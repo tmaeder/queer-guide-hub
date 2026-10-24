@@ -37,7 +37,7 @@ export function BrandIndexRow({ brand }: { brand: DirectoryBrand }) {
   const count = brand.product_count ?? 0;
 
   return (
-    <div className="group relative -mx-2 flex items-center gap-4 border-b border-border-hairline px-2 py-2 transition-colors duration-fast hover:bg-surface-container-low">
+    <div className="group relative flex items-center gap-4 border-b border-border-hairline px-2 py-2 transition-colors duration-fast hover:bg-surface-container-low">
       <BrandMark
         name={brand.display_name}
         logoUrl={brand.logo_url}

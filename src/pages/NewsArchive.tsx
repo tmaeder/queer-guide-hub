@@ -47,7 +47,7 @@ import { useTranslation } from 'react-i18next';
 import {
   PageContainer,
   PAGE_BLEED,
-  PAGE_GUTTER,
+  PAGE_BLEED_GUTTER,
   STICKY_UNDER_HEADER,
 } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -631,7 +631,7 @@ export default function NewsArchive() {
           <div
             role="tablist"
             aria-label={t('pages.news.categoriesLabel', 'News categories')}
-            className={`flex gap-2 mb-6 overflow-x-auto pb-2 sticky ${STICKY_UNDER_HEADER} z-20 bg-surface-container-low border-b border-border-hairline ${PAGE_BLEED} ${PAGE_GUTTER} pt-2`}
+            className={`flex gap-2 mb-6 overflow-x-auto pb-2 sticky ${STICKY_UNDER_HEADER} z-20 bg-surface-container-low border-b border-border-hairline ${PAGE_BLEED} ${PAGE_BLEED_GUTTER} pt-2`}
             style={{ scrollbarWidth: 'none' }}
           >
             <button
