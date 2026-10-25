@@ -203,6 +203,93 @@ export const FEEDS = {
   },
 };
 
+// France: one urban network per feed, all Licence Ouverte (attribution only) via
+// transport.data.gouv.fr. Paris (IDFM), Lyon, Toulouse, Montpellier and Rennes publish
+// under ODbL / Licence Mobilités (share-alike) and are deliberately not included.
+const N_LINES = /^N\d+$/;
+function frenchFeed(key, provider, sourceUrl, licence, city, nightLineName) {
+  return {
+    meta: {
+      feed_key: `fr-${key}`,
+      provider,
+      country_code: 'FR',
+      source_url: sourceUrl,
+      licence,
+      attribution: `Timetable: ${provider} via transport.data.gouv.fr (${licence})`,
+    },
+    nightLineName,
+    cities: [{ ...city, radiusKm: 8 }],
+  };
+}
+Object.assign(FEEDS, {
+  'fr-marseille': frenchFeed(
+    'rtm',
+    'RTM',
+    'https://transport.data.gouv.fr/datasets/reseaux-urbains-de-la-metropole-aix-marseille-provence',
+    'Licence Ouverte 2.0',
+    {
+      slug: 'marseille',
+      city_id: '2b2f1c9b-91c7-45ad-a7a3-cb06bcf4e63e',
+      centre: [43.2965, 5.3698],
+    },
+  ),
+  'fr-lille': frenchFeed(
+    'ilevia',
+    'ilévia',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-ilevia',
+    'Licence Ouverte 2.0',
+    {
+      slug: 'lille-france',
+      city_id: '4e0d885a-845d-4ecf-8cd7-f08be4e6c582',
+      centre: [50.63657, 3.06353],
+    },
+    N_LINES,
+  ),
+  'fr-nice': frenchFeed(
+    'lignes-dazur',
+    "Lignes d'Azur",
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-lignes-dazur',
+    'Licence Ouverte 2.0',
+    { slug: 'nice', city_id: '08685e84-d1a7-46c3-bf4e-6aa8b009de4a', centre: [43.7102, 7.262] },
+  ),
+  'fr-nantes': frenchFeed(
+    'naolib',
+    'Naolib',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-naolib',
+    'Licence Ouverte 2.0',
+    {
+      slug: 'nantes-france',
+      city_id: '42ccc458-9ee7-4866-a342-2f79cdd33196',
+      centre: [47.21864, -1.55414],
+    },
+    /^N[CNOS]$/,
+  ),
+  'fr-strasbourg': frenchFeed(
+    'cts',
+    'CTS',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-cts',
+    'Licence Ouverte 2.0',
+    {
+      slug: 'strasbourg',
+      city_id: '3ca9c869-2c13-4112-85b7-1d7b349e80eb',
+      centre: [48.5734, 7.7521],
+    },
+    N_LINES,
+  ),
+  'fr-bordeaux': frenchFeed(
+    'tbm',
+    'TBM',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-et-scolaire-tbm',
+    'Licence Ouverte',
+    {
+      slug: 'bordeaux-france',
+      city_id: 'c118881b-5586-40ae-9fe0-89cbc44cacd3',
+      centre: [44.84123, -0.58004],
+    },
+    N_LINES,
+  ),
+});
+
 const args = process.argv.slice(2);
 const zip = args[0];
 const outPath = args.includes('--out') ? args[args.indexOf('--out') + 1] : null;
@@ -219,6 +306,9 @@ const CITIES = FEEDS[feedArg].cities;
 const NIGHT_BY_NAME = !!FEEDS[feedArg].nightByName;
 // Measured German night-line names: N1, NE1, 'NE 1', NL1, n61 (Frankfurt), N1A, NG1, NA1.
 const NIGHT_LINE_NAME = /^N[EGLA]?\s?\d+[A-Z]?$/i;
+// A feed may name its night lines its own way (Nantes: NC/NN/NO/NS, while its N1-N3
+// are ferries); a feed with neither flag nor regex marks night lines by code only.
+const NIGHT_RE = FEEDS[feedArg].nightLineName ?? (NIGHT_BY_NAME ? NIGHT_LINE_NAME : null);
 
 const isoDate = (d) => (d ? `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}` : null);
 
@@ -290,17 +380,30 @@ async function main() {
     if (!/exited 11$/.test(e.message)) throw e;
   }
   const calendar = [];
-  for await (const c of rows('calendar.txt')) calendar.push(c);
-  // gtfs.de and Wiener Linien publish no feed dates; its validity is the calendar's own span.
+  // calendar.txt is optional too: Lille (ilévia) publishes calendar_dates.txt only.
+  try {
+    for await (const c of rows('calendar.txt')) calendar.push(c);
+  } catch (e) {
+    if (!/exited 11$/.test(e.message)) throw e;
+  }
+  // gtfs.de and Wiener Linien publish no feed dates; validity is the calendar's own span,
+  // or, with no calendar at all, the span of the dates calendar_dates adds.
   if (!feedInfo.feed_start_date || !feedInfo.feed_end_date) {
-    feedInfo.feed_start_date = calendar.reduce(
-      (m, c) => (c.start_date < m ? c.start_date : m),
-      '99999999',
-    );
-    feedInfo.feed_end_date = calendar.reduce(
-      (m, c) => (c.end_date > m ? c.end_date : m),
-      '00000000',
-    );
+    let lo = '99999999';
+    let hi = '00000000';
+    for (const c of calendar) {
+      if (c.start_date < lo) lo = c.start_date;
+      if (c.end_date > hi) hi = c.end_date;
+    }
+    if (!calendar.length) {
+      for await (const e of rows('calendar_dates.txt')) {
+        if (e.exception_type !== '1') continue;
+        if (e.date < lo) lo = e.date;
+        if (e.date > hi) hi = e.date;
+      }
+    }
+    feedInfo.feed_start_date = lo;
+    feedInfo.feed_end_date = hi;
   }
   const today = todayArg ?? new Date().toISOString().slice(0, 10).replaceAll('-', '');
   const week = pickServiceWeek(today, feedInfo.feed_start_date, feedInfo.feed_end_date);
@@ -330,7 +433,7 @@ async function main() {
     if (NIGHT_BY_NAME && m.mode === 'bus' && /^(SEV|S|RE|RB|U)\s?\d|^SEV\b/i.test(ref)) continue;
     routes.set(r.route_id, {
       ...m,
-      night: m.night || (NIGHT_BY_NAME && NIGHT_LINE_NAME.test(ref)),
+      night: m.night || !!NIGHT_RE?.test(ref),
       ref,
     });
   }

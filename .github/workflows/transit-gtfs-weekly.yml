@@ -1,4 +1,4 @@
-name: Transit timetable (Swiss + German + Vienna GTFS → city_transit_service)
+name: Transit timetable (CH + DE + Vienna + French GTFS → city_transit_service)
 
 # "Last departure tonight" per city, derived from the national Swiss GTFS feed.
 # Design: docs/plans/2026-10-22-zurich-late-night-mobility-design.md (Step 1).
@@ -84,3 +84,31 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node --max-old-space-size=2048 scripts/transit/build-city-service.mjs "$RUNNER_TEMP/gtfs-at.zip" --feed at --commit
+
+      # France: one urban network per feed, Licence Ouverte, via transport.data.gouv.fr's
+      # stable data.gouv.fr resource links. A failing city is reported and the rest still
+      # commit; the step fails at the end so the run is red.
+      - name: Download, derive and commit (France)
+        if: ${{ !cancelled() }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          rm -f "$RUNNER_TEMP/gtfs-at.zip"
+          failed=""
+          while read -r feed url; do
+            echo "::group::$feed"
+            if curl -sSfL --retry 3 -o "$RUNNER_TEMP/$feed.zip" "$url" \
+              && node --max-old-space-size=2048 scripts/transit/build-city-service.mjs "$RUNNER_TEMP/$feed.zip" --feed "$feed" --commit; then :
+            else failed="$failed $feed"; fi
+            rm -f "$RUNNER_TEMP/$feed.zip"
+            echo "::endgroup::"
+          done <<'FEEDS'
+          fr-marseille https://www.data.gouv.fr/api/1/datasets/r/7eef6ec9-9ebb-44f2-becb-2efc522522d6
+          fr-lille https://www.data.gouv.fr/api/1/datasets/r/c9e5dd3f-8eed-4ad7-aec2-915240599cf6
+          fr-nice https://www.data.gouv.fr/api/1/datasets/r/f5678ab2-c863-4b48-ba1f-9021c7d97634
+          fr-nantes https://www.data.gouv.fr/api/1/datasets/r/65bdd7e4-a8e7-4a54-893a-808e71c34d68
+          fr-strasbourg https://www.data.gouv.fr/api/1/datasets/r/eeea9e52-4f8a-459e-aef5-a093a3b05356
+          fr-bordeaux https://www.data.gouv.fr/api/1/datasets/r/10b87ffe-e6bb-494d-93df-bb6019e223d9
+          FEEDS
+          if [ -n "$failed" ]; then echo "::error::French feeds failed:$failed"; exit 1; fi

@@ -80,6 +80,15 @@ test.describe('Zürich late-night mobility', () => {
     await expect(section).not.toContainText('DELFI');
   });
 
+  test('Bordeaux reads its own network feed, credited to TBM', async ({ page }) => {
+    await page.goto('/city/bordeaux-france#travel');
+    const section = page.getByRole('region', { name: 'Late night' });
+    await expect(section).toContainText('Last tram', { timeout: 20_000 });
+    await expect(section).toContainText(CLOCK);
+    await expect(section).toContainText('TBM');
+    await expect(section).toContainText('transport.data.gouv.fr');
+  });
+
   test('/going-out in Zürich has a Getting home section', async ({ page }) => {
     await page.goto('/going-out?city=zuerich');
     await expect(page.getByText('Getting home', { exact: false }).first()).toBeVisible({
