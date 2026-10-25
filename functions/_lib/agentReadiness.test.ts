@@ -104,7 +104,7 @@ describe('public content and discovery', () => {
     expect(DOCS_MARKDOWN).toContain('without an account, API key');
   });
   it('publishes only supported organization details', () => {
-    const org = JSON.parse(homepageJsonLd().match(/<script[^>]*>(.*?)<\/script>/)![1]);
+    const org = JSON.parse(homepageJsonLd().match(/<script[^>]*>(.*?)<\/script>/i)![1]);
     expect(org.description.length).toBeGreaterThan(40);
     expect(org.contactPoint.email).toBe('legal@queer.guide');
     expect(org.contactPoint.contactType).toBe('legal and privacy enquiries');

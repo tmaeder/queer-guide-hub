@@ -182,7 +182,12 @@ for (const path of ['/robots.txt', '/sitemap.xml', '/sitemap-static.xml'])
     assert.equal(response.status, 200);
     assert(!text.includes('<!DOCTYPE html>'));
     if (path.endsWith('.xml')) assert(text.includes('http://www.sitemaps.org/schemas/sitemap/0.9'));
-    if (path === '/sitemap-static.xml') assert(text.includes('https://queer.guide/docs'));
+    if (path === '/sitemap-static.xml') {
+      const locations = [...text.matchAll(/<loc>([^<]+)<\/loc>/g)].map(
+        (match) => new URL(match[1]).href,
+      );
+      assert(locations.includes('https://queer.guide/docs'));
+    }
   });
 const report = {
   base,
