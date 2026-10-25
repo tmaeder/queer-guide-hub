@@ -14,6 +14,7 @@ import adminUiPrimitives from './eslint-rules/admin-ui-primitives.js';
 import noHandRolledPageWrapper from './eslint-rules/no-hand-rolled-page-wrapper.js';
 import noUngatedAnalytics from './eslint-rules/no-ungated-analytics.js';
 import noDirectDompurify from './eslint-rules/no-direct-dompurify.js';
+import noHandRolledDialog from './eslint-rules/no-hand-rolled-dialog.js';
 
 // typescript-eslint v8 throws when its project-service auto-detect sees
 // multiple candidate root dirs (here: repo root + scraper/). Pin it via
@@ -78,6 +79,7 @@ export default tseslint.config(
           'no-hand-rolled-page-wrapper': noHandRolledPageWrapper,
           'no-ungated-analytics': noUngatedAnalytics,
           'no-direct-dompurify': noDirectDompurify,
+          'no-hand-rolled-dialog': noHandRolledDialog,
         },
       },
     },
@@ -130,6 +132,8 @@ export default tseslint.config(
       'queerguide/no-ungated-analytics': 'error',
       // DOMPurify is configured in ONE place, as named profiles.
       'queerguide/no-direct-dompurify': 'error',
+      // Modals come from the ui/ primitives (focus trap, Escape, scroll lock).
+      'queerguide/no-hand-rolled-dialog': 'error',
       // Accessibility rules (WCAG 2.2 AA)
       'jsx-a11y/alt-text': 'error',
       'jsx-a11y/anchor-has-content': 'error',
