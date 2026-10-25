@@ -292,8 +292,8 @@ export async function dispatchRedirectDomainJobs(
           const proof=renewal.data as { actor:unknown; version:unknown; attempt:unknown; verification?: {name?:unknown;value?:unknown} };
           if (![proof.actor,proof.version,proof.attempt].every(value=>typeof value==='string' && UUID.test(value)) || proof.verification?.name !== '_qg-redirect.'+job.hostname || typeof proof.verification?.value!=='string') throw new Error('Invalid ownership renewal');
           const outcome=await checkRedirectDomainDns({name: proof.verification!.name as string, value: proof.verification!.value as string},fetcher);
-          const recorded=await db.rpc('redirect_domain_check_result',{p_actor:proof.actor,p_id:job.id,p_version:proof.version,p_attempt:proof.attempt,p_outcome:outcome});
-          if(recorded.error) throw new Error('Ownership changed during renewal');
+          const recorded=await db.rpc('finish_redirect_domain_renewal',{p_id:job.id,p_lease:job.lease,p_operation:job.operation,p_version:proof.version,p_attempt:proof.attempt,p_outcome:outcome});
+          if(recorded.error||recorded.data!==true) throw new Error('Ownership changed during renewal');
         }
       }
       if (job.kind === 'preflight' || job.kind === 'reconcile') {

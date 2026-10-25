@@ -831,3 +831,30 @@ parse; script lint/formatting and diff checks pass. No real email was sent.
 Domain-provider and webhook workers still need source-row authority before
 activation. Member installation, owner admission, tenant activation, transfer
 and live provider/device proof remain open.
+
+### 2026-10-25 source-bound provider workers
+
+Provider claims now select bounded jobs in active workspaces. Create, adoption,
+refresh, validation restart and ownership renewal recheck current source owner
+permission; foreground request headers cannot choose a worker tenant. Nonce-bound
+creation receipts and confirmed provider status/deletion facts remain recordable
+after deactivation or role loss, preserving external truth. Foreground private
+resource endpoints and activation fences remain unchanged.
+
+Background DNS reservation uses the source job's workspace and existing global/
+actor budgets. Its dedicated completion RPC requires the exact lease, operation,
+version and verification attempt plus current active workspace/owner. The actual
+provider adapter uses that RPC and stops before provider refresh when the receipt
+is rejected. Foreground DNS result authorization remains unchanged.
+
+The complete SQL suite passes with a non-admin explicit future owner, malformed
+headers, inactive claim denial, forged lease/nonce denial, creation/status receipts
+after deactivation/owner loss, exact DNS renewal and revoked-creator refresh
+denial. All five real SDK runtimes and their full HTTP matrix pass, including
+background DNS renewal. Twelve provider-adapter tests pass, the API's frozen Deno
+check passes and all 2557 migrations parse. Script/test lint and formatting pass.
+No live provider object was created, modified, adopted or deleted by these tests.
+
+Webhook worker authority remains before activation, along with member integration
+installation, owner admission, tenant activation, atomic transfer and external
+provider/device proof.
