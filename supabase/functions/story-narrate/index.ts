@@ -27,7 +27,6 @@ const CF_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 
 const corsFor = (req: Request) => ({
   ...getCorsHeaders(req),
-  'Access-Control-Allow-Headers': 'authorization, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 });
 

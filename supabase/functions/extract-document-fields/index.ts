@@ -27,7 +27,6 @@ const CF_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 
 const corsFor = (req: Request) => ({
   ...getCorsHeaders(req),
-  'Access-Control-Allow-Headers': 'authorization, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 });
 
