@@ -85,7 +85,7 @@ describe('EmailTemplates safeguards', () => {
     expect(screen.getByLabelText('Recipient email')).toHaveValue('editor@example.com');
     expect(screen.getByLabelText('Recipient email')).toHaveAttribute('readonly');
     expect(screen.getByLabelText('Recipient email')).toHaveAccessibleDescription(
-      'Tests go to your verified admin email address. Use the Email workspace for production sends.',
+      'Tests go to your verified admin email address. Review production sends in the Delivery tab.',
     );
     expect(screen.getByRole('button', { name: 'Send test' })).toBeDisabled();
     fireEvent.change(screen.getByLabelText('name'), { target: { value: 'Alex' } });

@@ -88,20 +88,30 @@ test.describe('city duplicate merges', () => {
   }
 
   test('misfiled venues sit on the city their coordinates belong to', async ({ request }) => {
-    // Filtered to the Freiburg area: "Hirscheneck" is also a well-known Basel venue.
-    // Both sat on a "Freiberg" row that carried Freiburg im Breisgau's coordinates.
+    // Assert the city against each venue's current geocoded location. Hirscheneck's
+    // Freiburg coordinates were cleared during factual city-lifecycle review;
+    // its geocoded records belong to Basel. Null-coordinate candidates cannot
+    // establish a location and are deliberately outside these geographic bounds.
     // (Founders Park, moved to Carmel, Indiana, is a cruising venue: anon cannot read
     // it by design, so it is not asserted here rather than read with a privileged key.)
-    for (const [venue, citySlug] of [
-      ['Hirscheneck', 'freiburg-de-rmir8'],
-      ['Freiburger Lesbenfilmtage e.V.', 'freiburg-de-rmir8'],
+    for (const [venue, citySlug, bounds] of [
+      [
+        'Hirscheneck',
+        'basel',
+        'latitude=gte.47.5&latitude=lte.47.6&longitude=gte.7.5&longitude=lte.7.7',
+      ],
+      [
+        'Freiburger Lesbenfilmtage e.V.',
+        'freiburg-de-rmir8',
+        'latitude=gte.47.9&latitude=lte.48.1&longitude=gte.7.7&longitude=lte.8.0',
+      ],
     ]) {
       // venues.city_id has no FK to cities any more (Geo P2), so PostgREST cannot embed it.
       const [city] = await anonGet(request, `cities?select=id&slug=eq.${citySlug}`);
       expect(city, `${citySlug} not readable`).toBeTruthy();
       const rows = await anonGet(
         request,
-        `venues?select=city_id&name=eq.${encodeURIComponent(venue)}&latitude=gte.47.9&latitude=lte.48.1&longitude=gte.7.7&longitude=lte.8.0`,
+        `venues?select=city_id&name=eq.${encodeURIComponent(venue)}&${bounds}`,
       );
       expect(rows.length, `${venue} not readable`).toBeGreaterThan(0);
       for (const r of rows) expect(r.city_id, venue).toBe(city.id);
