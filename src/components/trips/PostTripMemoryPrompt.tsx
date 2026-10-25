@@ -12,6 +12,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { TripWithDetails, TripPlace } from '@/hooks/useTrips';
 import { useTripReservations } from '@/hooks/useTripReservations';
 
+const NO_MARKS: NonNullable<ReturnType<typeof useMyPlaceMarks>['data']> = [];
+const NO_RESERVATIONS: NonNullable<ReturnType<typeof useTripReservations>['data']> = [];
+
 interface Props {
   trip: TripWithDetails;
 }
@@ -33,8 +36,12 @@ export function PostTripMemoryPrompt({ trip }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
-  const { data: marks = [] } = useMyPlaceMarks();
-  const { data: reservations = [] } = useTripReservations(trip.id);
+  // `= []` defaults would be a NEW array on every render while a query is
+  // loading, which re-derives `initiallyChecked` each render and turns the
+  // re-seed below into an infinite render loop ("Too many re-renders" on the
+  // trip page, intermittently, whenever either query was still in flight).
+  const { data: marks = NO_MARKS } = useMyPlaceMarks();
+  const { data: reservations = NO_RESERVATIONS } = useTripReservations(trip.id);
 
   const isPastTrip = useMemo(() => {
     if (!trip.end_date) return false;

@@ -15,14 +15,17 @@ interface NavContributeButtonProps {
  */
 export function NavContributeButton({ label, onClick }: NavContributeButtonProps) {
   return (
-    <li className="flex flex-1 items-center justify-center">
+    <li className="flex w-16 shrink-0 items-center justify-center">
       <button
         type="button"
         onClick={onClick}
         aria-label={label}
-        className="-mt-4 flex h-12 w-12 items-center justify-center rounded-element bg-background text-foreground transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        // Pink track = the dock's one brand CTA. The 4px ink ring cuts the
+        // button out of the dock edge; the inner track-ring border is the
+        // WCAG 1.4.11 edge every track-coloured mark carries.
+        className="-mt-8 flex h-14 w-14 items-center justify-center rounded-full border border-track-ring bg-track-pink text-foreground shadow-soft ring-4 ring-foreground transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-background"
       >
-        <Plus className="h-6 w-6" aria-hidden />
+        <Plus className="h-6 w-6" strokeWidth={2.75} aria-hidden />
       </button>
     </li>
   );

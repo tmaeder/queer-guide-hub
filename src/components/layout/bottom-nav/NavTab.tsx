@@ -41,8 +41,11 @@ interface NavTabProps {
 // (`li a:not(.no-underline)` in index.css) forces `display:inline`, which would
 // override the `flex` utility and left-align the icon under the centred label.
 const linkBase =
-  'flex h-14 flex-col items-center justify-center gap-1 no-underline select-none text-2xs font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
-const iconWrap = 'relative flex h-8 w-12 items-center justify-center';
+  'group flex h-16 flex-col items-center justify-center gap-1 rounded-container no-underline select-none text-2xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-background';
+// The active cue is a pill behind the ICON only (not a paper slab over the
+// whole slot): the slab read as a second button beside the contribute button.
+const iconWrap =
+  'relative flex h-8 w-14 items-center justify-center rounded-full transition-colors';
 
 /**
  * One bottom-nav slot: a localized link with an active pill, icon (or avatar),
@@ -95,17 +98,31 @@ export function NavTab({
           // rgb(180,180,177) on ink — 9.1:1, which a 10px bold label needs
           // (bold only counts as large text from 18.66px up, so the bar here
           // is 4.5:1, not 3:1).
-          active ? 'bg-background text-foreground' : 'text-background/70 hover:text-background',
+          active
+            ? 'font-bold text-background'
+            : 'font-medium text-background/70 hover:text-background',
         )}
       >
-        <span className={iconWrap}>
+        <span
+          className={cn(
+            iconWrap,
+            active ? 'bg-background text-foreground' : 'group-hover:bg-background/10',
+          )}
+        >
           {/* CSS scale-in replaces the framer layoutId shared-layout slide:
               the pill sits inside a non-uniform flex row (contribute button,
               accessory), so a single translated pill would need JS measurement
               — not worth ~97 KB of framer on the entry chunk. */}
-          {active && !reduced && <span aria-hidden className="absolute inset-0 scale-in" />}
+          {active && !reduced && (
+            <span aria-hidden className="absolute inset-0 scale-in rounded-full bg-background" />
+          )}
           {avatar ? (
-            <Avatar className="relative h-6 w-6">
+            <Avatar
+              className={cn(
+                'relative h-6 w-6 ring-1',
+                active ? 'ring-foreground' : 'ring-background/40',
+              )}
+            >
               <AvatarImage src={avatar.src} alt="" />
               <AvatarFallback className="text-2xs">{avatar.initial}</AvatarFallback>
             </Avatar>
