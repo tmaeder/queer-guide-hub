@@ -37,6 +37,13 @@ Deno.test('classification excludes uncertain classes, subdivisions, missing labe
  assertEquals(classificationEvidence(candidate,ended,classes,countries),null)
 })
 
+Deno.test('discovery does not mistake a county township container for a municipal settlement',()=>{
+ for(const label of ['township of Ohio','township of Illinois','township of Indiana','township of Iowa']){
+  assertEquals(classificationEvidence(candidate,entity(),{Q515:{id:'Q515',labels:{en:{value:label}}}},countries),null)
+ }
+ assertEquals(classificationEvidence(candidate,entity(),{Q515:{id:'Q515',labels:{en:{value:'township of Pennsylvania'}}}},countries)?.status,'municipality')
+})
+
 Deno.test('classification refuses conflicting points and identities and preserves settlement autonomy distinction',()=>{
  const source=entity()
  assertEquals(classificationEvidence(candidate,{...source,id:'Q999'},classes,countries),null)

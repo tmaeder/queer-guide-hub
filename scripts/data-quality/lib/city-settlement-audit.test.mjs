@@ -16,6 +16,15 @@ test('municipal vocabulary does not generalize to regional or ambiguous classes'
     assert.notEqual(classifyEvidence({ classes: [label] }).status, 'municipality', label);
   }
 });
+test('county township containers require settlement evidence; state-specific municipalities retain recognition', () => {
+  for (const state of ['Ohio', 'Illinois', 'Indiana', 'Iowa', 'Unknown']) {
+    assert.equal(classifyEvidence({ classes: [`township of ${state}`] }).status, 'review', state);
+  }
+  for (const state of ['Pennsylvania', 'New Jersey']) {
+    assert.equal(classifyEvidence({ classes: [`township of ${state}`] }).status, 'municipality', state);
+    assert.notEqual(classifyEvidence({ classes: [`township of ${state}`, 'former municipality'] }).status, 'municipality', state);
+  }
+});
 test('protects independent Culver City despite a PPLX classification', () => {
   assert.equal(
     classifyEvidence({
