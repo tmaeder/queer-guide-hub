@@ -110,6 +110,15 @@ describe('department category art', () => {
     expect(d).not.toMatch(/[LHV]/);
   });
 
+  // The category index reuses this plate for group tiles; `glyph` must win over
+  // the department's own mark, or every Apparel tile draws the T-shirt again.
+  it('draws an explicit glyph instead of the department mark', () => {
+    const html = (glyph?: 'shoe') =>
+      render(<DepartmentArt slug="apparel" index={0} count={3} glyph={glyph} />).container
+        .innerHTML;
+    expect(html('shoe')).not.toBe(html());
+  });
+
   it('inverts to the ink treatment for the active stop', () => {
     const { container } = render(<DepartmentArt slug="apparel" index={0} count={11} active />);
     // Yellow survives the inversion — a track colour is identity, not a tone.

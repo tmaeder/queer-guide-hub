@@ -1,5 +1,6 @@
 import { horizontalLine } from '@/components/transit/lineGeometry';
 import { TransitIcon } from '@/components/transit/TransitIcon';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { cn } from '@/lib/utils';
 import {
   PLATE_CREST,
@@ -67,10 +68,14 @@ export function DepartmentArt({
   slug,
   index,
   count,
+  glyph,
   active = false,
   className,
 }: {
   slug: string;
+  /** Mark for the disc. Defaults to the department's own; the category index
+   *  passes a group's mark so the same plate can stand for a group tile. */
+  glyph?: TransitIconName;
   /** Position in the rendered list — this plate's window onto the shared line. */
   index: number;
   /** How many plates are on the line, i.e. how long the line is. */
@@ -160,7 +165,7 @@ export function DepartmentArt({
             margin is interior — ticks here read as marks ON the disc, not as
             motion around the icon. */}
         <TransitIcon
-          name={departmentGlyph(slug)}
+          name={glyph ?? departmentGlyph(slug)}
           size={100}
           ticks={false}
           {...(active ? { color: 'currentColor' } : {})}
