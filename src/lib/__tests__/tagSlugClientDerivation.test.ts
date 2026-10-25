@@ -107,13 +107,12 @@ describe('no client-side tag slug derivation', () => {
     }
   });
 
-  it('the dormant useUnifiedTags.createTag derives nothing either', () => {
+  it('useUnifiedTags writes no tags at all', () => {
+    // Its dormant CRUD helpers (createTag included) were deleted; a write path
+    // reappearing here would need its own slug review.
     const src = statementsOf(UNIFIED);
-    expect(src).not.toMatch(/\[\^a-z0-9\\s-\]/);
-    expect(src).not.toMatch(/toLowerCase\(\)[\s\S]{0,80}?replace\([^)]*'-'\)/);
-    // Scoped to the insert, because `slug` is a legitimate read elsewhere.
-    const insert = src.slice(src.indexOf("from('unified_tags')\n        .insert"));
-    expect(insert.slice(0, 400)).toContain("slug: ''");
+    expect(src).toContain("from('unified_tags')");
+    expect(src).not.toMatch(/\.(insert|update|upsert|delete)\(/);
   });
 
   it('createAlias takes its slug from the database, not a regex', () => {
