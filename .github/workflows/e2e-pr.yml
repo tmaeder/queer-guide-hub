@@ -188,11 +188,11 @@ jobs:
             psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-artwork-dependencies.sql
           fi
 
-          # Backend ACLs are absent from the anonymous export. Recreate only
-          # this pending guard's local preconditions; never touch production.
+          # The schema-only snapshot omits ACLs. Local defaults must not invent
+          # browser access to backend tables before their guarded migration.
           if [ -f /tmp/migrations/20261025175909_complete_security_advisor_backend_contracts.sql ] && ! grep -qx '20261025175909' snapshot/versions.txt; then
-            DB_URL="$DB_URL" node scripts/ci/seed-backend-policy-migration.mjs > /tmp/ci-backend-policy-dependencies.sql
-            psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-backend-policy-dependencies.sql
+            DB_URL="$DB_URL" node scripts/ci/seed-backend-migration-grants.mjs /tmp/migrations/20261025175909_complete_security_advisor_backend_contracts.sql > /tmp/ci-backend-grants.sql
+            psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-backend-grants.sql
           fi
 
           # Only the PR's NEW migrations: versions production has not applied.

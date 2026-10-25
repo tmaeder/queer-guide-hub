@@ -3,7 +3,7 @@ import { classifyEvidence, normalizePlaceName } from './lib/city-settlement-audi
 import { CITY_NAME_LANGS, currentStatements, type Claims, type WdLabels, type WdAliases } from '../../supabase/functions/_shared/wikidata-city.ts'
 import { distanceKm } from '../../supabase/functions/_shared/geo-link-guards.ts'
 
-type Candidate = { id: string; name: string; wikidata_qid: string; latitude: number | string | null; longitude: number | string | null; country_code: string; expected_updated_at: string; expected_fingerprint: string; previous_classification: unknown }
+export type Candidate = { id: string; name: string; wikidata_qid: string; latitude: number | string | null; longitude: number | string | null; country_code: string; expected_updated_at: string; expected_fingerprint: string; previous_classification: unknown }
 type Entity = { id: string; claims?: Claims; labels?: WdLabels; aliases?: WdAliases; missing?: unknown }
 const hash = async (text: string) => [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))].map(v=>v.toString(16).padStart(2,'0')).join('')
 const currentValues = (e: Entity, property: string) => {
@@ -39,10 +39,7 @@ export function classificationEvidence(c: Candidate,e: Entity,classes: Record<st
  return {...c,latitude,longitude,status:verdict.status,reason:verdict.reason,classes:labels,class_ids:classIds,country_ids:refs(e,'P17'),source_latitude:point.latitude,source_longitude:point.longitude,distance_m:distance*1000,source_url:`https://www.wikidata.org/wiki/${e.id}`,human_reviewed:false}
 }
 
-if(import.meta.main){
- const [input,output]=Deno.args
- if(!input||!output)throw Error('Usage: collector candidates.json evidence.json')
- const rows=JSON.parse(await Deno.readTextFile(input))as Candidate[]
+export async function collectClassificationEvidence(rows:Candidate[]){
  if(!Array.isArray(rows)||rows.length>250||rows.some(c=>!/^Q[1-9]\d*$/.test(c.wikidata_qid)))throw Error('Bounded native candidate export required')
  const captures:Array<Record<string,unknown>>=[]
  async function read(ids:string[],props:string,languages='en',property?:string){
@@ -68,6 +65,13 @@ if(import.meta.main){
  const countries=await read([...new Set(Object.values(entities).flatMap(e=>refs(e,'P17')))],'claims','en','P297')
  const proofs=[];let unresolved=0
  for(const c of rows){const e=entities[c.wikidata_qid],proof=classificationEvidence(c,e,classes,countries);if(!proof){unresolved++;continue};proofs.push({...proof,observed_at:new Date().toISOString(),entity_payload_sha256:await hash(JSON.stringify(e)),entity_payload_text:JSON.stringify(e)})}
- await Deno.writeTextFile(output,JSON.stringify({proofs,captures,unresolved}))
- console.log(JSON.stringify({examined:rows.length,positive_proofs:proofs.length,unresolved,captures:captures.length}))
+ return {proofs,captures,unresolved}
+}
+if(import.meta.main){
+ const [input,output]=Deno.args
+ if(!input||!output)throw Error('Usage: collector candidates.json evidence.json')
+ const rows=JSON.parse(await Deno.readTextFile(input))as Candidate[]
+ const result=await collectClassificationEvidence(rows)
+ await Deno.writeTextFile(output,JSON.stringify(result))
+ console.log(JSON.stringify({examined:rows.length,positive_proofs:result.proofs.length,unresolved:result.unresolved,captures:result.captures.length}))
 }
