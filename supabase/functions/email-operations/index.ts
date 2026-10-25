@@ -8,6 +8,7 @@ import {
 import { operationalEmail } from "../_shared/email-operational.ts";
 import { fromHeader, getEmailBranding, wrapHtml } from "../_shared/branding.ts";
 import { readEmailGatewayReceipt } from "../_shared/email-gateway-receipt.ts";
+import { readEmailQueueMetrics } from "./queue-metrics.ts";
 
 // Planning/maintenance has its own scheduler so a failed audience job cannot
 // prevent essential transactional retries from draining the delivery outbox.
@@ -20,11 +21,14 @@ Deno.serve(async (req: Request) => {
     ? await requireInternalOrAdmin(req, db)
     : await requireAdmin(req, db);
   if (actor instanceof Response) return actor;
-  const result = (body: unknown, status = 200) =>
-    jsonResponse(body, status, req);
+  const result = (body: unknown, status = 200) => {
+    const response = jsonResponse(body, status, req);
+    response.headers.set("Cache-Control", "no-store");
+    return response;
+  };
   try {
     if (req.method === "GET") {
-      const [jobs, events, health] = await Promise.all([
+      const [jobs, events, health, queues] = await Promise.all([
         db.from("email_campaign_audiences").select(
           "id,campaign_id,version,status,scanned,created_at,completed_at",
         )
@@ -34,6 +38,7 @@ Deno.serve(async (req: Request) => {
         )
           .order("created_at", { ascending: false }).limit(100),
         db.rpc("email_operations_health"),
+        readEmailQueueMetrics(),
       ]);
       if (jobs.error || events.error || health.error) {
         throw new Error("Operations unavailable");
@@ -42,6 +47,7 @@ Deno.serve(async (req: Request) => {
         jobs: jobs.data,
         events: events.data,
         health: health.data,
+        queues,
       });
     }
     if (req.method !== "POST") {
