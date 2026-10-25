@@ -1,5 +1,13 @@
 -- AgendaQ's live renderer confirms m.nth=5 means LAST, not fifth.
 -- CANCEL entries are exclusions, including recurring exclusions and ranges.
+create or replace function public.agendaq_event_key(p_url text)
+returns text language sql immutable strict set search_path=public,pg_temp as $$
+ select case when p_url ~* '^https?://(www\.)?agendaq\.fr/[a-z]{2}/agenda/[^/?#]+'
+ then regexp_replace(p_url,'^https?://(www\.)?agendaq\.fr/[a-z]{2}/agenda/([^/?#]+).*$', '\2','i') end
+$$;
+revoke all on function public.agendaq_event_key(text) from public,anon,authenticated;
+grant execute on function public.agendaq_event_key(text) to service_role;
+
 create or replace function public.agendaq_evidence_schedule(p_raw jsonb,p_from date default current_date-1,p_to date default (current_date+interval '18 months')::date)
 returns jsonb language plpgsql stable set search_path=public,pg_temp as $$
 declare entry jsonb; c jsonb; slots jsonb:='[]'; omitted jsonb:='[]'; cancelled date[]:='{}'; tz text; entry_tz text;
@@ -89,9 +97,31 @@ do $$
 declare def text;
 begin
  select pg_get_functiondef('public.run_event_source_schedule_recovery(integer,boolean,uuid[])'::regprocedure) into def;
+ -- Generic titles were previously merged across venues. Only the canonical
+ -- event's own source key may supply its schedule, regardless of primary flags.
+ def:=replace(def,'where es.event_id=e.id and es.source_slug=''agendaq''',
+  'where es.event_id=e.id and es.source_slug=''agendaq'' and public.agendaq_event_key(es.source_url)=public.agendaq_event_key(e.website)');
  def:=replace(def,'and (e.field_provenance#>>','and (coalesce(e.field_provenance#>>''{source_schedule_recovery,parser_version}'',''1'')<>''2'' or e.field_provenance#>>');
  def:=replace(def,'''input_hash'',r.input_hash','''parser_version'',2,''omitted_periods'',coalesce(rule->''omitted_periods'',''[]''::jsonb),''input_hash'',r.input_hash');
  def:=replace(def,'''outcome'',case when rule is null then ''review'' else ''updated'' end', '''outcome'',case when rule is null then ''review'' when jsonb_array_length(coalesce(rule->''omitted_periods'',''[]''::jsonb))>0 then ''partial'' else ''updated'' end');
  def:=replace(def,'needs_attention=case when rule is null then true else needs_attention end','needs_attention=case when rule is null or jsonb_array_length(coalesce(rule->''omitted_periods'',''[]''::jsonb))>0 then true else needs_attention end');
  execute def;
+end $$;
+
+-- Withdraw previously recovered schedules attributed to a different source key.
+-- Retain the old schedule for audit and immediately attempt the correct source.
+do $$
+declare ids uuid[];
+begin
+ select array_agg(id) into ids from public.events e where e.schedule->>'source'='agendaq-raw'
+  and public.agendaq_event_key(e.website) is not null
+  and public.agendaq_event_key(e.field_provenance#>>'{source_schedule_recovery,source_url}') is distinct from public.agendaq_event_key(e.website);
+ if coalesce(array_length(ids,1),0)>0 then
+  update public.events set field_provenance=jsonb_set(jsonb_set(coalesce(field_provenance,'{}'),
+    '{withdrawn_source_schedule}',jsonb_build_object('schedule',schedule,'at',now(),'reason','different_canonical_source_key')),
+    '{source_schedule_recovery}',coalesce(field_provenance->'source_schedule_recovery','{}')||'{"parser_version":0,"outcome":"review","reason":"different_canonical_source_key"}'::jsonb),
+   schedule=null,needs_attention=true,updated_at=now() where id=any(ids);
+  delete from public.event_quality_current where event_id=any(ids);
+  perform public.run_event_source_schedule_recovery(75,false,ids);
+ end if;
 end $$;

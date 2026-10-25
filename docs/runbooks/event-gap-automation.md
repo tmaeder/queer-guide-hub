@@ -197,3 +197,11 @@ zero missing URLs as proof that future edition dates have been verified.
 Worker pages with matching title/date JSON-LD cancellation or postponement go to
 review before further enrichment. This is a review signal, not permission to
 cancel an unrelated event based on page prose.
+
+Source calendar selection also requires the canonical AgendaQ event key. Generic
+titles had merged multiple venues' source rows, including several marked primary.
+Primary flags and recency cannot establish ownership. The release withdraws 48
+previously recovered schedules whose source key differs, keeps the old schedule
+in `withdrawn_source_schedule`, and attempts the canonical source immediately.
+The integration fixture verifies that a newer primary row from another venue
+cannot replace the canonical source calendar.
