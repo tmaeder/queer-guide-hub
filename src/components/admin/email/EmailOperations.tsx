@@ -3,7 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+interface QueueReading {
+  available: boolean;
+  backlog_count: number | null;
+  backlog_bytes: number | null;
+  oldest_message_at: string | null;
+}
 interface Operations {
+  queues?: { observed_at: string; events: QueueReading; dead_letter: QueueReading } | null;
   health: {
     as_of: string;
     window_days: number;
@@ -27,6 +34,18 @@ interface Operations {
 }
 const seconds = (value: number | null) =>
   value === null ? 'No observations' : `${Math.round(value)} seconds`;
+const backlog = (reading: QueueReading | undefined) =>
+  reading?.available && reading.backlog_count !== null
+    ? reading.backlog_count.toLocaleString()
+    : 'Unavailable';
+function queueAge(reading: QueueReading | undefined, observed: string | undefined) {
+  if (!reading?.available) return 'Unavailable';
+  if (reading.backlog_count === 0) return 'No pending events';
+  if (!reading.oldest_message_at || !observed) return 'Age unavailable';
+  return seconds(
+    Math.max(0, (Date.parse(observed) - Date.parse(reading.oldest_message_at)) / 1000),
+  );
+}
 export function EmailOperations() {
   const [data, setData] = useState<Operations | null>(null),
     [error, setError] = useState(false),
@@ -107,6 +126,16 @@ export function EmailOperations() {
               ['Delivery time, 95th percentile', seconds(data.health.delivery_p95_seconds)],
               ['Provider events without a matched receipt', data.health.unmatched_provider_events],
               ['Terminal message body retention', `${data.health.retention.payload_days} days`],
+              ['Queued delivery events', backlog(data.queues?.events)],
+              ['Dead-letter delivery events', backlog(data.queues?.dead_letter)],
+              [
+                'Oldest queued delivery event',
+                queueAge(data.queues?.events, data.queues?.observed_at),
+              ],
+              [
+                'Oldest dead-letter delivery event',
+                queueAge(data.queues?.dead_letter, data.queues?.observed_at),
+              ],
             ].map(([label, value]) => (
               <div key={label} className="border-b border-border pb-4">
                 <dt className="text-sm text-muted-foreground">{label}</dt>
@@ -114,6 +143,18 @@ export function EmailOperations() {
               </div>
             ))}
           </dl>
+          {data.queues?.dead_letter.available &&
+            (data.queues.dead_letter.backlog_count ?? 0) > 0 && (
+              <p role="alert" className="text-sm">
+                Delivery events need recovery. Inspect the dead-letter queue before its retention
+                expires. Refreshing operations does not resend messages.
+              </p>
+            )}
+          <p className="text-sm text-muted-foreground">
+            {data.queues
+              ? `Queue measurements checked at ${new Date(data.queues.observed_at).toLocaleString()}. Counts are best-effort Cloudflare snapshots; unavailable measurements never mean zero.`
+              : 'Queue measurements are unavailable. Refresh operations or inspect the queues in Cloudflare.'}
+          </p>
           <section aria-label="Delivery state counts">
             <h3 className="font-semibold">Observed delivery states</h3>
             {Object.keys(data.health.states).length ? (
@@ -131,7 +172,7 @@ export function EmailOperations() {
           <p className="text-sm text-muted-foreground">
             Retention removes old terminal message bodies in bounded batches. It preserves
             suppression, consent and message identities. Queued and uncertain messages retain their
-            evidence. {data.health.dlq_visibility}
+            evidence.
           </p>
         </>
       )}

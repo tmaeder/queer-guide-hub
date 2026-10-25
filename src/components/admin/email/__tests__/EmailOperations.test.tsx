@@ -26,6 +26,54 @@ beforeEach(() => {
   api.invoke.mockResolvedValue({ data, error: null });
 });
 describe('email operations', () => {
+  it('shows measured empty queues separately from unavailable observations', async () => {
+    api.invoke.mockResolvedValue({
+      data: {
+        ...data,
+        queues: {
+          observed_at: '2026-10-25T18:00:00Z',
+          events: { available: true, backlog_count: 0, backlog_bytes: 0, oldest_message_at: null },
+          dead_letter: {
+            available: false,
+            backlog_count: null,
+            backlog_bytes: null,
+            oldest_message_at: null,
+          },
+        },
+      },
+      error: null,
+    });
+    render(<EmailOperations />);
+    await screen.findByText('No pending events');
+    expect(screen.getByText('Queued delivery events').parentElement).toHaveTextContent('0');
+    expect(screen.getByText('Dead-letter delivery events').parentElement).toHaveTextContent(
+      'Unavailable',
+    );
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+  it('surfaces a real dead-letter backlog without inventing its age or offering resend', async () => {
+    api.invoke.mockResolvedValue({
+      data: {
+        ...data,
+        queues: {
+          observed_at: '2026-10-25T18:00:00Z',
+          events: { available: true, backlog_count: 0, backlog_bytes: 0, oldest_message_at: null },
+          dead_letter: {
+            available: true,
+            backlog_count: 2,
+            backlog_bytes: 1460,
+            oldest_message_at: null,
+          },
+        },
+      },
+      error: null,
+    });
+    render(<EmailOperations />);
+    await screen.findByText('Age unavailable');
+    expect(screen.getByText('Dead-letter delivery events').parentElement).toHaveTextContent('2');
+    expect(screen.getByRole('alert')).toHaveTextContent('Delivery events need recovery');
+    expect(screen.queryByRole('button', { name: /resend/i })).not.toBeInTheDocument();
+  });
   it('reports absent latency evidence honestly and inspects an identity without dispatching', async () => {
     render(<EmailOperations />);
     await screen.findByText('uncertain: 1');
