@@ -10,6 +10,7 @@ declare dry_run boolean:=coalesce(nullif(current_setting('matching.overture_dry_
 begin
  perform public.assert_admin_or_internal();
  if auth.uid() is not null then raise exception 'Internal actor required';end if;
+ if not exists(select 1 from supabase_migrations.schema_migrations where version='99991792955040')then raise exception 'Bound contact validation release missing';end if;
  if not pg_try_advisory_xact_lock(hashtext('business_quality_lifecycle'))then raise exception 'Native business producer busy';end if;
  input:=coalesce(nullif(current_setting('matching.overture_proofs',true),''),'[]')::jsonb;
  if jsonb_typeof(input)<>'array' or jsonb_array_length(input)>20 then raise exception 'At most twenty source proofs required';end if;
