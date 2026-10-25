@@ -121,7 +121,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
   }
 
   return (
-    <div className="grid gap-6 grid-cols-1 md:grid-cols-[2fr_1fr]">
+    <div className="grid gap-6 grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <div className="rounded-element bg-muted p-4">
         <p className="text-sm font-bold mb-2">Volume by category (90d)</p>
         <div className="h-[260px]">
