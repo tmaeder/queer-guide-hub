@@ -36,6 +36,8 @@
     "test:coverage": "vitest run --coverage",
     "test:functions": "cd supabase/functions && deno test --allow-net --allow-env --allow-read --node-modules-dir=none",
     "test:e2e": "playwright test",
+    "test:e2e:taxonomies": "node --import tsx node_modules/@playwright/test/cli.js test --config playwright.taxonomy.config.ts",
+    "test:e2e:taxonomies:contracts": "node --import tsx --test scripts/ci/taxonomy-e2e.test.mjs",
     "test:e2e:ui": "playwright test --ui",
     "bones": "boneyard build",
     "bones:force": "boneyard build --force",

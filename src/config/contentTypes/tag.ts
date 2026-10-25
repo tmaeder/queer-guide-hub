@@ -92,7 +92,11 @@ export const unifiedTagsContentType: ContentTypeConfig = {
   label: { singular: 'Tag', plural: 'Tags' },
   color: 'hsl(var(--foreground))',
   fields: tagFields,
-  defaults: { status: 'active' },
+  // unified_tags has no created_by column; provenance lives in CMS metadata.
+  writeCreatedBy: false,
+  // New vocabulary is usable for classification without publishing an article
+  // or claiming a reviewed entity redirect. publication_role has no DB default.
+  defaults: { status: 'active', publication_role: 'utility', seo_indexable: false },
   fieldGroupOrder: ['basic', 'details'],
   translatableFields: ['name', 'description', 'short_description', 'long_description'],
   // Record tools share the canonical CMS editor; collection tools live in the Tags workspace.
