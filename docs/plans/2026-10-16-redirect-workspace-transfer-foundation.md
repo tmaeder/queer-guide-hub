@@ -627,3 +627,20 @@ headers, and immediate key/member/owner revocation. Full isolated SQL, actual HT
 through all five SDK runtimes, and all 2548 migration parser checks pass locally.
 Public reports and shared-host/native activation still require follow-through;
 this checkpoint does not enable tenant creation or switching.
+
+### 2026-10-25 public report resource context
+
+Public dashboard publisher checks now bind to the public share's fixed legacy
+workspace, and analytics use private helpers with that resource workspace as an
+explicit argument. Member folder edit permission is checked under the existing
+shared ACL lock without invoking a write-locking helper. Visitor workspace/account
+headers cannot change publication authority or select another analytics tenant.
+The authenticated analytics functions retain their existing legacy RLS path;
+the private aggregation helpers preserve the same filters and output contract.
+
+Rollback fixtures compare public owner totals to private analytics, retain member
+conversion privacy, deny cross-workspace link IDs and provisioning workspaces,
+preserve future public-share denial, and close publication after folder edit,
+membership or ownership revocation. Full SQL and all five actual HTTP/SDK runtimes
+pass on the revised lock-safe implementation. All 2549 migrations parse. No
+production schema, authenticated grants or tenant activation fences changed.

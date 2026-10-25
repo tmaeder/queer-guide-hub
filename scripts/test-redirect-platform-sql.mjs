@@ -9,6 +9,7 @@ try {
   await db.exec(
     readFileSync('supabase/tests/redirect_workspace_public_principal_scope.sql', 'utf8'),
   );
+  await db.exec(readFileSync('supabase/tests/redirect_workspace_public_report_scope.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_identity.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_relationships.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_membership_scope.sql', 'utf8'));
