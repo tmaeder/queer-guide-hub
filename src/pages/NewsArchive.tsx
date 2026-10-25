@@ -151,6 +151,9 @@ export default function NewsArchive() {
   if (countryParam) initialFilters.countryIds = [countryParam];
   const cityParam = searchParams.get('city');
   if (cityParam) initialFilters.cityIds = [cityParam];
+  // Seed the category too: sort, retry and the semantic search all rebuild
+  // their request from currentFilters, and without it they dropped ?category=.
+  if (initialCategory) initialFilters.category = initialCategory;
 
   const [viewMode, setViewMode] = useState<ViewMode>(initialView);
   const [sortBy, setSortBy] = useState(initialSort);
