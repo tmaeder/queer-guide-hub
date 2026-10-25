@@ -191,7 +191,11 @@ function InlineMultiSelect({
     );
 
   return (
-    <div role="group" aria-label={label} className="grid gap-1.5 sm:grid-cols-[3.5rem_1fr]">
+    <div
+      role="group"
+      aria-label={label}
+      className="grid grid-cols-1 gap-1.5 sm:grid-cols-[3.5rem_1fr]"
+    >
       <span className="pt-1.5 text-xs font-medium text-muted-foreground">{label}</span>
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         {values.map((value) => {
@@ -321,7 +325,7 @@ function AgeFilter({
     <div
       role="group"
       aria-label="Age"
-      className="grid gap-2 sm:grid-cols-[3.5rem_minmax(10rem,1fr)_auto] sm:items-center"
+      className="grid grid-cols-1 gap-2 sm:grid-cols-[3.5rem_minmax(10rem,1fr)_auto] sm:items-center"
     >
       <span className="text-xs font-medium text-muted-foreground">Age</span>
       <div className="flex min-w-0 items-center gap-4">

@@ -27,6 +27,23 @@ import { cn } from '@/lib/utils';
  *  the Header's full-bleed bar rows, BreadcrumbBar). */
 export const PAGE_GUTTER = 'px-4 sm:px-6 md:px-8';
 
+/** The page frame: never wider than the window minus the island inset on
+ *  each side — the same box `.island-capped` gives the header and footer —
+ *  and always STARTING where that box starts. The left margin is the island's
+ *  own centring arithmetic, `max(inset, (100% - cap) / 2)`, rather than
+ *  `mx-auto`, so a page that asks for a narrower measure (`reading`, `form`, a
+ *  caller's `max-w-*`) keeps its narrower width but stays on the header's left
+ *  edge instead of floating centred in the window — which is what made the
+ *  footer pages (legal at 1100px, email updates at 512px) read as different
+ *  page widths. For the default `page` size the result is identical to
+ *  centring. Before 2026-10-25 this was `w-full`, so below the cap every page's
+ *  content started one inset (14px phone, 22px tablet+) further out than the
+ *  header and footer above and below it; only past ~1650px, where the 1600 cap
+ *  centres everything, did the edges meet. Combined with SIZE's max-width this
+ *  resolves to `min(cap, 100% - 2*inset)`, exactly the island's width. */
+export const PAGE_FRAME =
+  'mr-auto ml-[max(var(--island-inset),calc((100%-var(--container-page))/2))] w-[calc(100%-2*var(--island-inset))]';
+
 /** The single vertical value. One rhythm site-wide — pages do not opt into a
  *  roomier or tighter one; a page that needs its own bands passes `flush`. */
 export const PAGE_VERTICAL = 'py-8 md:py-12';
@@ -44,11 +61,13 @@ export const PAGE_VERTICAL = 'py-8 md:py-12';
  *  hung one gutter past the column, measured on prod as bars 32px wider than
  *  every other block at 1920. Re-apply PAGE_BLEED_GUTTER inside so contents
  *  stay on the column at every width. */
-export const PAGE_BLEED = '-mx-4 sm:-mx-6 md:mx-0';
+export const PAGE_BLEED =
+  '-mx-[calc(1rem+var(--island-inset))] sm:-mx-[calc(1.5rem+var(--island-inset))] md:mx-0';
 
 /** The gutter to re-apply INSIDE (or on) a PAGE_BLEED element — tracks the
  *  bleed step for step, so it is zero wherever the bleed is. */
-export const PAGE_BLEED_GUTTER = 'px-4 sm:px-6 md:px-0';
+export const PAGE_BLEED_GUTTER =
+  'px-[calc(1rem+var(--island-inset))] sm:px-[calc(1.5rem+var(--island-inset))] md:px-0';
 
 /** Where a page-level sticky element must pin so the site header does not cover
  *  it. Page bars sit at z-20/z-30 — far below the header's z-40 — so this
@@ -86,7 +105,7 @@ export const STICKY_RAIL_UNDER_HEADER = 'top-[calc(var(--header-pinned-bottom)+1
  *  Carries its own re-padding, so contents stay aligned while the background
  *  and border reach the screen edge on mobile. For sticky bars that should span
  *  a phone screen but sit inside the column on desktop. */
-export const PAGE_BLEED_MOBILE = '-mx-4 sm:-mx-6 md:mx-0 px-4 sm:px-6 md:px-0';
+export const PAGE_BLEED_MOBILE = `${PAGE_BLEED} ${PAGE_BLEED_GUTTER}`;
 
 const SIZE = {
   /** 1600 — grids, listings, detail pages. The default. */
@@ -118,7 +137,7 @@ export const PageContainer = ({
   ...rest
 }: PageContainerProps) => (
   <Component
-    className={cn('mx-auto w-full', SIZE[size], PAGE_GUTTER, !flush && PAGE_VERTICAL, className)}
+    className={cn(PAGE_FRAME, SIZE[size], PAGE_GUTTER, !flush && PAGE_VERTICAL, className)}
     {...rest}
   >
     {children}
