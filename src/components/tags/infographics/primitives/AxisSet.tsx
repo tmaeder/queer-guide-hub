@@ -133,10 +133,7 @@ export function AxisSet({
 
   return (
     <div>
-      <div
-        className="relative w-full"
-        style={{ aspectRatio: `${viewBox.w} / ${viewBox.h}` }}
-      >
+      <div className="relative w-full" style={{ aspectRatio: `${viewBox.w} / ${viewBox.h}` }}>
         <svg
           viewBox={`0 0 ${viewBox.w} ${viewBox.h}`}
           preserveAspectRatio="none"
@@ -211,7 +208,7 @@ export function AxisSet({
         />
       </div>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2">
+      <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         {axes.map((axis) => {
           return (
             <fieldset key={axis.id} className="m-0 border-0 p-0">
