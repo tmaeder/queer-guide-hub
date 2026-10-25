@@ -9,6 +9,7 @@ import { useReviewCase, useRetryReviewResearch, reviewCaseInfo } from '@/hooks/u
 import type { ReviewDecision, ReviewItem } from '@/hooks/useAdminReview';
 import { reviewHttpUrl } from './reviewEvidence';
 import { VenueMatchPanel, type VenueMatchSelection } from './VenueMatchPanel';
+import { CityIdentityContext } from './CityIdentityContext';
 
 type Props = {
   item: ReviewItem;
@@ -144,6 +145,7 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                     : 'Identity and relationship changes require cited evidence. Missing evidence remains visible as research; it is never treated as verification.'}
               </p>
             </div>
+            {info.family === 'city_identity' && <CityIdentityContext value={data.city_context} />}
             {info.family !== 'artwork' && (
               <section aria-label="Research status" className="bg-muted/40 p-4">
                 <h3 className="text-sm font-semibold">
