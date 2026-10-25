@@ -1,12 +1,16 @@
 # Cloudflare email delivery
 
-This Worker is the only application delivery provider. The existing Supabase backend owns contacts, consent, campaigns and the transactional outbox. The native Cloudflare Email Sending binding supplies a provider message ID for lifecycle correlation; its HTTP REST API only supplies grouped recipient outcomes, so it is not used for application delivery.
+This Worker is the only application delivery provider. The existing Supabase backend owns contacts, consent, campaigns and the transactional outbox. The native Cloudflare Email Sending binding supplies the provider message ID used for lifecycle correlation and is the application’s configured transport.
 
 **Cloudflare currently supports transactional email only.** Campaign and newsletter dispatch is blocked in the database/API/gateway. Creating a draft or choosing a date never schedules an unsupported send. There is no vendor fallback or override flag. See https://developers.cloudflare.com/email-service/reference/faq/.
 
-## Release gates
+## Release status and capability boundaries
 
-This branch is a locally verified delivery and consent foundation, not a production-ready replacement for the benchmark platforms. Local account erasure/export now covers explicitly owned messages, confirmed linked subscriptions and pending account confirmation requests; verify the complete deployed self-service/admin flows before rollout. Group post mentions now have current source/membership checks; other group actions, saved-alert and other domain senders still need their adapters. Complete those integrations and the acceptance gates in `docs/research/2026-10-20-email-platform-benchmark.md`; changing a shared sender alone does not establish end-to-end integration.
+The transactional backend, recipient directory, consent and suppression controls, journeys, shared outbox, mailbox durability and inline receipts are deployed. The directory supports organisations, venues, vendors and verified users. Production release records and remaining verification boundaries live in `docs/plans/2026-10-21-email-platform-completion.md`; current incident procedures live in `docs/operations/email-delivery-recovery.md`. Historical staging notes below describe their dated checkpoint, not current deployment state.
+
+Cloudflare’s transactional-only restriction still prevents marketing/newsletter dispatch and full parity with the benchmark platforms. Group comments lack an audited recipient/read contract, and additional business notices require an authoritative owner/claim event. These are explicit capability boundaries; arbitrary directory addresses never establish ownership or consent. Do not enable unsupported adapters or fabricate experiment outcomes to label the platform complete.
+
+The 2026-10-25 continuation repairs the native-event consumer’s workerd redirect mode and adds protected, read-only queue health. Worker queue bindings reference the existing resources; regeneration never creates replacement queues. Operations distinguishes unavailable measurements from measured zero, and read-only receipt inspection cannot resend email. Live recovery and production E2E evidence must be recorded after deploying this repair; the final release record is maintained on [PR #4856](https://github.com/tmaeder/queer-guide-hub/pull/4856).
 
 ## Rollout
 
@@ -15,7 +19,7 @@ This branch is a locally verified delivery and consent foundation, not a product
 3. In this directory create queues `queer-guide-email-events` and `queer-guide-email-events-dlq`. Set Worker secrets `EMAIL_GATEWAY_SECRET` and `EMAIL_EVENTS_SECRET` with Wrangler, then deploy. Keep the generated resource bindings in sync using `wrangler types worker-configuration.d.ts --include-runtime=false`.
 4. Set Supabase secrets `EMAIL_GATEWAY_URL` (the deployed Worker origin), `EMAIL_GATEWAY_SECRET`, and `EMAIL_EVENTS_SECRET` (same values on each side). Deploy the changed functions and new `email-dispatch`, `email-admin`, `email-subscriptions`, `cloudflare-email-events`, `email-journeys` functions. They own their authorization; preserve `verify_jwt=false` for new endpoints. Keep all credential values out of browser env vars.
 5. Configure Cloudflare Email Sending Event Subscriptions on the verified sending domain, delivering all six native lifecycle event types to `queer-guide-email-events`. The consumer forwards to the authenticated backend. Configure DLQ monitoring in the existing operations workflow.
-6. For anonymous subscription requests configure a Turnstile widget for `queer.guide` with action `email-subscribe`, and backend `TURNSTILE_SECRET_KEY`. Signed-in members use their account email; both routes require a confirmation email before activation. A public website signup form is not included in this backend release.
+6. For anonymous subscription requests configure a Turnstile widget for `queer.guide` with action `email-subscribe`, and backend `TURNSTILE_SECRET_KEY`. Signed-in members use their account email; both routes require a confirmation email before activation. The public Email Updates page and signed-in profile preferences use the same confirmation and suppression model.
 7. Set Supabase Auth custom SMTP to Cloudflare's supported authenticated SMTP endpoint separately if authentication email is still supplied by Supabase's default mail service. Do not disable auth delivery while staging the cutover. See https://developers.cloudflare.com/email-service/api/send-emails/smtp/.
 8. Check one controlled account confirmation and one transactional notification, then verify provider ID, delivery event, suppression, retry and visible admin status. No real email or production migrations were issued during local tests.
 
@@ -56,7 +60,7 @@ Group post mentions are captured from authoritative writes, with original member
 Verified existing-member trip invitations now have Auth-derived invite/respond/revoke actions, a signed-in review page and sharing/Plans controls. Their default-off email preference joins shared quiet hours and daily limits. Apply the eighth migration and deploy `trip-invitations` plus the changed shared/settings/UI code together. The migration also guards pending membership writes and closes a group source-capture race with sender erasure. See `docs/architecture/email-trip-invitations.md` for source proof, seven-day review/24-hour email expiry, UTC-hour admission limits, privacy and rollout boundaries.
 
 
-## Staged deployment — 2026-10-21
+## Historical staging checkpoint — 2026-10-21
 
 The `queer-guide-email-delivery` Worker and its `queer-guide-email-events` / `queer-guide-email-events-dlq` queues are provisioned in the Queer Guide Cloudflare account. The gateway origin is `https://queer-guide-email-delivery.maeder-tobiassimon.workers.dev`. Gateway/event secrets are installed on both the Worker and backend; the backend gateway URL points at this origin. Credential values were generated into temporary owner-only files and removed after installation. No real mail was sent. Unauthenticated requests return 401; an authenticated empty-message request returns the expected 400 validation error.
 
