@@ -3,6 +3,11 @@ import path from 'node:path';
 import { readFileSync } from 'node:fs';
 import { waitForAppReady } from './support/appReady';
 
+// Verification branch only: authentication diagnostics must not retain secrets.
+// Keep the existing genuine login flow/assertions and its bounded HTTP retry.
+setup.use({ trace: 'off', screenshot: 'off', video: 'off' });
+setup.describe.configure({ retries: 0 });
+
 export const ADMIN_STORAGE_STATE = path.join(process.cwd(), 'playwright/.auth/admin.json');
 
 /**
