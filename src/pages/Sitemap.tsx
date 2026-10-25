@@ -167,7 +167,7 @@ export default function Sitemap() {
       </header>
 
       <PageContainer flush>
-        <main className="grid gap-6 md:grid-cols-[240px_1fr]">
+        <main className="grid grid-cols-1 gap-6 md:grid-cols-[240px_1fr]">
           <aside className="md:sticky md:top-24">
             <nav aria-label="Section jump navigation" className="p-4 bg-card rounded-container">
               <p className="text-sm font-semibold mb-2 flex items-center gap-2">
@@ -193,7 +193,7 @@ export default function Sitemap() {
           </aside>
 
           <section aria-label="Sitemap" className="flex flex-col gap-6">
-            <div className="grid gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               {filtered.map((section) => {
                 const id = slugify(section.title);
                 return (

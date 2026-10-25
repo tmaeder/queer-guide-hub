@@ -79,7 +79,7 @@ export default function GoingOut() {
           // hours, tags and verification — this page fetched them and rendered
           // none of them, which is why "going out" read as a directory listing
           // instead of somewhere you might actually go tonight.
-          <ul className="going-out-venues list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="going-out-venues list-none p-0 m-0 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {venues.map((v) => (
               <li key={v.id}>
                 <VenueCard venue={v as unknown as Parameters<typeof VenueCard>[0]['venue']} />
