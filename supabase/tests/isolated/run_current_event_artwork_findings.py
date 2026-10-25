@@ -60,6 +60,10 @@ create table before_observations as select to_jsonb(o)row from event_image_quali
 '''
 migration=(ROOT/'supabase/migrations/99991792950000_current_event_artwork_findings.sql').read_text()
 checks='''
+begin read only;
+select public.run_event_quality_scan(500,'all',true);
+select public.run_event_quality_scan(500,'all',null);
+commit;
 do $$declare i record;begin
  assert api_private.resolve_obsolete_event_image_issues(0,'all',false)=0;
  assert api_private.resolve_obsolete_event_image_issues(500,'all',true)=0;

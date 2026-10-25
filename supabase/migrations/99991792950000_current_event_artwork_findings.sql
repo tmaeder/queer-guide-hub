@@ -7,6 +7,7 @@ declare r record;resolved integer:=0;changed integer;
 begin
  perform public.assert_admin_or_internal();
  if p_scope not in('all','current','historical')or p_scope is null then raise exception 'Invalid event quality scope';end if;
+ if p_dry_run is distinct from false then return 0;end if;
  for r in
  with locked_events as materialized(
   select e.id,e.images[1]primary_image from public.events e
@@ -33,7 +34,6 @@ begin
   and(i.evidence->>'url')is distinct from e.primary_image
  order by i.id limit greatest(0,least(coalesce(p_batch,0),5000))for update of i skip locked
  loop
-  if p_dry_run is distinct from false then continue;end if;
   update public.event_quality_issues set status='resolved',resolved_at=now(),resolution='superseded_primary_artwork'
    where id=r.id and status='open'and reviewed_by is null and reviewed_at is null;
   get diagnostics changed=row_count;resolved:=resolved+changed;
