@@ -8,7 +8,9 @@
  * them in would make the mirror file's "keep the two in sync" instruction
  * untrue of half its contents.
  *
- * SCOPE IS DELIBERATELY THE TWO ADULT DEPARTMENTS, not all 40 groups.
+ * BLURBS ARE SCOPED TO THE TWO ADULT DEPARTMENTS, not all 40 groups. Every
+ * tile still gets an ICON — `groupIcon()` below falls back to the department
+ * mark — but the toy-specific glyphs stay in `TOY_GROUP_META`.
  * `/marketplace/categories` renders group tiles SECTIONED BY DEPARTMENT, so a
  * section is internally consistent either way, and widening to the whole
  * catalogue forces collisions the set cannot resolve: `gear-fetish` is a boot
@@ -27,6 +29,7 @@
  */
 
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
+import { departmentGlyph } from '@/components/marketplace/departmentPlate';
 
 export interface CategoryMeta {
   icon: TransitIconName;
@@ -216,4 +219,118 @@ export function toyGroupMeta(slug: string | null | undefined): CategoryMeta | nu
 /** Blurb for a fine chip, or null. */
 export function toyFineBlurb(slug: string | null | undefined): string | null {
   return (slug && TOY_FINE_BLURBS[slug]) || null;
+}
+
+/**
+ * Marks for the NON-adult groups. Each group gets its own glyph (trousers
+ * for Bottoms, a shoe for Footwear, …) so a tile's icon names its title; a
+ * group absent here falls back to its department's mark, which for `tops` and
+ * `underwear` is already the right picture. `footwear` uses the plain `shoe`,
+ * never `gear-fetish` — that boot is the fetish-garment mark.
+ */
+export const GROUP_ICONS: Record<string, TransitIconName> = {
+  // apparel — `tops` keeps the department's own T-shirt
+  bottoms: 'trousers',
+  outerwear: 'hoodie',
+  bodywear: 'bodysuit',
+  footwear: 'shoe',
+  headwear: 'cap',
+  socks: 'sock',
+  accessories: 'tote',
+  apparel: 'hanger',
+  // underwear — `underwear` keeps the department's own briefs
+  jockstraps: 'jockstrap',
+  thongs: 'thong',
+  lingerie: 'bra',
+  // books_art
+  books: 'library',
+  art: 'gallery',
+  film: 'film',
+  calendars: 'events',
+  home_goods: 'homeware',
+  grooming: 'selfcare',
+};
+
+/**
+ * Icon for a group tile: the toy mark, then a group override, then the
+ * department's own mark. Total — an unrouted group (no department) gets `shop`.
+ */
+export function groupIcon(
+  slug: string | null | undefined,
+  department: string | null | undefined,
+): TransitIconName {
+  return toyGroupMeta(slug)?.icon ?? GROUP_ICONS[slug ?? ''] ?? departmentGlyph(department);
+}
+
+/**
+ * Marks for FINE buckets that have a closer glyph than their group's. Anything
+ * absent inherits its group's mark via `fineIcon()`, so every subcategory chip
+ * carries one. Only reuse a glyph whose `use` line genuinely covers the thing:
+ * a near-miss mark reads as a different category.
+ */
+export const FINE_ICONS: Record<string, TransitIconName> = {
+  // bottoms
+  jeans: 'trousers',
+  leggings_joggers: 'trousers',
+  shorts: 'shorts',
+  skirts: 'skirt',
+  // accessories
+  flags: 'pride',
+  pins_badges: 'pride',
+  patches_stickers: 'pride',
+  belts: 'belt',
+  hats: 'cap',
+  scarves_gloves: 'mitten',
+  keychains: 'key',
+  sunglasses: 'sunglasses',
+  wigs: 'wig',
+  // underwear
+  boxers_trunks: 'shorts',
+  binders: 'trans-pride',
+  packing_underwear: 'trans-pride',
+  bras: 'bra',
+  // jewelry
+  rings: 'gem-ring',
+  // books_art
+  photography: 'gallery',
+  prints_posters: 'gallery',
+  cards_stationery: 'documents',
+  // grooming
+  fragrance: 'perfume',
+  soap_bath: 'soap',
+  shave_beard: 'salon',
+  aphrodisiacs: 'capsule',
+  edible_massage: 'candle',
+  // toys
+  strap_ons: 'gear-harness',
+  packers_stp: 'trans-pride',
+  nipple_play: 'clamps',
+  estim: 'bolt',
+  kegel: 'kegel',
+  anal_beads: 'beads',
+  butt_plugs: 'toy-plug',
+  dilators: 'toy-plug',
+  realistic_dildos: 'toy-dildo',
+  fantasy_dildos: 'toy-dildo',
+  double_dildos: 'toy-dildo',
+  penis_sleeves: 'toy-cockring',
+  douching_enemas: 'body-health',
+  cbt: 'toy-cockring',
+  // bondage / fetish
+  rope: 'rope-play',
+  cuffs_restraints: 'handcuffs',
+  spreader_bars: 'handcuffs',
+  latex: 'gear-fetish',
+  leather: 'gear-fetish',
+  rubber_neoprene: 'gear-fetish',
+  uniforms: 'gear-fetish',
+};
+
+/** Icon for a fine-tier chip: an override, else its group's mark. Total. */
+export function fineIcon(
+  slug: string | null | undefined,
+  group: string | null | undefined,
+  department: string | null | undefined,
+): TransitIconName {
+  return FINE_ICONS[slug ?? ''] ?? groupIcon(group, department);
 }

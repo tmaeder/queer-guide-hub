@@ -10,6 +10,7 @@ import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
+import { paper } from '@/components/transit/iconDefs';
 import './Footer.css';
 
 const legalLinks = [
@@ -73,97 +74,114 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
 
   return (
     <footer className="mt-auto py-4 md:py-8">
-      {/* Share the header's outer geometry, not just its content max-width. */}
       <div
         className={cn(
-          'island-capped relative overflow-hidden rounded-panel bg-foreground py-4 text-background md:py-6',
+          'island-capped rounded-panel bg-foreground py-4 text-background md:py-6',
           PAGE_GUTTER,
         )}
       >
-        <div className="flex flex-col gap-x-10 gap-y-0 md:gap-y-4 lg:flex-row lg:items-center lg:justify-between">
-          <LocalizedLink to="/" className={cn(footerLink, 'self-start')} aria-label={siteName}>
+        <nav
+          aria-label="Footer navigation"
+          className="grid grid-cols-2 gap-x-4 gap-y-0 md:flex md:flex-wrap md:gap-x-6"
+        >
+          {INTENT_NAV.map((intent) => (
+            <LocalizedLink
+              key={intent.to}
+              to={intent.to}
+              data-track={INTENT_TRACK[intent.id]}
+              aria-current={isIntentActive(intent, localePath) ? 'page' : undefined}
+              className={cn(
+                footerLink,
+                'footer-destination gap-1 text-15 font-bold leading-snug text-background md:gap-2 md:text-title aria-[current=page]:underline',
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className="footer-destination-icon inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-badge"
+                style={{ backgroundColor: paper }}
+              >
+                <intent.icon size={24} />
+              </span>
+              <span>{t(intent.labelKey, intent.fallback)}</span>
+            </LocalizedLink>
+          ))}
+        </nav>
+        <div className="mt-4 flex flex-wrap items-start gap-x-4 md:mt-6 md:gap-x-6">
+          <LocalizedLink to={REPORT_HREF} className={footerLink}>
+            {t('footer.report', 'Report')}
+          </LocalizedLink>
+          <LocalizedLink to="/help" className={footerLink}>
+            {t('footer.crisisSupport', 'Crisis support')}
+          </LocalizedLink>
+          <LocalizedLink to="/privacy" className={footerLink}>
+            {t('footer.privacy', 'Privacy')}
+          </LocalizedLink>
+          <LocalizedLink to="/terms" className={footerLink}>
+            {t('footer.terms', 'Terms')}
+          </LocalizedLink>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
+            className={cn(footerLink, 'text-start')}
+          >
+            {t('footer.cookiePreferences', 'Cookie preferences')}
+          </button>
+          <details className="group min-w-0 max-w-full open:basis-full">
+            <summary
+              className={cn(footerLink, 'flex w-fit cursor-pointer gap-2 text-background/75')}
+            >
+              {t('footer.siteInformation', 'Site information')}
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 16 16"
+                fill="none"
+                className="h-4 w-4 shrink-0 group-open:rotate-180"
+              >
+                <path
+                  d="m4 6 4 4 4-4"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </summary>
+            <nav
+              aria-label={t('footer.siteInformation', 'Site information')}
+              className="grid grid-cols-2 gap-x-4 pb-2 md:flex md:flex-wrap md:gap-x-6"
+            >
+              {legalLinks
+                .filter((link) => link.href !== '/privacy' && link.href !== '/terms')
+                .map((link) => (
+                  <LocalizedLink
+                    key={link.href}
+                    to={link.href}
+                    aria-current={localePath === link.href ? 'page' : undefined}
+                    className={cn(footerLink, 'text-background/75 hover:text-background')}
+                  >
+                    {t(link.labelKey, link.fallback)}
+                  </LocalizedLink>
+                ))}
+            </nav>
+          </details>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 md:mt-4">
+          <div className="flex flex-wrap items-center gap-0 sm:gap-2 [&_button]:!px-1 sm:[&_button]:!px-2 [&_button]:min-h-11 [&_button]:min-w-11 [&_button]:text-background [&_button:hover]:underline">
+            <LanguageSwitcher />
+            <CurrencySelector />
+            <ThemeToggle />
+          </div>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 md:mt-4">
+          <LocalizedLink
+            to="/"
+            className={cn(footerLink, 'hover:no-underline')}
+            aria-label={siteName}
+          >
             <Wordmark className="text-title text-background" />
           </LocalizedLink>
-          <nav
-            aria-label="Footer navigation"
-            className="flex flex-wrap items-center gap-x-4 md:gap-x-6"
-          >
-            {INTENT_NAV.map((intent) => (
-              <LocalizedLink
-                key={intent.to}
-                to={intent.to}
-                data-track={INTENT_TRACK[intent.id] ?? 'pink'}
-                aria-current={isIntentActive(intent, localePath) ? 'page' : undefined}
-                className={cn(
-                  footerLink,
-                  'footer-route-link font-medium text-background/80 hover:text-background hover:no-underline aria-[current=page]:text-background aria-[current=page]:font-bold',
-                )}
-              >
-                <span>{t(intent.labelKey, intent.fallback)}</span>
-                <span className="footer-route-marker" aria-hidden="true" />
-              </LocalizedLink>
-            ))}
-          </nav>
+          <p className="text-2xs text-background/70">&copy; {currentYear} Queer Guide</p>
         </div>
-
-        <div className="mt-2 flex flex-col gap-x-8 gap-y-0 border-t border-background/20 py-2 md:mt-4 md:flex-row md:gap-y-2 md:py-4 md:items-center md:justify-between">
-          <p className="text-13 leading-relaxed text-background/80">
-            {t('footer.antiDiscrimination.title', "We don't do bigotry here.")}
-          </p>
-          <div className="flex flex-wrap items-center gap-x-4 md:gap-x-6">
-            <LocalizedLink to={REPORT_HREF} className={footerLink}>
-              {t('footer.reportSomething', 'Report something')}
-            </LocalizedLink>
-            <LocalizedLink to="/help" className={footerLink}>
-              {t('footer.emergency.title', 'Crisis lines, 24 hours')}
-            </LocalizedLink>
-          </div>
-        </div>
-
-        <div className="border-t border-background/20 pt-2 md:pt-4">
-          <div className="flex flex-col gap-x-8 gap-y-0 md:gap-y-4 xl:flex-row xl:items-start xl:justify-between">
-            <div className="flex flex-wrap items-center gap-x-4 md:gap-x-6">
-              {legalLinks.map((link) => (
-                <LocalizedLink
-                  key={link.href}
-                  to={link.href}
-                  aria-current={localePath === link.href ? 'page' : undefined}
-                  className={cn(footerLink, 'text-background/70 hover:text-background')}
-                >
-                  {t(link.labelKey, link.fallback)}
-                </LocalizedLink>
-              ))}
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
-                className={cn(footerLink, 'text-start text-background/70 hover:text-background')}
-              >
-                {t('footer.cookiePreferences', 'Cookie preferences')}
-              </button>
-            </div>
-            {/* Triggers inherit the ink surface; portaled menus keep their own theme. */}
-            <div className="flex shrink-0 flex-wrap items-center gap-2 [&_button]:min-h-11 [&_button]:min-w-11 [&_button]:text-background [&_button:hover]:underline">
-              <LanguageSwitcher />
-              <CurrencySelector />
-              <ThemeToggle />
-            </div>
-          </div>
-          <p className="mt-2 text-2xs md:mt-4 text-background/70">
-            &copy; {currentYear} Queer Guide
-          </p>
-        </div>
-        <svg
-          aria-hidden="true"
-          focusable="false"
-          viewBox="0 0 128 32"
-          fill="none"
-          className="footer-route-drawing pointer-events-none absolute bottom-0 end-6 h-6 w-24 sm:w-32"
-        >
-          <path className="footer-route-blue" d="M4 26h36C56 26 56 6 72 6h52" />
-          <path className="footer-route-pink" d="M4 26h32c16 0 16-10 32-10h56" />
-          <circle className="footer-route-green" cx="78" cy="16" r="3" />
-          <circle className="footer-route-yellow" cx="110" cy="6" r="3" />
-        </svg>
       </div>
     </footer>
   );
