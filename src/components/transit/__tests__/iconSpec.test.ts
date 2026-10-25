@@ -69,9 +69,10 @@ describe('Icon System v2 — spec compliance', () => {
   // exact on purpose: 42 wayfinding icons from the subway rebrand, 10 venue
   // glyphs so the map could drop lucide from its pins, 7 marketplace
   // department glyphs so department tiles could stop using a product photo as
-  // category art.
+  // category art, and 28 marketplace category glyphs so a category tile's
+  // icon names its own title rather than its department's.
   it('covers the whole set', () => {
-    expect(entries).toHaveLength(76);
+    expect(entries).toHaveLength(104);
     expect(entries.length).toBeGreaterThan(0);
   });
 

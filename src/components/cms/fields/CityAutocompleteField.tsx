@@ -46,6 +46,7 @@ export function CityAutocompleteField({
   allValues,
 }: FieldProps) {
   const [cities, setCities] = useState<CityOption[]>([]);
+  const [linkedCity, setLinkedCity] = useState<CityOption | null>(null);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [open, setOpen] = useState(false);
@@ -55,6 +56,9 @@ export function CityAutocompleteField({
   const countryIdField = field.relatedFields?.country_id;
   const currentCountryId =
     countryIdField && allValues ? String(allValues[countryIdField] ?? '') : '';
+
+  const cityIdField = field.relatedFields?.city_id;
+  const currentCityId = cityIdField && allValues ? String(allValues[cityIdField] ?? '') : '';
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -93,18 +97,57 @@ export function CityAutocompleteField({
     fetchCities();
   }, [currentCountryId]);
 
-  // Display label. `relatedFields` is a write-only name→FK map, so on tables
-  // that store only `city_id` (queer_villages) `value` is always undefined and
-  // the trigger would show its placeholder over a perfectly good link. Fall
-  // back to resolving the FK against the list we already fetched — the list is
-  // country-scoped, so the linked city is in it and this costs no extra query.
-  const cityIdField = field.relatedFields?.city_id;
-  const currentCityId = cityIdField && allValues ? String(allValues[cityIdField] ?? '') : '';
+  // The country option list is capped by the API. Resolve an existing FK
+  // independently so a linked city beyond that first page still has a label.
+  useEffect(() => {
+    let cancelled = false;
+    if (!currentCityId) return;
+    const filters: Array<{ col: string; val: unknown; op?: 'eq' | 'is' }> = [
+      { col: 'id', val: currentCityId },
+      { col: 'duplicate_of_id', val: null, op: 'is' },
+    ];
+    if (currentCountryId) filters.push({ col: 'country_id', val: currentCountryId });
+    void listFromWhere<Record<string, unknown>>(
+      'cities',
+      'id, name, country_id, region_code, countries!inner(name, code)',
+      filters,
+      { limit: 1 },
+    )
+      .then((rows) => {
+        const row = rows.find((candidate) => candidate.id === currentCityId);
+        if (cancelled) return;
+        if (!row) {
+          setLinkedCity(null);
+          return;
+        }
+        setLinkedCity({
+          id: row.id as string,
+          name: row.name as string,
+          country_id: row.country_id as string,
+          country_name: (row.countries as { name: string })?.name ?? '',
+          country_code: cityCodesFromRow(row).countryCode ?? null,
+          region_code: cityCodesFromRow(row).regionCode ?? null,
+        });
+      })
+      .catch((err) => {
+        if (!cancelled) console.error('Error resolving linked city:', err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [currentCityId, currentCountryId]);
+
   // The linked id wins over the name: since 99991791233840 two cities in one
   // country can share a name (Portland US-ME / US-OR), so a name match may be
   // the twin. The id is trusted only while it still agrees with the name —
   // a failed create leaves the typed name with the old id.
-  const cityById = currentCityId ? cities.find((c) => c.id === currentCityId) : undefined;
+  const cityById = currentCityId
+    ? (cities.find((c) => c.id === currentCityId) ??
+      (linkedCity?.id === currentCityId &&
+      (!currentCountryId || linkedCity.country_id === currentCountryId)
+        ? linkedCity
+        : undefined))
+    : undefined;
   const selectedCity =
     (cityById && (!value || cityById.name === value) ? cityById : null) ||
     cities.find((c) => c.name === value) ||

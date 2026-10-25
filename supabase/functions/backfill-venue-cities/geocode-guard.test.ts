@@ -46,12 +46,12 @@ Deno.test('postal drain refuses satisfied, quarantined and stale-coordinate queu
     safety_gated: false,
     duplicate_of_id: null,
   }
-  assertEquals(postalQueueAction(queued, current), 'geocode')
-  assertEquals(postalQueueAction(queued, { ...current, postal_code: 'SW1A 1AA' }), 'drop')
-  assertEquals(postalQueueAction(queued, { ...current, duplicate_of_id: 'canonical' }), 'drop')
-  assertEquals(postalQueueAction(queued, { ...current, safety_gated: true }), 'defer')
-  assertEquals(postalQueueAction(queued, { ...current, latitude: null }), 'defer')
-  assertEquals(postalQueueAction(queued, { ...current, latitude: 52 }), 'refresh')
+  assertEquals(postalQueueAction(queued, current, 'venue'), 'geocode')
+  assertEquals(postalQueueAction(queued, { ...current, postal_code: 'SW1A 1AA' }, 'venue'), 'drop')
+  assertEquals(postalQueueAction(queued, { ...current, duplicate_of_id: 'canonical' }, 'venue'), 'drop')
+  assertEquals(postalQueueAction(queued, { ...current, safety_gated: true }, 'venue'), 'defer')
+  assertEquals(postalQueueAction(queued, { ...current, latitude: null }, 'venue'), 'defer')
+  assertEquals(postalQueueAction(queued, { ...current, latitude: 52 }, 'venue'), 'refresh')
 })
 
 Deno.test('postal drain holds city-centroid coordinates before Photon reverse', () => {
@@ -60,15 +60,23 @@ Deno.test('postal drain holds city-centroid coordinates before Photon reverse', 
   assertEquals(postalQueueAction(queued, {
     ...current,
     field_provenance: { latitude: { source: 'derived:city_centroid' } },
-  }), 'centroid_hold')
+  }, 'event'), 'centroid_hold')
   assertEquals(postalQueueAction(queued, {
     ...current,
     field_provenance: { longitude: { source: 'derived:city_centroid' } },
-  }), 'centroid_hold')
+  }, 'event'), 'centroid_hold')
   assertEquals(postalQueueAction(queued, {
     ...current,
     field_provenance: { latitude: { source: 'official:venue_address' } },
-  }), 'geocode')
+  }, 'event'), 'unverified_hold')
+  assertEquals(postalQueueAction(queued, {
+    ...current,
+    field_provenance: {
+      latitude: { source: 'official:venue_address' },
+      longitude: { source: 'official:venue_address' },
+    },
+  }, 'event'), 'geocode')
+  assertEquals(postalQueueAction(queued, current, 'event'), 'unverified_hold')
 })
 
 // The live reproduction this guard was written for.

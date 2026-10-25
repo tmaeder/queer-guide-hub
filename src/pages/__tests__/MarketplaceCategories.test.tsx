@@ -128,6 +128,17 @@ describe('MarketplaceCategories', () => {
     expect(screen.getByTestId('count')).toHaveTextContent('3 categories in 2 departments');
   });
 
+  it('gives every tile an icon, including non-adult and unrouted groups', () => {
+    groupCounts.mockReturnValue(rows(['tops', 8403], ['books', 7674], ['brand_new_sql_group', 42]));
+    renderPage();
+    for (const label of ['Tops', 'Books']) {
+      const tile = screen.getByText(label, { selector: 'span' }).closest('a');
+      expect(tile?.querySelector('svg'), `${label} tile has no icon`).not.toBeNull();
+    }
+    const stray = document.querySelector('a[href="/marketplace?grp=brand_new_sql_group"]');
+    expect(stray?.querySelector('svg')).not.toBeNull();
+  });
+
   it('renders an empty state rather than an empty grid', () => {
     groupCounts.mockReturnValue({ data: [], loading: false });
     renderPage();
