@@ -1,5 +1,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { validateDelivery, type DeliveryInput, type Receipt } from './protocol';
+import { readQueueMetrics } from './queue-metrics';
+import { encodeEventBody } from './event-body';
 const json = (value: unknown, status = 200) =>
   Response.json(value, { status, headers: { 'Cache-Control': 'no-store' } });
 export class EmailDelivery extends DurableObject<Env> {
@@ -85,6 +87,13 @@ export default {
     )
       return json({ error: 'Unauthorized' }, 401);
     const url = new URL(req.url);
+    if (req.method === 'GET' && url.pathname === '/queues/metrics') {
+      const [events, dead_letter] = await Promise.all([
+        readQueueMetrics(env.EVENT_QUEUE),
+        readQueueMetrics(env.EVENT_DLQ),
+      ]);
+      return json({ observed_at: new Date().toISOString(), events, dead_letter });
+    }
     if (req.method === 'GET' && url.pathname.startsWith('/receipts/')) {
       const id = url.pathname.slice('/receipts/'.length);
       if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id))
@@ -135,18 +144,24 @@ export default {
       try {
         const response = await fetch(env.EMAIL_EVENTS_URL, {
           method: 'POST',
-          redirect: 'error',
+          // workerd rejects redirect:"error" before any network I/O. Manual
+          // preserves the credential boundary; every 3xx remains a retry below.
+          redirect: 'manual',
           signal: AbortSignal.timeout(15000),
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${env.EMAIL_EVENTS_SECRET}`,
           },
-          body: JSON.stringify(message.body),
+          body: encodeEventBody(message.body),
         });
         await response.body?.cancel();
         if (response.ok) message.ack();
-        else message.retry({ delaySeconds: 60 });
+        else {
+          console.warn('email_event_ingestion_retry', { status: response.status });
+          message.retry({ delaySeconds: 60 });
+        }
       } catch {
+        console.warn('email_event_ingestion_retry', { status: 'network_or_timeout' });
         message.retry({ delaySeconds: 60 });
       }
     }
