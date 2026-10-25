@@ -6,6 +6,7 @@ import {
   imageCandidates,
   mapConcurrent,
   sourceUrls,
+  sourceCancellation,
   storedDescription,
   structuredEvent,
   supportedContentPatch,
@@ -179,5 +180,24 @@ describe('event gap evidence', () => {
     });
     expect(output).toEqual([2, 4, 6, 8, 10]);
     expect(peak).toBe(2);
+  });
+  it('routes only matching dated cancellations to review', () => {
+    const ev = { id: 'cancel', title: 'Pride March', start_date: '2027-06-01T12:00:00Z' };
+    const page = (
+      name: string,
+      startDate: string,
+      eventStatus = 'https://schema.org/EventCancelled',
+    ) =>
+      `<script type="application/ld+json">${JSON.stringify({ '@type': 'Event', name, startDate, eventStatus })}</script>`;
+    expect(sourceCancellation(page(ev.title, ev.start_date), ev)).toBe(
+      'https://schema.org/EventCancelled',
+    );
+    expect(sourceCancellation(page('Another Pride', ev.start_date), ev)).toBeNull();
+    expect(sourceCancellation(page(ev.title, '2026-06-01'), ev)).toBeNull();
+    expect(sourceCancellation(page(ev.title, 'invalid'), ev)).toBeNull();
+    expect(
+      sourceCancellation(page(ev.title, ev.start_date, 'https://schema.org/EventScheduled'), ev),
+    ).toBeNull();
+    expect(sourceCancellation('<p>A different event was cancelled.</p>', ev)).toBeNull();
   });
 });
