@@ -55,7 +55,8 @@ const CREATED: ReadonlyArray<readonly [slug: string, categorySlug: string]> = [
 
 /** The twelve aliases, each with the ACTIVE row it must route onto. */
 const ALIASES: ReadonlyArray<readonly [alias: string, canonical: string]> = [
-  ['grey-asexual', 'greysexual'],
+  // 99991792861452 merged greysexual into gray-asexuality and repointed aliases.
+  ['grey-asexual', 'gray-asexuality'],
   ['endosex', 'dyadic'],
   ['chest-surgery', 'top-surgery'],
   ['bilateral-mastectomy', 'top-surgery'],
