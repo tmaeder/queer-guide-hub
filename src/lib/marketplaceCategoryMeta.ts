@@ -222,18 +222,30 @@ export function toyFineBlurb(slug: string | null | undefined): string | null {
 }
 
 /**
- * Marks for the NON-adult groups that have a better glyph than their
- * department's. Everything else falls back to the department mark — so every
- * tile on `/marketplace/categories` carries an icon, and a group with no
- * distinct glyph reads as "a stop on the Apparel line" rather than borrowing a
- * mark that means something else. `footwear` deliberately stays on `apparel`
- * rather than `gear-fetish` (that boot is the fetish-garment mark; see the
- * scope note above).
+ * Marks for the NON-adult groups. Each group gets its own glyph (trousers
+ * for Bottoms, a shoe for Footwear, …) so a tile's icon names its title; a
+ * group absent here falls back to its department's mark, which for `tops` and
+ * `underwear` is already the right picture. `footwear` uses the plain `shoe`,
+ * never `gear-fetish` — that boot is the fetish-garment mark.
  */
 export const GROUP_ICONS: Record<string, TransitIconName> = {
+  // apparel — `tops` keeps the department's own T-shirt
+  bottoms: 'trousers',
+  outerwear: 'hoodie',
+  bodywear: 'bodysuit',
+  footwear: 'shoe',
+  headwear: 'cap',
+  socks: 'sock',
+  accessories: 'tote',
+  apparel: 'hanger',
+  // underwear — `underwear` keeps the department's own briefs
+  jockstraps: 'jockstrap',
+  thongs: 'thong',
+  lingerie: 'bra',
+  // books_art
   books: 'library',
   art: 'gallery',
-  film: 'theater',
+  film: 'film',
   calendars: 'events',
   home_goods: 'homeware',
   grooming: 'selfcare',
@@ -257,24 +269,45 @@ export function groupIcon(
  * a near-miss mark reads as a different category.
  */
 export const FINE_ICONS: Record<string, TransitIconName> = {
-  // apparel / underwear
-  hats: 'apparel',
+  // bottoms
+  jeans: 'trousers',
+  leggings_joggers: 'trousers',
+  shorts: 'shorts',
+  skirts: 'skirt',
+  // accessories
   flags: 'pride',
   pins_badges: 'pride',
   patches_stickers: 'pride',
+  belts: 'belt',
+  hats: 'cap',
+  scarves_gloves: 'mitten',
+  keychains: 'key',
+  sunglasses: 'sunglasses',
+  wigs: 'wig',
+  // underwear
+  boxers_trunks: 'shorts',
   binders: 'trans-pride',
   packing_underwear: 'trans-pride',
+  bras: 'bra',
+  // jewelry
+  rings: 'gem-ring',
   // books_art
   photography: 'gallery',
   prints_posters: 'gallery',
   cards_stationery: 'documents',
   // grooming
+  fragrance: 'perfume',
+  soap_bath: 'soap',
   shave_beard: 'salon',
-  edible_massage: 'intimacy',
-  aphrodisiacs: 'intimacy',
+  aphrodisiacs: 'capsule',
+  edible_massage: 'candle',
   // toys
   strap_ons: 'gear-harness',
   packers_stp: 'trans-pride',
+  nipple_play: 'clamps',
+  estim: 'bolt',
+  kegel: 'kegel',
+  anal_beads: 'beads',
   butt_plugs: 'toy-plug',
   dilators: 'toy-plug',
   realistic_dildos: 'toy-dildo',
@@ -287,7 +320,6 @@ export const FINE_ICONS: Record<string, TransitIconName> = {
   rope: 'rope-play',
   cuffs_restraints: 'handcuffs',
   spreader_bars: 'handcuffs',
-  slings_furniture: 'rope-play',
   latex: 'gear-fetish',
   leather: 'gear-fetish',
   rubber_neoprene: 'gear-fetish',
