@@ -106,7 +106,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             </LocalizedLink>
           ))}
         </nav>
-        <div className="mt-2 flex flex-wrap items-start gap-x-4 md:gap-x-6">
+        <div className="mt-2 flex flex-wrap items-start gap-x-2 md:gap-x-6">
           <LocalizedLink to={REPORT_HREF} className={footerLink}>
             {t('footer.report', 'Report')}
           </LocalizedLink>
