@@ -1,6 +1,26 @@
 import { QueryClient } from '@tanstack/react-query';
 import * as Sentry from '@sentry/react';
 
+type RequestError = Error & { status?: number; code?: string };
+
+/**
+ * True when retrying cannot help: an HTTP 4xx (except 408), or a Supabase
+ * PostgrestError — which carries a `code`, not a `status` — for a request,
+ * auth, permission or data error. Connection-class codes (PGRST000-003) and
+ * server faults (e.g. 57014 statement timeout) stay retryable.
+ */
+export const isNonRetryableError = (error: RequestError | null | undefined): boolean => {
+  const status = error?.status;
+  if (typeof status === 'number' && status >= 400 && status < 500 && status !== 408) return true;
+  const code = error?.code;
+  if (typeof code !== 'string') return false;
+  // PGRST1xx request, PGRST2xx schema/relation, PGRST3xx JWT; SQLSTATE
+  // 22 data, 23 constraint, 28 auth, 42 syntax/permission, P0001 raise.
+  return (
+    /^PGRST[123]\d\d$/.test(code) || /^(22|23|28|42)[0-9A-Z]{3}$/.test(code) || code === 'P0001'
+  );
+};
+
 // Optimized query client configuration with better batching and error handling
 export const createOptimizedQueryClient = () => {
   return new QueryClient({
@@ -20,31 +40,17 @@ export const createOptimizedQueryClient = () => {
         // Refetch when network reconnects after offline
         refetchOnReconnect: true,
         // Aggressive retry strategy with better error handling
-        retry: (failureCount, error: Error & { status?: number }) => {
-          // Don't retry on authentication errors
-          if (error?.status === 401 || error?.status === 403) {
-            return false;
-          }
-          // Don't retry on client errors except timeout
-          if (error?.status >= 400 && error?.status < 500 && error?.status !== 408) {
-            return false;
-          }
-          // Retry network errors and server errors up to 3 times
-          return failureCount < 3;
-        },
+        // Retry network and server errors up to 3 times; never client errors.
+        retry: (failureCount, error: RequestError) =>
+          !isNonRetryableError(error) && failureCount < 3,
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
         // Network mode for better offline handling
         networkMode: 'online',
       },
       mutations: {
         // Retry mutations with better error handling
-        retry: (failureCount, error: Error & { status?: number }) => {
-          // Don't retry client errors
-          if (error?.status >= 400 && error?.status < 500) {
-            return false;
-          }
-          return failureCount < 2;
-        },
+        retry: (failureCount, error: RequestError) =>
+          !isNonRetryableError(error) && failureCount < 2,
         retryDelay: 1500,
         networkMode: 'online',
         onError: (error) => Sentry.captureException(error),
