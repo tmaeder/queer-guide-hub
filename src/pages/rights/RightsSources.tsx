@@ -37,7 +37,7 @@ function MethodRoute({
           {stationCountLabel}
         </span>
       </div>
-      <ol className="relative m-0 grid list-none gap-4 p-0 before:absolute before:bottom-8 before:left-4 before:top-8 before:w-2 before:rounded-full before:bg-track-blue md:grid-cols-4 md:gap-6 md:before:bottom-auto md:before:left-[12.5%] md:before:right-[12.5%] md:before:top-4 md:before:h-2 md:before:w-auto">
+      <ol className="relative m-0 grid grid-cols-1 list-none gap-4 p-0 before:absolute before:bottom-8 before:left-4 before:top-8 before:w-2 before:rounded-full before:bg-track-blue md:grid-cols-4 md:gap-6 md:before:bottom-auto md:before:left-[12.5%] md:before:right-[12.5%] md:before:top-4 md:before:h-2 md:before:w-auto">
         {stops.map((stop) => (
           <li key={stop.id} className="relative z-1">
             <a
@@ -137,7 +137,7 @@ export default function RightsSources() {
           code="S1"
           label={t('rights.sources.station.source', 'Source station · ILGA World')}
         >
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-10">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-10">
             <div className="max-w-prose text-body-lg">
               <p className="mb-4">
                 {t(
@@ -240,7 +240,7 @@ export default function RightsSources() {
       label: t('rights.sources.section.score', 'The equality score'),
       kicker: t('rights.sources.kicker.score', 'How it is built, and what it hides'),
       content: (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)]">
           <StationPanel
             code="S3"
             label={t('rights.sources.station.score', 'Score station · 0–100')}
@@ -314,7 +314,7 @@ export default function RightsSources() {
           label={t('rights.sources.station.limits', 'Terminal · Off the map')}
           tone="ink"
         >
-          <ul className="m-0 grid list-none gap-4 p-0 md:grid-cols-2">
+          <ul className="m-0 grid grid-cols-1 list-none gap-4 p-0 md:grid-cols-2">
             {[
               t(
                 'rights.sources.limits.national',
