@@ -143,9 +143,11 @@ for (const family of taxonomyFamilies) {
       await page.getByRole('textbox', { name: target.titleInput, exact: true }).fill(name);
       if (target.hasSlug) await page.getByRole('textbox', { name: /^Slug\*?$/ }).fill(taxonomy.key);
       if (target.taxonomy) {
-        await expect(page.getByRole('combobox', { name: 'Taxonomy*', exact: true })).toHaveValue(
-          target.taxonomy,
-        );
+        // Directory filters scope the list; the shared new-record editor
+        // exposes the taxonomy choice explicitly rather than prefilling it.
+        await page
+          .getByRole('combobox', { name: 'Taxonomy*', exact: true })
+          .selectOption(target.taxonomy);
         const key =
           target.taxonomy === 'marketplace_browse' ? `department:${taxonomy.key}` : taxonomy.key;
         await page.getByRole('textbox', { name: 'Stable value*', exact: true }).fill(key);
