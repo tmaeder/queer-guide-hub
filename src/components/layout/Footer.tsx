@@ -76,7 +76,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
     <footer className="mt-auto py-4 md:py-8">
       <div
         className={cn(
-          'island-capped rounded-panel bg-foreground py-4 text-background md:py-6',
+          'island-capped rounded-panel bg-foreground py-2 text-background md:py-4',
           PAGE_GUTTER,
         )}
       >
@@ -106,7 +106,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             </LocalizedLink>
           ))}
         </nav>
-        <div className="mt-4 flex flex-wrap items-start gap-x-4 md:mt-6 md:gap-x-6">
+        <div className="mt-2 flex flex-wrap items-start gap-x-2 md:gap-x-6">
           <LocalizedLink to={REPORT_HREF} className={footerLink}>
             {t('footer.report', 'Report')}
           </LocalizedLink>
@@ -171,22 +171,22 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             </nav>
           </details>
         </div>
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 md:mt-4">
+        <div className="flex flex-col gap-0 md:mt-2 md:flex-row md:items-center md:justify-between md:gap-x-8">
           <div className="flex flex-wrap items-center gap-0 sm:gap-2 [&_button]:!px-1 sm:[&_button]:!px-2 [&_button]:min-h-11 [&_button]:min-w-11 [&_button]:text-background [&_button:hover]:underline">
             <LanguageSwitcher />
             <CurrencySelector />
             <ThemeToggle />
           </div>
-        </div>
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 md:mt-4">
-          <LocalizedLink
-            to="/"
-            className={cn(footerLink, 'hover:no-underline')}
-            aria-label={siteName}
-          >
-            <Wordmark className="text-title text-background" />
-          </LocalizedLink>
-          <p className="text-2xs text-background/70">&copy; {currentYear} Queer Guide</p>
+          <div className="flex flex-wrap items-center justify-between gap-x-6 md:gap-x-8">
+            <LocalizedLink
+              to="/"
+              className={cn(footerLink, 'hover:no-underline')}
+              aria-label={siteName}
+            >
+              <Wordmark className="text-title text-background" />
+            </LocalizedLink>
+            <p className="text-2xs text-background/70">&copy; {currentYear} Queer Guide</p>
+          </div>
         </div>
       </div>
     </footer>
