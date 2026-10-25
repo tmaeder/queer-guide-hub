@@ -73,19 +73,40 @@ export function readNewsStaging(
   const dates = (normalized.dates ?? {}) as Record<string, unknown>;
   const urls = Array.isArray(normalized.urls) ? normalized.urls : [];
   const images = Array.isArray(normalized.images) ? normalized.images : [];
+  const recovery = enriched.review_source_text_recovery as Record<string, unknown> | undefined;
+  const extraction = normalized.extraction_meta as Record<string, unknown> | undefined;
   return {
     headline: str(normalized.name) ?? str(normalized.title) ?? str(decision?.title),
     publication: str(normalized.sourceName),
     publishedAt: str(dates.start) ?? str(normalized.published_at),
     url: firstHttp(...urls, normalized.url),
     excerpt: str(decision?.excerpt) ?? str(enriched.ai_summary),
-    body: str(decision?.cleanedBody) ?? str(normalized.description),
+    body:
+      str(decision?.cleanedBody) ??
+      str(normalized.content) ??
+      str(normalized.body) ??
+      str(normalized.markdown) ??
+      str(normalized.description),
     image: firstHttp(enriched.image_url, ...images, normalized.image_url),
     decision,
     verdict: newsVerdict(decision),
     blockedReasons: strList(enriched.auto_publish_blocked_reasons),
     reviewReason: str(enriched.review_reason),
     lgbtqRelevance: num(enriched.ai_lgbtq_relevance_score),
+    sourceRecovery:
+      recovery?.contract === 'news_source_text_recovery.v1'
+        ? {
+            status: str(recovery.status),
+            attempts: num(recovery.attempts) ?? 0,
+            expiresAt: str(recovery.lease_expires_at),
+            checkedAt: str(recovery.finished_at) ?? str(recovery.attempted_at),
+            url: firstHttp(recovery.source_url, extraction?.url),
+            pageTitle: str(extraction?.page_title),
+            reason: str(extraction?.reason),
+            originalLength: num(extraction?.original_length),
+            extractedLength: num(extraction?.extracted_length),
+          }
+        : undefined,
   };
 }
 
