@@ -159,6 +159,12 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
                     {t(link.labelKey, link.fallback)}
                   </LocalizedLink>
                 ))}
+              <a
+                href="/docs"
+                className={cn(footerLink, 'text-background/75 hover:text-background')}
+              >
+                {t('footer.apiDocs', 'API & agents')}
+              </a>
             </nav>
           </details>
         </div>

@@ -12,7 +12,7 @@
     "check:env": "node scripts/check-env.mjs",
     "check:pages-routing": "node scripts/check-pages-routing.mjs",
     "check:npm-audit": "node scripts/check-npm-audit.mjs",
-    "prebuild": "tsx scripts/sync-public-locales.ts --write && node scripts/check-pages-routing.mjs",
+    "prebuild": "node scripts/agent-route-manifest.mjs && tsx scripts/sync-public-locales.ts --write && node scripts/check-pages-routing.mjs",
     "build": "vite build",
     "build:check": "tsx scripts/sync-public-locales.ts --write && npm run typecheck && node --max-old-space-size=8192 node_modules/vite/bin/vite.js build && node scripts/check-bundle-shape.mjs",
     "build:dev": "vite build --mode development",
@@ -59,7 +59,8 @@
     "test:redirect-webhooks": "node scripts/test-redirect-webhooks.mjs",
     "test:redirect-qr": "node scripts/test-redirect-qr-worker.mjs",
     "test:redirect-manifest": "node scripts/sync-redirect-inventory-manifest.mjs",
-    "format:check:functions": "prettier --check \"functions/**/*.{ts,js}\""
+    "format:check:functions": "prettier --check \"functions/**/*.{ts,js}\"",
+    "check:agent-routes": "node scripts/agent-route-manifest.mjs --check"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [

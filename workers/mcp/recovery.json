@@ -1,0 +1,7 @@
+{
+  "worker": "queer-guide-mcp",
+  "recoveredAt": "2026-10-25",
+  "source": "Cloudflare Workers authenticated script download API",
+  "sha256": "3edcd2651359558e6660b6ff1f87afc13584aa2a429370282eb199294b5ada30",
+  "reason": "Existing city/country resource templates depend on recommendation RPCs that currently return no list entries. Add two permanent resources while preserving all deployed code and bindings."
+}
