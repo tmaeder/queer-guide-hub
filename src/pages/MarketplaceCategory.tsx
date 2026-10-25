@@ -6,6 +6,9 @@ import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthead';
 import { FilterChip } from '@/components/transit/FilterChip';
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
+import { fineIcon, groupIcon } from '@/lib/marketplaceCategoryMeta';
 import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
 import { AttributeFacetGroups } from '@/components/marketplace/AttributeFacetGroups';
@@ -37,9 +40,13 @@ function prettify(slug: string): string {
  * `text-background/70` when the chip fills — a muted foreground on an ink fill
  * is unreadable, which is what the previous hand-rolled chip did.
  */
-function chipLabel(text: string, count: number, active: boolean) {
+function chipLabel(text: string, count: number, active: boolean, icon?: TransitIconName) {
   return (
     <>
+      {/* Monochrome currentColor so the mark inverts with the chip on
+          hover/active; a track-coloured glyph on the ink fill would lose its
+          outline (the `bg-foreground` trap). */}
+      {icon && <TransitIcon name={icon} size={16} color="currentColor" className="shrink-0" />}
       {text}{' '}
       <span className={active ? 'text-background/70' : 'text-muted-foreground'}>
         {count.toLocaleString()}
@@ -248,7 +255,12 @@ export default function MarketplaceCategory() {
               <FilterChip
                 key={g.slug}
                 active={activeGroup === g.slug}
-                label={chipLabel(groupLabel(g.slug), g.count, activeGroup === g.slug)}
+                label={chipLabel(
+                  groupLabel(g.slug),
+                  g.count,
+                  activeGroup === g.slug,
+                  groupIcon(g.slug, subcategory),
+                )}
                 onClick={() => setGroup(g.slug)}
               />
             ))}
@@ -262,7 +274,12 @@ export default function MarketplaceCategory() {
               <FilterChip
                 key={f.slug}
                 active={activeFine === f.slug}
-                label={chipLabel(fineLabel(f.slug), f.count, activeFine === f.slug)}
+                label={chipLabel(
+                  fineLabel(f.slug),
+                  f.count,
+                  activeFine === f.slug,
+                  fineIcon(f.slug, activeGroup, subcategory),
+                )}
                 onClick={() => setFine(f.slug)}
               />
             ))}
