@@ -261,7 +261,13 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   { path: 'graph', archetype: 'G', title: 'Content graph', adopted: true },
 
   // ── H · Registry ──────────────────────────────────────────────────────
-  { path: 'email', archetype: 'H', title: 'Email', adopted: true },
+  {
+    path: 'email',
+    archetype: 'H',
+    title: 'Email',
+    adopted: true,
+    caveat: 'H workspace with a B rich editor in the Templates tab.',
+  },
   { path: 'automation', archetype: 'H', title: 'Automations', adopted: true },
   {
     path: 'quality',
