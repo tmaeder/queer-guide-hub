@@ -31,7 +31,7 @@ if(import.meta.main){
   const body=new TextDecoder().decode(bytes);const result={url,body,sha256:await sha(body),observed_at:new Date().toISOString()};captures.push(result);return result
  }
  const official=await capture(officialUrl),officialPoint=officialContactPoint(official.body)
- const officialText=official.body.replace(/<script\b[\s\S]*?<\/script>/gi,' ').replace(/<style\b[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ')
+ const officialText=official.body.replace(/<script\b[\s\S]*?<\/script\b[^>]*>/gi,' ').replace(/<style\b[\s\S]*?<\/style\b[^>]*>/gi,' ').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ')
  if(!officialPoint||!/^https:\/\/(?:www\.)?insomnia-berlin\.de\//.test(officialUrl)||!officialText.includes('12099'))throw Error('Official identity/address/map unavailable')
  const proofs=[];let refused=0
  for(const c of candidates){
