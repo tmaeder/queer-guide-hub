@@ -37,7 +37,8 @@ interface NavBadgeProps {
  * badge is mounted, which is the property the previous shape lacked.
  */
 export function NavBadge({ count, dot, label, inline = false }: NavBadgeProps) {
-  const place = inline ? 'ms-auto' : 'absolute -end-0.5 -top-0.5';
+  // Pinned marks carry an ink ring so they read as cut out of the dock.
+  const place = inline ? 'ms-auto' : 'absolute -end-1 -top-1 ring-2 ring-foreground';
 
   if (dot) {
     return (
