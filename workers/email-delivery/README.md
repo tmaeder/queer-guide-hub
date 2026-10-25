@@ -10,7 +10,7 @@ The transactional backend, recipient directory, consent and suppression controls
 
 Cloudflare’s transactional-only restriction still prevents marketing/newsletter dispatch and full parity with the benchmark platforms. Group comments lack an audited recipient/read contract, and additional business notices require an authoritative owner/claim event. These are explicit capability boundaries; arbitrary directory addresses never establish ownership or consent. Do not enable unsupported adapters or fabricate experiment outcomes to label the platform complete.
 
-The 2026-10-25 continuation repairs the native-event consumer’s workerd redirect mode and adds protected, read-only queue health. Worker queue bindings reference the existing resources; regeneration never creates replacement queues. Operations distinguishes unavailable measurements from measured zero, and read-only receipt inspection cannot resend email. Live recovery and production E2E evidence must be recorded after deploying this repair.
+The 2026-10-25 continuation repairs the native-event consumer’s workerd redirect mode and adds protected, read-only queue health. Worker queue bindings reference the existing resources; regeneration never creates replacement queues. Operations distinguishes unavailable measurements from measured zero, and read-only receipt inspection cannot resend email. Live recovery and production E2E evidence must be recorded after deploying this repair; the final release record is maintained on [PR #4856](https://github.com/tmaeder/queer-guide-hub/pull/4856).
 
 ## Rollout
 

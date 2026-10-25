@@ -66,8 +66,10 @@ Final local evidence for this path: 34 focused client tests across ten files pas
 
 PR #4708 deployed as 3489ac55d3bc831399c78d8f642b4757a38eb81e. All twelve required checks passed, including 18,058 application tests; backend, Pages and migration guard succeeded. Migration 99991792793842 is applied. A scoped mailbox-function deployment and fresh source download verified the deployed handler after an initial CI/source discrepancy. The earlier local-only statements above describe historical checkpoints, not the current deployment state.
 
-## Production operations continuation (2026-10-25, release in progress)
+## Production operations continuation (2026-10-25, pre-release checkpoint)
 
 The production audit found two native delivery events in the dead-letter queue. Original envelopes were preserved privately and replayed successfully into the authenticated receiver, with native event identities intact. The Worker had used `redirect: "error"`, which workerd rejects before network I/O. The repair uses manual redirects, retries every non-success response without following it, and normalizes decoded or JSON-text envelopes without double encoding. Status-only diagnostics disclose no recipient or event payload. A live drain remains a release verification step; replay alone does not establish that the queue consumer works.
 
 Operations now reads native queue metrics through the existing authenticated gateway and admin-only backend. Queue reads cannot publish, consume, acknowledge or purge messages. Independent unavailable readings remain null; measured zero and unknown oldest age have distinct UI labels. No new migration, permission grant, delivery identity or promotional dispatch is introduced.
+
+The final protected release and production verification record is maintained on [PR #4856](https://github.com/tmaeder/queer-guide-hub/pull/4856), including exact deployed versions, native-event recovery and the controlled owner-mailbox test. This section records the pre-release checkpoint; it does not infer later delivery outcomes.
