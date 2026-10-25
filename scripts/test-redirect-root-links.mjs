@@ -854,4 +854,12 @@ console.log(
   'Managed roots: actual Worker → signed resolver → migrated PostgreSQL verifies legacy fallback only when absent, password POST/HEAD denial, targeting, root preview canonical URL, QR/conversion attribution, atomic quota, scheduling/expiry/disabled behavior and inaccessible internal slug. No external requests.',
 );
 
+const { verifyPublicWorkspaceRouting } = await import('./lib/redirect-public-workspace-fixture.mjs');
+await verifyPublicWorkspaceRouting({
+  db,
+  builtin: builtinExports,
+  worker,
+  values,
+  hashPassword: policy.hashLinkPassword,
+});
 await db.close();

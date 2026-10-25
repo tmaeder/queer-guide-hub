@@ -69,3 +69,21 @@ main's canonical versions. No migration was renamed or reapplied by this test.
 The temporary hosted capability is revoked. The managed test redirect is retained
 for the post-deployment geography check, after which it should be disabled and
 archived rather than permanently deleted.
+
+## Scheduled worker configuration
+
+All six Redirects schedules were active and reported successful database runs,
+but the five HTTP schedules silently selected no rows: Vault had the existing
+`internal_invoke_secret` and no `supabase_url`. Read-only inspection confirmed
+that only these five Redirects jobs depended on that URL. Under table locks,
+rechecked that the mail, domain, webhook and asset queues were empty, then added
+the public project API URL without reading or changing the invocation secret.
+
+Guarded empty-queue probes used the same Vault-backed HTTP transport. Responses
+136547–136551 all returned HTTP200 without timeouts: access notifications and
+QR cleanup reported configured, webhook dispatch claimed no deliveries, and
+domain provisioning/instruction mail reported unconfigured. No email, provider
+hostname or external webhook was submitted. This proves dispatch reachability,
+not delivery/provider readiness. The available Cloudflare OAuth connection can
+read the active Queer Guide zone but returns403 for SaaS fallback-origin settings;
+a dedicated zone-scoped SaaS configuration remains required.

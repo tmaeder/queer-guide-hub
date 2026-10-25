@@ -613,17 +613,18 @@ provider onboarding, approval or DNS changes.
 ## Native DNS instruction email
 
 The owner API now supports native instruction email through a private durable
-outbox and Resend transport. The owner domain row provides inline exact-record
+outbox and the shared Cloudflare email gateway. The owner domain row provides inline exact-record
 review, a single recipient, email submission and private status/recovery/cancel
 controls. Live configured-sender/delivery proof and rollout remain required.
 No real recipient or email provider was contacted during implementation.
 
-Explicit server configuration is `RESEND_API_KEY`,
+Explicit server configuration is `EMAIL_GATEWAY_SECRET`, `EMAIL_GATEWAY_URL`,
 `REDIRECT_DOMAIN_EMAIL_FROM` (a verified sender address, optionally with a display
 name), and the current `REDIRECT_CNAME_TARGET`. Missing/invalid configuration
 leaves the feature unavailable. The owner domain list exposes only
 `instructionMail.configured`; sender, credentials and transport fingerprints are
-not returned. This uses the existing email provider, independently of Domain
+not returned. The gateway URL and shared secret must match the deployed
+`queer-guide-email-delivery` Worker. This uses the existing email gateway, independently of Domain
 Connect template onboarding or its signing key.
 
 Owner-session routes:
@@ -664,14 +665,15 @@ Before every send, the durable lease rechecks the current owner, domain version,
 enabled/archive state, record digest and configured target. A cancelled lease or
 stale unsent snapshot never reaches the provider. The exact first message payload,
 including sender, is saved before sending and reused on retry. Provider requests
-use a fixed HTTPS endpoint, reject redirects, time out after10seconds and bound
+use the configured gateway's HTTPS `/send` endpoint, reject redirects, time out after20seconds and bound
 response bodies to16KiB. Bodies/raw provider errors are not exposed or logged.
 
 A provider receipt yields `sent`, meaning provider acceptance. It does not confirm
 inbox delivery or DNS/ownership/TLS/routing readiness. Known rejection or exhausted
 unsent retry yields `failed`. Lost/invalid receipts are retried with the same
-idempotency key and persisted payload, at most eight attempts and within23hours
-of queueing, inside Resend's24-hour deduplication window. An unresolved result at
+message identity and persisted payload, at most eight attempts and within23hours
+of queueing. The gateway's Durable Object persists submission uncertainty before
+calling the native provider and never resubmits an uncertain identity. An unresolved result at
 the boundary, a changed credential after an ambiguous attempt, or setup changes
 after a possible send yield `uncertain`, not a false failure/cancellation. A request
 already in flight can complete after a role or setup change; it cannot be recalled.
@@ -681,20 +683,26 @@ consumer, with its own frozen Deno configuration/lock. It claims at most three
 jobs per invocation. The guarded once/minute cron command uses the existing
 Vault `supabase_url` and `internal_invoke_secret` (matching the function’s
 `INTERNAL_INVOKE_SECRET`); missing configuration makes no
-HTTP call. Its named schedule can be reapplied without duplicating jobs. These
-migration/configuration files have not been applied or enabled in production.
+HTTP call. Its named schedule can be reapplied without duplicating jobs.
+On 2026-10-25 the production schedule existed but skipped HTTP because the public
+project URL was absent from Vault. After verifying all five URL-dependent jobs
+were Redirects jobs and the mail/domain/webhook queues were empty, the public
+project URL was configured. A guarded empty-queue probe returned HTTP200 from
+all five workers. Domain instruction mail and domain provisioning still reported
+`configured:false`; this does not establish sender or provider readiness.
 
 Verification covers exact records and certificate changes, idempotent queueing,
 private receipts, cancellation/races, current-owner removal, immutable retries,
 credential changes, expired leases, retries and uncertainty. The actual HTTP
-handler runs through migrated PostgreSQL and a bounded Resend fixture, including
+handler runs through migrated PostgreSQL and the actual gateway/receipt adapters
+with a bounded mock transport, including
 lost responses after simulated acceptance. The SQL driver also executes the real
 scheduler command against an isolated net/Vault seam to prove missing-secret and
-invalid-project guards. Sender verification, a controlled real email, cron/Vault
-activation, frontend controls and the overall release remain open.
+invalid-project guards. Frontend controls exist, while configured sender/provider,
+a controlled real email, final browser verification and the overall release remain open.
 
 References: [Dub forwarding behavior](https://dub.co/help/article/how-to-add-custom-domain),
-[Resend idempotency](https://resend.com/docs/dashboard/emails/idempotency-keys),
+[Cloudflare Email Service](https://developers.cloudflare.com/email-service/),
 [Supabase scheduled functions](https://supabase.com/docs/guides/functions/schedule-functions).
 
 

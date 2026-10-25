@@ -217,8 +217,8 @@ export async function verifyRedirectWorkspaceMembershipHttp(
       foreignPasswordAsset = randomUUID();
     const foreignAppVersion = (
       await db.query(
-        "INSERT INTO public.redirect_native_apps(id,workspace_id,label,platform,app_id,app_clip_id,public_name,store_id,app_group_id,handoff_enabled,enabled,created_by,paths) VALUES($1,$2,'Foreign private HTTP native app','ios','ABCDE12345.org.qg.ForeignHttp','ABCDE12345.org.qg.ForeignHttp.Clip','Foreign HTTP app','12345','group.org.qg.ForeignHttp',true,true,$3,ARRAY['/go/*']) RETURNING revision",
-        [foreignApp, workspace, owner],
+        "INSERT INTO public.redirect_native_apps(id,workspace_id,domain_id,label,platform,app_id,app_clip_id,public_name,store_id,app_group_id,handoff_enabled,enabled,created_by,paths) VALUES($1,$2,$4,'Foreign private HTTP native app','ios','ABCDE12345.org.qg.ForeignHttp','ABCDE12345.org.qg.ForeignHttp.Clip','Foreign HTTP app','12345','group.org.qg.ForeignHttp',true,true,$3,ARRAY['/go/*']) RETURNING revision",
+        [foreignApp, workspace, owner, domain],
       )
     ).rows[0].revision;
     await db.query(

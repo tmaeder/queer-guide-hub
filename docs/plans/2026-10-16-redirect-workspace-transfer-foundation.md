@@ -669,3 +669,30 @@ foreign built-in insertion/update denial, cross-tenant domain denial, per-host
 uniqueness and preserved provisioning denial. This is a pre-activation invariant;
 custom-domain public routing activation and signed store/device evidence remain
 open.
+
+### 2026-10-25 public link routing identity
+
+Public built-in resolution now looks up the globally unique short-link slug and
+its active workspace; custom-domain readiness binds to its globally unique
+registered hostname and active workspace. A private link/host helper keeps visit
+and snapshot writes bound to that resource. Contradictory visitor workspace
+headers cannot select the tenant. Route-proof refresh uses the registered domain
+workspace, while password branding and throttling derive the active workspace
+from the source link UUID. Legacy fingerprints and existing quota/snapshot guards
+remain intact. Native associations on the built-in host still belong only to the
+legacy workspace; other workspaces use their own registered custom domains.
+
+Rollback-only SQL fixtures cover provisioning denial, active built-in/custom/root
+routing, host mismatch, current provider-requester ownership, password branding
+and scoped throttle rows, lifecycle closure and no rejected-visit inflation. The
+actual Pages and signed branded Worker → resolver → SQL harness additionally
+checks a simulated second workspace: preserved campaigns/QR markers, password
+GET/POST behavior, correct workspace on exactly three visits, and HEAD/no-count.
+Full SQL, all five actual HTTP/SDK runtimes, 2551 migration parser checks and
+targeted script lint/format checks pass. Native HTTP fixtures now use their own
+custom domain rather than trying to insert a foreign built-in binding.
+
+No production tenant was activated and the private selector/resource fences stay
+closed. Public QR/report capability lookup still has its separate legacy-only
+publication fence. Their resource-context helpers are ready, but enabling public
+capabilities across active workspaces remains part of the final activation audit.
