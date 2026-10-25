@@ -178,7 +178,7 @@ function LinkEditor({
             {isDomainRoot && !domain.domainId && (
               <p role="alert">Choose a custom domain for its homepage link.</p>
             )}
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="member-link-slug">Short path</Label>
                 <Input
@@ -248,7 +248,7 @@ function LinkEditor({
                 ))}
               </select>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {CAMPAIGN_FIELDS.map((field) => (
                 <div key={field} className="space-y-2">
                   <Label htmlFor={'member-' + field}>{field}</Label>
@@ -532,7 +532,7 @@ export function MemberWorkspaceContent({
           </Button>
         </p>
       )}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="workspace-search">Search links</Label>
           <Input

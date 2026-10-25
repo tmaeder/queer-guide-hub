@@ -97,7 +97,7 @@ export function TagHankyCodeBand({ tagSlug }: { tagSlug: string }) {
           <AgeAffirmationModal active={requested} onDecline={() => setRequested(false)} />
         </div>
       ) : (
-        <div className="mt-6 grid gap-8 sm:grid-cols-2">
+        <div className="mt-6 grid grid-cols-1 gap-8 sm:grid-cols-2">
           <div>
             <h3 className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
               {t('tags.detail.hanky.classic', 'Classic core (Townsend, 1983)')}
