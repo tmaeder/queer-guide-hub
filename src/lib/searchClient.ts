@@ -55,6 +55,8 @@ async function post<T>(path: string, body: object): Promise<T> {
     body: JSON.stringify(body),
     credentials: WRITE_PATHS.has(path) ? 'include' : 'same-origin',
     keepalive: true,
+    // Same deadline as searchFetch's /search; a hung worker must not hang the UI.
+    signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`${path} ${res.status}: ${await res.text()}`);
   const data = (await res.json()) as T & { session_verified?: boolean };
