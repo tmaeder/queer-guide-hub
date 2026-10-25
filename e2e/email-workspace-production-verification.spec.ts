@@ -242,11 +242,44 @@ test('production email workspace preserves and saves only its isolated inactive 
   expect(fixtureWrites).toBe(1);
   expect(blocked, 'No forbidden email mutation or send should be attempted').toEqual([]);
   await tabs.getByRole('tab', { name: 'Operations', exact: true }).click();
-  await expect(page.getByText('Queued delivery events', { exact: true })).toBeVisible();
-  await expect(page.getByText('Dead-letter delivery events', { exact: true })).toBeVisible();
-  await expect(
-    page.getByText(/Queue measurements checked at|Queue measurements are unavailable/),
-  ).toBeVisible();
+  const operations = page.getByRole('region', { name: 'Email operations', exact: true });
+  const readings = [
+    ['Queued delivery events', '0'],
+    ['Dead-letter delivery events', '0'],
+    ['Oldest queued delivery event', 'No pending events'],
+    ['Oldest dead-letter delivery event', 'No pending events'],
+  ];
+  for (const [label, value] of readings)
+    await expect(
+      operations.getByText(label, { exact: true }).locator('..').locator('dd'),
+    ).toHaveText(value);
+  await expect(operations.getByText(/Queue measurements checked at/)).toBeVisible();
+  await expect(operations.getByRole('alert')).toHaveCount(0);
+  const refreshedOperations = page.waitForResponse(
+    (res) =>
+      res.request().method() === 'GET' &&
+      new URL(res.url()).pathname === '/functions/v1/email-operations',
+  );
+  await operations.getByRole('button', { name: 'Refresh operations', exact: true }).click();
+  expect((await refreshedOperations).ok()).toBe(true);
+  for (const [label, value] of readings)
+    await expect(
+      operations.getByText(label, { exact: true }).locator('..').locator('dd'),
+    ).toHaveText(value);
+  await info.attach('operations-desktop', {
+    body: await operations.locator('dl').first().screenshot(),
+    contentType: 'image/png',
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+  await info.attach('operations-mobile', {
+    body: await operations.locator('dl').first().screenshot(),
+    contentType: 'image/png',
+  });
   expect(fixtureWrites).toBe(1);
   expect(blocked).toEqual([]);
   const build = await page.request.get('/build-id.txt');
@@ -260,6 +293,7 @@ test('production email workspace preserves and saves only its isolated inactive 
       build: (await build.text()).trim(),
       dimensions,
       operationsQueueLabelsVerified: true,
+      operationsQueueReadings: readings,
       cleanup: 'Independent SQL owner must remove exact fixture and compare canonical hashes.',
     }),
     contentType: 'application/json',
