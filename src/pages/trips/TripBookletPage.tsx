@@ -121,7 +121,7 @@ export default function TripBookletPage() {
           .no-print { display: none !important; }
           .page-break { page-break-after: always; }
         }
-        .booklet { max-width: 720px; margin: 0 auto; padding: 32px 24px 64px; font-family: 'Space Grotesk', system-ui, sans-serif; color: #111; }
+        .booklet { max-width: 720px; margin: 0 auto; padding: 32px calc(var(--island-inset) + 16px) 64px; font-family: 'Space Grotesk', system-ui, sans-serif; color: #111; }
         .booklet h1 { font-family: 'Anton', sans-serif; font-size: 52px; line-height: 1.02; margin: 0 0 4px; font-weight: 400; letter-spacing: -0.02em; }
         .booklet h2 { font-family: 'Anton', sans-serif; font-size: 32px; line-height: 1.15; margin: 28px 0 8px; font-weight: 400; padding-bottom: 4px; }
         .booklet h3 { font-size: 14px; margin: 16px 0 6px; font-weight: 700; }
