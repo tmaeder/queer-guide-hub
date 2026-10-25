@@ -307,7 +307,7 @@ function transformPath(
 /**
  * The size an icon is DRAWN at for a requested size.
  *
- * Every icon below 28px renders 4px larger than asked. Measured on the live
+ * Every icon below 28px renders larger than asked (see the ramp below). Measured on the live
  * site, the bulk of the product asked for 12-16px — a lucide habit, where a
  * 1.5-unit hairline glyph needs no room — and a filled v2 icon with an outline
  * reads as a speck at that size. One rule here moves the whole product a step
@@ -316,5 +316,9 @@ function transformPath(
  * into a container of fixed size.
  */
 export function displaySize(size: number): number {
-  return size < 28 ? size + 4 : size;
+  // Measured second pass: +4 still read as small next to the marketplace
+  // department plates, so small sizes now scale by half (12→18, 16→24) and
+  // mid sizes step +6 (20→26, 24→30). 28 and up are deliberate and untouched.
+  if (size <= 16) return Math.round(size * 1.5);
+  return size < 28 ? size + 6 : size;
 }
