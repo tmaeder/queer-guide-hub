@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router';
+import { lazyRetry } from '@/utils/lazyRetry';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
@@ -12,6 +13,19 @@ import { EmailAudiences } from '@/components/admin/email/EmailAudiences';
 import { EmailOperations } from '@/components/admin/email/EmailOperations';
 import { EmailJourneys } from '@/components/admin/email/EmailJourneys';
 import { EmailCampaigns, type Campaign } from '@/components/admin/email/EmailCampaigns';
+const EmailTemplates = lazyRetry(() => import('./EmailTemplates'));
+const workspaceTabs = [
+  'campaigns',
+  'templates',
+  'audiences',
+  'journeys',
+  'content',
+  'delivery',
+  'operations',
+  'measurement',
+  'subscribers',
+];
+
 interface Message {
   id: string;
   recipient_email: string;
@@ -31,6 +45,27 @@ interface Overview {
   templates: { template_key: string; name: string; is_active: boolean }[];
 }
 export default function EmailPlatform() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab') ?? 'campaigns';
+  const tab = workspaceTabs.includes(requestedTab) ? requestedTab : 'campaigns';
+  const [templatesVisited, setTemplatesVisited] = useState(tab === 'templates');
+  // Record the first Templates visit during rendering so browser history also retains its draft.
+  if (tab === 'templates' && !templatesVisited) setTemplatesVisited(true);
+  // Radix can activate a tab on both pointer-down and focus before navigation renders.
+  // Deduplicate those events so one tab selection creates one history entry.
+  const pendingTab = useRef(tab);
+  useEffect(() => {
+    pendingTab.current = tab;
+  }, [tab]);
+  const selectTab = (value: string) => {
+    if (pendingTab.current === value) return;
+    pendingTab.current = value;
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set('tab', value);
+      return next;
+    });
+  };
   const [data, setData] = useState<Overview | null>(null),
     [error, setError] = useState(false);
   const [audienceRevision, setAudienceRevision] = useState(0);
@@ -61,54 +96,63 @@ export default function EmailPlatform() {
       <AdminArchetypeHeader
         title="Email"
         actions={
-          <>
-            <Button asChild variant="outline">
-              <Link to="/admin/email-templates">Edit templates</Link>
-            </Button>
+          tab !== 'templates' ? (
             <Button variant="outline" onClick={() => void load()}>
               Refresh
             </Button>
-          </>
+          ) : undefined
         }
       />
-      <p
-        role="status"
-        aria-label="Cloudflare email capability"
-        className="border border-border bg-muted p-4 text-sm"
-      >
-        Cloudflare sends transactional email only. Newsletter and marketing drafts can be prepared
-        here; campaign delivery is unavailable.
-      </p>
-      {data && !data.configured && (
-        <p role="alert" className="text-sm">
-          Transactional delivery is not configured. Complete the email gateway setup before sending.
-        </p>
-      )}
-      {error && (
-        <div role="alert">
-          <p>Email administration could not load.</p>
-          <Button onClick={() => void load()}>Retry</Button>
-        </div>
-      )}
-      {!data ? (
-        !error && <p role="status">Loading email workspace…</p>
-      ) : (
-        <>
-          <p className="text-sm text-muted-foreground">
-            {data.subscribers} confirmed subscribers · {data.suppressions} suppressed addresses ·
-            Showing the latest 50 deliveries and campaigns
+      <Tabs value={tab} onValueChange={selectTab}>
+        <TabsList aria-label="Email workspace" className="h-auto justify-start gap-1">
+          <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+          <TabsTrigger value="templates">Templates</TabsTrigger>
+          <TabsTrigger value="audiences">Audiences</TabsTrigger>
+          <TabsTrigger value="journeys">Journeys</TabsTrigger>
+          <TabsTrigger value="content">Content</TabsTrigger>
+          <TabsTrigger value="delivery">Delivery</TabsTrigger>
+          <TabsTrigger value="operations">Operations</TabsTrigger>
+          <TabsTrigger value="measurement">Measurement</TabsTrigger>
+          <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
+        </TabsList>
+        <TabsContent value="templates" forceMount className="data-[state=inactive]:hidden">
+          {(tab === 'templates' || templatesVisited) && (
+            <Suspense fallback={<p role="status">Loading templates…</p>}>
+              <EmailTemplates embedded onSaved={load} />
+            </Suspense>
+          )}
+        </TabsContent>
+        <div hidden={tab === 'templates'} className="space-y-6">
+          <p
+            role="status"
+            aria-label="Cloudflare email capability"
+            className="border border-border bg-muted p-4 text-sm"
+          >
+            Cloudflare sends transactional email only. Newsletter and marketing drafts can be
+            prepared here; campaign delivery is unavailable.
           </p>
-          <Tabs defaultValue="campaigns">
-            <TabsList className="h-auto flex-wrap justify-start gap-1">
-              <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-              <TabsTrigger value="audiences">Audiences</TabsTrigger>
-              <TabsTrigger value="journeys">Journeys</TabsTrigger>
-              <TabsTrigger value="content">Content</TabsTrigger>
-              <TabsTrigger value="delivery">Delivery</TabsTrigger>
-              <TabsTrigger value="operations">Operations</TabsTrigger>
-              <TabsTrigger value="measurement">Measurement</TabsTrigger>
-              <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
-            </TabsList>
+          {data && !data.configured && (
+            <p role="alert" className="text-sm">
+              Transactional delivery is not configured. Complete the email gateway setup before
+              sending.
+            </p>
+          )}
+          {error && (
+            <div role="alert">
+              <p>Email administration could not load.</p>
+              <Button onClick={() => void load()}>Retry</Button>
+            </div>
+          )}
+          {!data && !error && <p role="status">Loading email workspace…</p>}
+          {data && (
+            <p className="text-sm text-muted-foreground">
+              {data.subscribers} confirmed subscribers · {data.suppressions} suppressed addresses ·
+              Showing the latest 50 deliveries and campaigns
+            </p>
+          )}
+        </div>
+        {data && (
+          <>
             <TabsContent value="campaigns" forceMount className="data-[state=inactive]:hidden">
               <EmailCampaigns
                 campaigns={data.campaigns}
@@ -164,9 +208,9 @@ export default function EmailPlatform() {
             <TabsContent value="subscribers" forceMount className="data-[state=inactive]:hidden">
               <EmailContacts />
             </TabsContent>
-          </Tabs>
-        </>
-      )}
+          </>
+        )}
+      </Tabs>
     </div>
   );
 }
