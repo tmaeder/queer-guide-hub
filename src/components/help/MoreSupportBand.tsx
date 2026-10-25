@@ -16,7 +16,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Building2, ChevronRight } from 'lucide-react';
+import { Building2, ChevronRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 

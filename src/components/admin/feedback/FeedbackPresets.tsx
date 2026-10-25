@@ -1,4 +1,4 @@
-import { Inbox, User, Clock, Bot, CircleSlash2, AlarmClock } from 'lucide-react';
+import { Inbox, User, Clock, Bot, CircleSlash2, AlarmClock } from '@/components/icons';
 import type { FeedbackUrlState } from '@/hooks/useFeedbackUrlState';
 
 type PresetId = 'all' | 'mine' | 'overdue' | 'with-claude' | 'unresolved' | 'stale';

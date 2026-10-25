@@ -1,5 +1,5 @@
 import { lazy, useState } from 'react';
-import { ArrowLeft, ArrowRight, Camera, LockKeyhole } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, LockKeyhole } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

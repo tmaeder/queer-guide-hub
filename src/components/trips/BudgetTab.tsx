@@ -11,7 +11,7 @@ import {
   Package,
   Wallet,
   Sparkles,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

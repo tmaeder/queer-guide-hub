@@ -38,7 +38,7 @@ import {
   Sparkles,
   TrendingUp,
   Star,
-} from 'lucide-react';
+} from '@/components/icons';
 import {
   UserFilters,
   ageRanges,

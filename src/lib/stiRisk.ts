@@ -1,4 +1,4 @@
-import { AlertOctagon, AlertTriangle, Circle, Droplet } from 'lucide-react';
+import { AlertOctagon, AlertTriangle, Circle, Droplet } from '@/components/icons';
 
 /**
  * The locked palette for STI transmission risk.

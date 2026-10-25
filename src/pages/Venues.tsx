@@ -48,7 +48,7 @@ import {
 } from '@/components/ui/select';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { LoadMore } from '@/components/transit/LoadMore';
-import { MapPin, Grid, Map } from 'lucide-react';
+import { MapPin, Grid, Map } from '@/components/icons';
 import type { Database } from '@/integrations/supabase/types';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { useGridColumns } from '@/components/ui/useGridColumns';

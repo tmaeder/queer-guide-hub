@@ -6,7 +6,7 @@ import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
-} from 'lucide-react';
+} from '@/components/icons';
 
 /**
  * The locked palette for drug-interaction risk.

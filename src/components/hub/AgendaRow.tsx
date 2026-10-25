@@ -8,8 +8,8 @@ import {
   Cake,
   Sparkles,
   Newspaper,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+} from '@/components/icons';
+import type { LucideIcon } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { AgendaItem } from '@/hooks/useMyAgenda';
 import type { CalendarItem, CalendarKind } from '@/components/hub/calendar/types';

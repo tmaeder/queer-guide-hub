@@ -16,7 +16,7 @@ import {
   Clock,
   AlertCircle,
   FlaskConical,
-} from 'lucide-react';
+} from '@/components/icons';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Badge } from '@/components/ui/badge';

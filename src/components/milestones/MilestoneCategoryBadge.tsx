@@ -8,9 +8,9 @@ import {
   Scale,
   ShieldAlert,
   Stethoscope,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useTranslation } from 'react-i18next';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { badgeVariants } from '@/components/ui/badge';
 import { milestoneCategoryLabelKey, type MilestoneCategory } from '@/types/milestone';

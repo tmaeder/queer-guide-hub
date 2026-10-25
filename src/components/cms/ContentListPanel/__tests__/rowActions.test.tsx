@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ExternalLink, Copy } from 'lucide-react';
+import { ExternalLink, Copy } from '@/components/icons';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ContentListTable } from '../ContentListTable';
 import type { ContentTypeConfig } from '@/types/cms';

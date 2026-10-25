@@ -303,7 +303,6 @@ export default defineConfig(({ mode }) => ({
             { name: 'framer-motion', test: /node_modules\/(motion|motion-dom|motion-utils)\// },
             { name: 'radix', test: /node_modules\/@radix-ui\// },
             { name: 'react-query', test: /node_modules\/@tanstack\/(react-query|query-)/ },
-            { name: 'lucide', test: /node_modules\/lucide-react\// },
             { name: 'supabase', test: /node_modules\/@supabase\// },
             { name: 'recharts', test: /node_modules\/(recharts|victory-vendor)\// },
             { name: 'xyflow', test: /node_modules\/@xyflow\// },

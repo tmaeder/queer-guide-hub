@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Upload, X, Edit3, Trash2, Camera, ImageIcon, ZoomIn } from 'lucide-react';
+import { Plus, Upload, X, Edit3, Trash2, Camera, ImageIcon, ZoomIn } from '@/components/icons';
 import { useUserPhotos } from '@/hooks/useUserPhotos';
 
 interface PhotoGalleryProps {

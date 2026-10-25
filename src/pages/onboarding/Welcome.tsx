@@ -4,7 +4,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Heart, KeyRound, ShieldCheck, Check } from 'lucide-react';
+import { Heart, KeyRound, ShieldCheck, Check } from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useSignupFunnel } from '@/hooks/useSignupFunnel';
 import { useToast } from '@/hooks/use-toast';

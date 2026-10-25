@@ -186,11 +186,16 @@ export default tseslint.config(
             },
             {
               name: '@mui/icons-material',
-              message: 'MUI migration complete (ADR 0001). Use lucide-react icons instead.',
+              message: 'MUI migration complete (ADR 0001). Use @/components/icons instead.',
             },
             {
               name: '@mui/lab',
               message: 'MUI migration complete (ADR 0001). Use shadcn/ui components + Tailwind.',
+            },
+            {
+              name: 'lucide-react',
+              message:
+                'Every icon is a custom Icon System v2 drawing. Import from @/components/icons (add a name there; draw a glyph in components/transit/defs/).',
             },
           ],
           patterns: [
@@ -719,11 +724,16 @@ export default tseslint.config(
             },
             {
               name: '@mui/icons-material',
-              message: 'MUI migration complete (ADR 0001). Use lucide-react icons instead.',
+              message: 'MUI migration complete (ADR 0001). Use @/components/icons instead.',
             },
             {
               name: '@mui/lab',
               message: 'MUI migration complete (ADR 0001). Use shadcn/ui components + Tailwind.',
+            },
+            {
+              name: 'lucide-react',
+              message:
+                'Every icon is a custom Icon System v2 drawing. Import from @/components/icons (add a name there; draw a glyph in components/transit/defs/).',
             },
           ],
           patterns: [

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Copy, Check, Mail } from 'lucide-react';
+import { Copy, Check, Mail } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { useProfile } from '@/hooks/useProfile';
 

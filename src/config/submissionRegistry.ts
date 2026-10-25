@@ -13,11 +13,11 @@ import {
   Hotel,
   Newspaper,
   MapPin,
-} from 'lucide-react';
+} from '@/components/icons';
 import { organizationFields } from './contentTypes/organization';
 import { venueFields } from './contentTypes/venue';
 import type { FieldConfig } from '@/types/cms';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/components/icons';
 
 // ── Types ────────────────────────────────────────────────────────
 

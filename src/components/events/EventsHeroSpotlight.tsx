@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Calendar, Sparkles } from 'lucide-react';
+import { ArrowRight, Calendar, Sparkles } from '@/components/icons';
 import { useEventSpotlight } from '@/hooks/useEventSpotlight';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { format, differenceInCalendarDays } from 'date-fns';

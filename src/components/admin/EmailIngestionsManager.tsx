@@ -15,7 +15,7 @@ import {
   AlertCircle,
   Clock,
   Search,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';

@@ -1,4 +1,4 @@
-import { Building } from 'lucide-react';
+import { Building } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { validateVenue } from '@/utils/contentValidation';
 import { VENUE_CATEGORY_OPTIONS } from '@/lib/venueCategories';

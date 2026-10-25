@@ -39,7 +39,7 @@ import {
   MoreHorizontal,
   ChevronRight,
   ChevronDown,
-} from 'lucide-react';
+} from '@/components/icons';
 import { storyColumns, priorities, priorityFor } from './constants';
 import type {
   AdminProfile,

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { format } from 'date-fns';
-import { Sparkles, Smile, Meh, CloudRain, ImagePlus, Trash2, NotebookPen, X } from 'lucide-react';
+import { Sparkles, Smile, Meh, CloudRain, ImagePlus, Trash2, NotebookPen, X } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

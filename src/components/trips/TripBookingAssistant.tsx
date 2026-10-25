@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plane, Hotel, Plus, Shield, MapPin, Star, Check} from 'lucide-react';
+import { Plane, Hotel, Plus, Shield, MapPin, Star, Check} from '@/components/icons';
 import {
   fetchBookingAssistantCities,
   fetchTripReservations,

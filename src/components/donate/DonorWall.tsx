@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Heart } from 'lucide-react';
+import { Heart } from '@/components/icons';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useDonorWall } from '@/hooks/useDonations';

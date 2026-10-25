@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Check } from 'lucide-react';
+import { Check } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { useUserIntent, LOOKING_FOR_OPTIONS, LOOKING_FOR_LABELS } from '@/hooks/useUserIntent';
 

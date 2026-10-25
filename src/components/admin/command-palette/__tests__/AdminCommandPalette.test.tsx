@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Box } from 'lucide-react';
+import { Box } from '@/components/icons';
 
 const navigateMock = vi.fn();
 vi.mock('react-router', async () => {

@@ -43,7 +43,7 @@ describe('BreadcrumbBar route stops', () => {
       'page',
     );
     expect(container.querySelectorAll('[data-breadcrumb-stop]')).toHaveLength(2);
-    expect(container.querySelector('.lucide-chevron-right')).not.toBeInTheDocument();
+    expect(container.querySelector('[data-icon="chevron-right"]')).not.toBeInTheDocument();
   });
 
   it('keeps collapsed intermediate stops reachable from an overflow station', async () => {

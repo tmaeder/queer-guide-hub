@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { GitCompare, Plus, Minus, Pencil } from 'lucide-react';
+import { GitCompare, Plus, Minus, Pencil } from '@/components/icons';
 import {
   Dialog,
   DialogContent,

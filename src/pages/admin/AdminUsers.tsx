@@ -12,7 +12,7 @@ import { AdminEntityTable } from '@/components/admin/data-table/AdminEntityTable
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import type { AdminTableFeatures } from '@/components/admin/data-table/features';
-import { Eye, ExternalLink, MapPin, Shield, UserPlus } from 'lucide-react';
+import { Eye, ExternalLink, MapPin, Shield, UserPlus } from '@/components/icons';
 import { UserStatsCards } from '@/components/admin/users/UserStatsCards';
 import { UserDetailSheet } from '@/components/admin/users/UserDetailSheet';
 import { CreateUserDialog } from '@/components/admin/users/CreateUserDialog';

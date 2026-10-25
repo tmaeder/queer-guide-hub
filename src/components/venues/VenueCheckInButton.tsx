@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { MapPin, Shield } from 'lucide-react';
+import { MapPin, Shield } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

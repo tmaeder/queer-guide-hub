@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { usePrideCalendar } from '@/hooks/usePrideCalendar';
 import { PrideTimeline } from '@/components/pride/PrideTimeline';

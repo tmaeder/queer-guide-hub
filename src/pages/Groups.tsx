@@ -10,7 +10,7 @@ import { useGroups } from '@/hooks/useGroups';
 import { useRecommendedGroups } from '@/hooks/useRecommendedGroups';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { Users, Search, TrendingUp, Sparkles, Star } from 'lucide-react';
+import { Users, Search, TrendingUp, Sparkles, Star } from '@/components/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';

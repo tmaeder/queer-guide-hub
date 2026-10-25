@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Heart, MessageCircle, ShieldCheck, Star } from 'lucide-react';
+import { Heart, MessageCircle, ShieldCheck, Star } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useKinkCompare, useKinkCompareSummary } from '@/hooks/useKinkCompare';

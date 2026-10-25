@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Luggage, ArrowRight } from 'lucide-react';
+import { Luggage, ArrowRight } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import {

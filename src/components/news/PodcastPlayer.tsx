@@ -1,4 +1,4 @@
-import { Play, Pause, Headphones } from 'lucide-react';
+import { Play, Pause, Headphones } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Slider } from '@/components/ui/slider';
 import { useAudioPlayer, formatTime } from '@/hooks/audioPlayerContext';

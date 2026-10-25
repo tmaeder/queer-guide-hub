@@ -94,6 +94,6 @@ describe('TripNudgesBanner', () => {
       isLoading: false,
     });
     const { container } = render(inRouter(<TripNudgesBanner tripId="t1" />));
-    expect(container.querySelector('svg.lucide-alert-triangle, svg.lucide-triangle-alert')).not.toBeNull();
+    expect(container.querySelector('svg[data-icon="alert-triangle"], svg[data-icon="triangle-alert"]')).not.toBeNull();
   });
 });

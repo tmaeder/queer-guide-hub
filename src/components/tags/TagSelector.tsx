@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs } from '@/components/ui/tabs';
-import { X, Plus, Search, Tag as TagIcon } from 'lucide-react';
+import { X, Plus, Search, Tag as TagIcon } from '@/components/icons';
 import { useCentralizedTags, CentralizedTag } from '@/hooks/useCentralizedTags';
 
 interface TagSelectorProps {

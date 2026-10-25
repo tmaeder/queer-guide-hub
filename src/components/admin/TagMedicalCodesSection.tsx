@@ -25,7 +25,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink } from '@/components/icons';
 import {
   useTagMedicalCodes,
   MEDICAL_CODE_GROUPS,

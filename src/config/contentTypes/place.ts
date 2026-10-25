@@ -1,4 +1,4 @@
-import { MapPin } from 'lucide-react';
+import { MapPin } from '@/components/icons';
 import type { ContentTypeConfig } from '@/types/cms';
 
 /**

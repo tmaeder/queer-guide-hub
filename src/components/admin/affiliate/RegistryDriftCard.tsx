@@ -5,7 +5,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2 } from '@/components/icons';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { Badge } from '@/components/ui/badge';
 import { PARTNERS as FRONTEND_PARTNERS } from '@/lib/affiliate/config';

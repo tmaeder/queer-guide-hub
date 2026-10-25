@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink } from '@/components/icons';
 
 const ILGA_URL = 'https://database.ilga.org/';
 

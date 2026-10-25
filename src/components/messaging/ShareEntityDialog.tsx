@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Search, Send, Check } from 'lucide-react';
+import { Search, Send, Check } from '@/components/icons';
 import {
   fetchSendEventMembers,
   fetchSendEventGroups,

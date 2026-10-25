@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';

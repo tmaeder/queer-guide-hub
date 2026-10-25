@@ -27,7 +27,7 @@ import {
   Languages,
   Headphones,
   SmilePlus,
-} from 'lucide-react';
+} from '@/components/icons';
 import type { Tables } from '@/integrations/supabase/types';
 import type { DateRange } from 'react-day-picker';
 import { useToast } from '@/hooks/use-toast';

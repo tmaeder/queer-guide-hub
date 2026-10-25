@@ -4,7 +4,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { Home } from 'lucide-react';
+import { Home } from '@/components/icons';
 import { NavTab } from '../NavTab';
 
 function renderTab(props: Partial<React.ComponentProps<typeof NavTab>> = {}) {

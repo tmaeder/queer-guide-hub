@@ -31,7 +31,7 @@ import { createHotel, deleteHotel, regenerateSafetyNote, updateHotel } from '@/h
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import { useQueryClient } from '@tanstack/react-query';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw } from '@/components/icons';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router';
 import { usePromoteToOrg } from '@/hooks/useBusinessSpine';

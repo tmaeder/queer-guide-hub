@@ -1,5 +1,5 @@
 import { createElement } from 'react';
-import { Tag } from 'lucide-react';
+import { Tag } from '@/components/icons';
 import { TagAliasesSection } from '@/components/admin/TagAliasesSection';
 import { TagLegalSourcesSection } from '@/components/admin/TagLegalSourcesSection';
 import { TagMedicalCodesSection } from '@/components/admin/TagMedicalCodesSection';

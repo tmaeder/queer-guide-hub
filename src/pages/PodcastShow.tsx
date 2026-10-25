@@ -1,6 +1,6 @@
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Rss, ExternalLink } from 'lucide-react';
+import { Rss, ExternalLink } from '@/components/icons';
 import { useMeta } from '@/hooks/useMeta';
 import { usePodcastShow, usePodcastEpisodes } from '@/hooks/usePodcasts';
 import { PageContainer } from '@/components/layout/PageContainer';

@@ -4,7 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Wind, Hand, FileText, ExternalLink, Phone } from 'lucide-react';
+import { Wind, Hand, FileText, ExternalLink, Phone } from '@/components/icons';
 import {
   Sheet,
   SheetContent,

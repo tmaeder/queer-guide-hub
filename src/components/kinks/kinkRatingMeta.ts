@@ -1,4 +1,4 @@
-import { Star, ThumbsUp, Sparkles, CircleDashed, X, Ban } from 'lucide-react';
+import { Star, ThumbsUp, Sparkles, CircleDashed, X, Ban } from '@/components/icons';
 import type { KinkRatingValue, KinkSide } from '@/lib/kinks/types';
 
 export const RATING_META: {

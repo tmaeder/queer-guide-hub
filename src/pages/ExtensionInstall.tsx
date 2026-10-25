@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Download, Puzzle, Wand2, ShieldCheck, Bug, Link2 } from 'lucide-react';
+import { CheckCircle2, Download, Puzzle, Wand2, ShieldCheck, Bug, Link2 } from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { supabase } from '@/integrations/supabase/client';

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Heart, ShieldCheck, Globe, Users } from 'lucide-react';
+import { Heart, ShieldCheck, Globe, Users } from '@/components/icons';
 import { DonationForm } from '@/components/donate/DonationForm';
 import { DonorWall } from '@/components/donate/DonorWall';
 import { DonationSuccess } from '@/components/donate/DonationSuccess';

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from '@/components/icons';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { Trans, useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';

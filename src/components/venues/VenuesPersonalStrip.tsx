@@ -1,4 +1,4 @@
-import { Flame, MapPin, Trophy, Sparkles } from 'lucide-react';
+import { Flame, MapPin, Trophy, Sparkles } from '@/components/icons';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {

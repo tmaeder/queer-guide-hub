@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ArrowRight, Scale } from 'lucide-react';
+import { ArrowRight, Scale } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { listFromWhere } from '@/hooks/usePageFetchers';

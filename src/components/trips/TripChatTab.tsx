@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { format } from 'date-fns';
-import { Send, MessageCircle } from 'lucide-react';
+import { Send, MessageCircle } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useTripChat, useSendTripMessage } from '@/hooks/useTripChat';

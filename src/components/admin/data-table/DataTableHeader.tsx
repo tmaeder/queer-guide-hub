@@ -1,5 +1,5 @@
 import { flexRender, type Header, type RowData } from '@tanstack/react-table';
-import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowUpDown } from '@/components/icons';
 import { TableHead } from '@/components/ui/table';
 import type { AdminColumnMeta } from './types';
 import type { AdminTableFeatures } from './features';

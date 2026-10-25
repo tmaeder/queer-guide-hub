@@ -34,8 +34,8 @@ import {
   ScanSearch,
   Sparkles,
   UserCheck,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+} from '@/components/icons';
+import type { LucideIcon } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { TrackLoader } from '@/components/transit/TrackLoader';

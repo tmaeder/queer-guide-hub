@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { MapPin, Check } from 'lucide-react';
+import { MapPin, Check } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useDebounce } from '@/hooks/useDebounce';

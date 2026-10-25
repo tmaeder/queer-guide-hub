@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowUp, ArrowDown, Star } from 'lucide-react';
+import { ArrowUp, ArrowDown, Star } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { continentOf } from '@/components/pride/PrideFilterRail';
 import { ProgrammeSummary } from '@/components/pride/ProgrammeSummary';

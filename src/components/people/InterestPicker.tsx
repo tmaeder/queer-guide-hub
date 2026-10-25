@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Check } from 'lucide-react';
+import { Check } from '@/components/icons';
 import { useFollowedTags } from '@/hooks/useFollowedTags';
 import { useInterestVocabularyTags, type InterestTag } from '@/hooks/useInterestVocabularyTags';
 import { INTEREST_GROUPS } from '@/config/interestVocabulary';

@@ -15,7 +15,7 @@ import {
   Moon,
   Sparkles,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGamification } from '@/hooks/useGamification';
 import { SectionHeader } from '@/components/ui/SectionHeader';

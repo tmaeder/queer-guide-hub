@@ -16,7 +16,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Columns2 } from 'lucide-react';
+import { ArrowRight, Columns2 } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';

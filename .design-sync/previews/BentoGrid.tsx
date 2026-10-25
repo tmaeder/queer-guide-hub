@@ -1,5 +1,5 @@
 import { BentoGrid, BentoCell, Badge, Button } from 'queer-guide';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@/components/icons';
 
 export const CityStatsBento = () => (
   <div className="w-[720px]">

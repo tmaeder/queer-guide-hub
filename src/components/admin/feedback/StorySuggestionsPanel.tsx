@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Check, X } from 'lucide-react';
+import { Sparkles, Check, X } from '@/components/icons';
 import type { StorySuggestion } from './types';
 
 interface Props {

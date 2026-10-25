@@ -28,7 +28,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@/components/icons';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import {

@@ -12,7 +12,7 @@ import {
   Sparkles,
   Sticker as StickerIcon,
   X,
-} from 'lucide-react';
+} from '@/components/icons';
 import { EmojiPicker } from '@/components/messaging/EmojiPicker';
 import { StickerPicker } from '@/components/messaging/StickerPicker';
 import { pickIcebreaker } from '@/lib/icebreakers';

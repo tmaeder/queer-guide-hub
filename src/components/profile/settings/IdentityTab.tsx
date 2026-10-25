@@ -5,7 +5,7 @@ import { useClassificationOptions } from '@/hooks/useManagedOptions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SelectField } from './fields';
-import { Heart } from 'lucide-react';
+import { Heart } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { PRIDE_FLAGS } from '@/lib/flags';

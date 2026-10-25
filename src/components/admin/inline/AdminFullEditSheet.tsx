@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Pencil } from 'lucide-react';
+import { Pencil } from '@/components/icons';
 import {
   Sheet,
   SheetContent,

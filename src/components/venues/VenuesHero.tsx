@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin } from 'lucide-react';
+import { MapPin } from '@/components/icons';
 import { useFeaturedVenue } from '@/hooks/useVenuesV2Data';
 import { getVenueVisual } from '@/lib/venueVisual';
 

@@ -1,4 +1,4 @@
-import { Plus, Sparkles, Compass, ArrowRight } from 'lucide-react';
+import { Plus, Sparkles, Compass, ArrowRight } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useDiscoverableTrips } from '@/hooks/useDiscoverableTrips';

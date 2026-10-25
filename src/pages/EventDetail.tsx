@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';

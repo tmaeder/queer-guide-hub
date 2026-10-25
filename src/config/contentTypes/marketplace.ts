@@ -1,4 +1,4 @@
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 
 export const marketplaceFields: FieldConfig[] = [

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, MapPin, CalendarDays, Shield, Accessibility } from 'lucide-react';
+import { Plus, MapPin, CalendarDays, Shield, Accessibility } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

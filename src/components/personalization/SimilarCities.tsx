@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Sparkles, Shield } from 'lucide-react';
+import { Sparkles, Shield } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
 import { fetchSimilarCitiesPool, fetchSameCountryCities } from '@/hooks/useSimilarCities';

@@ -1,4 +1,4 @@
-import { Award } from 'lucide-react';
+import { Award } from '@/components/icons';
 import type { ContentTypeConfig } from '@/types/cms';
 export const competitionContentType: ContentTypeConfig = {
   id: 'competitions',

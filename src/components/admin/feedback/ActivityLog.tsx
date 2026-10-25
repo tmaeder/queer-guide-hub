@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronRight, History } from 'lucide-react';
+import { ChevronDown, ChevronRight, History } from '@/components/icons';
 import { timeAgo } from '@/utils/timezone';
 import { kanbanColumns, priorityFor } from './constants';
 import type { AdminProfile, FeedbackAuditEntry } from './types';

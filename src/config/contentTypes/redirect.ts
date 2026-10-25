@@ -4,7 +4,7 @@ import {
   manualRedirectValues,
 } from '@/lib/redirects/manualRecords';
 import { createElement } from 'react';
-import { Copy, ExternalLink, Link2 } from 'lucide-react';
+import { Copy, ExternalLink, Link2 } from '@/components/icons';
 import { toast } from 'sonner';
 import { validateSlug, detectLoop } from '@/lib/redirects/validation';
 import { RedirectEventsPanel } from '@/components/admin/redirects/RedirectEventsPanel';

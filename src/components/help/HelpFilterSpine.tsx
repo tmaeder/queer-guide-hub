@@ -15,7 +15,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react';
+import { Search } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 
 /** Below this the reader can just read the list. */

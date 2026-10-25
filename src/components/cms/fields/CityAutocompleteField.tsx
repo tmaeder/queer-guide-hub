@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown } from '@/components/icons';
 import { FieldWrapper } from './FieldWrapper';
 import type { FieldProps } from './FieldRenderer';
 import { Button } from '@/components/ui/button';

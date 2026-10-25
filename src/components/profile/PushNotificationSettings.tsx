@@ -1,4 +1,4 @@
-import { Bell, BellOff } from 'lucide-react';
+import { Bell, BellOff } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

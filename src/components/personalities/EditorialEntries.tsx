@@ -1,7 +1,7 @@
 import { useProfessionFacets } from '@/hooks/usePersonalities';
 import { useBornThisWeek } from '@/hooks/useBornThisWeek';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Cake, Flower2 } from 'lucide-react';
+import { Cake, Flower2 } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 

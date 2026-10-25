@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { ArrowRight, ArrowUpRight, ExternalLink, Search, Waypoints } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, ExternalLink, Search, Waypoints } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useContentGraphRecordSearch } from '@/hooks/useContentGraph';

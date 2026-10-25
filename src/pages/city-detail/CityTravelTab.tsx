@@ -1,4 +1,4 @@
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { FactGrid, type Fact } from '@/components/transit/FactGrid';

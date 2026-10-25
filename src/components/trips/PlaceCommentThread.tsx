@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MessageCircle, Send, Trash2 } from 'lucide-react';
+import { MessageCircle, Send, Trash2 } from '@/components/icons';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';

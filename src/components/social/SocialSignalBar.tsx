@@ -1,4 +1,4 @@
-import { type LucideIcon } from 'lucide-react';
+import { type LucideIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 export interface SocialSignal {

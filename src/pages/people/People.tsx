@@ -1,7 +1,7 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { useMeta } from '@/hooks/useMeta';

@@ -9,7 +9,7 @@ import {
   Package,
   ExternalLink,
   CalendarClock,
-} from 'lucide-react';
+} from '@/components/icons';
 import { format, isAfter, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';

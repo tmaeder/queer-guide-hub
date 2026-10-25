@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Save, Check} from 'lucide-react';
+import { Save, Check} from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 

@@ -4,7 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Waypoints } from 'lucide-react';
+import { Waypoints } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { detailHref } from '@/lib/searchRoutes';
 import { useTrackClick, type Entity } from '@/hooks/useSearchActions';

@@ -6,7 +6,7 @@
 
 import { useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { AdminInlineSpinner } from '@/components/admin/primitives/AdminLoading';
 

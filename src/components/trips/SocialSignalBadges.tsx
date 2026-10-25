@@ -1,4 +1,4 @@
-import { Heart, Users } from 'lucide-react';
+import { Heart, Users } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { VenueSocialSignal } from '@/hooks/useVenueSocialSignals';

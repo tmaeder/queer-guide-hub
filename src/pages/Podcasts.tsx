@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Headphones } from 'lucide-react';
+import { Headphones } from '@/components/icons';
 import { useMeta } from '@/hooks/useMeta';
 import { usePodcastShows, useLatestEpisodes } from '@/hooks/usePodcasts';
 import { PageContainer } from '@/components/layout/PageContainer';

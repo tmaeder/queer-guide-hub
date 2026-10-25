@@ -4,13 +4,13 @@ import { fetchStoryBySlug, type StoryDetail } from '@/hooks/useNewsStories';
 import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Badge } from '@/components/ui/badge';
-import { Layers, Clock, ArrowLeft } from 'lucide-react';
+import { Layers, Clock, ArrowLeft } from '@/components/icons';
 import { formatDistanceToNow, format } from 'date-fns';
 import { safeText } from '@/utils/safeDisplay';
 import { decodeHtmlEntities } from '@/utils/htmlDecode';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Newspaper } from 'lucide-react';
+import { Newspaper } from '@/components/icons';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function NewsStoryDetail() {

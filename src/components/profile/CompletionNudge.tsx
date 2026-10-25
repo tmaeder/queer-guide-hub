@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { CompletionRing } from '@/components/profile/CompletionRing';
 import { cn } from '@/lib/utils';

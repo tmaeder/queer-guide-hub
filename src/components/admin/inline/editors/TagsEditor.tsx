@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { EditorActions } from './EditorActions';

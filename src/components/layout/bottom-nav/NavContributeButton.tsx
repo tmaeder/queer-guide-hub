@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { Plus } from '@/components/icons';
 
 interface NavContributeButtonProps {
   /** Localized aria-label (context-aware submit CTA, or sign-in prompt). */

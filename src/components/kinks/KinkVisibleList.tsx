@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MessageCircle, Star } from 'lucide-react';
+import { MessageCircle, Star } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useKinkVisibleList } from '@/hooks/useKinkVisibleList';

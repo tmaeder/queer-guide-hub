@@ -3,7 +3,7 @@ import seeds from '@/config/classificationSeeds.json';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { useMeta } from '@/hooks/useMeta';

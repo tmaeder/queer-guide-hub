@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Calendar, CalendarX, ArrowRight } from 'lucide-react';
+import { Calendar, CalendarX, ArrowRight } from '@/components/icons';
 import { format } from 'date-fns';
 import { dateFnsLocaleFor } from '@/i18n/dateFnsLocale';
 import { Button } from '@/components/ui/button';

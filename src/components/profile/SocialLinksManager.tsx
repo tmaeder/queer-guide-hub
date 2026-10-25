@@ -23,7 +23,7 @@ import {
   Copy,
   EyeOff,
   X,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { updateRowsBy } from '@/hooks/usePageFetchers';

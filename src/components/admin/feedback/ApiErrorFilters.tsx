@@ -1,5 +1,5 @@
 import { Input } from '@/components/ui/input';
-import { Search, X } from 'lucide-react';
+import { Search, X } from '@/components/icons';
 
 export type ErrorSource = 'runtime' | 'advisor' | 'github-actions';
 export type ErrorSeverity = 'ERROR' | 'WARN' | 'INFO';

@@ -16,7 +16,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from '@/components/icons';
 import { emergencyContactsForCountry } from './helpData';
 
 export function CrisisBar({ country }: { country: string }) {

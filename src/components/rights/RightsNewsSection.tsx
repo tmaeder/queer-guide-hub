@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
-import { Layers } from 'lucide-react';
+import { Layers } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useRightsNews } from '@/hooks/useRightsNews';

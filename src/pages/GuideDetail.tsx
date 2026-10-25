@@ -1,6 +1,6 @@
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Clock, BookOpen } from 'lucide-react';
+import { ArrowLeft, Clock, BookOpen } from '@/components/icons';
 import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { useGuide, questPhase, type GuideSection } from '@/hooks/useGuides';
 import { useGuideReadTracker } from '@/hooks/useGuideReadTracker';

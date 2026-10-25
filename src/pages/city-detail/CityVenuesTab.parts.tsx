@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowUpRight, Landmark, Search, Store } from 'lucide-react';
+import { ArrowUpRight, Landmark, Search, Store } from '@/components/icons';
 import { OccurrenceList, type Occurrence } from '@/components/transit/OccurrenceList';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';

@@ -12,7 +12,7 @@ import {
   CalendarDays,
   Map,
   Clock,
-} from 'lucide-react';
+} from '@/components/icons';
 import { fileError } from '@/utils/autoFileError';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
 import { healFailedAssets } from '@/utils/assetHeal';

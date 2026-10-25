@@ -12,7 +12,7 @@ import {
   CalendarClock,
   Bookmark,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/components/icons';
 
 /**
  * Registry for the unified /hub community, connection, and personal modules.

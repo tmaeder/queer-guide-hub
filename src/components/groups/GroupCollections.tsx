@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FolderPlus, Plus, Trash2 } from 'lucide-react';
+import { FolderPlus, Plus, Trash2 } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

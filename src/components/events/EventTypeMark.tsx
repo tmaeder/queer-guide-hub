@@ -22,7 +22,7 @@ import {
   Store,
   LockKeyhole,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useEventTypeOptions, useEventTypeLabel, type EventType } from '@/lib/eventTypes';
 
 const ICONS: Record<EventType, LucideIcon> = {

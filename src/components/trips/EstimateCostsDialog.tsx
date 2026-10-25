@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Sparkles, RefreshCw } from 'lucide-react';
+import { Sparkles, RefreshCw } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,

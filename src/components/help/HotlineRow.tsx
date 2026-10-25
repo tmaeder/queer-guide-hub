@@ -32,7 +32,7 @@ import {
   Clock,
   BadgeCheck,
   ChevronDown,
-} from 'lucide-react';
+} from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { Hotline, HotlineChannel } from '@/types/cms';
 import {

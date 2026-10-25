@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { CalendarDays, TrendingUp, Sun } from 'lucide-react';
+import { CalendarDays, TrendingUp, Sun } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';

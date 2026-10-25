@@ -7,7 +7,7 @@ import {
   MessagesSquare,
   PencilLine,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PageContainer } from '@/components/layout/PageContainer';

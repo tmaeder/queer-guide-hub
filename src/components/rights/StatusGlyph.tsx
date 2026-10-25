@@ -1,4 +1,4 @@
-import { Check, Minus, X } from 'lucide-react';
+import { Check, Minus, X } from '@/components/icons';
 import type { StatusKind } from '@/lib/rights/rightsValue';
 
 /**

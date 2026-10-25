@@ -19,7 +19,7 @@ import {
   Heart,
   ExternalLink,
   Sparkles,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useVenueOrganisation } from '@/hooks/useVenueOrganisation';
 import { useCMSEditor } from '@/hooks/useCMSEditor';
 import { useCMSWorkflow } from '@/hooks/useCMSWorkflow';

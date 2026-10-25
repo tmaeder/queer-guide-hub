@@ -1,4 +1,4 @@
-import { X, CheckCircle2, XCircle, Clock, Zap, User, Hash, GitBranch } from 'lucide-react';
+import { X, CheckCircle2, XCircle, Clock, Zap, User, Hash, GitBranch } from '@/components/icons';
 import { formatDistanceToNow, format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

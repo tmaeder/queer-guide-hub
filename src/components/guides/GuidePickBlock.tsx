@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
-import { Check, X, MapPin } from 'lucide-react';
+import { Check, X, MapPin } from '@/components/icons';
 import type { HydratedPick, PickTier } from '@/hooks/useGuides';
 
 /**

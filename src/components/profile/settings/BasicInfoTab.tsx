@@ -4,7 +4,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon } from '@/components/icons';
 import { SocialLinksManager } from '@/components/profile/SocialLinksManager';
 import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import { PronounCombobox } from '@/components/ui/pronoun-combobox';

@@ -3,7 +3,7 @@ import { CreatePostDialog } from './CreatePostDialog';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PenSquare, Users } from 'lucide-react';
+import { PenSquare, Users } from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { usePostModeration } from '@/hooks/useSocialModeration';
 

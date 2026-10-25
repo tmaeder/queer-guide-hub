@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Hotel, Plane, Train, Bus } from 'lucide-react';
+import { Hotel, Plane, Train, Bus } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { SuggestionCard } from '@/components/trips/shared/SuggestionCard';

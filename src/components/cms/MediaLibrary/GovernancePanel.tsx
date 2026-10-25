@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Lock, Tag as TagIcon, X, LayoutTemplate } from 'lucide-react';
+import { Lock, Tag as TagIcon, X, LayoutTemplate } from '@/components/icons';
 import { useMediaMutations } from '@/hooks/useMediaMutations';
 import { ACCESS_LEVELS, BRAND_CATEGORIES, TEMPLATE_STATUSES } from './types';
 import type { AccessLevel, BrandCategory, TemplateStatus, MediaDetailData } from './types';

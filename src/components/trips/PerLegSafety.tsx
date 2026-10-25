@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ArrowRight, Shield, ShieldAlert, Skull } from 'lucide-react';
+import { ArrowRight, Shield, ShieldAlert, Skull } from '@/components/icons';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';

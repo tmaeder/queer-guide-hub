@@ -20,7 +20,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Plus } from 'lucide-react';
+import { CalendarIcon, Plus } from '@/components/icons';
 import { format } from 'date-fns';
 import { CreateGroupEventData } from '@/hooks/useGroupEvents';
 import { useEventTypeOptions } from '@/lib/eventTypes';

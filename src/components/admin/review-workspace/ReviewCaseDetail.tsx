@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, ExternalLink, RefreshCw, SkipForward } from 'lucide-react';
+import { ArrowLeft, ExternalLink, RefreshCw, SkipForward } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';

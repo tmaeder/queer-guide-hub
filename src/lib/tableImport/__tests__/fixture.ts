@@ -1,4 +1,4 @@
-import { ListTree } from 'lucide-react';
+import { ListTree } from '@/components/icons';
 import type { ContentTypeConfig } from '@/types/cms';
 export const config: ContentTypeConfig = {
   id: 'example',

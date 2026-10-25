@@ -15,7 +15,7 @@ import {
   ExternalLink,
   Lock,
   X,
-} from 'lucide-react';
+} from '@/components/icons';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import { AdminInlineSpinner } from '@/components/admin/primitives/AdminLoading';

@@ -1,6 +1,6 @@
 import { forwardRef, useMemo, useState, type ButtonHTMLAttributes } from 'react';
 import * as SliderPrimitive from '@radix-ui/react-slider';
-import { Check, ChevronDown, Search, X } from 'lucide-react';
+import { Check, ChevronDown, Search, X } from '@/components/icons';
 import { Link } from 'react-router';
 import { AGE_BANDS, BODY_TYPES, ROLES } from '@/assets/intimate/options';
 import { Button } from '@/components/ui/button';

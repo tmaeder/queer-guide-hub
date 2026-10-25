@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { ThumbsUp } from 'lucide-react';
+import { ThumbsUp } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { RoadmapItemDrawer } from '@/components/admin/feedback/RoadmapItemDrawer';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Tag } from 'lucide-react';
+import { Tag } from '@/components/icons';
 import { validateAgainstRegistry, zodFromFields } from '../zodFromFields';
 import type { ContentTypeConfig } from '@/types/cms';
 

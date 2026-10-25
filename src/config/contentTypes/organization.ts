@@ -1,5 +1,5 @@
 import { createElement } from 'react';
-import { Building2 } from 'lucide-react';
+import { Building2 } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { ORG_ROLE_LABELS } from '@/lib/organizationRoles';
 import { OrganizationLocationCell, OrganizationWebsiteCell } from './organizationListCells';

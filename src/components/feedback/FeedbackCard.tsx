@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { ChevronUp, Clock } from 'lucide-react';
+import { ChevronUp, Clock } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/hooks/useAuth';

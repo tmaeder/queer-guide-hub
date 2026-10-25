@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Flag, ArrowRight } from 'lucide-react';
+import { Flag, ArrowRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useActiveQuestGuide } from '@/hooks/useGuides';
 

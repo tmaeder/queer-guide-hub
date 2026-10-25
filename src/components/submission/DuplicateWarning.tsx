@@ -5,7 +5,7 @@
  */
 
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, ExternalLink } from 'lucide-react';
+import { AlertCircle, ExternalLink } from '@/components/icons';
 import { hrefForEntity } from '@/lib/searchRoutes';
 import { duplicateEntityType, type DuplicateMatch } from '@/hooks/submission/useDuplicateCheck';
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Keyboard } from 'lucide-react';
+import { Keyboard } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {

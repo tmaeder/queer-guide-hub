@@ -1,4 +1,4 @@
-import { Briefcase, Handshake } from 'lucide-react';
+import { Briefcase, Handshake } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { hotelContentType } from '@/config/contentTypes/hotel';
 import { marketplaceBrandContentType } from '@/config/contentTypes/brand';

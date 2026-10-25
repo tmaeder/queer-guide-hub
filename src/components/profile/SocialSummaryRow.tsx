@@ -1,4 +1,4 @@
-import { Users, UsersRound, MessageSquare } from 'lucide-react';
+import { Users, UsersRound, MessageSquare } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useSocialSummary } from '@/hooks/useSocialSummary';
 

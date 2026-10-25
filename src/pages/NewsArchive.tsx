@@ -42,7 +42,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
-import { Newspaper, Grid3X3, List, SortAsc, Filter, TrendingUp, Layers } from 'lucide-react';
+import { Newspaper, Grid3X3, List, SortAsc, Filter, TrendingUp, Layers } from '@/components/icons';
 import { useNewsStories } from '@/hooks/useNewsStories';
 import { StoryCard } from '@/components/news/StoryCard';
 import { fetchNamesByIds } from '@/hooks/usePageFetchers';

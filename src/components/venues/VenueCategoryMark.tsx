@@ -17,7 +17,7 @@ import {
   Accessibility,
   Footprints,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useVenueCategoryLabel, type VenueCategory } from '@/lib/venueCategories';
 
 const ICONS: Record<VenueCategory, LucideIcon> = {
