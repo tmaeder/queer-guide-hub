@@ -53,3 +53,12 @@ Deno.test('gay.ch ambiguous Event objects cannot authorize an original', () => {
   assert.deepEqual(extractGaychEventArtwork(html() + script(node), event, page), [original, thumbnail])
   assert.deepEqual(extractGaychEventArtwork(html().replace('</head>', meta(page + '/@@download/image/second.jpg') + '</head>'), event, page), [thumbnail])
 })
+Deno.test('gay.ch DOM parsing ignores inert and quoted markup and handles HTML end tags', () => {
+  const inert = '<head>' + meta(original) + '</head><body><template>' + script(node) + '</template></body>'
+  assert.deepEqual(extractGaychEventArtwork(inert, event, page), [])
+  assert.deepEqual(extractGaychEventArtwork('<!--' + html(), event, page), [])
+  const quoted = '<head><link data-example=\'' + meta(original) + '\'></head><body>' + script(node) + '</body>'
+  assert.deepEqual(extractGaychEventArtwork(quoted, event, page), [thumbnail])
+  const endTag = html().replace('</script>', '</script\t\n ignored>')
+  assert.deepEqual(extractGaychEventArtwork(endTag, event, page), [original, thumbnail])
+})
