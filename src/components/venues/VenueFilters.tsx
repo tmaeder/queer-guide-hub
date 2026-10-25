@@ -111,7 +111,7 @@ export function VenueFilters({
           onTagsOpenChange={f.setTagsOpen}
           selectedTags={f.selectedTags}
           tagsLoading={f.tagsLoading}
-          tagItems={f.unifiedTags.map((t) => ({ key: t.id, label: t.name }))}
+          tagItems={f.unifiedTags.map((t) => ({ key: t.slug, label: t.name }))}
           onToggleTag={f.handleTagToggle}
           selectedAmenities={f.selectedAmenities}
           selectedServices={f.selectedServices}
@@ -128,7 +128,7 @@ export function VenueFilters({
           selectedTargetGroups={f.selectedTargetGroups}
           targetGroupsLoading={f.targetGroupsLoading}
           targetGroupItems={f.targetGroups.map((g) => ({
-            key: g.id,
+            key: g.slug,
             label: g.name,
             color: g.color,
           }))}
