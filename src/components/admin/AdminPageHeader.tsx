@@ -66,7 +66,7 @@ export function AdminPageHeader({
         <h1 className="text-headline font-bold tracking-tight text-foreground">{title}</h1>
         {subtitle && <div className="mt-2 max-w-2xl text-13 text-muted-foreground">{subtitle}</div>}
       </div>
-      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+      {actions && <div className="flex min-w-0 flex-wrap items-center gap-2">{actions}</div>}
       {children && <div className="w-full">{children}</div>}
     </header>
   );
