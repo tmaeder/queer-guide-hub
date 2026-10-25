@@ -226,7 +226,7 @@ export function ChemsexWheel() {
       </div>
 
       {/* ── The same content, readable ──────────────────────────────────── */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
         {CATEGORIES.map((cat) => (
           <div key={cat.key} className="bg-muted rounded-element p-4">
             <h3 className="text-2xs font-bold uppercase tracking-label">{cat.label}</h3>

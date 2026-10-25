@@ -136,7 +136,7 @@ export default function People() {
                 })}
               </CoverageNote>
             ) : null}
-            <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="m-0 grid grid-cols-1 list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
               {spacesResult.spaces.map((s) => (
                 <li key={s.id}>
                   <NestedEntityCard
@@ -184,7 +184,7 @@ export default function People() {
       kicker: t('people.sections.groupsKicker', 'Smaller rooms than a whole city'),
       content:
         groups && groups.length > 0 ? (
-          <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="m-0 grid grid-cols-1 list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
             {groups.map((g) => (
               <li key={g.id}>
                 <NestedEntityCard
@@ -230,7 +230,7 @@ export default function People() {
       // entirely when we could not resolve a city.
       content:
         venues && venues.length > 0 ? (
-          <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="m-0 grid grid-cols-1 list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
             {venues.map((v) => (
               <li key={v.id}>
                 <NestedEntityCard
@@ -309,7 +309,7 @@ export default function People() {
       label: t('people.sections.elsewhere', 'Elsewhere'),
       kicker: t('people.sections.elsewhereKicker', 'Cities with the deepest scenes'),
       content: (
-        <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="m-0 grid grid-cols-1 list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
           {(cities ?? []).map((c) => (
             <li key={c.id}>
               <NestedEntityCard

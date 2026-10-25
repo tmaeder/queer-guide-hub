@@ -79,7 +79,7 @@ export function MissionsRow({ className, hideCompleted = false, limit = 6 }: Mis
           {missions.filter((m) => m.completed).length}/{missions.length} done
         </span>
       </div>
-      <ul className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
         {filtered.map((m) => (
           <li key={m.slug}>
             <MissionCard mission={m} />

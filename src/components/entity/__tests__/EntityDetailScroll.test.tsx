@@ -99,12 +99,16 @@ describe('EntityDetailScroll — descriptor contract', () => {
       loading: false,
       error: null,
     });
-    expect(container.querySelector('.md\\:grid-cols-\\[2fr_1fr\\]')).toBeFalsy();
+    expect(
+      container.querySelector('.md\\:grid-cols-\\[minmax\\(0\\2c 2fr\\)_minmax\\(0\\2c 1fr\\)\\]'),
+    ).toBeFalsy();
   });
 
   it('keeps the two-column grid when a sidebar is present', () => {
     const { container } = draw({ descriptor: descriptor(), loading: false, error: null });
-    expect(container.querySelector('.md\\:grid-cols-\\[2fr_1fr\\]')).toBeTruthy();
+    expect(
+      container.querySelector('.md\\:grid-cols-\\[minmax\\(0\\2c 2fr\\)_minmax\\(0\\2c 1fr\\)\\]'),
+    ).toBeTruthy();
   });
 
   it('surfaces the error message instead of the body', () => {
