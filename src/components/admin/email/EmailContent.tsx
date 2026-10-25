@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Link } from 'react-router';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -153,9 +154,9 @@ export function EmailContent({
           resolved content when saved; operational mail uses the recipient’s confirmed language
           choice when available.
         </p>
-        <a href="/admin/email-templates" className="text-sm underline underline-offset-4">
-          Edit base templates in the shared email editor
-        </a>
+        <Link to="/admin/email?tab=templates" className="text-sm underline underline-offset-4">
+          Edit base templates in Templates
+        </Link>
       </header>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>

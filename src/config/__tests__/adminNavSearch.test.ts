@@ -17,6 +17,8 @@ describe('admin navigation search', () => {
     ['overview', 'places editorial'],
     ['overview', 'editorial drafts'],
     ['cloudflare', 'cloudflare'],
+    ['email', 'templates'],
+    ['email', 'designer'],
   ])('finds %s by its familiar alias %s', (id, query) => {
     const { item, section } = find(id);
     expect(matchesAdminNavSearch(item, section, query)).toBe(true);
