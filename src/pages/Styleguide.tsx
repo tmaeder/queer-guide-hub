@@ -170,7 +170,7 @@ export default function Styleguide() {
                   <Badge variant="outline">{SCENARIO_LABELS[example.scenario]}</Badge>
                   <h3 className="text-title font-bold">{example.title}</h3>
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <Card>
                     <CardContent className="pt-6">
                       <p className="mb-2 text-2xs uppercase tracking-wider text-muted-foreground">
