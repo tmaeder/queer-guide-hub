@@ -30,6 +30,13 @@ export const taxonomyFamilies = getTaxonomyDestinations()
 
 export type TaxonomyFamily = (typeof taxonomyFamilies)[number];
 
+export function stableValue(taxonomy: string, key: string): string {
+  const words = key.replaceAll('-', '_');
+  if (taxonomy === 'competition_category') return words;
+  if (taxonomy === 'marketplace_browse') return `department:${words}`;
+  return key;
+}
+
 export function referenceMetadata(taxonomy: string | null): Record<string, unknown> | undefined {
   if (taxonomy === 'pride_flag') return { stripes: [{ hex: '#111111' }] };
   if (taxonomy === 'hanky_code')

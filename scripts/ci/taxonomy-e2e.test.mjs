@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { taxonomyFamilies } from '../../e2e/support/taxonomyCases.ts';
+import { stableValue, taxonomyFamilies } from '../../e2e/support/taxonomyCases.ts';
 import {
   assertLocalTaxonomyEnvironment,
   TaxonomyDatabase,
@@ -23,6 +23,15 @@ test('53 families have separate mutation cases, including all 38 classifications
   assert.equal(new Set(taxonomyFamilies.map((family) => family.route)).size, 53);
   assert.ok(taxonomyFamilies.some((family) => family.id === 'event_categories'));
   assert.ok(taxonomyFamilies.some((family) => family.id === 'unified_tags'));
+});
+
+test('reference fixtures meet the competition and marketplace database key constraints', () => {
+  const key = 'taxonomy-regression-79c7cfb7-cafb-41f1-9644-cb0fec36615b';
+  assert.match(stableValue('competition_category', key), /^[a-z][a-z0-9]*(_[a-z0-9]+)*$/);
+  assert.match(
+    stableValue('marketplace_browse', key),
+    /^(department|group|fine|source):[a-z][a-z0-9_]*$/,
+  );
 });
 
 test('refuses every remote endpoint independently, even with a local frontend', () => {

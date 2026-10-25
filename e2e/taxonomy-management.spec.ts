@@ -1,6 +1,11 @@
 import type { Locator, Page } from '@playwright/test';
 import { test, expect } from './support/taxonomyFixtures';
-import { referenceMetadata, taxonomyFamilies, type TaxonomyFamily } from './support/taxonomyCases';
+import {
+  referenceMetadata,
+  stableValue,
+  taxonomyFamilies,
+  type TaxonomyFamily,
+} from './support/taxonomyCases';
 
 // Deliberately excluded from playwright.config.ts (the production nightly).
 // Run only with playwright.taxonomy.config.ts, which validates all endpoints.
@@ -148,8 +153,7 @@ for (const family of taxonomyFamilies) {
         await page
           .getByRole('combobox', { name: 'Taxonomy*', exact: true })
           .selectOption(target.taxonomy);
-        const key =
-          target.taxonomy === 'marketplace_browse' ? `department:${taxonomy.key}` : taxonomy.key;
+        const key = stableValue(target.taxonomy, taxonomy.key);
         await page.getByRole('textbox', { name: 'Stable value*', exact: true }).fill(key);
       }
       if (target.id === 'kink_categories')
@@ -184,6 +188,10 @@ for (const family of taxonomyFamilies) {
     }
     const created = await test.step('create through the editor', () => create(family, createdName));
     expect(String(created[family.titleColumn]).toLowerCase()).toBe(createdName.toLowerCase());
+    if (family.id === 'unified_tags') {
+      expect(created.publication_role).toBe('utility');
+      expect(created.seo_indexable).toBe(false);
+    }
     await test.step('reload and reopen the created record', async () => {
       await reopenAfterReload(
         page,
