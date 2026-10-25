@@ -151,7 +151,7 @@ export function EventMoreEvents({ eventId, city, limit = 8, className, compact =
         <h2 className="mb-2 text-body-lg font-bold">
           {t('events.detail.moreStops', 'Where to next?')}
         </h2>
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {data.map((event) => (
             <LocalizedLink
               key={event.id}
