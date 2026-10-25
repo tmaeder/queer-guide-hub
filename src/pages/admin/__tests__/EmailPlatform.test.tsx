@@ -101,6 +101,48 @@ describe('integrated admin email workspace', () => {
     );
     expect(screen.getByLabelText('Designer draft')).toHaveValue('Unfinished email');
   });
+  it('keeps tab controls linked to live panels while the overview loads or fails', async () => {
+    let resolveOverview!: (result: { error: Error }) => void;
+    api.invoke.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveOverview = resolve;
+        }),
+    );
+    render(
+      <MemoryRouter initialEntries={['/admin/email']}>
+        <EmailPlatform />
+      </MemoryRouter>,
+    );
+    const user = userEvent.setup();
+    const checkPanel = (name: string, busy: boolean) => {
+      const trigger = screen.getByRole('tab', { name });
+      expect(trigger).toHaveAttribute('aria-selected', 'true');
+      const panel = document.getElementById(trigger.getAttribute('aria-controls')!);
+      expect(panel).toHaveAttribute('role', 'tabpanel');
+      expect(panel).toHaveAttribute('aria-labelledby', trigger.id);
+      expect(panel).toHaveAttribute('aria-busy', String(busy));
+    };
+    checkPanel('Campaigns', true);
+    for (const name of [
+      'Audiences',
+      'Journeys',
+      'Content',
+      'Delivery',
+      'Operations',
+      'Measurement',
+      'Subscribers',
+      'Campaigns',
+    ]) {
+      await user.click(screen.getByRole('tab', { name }));
+      checkPanel(name, true);
+    }
+    resolveOverview({ error: new Error('unavailable') });
+    expect(await screen.findByRole('alert')).toHaveTextContent('could not load');
+    checkPanel('Campaigns', false);
+    await user.click(screen.getByRole('tab', { name: 'Delivery' }));
+    checkPanel('Delivery', false);
+  });
   it('keeps templates usable when the delivery overview fails', async () => {
     api.invoke.mockResolvedValue({ error: new Error('unavailable') });
     render(

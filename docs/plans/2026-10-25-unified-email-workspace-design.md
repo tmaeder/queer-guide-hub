@@ -9,3 +9,5 @@ Tabs use the `tab` search parameter, preserving other parameters and browser his
 The designer loads on its first visit and stays mounted across tab switches, preserving edits and recovery guards. It uses the Email page heading rather than duplicating a page title. Templates remain accessible if the separate email overview request fails. Saving a template refreshes overview template choices. Content and branding links point to the integrated tab.
 
 Validation covers URL restoration, browser back, retained drafts, overview failure isolation, navigation access, existing save/send safeguards, and production desktop/mobile flows. No backend or database changes are required.
+
+Keep a stable tab-panel shell for each workspace section while the overview loads or fails, gating expensive child tools inside that shell. This preserves valid `aria-controls` relationships and exposes the pending state with `aria-busy`; regression tests cover every active section before load and after failure.
