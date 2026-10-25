@@ -29,6 +29,18 @@ interface CityOption {
   region_code: string | null;
 }
 
+const CITY_COLUMNS = 'id, name, country_id, region_code, countries!inner(name, code)';
+function cityOption(c: Record<string, unknown>): CityOption {
+  return {
+    id: c.id as string,
+    name: c.name as string,
+    country_id: c.country_id as string,
+    country_name: (c.countries as { name: string })?.name ?? '',
+    country_code: cityCodesFromRow(c).countryCode ?? null,
+    region_code: cityCodesFromRow(c).regionCode ?? null,
+  };
+}
+
 /**
  * City autocomplete field for the CMS.
  * Queries cities table filtered by current country_id (read from allValues).
@@ -46,6 +58,7 @@ export function CityAutocompleteField({
   allValues,
 }: FieldProps) {
   const [cities, setCities] = useState<CityOption[]>([]);
+  const [linkedCity, setLinkedCity] = useState<CityOption | null>(null);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [open, setOpen] = useState(false);
@@ -55,6 +68,36 @@ export function CityAutocompleteField({
   const countryIdField = field.relatedFields?.country_id;
   const currentCountryId =
     countryIdField && allValues ? String(allValues[countryIdField] ?? '') : '';
+  const cityIdField = field.relatedFields?.city_id;
+  const currentCityId = cityIdField && allValues ? String(allValues[cityIdField] ?? '') : '';
+
+  // The country list is capped by PostgREST. Resolve the saved FK separately:
+  // e.g. Springfield follows over 2,000 US cities in the alphabetical list.
+  // Keep merged-away cities excluded and never let a late response label a
+  // different record after the editor switches records.
+  useEffect(() => {
+    let active = true;
+    setLinkedCity(null);
+    if (!currentCityId) return;
+    listFromWhere<Record<string, unknown>>(
+      'cities',
+      CITY_COLUMNS,
+      [
+        { col: 'id', val: currentCityId },
+        { col: 'duplicate_of_id', val: null, op: 'is' },
+      ],
+      { limit: 1 },
+    )
+      .then(([row]) => {
+        if (active) setLinkedCity(row ? cityOption(row) : null);
+      })
+      .catch((err) => {
+        if (active) console.error('Error resolving linked city:', err);
+      });
+    return () => {
+      active = false;
+    };
+  }, [currentCityId]);
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -66,23 +109,11 @@ export function CityAutocompleteField({
           { col: 'duplicate_of_id', val: null, op: 'is' },
         ];
         if (currentCountryId) filters.push({ col: 'country_id', val: currentCountryId });
-        const data = await listFromWhere<Record<string, unknown>>(
-          'cities',
-          'id, name, country_id, region_code, countries!inner(name, code)',
-          filters,
-          { order: { col: 'name', ascending: true } },
-        );
+        const data = await listFromWhere<Record<string, unknown>>('cities', CITY_COLUMNS, filters, {
+          order: { col: 'name', ascending: true },
+        });
 
-        setCities(
-          data.map((c) => ({
-            id: c.id as string,
-            name: c.name as string,
-            country_id: c.country_id as string,
-            country_name: (c.countries as { name: string })?.name ?? '',
-            country_code: cityCodesFromRow(c).countryCode ?? null,
-            region_code: cityCodesFromRow(c).regionCode ?? null,
-          })),
-        );
+        setCities(data.map(cityOption));
       } catch (err) {
         console.error('Error fetching cities:', err);
       } finally {
@@ -96,15 +127,15 @@ export function CityAutocompleteField({
   // Display label. `relatedFields` is a write-only name→FK map, so on tables
   // that store only `city_id` (queer_villages) `value` is always undefined and
   // the trigger would show its placeholder over a perfectly good link. Fall
-  // back to resolving the FK against the list we already fetched — the list is
-  // country-scoped, so the linked city is in it and this costs no extra query.
-  const cityIdField = field.relatedFields?.city_id;
-  const currentCityId = cityIdField && allValues ? String(allValues[cityIdField] ?? '') : '';
+  // back to the resolved FK even when it falls outside the country list page.
   // The linked id wins over the name: since 99991791233840 two cities in one
   // country can share a name (Portland US-ME / US-OR), so a name match may be
   // the twin. The id is trusted only while it still agrees with the name —
   // a failed create leaves the typed name with the old id.
-  const cityById = currentCityId ? cities.find((c) => c.id === currentCityId) : undefined;
+  const cityById = currentCityId
+    ? cities.find((c) => c.id === currentCityId) ||
+      (linkedCity?.id === currentCityId ? linkedCity : undefined)
+    : undefined;
   const selectedCity =
     (cityById && (!value || cityById.name === value) ? cityById : null) ||
     cities.find((c) => c.name === value) ||

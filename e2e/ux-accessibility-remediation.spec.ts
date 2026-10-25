@@ -46,6 +46,13 @@ test.describe('UX accessibility remediation — production contract', () => {
       const footer = page.locator('footer');
       await footer.scrollIntoViewIfNeeded();
       await expect(footer).toBeVisible();
+      // The station-sign footer keeps Privacy directly accessible and places
+      // secondary links, including Terms, in a native keyboard disclosure.
+      const information = footer.locator('details');
+      await expect(information.locator('summary')).toBeVisible();
+      await information.locator('summary').focus();
+      await page.keyboard.press('Enter');
+      await expect(information).toHaveAttribute('open', '');
       for (const name of [/privacy/i, /terms/i]) {
         const link = footer.getByRole('link', { name }).first();
         await expect(link).toBeVisible();
