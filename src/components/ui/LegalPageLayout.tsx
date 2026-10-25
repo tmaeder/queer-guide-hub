@@ -35,10 +35,11 @@ interface LegalPageLayoutProps {
  * - **The contact block lives here only.** It used to be hardcoded in this
  *   component *and* again in the legal hub, so the two could drift.
  *
- * The 1100px cap is the one sanctioned bespoke width in the layout tier: this
- * is prose with a 224px rail beside it, so the page cap (1600) would stretch
- * legal text past a readable measure and `reading` (768) would leave the prose
- * about 430px once the rail takes its share.
+ * The FRAME is the ordinary page frame, so these pages share the header's
+ * edges like every other page; the readable measure is a cap on the prose
+ * column itself (`max-w-reading`), not on the frame. Until 2026-10-25 the frame
+ * was a bespoke centred 1100px, which made Privacy / Terms / Legal /
+ * Accessibility visibly narrower than the rest of the footer's pages.
  */
 export const LegalPageLayout = ({
   title,
@@ -61,7 +62,7 @@ export const LegalPageLayout = ({
   const siblings = LEGAL_LINE_ORDER.filter((s) => s !== slug);
 
   return (
-    <PageContainer className="max-w-[1100px]">
+    <PageContainer>
       <header className="border-b border-border-hairline pb-6">
         <div className="flex items-center gap-4">
           {line && (
@@ -131,7 +132,7 @@ export const LegalPageLayout = ({
           </div>
         )}
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 max-w-reading flex-1">
           {children}
 
           {footer}

@@ -333,7 +333,7 @@ function Captures() {
 function Highlights() {
   const { t } = useTranslation();
   return (
-    <div className="grid sm:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <Highlight
         icon={<Wand2 className="h-5 w-5" />}
         title={t('extension.highlights.smart.title', 'Smart capture')}
