@@ -20,6 +20,19 @@ export const test = base.extend<{ taxonomy: TaxonomyFixture }>({
     const blocked: string[] = [];
     let restoreIntimate: ReturnType<TaxonomyDatabase['enableIntimateAdmin']> | undefined;
     const errors: unknown[] = [];
+    // Consent is a fixture prerequisite, as in tag-discovery.spec.ts. Seed a
+    // real necessary-only preference before the lazy banner can cover links
+    // near the bottom of the 53-family directory, including after reloads.
+    await context.addInitScript(() => {
+      localStorage.setItem(
+        'queer-guide-cookie-consent',
+        JSON.stringify({
+          preferences: { necessary: true, functional: false, analytics: false, marketing: false },
+          version: '1.0',
+          timestamp: new Date().toISOString(),
+        }),
+      );
+    });
     await context.route(/\/(?:rest|auth|functions|storage)\/v1\//, async (route) => {
       if (new URL(route.request().url()).origin !== api.origin) {
         blocked.push(new URL(route.request().url()).origin);
