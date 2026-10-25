@@ -69,10 +69,36 @@ begin
  raise notice 'PASS: % malformed captures, source hashes, composition, original source scope, permissions and no finding writes',cases;
 end $test$;
 '''
+bound_checks='''
+-- Instrument only the expensive validator; all semantic cases above used its real body.
+create sequence supplement_validation_calls;
+create or replace function api_private.overture_phone_source_is_contact_only(s public.venue_sources)
+returns boolean language plpgsql stable set search_path=public,pg_temp as $$begin
+ if s.venue_id<>'90000000-0000-4000-8000-000000000002'::uuid then raise exception 'Unrelated source capture validated';end if;
+ perform nextval('supplement_validation_calls');return true;
+end$$;
+insert into organizations(id,name,primary_venue_id,roles,field_provenance)values('90000000-0000-4000-8000-000000000001','Bound Venue','90000000-0000-4000-8000-000000000002',array['venue'],'{"identity":{"source":"unified_location"}}');
+insert into venues(id,name,organization_id,category)values('90000000-0000-4000-8000-000000000002','Bound Venue','90000000-0000-4000-8000-000000000001','bar');
+insert into venue_sources(venue_id,source_slug,source_url,payload)values('90000000-0000-4000-8000-000000000002','gayout','https://www.gayout.com/bound','{"normalized":{"name":"Bound Venue","metadata":{"data_source":"gayout"}}}');
+insert into venue_sources(venue_id,source_slug,payload)select gen_random_uuid(),'overture','{}'from generate_series(1,10000);
+analyze venue_sources;
+do $$begin
+ assert organization_facts_only_source('90000000-0000-4000-8000-000000000001')is not null;
+ assert not(select is_called from supplement_validation_calls),'Unrelated captures validated';
+end$$;
+insert into venue_sources(venue_id,source_slug,payload)values('90000000-0000-4000-8000-000000000002','overture','{}');
+do $$begin
+ assert organization_facts_only_source('90000000-0000-4000-8000-000000000001')is not null;
+ assert(select is_called and last_value=1 from supplement_validation_calls),'Current capture validation count changed';
+end$$;
+'''
+fix=(ROOT/'supabase/migrations/99991792955040_bound_contact_supplement_validation.sql').read_text()
 with tempfile.TemporaryDirectory(prefix='qg-contact-composition-')as tmp:
  data=Path(tmp)/'data'
- subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale','--wal-segsize=1'],check=True,stdout=subprocess.DEVNULL)
- subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55512 -c listen_addresses= -c min_wal_size=2MB -c max_wal_size=16MB','-w','start'],check=True,stdout=subprocess.DEVNULL)
+ subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
+ subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55512 -c listen_addresses= -c min_wal_size=32MB -c max_wal_size=64MB','-w','start'],check=True,stdout=subprocess.DEVNULL)
  try:
-  subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55512','-d','postgres','-v','ON_ERROR_STOP=1'],input=schema+base+migration+checks,text=True,check=True,stdout=subprocess.DEVNULL)
+  subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55512','-d','postgres','-v','ON_ERROR_STOP=1'],input="begin;"+schema+base+migration+fix+checks+bound_checks+"commit;",text=True,check=True,stdout=subprocess.DEVNULL)
  finally:subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
+
+print("PASS: 28 real capture boundaries and validation restricted to 0/1 relevant captures despite 10,000 unrelated records")
