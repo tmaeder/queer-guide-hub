@@ -387,7 +387,7 @@ export default function EmailTemplates({
                     type="button"
                     aria-pressed={template.id === selected?.id}
                     disabled={saving}
-                    className={`rounded-element border p-4 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${template.id === selected?.id ? 'border-primary bg-accent' : 'border-transparent hover:bg-muted'}`}
+                    className={`shrink-0 rounded-element border p-4 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${template.id === selected?.id ? 'border-primary bg-accent' : 'border-transparent hover:bg-muted'}`}
                     onClick={() => selectTemplate(template)}
                   >
                     <span className="flex items-start gap-2">
