@@ -30,6 +30,14 @@ describe('adminNavSections shape', () => {
     expect(items.some((item) => item.route === '/admin/places-editorial')).toBe(false);
   });
 
+  it('provides one Email destination and protects the legacy template redirect', () => {
+    const items = adminNavSections.flatMap((section) => section.items);
+    expect(items.filter((item) => item.route === '/admin/email')).toHaveLength(1);
+    expect(getNavItemByRoute('/admin/email-templates')).toBeUndefined();
+    expect(getRouteMinRole('/admin/email')).toBe('admin');
+    expect(getRouteMinRole('/admin/email-templates')).toBe('admin');
+  });
+
   it('every item has unique id within its section', () => {
     for (const section of adminNavSections) {
       const ids = section.items.map((i) => i.id);
