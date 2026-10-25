@@ -61,7 +61,7 @@ describe('Footer', () => {
   it('keeps essentials visible while secondary links are collapsed', () => {
     renderFooter();
     expect(screen.getByText('Email updates')).not.toBeVisible();
-    for (const name of ['Report', 'Crisis support', 'Privacy']) {
+    for (const name of ['Report', 'Crisis support', 'Privacy', 'Terms']) {
       expect(screen.getByRole('link', { name })).toBeVisible();
     }
     const summary = screen.getByText('Site information');
