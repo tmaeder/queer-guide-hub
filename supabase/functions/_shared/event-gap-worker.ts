@@ -9,7 +9,7 @@ import { gateImages } from './image-gate.ts'
 import { readImageDimensions } from './image-dimensions.ts'
 import { evaluateCover } from './image-probe.ts'
 import { storedAgendaqDescription } from './event-source-copy.ts'
-import { boundedInt, cleanDescription, hasUnverifiedLongRange, supportedContentPatch, imageCandidates, mapConcurrent, sourceArtwork, sourceUrls, storedDescription, structuredEvent, text, type GapEvent, type GapLane, type GapPatch, type SourceEvidence } from './event-gap-core.ts'
+import { boundedInt, cleanDescription, hasUnverifiedLongRange, supportedContentPatch, imageCandidates, mapConcurrent, sourceArtwork, sourceCancellation, sourceUrls, storedDescription, structuredEvent, text, type GapEvent, type GapLane, type GapPatch, type SourceEvidence } from './event-gap-core.ts'
 
 type Candidate = { event_id: string; event: GapEvent; sources: SourceEvidence[] }
 type Evidence = { source_url?: string; confidence?: number; previous_images?: unknown }
@@ -142,6 +142,10 @@ export function serveEventGaps(lane: GapLane) {
           const fetched = await page(url, c.event_id)
           if (!fetched) continue
           const html = new TextDecoder().decode(fetched.bytes)
+          const cancellation = sourceCancellation(html, c.event)
+          if (cancellation) return await finish(c, {}, { source_url: fetched.url, confidence: 1 }, 'review', {
+            reason: 'source_event_cancelled_or_postponed', source_status: cancellation,
+          })
           if (lane === 'image') {
             for (const image of gateImages(imageCandidates(html, c.event, fetched.url)).kept) {
               if (Array.isArray(c.event.images) && c.event.images[0] === image) continue
