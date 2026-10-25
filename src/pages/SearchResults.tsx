@@ -156,7 +156,7 @@ export default function SearchResults() {
   // Pass identity so the worker personalizes ranking from the profile
   // (interests/home_city → _boostReason). Anonymous users fall back to session.
   const { user } = useAuth();
-  const { results, loading, error, errorKind, totalHits, tooShort, facets } = useSearch(
+  const { results, loading, error, errorKind, totalHits, tooShort, facets, resultsKey } = useSearch(
     query,
     effectiveFilters,
     page,
@@ -281,7 +281,11 @@ export default function SearchResults() {
   );
 
   // ── Accumulate pages (infinite scroll), keep previous during refetch ─────
-  const queryKey = `${query}|${JSON.stringify(filters)}|${effectiveSort}`;
+  // Keyed on the request the results came from, not the raw URL query: the
+  // hook debounces, so for 300ms after a new query `results` still belong to
+  // the old one, and keying on `query` filed them under the new search —
+  // the new results were then appended to the old ones as if a next page.
+  const queryKey = resultsKey;
   const [accumulated, setAccumulated] = useState<SearchResult[]>([]);
   const lastKeyRef = useRef('');
   useEffect(() => {
