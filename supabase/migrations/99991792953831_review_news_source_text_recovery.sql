@@ -85,6 +85,8 @@ declare r public.ingestion_staging;marker jsonb;meta jsonb;after_row jsonb;next_
 begin
  perform public.assert_admin_or_internal();
  if auth.uid()is not null then raise exception 'Internal source recovery actor required';end if;
+ if exists(select 1 from public.admin_automations where slug='review_automatic_resolution'and not enabled)
+ then return '{"saved":false,"reason":"paused"}';end if;
  select * into r from public.ingestion_staging where id=p_id for update;
  if not found then return '{"saved":false,"reason":"missing"}';end if;
  marker:=r.enriched_data->'review_source_text_recovery';meta:=p_normalized->'extraction_meta';

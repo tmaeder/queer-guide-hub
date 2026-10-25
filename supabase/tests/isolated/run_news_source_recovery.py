@@ -77,6 +77,9 @@ begin
  if exists(select 1 from public.claim_review_news_source_recovery(4,false))then raise exception 'Active lease was claimed twice';end if;
  if exists(select 1 from original_staging o join ingestion_staging s using(id)where o.value<>to_jsonb(s)and s.id not in(md5('1')::uuid,md5('19')::uuid,md5('20')::uuid,md5('21')::uuid))then raise exception 'A refused row changed';end if;
  select (enriched_data#>>'{review_source_text_recovery,lease_token}')::uuid,normalized_data into token,proposal from ingestion_staging where id=md5('1')::uuid;
+ update admin_automations set enabled=false;
+ if(public.finish_review_news_source_recovery(md5('1')::uuid,token,proposal)->>'reason')is distinct from 'paused'then raise exception 'In-flight completion ignored pause';end if;
+ update admin_automations set enabled=true;
  update ingestion_staging set normalized_data=jsonb_set(normalized_data,'{content}','"A newer source capture"')where id=md5('1')::uuid;
  if(public.finish_review_news_source_recovery(md5('1')::uuid,token,proposal)->>'saved')<>'false'then raise exception 'Source fingerprint race overwritten';end if;
  update ingestion_staging set normalized_data=proposal where id=md5('1')::uuid;
