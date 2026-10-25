@@ -80,7 +80,7 @@ BEGIN
  IF public.redirect_access_requests_page(NULL,'review')->>'count'<>'0' THEN RAISE EXCEPTION 'Foreign access request appeared in owner review';END IF;
  BEGIN PERFORM public.redirect_access_request('approve',NULL,p_id=>foreign_request,p_actor=>owner_id);RAISE EXCEPTION 'Foreign access request approved';EXCEPTION WHEN no_data_found THEN NULL;END;
  BEGIN PERFORM public.redirect_access_notify(foreign_request,'requested');RAISE EXCEPTION 'Foreign notification generated';EXCEPTION WHEN no_data_found THEN NULL;END;
- IF public.claim_redirect_access_mail('fixture@example.org')<>'[]' OR public.finish_redirect_access_mail(foreign_job,foreign_lease,'foreign-provider-receipt') THEN RAISE EXCEPTION 'Legacy queue claimed or acknowledged foreign mail';END IF;
+ IF public.claim_redirect_access_mail('fixture@example.org')<>'[]' OR public.finish_redirect_access_mail(foreign_job,gen_random_uuid(),'foreign-provider-receipt') THEN RAISE EXCEPTION 'Inactive source queue claimed or forged lease acknowledged mail';END IF;
  IF NOT EXISTS(SELECT FROM public.redirect_access_mail WHERE id=foreign_job AND state='leased' AND lease_id=foreign_lease) OR EXISTS(SELECT FROM public.notifications WHERE related_id=foreign_request) OR NOT EXISTS(SELECT FROM public.redirect_access_requests WHERE id=foreign_request AND status='pending') THEN RAISE EXCEPTION 'Legacy request/queue touched foreign state';END IF;
  PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',other)::text,true);
  BEGIN PERFORM public.redirect_member_administration(owner_id,'list');RAISE EXCEPTION 'Unconverted workspace selection accepted';EXCEPTION WHEN insufficient_privilege THEN NULL;END;

@@ -803,3 +803,31 @@ pass. These checks use isolated SQL and mocked Storage, not production deletion.
 Domain, email and webhook dispatch still need source-row claim/receipt authority
 before workspace activation. Member installation, owner admission, workspace
 activation, atomic domain transfer and live provider/device evidence remain open.
+
+### 2026-10-25 source-bound email workers
+
+Instruction-mail and access-notification claims now select bounded jobs from
+active workspaces and derive every subsequent predicate from the saved job's
+workspace. Private explicit-workspace snapshot/folder-owner helpers preserve
+current DNS setup and recipient authorization without relying on request headers.
+Send preparation rechecks active workspace, current owner, setup snapshot,
+transport fingerprint and exact lease. Foreground private domain readers and
+workspace activation fences are unchanged.
+
+Receipt completion identifies the source row by job ID and exact current lease,
+then persists provider truth even after workspace deactivation or owner loss.
+Forged and replayed completions cannot change the row. The existing unknown-send,
+immutable payload, retry-window and transport-change behavior is retained.
+
+Complete SQL tests pass for isolated future workspaces with explicit non-admin
+owners, malformed visitor headers, inactive claim denial, claim/prepare
+transitions, deactivation before send, and accepted receipts after deactivation
+and owner loss. Earlier boundary tests now use forged worker leases when checking
+no-write denial; source-row service workers deliberately accept valid leases
+independent of foreground selection. The complete five-SDK HTTP matrix passes,
+including native instruction mail/gateway receipt tests. All 2556 migrations
+parse; script lint/formatting and diff checks pass. No real email was sent.
+
+Domain-provider and webhook workers still need source-row authority before
+activation. Member installation, owner admission, tenant activation, transfer
+and live provider/device proof remain open.
