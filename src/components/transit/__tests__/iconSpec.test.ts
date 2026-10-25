@@ -87,7 +87,7 @@ describe('Icon System v2 — spec compliance', () => {
   // category art, and 28 marketplace category glyphs so a category tile's
   // icon names its own title rather than its department's.
   it('covers the whole set', () => {
-    if (!BATCH) expect(entries).toHaveLength(273);
+    if (!BATCH) expect(entries).toHaveLength(274);
     expect(entries.length).toBeGreaterThan(0);
   });
 

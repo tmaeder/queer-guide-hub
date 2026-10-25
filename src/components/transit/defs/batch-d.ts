@@ -73,7 +73,7 @@ export const BATCH_D = {
     l: ['M 36 46 C 35 30 40 20 50 20 C 59 20 63 25 65 32', KEYHOLE],
   },
 
-  key: {
+  'access-key': {
     name: 'Access key',
     group: 'Safety',
     hex: Y,
