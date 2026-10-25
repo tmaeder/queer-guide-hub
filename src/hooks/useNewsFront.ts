@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { untypedRpc } from '@/integrations/supabase/untyped';
+import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 /**
@@ -133,5 +133,65 @@ export function useForYouNews(limit = 6, countryIds?: string[] | null) {
     loading: query.isLoading,
     error: query.error ? (query.error as Error).message : null,
     refetch: query.refetch,
+  };
+}
+
+/**
+ * Newest podcast episodes for the homepage band's Podcasts chip.
+ *
+ * The chip used to filter the ranked `get_news_front` pool, and that pool can
+ * never hold enough episodes: hotness decays 50% per 24h, articles publish
+ * through the day while most shows drop overnight, so measured on 2026-10-25
+ * the best-ranked of 164 eligible episodes sat at position 99 — zero in the
+ * 80-row pool, so the chip stayed disabled for every visitor. Episodes are a
+ * different KIND of thing (`media_type`, not a category), so they get their own
+ * query, newest first.
+ *
+ * Visibility predicate is the RPC's `base` CTE, kept in step deliberately: a
+ * looser one would publish episodes the news pipeline rejected.
+ */
+export function useFrontPodcasts(limit = 16, windowDays = 21) {
+  const query = useQuery({
+    queryKey: ['news-front-podcasts', limit, windowDays],
+    ...LIVE_OPTS,
+    queryFn: async () => {
+      const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await untypedFrom('news_articles')
+        .select(
+          'id, slug, title, excerpt, image_url, published_at, publisher_name, category_canonical, media_type, title_i18n',
+        )
+        .eq('media_type', 'podcast')
+        .gt('published_at', since)
+        .not('content', 'is', null)
+        .neq('content', '')
+        .is('duplicate_of_id', null)
+        .or('is_premium.is.null,is_premium.eq.false')
+        .or(
+          'quality_status.eq.passed,and(quality_status.is.null,or(quality_score.is.null,quality_score.gte.50))',
+        )
+        .order('published_at', { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return (data ?? []) as unknown as Array<
+        Pick<
+          NewsFrontArticle,
+          | 'id'
+          | 'slug'
+          | 'title'
+          | 'excerpt'
+          | 'image_url'
+          | 'published_at'
+          | 'publisher_name'
+          | 'category_canonical'
+          | 'media_type'
+          | 'title_i18n'
+        >
+      >;
+    },
+  });
+  return {
+    articles: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error ? (query.error as Error).message : null,
   };
 }
