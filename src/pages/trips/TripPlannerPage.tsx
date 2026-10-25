@@ -319,7 +319,7 @@ export default function TripPlannerPage() {
 
       {section === 'plan' || section === 'all' ? (
         <>
-          <div className="flex items-center justify-between mb-6 gap-4 mt-2">
+          <div className="flex flex-wrap items-center justify-between mb-6 gap-4 mt-2">
             <span className="inline-flex items-center gap-2 rounded-full bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
               {t('trips.planner.placesCount', { count: trip.trip_places.length })}
@@ -331,7 +331,7 @@ export default function TripPlannerPage() {
               )}
             </span>
             {canEdit && (
-              <div className="flex items-center gap-2">
+              <div className="ml-auto flex flex-wrap items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
