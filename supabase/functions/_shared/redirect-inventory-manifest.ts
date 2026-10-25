@@ -2522,6 +2522,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "client:admin:%2Fadmin%2Femail-templates:%2Fadmin%2Femail%3Ftab%3Dtemplates:Navigate:0",
+    "source": "/admin/email-templates",
+    "target": "/admin/email?tab=templates",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "client:admin:%2Fadmin%2Fsettings:%2Fadmin%2Fcontent%2Funified_tags:Navigate:0",
     "source": "/admin/settings",
     "target": "/admin/content/unified_tags",
