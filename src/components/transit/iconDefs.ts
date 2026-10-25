@@ -847,6 +847,465 @@ const DEFS = {
     ],
   },
 
+  // ── Marketplace categories ───────────────────────────────────────────────
+  // One mark per group (and per fine bucket where the group mark would name
+  // the wrong thing), so a tile titled Footwear shows a shoe rather than its
+  // department's T-shirt. Same rules as the department glyphs above: Market
+  // group, no ticks, one track colour chosen to match the department.
+  // The kink entries show gear only, never bodies or acts (rule 6).
+  trousers: {
+    name: 'Trousers',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Trousers, jeans, shorts and other bottoms.',
+    f: [
+      [
+        'M 30 16 C 43.3 17.6 56.7 17.6 70 16 C 70.4 38.8 72.4 61.5 76 84 C 69.7 82.4 63.3 82.4 57 84 C 56.2 69.1 53.9 54.4 50 40 C 46.1 54.4 43.8 69.1 43 84 C 36.7 82.4 30.3 82.4 24 84 C 27.6 61.5 29.6 38.8 30 16 Z',
+        'T',
+      ],
+    ],
+    l: ['M 30 26 C 43.3 27.6 56.7 27.6 70 26'],
+  },
+
+  shorts: {
+    name: 'Shorts',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Shorts and cut-offs.',
+    f: [
+      [
+        'M 26 26 C 42 27.6 58 27.6 74 26 C 74.4 40.9 76.4 55.5 80 70 C 72.2 69.1 64.5 69.7 57 72 C 56.2 62.9 53.9 54.3 50 46 C 46.1 54.3 43.8 62.9 43 72 C 35.5 69.7 27.8 69.1 20 70 C 23.6 55.5 25.6 40.9 26 26 Z',
+        'T',
+      ],
+    ],
+    l: ['M 26 36 C 42 37.6 58 37.6 74 36'],
+  },
+
+  skirt: {
+    name: 'Skirt',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Skirts and dresses.',
+    f: [
+      [
+        'M 36 20 C 45.3 21.6 54.7 21.6 64 20 C 63.8 23.9 65.2 27.3 68 30 C 71.1 47.1 75.8 63.8 82 80 C 60.7 78.4 39.3 78.4 18 80 C 24.2 63.8 28.9 47.1 32 30 C 34.8 27.3 36.2 23.9 36 20 Z',
+        'T',
+      ],
+    ],
+    l: [
+      'M 32 30 C 44 31.6 56 31.6 68 30',
+      'M 42 40 C 38.4 51.7 36.4 63.7 36 76',
+      'M 58 40 C 58.4 52.3 60.4 64.3 64 76',
+    ],
+  },
+
+  hoodie: {
+    name: 'Hoodie',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Hoodies, jackets, coats and knitwear.',
+    f: [
+      [
+        'M 34 26 C 44.7 27.6 55.3 27.6 66 26 C 69.9 30.1 74.5 32.7 80 34 C 80.4 47.6 82.4 60.9 86 74 C 81.7 73.1 77.7 73.8 74 76 C 74.3 66.4 72.9 57.1 70 48 C 68.4 60.7 68.4 73.3 70 86 C 56.7 84.4 43.3 84.4 30 86 C 31.6 73.3 31.6 60.7 30 48 C 27.1 57.1 25.7 66.4 26 76 C 22.3 73.8 18.3 73.1 14 74 C 17.6 60.9 19.6 47.6 20 34 C 25.5 32.7 30.1 30.1 34 26 Z',
+        'T',
+      ],
+    ],
+    l: ['M 38 27 C 38 18 44 14 50 14 C 56 14 62 18 62 27', 'M 50 30 C 48.4 48.7 48.4 67.3 50 86'],
+  },
+
+  bodysuit: {
+    name: 'Bodysuit',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Bodysuits, singlets and harness-cut bodywear.',
+    f: [
+      [
+        'M 36 14 C 38 22 42 26 50 26 C 58 26 62 22 64 14 C 68 19 71 25 70 32 C 71 44 70 56 67 66 C 62 72 58 78 56 86 C 52 87 48 87 44 86 C 42 78 38 72 33 66 C 30 56 29 44 30 32 C 29 25 32 19 36 14 Z',
+        'T',
+      ],
+    ],
+    l: ['M 33 66 C 40 64 46 66 50 72 C 54 66 60 64 67 66'],
+  },
+
+  shoe: {
+    name: 'Shoe',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Shoes, boots and other footwear.',
+    f: [
+      [
+        'M 14 74 C 15.6 62.7 15.6 51.3 14 40 C 19.3 41.6 24.7 41.6 30 40 C 32 46.2 35.3 51.5 40 56 C 48.4 58.9 57.1 60.2 66 60 C 70.8 63.5 76.1 65.5 82 66 C 81.8 69.9 83.2 73.3 86 76 C 83.8 77.5 83.1 79.5 84 82 C 61.3 80.4 38.7 80.4 16 82 C 16.9 78.9 16.2 76.3 14 74 Z',
+        'T',
+      ],
+    ],
+    l: [
+      'M 14 72 C 38 73.6 62 73.6 86 72',
+      'M 38 46 C 41.1 46.9 43.7 46.2 46 44',
+      'M 44 54 C 47.1 54.9 49.7 54.2 52 52',
+    ],
+  },
+
+  cap: {
+    name: 'Cap',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Caps, hats and other headwear.',
+    f: [
+      ['M 20 62 C 20 40 32 28 48 28 C 64 28 74 40 74 58 C 56 62 38 63 20 62 Z', 'T'],
+      ['M 70 58 C 78 58 84 61 88 66 C 80 69 70 68 62 64 C 64 61 66 59 70 58 Z', 'T'],
+    ],
+    l: ['M 47 28 C 44 38 42 50 42 62'],
+  },
+
+  sock: {
+    name: 'Sock',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Socks and hosiery.',
+    f: [
+      [
+        'M 36 14 C 44.7 15.6 53.3 15.6 62 14 C 60.4 26.7 60.4 39.3 62 52 C 67.2 56.7 73.2 60.1 80 62 C 80.6 66.7 82.6 70.7 86 74 C 82 77.1 79.3 81.1 78 86 C 69.7 82.4 61 80.4 52 80 C 48.3 75.4 43.6 72 38 70 C 38.9 64.5 38.3 59.1 36 54 C 37.6 40.7 37.6 27.3 36 14 Z',
+        'T',
+      ],
+    ],
+    l: ['M 36 26 C 44.7 27.6 53.3 27.6 62 26'],
+  },
+
+  tote: {
+    name: 'Tote bag',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Bags, totes and carried accessories.',
+    f: [
+      [
+        'M 22 42 C 40.7 43.6 59.3 43.6 78 42 C 75.1 56.5 73.7 71.2 74 86 C 58 84.4 42 84.4 26 86 C 26.3 71.2 24.9 56.5 22 42 Z',
+        'T',
+      ],
+    ],
+    l: ['M 38 42 C 38 24 62 24 62 42'],
+  },
+
+  hanger: {
+    name: 'Hanger',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'General clothing that fits no narrower category.',
+    l: [
+      ['M 50 36 C 50 28 58 27 58 20 C 58 15 54 13 50 13 C 46 13 43 15 42 19', null, 1],
+      [
+        'M 50 36 C 36 43 24 50 16 60 C 13 63 14 68 19 68 C 40 67 60 67 81 68 C 86 68 87 63 84 60 C 76 50 64 43 50 36 Z',
+        null,
+        1,
+      ],
+      [
+        'M 50 36 C 36 43 24 50 16 60 C 13 63 14 68 19 68 C 40 67 60 67 81 68 C 86 68 87 63 84 60 C 76 50 64 43 50 36 Z',
+        'T',
+        0.45,
+      ],
+    ],
+  },
+
+  belt: {
+    name: 'Belt',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Belts and buckles.',
+    f: [
+      [
+        'M 12 42 C 37.3 43.6 62.7 43.6 88 42 C 86.4 47.3 86.4 52.7 88 58 C 62.7 56.4 37.3 56.4 12 58 C 13.6 52.7 13.6 47.3 12 42 Z',
+        'T',
+      ],
+      [
+        'M 34 32 C 41.3 33.6 48.7 33.6 56 32 C 54.4 44 54.4 56 56 68 C 48.7 66.4 41.3 66.4 34 68 C 35.6 56 35.6 44 34 32 Z',
+        'P',
+      ],
+    ],
+    l: ['M 40 50 C 48 51.6 56 51.6 64 50'],
+  },
+
+  sunglasses: {
+    name: 'Sunglasses',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Sunglasses and eyewear.',
+    f: [
+      ['M 16 42 C 26 40 36 40 44 43 C 44 56 38 64 29 64 C 20 64 16 56 16 42 Z', 'T'],
+      ['M 84 42 C 74 40 64 40 56 43 C 56 56 62 64 71 64 C 80 64 84 56 84 42 Z', 'T'],
+    ],
+    l: [
+      'M 44 46 C 47 42 53 42 56 46',
+      'M 16 42 C 16 37 15 34 12 32',
+      'M 84 42 C 84 37 85 34 88 32',
+    ],
+  },
+
+  key: {
+    name: 'Key',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Keychains, keyrings and small charms.',
+    f: [
+      ['M 51 36 a 19 19 0 1 0 -38 0 a 19 19 0 1 0 38 0', 'T'],
+      ['M 41 36 a 9 9 0 1 0 -18 0 a 9 9 0 1 0 18 0', 'P'],
+    ],
+    l: [
+      ['M 46 49 C 58 55 70 63 84 74', null, 1.6],
+      ['M 68 62 C 70 66 69 70 65 74', null, 1],
+      ['M 78 69 C 80 73 79 77 75 81', null, 1],
+    ],
+  },
+
+  mitten: {
+    name: 'Mitten',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Gloves, mittens and scarves.',
+    f: [
+      [
+        'M 32 86 C 29 72 28 58 30 44 C 30 28 38 18 50 18 C 62 18 68 28 68 42 C 70 48 70 54 68 58 C 72 52 78 48 82 52 C 86 56 82 64 78 70 C 74 76 70 80 68 86 C 56 88 44 88 32 86 Z',
+        'T',
+      ],
+    ],
+    l: ['M 31 74 C 44 76 56 76 69 74'],
+  },
+
+  wig: {
+    name: 'Wig',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Wigs and hairpieces.',
+    f: [
+      [
+        'M 50 14 C 30 14 18 28 18 48 C 18 58 20 66 24 72 C 34 74 66 74 76 72 C 80 66 82 58 82 48 C 82 28 70 14 50 14 Z',
+        'T',
+      ],
+      [
+        'M 36 44 C 44 40 54 36 60 30 C 63 38 64 46 64 54 C 64 64 58 70 50 70 C 42 70 36 64 36 54 C 34 50 34 47 36 44 Z',
+        'P',
+      ],
+    ],
+    l: ['M 50 72 C 51 76 51 80 50 84', 'M 38 86 C 46 84 54 84 62 86'],
+  },
+
+  jockstrap: {
+    name: 'Jockstrap',
+    group: 'Market',
+    hex: M,
+    t: 'none',
+    use: 'Jockstraps and athletic supporters.',
+    f: [
+      [
+        'M 16 26 C 38.7 27.6 61.3 27.6 84 26 C 82.4 29.3 82.4 32.7 84 36 C 61.3 34.4 38.7 34.4 16 36 C 17.6 32.7 17.6 29.3 16 26 Z',
+        'T',
+      ],
+      ['M 38 36 C 40 52 44 64 50 72 C 56 64 60 52 62 36 C 54 38 46 38 38 36 Z', 'T'],
+    ],
+    l: [
+      ['M 17 36 C 22 54 32 68 46 74', null, 1],
+      ['M 83 36 C 78 54 68 68 54 74', null, 1],
+    ],
+  },
+
+  thong: {
+    name: 'Thong',
+    group: 'Market',
+    hex: M,
+    t: 'none',
+    use: 'Thongs, G-strings and minimal briefs.',
+    f: [['M 30 36 C 43 39 57 39 70 36 C 62 48 56 60 50 74 C 44 60 38 48 30 36 Z', 'T']],
+    l: ['M 13 28 C 19 32 24 34 30 36', 'M 70 36 C 76 34 81 32 87 28'],
+  },
+
+  bra: {
+    name: 'Bra',
+    group: 'Market',
+    hex: M,
+    t: 'none',
+    use: 'Bras, bralettes and lingerie.',
+    f: [
+      ['M 16 64 C 16 48 24 38 34 38 C 43 38 48 48 50 60 C 40 65 28 66 16 64 Z', 'T'],
+      ['M 84 64 C 84 48 76 38 66 38 C 57 38 52 48 50 60 C 60 65 72 66 84 64 Z', 'T'],
+    ],
+    l: ['M 28 40 C 28 30 29 22 31 15', 'M 72 40 C 72 30 71 22 69 15'],
+  },
+
+  film: {
+    name: 'Film',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Films, DVDs and video.',
+    f: [
+      [
+        'M 18 44 C 39.3 45.6 60.7 45.6 82 44 C 80.4 57.3 80.4 70.7 82 84 C 60.7 82.4 39.3 82.4 18 84 C 19.6 70.7 19.6 57.3 18 44 Z',
+        'T',
+      ],
+      [
+        'M 18 40 C 38.5 35.5 58.5 29.5 78 22 C 77.8 26.5 79.1 30.5 82 34 C 61.5 38.5 41.5 44.5 22 52 C 22.2 47.5 20.9 43.5 18 40 Z',
+        'P',
+      ],
+    ],
+    l: ['M 36 35 C 36.6 39.4 38.6 43.1 42 46', 'M 56 29 C 56.6 33.4 58.6 37.1 62 40'],
+  },
+
+  'gem-ring': {
+    name: 'Gem ring',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Rings and bands.',
+    f: [
+      ['M 74 60 a 24 24 0 1 0 -48 0 a 24 24 0 1 0 48 0', 'T'],
+      ['M 64 60 a 14 14 0 1 0 -28 0 a 14 14 0 1 0 28 0', 'P'],
+      ['M 50 14 C 56 20 60 26 62 32 C 56 37 44 37 38 32 C 40 26 44 20 50 14 Z', 'T'],
+    ],
+  },
+
+  perfume: {
+    name: 'Perfume',
+    group: 'Market',
+    hex: C,
+    t: 'none',
+    use: 'Fragrance, cologne and perfume.',
+    f: [
+      [
+        'M 28 50 C 28 42 36 38 50 38 C 64 38 72 42 72 50 C 72 62 72 74 70 86 C 56 88 44 88 30 86 C 28 74 28 62 28 50 Z',
+        'T',
+      ],
+      ['M 42 38 C 41 34 41 30 43 26 C 48 24 52 24 57 26 C 59 30 59 34 58 38 Z', 'P'],
+    ],
+    l: ['M 64 24 C 70 20 76 18 82 18', 'M 64 30 C 70 30 76 32 82 34'],
+  },
+
+  soap: {
+    name: 'Soap',
+    group: 'Market',
+    hex: C,
+    t: 'none',
+    use: 'Soap, bath and body wash.',
+    f: [
+      [
+        'M 16 58 C 16 50 22 46 30 46 C 50 44 66 44 74 46 C 82 48 84 52 84 58 C 84 68 84 74 80 80 C 60 84 40 84 22 80 C 17 74 16 66 16 58 Z',
+        'T',
+      ],
+      ['M 44 28 a 10 10 0 1 0 -20 0 a 10 10 0 1 0 20 0', 'P'],
+      ['M 70 22 a 8 8 0 1 0 -16 0 a 8 8 0 1 0 16 0', 'P'],
+    ],
+  },
+
+  candle: {
+    name: 'Candle',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Candles, massage oils and edible body products.',
+    f: [
+      [
+        'M 34 42 C 44 40 56 40 66 42 C 67 56 67 72 66 86 C 56 88 44 88 34 86 C 33 72 33 56 34 42 Z',
+        'T',
+      ],
+      ['M 50 12 C 57 20 60 26 58 31 C 56 36 44 36 42 31 C 40 26 43 20 50 12 Z', 'T'],
+    ],
+    l: ['M 50 36 C 51.5 37.5 51.5 39 50 41'],
+  },
+
+  capsule: {
+    name: 'Capsule',
+    group: 'Market',
+    hex: C,
+    t: 'none',
+    use: 'Supplements, capsules and libido products.',
+    f: [
+      [
+        'M 50 34 C 42 33 36 33 30 34 C 21 34 14 41 14 50 C 14 59 21 66 30 66 C 36 67 42 67 50 66 C 51 56 51 44 50 34 Z',
+        'T',
+      ],
+      [
+        'M 50 34 C 58 33 64 33 70 34 C 79 34 86 41 86 50 C 86 59 79 66 70 66 C 64 67 58 67 50 66 C 49 56 49 44 50 34 Z',
+        'P',
+      ],
+    ],
+  },
+
+  kegel: {
+    name: 'Kegel balls',
+    group: 'Market',
+    hex: M,
+    t: 'none',
+    use: 'Kegel balls, weighted trainers and ben wa balls.',
+    f: [
+      ['M 52 34 a 16 16 0 1 0 -32 0 a 16 16 0 1 0 32 0', 'T'],
+      ['M 76 62 a 16 16 0 1 0 -32 0 a 16 16 0 1 0 32 0', 'T'],
+    ],
+    l: ['M 70 75 C 74 78 77 82 78 88'],
+  },
+
+  clamps: {
+    name: 'Clamps',
+    group: 'Market',
+    hex: M,
+    t: 'none',
+    use: 'Nipple clamps, suckers and weights.',
+    f: [
+      [
+        'M 18 18 C 24 16 30 16 36 18 C 35 26 33 34 30 40 C 28 41 26 41 24 40 C 21 34 19 26 18 18 Z',
+        'T',
+      ],
+      [
+        'M 64 18 C 70 16 76 16 82 18 C 81 26 79 34 76 40 C 74 41 72 41 70 40 C 67 34 65 26 64 18 Z',
+        'T',
+      ],
+    ],
+    l: [
+      'M 27 41 C 32 70 68 70 73 41',
+      'M 22 26 C 26 27 30 27 33 26',
+      'M 67 26 C 71 27 75 27 78 26',
+    ],
+  },
+
+  bolt: {
+    name: 'Bolt',
+    group: 'Market',
+    hex: M,
+    t: 'none',
+    use: 'Electro-stimulation units and pads.',
+    f: [
+      [
+        'M 58 12 C 46.7 25.1 36.7 39.1 28 54 C 34.7 55.6 41.3 55.6 48 54 C 43.8 65 41.1 76.3 40 88 C 52 73.6 62.6 58.2 72 42 C 65.3 40.4 58.7 40.4 52 42 C 55.6 32.3 57.6 22.3 58 12 Z',
+        'T',
+      ],
+    ],
+  },
+
+  beads: {
+    name: 'Beads',
+    group: 'Market',
+    hex: M,
+    t: 'none',
+    use: 'Anal beads and graduated bead toys.',
+    f: [
+      ['M 40 30 a 10 10 0 1 0 -20 0 a 10 10 0 1 0 20 0', 'T'],
+      ['M 60 48 a 12 12 0 1 0 -24 0 a 12 12 0 1 0 24 0', 'T'],
+      ['M 82 68 a 14 14 0 1 0 -28 0 a 14 14 0 1 0 28 0', 'T'],
+    ],
+    l: ['M 21 21 C 19 17 17 15 14 13'],
+  },
+
   // Two interlocking rings. Intimacy is a department of the catalogue, not a
   // depiction: the fine buckets under it (`sex_toys`, `chastity`, …) have no
   // mark that is both legible at 44px and printable on a page that is SFW by

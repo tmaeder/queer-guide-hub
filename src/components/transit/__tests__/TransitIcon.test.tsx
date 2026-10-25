@@ -152,8 +152,8 @@ describe('TransitIcon', () => {
 
   // Exact count on purpose — it is the guard against a vacuous "every icon
   // renders" pass over an accidentally-empty set.
-  it('has 246 icons and bumps stroke weight below 32px', () => {
-    expect(TRANSIT_ICON_NAMES).toHaveLength(246);
+  it('has 273 icons and bumps stroke weight below 32px', () => {
+    expect(TRANSIT_ICON_NAMES).toHaveLength(273);
     const w = (size: number) =>
       Number(
         render(<TransitIcon name="search" size={size} color={ink} />)
