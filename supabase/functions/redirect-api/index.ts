@@ -49,7 +49,9 @@ Deno.serve(async (req: Request) => {
  // Registry administration has explicit current-Owner checks and may prepare
  // co-Owners during provisioning. Business-resource selection stays fenced.
  const ownershipRegistry=path==='/workspace-ownership'||/^\/workspace-ownership\/[a-f0-9-]+$/i.test(path);
- const selectedWorkspace=ownershipRegistry&&requestedWorkspace!==null&&UUID.test(requestedWorkspace)?{id:requestedWorkspace.toLowerCase()}:redirectWorkspaceSelection(requestedWorkspace);
+ // Native signup follows the recorded public click; visitor workspace headers are not attribution authority.
+ const nativeSignup=path==='/native/signup'&&req.method==='POST';
+ const selectedWorkspace=nativeSignup?redirectWorkspaceSelection(null):ownershipRegistry&&requestedWorkspace!==null&&UUID.test(requestedWorkspace)?{id:requestedWorkspace.toLowerCase()}:redirectWorkspaceSelection(requestedWorkspace);
  if('error' in selectedWorkspace)return json({error:selectedWorkspace.error},selectedWorkspace.status);
  db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{global:{headers:{'x-qg-redirect-workspace':selectedWorkspace.id,...(user?{'x-qg-redirect-session-actor':user.id}:{})}}});
  const sessionPrincipal=async(scope:string):Promise<{id:string|null;role?:string;label?:string;workspace?:{id:string;name:string;slug:string};failure?:Response}>=>{
@@ -757,7 +759,7 @@ Deno.serve(async (req: Request) => {
    if(!user || user.is_anonymous || !(user.email_confirmed_at || user.confirmed_at)) return json({error:'A verified account is required'},403);
    const body=await boundedJson(req);
    if(!body || typeof body!=='object' || Object.keys(body).some(key=>key!=='clickId') || typeof body.clickId!=='string' || !UUID.test(body.clickId))return json({error:'Provide an attributed click ID'},400);
-   const {data,error}=await db.rpc('record_redirect_conversion',{p_event:{kind:'lead',clickId:body.clickId,customerExternalId:'native:'+user.id,eventId:'native:signup:'+user.id,eventName:'Sign up',occurredAt:user.created_at},p_registered_at:user.created_at});
+   const {data,error}=await db.rpc('record_redirect_signup',{p_user:user.id,p_click:body.clickId});
    if(error)return rpcError(error);
    return json(data,data.duplicate?200:201);
   }

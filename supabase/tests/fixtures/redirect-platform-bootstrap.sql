@@ -2,7 +2,7 @@ CREATE ROLE anon;
 CREATE ROLE authenticated;
 CREATE ROLE service_role BYPASSRLS;
 CREATE SCHEMA auth;
-CREATE TABLE auth.users(id uuid PRIMARY KEY,email text,email_confirmed_at timestamptz);
+CREATE TABLE auth.users(id uuid PRIMARY KEY,email text,email_confirmed_at timestamptz,created_at timestamptz NOT NULL DEFAULT now());
 -- Narrow fixture-only Auth management grants model account creation/deletion.
 -- Runtime service_role must not read Auth email columns directly.
 GRANT INSERT,DELETE ON auth.users TO service_role;

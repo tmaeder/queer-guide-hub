@@ -462,12 +462,9 @@ describe('actual Redirects API handler', () => {
     run.state.admin = false;
     expect((await run.invoke('/native/signup', { clickId: click })).status).toBe(201);
     expect(run.getUser).toHaveBeenCalledWith('signed-user');
-    expect(run.rpc.mock.calls[0][1]).toMatchObject({
-      p_registered_at: '2026-10-13T09:00:00Z',
-      p_event: {
-        customerExternalId: 'native:00000000-0000-4000-8000-000000000001',
-        eventId: 'native:signup:00000000-0000-4000-8000-000000000001',
-      },
+    expect(run.rpc).toHaveBeenCalledWith('record_redirect_signup', {
+      p_user: '00000000-0000-4000-8000-000000000001',
+      p_click: click,
     });
     expect(
       (await run.invoke('/native/signup', { clickId: click, customerExternalId: 'forged' })).status,

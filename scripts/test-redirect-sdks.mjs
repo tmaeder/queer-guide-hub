@@ -115,7 +115,8 @@ await db.query("INSERT INTO public.redirect_domain_jobs(domain_id,zone_id,cname_
 const reportOtherActor='00000000-0000-4000-8000-000000000098';
 await db.query("INSERT INTO auth.users(id,email,email_confirmed_at) VALUES($1,'http-invite@example.org',now())",[reportOtherActor]);
 await db.query("INSERT INTO public.user_roles(user_id,role) VALUES($1,'admin')",[reportOtherActor]);
-const identity={auth:{getUser:async(value)=>({data:{user:['fixture-account-session','fixture-other-account-session'].includes(value)?{id:value==='fixture-account-session'?reportActor:reportOtherActor,created_at:'2026-10-01T00:00:00Z',is_anonymous:false}:null},error:null})},rpc:async()=>({data:true,error:null})};
+let nativeSignupVerified=false;
+const identity={auth:{getUser:async(value)=>({data:{user:['fixture-account-session','fixture-other-account-session'].includes(value)?{id:value==='fixture-account-session'?reportActor:reportOtherActor,created_at:'2026-10-01T00:00:00Z',...(nativeSignupVerified?{email_confirmed_at:'2026-10-01T00:01:00Z'}:{}),is_anonymous:false}:null},error:null})},rpc:async()=>({data:true,error:null})};
 let dnsCalls=0,dnsMissing=false;
 const domainConnectKey = await webcrypto.subtle.generateKey({name:'RSASSA-PKCS1-v1_5',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['sign','verify']);
 const domainConnectJwk = JSON.stringify(await webcrypto.subtle.exportKey('jwk',domainConnectKey.privateKey));
@@ -374,6 +375,8 @@ try {
     const response=await fetch(base+path,{method,headers:{Authorization:'Bearer '+credential,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
     const data=await response.json();if(response.status!==expected)throw new Error('Report HTTP '+path+' expected '+expected+' received '+response.status+': '+JSON.stringify(data));return data;
   }
+  const {verifyNativeSignupWorkspace}=await import('./lib/redirect-native-signup-fixture.mjs');
+  try {await verifyNativeSignupWorkspace(db,base,reportActor,(verified)=>{nativeSignupVerified=verified;});} finally {nativeSignupVerified=false;}
   const {verifyPublicCapabilityWorkspaces}=await import('./lib/redirect-public-capability-fixture.mjs');
   await verifyPublicCapabilityWorkspaces(db,reportRequest,base,policyRuntime.hashLinkPassword);
   const {verifyOwnerAdmissionHttp}=await import('./lib/redirect-owner-admission-fixture.mjs');

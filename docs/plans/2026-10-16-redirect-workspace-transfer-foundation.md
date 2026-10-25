@@ -972,3 +972,19 @@ an explicit-workspace conversion helper so ordinary account/key writes preserve
 their current scope and role checks. Visitor workspace headers cannot choose
 signup attribution. Keep workspace activation and resource fences closed while
 verifying this boundary through SQL and the actual HTTP handler.
+
+
+The source boundary is now implemented in `record_redirect_signup`: the service
+uses the actual verified Auth registration timestamp and an immutable click's
+active source workspace. A private explicit-workspace conversion helper retains
+current account/key scope checks and tenant-local event/customer idempotency.
+The browser supplies only a click ID; visitor workspace headers cannot redirect
+attribution, and the registrant needs no business membership in the publisher's
+workspace. Fixed signup fields cannot be overwritten by browser-reported sales.
+
+The complete SQL suite and five-language HTTP/SDK suite pass, including new
+source-workspace fixtures for verified/unverified sessions and Auth records,
+wrong actors, missing/inactive clicks, registration timing, repeated requests,
+forged payload fields, visitor-header independence and no additional visits.
+All 34 API unit tests, frozen Edge type checking, script lint/formatting and
+2561 migration parses pass. No production signup or tenant activation occurred.
