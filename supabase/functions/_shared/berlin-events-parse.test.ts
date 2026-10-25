@@ -272,6 +272,21 @@ Deno.test('parseSiegessaeuleDetail: the footer never leaks into the venue', () =
   assertEquals(d.venueUrl?.includes('siegessaeule.de'), false)
 })
 
+Deno.test('parseSiegessaeuleDetail: preserves the typed publisher venue point without evaluating scripts', () => {
+  const location='location:{lat:52.4656105,lng:13.38597012,__typename:"LocationPoint"}'
+  const d=parseSiegessaeuleDetail(SIEG_DETAIL+`<script>${location};throw Error("never execute")</script>`)
+  assertEquals(d.venueLatitude,52.4656105)
+  assertEquals(d.venueLongitude,13.38597012)
+  assertEquals(parseSiegessaeuleDetail(SIEG_DETAIL+location+location).venueLatitude,52.4656105)
+})
+Deno.test('parseSiegessaeuleDetail: refuses competing, absent and invalid map points', () => {
+  for(const extra of ['', 'location:{lat:91,lng:8,__typename:"LocationPoint"}', 'location:{lat:0,lng:0,__typename:"LocationPoint"}', 'location:{lat:52,lng:13,__typename:"OtherPoint"}', '52.46561 13.38597', 'location:{lat:52,lng:13,__typename:"LocationPoint"}location:{lat:53,lng:13,__typename:"LocationPoint"}', 'location:{lat:52,lng:13,__typename:"LocationPoint"}location:{lat:91,lng:13,__typename:"LocationPoint"}']){
+    const d=parseSiegessaeuleDetail(SIEG_DETAIL+extra)
+    assertEquals(d.venueLatitude,null,extra)
+    assertEquals(d.venueLongitude,null,extra)
+  }
+})
+
 // ----------------------------------------------------------- Lab.oratory
 
 // Two blocks: the first ("TONIGHT") carries no uuid, the second does.

@@ -411,6 +411,9 @@ export interface SiegessaeuleDetail {
   venueName: string | null
   venueAddress: string | null
   venueUrl: string | null
+  /** The publisher's typed LocationPoint, never the city centroid or SVG numbers. */
+  venueLatitude: number | null
+  venueLongitude: number | null
   /** "Mehr Infos: eversports.de" — the organiser's own link. */
   infoUrl: string | null
   image: string | null
@@ -484,6 +487,16 @@ export function parseSiegessaeuleDetail(html: string): SiegessaeuleDetail {
   const address = text(
     firstMatch(/feather-map-pin[\s\S]{0,400}?<\/span>([\s\S]{0,300}?)<\/li>/, venueZone),
   )
+  // Sapper serializes the venue's map point outside the visible venue section.
+  // Do not evaluate that script. Accept one distinct, typed numeric point only.
+  const points = new Map<string, { lat: number; lng: number }>()
+  let invalidPoint = false
+  for (const m of html.matchAll(/location:\{lat:([+-]?(?:\d+(?:\.\d+)?|\.\d+)),lng:([+-]?(?:\d+(?:\.\d+)?|\.\d+)),__typename:"LocationPoint"\}/g)) {
+    const lat = Number(m[1]), lng = Number(m[2])
+    if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat)<=90 && Math.abs(lng)<=180 && (lat!==0 || lng!==0)) points.set(`${lat},${lng}`, { lat, lng })
+    else invalidPoint = true
+  }
+  const point = !invalidPoint && points.size===1 ? [...points.values()][0] : null
 
   return {
     title: text(decodeEntities(firstMatch(/<meta property="og:title" content="([^"]+)"/, body) ?? '')) || null,
@@ -508,6 +521,8 @@ export function parseSiegessaeuleDetail(html: string): SiegessaeuleDetail {
     venueName: venueName || null,
     venueAddress: address && /\d{5}/.test(address) ? address : null,
     venueUrl: firstMatch(/href="(https?:\/\/(?!(?:www\.)?siegessaeule\.de|cdn\.siegessaeule\.de)[^"]+)"/, venueZone),
+    venueLatitude: point?.lat ?? null,
+    venueLongitude: point?.lng ?? null,
     infoUrl: firstMatch(/Mehr Infos:[\s\S]{0,300}?href="(https?:\/\/[^"]+)"/, body),
     // Unsigned CDN path only — never the expiring og:image.
     image: firstMatch(/<img[^>]+src="(https:\/\/cdn\.siegessaeule\.de\/images\/[^"]+)"/, body),
