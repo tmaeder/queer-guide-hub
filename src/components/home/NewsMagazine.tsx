@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
-import { useNewsFront, type NewsFrontArticle } from '@/hooks/useNewsFront';
+import { useFrontPodcasts, useNewsFront, type NewsFrontArticle } from '@/hooks/useNewsFront';
 import { useHomeRegionContext } from './homeRegionContext';
 import { useEditorsPick } from '@/hooks/useEditorsPick';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
@@ -40,8 +40,8 @@ type Article = Pick<NewsFrontArticle, 'id' | 'slug' | 'title' | 'published_at'> 
     >
   >;
 
-/** Ask for a superset so a topic slice still has depth behind it. Podcasts is
- *  the thinnest slice at ~11% of the corpus, i.e. ~9 rows out of 80. */
+/** Ask for a superset so a topic slice still has depth behind it. Podcasts
+ *  are NOT sliced from this pool — see useFrontPodcasts for why. */
 const POOL = 80;
 /**
  * Lead + this many dense rows before the disclosure.
@@ -339,6 +339,7 @@ const NewsMagazine = React.memo(() => {
   const editorsPick = useEditorsPick();
 
   const [topic, setTopic] = useState<TopicId>(readStoredTopic);
+  const podcasts = useFrontPodcasts(1 + TIER_ONE_ROWS + TIER_TWO_MAX);
 
   const pool = front.articles as unknown as Article[];
 
@@ -370,10 +371,17 @@ const NewsMagazine = React.memo(() => {
   const counts = useMemo(() => {
     const m = new Map<TopicId, number>();
     for (const { id } of TOPICS) m.set(id, ranked.filter((a) => matchesTopic(a, id)).length);
+    m.set('podcasts', podcasts.articles.length);
     return m;
-  }, [ranked]);
+  }, [ranked, podcasts.articles]);
 
-  const filtered = useMemo(() => ranked.filter((a) => matchesTopic(a, topic)), [ranked, topic]);
+  const filtered = useMemo(
+    () =>
+      topic === 'podcasts'
+        ? (podcasts.articles as Article[])
+        : ranked.filter((a) => matchesTopic(a, topic)),
+    [ranked, topic, podcasts.articles],
+  );
 
   const shown = useMemo(() => filtered.slice(0, 1 + TIER_ONE_ROWS + TIER_TWO_MAX), [filtered]);
   const ids = useMemo(() => shown.map((a) => a.id), [shown]);
@@ -386,6 +394,10 @@ const NewsMagazine = React.memo(() => {
     seeAllLabel: t('common.allStories', 'All stories'),
   };
 
+  // A restored Podcasts topic waits on its own query, not the news pool —
+  // without this the band flashes the empty state before episodes arrive.
+  const loading = front.loading || (topic === 'podcasts' && podcasts.loading);
+
   if (front.error) {
     return (
       <Band {...head}>
@@ -394,7 +406,7 @@ const NewsMagazine = React.memo(() => {
     );
   }
 
-  if (!front.loading && shown.length === 0) {
+  if (!loading && shown.length === 0) {
     return (
       <Band {...head}>
         <p className="py-8 text-15 text-muted-foreground">
@@ -404,7 +416,7 @@ const NewsMagazine = React.memo(() => {
     );
   }
 
-  if (front.loading && shown.length === 0) {
+  if (loading && shown.length === 0) {
     return (
       <Band {...head}>
         <div className="mb-6 flex gap-2">
