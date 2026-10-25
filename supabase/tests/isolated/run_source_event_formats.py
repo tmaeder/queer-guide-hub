@@ -23,7 +23,7 @@ create table event_quality_current(event_id uuid,open_issue_codes text[],issue_c
 create table content_revisions(source_table text,source_id uuid,actor_kind text,changed_fields text[]);
 create table admin_review_repairs(entity_type text,entity_id uuid,reason text,previous_value jsonb,next_value jsonb);
 create table admin_automations(slug text,enabled boolean);insert into admin_automations values('review_automatic_resolution',true);
-create function event_quality_findings(uuid)returns table(issue_code text)language sql stable as
+create function event_quality_findings(uuid)returns table(issue_code text)language sql stable set search_path=public as
  'select ''CATEGORY_UNRESOLVED''from events where id=$1 and event_type=''other'' union all select ''IMAGE_MISSING''';
 create function api_private.run_review_automatic_resolution(p_batch integer,p_dry_run boolean)returns jsonb language plpgsql as $$
 declare v_limit integer:=p_batch;begin return '{"publisher_description_findings":0}'::jsonb || jsonb_build_object('dry_run',p_dry_run,'existing',0);end$$;
