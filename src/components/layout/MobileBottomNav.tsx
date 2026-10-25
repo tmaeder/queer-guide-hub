@@ -1,5 +1,4 @@
 import { Fragment, useState } from 'react';
-import { ChevronUp } from 'lucide-react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -86,13 +85,11 @@ export function MobileBottomNav() {
     navigate(cta.route);
   };
 
-  // The chevron is a hint, not a control: since Explore's own tap opens the
-  // sheet, a second button doing the same thing would be a duplicate target.
-  // It stays because it still carries the trip-count dot and reads as "there
-  // is more above". `pointer-events-none` lets taps fall through to the tab.
+  // Decoration only: the trip-count dot pinned to Explore's icon corner.
+  // `aria-haspopup` already says the tab opens a sheet, so the old chevron
+  // hint is gone. `pointer-events-none` lets taps fall through to the tab.
   const exploreAccessory = (
-    <span className="pointer-events-none absolute end-0 top-0 flex h-6 w-6 items-center justify-center rounded-full text-background/70">
-      <ChevronUp className="h-3.5 w-3.5" aria-hidden />
+    <span className="pointer-events-none absolute start-1/2 top-2 ms-5 flex">
       {!!user && tripCount > 0 && (
         <NavBadge
           dot
@@ -135,7 +132,7 @@ export function MobileBottomNav() {
             the raised contribute button, which is pulled 16px above this row.
             The class was named in the island spec's own comments for months
             and never written. */}
-        <ul className="island island-dock island-ink flex items-stretch gap-1 bg-foreground px-2 text-background">
+        <ul className="island island-dock island-ink flex items-center gap-0.5 bg-foreground px-1.5 text-background">
           {BOTTOM_NAV_TABS.map((tab) => {
             const isExplore = tab.id === 'explore';
             const anonGated = tab.authGated && !user;

@@ -1,6 +1,17 @@
 import { distanceKm } from '../_shared/geo-link-guards.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { providerFetch, ProviderUnavailable } from './provider-outcomes.ts'
+import { normalizeCoordinate } from '../_shared/venue-pipeline-utils.ts'
+
+/** Validate capture eligibility before reserving a limited provider call. */
+export function contactCaptureCoordinates(venue: { category?: unknown; latitude?: unknown; longitude?: unknown }) {
+  if (typeof venue.category !== 'string' || !venue.category.trim()
+    || ['cruising', 'toilet', 'other'].includes(venue.category)) return null
+  const latitude = normalizeCoordinate(venue.latitude), longitude = normalizeCoordinate(venue.longitude)
+  if (latitude === null || longitude === null || Math.abs(latitude) > 90 || Math.abs(longitude) > 180
+    || (latitude === 0 && longitude === 0)) return null
+  return { latitude, longitude }
+}
 
 export type ContactVenue = { id: string; name: string; latitude: number; longitude: number;
   address: string | null; country_code: string; updated_at: string; country_id: string;

@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { timingSafeEqual } from './timing-safe.ts'
 
 const ALLOWED_ORIGINS = new Set<string>([
   'https://queer.guide',
@@ -34,6 +35,21 @@ export const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://queer.guide',
 }
 
+/**
+ * Quote a value for a PostgREST logic-tree filter (`.or()` / `and()`), where
+ * `,` `(` `)` `.` are grammar. Unquoted, a value like `a.com,slug.neq.x`
+ * adds its own condition. Double-quoted with `\` and `"` escaped, it is data.
+ */
+export function pgrstValue(v: unknown): string {
+  return '"' + String(v ?? '').replace(/["\\]/g, (c) => '\\' + c) + '"'
+}
+
+/** Integer request param clamped to [1, max]; NaN/absent/negative → fallback. */
+export function boundedInt(value: unknown, fallback: number, max: number): number {
+  const n = Math.trunc(Number(value))
+  return Number.isFinite(n) && n >= 1 ? Math.min(n, max) : Math.min(fallback, max)
+}
+
 export function getServiceClient(): SupabaseClient {
   return createClient(
     Deno.env.get('SUPABASE_URL')!,
@@ -48,17 +64,36 @@ export function getAnonClient(): SupabaseClient {
   )
 }
 
+/**
+ * The one place every JSON body leaves through. On a 500 — the catch-all
+ * where a caught `e.message` lands, carrying Postgres column/constraint names
+ * (CWE-209) — an `error` field must be a snake_case code the handler chose
+ * (e.g. 'upsert_failed'); free text is logged server-side and replaced.
+ * 4xx and 502-504 pass through: those are the handler's own words
+ * (validation, upstream or config status an admin needs).
+ */
+const ERROR_CODE_RE = /^[a-z][a-z0-9_]{0,63}$/
+const GENERIC_ERROR = 'Internal server error'
+
 export function jsonResponse(data: unknown, status = 200, req?: Request): Response {
-  return new Response(JSON.stringify(data), {
+  let body = data
+  if (status === 500 && data && typeof data === 'object' && !Array.isArray(data)) {
+    const err = (data as Record<string, unknown>).error
+    if (typeof err === 'string' && err !== GENERIC_ERROR && !ERROR_CODE_RE.test(err)) {
+      console.error('jsonResponse 500:', err)
+      body = { ...(data as Record<string, unknown>), error: GENERIC_ERROR }
+    }
+  }
+  return new Response(JSON.stringify(body), {
     status,
     headers: { ...(req ? getCorsHeaders(req) : corsHeaders), 'Content-Type': 'application/json' },
   })
 }
 
+/** Uniform error body `{ error, success: false }`; 500s are sanitised by jsonResponse. */
 export function errorResponse(message: unknown, status = 500, req?: Request): Response {
-  const safeMessage =
-    typeof message === 'string' && message.trim().length > 0 ? message : 'Internal server error'
-  return jsonResponse({ error: safeMessage, success: false }, status, req)
+  const msg = typeof message === 'string' && message.trim().length > 0 ? message : GENERIC_ERROR
+  return jsonResponse({ error: msg, success: false }, status, req)
 }
 
 export function corsResponse(req?: Request): Response {
@@ -94,8 +129,7 @@ export interface AdminContext {
 export function hasInternalSecret(req: Request): boolean {
   const expected = Deno.env.get('INTERNAL_INVOKE_SECRET')
   if (!expected) return false
-  const provided = req.headers.get('x-internal-secret')
-  return provided === expected
+  return timingSafeEqual(req.headers.get('x-internal-secret'), expected)
 }
 
 /**
@@ -120,6 +154,38 @@ export async function requireInternalOrAdmin(
   return requireAdmin(req, serviceClient)
 }
 
+/**
+ * Like requireAdmin, but any of `roles` qualifies (user_roles has one row per
+ * role and has_role_jwt matches exactly, with no hierarchy). Use for staff
+ * tools the UI opens to editors/moderators: the /admin route guard defaults
+ * to editor+, so an admin-only gate there would break the UI it serves.
+ * Internal secret and service-role bearer pass, as with requireAdmin.
+ */
+export async function requireAnyRole(
+  req: Request,
+  serviceClient: SupabaseClient,
+  roles: readonly string[],
+): Promise<AdminContext | Response> {
+  if (hasInternalSecret(req)) return { userId: 'internal', isServiceRole: true, originalActorId: null }
+  const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '')
+  if (!token) return errorResponse('Missing authorization header', 401, req)
+  if (timingSafeEqual(token, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'))) {
+    return { userId: 'service-role', isServiceRole: true, originalActorId: null }
+  }
+  const { data: userData, error: userError } = await serviceClient.auth.getUser(token)
+  if (userError || !userData.user) return errorResponse('Invalid authorization', 401, req)
+  const { data: rows } = await serviceClient
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userData.user.id)
+    .in('role', roles as string[])
+    .limit(1)
+  if (!rows || rows.length === 0) return errorResponse('Insufficient role', 403, req)
+  return { userId: userData.user.id, isServiceRole: false, originalActorId: null }
+}
+
+export const STAFF_ROLES = ['admin', 'moderator', 'editor'] as const
+
 export async function requireAdmin(
   req: Request,
   serviceClient: SupabaseClient
@@ -140,7 +206,7 @@ export async function requireAdmin(
 
   // Allow internal service-role invocations (workflow-dispatcher, cron, etc.)
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  if (serviceRoleKey && token === serviceRoleKey) {
+  if (timingSafeEqual(token, serviceRoleKey)) {
     const originalActor = req.headers.get('x-original-actor')
     return {
       userId: originalActor || 'service-role',

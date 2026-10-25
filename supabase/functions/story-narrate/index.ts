@@ -14,7 +14,8 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { getCorsHeaders } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, getServiceClient, requireAnyRole, STAFF_ROLES } from '../_shared/supabase-client.ts';
+import { safeErrCode } from '../_shared/safe-error.ts';
 import { checkUserRateLimit } from '../_shared/user-rate-limit.ts';
 import { hasEnoughSignal, ungroundedSensitiveConcepts } from '../_shared/story-title-guard.ts';
 
@@ -26,7 +27,6 @@ const CF_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 
 const corsFor = (req: Request) => ({
   ...getCorsHeaders(req),
-  'Access-Control-Allow-Headers': 'authorization, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 });
 
@@ -122,6 +122,10 @@ Deno.serve(async (req) => {
       headers: { ...cors, 'content-type': 'application/json' },
     });
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
+  // LLM spend + overwrites story narratives (force=true beats hand edits):
+  // staff, or the community_submissions trigger via X-Internal-Secret.
+  const gate = await requireAnyRole(req, getServiceClient(), STAFF_ROLES);
+  if (gate instanceof Response) return gate;
   if (!(await checkUserRateLimit(req, 'story-narrate', 30, 3600))) {
     return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), { status: 429, headers: { ...cors, 'Content-Type': 'application/json' } });
   }
@@ -142,7 +146,7 @@ Deno.serve(async (req) => {
     .select('id, title, brief_title, narrative, narrative_edited')
     .eq('id', storyId)
     .maybeSingle();
-  if (storyErr) return jsonResp({ error: storyErr.message }, 500);
+  if (storyErr) return jsonResp({ error: safeErrCode(storyErr, [], 'story-narrate') }, 500);
   if (!story) return jsonResp({ error: 'story not found' }, 404);
   if (story.narrative_edited && !body.force) {
     return jsonResp({ success: true, skipped: 'narrative_edited' });
@@ -153,7 +157,7 @@ Deno.serve(async (req) => {
     .select('submission_id')
     .eq('story_id', storyId)
     .limit(8);
-  if (memErr) return jsonResp({ error: memErr.message }, 500);
+  if (memErr) return jsonResp({ error: safeErrCode(memErr, [], 'story-narrate') }, 500);
   if (!memberRows?.length) return jsonResp({ error: 'story has no members' }, 400);
 
   const ids = memberRows.map((r) => r.submission_id);
@@ -161,7 +165,7 @@ Deno.serve(async (req) => {
     .from('community_submissions')
     .select('content_type, data')
     .in('id', ids);
-  if (subErr) return jsonResp({ error: subErr.message }, 500);
+  if (subErr) return jsonResp({ error: safeErrCode(subErr, [], 'story-narrate') }, 500);
 
   const members: MemberText[] = (subs ?? []).map((s) => {
     const d = (s.data ?? {}) as Record<string, unknown>;
@@ -214,7 +218,7 @@ Deno.serve(async (req) => {
       narrative: result.narrative,
     })
     .eq('id', storyId);
-  if (updErr) return jsonResp({ error: updErr.message }, 500);
+  if (updErr) return jsonResp({ error: safeErrCode(updErr, [], 'story-narrate') }, 500);
 
   return jsonResp({ success: true, story_id: storyId, ...result });
 });

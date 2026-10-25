@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
-import { collectContactEvidence, matchingContactPlace, type ContactVenue } from './contact-evidence.ts'
+import { collectContactEvidence, matchingContactPlace, contactCaptureCoordinates, type ContactVenue } from './contact-evidence.ts'
 import { ProviderUnavailable } from './provider-outcomes.ts'
 const venue: ContactVenue = { id: 'native', name: 'Café Example', latitude: 47, longitude: 8,
   country_code: 'CH', country_id: 'country', city_id: 'city', organization_id: 'org',
@@ -46,7 +46,7 @@ Deno.test('scoped capture retains raw source hash and has no credentials in its 
     assertEquals(url.searchParams.get('ll'), '47,8')
     assertEquals(url.searchParams.get('radius'), '100')
     assertEquals(url.searchParams.get('limit'), '50')
-    assertEquals(new Headers(init?.headers).get('authorization'), 'Bearer private-key')
+    assertEquals(new Headers((init as { headers?: HeadersInit } | undefined)?.headers).get('authorization'), 'Bearer private-key')
     return Promise.resolve(Response.json({ results: [place] }))
   }
   try {
@@ -68,4 +68,21 @@ Deno.test('source outages and oversized captures cannot become negative contact 
     globalThis.fetch = () => Promise.resolve(Response.json({ results: [place, ...Array.from({ length: 49 }, () => ({ name: 'Other' }))] }))
     assertEquals((await collectContactEvidence(venue, 'key')).proof, null)
   } finally { globalThis.fetch = original }
+})
+
+Deno.test('provider budget eligibility rejects non-business and malformed coordinates before reservation', () => {
+  for (const category of ['other', 'cruising', 'toilet', '', null, undefined]) {
+    assertEquals(contactCaptureCoordinates({ category, latitude: 47, longitude: 8 }), null)
+  }
+  for (const latitude of [null, '', ' ', false, [], {}, '0x10', Infinity, 91]) {
+    assertEquals(contactCaptureCoordinates({ category: 'bar', latitude, longitude: 8 }), null)
+  }
+  assertEquals(contactCaptureCoordinates({ category: 'bar', latitude: 47, longitude: 181 }), null)
+  assertEquals(contactCaptureCoordinates({ category: 'bar', latitude: 0, longitude: 0 }), null)
+})
+Deno.test('eligible provider captures preserve decimal coordinates and explicit zero axes', () => {
+  assertEquals(contactCaptureCoordinates({ category: 'event-venue', latitude: '47.38331190', longitude: '8.53934100' }),
+    { latitude: 47.3833119, longitude: 8.539341 })
+  assertEquals(contactCaptureCoordinates({ category: 'bar', latitude: '0', longitude: 8 }), { latitude: 0, longitude: 8 })
+  assertEquals(contactCaptureCoordinates({ category: 'bar', latitude: 47, longitude: '0' }), { latitude: 47, longitude: 0 })
 })

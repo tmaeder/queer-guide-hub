@@ -12,7 +12,16 @@ vi.mock('@/components/map/NearbyMapLegend', () => ({ NearbyMapLegend: () => null
 vi.mock('@/hooks/useNearbyMapPoints', () => ({ useNearbyMapPoints: () => [] }));
 vi.mock('@/components/share/ShareMenu', () => ({ ShareMenu: () => <button>Share</button> }));
 vi.mock('@/components/moderation/ReportButton', () => ({ ReportButton: () => null }));
-vi.mock('@/components/admin/AdminEditButton', () => ({ AdminEditButton: () => null }));
+vi.mock('@/components/admin/AdminEditButton', () => ({
+  AdminEditButton: (p: { contentType: string; contentId: string; exportable?: boolean }) => (
+    <span
+      data-testid="admin-edit"
+      data-type={p.contentType}
+      data-id={p.contentId}
+      data-exportable={String(Boolean(p.exportable))}
+    />
+  ),
+}));
 
 import { OrgActions, OrgLocationContact } from '../OrganizationDetail.parts';
 
@@ -129,5 +138,17 @@ describe('organization page — contact lines', () => {
       expect(cls).toMatch(/\bflex\b/);
       expect(cls).toMatch(/\bitems-center\b/);
     }
+  });
+
+  it('opts the organization admin menu into the record export', () => {
+    const { getByTestId } = render(
+      <MemoryRouter>
+        <OrgActions org={org} />
+      </MemoryRouter>,
+    );
+    const btn = getByTestId('admin-edit');
+    expect(btn).toHaveAttribute('data-type', 'organizations');
+    expect(btn).toHaveAttribute('data-id', 'o1');
+    expect(btn).toHaveAttribute('data-exportable', 'true');
   });
 });

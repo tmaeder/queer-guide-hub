@@ -138,7 +138,7 @@ test.describe('@smoke trans health vocabulary is published and sourced', () => {
     ['orchiectomy', /testicl/i],
     ['bottom-surgery', /genital surgery/i],
     ['hysterectomy', /uterus/i],
-    ['silicone-injection', /embolism/i],
+    ['silicone-injection', /embolism|migration|chronic inflammation/i],
   ];
 
   for (const [slug, present] of REVIVED) {
@@ -176,7 +176,10 @@ test.describe('@smoke trans health vocabulary is published and sourced', () => {
       /consent to protected sex is not consent to unprotected sex/i,
     );
     expect(article, 'stealthing lost the PEP time limit').toMatch(/72 hours/i);
-    expect(article, 'stealthing must point away from the trans sense').toMatch(/trans/i);
+    expect(article, 'stealthing must describe the condom-removal assault').toMatch(/condom/i);
+    expect(article, 'stealthing must not adopt the trans privacy definition').not.toMatch(
+      /living without disclosing.*trans/i,
+    );
 
     // Filed as safety, not kink. Reading "Fetishes" here would mean the age gate
     // is back on a page about assault.

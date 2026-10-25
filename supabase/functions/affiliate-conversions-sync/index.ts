@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin, pgrstValue } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
@@ -106,7 +106,7 @@ async function matchClick(supabase: SupabaseClient, subId: string | null | undef
       const { data: merchants } = await supabase
         .from('marketplace_merchants')
         .select('id')
-        .or(`slug.eq.${listing.source_type ?? ''},shop_domain.eq.${listing.merchant_domain ?? ''}`)
+        .or(`slug.eq.${pgrstValue(listing.source_type)},shop_domain.eq.${pgrstValue(listing.merchant_domain)}`)
         .limit(1)
       base.merchant_id = merchants?.[0]?.id ?? null
     }

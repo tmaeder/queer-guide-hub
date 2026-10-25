@@ -190,7 +190,39 @@
       "aVenue": "Venue"
     },
     "matchTag": "Match",
-    "openAlerts": "All notifications"
+    "openAlerts": "All notifications",
+    "mail": {
+      "delivery": {
+        "label": "Delivery: {{status}}",
+        "loading": "Checking delivery status…",
+        "refresh": "Refresh status",
+        "refreshing": "Refreshing…",
+        "error": "Could not refresh delivery status.",
+        "lastKnown": "Last verified status: {{status}}",
+        "unavailable": "Delivery status unavailable",
+        "unproved": "No verified receipt is available for this message.",
+        "states": {
+          "queued": "Queued",
+          "processing": "Submitting",
+          "accepted": "Submitted",
+          "deferred": "Delayed",
+          "uncertain": "Confirmation pending",
+          "delivered": "Delivered",
+          "failed": "Failed",
+          "bounced": "Rejected",
+          "suppressed": "Sending stopped",
+          "complained": "Spam complaint"
+        },
+        "help": {
+          "accepted": "Delivery is not yet confirmed.",
+          "uncertain": "Confirmation is pending. Check the status before sending another copy.",
+          "delivered": "The recipient’s mail server accepted this message. Inbox placement is not confirmed."
+        }
+      },
+      "scope": "Received and sent mail",
+      "sent": "Sent",
+      "loadError": "Messages could not load. Try again."
+    }
   },
   "eventTypes": {
     "party": "Party",

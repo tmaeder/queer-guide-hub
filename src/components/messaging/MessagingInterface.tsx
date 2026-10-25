@@ -22,6 +22,8 @@ import { ChatView } from '@/components/messaging/chat/ChatView';
 import { useInboxSearch } from '@/components/messaging/chat/useInboxSearch';
 import { useInboxSelection } from '@/components/messaging/chat/useInboxSelection';
 import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Button } from '@/components/ui/button';
+import { mailboxSelection } from '@/lib/mailboxSelection';
 
 export interface MessagingInterfaceProps {
   /**
@@ -36,14 +38,15 @@ export interface MessagingInterfaceProps {
 export const MessagingInterface = ({ filter, className }: MessagingInterfaceProps = {}) => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { items, loading } = useInboxFeed(filter ?? 'all');
+  const { items, loading, hasNextPage, fetchNextPage, isFetchingNextPage, error, refetch } =
+    useInboxFeed(filter ?? 'all');
   const onlineUsers = useGlobalPresence();
   const railActions = useRailActions();
   const [composeEmailOpen, setComposeEmailOpen] = useState(false);
   const [recipientOpen, setRecipientOpen] = useState(false);
   const { user } = useAuth();
 
-  const { search, setSearch, visibleItems } = useInboxSearch(items, user);
+  const { search, setSearch, visibleItems } = useInboxSearch(items, user, filter === 'mail');
   const { selected, handleSelect, handleBack } = useInboxSelection(
     filter,
     items,
@@ -65,7 +68,11 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
             <SheetTitle>{t('inbox.compose.email', { defaultValue: 'New email' })}</SheetTitle>
           </SheetHeader>
           <ComposeEmail
-            onSent={() => setComposeEmailOpen(false)}
+            onSent={(emailId) => {
+              setComposeEmailOpen(false);
+              const saved = emailId ? mailboxSelection(emailId) : null;
+              if (saved) handleSelect(saved);
+            }}
             onCancel={() => setComposeEmailOpen(false)}
           />
         </SheetContent>
@@ -98,6 +105,9 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
             />
           </div>
           <div className="px-4 pb-2">
+            {filter === 'mail' && (
+              <p className="mb-2 text-sm text-muted-foreground">{t('inbox.mail.scope')}</p>
+            )}
             <div className="relative">
               <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -116,6 +126,13 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
                 size={32}
                 label={t('inbox.loading', { defaultValue: 'Loading messages' })}
               />
+            </div>
+          ) : error && items.length === 0 ? (
+            <div className="space-y-4 p-4" role="alert">
+              <p>{t('inbox.mail.loadError')}</p>
+              <Button variant="outline" onClick={() => void refetch()}>
+                {t('common.retry')}
+              </Button>
             </div>
           ) : visibleItems.length === 0 ? (
             <div className="text-center py-8">
@@ -144,6 +161,23 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
               ))}
             </div>
           )}
+          {!loading && items.length > 0 && error && (
+            <p className="px-4 pb-4 text-sm" role="alert">
+              {t('inbox.mail.loadError')}
+            </p>
+          )}
+          {!loading && hasNextPage && (
+            <div className="px-4 pb-4">
+              <Button
+                variant="outline"
+                className="w-full"
+                disabled={isFetchingNextPage}
+                onClick={() => void fetchNextPage()}
+              >
+                {isFetchingNextPage ? t('common.loading') : t('common.loadMore')}
+              </Button>
+            </div>
+          )}
         </ScrollArea>
       </div>
 
@@ -153,14 +187,15 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
             Chat already renders its own back button inside ChatView. */}
         {selected && selected.kind !== 'chat' && (
           <div className="md:hidden border-b p-4">
-            <button
+            <Button
+              variant="ghost"
               onClick={handleBack}
               aria-label={t('common.back', { defaultValue: 'Back' })}
               className="flex items-center gap-2 text-sm text-muted-foreground"
             >
               <ChevronLeft className="h-4 w-4" />
               {t('common.back', { defaultValue: 'Back' })}
-            </button>
+            </Button>
           </div>
         )}
         {selected?.kind === 'chat' ? (

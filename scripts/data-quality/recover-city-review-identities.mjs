@@ -13,7 +13,15 @@ const batchSize = Number(option('--batch', '20'))
 const maxBatches = Number(option('--max-batches', '10'))
 const output = option('--output', `outputs/city-review-identity-${apply?'apply':'dry'}-${Date.now()}.json`)
 const skipReport = option('--skip-report', null)
+const country = option('--country', null)
+const blockedBy = option('--blocked-by', null)
+const excludeIdsFile = option('--exclude-ids-file', null)
+const expectRevision = option('--expect-revision', null)
+if (country && !/^[A-Z]{2}$/.test(country)) throw new Error('Country must be an ISO alpha-2 code')
+if (blockedBy && !['incomplete', 'scope'].includes(blockedBy)) throw new Error('Unsupported blocked reason')
 if (!Number.isInteger(batchSize) || batchSize<1 || batchSize>40 || !Number.isInteger(maxBatches) || maxBatches<1 || maxBatches>500) throw new Error('Bounded batch (1–40) and run (1–500) required')
+try { await readFile(output); throw new Error('Use a fresh journal path; existing native receipts must be retained') }
+catch (error) { if (error.code !== 'ENOENT') throw error }
 const project = 'xqeacpakadqfxjxjcewc'
 let token = process.env.SUPABASE_PAT
 if (!token) {
@@ -53,6 +61,11 @@ if (skipReport) {
   skippedIds=[...new Set([...(previous.skipped_ids??[]),...previous.receipts.filter(r=>r.status==='completed').flatMap(r=>r.ids)])]
   if (skippedIds.some(id=>typeof id!=='string' || !/^[0-9a-f-]{36}$/.test(id))) throw new Error('Invalid prior native identity')
 }
+if (excludeIdsFile) {
+  const excluded = JSON.parse(await readFile(excludeIdsFile, 'utf8'))
+  if (!Array.isArray(excluded) || excluded.some(id => typeof id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))) throw new Error('Excluded native UUID array required')
+  skippedIds = [...new Set([...skippedIds, ...excluded])]
+}
 const skipClause=skippedIds.length ? `and not(c.id=any(array[${skippedIds.map(id=>`'${id}'::uuid`).join(',')}]))` : ''
 // Keep each source resolver batch in the same country where possible, so its
 // existing country/class caches avoid repeated upstream entity reads.
@@ -62,8 +75,10 @@ const candidates = await sql(`select distinct c.id,c.country_id from public.revi
  and coalesce(c.enrichment_status#>>'{disposition,state}','')<>'not_a_city'
  and c.latitude between -90 and 90 and c.longitude between -180 and 180
  ${skipClause}
+ ${country ? `and c.country_id in(select id from public.countries where code='${country}')` : ''}
+ ${blockedBy ? `and c.enrichment_status#>>'{wikidata_search,detail,blocked_by}'='${blockedBy}'` : ''}
  order by c.country_id nulls last,c.id limit ${batchSize*maxBatches}`,true)
-const report = { started_at:new Date().toISOString(),apply,skip_report:skipReport,skipped_ids:skippedIds,candidate_ids:candidates.map(c=>c.id),receipts:[],totals:{processed:0,updated:0,failed:0},complete:false }
+const report = { started_at:new Date().toISOString(),apply,country,expected_revision:expectRevision,blocked_by:blockedBy,exclude_ids_file:excludeIdsFile,skip_report:skipReport,skipped_ids:skippedIds,candidate_ids:candidates.map(c=>c.id),receipts:[],totals:{processed:0,updated:0,failed:0},complete:false }
 await mkdir(dirname(output),{recursive:true})
 // Keep the last complete receipt journal intact if a full disk interrupts a
 // write. A partial JSON file cannot safely tell an operator what ran already.
@@ -109,6 +124,10 @@ for (let offset=0;offset<candidates.length;offset+=batchSize) {
   for (const key of Object.keys(report.totals)) report.totals[key]+=Number(data[key]??0)
   await save()
   console.log(JSON.stringify({batch:report.receipts.length,request_id:rid,processed:data.processed,updated:data.updated,failed:data.failed,dry_run:!apply}))
+  if (expectRevision && data.revision !== expectRevision) {
+    report.stop_reason='deployed_revision_changed'; await save()
+    throw new Error('Native resolver revision changed; stop before submitting another batch')
+  }
   if (data.error || data.circuit_open || data.failed || data.wikidata_fetch_failed) throw new Error('Native enrichment requires attention; stopping before the next batch')
   if (!apply) break
   await sleep(3000)

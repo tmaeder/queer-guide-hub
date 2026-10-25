@@ -35,12 +35,6 @@ const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/b
 
 const SURNAME_STUB = [/is a surname/i, /Notable people with the (surname|given name|name)/i];
 
-/** The tag's own prose block, excluding the nav/rails that follow it. */
-function articleOf(html: string): string {
-  const m = html.match(/<article[\s\S]*?<\/article>/i);
-  return m ? m[0] : '';
-}
-
 function isNoindex(html: string): boolean {
   return /<meta\s+name="robots"\s+content="[^"]*noindex/i.test(html);
 }
@@ -50,15 +44,21 @@ test.describe('@smoke glossary entries do not publish a surname stub', () => {
   // once their stub prose was nulled, so the assertion is the gate's own stamp
   // plus a document-wide absence of the stub.
   for (const slug of [
-    'farber',
-    'kerle',
+    // 'farber' renamed to English by 99991792821333 (batch 7); the German slug redirects here.
+    'dyer',
+    // 'kerle' renamed to English by 99991792821333 (batch 7); the German slug redirects here.
+    'guys',
     // 'kuenstler' was merged into `artist` by 99991792781503 (2026-10-23 Review
     // Queue sheet); its slug now redirects there, so it is no longer an active row.
     'lehrer',
-    'maler',
-    'sprecher',
+    // 'maler' was renamed to `painter` by 99991792821328 (German slug to English);
+    // /tags/maler now redirects there.
+    'painter',
+    // 'sprecher' renamed to English by 99991792821333 (batch 7); the German slug redirects here.
+    'speaker',
     'tanzer',
-    'zeichner',
+    // 'zeichner' renamed to English by 99991792821333 (batch 7); the German slug redirects here.
+    'illustrator',
   ]) {
     test(`/tags/${slug} publishes no surname list and is deindexed`, async ({ request }) => {
       const res = await request.get(`/tags/${slug}`, {
@@ -122,19 +122,7 @@ test.describe('a glossary summary names its own subject', () => {
   // legitimately improves the other, and pinning to the bare term would pass
   // against the drag summary this spec exists to keep out.
   test('/tags/queening is facesitting, not drag performance', async ({ request }) => {
-    const res = await request.get('/tags/queening', {
-      headers: { 'User-Agent': BOT_UA },
-    });
-    expect(res.status()).toBe(200);
-    const html = await res.text();
-
-    // Still indexable — this row was never thin, only mislabelled.
-    expect(
-      isNoindex(html),
-      '/tags/queening was deindexed; the summary fix should not have changed its prose gate',
-    ).toBe(false);
-
-    const article = articleOf(html);
+    const { prose: article, html } = await glossaryEntry(request, 'queening');
     expect(article, '/tags/queening renders no prose').toMatch(/facesitting|sitting on a partner/i);
     expect(html, '/tags/queening still publishes the drag summary').not.toMatch(
       /Drag culture performance art/i,

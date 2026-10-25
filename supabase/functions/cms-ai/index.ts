@@ -32,7 +32,8 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { llmChatCompletion, isLlmConfigured } from '../_shared/llm-client.ts';
-import { getCorsHeaders } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, getServiceClient, requireAnyRole, STAFF_ROLES } from '../_shared/supabase-client.ts';
+import { safeErrCode } from '../_shared/safe-error.ts'
 
 type AIOp = 'summarize' | 'alt_text' | 'seo_draft' | 'auto_tag' | 'fact_check' | 'quality_review';
 
@@ -135,7 +136,7 @@ Deno.serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         ok: false,
-        error: err instanceof Error ? err.message : 'Unhandled error',
+        error: safeErrCode(err, [], 'cms-ai'),
       }),
       { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } },
     );
@@ -151,6 +152,10 @@ async function handle(req: Request): Promise<Response> {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
   }
+
+  // Paid LLM calls + cms_ai_cache writes: CMS staff only (the editor is editor+).
+  const gate = await requireAnyRole(req, getServiceClient(), STAFF_ROLES);
+  if (gate instanceof Response) return gate;
 
   if (!isLlmConfigured()) {
     return new Response(

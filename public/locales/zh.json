@@ -3442,7 +3442,39 @@
       "aVenue": "场所"
     },
     "matchTag": "配对",
-    "openAlerts": "[ZH] All notifications"
+    "openAlerts": "[ZH] All notifications",
+    "mail": {
+      "delivery": {
+        "label": "投递：{{status}}",
+        "loading": "正在检查投递状态…",
+        "refresh": "刷新状态",
+        "refreshing": "正在刷新…",
+        "error": "无法刷新投递状态。",
+        "lastKnown": "最后验证的状态：{{status}}",
+        "unavailable": "投递状态不可用",
+        "unproved": "此邮件没有可验证的投递回执。",
+        "states": {
+          "queued": "排队中",
+          "processing": "正在提交",
+          "accepted": "已提交",
+          "deferred": "延迟",
+          "uncertain": "等待确认",
+          "delivered": "已投递",
+          "failed": "失败",
+          "bounced": "被拒收",
+          "suppressed": "已停止发送",
+          "complained": "垃圾邮件投诉"
+        },
+        "help": {
+          "accepted": "投递尚未确认。",
+          "uncertain": "正在等待确认。再次发送相同内容前，请先检查状态。",
+          "delivered": "收件人的邮件服务器已接受此邮件。尚未确认其是否进入收件箱。"
+        }
+      },
+      "scope": "收件和已发送邮件",
+      "sent": "已发送",
+      "loadError": "无法加载邮件。请重试。"
+    }
   },
   "extension": {
     "signInGate": {

@@ -342,7 +342,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return new Response(null, {
       status: 301,
       headers: {
-        Location: locale ? localizedUrl(locale, handleRoute.location) : canonicalUrl(handleRoute.location),
+        Location: locale
+          ? localizedUrl(locale, handleRoute.location)
+          : canonicalUrl(handleRoute.location),
         'Cache-Control': 'public, s-maxage=300, max-age=60',
       },
     });
@@ -617,7 +619,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // crisis-hotline default that ships in index.html (buildNoscriptHtml
   // returns null for them). Other indexable routes get a route-specific
   // summary + internal links so pre-JS visitors see meaningful content.
-  const noscriptHtml = indexable ? (reportPage?.body || buildNoscriptHtml(basePath)) : null;
+  const noscriptHtml = indexable ? reportPage?.body || buildNoscriptHtml(basePath) : null;
   if (noscriptHtml) {
     rewriter.on('noscript', new NoscriptRewriter(noscriptHtml));
   }
@@ -689,7 +691,7 @@ const NOT_FOUND_KINDS: Record<string, NotFoundKind> = {
   personality: {
     title: 'Person not found',
     heading: 'Nobody at this stop.',
-    body: 'The person you\'re looking for was moved, removed, or never existed.',
+    body: "The person you're looking for was moved, removed, or never existed.",
     backLabel: 'Back to people',
     backHref: '/personalities',
     track: '330 100% 56%',
@@ -697,7 +699,7 @@ const NOT_FOUND_KINDS: Record<string, NotFoundKind> = {
   news: {
     title: 'Article not found',
     heading: 'No article at this stop.',
-    body: 'The article you\'re looking for was moved or removed.',
+    body: "The article you're looking for was moved or removed.",
     backLabel: 'Back to news',
     backHref: '/news',
     track: '193 100% 45%',
@@ -705,7 +707,7 @@ const NOT_FOUND_KINDS: Record<string, NotFoundKind> = {
   venue: {
     title: 'Venue not found',
     heading: 'No venue at this stop.',
-    body: 'The venue you\'re looking for was moved or removed.',
+    body: "The venue you're looking for was moved or removed.",
     backLabel: 'Browse venues',
     backHref: '/venues',
     track: '330 100% 56%',
@@ -713,7 +715,7 @@ const NOT_FOUND_KINDS: Record<string, NotFoundKind> = {
   event: {
     title: 'Event not found',
     heading: 'No event at this stop.',
-    body: 'The event you\'re looking for was moved or removed.',
+    body: "The event you're looking for was moved or removed.",
     backLabel: 'Browse events',
     backHref: '/events',
     track: '193 100% 45%',
@@ -721,7 +723,7 @@ const NOT_FOUND_KINDS: Record<string, NotFoundKind> = {
   hotel: {
     title: 'Hotel not found',
     heading: 'No hotel at this stop.',
-    body: 'The hotel you\'re looking for was moved or removed.',
+    body: "The hotel you're looking for was moved or removed.",
     backLabel: 'Browse hotels',
     backHref: '/hotels',
     track: '50.1 100% 50%',
@@ -729,7 +731,7 @@ const NOT_FOUND_KINDS: Record<string, NotFoundKind> = {
   city: {
     title: 'City not found',
     heading: 'No city at this stop.',
-    body: 'The city you\'re looking for was moved or removed.',
+    body: "The city you're looking for was moved or removed.",
     backLabel: 'Browse cities',
     backHref: '/cities',
     track: '135.6 74.5% 52.4%',
@@ -737,7 +739,7 @@ const NOT_FOUND_KINDS: Record<string, NotFoundKind> = {
   country: {
     title: 'Country not found',
     heading: 'No country at this stop.',
-    body: 'The country you\'re looking for was moved or removed.',
+    body: "The country you're looking for was moved or removed.",
     backLabel: 'Browse destinations',
     backHref: '/travel',
     track: '50.1 100% 50%',
@@ -745,7 +747,7 @@ const NOT_FOUND_KINDS: Record<string, NotFoundKind> = {
   village: {
     title: 'District not found',
     heading: 'No district at this stop.',
-    body: 'The district you\'re looking for was moved or removed.',
+    body: "The district you're looking for was moved or removed.",
     backLabel: 'Browse destinations',
     backHref: '/travel',
     track: '135.6 74.5% 52.4%',
@@ -753,7 +755,7 @@ const NOT_FOUND_KINDS: Record<string, NotFoundKind> = {
   marketplace: {
     title: 'Product not found',
     heading: 'No product at this stop.',
-    body: 'The product you\'re looking for was moved or removed.',
+    body: "The product you're looking for was moved or removed.",
     backLabel: 'Browse the marketplace',
     backHref: '/marketplace',
     track: '50.1 100% 50%',
@@ -776,7 +778,7 @@ function notFoundKindFor(pathname: string): NotFoundKind {
   return {
     title: 'Page not found',
     heading: 'No stop here.',
-    body: 'The page you\'re looking for was moved or removed.',
+    body: "The page you're looking for was moved or removed.",
     backLabel: 'Home',
     backHref: '/',
   };

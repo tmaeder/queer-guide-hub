@@ -1,3 +1,4 @@
+import { assertCurrentTagSitemap } from './support/tagSitemap';
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 
@@ -148,13 +149,6 @@ const MUST_NOT_BE_GEO_DUPLICATES: Array<{
 /** Path prefixes that ARE geo pages — the thing none of these may land on. */
 const GEO_PREFIXES = ['/city/', '/cities/', '/country/', '/countries/', '/villages/', '/place/'];
 
-/**
- * Tags that ARE published as glossary articles. The arming control for the sitemap: a
- * truncated or empty sitemap satisfies every "not present" assertion, and so does one that
- * lost the whole `article` cohort. Each measured 200, in-sitemap and index-able.
- */
-const PUBLISHED_ARTICLE_TAGS = ['bipoc', 'bisexual', 'dildo'];
-
 test.describe('place-named glossary tags redirect to the canonical geo page', () => {
   for (const c of DUPLICATES) {
     test(`/tags/${c.slug} permanently redirects to ${c.geo}`, async ({ request }) => {
@@ -265,7 +259,7 @@ test.describe('place-named glossary tags redirect to the canonical geo page', ()
 
     // Arming check. An empty or truncated sitemap would satisfy every "not present"
     // assertion below; this is what makes their absence mean something.
-    expect(slugs.size, 'tag sitemap looks empty or unparsed').toBeGreaterThan(1000);
+    await assertCurrentTagSitemap(request, xml);
 
     for (const c of DUPLICATES) {
       expect(slugs.has(c.slug), `sitemap still advertises /tags/${c.slug}`).toBe(false);
@@ -275,12 +269,5 @@ test.describe('place-named glossary tags redirect to the canonical geo page', ()
     // by design, and sitemap-tags.xml carries exactly the 1,196 `article` rows. So the
     // arming control is that the PUBLISHED vocabulary is still there: size alone would be
     // satisfied by a sitemap that kept 1,196 entries and lost this cohort.
-    for (const slug of PUBLISHED_ARTICLE_TAGS) {
-      expect(
-        slugs.has(slug),
-        `sitemap dropped /tags/${slug}, a published article tag — the article cohort is ` +
-          `missing, so every "not present" assertion above is meaningless`,
-      ).toBe(true);
-    }
   });
 });

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useUnifiedTags } from '@/hooks/useUnifiedTags';
 import { useAmenityVocabulary } from '@/hooks/useAmenityVocabulary';
 import { useTargetGroups } from '@/hooks/useTargetGroups';
@@ -58,7 +58,8 @@ export function useVenueFilters({
     null,
   );
 
-  const { tags: unifiedTags, loading: tagsLoading, fetchTags } = useUnifiedTags();
+  // useUnifiedTags fetches on mount itself; a second fetchTags() here only doubled the request.
+  const { tags: unifiedTags, loading: tagsLoading } = useUnifiedTags();
   const { vocab: amenityVocab, loading: vocabLoading } = useAmenityVocabulary();
   const amenityOptions = Array.from(amenityVocab?.values() ?? [])
     .filter((a) => a.kind === 'amenity')
@@ -76,8 +77,11 @@ export function useVenueFilters({
 
   // "Save as my accessibility needs" — first-use affordance, max one
   // save-default prompt per session across all surfaces.
-  const { chips: savedAccessibilityChips, loading: prefsLoading, signedIn } =
-    usePreferenceChips(['accessibility']);
+  const {
+    chips: savedAccessibilityChips,
+    loading: prefsLoading,
+    signedIn,
+  } = usePreferenceChips(['accessibility']);
   const { show: showAccessibilityPrompt, dismiss: dismissAccessibilityPrompt } =
     useDefaultPromptGate(
       signedIn &&
@@ -86,11 +90,6 @@ export function useVenueFilters({
         selectedAccessibilityAttributes.length > 0,
     );
 
-  useEffect(() => {
-    fetchTags();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Sync array filters when URL-driven props change (e.g. back/forward
   // navigation). Compares joined keys so we don't fight user typing.
   const initialTagsKey = (initialTags ?? []).join(',');
@@ -98,30 +97,28 @@ export function useVenueFilters({
   const initialServicesKey = (initialServices ?? []).join(',');
   const initialAccessibilityKey = (initialAccessibilityAttributes ?? []).join(',');
   const initialTargetGroupsKey = (initialTargetGroups ?? []).join(',');
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setSelectedTags(initialTags ?? []);
-  }, [initialTagsKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setSelectedAmenities(initialAmenities ?? []);
-  }, [initialAmenitiesKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setSelectedServices(initialServices ?? []);
-  }, [initialServicesKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setSelectedAccessibilityAttributes(initialAccessibilityAttributes ?? []);
-  }, [initialAccessibilityKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setSelectedTargetGroups(initialTargetGroups ?? []);
-  }, [initialTargetGroupsKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setCity(initialCity);
-  }, [initialCity]);
+  // Adjust state during render (react.dev "storing information from previous
+  // renders") instead of six sync effects: no extra commit, no stale frame.
+  const syncKey = [
+    initialTagsKey,
+    initialAmenitiesKey,
+    initialServicesKey,
+    initialAccessibilityKey,
+    initialTargetGroupsKey,
+    initialCity,
+  ];
+  const [prevSyncKey, setPrevSyncKey] = useState(syncKey);
+  if (syncKey.some((k, i) => k !== prevSyncKey[i])) {
+    setPrevSyncKey(syncKey);
+    if (initialTagsKey !== prevSyncKey[0]) setSelectedTags(initialTags ?? []);
+    if (initialAmenitiesKey !== prevSyncKey[1]) setSelectedAmenities(initialAmenities ?? []);
+    if (initialServicesKey !== prevSyncKey[2]) setSelectedServices(initialServices ?? []);
+    if (initialAccessibilityKey !== prevSyncKey[3])
+      setSelectedAccessibilityAttributes(initialAccessibilityAttributes ?? []);
+    if (initialTargetGroupsKey !== prevSyncKey[4])
+      setSelectedTargetGroups(initialTargetGroups ?? []);
+    if (initialCity !== prevSyncKey[5]) setCity(initialCity);
+  }
 
   // Build current filters object
   const buildFilters = useCallback(

@@ -3444,7 +3444,39 @@
       "aVenue": "Local"
     },
     "matchTag": "Match",
-    "openAlerts": "[PT] All notifications"
+    "openAlerts": "[PT] All notifications",
+    "mail": {
+      "delivery": {
+        "label": "Entrega: {{status}}",
+        "loading": "A verificar a entrega…",
+        "refresh": "Atualizar estado",
+        "refreshing": "A atualizar…",
+        "error": "Não foi possível atualizar o estado da entrega.",
+        "lastKnown": "Último estado verificado: {{status}}",
+        "unavailable": "Estado de entrega indisponível",
+        "unproved": "Não existe um comprovativo verificado para esta mensagem.",
+        "states": {
+          "queued": "Em fila",
+          "processing": "A transmitir",
+          "accepted": "Transmitido",
+          "deferred": "Atrasado",
+          "uncertain": "Confirmação pendente",
+          "delivered": "Entregue",
+          "failed": "Falhou",
+          "bounced": "Rejeitado",
+          "suppressed": "Envio interrompido",
+          "complained": "Reclamação de spam"
+        },
+        "help": {
+          "accepted": "A entrega ainda não foi confirmada.",
+          "uncertain": "A confirmação está pendente. Verifique o estado antes de enviar outra cópia.",
+          "delivered": "O servidor de correio do destinatário aceitou esta mensagem. A chegada à caixa de entrada não está confirmada."
+        }
+      },
+      "scope": "Correio recebido e enviado",
+      "sent": "Enviado",
+      "loadError": "Não foi possível carregar as mensagens. Tente novamente."
+    }
   },
   "extension": {
     "signInGate": {

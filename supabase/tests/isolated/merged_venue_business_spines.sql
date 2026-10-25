@@ -49,6 +49,27 @@ update organizations set field_provenance=field_provenance||'{"primary_venue_id"
 update organizations set safety_gated=true where id in(select o from fixture_ids where n=111);
 update organizations set status='archived' where id in(select o from fixture_ids where n=112);
 
+-- Candidate comparison may only see an actual keyed merge pair, even with
+-- thousands of unrelated active profiles available to a nested-loop plan.
+insert into organizations(id,name,status,roles,primary_venue_id,field_provenance)
+ select gen_random_uuid(),'Unrelated profile '||n,'active',array['venue'],gen_random_uuid(),
+ '{"identity":{"source":"unified_location"}}'::jsonb from generate_series(1,2001)n;
+create sequence gap_comparison_calls;
+create or replace function merge_gap_patch(text,survivor jsonb,donor jsonb) returns jsonb language plpgsql as $comparison$
+begin
+ if not exists(select 1 from fixture_ids where o=(donor->>'id')::uuid and k=(survivor->>'id')::uuid)then
+  raise exception 'Compared unrelated business identities';end if;
+ perform nextval('gap_comparison_calls');
+ return case when donor->>'website' is not null and survivor->>'website' is null then jsonb_build_object('website',donor->'website')else '{}'::jsonb end;
+end $comparison$;
+do $bounded$
+declare r jsonb;
+begin
+ r:=reconcile_merged_venue_business_spines(1,true);
+ assert(r->>'candidates')::int=1,'Incompatible candidates must not consume the qualifying batch';
+ assert(select last_value from gap_comparison_calls)=2,'Compared more than the two actual keyed candidates';
+end $bounded$;
+
 do $test$
 declare r jsonb;before text;rejected boolean;helper text;
 begin

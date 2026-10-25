@@ -7,7 +7,10 @@ import {
 } from '../../../../supabase/functions/_shared/redirect-domain-provider';
 function runtime() {
   const root = '../../../../supabase/functions/';
-  const auth = readFileSync(new URL(root + '_shared/supabase-client.ts', import.meta.url), 'utf8')
+  const auth = (
+    readFileSync(new URL(root + '_shared/timing-safe.ts', import.meta.url), 'utf8') +
+    readFileSync(new URL(root + '_shared/supabase-client.ts', import.meta.url), 'utf8')
+  )
     .replace(/^import .*$/gm, '')
     .replace(/^export\s+/gm, '');
   const worker = readFileSync(

@@ -33,6 +33,12 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
+const rpcMock = vi.fn();
+vi.mock('@/integrations/supabase/untyped', () => ({
+  untypedRpc: (...args: unknown[]) => rpcMock(...args),
+  untypedSupabase: { from: (...args: unknown[]) => fromMock(...args) },
+}));
+
 import { useInlineSave } from '../useInlineSave';
 
 const NAME_FIELD: FieldConfig = {
@@ -140,5 +146,43 @@ describe('useInlineSave', () => {
     const res = await act(async () => result.current.save({ field: NAME_FIELD, value: 'ok' }));
     expect(res.success).toBe(false);
     expect(fromMock).not.toHaveBeenCalled();
+  });
+
+  describe('types with their own editor IO', () => {
+    const ADDRESS_FIELD: FieldConfig = {
+      name: 'address',
+      label: 'Address',
+      type: 'text',
+      group: 'location',
+    };
+
+    beforeEach(() => rpcMock.mockReset());
+
+    it('saves a landmark field through cms_landmark_save, never a table UPDATE', async () => {
+      rpcMock.mockResolvedValue({ data: [{ id: 'l1', address: 'Main St' }], error: null });
+      const { result } = renderHook(() => useInlineSave('landmarks', 'l1'));
+      const res = await act(async () =>
+        result.current.save({ field: ADDRESS_FIELD, value: 'Main St' }),
+      );
+      expect(res.success).toBe(true);
+      expect(rpcMock).toHaveBeenCalledWith('cms_landmark_save', {
+        p_id: 'l1',
+        p_data: { address: 'Main St' },
+        p_expected_updated_at: null,
+      });
+      expect(fromMock).not.toHaveBeenCalled();
+    });
+
+    it('reports a refused landmark save', async () => {
+      rpcMock.mockResolvedValue({ data: null, error: new Error('Unknown landmark fields: x') });
+      const { result } = renderHook(() => useInlineSave('landmarks', 'l1'));
+      const res = await act(async () =>
+        result.current.save({ field: ADDRESS_FIELD, value: 'Main St' }),
+      );
+      expect(res.success).toBe(false);
+      expect(toastErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Unknown landmark fields'),
+      );
+    });
   });
 });

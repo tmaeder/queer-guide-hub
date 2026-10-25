@@ -31,7 +31,10 @@ export declare function createNightAccumulator(week: string[]): {
   result(): NightRow[];
 };
 export declare const SERVICE_GAP_S: number;
-export declare function serviceEnd(times: number[]): { last: number; allNight: boolean };
+export declare function serviceEnd(
+  times: number[],
+  nightLine?: boolean,
+): { last: number; allNight: boolean };
 export declare function separateNightVariants<
   T extends {
     city_id: string;

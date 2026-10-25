@@ -8,6 +8,8 @@
 //
 // For signed request bodies (runner ↔ callback) use `hmac.ts` instead.
 
+import { timingSafeEqual } from './hmac.ts';
+
 /**
  * True only when `envVar` is configured AND the request carries the matching
  * `X-Webhook-Secret` header. Accepts additional env var names as fallbacks
@@ -18,7 +20,7 @@ export function hasValidWebhookSecret(req: Request, ...envVars: string[]): boole
   if (!provided) return false;
   for (const name of envVars) {
     const expected = Deno.env.get(name);
-    if (expected && provided === expected) return true;
+    if (expected && timingSafeEqual(provided, expected)) return true;
   }
   return false;
 }

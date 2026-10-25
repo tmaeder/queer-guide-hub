@@ -84,7 +84,7 @@ const CASES: Case[] = [
   {
     slug: 'homonationalism',
     present: /homonationalis/i,
-    fact: /nationalist agendas|strategic acceptance/i,
+    fact: /nationalist agendas|strategic acceptance|nationalis[mt]|national identity/i,
   },
   {
     slug: 'cisnormativity',

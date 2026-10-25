@@ -4,6 +4,10 @@ import {
   TOY_FINE_BLURBS,
   toyGroupMeta,
   toyFineBlurb,
+  GROUP_ICONS,
+  groupIcon,
+  FINE_ICONS,
+  fineIcon,
 } from '@/lib/marketplaceCategoryMeta';
 import {
   ADULT_DEPARTMENTS,
@@ -87,5 +91,45 @@ describe('marketplace toy category meta', () => {
     expect(toyGroupMeta(null)).toBeNull();
     expect(toyFineBlurb('butt_plugs')).not.toBeNull();
     expect(toyFineBlurb('nope')).toBeNull();
+  });
+
+  it('every routed group resolves to a real glyph, adult or not', () => {
+    const pairs = Object.entries(DEPARTMENT_GROUPS).flatMap(([d, gs]) => gs.map((g) => [g, d]));
+    expect(pairs.length).toBeGreaterThan(30); // guards a vacuous pass
+    for (const [g, d] of pairs) {
+      const icon = groupIcon(g, d);
+      expect(TRANSIT_ICON_PATHS[icon], `${d}/${g} -> missing glyph ${icon}`).toBeDefined();
+    }
+    for (const [g, icon] of Object.entries(GROUP_ICONS)) {
+      expect(GROUP_LABELS[g], `icon override for unlabelled group ${g}`).toBeDefined();
+      expect(TRANSIT_ICON_PATHS[icon]).toBeDefined();
+    }
+  });
+
+  it('groupIcon prefers toy mark, then override, then department mark', () => {
+    expect(groupIcon('dildos', 'intimacy')).toBe('toy-dildo');
+    expect(groupIcon('film', 'books_art')).toBe('theater');
+    expect(groupIcon('tops', 'apparel')).toBe('apparel');
+    expect(groupIcon('brand_new', null)).toBe('shop');
+  });
+
+  it('every fine bucket resolves to a real glyph, and overrides are real buckets', () => {
+    const groupDept = new Map(
+      Object.entries(DEPARTMENT_GROUPS).flatMap(([d, gs]) => gs.map((g) => [g, d] as const)),
+    );
+    const known = new Set(Object.values(GROUP_FINE).flat());
+    expect(known.size).toBeGreaterThan(40); // guards a vacuous pass
+    for (const [g, fines] of Object.entries(GROUP_FINE)) {
+      for (const f of fines) {
+        const icon = fineIcon(f, g, groupDept.get(g));
+        expect(TRANSIT_ICON_PATHS[icon], `${g}/${f} -> missing glyph ${icon}`).toBeDefined();
+      }
+    }
+    for (const [f, icon] of Object.entries(FINE_ICONS)) {
+      expect(known.has(f), `icon override for unknown fine bucket ${f}`).toBe(true);
+      expect(TRANSIT_ICON_PATHS[icon]).toBeDefined();
+    }
+    expect(fineIcon('rope', 'bondage', 'bdsm_fetish')).toBe('rope-play');
+    expect(fineIcon('jeans', 'bottoms', 'apparel')).toBe('apparel');
   });
 });

@@ -102,8 +102,16 @@ async function selectView(page: Page, option: string) {
   await trigger.click();
   await page.getByRole('option', { name: option, exact: true }).click();
   await page.keyboard.press('Escape');
-  await expect.poll(() => rowKey(page), { timeout: 30_000 }).not.toBe(before);
-  await expect(rows(page).first()).toBeVisible();
+  await expect
+    .poll(
+      async () => {
+        const current = await rowKey(page);
+        return current.length > 0 && current !== before;
+      },
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+  await expect(rows(page).first()).toBeVisible({ timeout: 30_000 });
 }
 
 test.describe('archived state in the content list', () => {

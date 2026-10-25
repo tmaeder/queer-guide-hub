@@ -3,7 +3,14 @@
  * /pride/:year/:city. Slugs/years come from the static lists exported by
  * functions/_lib/landing.ts plus a dynamic city aggregation from Supabase.
  */
-import { fetchRows, urlsetXml, xmlResponse, ORIGIN, type Env, type SitemapEntry } from './_lib/sitemap';
+import {
+  fetchRows,
+  urlsetXml,
+  xmlResponse,
+  ORIGIN,
+  type Env,
+  type SitemapEntry,
+} from './_lib/sitemap';
 import { IDENTITY_SLUGS, prideYears, PRIDE_REGION_SLUGS } from './_lib/landing';
 
 const today = () => new Date().toISOString().slice(0, 10);

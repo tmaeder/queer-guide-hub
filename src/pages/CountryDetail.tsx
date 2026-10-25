@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -30,9 +30,9 @@ import {
 import { useWorldBankData } from '@/hooks/useWorldBankData';
 import { useSDGData } from '@/hooks/useSDGData';
 import { useOptimizedCountry, useOptimizedCities } from '@/hooks/usePlaces';
-import { useVenues } from '@/hooks/useVenues';
-import { useEvents } from '@/hooks/useEvents';
-import { useNews } from '@/hooks/useNews';
+import { useVenuesQuery } from '@/hooks/useVenues';
+import { useEventsQuery } from '@/hooks/useEvents';
+import { incrementArticleViews, useNewsArticles } from '@/hooks/useNews';
 import { useMilestonesForCountry } from '@/hooks/useMilestones';
 import { TransSafetyBand } from '@/components/rights/TransSafetyBand';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
@@ -98,9 +98,11 @@ export default function CountryDetail() {
   });
 
   const { cities } = useOptimizedCities({ countryId: country?.id ?? '', limit: 12 });
-  const { venues, fetchVenues } = useVenues(false);
-  const { events, fetchEvents } = useEvents(false);
-  const { articles, fetchArticles, incrementViews } = useNews({ autoload: false });
+  const { venues } = useVenuesQuery(
+    country?.id ? { countryId: country.id, limit: 12, railQuality: true } : null,
+  );
+  const { events } = useEventsQuery(country?.id ? { countryId: country.id, limit: 12 } : null);
+  const { articles } = useNewsArticles(country?.id ? { countryIds: [country.id] } : null);
 
   // Hoisted rather than left inside `CountryLegalRecord`: a component that
   // returns null from its own body is invisible to the section filter, so the
@@ -125,9 +127,6 @@ export default function CountryDetail() {
   const sdgData = useSDGData(country ?? null);
 
   const [weatherData, setWeatherData] = useState<WeatherDataType>(null);
-  const fetchVenuesRef = useRef(fetchVenues);
-  // eslint-disable-next-line react-hooks/refs -- "latest value" ref; effect reads .current.
-  fetchVenuesRef.current = fetchVenues;
 
   useEffect(() => {
     if (country?.id) {
@@ -139,19 +138,6 @@ export default function CountryDetail() {
       });
     }
   }, [country?.id, country?.name, track]);
-
-  useEffect(() => {
-    if (country?.id)
-      fetchVenuesRef.current({ countryId: country.id, limit: 12, railQuality: true });
-  }, [country?.id]);
-
-  useEffect(() => {
-    if (country?.id) fetchEvents({ countryId: country.id, limit: 12 });
-  }, [country?.id, fetchEvents]);
-
-  useEffect(() => {
-    if (country?.id) fetchArticles({ countryIds: [country.id] });
-  }, [country?.id, fetchArticles]);
 
   useEffect(() => {
     if (!country) return;
@@ -392,7 +378,7 @@ export default function CountryDetail() {
                 articles={articles}
                 locale={i18n.language}
                 openLabel={t('cities.detail.openEvent', 'Open')}
-                onViewArticle={incrementViews}
+                onViewArticle={incrementArticleViews}
               />
             ) : null,
         },

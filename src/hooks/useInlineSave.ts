@@ -61,21 +61,36 @@ export function useInlineSave(contentType: string, recordId: string) {
 
       setSaving(true);
       try {
-        const table = config.tableName as 'venues';
-        // No pre-save SELECT: it existed only to fill the audit row that was
-        // never actually written, so it was a round-trip per keystroke-save
-        // for nothing. The trigger captures the before-image server-side,
-        // where it cannot race with a concurrent write.
-        const { data: after, error } = await supabase
-          .from(table)
-          .update({ [field.name]: normalized })
-          .eq('id', recordId)
-          .select()
-          .maybeSingle();
+        let after: unknown;
+        if (config.editorApi) {
+          // Types with their own editor IO (e.g. landmarks, whose record spans
+          // two tables behind a read-only view) must not be written as a
+          // plain table UPDATE — `tableName` may not be writable at all.
+          try {
+            after = await config.editorApi.save(recordId, { [field.name]: normalized }, null);
+          } catch (e) {
+            const message = e instanceof Error ? e.message : String(e);
+            toast.error(`Save failed: ${message}`);
+            return { success: false, error: message };
+          }
+        } else {
+          const table = config.tableName as 'venues';
+          // No pre-save SELECT: it existed only to fill the audit row that was
+          // never actually written, so it was a round-trip per keystroke-save
+          // for nothing. The trigger captures the before-image server-side,
+          // where it cannot race with a concurrent write.
+          const { data, error } = await supabase
+            .from(table)
+            .update({ [field.name]: normalized })
+            .eq('id', recordId)
+            .select()
+            .maybeSingle();
 
-        if (error) {
-          toast.error(`Save failed: ${error.message}`);
-          return { success: false, error: error.message };
+          if (error) {
+            toast.error(`Save failed: ${error.message}`);
+            return { success: false, error: error.message };
+          }
+          after = data;
         }
 
         // Detect silent trigger blanking (defensive: blocklist preflight

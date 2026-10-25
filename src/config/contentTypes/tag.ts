@@ -71,9 +71,10 @@ export const tagFields: FieldConfig[] = [
     type: 'select',
     group: 'details',
     options: [
-      { value: 'pending', label: 'Pending' },
-      { value: 'verified', label: 'Verified' },
-      { value: 'rejected', label: 'Rejected' },
+      { value: 'unverified', label: 'Unverified' },
+      { value: 'auto', label: 'Automatic' },
+      { value: 'reviewed', label: 'Reviewed' },
+      { value: 'locked', label: 'Locked' },
     ],
   },
   // No media group: glossary photography is retired (2026-08-28) — tags render

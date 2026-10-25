@@ -12,7 +12,9 @@ import { FactGrid } from '@/components/transit/FactGrid';
 import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useMarketplaceBrand } from '@/hooks/useMarketplaceBrands';
+import { useMarketplaceBrand, useMarketplaceBrandId } from '@/hooks/useMarketplaceBrands';
+import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 const OWNERSHIP_LABEL = new Map(COMMUNITY_OWNED_OPTIONS.map((o) => [o.value, o.label]));
@@ -49,6 +51,8 @@ export default function MarketplaceBrand() {
   const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { data: brand, isLoading } = useMarketplaceBrand(slug);
+  const { canManageContent } = useAdminRoles();
+  const { data: brandId } = useMarketplaceBrandId(slug, canManageContent());
 
   useDetailMeta({
     status: isLoading ? 'loading' : !brand ? 'notFound' : 'ready',
@@ -154,12 +158,25 @@ export default function MarketplaceBrand() {
               </p>
             </div>
 
-            {brand.website && (
-              <Button asChild variant="outline">
-                <a href={brand.website} target="_blank" rel="noopener noreferrer">
-                  {t('marketplace.visitBrandSite', 'Visit brand site')}
-                </a>
-              </Button>
+            {(brand.website || brandId) && (
+              <div className="flex flex-wrap items-center gap-2">
+                {brand.website && (
+                  <Button asChild variant="outline">
+                    <a href={brand.website} target="_blank" rel="noopener noreferrer">
+                      {t('marketplace.visitBrandSite', 'Visit brand site')}
+                    </a>
+                  </Button>
+                )}
+                {brandId && (
+                  <AdminEditButton
+                    contentType="marketplace_brands"
+                    contentId={brandId}
+                    contentName={brand.display_name}
+                    onSaved={() => window.location.reload()}
+                    exportable
+                  />
+                )}
+              </div>
             )}
           </div>
         </PageContainer>

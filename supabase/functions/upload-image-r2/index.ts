@@ -15,7 +15,7 @@
 // Env: IMAGE_CDN_ADMIN_SECRET, IMAGE_CDN_BASE_URL (see _shared/logo-mirror.ts).
 // Deploy with verify_jwt=true (default) so only authenticated users can upload.
 
-import { jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { jsonResponse, errorResponse, corsResponse, getServiceClient, hasInternalSecret } from '../_shared/supabase-client.ts'
 import { mirrorImageToR2, logoMirrorConfigured } from '../_shared/logo-mirror.ts'
 
 const MAX_BYTES = 8 * 1024 * 1024
@@ -35,6 +35,12 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   if (req.method !== 'POST') return errorResponse('POST only', 405, req)
   if (!logoMirrorConfigured()) return errorResponse('R2 not configured', 500, req)
+  // verify_jwt alone accepts the public anon key, i.e. anonymous uploads.
+  if (!hasInternalSecret(req)) {
+    const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '')
+    const { data: u } = token ? await getServiceClient().auth.getUser(token) : { data: { user: null } }
+    if (!u?.user) return errorResponse('auth_required', 401, req)
+  }
 
   try {
     const body = await req.json().catch(() => ({}))
@@ -56,7 +62,8 @@ Deno.serve(async (req) => {
 
     if (bytes.byteLength < 100) return errorResponse('too small', 400, req)
     if (bytes.byteLength > MAX_BYTES) return errorResponse('too large', 400, req)
-    if (!contentType.startsWith('image/')) return errorResponse('not an image', 400, req)
+    // Raster only: image/svg+xml is a script-capable document on img.queer.guide.
+    if (!/^image\/(jpeg|png|webp|gif|avif|heic|heif)$/.test(contentType)) return errorResponse('not an image', 400, req)
 
     const url = await mirrorImageToR2(bytes, contentType, prefix)
     if (!url) return errorResponse('upload failed', 502, req)

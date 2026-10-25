@@ -3,11 +3,10 @@
  * Use on Index, CityDetail, Map sidebar.
  */
 
-import { useEffect, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { detailHref } from '@/lib/searchRoutes';
-import { fetchTrending } from '@/lib/searchClient';
 import { useTrackClick } from '@/hooks/useSearchActions';
+import { useTrendingQuery } from '@/hooks/useDiscoveryQueries';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SkeletonCrossfade } from '@/components/effects';
@@ -84,31 +83,12 @@ export function TrendingStrip({
   className,
   hideHeader,
 }: Props) {
-  const [items, setItems] = useState<TrendItem[] | null>(null);
-  const [error, setError] = useState(false);
   const trackClick = useTrackClick();
-
-  useEffect(() => {
-    let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setItems(null);
-    setError(false);
-    fetchTrending(types, city, limit)
-      .then((res) => {
-        if (cancelled) return;
-        const now = Date.now();
-        const live = (res as TrendItem[]).filter((it) => isLiveOrFuture(it, now));
-        setItems(live);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setError(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [city, types.join(','), limit]);
+  const { data, isError: error } = useTrendingQuery(types, city, limit, (hits) => {
+    const now = Date.now();
+    return (hits as unknown as TrendItem[]).filter((it) => isLiveOrFuture(it, now));
+  });
+  const items = data ?? null;
 
   if (error || items?.length === 0) return null;
 
@@ -125,7 +105,7 @@ export function TrendingStrip({
       <SkeletonCrossfade
         loading={!items}
         skeleton={
-          <div className="flex gap-4 pb-4">
+          <div className="flex gap-4 overflow-hidden pb-4">
             {Array.from({ length: limit }).map((_, i) => (
               <Skeleton key={i} className="h-40 w-56 shrink-0 rounded-element" />
             ))}

@@ -3444,7 +3444,39 @@
       "aVenue": "Luogo"
     },
     "matchTag": "Match",
-    "openAlerts": "[IT] All notifications"
+    "openAlerts": "[IT] All notifications",
+    "mail": {
+      "delivery": {
+        "label": "Recapito: {{status}}",
+        "loading": "Verifica del recapito…",
+        "refresh": "Aggiorna stato",
+        "refreshing": "Aggiornamento…",
+        "error": "Impossibile aggiornare lo stato di recapito.",
+        "lastKnown": "Ultimo stato verificato: {{status}}",
+        "unavailable": "Stato di recapito non disponibile",
+        "unproved": "Non è disponibile una ricevuta verificata per questo messaggio.",
+        "states": {
+          "queued": "In coda",
+          "processing": "In trasmissione",
+          "accepted": "Trasmesso",
+          "deferred": "In ritardo",
+          "uncertain": "Conferma in attesa",
+          "delivered": "Recapitato",
+          "failed": "Non riuscito",
+          "bounced": "Rifiutato",
+          "suppressed": "Invio interrotto",
+          "complained": "Segnalazione spam"
+        },
+        "help": {
+          "accepted": "Il recapito non è ancora confermato.",
+          "uncertain": "La conferma è in attesa. Controlla lo stato prima di inviare un’altra copia.",
+          "delivered": "Il server di posta del destinatario ha accettato il messaggio. L’arrivo nella posta in entrata non è confermato."
+        }
+      },
+      "scope": "Posta ricevuta e inviata",
+      "sent": "Inviato",
+      "loadError": "Impossibile caricare i messaggi. Riprova."
+    }
   },
   "extension": {
     "signInGate": {

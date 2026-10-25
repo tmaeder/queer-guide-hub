@@ -226,4 +226,36 @@ describe('ContentListTable', () => {
     expect(screen.getByText('Yes')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Edit Needs Attention/ })).toBeNull();
   });
+
+  describe('empty state create button', () => {
+    const emptyConfig = (canCreate?: boolean) =>
+      ({
+        id: 'landmarks',
+        tableName: 'cms_landmarks',
+        titleField: 'name',
+        label: { singular: 'Landmark', plural: 'Landmarks' },
+        color: '#000',
+        icon: (() => null) as never,
+        fields: [],
+        ...(canCreate === undefined ? {} : { canCreate }),
+      }) as never;
+
+    const renderEmpty = (config: never) =>
+      render(
+        <TooltipProvider>
+          <ContentListTable {...baseProps} totalCount={0} items={[]} config={config} />
+        </TooltipProvider>,
+      );
+
+    it('offers Create by default', () => {
+      renderEmpty(emptyConfig());
+      expect(screen.getByRole('button', { name: /Create Landmark/ })).toBeInTheDocument();
+    });
+
+    it('hides Create for a type that cannot create', () => {
+      renderEmpty(emptyConfig(false));
+      expect(screen.queryByRole('button', { name: /Create Landmark/ })).not.toBeInTheDocument();
+      expect(screen.getByText('No landmarks yet')).toBeInTheDocument();
+    });
+  });
 });

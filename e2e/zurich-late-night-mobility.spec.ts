@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 /**
  * Zürich late-night mobility, end to end on the deployed site.
@@ -13,17 +13,26 @@ const ZURICH_VENUE = '/venues/petra-s-tip-top-bar';
 const BERLIN_VENUE = '/venues/about-blank';
 const CLOCK = /\b([01]\d|2[0-3]):[0-5]\d\b/;
 
-async function dismissConsent(page: Page) {
-  const btn = page.getByRole('button', { name: 'Necessary Only' });
-  if (await btn.isVisible({ timeout: 3_000 }).catch(() => false)) await btn.click();
-}
+// Record the "Necessary only" choice before the first navigation so the banner
+// never renders. Clicking it raced page hydration under load and timed out
+// (3 of 6 failed on 2026-10-23, all on the click, while the data was correct).
+const NECESSARY_ONLY = JSON.stringify({
+  version: '1.0',
+  preferences: { necessary: true, functional: false, analytics: false, marketing: false },
+});
 
 test.describe('Zürich late-night mobility', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(
+      ([key, value]) => window.localStorage.setItem(key, value),
+      ['queer-guide-cookie-consent', NECESSARY_ONLY],
+    );
+  });
+
   test('city page states last departures, the all-night network and its sources', async ({
     page,
   }) => {
     await page.goto('/city/zuerich#travel');
-    await dismissConsent(page);
     const section = page.getByRole('region', { name: 'Late night' });
     await expect(section).toBeAttached({ timeout: 20_000 });
     // Facts arrive after the heading (separate query): auto-waiting assertions, not a
@@ -45,7 +54,6 @@ test.describe('Zürich late-night mobility', () => {
     page,
   }) => {
     await page.goto('/city/geneva#travel');
-    await dismissConsent(page);
     const section = page.getByRole('region', { name: 'Late night' });
     await expect(section).toContainText('Last tram', { timeout: 20_000 });
     await expect(section).toContainText(CLOCK);
@@ -56,7 +64,6 @@ test.describe('Zürich late-night mobility', () => {
 
   test('Berlin reads the German timetable, credited to DELFI', async ({ page }) => {
     await page.goto('/city/berlin#travel');
-    await dismissConsent(page);
     const section = page.getByRole('region', { name: 'Late night' });
     await expect(section).toContainText('Last metro', { timeout: 20_000 });
     await expect(section).toContainText(CLOCK);
@@ -64,9 +71,35 @@ test.describe('Zürich late-night mobility', () => {
     await expect(section).not.toContainText('opentransportdata.swiss');
   });
 
+  test('Vienna reads the Wiener Linien timetable', async ({ page }) => {
+    await page.goto('/city/vienna#travel');
+    const section = page.getByRole('region', { name: 'Late night' });
+    await expect(section).toContainText('Last tram', { timeout: 20_000 });
+    await expect(section).toContainText(CLOCK);
+    await expect(section).toContainText('Wiener Linien');
+    await expect(section).not.toContainText('DELFI');
+  });
+
+  test('Bordeaux reads its own network feed, credited to TBM', async ({ page }) => {
+    await page.goto('/city/bordeaux-france#travel');
+    const section = page.getByRole('region', { name: 'Late night' });
+    await expect(section).toContainText('Last tram', { timeout: 20_000 });
+    await expect(section).toContainText(CLOCK);
+    await expect(section).toContainText('TBM');
+    await expect(section).toContainText('transport.data.gouv.fr');
+  });
+
+  test('Paris credits IDFM and states the derived data is ODbL', async ({ page }) => {
+    await page.goto('/city/paris#travel');
+    const section = page.getByRole('region', { name: 'Late night' });
+    await expect(section).toContainText('Last metro', { timeout: 20_000 });
+    await expect(section).toContainText(CLOCK);
+    await expect(section).toContainText('Île-de-France Mobilités');
+    await expect(section).toContainText('available under ODbL');
+  });
+
   test('/going-out in Zürich has a Getting home section', async ({ page }) => {
     await page.goto('/going-out?city=zuerich');
-    await dismissConsent(page);
     await expect(page.getByText('Getting home', { exact: false }).first()).toBeVisible({
       timeout: 20_000,
     });
@@ -75,7 +108,6 @@ test.describe('Zürich late-night mobility', () => {
 
   test('Zürich venue shows nearby shared bikes; a Berlin venue shows none', async ({ page }) => {
     await page.goto(ZURICH_VENUE);
-    await dismissConsent(page);
     const fact = page.locator('dt', { hasText: 'Bikes & e-scooters now' }).locator('..');
     await expect(fact).toBeVisible({ timeout: 20_000 });
     await expect(fact).toContainText(/About \d+ within 300 m/);
@@ -95,7 +127,6 @@ test.describe('Zürich late-night mobility', () => {
       if (/shared_mobility_in_bbox/.test(r.url())) snapshotCalls++;
     });
     await page.goto('/map?lat=47.3705&lng=8.5420&z=15');
-    await dismissConsent(page);
     await page.getByRole('button', { name: 'Filters' }).click();
     const chip = page.getByRole('button', { name: 'Shared bikes & e-scooters' });
     await chip.click();

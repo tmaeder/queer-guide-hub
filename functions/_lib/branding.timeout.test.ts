@@ -18,9 +18,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 const ENV = {
   SUPABASE_URL: 'https://example.supabase.co',
   SUPABASE_ANON_KEY: 'anon-key',
-} as unknown as Parameters<
-  Awaited<ReturnType<typeof importBranding>>['getBranding']
->[0];
+} as unknown as Parameters<Awaited<ReturnType<typeof importBranding>>['getBranding']>[0];
 
 async function importBranding() {
   // Module-level memo: each test needs its own instance.
@@ -79,10 +77,13 @@ describe('getBranding resilience', () => {
   it('still serves a successful doc from cache', async () => {
     const fetchMock = vi.fn(
       async () =>
-        new Response(JSON.stringify([{ published: { meta: { site_name: 'X' } }, overrides_enabled: true }]), {
-          status: 200,
-          headers: { 'content-type': 'application/json' },
-        }),
+        new Response(
+          JSON.stringify([{ published: { meta: { site_name: 'X' } }, overrides_enabled: true }]),
+          {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          },
+        ),
     );
     vi.stubGlobal('fetch', fetchMock);
 

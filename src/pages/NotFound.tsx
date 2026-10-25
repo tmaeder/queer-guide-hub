@@ -218,7 +218,7 @@ const NotFound = () => {
         <h1 className="mt-6 font-display text-display leading-[0.95] md:text-hero">
           {kind ? t(kind.key, kind.fallback) : t('pages.notFound.heading', 'No stop here.')}
         </h1>
-        <p className="mt-6 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
+        <p className="mt-6 max-w-reading break-words text-body-lg leading-relaxed text-muted-foreground">
           {t(
             'pages.notFound.description',
             'Nothing is on the map at {{path}}. It was moved, removed, or never existed.',

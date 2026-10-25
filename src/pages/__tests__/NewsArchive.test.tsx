@@ -12,10 +12,7 @@ const makeNewsReturn = (overrides = {}) => ({
   loading: false,
   error: null,
   fetchArticles: vi.fn(),
-  fetchTagsForArticles: vi.fn(),
-  incrementViews: vi.fn(),
-  getFeaturedArticles: vi.fn().mockResolvedValue([]),
-  getTrendingTags: vi.fn().mockResolvedValue([]),
+  refetch: vi.fn(),
   loadingTimedOut: false,
   ...overrides,
 });
@@ -37,7 +34,32 @@ vi.mock('@/hooks/useEntityImageAssets', () => ({
 }));
 vi.mock('@/hooks/useNewsStories', () => ({ useNewsStories: () => ({ stories: [], heroes: [] }) }));
 vi.mock('@/hooks/usePageFetchers', () => ({ fetchNamesByIds: vi.fn().mockResolvedValue({}) }));
-vi.mock('@/hooks/useNews', () => ({ useNews: useNewsMock }));
+/** The lazy initial request NewsArchive hands the feed, per render. */
+const initialRequests: Array<Record<string, unknown>> = [];
+vi.mock('@/hooks/useNews', () => ({
+  useNewsArticlesFeed: (initial?: () => Record<string, unknown>) => {
+    if (initial) initialRequests.push(initial());
+    const r = useNewsMock();
+    return {
+      articles: r.articles,
+      loading: r.loading,
+      error: r.error,
+      fetchArticles: r.fetchArticles,
+      refetch: r.refetch,
+      loadingTimedOut: r.loadingTimedOut,
+    };
+  },
+  useNewsSources: () => useNewsMock().sources,
+  useNewsCategories: () => useNewsMock().categories,
+  useNewsCategoryCounts: () => ({
+    categoryCounts: useNewsMock().categoryCounts,
+    totalArticles: useNewsMock().totalArticles,
+  }),
+  useNewsArticleTags: () => useNewsMock().articleTags,
+  useFeaturedNewsArticles: () => [],
+  useTrendingNewsTags: () => [],
+  incrementArticleViews: vi.fn(),
+}));
 
 vi.mock('@/components/news/NewsCard', () => ({
   NewsCard: ({ loading }: { loading?: boolean }) =>
@@ -134,16 +156,77 @@ describe('NewsArchive page', () => {
       }),
     );
 
+    initialRequests.length = 0;
     renderWithProviders(<NewsArchive />, { route: '/news/all?right=conversion-therapy' });
 
-    await waitFor(() =>
-      expect(fetchArticles).toHaveBeenCalledWith(
-        expect.objectContaining({ tags: ['conversion-therapy'] }),
-      ),
-    );
+    // The URL's filter is on the FIRST request, not a mount-time correction.
+    expect(initialRequests[0]).toEqual(expect.objectContaining({ tags: ['conversion-therapy'] }));
+    await waitFor(() => expect(screen.getByText(/Right: Conversion therapy/)).toBeInTheDocument());
     expect(screen.getByText(/Right: Conversion therapy/)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Remove Conversion therapy filter' }));
     expect(fetchArticles).toHaveBeenLastCalledWith(expect.objectContaining({ tags: undefined }));
+  });
+
+  // currentFilters was seeded from the URL without the category, so every
+  // request rebuilt from it (sort, clearing a right, semantic search) lost it.
+  it('clearing the right filter keeps the URL category on the request', async () => {
+    const fetchArticles = vi.fn();
+    useNewsMock.mockReturnValue(
+      makeNewsReturn({
+        fetchArticles,
+        articles: [
+          {
+            id: 'a1',
+            title: 'Test Article',
+            content: null,
+            excerpt: null,
+            url: 'https://example.com',
+            image_url: null,
+            author: null,
+            published_at: '2026-05-01T00:00:00Z',
+            source_id: 's1',
+            views_count: 0,
+            is_featured: false,
+            category: null,
+            country_ids: null,
+            city_ids: null,
+            tags: null,
+            publisher_name: null,
+            created_at: '2026-05-01T00:00:00Z',
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<NewsArchive />, {
+      route: '/news/all?category=politics&right=conversion-therapy',
+    });
+    await waitFor(() => expect(screen.getByText(/Right: Conversion therapy/)).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button', { name: 'Remove Conversion therapy filter' }));
+    expect(fetchArticles).toHaveBeenLastCalledWith(
+      expect.objectContaining({ tags: undefined, category: 'politics' }),
+    );
+  });
+
+  // Retry used to call fetchArticles() with no arguments, replacing the
+  // filtered request with an unfiltered one. It must re-run what is on screen.
+  it('retrying a failed filtered archive refetches it instead of dropping the filters', async () => {
+    const fetchArticles = vi.fn();
+    const refetch = vi.fn();
+    useNewsMock.mockReturnValue(
+      makeNewsReturn({
+        fetchArticles,
+        refetch,
+        error: 'Failed to load articles. Please try again.',
+      }),
+    );
+    initialRequests.length = 0;
+    renderWithProviders(<NewsArchive />, { route: '/news/all?category=politics' });
+    // Control: the page really is filtered.
+    expect(initialRequests[0]).toEqual(expect.objectContaining({ category: 'politics' }));
+
+    await userEvent.click(screen.getAllByRole('button', { name: /try again|retry/i })[0]);
+    expect(refetch).toHaveBeenCalledTimes(1);
+    expect(fetchArticles).not.toHaveBeenCalled();
   });
 });

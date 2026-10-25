@@ -3,6 +3,7 @@ import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-quer
 import { supabase } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
+import { fetchMailboxFeed } from '@/lib/mailboxFeed';
 
 export type InboxKind = 'chat' | 'mail' | 'notification' | 'trip_email';
 // 'matches' and 'groups' are lenses over chats: get_inbox_feed returns only
@@ -33,7 +34,9 @@ export interface InboxItem {
 
 const PAGE = 30;
 const feedKey = (userId: string | undefined, filter: InboxFilter) =>
-  ['inbox-feed', userId, filter] as const;
+  filter === 'mail'
+    ? (['inbox-feed', userId, filter, 'received-and-sent'] as const)
+    : (['inbox-feed', userId, filter] as const);
 const countKey = (userId: string | undefined) => ['inbox-unread', userId] as const;
 
 /**
@@ -72,7 +75,8 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
     queryKey: feedKey(user?.id, filter),
     enabled: !!user,
     initialPageParam: null as { ts: string; id: string } | null,
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam, signal }) => {
+      if (filter === 'mail') return fetchMailboxFeed(user!.id, pageParam, signal);
       // 'trips' is a real RPC filter since 20260704130000: trip-email threads
       // + trip_nudge alerts.
       const { data, error } = await untypedRpc<InboxItem[]>('get_inbox_feed', {
@@ -174,6 +178,8 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
     loading: feed.isLoading,
     hasNextPage: feed.hasNextPage,
     fetchNextPage: feed.fetchNextPage,
+    isFetchingNextPage: feed.isFetchingNextPage,
+    error: feed.error,
     refetch: feed.refetch,
   };
 }

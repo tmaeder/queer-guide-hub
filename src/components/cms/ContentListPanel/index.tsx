@@ -7,7 +7,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router';
 import { Plus, Search, RefreshCw, X } from 'lucide-react';
-import { contentTypeRouteAliases } from '@/config/contentTypes';
+import { contentTypeRegistry, contentTypeRouteAliases } from '@/config/contentTypes';
 import { AdminToolsPopover } from '@/components/admin/primitives/AdminToolsPopover';
 import { ContentEntityTabs } from '@/components/admin/ContentEntityTabs';
 import { Button } from '@/components/ui/button';
@@ -36,6 +36,8 @@ import { useContentListController } from './useContentListController';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import { exportToExcel, generateFilename } from '@/utils/excelExport';
 import { exportContentType } from './exportContentList';
+import { TableImportDialog } from '@/components/cms/import/TableImportDialog';
+import { writableFields } from '@/lib/tableImport/plan';
 import { OPERATOR_LABELS } from './filterOps';
 import { FILTER_LABEL_SUFFIX } from '@/lib/cmsFilterHref';
 import type { Filter } from './viewSpec';
@@ -254,30 +256,35 @@ function ContentListPanelBody(props: ContentListPanelProps) {
   // The controller can return undefined (no type selected); the views model
   // "no config" as null, so normalize once here rather than at each call site.
   const config = c.config ?? null;
-  // One definition for both headers (the standard one and the workspace one),
-  // so a list can never lose its exports by rendering the other header. The
-  // file matches what the list shows: same filters, search and archived/merged
-  // slice, every page.
-  const exportButtons =
+
+  const exportActions =
     config &&
     (['Excel', 'CSV'] as const).map((format) => (
       <ExportExcelButton
         key={format}
         format={format}
-        onExport={() =>
-          exportContentType(config, c.allListColumns, format, {
-            filters: c.filters,
-            search: c.debouncedSearch,
-            archivedView: c.archivedView,
-            mergedView: c.mergedView,
-          })
-        }
+        onExport={() => exportContentType(config, c.allListColumns, format)}
       />
     ));
 
   // The standard header's tools menu (refresh, type actions, exports). A page
   // that hides the header to own its title without using the workspace header
   // (Milestones) still renders this menu, or it would lose its exports.
+  const importConfig =
+    config &&
+    (Object.values(contentTypeRegistry).find((type) => type.tableName === config.tableName) ??
+      config);
+  const importButton =
+    importConfig && writableFields(importConfig).length > 0 ? (
+      <TableImportDialog
+        config={importConfig}
+        onComplete={() => {
+          void c.loadItems();
+          props.source?.refresh();
+        }}
+      />
+    ) : null;
+
   const contentTools = (
     <AdminToolsPopover label="Content tools">
       <Button
@@ -293,8 +300,9 @@ function ContentListPanelBody(props: ContentListPanelProps) {
         <RefreshCw size={16} aria-hidden="true" /> Refresh records
       </Button>
 
+      {importButton}
       {c.config?.toolbarActions?.()}
-      {exportButtons}
+      {exportActions}
     </AdminToolsPopover>
   );
 
@@ -361,14 +369,17 @@ function ContentListPanelBody(props: ContentListPanelProps) {
                   <Link to={config.admin.duplicatesRoute}>Review duplicates</Link>
                 </Button>
               )}
+              {props.hideHeader && exportActions}
               {props.tools}
+              {importButton}
               {config.toolbarActions?.()}
-              {exportButtons}
             </AdminToolsPopover>
-            <Button size="sm" onClick={() => c.onCreate(config.id)}>
-              <Plus size={16} className="mr-1.5" />
-              Add {config.label.singular}
-            </Button>
+            {config.canCreate !== false && (
+              <Button size="sm" onClick={() => c.onCreate(config.id)}>
+                <Plus size={16} className="mr-1.5" />
+                Add {config.label.singular}
+              </Button>
+            )}
           </div>
         </div>
       )}
@@ -423,7 +434,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           actions={
             <>
               {contentTools}
-              {c.config && (
+              {c.config && c.config.canCreate !== false && (
                 <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
                   <Plus size={16} className="mr-1" />
                   New {c.config.label.singular}
@@ -658,6 +669,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
             () => void c.loadItems(),
           )}
           <ExportExcelButton
+            label="Export selected (Excel)"
             onExport={() =>
               exportToExcel(
                 c.items

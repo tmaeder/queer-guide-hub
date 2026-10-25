@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useEffectEvent, useRef, useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, Sparkles } from 'lucide-react';
@@ -98,6 +98,14 @@ export default function SearchResults() {
   // would skip the first page of results — fatal for scopes with < hitsPerPage.
   const [page, setPage] = useState(0);
   const [askOpen, setAskOpen] = useState(false);
+  // New URL query → sync the input and reset paging during render, so the
+  // first fetch for the new query already uses page 0.
+  const [prevQuery, setPrevQuery] = useState(query);
+  if (query !== prevQuery) {
+    setPrevQuery(query);
+    setSearchQuery(query);
+    setPage(0);
+  }
 
   const initialLat = Number(searchParams.get('lat')) || undefined;
   const initialLng = Number(searchParams.get('lng')) || undefined;
@@ -130,11 +138,6 @@ export default function SearchResults() {
     ? sortId
     : (availableSorts[0] ?? 'relevance');
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync input with URL query.
-    setSearchQuery(query);
-  }, [query]);
-
   // Traveling preference chips — the saved budget applies as a default price
   // range unless the user sets one manually. Stays out of filters/URL.
   const {
@@ -146,14 +149,14 @@ export default function SearchResults() {
   const effectiveFilters = useMemo<SearchFilters>(
     () =>
       chipPriceRange && !filters.priceRange ? { ...filters, priceRange: chipPriceRange } : filters,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filters, chipPriceRange?.[0], chipPriceRange?.[1]],
+    // chipPriceRange is a BUDGET_PRICE_RANGE constant, so its identity is stable.
+    [filters, chipPriceRange],
   );
 
   // Pass identity so the worker personalizes ranking from the profile
   // (interests/home_city → _boostReason). Anonymous users fall back to session.
   const { user } = useAuth();
-  const { results, loading, error, errorKind, totalHits, tooShort, facets } = useSearch(
+  const { results, loading, error, errorKind, totalHits, tooShort, facets, resultsKey } = useSearch(
     query,
     effectiveFilters,
     page,
@@ -235,11 +238,6 @@ export default function SearchResults() {
     [filters, query, writeParams],
   );
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset paging on new query.
-    setPage(0);
-  }, [query]);
-
   const submitSearch = useCallback(() => {
     if (!searchQuery.trim()) return;
     const params = new URLSearchParams(searchParams);
@@ -283,7 +281,11 @@ export default function SearchResults() {
   );
 
   // ── Accumulate pages (infinite scroll), keep previous during refetch ─────
-  const queryKey = `${query}|${JSON.stringify(filters)}|${effectiveSort}`;
+  // Keyed on the request the results came from, not the raw URL query: the
+  // hook debounces, so for 300ms after a new query `results` still belong to
+  // the old one, and keying on `query` filed them under the new search —
+  // the new results were then appended to the old ones as if a next page.
+  const queryKey = resultsKey;
   const [accumulated, setAccumulated] = useState<SearchResult[]>([]);
   const lastKeyRef = useRef('');
   useEffect(() => {
@@ -307,12 +309,13 @@ export default function SearchResults() {
   const hasQuery = query.trim().length > 0;
 
   // Fire zero_results telemetry once when a real query lands with no hits.
+  // Scope is read at fire time, not a trigger: a scope change alone must not re-fire.
+  const trackZeroResults = useEffectEvent((q: string) => {
+    void trackSearchUx('zero_results', { query: q, scope: activeScope || 'all' });
+  });
   useEffect(() => {
     if (!query || query.trim().length < 2 || loading || tooShort) return;
-    if (totalHits === 0 && !errorKind) {
-      void trackSearchUx('zero_results', { query, scope: activeScope || 'all' });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (totalHits === 0 && !errorKind) trackZeroResults(query);
   }, [query, totalHits, loading, tooShort, errorKind]);
 
   const dymHit = useDidYouMean(

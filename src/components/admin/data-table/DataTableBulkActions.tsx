@@ -12,9 +12,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { deleteRowsByIds } from '@/hooks/usePageFetchers';
-import { untypedFrom } from '@/integrations/supabase/untyped';
 import { fetchAdminUsersForExport } from '@/lib/adminUsers';
 import { toast } from 'sonner';
+import { fetchAllRows } from '@/utils/excelExport';
+import { exportToCsv } from '@/utils/csvExport';
 import { DataTableBulkEditDialog } from './DataTableBulkEditDialog';
 import type { BulkEditFieldConfig } from './types';
 
@@ -59,11 +60,17 @@ export function DataTableBulkActions({
       if (tableName === 'profiles') {
         rows = await fetchAdminUsersForExport(Array.from(selectedIds));
       } else {
-        const { data, error } = await untypedFrom(tableName)
-          .select('*')
-          .in('id', Array.from(selectedIds));
-        if (error) throw error;
-        rows = (data ?? []) as Array<Record<string, unknown>>;
+        rows = await fetchAllRows<Record<string, unknown>>(
+          tableName,
+          '*',
+          { column: 'id', ascending: true },
+          1000,
+          <Q,>(query: Q): Q =>
+            (query as unknown as { in: (column: string, ids: string[]) => Q }).in(
+              'id',
+              Array.from(selectedIds),
+            ),
+        );
       }
       if (rows.length === 0) {
         toast.error('Nothing to export');
@@ -75,22 +82,21 @@ export function DataTableBulkActions({
           return acc;
         }, new Set()),
       );
-      const escape = (v: unknown) => {
-        if (v === null || v === undefined) return '';
-        const s = typeof v === 'object' ? JSON.stringify(v) : String(v);
-        return `"${s.replace(/"/g, '""')}"`;
-      };
-      const csv = [
-        headers.join(','),
-        ...rows.map((r) => headers.map((h) => escape(r[h])).join(',')),
-      ].join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${tableName}-${new Date().toISOString().slice(0, 10)}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
+      exportToCsv(
+        rows,
+        headers.map((header) => ({
+          header,
+          accessor: (row) => {
+            const value = row[header];
+            return value == null
+              ? ''
+              : typeof value === 'object'
+                ? JSON.stringify(value)
+                : String(value);
+          },
+        })),
+        `${tableName}-${new Date().toISOString().slice(0, 10)}.csv`,
+      );
       toast.success(`Exported ${rows.length} rows`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Export failed');
@@ -144,7 +150,7 @@ export function DataTableBulkActions({
 
         <Button variant="outline" size="sm" onClick={handleExportCsv} disabled={exporting}>
           <Download size={14} className="mr-1" />
-          {exporting ? 'Exporting…' : 'Export CSV'}
+          {exporting ? 'Exporting…' : 'Export selected (CSV)'}
         </Button>
 
         {extraActions}

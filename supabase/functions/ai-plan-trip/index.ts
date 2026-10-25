@@ -31,9 +31,10 @@ import { checkUserRateLimit } from '../_shared/user-rate-limit.ts';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 
+// Inherits the shared Allow-Headers (supabase-js sends x-client-info + apikey);
+// a narrower list makes the browser block every call. See _tests/cors-allow-headers.test.ts.
 const corsFor = (req: Request) => ({
   ...getCorsHeaders(req),
-  'Access-Control-Allow-Headers': 'authorization, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 });
 

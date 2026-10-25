@@ -6095,6 +6095,44 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// § News text decoding (2026-10-24). Every news fetcher used to force a
+// UTF-8 decode, so queer.de's ISO-8859-1 feed was stored with U+FFFD where
+// every umlaut belonged ("B\uFFFDhne") — 126 articles in ten days, and nothing
+// noticed. Fetchers now honour the declared charset (_shared/decode-charset.ts);
+// a NEW article carrying U+FFFD means a fetcher regressed or a new source
+// declares nothing and is not UTF-8. The stored backlog only warns: it is
+// repaired by news-fulltext-backfill {"mode":"repair_encoding"}.
+{
+  const FFFD = encodeURIComponent('\uFFFD')
+  const since = new Date(Date.now() - 3 * 86400_000).toISOString()
+  const probe = async (extra) => {
+    const r = await fetch(
+      // A bounded fetch, not count=exact: an exact count over a LIKE on the
+      // whole table measured as an HTTP 500 (statement timeout).
+      `${BASE}/rest/v1/news_articles?select=id&limit=200&or=(title.like.*${FFFD}*,excerpt.like.*${FFFD}*)${extra}`,
+      { headers },
+    )
+    if (!r.ok) return null
+    return (await r.json()).length
+  }
+  const recent = await probe(`&created_at=gte.${encodeURIComponent(since)}`)
+  const total = await probe('')
+  if (recent === null || total === null || Number.isNaN(recent) || Number.isNaN(total)) {
+    console.error('✗ news decoding probe failed — measured nothing')
+    FAILED = true
+  } else if (recent > 0) {
+    console.error(
+      `✗ ${recent} news article(s) ingested in the last 3 days carry U+FFFD in title/excerpt — a feed is being ` +
+        'decoded with the wrong charset. Check _shared/decode-charset.ts adoption, then run ' +
+        'news-fulltext-backfill {"mode":"repair_encoding"}.',
+    )
+    FAILED = true
+  } else {
+    if (total > 0) console.warn(`⚠ ${total >= 200 ? '200+' : total} older news article(s) still carry U+FFFD — run news-fulltext-backfill {"mode":"repair_encoding"}`)
+    console.log('✓ news decoding: no U+FFFD in articles ingested in the last 3 days')
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')

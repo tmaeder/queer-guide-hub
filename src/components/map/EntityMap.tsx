@@ -6,6 +6,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
@@ -85,7 +86,7 @@ const PRIMARY_LAYER = 'entity-primary-circle';
 const PRIMARY_LABEL = 'entity-primary-label';
 const NEARBY_LAYER = 'entity-nearby-circle';
 
-export const EntityMap = ({
+const EntityMapInner = ({
   center,
   zoom = 14,
   height = 300,
@@ -525,5 +526,12 @@ export const EntityMap = ({
     </div>
   );
 };
+
+/** Detail-page map island: a map crash drops the map, never the page around it. */
+export const EntityMap = (props: EntityMapProps) => (
+  <ErrorBoundary section="entity-map" fallback={null}>
+    <EntityMapInner {...props} />
+  </ErrorBoundary>
+);
 
 export default EntityMap;

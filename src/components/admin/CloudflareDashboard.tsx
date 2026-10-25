@@ -140,7 +140,7 @@ export function CloudflareDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 text-sm [overflow-wrap:anywhere]">
               {Object.entries(stats.errors).map(([section, message]) => (
                 <li key={section}>
                   <strong>
@@ -450,7 +450,7 @@ export function CloudflareDashboard() {
                         To use the Cloudflare dashboard, configure the following Supabase secrets:
                       </p>
                       <ol
-                        className="text-sm flex flex-col gap-1"
+                        className="text-sm flex flex-col gap-1 break-words"
                         style={{
                           color: 'hsl(var(--muted-foreground))',
                           listStyleType: 'decimal',

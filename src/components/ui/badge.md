@@ -9,9 +9,20 @@ One-line: shadcn-as-MUI wrapper for the `badge` primitive. See
 
 ## Variants
 
-See the component source for `variant`, `size`, and other prop
-options. The shadcn API surface is preserved; the underlying
-implementation uses MUI 7.
+The ONE badge implementation. Domain badges (`UserModeBadge`,
+`MilestoneCategoryBadge`, booking/confidence/count marks) pick a variant
+here instead of hand-rolling classes. On an element that must stay inline
+(inside `<p>`, `<span>`, a positioned overlay) use
+`badgeVariants({ variant })` on your own `<span>`; `<Badge>` renders a `div`.
+
+| Variant | Rank | Use |
+|---|---|---|
+| `default` `outline` `soft` `ink` `secondary` `destructive` | chip (12px radius, 11px uppercase) | labels on cards and rows |
+| `mark` `mark-solid` `mark-dashed` | badge (9px radius, 10px) | status marks in dense rows |
+| `count` `count-alert` | badge | numeric counts in nav rows |
+| `overlay` | badge | "Featured" over a card image (position via className) |
+| `pill` | full | icon + label (user mode); size via className |
+| `plate` | container | raised paper plate (milestone category) |
 
 ## States
 
@@ -39,7 +50,8 @@ Default · hover · active · focus · disabled. Loading where applicable.
 ## Example
 
 ```tsx
-import { /* exports */ } from '@/components/ui/badge';
+import { Badge, badgeVariants } from '@/components/ui/badge';
 
-// minimal usage — see source for the full prop surface.
+<Badge variant="outline">Open</Badge>
+<span className={badgeVariants({ variant: 'mark' })}>Visited</span>
 ```

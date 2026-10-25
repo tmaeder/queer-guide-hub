@@ -8,7 +8,11 @@ import type { User } from '@supabase/supabase-js';
  * the user's conversations, merged with a client-side filter over the already-
  * loaded feed. Extracted verbatim from MessagingInterface — behavior-preserving.
  */
-export function useInboxSearch(items: InboxItem[], user: User | null | undefined) {
+export function useInboxSearch(
+  items: InboxItem[],
+  user: User | null | undefined,
+  mailOnly = false,
+) {
   const [search, setSearch] = useState('');
   const [serverResults, setServerResults] = useState<InboxItem[]>([]);
 
@@ -16,7 +20,7 @@ export function useInboxSearch(items: InboxItem[], user: User | null | undefined
   // (the client filter below only covers the already-loaded feed). Debounced.
   useEffect(() => {
     const q = search.trim();
-    if (!user || q.length <= 2) {
+    if (mailOnly || !user || q.length <= 2) {
       // Intentional reset of the debounced server-search when the query is too
       // short; harmless, not a cascading render.
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -36,7 +40,7 @@ export function useInboxSearch(items: InboxItem[], user: User | null | undefined
       cancelled = true;
       clearTimeout(t);
     };
-  }, [search, user]);
+  }, [search, user, mailOnly]);
 
   const visibleItems = (() => {
     const q = search.trim().toLowerCase();
@@ -45,7 +49,7 @@ export function useInboxSearch(items: InboxItem[], user: User | null | undefined
       (i) => i.title.toLowerCase().includes(q) || i.preview.toLowerCase().includes(q),
     );
     const seen = new Set(clientMatches.map((i) => i.id));
-    return [...clientMatches, ...serverResults.filter((i) => !seen.has(i.id))];
+    return [...clientMatches, ...(mailOnly ? [] : serverResults.filter((i) => !seen.has(i.id)))];
   })();
 
   return { search, setSearch, visibleItems };

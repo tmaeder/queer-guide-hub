@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook as rtlRenderHook, waitFor } from '@testing-library/react';
+import { createElement, type ReactNode } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // useSearch calls the Meilisearch proxy directly via `fetch`. Mock the global
 // so tests don't hit the live worker (was mocking @/utils/fetchWithRetry which
@@ -11,13 +13,34 @@ vi.mock('@/integrations/supabase/client', () => ({ supabase: {} }));
 
 import { useSearch, sanitiseHits } from '../useSearch';
 
+// useSearch is a TanStack query: give each hook its own client.
+const renderHookWithProps = <P, T>(cb: (p: P) => T, initial: P) => {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return rtlRenderHook(cb, {
+    initialProps: initial,
+    wrapper: ({ children }: { children: ReactNode }) =>
+      createElement(QueryClientProvider, { client }, children),
+  });
+};
+const renderHook = <T,>(cb: () => T) => {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return rtlRenderHook(cb, {
+    wrapper: ({ children }: { children: ReactNode }) =>
+      createElement(QueryClientProvider, { client }, children),
+  });
+};
+
 function okJson(body: unknown): Response {
   return { ok: true, status: 200, json: async () => body } as unknown as Response;
 }
 
 describe('useSearch', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
-  afterEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('should start with empty results', () => {
     const { result } = renderHook(() => useSearch(''));
@@ -45,11 +68,6 @@ describe('useSearch', () => {
   it('should not search for empty query', () => {
     renderHook(() => useSearch(''));
     expect(mockFetch).not.toHaveBeenCalled();
-  });
-
-  it('should expose performSearch', () => {
-    const { result } = renderHook(() => useSearch(''));
-    expect(typeof result.current.performSearch).toBe('function');
   });
 
   it('should return suggestions', async () => {
@@ -134,6 +152,29 @@ describe('useSearch', () => {
     await waitFor(() => expect(mockFetch).toHaveBeenCalled(), { timeout: 2000 });
     const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string);
     expect(body.page).toBe(3);
+  });
+});
+
+describe('useSearch request ordering', () => {
+  // The old effect had no cancellation: a slow response for an earlier query
+  // could land after, and overwrite, the newer query's results.
+  it('keeps the newest query when an older response resolves last', async () => {
+    let releaseOld: (r: Response) => void = () => {};
+    mockFetch.mockImplementation((_url: string, init: RequestInit) => {
+      const body = JSON.parse(init.body as string);
+      if (body.query === 'old') return new Promise<Response>((r) => (releaseOld = r));
+      return Promise.resolve(okJson({ hits: [{ objectID: 'n', title: 'New', type: 'venue' }] }));
+    });
+    const { result, rerender } = renderHookWithProps<string, ReturnType<typeof useSearch>>(
+      (q) => useSearch(q),
+      'old',
+    );
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1), { timeout: 2000 });
+    rerender('new');
+    await waitFor(() => expect(result.current.results[0]?.title).toBe('New'), { timeout: 2000 });
+    releaseOld(okJson({ hits: [{ objectID: 'o', title: 'Old', type: 'venue' }] }));
+    await new Promise((r) => setTimeout(r, 50));
+    expect(result.current.results[0]?.title).toBe('New');
   });
 });
 

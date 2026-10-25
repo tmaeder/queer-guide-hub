@@ -70,12 +70,18 @@ export function IntentMap() {
           the stage put that bleed 96px inside the window at 1920px and the
           lines read as four short strokes with rounded ends floating in a
           margin. Full bleed is the whole point of the drawing — the section
-          already drops its gutter at `lg`, and `SubwayHero` clips. */}
-      <div className="intent-map relative">
+          already drops its gutter at `lg`, and `SubwayHero` clips.
+          The ONE cap is 120rem: the stations are positioned as percentages of
+          this stage, so past 1920 they spread beyond the page column (the
+          leftmost plate sat 240px outside it at 2560, measured on prod). Up to
+          1920 the stage is the full window, exactly as before. */}
+      <div className="intent-map relative mx-auto max-w-[120rem]">
         {/* Decorative: every label on this map is HTML. */}
         <svg
           viewBox={`0 0 ${VIEWBOX.w} ${VIEWBOX.h}`}
-          className="hidden w-full lg:block"
+          // Above the 120rem cap the tracks would stop in a hard vertical cut;
+          // an alpha mask lets them fade out instead. No effect at or below 1920.
+          className="hidden w-full lg:block min-[1921px]:[mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
           aria-hidden
         >
           <g
@@ -131,6 +137,12 @@ function StationNode({
 }) {
   const { t } = useTranslation();
   const interchange = station.id === 'interchange';
+  // The outermost plates align to their station instead of centring on it,
+  // so a plate never hangs past the page column on wide screens.
+  const xs = STATIONS.map((s) => s.x);
+  const atMin = station.x === Math.min(...xs);
+  const atMax = station.x === Math.max(...xs);
+  const edge = (rtl ? atMax : atMin) ? 'left' : (rtl ? atMin : atMax) ? 'right' : undefined;
   // `findActiveIntent('/')` is undefined, so nothing is ever current on the
   // homepage. Kept because it is correct-by-construction wherever this map
   // gets reused, and it costs one attribute.
@@ -190,6 +202,8 @@ function StationNode({
           'intent-station-link flex min-w-0 flex-1 flex-col gap-1 bg-background/95 p-4 no-underline rounded-container',
           'lg:absolute lg:left-1/2 lg:w-36 lg:flex-none lg:-translate-x-1/2 xl:w-44',
           station.lane === 'above' ? 'lg:bottom-full lg:mb-4' : 'lg:top-full lg:mt-4',
+          edge === 'left' && 'lg:left-0 lg:translate-x-0',
+          edge === 'right' && 'lg:left-auto lg:right-0 lg:translate-x-0',
         )}
       >
         {interchange && (

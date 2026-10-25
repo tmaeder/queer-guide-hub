@@ -1,0 +1,7 @@
+# Source-owned venue artwork
+
+Fresh exact registered publisher listings already passed name, listing ID, country and 60 m coordinate checks during contact enrichment. Their dedicated `uploads/venues/<publisher id>/` artwork is a separate source fact. Direct image probes found 18 of 39 captured originals meet the same conservative 800/450 px, byte-size and density requirements used for original event artwork; the other images remain excluded. No thumbnail upscaling or generic stock substitution is permitted.
+
+Promote only an empty canonical venue/business media slot, using a fresh native snapshot plus the exact already-registered listing JSON-LD capture and original source timestamps. Require the publisher-specific image path and captured artwork list, actual HTTP 200 raster dimensions/content hash, unique batch content, no reused/flagged library asset, no human image decisions/reviews, claims, verified or conflicting identities. Preserve all other fields, original source data and quality findings. Store photo provenance and invalidate the derived business cursor; the native worker owns assessment outcomes.
+
+The default-dry operator limits each transaction to 20 captures. Its disposable PostgreSQL suite tests 32 ownership/source/media cases, low/zero dimensions, stale/different captures, reused/flagged imagery, whole-row invariants, untouched quality findings and replay. Apply only after native dry run and full rollback agree.

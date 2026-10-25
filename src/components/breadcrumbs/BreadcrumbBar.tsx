@@ -81,6 +81,7 @@ export function BreadcrumbBar() {
   const track = routeJourneyTrack(pathname);
   // Collapse the middle of long trails on small screens to a single ellipsis.
   const collapse = trail.length > 3;
+  const fractions = stopFractions(trail.length);
 
   return (
     <div
@@ -92,17 +93,24 @@ export function BreadcrumbBar() {
         <div className="route-network-rail__canvas">
           <svg
             className="route-network-rail__breadcrumb-map"
-            viewBox="0 0 900 52"
+            viewBox={`0 0 ${TRACK_W} 52`}
             preserveAspectRatio="none"
             role="presentation"
             aria-hidden="true"
           >
             <path
               data-testid="breadcrumb-track"
-              className={`route-network-rail__track route-network-rail__track--${track}`}
-              d="M -20 28 C 170 10 320 42 470 27 C 620 12 740 40 920 22"
+              className={`route-network-rail__track route-network-rail__track--${track} ${collapse ? 'hidden md:inline' : ''}`}
+              d={trackPath(fractions)}
               pathLength="1"
             />
+            {collapse && (
+              <path
+                className={`route-network-rail__track route-network-rail__track--${track} md:hidden`}
+                d={trackPath(stopFractions(3))}
+                pathLength="1"
+              />
+            )}
           </svg>
           <Breadcrumb className="route-network-rail__breadcrumb">
             {/* The semantic breadcrumb and the visible network are one thing:
@@ -128,6 +136,7 @@ export function BreadcrumbBar() {
                   : isLast
                     ? 'justify-end'
                     : 'justify-center';
+                const ringPlace = ringPlacement(isFirst, isLast);
 
                 return (
                   <Fragment key={i}>
@@ -139,12 +148,13 @@ export function BreadcrumbBar() {
                       <BreadcrumbItem
                         data-testid="breadcrumb-overflow"
                         className="route-network-rail__crumb-stop relative z-10 flex min-w-0 flex-1 justify-center md:hidden"
-                        style={routeStopStyle(1, 3)}
+                        style={stopStyle(0.5)}
                       >
                         <CollapsedCrumbsMenu
                           crumbs={trail.slice(1, lastIndex)}
                           track={track}
                           t={t}
+                          ringClass={ringPlacement(false, false)}
                         />
                       </BreadcrumbItem>
                     )}
@@ -152,13 +162,14 @@ export function BreadcrumbBar() {
                       data-breadcrumb-stop=""
                       data-current={isLast ? 'true' : undefined}
                       className={`route-network-rail__crumb-stop relative z-10 min-w-0 flex-1 whitespace-nowrap ${justification} ${mobileClass}`}
-                      style={routeStopStyle(i, trail.length)}
+                      style={stopStyle(
+                        fractions[i],
+                        collapse && !isMiddle ? Number(isLast) : undefined,
+                      )}
                     >
                       {isLast ? (
-                        <BreadcrumbPage
-                          className={`flex min-w-0 max-w-full flex-col gap-1 ${alignment}`}
-                        >
-                          <StationRing state="typed" track={track} />
+                        <BreadcrumbPage className={`flex min-w-0 max-w-full flex-col ${alignment}`}>
+                          <StationRing state="typed" track={track} className={ringPlace} />
                           <span className="block max-w-full truncate bg-background px-1 text-13 font-bold">
                             {crumb.label}
                           </span>
@@ -167,12 +178,12 @@ export function BreadcrumbBar() {
                         <BreadcrumbLink asChild className="min-w-0 max-w-full">
                           <LocalizedLink
                             to={crumb.href}
-                            className={`group flex min-w-0 max-w-full flex-col gap-1 ${alignment}`}
+                            className={`group flex min-w-0 max-w-full flex-col ${alignment}`}
                           >
                             <StationRing
                               state="open"
                               track={track}
-                              className="transition-colors group-hover:bg-surface-container"
+                              className={`${ringPlace} transition-colors group-hover:bg-surface-container`}
                             />
                             <span className="block max-w-full truncate bg-background px-1 text-13 font-semibold text-foreground group-hover:underline">
                               {crumb.label}
@@ -181,9 +192,9 @@ export function BreadcrumbBar() {
                         </BreadcrumbLink>
                       ) : (
                         <span
-                          className={`flex min-w-0 max-w-full flex-col gap-1 text-muted-foreground ${alignment}`}
+                          className={`flex min-w-0 max-w-full flex-col text-muted-foreground ${alignment}`}
                         >
-                          <StationRing state="open" track={track} />
+                          <StationRing state="open" track={track} className={ringPlace} />
                           <span className="block max-w-full truncate bg-background px-1 text-13">
                             {crumb.label}
                           </span>
@@ -201,13 +212,55 @@ export function BreadcrumbBar() {
   );
 }
 
-/** Approximate the shared cubic at evenly-spaced breadcrumb positions. The
- * endpoints land at the path's y=28/y=22 and the sine term follows its two
- * bends closely enough that every HTML station sits visually on the SVG rail. */
-function routeStopStyle(index: number, count: number): CSSProperties {
-  const t = count <= 1 ? 0 : index / (count - 1);
-  const y = 28 - 8 * Math.sin(t * Math.PI * 2) - 6 * t;
-  return { '--route-stop-y': `${Math.round(y)}px` } as CSSProperties;
+const TRACK_W = 1000;
+
+/** Where each station's ring centre sits, as a fraction of the row width.
+ * Stops are `flex-1` cells: the first pins its ring to the left edge, the last
+ * to the right edge, middle rings sit at their cell centre. */
+function stopFractions(count: number): number[] {
+  return Array.from({ length: count }, (_, i) =>
+    i === 0 ? 0 : i === count - 1 ? 1 : (i + 0.5) / count,
+  );
+}
+
+/** The gentle wave every ring sits on, in px from the top of the rail. */
+function waveY(f: number): number {
+  return Math.round(24 - 7 * Math.sin(f * Math.PI * 2) - 4 * f);
+}
+
+/** A smooth (Catmull-Rom) curve passing exactly through every station, so a
+ * ring can never drift off the line. Wave points between stations keep a
+ * two-stop trail from collapsing into a straight line. */
+function trackPath(stops: number[]): string {
+  const fs = [...new Set([...stops, 0.25, 0.5, 0.75])].sort((a, b) => a - b);
+  const pts: [number, number][] = [
+    [-40, waveY(0) + 3],
+    ...fs.map((f): [number, number] => [f * TRACK_W, waveY(f)]),
+    [TRACK_W + 40, waveY(1) - 3],
+  ];
+  let d = `M ${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [p0, p1, p2, p3] = [pts[i - 1] ?? pts[i], pts[i], pts[i + 1], pts[i + 2] ?? pts[i + 1]];
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C ${c1.join(' ')} ${c2.join(' ')} ${p2.join(' ')}`;
+  }
+  return d;
+}
+
+/** Ring height for a stop at row fraction `f`. Below `md` a collapsed trail
+ * shows only three stations, so a stop can sit at a different fraction there. */
+function stopStyle(f: number, mobileF = f): CSSProperties {
+  return {
+    '--route-stop-y': `${waveY(f)}px`,
+    '--route-stop-y-mobile': `${waveY(mobileF)}px`,
+  } as CSSProperties;
+}
+
+/** Rings hang on the curve; labels share one baseline below it. */
+function ringPlacement(isFirst: boolean, isLast: boolean): string {
+  const x = isFirst ? '-left-2' : isLast ? '-right-2' : 'left-1/2 -translate-x-1/2';
+  return `route-network-rail__crumb-ring absolute ${x}`;
 }
 
 /**
@@ -233,10 +286,12 @@ function CollapsedCrumbsMenu({
   crumbs,
   track,
   t,
+  ringClass,
 }: {
   crumbs: Crumb[];
   track: ReturnType<typeof routeJourneyTrack>;
   t: TFunction;
+  ringClass: string;
 }) {
   if (crumbs.length === 0) return null;
   return (
@@ -244,13 +299,13 @@ function CollapsedCrumbsMenu({
       {/* The glyph is decorative and stays aria-hidden; the BUTTON carries the
           accessible name. `min-height: 44px` comes from the base layer. */}
       <DropdownMenuTrigger
-        className="group inline-flex min-w-0 flex-col items-center justify-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
+        className="group inline-flex min-w-0 flex-col items-center justify-start text-muted-foreground transition-colors hover:text-foreground"
         aria-label={t('breadcrumb.showCollapsed', 'Show the levels above')}
       >
         <StationRing
           state="open"
           track={track}
-          className="transition-colors group-hover:bg-surface-container"
+          className={`${ringClass} transition-colors group-hover:bg-surface-container`}
         />
         <span className="bg-background px-1">
           <BreadcrumbEllipsis />

@@ -3,7 +3,16 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { breadcrumbJsonLd } from '@/lib/breadcrumbJsonLd';
-import { useNews } from '@/hooks/useNews';
+import {
+  incrementArticleViews,
+  useFeaturedNewsArticles,
+  useNewsArticleTags,
+  useNewsArticlesFeed,
+  useNewsCategories,
+  useNewsCategoryCounts,
+  useNewsSources,
+  useTrendingNewsTags,
+} from '@/hooks/useNews';
 import type { NewsCategory } from '@/hooks/useNews';
 import { useNewsSearch, type NewsSearchFilters } from '@/hooks/useNewsSearch';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
@@ -47,7 +56,7 @@ import { useTranslation } from 'react-i18next';
 import {
   PageContainer,
   PAGE_BLEED,
-  PAGE_GUTTER,
+  PAGE_BLEED_GUTTER,
   STICKY_UNDER_HEADER,
 } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -88,22 +97,13 @@ export default function NewsArchive() {
   const { t } = useTranslation();
   const { tweens } = useMotionTokens();
   const navigate = useLocalizedNavigate();
-  const {
-    articles,
-    sources,
-    categories,
-    categoryCounts: categoryCountsFromHook,
-    totalArticles,
-    articleTags,
-    loading,
-    error,
-    fetchArticles,
-    fetchTagsForArticles,
-    incrementViews,
-    getFeaturedArticles,
-    getTrendingTags,
-    loadingTimedOut,
-  } = useNews();
+  const sources = useNewsSources();
+  const categories = useNewsCategories();
+  const { categoryCounts: categoryCountsFromHook, totalArticles } =
+    useNewsCategoryCounts(categories);
+  const featuredArticles = useFeaturedNewsArticles() as unknown as FeaturedArticle[];
+  const trendingTags = useTrendingNewsTags();
+  const incrementViews = incrementArticleViews;
 
   const {
     articles: searchHits,
@@ -151,9 +151,10 @@ export default function NewsArchive() {
   if (countryParam) initialFilters.countryIds = [countryParam];
   const cityParam = searchParams.get('city');
   if (cityParam) initialFilters.cityIds = [cityParam];
+  // Seed the category too: sort, retry and the semantic search all rebuild
+  // their request from currentFilters, and without it they dropped ?category=.
+  if (initialCategory) initialFilters.category = initialCategory;
 
-  const [featuredArticles, setFeaturedArticles] = useState<FeaturedArticle[]>([]);
-  const [trendingTags, setTrendingTags] = useState<{ tag: string; count: number }[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>(initialView);
   const [sortBy, setSortBy] = useState(initialSort);
   const [quickSearch, setQuickSearch] = useState(initialSearch);
@@ -161,6 +162,24 @@ export default function NewsArchive() {
   const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>(initialFilters);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [activeCategory, setActiveCategory] = useState<string | null>(initialCategory);
+  // The URL's filters are the FIRST request, so a deep link like
+  // /news/all?category=politics&source=<id>&q=trump cold-loads its slice
+  // instead of the unfiltered list followed by a correction.
+  const { articles, loading, error, fetchArticles, refetch, loadingTimedOut } = useNewsArticlesFeed(
+    () => {
+      const opt = sortOptions.find((o) => o.value === initialSort);
+      const f: Record<string, unknown> = {
+        ...initialFilters,
+        sortField: opt?.field || 'published_at',
+        sortOrder: opt?.order || 'desc',
+      };
+      if (initialCategory) f.category = initialCategory;
+      if (initialSearch) f.search = initialSearch;
+      return f;
+    },
+  );
+  const articleIds = useMemo(() => articles.map((a) => a.id as string), [articles]);
+  const articleTags = useNewsArticleTags(articleIds);
   const [activeRight, setActiveRight] = useState<RightTopic | null>(initialRight);
 
   const {
@@ -217,25 +236,6 @@ export default function NewsArchive() {
     writeUrl({ replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quickSearch]);
-
-  // Apply URL-derived filters on mount so a deep link like
-  // /news?category=politics&source=<id>&q=trump cold-loads the right slice
-  // (the default useNews mount only fetches with no filters).
-  const didApplyInitialUrlRef = useRef(false);
-  useEffect(() => {
-    if (didApplyInitialUrlRef.current) return;
-    didApplyInitialUrlRef.current = true;
-    const opt = sortOptions.find((o) => o.value === initialSort);
-    const f: Record<string, unknown> = {
-      ...initialFilters,
-      sortField: opt?.field || 'published_at',
-      sortOrder: opt?.order || 'desc',
-    };
-    if (initialCategory) f.category = initialCategory;
-    if (initialSearch) f.search = initialSearch;
-    fetchArticles(f);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const [cityNames, setCityNames] = useState<Record<string, string>>({});
   const [countryNames, setCountryNames] = useState<Record<string, string>>({});
@@ -321,23 +321,6 @@ export default function NewsArchive() {
     };
     fetchNames();
   }, [articles]);
-
-  // Batch-fetch tags when articles change
-  useEffect(() => {
-    if (articles.length === 0) return;
-    const ids = articles.map((a: { id: string }) => a.id);
-    fetchTagsForArticles(ids);
-  }, [articles, fetchTagsForArticles]);
-
-  useEffect(() => {
-    const loadAdditionalData = async () => {
-      const [featured, trending] = await Promise.all([getFeaturedArticles(), getTrendingTags()]);
-      setFeaturedArticles(featured);
-      setTrendingTags(trending);
-    };
-    if (!loading) loadAdditionalData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
 
   const semanticDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -544,6 +527,16 @@ export default function NewsArchive() {
     : getSortedArticles();
   const displayLoading = isSemanticSearch ? searchLoading : loading;
   const displayError = isSemanticSearch ? searchError : error;
+  /** Retry / Refresh re-run what is on screen. A bare fetchArticles() here
+   *  replaced the request with an unfiltered one, so retrying a filtered
+   *  archive silently showed the whole corpus. */
+  const retry = () => {
+    if (isSemanticSearch) {
+      void runSemanticSearch(quickSearch.trim(), buildSearchFilters(currentFilters), 0, sortBy);
+    } else {
+      refetch();
+    }
+  };
   const displayLoadingTimedOut = !isSemanticSearch && loadingTimedOut;
   const displayTotal = isSemanticSearch ? searchTotalHits : totalArticles;
 
@@ -631,7 +624,7 @@ export default function NewsArchive() {
           <div
             role="tablist"
             aria-label={t('pages.news.categoriesLabel', 'News categories')}
-            className={`flex gap-2 mb-6 overflow-x-auto pb-2 sticky ${STICKY_UNDER_HEADER} z-20 bg-surface-container-low border-b border-border-hairline ${PAGE_BLEED} ${PAGE_GUTTER} pt-2`}
+            className={`flex gap-2 mb-6 overflow-x-auto pb-2 sticky ${STICKY_UNDER_HEADER} z-20 bg-surface-container-low border-b border-border-hairline ${PAGE_BLEED} ${PAGE_BLEED_GUTTER} pt-2`}
             style={{ scrollbarWidth: 'none' }}
           >
             <button
@@ -896,7 +889,7 @@ export default function NewsArchive() {
           <div className={showFilters ? 'lg:col-span-3' : 'lg:col-span-4'}>
             {/* Error and loading are mutually exclusive with the list. */}
             {displayError && !displayLoading ? (
-              <ErrorState message={displayError} onRetry={() => fetchArticles()} />
+              <ErrorState message={displayError} onRetry={retry} />
             ) : null}
 
             {!displayError && displayLoading && (
@@ -907,7 +900,7 @@ export default function NewsArchive() {
               </div>
             )}
             {!displayError && displayLoading && displayLoadingTimedOut && (
-              <LoadingTimeout onRetry={() => fetchArticles()} />
+              <LoadingTimeout onRetry={retry} />
             )}
 
             {!displayLoading &&
@@ -984,7 +977,7 @@ export default function NewsArchive() {
                   mood="encouraging"
                   primaryAction={{
                     label: t('pages.news.refresh', 'Refresh'),
-                    onClick: () => fetchArticles(),
+                    onClick: retry,
                   }}
                   secondaryAction={{
                     label: t('pages.news.emptyBrowseEvents', 'Browse events'),

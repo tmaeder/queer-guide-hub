@@ -442,6 +442,31 @@ describe('normalizeGcEvent dead image hosts', () => {
       outcome: 'source_unavailable', api_reference: image, reason: 'api_reference_excluded', human_reviewed: false });
   });
 
+  it.each(['originals', 't/sm'])('preserves potentially live nested source artwork in %s', path => {
+    const image = `https://gaycities-featured-images-production.s3.amazonaws.com/events/${path}/poster.jpg`;
+    const norm = normalizeGcEvent(detailFixture({ fromWayback: true, jsonLd: { ...ld(image), _legacyTemplate: true }, bodyDescription: null }), METRO);
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.images).toEqual([image]);
+    expect(norm.metadata.artwork_exclusion).toBeUndefined();
+  });
+
+  it('records the existing retired-bucket importer exclusion for a complete archive record', () => {
+    const image = 'https://gaycities-featured-images-production.s3.amazonaws.com/events/sm_fb_1.jpg';
+    const norm = normalizeGcEvent(detailFixture({ jsonLd: { ...ld(image), _legacyTemplate: true },
+      bodyDescription: null, fromWayback: true }), METRO);
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.images).toEqual([]);
+    expect(norm.metadata.artwork_exclusion).toEqual({ contract: 'gaycities-wayback-retired-bucket-artwork:v1',
+      outcome: 'source_unavailable', api_reference: image, reason: 'retired_source_bucket_excluded', human_reviewed: false });
+  });
+
+  it('does not infer an archive exception from a retired host on a current page', () => {
+    const image = 'https://gaycities-featured-images-production.s3.amazonaws.com/events/sm_fb_1.jpg';
+    const norm = normalizeGcEvent(detailFixture({ jsonLd: ld(image), bodyDescription: null }), METRO);
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.metadata.artwork_exclusion).toBeUndefined();
+  });
+
   it('does not declare a historical source limitation for an ordinary current page', () => {
     const norm = normalizeGcEvent(detailFixture({ jsonLd: ld('https://graph.facebook.com/123456/picture?type=large'),
       bodyDescription: null }), METRO);

@@ -3442,7 +3442,39 @@
       "aVenue": "会場"
     },
     "matchTag": "マッチ",
-    "openAlerts": "[JA] All notifications"
+    "openAlerts": "[JA] All notifications",
+    "mail": {
+      "delivery": {
+        "label": "配信：{{status}}",
+        "loading": "配信状況を確認中…",
+        "refresh": "状況を更新",
+        "refreshing": "更新中…",
+        "error": "配信状況を更新できませんでした。",
+        "lastKnown": "最後に確認された状況：{{status}}",
+        "unavailable": "配信状況を確認できません",
+        "unproved": "このメッセージには確認済みの配信記録がありません。",
+        "states": {
+          "queued": "待機中",
+          "processing": "送信処理中",
+          "accepted": "送信サービスに提出済み",
+          "deferred": "遅延",
+          "uncertain": "確認待ち",
+          "delivered": "配信済み",
+          "failed": "失敗",
+          "bounced": "拒否",
+          "suppressed": "送信停止",
+          "complained": "迷惑メールの報告"
+        },
+        "help": {
+          "accepted": "配信はまだ確認されていません。",
+          "uncertain": "確認待ちです。同じ内容を再送する前に状況を確認してください。",
+          "delivered": "受信者のメールサーバーがメッセージを受け付けました。受信トレイへの到達は確認されていません。"
+        }
+      },
+      "scope": "受信・送信したメール",
+      "sent": "送信済み",
+      "loadError": "メッセージを読み込めませんでした。もう一度お試しください。"
+    }
   },
   "extension": {
     "signInGate": {

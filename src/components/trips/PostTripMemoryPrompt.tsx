@@ -1,9 +1,9 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,6 +11,9 @@ import { useMyPlaceMarks, type PlaceMarkEntity } from '@/hooks/usePlaceMarks';
 import { useQueryClient } from '@tanstack/react-query';
 import type { TripWithDetails, TripPlace } from '@/hooks/useTrips';
 import { useTripReservations } from '@/hooks/useTripReservations';
+
+const NO_MARKS: NonNullable<ReturnType<typeof useMyPlaceMarks>['data']> = [];
+const NO_RESERVATIONS: NonNullable<ReturnType<typeof useTripReservations>['data']> = [];
 
 interface Props {
   trip: TripWithDetails;
@@ -33,8 +36,12 @@ export function PostTripMemoryPrompt({ trip }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
-  const { data: marks = [] } = useMyPlaceMarks();
-  const { data: reservations = [] } = useTripReservations(trip.id);
+  // `= []` defaults would be a NEW array on every render while a query is
+  // loading, which re-derives `initiallyChecked` each render and turns the
+  // re-seed below into an infinite render loop ("Too many re-renders" on the
+  // trip page, intermittently, whenever either query was still in flight).
+  const { data: marks = NO_MARKS } = useMyPlaceMarks();
+  const { data: reservations = NO_RESERVATIONS } = useTripReservations(trip.id);
 
   const isPastTrip = useMemo(() => {
     if (!trip.end_date) return false;
@@ -43,9 +50,7 @@ export function PostTripMemoryPrompt({ trip }: Props) {
 
   const candidates: Candidate[] = useMemo(() => {
     const visitedSet = new Set(
-      marks
-        .filter((m) => m.mark_type === 'visited')
-        .map((m) => `${m.entity_type}:${m.entity_id}`),
+      marks.filter((m) => m.mark_type === 'visited').map((m) => `${m.entity_type}:${m.entity_id}`),
     );
     const out: Candidate[] = [];
     for (const place of trip.trip_places) {
@@ -69,7 +74,6 @@ export function PostTripMemoryPrompt({ trip }: Props) {
   }, [trip.trip_places, marks]);
 
   // Auto-tick places whose reservation ended OR booking_status is 'completed'.
-  const now = new Date();
   const reservationById = useMemo(() => {
     const m = new Map<string, { end_at: string | null }>();
     reservations.forEach((r) => m.set(r.id, { end_at: r.check_out ?? null }));
@@ -77,25 +81,26 @@ export function PostTripMemoryPrompt({ trip }: Props) {
   }, [reservations]);
 
   const initiallyChecked = useMemo(() => {
+    const now = new Date();
     const set = new Set<string>();
     for (const c of candidates) {
       const reservation = c.place.reservation_id
         ? reservationById.get(c.place.reservation_id)
         : null;
-      const reservationEnded =
-        !!reservation?.end_at && new Date(reservation.end_at) < now;
+      const reservationEnded = !!reservation?.end_at && new Date(reservation.end_at) < now;
       const completed = c.place.booking_status === 'completed';
       if (reservationEnded || completed) set.add(c.place.id);
     }
     return set;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [candidates, reservationById]);
 
+  // Re-seed the selection when the auto-ticked set changes (during render).
   const [checked, setChecked] = useState<Set<string>>(initiallyChecked);
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+  const [prevInitiallyChecked, setPrevInitiallyChecked] = useState(initiallyChecked);
+  if (initiallyChecked !== prevInitiallyChecked) {
+    setPrevInitiallyChecked(initiallyChecked);
     setChecked(initiallyChecked);
-  }, [initiallyChecked]);
+  }
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -156,33 +161,24 @@ export function PostTripMemoryPrompt({ trip }: Props) {
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Confirm the places you actually visited on this trip. They become
-          part of your private passport.
+          Confirm the places you actually visited on this trip. They become part of your private
+          passport.
         </p>
         <div className="space-y-2">
           {candidates.map((c) => (
-            <label
-              key={c.place.id}
-              className="flex items-center gap-2 cursor-pointer"
-            >
+            <label key={c.place.id} className="flex items-center gap-2 cursor-pointer">
               <Checkbox
                 checked={checked.has(c.place.id)}
                 onCheckedChange={() => toggle(c.place.id)}
                 aria-label={`Mark ${c.label} visited`}
               />
               <span className="text-sm">{c.label}</span>
-              <span className="text-xs text-muted-foreground capitalize">
-                {c.entityType}
-              </span>
+              <span className="text-xs text-muted-foreground capitalize">{c.entityType}</span>
             </label>
           ))}
         </div>
         <div className="flex gap-2 pt-2">
-          <Button
-            type="button"
-            onClick={submit}
-            disabled={submitting || checked.size === 0}
-          >
+          <Button type="button" onClick={submit} disabled={submitting || checked.size === 0}>
             {submitting && <TrackLoader size={14} className="mr-2" />}
             Confirm {checked.size > 0 ? `(${checked.size})` : 'all visited'}
           </Button>

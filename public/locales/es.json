@@ -3444,7 +3444,39 @@
       "aVenue": "Lugar"
     },
     "matchTag": "Coincidencia",
-    "openAlerts": "[ES] All notifications"
+    "openAlerts": "[ES] All notifications",
+    "mail": {
+      "delivery": {
+        "label": "Entrega: {{status}}",
+        "loading": "Comprobando la entrega…",
+        "refresh": "Actualizar estado",
+        "refreshing": "Actualizando…",
+        "error": "No se pudo actualizar el estado de entrega.",
+        "lastKnown": "Último estado verificado: {{status}}",
+        "unavailable": "Estado de entrega no disponible",
+        "unproved": "No hay un comprobante verificado para este mensaje.",
+        "states": {
+          "queued": "En cola",
+          "processing": "Enviando",
+          "accepted": "Enviado al servicio",
+          "deferred": "Retrasado",
+          "uncertain": "Confirmación pendiente",
+          "delivered": "Entregado",
+          "failed": "Error",
+          "bounced": "Rechazado",
+          "suppressed": "Envío detenido",
+          "complained": "Queja por spam"
+        },
+        "help": {
+          "accepted": "La entrega aún no está confirmada.",
+          "uncertain": "La confirmación está pendiente. Comprueba el estado antes de enviar otra copia.",
+          "delivered": "El servidor de correo del destinatario aceptó este mensaje. No se ha confirmado su llegada a la bandeja de entrada."
+        }
+      },
+      "scope": "Correo recibido y enviado",
+      "sent": "Enviado",
+      "loadError": "No se pudieron cargar los mensajes. Inténtalo de nuevo."
+    }
   },
   "extension": {
     "signInGate": {

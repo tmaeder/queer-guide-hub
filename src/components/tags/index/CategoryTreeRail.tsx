@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { StationRing } from '@/components/transit/StationRing';
 import { TransitIcon } from '@/components/transit/TransitIcon';
-import { PAGE_BLEED } from '@/components/layout/PageContainer';
+import { PAGE_BLEED, PAGE_BLEED_GUTTER } from '@/components/layout/PageContainer';
 import { getCategoryShortName, parentOrder } from '@/components/resources/categoryMeta';
 import { CATEGORY_LINES, DEFAULT_CATEGORY_ICON } from '@/lib/tags/categoryIdentity';
 import { CHIP, CHIP_OFF, CHIP_ON } from './TagsFilterSpine';
@@ -72,7 +72,12 @@ export function CategoryTreeRail({
         aria-label={t('tags.rail.label', 'Topic lines')}
         className={cn('border-b border-border-hairline bg-background', PAGE_BLEED, className)}
       >
-        <div className="flex items-center gap-2 overflow-x-auto px-4 py-2 sm:px-6 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div
+          className={cn(
+            'flex items-center gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+            PAGE_BLEED_GUTTER,
+          )}
+        >
           <LocalizedLink
             to={href(null)}
             aria-current={!activeSlug ? 'page' : undefined}

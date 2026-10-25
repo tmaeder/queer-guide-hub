@@ -33,6 +33,26 @@ describe('admin user reads', () => {
     });
   });
 
+  it('exports every user without forwarding list filters', async () => {
+    rpc.mockResolvedValueOnce({
+      data: { items: Array.from({ length: 500 }, (_, id) => ({ id })), total: 501 },
+      error: null,
+    });
+    rpc.mockResolvedValueOnce({ data: { items: [{ id: 500 }], total: 501 }, error: null });
+    expect(await fetchAdminUsersForExport()).toHaveLength(501);
+    expect(
+      rpc.mock.calls.every(
+        ([, args]) => !args.p_search && !args.p_filters && args.p_ids === undefined,
+      ),
+    ).toBe(true);
+  });
+
+  it('rejects a premature empty page rather than returning a partial user export', async () => {
+    rpc.mockResolvedValueOnce({ data: { items: [{ id: 1 }], total: 2 }, error: null });
+    rpc.mockResolvedValueOnce({ data: { items: [], total: 2 }, error: null });
+    await expect(fetchAdminUsersForExport()).rejects.toThrow('Incomplete user export');
+  });
+
   it('never exports all users when selection is empty', async () => {
     expect(await fetchAdminUsersForExport([])).toEqual([]);
     expect(rpc).not.toHaveBeenCalled();

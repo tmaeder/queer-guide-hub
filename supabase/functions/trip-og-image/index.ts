@@ -20,7 +20,7 @@ const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const corsFor = (req: Request) => ({
   ...getCorsHeaders(req),
-  'Access-Control-Allow-Headers': 'content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
 });
 
@@ -110,18 +110,18 @@ function buildSvg(args: {
 // deno-lint-ignore no-explicit-any
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function loadTrip(admin: any, params: URLSearchParams) {
-  const tripId = params.get('trip_id');
+  // Share token only (same model as trip-ical / get_shared_trip). A bare
+  // trip_id used to be accepted here, rendering any private trip's title,
+  // dates and countries to anyone holding its uuid.
   const token = params.get('token');
-  let id = tripId;
-  if (!id && token) {
-    const { data: link } = await admin
-      .from('trip_share_links')
-      .select('trip_id')
-      .eq('token', token)
-      .maybeSingle();
-    id = link?.trip_id ?? null;
-  }
-  if (!id) return null;
+  if (!token) return null;
+  const { data: share } = await admin
+    .from('trip_shares')
+    .select('trip_id, expires_at')
+    .eq('token', token)
+    .maybeSingle();
+  if (!share || (share.expires_at && new Date(share.expires_at).getTime() < Date.now())) return null;
+  const id = share.trip_id as string;
   const { data: trip } = await admin
     .from('trips')
     .select('id, title, start_date, end_date')

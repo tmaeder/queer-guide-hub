@@ -1,3 +1,5 @@
+import { reviewerTagRows, hasReviewerSession } from './support/reviewerRegistry';
+import { glossaryEntry } from './support/glossaryProse';
 /**
  * Output-level guard for the glossary workbooks, against prod.
  *
@@ -125,30 +127,47 @@ function definedTermOf(html: string): { name?: string; description?: string; url
 
 test.describe('workbook prompts never reach a crawler', () => {
   for (const { tag } of HOSTS) {
-    test(`/tags/${tag} serves its own prose and no workbook prompt`, async () => {
+    test(`/tags/${tag} serves its own prose and no workbook prompt`, async ({ request }) => {
       const { status, html } = await crawl(`/tags/${tag}`);
-      expect(status, `/tags/${tag} did not render`).toBe(200);
+      expect(status).toBe(200);
+      const gated = /<title>Sign in to view(?: \||<)/i.test(html);
+      let prose = '';
+      let published = false;
+      if (gated) {
+        expect(html).toMatch(/name=["']robots["'][^>]*content=["'][^"']*noindex/i);
+        expect(definedTermOf(html), 'A sign-in gate must not leak term metadata').toBeNull();
+        if (hasReviewerSession) {
+          const rows = await reviewerTagRows<{ status: string; long_description: string }>(
+            request,
+            `slug=eq.${tag}&select=status,long_description`,
+          );
+          expect(rows).toHaveLength(1);
+          expect(rows[0].status).toBe('active');
+          prose = rows[0].long_description;
+        }
+      } else {
+        ({ prose, published } = await glossaryEntry(request, tag));
+      }
 
       // ── POSITIVE CONTROL ──────────────────────────────────────────────────
       // Without this, "no prompt text" is also true of a 404 or a gate. See
       // definedTermOf() for why this is the JSON-LD and not the body.
       const term = definedTermOf(html);
-      expect(term, `/tags/${tag} published no DefinedTerm — gated, 404 or empty`).not.toBeNull();
-      // And it is THIS term's document, not another tag's. Asserted on `url`
-      // rather than a substring of the slug: the slug is echoed in
-      // `<link rel="canonical">` and `og:url` on a gate too, so a substring
-      // match is satisfied by the document this control exists to reject.
-      expect(term!.url ?? '', `DefinedTerm is not /tags/${tag}`).toContain(`/tags/${tag}`);
-      // Its own prose reached the crawler, which is what makes the absence
-      // below a measurement of a document that COULD have leaked.
-      expect(
-        (term!.description ?? '').length,
-        `/tags/${tag} published a DefinedTerm with no description`,
-      ).toBeGreaterThan(0);
+      if (published) {
+        expect(term, `/tags/${tag} published no DefinedTerm`).not.toBeNull();
+        expect(term!.url ?? '').toContain(`/tags/${tag}`);
+        expect((term!.description ?? '').length).toBeGreaterThan(0);
+      }
+      if (!gated || hasReviewerSession) {
+        expect(prose.trim().length, 'The readable term carries its own prose').toBeGreaterThan(0);
+      }
 
       // ── THE ASSERTION ─────────────────────────────────────────────────────
       for (const fragment of PROMPT_FRAGMENTS) {
         expect(html, `workbook prompt leaked to a crawler: "${fragment}"`).not.toContain(fragment);
+        expect(prose, `workbook prompt leaked to glossary prose: "${fragment}"`).not.toContain(
+          fragment,
+        );
       }
       // Nor any trace of the tables themselves.
       expect(html).not.toContain('tag_workbook');

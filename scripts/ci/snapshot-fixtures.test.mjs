@@ -1,3 +1,4 @@
+import { eventArtworkMigrationSeedSql } from './seed-event-artwork-migration.mjs';
 import { strict as assert } from 'node:assert';
 import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -140,4 +141,13 @@ test('main sync keeps the full glossary and only the four static registry except
   );
   assert(!sql.includes("'review_queue'"));
   assert.throws(() => manifestSql({ fullTables: ["tags'); drop table users; --"] }));
+});
+
+// The exported builder also enforces locality, not just the CLI entry point.
+test('artwork migration dependencies refuse remote databases and never invoke providers', () => {
+  assert.throws(() => eventArtworkMigrationSeedSql('postgresql://db.example.com/postgres'), /loopback/);
+  const sql = eventArtworkMigrationSeedSql('postgresql://127.0.0.1/postgres');
+  assert(sql.includes("'command','select 1'"));
+  assert(!sql.includes('http_post'));
+  assert(!sql.includes('vault'));
 });

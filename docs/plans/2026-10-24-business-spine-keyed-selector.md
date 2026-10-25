@@ -1,0 +1,9 @@
+# Restore bounded business quality refreshes
+
+The auto-paused business quality job still timed out at 120 seconds on October 24 in `reconcile_merged_venue_business_spines`, despite all three deployed merge-gap cost hints being present. Its query deferred identity equalities and evaluated profile guards across roughly 1.7 million unrelated combinations. A materialized compatibility stage alone reduced that to 24 seconds but retained repeated profile lookups.
+
+The final selector binds both organization reads to the audited venue pair's exact keys using lateral non-flattening lookups, then materializes genuine candidates before complete profile comparison. It retains every original ownership, provenance, lifecycle, linkage and audit predicate, the qualifying batch limit, internal actor requirement, locks, canonical preservation assertion and native merge call. Final full-row comparisons protect against concurrent changes between materialization and locking. No automation is enabled by the migration.
+
+The real production selector query completed in 1,647 ms inside a rolled-back transaction, without applying DDL or merging records. The existing disposable PostgreSQL ownership/lifecycle suite passes. An additional regression adds 2,001 unrelated active profiles, rejects any comparison across unrelated identities, checks that only the two true keyed candidates are compared and verifies that incompatible candidates do not consume the qualifying batch. Default dry run, zero batch, human actor rejection, canonical mutation rollback and convergence remain covered.
+
+After the normal migration deployment, verify the whole native quality refresh within its existing timeout, then restore only the auto-paused job's original registry state and 15-minute schedule. Read and check the scheduler's actual recreated list. Keep the job paused if the full refresh still fails.

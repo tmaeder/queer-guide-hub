@@ -72,7 +72,7 @@ export function AdminArchetypeHeader({
         <h1 className="m-0 mt-1 font-display text-headline leading-tight">{title}</h1>
         {filters && <div className="mt-4 flex flex-wrap items-center gap-2">{filters}</div>}
       </div>
-      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+      {actions && <div className="flex min-w-0 flex-wrap items-center gap-2">{actions}</div>}
     </header>
   );
 }

@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin, boundedInt } from '../_shared/supabase-client.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { llmChatCompletion } from '../_shared/llm-client.ts'
 import {
@@ -29,11 +29,14 @@ const WALL_CLOCK_MS = 50_000
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
+  // Service-role client + paid LLM calls: never reachable with the public anon key.
+  const auth = await requireInternalOrAdmin(req, supabase)
+  if (auth instanceof Response) return auth
   const startedAt = Date.now()
 
   try {
     const body = await req.json().catch(() => ({}))
-    const limit      = Number(body.limit ?? DEFAULT_LIMIT)
+    const limit      = boundedInt(body.limit, DEFAULT_LIMIT, 1000)
     const includeInactive = body.include_inactive ?? false
     const onlyOldSlug = body.only_old_slug ?? true // skip rows already on a new-taxonomy slug
     const dryRun     = body.dry_run ?? false

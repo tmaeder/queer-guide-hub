@@ -1,16 +1,12 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
-import { untypedRpc } from '@/integrations/supabase/untyped';
 import { Rail, RailItem } from '@/components/ui/Rail';
 import { Button } from '@/components/ui/button';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
+import { useVenueRail, type VenueRailData } from '@/hooks/useVenueRail';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import type { Database } from '@/integrations/supabase/types';
-
-type Venue = Database['public']['Tables']['venues']['Row'];
 
 interface VenuesRailsProps {
   userLocation: { latitude: number; longitude: number } | null;
@@ -18,119 +14,46 @@ interface VenuesRailsProps {
   primaryCityName: string | null;
 }
 
-interface RailData {
-  loading: boolean;
-  venues: Venue[];
-}
-
-async function fetchRanked(params: {
-  userId: string | null;
-  lat: number | null;
-  lng: number | null;
-  filters?: Record<string, unknown>;
-  sort: string;
-  limit?: number;
-}): Promise<Venue[]> {
-  const { data, error } = await untypedRpc<Array<{ venue: Venue }>>('rpc_venues_ranked', {
-    p_user_id: params.userId,
-    p_lat: params.lat,
-    p_lng: params.lng,
-    p_filters: params.filters ?? {},
-    p_sort: params.sort,
-    p_limit: params.limit ?? 8,
-    p_offset: 0,
-  });
-  if (error || !data) return [];
-  return data.map((r) => r.venue);
-}
-
-function useRailData(enabled: boolean, fetcher: () => Promise<Venue[]>, deps: unknown[]): RailData {
-  const [state, setState] = useState<RailData>({ loading: enabled, venues: [] });
-  useEffect(() => {
-    let cancelled = false;
-    if (!enabled) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setState({ loading: false, venues: [] });
-      return;
-    }
-    setState((s) => ({ ...s, loading: true }));
-    fetcher().then((venues) => {
-      if (cancelled) return;
-      setState({ loading: false, venues });
-    });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
-  return state;
-}
-
 export function VenuesRails({ userLocation, primaryCityId, primaryCityName }: VenuesRailsProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
 
-  const nearYou = useRailData(
-    !!userLocation,
-    () =>
-      fetchRanked({
-        userId: user?.id ?? null,
-        lat: userLocation!.latitude,
-        lng: userLocation!.longitude,
-        sort: 'nearest',
-        filters: { radiusKm: 30 },
-      }),
-    [user?.id, userLocation?.latitude, userLocation?.longitude],
-  );
+  const nearYou = useVenueRail(!!userLocation, {
+    userId: user?.id ?? null,
+    lat: userLocation?.latitude ?? null,
+    lng: userLocation?.longitude ?? null,
+    sort: 'nearest',
+    filters: { radiusKm: 30 },
+  });
 
-  const forYou = useRailData(
-    !!user,
-    () =>
-      fetchRanked({
-        userId: user!.id,
-        lat: userLocation?.latitude ?? null,
-        lng: userLocation?.longitude ?? null,
-        sort: 'relevance',
-      }),
-    [user?.id, userLocation?.latitude, userLocation?.longitude],
-  );
+  const forYou = useVenueRail(!!user, {
+    userId: user?.id ?? null,
+    lat: userLocation?.latitude ?? null,
+    lng: userLocation?.longitude ?? null,
+    sort: 'relevance',
+  });
 
-  const newThisMonth = useRailData(
-    true,
-    () =>
-      fetchRanked({
-        userId: user?.id ?? null,
-        lat: userLocation?.latitude ?? null,
-        lng: userLocation?.longitude ?? null,
-        sort: 'created_at',
-      }),
-    [user?.id],
-  );
+  const newThisMonth = useVenueRail(true, {
+    userId: user?.id ?? null,
+    lat: userLocation?.latitude ?? null,
+    lng: userLocation?.longitude ?? null,
+    sort: 'created_at',
+  });
 
-  const topInCity = useRailData(
-    !!primaryCityId,
-    () =>
-      fetchRanked({
-        userId: user?.id ?? null,
-        lat: userLocation?.latitude ?? null,
-        lng: userLocation?.longitude ?? null,
-        filters: { cityId: primaryCityId ?? undefined, city: primaryCityName ?? undefined },
-        sort: 'featured',
-      }),
-    [user?.id, primaryCityId, primaryCityName],
-  );
+  const topInCity = useVenueRail(!!primaryCityId, {
+    userId: user?.id ?? null,
+    lat: userLocation?.latitude ?? null,
+    lng: userLocation?.longitude ?? null,
+    filters: { cityId: primaryCityId ?? undefined, city: primaryCityName ?? undefined },
+    sort: 'featured',
+  });
 
-  const editorsPicks = useRailData(
-    true,
-    () =>
-      fetchRanked({
-        userId: user?.id ?? null,
-        lat: userLocation?.latitude ?? null,
-        lng: userLocation?.longitude ?? null,
-        sort: 'featured',
-      }),
-    [user?.id],
-  );
+  const editorsPicks = useVenueRail(true, {
+    userId: user?.id ?? null,
+    lat: userLocation?.latitude ?? null,
+    lng: userLocation?.longitude ?? null,
+    sort: 'featured',
+  });
 
   return (
     <div className="space-y-12">
@@ -184,7 +107,7 @@ function RailSection({
 }: {
   title: string;
   subtitle: string;
-  data: RailData;
+  data: VenueRailData;
 }) {
   if (!data.loading && data.venues.length === 0) return null;
   return (

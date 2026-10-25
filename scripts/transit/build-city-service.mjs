@@ -179,7 +179,173 @@ export const FEEDS = {
       },
     ],
   },
+  at: {
+    meta: {
+      feed_key: 'at-wiener-linien',
+      provider: 'Wiener Linien',
+      country_code: 'AT',
+      source_url: 'https://www.wienerlinien.at/open-data',
+      licence: 'CC BY 4.0',
+      attribution: 'Timetable: Wiener Linien (CC BY 4.0)',
+    },
+    // Wiener Linien only, the one key-free Austrian feed: the national
+    // Mobilitätsverbünde feeds (Graz, Linz, Salzburg, Innsbruck, rail) need an account.
+    // Night lines are named N6, N25, like Germany's.
+    nightByName: true,
+    cities: [
+      {
+        slug: 'vienna',
+        city_id: '18463095-3eef-4e81-b367-1ce244a39c19',
+        centre: [48.2082, 16.3738],
+        radiusKm: 15,
+      },
+    ],
+  },
 };
+
+// France: one urban network per feed, all Licence Ouverte (attribution only) via
+// transport.data.gouv.fr — except Paris, Lyon, Toulouse, Montpellier and Rennes, which are
+// ODbL / Licence Mobilités (share-alike); their credit states the derived data is ODbL.
+const N_LINES = /^N\d+$/;
+function frenchFeed(key, provider, sourceUrl, licence, city, nightLineName, extra = {}) {
+  // ODbL and Licence Mobilités are share-alike: the derived rows we publish are ODbL too,
+  // and the credit says so.
+  const shareAlike = /odbl|mobilit/i.test(licence);
+  return {
+    meta: {
+      feed_key: `fr-${key}`,
+      provider,
+      country_code: 'FR',
+      source_url: sourceUrl,
+      licence,
+      attribution: shareAlike
+        ? `Timetable: ${provider} via transport.data.gouv.fr (${licence}). Derived late-night data on this page is available under ODbL.`
+        : `Timetable: ${provider} via transport.data.gouv.fr (${licence})`,
+    },
+    nightLineName,
+    ...extra,
+    cities: [{ ...city, radiusKm: 8 }],
+  };
+}
+Object.assign(FEEDS, {
+  'fr-marseille': frenchFeed(
+    'rtm',
+    'RTM',
+    'https://transport.data.gouv.fr/datasets/reseaux-urbains-de-la-metropole-aix-marseille-provence',
+    'Licence Ouverte 2.0',
+    {
+      slug: 'marseille',
+      city_id: '2b2f1c9b-91c7-45ad-a7a3-cb06bcf4e63e',
+      centre: [43.2965, 5.3698],
+    },
+  ),
+  'fr-lille': frenchFeed(
+    'ilevia',
+    'ilévia',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-ilevia',
+    'Licence Ouverte 2.0',
+    {
+      slug: 'lille-france',
+      city_id: '4e0d885a-845d-4ecf-8cd7-f08be4e6c582',
+      centre: [50.63657, 3.06353],
+    },
+    N_LINES,
+  ),
+  'fr-nice': frenchFeed(
+    'lignes-dazur',
+    "Lignes d'Azur",
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-lignes-dazur',
+    'Licence Ouverte 2.0',
+    { slug: 'nice', city_id: '08685e84-d1a7-46c3-bf4e-6aa8b009de4a', centre: [43.7102, 7.262] },
+  ),
+  'fr-nantes': frenchFeed(
+    'naolib',
+    'Naolib',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-naolib',
+    'Licence Ouverte 2.0',
+    {
+      slug: 'nantes-france',
+      city_id: '42ccc458-9ee7-4866-a342-2f79cdd33196',
+      centre: [47.21864, -1.55414],
+    },
+    /^N[CNOS]$/,
+  ),
+  'fr-strasbourg': frenchFeed(
+    'cts',
+    'CTS',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-cts',
+    'Licence Ouverte 2.0',
+    {
+      slug: 'strasbourg',
+      city_id: '3ca9c869-2c13-4112-85b7-1d7b349e80eb',
+      centre: [48.5734, 7.7521],
+    },
+    N_LINES,
+  ),
+  'fr-bordeaux': frenchFeed(
+    'tbm',
+    'TBM',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-et-scolaire-tbm',
+    'Licence Ouverte',
+    {
+      slug: 'bordeaux-france',
+      city_id: 'c118881b-5586-40ae-9fe0-89cbc44cacd3',
+      centre: [44.84123, -0.58004],
+    },
+    N_LINES,
+  ),
+  'fr-paris': frenchFeed(
+    'idfm',
+    'Île-de-France Mobilités',
+    'https://transport.data.gouv.fr/datasets/reseaux-urbains-et-interurbains-dile-de-france-mobilites',
+    'Licence Mobilités (ODbL)',
+    { slug: 'paris', city_id: 'b46a28a1-5c7a-41ac-a2cc-5b03448f6f69', centre: [48.8566, 2.3522] },
+    N_LINES,
+    { dropBusNamedLikeRail: true },
+  ),
+  'fr-lyon': frenchFeed(
+    'tcl',
+    'TCL',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-tcl',
+    'Licence Mobilités (ODbL)',
+    { slug: 'lyon', city_id: '0218d34e-8b6b-47d6-9f7e-9871065d8c19', centre: [45.764, 4.8357] },
+    /^PL\d+$/, // "Pleine Lune" night buses; Lyon's N18x are regional coaches
+  ),
+  'fr-toulouse': frenchFeed(
+    'tisseo',
+    'Tisséo',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-tisseo',
+    'ODbL',
+    {
+      slug: 'toulouse-fr-6qolh',
+      city_id: 'a399b92d-9fb9-4168-8af7-e84979de1bcc',
+      centre: [43.60426, 1.44367],
+    },
+  ),
+  'fr-montpellier': frenchFeed(
+    'tam',
+    'TaM',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-tam',
+    'ODbL',
+    {
+      slug: 'montpellier-france',
+      city_id: '3d7d0448-7c9f-477e-aa8f-b9f6906db578',
+      centre: [43.61124, 3.87673],
+    },
+  ),
+  'fr-rennes': frenchFeed(
+    'star',
+    'STAR',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-star',
+    'ODbL',
+    {
+      slug: 'rennes-france',
+      city_id: '8a21d101-0e41-4131-9a8d-0c1b2084d13c',
+      centre: [48.11134, -1.68002],
+    },
+    N_LINES,
+  ),
+});
 
 const args = process.argv.slice(2);
 const zip = args[0];
@@ -197,6 +363,9 @@ const CITIES = FEEDS[feedArg].cities;
 const NIGHT_BY_NAME = !!FEEDS[feedArg].nightByName;
 // Measured German night-line names: N1, NE1, 'NE 1', NL1, n61 (Frankfurt), N1A, NG1, NA1.
 const NIGHT_LINE_NAME = /^N[EGLA]?\s?\d+[A-Z]?$/i;
+// A feed may name its night lines its own way (Nantes: NC/NN/NO/NS, while its N1-N3
+// are ferries); a feed with neither flag nor regex marks night lines by code only.
+const NIGHT_RE = FEEDS[feedArg].nightLineName ?? (NIGHT_BY_NAME ? NIGHT_LINE_NAME : null);
 
 const isoDate = (d) => (d ? `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}` : null);
 
@@ -260,19 +429,38 @@ async function* rows(file) {
 async function main() {
   const t0 = Date.now();
   let feedInfo = {};
-  for await (const r of rows('feed_info.txt')) feedInfo = r;
+  // feed_info.txt is optional in GTFS and Wiener Linien omits it (unzip exits 11 =
+  // "no such file"); any other failure still aborts.
+  try {
+    for await (const r of rows('feed_info.txt')) feedInfo = r;
+  } catch (e) {
+    if (!/exited 11$/.test(e.message)) throw e;
+  }
   const calendar = [];
-  for await (const c of rows('calendar.txt')) calendar.push(c);
-  // gtfs.de publishes no feed dates; its validity is the calendar's own span.
+  // calendar.txt is optional too: Lille (ilévia) publishes calendar_dates.txt only.
+  try {
+    for await (const c of rows('calendar.txt')) calendar.push(c);
+  } catch (e) {
+    if (!/exited 11$/.test(e.message)) throw e;
+  }
+  // gtfs.de and Wiener Linien publish no feed dates; validity is the calendar's own span,
+  // or, with no calendar at all, the span of the dates calendar_dates adds.
   if (!feedInfo.feed_start_date || !feedInfo.feed_end_date) {
-    feedInfo.feed_start_date = calendar.reduce(
-      (m, c) => (c.start_date < m ? c.start_date : m),
-      '99999999',
-    );
-    feedInfo.feed_end_date = calendar.reduce(
-      (m, c) => (c.end_date > m ? c.end_date : m),
-      '00000000',
-    );
+    let lo = '99999999';
+    let hi = '00000000';
+    for (const c of calendar) {
+      if (c.start_date < lo) lo = c.start_date;
+      if (c.end_date > hi) hi = c.end_date;
+    }
+    if (!calendar.length) {
+      for await (const e of rows('calendar_dates.txt')) {
+        if (e.exception_type !== '1') continue;
+        if (e.date < lo) lo = e.date;
+        if (e.date > hi) hi = e.date;
+      }
+    }
+    feedInfo.feed_start_date = lo;
+    feedInfo.feed_end_date = hi;
   }
   const today = todayArg ?? new Date().toISOString().slice(0, 10).replaceAll('-', '');
   const week = pickServiceWeek(today, feedInfo.feed_start_date, feedInfo.feed_end_date);
@@ -292,17 +480,29 @@ async function main() {
   }
 
   const routes = new Map(); // route_id -> {mode, night, ref}
-  for await (const r of rows('routes.txt')) {
+  const routeRows = [];
+  for await (const r of rows('routes.txt')) routeRows.push(r);
+  // Île-de-France names its rail-replacement buses after the line they replace (bus "A"
+  // for RER A at 02:21, "L" for Transilien L): a works diversion, not the last bus.
+  const railRefs = new Set();
+  if (FEEDS[feedArg].dropBusNamedLikeRail) {
+    for (const r of routeRows) {
+      const m = mapMode(r.route_type, r.route_desc);
+      if (m && m.mode !== 'bus') railRefs.add(r.route_short_name || r.route_long_name);
+    }
+  }
+  for (const r of routeRows) {
     const m = mapMode(r.route_type, r.route_desc);
     if (!m) continue;
     const ref = r.route_short_name || r.route_long_name;
     if (m.mode === 'rail' && isLongDistanceRail(r.route_type, r.route_desc, ref)) continue;
     // German rail-replacement buses carry the train's name ("S8" bus in Düsseldorf at 03:10):
     // a works diversion, not the city's last bus.
-    if (NIGHT_BY_NAME && m.mode === 'bus' && /^(S|RE|RB|U)\s?\d/i.test(ref)) continue;
+    if (NIGHT_BY_NAME && m.mode === 'bus' && /^(SEV|S|RE|RB|U)\s?\d|^SEV\b/i.test(ref)) continue;
+    if (m.mode === 'bus' && railRefs.has(ref)) continue;
     routes.set(r.route_id, {
       ...m,
-      night: m.night || (NIGHT_BY_NAME && NIGHT_LINE_NAME.test(ref)),
+      night: m.night || !!NIGHT_RE?.test(ref),
       ref,
     });
   }

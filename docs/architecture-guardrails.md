@@ -23,6 +23,7 @@ Enabled as of 2026-03-03:
 Already present:
 - `react-hooks/exhaustive-deps` — warns on missing hook dependencies
 - `jsx-a11y/*` — WCAG 2.2 AA accessibility warnings
+- `queerguide/no-hand-rolled-dialog` — `role="dialog"`/`alertdialog`/`aria-modal` on a raw DOM element outside `src/components/ui` is an error; use Dialog/Sheet/AlertDialog/Popover/Drawer. Role overrides on a primitive are allowed.
 
 ## Dependency Rules
 
@@ -40,6 +41,15 @@ Exceptions: Admin pages not yet launched can stay if tracked in a TODO comment a
 ```tsx
 // TODO: Register route at /admin/audio before shipping
 ```
+
+## Service Worker (asset-heal layer 1)
+
+`public/sw.js` is live on prod (verified 2026-10-24: fresh visit registers it, it activates, the next load is controlled — `navigator.serviceWorker.controller.scriptURL === 'https://queer.guide/sw.js'`).
+
+- **Only registrar:** `PWAProvider` (`src/components/pwa/PWAProvider.tsx`, `navigator.serviceWorker.register('/sw.js', { scope: '/' })`, production builds only, after `load`). Mounted by `src/providers/AppProviders.tsx`. Not in `index.html`, the boot guard, the middleware or a Vite plugin.
+- **Why it matters:** it retries suspect `/assets/*` responses with `fetch(new Request(request, { cache: 'reload' }))`, the only fix for a poisoned year-long immutable browser-cache entry. `self.clients.claim()` makes it control the first page after install.
+- **Must stay:** `/sw.js` in `public/_routes.json` `exclude`, and its `public/_headers` blocks never `immutable`.
+- **Guard:** `src/utils/__tests__/serviceWorkerWiring.test.ts` fails if any link above is removed; `PWAProvider.test.tsx` covers the register call itself.
 
 ## Build Rules
 

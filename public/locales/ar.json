@@ -3452,7 +3452,39 @@
       "aVenue": "مكان"
     },
     "matchTag": "تطابق",
-    "openAlerts": "[AR] All notifications"
+    "openAlerts": "[AR] All notifications",
+    "mail": {
+      "delivery": {
+        "label": "التسليم: {{status}}",
+        "loading": "جارٍ التحقق من حالة التسليم…",
+        "refresh": "تحديث الحالة",
+        "refreshing": "جارٍ التحديث…",
+        "error": "تعذر تحديث حالة التسليم.",
+        "lastKnown": "آخر حالة تم التحقق منها: {{status}}",
+        "unavailable": "حالة التسليم غير متاحة",
+        "unproved": "لا يتوفر إيصال موثّق لهذه الرسالة.",
+        "states": {
+          "queued": "في قائمة الانتظار",
+          "processing": "جارٍ الإرسال",
+          "accepted": "أُرسلت إلى الخدمة",
+          "deferred": "متأخر",
+          "uncertain": "بانتظار التأكيد",
+          "delivered": "تم التسليم",
+          "failed": "فشل",
+          "bounced": "مرفوض",
+          "suppressed": "توقف الإرسال",
+          "complained": "شكوى بريد مزعج"
+        },
+        "help": {
+          "accepted": "لم يتم تأكيد التسليم بعد.",
+          "uncertain": "التأكيد قيد الانتظار. تحقق من الحالة قبل إرسال نسخة أخرى.",
+          "delivered": "قبل خادم بريد المستلم هذه الرسالة. لم يتم تأكيد وصولها إلى صندوق الوارد."
+        }
+      },
+      "scope": "البريد الوارد والمرسل",
+      "sent": "مرسل",
+      "loadError": "تعذر تحميل الرسائل. حاول مرة أخرى."
+    }
   },
   "extension": {
     "signInGate": {

@@ -1,7 +1,7 @@
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 import { providerFetch, providerResults, ProviderUnavailable } from './provider-outcomes.ts'
 import { searchFoursquare } from './foursquare.ts'
-import { collectContactEvidence, type ContactVenue } from './contact-evidence.ts'
+import { collectContactEvidence, contactCaptureCoordinates, type ContactVenue } from './contact-evidence.ts'
 import { reserveFoursquareApiCalls, type FoursquareBudgetVerdict } from '../_shared/foursquare-budget.ts'
 
 interface VenueData {
@@ -57,19 +57,22 @@ Deno.serve(async (req) => {
       const { data: cities, error: cityError } = await serviceClient.from('cities')
         .select('id,name').in('id', [...new Set((venues ?? []).map(v => v.city_id).filter(Boolean))])
       if (cityError) throw new Error('Could not read native city identities')
-      const budget = await reserveFoursquareApiCalls(serviceClient, 'contact-evidence', venues?.length ?? 0)
+      const eligible = (venues ?? []).flatMap(venue => {
+        const country = countries?.find(c => c.id === venue.country_id)
+        const coordinates = contactCaptureCoordinates(venue)
+        return country && coordinates ? [{ ...venue, ...coordinates, country_code: country.code,
+          city_name: cities?.find(c => c.id === venue.city_id)?.name }] : []
+      })
+      if (!eligible.length) return new Response(JSON.stringify({ success: true, read_only: true, captures: [], eligible: 0 }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+      const budget = await reserveFoursquareApiCalls(serviceClient, 'contact-evidence', eligible.length)
       if (!budget.allowed) return new Response(JSON.stringify({ success: false, read_only: true, capped: true, captures: [], budget }), {
         status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
       const captures = []
-      for (const venue of venues ?? []) {
-        const country = countries?.find(c => c.id === venue.country_id)
-        if (!country || ['cruising', 'toilet', 'other'].includes(venue.category)
-          || typeof venue.latitude !== 'number' || typeof venue.longitude !== 'number'
-          || !Number.isFinite(venue.latitude) || !Number.isFinite(venue.longitude)
-          || Math.abs(venue.latitude) > 90 || Math.abs(venue.longitude) > 180
-          || (!venue.latitude && !venue.longitude)) continue
-        captures.push(await collectContactEvidence({ ...venue, country_code: country.code, city_name: cities?.find(c => c.id === venue.city_id)?.name } as ContactVenue, apiKey))
+      for (const venue of eligible) {
+        captures.push(await collectContactEvidence(venue as ContactVenue, apiKey))
       }
       return new Response(JSON.stringify({ success: true, read_only: true, captures }), {
         status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -96,8 +99,6 @@ Deno.serve(async (req) => {
     const tripadvisorKey = Deno.env.get('TRIPADVISOR_API_KEY')
 
     const providers: { source: string; run: () => Promise<VenueData | null> }[] = []
-    let foursquareBudget: FoursquareBudgetVerdict | undefined
-
     let foursquareBudget: FoursquareBudgetVerdict | undefined
 
     // Foursquare search

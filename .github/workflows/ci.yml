@@ -85,10 +85,27 @@ jobs:
       # missing _routes.json (which leaves the Functions bundle unrouted, so
       # every Pages Function 404s). Both shipped green on 2026-08-01.
       - run: npm run check:pages-routing
+      # Every install here runs --no-audit, so nothing else looks at advisories
+      # between Dependabot PRs. Ratchet against scripts/npm-audit-baseline.json:
+      # a NEW high/critical prod advisory fails; a baselined one that goes away
+      # fails too until its entry is deleted (shrink-only).
+      - name: npm audit (production deps, high+)
+        run: npm run check:npm-audit
+      # functions/** (Pages edge middleware) was outside Prettier/lint-staged and
+      # drifted; this keeps it formatted now that lint-staged covers it too.
+      - name: Prettier check (functions/)
+        run: npm run format:check:functions
 
-  test:
+  unit-test-shards:
+    name: Unit tests (${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    env:
+      SHARD_INDEX: ${{ matrix.shard }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -96,13 +113,70 @@ jobs:
           node-version: '22.20.0'
           cache: npm
       - run: npm ci --prefer-offline --no-audit
-      # Server-only importer and script regressions use their own Node config;
-      # the app's jsdom suite and Deno discovery do not collect these files.
+      # These server regressions have their own Node config. Execute once;
+      # failure of this shard also fails the required aggregate test job.
       - name: Run merchant and server-script regressions
+        if: matrix.shard == 1
         run: npm run test:merchant-sync
-      # Coverage gate is enforced via thresholds in vite.config.ts
-      # test.coverage.thresholds (Phase 6, locked 2026-05-16).
-      - run: npm run test:coverage
+      - name: Collect unit results and coverage
+        run: |
+          npm run test:coverage -- \
+            --shard "$SHARD_INDEX/4" \
+            --reporter=default --reporter=blob \
+            --outputFile.blob=".unit-test-reports/blobs/blob-$SHARD_INDEX.json" \
+            --coverage.reporter=json-summary \
+            --coverage.thresholds.lines=0 --coverage.thresholds.statements=0 \
+            --coverage.thresholds.branches=0 --coverage.thresholds.functions=0
+          node scripts/ci/unit-shard-reports.mjs write .unit-test-reports "$SHARD_INDEX/4" "$GITHUB_SHA"
+      # These are gate inputs, unlike the optional diagnostic report below.
+      # Failed, cancelled, missing or substituted inputs cannot pass test.
+      - name: Upload required shard evidence
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: unit-test-shard-${{ matrix.shard }}
+          path: .unit-test-reports/
+          include-hidden-files: true
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 1
+
+  # Preserve the branch-protection check name. All tests run across the four
+  # shards; the original coverage thresholds run once on their complete union.
+  test:
+    if: always()
+    needs: [unit-test-shards]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SHARD_RESULT: ${{ needs.unit-test-shards.result }}
+    steps:
+      - name: Require every unit shard to succeed
+        run: |
+          if [ "$SHARD_RESULT" != "success" ]; then
+            echo "::error::A unit shard failed, was cancelled or did not run."
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '22.20.0'
+          cache: npm
+      - run: npm ci --prefer-offline --no-audit
+      - name: Download all required shard evidence
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          pattern: unit-test-shard-*
+          path: .unit-test-reports
+          merge-multiple: true
+      - name: Validate complete evidence from this commit
+        run: node scripts/ci/unit-shard-reports.mjs verify-inputs .unit-test-reports 4 "$GITHUB_SHA"
+      - name: Enforce combined coverage and complete test discovery
+        run: |
+          npx vitest list --filesOnly --json=.unit-test-reports/expected-files.json
+          npm run test:coverage -- --merge-reports=.unit-test-reports/blobs \
+            --reporter=default --reporter=json --outputFile.json=.unit-test-reports/merged-tests.json
+          node scripts/ci/unit-shard-reports.mjs verify-results \
+            .unit-test-reports/expected-files.json .unit-test-reports/merged-tests.json
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
@@ -376,6 +450,12 @@ jobs:
             deno-${{ runner.os }}-
       - name: Prepare disposable redirect webhook TLS certificates
         run: node scripts/test-redirect-webhooks.mjs --prepare-only
+
+      # Unit discovery does not import Deno.serve entrypoints. A duplicate
+      # block-scoped declaration passed helper tests but boot-failed in prod.
+      - name: Check enrichment and Foursquare entrypoints
+        working-directory: supabase/functions
+        run: deno check --node-modules-dir=none enrich-venue/index.ts source-foursquare/index.ts source-foursquare-free/index.ts
 
       - name: Run deno unit tests
         working-directory: supabase/functions

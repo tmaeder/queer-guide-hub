@@ -560,8 +560,15 @@ test.describe('page layout — sticky elements clear the header', () => {
  */
 const BLED_BAR_ROUTES = ['/going-out', '/tags'];
 
+/**
+ * PAGE_BLEED bleeds below `md` only (2026-10-24): from md up a bled bar sits on
+ * the column like every other block, so there is no negative margin left to
+ * select at desktop widths. The round trip is asserted where the bleed exists;
+ * the desktop half — nothing wider than the column — is the job of the
+ * `nothing wider than the header` describe below.
+ */
 test.describe('page layout — bled bars align with the content column', () => {
-  for (const width of [1440, 1920]) {
+  for (const width of [390, 640]) {
     for (const route of BLED_BAR_ROUTES) {
       test(`${route} aligns its sticky bar row at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
@@ -583,7 +590,7 @@ test.describe('page layout — bled bars align with the content column', () => {
             Math.round(n.getBoundingClientRect().left) + cs(n, 'paddingLeft');
 
           // BLED bars only, identified by a NEGATIVE LEFT MARGIN — which is
-          // literally what PAGE_BLEED is (`-mx-4 sm:-mx-6 md:-mx-8`) and so
+          // literally what PAGE_BLEED is (`-mx-4 sm:-mx-6 md:mx-0`) and so
           // cannot be confused by anything else on the page. /tags also carries
           // a sticky SIDEBAR rail sitting inside the column, whose first child
           // is not a bled row and would report a bogus misalignment.
@@ -618,6 +625,88 @@ test.describe('page layout — bled bars align with the content column', () => {
             `${route} @${width}: bar row content at ${row}, its container's content at ${parent}`,
           ).toBe(parent);
         }
+      });
+    }
+  }
+});
+
+/**
+ * Nothing on a page is wider than the header's content row at desktop widths.
+ *
+ * The alignment checks above compare container EDGES, which a block hanging
+ * past its container never moves — that is how bled sticky bars sat 32px past
+ * the column at 1920 (and reached one screen edge inside /tags' two-column
+ * body) with every other assertion in this file green. This measures the boxes
+ * that are actually drawn: anything with a fill, a shadow or a border.
+ */
+const NO_OVERHANG_ROUTES = [
+  '/',
+  '/tags',
+  '/rights',
+  '/help',
+  '/city/berlin',
+  '/history',
+  '/sitemap',
+];
+
+test.describe('page layout — nothing wider than the header', () => {
+  // 2560 because the homepage intent map is a full-window stage whose stations
+  // are placed in percent of it: fine at 1920, 240px outside the column at 2560.
+  // 768 and 1024 because tablet widths are where action rows and fixed-width
+  // inputs ran out of room in the 2026-10 sweeps.
+  for (const width of [768, 1024, 1440, 1920, 2560]) {
+    for (const route of NO_OVERHANG_ROUTES) {
+      test(`${route} draws nothing past the column at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(route);
+        await page.waitForLoadState('domcontentloaded');
+        await page.waitForFunction(
+          () => document.querySelectorAll('main .max-w-page').length > 0,
+          undefined,
+          { timeout: 15_000 },
+        );
+        await page.waitForTimeout(1500);
+
+        const r = await page.evaluate(() => {
+          const header = document.querySelector('header .max-w-page');
+          if (!header) return null;
+          const cs = getComputedStyle(header);
+          const V = document.documentElement.clientWidth;
+          const L = Math.max(0, (V - parseFloat(cs.maxWidth)) / 2) + parseFloat(cs.paddingLeft);
+          const R = V - L;
+          const main = document.querySelector('main');
+          const scrolls = (n: Element) => {
+            for (let p = n.parentElement; p && p !== main; p = p.parentElement) {
+              const ps = getComputedStyle(p);
+              if (/(auto|scroll|hidden)/.test(ps.overflowX) && p.scrollWidth > p.clientWidth + 2)
+                return true;
+            }
+            return false;
+          };
+          const bad: string[] = [];
+          const drawn = Array.from(main ? main.querySelectorAll('*') : []);
+          for (const n of drawn) {
+            const b = n.getBoundingClientRect();
+            // A box spanning the viewport is a deliberate full-bleed band.
+            if (b.width < 8 || b.height < 8 || b.width >= V - 4) continue;
+            if (b.left >= L - 2 && b.right <= R + 2) continue;
+            const s = getComputedStyle(n);
+            if (s.position === 'fixed') continue;
+            const visible =
+              s.backgroundColor !== 'rgba(0, 0, 0, 0)' ||
+              s.boxShadow !== 'none' ||
+              parseFloat(s.borderBottomWidth) > 0;
+            if (!visible || scrolls(n)) continue;
+            bad.push(
+              `${Math.round(b.left)}..${Math.round(b.right)} ${String(n.className).slice(0, 80)}`,
+            );
+          }
+          return { L: Math.round(L), R: Math.round(R), checked: drawn.length, bad };
+        });
+
+        expect(r, 'header has no capped content row').not.toBeNull();
+        expect(r!.checked, `${route} rendered nothing to measure`).toBeGreaterThan(20);
+        expect(r!.bad, `${route} @${width}: column is ${r!.L}..${r!.R}`).toEqual([]);
       });
     }
   }

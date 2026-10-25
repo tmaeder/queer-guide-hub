@@ -10,7 +10,7 @@ import { TripIntentResume } from '@/components/trips/TripIntentResume';
 import { RecoveryRedirect } from '@/components/auth/RecoveryRedirect';
 import { BreadcrumbBar } from '@/components/breadcrumbs/BreadcrumbBar';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { lazyOptional } from '@/utils/lazyRetry';
 import { isMapRoute, isAdminRoute, isCompactFooterRoute, stripLocale } from '@/lib/locale';
 

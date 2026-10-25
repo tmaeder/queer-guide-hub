@@ -19,7 +19,7 @@
 
 export const MIN_ACCEPTANCE_SCORE = 30
 
-export type ImageSource = 'pexels' | 'unsplash' | 'wikimedia'
+export type ImageSource = ImageResultSource
 
 export type SubjectType = 'city' | 'country' | 'venue' | 'event' | 'place' | 'marketplace'
 
