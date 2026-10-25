@@ -15,7 +15,10 @@ import { X, Check, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { type FilterOption } from './constants';
 
-// Extracted filter dropdown component to reduce repetition
+// Extracted filter dropdown component to reduce repetition.
+// Selections are item KEYS, never labels: the venue columns these filter
+// (`venues.tags`, `venues.target_groups`) store slugs, so toggling the display
+// name matched nothing — every tag/target-group selection returned 0 venues.
 export function FilterDropdown({
   label,
   open,
@@ -44,6 +47,8 @@ export function FilterDropdown({
    *  string "Remove filter", so a row of them was indistinguishable by ear. */
   const removeLabel = (val: string) =>
     t('search.removeFilter', 'Remove filter {{label}}', { label: val });
+
+  const labelOf = (key: string) => items.find((i) => i.key === key)?.label ?? key;
 
   return (
     <div className="flex flex-col gap-2">
@@ -87,11 +92,11 @@ export function FilterDropdown({
                     <CommandItem
                       key={item.key}
                       value={item.label}
-                      onSelect={() => onToggle(item.label)}
+                      onSelect={() => onToggle(item.key)}
                     >
                       <Check
                         className={`mr-2 w-4 h-4 ${
-                          selected.includes(item.label) ? 'opacity-100' : 'opacity-0'
+                          selected.includes(item.key) ? 'opacity-100' : 'opacity-0'
                         }`}
                       />
                       <div className="flex items-center gap-2">
@@ -116,7 +121,7 @@ export function FilterDropdown({
         <div className="flex flex-wrap gap-1">
           {selected.map((val) => (
             <Badge key={val} variant="secondary">
-              {val}
+              {labelOf(val)}
               {/* A real <button>, not `<X role="button">`. `role` does not make
                   an SVG focusable, so this control was pointer-only — see the
                   docblock on ActiveFilterBadges, which had the same defect
@@ -124,8 +129,8 @@ export function FilterDropdown({
               <button
                 type="button"
                 onClick={() => onToggle(val)}
-                aria-label={removeLabel(val)}
-                title={removeLabel(val)}
+                aria-label={removeLabel(labelOf(val))}
+                title={removeLabel(labelOf(val))}
                 className="-me-1 ms-1 inline-flex items-center justify-center rounded-badge p-1 transition-colors hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
               >
                 <X className="h-3 w-3" aria-hidden="true" />
