@@ -1,6 +1,6 @@
 # Agent readiness implementation — 2026-10-25
 
-The website changes are implemented on `fix/agent-readiness`. Public review deployment: <https://agent-readiness-review.queer-guide.pages.dev>. Production has not been changed by this branch. The separately deployed MCP Worker has been recovered and its repair verified locally; release instructions and the baseline fingerprint are in `workers/mcp/README.md`.
+The website changes are implemented on `fix/agent-readiness`. Public review deployment: <https://agent-readiness-review.queer-guide.pages.dev>. The website is awaiting its coordinated production release. The separate MCP repair was deployed and verified on 2026-10-25 at 22:06 UTC; release instructions and the original baseline fingerprint are in `workers/mcp/README.md`.
 
 ## Changes mapped to the audit
 
@@ -11,7 +11,7 @@ The website changes are implemented on `fix/agent-readiness`. Public review depl
 | 3. Redirect hygiene | Deterministic existing public aliases resolve through real HTTP 301 responses; locale and query behavior follows the existing client redirects. Homepage is content, not an empty redirect-looking shell. |
 | 4. OpenAPI | `/openapi.json` is a validated OpenAPI 3.1 specification for the new public content API. |
 | 5. JSON errors | Public API errors have `error.code`, `error.message`, `error.hint` and `docs`, with appropriate 400/404/405/500 statuses. Accidental API HTML fallbacks and unhandled exceptions become JSON errors. Existing successful API responses remain intact. |
-| 6. MCP resources | Recovered the deployed `queer-guide-mcp` Worker through Cloudflare's authenticated API. City/country resource lists depended entirely on empty/failing recommendation RPCs. Repair adds two permanent, readable resources without changing existing tools, templates, OAuth or bindings. Tested in a real local Workers runtime. Requires release to the separate Worker. |
+| 6. MCP resources | Recovered the deployed `queer-guide-mcp` Worker through Cloudflare's authenticated API. City/country resource lists called RPCs that intentionally reject anonymous execution. Added two permanent documentation resources and adapted four public discovery reads to the website's existing gated public search service. All 15 tool definitions, both templates, OAuth and all seven bindings remain present. Live verification listed 102 resources and read both documentation resources plus city/country records. No database grants changed. |
 | 7. Markdown negotiation | Homepage, static introductory pages and `/docs` serve HTML or Markdown at the same URL, honour q-values and emit `Vary: Accept`. Unsupported representations return 406 on these pages. |
 | 8. Brand discoverability | Meaningful brand/product content is present in raw homepage HTML. Search placement, earned links and press mentions require indexing time and editorial/outreach decisions; no ranking improvement is claimed. |
 | 9. Public API | Anonymous `GET /api/v1/pages` and `GET /api/v1/pages/{slug}` expose actual introductory guide content and canonical links. This is not a full venue/event export; existing public MCP remains the live search interface. |
@@ -29,10 +29,11 @@ The website changes are implemented on `fix/agent-readiness`. Public review depl
 - Production Vite build: passed after installing this checkout's lockfile dependencies. The initial shared dependency tree was missing `web-vitals`; no dependency files were changed to resolve that local mismatch.
 - Edge TypeScript: `tsc -p tsconfig.functions.json --noEmit`, passed.
 - Regression suite: 80 tests passed across agent HTTP/content/API/schema behavior, footer, edge error design tokens, JSON-LD breadcrumbs, native gateways and feed generation.
-- MCP registration unit test: passed.
+- MCP native tests: 15 passed, covering registration, query mapping/privacy/limits/errors/stream bounds, generated-bundle dispatch and baseline/anchor refusal. The existing CI worker-test loop discovers these through the dependency-free MCP package.
 - Local website HTTP verification: 37/37 checks passed; includes every page returned by the new API, HTML/Markdown negotiation, headings, redirects, error bodies, CORS, HEAD, docs, OpenAPI, instructions, robots and sitemaps.
 - Public preview HTTP verification: run `node scripts/verify-agent-readiness.mjs https://agent-readiness-review.queer-guide.pages.dev` to reproduce the full endpoint check. The final preview report is saved with the task artifacts.
 - MCP local protocol verification: successful initialize, initialized notification, resources/list, both resources/read calls, unknown-resource protocol error, tools/list and resources/templates/list. All 15 existing tools and both existing templates remain present. New resources have descriptions, stable URIs, matching MIME types and substantial readable contents.
+- MCP production verification at 22:07 UTC: 102 listed resources; both documentation reads and representative city/country reads passed; all eight public read tools responded successfully. Search, autocomplete, recommendations, related items, entity lookup, event windows and on-this-day returned actual results. Knowledge returned no passages, which does not establish editorial coverage. Seven root/OAuth boundary checks passed. Exact deployed source, all seven bindings/settings and MCP domains matched the release snapshot.
 - OpenAPI: `npx @redocly/cli lint --extends minimal public/openapi.json`, passed.
 - Route-manifest freshness, Pages routing checks, focused ESLint and whitespace checks: passed. Pages retains its pre-existing warning about excluded static-asset paths; this change does not expand billable middleware invocations to all asset requests.
 
@@ -40,7 +41,7 @@ The native endpoint inventory is generated from the Functions tree, in addition 
 
 ## Release and remaining decisions
 
-Release the website through the existing main-branch Pages workflow after review, then run the HTTP verifier against <https://queer.guide>. Separately upload the tested MCP bundle repair while preserving the existing Worker bindings and namespaces, and run `scripts/verify-mcp-readiness.mjs https://mcp.queer.guide/mcp`. The original recovered deployment and settings are retained as task artifacts for rollback. The authenticated MCP sign-in flow should be smoke-tested with an authorized test account during release; no sign-in credentials or private member data were used here.
+Release the website through the existing main-branch Pages workflow after review, then run the HTTP verifier against <https://queer.guide>. MCP production deployment `69bb0714d70d4092bf09e8edfb9f5760` is already verified; reproduce its checks with `scripts/verify-mcp-readiness.mjs` and `scripts/verify-mcp-public-tools.mjs`. Original and immediately preceding source/settings snapshots are retained as task artifacts for rollback. Successful authenticated account flows still require an authorized test account; no sign-in emails, OAuth clients, private member actions or data writes were performed by this verification.
 
 Provide a real public organization mailing address for PostalAddress. Decide whether a broader data API, write API, key management or dedicated sandbox is a product requirement; public reads currently need none of those. Submit the updated sitemap through the site's search-console account after release and allow recrawling; external search results and the independent Is Agentic score must be re-audited rather than predicted.
 

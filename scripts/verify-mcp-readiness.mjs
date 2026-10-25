@@ -79,6 +79,7 @@ const report = {
   endpoint,
   checkedAt: new Date().toISOString(),
   protocolVersion: initialize.result.protocolVersion,
+  listedResources: list.result.resources.length,
   verified,
   existingTools: tools.result.tools.map((tool) => tool.name),
   existingTemplates: templates.result.resourceTemplates.map((template) => template.uriTemplate),

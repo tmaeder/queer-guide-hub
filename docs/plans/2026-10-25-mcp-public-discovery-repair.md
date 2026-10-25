@@ -1,0 +1,7 @@
+# MCP public discovery repair
+
+The authorized agent-readiness repair must expose useful resources and preserve existing product and access behavior. Live verification found that four public discovery tools call database RPCs that intentionally reject anonymous execution. Granting anonymous RPC execution would change that access boundary. The website already provides public search, autocomplete, recommendations and similar-item endpoints with anonymous content gating.
+
+Adapt only those four MCP reads to that existing service. Retain their input definitions and output containers; normalize similar-item metadata into entity cards. Allowlist public query fields and omit identities, tokens, personalization, embeddings and privileged flags. Use fixed URLs, bounded response bytes, deadlines, manual redirect rejection and errors that do not reflect upstream bodies. The public search service owns query embedding. Keep all existing Worker bindings and database grants unchanged.
+
+Build against the fingerprinted original recovered bundle. Test request mapping, limits, privacy boundaries, errors, stream bounds, preserved RPC dispatch and baseline/anchor refusal. Verify the actual generated bundle in a local Workers runtime, then verify the public tools, documentation resources, template reads and OAuth boundaries after production upload. Retain the exact immediately preceding source/settings/deployment snapshot for rollback.

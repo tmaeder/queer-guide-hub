@@ -1,0 +1,10 @@
+{
+  "name": "queer-guide-mcp-repair",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Native tests and deterministic repair for the recovered MCP Worker.",
+  "scripts": {
+    "test": "node --test *.test.mjs"
+  }
+}
