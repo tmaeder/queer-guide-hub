@@ -44,7 +44,6 @@ import {
   Download,
   Settings,
   Mail,
-  MailCheck,
   Send,
   Route as RouteIcon,
   Handshake,
@@ -420,14 +419,14 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/email',
         minRole: 'admin',
         group: 'Configuration',
-        keywords: ['newsletter', 'campaigns', 'subscribers', 'transactional'],
-      },
-      {
-        id: 'email-templates',
-        label: 'Email templates',
-        icon: MailCheck,
-        route: '/admin/email-templates',
-        group: 'Configuration',
+        keywords: [
+          'newsletter',
+          'campaigns',
+          'subscribers',
+          'transactional',
+          'templates',
+          'designer',
+        ],
       },
       {
         id: 'redirects',
@@ -488,6 +487,7 @@ export function resolveItemMinRole(item: AdminNavItem, section?: AdminNavSection
  * deliberately.
  */
 export const ADMIN_ROUTE_ROLE_OVERRIDES: Record<string, AdminRole> = {
+  '/admin/email-templates': 'admin',
   '/admin/diagnostics': 'moderator',
   '/admin/governance': 'moderator',
   '/admin/editorial-tools': 'admin',
