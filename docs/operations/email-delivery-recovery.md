@@ -36,3 +36,5 @@ The 2026-10-25 production investigation preserved two native dead-letter envelop
 Native queue bodies may be decoded JSON or JSON text. Normalize once, retain the bounded native envelope, and leave malformed messages unacknowledged for investigation. Diagnostics contain only a status code or a generic transport failure, never payloads, recipient addresses or secrets.
 
 The gateway’s protected `GET /queues/metrics` reads the existing `EVENT_QUEUE` and `EVENT_DLQ` bindings. The admin function enriches its existing health response; if either queue fails, that reading remains unavailable independently. This route cannot send or recover mail. Recovery still requires the deliberate consumer procedure above and removal of the temporary consumer afterward.
+
+A direct local workerd probe (bundled runtime compatibility 2026-10-19) reproduced the pre-network redirect error; the same unauthenticated GET with manual redirects reached the existing gateway and returned its expected 401. This is runtime evidence in addition to Node mocks, not a substitute for the release’s live queue drain. Production compatibility settings are unchanged.
