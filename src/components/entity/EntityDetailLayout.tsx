@@ -92,7 +92,7 @@ export function EntityDetailLayout({
       <PageContainer data-testid="entity-detail-loading">
         <Skeleton variant="rectangular" height={32} style={{ width: '40%' }} className="mb-4" />
         <Skeleton variant="rectangular" height={192} className="mb-6 rounded-container" />
-        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6">
           <Skeleton variant="rectangular" height={320} className="rounded-container" />
           <Skeleton variant="rectangular" height={240} className="rounded-container" />
         </div>
@@ -109,7 +109,9 @@ export function EntityDetailLayout({
       <PageContainer data-testid="entity-detail-layout">
         <div className="mb-6">{hero}</div>
 
-        <div className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[2fr_1fr]' : ''} gap-6`}>
+        <div
+          className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]' : ''} gap-6`}
+        >
           <div>
             {tabs.length > 0 && (
               <Tabs value={activeTab} onValueChange={handleTabChange}>

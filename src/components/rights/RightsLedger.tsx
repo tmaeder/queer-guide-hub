@@ -30,7 +30,7 @@ export function RightsLedger({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="grid gap-8 md:grid-cols-2 md:gap-x-12">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-x-12">
       {RIGHT_SECTION_ORDER.map((sectionId) => {
         const rows = summary.filter((r) => r.topic.section === sectionId);
         if (rows.length === 0) return null;
