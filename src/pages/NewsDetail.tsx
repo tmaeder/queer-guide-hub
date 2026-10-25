@@ -255,7 +255,7 @@ export default function NewsDetail() {
               <div key={i} className="h-7 w-20 rounded-badge bg-muted" />
             ))}
           </div>
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             <div className="flex flex-col gap-6">
               <div className="h-64 rounded-element bg-muted" />
             </div>
@@ -489,7 +489,7 @@ export default function NewsDetail() {
       </div>
 
       {/* 2-column layout */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         {/* Main */}
         <div className="flex flex-col gap-6">
           {/* Editorial note ("Why this matters") — admin-curated, monochrome blockquote.
