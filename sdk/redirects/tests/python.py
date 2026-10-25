@@ -1,4 +1,6 @@
 import json
+import uuid
+from datetime import datetime, timezone, timedelta
 import os, sys
 sys.path.insert(0,os.path.join(os.path.dirname(__file__),'../python'))
 from redirects import RedirectsClient, RedirectApiError, verify_webhook
@@ -64,6 +66,16 @@ except ValueError: pass
 account=RedirectsClient(os.environ['REDIRECT_TEST_SESSION'],os.environ['REDIRECT_TEST_BASE'],workspace_id=os.environ['REDIRECT_TEST_WORKSPACE'])
 assert account.get_session()['workspace']['id']==os.environ['REDIRECT_TEST_WORKSPACE']
 assert account.list_workspaces()['currentWorkspaceId']==os.environ['REDIRECT_TEST_WORKSPACE']
+integration_input={'requestId':str(uuid.uuid4()),'provider':'gtm','name':'Python integration setup','linkIds':[os.environ['REDIRECT_TEST_REPORT_LINK']],'expiresAt':(datetime.now(timezone.utc)+timedelta(days=1)).isoformat()}
+integration_setup=account.create_integration_setup(integration_input)
+assert integration_setup['created'] and integration_setup['credential'].startswith('qg_redirect_')
+assert account.create_integration_setup(integration_input)['credential'] is None
+assert account.lookup_integration_setup(integration_input['requestId'])['installation']['id']==integration_setup['installation']['id']
+assert account.lookup_integration_setup(str(uuid.uuid4()))['installation'] is None
+assert any(row['id']==integration_setup['installation']['id'] for row in account.list_integration_setups()['data'])
+assert account.revoke_integration_setup(integration_setup['installation']['id'])['status']=='revoked'
+try: api.list_integration_setups(); raise AssertionError('Key read account integration setups')
+except RedirectApiError as error: assert error.status==403
 for kind in ['domains','tokens','webhooks']: assert isinstance(account.list_workspace_information(kind,1)['data'],list)
 try: api.list_workspace_information('tokens'); raise AssertionError('Key read account metadata')
 except RedirectApiError as error: assert error.status==403

@@ -1,3 +1,4 @@
+import { RedirectIntegrationInstallations } from '@/components/admin/redirects/RedirectIntegrationInstallations';
 import { RedirectInvitationAcceptance } from '@/components/admin/redirects/RedirectInvitations';
 import { RedirectMemberTags } from '@/components/admin/redirects/RedirectMemberTags';
 import { RedirectWorkspaceInformation } from '@/components/admin/redirects/RedirectWorkspaceInformation';
@@ -368,6 +369,7 @@ export function MemberWorkspaceContent({
     [analytics, setAnalytics] = useState<string | null>(null),
     [importing, setImporting] = useState(false),
     [accessState, setAccess] = useState<string | null>(null);
+  const [integrations, setIntegrations] = useState(false);
   const [requestFolder, setRequestFolder] = useState<{ id: string; name: string } | null>(null);
   const [requestView, setRequestView] = useState<'mine' | 'review' | null>(
     initialRequestView ?? null,
@@ -523,6 +525,9 @@ export function MemberWorkspaceContent({
           <Button variant="outline" onClick={() => setWorkspaceInformation(true)}>
             Workspace information
           </Button>
+          <Button variant="outline" onClick={() => setIntegrations(true)}>
+            Conversion adapters
+          </Button>
         </div>
       </header>
       {requestView && (
@@ -533,6 +538,28 @@ export function MemberWorkspaceContent({
           onViewChange={setRequestView}
           onChanged={refresh}
         />
+      )}
+      {integrations && session.data && (
+        <Dialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setIntegrations(false);
+          }}
+        >
+          <DialogContent className="max-h-[90dvh] max-w-2xl overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Conversion adapters</DialogTitle>
+              <DialogDescription>
+                Server credentials and native provider setup for your shared links.
+              </DialogDescription>
+            </DialogHeader>
+            <RedirectIntegrationInstallations
+              key={userId + ':' + session.data.role}
+              userId={userId}
+              workspaceRole={session.data.role}
+            />
+          </DialogContent>
+        </Dialog>
       )}
       {workspaceInformation && (
         <RedirectWorkspaceInformation

@@ -47,6 +47,15 @@ try {new QueerGuide\RedirectsClient('token','http://example.com/api');throw new 
 $account=new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_SESSION'),getenv('REDIRECT_TEST_BASE'),workspaceId:getenv('REDIRECT_TEST_WORKSPACE'));
 check($account->getSession()['workspace']['id']===getenv('REDIRECT_TEST_WORKSPACE'));
 check($account->listWorkspaces()['currentWorkspaceId']===getenv('REDIRECT_TEST_WORKSPACE'));
+$integrationHex=bin2hex(random_bytes(16));$integrationRequest=substr($integrationHex,0,8).'-'.substr($integrationHex,8,4).'-'.substr($integrationHex,12,4).'-'.substr($integrationHex,16,4).'-'.substr($integrationHex,20,12);
+$integrationInput=['requestId'=>$integrationRequest,'provider'=>'gtm','name'=>'PHP integration setup','linkIds'=>[getenv('REDIRECT_TEST_REPORT_LINK')],'expiresAt'=>gmdate('Y-m-d\TH:i:s\Z',time()+86400)];
+$integrationSetup=$account->createIntegrationSetup($integrationInput);check($integrationSetup['created'] && str_starts_with($integrationSetup['credential'],'qg_redirect_'));
+check($account->createIntegrationSetup($integrationInput)['credential']===null);
+check($account->lookupIntegrationSetup($integrationRequest)['installation']['id']===$integrationSetup['installation']['id']);
+check($account->lookupIntegrationSetup('00000000-0000-4000-8000-000000000000')['installation']===null);
+check(in_array($integrationSetup['installation']['id'],array_column($account->listIntegrationSetups()['data'],'id'),true));
+check($account->revokeIntegrationSetup($integrationSetup['installation']['id'])['status']==='revoked');
+try {$api->listIntegrationSetups();throw new RuntimeException('Key read account integration setups');}catch(QueerGuide\RedirectApiError $error){check($error->status===403);}
 foreach (['domains','tokens','webhooks'] as $kind) check(is_array($account->listWorkspaceInformation($kind,1)['data']));
 try {$api->listWorkspaceInformation('tokens');throw new RuntimeException('Key read account metadata');} catch(QueerGuide\RedirectApiError $error) {check($error->status===403);}
 try {(new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_TOKEN'),getenv('REDIRECT_TEST_BASE'),workspaceId:'00000000-0000-4000-8000-000000000777'))->listLinks();throw new RuntimeException('Unavailable workspace accepted');} catch(QueerGuide\RedirectApiError $error) {check($error->status===403);}

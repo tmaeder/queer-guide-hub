@@ -1,6 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { RedirectIntegrationSetup } from './RedirectIntegrationSetup';
+vi.mock('./RedirectIntegrationInstallations', () => ({
+  RedirectIntegrationInstallations: () => null,
+}));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'fixture-owner' } }) }));
 vi.mock('./RedirectWebhooks', () => ({
   RedirectWebhookCreate: ({ preset }: { preset: { url: string; includeCustomerId: boolean } }) => (

@@ -1,3 +1,5 @@
+require 'securerandom'
+require 'time'
 require_relative '../ruby/redirects'
 api=QueerGuide::RedirectsClient.new(ENV.fetch('REDIRECT_TEST_TOKEN'),base_url:ENV.fetch('REDIRECT_TEST_BASE'),workspace_id:ENV.fetch('REDIRECT_TEST_WORKSPACE'))
 def check(value); raise 'Assertion failed' unless value; end
@@ -52,6 +54,15 @@ begin;QueerGuide::RedirectsClient.new('token',base_url:'http://example.com/api')
 account=QueerGuide::RedirectsClient.new(ENV.fetch('REDIRECT_TEST_SESSION'),base_url:ENV.fetch('REDIRECT_TEST_BASE'),workspace_id:ENV.fetch('REDIRECT_TEST_WORKSPACE'))
 check(account.get_session['workspace']['id']==ENV.fetch('REDIRECT_TEST_WORKSPACE'))
 check(account.list_workspaces['currentWorkspaceId']==ENV.fetch('REDIRECT_TEST_WORKSPACE'))
+integration_input={requestId:SecureRandom.uuid,provider:'segment',name:'Ruby integration setup',linkIds:[ENV.fetch('REDIRECT_TEST_REPORT_LINK')],expiresAt:(Time.now.utc+86400).iso8601}
+integration_setup=account.create_integration_setup(integration_input)
+check(integration_setup['created'] && integration_setup['credential'].start_with?('qg_redirect_'))
+check(account.create_integration_setup(integration_input)['credential'].nil?)
+check(account.lookup_integration_setup(integration_input[:requestId])['installation']['id']==integration_setup['installation']['id'])
+check(account.lookup_integration_setup(SecureRandom.uuid)['installation'].nil?)
+check(account.list_integration_setups['data'].any?{|row|row['id']==integration_setup['installation']['id']})
+check(account.revoke_integration_setup(integration_setup['installation']['id'])['status']=='revoked')
+begin; api.list_integration_setups; raise 'Key read account integration setups'; rescue QueerGuide::RedirectApiError => error; check(error.status==403); end
 ['domains','tokens','webhooks'].each {|kind|check(account.list_workspace_information(kind,1)['data'].is_a?(Array))}
 begin;api.list_workspace_information('tokens');raise 'Key read account metadata';rescue QueerGuide::RedirectApiError=>error;check(error.status==403);end
 begin

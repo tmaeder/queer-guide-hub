@@ -19,6 +19,10 @@ final class RedirectsClient {
     public function getSession(): array {return $this->request('GET','/session');}
     public function listWorkspaces(): array {return $this->request('GET','/workspaces');}
     public function listWorkspaceInformation(string $kind, int $limit=50, ?string $after=null): array {return $this->request('GET','/workspace-information',null,['kind'=>$kind,'limit'=>$limit,'after'=>$after]);}
+    public function listIntegrationSetups(int $limit=50, ?string $after=null): array {return $this->request('GET','/integrations',null,['limit'=>$limit,'after'=>$after]);}
+    public function createIntegrationSetup(array $data): array {return $this->request('POST','/integrations',$data);}
+    public function lookupIntegrationSetup(string $requestId): array {return $this->request('GET','/integrations',null,['requestId'=>$requestId]);}
+    public function revokeIntegrationSetup(string $id): array {return $this->request('DELETE','/integrations/'.rawurlencode($id));}
     public function request(string $method, string $path, mixed $body = null, array $query = []): array {
         if (!preg_match('~^/[a-zA-Z0-9_/-]+$~D',$path) || str_contains($path,'//')) throw new \InvalidArgumentException('Invalid API path');
         $params=[];foreach ($query as $key=>$value) if ($value!==null) $params[$key] = is_array($value)||is_object($value) ? json_encode($value,JSON_THROW_ON_ERROR) : (is_bool($value)?($value?'true':'false'):(string)$value);

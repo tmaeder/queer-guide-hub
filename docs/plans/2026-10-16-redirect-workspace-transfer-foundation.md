@@ -889,3 +889,41 @@ Member installation, additional-owner admission, tenant creation/switching/
 activation, reviewed atomic domain transfer and external provider/device proof
 remain open. This is local integration evidence, with production release and
 post-deployment E2E verification still pending.
+
+### 2026-10-25 member conversion adapter credentials
+
+Owners and Members can now configure a durable Segment/Google server-adapter
+setup with a one-time, selected-link conversions:write credential. Member keys
+bind the installing membership and retain current role/folder/link checks on
+every conversion. Generic API-key administration remains Owner-only. Setup
+metadata is sanitized and readable by all current roles; Member writes manage
+only their own setups, while Owners may revoke any current-workspace setup.
+Revocation updates the setup and token atomically. Account/member deletion cannot
+turn the purpose key into an Owner credential.
+
+Creation binds a stable request ID to canonical input. Replays do not issue
+another key or reveal the original secret. Metadata lookup supports unknown
+response recovery; lost keys require revoke/recreate. Plaintext exists only in
+the first response and local component state, outside query caches. The member
+and owner UIs include selected editable links, 90-day expiry, current session
+rechecks, explicit revocation, adapter downloads and provider setup instructions.
+Private installation rows are additionally fenced to the legacy workspace until
+tenant activation is complete.
+
+The complete SQL suite passes for purpose/scope limits, folder/role revocation,
+Owner-only generic key denial, replay conflicts, metadata exclusion, current
+ownership and membership deletion. The actual HTTP handler creates Member keys,
+records idempotent attributed conversions, denies other/newly forbidden links and
+atomically revokes keys. All five SDKs exercise create/replay/list/request lookup/
+revoke, including missing receipts and account-only denial. The complete SDK
+matrix passes. Twenty UI tests pass; the app builds, frozen API and standalone
+SDK type checks pass, and app typechecking reports 660 errors with none new
+against its existing baseline. All 2559 migrations parse; lint/format/diff checks
+pass. The UI tests emit existing React act/i18next warnings.
+
+This implements the local member credential/configuration flow. It does not
+install or remove anything in a real Segment/Google account, prove provider
+runtime/debugger verification, or publish SDK packages. Those remain external
+release evidence alongside custom-domain/device proof. Additional-owner admission,
+workspace creation/switching/activation, atomic domain transfer and final deployed
+production E2E remain open.

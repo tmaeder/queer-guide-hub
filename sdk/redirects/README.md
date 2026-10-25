@@ -578,3 +578,32 @@ a new report with the loaded filters to create a private copy. Set visibility to
 `private` to withdraw discovery; independent public snapshots remain managed by
 their own share methods. Publisher-owner and reader-member rights are checked on
 every request. API keys cannot list or manage report definitions.
+
+## Account-managed conversion adapter setups
+
+All five server SDKs expose setup creation, metadata pagination, request receipt
+lookup and revocation. These methods require an account session; Owner/Member
+writes issue only a selected-link `conversions:write` credential. Generic key
+administration remains Owner-only.
+
+| Operation | TypeScript / PHP | Python / Ruby | Go |
+| --- | --- | --- | --- |
+| List | `listIntegrationSetups` | `list_integration_setups` | `ListIntegrationSetups` |
+| Create | `createIntegrationSetup` | `create_integration_setup` | `CreateIntegrationSetup` |
+| Recover request | `lookupIntegrationSetup` | `lookup_integration_setup` | `LookupIntegrationSetup` |
+| Revoke | `revokeIntegrationSetup` | `revoke_integration_setup` | `RevokeIntegrationSetup` |
+
+Create input is `{requestId, provider, name, linkIds, expiresAt}`. Generate a UUID
+request ID once and retain that exact input for retries. Creation returns
+`{created, installation, credential}`; only the first response includes the
+one-time plaintext credential. Replays return a null credential. Lookup returns
+`{installation}` with null when the authenticated installer's request was not
+committed. Recover metadata and revoke/recreate if the original key was lost.
+
+The member UI chooses a 90-day expiry; API/SDK callers may choose an expiry within
+one year. Current member/folder permissions still cap every conversion. Setup
+metadata and credential usage do not claim provider installation or verification:
+finish the native adapter's provider steps and verify an actual attributed event.
+
+A null lookup does not cancel a request that may still be in flight. Retry that
+setup using its original request ID and unchanged input.

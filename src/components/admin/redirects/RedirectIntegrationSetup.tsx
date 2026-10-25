@@ -1,3 +1,4 @@
+import { RedirectIntegrationInstallations } from './RedirectIntegrationInstallations';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -6,9 +7,9 @@ import { Label } from '@/components/ui/label';
 import { RedirectWebhookCreate, type WebhookPreset } from './RedirectWebhooks';
 export function RedirectIntegrationSetup() {
   const { user } = useAuth();
-  return user ? <IntegrationSetupWorkspace key={user.id} /> : null;
+  return user ? <IntegrationSetupWorkspace key={user.id} userId={user.id} /> : null;
 }
-function IntegrationSetupWorkspace() {
+function IntegrationSetupWorkspace({ userId }: { userId: string }) {
   const [kind, setKind] = useState<'segment' | 'gtm'>('segment'),
     [endpoint, setEndpoint] = useState(''),
     [customerIds, setCustomerIds] = useState(false),
@@ -39,6 +40,7 @@ function IntegrationSetupWorkspace() {
   return (
     <section aria-label="Conversion integrations" className="space-y-4 border-t pt-4">
       <h3 className="font-semibold">Conversion integrations</h3>
+      <RedirectIntegrationInstallations userId={userId} workspaceRole="owner" />
       <p className="text-sm text-muted-foreground">
         Install the provider adapter, configure a server credential, then verify a real test event
         in the provider’s debugger.

@@ -52,6 +52,32 @@ assert.throws(()=>new RedirectsClient('token',{baseUrl:'http://example.com/api'}
 const account=new RedirectsClient(process.env.REDIRECT_TEST_SESSION,{baseUrl:process.env.REDIRECT_TEST_BASE,workspaceId:process.env.REDIRECT_TEST_WORKSPACE});
 assert.equal((await account.getSession()).workspace.id,process.env.REDIRECT_TEST_WORKSPACE);
 assert.equal((await account.listWorkspaces()).currentWorkspaceId,process.env.REDIRECT_TEST_WORKSPACE);
+const integrationInput = {
+  requestId: crypto.randomUUID(),
+  provider: 'segment',
+  name: 'TS integration setup',
+  linkIds: [process.env.REDIRECT_TEST_REPORT_LINK],
+  expiresAt: new Date(Date.now() + 86400000).toISOString(),
+};
+const integrationSetup = await account.createIntegrationSetup(integrationInput);
+assert.equal(integrationSetup.created, true);
+assert.match(integrationSetup.credential, /^qg_redirect_[a-f0-9]{64}$/);
+assert.equal((await account.createIntegrationSetup(integrationInput)).credential, null);
+assert.equal(
+  (await account.lookupIntegrationSetup(integrationInput.requestId)).installation.id,
+  integrationSetup.installation.id,
+);
+assert.equal((await account.lookupIntegrationSetup(crypto.randomUUID())).installation, null);
+assert.ok(
+  (await account.listIntegrationSetups()).data.some(
+    (row) => row.id === integrationSetup.installation.id,
+  ),
+);
+assert.equal(
+  (await account.revokeIntegrationSetup(integrationSetup.installation.id)).status,
+  'revoked',
+);
+await assert.rejects(api.listIntegrationSetups(), (error) => error.status === 403);
 for(const kind of ['domains','tokens','webhooks'])assert.ok(Array.isArray((await account.listWorkspaceInformation(kind,1)).data));
 await assert.rejects(api.listWorkspaceInformation('tokens'),error=>error.status===403);
 const unavailableWorkspace=new RedirectsClient(process.env.REDIRECT_TEST_TOKEN,{baseUrl:process.env.REDIRECT_TEST_BASE,workspaceId:'00000000-0000-4000-8000-000000000777'});

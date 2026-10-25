@@ -1,0 +1,70 @@
+BEGIN;
+SET LOCAL ROLE service_role;
+DO $$
+DECLARE workspace uuid:='58aa4340-8f21-4b7f-9a10-90be2da89c01';owner uuid:=gen_random_uuid();actor uuid:=gen_random_uuid();member uuid:=gen_random_uuid();folder uuid:=gen_random_uuid();link uuid:=gen_random_uuid();other_link uuid:=gen_random_uuid();click uuid:=gen_random_uuid();other_click uuid:=gen_random_uuid();request uuid:=gen_random_uuid();installation uuid;owner_installation uuid;token uuid;owner_token uuid;values jsonb;result jsonb;page jsonb;before_count integer;hash text:=encode(sha256(convert_to(gen_random_uuid()::text,'UTF8')),'hex');owner_hash text:=encode(sha256(convert_to(gen_random_uuid()::text,'UTF8')),'hex');
+BEGIN
+ INSERT INTO auth.users(id) VALUES(owner),(actor);INSERT INTO public.user_roles VALUES(owner,'admin');
+ INSERT INTO public.redirect_workspace_members(id,user_id,kind,label,role) VALUES(member,actor,'user','Integration member','member');
+ INSERT INTO public.redirect_link_folders(id,name,default_permission) VALUES(folder,'Integration protected folder','view');
+ INSERT INTO public.redirect_folder_members(folder_id,member_id,permission) VALUES(folder,member,'edit');
+ INSERT INTO public.redirects(id,type,slug,target) VALUES(link,'SHORT','integration-member-link','https://example.org/integration'),(other_link,'SHORT','integration-denied-link','https://example.org/other');
+ INSERT INTO public.redirect_link_metadata(redirect_key,folder_id) VALUES('redirects:'||link,folder),('redirects:'||other_link,folder);
+ -- Only the selected first link may receive conversions, even though both
+ -- currently share editable folder permission.
+ values:=jsonb_build_object('provider','segment','name','Member conversion adapter','linkIds',jsonb_build_array(link),'expiresAt',clock_timestamp()+interval '30 days','token_hash',hash,'prefix','qg_redirect_12345678');
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',workspace,'x-qg-redirect-session-actor',actor)::text,true);
+ result:=public.redirect_integration_installation(actor,'create',request,values);
+ installation:=(result#>>'{installation,id}')::uuid;
+ IF result->>'created'<>'true' OR result#>>'{installation,status}'<>'configured' OR result#>>'{installation,linkCount}'<>'1' OR NOT(result#>>'{installation,canRevoke}')::boolean THEN RAISE EXCEPTION 'Member integration setup failed';END IF;
+ SELECT key_id INTO token FROM redirect_internal.integration_installations WHERE id=installation;
+ IF NOT EXISTS(SELECT FROM public.redirect_api_tokens WHERE id=token AND workspace_id=workspace AND member_id=member AND created_by=actor AND scopes=ARRAY['conversions:write'] AND redirect_ids=ARRAY[link]) THEN RAISE EXCEPTION 'Member integration credential widened its purpose or scope';END IF;
+ before_count:=(SELECT count(*) FROM public.redirect_api_tokens);
+ result:=public.redirect_integration_installation(actor,'create',request,values||jsonb_build_object('token_hash',repeat('a',64),'prefix','qg_redirect_abcdef12'));
+ IF result->>'created'<>'false' OR result#>>'{installation,id}' IS DISTINCT FROM installation::text OR (SELECT count(*) FROM public.redirect_api_tokens)<>before_count THEN RAISE EXCEPTION 'Idempotent setup created another credential';END IF;
+ IF public.redirect_integration_installation(actor,'lookup',request)->>'id' IS DISTINCT FROM installation::text THEN RAISE EXCEPTION 'Lost setup receipt could not be recovered';END IF;
+ BEGIN PERFORM public.redirect_integration_installation(actor,'create',request,values||'{"name":"Changed replay"}');RAISE EXCEPTION 'Changed setup replay accepted';EXCEPTION WHEN unique_violation THEN NULL;END;
+ BEGIN PERFORM public.redirect_integration_installation(actor,'create',gen_random_uuid(),values||'{"scopes":["workspace:write"]}');RAISE EXCEPTION 'Install accepted generic key scope';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ BEGIN PERFORM public.redirect_integration_installation(actor,'create',gen_random_uuid(),values||jsonb_build_object('linkIds',jsonb_build_array(gen_random_uuid())));RAISE EXCEPTION 'Foreign/missing link credential created';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ BEGIN PERFORM public.redirect_token_administration(actor,'create',p_values=>'{}');RAISE EXCEPTION 'Member gained generic credential administration';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ page:=public.redirect_integration_installation(actor,'list');
+ IF page->>'count'<>'1' OR page::text LIKE '%token_hash%' OR page::text LIKE '%key_id%' OR page::text LIKE '%member_id%' OR page::text LIKE '%'||hash||'%' THEN RAISE EXCEPTION 'Installation metadata leaked private credential or membership';END IF;
+ INSERT INTO public.redirect_events(redirect_id,click_id,ts,path) VALUES(link,click,clock_timestamp()-interval '1 minute','/go/integration-member-link'),(other_link,other_click,clock_timestamp()-interval '1 minute','/go/integration-denied-link');
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',workspace)::text,true);
+ IF public.authenticate_redirect_api_token(hash,'conversions:write')->>'id' IS DISTINCT FROM token::text OR public.authenticate_redirect_api_token(hash,'links:read') IS NOT NULL THEN RAISE EXCEPTION 'Purpose-limited integration authentication failed';END IF;
+ result:=public.record_redirect_conversion(jsonb_build_object('kind','lead','clickId',click,'customerExternalId','integration-sql-customer','eventId','integration-sql-lead','eventName','Sign up'),token);
+ IF result->>'kind'<>'lead' THEN RAISE EXCEPTION 'Member integration conversion not attributed';END IF;
+ BEGIN PERFORM public.record_redirect_conversion(jsonb_build_object('kind','lead','clickId',other_click,'customerExternalId','integration-denied-customer','eventId','integration-denied-lead','eventName','Denied'),token);RAISE EXCEPTION 'Integration attributed an unselected link';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ UPDATE public.redirect_folder_members SET permission='view' WHERE folder_id=folder AND member_id=member;
+ BEGIN PERFORM public.record_redirect_conversion(jsonb_build_object('kind','lead','clickId',click,'customerExternalId','integration-revoked-folder','eventId','integration-folder-loss','eventName','Denied'),token);RAISE EXCEPTION 'Integration retained revoked folder edit permission';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ UPDATE public.redirect_folder_members SET permission='edit' WHERE folder_id=folder AND member_id=member;
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',workspace,'x-qg-redirect-session-actor',actor)::text,true);
+ UPDATE public.redirect_workspace_members SET role='billing' WHERE id=member;
+ BEGIN PERFORM public.redirect_integration_installation(actor,'create',gen_random_uuid(),values);RAISE EXCEPTION 'Billing installed integration';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ page:=public.redirect_integration_installation(actor,'list');
+ IF page#>>'{data,0,status}'<>'unavailable' OR(page#>>'{data,0,canRevoke}')::boolean THEN RAISE EXCEPTION 'Read-only role retained installation controls';END IF;
+ UPDATE public.redirect_workspace_members SET role='viewer' WHERE id=member;
+ BEGIN PERFORM public.redirect_integration_installation(actor,'revoke',installation);RAISE EXCEPTION 'Viewer mutated integration';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ UPDATE public.redirect_workspace_members SET role='member' WHERE id=member;
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',workspace,'x-qg-redirect-session-actor',owner)::text,true);
+ result:=public.redirect_integration_installation(owner,'create',gen_random_uuid(),values||jsonb_build_object('provider','gtm','name','Owner adapter','token_hash',owner_hash));
+ owner_installation:=(result#>>'{installation,id}')::uuid;SELECT key_id INTO owner_token FROM redirect_internal.integration_installations WHERE id=owner_installation;
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',workspace,'x-qg-redirect-session-actor',actor)::text,true);
+ BEGIN PERFORM public.redirect_integration_installation(actor,'revoke',owner_installation);RAISE EXCEPTION 'Member revoked another installer credential';EXCEPTION WHEN no_data_found THEN NULL;END;
+ PERFORM public.redirect_integration_installation(actor,'revoke',installation);
+ IF NOT EXISTS(SELECT FROM public.redirect_api_tokens WHERE id=token AND revoked_at IS NOT NULL) OR NOT EXISTS(SELECT FROM redirect_internal.integration_installations WHERE id=installation AND revoked_at IS NOT NULL) THEN RAISE EXCEPTION 'Integration revoke was not atomic';END IF;
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',workspace)::text,true);
+ IF public.authenticate_redirect_api_token(hash,'conversions:write') IS NOT NULL THEN RAISE EXCEPTION 'Revoked installation key authenticated';END IF;
+ -- Deleting membership must revoke its new purpose key even when the creator
+ -- becomes an application admin; SET NULL must not create an owner shortcut.
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',workspace,'x-qg-redirect-session-actor',actor)::text,true);
+ hash:=encode(sha256(convert_to(gen_random_uuid()::text,'UTF8')),'hex');
+ result:=public.redirect_integration_installation(actor,'create',gen_random_uuid(),values||jsonb_build_object('name','Membership deletion adapter','token_hash',hash));
+ SELECT key_id INTO token FROM redirect_internal.integration_installations WHERE id=(result#>>'{installation,id}')::uuid;
+ INSERT INTO public.user_roles VALUES(actor,'admin');DELETE FROM public.redirect_workspace_members WHERE id=member;
+ IF EXISTS(SELECT FROM public.redirect_api_tokens WHERE id=token AND revoked_at IS NULL) OR public.authenticate_redirect_api_token(hash,'conversions:write') IS NOT NULL THEN RAISE EXCEPTION 'Member deletion elevated installation credential';END IF;
+ DELETE FROM public.user_roles WHERE user_id=owner;
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',workspace)::text,true);
+ IF public.authenticate_redirect_api_token(owner_hash,'conversions:write') IS NOT NULL THEN RAISE EXCEPTION 'Former owner installation retained authority';END IF;
+ IF has_table_privilege('authenticated','redirect_internal.integration_installations','SELECT') OR has_function_privilege('authenticated','public.redirect_integration_installation(uuid,text,uuid,jsonb,integer,uuid)','EXECUTE') OR has_function_privilege('anon','redirect_internal.integration_json(uuid,uuid,uuid,boolean)','EXECUTE') THEN RAISE EXCEPTION 'Private integration registry exposed';END IF;
+END $$;
+ROLLBACK;

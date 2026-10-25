@@ -17,6 +17,7 @@ try {
   await db.exec(readFileSync('supabase/tests/redirect_mail_job_workspaces.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_provider_job_workspaces.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_webhook_job_workspaces.sql', 'utf8'));
+  await db.exec(readFileSync('supabase/tests/redirect_member_integrations.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_identity.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_relationships.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_membership_scope.sql', 'utf8'));

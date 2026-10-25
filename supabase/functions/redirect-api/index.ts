@@ -57,6 +57,32 @@ Deno.serve(async (req: Request) => {
   return {id:principal.id,role:principal.role,label:principal.label,workspace:context.workspace};
  };
  try {
+  if(path==='/integrations'||/^\/integrations\/[a-f0-9-]+$/i.test(path)){
+   if(tokenCredential||!user||user.is_anonymous)return json({error:'Workspace account session required'},403);
+   const query=new URL(req.url).searchParams,id=path==='/integrations'?null:path.slice('/integrations/'.length);
+   if(id&&!UUID.test(id))return json({error:'Choose an integration'},400);
+   if(req.method==='GET'&&!id){
+    if([...query.keys()].some(key=>!['limit','after','requestId'].includes(key)||query.getAll(key).length!==1))return json({error:'Invalid integration page'},400);
+    const requestId=query.get('requestId'),after=query.get('after'),limit=Number(query.get('limit')??50);
+    if(requestId!==null&&(!UUID.test(requestId)||query.size!==1)||after!==null&&!UUID.test(after)||!Number.isInteger(limit)||limit<1||limit>100)return json({error:'Invalid integration page'},400);
+    const result=await db.rpc('redirect_integration_installation',{p_actor:user.id,p_action:requestId?'lookup':'list',...(requestId?{p_id:requestId}:{p_limit:limit,p_after:after})});
+    return result.error?rpcError(result.error):json(requestId?{installation:result.data}:result.data);
+   }
+   if(query.size)return json({error:'Invalid integration query'},400);
+   if(req.method==='POST'&&!id){
+    const body=await boundedJson(req,16384);
+    if(!body||Array.isArray(body)||Object.keys(body).some(key=>!['requestId','provider','name','linkIds','expiresAt'].includes(key))||typeof body.requestId!=='string'||!UUID.test(body.requestId))return json({error:'Provide a unique setup request ID and integration settings'},400);
+    const secret=createRedirectToken(),result=await db.rpc('redirect_integration_installation',{p_actor:user.id,p_action:'create',p_id:body.requestId,p_values:{provider:body.provider,name:body.name,linkIds:body.linkIds,expiresAt:body.expiresAt,token_hash:await tokenDigest(secret),prefix:secret.slice(0,20)}});
+    if(result.error)return rpcError(result.error);
+    if(result.data?.retryAfter)return json(result.data,429);
+    return json({...result.data,credential:result.data?.created===true?secret:null},result.data?.created===true?201:200);
+   }
+   if(req.method==='DELETE'&&id){
+    const result=await db.rpc('redirect_integration_installation',{p_actor:user.id,p_action:'revoke',p_id:id});
+    return result.error?rpcError(result.error):json(result.data);
+   }
+   return json({error:'Method not supported'},405);
+  }
   if(path==='/workspace-information'){
    if(tokenCredential||!user||user.is_anonymous)return json({error:'Workspace account session required'},403);
    if(req.method!=='GET')return json({error:'Method not supported'},405);

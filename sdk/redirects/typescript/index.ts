@@ -90,6 +90,30 @@ export interface RedirectWorkspaceList {
   currentWorkspaceId: string;
 }
 export type WorkspaceInformationKind = 'domains' | 'tokens' | 'webhooks';
+export interface IntegrationSetupInput {
+  requestId: string;
+  provider: 'segment' | 'gtm';
+  name: string;
+  linkIds: string[];
+  expiresAt: string;
+}
+export interface IntegrationInstallation {
+  id: string;
+  provider: 'segment' | 'gtm';
+  name: string;
+  createdAt: string;
+  expiresAt: string;
+  credentialPrefix: string;
+  credentialLastUsedAt: string | null;
+  linkCount: number;
+  status: 'configured' | 'revoked' | 'expired' | 'unavailable';
+  canRevoke: boolean;
+}
+export interface IntegrationSetupResult {
+  created: boolean;
+  installation: IntegrationInstallation;
+  credential: string | null;
+}
 export interface WorkspaceInformationRow {
   id: string;
   name: string;
@@ -420,6 +444,20 @@ export class RedirectsClient {
     after?: string,
   ): Promise<WorkspaceInformationPage> {
     return this.request('GET', '/workspace-information', undefined, { kind, limit, after });
+  }
+  listIntegrationSetups(limit = 50, after?: string): Promise<Page<IntegrationInstallation>> {
+    return this.request('GET', '/integrations', undefined, { limit, after });
+  }
+  createIntegrationSetup(input: IntegrationSetupInput): Promise<IntegrationSetupResult> {
+    return this.request('POST', '/integrations', input);
+  }
+  lookupIntegrationSetup(
+    requestId: string,
+  ): Promise<{ installation: IntegrationInstallation | null }> {
+    return this.request('GET', '/integrations', undefined, { requestId });
+  }
+  revokeIntegrationSetup(id: string): Promise<IntegrationInstallation> {
+    return this.request('DELETE', '/integrations/' + encodeURIComponent(id));
   }
   async request<T>(
     method: string,

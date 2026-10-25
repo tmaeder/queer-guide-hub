@@ -411,6 +411,8 @@ try {
   if(viewerWorkspaces.data[0].role!=='viewer')throw new Error('Stale admin claim overrode current workspace membership');
   const {verifyBillingAndTagHttp}=await import('./lib/redirect-billing-http-fixture.mjs');
   await verifyBillingAndTagHttp(db,reportRequest,discoveryMember);
+  const {verifyMemberIntegrationHttp}=await import('./lib/redirect-member-integration-fixture.mjs');
+  await verifyMemberIntegrationHttp(db,reportRequest,discoveryMember);
   await db.query('UPDATE public.redirect_workspace_members SET active=false WHERE id=$1',[discoveryMember]);
   await reportRequest('/workspaces','GET',undefined,'fixture-other-account-session',403);
   await db.query('DELETE FROM public.redirect_workspace_members WHERE id=$1',[discoveryMember]);

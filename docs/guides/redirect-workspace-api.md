@@ -115,3 +115,42 @@ excluded. Credentials or active webhooks whose authorizing owner/member access
 has ended are marked unavailable. Reading information never counts as key use.
 The existing owner configuration endpoints keep their owner-only controls, and
 direct Data API grants are unchanged.
+
+## Member conversion adapter credentials
+
+Owners and Members can configure a native Segment or Google server-container
+adapter with a purpose-limited credential. The member workspace exposes
+**Conversion adapters**; the owner workspace also includes this under conversion
+setup. Viewer and Billing roles see sanitized setup information.
+
+- `GET /integrations?limit=50&after=<uuid>` returns setup metadata and a UUID cursor.
+- `POST /integrations` accepts exactly `requestId`, `provider` (`segment`/`gtm`),
+  `name`, `linkIds` (1–100 currently editable managed links) and `expiresAt`
+  (within one year). Only the first successful response returns `credential`.
+- `GET /integrations?requestId=<uuid>` returns `{installation: ...}` or
+  `{installation: null}` for the authenticated installer's request.
+- `DELETE /integrations/<id>` revokes the setup and its key atomically. Members
+  manage their own setups; Owners may revoke any setup in this workspace.
+
+All endpoints require an account session. Generic API-key management remains
+Owner-only. Setup keys carry only `conversions:write`, selected link IDs and the
+installer's membership binding. Conversion writes recheck current membership,
+role, folder permissions, link scope, key expiry and revocation in SQL. Removing
+membership cannot elevate a setup key into an Owner credential.
+
+Reuse the same request ID and unchanged input after an unknown create response.
+A replay returns `created: false` and `credential: null` without creating another
+key. If the original key was lost, recover the metadata, revoke that setup and
+create a replacement. Plaintext keys are not saved in setup records or query
+caches. Metadata includes a bounded prefix and credential usage time; usage is
+not proof of provider verification.
+
+Save the key as a server secret, install the existing adapter in Segment or the
+Google server container, then verify an attributed event in the provider debugger
+and Redirects tracking. Setup configuration does not change a provider account
+or prove live installation. Revocation stops the Redirects key; remove the old
+adapter/secret from the provider separately.
+
+A null lookup is not cancellation of an in-flight request. Retain the same
+request ID and input when retrying that setup; do not infer permission to create
+a replacement with a fresh ID from a missing receipt alone.

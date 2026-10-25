@@ -26,6 +26,12 @@ module QueerGuide
     def list_workspace_information(kind, limit = 50, after = nil)
       request('GET','/workspace-information',nil,{kind:kind,limit:limit,after:after})
     end
+    def list_integration_setups(limit = 50, after = nil)
+      request('GET','/integrations',nil,{limit:limit,after:after})
+    end
+    def create_integration_setup(data); request('POST','/integrations',data); end
+    def lookup_integration_setup(request_id); request('GET','/integrations',nil,{requestId:request_id}); end
+    def revoke_integration_setup(id); request('DELETE','/integrations/'+URI.encode_www_form_component(id)); end
     def request(method, path, body = nil, query = {})
       raise ArgumentError, 'Invalid API path' unless path.match?(%r{\A/[a-zA-Z0-9_/-]+\z}) && !path.include?('//')
       uri = URI(@base + path)

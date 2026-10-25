@@ -75,6 +75,23 @@ func (c *Client) ListWorkspaceInformation(ctx context.Context, kind string, limi
 	return c.Request(ctx, "GET", "/workspace-information", nil, query)
 }
 
+func (c *Client) ListIntegrationSetups(ctx context.Context, limit int, after string) (Object, error) {
+	query := Object{"limit": limit}
+	if after != "" {
+		query["after"] = after
+	}
+	return c.Request(ctx, "GET", "/integrations", nil, query)
+}
+func (c *Client) CreateIntegrationSetup(ctx context.Context, data Object) (Object, error) {
+	return c.Request(ctx, "POST", "/integrations", data, nil)
+}
+func (c *Client) LookupIntegrationSetup(ctx context.Context, requestID string) (Object, error) {
+	return c.Request(ctx, "GET", "/integrations", nil, Object{"requestId": requestID})
+}
+func (c *Client) RevokeIntegrationSetup(ctx context.Context, id string) (Object, error) {
+	return c.Request(ctx, "DELETE", "/integrations/"+url.PathEscape(id), nil, nil)
+}
+
 var workspacePattern = regexp.MustCompile(`(?i)^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$`)
 
 var pathPattern = regexp.MustCompile(`^/[a-zA-Z0-9_/-]+$`)

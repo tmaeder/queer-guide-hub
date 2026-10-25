@@ -32,6 +32,12 @@ class RedirectsClient:
     def list_workspace_information(self, kind, limit=50, after=None):
         return self.request('GET','/workspace-information',query={'kind':kind,'limit':limit,'after':after})
 
+    def list_integration_setups(self, limit=50, after=None):
+        return self.request('GET','/integrations',query={'limit':limit,'after':after})
+    def create_integration_setup(self, data): return self.request('POST','/integrations',data)
+    def lookup_integration_setup(self, request_id): return self.request('GET','/integrations',query={'requestId':request_id})
+    def revoke_integration_setup(self, setup_id): return self.request('DELETE','/integrations/'+quote(setup_id,safe=''))
+
     def request(self, method, path, body=None, query=None):
         if not path.startswith('/') or '//' in path or any(not (c.isascii() and (c.isalnum() or c in '/_-')) for c in path):
             raise ValueError('Invalid API path')

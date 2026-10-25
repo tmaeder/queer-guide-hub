@@ -2,8 +2,10 @@ package redirects
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -217,6 +219,25 @@ func TestSDKIntegration(t *testing.T) {
 		}
 	}
 	_, err = api.ListReports(ctx, 50, "")
+	var integrationBytes [16]byte
+	if _, err := rand.Read(integrationBytes[:]); err != nil {
+		t.Fatal(err)
+	}
+	integrationRequest := fmt.Sprintf("%x-%x-%x-%x-%x", integrationBytes[0:4], integrationBytes[4:6], integrationBytes[6:8], integrationBytes[8:10], integrationBytes[10:16])
+	integrationInput := Object{"requestId": integrationRequest, "provider": "segment", "name": "Go integration setup", "linkIds": []string{os.Getenv("REDIRECT_TEST_REPORT_LINK")}, "expiresAt": time.Now().UTC().Add(24 * time.Hour).Format(time.RFC3339)}
+	integrationSetup := must(account.CreateIntegrationSetup(ctx, integrationInput))
+	integrationID := integrationSetup["installation"].(map[string]any)["id"].(string)
+	if integrationSetup["created"] != true || !strings.HasPrefix(integrationSetup["credential"].(string), "qg_redirect_") || must(account.CreateIntegrationSetup(ctx, integrationInput))["credential"] != nil {
+		t.Fatal("One-time integration setup/replay failed")
+	}
+	if must(account.LookupIntegrationSetup(ctx, integrationRequest))["installation"].(map[string]any)["id"] != integrationID || must(account.LookupIntegrationSetup(ctx, "00000000-0000-4000-8000-000000000000"))["installation"] != nil {
+		t.Fatal("Integration receipt lookup failed")
+	}
+	if len(must(account.ListIntegrationSetups(ctx, 50, ""))["data"].([]any)) == 0 || must(account.RevokeIntegrationSetup(ctx, integrationID))["status"] != "revoked" {
+		t.Fatal("Integration list/revoke failed")
+	}
+	_, integrationError := api.ListIntegrationSetups(ctx, 50, "")
+	expectStatus(integrationError, 403)
 	for _, kind := range []string{"domains", "tokens", "webhooks"} {
 		if _, ok := must(account.ListWorkspaceInformation(ctx, kind, 1, ""))["data"].([]any); !ok {
 			t.Fatal("Workspace information page missing")
