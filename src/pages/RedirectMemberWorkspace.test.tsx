@@ -272,23 +272,28 @@ describe('member redirect workspace', () => {
       ),
     );
   });
-  it('lets viewers read links and behavior while keeping mutation controls unavailable', async () => {
-    mocks.role = 'viewer';
-    mocks.canEdit = false;
-    show();
-    await screen.findByText('/go/pride');
-    expect(screen.getByRole('button', { name: 'Create link' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Edit /go/pride' })).toBeDisabled();
-    fireEvent.click(screen.getByRole('button', { name: 'Link behavior' }));
-    expect(
-      await screen.findByText(
-        'You can view these settings. Edit access is required to change them.',
-      ),
-    ).toBeVisible();
-    expect(screen.queryByRole('button', { name: 'Save link behavior' })).toBeNull();
-    expect(screen.getByRole('checkbox', { name: 'Attribute leads and sales' })).toBeDisabled();
-    expect(mocks.invoke.mock.calls.every(([, options]) => options.method === 'GET')).toBe(true);
-  });
+  it.each(['viewer', 'billing'])(
+    'lets %s read links while keeping mutation controls unavailable',
+    async (role) => {
+      mocks.role = role;
+      // Cached link capabilities from an earlier role cannot override the current role.
+      mocks.canEdit = true;
+      show();
+      await screen.findByText('/go/pride');
+      expect(screen.getByRole('button', { name: 'Create link' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Edit /go/pride' })).toBeDisabled();
+      expect(screen.queryByRole('button', { name: 'Manage tags' })).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: 'Link behavior' }));
+      expect(
+        await screen.findByText(
+          'You can view these settings. Edit access is required to change them.',
+        ),
+      ).toBeVisible();
+      expect(screen.queryByRole('button', { name: 'Save link behavior' })).toBeNull();
+      expect(screen.getByRole('checkbox', { name: 'Attribute leads and sales' })).toBeDisabled();
+      expect(mocks.invoke.mock.calls.every(([, options]) => options.method === 'GET')).toBe(true);
+    },
+  );
   it('saves member policy changes through the scoped patch endpoint with explicit clearing', async () => {
     show();
     await screen.findByText('/go/pride');

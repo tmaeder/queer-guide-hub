@@ -42,7 +42,7 @@ const resources = {
   tags: [{ id: '30000000-0000-4000-8000-000000000001', name: 'Pride', color: 'pink' }],
   templates: [],
 };
-function show() {
+function show(readOnly = false) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
@@ -57,6 +57,7 @@ function show() {
           filters={{ search: '', isArchived: false }}
           resources={resources}
           onPrefill={prefill}
+          readOnly={readOnly}
         />
       </QueryClientProvider>,
     ),
@@ -166,6 +167,16 @@ describe('all-source workspace inventory', () => {
     });
     await waitFor(() => expect(screen.queryByLabelText('Workspace comment')).toBeNull());
     expect(screen.queryByText('/venues/current')).toBeNull();
+  });
+  it('caps stale source capabilities when the current workspace role is read only', async () => {
+    mocks.canEdit = true;
+    show(true);
+    await screen.findByText('/venues/old');
+    expect(screen.queryByRole('button', { name: 'Archive' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Create tracked link' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'View organization' }));
+    expect(await screen.findByLabelText('Workspace comment')).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Save organization' })).toBeNull();
   });
   it('sends versioned bulk organization and clears selection when changing source kind', async () => {
     show();

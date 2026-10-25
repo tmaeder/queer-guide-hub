@@ -696,3 +696,37 @@ No production tenant was activated and the private selector/resource fences stay
 closed. Public QR/report capability lookup still has its separate legacy-only
 publication fence. Their resource-context helpers are ready, but enabling public
 capabilities across active workspaces remains part of the final activation audit.
+
+### 2026-10-25 Billing Links role and member tags
+
+Re-read [Dub's role grid](https://dub.co/help/article/workspace-roles) on 2026-10-25.
+Billing is now a supported membership/invitation/session/TypeScript SDK role with
+read-only Links and analytics access. Folder-owner overrides and write-scoped
+member-bound keys cannot lift that cap. It grants no application administrator,
+billing-provider or payout authority. Existing owner authority and tenant fences
+remain unchanged. The member editor can assign all three non-owner roles, and
+recipient-bound invitations preserve an explicit Billing choice.
+
+Members can now create, rename, recolor and delete shared workspace tags through
+the scoped API and a member-workspace tag dialog. Viewer/Billing writes remain
+denied. Deletion requires confirmation that the shared tag is removed from links.
+Tag mutations retain the selected workspace predicate, including denial of foreign
+tag IDs and preservation of independent same-name tags. UTM template writes stay
+owner-controlled; folder writes retain their existing ACL rules.
+
+Current read-only roles also cap cached link/source edit flags and already-open
+organization/policy editors. This keeps the UI read-only while fresh server
+capabilities are loading. SQL remains authoritative for every mutation.
+
+The full SQL suite and all five actual HTTP/SDK runtimes pass. New HTTP cases
+exercise owner-assigned Billing, session/discovery, permitted analytics, denied
+link/folder/tag/key/member writes despite a folder-owner override, member tag CRUD
+and preserved viewer denial. All 41 interface tests pass; API checking uses its
+existing frozen Deno configuration/lock. Script/UI lint passes, all 2552 migrations
+parse, and the app typecheck ratchet reports no new errors. Missing local ATProto
+and fflate packages were supplied at the already-declared versions in a temporary
+install; no dependency manifest or typecheck baseline was changed.
+
+All-role domain/key/webhook metadata views, member integration installation,
+additional-owner admission, workspace creation/switching/activation, atomic domain
+transfer and live provider/device evidence remain open.

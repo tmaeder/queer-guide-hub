@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { isReadOnlyRedirectRole } from '@/lib/redirects/roles';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { memberRedirectApi } from '@/lib/redirects/memberApi';
 import { Button } from '@/components/ui/button';
@@ -58,8 +59,8 @@ export function AskRedirectEdit({
         </DialogHeader>
         {viewer && (
           <p className="text-sm">
-            Your workspace role is viewer. A workspace administrator must update that role before a
-            folder owner can approve edit access.
+            Your workspace role is read only. A workspace administrator must update that role before
+            a folder owner can approve edit access.
           </p>
         )}
         {send.isSuccess ? (
@@ -198,11 +199,13 @@ export function RedirectAccessRequests({
             {request.message && (
               <p className="whitespace-pre-wrap break-words text-sm">{request.message}</p>
             )}
-            {view === 'review' && (request.member_role === 'viewer' || !request.member_active) && (
-              <p className="text-sm text-muted-foreground">
-                A workspace administrator must activate or upgrade this membership before approval.
-              </p>
-            )}
+            {view === 'review' &&
+              (isReadOnlyRedirectRole(request.member_role) || !request.member_active) && (
+                <p className="text-sm text-muted-foreground">
+                  A workspace administrator must activate or upgrade this membership before
+                  approval.
+                </p>
+              )}
             {request.status === 'pending' &&
               (confirm?.id === request.id ? (
                 <div className="space-y-2">
@@ -255,7 +258,7 @@ export function RedirectAccessRequests({
                         variant="outline"
                         disabled={
                           change.isPending ||
-                          request.member_role === 'viewer' ||
+                          isReadOnlyRedirectRole(request.member_role) ||
                           !request.member_active
                         }
                         onClick={() => {

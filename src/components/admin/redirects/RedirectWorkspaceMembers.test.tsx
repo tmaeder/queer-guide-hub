@@ -28,6 +28,18 @@ beforeEach(() => {
   }));
 });
 describe('workspace membership editor', () => {
+  it('lets an owner assign the Billing role to an existing teammate', async () => {
+    show();
+    fireEvent.change(await screen.findByLabelText('Role for Sam'), {
+      target: { value: 'billing' },
+    });
+    await waitFor(() =>
+      expect(mocks.invoke).toHaveBeenCalledWith('redirect-api/members/member', {
+        method: 'PATCH',
+        body: { role: 'billing' },
+      }),
+    );
+  });
   it('requires a second explicit action before deleting membership and credentials', async () => {
     show();
     await screen.findByText('Sam');

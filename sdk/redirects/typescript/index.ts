@@ -81,7 +81,7 @@ export interface RedirectWorkspace {
   slug: string;
 }
 export interface RedirectWorkspaceSession {
-  role: 'owner' | 'member' | 'viewer';
+  role: 'owner' | 'member' | 'viewer' | 'billing';
   label: string | null;
   workspace: RedirectWorkspace;
 }

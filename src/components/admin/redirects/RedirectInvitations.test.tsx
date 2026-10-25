@@ -40,6 +40,20 @@ beforeEach(() => {
   });
 });
 describe('recipient-bound workspace invitations', () => {
+  it('creates a Billing invitation with an explicit role choice', async () => {
+    view();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Create invitation' })).toBeEnabled(),
+    );
+    fireEvent.change(screen.getByLabelText('Workspace role'), { target: { value: 'billing' } });
+    create();
+    await screen.findByLabelText('Invitation link · shown once');
+    expect(mocks.api).toHaveBeenCalledWith('/invitations', 'POST', {
+      email: 'recipient@example.org',
+      label: 'Teammate',
+      role: 'billing',
+    });
+  });
   it('shows a generated link once, hides it and never sends an email request', async () => {
     view();
     await waitFor(() =>

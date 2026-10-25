@@ -126,6 +126,7 @@ function InvitationEditor({ userId }: { userId: string }) {
             onChange={(e) => setRole(e.target.value)}
           >
             <option value="viewer">Viewer</option>
+            <option value="billing">Billing (links read only)</option>
             <option value="member">Member</option>
           </select>
         </div>

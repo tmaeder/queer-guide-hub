@@ -144,11 +144,13 @@ function Organization({
   row,
   userId,
   resources,
+  readOnly,
   onClose,
 }: {
   row: OtherInventoryRow;
   userId: string;
   resources: MemberResources;
+  readOnly: boolean;
   onClose: () => void;
 }) {
   const client = useQueryClient();
@@ -197,7 +199,7 @@ function Organization({
           query.data && (
             <MetadataDraft
               key={epoch}
-              value={query.data}
+              value={{ ...query.data, canEditMetadata: !readOnly && query.data.canEditMetadata }}
               resources={resources}
               onReload={() =>
                 void query.refetch().then((result) => {
@@ -226,11 +228,13 @@ export function RedirectOtherInventory({
   filters,
   resources,
   onPrefill,
+  readOnly = false,
 }: {
   userId: string;
   filters: Record<string, unknown>;
   resources: MemberResources;
   onPrefill?: (row: OtherInventoryRow, target: string) => void;
+  readOnly?: boolean;
 }) {
   const [selected, setSelected] = useState<string[]>([]),
     [bulkFolder, setBulkFolder] = useState(''),
@@ -258,7 +262,12 @@ export function RedirectOtherInventory({
     },
     getNextPageParam: (page) => page.nextCursor ?? undefined,
   });
-  const rows = query.isError ? [] : (query.data?.pages.flatMap((page) => page.data) ?? []);
+  const rows = (query.isError ? [] : (query.data?.pages.flatMap((page) => page.data) ?? [])).map(
+    (row) => ({
+      ...row,
+      canEditMetadata: !readOnly && row.canEditMetadata,
+    }),
+  );
   const selectedRows = [
     ...new Map(
       rows
@@ -496,7 +505,8 @@ export function RedirectOtherInventory({
                     </Button>
                   </>
                 )}
-                {onPrefill &&
+                {!readOnly &&
+                  onPrefill &&
                   ((row.target &&
                     validPublicTarget(row.target) &&
                     !/(^|\/):[a-z_]/i.test(row.target) &&
@@ -564,6 +574,7 @@ export function RedirectOtherInventory({
           row={editing}
           userId={userId}
           resources={resources}
+          readOnly={readOnly}
           onClose={() => setEditing(null)}
         />
       )}

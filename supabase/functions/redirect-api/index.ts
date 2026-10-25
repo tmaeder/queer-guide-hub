@@ -53,7 +53,7 @@ Deno.serve(async (req: Request) => {
   const result=await db.rpc('redirect_workspace_context',{p_actor:user.id,p_workspace:selectedWorkspace.id,p_scope:scope});
   if(result.error)return {id:null,failure:rpcError(result.error)};
   const context=result.data,principal=context?.principal;
-  if(context?.workspace?.id!==selectedWorkspace.id||!principal||!['owner','member','viewer'].includes(principal.role)||(principal.role==='owner'?principal.id!==null:typeof principal.id!=='string'||!UUID.test(principal.id)))return {id:null,failure:json({error:'Workspace authorization unavailable'},503)};
+  if(context?.workspace?.id!==selectedWorkspace.id||!principal||!['owner','member','viewer','billing'].includes(principal.role)||(principal.role==='owner'?principal.id!==null:typeof principal.id!=='string'||!UUID.test(principal.id)))return {id:null,failure:json({error:'Workspace authorization unavailable'},503)};
   return {id:principal.id,role:principal.role,label:principal.label,workspace:context.workspace};
  };
  try {
@@ -553,7 +553,7 @@ Deno.serve(async (req: Request) => {
     const body=await boundedJson(req),create=req.method==='POST',allowed=create?['label','role','active','kind','userId']:['label','role','active'];
     if(!body||typeof body!=='object'||Array.isArray(body)||!Object.keys(body).length||Object.keys(body).some(k=>!allowed.includes(k)))return json({error:'Invalid membership fields'},400);
     if((create||body.label!==undefined)&&(typeof body.label!=='string'||!body.label.trim()||body.label.trim().length>100))return json({error:'Member label must be 1–100 characters'},400);
-    if(body.role!==undefined&&!['member','viewer'].includes(body.role)||body.active!==undefined&&typeof body.active!=='boolean')return json({error:'Invalid membership role or status'},400);
+    if(body.role!==undefined&&!['member','viewer','billing'].includes(body.role)||body.active!==undefined&&typeof body.active!=='boolean')return json({error:'Invalid membership role or status'},400);
     if(create&&(!['user','machine'].includes(body.kind)||body.kind==='user'&&(typeof body.userId!=='string'||!UUID.test(body.userId))||body.kind==='machine'&&body.userId!=null))return json({error:'Choose an existing account UUID or a machine member'},400);
     const values={...(body.label!==undefined?{label:body.label.trim()}:{}),...(body.role!==undefined?{role:body.role}:{}),...(body.active!==undefined?{active:body.active}:{}),...(create?{kind:body.kind,user_id:body.kind==='user'?body.userId:null}:{})};
     const {data,error}=await db.rpc('redirect_member_administration',{p_actor:user.id,p_action:create?'create':'update',p_id:id??null,p_values:values});if(error)return rpcError(error);return json(data,create?201:200);

@@ -87,15 +87,20 @@ describe('folder access request controls', () => {
     );
     await waitFor(() => expect(mocks.changed).toHaveBeenCalled());
   });
-  it('explains the workspace viewer cap and leaves approval disabled', async () => {
-    mocks.invoke.mockResolvedValue({
-      data: { data: [{ ...request, member_role: 'viewer' }], count: 1, nextCursor: null },
-      error: null,
-    });
-    show(<RedirectAccessRequests userId="owner" initialView="review" onChanged={mocks.changed} />);
-    expect(await screen.findByRole('button', { name: 'Approve request' })).toBeDisabled();
-    expect(screen.getByText(/activate or upgrade/)).toBeVisible();
-  });
+  it.each(['viewer', 'billing'])(
+    'explains the %s cap and leaves approval disabled',
+    async (role) => {
+      mocks.invoke.mockResolvedValue({
+        data: { data: [{ ...request, member_role: role }], count: 1, nextCursor: null },
+        error: null,
+      });
+      show(
+        <RedirectAccessRequests userId="owner" initialView="review" onChanged={mocks.changed} />,
+      );
+      expect(await screen.findByRole('button', { name: 'Approve request' })).toBeDisabled();
+      expect(screen.getByText(/activate or upgrade/)).toBeVisible();
+    },
+  );
   it('preserves the confirmation and shows current-ownership rejection', async () => {
     const base = mocks.invoke.getMockImplementation()!;
     mocks.invoke.mockImplementation(async (path, options) =>

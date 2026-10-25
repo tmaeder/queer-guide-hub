@@ -1,4 +1,6 @@
 import { RedirectInvitationAcceptance } from '@/components/admin/redirects/RedirectInvitations';
+import { RedirectMemberTags } from '@/components/admin/redirects/RedirectMemberTags';
+import { isReadOnlyRedirectRole, type RedirectWorkspaceRole } from '@/lib/redirects/roles';
 import { RedirectOtherInventory } from '@/components/admin/redirects/RedirectOtherInventory';
 import {
   AskRedirectEdit,
@@ -329,11 +331,12 @@ export function MemberWorkspaceContent({
   initialRequestView?: 'mine' | 'review';
 }) {
   const client = useQueryClient();
+  const [manageTags, setManageTags] = useState(false);
   const resources = useMemberRedirectResources(userId);
   const session = useQuery({
     queryKey: ['redirect-member', userId, 'session'],
     queryFn: () =>
-      memberRedirectApi<{ role: 'owner' | 'member' | 'viewer'; label: string | null }>('/session'),
+      memberRedirectApi<{ role: RedirectWorkspaceRole; label: string | null }>('/session'),
     retry: false,
   });
   const [viewParams, setViewParams] = useSearchParams();
@@ -412,8 +415,11 @@ export function MemberWorkspaceContent({
     getNextPageParam: (page) => page.nextCursor ?? undefined,
     retry: false,
   });
-  const rows = links.data?.pages.flatMap((p) => p.data) ?? [];
   const canWrite = session.data?.role === 'member' || session.data?.role === 'owner';
+  const rows = (links.data?.pages.flatMap((p) => p.data) ?? []).map((link) => ({
+    ...link,
+    canEdit: canWrite && link.canEdit,
+  }));
   const refresh = async () => {
     await client.invalidateQueries({ queryKey: ['redirect-member', userId] });
     setSelected([]);
@@ -475,7 +481,9 @@ export function MemberWorkspaceContent({
           <h1 className="text-headline font-normal">Link workspace</h1>
           <p className="text-muted-foreground">
             Your shared links, campaign settings, QR codes and analytics.{' '}
-            {session.data?.role === 'viewer' ? 'You have read-only workspace access.' : ''}
+            {isReadOnlyRedirectRole(session.data?.role)
+              ? 'You have read-only workspace access.'
+              : ''}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -491,6 +499,15 @@ export function MemberWorkspaceContent({
           <Button variant="outline" disabled={!canWrite} onClick={() => setImporting(true)}>
             Import CSV
           </Button>
+          {canWrite && (
+            <Button
+              variant="outline"
+              disabled={!resources.data || resources.isError}
+              onClick={() => setManageTags(true)}
+            >
+              Manage tags
+            </Button>
+          )}
           <Button
             variant="outline"
             disabled={!rows.length}
@@ -512,12 +529,20 @@ export function MemberWorkspaceContent({
           onChanged={refresh}
         />
       )}
+      {manageTags && canWrite && resources.data && !resources.isError && (
+        <RedirectMemberTags
+          key={userId}
+          tags={resources.data.tags}
+          onChanged={refresh}
+          onClose={() => setManageTags(false)}
+        />
+      )}
       {requestFolder && (
         <AskRedirectEdit
           folderId={requestFolder.id}
           folderName={requestFolder.name}
           userId={userId}
-          viewer={session.data?.role === 'viewer'}
+          viewer={isReadOnlyRedirectRole(session.data?.role)}
           onClose={() => {
             setRequestFolder(null);
             setRequestView('mine');
@@ -554,7 +579,7 @@ export function MemberWorkspaceContent({
             {resources.data?.folders.map((f) => (
               <option key={f.id} value={f.id}>
                 {f.name}
-                {f.canEdit ? '' : ' · view only'}
+                {canWrite && f.canEdit ? '' : ' · view only'}
               </option>
             ))}
           </select>
@@ -626,7 +651,7 @@ export function MemberWorkspaceContent({
           />
           Show archived links
         </label>
-        {folder && resources.data?.folders.find((f) => f.id === folder)?.canManage && (
+        {canWrite && folder && resources.data?.folders.find((f) => f.id === folder)?.canManage && (
           <Button variant="outline" size="sm" onClick={() => setAccess(folder)}>
             Manage folder access
           </Button>
@@ -669,7 +694,7 @@ export function MemberWorkspaceContent({
           </Button>
         </form>
       )}
-      {access && (
+      {canWrite && access && (
         <RedirectFolderAccess
           key={access}
           folderId={access}
@@ -680,7 +705,8 @@ export function MemberWorkspaceContent({
           }}
         />
       )}
-      {folder &&
+      {canWrite &&
+        folder &&
         resources.data?.folders.some((f) => f.id === folder && (f.canRename ?? f.canManage)) && (
           <section className="space-y-2" aria-label="Folder management">
             <form
@@ -958,7 +984,7 @@ export function MemberWorkspaceContent({
           {links.isFetchingNextPage ? 'Loading…' : 'Load more links'}
         </Button>
       )}
-      {editor && resources.data && (
+      {canWrite && editor && resources.data && (
         <LinkEditor
           userId={userId}
           key={editor.link?.id ?? editor.prefill?.id ?? 'new'}
@@ -981,6 +1007,7 @@ export function MemberWorkspaceContent({
           userId={userId}
           filters={filters}
           resources={resources.data}
+          readOnly={!canWrite}
           onPrefill={
             canWrite
               ? (row, target) =>
@@ -1023,7 +1050,7 @@ export function MemberWorkspaceContent({
         <RedirectPolicyDialog
           row={inventory(policy)}
           principalId={userId}
-          readOnly={!policy.canEdit}
+          readOnly={!canWrite || !policy.canEdit}
           onClose={() => setPolicy(null)}
         />
       )}
@@ -1036,7 +1063,7 @@ export function MemberWorkspaceContent({
           onClose={() => setAnalytics(null)}
         />
       )}
-      {importing && <RedirectManagedImportDialog onClose={() => setImporting(false)} />}
+      {canWrite && importing && <RedirectManagedImportDialog onClose={() => setImporting(false)} />}
     </div>
   );
 }

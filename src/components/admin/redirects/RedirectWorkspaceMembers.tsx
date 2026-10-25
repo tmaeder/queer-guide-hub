@@ -109,6 +109,7 @@ function MemberEditor() {
           >
             <option value="member">Member</option>
             <option value="viewer">Viewer (read only)</option>
+            <option value="billing">Billing (links read only)</option>
           </select>
         </div>
         <Button type="submit" className="self-end" disabled={change.isPending || !label.trim()}>
@@ -141,19 +142,22 @@ function MemberEditor() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
+                <select
+                  aria-label={'Role for ' + member.label}
+                  className="rounded-element border bg-background p-2 text-sm"
+                  value={member.role}
                   disabled={change.isPending}
-                  onClick={() =>
+                  onChange={(event) =>
                     change.mutate({
                       id: member.id,
-                      values: { role: member.role === 'viewer' ? 'member' : 'viewer' },
+                      values: { role: event.target.value },
                     })
                   }
                 >
-                  {member.role === 'viewer' ? 'Make member' : 'Make viewer'}
-                </Button>
+                  <option value="member">Member</option>
+                  <option value="viewer">Viewer</option>
+                  <option value="billing">Billing (links read only)</option>
+                </select>
                 <Button
                   variant="outline"
                   size="sm"

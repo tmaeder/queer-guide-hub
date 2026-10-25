@@ -1,12 +1,13 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { RedirectWorkspaceRole } from '@/lib/redirects/roles';
 export interface RedirectMember {
   id: string;
   user_id: string | null;
   kind: 'user' | 'machine';
   label: string;
-  role: 'member' | 'viewer';
+  role: Exclude<RedirectWorkspaceRole, 'owner'>;
   active: boolean;
 }
 export function useRedirectMembers() {
