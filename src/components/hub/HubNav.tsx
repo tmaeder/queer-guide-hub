@@ -49,15 +49,15 @@ export function HubNav({ className }: { className?: string }) {
   return (
     <div className={cn('flex min-w-0 items-end gap-4', className)}>
       {/* HubIdentityBlock renders null when signed out, so no auth check here. */}
-      <div className="hidden shrink-0 md:block">
+      <div className="hidden shrink-0 md:block md:empty:hidden">
         <HubIdentityBlock />
       </div>
       <nav
         ref={navRef}
         aria-label={t('hub.nav', 'Hub sections')}
-        className="min-w-0 flex-1 overflow-x-auto pb-2 md:overflow-visible"
+        className="min-w-0 flex-1 overflow-x-auto pb-2 lg:overflow-visible"
       >
-        <div className="flex min-w-max items-end gap-6 md:min-w-0 md:flex-wrap">
+        <div className="flex min-w-max items-end gap-6 lg:min-w-0 lg:flex-wrap">
           {HUB_SECTIONS.map((section) => {
             const modules = HUB_MODULES.filter((module) => module.section === section.id);
             return (

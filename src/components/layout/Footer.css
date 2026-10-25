@@ -1,73 +1,38 @@
-/* Small route markers reuse the same intent colors as the header. Their
-   absolute positioning keeps link targets and footer dimensions unchanged. */
-.footer-route-link {
-  --footer-route-color: hsl(var(--track-pink));
-  position: relative;
+.footer-destination {
+  --footer-track: var(--track-pink);
 }
 
-.footer-route-link[data-track='blue'] {
-  --footer-route-color: hsl(var(--track-blue));
+.footer-destination[data-track='blue'] {
+  --footer-track: var(--track-blue);
 }
 
-.footer-route-link[data-track='green'] {
-  --footer-route-color: hsl(var(--track-green));
+.footer-destination[data-track='green'] {
+  --footer-track: var(--track-green);
 }
 
-.footer-route-link[data-track='yellow'] {
-  --footer-route-color: hsl(var(--track-yellow));
+.footer-destination[data-track='yellow'] {
+  --footer-track: var(--track-yellow);
 }
 
-.footer-route-marker {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 6px;
-  height: 3px;
-  border-radius: 999px;
-  background: var(--footer-route-color);
-  transform: scaleX(0.24);
-  transform-origin: left center;
-  transition: transform var(--motion-fast) cubic-bezier(0.16, 1, 0.3, 1);
+.footer-destination:is(:hover, :focus-visible, [aria-current='page']) {
+  text-decoration-line: underline;
+  text-decoration-color: hsl(var(--footer-track));
+  text-decoration-thickness: 3px;
+  text-underline-offset: 5px;
 }
 
-:dir(rtl) .footer-route-marker {
-  transform-origin: right center;
+.footer-destination-icon {
+  transition: transform var(--motion-fast) ease-out;
 }
 
-.footer-route-link:hover .footer-route-marker,
-.footer-route-link:focus-visible .footer-route-marker,
-.footer-route-link[aria-current='page'] .footer-route-marker {
-  transform: scaleX(1);
-}
-
-.footer-route-drawing {
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.footer-route-blue {
-  stroke: hsl(var(--track-blue));
-}
-
-.footer-route-pink {
-  stroke: hsl(var(--track-pink));
-}
-
-.footer-route-green,
-.footer-route-yellow {
-  fill: hsl(var(--foreground));
-}
-
-.footer-route-green {
-  stroke: hsl(var(--track-green));
-}
-
-.footer-route-yellow {
-  stroke: hsl(var(--track-yellow));
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .footer-destination:hover .footer-destination-icon {
+    transform: translateY(-2px) rotate(-6deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .footer-route-marker {
+  .footer-destination-icon {
     transition: none;
   }
 }
