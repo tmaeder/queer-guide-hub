@@ -116,6 +116,9 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
           <LocalizedLink to="/privacy" className={footerLink}>
             {t('footer.privacy', 'Privacy')}
           </LocalizedLink>
+          <LocalizedLink to="/terms" className={footerLink}>
+            {t('footer.terms', 'Terms')}
+          </LocalizedLink>
           <button
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
@@ -148,7 +151,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               className="grid grid-cols-2 gap-x-4 pb-2 md:flex md:flex-wrap md:gap-x-6"
             >
               {legalLinks
-                .filter((link) => link.href !== '/privacy')
+                .filter((link) => link.href !== '/privacy' && link.href !== '/terms')
                 .map((link) => (
                   <LocalizedLink
                     key={link.href}
