@@ -21,7 +21,7 @@
 
 import { useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { LayoutDashboard, RefreshCw, SlidersHorizontal } from 'lucide-react';
+import { LayoutDashboard, RefreshCw, SlidersHorizontal } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';

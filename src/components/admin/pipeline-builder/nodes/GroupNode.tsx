@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { NodeResizer, type NodeProps } from '@xyflow/react';
-import { Folder, Palette } from 'lucide-react';
+import { Folder, Palette } from '@/components/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { GroupNodeData, GroupNodeType } from '../types';
 

@@ -1,5 +1,5 @@
 import { createElement } from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin } from '@/components/icons';
 import { CityCodeBadges } from '@/components/admin/CityCodeBadges';
 import { cityCodesFromRow } from '@/lib/cityCodes';
 import { countLink } from './countLink';

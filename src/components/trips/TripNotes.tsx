@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Pin, PinOff, Trash2, StickyNote } from 'lucide-react';
+import { Plus, Pin, PinOff, Trash2, StickyNote } from '@/components/icons';
 import { formatDistanceToNow } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

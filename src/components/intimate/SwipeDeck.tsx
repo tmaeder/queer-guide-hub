@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, useMotionValue, useTransform, useReducedMotion, type PanInfo } from 'motion/react';
-import { Heart, X } from 'lucide-react';
+import { Heart, X } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 

@@ -10,7 +10,7 @@ import {
   Scale,
   ShieldCheck,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

@@ -28,7 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Trash2, UserMinus, AlertTriangle } from 'lucide-react';
+import { Trash2, UserMinus, AlertTriangle } from '@/components/icons';
 
 type Mode = 'delete' | 'anonymize';
 

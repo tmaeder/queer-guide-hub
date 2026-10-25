@@ -8,7 +8,7 @@ import {
   AlertTriangle,
   CloudRain,
   FileWarning,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { useTripNudges, useDismissTripNudge, type TripNudge } from '@/hooks/useTripNudges';
 

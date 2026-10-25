@@ -16,7 +16,7 @@ import type { Tables } from '@/integrations/supabase/types';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@/components/icons';
 
 import { IssueMasthead } from '@/components/news/editorial/IssueMasthead';
 import { LeadStory } from '@/components/news/editorial/LeadStory';

@@ -5,7 +5,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { ArrowLeft, Eye, Flag, Share2, Shield, User, Heart } from 'lucide-react';
+import { ArrowLeft, Eye, Flag, Share2, Shield, User, Heart } from '@/components/icons';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ScrollableTabList } from '@/components/profile/ScrollableTabList';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';

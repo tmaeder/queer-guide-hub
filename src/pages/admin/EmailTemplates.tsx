@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Mail, Edit, Eye, Save, Search, Monitor, Smartphone } from 'lucide-react';
+import { Mail, Edit, Eye, Save, Search, Monitor, Smartphone } from '@/components/icons';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';

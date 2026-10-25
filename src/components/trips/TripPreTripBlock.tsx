@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { differenceInCalendarDays, format } from 'date-fns';
-import { AlertTriangle, Info, Calendar, Ticket, Plus } from 'lucide-react';
+import { AlertTriangle, Info, Calendar, Ticket, Plus } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import type { TripWithDetails } from '@/hooks/useTrips';
 import { useTripReservations } from '@/hooks/useTripReservations';

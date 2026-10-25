@@ -20,7 +20,7 @@ import {
   Route,
   ExternalLink,
   type LucideProps,
-} from 'lucide-react';
+} from '@/components/icons';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

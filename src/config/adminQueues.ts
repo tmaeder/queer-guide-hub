@@ -50,8 +50,8 @@ import {
   UserPlus,
   Users,
   UsersRound,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+} from '@/components/icons';
+import type { LucideIcon } from '@/components/icons';
 import { roleAtLeast, type AdminRole, type EffectiveRole } from '@/config/adminRoles';
 import type { AdminCounts } from '@/hooks/useAdminCounts';
 

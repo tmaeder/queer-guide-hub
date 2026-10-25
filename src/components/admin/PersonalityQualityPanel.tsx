@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, ShieldCheck } from 'lucide-react';
+import { Users, ShieldCheck } from '@/components/icons';
 import { usePersonalityQualitySummary } from '@/hooks/usePersonalityQualitySummary';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';
 

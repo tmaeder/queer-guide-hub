@@ -12,8 +12,8 @@ describe('Checkbox', () => {
       'aria-checked',
       'mixed',
     );
-    expect(container.querySelector('svg.lucide-minus')).not.toBeNull();
-    expect(container.querySelector('svg.lucide-check')).toBeNull();
+    expect(container.querySelector('svg[data-icon="minus"]')).not.toBeNull();
+    expect(container.querySelector('svg[data-icon="check"]')).toBeNull();
   });
 
   it('renders', () => {

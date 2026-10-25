@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Accessibility, ChevronDown } from 'lucide-react';
+import { Accessibility, ChevronDown } from '@/components/icons';
 import { tweens } from '@/lib/motion';
 import {
   DropdownMenu,

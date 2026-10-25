@@ -1,4 +1,4 @@
-import { Users } from 'lucide-react';
+import { Users } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { validatePersonality } from '@/utils/contentValidation';
 

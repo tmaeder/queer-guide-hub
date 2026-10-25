@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, MessageCircle, Mail } from 'lucide-react';
+import { Plus, MessageCircle, Mail } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,

@@ -1,4 +1,4 @@
-import { CalendarRange, MessageCircle, ShieldCheck } from 'lucide-react';
+import { CalendarRange, MessageCircle, ShieldCheck } from '@/components/icons';
 import { useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';

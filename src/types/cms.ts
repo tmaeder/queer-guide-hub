@@ -4,7 +4,7 @@
  */
 
 import type { ReactNode } from 'react';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/components/icons';
 import type { ZodTypeAny } from 'zod';
 
 // ── Workflow & Visibility ──────────────────────────────────────────

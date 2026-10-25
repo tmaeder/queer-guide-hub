@@ -6,7 +6,7 @@ import {
   Mountain,
   Trees,
   Waves,
-} from 'lucide-react';
+} from '@/components/icons';
 
 /** Static icon per landmark kind — mirrors landmarkKindIcon without creating components mid-render. */
 export function LandmarkKindIcon({ kind, className }: { kind: string; className?: string }) {

@@ -7,7 +7,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Check} from 'lucide-react';
+import { Check} from '@/components/icons';
 
 export function FilterList({
   items,

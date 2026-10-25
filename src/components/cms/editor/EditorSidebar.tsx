@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { ChevronDown, FileText, Clock, History } from 'lucide-react';
+import { ChevronDown, FileText, Clock, History } from '@/components/icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

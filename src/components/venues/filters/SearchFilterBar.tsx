@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Navigation} from 'lucide-react';
+import { Search, Filter, Navigation} from '@/components/icons';
 
 interface SearchFilterBarProps {
   search: string;

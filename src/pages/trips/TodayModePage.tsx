@@ -14,7 +14,7 @@ import {
   Skull,
   WifiOff,
   Bell,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useTrip, type TripPlace, type TripDay, type TripWithDetails } from '@/hooks/useTrips';

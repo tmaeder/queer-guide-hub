@@ -1,4 +1,4 @@
-import { Globe, Music, Send, MessageCircle, Tv, Coffee, Heart, Flame, Video, ShoppingBag } from 'lucide-react';
+import { Globe, Music, Send, MessageCircle, Tv, Coffee, Heart, Flame, Video, ShoppingBag } from '@/components/icons';
 import {
   Instagram,
   Facebook,

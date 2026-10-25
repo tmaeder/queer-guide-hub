@@ -4,7 +4,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { Box, Layers } from 'lucide-react';
+import { Box, Layers } from '@/components/icons';
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: { auth: { signOut: vi.fn() } },

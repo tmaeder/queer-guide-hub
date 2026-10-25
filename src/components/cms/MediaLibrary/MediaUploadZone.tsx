@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Upload, X, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Upload, X, CheckCircle, AlertTriangle } from '@/components/icons';
 import { bucketForTier, objectKeyForTier } from '@/lib/mediaAccess';
 import { ACCESS_LEVELS, BRAND_CATEGORIES } from './types';
 import type { AccessLevel, BrandCategory } from './types';

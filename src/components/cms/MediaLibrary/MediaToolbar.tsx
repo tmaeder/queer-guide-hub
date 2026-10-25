@@ -20,7 +20,7 @@ import {
   ArrowDown,
   Tag as TagIcon,
   X,
-} from 'lucide-react';
+} from '@/components/icons';
 import type {
   ViewMode,
   SortBy,

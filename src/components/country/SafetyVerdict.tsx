@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Skull, ShieldAlert, ShieldQuestion, ArrowDown } from 'lucide-react';
+import { Skull, ShieldAlert, ShieldQuestion, ArrowDown } from '@/components/icons';
 import { useTripSafety } from '@/hooks/useTripSafety';
 import { useRiskVisual, type OverallRisk } from '@/hooks/useRiskVisual';
 import { EQUALITY_TIER_I18N_KEY, getScoreLabel } from '@/utils/equalityScore';

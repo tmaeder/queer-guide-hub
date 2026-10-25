@@ -1,4 +1,4 @@
-import { Search } from 'lucide-react';
+import { Search } from '@/components/icons';
 import { resolvePipelineIcon } from './icon-registry';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { PipelineNodeType } from './hooks/usePipelineBuilder';

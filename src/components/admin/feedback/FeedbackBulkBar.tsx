@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { CheckCheck, Tag, UserPlus, Zap, X, Layers } from 'lucide-react';
+import { CheckCheck, Tag, UserPlus, Zap, X, Layers } from '@/components/icons';
 import { Github } from '@/components/icons/brand';
 import { kanbanColumns, priorities, type KanbanStatus } from './constants';
 import type { AdminProfile, StoryWithCounts } from './types';

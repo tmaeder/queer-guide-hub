@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Calendar } from 'lucide-react';
+import { Calendar } from '@/components/icons';
 import {
   Dialog,
   DialogContent,

@@ -21,7 +21,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, X, Upload, ImageIcon, Search, Check } from 'lucide-react';
+import { Plus, X, Upload, ImageIcon, Search, Check } from '@/components/icons';
 import { usePersonalities } from '@/hooks/usePersonalities';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { CountryAutocomplete } from '@/components/ui/country-autocomplete';

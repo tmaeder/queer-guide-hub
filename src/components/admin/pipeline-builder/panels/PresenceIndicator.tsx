@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Users, Eye, Pencil } from 'lucide-react';
+import { Users, Eye, Pencil } from '@/components/icons';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import type { RealtimeChannel } from '@supabase/supabase-js';

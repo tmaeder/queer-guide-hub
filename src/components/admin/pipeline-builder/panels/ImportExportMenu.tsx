@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Download, Upload, Copy, ClipboardPaste, MoreVertical } from 'lucide-react';
+import { Download, Upload, Copy, ClipboardPaste, MoreVertical } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,

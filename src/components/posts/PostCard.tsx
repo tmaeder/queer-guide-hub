@@ -24,7 +24,7 @@ import {
   Volume2,
   UserPlus,
   UserMinus,
-} from 'lucide-react';
+} from '@/components/icons';
 import {
   DropdownMenu,
   DropdownMenuContent,

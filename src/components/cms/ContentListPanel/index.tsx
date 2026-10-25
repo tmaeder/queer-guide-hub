@@ -6,7 +6,7 @@
 
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router';
-import { Plus, Search, RefreshCw, X } from 'lucide-react';
+import { Plus, Search, RefreshCw, X } from '@/components/icons';
 import { contentTypeRegistry, contentTypeRouteAliases } from '@/config/contentTypes';
 import { AdminToolsPopover } from '@/components/admin/primitives/AdminToolsPopover';
 import { ContentEntityTabs } from '@/components/admin/ContentEntityTabs';

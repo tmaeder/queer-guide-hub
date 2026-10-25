@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';

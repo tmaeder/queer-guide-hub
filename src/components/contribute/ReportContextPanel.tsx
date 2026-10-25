@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Camera, Info } from 'lucide-react';
+import { Camera, Info } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';

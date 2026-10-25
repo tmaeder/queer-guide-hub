@@ -6,7 +6,7 @@ import {
   normalizeStructured,
 } from '@/components/cms/fields/structured/structuredValue';
 import { useEffect, useMemo, useState } from 'react';
-import { ExternalLink, Save } from 'lucide-react';
+import { ExternalLink, Save } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';

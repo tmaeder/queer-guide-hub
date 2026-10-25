@@ -1,4 +1,4 @@
-import { Sparkles, RefreshCw } from 'lucide-react';
+import { Sparkles, RefreshCw } from '@/components/icons';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import {

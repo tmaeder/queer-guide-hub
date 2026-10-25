@@ -13,7 +13,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 import type { Node } from '@xyflow/react';
 
 interface NodeConfigPanelProps {

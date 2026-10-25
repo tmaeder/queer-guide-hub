@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Rocket, Boxes, History, Command as CommandIcon,
   Save, Play, ArrowRight, CheckCircle2,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 

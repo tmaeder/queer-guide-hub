@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from '@/components/icons';
 import { useTagHygieneStats, type TagHygieneStats } from '@/hooks/useTagHygieneStats';
 import { HYGIENE_METRICS, type HygieneMetric } from '@/lib/tagHygieneMetrics';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';

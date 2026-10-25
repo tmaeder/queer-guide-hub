@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Plane } from 'lucide-react';
+import { Plane } from '@/components/icons';
 import {
   Sheet,
   SheetContent,

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/components/icons';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { GroupCard } from '@/components/groups/GroupCard';
 import type { Group } from '@/hooks/useGroups';

@@ -10,7 +10,7 @@
  * which hold the per-type semantics and write `admin_lifecycle_audit`.
  */
 import { useState } from 'react';
-import { Archive, ArchiveRestore, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, Trash2 } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

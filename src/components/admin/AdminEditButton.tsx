@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, Download, History, Pencil, SquareArrowOutUpRight } from 'lucide-react';
+import { ChevronDown, Download, History, Pencil, SquareArrowOutUpRight } from '@/components/icons';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {

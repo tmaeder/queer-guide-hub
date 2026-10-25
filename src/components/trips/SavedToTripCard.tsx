@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Luggage, Plus, MapPin } from 'lucide-react';
+import { Luggage, Plus, MapPin } from '@/components/icons';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';

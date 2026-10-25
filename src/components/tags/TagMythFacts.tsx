@@ -1,4 +1,4 @@
-import { Check, X } from 'lucide-react';
+import { Check, X } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { useTagMythFacts } from '@/hooks/useStiProfile';

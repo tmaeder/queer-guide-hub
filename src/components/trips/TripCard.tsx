@@ -10,7 +10,7 @@ import {
   AlertTriangle,
   Pin,
   PinOff,
-} from 'lucide-react';
+} from '@/components/icons';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { Card, CardImage, CardContent } from '@/components/ui/card';

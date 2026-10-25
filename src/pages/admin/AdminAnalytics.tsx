@@ -16,7 +16,7 @@ import {
   TrendingUp,
   Activity,
   Filter,
-} from 'lucide-react';
+} from '@/components/icons';
 
 export default function AdminAnalytics() {
   const [stats, setStats] = useState({

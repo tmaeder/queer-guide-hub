@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Merge, Database, Inbox, RefreshCw, History } from 'lucide-react';
+import { Search, Merge, Database, Inbox, RefreshCw, History } from '@/components/icons';
 import {
   useBatchFindDuplicates,
   useScanTableDuplicates,

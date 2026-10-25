@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { X, Accessibility } from 'lucide-react';
+import { X, Accessibility } from '@/components/icons';
 import type { Profile } from '@/hooks/useProfile';
 
 interface TravelPrefs {

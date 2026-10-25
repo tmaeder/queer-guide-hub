@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, X, ExternalLink } from 'lucide-react';
+import { Plus, X, ExternalLink } from '@/components/icons';
 
 /**
  * Attach the law a glossary tag is about.

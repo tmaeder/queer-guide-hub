@@ -28,7 +28,9 @@ import { TransitIcon } from '../src/components/transit/TransitIcon';
 import { ICON_DEFS, ICON_GROUPS } from '../src/components/transit/iconDefs';
 
 const out = process.argv[2] ?? 'icon-sheet.html';
-const slugs = Object.keys(ICON_DEFS);
+// ICON_SLUGS=a,b,c renders only those icons (one drawing batch at a time).
+const only = process.env.ICON_SLUGS?.split(',').filter(Boolean);
+const slugs = Object.keys(ICON_DEFS).filter((s) => !only || only.includes(s));
 
 const icon = (slug, size) =>
   renderToStaticMarkup(createElement(TransitIcon, { name: slug, size, label: slug }));
@@ -51,6 +53,9 @@ const card = ({ slug, def }) => `
         <span title="16px">${icon(slug, 16)}</span>
         <span title="24px">${icon(slug, 24)}</span>
         <span title="32px — ticks appear here">${icon(slug, 32)}</span>
+      </div>
+      <div class="small dark" title="on an ink ground: the outline follows the text colour">
+        <span>${icon(slug, 16)}</span><span>${icon(slug, 24)}</span><span>${icon(slug, 32)}</span>
       </div>
     </figcaption>
   </figure>`;
@@ -96,6 +101,7 @@ writeFileSync(
         margin-left:auto; }
   .small { display:flex; align-items:center; gap:10px; margin-top:10px;
            padding-top:10px; border-top:1px solid rgba(17,17,17,.12); }
+  .dark { background:var(--ink); color:var(--paper); border-radius:9px; padding:6px 10px; border-top:0; }
   .strip { background:var(--paper); border-radius:18px; padding:16px;
            display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
 </style>

@@ -19,7 +19,7 @@ import { PageHero } from '@/components/discovery';
 import { LoadMore } from '@/components/transit/LoadMore';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
-import { Calendar } from 'lucide-react';
+import { Calendar } from '@/components/icons';
 import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';

@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import { Gauge, ShieldCheck } from 'lucide-react';
+import { Gauge, ShieldCheck } from '@/components/icons';
 import { useNewsQualitySummary } from '@/hooks/useNewsQualitySummary';
 
 /**

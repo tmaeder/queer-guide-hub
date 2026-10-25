@@ -19,7 +19,7 @@ import {
   Workflow,
   GitBranch,
   Search,
-} from 'lucide-react';
+} from '@/components/icons';
 import { AdminStatTile } from '@/components/admin/primitives/AdminStatTile';
 import {
   useUnifiedPipelineOverview,

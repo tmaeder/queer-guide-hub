@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Accessibility, Check } from 'lucide-react';
+import { Accessibility, Check } from '@/components/icons';
 import { useAmenityVocabulary } from '@/hooks/useAmenityVocabulary';
 import { amenityIcon } from '@/lib/amenityIcons';
 import { useProfile } from '@/hooks/useProfile';

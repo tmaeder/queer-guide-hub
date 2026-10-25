@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { History } from 'lucide-react';
+import { History } from '@/components/icons';
 import type { MediaDetailData } from './types';
 
 interface VersionRow {

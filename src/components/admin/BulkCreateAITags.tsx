@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Sparkles, CheckCircle, XCircle, AlertCircle, ExternalLink } from 'lucide-react';
+import { Sparkles, CheckCircle, XCircle, AlertCircle, ExternalLink } from '@/components/icons';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 

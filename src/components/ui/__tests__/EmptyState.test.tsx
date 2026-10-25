@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Newspaper } from 'lucide-react';
+import { Newspaper } from '@/components/icons';
 import { EmptyState } from '../EmptyState';
 
 describe('EmptyState', () => {

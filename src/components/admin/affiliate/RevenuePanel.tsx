@@ -7,7 +7,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Download, Upload, AlertCircle } from 'lucide-react';
+import { Download, Upload, AlertCircle } from '@/components/icons';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedSupabase } from '@/integrations/supabase/untyped';

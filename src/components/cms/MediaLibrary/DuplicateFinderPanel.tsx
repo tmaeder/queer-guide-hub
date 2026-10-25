@@ -5,7 +5,7 @@ import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Merge, Check } from 'lucide-react';
+import { Merge, Check } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import type { DuplicateGroup, VisualDuplicatePair } from './types';
 

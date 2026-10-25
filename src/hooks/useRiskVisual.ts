@@ -1,4 +1,4 @@
-import { ShieldCheck, ShieldAlert, Skull, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Skull, AlertTriangle } from '@/components/icons';
 import type { TripSafetyReport } from '@/hooks/useTripSafety';
 
 export type OverallRisk = TripSafetyReport['overallRisk'];

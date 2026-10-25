@@ -13,7 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { AlertTriangle, Check, ChevronDown, ChevronUp, FileText, Link2, X } from 'lucide-react';
+import { AlertTriangle, Check, ChevronDown, ChevronUp, FileText, Link2, X } from '@/components/icons';
 import { WatchSiteControl } from '@/components/submission/WatchSiteControl';
 import {
   buildSubmissionRow,

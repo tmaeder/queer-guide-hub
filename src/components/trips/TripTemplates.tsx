@@ -1,5 +1,5 @@
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { Clock, ArrowRight } from 'lucide-react';
+import { Clock, ArrowRight } from '@/components/icons';
 import { addMonths, startOfDay, addDays, format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

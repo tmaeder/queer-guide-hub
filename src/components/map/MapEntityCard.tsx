@@ -1,4 +1,4 @@
-import { ExternalLink, Star, Clock, Radio, MapPin, TrendingUp, Users, Heart } from 'lucide-react';
+import { ExternalLink, Star, Clock, Radio, MapPin, TrendingUp, Users, Heart } from '@/components/icons';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { Image } from '@/components/ui/Image';

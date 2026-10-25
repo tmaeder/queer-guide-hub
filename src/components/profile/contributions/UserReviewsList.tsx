@@ -1,4 +1,4 @@
-import { Star } from 'lucide-react';
+import { Star } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useUserReviews } from '@/hooks/useUserReviews';
 

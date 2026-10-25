@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, UserPlus, Trash2, Shield, Eye, Pencil, Play } from 'lucide-react';
+import { Users, UserPlus, Trash2, Shield, Eye, Pencil, Play } from '@/components/icons';
 import {
   Dialog,
   DialogContent,

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users } from '@/components/icons';
 import { GroupImageUpload } from "./GroupImageUpload";
 import { TagSelector } from "@/components/tags/TagSelector";
 

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useCookieConsent, CookiePreferences } from '@/hooks/useCookieConsent';
-import { Cookie, Shield, BarChart3, Target, Cog } from 'lucide-react';
+import { Cookie, Shield, BarChart3, Target, Cog } from '@/components/icons';
 
 interface CookiePreferencesDialogProps {
   open: boolean;

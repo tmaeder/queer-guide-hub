@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Info, MessageCircle } from 'lucide-react';
+import { Info, MessageCircle } from '@/components/icons';
 import {
   Accordion,
   AccordionContent,

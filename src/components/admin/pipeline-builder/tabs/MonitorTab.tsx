@@ -10,7 +10,7 @@ import {
   Clock,
   SkipForward,
   TrendingUp,
-} from 'lucide-react';
+} from '@/components/icons';
 import {
   BarChart,
   Bar,

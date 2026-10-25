@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Waypoints } from 'lucide-react';
+import { Waypoints } from '@/components/icons';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';

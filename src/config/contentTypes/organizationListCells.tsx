@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink } from '@/components/icons';
 import { CityCodeBadges } from '@/components/admin/CityCodeBadges';
 import { toWebsiteHref } from '@/lib/websiteHref';
 

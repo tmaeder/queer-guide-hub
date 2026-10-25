@@ -5,7 +5,7 @@ import {
 } from '@/components/cms/fields/structured/structuredValue';
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Check, X } from 'lucide-react';
+import { ExternalLink, Check, X } from '@/components/icons';
 
 interface FieldDef {
   key: string;

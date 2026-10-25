@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search } from 'lucide-react';
+import { Search } from '@/components/icons';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const HOTEL_TYPE_OPTIONS = [

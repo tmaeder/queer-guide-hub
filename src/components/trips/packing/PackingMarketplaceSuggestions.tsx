@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Sparkles, ShoppingBag } from 'lucide-react';
+import { Sparkles, ShoppingBag } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { SuggestionCard } from '@/components/trips/shared/SuggestionCard';

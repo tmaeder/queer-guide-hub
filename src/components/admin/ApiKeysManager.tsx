@@ -45,7 +45,7 @@ import {
   AlertTriangle,
   Server,
   Shield,
-} from 'lucide-react';
+} from '@/components/icons';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 const PREDEFINED_SERVICES = [

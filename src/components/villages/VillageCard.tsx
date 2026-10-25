@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { MapPin, Landmark } from 'lucide-react';
+import { MapPin, Landmark } from '@/components/icons';
 import { Card } from '@/components/ui/card';
 import { Image } from '@/components/ui/Image';
 import { useTranslation } from 'react-i18next';

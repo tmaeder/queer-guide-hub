@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { Users, X } from 'lucide-react';
+import { Users, X } from '@/components/icons';
 
 import { useMeta } from '@/hooks/useMeta';
 import { useAuth } from '@/hooks/useAuth';
@@ -40,7 +40,7 @@ const PersonalitiesMap = lazy(() =>
   import('@/components/map/PersonalitiesMap').then((m) => ({ default: m.PersonalitiesMap })),
 );
 import { AddPersonalityDialog } from '@/components/personalities/AddPersonalityDialog';
-import { LayoutGrid, Rows3, Map as MapIcon } from 'lucide-react';
+import { LayoutGrid, Rows3, Map as MapIcon } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';

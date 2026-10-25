@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Merge, X, Eye, ChevronUp } from 'lucide-react';
+import { Merge, X, Eye, ChevronUp } from '@/components/icons';
 import { useEntityById, useDismissDuplicate } from '@/hooks/useImportHubQueries';
 import { StructuredFieldDisplay } from './StructuredFieldDisplay';
 import type { DuplicatePair } from '@/hooks/useImportHubQueries';

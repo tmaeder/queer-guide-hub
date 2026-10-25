@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useState, type ReactNode } from 'react';
-import { ChevronDown, ExternalLink } from 'lucide-react';
+import { ChevronDown, ExternalLink } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { RenderedContent } from '@/components/cms/fields/RenderedContent';

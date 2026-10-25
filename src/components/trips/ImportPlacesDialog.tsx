@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Upload, MapPin, CircleCheck } from 'lucide-react';
+import { Upload, MapPin, CircleCheck } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,

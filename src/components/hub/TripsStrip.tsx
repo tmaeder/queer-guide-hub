@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { Plus, Compass } from 'lucide-react';
+import { Plus, Compass } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTrips } from '@/hooks/useTrips';

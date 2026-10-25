@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
-import { Share2, BookOpen } from 'lucide-react';
+import { Share2, BookOpen } from '@/components/icons';
 import { formatDistanceToNow } from 'date-fns';
 import { shareOrCopy, articleShareUrl, estimateReadingTime } from '@/lib/share';
 import type { Tables } from '@/integrations/supabase/types';

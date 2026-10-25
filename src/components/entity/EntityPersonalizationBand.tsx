@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Sparkles, MapPin, ShieldAlert } from 'lucide-react';
+import { Sparkles, MapPin, ShieldAlert } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Badge } from '@/components/ui/badge';
 import { Eyebrow } from '@/components/ui/Eyebrow';

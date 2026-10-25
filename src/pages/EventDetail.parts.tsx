@@ -27,7 +27,7 @@ import {
   CircleCheck,
   Sparkles,
   Flag,
-} from 'lucide-react';
+} from '@/components/icons';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { buildProfileUrl } from '@/lib/social/registry';
 import { ShareMenu } from '@/components/share/ShareMenu';

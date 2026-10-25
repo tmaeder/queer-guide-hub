@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { Cookie, Settings } from 'lucide-react';
+import { Cookie, Settings } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { easing } from '@/lib/motion';
 import { duration, distance } from '@/lib/animation';

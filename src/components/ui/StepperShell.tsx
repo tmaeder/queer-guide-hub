@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Check, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Check, ArrowLeft, ArrowRight } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { AnimatedBeamConnector } from '@/components/ui/AnimatedBeamConnector';

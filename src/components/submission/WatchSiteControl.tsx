@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Check, Eye } from 'lucide-react';
+import { Check, Eye } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { useWatchedUrls } from '@/hooks/useWatchedUrls';
 

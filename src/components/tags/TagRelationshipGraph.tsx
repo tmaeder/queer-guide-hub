@@ -18,7 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Maximize2, Filter, AlertTriangle } from 'lucide-react';
+import { Maximize2, Filter, AlertTriangle } from '@/components/icons';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 interface TagRelationshipGraphProps {

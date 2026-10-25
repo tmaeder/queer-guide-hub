@@ -1,4 +1,4 @@
-import { ExternalLink, RefreshCw } from 'lucide-react';
+import { ExternalLink, RefreshCw } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { StructuredValue } from '@/components/admin/triage/StructuredDataView';
 import { useReviewContext } from '@/hooks/useReviewContext';

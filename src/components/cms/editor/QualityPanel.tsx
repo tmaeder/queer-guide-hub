@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Gauge, RotateCcw, Check, CornerDownRight } from 'lucide-react';
+import { Gauge, RotateCcw, Check, CornerDownRight } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';

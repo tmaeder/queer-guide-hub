@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation, type TFunction } from 'react-i18next';
-import { Calendar, MapPin, Star } from 'lucide-react';
+import { Calendar, MapPin, Star } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 

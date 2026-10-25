@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, UserPlus, Activity, ShieldAlert } from 'lucide-react';
+import { Users, UserPlus, Activity, ShieldAlert } from '@/components/icons';
 
 function useUserStats() {
   return useQuery({

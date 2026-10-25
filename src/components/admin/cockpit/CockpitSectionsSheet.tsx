@@ -7,7 +7,7 @@
  * the admin's to rearrange.
  */
 
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw } from '@/components/icons';
 import {
   Sheet,
   SheetContent,

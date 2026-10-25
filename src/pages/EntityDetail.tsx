@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { useDetailMeta } from '@/hooks/useDetailMeta';

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Calendar, MapPin, ArrowRight, Plus, Plane } from 'lucide-react';
+import { Calendar, MapPin, ArrowRight, Plus, Plane } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrips } from '@/hooks/useTrips';

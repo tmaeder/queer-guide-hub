@@ -228,13 +228,13 @@ describe('INTENT_NAV', () => {
     // Hard rule: "never mix TransitIcon and lucide in the same surface". The
     // intent row is rendered by the header, the mobile sheet, the search modal
     // and the footer, so a lucide binding here leaks into all four at once.
-    // lucide icons are ForwardRefExoticComponents and carry `$$typeof`;
-    // transitIcon() returns a plain function component.
+    // transitIcon() names its component `TransitIcon(<slug>)`; a generic
+    // interface icon from @/components/icons carries its export name instead.
     for (const intent of INTENT_NAV) {
       expect(
-        Object.prototype.hasOwnProperty.call(intent.icon, '$$typeof'),
-        `${intent.id} still carries a lucide icon`,
-      ).toBe(false);
+        (intent.icon as { displayName?: string }).displayName ?? '',
+        `${intent.id} is not bound to a wayfinding icon`,
+      ).toMatch(/^TransitIcon\(/);
     }
   });
 

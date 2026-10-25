@@ -15,7 +15,7 @@ import {
   Inbox,
   X,
   SquareArrowOutUpRight,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AdminSelectionCheckbox as Checkbox } from '@/components/admin/primitives/AdminSelectionCheckbox';

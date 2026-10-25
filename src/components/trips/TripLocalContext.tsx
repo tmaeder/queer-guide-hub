@@ -1,4 +1,4 @@
-import { Users, Map as MapIcon, Star } from 'lucide-react';
+import { Users, Map as MapIcon, Star } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardContent } from '@/components/ui/card';

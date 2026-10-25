@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Wallet } from 'lucide-react';
+import { Wallet } from '@/components/icons';
 import {
   Select,
   SelectContent,

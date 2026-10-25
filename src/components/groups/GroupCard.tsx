@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Lock, Globe, UserPlus, UserMinus, Settings, ExternalLink } from 'lucide-react';
+import { Users, Lock, Globe, UserPlus, UserMinus, Settings, ExternalLink } from '@/components/icons';
 import { Group } from '@/hooks/useGroups';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';

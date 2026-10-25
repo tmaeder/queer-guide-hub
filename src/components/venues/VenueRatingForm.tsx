@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Rainbow } from 'lucide-react';
+import { Rainbow } from '@/components/icons';
 import { useVenueRating } from '@/hooks/useVenueRating';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';

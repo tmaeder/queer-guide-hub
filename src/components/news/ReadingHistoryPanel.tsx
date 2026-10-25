@@ -1,7 +1,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Newspaper, Globe, BookOpen } from 'lucide-react';
+import { Newspaper, Globe, BookOpen } from '@/components/icons';
 import { useUserNewsReadsList } from '@/hooks/useUserNewsReadsList';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';

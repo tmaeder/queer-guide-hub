@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { BigHead } from '@bigheads/core';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw } from '@/components/icons';
 import { generateRandomConfig, type AvatarConfig } from './avatarConfig';
 
 interface Props {

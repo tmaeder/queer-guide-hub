@@ -27,7 +27,7 @@ import {
   Download,
   Link as LinkIcon,
   CalendarDays,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchAllUserFavorites } from '@/hooks/usePageFetchers';
 import { FavoriteButton } from '@/components/ui/favorite-button';

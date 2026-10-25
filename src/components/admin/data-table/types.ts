@@ -1,6 +1,6 @@
 import type { ContentTypeConfig } from '@/types/cms';
 import type { ColumnDef, RowData } from '@tanstack/react-table';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/components/icons';
 import type { AdminTableFeatures } from './features';
 import type { ExportColumnDef } from '@/utils/excelExport';
 import type { BackfillJob } from '@/config/backfillJobs';

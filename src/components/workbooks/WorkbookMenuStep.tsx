@@ -18,7 +18,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { KinkRatingControl } from '@/components/kinks/KinkRatingControl';

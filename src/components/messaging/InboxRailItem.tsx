@@ -11,7 +11,7 @@ import {
   Archive,
   CheckCheck,
   MoreVertical,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

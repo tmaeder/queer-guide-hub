@@ -2,7 +2,7 @@ import { TripInviteControls } from './TripInviteControls';
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Copy, Trash2, Check, Link2, Lock, Calendar, Eye } from 'lucide-react';
+import { Copy, Trash2, Check, Link2, Lock, Calendar, Eye } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

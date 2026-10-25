@@ -10,7 +10,7 @@ import {
   Search,
   FlaskConical,
   CircleAlert,
-} from 'lucide-react';
+} from '@/components/icons';
 import { toast } from 'sonner';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';

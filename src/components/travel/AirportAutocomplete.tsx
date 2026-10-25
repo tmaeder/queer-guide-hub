@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plane } from 'lucide-react';
+import { Plane } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { fetchAirportByIata, searchAirports } from '@/hooks/useAirportSearch';
 

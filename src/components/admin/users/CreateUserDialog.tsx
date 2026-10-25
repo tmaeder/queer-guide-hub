@@ -14,7 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Shuffle } from 'lucide-react';
+import { Shuffle } from '@/components/icons';
 
 interface CreateUserDialogProps {
   open: boolean;

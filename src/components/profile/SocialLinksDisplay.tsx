@@ -2,7 +2,7 @@ import {
   Globe,
   Music,
   ExternalLink
-} from 'lucide-react';
+} from '@/components/icons';
 import { Twitter, Instagram, Linkedin, Github, Facebook, Youtube } from '@/components/icons/brand';
 import { Button } from '@/components/ui/button';
 

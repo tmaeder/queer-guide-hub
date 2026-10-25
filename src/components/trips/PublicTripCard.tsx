@@ -8,7 +8,7 @@ import {
   Sparkles,
   GitFork,
   Bookmark,
-} from 'lucide-react';
+} from '@/components/icons';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';

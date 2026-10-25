@@ -11,7 +11,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
-import { X, Check, ChevronDown } from 'lucide-react';
+import { X, Check, ChevronDown } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { type FilterOption } from './constants';
 

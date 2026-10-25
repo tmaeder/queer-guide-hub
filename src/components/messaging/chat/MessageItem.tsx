@@ -19,7 +19,7 @@ import {
   Reply,
   Pencil,
   Trash2,
-} from 'lucide-react';
+} from '@/components/icons';
 import { formatDistanceToNow } from 'date-fns';
 import type { Message } from '@/hooks/useMessaging';
 import { EmojiPicker } from '@/components/messaging/EmojiPicker';

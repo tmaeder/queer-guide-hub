@@ -14,7 +14,7 @@ import {
   BarChart3,
   Clock,
   Users
-} from 'lucide-react';
+} from '@/components/icons';
 import { GroupPost } from '@/hooks/useGroupPosts';
 import { formatDistanceToNow } from 'date-fns';
 

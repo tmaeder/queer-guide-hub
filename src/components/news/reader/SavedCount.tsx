@@ -1,5 +1,5 @@
 import { useFavorites } from '@/hooks/useFavorites';
-import { Bookmark } from 'lucide-react';
+import { Bookmark } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 export function SavedCount() {

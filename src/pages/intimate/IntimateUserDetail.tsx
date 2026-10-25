@@ -16,7 +16,7 @@ import { KinkPeerActions } from '@/components/kinks/KinkPeerActions';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { UserX } from 'lucide-react';
+import { UserX } from '@/components/icons';
 import { HubNavBar } from '@/components/hub/HubNavBar';
 
 function Row({ k, v }: { k: string; v: string }) {

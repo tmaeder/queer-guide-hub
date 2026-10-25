@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Shapes } from 'lucide-react';
+import { Shapes } from '@/components/icons';
 import { vocabularyContentType } from '../vocabulary';
 import { contentTypeRegistry, getContentType, getFieldGroups } from '../index';
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Crown, Shield, User, MessageSquare, MoreVertical, UserMinus, ArrowUpDown } from 'lucide-react';
+import { Crown, Shield, User, MessageSquare, MoreVertical, UserMinus, ArrowUpDown } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';

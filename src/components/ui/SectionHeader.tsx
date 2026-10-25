@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { cn } from '@/lib/utils';
