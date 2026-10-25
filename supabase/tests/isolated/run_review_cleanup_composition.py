@@ -53,7 +53,7 @@ migrations = [
     '99991792970935_event_quality_publisher_occurrence_copy.sql',
     '99991792970955_review_news_source_text_recovery.sql',
     '99991792971002_source_explicit_event_formats.sql',
-    '99991792964788_review_exact_news_source_duplicates.sql',
+    '99991792972161_review_exact_news_source_duplicates.sql',
 ]
 checks = """
 do $check$declare r jsonb;begin
