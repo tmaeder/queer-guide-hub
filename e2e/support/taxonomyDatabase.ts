@@ -78,6 +78,18 @@ export class TaxonomyDatabase {
       throw new Error('Refusing cleanup without an owned fixture prefix');
     const rows = this.rows(table, prefix);
     const title = table.startsWith('kink_') ? 'label' : 'name';
+    const ids = rows.map((row) => sqlLiteral(String(row.id))).join(',');
+    // These operational mappings use ON DELETE SET NULL, so checking their
+    // tag FK after deleting the source would miss orphaned test data. Capture
+    // their own IDs first and assert their absence by those IDs afterward.
+    const mappings =
+      table === 'unified_tags' && ids
+        ? this.json<{ aliases: string[]; redirects: string[] }>(`select jsonb_build_object(
+        'aliases',coalesce((select jsonb_agg(id::text) from public.tag_aliases
+          where canonical_tag_id::text in (${ids})),'[]'::jsonb),
+        'redirects',coalesce((select jsonb_agg(id::text) from public.tag_slug_redirects
+          where tag_id::text in (${ids})),'[]'::jsonb));`)
+        : { aliases: [], redirects: [] };
     // This helper is available only to the dedicated loopback configuration.
     // The exclusive lock prevents any concurrent writer seeing the guard off;
     // a failure rolls back the entire DO statement, including trigger state.
@@ -95,7 +107,12 @@ export class TaxonomyDatabase {
       if guard_state='O' then
         alter table public.${table} disable trigger guard_managed_taxonomy;
       end if;
-      ${table === 'unified_tags' ? 'delete from public.tag_aliases where canonical_tag_id=any(owned);' : ''}
+      ${
+        table === 'unified_tags'
+          ? `delete from public.tag_aliases where canonical_tag_id=any(owned);
+      delete from public.tag_slug_redirects where tag_id=any(owned);`
+          : ''
+      }
       delete from public.${table} where id=any(owned);
       delete from public.cms_content_metadata
         where source_table=${sqlLiteral(table)} and source_id::text=any(owned::text[]);
@@ -104,7 +121,6 @@ export class TaxonomyDatabase {
       end if;
     end $cleanup$;`);
     const remaining = this.rows(table, prefix).length;
-    const ids = rows.map((row) => sqlLiteral(String(row.id))).join(',');
     const metadataRemaining = ids
       ? Number(
           this.sql(`select count(*) from public.cms_content_metadata
@@ -115,9 +131,43 @@ export class TaxonomyDatabase {
       this.sql(`select not exists(select 1 from pg_trigger
       where tgrelid='public.${table}'::regclass and tgname='guard_managed_taxonomy' and tgenabled<>'O');`) ===
       't';
-    if (remaining || metadataRemaining || !guardRestored)
+    const mappingCount = (relation: string, captured: string[]) =>
+      captured.length
+        ? Number(
+            this.sql(`select count(*) from public.${relation}
+        where id::text in (${captured.map(sqlLiteral).join(',')});`),
+          )
+        : 0;
+    const mappingsRemaining =
+      table === 'unified_tags'
+        ? {
+            aliases: mappingCount('tag_aliases', mappings.aliases),
+            redirects: mappingCount('tag_slug_redirects', mappings.redirects),
+          }
+        : undefined;
+    if (
+      remaining ||
+      metadataRemaining ||
+      !guardRestored ||
+      (mappingsRemaining && Object.values(mappingsRemaining).some(Boolean))
+    )
       throw new Error(`Fixture cleanup failed for ${table}`);
-    return { table, removed: rows.length, remaining, metadataRemaining, guardRestored };
+    return {
+      table,
+      removed: rows.length,
+      remaining,
+      metadataRemaining,
+      guardRestored,
+      mappingsRemaining,
+      ...(table === 'unified_tags'
+        ? {
+            mappingsRemoved: {
+              aliases: mappings.aliases.length,
+              redirects: mappings.redirects.length,
+            },
+          }
+        : {}),
+    };
   }
 
   enableIntimateAdmin(email: string) {

@@ -20,7 +20,7 @@ Run `npm run test:e2e:taxonomies -- --list` to inspect coverage without running 
 
 The dedicated config rejects any remote frontend, API or PostgreSQL URL before auth setup. A browser network guard also blocks Supabase requests to an unexpected origin. The normal Playwright config excludes this mutating spec, so production nightly runs cannot discover it accidentally.
 
-Each test owns a random UUID-derived name prefix. Teardown closes its page to stop pending writes, removes only matching owned records and their CMS metadata, and verifies absence. This still runs after assertion failures or missing save responses. Intimate interests get an owned parent category; children are removed first, and synthetic admin eligibility is restored afterward.
+Each test owns a random UUID-derived name prefix. Teardown closes its page to stop pending writes, removes only matching owned records and their CMS metadata, and verifies absence. Tag aliases and URL redirects are explicitly removed and checked by their own captured IDs, because redirects otherwise survive source deletion with a null foreign key. This still runs after assertion failures or missing save responses. Intimate interests get an owned parent category; children are removed first, and synthetic admin profile and eligibility state are restored and verified afterward.
 
 Managed taxonomy deletion is normally prohibited. Cleanup uses an exclusive table lock and restores the managed deletion trigger in the same transaction; failures roll back trigger changes. No production RPC, migration or permanent guard change is added. Existing records are never used as mutable fixtures. Normal audit history is retained in the disposable database.
 
