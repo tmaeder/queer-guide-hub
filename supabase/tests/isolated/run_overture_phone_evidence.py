@@ -15,7 +15,7 @@ def binary(name):
 schema += """
 create role anon;create role authenticated;create role service_role;create schema api_private;
 create schema supabase_migrations;create table supabase_migrations.schema_migrations(version text);
-insert into supabase_migrations.schema_migrations values('99991792951000');
+insert into supabase_migrations.schema_migrations values('99991792951000'),('99991792955040');
 create table cities(id uuid primary key,name text,country_id uuid);
 alter table organizations add column claimed_by uuid,add column website text,add column email text,add column social jsonb default '{}';
 alter table venues add column verified boolean default false,add column website text,add column email text,add column address text default 'Example Street 12';
@@ -78,10 +78,10 @@ begin
  assert(select count(*)from venue_sources)=3;
 end $test$;
 """
-sql=schema[:schema.index('insert into fixture select')]+(ROOT/'supabase/migrations/99991792618428_refuge_source_quality_limits.sql').read_text()+(ROOT/'supabase/migrations/99991792951000_contact_only_source_composition.sql').read_text()+schema[schema.index('insert into fixture select'):]+(ROOT/'scripts/data-quality/register-overture-phone-evidence.sql').read_text()+assertions
+sql=schema[:schema.index('insert into fixture select')]+(ROOT/'supabase/migrations/99991792618428_refuge_source_quality_limits.sql').read_text()+(ROOT/'supabase/migrations/99991792951000_contact_only_source_composition.sql').read_text()+(ROOT/'supabase/migrations/99991792955040_bound_contact_supplement_validation.sql').read_text()+schema[schema.index('insert into fixture select'):]+(ROOT/'scripts/data-quality/register-overture-phone-evidence.sql').read_text()+assertions
 with tempfile.TemporaryDirectory(prefix='qg-overture-phone-')as tmp:
     data=Path(tmp)/'data'
-    subprocess.run([binary('initdb'),'-D',str(data),'-A','trust','--no-locale','--wal-segsize=1'],check=True,stdout=subprocess.DEVNULL)
-    subprocess.run([binary('pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55504 -c listen_addresses= -c min_wal_size=2MB -c max_wal_size=16MB','-w','start'],check=True,stdout=subprocess.DEVNULL)
+    subprocess.run([binary('initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
+    subprocess.run([binary('pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55504 -c listen_addresses= -c min_wal_size=32MB -c max_wal_size=64MB','-w','start'],check=True,stdout=subprocess.DEVNULL)
     try:subprocess.run([binary('psql'),'-h',tmp,'-p','55504','-d','postgres','-v','ON_ERROR_STOP=1'],input=sql,text=True,check=True)
     finally:subprocess.run([binary('pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
