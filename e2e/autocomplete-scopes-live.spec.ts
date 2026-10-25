@@ -11,11 +11,10 @@ for (const scenario of [
   test(`${scenario.scope} autocomplete reaches its real detail page`, async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
-    const hero = page.locator('input[role="combobox"][aria-controls="qg-search-listbox-hero"]');
-    await expect(hero).toBeVisible();
-    await hero.fill(scenario.query);
+    await page.getByRole('banner').getByRole('button', { name: 'Search', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Search Queer Guide' });
     await expect(dialog).toBeVisible();
+    await dialog.getByRole('combobox', { name: 'Search Queer Guide', exact: true }).fill(scenario.query);
 
     const response = page.waitForResponse((res) => {
       const url = new URL(res.url());
