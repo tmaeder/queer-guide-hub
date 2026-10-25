@@ -295,7 +295,7 @@ export function TestingSitesBand({
           {t('testing.none_here', 'No testing locations on record for this area yet.')}
         </p>
       ) : (
-        <ul className="m-0 mt-4 grid list-none gap-4 p-0 md:grid-cols-2">
+        <ul className="m-0 mt-4 grid grid-cols-1 list-none gap-4 p-0 md:grid-cols-2">
           {sites.map((site) => (
             <SiteCard key={site.id} site={site} />
           ))}

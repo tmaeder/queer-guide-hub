@@ -29,9 +29,9 @@ export function CrisisBar({ country }: { country: string }) {
       // so it cancels the page gutter and re-applies it to its content row. It
       // must stay a descendant of the container — a sibling would break the
       // header-alignment contract in e2e/page-layout.spec.ts.
-      className="-mx-4 overflow-hidden rounded-container border-y border-border-hairline bg-destructive text-destructive-foreground sm:-mx-6 md:mx-0"
+      className="overflow-hidden rounded-container border-y border-border-hairline bg-destructive text-destructive-foreground"
     >
-      <div className="mx-auto grid max-w-page gap-2 px-4 py-4 sm:px-6 md:grid-cols-[auto_1fr] md:items-center md:gap-6 md:px-8">
+      <div className="mx-auto grid grid-cols-1 max-w-page gap-2 px-4 py-4 sm:px-6 md:grid-cols-[auto_1fr] md:items-center md:gap-6 md:px-8">
         <h2 className="flex items-center gap-2 font-sans text-15 font-bold leading-tight tracking-normal">
           <AlertTriangle size={18} aria-hidden className="shrink-0" />
           {t('help.emergency_title', 'In acute danger?')}

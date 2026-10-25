@@ -99,7 +99,7 @@ export function HotlineRow({
 
   return (
     <article>
-      <div className="grid gap-6 p-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <div className="grid grid-cols-1 gap-6 p-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
         <div className="min-w-0 flex-1 basis-56">
           <h3 className="text-title font-bold leading-tight">{hotline.name}</h3>
           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-13">

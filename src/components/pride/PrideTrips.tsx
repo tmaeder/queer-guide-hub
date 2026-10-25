@@ -105,7 +105,7 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
         <span className="text-xs2 text-muted-foreground">{t('pride.trips.subtitle')}</span>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {clusters.map((c) => (
           <article key={c.id} className="rounded-container bg-background p-6 space-y-4">
             <div className="flex items-baseline justify-between gap-2 flex-wrap">

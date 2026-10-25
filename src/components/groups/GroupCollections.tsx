@@ -70,7 +70,7 @@ export function GroupCollections({ groupId, isMember, className }: GroupCollecti
           {isMember && ' Create one to start saving venues, events, listings, and trips together.'}
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-[220px_1fr]">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_1fr]">
           <ul className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
             {collections.map((c) => {
               const active = c.id === selected?.id;

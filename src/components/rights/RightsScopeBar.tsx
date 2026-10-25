@@ -58,7 +58,7 @@ export function RightsScopeBar({
           : 'same-sex acts are not criminalised';
 
   return (
-    <div className="grid gap-8 md:grid-cols-2 md:items-start">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:items-start">
       <div>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>

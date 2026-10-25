@@ -184,7 +184,7 @@ export default function ContactBranch({ onBack, onDone }: ContactBranchProps) {
         <div
           role="radiogroup"
           aria-labelledby={linesLabelId}
-          className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
         >
           {LINES.map((line) => {
             const Icon = line.icon;
@@ -240,7 +240,7 @@ export default function ContactBranch({ onBack, onDone }: ContactBranchProps) {
           </p>
         </div>
 
-        <div className="mt-6 grid gap-6 sm:grid-cols-2">
+        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <Label htmlFor="contact-name">{t('contact.form.name', 'Name')} *</Label>
             <Input

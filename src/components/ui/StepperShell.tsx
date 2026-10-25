@@ -116,7 +116,7 @@ export function StepperShell({
   return (
     <div className={cn('min-h-screen bg-background', className)}>
       <PageContainer>
-        <div className="grid lg:grid-cols-[280px_1fr] gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 lg:gap-12">
           {/* Sidebar: vertical step indicator */}
           <aside className="hidden lg:block">
             <ol className="relative space-y-6">

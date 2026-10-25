@@ -68,7 +68,7 @@ export default function AddSomethingBranch({ initialType, onBack }: AddSomething
         <ArrowLeft size={16} />
         {t('contribute.common.back', 'Back')}
       </Button>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <button
           type="button"
           onClick={() => setSelectedType(SCAN)}

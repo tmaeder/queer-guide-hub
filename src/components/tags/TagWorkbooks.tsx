@@ -132,7 +132,7 @@ export function TagWorkbooks({ tagId }: { tagId: string }) {
         {t('tags.detail.workbooks.title', 'Exercises')}
       </h2>
 
-      <ul className="mt-6 grid list-none gap-4 p-0 sm:grid-cols-2">
+      <ul className="mt-6 grid grid-cols-1 list-none gap-4 p-0 sm:grid-cols-2">
         {workbooks.map((wb) => (
           <WorkbookRow key={wb.id} wb={wb} locked={locked} />
         ))}

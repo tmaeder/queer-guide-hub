@@ -61,7 +61,7 @@ export function QuestModule({ guide }: { guide: Guide }) {
 
   return (
     <section
-      className="grid gap-8 md:grid-cols-[1fr_280px]"
+      className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_280px]"
       aria-label={t('guides.quest.module', 'Quest')}
     >
       <div className="space-y-8">

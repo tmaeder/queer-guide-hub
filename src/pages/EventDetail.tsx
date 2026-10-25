@@ -369,7 +369,7 @@ export default function EventDetail() {
       <PageContainer data-testid="event-detail-loading">
         <Skeleton variant="rectangular" height={380} className="mb-6 rounded-container" />
         <Skeleton variant="rectangular" height={28} style={{ width: '50%' }} className="mb-6" />
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-[2fr_1fr]">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <Skeleton variant="rectangular" height={320} className="rounded-container" />
           <Skeleton variant="rectangular" height={280} className="rounded-container" />
         </div>

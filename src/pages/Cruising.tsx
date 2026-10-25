@@ -196,7 +196,7 @@ export default function Cruising() {
       </PageContainer>
 
       <PageContainer className="pt-0">
-        <div className="grid gap-4 overflow-hidden bg-surface-container p-2 lg:min-h-[42rem] lg:grid-cols-[minmax(0,1.6fr)_minmax(22rem,.8fr)] lg:p-4">
+        <div className="grid grid-cols-1 gap-4 overflow-hidden bg-surface-container p-2 lg:min-h-[42rem] lg:grid-cols-[minmax(0,1.6fr)_minmax(22rem,.8fr)] lg:p-4">
           <div className="relative h-[56dvh] min-h-[28rem] lg:h-[calc(100dvh-13rem)] lg:min-h-[42rem]">
             <CruisingMapPanel
               spots={mappedSpots}

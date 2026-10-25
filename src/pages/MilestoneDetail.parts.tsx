@@ -204,7 +204,7 @@ export function MilestoneLinkedEntities({ links }: { links: MilestoneLink[] }) {
           rather than the default treatment for faces). So: the card frame and
           the cross-type RouteBullet from that module — rule 4, a person shows a
           pink P, an organization a green O — kept alongside the avatar. */}
-      <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2">
+      <ul className="m-0 grid grid-cols-1 list-none gap-4 p-0 sm:grid-cols-2">
         {links.map((link) => {
           const href = linkedHref(link);
           const body = (
@@ -307,7 +307,7 @@ export function MilestonePrevNext({ milestone }: { milestone: Milestone }) {
       aria-label={t('milestones.timelineNav', 'Timeline navigation')}
       // The 4px ink rule is the system's block separator — the same edge
       // SinglePage puts above its footer block.
-      className="grid gap-4 border-t border-border-hairline pt-8 sm:grid-cols-2"
+      className="grid grid-cols-1 gap-4 border-t border-border-hairline pt-8 sm:grid-cols-2"
     >
       {milestone.prev ? (
         <LocalizedLink
