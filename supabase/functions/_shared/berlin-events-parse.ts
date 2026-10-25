@@ -270,22 +270,35 @@ const BKA_PLACEHOLDER_IMAGE = /Fahne_RGB|\/images\//i
 /**
  * Split the spielplan into `.bka-spielplan-row` blocks and read each one.
  *
- * Rows are keyed `data-pid` (production) + `data-tid` (this date). Neither
- * alone is an identity: a production runs many nights, and two productions can
- * share a slot on different stages — the pair is what `source_entity_id` uses.
+ * Rows carry `data-pid` (production) and `data-tid` (formerly wall time,
+ * now the performance ID). Source identity remains production plus the
+ * explicit date/time: a production runs many nights, and two productions can
+ * share a slot on different stages.
  */
 export function parseBkaSpielplan(html: string): BkaEvent[] {
   const out: BkaEvent[] = []
   const re =
-    /<div class="([^"]*bka-spielplan-row[^"]*)"\s+data-month="[^"]*"\s+data-pid="(\d+)"\s+data-tid="([^"]+)">([\s\S]*?)(?=<div class="[^"]*bka-spielplan-row|<section class="bka-spielplan-section|<footer)/g
+    /<div class="([^"]*bka-spielplan-row[^"]*)"\s+data-month="[^"]*"\s+data-pid="(\d+)"\s+data-tid="([^"]+)"([^>]*)>([\s\S]*?)(?=<div class="[^"]*bka-spielplan-row|<section class="bka-spielplan-section|<footer)/g
 
   let m: RegExpExecArray | null
   while ((m = re.exec(html))) {
-    const [, rowClass, pid, tid, body] = m
+    const [, rowClass, pid, tid, attributes, body] = m
     if (BKA_SPIELFREI.test(rowClass)) continue
 
-    const t = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})/.exec(tid)
-    if (!t) continue
+    // The October calendar uses a numeric performance ID in data-tid;
+    // its explicit date/time fields replace the old wall-time attribute.
+    const legacy = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})/.exec(tid)
+    const dateField = firstMatch(/\bdata-eventdate="(\d{8})"/, body)
+    const timeField = firstMatch(/\bdata-eventtime="(\d{4})"/, body)
+    const explicitDate = dateField ? `${dateField.slice(0,4)}-${dateField.slice(4,6)}-${dateField.slice(6,8)}` : null
+    const explicitTime = timeField ? `${timeField.slice(0,2)}:${timeField.slice(2,4)}` : null
+    const date = legacy?.[1] ?? explicitDate
+    const time = legacy?.[2] ?? explicitTime
+    if (!date || !time || (!legacy && !/^\d+$/.test(tid))) continue
+    if (explicitDate && explicitDate !== date || explicitTime && explicitTime !== time) continue
+    const startIso = berlinIso(date,time)
+    const epoch = firstMatch(/\bdata-start-ts="(\d+)"/, attributes)
+    if (epoch && (!startIso || Number(epoch)*1000 !== Date.parse(startIso))) continue
 
     // The title block is `<a class="…event-title…"><h2>Name:</h2><h3>Sub</h3></a>`.
     // The h2 carries a trailing colon as typography, not punctuation. Dark
@@ -315,9 +328,9 @@ export function parseBkaSpielplan(html: string): BkaEvent[] {
     out.push({
       productionId: pid,
       tid,
-      date: t[1],
-      time: t[2],
-      startIso: berlinIso(t[1], t[2]),
+      date,
+      time,
+      startIso,
       title: h2,
       subtitle: h3,
       description: text(firstMatch(/<span class="description"[^>]*>([\s\S]*?)<\/span>/, body)) || null,
@@ -325,7 +338,7 @@ export function parseBkaSpielplan(html: string): BkaEvent[] {
       image: img && !BKA_PLACEHOLDER_IMAGE.test(img) ? abs(BKA_BASE, img) : null,
       ticketUrl: firstMatch(/href="(https:\/\/bka-theater-webshop\.comfortticket\.de\/[^"]+)"/, body),
       // /cal.php is Disallow: in robots.txt — the content page is the detail link.
-      detailUrl: abs(BKA_BASE, firstMatch(/href="(\/content_start\.php\?[^"]+)"/, body)),
+      detailUrl: abs(BKA_BASE, firstMatch(/href="(\/(?:content_start\.php\?|prg\/\d+\?)[^"]+)"/, body)),
     })
   }
   return out
