@@ -21,7 +21,7 @@ begin
  assert (select website='https://example.org/editor-choice/' from public.events where id=a),'source fill overwrote editorial choice';
  assert (select count(*)=1 from public.event_sources where event_id=a and source_slug='editorial-evidence'),'retry duplicated source rows';
  insert into public.events(title,slug,city,start_date,event_type,status,data_source)
- values('Evidence fixture pride 2028','evidence-fixture-pride-2028','Test source city',now()+interval '2 years','social','active','seed:clone-from-2026') returning id into b;
+ values('Evidence fixture pride 2028','evidence-fixture-pride-2028','Test source city',now()+interval '2 years','social','active','seed:clone-from-2027') returning id into b;
  insert into public.events(title,slug,city,start_date,event_type,status,data_source)
  values('Evidence fixture pride 2028','evidence-fixture-pride-2028-other','Different source city',now()+interval '2 years','social','active','seed:clone-from-2026') returning id into c;
  perform public.recover_event_series_sources();

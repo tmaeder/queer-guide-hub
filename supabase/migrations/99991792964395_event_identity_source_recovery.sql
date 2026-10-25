@@ -55,7 +55,7 @@ begin
     and (es.payload#>>'{identity_evidence,checked_at}')::timestamptz>now()-interval '90 days'
    order by es.last_seen_at desc limit 1
   )s on true
-  where e.status='active' and e.duplicate_of_id is null and e.data_source='seed:clone-from-2026'
+  where e.status='active' and e.duplicate_of_id is null and e.data_source like 'seed:clone-from-%'
    and nullif(btrim(e.website),'') is null and nullif(btrim(e.ticket_url),'') is null
    and not exists(select 1 from public.event_sources es where es.event_id=e.id and nullif(btrim(es.source_url),'') is not null)
   limit 100 for update of e skip locked
@@ -79,7 +79,7 @@ select cron.schedule('event_series_source_recovery','4 */6 * * *',$job$select pu
 do $$
 declare def text;
 begin
- select pg_get_functiondef('public.event_gap_metrics()'::regprocedure) into def;
+ select regexp_replace(pg_get_functiondef('public.event_gap_metrics()'::regprocedure),'--[^'||chr(10)||']*','','g') into def;
  def:=replace(def,'select jsonb_build_object(', 'select jsonb_build_object(''identity_only_unconfirmed_editions'',(select count(*) from public.events e where e.status=''active'' and e.duplicate_of_id is null and e.data_source like ''seed:%'' and e.field_provenance#>>''{source_identity,dates_confirmed}''=''false'' and coalesce(e.field_provenance#>>''{verified_edition_date,verified}'',''false'')<>''true'' and coalesce(e.end_date,e.start_date)>=now()),''partial_source_calendars'',(select count(*) from public.events e where e.status=''active'' and e.field_provenance#>>''{source_schedule_recovery,outcome}''=''partial'' and coalesce(e.end_date,e.start_date)>=now()),');
  execute def;
 end $$;

@@ -8,6 +8,26 @@ $$;
 revoke all on function public.agendaq_event_key(text) from public,anon,authenticated;
 grant execute on function public.agendaq_event_key(text) to service_role;
 
+-- Apply the same ownership boundary to content and artwork claims and completion.
+do $$
+declare def text;
+begin
+ select pg_get_functiondef('public.claim_event_gaps(text,uuid,integer,uuid[],boolean)'::regprocedure) into def;
+ def:=replace(def,'from public.event_sources es where es.event_id=e.id',
+  'from public.event_sources es where es.event_id=e.id and (public.agendaq_event_key(e.website) is null or public.agendaq_event_key(es.source_url)=public.agendaq_event_key(e.website))');
+ execute def;
+ select pg_get_functiondef('public.finish_event_gap(uuid,text,uuid,jsonb,jsonb,text,jsonb)'::regprocedure) into def;
+ def:=replace(def,'old_e:=e;', $guard$
+ old_e:=e;
+ if coalesce(p_patch,'{}'::jsonb)<>'{}'::jsonb and public.agendaq_event_key(e.website) is not null
+  and public.agendaq_event_key(p_evidence->>'source_url') is distinct from public.agendaq_event_key(e.website) then
+  p_patch:='{}'::jsonb; p_outcome:='review';
+  p_details:=coalesce(p_details,'{}')||jsonb_build_object('reason','source_identity_conflict','canonical_source',e.website);
+ end if;
+ $guard$);
+ execute def;
+end $$;
+
 create or replace function public.agendaq_evidence_schedule(p_raw jsonb,p_from date default current_date-1,p_to date default (current_date+interval '18 months')::date)
 returns jsonb language plpgsql stable set search_path=public,pg_temp as $$
 declare entry jsonb; c jsonb; slots jsonb:='[]'; omitted jsonb:='[]'; cancelled date[]:='{}'; tz text; entry_tz text;

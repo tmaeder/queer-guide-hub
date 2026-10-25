@@ -205,3 +205,6 @@ previously recovered schedules whose source key differs, keeps the old schedule
 in `withdrawn_source_schedule`, and attempts the canonical source immediately.
 The integration fixture verifies that a newer primary row from another venue
 cannot replace the canonical source calendar.
+The same source key restriction applies when claiming content/artwork evidence
+and when committing a fill, so an in-flight older worker cannot apply a foreign
+venue's text or poster during rollout.
