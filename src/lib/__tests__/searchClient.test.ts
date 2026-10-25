@@ -269,6 +269,20 @@ describe('fetchRecommendations', () => {
 });
 
 describe('fetchAutocomplete', () => {
+  it.each([
+    ['cities', 'city'],
+    ['venues', 'venue'],
+    ['personalities', 'personality'],
+    ['queer_villages', 'queer_village'],
+    ['user', 'user'],
+    ['invalid_scope', 'invalid_scope'],
+  ])('sends the worker entity type for scope %s', async (scope, expected) => {
+    fetchSpy.mockResolvedValueOnce(jsonResponse({ suggestions: [] }));
+    await fetchAutocomplete('Berlin', [scope], 5);
+    const body = JSON.parse(fetchSpy.mock.calls[0][1].body);
+    expect(body).toEqual({ query: 'Berlin', types: [expected], limit: 5 });
+  });
+
   it('short-circuits to empty array for empty input', async () => {
     expect(await fetchAutocomplete('')).toEqual([]);
     expect(await fetchAutocomplete('   ')).toEqual([]);

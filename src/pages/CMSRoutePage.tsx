@@ -49,7 +49,7 @@ function countStations(html: string | null | undefined): number {
 // ── Skeleton ────────────────────────────────────────────────────────────────
 function PageSkeleton() {
   return (
-    <PageContainer className="w-full">
+    <PageContainer>
       <Skeleton className="mb-4 h-6 w-32" />
       <Skeleton className="mb-2 h-12 w-[70%]" />
       <Skeleton className="mb-8 h-7 w-1/2" />
@@ -155,7 +155,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
   if (notFound || !page) {
     return (
-      <PageContainer className="w-full text-center">
+      <PageContainer className="text-center">
         <h1 className="mb-2 font-display text-display">Page Not Found</h1>
         <p className="text-muted-foreground">
           The page you're looking for doesn't exist or hasn't been published yet.
@@ -179,7 +179,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   // ── Legal hub: the route index ──────────────────────────────────────────
   if (isLegalHub) {
     return (
-      <PageContainer className="max-w-[1100px]">
+      <PageContainer>
         <header className="border-b border-border-hairline pb-6">
           <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">Legal</p>
           <h1 className="mt-4 font-display text-display leading-none tracking-tight md:text-hero">
@@ -280,7 +280,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
   // ── Default CMS page layout ─────────────────────────────────────────────
   return (
-    <PageContainer className="w-full">
+    <PageContainer>
       {page.cover_image_url && (
         <img
           src={page.cover_image_url}

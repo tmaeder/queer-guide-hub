@@ -46,7 +46,7 @@ export function HelpFilterSpine({
 
   return (
     <>
-      <div className="mt-6 grid gap-4 border-y border-border-hairline py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <div className="mt-6 grid grid-cols-1 gap-4 border-y border-border-hairline py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
         <div className="relative max-w-form">
           <label htmlFor="help-search" className="sr-only">
             {t('help.search_placeholder', 'Search hotlines')}

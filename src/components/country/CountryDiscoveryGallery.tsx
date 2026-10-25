@@ -150,7 +150,7 @@ export function CountryDiscoveryGallery({
   return (
     <div>
       <div className="mb-6 rounded-container bg-surface-container p-4">
-        <div className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+        <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
           <Field label={t('common.search', 'Search')}>
             <Input
               type="search"
@@ -210,7 +210,7 @@ export function CountryDiscoveryGallery({
         <div
           id={`${kind}-gallery-filters`}
           hidden={!advanced}
-          className="mt-4 grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          className="mt-4 grid grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-4"
         >
           <Field label={t('search.sortBy', 'Sort By')}>
             <select
