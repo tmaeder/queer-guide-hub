@@ -37,6 +37,7 @@ import { roleAtLeast } from '@/config/adminRoles';
 import { useAdminCounts, readCount } from '@/hooks/useAdminCounts';
 import { useAdminNavPins } from '@/hooks/useAdminNavPins';
 import { cn } from '@/lib/utils';
+import { badgeVariants } from '@/components/ui/badge';
 
 const COLLAPSE_KEY = 'admin.nav.collapsed';
 
@@ -70,12 +71,7 @@ function CountBadge({ count, overdue }: { count: number | undefined; overdue?: n
           <TooltipContent>{overdue} overdue</TooltipContent>
         </Tooltip>
       )}
-      <span
-        className={cn(
-          'inline-flex items-center justify-center rounded-badge h-5 min-w-7 px-1.5 text-2xs font-semibold',
-          hasOverdue ? 'bg-destructive/10 text-foreground' : 'bg-muted text-muted-foreground',
-        )}
-      >
+      <span className={badgeVariants({ variant: hasOverdue ? 'count-alert' : 'count' })}>
         {count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count}
       </span>
     </span>
