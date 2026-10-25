@@ -52,7 +52,7 @@ Deno.serve(async (req: Request) => {
  // Native signup follows the recorded public click; visitor workspace headers are not attribution authority.
  const nativeSignup=path==='/native/signup'&&req.method==='POST';
  const recipientInvitation=path==='/invitations/accept'&&req.method==='POST'||path==='/invitations/received'&&req.method==='GET';
- const selectedWorkspace=nativeSignup||recipientInvitation?redirectWorkspaceSelection(null):ownershipRegistry&&requestedWorkspace!==null&&UUID.test(requestedWorkspace)?{id:requestedWorkspace.toLowerCase()}:redirectWorkspaceSelection(requestedWorkspace);
+ const selectedWorkspace=nativeSignup||recipientInvitation?redirectWorkspaceSelection(null):(ownershipRegistry||path==='/workspaces')&&requestedWorkspace!==null&&UUID.test(requestedWorkspace)?{id:requestedWorkspace.toLowerCase()}:redirectWorkspaceSelection(requestedWorkspace);
  if('error' in selectedWorkspace)return json({error:selectedWorkspace.error},selectedWorkspace.status);
  db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{global:{headers:{'x-qg-redirect-workspace':selectedWorkspace.id,...(user?{'x-qg-redirect-session-actor':user.id}:{})}}});
  const sessionPrincipal=async(scope:string):Promise<{id:string|null;role?:string;label?:string;workspace?:{id:string;name:string;slug:string};failure?:Response}>=>{
@@ -182,9 +182,10 @@ Deno.serve(async (req: Request) => {
   if(path==='/workspaces'){
    if(tokenCredential)return json({error:'Account session required'},403);
    if(req.method!=='GET')return json({error:'Method not supported'},405);
-   if(new URL(req.url).search)return json({error:'Unexpected workspace query'},400);
-   const principal=await sessionPrincipal('links:read');if(principal.failure)return principal.failure;
-   return json({data:[{...principal.workspace,role:principal.role}],currentWorkspaceId:principal.workspace!.id});
+   if(!user||user.is_anonymous)return json({error:'Account session required'},403);
+   const query=new URL(req.url).searchParams,offset=Number(query.get('offset')??0);
+   if([...query.keys()].some(key=>key!=='offset')||query.getAll('offset').length>1||!Number.isInteger(offset)||offset<0||offset>10000000)return json({error:'Invalid workspace page'},400);
+   const {data,error}=await db.rpc('redirect_account_workspaces',{p_actor:user.id,p_selected:requestedWorkspace,p_offset:offset});if(error)return rpcError(error);return json(data);
   }
   if(path==='/session'&&req.method==='GET'){if(tokenCredential)return json({error:'Account session required'},403);const principal=await sessionPrincipal('links:read');if(principal.failure)return principal.failure;return json({role:principal.role,label:principal.label??null,workspace:principal.workspace});}
   const manual=path.match(/^\/manual-records(?:\/([a-f0-9-]{36}))?$/i);

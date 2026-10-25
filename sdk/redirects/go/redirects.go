@@ -64,8 +64,15 @@ func (c *Client) WithWorkspace(id string) (*Client, error) {
 func (c *Client) GetSession(ctx context.Context) (Object, error) {
 	return c.Request(ctx, "GET", "/session", nil, nil)
 }
-func (c *Client) ListWorkspaces(ctx context.Context) (Object, error) {
-	return c.Request(ctx, "GET", "/workspaces", nil, nil)
+func (c *Client) ListWorkspaces(ctx context.Context, offsets ...int) (Object, error) {
+	if len(offsets) > 1 {
+		return nil, fmt.Errorf("provide one workspace offset")
+	}
+	offset := 0
+	if len(offsets) == 1 {
+		offset = offsets[0]
+	}
+	return c.Request(ctx, "GET", "/workspaces", nil, Object{"offset": offset})
 }
 func (c *Client) ListWorkspaceInformation(ctx context.Context, kind string, limit int, after string) (Object, error) {
 	query := Object{"kind": kind, "limit": limit}

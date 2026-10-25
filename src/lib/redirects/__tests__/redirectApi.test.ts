@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
 import { webcrypto } from 'node:crypto';
 import ts from 'typescript';
 import { describe, expect, it, vi } from 'vitest';
+const legacy = '58aa4340-8f21-4b7f-9a10-90be2da89c01';
 function runtime() {
   const root = '../../../../supabase/functions/';
   const shared = readFileSync(
@@ -86,34 +87,54 @@ function runtime() {
     user_metadata: { role: 'admin' },
   };
   const rpc = vi.fn(async (name: string, _args?: Record<string, unknown>) =>
-    name === 'authenticate_redirect_api_token'
+    name === 'redirect_account_workspaces'
       ? {
-          data: state.validToken ? { id: 'token-id', redirect_ids: state.allowedIds } : null,
+          data: {
+            data:
+              state.admin || state.membership
+                ? [
+                    {
+                      id: legacy,
+                      name: 'Queer Guide',
+                      slug: 'queer-guide',
+                      role: state.admin ? 'owner' : state.membership?.role,
+                    },
+                  ]
+                : [],
+            currentWorkspaceId: state.admin || state.membership ? legacy : null,
+            count: state.admin || state.membership ? 1 : 0,
+            nextOffset: null,
+          },
           error: null,
         }
-      : {
-          data: state.conversionError
-            ? null
-            : name === 'redirect_workspace_resource'
-              ? { id: 'resource', name: 'API folder', data: [], count: 0, nextCursor: null }
-              : name === 'redirect_management_list'
-                ? {
-                    data: [{ id: 'link-id', slug: 'pride', target: '/events' }],
-                    count: 1,
-                    nextCursor: null,
-                  }
-                : name === 'redirect_management_mutate'
-                  ? (_args?.p_operations as Array<{ operation: string }>).map((op) =>
-                      op.operation === 'delete'
-                        ? { deleted: true, id: 'link-id' }
-                        : {
-                            created: ['create', 'upsert'].includes(op.operation),
-                            link: { id: 'link-id', slug: 'pride', target: '/events' },
-                          },
-                    )
-                  : { id: 'conversion', duplicate: false },
-          error: state.conversionError,
-        },
+      : name === 'authenticate_redirect_api_token'
+        ? {
+            data: state.validToken ? { id: 'token-id', redirect_ids: state.allowedIds } : null,
+            error: null,
+          }
+        : {
+            data: state.conversionError
+              ? null
+              : name === 'redirect_workspace_resource'
+                ? { id: 'resource', name: 'API folder', data: [], count: 0, nextCursor: null }
+                : name === 'redirect_management_list'
+                  ? {
+                      data: [{ id: 'link-id', slug: 'pride', target: '/events' }],
+                      count: 1,
+                      nextCursor: null,
+                    }
+                  : name === 'redirect_management_mutate'
+                    ? (_args?.p_operations as Array<{ operation: string }>).map((op) =>
+                        op.operation === 'delete'
+                          ? { deleted: true, id: 'link-id' }
+                          : {
+                              created: ['create', 'upsert'].includes(op.operation),
+                              link: { id: 'link-id', slug: 'pride', target: '/events' },
+                            },
+                      )
+                    : { id: 'conversion', duplicate: false },
+            error: state.conversionError,
+          },
   );
   // Authorization is a separate SQL seam from business RPCs, so mutation mocks
   // cannot accidentally stand in for the current workspace principal.
@@ -951,7 +972,6 @@ describe('policy revocation during password hashing', () => {
 });
 
 describe('verified workspace request context', () => {
-  const legacy = '58aa4340-8f21-4b7f-9a10-90be2da89c01';
   it('rejects empty, duplicate and unavailable selectors before business or authority RPCs', async () => {
     const run = runtime();
     for (const [selected, status] of [
@@ -1045,6 +1065,10 @@ describe('verified workspace request context', () => {
     expect(
       (await run.invoke('/workspaces', undefined, 'qg_redirect_' + 'a'.repeat(64), 'GET')).status,
     ).toBe(403);
-    expect(run.rpc).not.toHaveBeenCalled();
+    expect(run.rpc).toHaveBeenCalledExactlyOnceWith('redirect_account_workspaces', {
+      p_actor: '00000000-0000-4000-8000-000000000001',
+      p_selected: null,
+      p_offset: 0,
+    });
   });
 });

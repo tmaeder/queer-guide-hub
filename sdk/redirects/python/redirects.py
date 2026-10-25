@@ -28,7 +28,7 @@ class RedirectsClient:
         self._opener = build_opener(_NoRedirect())
 
     def get_session(self): return self.request('GET','/session')
-    def list_workspaces(self): return self.request('GET','/workspaces')
+    def list_workspaces(self, offset=0): return self.request('GET','/workspaces',query={'offset':offset})
     def list_workspace_information(self, kind, limit=50, after=None):
         return self.request('GET','/workspace-information',query={'kind':kind,'limit':limit,'after':after})
 

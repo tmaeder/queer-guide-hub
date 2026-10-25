@@ -22,7 +22,7 @@ module QueerGuide
       @token, @base, @timeout = token, base_url.sub(%r{/$}, ''), timeout
     end
     def get_session; request('GET','/session'); end
-    def list_workspaces; request('GET','/workspaces'); end
+    def list_workspaces(offset = 0); request('GET','/workspaces',nil,{offset:offset}); end
     def list_workspace_information(kind, limit = 50, after = nil)
       request('GET','/workspace-information',nil,{kind:kind,limit:limit,after:after})
     end

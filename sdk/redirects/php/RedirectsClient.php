@@ -17,7 +17,7 @@ final class RedirectsClient {
         $this->base = rtrim($baseUrl,'/');
     }
     public function getSession(): array {return $this->request('GET','/session');}
-    public function listWorkspaces(): array {return $this->request('GET','/workspaces');}
+    public function listWorkspaces(int $offset=0): array {return $this->request('GET','/workspaces',null,['offset'=>$offset]);}
     public function listWorkspaceInformation(string $kind, int $limit=50, ?string $after=null): array {return $this->request('GET','/workspace-information',null,['kind'=>$kind,'limit'=>$limit,'after'=>$after]);}
     public function listIntegrationSetups(int $limit=50, ?string $after=null): array {return $this->request('GET','/integrations',null,['limit'=>$limit,'after'=>$after]);}
     public function createIntegrationSetup(array $data): array {return $this->request('POST','/integrations',$data);}

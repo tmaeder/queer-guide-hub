@@ -1006,3 +1006,21 @@ expiry/revocation, inactive membership, idempotency and visitor-header independe
 The 41 invitation/API unit tests, frozen Edge type check, targeted lint/format,
 diff checks and all 2562 migration parses pass. Tenant activation and private
 resource fences remain intact. No real invitation was accepted or sent.
+
+
+### Account workspace discovery
+
+The account-only catalogue now lists active explicit Owner and human membership
+grants across workspaces, with bounded stable offset pagination and current role
+metadata. Application admins inherit only legacy ownership. Inactive membership,
+revoked Owner grants and provisioning workspaces disappear. No-access accounts
+receive an empty list, supporting invitation entry before membership. An explicit
+unavailable workspace returns a null current selection; it cannot silently choose
+another mutation target. All five SDKs support optional paging.
+
+Complete SQL and five-language HTTP/SDK suites pass, including 102-workspace
+pagination, independent owners, all three member roles, global-admin isolation,
+no-access accounts, current grants, explicit unavailable selections, malformed/
+duplicate query denial and preserved private resource fences. All 34 API unit
+tests, frozen Edge and SDK type checks, targeted lint/format/diff checks and
+2563 migration parses pass. No tenant was created or activated in production.

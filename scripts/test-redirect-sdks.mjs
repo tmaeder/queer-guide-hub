@@ -375,6 +375,8 @@ try {
     const response=await fetch(base+path,{method,headers:{Authorization:'Bearer '+credential,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
     const data=await response.json();if(response.status!==expected)throw new Error('Report HTTP '+path+' expected '+expected+' received '+response.status+': '+JSON.stringify(data));return data;
   }
+  const {verifyWorkspaceDiscovery}=await import('./lib/redirect-workspace-discovery-fixture.mjs');
+  await verifyWorkspaceDiscovery(db,base,reportActor,reportOtherActor);
   const {verifyInvitationSourceWorkspace}=await import('./lib/redirect-invitation-source-fixture.mjs');
   await verifyInvitationSourceWorkspace(db,base,reportActor,reportOtherActor);
   const {verifyNativeSignupWorkspace}=await import('./lib/redirect-native-signup-fixture.mjs');
@@ -428,7 +430,8 @@ try {
   const {verifyMemberIntegrationHttp}=await import('./lib/redirect-member-integration-fixture.mjs');
   await verifyMemberIntegrationHttp(db,reportRequest,discoveryMember);
   await db.query('UPDATE public.redirect_workspace_members SET active=false WHERE id=$1',[discoveryMember]);
-  await reportRequest('/workspaces','GET',undefined,'fixture-other-account-session',403);
+  const emptyWorkspaces=await reportRequest('/workspaces','GET',undefined,'fixture-other-account-session');
+  if(emptyWorkspaces.data.length||emptyWorkspaces.count!==0||emptyWorkspaces.currentWorkspaceId!==null)throw new Error('Inactive membership remained in account discovery');
   await db.query('DELETE FROM public.redirect_workspace_members WHERE id=$1',[discoveryMember]);
   await db.query("INSERT INTO public.user_roles VALUES($1,'admin')",[reportOtherActor]);
   console.log('Workspace identity: owner/member current-role discovery, immutable legacy selection, unsupported/empty/duplicate selector preflight denial and no wrong-workspace mutation pass.');

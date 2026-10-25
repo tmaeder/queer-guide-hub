@@ -27,7 +27,11 @@ decimal places. Revenue responses remain exact strings by currency.
 
 Account-session clients can call `getSession` / `get_session` / `GetSession` and
 `listWorkspaces` / `list_workspaces` / `ListWorkspaces` to discover their current
-workspace UUID and role. These account-only methods reject server API keys.
+workspace UUIDs and current roles. These account-only methods reject server API keys.
+Pass an optional offset (default 0) for pages of up to 100; responses include
+`count` and nullable `nextOffset`. `currentWorkspaceId` is null for an unavailable
+explicit selection or an account without active access. Discovery never grants
+access or silently replaces an unavailable explicit workspace.
 The server reads current membership/owner state; stale admin claims do not grant
 workspace access.
 

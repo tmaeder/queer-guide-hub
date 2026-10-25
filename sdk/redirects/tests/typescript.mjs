@@ -52,6 +52,7 @@ assert.throws(()=>new RedirectsClient('token',{baseUrl:'http://example.com/api'}
 const account=new RedirectsClient(process.env.REDIRECT_TEST_SESSION,{baseUrl:process.env.REDIRECT_TEST_BASE,workspaceId:process.env.REDIRECT_TEST_WORKSPACE});
 assert.equal((await account.getSession()).workspace.id,process.env.REDIRECT_TEST_WORKSPACE);
 assert.equal((await account.listWorkspaces()).currentWorkspaceId,process.env.REDIRECT_TEST_WORKSPACE);
+assert.equal((await account.listWorkspaces(100)).data.length,0);
 const integrationInput = {
   requestId: crypto.randomUUID(),
   provider: 'segment',

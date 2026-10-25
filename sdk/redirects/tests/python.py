@@ -66,6 +66,7 @@ except ValueError: pass
 account=RedirectsClient(os.environ['REDIRECT_TEST_SESSION'],os.environ['REDIRECT_TEST_BASE'],workspace_id=os.environ['REDIRECT_TEST_WORKSPACE'])
 assert account.get_session()['workspace']['id']==os.environ['REDIRECT_TEST_WORKSPACE']
 assert account.list_workspaces()['currentWorkspaceId']==os.environ['REDIRECT_TEST_WORKSPACE']
+assert account.list_workspaces(100)['data']==[]
 integration_input={'requestId':str(uuid.uuid4()),'provider':'gtm','name':'Python integration setup','linkIds':[os.environ['REDIRECT_TEST_REPORT_LINK']],'expiresAt':(datetime.now(timezone.utc)+timedelta(days=1)).isoformat()}
 integration_setup=account.create_integration_setup(integration_input)
 assert integration_setup['created'] and integration_setup['credential'].startswith('qg_redirect_')

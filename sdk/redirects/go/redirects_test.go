@@ -204,6 +204,9 @@ func TestSDKIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(must(account.ListWorkspaces(ctx, 100))["data"].([]any)) != 0 {
+		t.Fatal("workspace paging failed")
+	}
 	if must(account.GetSession(ctx))["workspace"].(map[string]any)["id"] != os.Getenv("REDIRECT_TEST_WORKSPACE") || must(account.ListWorkspaces(ctx))["currentWorkspaceId"] != os.Getenv("REDIRECT_TEST_WORKSPACE") {
 		t.Fatal("Workspace discovery missing")
 	}

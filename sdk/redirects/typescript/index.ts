@@ -87,7 +87,9 @@ export interface RedirectWorkspaceSession {
 }
 export interface RedirectWorkspaceList {
   data: (RedirectWorkspace & { role: RedirectWorkspaceSession['role'] })[];
-  currentWorkspaceId: string;
+  currentWorkspaceId: string | null;
+  count: number;
+  nextOffset: number | null;
 }
 export type WorkspaceInformationKind = 'domains' | 'tokens' | 'webhooks';
 export interface WorkspaceOwner {
@@ -454,8 +456,8 @@ export class RedirectsClient {
   getSession(): Promise<RedirectWorkspaceSession> {
     return this.request('GET', '/session');
   }
-  listWorkspaces(): Promise<RedirectWorkspaceList> {
-    return this.request('GET', '/workspaces');
+  listWorkspaces(offset = 0): Promise<RedirectWorkspaceList> {
+    return this.request('GET', '/workspaces', undefined, { offset });
   }
   listWorkspaceInformation(
     kind: WorkspaceInformationKind,

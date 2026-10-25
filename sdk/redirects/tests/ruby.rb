@@ -54,6 +54,7 @@ begin;QueerGuide::RedirectsClient.new('token',base_url:'http://example.com/api')
 account=QueerGuide::RedirectsClient.new(ENV.fetch('REDIRECT_TEST_SESSION'),base_url:ENV.fetch('REDIRECT_TEST_BASE'),workspace_id:ENV.fetch('REDIRECT_TEST_WORKSPACE'))
 check(account.get_session['workspace']['id']==ENV.fetch('REDIRECT_TEST_WORKSPACE'))
 check(account.list_workspaces['currentWorkspaceId']==ENV.fetch('REDIRECT_TEST_WORKSPACE'))
+check(account.list_workspaces(100)['data']==[])
 integration_input={requestId:SecureRandom.uuid,provider:'segment',name:'Ruby integration setup',linkIds:[ENV.fetch('REDIRECT_TEST_REPORT_LINK')],expiresAt:(Time.now.utc+86400).iso8601}
 integration_setup=account.create_integration_setup(integration_input)
 check(integration_setup['created'] && integration_setup['credential'].start_with?('qg_redirect_'))
