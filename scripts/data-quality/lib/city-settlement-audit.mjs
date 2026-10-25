@@ -29,6 +29,18 @@ export function distanceMeters(lat1, lon1, lat2, lon2) {
   return 6371000 * 2 * Math.asin(Math.min(1, Math.sqrt(a)));
 }
 export function classifyClasses(labels = [], description = '') {
+  // Exact municipal forms, not a blanket township/county/district exception.
+  // Ontario lower-tier and Quebec parish/township municipalities are local
+  // municipalities. Italian sources spell the singular "comune", not "commune".
+  const municipalForm = labels.some((label) =>
+    /^(?:lower-tier municipality of Ontario|township municipality in Ontario|parish municipality|township municipality|charter township of Michigan|comune of Italy|city with county rights)$/i.test(label),
+  );
+  // Additional vocabulary must not revive historical places or promote a
+  // conflicting neighbourhood/container identity to a municipal profile.
+  const conflictingForm = labels.some((label) =>
+    /former|historical|ancient|abandoned|ghost town|archaeological|neighbou?rhood|suburb|subdistrict|city district|municipal district|^district of |^area of /i.test(label),
+  );
+  if (municipalForm && !conflictingForm) return 'municipality';
   // These are autonomous municipal forms, including US boroughs. A German
   // kreisfreie Stadt also carries an urban-district class; that is not a suburb.
   const independent = labels.some(

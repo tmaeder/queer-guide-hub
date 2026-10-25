@@ -5,6 +5,18 @@ const candidate={id:'test',name:'Example',wikidata_qid:'Q123',latitude:50,longit
 const entity=()=>({id:'Q123',labels:{en:{value:'Example'}},claims:{P31:[statement({id:'Q515'})],P17:[statement({id:'Q183'})],P625:[statement({latitude:50,longitude:8,globe:'http://www.wikidata.org/entity/Q2'})]}})
 const classes={Q515:{id:'Q515',labels:{en:{value:'city'}}}},countries={Q183:{id:'Q183',claims:{P297:[statement('DE')]}}}
 
+Deno.test('new municipal forms still require matching identity, country and pin',()=>{
+ const municipalClasses={Q515:{id:'Q515',labels:{en:{value:'lower-tier municipality of Ontario'}}}}
+ const canadianCountries={Q183:{id:'Q183',claims:{P297:[statement('CA')]}}}
+ const canadianCandidate={...candidate,country_code:'CA'}
+ assertEquals(classificationEvidence(canadianCandidate,entity(),municipalClasses,canadianCountries)?.status,'municipality')
+ assertEquals(classificationEvidence({...canadianCandidate,name:'Wrong'},entity(),municipalClasses,canadianCountries),null)
+ assertEquals(classificationEvidence({...canadianCandidate,country_code:'US'},entity(),municipalClasses,canadianCountries),null)
+ assertEquals(classificationEvidence({...canadianCandidate,latitude:51},entity(),municipalClasses,canadianCountries),null)
+ const historical=entity();historical.claims.P31.push(statement({id:'Q999'}))
+ assertEquals(classificationEvidence(canadianCandidate,historical,{...municipalClasses,Q999:{id:'Q999',labels:{en:{value:'former municipality'}}}},canadianCountries),null)
+})
+
 Deno.test('classification captures require current name, country and coordinates alongside a positive class',()=>{
  const result=classificationEvidence(candidate,entity(),classes,countries)
  assertEquals(result?.status,'municipality')
