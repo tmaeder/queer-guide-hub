@@ -43,8 +43,14 @@ BEGIN
  result:=public.redirect_public_report_read((member_share->>'id')::uuid,(checked->>'version')::uuid,false,'{}');
  IF result#>>'{report,totals,clicks}'<>'1' OR result#>>'{report,totals,leads}'<>'0' OR result->>'linkCount'<>'1' THEN RAISE EXCEPTION 'Public member scope or conversion privacy changed';END IF;
  IF redirect_internal.analytics_report_for_workspace(legacy,'{}',ARRAY[foreign_link])#>>'{totals,clicks}'<>'0' OR redirect_internal.analytics_report_for_workspace(other,'{}',ARRAY[one])#>>'{totals,clicks}'<>'0' OR redirect_internal.analytics_report_for_workspace(other,'{}',ARRAY[foreign_link])#>>'{totals,clicks}'<>'1' THEN RAISE EXCEPTION 'Explicit analytics workspace crossed link identity';END IF;
- BEGIN PERFORM public.redirect_public_report_check(foreign_share,repeat('c',64));RAISE EXCEPTION 'Foreign public report activated';EXCEPTION WHEN no_data_found THEN NULL;END;
- BEGIN PERFORM public.redirect_public_report_read(foreign_share,foreign_version,true,'{}');RAISE EXCEPTION 'Foreign public report read';EXCEPTION WHEN no_data_found THEN NULL;END;
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',legacy,'x-qg-redirect-session-actor',actor)::text,true);
+ checked:=public.redirect_public_report_check(foreign_share,repeat('c',64));
+ result:=public.redirect_public_report_read(foreign_share,foreign_version,false,'{}');
+ IF result#>>'{report,totals,clicks}'<>'1' OR result->>'linkCount'<>'1' THEN RAISE EXCEPTION 'Active public report capability did not select saved workspace';END IF;
+ UPDATE public.redirect_workspaces SET status='provisioning' WHERE id=other;
+ BEGIN PERFORM public.redirect_public_report_check(foreign_share,repeat('c',64));RAISE EXCEPTION 'Inactive public report checked';EXCEPTION WHEN no_data_found THEN NULL;END;
+ BEGIN PERFORM public.redirect_public_report_read(foreign_share,foreign_version,true,'{}');RAISE EXCEPTION 'Inactive public report read';EXCEPTION WHEN no_data_found THEN NULL;END;
+ UPDATE public.redirect_workspaces SET status='active' WHERE id=other;
  -- Retaining read permission cannot preserve publication after losing edit.
  INSERT INTO public.redirect_folder_members VALUES(folder,member,'view');
  BEGIN PERFORM public.redirect_public_report_check((member_share->>'id')::uuid,repeat('b',64));RAISE EXCEPTION 'Lost folder edit retained public report';EXCEPTION WHEN no_data_found THEN NULL;END;

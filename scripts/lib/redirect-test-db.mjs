@@ -27,6 +27,7 @@ export async function createRedirectTestDb({ beforeMigration } = {}) {
       'redirect_workspace_public_link_identity.sql',
       'redirect_billing_role.sql',
       'redirect_workspace_information.sql',
+      'redirect_workspace_public_capabilities.sql',
     ].sort((a, b) =>
       (files.find((name) => name.endsWith(a)) ?? a).localeCompare(
         files.find((name) => name.endsWith(b)) ?? b,

@@ -190,7 +190,7 @@ if(url.origin==='https://api.cloudflare.com'){
  return Response.json({success:true,result:item});
 }
 if(url.origin!=='https://cloudflare-dns.com'||url.pathname!=='/dns-query')throw new Error('Unexpected external fixture request');dnsCalls++;const hostname=url.searchParams.get('name').replace(/^_qg-redirect\./,'');const row=(await db.query('SELECT verification_token FROM public.redirect_domains WHERE hostname=$1',[hostname])).rows[0];return new Response(JSON.stringify({Status:0,Question:[{name:url.searchParams.get('name'),type:16}],Answer:row&&!dnsMissing?[{name:url.searchParams.get('name'),type:16,data:'\"qg-redirect='+row.verification_token+'\"'}]:[]}),{headers:{'Content-Type':'application/dns-json'}});};
-policyRuntime=new Function('Deno', 'createClient', 'crypto', 'fetch', 'getDomain', code+'\nreturn {verifyLinkPassword,dispatchRedirectDomainJobs,dispatchRedirectQrAssetCleanup,qrAssetStorageConfig,dispatchDomainInstructionMail,domainInstructionMailConfig};')(
+policyRuntime=new Function('Deno', 'createClient', 'crypto', 'fetch', 'getDomain', code+'\nreturn {hashLinkPassword,verifyLinkPassword,dispatchRedirectDomainJobs,dispatchRedirectQrAssetCleanup,qrAssetStorageConfig,dispatchDomainInstructionMail,domainInstructionMailConfig};')(
   {
     env: { get: (key) => key==='SUPABASE_URL'?'https://fixture.supabase.co':key==='SUPABASE_SERVICE_ROLE_KEY'?'fixture-service':key==='SUPABASE_ANON_KEY'?'fixture-anon':key==='REDIRECT_CF_ZONE_ID'?providerConfig.zoneId:key==='REDIRECT_CF_API_TOKEN'?providerConfig.token:key==='REDIRECT_CNAME_TARGET'?providerConfig.cnameTarget:key==='REDIRECT_DOMAIN_EMAIL_FROM'?(instructionMailEnabled?'Queer Guide <noreply@queer.guide>':''):key==='EMAIL_GATEWAY_SECRET'?'fixture-mail-provider':key==='EMAIL_GATEWAY_URL'?'https://email-gateway.fixture.invalid':key==='REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK'?(domainConnectEnabled?domainConnectJwk:''):key==='REDIRECT_DOMAIN_CONNECT_KEY_LABEL'?'_fixture':'fixture' },
     serve: (fn) => {
@@ -374,6 +374,8 @@ try {
     const response=await fetch(base+path,{method,headers:{Authorization:'Bearer '+credential,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
     const data=await response.json();if(response.status!==expected)throw new Error('Report HTTP '+path+' expected '+expected+' received '+response.status+': '+JSON.stringify(data));return data;
   }
+  const {verifyPublicCapabilityWorkspaces}=await import('./lib/redirect-public-capability-fixture.mjs');
+  await verifyPublicCapabilityWorkspaces(db,reportRequest,base,policyRuntime.hashLinkPassword);
   const workspaceFixtureConfig={domainConnectEnabled,instructionMailEnabled,sdkHeartbeatEnabled},workspaceFixtureRequests=fixtureExternalRequests;
   domainConnectEnabled=true;instructionMailEnabled=true;sdkHeartbeatEnabled=true;
   try {await verifyRedirectWorkspaceMembershipHttp(db,reportRequest,reportActor,{cleanupAssets:()=>policyRuntime.dispatchRedirectQrAssetCleanup(service,sdkArtworkStorage,fixtureDnsFetch)});}

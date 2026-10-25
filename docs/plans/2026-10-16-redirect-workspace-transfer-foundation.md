@@ -757,3 +757,27 @@ This closes the local all-role metadata gap, not tenant activation or live relea
 verification. Member integration installation, additional-owner admission,
 workspace creation/switching/activation, atomic transfer and external provider/
 device evidence remain open.
+
+### 2026-10-25 public QR and report capability identity
+
+Public QR image hashes and saved-report share IDs now select their immutable
+resource workspace, requiring that workspace to be active. Current creator,
+member, key, folder, version, password and revocation checks remain in force;
+visitor workspace and actor headers cannot select a private context. Private
+workspace activation and tenant write fences remain closed.
+
+The complete SQL suite passes, including independent future-workspace creator,
+member/key revocation and report totals. A rolled-back isolated HTTP fixture
+checks provisioning denial, active QR/report publication, real password hashing,
+password denial/acceptance, contradictory visitor headers, current workspace
+status and explicit revocation. It records one visit and confirms publication
+reads add none. Expected failed RPC calls use savepoints to model independent
+production transactions. All five SDK runtimes and their complete HTTP matrix
+pass. All 2554 migrations parse; script lint, formatting and diff checks pass.
+The first SDK retry encountered host disk exhaustion in Go linking; downloaded
+archives were removed and the full run then passed.
+
+This remains local integration evidence, with production release verification
+pending. Service job/retention authority, member integration installation,
+additional-owner admission, tenant activation, atomic transfer and external
+provider/device evidence still need work.
