@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { badgeVariants } from '@/components/ui/badge';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, MapPin, Hotel, CalendarDays, Star, Clock, X, Check } from 'lucide-react';
@@ -46,30 +47,21 @@ interface BookingBadgeProps {
 function BookingBadge({ status, confirmationCode }: BookingBadgeProps) {
   if (status === 'completed') {
     return (
-      <span
-        data-testid="booking-badge-completed"
-        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs rounded-badge bg-muted text-muted-foreground"
-      >
+      <span data-testid="booking-badge-completed" className={badgeVariants({ variant: 'mark' })}>
         Visited
       </span>
     );
   }
   if (status === 'booked') {
     return (
-      <span
-        data-testid="booking-badge-booked"
-        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs rounded-badge bg-foreground text-background"
-      >
+      <span data-testid="booking-badge-booked" className={badgeVariants({ variant: 'mark-solid' })}>
         <Check className="w-2.5 h-2.5" />
         Booked{confirmationCode ? ` · ${confirmationCode}` : ''}
       </span>
     );
   }
   return (
-    <span
-      data-testid="booking-badge-intent"
-      className="inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs rounded-badge border border-dashed border-border text-muted-foreground"
-    >
+    <span data-testid="booking-badge-intent" className={badgeVariants({ variant: 'mark-dashed' })}>
       Not booked
     </span>
   );

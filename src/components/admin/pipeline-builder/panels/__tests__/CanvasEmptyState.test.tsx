@@ -14,6 +14,7 @@ describe('CanvasEmptyState', () => {
         onImport={vi.fn()}
       />,
     );
+    expect(screen.getByText('No nodes yet.')).toBeInTheDocument();
     expect(screen.getByText(/Quick-add a node/i)).toBeInTheDocument();
     expect(screen.getByText(/Apply a template/i)).toBeInTheDocument();
     expect(screen.getByText(/Import from JSON/i)).toBeInTheDocument();
@@ -24,7 +25,11 @@ describe('CanvasEmptyState', () => {
     const onTpl = vi.fn();
     const onImp = vi.fn();
     render(
-      <CanvasEmptyState onOpenCommandPalette={onCmd} onOpenTemplateLibrary={onTpl} onImport={onImp} />,
+      <CanvasEmptyState
+        onOpenCommandPalette={onCmd}
+        onOpenTemplateLibrary={onTpl}
+        onImport={onImp}
+      />,
     );
     fireEvent.click(screen.getByText(/Quick-add a node/i).closest('button')!);
     fireEvent.click(screen.getByText(/Apply a template/i).closest('button')!);

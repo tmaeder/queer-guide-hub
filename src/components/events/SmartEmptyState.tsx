@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { Calendar, ArrowRight } from 'lucide-react';
+import { Calendar, CalendarX, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { dateFnsLocaleFor } from '@/i18n/dateFnsLocale';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useEmptyStateSuggestions } from '@/hooks/useEmptyStateSuggestions';
 import type { Database } from '@/integrations/supabase/types';
@@ -45,21 +46,16 @@ export function SmartEmptyState({
           : null;
 
   return (
-    <div className="rounded-container bg-card p-6 sm:p-10 space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-semibold tracking-tight">
-          {t('pages.events.smartEmpty.title', 'No events match your filters')}
-        </h2>
-        <p className="text-sm text-muted-foreground max-w-xl">
-          {t(
-            'pages.events.smartEmpty.body',
-            'Try one of the suggestions below, or clear filters to browse everything.',
-          )}
-        </p>
-      </div>
-
-      {/* Quick-fix actions */}
-      <div className="flex flex-wrap gap-2">
+    <div className="space-y-6">
+      <EmptyState
+        variant="filtered"
+        icon={CalendarX}
+        title={t('pages.events.smartEmpty.title', 'No events match your filters')}
+        description={t(
+          'pages.events.smartEmpty.body',
+          'Try one of the suggestions below, or clear filters to browse everything.',
+        )}
+      >
         {city && onClearCity && (
           <Button variant="outline" size="sm" onClick={onClearCity}>
             {t('pages.events.smartEmpty.clearCity', {
@@ -76,7 +72,7 @@ export function SmartEmptyState({
         <Button variant="outline" size="sm" onClick={onClearFilters}>
           {t('pages.events.smartEmpty.viewAll', 'View all upcoming events')}
         </Button>
-      </div>
+      </EmptyState>
 
       {/* Suggestions */}
       {primary && (

@@ -53,9 +53,7 @@ describe('EntityDetailLayout', () => {
     const detailsTab = screen.getByRole('tab', { name: 'Details' });
     detailsTab.focus();
     fireEvent.keyDown(detailsTab, { key: 'Enter' });
-    await waitFor(() =>
-      expect(screen.getByText('Details body')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText('Details body')).toBeInTheDocument());
   });
 
   it('publishes breadcrumbs to the global bar context', () => {
@@ -79,5 +77,40 @@ describe('EntityDetailLayout', () => {
       </MemoryRouter>,
     );
     expect(screen.getByTestId('probe')).toHaveTextContent('Venues / My Venue');
+  });
+
+  it('honours a ?tab deep link when tabs arrive after the first render', () => {
+    const props = {
+      loading: false,
+      error: null,
+      hero: <div>Hero content</div>,
+      entityType: 'venue',
+    };
+    const { rerender } = render(
+      <MemoryRouter initialEntries={['/x?tab=details']}>
+        <EntityDetailLayout {...props} tabs={[]} />
+      </MemoryRouter>,
+    );
+    rerender(
+      <MemoryRouter initialEntries={['/x?tab=details']}>
+        <EntityDetailLayout {...props} tabs={tabs} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('Details body')).toBeInTheDocument();
+  });
+
+  it('falls back to the first tab for an unknown ?tab', () => {
+    render(
+      <MemoryRouter initialEntries={['/x?tab=nope']}>
+        <EntityDetailLayout
+          loading={false}
+          error={null}
+          hero={<div>Hero content</div>}
+          tabs={tabs}
+          entityType="venue"
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('Overview body')).toBeInTheDocument();
   });
 });
