@@ -56,7 +56,7 @@ export function EntityDetailScroll({ descriptor, loading, error }: EntityDetailS
       <PageContainer data-testid="entity-detail-loading">
         <Skeleton variant="rectangular" height={32} style={{ width: '40%' }} className="mb-4" />
         <Skeleton variant="rectangular" height={192} className="mb-6 rounded-container" />
-        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6">
           <Skeleton variant="rectangular" height={320} className="rounded-container" />
           <Skeleton variant="rectangular" height={240} className="rounded-container" />
         </div>
@@ -78,7 +78,9 @@ export function EntityDetailScroll({ descriptor, loading, error }: EntityDetailS
 
         {personalization && <EntityPersonalizationBand inputs={personalization} className="mb-6" />}
 
-        <div className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[2fr_1fr]' : ''} gap-6`}>
+        <div
+          className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]' : ''} gap-6`}
+        >
           <div className="flex flex-col gap-10">
             {visibleSections.map((section) => (
               <Fragment key={section.id}>{section.render()}</Fragment>

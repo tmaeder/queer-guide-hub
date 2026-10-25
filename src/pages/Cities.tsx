@@ -228,7 +228,7 @@ export default function Cities() {
       {/* ---- Tail ----------------------------------------------------------- */}
       <section className="border-t border-border-hairline">
         <PageContainer flush className="py-6 md:py-12">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="card-lift group relative bg-muted rounded-container p-6">
               <h3 className="m-0 font-display text-headline">
                 {t('cities.mapTeaserTitle', 'See it on the map')}
