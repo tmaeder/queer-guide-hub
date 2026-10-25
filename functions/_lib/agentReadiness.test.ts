@@ -113,7 +113,9 @@ describe('public content and discovery', () => {
 
 describe('public REST API', () => {
   it('lists and reads every published page', async () => {
-    const list = await publicPages(request('/api/v1/pages')).json();
+    const list = (await publicPages(request('/api/v1/pages')).json()) as {
+      pages: { slug: string }[];
+    };
     expect(list.pages.length).toBeGreaterThan(4);
     for (const page of list.pages) {
       const response = publicPages(request('/api/v1/pages/' + page.slug));
@@ -130,7 +132,10 @@ describe('public REST API', () => {
   ])('%s %s returns structured error', async (path, method, status, code) => {
     const response = publicPages(request(path, method));
     expect(response.status).toBe(status);
-    const body = await response.json();
+    const body = (await response.json()) as {
+      error: { code: string; message: string; hint: string };
+      docs: string;
+    };
     expect(body.error.code).toBe(code);
     expect(body.error.message.length).toBeGreaterThan(10);
     expect(body.error.hint.length).toBeGreaterThan(10);
