@@ -27,7 +27,7 @@ function Harness({ onToggleTag }: { onToggleTag: (v: string) => void }) {
     onTagsOpenChange: setTagsOpen,
     selectedTags: [],
     tagsLoading: false,
-    tagItems: [{ key: 't1', label: 'Leather' }],
+    tagItems: [{ key: 'leather-scene', label: 'Leather' }],
     onToggleTag,
     selectedAmenities: [],
     selectedServices: [],
@@ -92,6 +92,7 @@ describe('AdvancedFiltersPanel', () => {
     await act(async () => {
       fireEvent.click(option);
     });
-    expect(onToggleTag).toHaveBeenCalledWith('Leather');
+    // venues.tags stores slugs; emitting the display name matched 0 venues.
+    expect(onToggleTag).toHaveBeenCalledWith('leather-scene');
   });
 });
