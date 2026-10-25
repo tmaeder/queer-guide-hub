@@ -186,7 +186,7 @@ for (const path of ['/robots.txt', '/sitemap.xml', '/sitemap-static.xml'])
       const locations = [...text.matchAll(/<loc>([^<]+)<\/loc>/g)].map(
         (match) => new URL(match[1]).href,
       );
-      assert(locations.includes('https://queer.guide/docs'));
+      assert(locations.some((location) => location === 'https://queer.guide/docs'));
     }
   });
 const report = {
