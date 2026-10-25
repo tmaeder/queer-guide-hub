@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { hashKey, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useLoadingTimedOut } from '@/hooks/useLoadingTimedOut';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 
 type NewsArticle = Record<string, unknown>;
@@ -200,17 +201,6 @@ const NO_SOURCES: NewsSource[] = [];
 const NO_CATEGORIES: NewsCategory[] = [];
 const NO_TAGS: Record<string, string[]> = {};
 const NO_COUNTS: Record<string, number> = {};
-
-/** 30s, then the page offers a retry. */
-function useLoadingTimedOut(loading: boolean, key: string) {
-  const [timedOutFor, setTimedOutFor] = useState<string | null>(null);
-  useEffect(() => {
-    if (!loading) return;
-    const timer = setTimeout(() => setTimedOutFor(key), 30000);
-    return () => clearTimeout(timer);
-  }, [loading, key]);
-  return loading && timedOutFor === key;
-}
 
 /**
  * Declarative article list for one slice (a city, a country, the /news front).

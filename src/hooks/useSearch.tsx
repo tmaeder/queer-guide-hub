@@ -1,13 +1,14 @@
-import { useState, useEffect, useRef } from "react";
-import { useDebounce } from "./useDebounce";
+import { hashKey, useQuery } from '@tanstack/react-query';
+import { useDebounce } from './useDebounce';
+import { useLoadingTimedOut } from './useLoadingTimedOut';
 import {
   searchFetch,
   SearchFetchException,
   SEARCH_UNAVAILABLE_MESSAGE,
   isSearchUnavailable,
-} from "@/lib/searchFetch";
-import { resolveType } from "@/lib/searchTaxonomy";
-import { resolveImageUrl } from "@/utils/resolveImageUrl";
+} from '@/lib/searchFetch';
+import { resolveType } from '@/lib/searchTaxonomy';
+import { resolveImageUrl } from '@/utils/resolveImageUrl';
 
 // P2-8: queries shorter than this never reach the network. The worker accepts
 // short queries (returns []) but a single-character query is overwhelmingly a
@@ -73,10 +74,7 @@ export interface SearchFilters {
  * price_min/max, dateRange→date_from/to (ISO), free→is_free; drops UI-only
  * fields with no backend (rating, verified). `sort` is the worker p_sort.
  */
-export function toWorkerFilters(
-  filters: SearchFilters,
-  sort?: string,
-): Record<string, unknown> {
+export function toWorkerFilters(filters: SearchFilters, sort?: string): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   // The worker's filters.types enum is the singular entity type (venue, event,
   // …) — which is exactly our scope id. (Do NOT map to plural index keys; the
@@ -158,10 +156,7 @@ function sanitiseFacets(input: unknown): FacetDistribution {
   for (const [facet, values] of Object.entries(input as Record<string, unknown>)) {
     out[facet] = {};
     const pairs: Array<[unknown, unknown]> = Array.isArray(values)
-      ? values.map((e) => [
-          (e as { value?: unknown })?.value,
-          (e as { count?: unknown })?.count,
-        ])
+      ? values.map((e) => [(e as { value?: unknown })?.value, (e as { count?: unknown })?.count])
       : Object.entries((values as Record<string, unknown>) || {});
     for (const [v, c] of pairs) {
       if (v == null) continue;
@@ -267,6 +262,21 @@ export interface SearchIdentity {
   sessionId?: string | null;
 }
 
+interface SearchPage {
+  results: SearchResult[];
+  suggestions: SearchResult[];
+  facets: FacetDistribution;
+  totalHits: number;
+}
+
+const EMPTY_RESULTS: SearchResult[] = [];
+const EMPTY_FACETS: FacetDistribution = {};
+
+/**
+ * Search request as a TanStack query keyed on everything that shapes it, so
+ * the newest request wins: the old effect had no cancellation, and a slow
+ * response for an earlier query/page could overwrite a newer one.
+ */
 export const useSearch = (
   query: string,
   filters: SearchFilters = {},
@@ -274,131 +284,78 @@ export const useSearch = (
   sort?: string,
   identity: SearchIdentity = {},
 ) => {
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
-  const [facets, setFacets] = useState<FacetDistribution>({});
-  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [errorKind, setErrorKind] = useState<SearchErrorKind>(null);
-  const [totalHits, setTotalHits] = useState(0);
-  const [tooShort, setTooShort] = useState(false);
-
-  useEffect(() => {
-    if (!loading) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setLoadingTimedOut(false);
-      return;
-    }
-    const timer = setTimeout(() => setLoadingTimedOut(true), 15000);
-    return () => clearTimeout(timer);
-  }, [loading]);
-
   const debouncedQuery = useDebounce(query, 300);
-
   const filtersKey = JSON.stringify(filters);
-  const filtersRef = useRef(filters);
-  useEffect(() => {
-    filtersRef.current = filters;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtersKey]);
+  const { userId = null, sessionId = null } = identity;
 
-  const sortRef = useRef(sort);
-  useEffect(() => {
-    sortRef.current = sort;
-  }, [sort]);
+  // Allow a filter-only browse (empty query + active filters); only skip a
+  // genuinely empty, unfiltered request or a 1-char mid-typing artefact.
+  const trimmedLen = debouncedQuery.trim().length;
+  const browseable = hasBrowseFilters(filters);
+  const enabled = trimmedLen >= MIN_QUERY_LEN || browseable;
+  const tooShort = !enabled && trimmedLen > 0;
 
-  const { userId, sessionId } = identity;
-  const identityRef = useRef(identity);
-  useEffect(() => {
-    identityRef.current = { userId, sessionId };
-  }, [userId, sessionId]);
-
-  const performSearch = async (searchQuery: string, searchPage = 1) => {
-    // Allow a filter-only browse (empty query + active filters); only short-circuit
-    // a genuinely empty, unfiltered request or a 1-char mid-typing artefact.
-    const browseable = hasBrowseFilters(filtersRef.current);
-    if (searchQuery.trim().length < MIN_QUERY_LEN && !browseable) {
-      setResults([]);
-      setSuggestions([]);
-      setFacets({});
-      setTotalHits(0);
-      setError(null);
-      setErrorKind(null);
-      setTooShort(searchQuery.trim().length > 0);
-      return;
-    }
-    setTooShort(false);
-
-    setLoading(true);
-    setLoadingTimedOut(false);
-    setError(null);
-    setErrorKind(null);
-    try {
-      const { userId: uid, sessionId: sid } = identityRef.current;
-      const data = await searchFetch<SearchResponse>('/', {
-        query: searchQuery,
-        filters: toWorkerFilters(filtersRef.current, sortRef.current),
-        hitsPerPage: 20,
-        page: searchPage,
-        ...(uid ? { user_id: uid } : {}),
-        ...(sid ? { session_id: sid } : {}),
+  const queryKey = ['search', debouncedQuery, filtersKey, page, sort ?? null, userId, sessionId];
+  const q = useQuery<SearchPage>({
+    queryKey,
+    enabled,
+    retry: false, // searchFetch already retries a timeout once
+    queryFn: async ({ signal }) => {
+      const reqFilters = JSON.parse(filtersKey) as SearchFilters;
+      const data = await searchFetch<SearchResponse>(
+        '/',
+        {
+          query: debouncedQuery,
+          filters: toWorkerFilters(reqFilters, sort),
+          hitsPerPage: 20,
+          page,
+          ...(userId ? { user_id: userId } : {}),
+          ...(sessionId ? { session_id: sessionId } : {}),
+        },
+        { signal },
+      ).catch((err: unknown) => {
+        console.error('Search error:', err);
+        throw err;
       });
-
-      const cleaned = sanitiseHits(data?.hits, filtersRef.current);
-      setResults(cleaned);
-      setSuggestions(sanitiseHits(data?.suggestions, {}));
-      setFacets(sanitiseFacets(data?.facetDistribution));
-      // P0-1: report the post-filter count to the UI so totals don't include
-      // hits we just dropped.
+      const results = sanitiseHits(data?.hits, reqFilters);
+      // P0-1: report the post-filter count so totals don't include hits we
+      // just dropped.
       const reportedTotal = data?.totalHits ?? data?.hits?.length ?? 0;
-      const dropped = (data?.hits?.length ?? 0) - cleaned.length;
-      setTotalHits(Math.max(cleaned.length, reportedTotal - dropped));
-    } catch (err) {
-      console.error('Search error:', err);
-      setResults([]);
-      setSuggestions([]);
-      setFacets({});
-      setTotalHits(0);
-      if (isSearchUnavailable(err)) {
-        setError(SEARCH_UNAVAILABLE_MESSAGE);
-        setErrorKind('unavailable');
-      } else if (err instanceof SearchFetchException) {
-        setError(err.message);
-        setErrorKind('client_error');
-      } else {
-        setError(SEARCH_UNAVAILABLE_MESSAGE);
-        setErrorKind('unavailable');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+      const dropped = (data?.hits?.length ?? 0) - results.length;
+      return {
+        results,
+        suggestions: sanitiseHits(data?.suggestions, {}),
+        facets: sanitiseFacets(data?.facetDistribution),
+        totalHits: Math.max(results.length, reportedTotal - dropped),
+      };
+    },
+  });
 
-  useEffect(() => {
-    if (debouncedQuery || hasBrowseFilters(filtersRef.current)) {
-      performSearch(debouncedQuery, page);
+  const loading = enabled && q.isFetching;
+  const err = enabled ? q.error : null;
+  let error: string | null = null;
+  let errorKind: SearchErrorKind = null;
+  if (err) {
+    if (!isSearchUnavailable(err) && err instanceof SearchFetchException) {
+      error = err.message;
+      errorKind = 'client_error';
     } else {
-      setResults([]);
-      setSuggestions([]);
-      setFacets({});
-      setTotalHits(0);
-      setTooShort(false);
+      error = SEARCH_UNAVAILABLE_MESSAGE;
+      errorKind = 'unavailable';
     }
-
-  }, [debouncedQuery, filtersKey, page, sort, userId, sessionId]);
+  }
+  const data = enabled && !err ? q.data : undefined;
 
   return {
-    results,
-    suggestions,
-    facets,
-    totalHits,
+    results: data?.results ?? EMPTY_RESULTS,
+    suggestions: data?.suggestions ?? EMPTY_RESULTS,
+    facets: data?.facets ?? EMPTY_FACETS,
+    totalHits: data?.totalHits ?? 0,
     loading,
-    loadingTimedOut,
+    loadingTimedOut: useLoadingTimedOut(loading, hashKey(queryKey), 15000),
     error,
     errorKind,
     tooShort,
-    performSearch,
   };
 };
 
