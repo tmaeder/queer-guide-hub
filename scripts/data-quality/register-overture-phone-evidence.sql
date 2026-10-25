@@ -16,7 +16,7 @@ begin
  for r in
  with inputs as materialized(select value p from jsonb_array_elements(input)),
  unique_ids as(select p->>'venue_id' id from inputs group by 1 having count(*)=1)
- select i.p,to_jsonb(v) old_venue,to_jsonb(o) old_organization,ci.name city_name,c.code country_code
+ select i.p,to_jsonb(v) old_venue,to_jsonb(o) old_organization,public.organization_facts_only_source(o.id)old_source_contract,ci.name city_name,c.code country_code
  from inputs i join unique_ids u on u.id=i.p->>'venue_id'
  join venues v on v.id=(i.p->>'venue_id')::uuid
  join organizations o on o.id=v.organization_id and o.primary_venue_id=v.id
@@ -72,8 +72,10 @@ begin
   and revision.changed_fields&&array['website','phone','email'])
  and not exists(select 1 from entity_quality_findings f where f.entity_type='organization'and f.entity_id=o.id
   and f.dimension='contact'and(f.waived_at is not null or f.waived_by is not null))
- and not exists(select 1 from entity_quality_findings f where f.entity_type='organization' and f.entity_id=o.id
+ and(not exists(select 1 from entity_quality_findings f where f.entity_type='organization' and f.entity_id=o.id
   and f.dimension in('editorial','media') and f.state in('source_unavailable','not_applicable'))
+  or(exists(select 1 from supabase_migrations.schema_migrations where version='99991792951000')
+   and public.organization_facts_only_source(o.id)is not null))
  order by v.id limit 20 for update of v,o skip locked
  loop
   p:=r.p;
@@ -127,6 +129,7 @@ begin
    is distinct from r.old_organization-array['phone','quality_checked_at','updated_at','field_provenance']
    or (after_row->'field_provenance')-'phone'is distinct from r.old_organization->'field_provenance'
    then raise exception 'Unexpected direct business mutation';end if;
+  if r.old_source_contract is not null and (public.organization_facts_only_source((r.old_organization->>'id')::uuid)->'unavailable_dimensions')is distinct from(r.old_source_contract->'unavailable_dimensions')then raise exception 'Phone source reopened unrelated quality work';end if;
   changed:=changed+1;changed_ids:=array_append(changed_ids,(p->>'venue_id')::uuid);
  end loop;
  perform set_config('matching.overture_phone_result',jsonb_build_object('dry_run',dry_run,'venues',changed,'venue_ids',changed_ids)::text,false);
