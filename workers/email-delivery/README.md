@@ -1,6 +1,6 @@
 # Cloudflare email delivery
 
-This Worker is the only application delivery provider. The existing Supabase backend owns contacts, consent, campaigns and the transactional outbox. The native Cloudflare Email Sending binding supplies a provider message ID for lifecycle correlation; its HTTP REST API only supplies grouped recipient outcomes, so it is not used for application delivery.
+This Worker is the only application delivery provider. The existing Supabase backend owns contacts, consent, campaigns and the transactional outbox. The native Cloudflare Email Sending binding supplies the provider message ID used for lifecycle correlation and is the application’s configured transport.
 
 **Cloudflare currently supports transactional email only.** Campaign and newsletter dispatch is blocked in the database/API/gateway. Creating a draft or choosing a date never schedules an unsupported send. There is no vendor fallback or override flag. See https://developers.cloudflare.com/email-service/reference/faq/.
 

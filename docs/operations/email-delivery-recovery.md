@@ -38,3 +38,7 @@ Native queue bodies may be decoded JSON or JSON text. Normalize once, retain the
 The gateway’s protected `GET /queues/metrics` reads the existing `EVENT_QUEUE` and `EVENT_DLQ` bindings. The admin function enriches its existing health response; if either queue fails, that reading remains unavailable independently. This route cannot send or recover mail. Recovery still requires the deliberate consumer procedure above and removal of the temporary consumer afterward.
 
 A direct local workerd probe (bundled runtime compatibility 2026-10-19) reproduced the pre-network redirect error; the same unauthenticated GET with manual redirects reached the existing gateway and returned its expected 401. This is runtime evidence in addition to Node mocks, not a substitute for the release’s live queue drain. Production compatibility settings are unchanged.
+
+## Controlled recipient evidence
+
+[Email Sending subscriptions](https://developers.cloudflare.com/email-service/reference/event-subscriptions/) exclude Email Routing forwards, replies, Worker routing events and deliveries to verified routing destinations. An Auth-verified application address does not itself establish Cloudflare destination verification. Record the evidence actually observed: a provider-accepted owner test, a canonical Sent copy and no-resend checks do not establish native event correlation or inbox placement. Original native DLQ ingestion is a separate recovery proof. Never fabricate a delivered event or use unrelated contacts to force this test.
