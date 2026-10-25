@@ -118,11 +118,24 @@ beforeEach(() => {
 });
 
 describe('PostTripMemoryPrompt', () => {
+  // While either query is loading `data` is undefined. A `= []` default made a
+  // new array every render, which re-seeded the selection during render and
+  // crashed the whole trip page with "Too many re-renders" (prod, 2026-10-25).
+  // The other tests return one shared `[]` from the mock, so they cannot see it.
+  it('renders without looping while its queries are still loading', () => {
+    useMyPlaceMarksMock.mockReturnValue({ data: undefined });
+    useTripReservationsMock.mockReturnValue({ data: undefined });
+    const trip = makeTrip();
+    const { rerender } = render(<PostTripMemoryPrompt trip={trip} />);
+    // The loop needs a second render to start; in the app the parent
+    // re-renders as the trip's other queries resolve.
+    expect(() => rerender(<PostTripMemoryPrompt trip={trip} />)).not.toThrow();
+    expect(screen.getByTestId('post-trip-memory-prompt')).toBeInTheDocument();
+  });
+
   it('does not render when trip end_date is in the future', () => {
     const future = new Date(Date.now() + 7 * 86400_000).toISOString().slice(0, 10);
-    const { container } = render(
-      <PostTripMemoryPrompt trip={makeTrip({ end_date: future })} />,
-    );
+    const { container } = render(<PostTripMemoryPrompt trip={makeTrip({ end_date: future })} />);
     expect(container.firstChild).toBeNull();
   });
 
