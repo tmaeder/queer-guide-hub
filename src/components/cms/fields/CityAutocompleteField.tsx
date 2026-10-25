@@ -77,7 +77,6 @@ export function CityAutocompleteField({
   // different record after the editor switches records.
   useEffect(() => {
     let active = true;
-    setLinkedCity(null);
     if (!currentCityId) return;
     listFromWhere<Record<string, unknown>>(
       'cities',
