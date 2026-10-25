@@ -120,7 +120,12 @@ export function EmailOperations() {
           </p>
           <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              ['Oldest queued message', seconds(data.health.queue_oldest_seconds)],
+              [
+                'Oldest overdue message',
+                data.health.queue_oldest_seconds === 0
+                  ? 'None'
+                  : seconds(data.health.queue_oldest_seconds),
+              ],
               ['Expired processing leases', data.health.expired_leases],
               ['Acceptance time, 95th percentile', seconds(data.health.acceptance_p95_seconds)],
               ['Delivery time, 95th percentile', seconds(data.health.delivery_p95_seconds)],

@@ -26,6 +26,15 @@ beforeEach(() => {
   api.invoke.mockResolvedValue({ data, error: null });
 });
 describe('email operations', () => {
+  it('does not interpret zero overdue age as an empty outbox', async () => {
+    api.invoke.mockResolvedValue({
+      data: { ...data, health: { ...data.health, states: { queued: 1 }, queue_oldest_seconds: 0 } },
+      error: null,
+    });
+    render(<EmailOperations />);
+    await screen.findByText('queued: 1');
+    expect(screen.getByText('Oldest overdue message').parentElement).toHaveTextContent('None');
+  });
   it('shows measured empty queues separately from unavailable observations', async () => {
     api.invoke.mockResolvedValue({
       data: {

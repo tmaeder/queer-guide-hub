@@ -42,3 +42,5 @@ A direct local workerd probe (bundled runtime compatibility 2026-10-19) reproduc
 ## Controlled recipient evidence
 
 [Email Sending subscriptions](https://developers.cloudflare.com/email-service/reference/event-subscriptions/) exclude Email Routing forwards, replies, Worker routing events and deliveries to verified routing destinations. An Auth-verified application address does not itself establish Cloudflare destination verification. Record the evidence actually observed: a provider-accepted owner test, a canonical Sent copy and no-resend checks do not establish native event correlation or inbox placement. Original native DLQ ingestion is a separate recovery proof. Never fabricate a delivered event or use unrelated contacts to force this test.
+
+The outbox’s oldest-age measurement starts at availability time. A zero value can include mail scheduled for later; Operations labels it as no overdue message, without claiming the outbox is empty. Native queue backlog counts are separate observations.
