@@ -1,4 +1,71 @@
 import { decodeEntities } from './html-entities.ts'
+
+/** Only this event page's published Plone artwork, after matching its Event. */
+export function extractGaychEventArtwork(
+  html: string,
+  event: { title: string; start_date?: unknown },
+  pageUrl: string,
+): string[] {
+  let page: URL
+  try { page = new URL(pageUrl) } catch { return [] }
+  if (page.origin !== 'https://gay.ch' || page.username || page.password || page.search || page.hash
+    || !/^\/parties\/[^/]+\/?$/.test(page.pathname)) return []
+  const path = page.pathname.replace(/\/$/, '')
+  const key = (value: unknown) => typeof value === 'string'
+    ? value.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') : ''
+  const day = (value: unknown) => {
+    if (typeof value !== 'string' || !Number.isFinite(Date.parse(value))) return null
+    const part = value.slice(0, 10), stamp = Date.parse(part)
+    return /^\d{4}-\d{2}-\d{2}$/.test(part) && Number.isFinite(stamp)
+      && new Date(stamp).toISOString().slice(0, 10) === part ? stamp : null
+  }
+  const expectedDay = day(event.start_date)
+  if (!key(event.title) || expectedDay === null) return []
+  const attribute = (tag: string, name: string) =>
+    tag.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*["']([^"']*)["']`, 'i'))?.[1]
+  const clean = html.replace(/<!--[\s\S]*?-->/g, '')
+  const matches: Record<string, unknown>[] = []
+  for (const script of clean.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
+    // gay.ch also publishes a bare JSON object. Never evaluate JavaScript.
+    if (script[1].trim() && attribute(script[1], 'type')?.toLowerCase() !== 'application/ld+json') continue
+    try {
+      const node = JSON.parse(script[2])
+      if (!node || Array.isArray(node) || typeof node !== 'object'
+        || !['https://schema.org', 'http://schema.org'].includes(node['@context'])
+        || node['@type'] !== 'Event' || key(node.name) !== key(event.title)) continue
+      const sourceDay = day(node.startDate)
+      if (sourceDay !== null && Math.abs(sourceDay - expectedDay) <= 86400000) matches.push(node)
+    } catch { /* Non-JSON scripts are not evidence. */ }
+  }
+  const distinct = [...new Map(matches.map(node => [JSON.stringify(node), node])).values()]
+  if (distinct.length !== 1) return []
+  const owned = (value: unknown, original = false): string | null => {
+    if (typeof value !== 'string' || !value.trim()) return null
+    try {
+      const url = new URL(decodeEntities(value), page.href)
+      if (url.origin !== page.origin || url.username || url.password || url.search || url.hash
+        || !url.pathname.startsWith(path + '/')) return null
+      const tail = url.pathname.slice(path.length + 1)
+      if (!(original ? /^@@download\/image\/[^/]+$/ : /^@@(?:download\/image|images)\/[^/]+$/).test(tail)) return null
+      return url.href
+    } catch { return null }
+  }
+  // This is a narrowly owned original URL, not a general social-image fallback.
+  const head = clean.match(/<head\b[^>]*>([\s\S]*?)<\/head\s*>/i)?.[1]
+    ?.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, '') ?? ''
+  const originals = [...head.matchAll(/<meta\b[^>]*>/gi)].flatMap(([tag]) => {
+    if (attribute(tag, 'property')?.toLowerCase() !== 'og:image') return []
+    const url = owned(attribute(tag, 'content'), true)
+    return url ? [url] : []
+  })
+  const image = distinct[0].image
+  const structured = (Array.isArray(image) ? image : [image]).flatMap(value => {
+    const url = owned(value && typeof value === 'object' ? value.url : value)
+    return url ? [url] : []
+  })
+  const uniqueOriginals = [...new Set(originals)]
+  return [...new Set([...(uniqueOriginals.length === 1 ? uniqueOriginals : []), ...structured])].slice(0, 3)
+}
 /**
  * gay.ch category-link extraction.
  *
