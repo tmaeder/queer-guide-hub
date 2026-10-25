@@ -187,14 +187,25 @@ One primitive frames every page: **`<PageContainer>`**
   home rails, `SinglePage`'s three spine blocks). It never drops the gutter.
 - `as` renders a different element (`article`, `section`, `header`, `footer`).
 
-**The gutter ladder is the same one `Header` and `Footer` use.** That is the
-whole point: a page's first pixel of content sits on the same vertical as the
-nav tab above it, at every breakpoint. Full-bleed bars (header rows, the
+**The frame is the same box `Header` and `Footer` use.** That is the whole
+point: a page's first pixel of content sits on the same vertical as the nav tab
+above it and the footer links below it, at every breakpoint. The header and
+footer are islands inset by `--island-inset`, so the frame is too: width
+`min(cap, 100% - 2*inset)` and left margin `max(inset, (100% - cap)/2)`
+(`PAGE_FRAME`). Until 2026-10-25 the frame was `w-full`, so every page ran
+14px (phone) / 22px (tablet+) wider than the chrome on each side, and the
+narrow sizes (legal at 1100px, `form`, `reading`) floated centred. A narrower
+`size` now keeps its width but starts on the same left edge.
+
+Deliberate exceptions, all centred on purpose: the sign-in card (`/auth`), the
+sign-in prompts of gated tools, the trip booklet's 720px print page, and the
+full-screen `/map`. Full-bleed bars (header rows, the
 breadcrumb bar, tinted home bands) stay full-bleed — their rule or tint IS the
 band's edge — and take the cap on their _content row_ only.
 
-**A bleed is a ROUND TRIP: `PAGE_BLEED` out, `PAGE_GUTTER` back in, and no
-second cap.** The inner row must return to its container's content box exactly.
+**A bleed is a ROUND TRIP: `PAGE_BLEED` out, `PAGE_BLEED_GUTTER` back in, and
+no second cap.** Bleeds apply below `md` only and cancel the inset as well as
+the gutter. The inner row must return to its container's content box exactly.
 `SectionNav`'s row carried `max-w-screen-2xl` (1536) while the bleed had landed
 it on the page container's 1600 box, so `mx-auto` split the 64px difference into
 32px of margin per side and its tabs sat 32px right of the cards below —

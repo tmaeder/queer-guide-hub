@@ -250,7 +250,7 @@ function Key() {
   return (
     <div className="mt-10 rounded-container bg-surface-container p-4">
       <Eyebrow>{t('stiGuide.legend', 'What the marks mean')}</Eyebrow>
-      <ul className="mt-4 grid list-none gap-x-8 gap-y-4 p-0 sm:grid-cols-2 xl:grid-cols-4">
+      <ul className="mt-4 grid grid-cols-1 list-none gap-x-8 gap-y-4 p-0 sm:grid-cols-2 xl:grid-cols-4">
         {TRANSMISSION_RISK_ORDER.map((risk) => (
           <li key={risk} className="flex items-start gap-2">
             <RiskMark risk={risk} label className="mt-0.5 shrink-0" />
@@ -689,7 +689,7 @@ export default function StiGuidePage() {
           'No single method covers everything — stacking them is what public health calls combination prevention.',
         )}
       >
-        <ul className="m-0 grid list-none gap-x-12 gap-y-8 p-0 md:grid-cols-2">
+        <ul className="m-0 grid grid-cols-1 list-none gap-x-12 gap-y-8 p-0 md:grid-cols-2">
           {methods.map((m) => {
             const covered = stisByMethod.get(m.slug) ?? [];
             return (
