@@ -20,7 +20,8 @@ begin
     or e.city is distinct from r->>'city' then skipped:=skipped+1; continue; end if;
   proof:=jsonb_build_object('scope','series_identity','dates_confirmed',false,
     'source_url',r->>'source_url','quote',r->>'evidence_quote','content_sha256',r->>'content_sha256',
-    'checked_at',r->>'checked_at','method','reviewed-candidate-live-http-v1');
+    'checked_at',r->>'checked_at','content_truncated',coalesce((r->>'content_truncated')::boolean,false),
+    'hash_scope','bounded_response_prefix','method','reviewed-candidate-live-http-v1');
   insert into public.event_sources(event_id,source_slug,source_entity_id,source_url,payload,payload_hash,confidence,is_primary)
   values(e.id,'editorial-evidence',e.id::text,r->>'source_url',jsonb_build_object('identity_evidence',proof),md5(proof::text),1,false)
   on conflict(source_slug,source_entity_id) do update set source_url=excluded.source_url,

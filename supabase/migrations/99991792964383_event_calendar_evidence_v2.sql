@@ -47,7 +47,7 @@ begin
    end if;
    -- Different IANA names are allowed only when their instants agree for every materialized date.
    if entry_tz<>tz and (((d+coalesce(opening,'00:00'::time)) at time zone entry_tz) is distinct from ((d+coalesce(opening,'00:00'::time)) at time zone tz)
-    or ((d+coalesce(closing,'23:59'::time)) at time zone entry_tz) is distinct from ((d+coalesce(closing,'23:59'::time)) at time zone tz)) then return null; end if;
+    or (((case when closing<=opening then d+1 else d end)+coalesce(closing,'23:59'::time)) at time zone entry_tz) is distinct from (((case when closing<=opening then d+1 else d end)+coalesce(closing,'23:59'::time)) at time zone tz)) then return null; end if;
    if is_cancel then cancelled:=array_append(cancelled,d);
    elsif recurrence='' then
     if d=greatest(a,p_from) then slots:=slots||jsonb_build_array(jsonb_build_object('date',a,'start',to_char(opening,'HH24:MI'),
