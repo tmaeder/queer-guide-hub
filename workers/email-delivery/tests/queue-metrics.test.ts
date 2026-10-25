@@ -119,3 +119,37 @@ it('uses the workerd redirect contract and never follows or acknowledges a redir
     vi.unstubAllGlobals();
   }
 });
+
+it('preserves unknown epoch-zero age and accepts documented millisecond timestamps', async () => {
+  for (const oldestMessageTimestamp of [undefined, new Date(0), 0]) {
+    expect(
+      await readQueueMetrics({
+        metrics: vi.fn().mockResolvedValue({
+          backlogCount: 2,
+          backlogBytes: 100,
+          oldestMessageTimestamp,
+        }),
+      }),
+    ).toEqual({ available: true, backlog_count: 2, backlog_bytes: 100, oldest_message_at: null });
+  }
+  expect(
+    await readQueueMetrics({
+      metrics: vi.fn().mockResolvedValue({
+        backlogCount: 2,
+        backlogBytes: 100,
+        oldestMessageTimestamp: Date.parse('2026-10-25T18:00:00Z'),
+      }),
+    }),
+  ).toMatchObject({ available: true, oldest_message_at: '2026-10-25T18:00:00.000Z' });
+  for (const oldestMessageTimestamp of [new Date(NaN), Infinity, -1, 'yesterday']) {
+    expect(
+      await readQueueMetrics({
+        metrics: vi.fn().mockResolvedValue({
+          backlogCount: 2,
+          backlogBytes: 100,
+          oldestMessageTimestamp,
+        }),
+      }),
+    ).toMatchObject({ available: false, backlog_count: null, oldest_message_at: null });
+  }
+});

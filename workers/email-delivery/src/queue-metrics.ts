@@ -25,14 +25,26 @@ export async function readQueueMetrics(
       result.backlogBytes < 0
     )
       return unavailable;
-    const oldest = result.oldestMessageTimestamp;
-    if (oldest !== undefined && (!(oldest instanceof Date) || !Number.isFinite(oldest.getTime())))
+    // Current runtime types expose Date; the JS API documentation also describes
+    // epoch milliseconds. Both representations retain 0 as an unknown timestamp.
+    const oldest: unknown = result.oldestMessageTimestamp;
+    const milliseconds = oldest instanceof Date ? oldest.getTime() : oldest;
+    if (
+      milliseconds !== undefined &&
+      (typeof milliseconds !== 'number' ||
+        !Number.isFinite(milliseconds) ||
+        milliseconds < 0 ||
+        !Number.isFinite(new Date(milliseconds).getTime()))
+    )
       return unavailable;
     return {
       available: true,
       backlog_count: result.backlogCount,
       backlog_bytes: result.backlogBytes,
-      oldest_message_at: result.backlogCount > 0 && oldest ? oldest.toISOString() : null,
+      oldest_message_at:
+        result.backlogCount > 0 && typeof milliseconds === 'number' && milliseconds > 0
+          ? new Date(milliseconds).toISOString()
+          : null,
     };
   } catch {
     return unavailable;
