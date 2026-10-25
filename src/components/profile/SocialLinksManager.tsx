@@ -61,6 +61,7 @@ async function resolveAvatar(platform: string, handle: string | null): Promise<s
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ source, identifier: handle.replace(/^@/, '') }),
+      signal: AbortSignal.timeout(20_000),
     });
     if (!res.ok) return null;
     const body = (await res.json()) as { url?: string };

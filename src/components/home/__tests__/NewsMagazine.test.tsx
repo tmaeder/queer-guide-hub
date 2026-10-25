@@ -13,6 +13,8 @@ const state = vi.hoisted(() => ({
   storyCounts: new Map<string, { slug: string; count: number }>(),
   user: null as { id: string } | null,
   frontCalls: 0,
+  podcasts: [] as unknown[],
+  podcastsLoading: false,
 }));
 
 // The band reads the RANKED feed, not `published_at desc` — mocking
@@ -28,6 +30,11 @@ vi.mock('@/hooks/useNewsFront', () => ({
     };
   },
   useForYouNews: () => ({ articles: [], loading: false, error: null }),
+  useFrontPodcasts: () => ({
+    articles: state.podcasts,
+    loading: state.podcastsLoading,
+    error: null,
+  }),
 }));
 vi.mock('@/hooks/useEditorsPick', () => ({ useEditorsPick: () => null }));
 vi.mock('@/hooks/useEntityImageAssets', () => ({
@@ -73,6 +80,8 @@ beforeEach(() => {
   state.storyCounts = new Map();
   state.user = null;
   state.frontCalls = 0;
+  state.podcasts = [];
+  state.podcastsLoading = false;
   sessionStorage.clear();
 });
 
@@ -221,6 +230,41 @@ describe('NewsMagazine', () => {
       );
       const stale = renderWithProviders(<NewsMagazine />);
       expect(stale.container.querySelector('h3')?.textContent).toContain('Story 0');
+    });
+  });
+
+  // The ranked pool never holds podcasts: hotness halves every 24h and most
+  // shows publish overnight, so measured on prod the best episode ranked 99th
+  // and the chip was disabled for everyone. It reads its own query now.
+  describe('podcasts chip', () => {
+    it('is enabled from the podcast query even when the ranked pool has none', () => {
+      state.front = Array.from({ length: 10 }, (_, i) => article(i));
+      state.podcasts = Array.from({ length: 4 }, (_, i) =>
+        article(200 + i, { title: `Episode ${i}`, media_type: 'podcast' }),
+      );
+      renderWithProviders(<NewsMagazine />);
+      const tab = screen.getByRole('tab', { name: 'Podcasts' });
+      expect(tab).not.toBeDisabled();
+      fireEvent.click(tab);
+      expect(screen.getByRole('heading', { level: 3 }).textContent).toContain('Episode 0');
+      expect(screen.queryByText('Story 1')).toBeNull();
+    });
+
+    it('stays disabled when there are too few episodes', () => {
+      state.front = Array.from({ length: 10 }, (_, i) =>
+        article(i, i < 5 ? { media_type: 'podcast' } : {}),
+      );
+      state.podcasts = [article(300, { media_type: 'podcast' })];
+      renderWithProviders(<NewsMagazine />);
+      expect(screen.getByRole('tab', { name: 'Podcasts' })).toBeDisabled();
+    });
+
+    it('shows a skeleton, not the empty state, while a restored podcasts topic loads', () => {
+      state.front = Array.from({ length: 10 }, (_, i) => article(i));
+      state.podcastsLoading = true;
+      sessionStorage.setItem('qg_news_topic', JSON.stringify({ id: 'podcasts', ts: Date.now() }));
+      renderWithProviders(<NewsMagazine />);
+      expect(screen.queryByText('No current stories are available right now.')).toBeNull();
     });
   });
 

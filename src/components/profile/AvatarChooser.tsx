@@ -256,6 +256,8 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ source, identifier: identifier.trim() }),
+        // The worker proxies a third-party lookup and mirrors to R2.
+        signal: AbortSignal.timeout(20_000),
       });
       const body = (await res.json()) as { url?: string; error?: string };
       if (res.status === 404) {
@@ -268,7 +270,13 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
       }
       setImportPreview(body.url);
     } catch (err) {
-      setImportError(err instanceof Error ? err.message : 'Lookup failed — try again.');
+      setImportError(
+        err instanceof Error && err.name === 'TimeoutError'
+          ? 'Lookup timed out — try again.'
+          : err instanceof Error
+            ? err.message
+            : 'Lookup failed — try again.',
+      );
     } finally {
       setBusy(false);
     }
