@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { webcrypto } from 'node:crypto';
 import { redirectClientIp } from '../../supabase/functions/_shared/redirect-relay';
 import { onRequest } from '../go/[slug]';
+import { visitorMetadata } from '../../supabase/functions/_shared/redirect-visitor';
 
 afterEach(() => vi.unstubAllGlobals());
 function invoke(method = 'GET', slug = 'pride-zurich', query = '', secret?: string) {
@@ -23,6 +24,34 @@ function invoke(method = 'GET', slug = 'pride-zurich', query = '', secret?: stri
   } as never);
 }
 describe('branded tracked URL', () => {
+  it('relays Unicode geography without raw non-ASCII header bytes or forged visitor fields', async () => {
+    let captured: Request | undefined;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url, options) => {
+        captured = new Request(url, options);
+        return new Response(null, { status: 302, headers: { Location: 'https://example.org' } });
+      }),
+    );
+    const request = Object.assign(
+      new Request('https://queer.guide/go/geo-fixture', {
+        headers: { 'x-qg-visitor-city': 'Forged', 'x-qg-visitor-city-utf8': 'Forged' },
+      }),
+      { cf: { city: 'Zürich', region: 'Zürich', continent: 'EU', country: 'CH' } },
+    );
+    expect(
+      (
+        await onRequest({
+          request,
+          params: { slug: 'geo-fixture' },
+          env: { SUPABASE_URL: 'https://example.supabase.co', SUPABASE_ANON_KEY: 'public' },
+        } as never)
+      ).status,
+    ).toBe(302);
+    expect(captured?.headers.get('x-qg-visitor-city-utf8')).toBe('Z%C3%BCrich');
+    expect(captured?.headers.has('x-qg-visitor-city')).toBe(false);
+    expect(visitorMetadata(captured!, false).city).toBe('Zürich');
+  });
   it('preserves encoded query/context and returns the resolver redirect without following it', async () => {
     const fetcher = vi.fn(
       async () =>

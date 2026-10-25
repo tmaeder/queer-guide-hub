@@ -1,13 +1,21 @@
 # Redirect QR image service
 
-Local implementation; not deployed. A service binding named `REDIRECT_QR` from the
+The production Worker was first deployed on 2026-10-25 (version
+`900e62d2-f9fb-43b1-a9a8-e481cdf91137`). A service binding named `REDIRECT_QR` from the
 Pages project to `qg-redirect-qr` exposes `functions/api/qr.ts` at `/api/qr`.
 The Worker deliberately has no public route or workers.dev/preview URL. Configure
 `SUPABASE_URL` and `SUPABASE_ANON_KEY` to the same fixed project/publishable key as
 the app for saved profile/logo reads. It needs no service-role key, destination
 fetch, database write or click lookup.
-The rate-limit namespace ID in wrangler.jsonc is reserved for this service; verify
-it is unused in the deployment account before release.
+The rate-limit namespace ID in wrangler.jsonc was verified unused across the
+account's 27 existing Workers before that first deployment.
+
+`.github/workflows/redirect-qr.yml` verifies and deploys changes to this Worker on
+main. `node scripts/redirect-qr-deployment-config.mjs` generates its ignored
+deployment configuration from the application's public production project
+fallback, rejecting any non-anon key or mismatched project. The renderer receives
+no service-role credentials. Pages' production `services.REDIRECT_QR` binding
+must point to this Worker; redeploy Pages after changing the binding.
 
 ## HTTP contract
 
