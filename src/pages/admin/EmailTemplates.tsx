@@ -73,7 +73,10 @@ function getRecovery(key: string, selected: EmailTemplate): EmailTemplate | null
   }
 }
 
-export default function EmailTemplates() {
+export default function EmailTemplates({
+  embedded = false,
+  onSaved,
+}: { embedded?: boolean; onSaved?: () => void } = {}) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
@@ -164,6 +167,9 @@ export default function EmailTemplates() {
       const url = new URL(anchor.href);
       if (
         url.href === window.location.href ||
+        (embedded &&
+          url.origin === window.location.origin &&
+          url.pathname === window.location.pathname) ||
         (url.pathname === window.location.pathname && url.hash)
       )
         return;
@@ -180,7 +186,7 @@ export default function EmailTemplates() {
       window.removeEventListener('beforeunload', unload);
       document.removeEventListener('click', followLink, true);
     };
-  }, [dirty, exportPending, navigate]);
+  }, [dirty, exportPending, navigate, embedded]);
   useEffect(() => {
     if (!draft) return;
     try {
@@ -273,6 +279,7 @@ export default function EmailTemplates() {
       setSelected(saved);
       setDraft(null);
       toast.success('Email template saved');
+      onSaved?.();
     } catch {
       setSaveError('Could not save the template. Your draft is preserved. Try saving again.');
     } finally {
@@ -329,7 +336,7 @@ export default function EmailTemplates() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <AdminArchetypeHeader title="Email Templates" />
+      {!embedded && <AdminArchetypeHeader title="Email Templates" />}
       <p className="text-sm text-muted-foreground">
         Compose, preview and test transactional emails.{' '}
         <a className="underline underline-offset-4" href="/admin/design">
@@ -812,8 +819,8 @@ export default function EmailTemplates() {
                 aria-describedby="test-recipient-help"
               />
               <p id="test-recipient-help" className="text-sm text-muted-foreground">
-                Tests go to your verified admin email address. Use the Email workspace for
-                production sends.
+                Tests go to your verified admin email address. Review production sends in the
+                Delivery tab.
               </p>
             </div>
             {sampleFields(testVariables, 'test')}

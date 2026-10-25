@@ -85,6 +85,14 @@ describe('admin archetype registry', () => {
     expect(stale, 'registry entries with no matching route in src/routes.tsx').toEqual([]);
   });
 
+  it('registers the integrated Email workspace rather than its legacy template redirect', () => {
+    expect(ADMIN_ARCHETYPES.find((entry) => entry.path === 'email')).toMatchObject({
+      archetype: 'H',
+      caveat: expect.stringContaining('Templates'),
+    });
+    expect(ADMIN_ARCHETYPES.some((entry) => entry.path === 'email-templates')).toBe(false);
+  });
+
   it('registers each route exactly once', () => {
     const seen = new Set<string>();
     const dupes = ADMIN_ARCHETYPES.filter((e) =>
@@ -118,11 +126,12 @@ describe('admin archetype registry', () => {
     // surfaces that were Inbox / Quality / Duplicates. The three old paths stay
     // registered as redirects, so the two derived e2e suites keep their coverage.)
     // (12 -> 11 caveated when /admin/maps was retired.)
+    // (28 -> 27 clean when Templates joined Email: its rich-editor caveat moves to Email.)
     const clean = ADMIN_ARCHETYPES.filter((e) => e.archetype && !e.caveat).length;
     const caveated = ADMIN_ARCHETYPES.filter((e) => e.archetype && e.caveat).length;
     const exempt = ADMIN_ARCHETYPES.filter((e) => e.archetype === null).length;
     // The email workspace adds a standard inbox route. The taxonomy directory adds a standard index route. Organisation workspace has its own static route; Business remains a redirect.
-    expect({ clean, caveated, exempt }).toEqual({ clean: 28, caveated: 13, exempt: 4 });
+    expect({ clean, caveated, exempt }).toEqual({ clean: 27, caveated: 13, exempt: 4 });
     expect(clean + caveated + exempt).toBe(ADMIN_ARCHETYPES.length);
   });
 
