@@ -23,6 +23,9 @@ begin
  join countries c on c.id=v.country_id join cities ci on ci.id=v.city_id and ci.country_id=c.id
  where v.duplicate_of_id is null and v.closed_at is null and o.duplicate_of_id is null and o.status='active'
  and o.roles=array['venue']::text[] and o.claim_status='unclaimed' and o.last_verified_at is null
+ and coalesce(to_jsonb(o)->>'claimed_by','')=''
+ and coalesce(to_jsonb(v)->>'verified','false')='false'
+ and coalesce(to_jsonb(v)->>'verification_status','')not in('verified','claimed')
  and o.field_provenance#>>'{identity,source}'='unified_location'
  and lower(btrim(o.name))=lower(btrim(v.name)) and o.city_id=v.city_id and o.country_id=v.country_id
  and v.website is null and v.phone is null and v.phone_e164 is null and v.email is null

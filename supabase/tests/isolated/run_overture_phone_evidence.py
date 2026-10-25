@@ -17,12 +17,12 @@ create role anon;create role authenticated;create role service_role;create schem
 create schema supabase_migrations;create table supabase_migrations.schema_migrations(version text);
 insert into supabase_migrations.schema_migrations values('99991792951000');
 create table cities(id uuid primary key,name text,country_id uuid);
-alter table organizations add column website text,add column email text,add column social jsonb default '{}';
-alter table venues add column website text,add column email text,add column address text default 'Example Street 12';
+alter table organizations add column claimed_by uuid,add column website text,add column email text,add column social jsonb default '{}';
+alter table venues add column verified boolean default false,add column website text,add column email text,add column address text default 'Example Street 12';
 alter table venue_sources alter column id set default gen_random_uuid();
 alter table venue_sources add column source_entity_id text,add column is_primary boolean;
 create table venue_quality_signals(venue_id uuid,signal_type text,value numeric,source text,details jsonb);
-insert into fixture select n,gen_random_uuid(),gen_random_uuid(),gen_random_uuid(),gen_random_uuid(),gen_random_uuid(),null,null from generate_series(1,17)n;
+insert into fixture select n,gen_random_uuid(),gen_random_uuid(),gen_random_uuid(),gen_random_uuid(),gen_random_uuid(),null,null from generate_series(1,20)n;
 insert into countries select c,'AO'from fixture;
 insert into cities select city,'Luanda',c from fixture;
 insert into organizations(id,name,primary_venue_id,country_id,city_id)select o,'Venue '||n,v,c,city from fixture;
@@ -35,6 +35,9 @@ update organizations set field_provenance=field_provenance||'{"phone":{"human_re
 update venues set phone_e164='+244900000000'where id=(select v from fixture where n=16);
 insert into venue_sources(id,venue_id,source_slug,source_entity_id,source_url,is_primary,payload)select gen_random_uuid(),v,'gayout','123','https://www.gayout.com/venue-17',true,jsonb_build_object('normalized',jsonb_build_object('name','Venue 17','metadata',jsonb_build_object('data_source','gayout')))from fixture where n=17;
 insert into entity_quality_findings(entity_type,entity_id,dimension,state)select 'organization',o,d,'source_unavailable'from fixture cross join unnest(array['editorial','media'])d where n=17;
+update venues set verified=true where id=(select v from fixture where n=18);
+update organizations set claimed_by=gen_random_uuid()where id=(select o from fixture where n=19);
+update venues set verification_status='verified'where id=(select v from fixture where n=20);
 update fixture f set old_v=to_jsonb(vv),old_o=to_jsonb(oo)from venues vv,organizations oo where vv.id=f.v and oo.id=f.o;
 select set_config('matching.overture_proofs',(
 select jsonb_agg(jsonb_build_object('venue_id',v.id,'organization_id',o.id,'name',v.name,'latitude',v.latitude,'longitude',v.longitude,
