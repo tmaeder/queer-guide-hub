@@ -41,4 +41,4 @@ BEGIN
   END IF;
 END $verify$;
 NOTIFY pgrst,'reload schema';
-;
+

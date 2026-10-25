@@ -78,4 +78,4 @@ DROP INDEX IF EXISTS "public"."idx_fk_redirect_password_attempts_workspace_id_3c
 DROP INDEX IF EXISTS "public"."idx_fk_redirect_folder_members_workspace_id_815ed3c0";
 -- Retained: public.idx_fk_redirect_access_mail_workspace_id_request_id_21ee818d
 DROP INDEX IF EXISTS "public"."idx_fk_redirect_access_mail_workspace_id_f6bf30da";
-;
+
