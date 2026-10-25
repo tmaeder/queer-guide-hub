@@ -652,7 +652,9 @@ const NO_OVERHANG_ROUTES = [
 test.describe('page layout — nothing wider than the header', () => {
   // 2560 because the homepage intent map is a full-window stage whose stations
   // are placed in percent of it: fine at 1920, 240px outside the column at 2560.
-  for (const width of [1440, 1920, 2560]) {
+  // 768 and 1024 because tablet widths are where action rows and fixed-width
+  // inputs ran out of room in the 2026-10 sweeps.
+  for (const width of [768, 1024, 1440, 1920, 2560]) {
     for (const route of NO_OVERHANG_ROUTES) {
       test(`${route} draws nothing past the column at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
