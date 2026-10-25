@@ -8,7 +8,9 @@
  * them in would make the mirror file's "keep the two in sync" instruction
  * untrue of half its contents.
  *
- * SCOPE IS DELIBERATELY THE TWO ADULT DEPARTMENTS, not all 40 groups.
+ * BLURBS ARE SCOPED TO THE TWO ADULT DEPARTMENTS, not all 40 groups. Every
+ * tile still gets an ICON — `groupIcon()` below falls back to the department
+ * mark — but the toy-specific glyphs stay in `TOY_GROUP_META`.
  * `/marketplace/categories` renders group tiles SECTIONED BY DEPARTMENT, so a
  * section is internally consistent either way, and widening to the whole
  * catalogue forces collisions the set cannot resolve: `gear-fetish` is a boot
@@ -27,6 +29,7 @@
  */
 
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
+import { departmentGlyph } from '@/components/marketplace/departmentPlate';
 
 export interface CategoryMeta {
   icon: TransitIconName;
@@ -216,4 +219,86 @@ export function toyGroupMeta(slug: string | null | undefined): CategoryMeta | nu
 /** Blurb for a fine chip, or null. */
 export function toyFineBlurb(slug: string | null | undefined): string | null {
   return (slug && TOY_FINE_BLURBS[slug]) || null;
+}
+
+/**
+ * Marks for the NON-adult groups that have a better glyph than their
+ * department's. Everything else falls back to the department mark — so every
+ * tile on `/marketplace/categories` carries an icon, and a group with no
+ * distinct glyph reads as "a stop on the Apparel line" rather than borrowing a
+ * mark that means something else. `footwear` deliberately stays on `apparel`
+ * rather than `gear-fetish` (that boot is the fetish-garment mark; see the
+ * scope note above).
+ */
+export const GROUP_ICONS: Record<string, TransitIconName> = {
+  books: 'library',
+  art: 'gallery',
+  film: 'theater',
+  calendars: 'events',
+  home_goods: 'homeware',
+  grooming: 'selfcare',
+};
+
+/**
+ * Icon for a group tile: the toy mark, then a group override, then the
+ * department's own mark. Total — an unrouted group (no department) gets `shop`.
+ */
+export function groupIcon(
+  slug: string | null | undefined,
+  department: string | null | undefined,
+): TransitIconName {
+  return toyGroupMeta(slug)?.icon ?? GROUP_ICONS[slug ?? ''] ?? departmentGlyph(department);
+}
+
+/**
+ * Marks for FINE buckets that have a closer glyph than their group's. Anything
+ * absent inherits its group's mark via `fineIcon()`, so every subcategory chip
+ * carries one. Only reuse a glyph whose `use` line genuinely covers the thing:
+ * a near-miss mark reads as a different category.
+ */
+export const FINE_ICONS: Record<string, TransitIconName> = {
+  // apparel / underwear
+  hats: 'apparel',
+  flags: 'pride',
+  pins_badges: 'pride',
+  patches_stickers: 'pride',
+  binders: 'trans-pride',
+  packing_underwear: 'trans-pride',
+  // books_art
+  photography: 'gallery',
+  prints_posters: 'gallery',
+  cards_stationery: 'documents',
+  // grooming
+  shave_beard: 'salon',
+  edible_massage: 'intimacy',
+  aphrodisiacs: 'intimacy',
+  // toys
+  strap_ons: 'gear-harness',
+  packers_stp: 'trans-pride',
+  butt_plugs: 'toy-plug',
+  dilators: 'toy-plug',
+  realistic_dildos: 'toy-dildo',
+  fantasy_dildos: 'toy-dildo',
+  double_dildos: 'toy-dildo',
+  penis_sleeves: 'toy-cockring',
+  douching_enemas: 'body-health',
+  cbt: 'toy-cockring',
+  // bondage / fetish
+  rope: 'rope-play',
+  cuffs_restraints: 'handcuffs',
+  spreader_bars: 'handcuffs',
+  slings_furniture: 'rope-play',
+  latex: 'gear-fetish',
+  leather: 'gear-fetish',
+  rubber_neoprene: 'gear-fetish',
+  uniforms: 'gear-fetish',
+};
+
+/** Icon for a fine-tier chip: an override, else its group's mark. Total. */
+export function fineIcon(
+  slug: string | null | undefined,
+  group: string | null | undefined,
+  department: string | null | undefined,
+): TransitIconName {
+  return FINE_ICONS[slug ?? ''] ?? groupIcon(group, department);
 }
