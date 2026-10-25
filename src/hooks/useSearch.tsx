@@ -356,6 +356,10 @@ export const useSearch = (
     error,
     errorKind,
     tooShort,
+    /** Identity of the request `results` belong to, page excluded. Changes
+     *  only when the debounced query/filters/sort do, so callers that
+     *  accumulate pages can tell "next page" from "new search". */
+    resultsKey: hashKey([debouncedQuery, filtersKey, sort ?? null]),
   };
 };
 

@@ -89,6 +89,15 @@ test.describe('Zürich late-night mobility', () => {
     await expect(section).toContainText('transport.data.gouv.fr');
   });
 
+  test('Paris credits IDFM and states the derived data is ODbL', async ({ page }) => {
+    await page.goto('/city/paris#travel');
+    const section = page.getByRole('region', { name: 'Late night' });
+    await expect(section).toContainText('Last metro', { timeout: 20_000 });
+    await expect(section).toContainText(CLOCK);
+    await expect(section).toContainText('Île-de-France Mobilités');
+    await expect(section).toContainText('available under ODbL');
+  });
+
   test('/going-out in Zürich has a Getting home section', async ({ page }) => {
     await page.goto('/going-out?city=zuerich');
     await expect(page.getByText('Getting home', { exact: false }).first()).toBeVisible({
