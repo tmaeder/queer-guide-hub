@@ -303,3 +303,18 @@ function transformPath(
   }
   return out.join(' ');
 }
+
+/**
+ * The size an icon is DRAWN at for a requested size.
+ *
+ * Every icon below 28px renders 4px larger than asked. Measured on the live
+ * site, the bulk of the product asked for 12-16px — a lucide habit, where a
+ * 1.5-unit hairline glyph needs no room — and a filled v2 icon with an outline
+ * reads as a speck at that size. One rule here moves the whole product a step
+ * up instead of editing ~1,500 call sites. Large, deliberate sizes are left
+ * alone, and so is a monochrome render (map pins, the favicon), which is drawn
+ * into a container of fixed size.
+ */
+export function displaySize(size: number): number {
+  return size < 28 ? size + 4 : size;
+}

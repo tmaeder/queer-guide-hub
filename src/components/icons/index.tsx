@@ -17,10 +17,11 @@
  * `transit/defs/`. Importing `lucide-react` is an ESLint error.
  */
 import { forwardRef, type CSSProperties, type ForwardRefExoticComponent, type RefAttributes, type SVGProps } from 'react';
-import { TransitIcon, displaySize } from '@/components/transit/TransitIcon';
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import { displaySize } from '@/components/transit/iconKit';
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
 
-export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'ref'> {
+export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'ref' | 'name'> {
   size?: number | string;
   /** Accepted for call-site compatibility and ignored: v2 strokes are set by size. */
   strokeWidth?: number | string;
@@ -82,6 +83,7 @@ export function iconFor(slug: TransitIconName, displayName: string): Icon {
         label={ariaLabel}
         hollow={off}
         data-icon={kebab}
+        className={className}
         style={sized}
         {...rest}
       />

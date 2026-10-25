@@ -86,7 +86,7 @@ describe('Icon System v2 — spec compliance', () => {
   // department glyphs so department tiles could stop using a product photo as
   // category art.
   it('covers the whole set', () => {
-    if (!BATCH) expect(entries).toHaveLength(76);
+    if (!BATCH) expect(entries).toHaveLength(246);
     expect(entries.length).toBeGreaterThan(0);
   });
 

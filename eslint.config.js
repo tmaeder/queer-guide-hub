@@ -227,6 +227,8 @@ export default tseslint.config(
       // CSS variable to resolve against. Drift-tested against src/index.css by
       // src/components/transit/__tests__/iconPalette.test.ts.
       'src/components/transit/iconDefs.ts',
+      'src/components/transit/iconKit.ts',
+      'src/components/transit/defs/**',
       'src/config/mapStyle.ts',
       'src/config/contentTypeRegistry.ts',
       'src/config/submissionRegistry.ts',
@@ -551,6 +553,8 @@ export default tseslint.config(
       // CSS variable to resolve against. Drift-tested against src/index.css by
       // src/components/transit/__tests__/iconPalette.test.ts.
       'src/components/transit/iconDefs.ts',
+      'src/components/transit/iconKit.ts',
+      'src/components/transit/defs/**',
       'src/lib/avatar.ts',
       // Locked drug-interaction risk scale — see the note in the block above.
       'src/lib/substanceRisk.ts',
