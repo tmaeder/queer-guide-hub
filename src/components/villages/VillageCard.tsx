@@ -3,7 +3,9 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MapPin, Landmark } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Image } from '@/components/ui/Image';
-import { FeaturedBadge } from '@/components/ui/FeaturedBadge';
+import { useTranslation } from 'react-i18next';
+import { badgeVariants } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import type { QueerVillageWithRelations } from '@/hooks/useQueerVillages';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 
@@ -12,6 +14,7 @@ interface VillageCardProps {
 }
 
 export const VillageCard = memo(function VillageCard({ village }: VillageCardProps) {
+  const { t } = useTranslation();
   const imageUrl = village.image_url;
   const cityName = village.cities?.name;
   const countryName = village.countries?.name;
@@ -30,7 +33,11 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
           fallbackIcon={Landmark}
           fallbackKey={village.slug}
         >
-          {village.featured && <FeaturedBadge />}
+          {village.featured && (
+            <span className={cn(badgeVariants({ variant: 'overlay' }), 'absolute top-2 right-2')}>
+              {t('common.featured', 'Featured')}
+            </span>
+          )}
           {isVisited && (
             <div
               className="text-2xs absolute bottom-2 left-2 inline-flex items-center px-1.5 py-0.5 font-semibold bg-foreground/80 text-background"
