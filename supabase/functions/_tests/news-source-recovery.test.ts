@@ -20,6 +20,14 @@ Deno.test('source recovery keeps existing full source text when there is no mate
  const p=sourceRecoveryProposal({...n,content:body},result)
  assertEquals(p.content,body);assertEquals(p.extraction_meta.applied,false)
 })
+Deno.test('article recovery never replaces podcast notes with player or recommendation text',()=>{
+ for(const fields of [{media_type:'podcast'},{metadata:{media_type:'podcast'}},{metadata:{audio_url:'https://example.org/episode.mp3'}},{audio_url:'https://example.org/episode.mp3'}]){
+  const original={...n,...fields}
+  const proposal=sourceRecoveryProposal(original,{...result,markdown:'Player recommendations'})
+  assertEquals(proposal.content,n.content);assertEquals(proposal.extraction_meta.applied,false)
+  assertEquals(proposal.extraction_meta.reason,'not_an_article');assert(!('markdown'in proposal))
+ }
+})
 Deno.test('page title comparison permits publisher suffix and ordinary punctuation only',()=>{
  assert(sourceRecoveryProposal(n,{...result,pageTitle:n.title+' | Outlet'}).extraction_meta.applied)
  assertEquals(sourceRecoveryProposal(n,{...result,pageTitle:'Outlet home'}).extraction_meta.applied,false)

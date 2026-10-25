@@ -34,7 +34,7 @@ select md5(i::text)::uuid,jsonb_build_object('title','Community source','content
  '{"quality_status":"review","auto_publish":false,"auto_publish_blocked_reasons":["truncated_body"],
  "quality_input_version":"original","quality_attempts":1,"keep_existing":"yes","quality_decision":{"needsManualReview":false,
  "shouldPublish":true,"isRelevant":true,"isSatire":false,"isAdvertorial":false,"confidence":0.9,"relevanceScore":0.9,"qualityScoreAfter":0.9}}'::jsonb
-from generate_series(1,22)i;
+from generate_series(1,24)i;
 update ingestion_staging set enriched_data=jsonb_set(enriched_data,'{quality_decision,needsManualReview}','true')where id=md5('2')::uuid;
 update ingestion_staging set enriched_data=jsonb_set(enriched_data,'{quality_decision,confidence}','0.69')where id=md5('3')::uuid;
 update ingestion_staging set enriched_data=jsonb_set(enriched_data,'{auto_publish_blocked_reasons}','["truncated_body","image_unusable"]')where id=md5('4')::uuid;
@@ -53,6 +53,8 @@ update ingestion_staging set enriched_data=jsonb_set(enriched_data,'{quality_dec
 update ingestion_staging set enriched_data=jsonb_set(enriched_data,'{quality_decision,needsManualReview}','"false"')where id=md5('17')::uuid;
 update ingestion_staging set target_table='venues'where id=md5('18')::uuid;
 update ingestion_staging set dedup_status='duplicate'where id=md5('22')::uuid;
+update ingestion_staging set normalized_data=normalized_data||'{"metadata":{"media_type":"podcast"}}'where id=md5('23')::uuid;
+update ingestion_staging set normalized_data=normalized_data||'{"metadata":{"audio_url":"https://example.org/episode.mp3"}}'where id=md5('24')::uuid;
 create table original_staging as select id,to_jsonb(s)value from ingestion_staging s;
 """
 checks="""

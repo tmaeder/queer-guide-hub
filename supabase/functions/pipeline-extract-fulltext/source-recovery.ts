@@ -42,18 +42,20 @@ export function recoverySource(n:Record<string,unknown>){
  const metadata=n.metadata&&typeof n.metadata==='object'?n.metadata as Record<string,unknown>:{}
  const candidates=[n.url,Array.isArray(n.urls)?n.urls[0]:null,metadata.url,n.source_url]
  const capturedUrl=input.url??candidates.find((v):v is string=>typeof v==='string'&&!!v.trim())?.trim()??''
- return {...input,capturedUrl}
+ const mediaType=String(n.media_type||metadata.media_type||'article').trim().toLowerCase()
+ const isArticle=['article','news','text'].includes(mediaType)&&![n.audio_url,metadata.audio_url].some(v=>typeof v==='string'&&!!v.trim())
+ return {...input,capturedUrl,isArticle}
 }
 
 export function sourceRecoveryProposal<T extends Record<string,unknown>>(n:T,result:{body:string;markdown?:string|null;method:string;url:string;pageTitle?:string|null;at:string}){
  const source=recoverySource(n),body=result.body.trim()
  const titleMatches=!!result.pageTitle&&!!titleKey(source.title)&&titleKey(source.title)===titleKey(result.pageTitle)
  const gain=body.length>=280&&body.length<=100000&&body.length>source.content.length*1.2
- const applied=titleMatches&&gain
+ const applied=source.isArticle&&titleMatches&&gain
  return {...n,...(applied&&result.markdown?{markdown:result.markdown}:{}),...(applied?{content:body}:{}),extraction_meta:{
   recovery_contract:SOURCE_RECOVERY_CONTRACT,url:result.url,method:result.method,run_at:result.at,
   original_length:source.content.length,extracted_length:body.length,has_markdown:!!result.markdown,applied,
   page_title:result.pageTitle??null,...(titleMatches?{matched_title:source.title}:{}),
-  reason:applied?'source_text_recovered':!titleMatches?'page_identity_unconfirmed':'no_material_source_gain',
+  reason:applied?'source_text_recovered':!source.isArticle?'not_an_article':!titleMatches?'page_identity_unconfirmed':'no_material_source_gain',
  }}
 }

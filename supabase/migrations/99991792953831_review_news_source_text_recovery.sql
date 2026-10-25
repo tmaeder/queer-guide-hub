@@ -11,6 +11,8 @@ returns boolean language sql immutable set search_path='' as $fn$
  select coalesce(s.target_table='news_articles' and s.disposition='pending' and s.review_status='pending_review'
  and s.reviewed_by is null and s.reviewed_at is null and s.enrichment_status in('enriched','completed')
  and s.dedup_status is distinct from 'duplicate'
+ and lower(coalesce(nullif(s.normalized_data->>'media_type',''),s.normalized_data#>>'{metadata,media_type}','article'))in('article','news','text')
+ and coalesce(nullif(btrim(s.normalized_data->>'audio_url'),''),nullif(btrim(s.normalized_data#>>'{metadata,audio_url}'),''))is null
  and s.enriched_data->>'quality_status'='review' and s.enriched_data->'auto_publish'='false'::jsonb
  and s.enriched_data->'auto_publish_blocked_reasons'='["truncated_body"]'::jsonb
  and coalesce(s.normalized_data->'extraction_meta','null')='null'::jsonb
