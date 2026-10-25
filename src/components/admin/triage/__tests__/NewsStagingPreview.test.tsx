@@ -82,4 +82,67 @@ describe('NewsStagingPreview', () => {
     expect(screen.getByText(/Verdict pending/)).not.toBeNull();
     expect(screen.getByText('Raw description body')).not.toBeNull();
   });
+
+  it('shows recovered source text and the fresh quality requirement', () => {
+    const news = readNewsStaging(
+      {
+        ...normalized,
+        content: 'Complete publisher article',
+        extraction_meta: {
+          url: 'https://example.com/story',
+          page_title: normalized.name,
+          original_length: 180,
+          extracted_length: 2400,
+        },
+      },
+      {
+        review_source_text_recovery: {
+          contract: 'news_source_text_recovery.v1',
+          status: 'recovered',
+          attempts: 1,
+        },
+      },
+    );
+    render(<NewsStagingPreview news={news} />);
+    expect(screen.getByText('Complete publisher article')).not.toBeNull();
+    expect(screen.getByText('Full article recovered; quality check pending')).not.toBeNull();
+    expect(screen.getByText(/A fresh quality check must pass/)).not.toBeNull();
+    expect(
+      screen.getByRole('link', { name: /Check the publisher page/ }).getAttribute('href'),
+    ).toBe('https://example.com/story');
+  });
+
+  it('shows identity evidence when source recovery cannot confirm the headline', () => {
+    const news = readNewsStaging(
+      {
+        ...normalized,
+        extraction_meta: { page_title: 'Publisher home page', reason: 'page_identity_unconfirmed' },
+      },
+      {
+        review_source_text_recovery: {
+          contract: 'news_source_text_recovery.v1',
+          status: 'no_gain',
+          attempts: 1,
+        },
+      },
+    );
+    render(<NewsStagingPreview news={news} />);
+    expect(screen.getByText(/Publisher home page/)).not.toBeNull();
+    expect(screen.getByText(/correct its URL before approving/)).not.toBeNull();
+    expect(screen.getByText('Raw description body')).not.toBeNull();
+  });
+
+  it('does not show an exhausted expired attempt as still running', () => {
+    const news = readNewsStaging(normalized, {
+      review_source_text_recovery: {
+        contract: 'news_source_text_recovery.v1',
+        status: 'running',
+        attempts: 2,
+        lease_expires_at: '2020-01-01T00:00:00Z',
+      },
+    });
+    render(<NewsStagingPreview news={news} />);
+    expect(screen.getByText('Automatic source recovery was interrupted')).not.toBeNull();
+    expect(screen.queryByText('Recovering the full article')).toBeNull();
+  });
 });
