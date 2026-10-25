@@ -157,7 +157,7 @@ export function IntimateMatchThread({
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {/* Photo unlock — mutual consent */}
         <div className="flex flex-col gap-2 rounded-element p-4 bg-surface-container">
           <div className="flex items-center justify-between gap-2">

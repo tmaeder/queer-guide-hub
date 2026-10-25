@@ -137,7 +137,7 @@ export default function ArchiveBand() {
   if ((milestonesQuery.isLoading || peopleLoading) && !hasMilestones && !hasPeople) {
     return (
       <Band {...bandProps}>
-        <div className="grid gap-10 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
           <Skeleton className="h-40 w-full rounded-container" />
           <Skeleton className="h-40 w-full rounded-container" />
         </div>
