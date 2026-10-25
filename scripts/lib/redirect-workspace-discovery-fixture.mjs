@@ -73,7 +73,8 @@ export async function verifyWorkspaceDiscovery(db, base, actor, otherActor) {
     await request('/workspaces?offset=0&offset=1', workspace, 400);
     await request('/workspaces', 'invalid', 400);
     await request('/workspaces', workspace, 403, 'qg_redirect_' + 'a'.repeat(64));
-    await request('/session', workspace, 403);
+    assert.equal((await request('/session', workspace)).role, 'billing');
+    await request('/members', workspace, 403);
     await db.query('UPDATE public.redirect_workspace_members SET active=false WHERE id=$1', [
       member,
     ]);

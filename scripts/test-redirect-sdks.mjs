@@ -82,7 +82,7 @@ const service = {
     try {
       const entries = Object.entries(args);
       const params = entries.map(([key, value]) =>
-        jsonArgs.has(key)
+        jsonArgs.has(key) && value !== null
           ? JSON.stringify(value)
           : Array.isArray(value)
             ? '{' + value.join(',') + '}'
@@ -375,6 +375,8 @@ try {
     const response=await fetch(base+path,{method,headers:{Authorization:'Bearer '+credential,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
     const data=await response.json();if(response.status!==expected)throw new Error('Report HTTP '+path+' expected '+expected+' received '+response.status+': '+JSON.stringify(data));return data;
   }
+  const {verifyActiveWorkspaceContext}=await import('./lib/redirect-active-context-fixture.mjs');
+  await verifyActiveWorkspaceContext(db,base,reportActor,reportOtherActor);
   const {verifyWorkspaceDiscovery}=await import('./lib/redirect-workspace-discovery-fixture.mjs');
   await verifyWorkspaceDiscovery(db,base,reportActor,reportOtherActor);
   const {verifyInvitationSourceWorkspace}=await import('./lib/redirect-invitation-source-fixture.mjs');

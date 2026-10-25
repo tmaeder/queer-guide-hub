@@ -1024,3 +1024,29 @@ no-access accounts, current grants, explicit unavailable selections, malformed/
 duplicate query denial and preserved private resource fences. All 34 API unit
 tests, frozen Edge and SDK type checks, targeted lint/format/diff checks and
 2563 migration parses pass. No tenant was created or activated in production.
+
+### Active private context preparation
+
+Private UUID selection now delegates active/current authorization to SQL rather
+than rejecting every non-legacy UUID in Edge. Session context retains explicit
+workspace Owner/member checks. Omitted server-key context derives only the
+immutable active token workspace; the actual operation rechecks scope, expiry,
+revocation and current Owner/member access. Explicit header/key mismatch denies.
+Permission failures return 403 while service outages remain 503.
+
+A positive future-workspace fixture exposed folder-capability code that discarded
+an Owner key's principal and attempted a NULL account check. A private folder-rank
+helper now retains that principal through capabilities, create/write checks,
+folder access, metadata movement and mutation. Operation scope and selected-link
+limits remain in their existing callers. The HTTP-to-SQL harness also preserves
+SQL NULL for null JSON arguments, matching PostgREST read/write selection.
+
+Complete SQL and all five native SDK/HTTP suites pass after syncing the current
+production-finish branch. The active future fixture proves Owner/viewer private
+reads/writes, no global-admin inheritance, omitted key selection, exact header
+binding, read-only keys, folder access, scoped-key creation/folder denial, current
+Owner/key revocation and provisioning denial. All 34 API unit tests, frozen Edge
+checking, targeted lint/format/diff checks and 2569 migration parses pass. The
+40 public resource fences, private integration fence and registry activation
+constraint remain intact; no production tenant was activated. Immutable browser
+context and new-workspace lifecycle must precede removing those constraints.

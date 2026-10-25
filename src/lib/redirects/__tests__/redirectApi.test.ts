@@ -87,54 +87,56 @@ function runtime() {
     user_metadata: { role: 'admin' },
   };
   const rpc = vi.fn(async (name: string, _args?: Record<string, unknown>) =>
-    name === 'redirect_account_workspaces'
-      ? {
-          data: {
-            data:
-              state.admin || state.membership
-                ? [
-                    {
-                      id: legacy,
-                      name: 'Queer Guide',
-                      slug: 'queer-guide',
-                      role: state.admin ? 'owner' : state.membership?.role,
-                    },
-                  ]
-                : [],
-            currentWorkspaceId: state.admin || state.membership ? legacy : null,
-            count: state.admin || state.membership ? 1 : 0,
-            nextOffset: null,
-          },
-          error: null,
-        }
-      : name === 'authenticate_redirect_api_token'
+    name === 'redirect_token_workspace'
+      ? { data: state.validToken ? legacy : null, error: null }
+      : name === 'redirect_account_workspaces'
         ? {
-            data: state.validToken ? { id: 'token-id', redirect_ids: state.allowedIds } : null,
+            data: {
+              data:
+                state.admin || state.membership
+                  ? [
+                      {
+                        id: legacy,
+                        name: 'Queer Guide',
+                        slug: 'queer-guide',
+                        role: state.admin ? 'owner' : state.membership?.role,
+                      },
+                    ]
+                  : [],
+              currentWorkspaceId: state.admin || state.membership ? legacy : null,
+              count: state.admin || state.membership ? 1 : 0,
+              nextOffset: null,
+            },
             error: null,
           }
-        : {
-            data: state.conversionError
-              ? null
-              : name === 'redirect_workspace_resource'
-                ? { id: 'resource', name: 'API folder', data: [], count: 0, nextCursor: null }
-                : name === 'redirect_management_list'
-                  ? {
-                      data: [{ id: 'link-id', slug: 'pride', target: '/events' }],
-                      count: 1,
-                      nextCursor: null,
-                    }
-                  : name === 'redirect_management_mutate'
-                    ? (_args?.p_operations as Array<{ operation: string }>).map((op) =>
-                        op.operation === 'delete'
-                          ? { deleted: true, id: 'link-id' }
-                          : {
-                              created: ['create', 'upsert'].includes(op.operation),
-                              link: { id: 'link-id', slug: 'pride', target: '/events' },
-                            },
-                      )
-                    : { id: 'conversion', duplicate: false },
-            error: state.conversionError,
-          },
+        : name === 'authenticate_redirect_api_token'
+          ? {
+              data: state.validToken ? { id: 'token-id', redirect_ids: state.allowedIds } : null,
+              error: null,
+            }
+          : {
+              data: state.conversionError
+                ? null
+                : name === 'redirect_workspace_resource'
+                  ? { id: 'resource', name: 'API folder', data: [], count: 0, nextCursor: null }
+                  : name === 'redirect_management_list'
+                    ? {
+                        data: [{ id: 'link-id', slug: 'pride', target: '/events' }],
+                        count: 1,
+                        nextCursor: null,
+                      }
+                    : name === 'redirect_management_mutate'
+                      ? (_args?.p_operations as Array<{ operation: string }>).map((op) =>
+                          op.operation === 'delete'
+                            ? { deleted: true, id: 'link-id' }
+                            : {
+                                created: ['create', 'upsert'].includes(op.operation),
+                                link: { id: 'link-id', slug: 'pride', target: '/events' },
+                              },
+                        )
+                      : { id: 'conversion', duplicate: false },
+              error: state.conversionError,
+            },
   );
   // Authorization is a separate SQL seam from business RPCs, so mutation mocks
   // cannot accidentally stand in for the current workspace principal.
@@ -142,7 +144,8 @@ function runtime() {
     async (
       _args?: Record<string, unknown>,
     ): Promise<{ data: unknown; error: { code: string; message: string } | null }> =>
-      state.admin || state.membership
+      (_args?.p_workspace === undefined || _args.p_workspace === legacy) &&
+      (state.admin || state.membership)
         ? {
             data: {
               workspace: {
@@ -456,12 +459,12 @@ describe('actual Redirects API handler', () => {
     const run = runtime(),
       token = 'qg_redirect_' + 'a'.repeat(64);
     expect((await run.invoke('/track/lead', lead, token)).status).toBe(201);
-    expect(run.rpc.mock.calls[0]).toMatchObject([
+    expect(run.rpc.mock.calls[1]).toMatchObject([
       'authenticate_redirect_api_token',
       { p_scope: 'conversions:write' },
     ]);
-    expect(run.rpc.mock.calls[0][1]?.p_hash).not.toContain(token);
-    expect(run.rpc.mock.calls[1][1]).toMatchObject({
+    expect(run.rpc.mock.calls[1][1]?.p_hash).not.toContain(token);
+    expect(run.rpc.mock.calls[2][1]).toMatchObject({
       p_token_id: 'token-id',
       p_event: { kind: 'lead', clickId: click, eventName: 'Lead' },
     });
@@ -769,8 +772,8 @@ describe('actual Redirects API handler', () => {
     const run = runtime(),
       token = 'qg_redirect_' + 'a'.repeat(64);
     expect((await run.invoke('/analytics', undefined, token, 'GET')).status).toBe(200);
-    expect(run.rpc.mock.calls[0][1]).toMatchObject({ p_scope: 'events:read' });
-    expect(run.rpc.mock.calls[1]).toMatchObject([
+    expect(run.rpc.mock.calls[1][1]).toMatchObject({ p_scope: 'events:read' });
+    expect(run.rpc.mock.calls[2]).toMatchObject([
       'redirect_scoped_analytics',
       { p_action: 'report', p_token_id: 'token-id', p_filters: {} },
     ]);
@@ -972,7 +975,7 @@ describe('policy revocation during password hashing', () => {
 });
 
 describe('verified workspace request context', () => {
-  it('rejects empty, duplicate and unavailable selectors before business or authority RPCs', async () => {
+  it('rejects malformed selectors before SQL and requires current SQL authority for valid selectors', async () => {
     const run = runtime();
     for (const [selected, status] of [
       ['', 400],
@@ -988,7 +991,7 @@ describe('verified workspace request context', () => {
       ).toBe(status);
     }
     expect(run.rpc).not.toHaveBeenCalled();
-    expect(run.workspaceRpc).not.toHaveBeenCalled();
+    expect(run.workspaceRpc).toHaveBeenCalledTimes(1);
     expect(run.upload).not.toHaveBeenCalled();
   });
   it('uses current SQL owner state for membership, credentials, links and tracking despite stale cached claims', async () => {

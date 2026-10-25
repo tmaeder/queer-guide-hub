@@ -54,7 +54,7 @@ BEGIN
  IF public.redirect_public_domain('public-link-identity.example.org') IS NOT NULL OR public.redirect_resolution_snapshot('public-link-identity.example.org','custom-public-link') IS NOT NULL THEN RAISE EXCEPTION 'Provider requester lost authority but hostname remained ready';END IF;
  IF (SELECT count(*) FROM public.redirect_events)<>before_count OR (SELECT click_count FROM public.redirects WHERE id=builtin)<>1 OR (SELECT click_count FROM public.redirects WHERE id=custom)<>1 OR (SELECT click_count FROM public.redirects WHERE id=root_link)<>1 THEN RAISE EXCEPTION 'Denied routing inflated visits';END IF;
  PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',other,'x-qg-redirect-session-actor',actor)::text,true);
- BEGIN PERFORM public.redirect_management_scope(NULL,'links:read');RAISE EXCEPTION 'Public routing enabled private tenant activation';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ IF public.redirect_management_scope(NULL,'links:read') IS NOT NULL THEN RAISE EXCEPTION 'Current active explicit Owner lost workspace scope';END IF;
  IF has_function_privilege('anon','redirect_internal.public_link_workspace(uuid,text)','execute') OR has_function_privilege('authenticated','redirect_internal.public_link_workspace(uuid,text)','execute') THEN RAISE EXCEPTION 'Public resource helper exposed through Data API';END IF;
 END $$;
 ROLLBACK;

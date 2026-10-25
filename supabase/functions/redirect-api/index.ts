@@ -38,6 +38,7 @@ Deno.serve(async (req: Request) => {
  if(path==='/public-qr-image')return publicQrImageRequest(req,db,Deno.env.get('SUPABASE_URL')??'',cors);
  if(path==='/public-report')return publicReportRequest(req,db,Deno.env.get('REDIRECT_RELAY_SECRET')??Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,cors);
  const tokenCredential=/^qg_redirect_[a-f0-9]{64}$/.test(credential);
+ if(tokenCredential&&path==='/workspaces')return json({error:'Account session required'},403);
  let user: {id:string;created_at:string;email_confirmed_at?:string;confirmed_at?:string;is_anonymous?:boolean} | null=null;
  if(!tokenCredential){
   const identityClient=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:'Bearer '+credential}}});
@@ -46,14 +47,22 @@ Deno.serve(async (req: Request) => {
   user=data.user;
  }
  const requestedWorkspace=req.headers.get('x-qg-redirect-workspace');
- // Registry administration has explicit current-Owner checks and may prepare
- // co-Owners during provisioning. Business-resource selection stays fenced.
- const ownershipRegistry=path==='/workspace-ownership'||/^\/workspace-ownership\/[a-f0-9-]+$/i.test(path);
- // Native signup follows the recorded public click; visitor workspace headers are not attribution authority.
+ // Public attribution and recipient flows follow their saved source, independently of private selection.
  const nativeSignup=path==='/native/signup'&&req.method==='POST';
  const recipientInvitation=path==='/invitations/accept'&&req.method==='POST'||path==='/invitations/received'&&req.method==='GET';
- const selectedWorkspace=nativeSignup||recipientInvitation?redirectWorkspaceSelection(null):(ownershipRegistry||path==='/workspaces')&&requestedWorkspace!==null&&UUID.test(requestedWorkspace)?{id:requestedWorkspace.toLowerCase()}:redirectWorkspaceSelection(requestedWorkspace);
- if('error' in selectedWorkspace)return json({error:selectedWorkspace.error},selectedWorkspace.status);
+ const selection=redirectWorkspaceSelection(nativeSignup||recipientInvitation?null:requestedWorkspace);
+ if('error' in selection)return json({error:selection.error},selection.status);
+ let workspaceId=selection.id;
+ if(tokenCredential&&requestedWorkspace===null){
+  try{
+   const binding=await db.rpc('redirect_token_workspace',{p_hash:await tokenDigest(credential)});
+   if(binding.error)return rpcError(binding.error);
+   if(binding.data===null)return json({error:'Active credential required'},403);
+   if(typeof binding.data!=='string'||!UUID.test(binding.data))return json({error:'Credential workspace verification unavailable'},503);
+   workspaceId=binding.data;
+  }catch{return json({error:'Credential workspace verification unavailable'},503);}
+ }
+ const selectedWorkspace={id:workspaceId};
  db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{global:{headers:{'x-qg-redirect-workspace':selectedWorkspace.id,...(user?{'x-qg-redirect-session-actor':user.id}:{})}}});
  const sessionPrincipal=async(scope:string):Promise<{id:string|null;role?:string;label?:string;workspace?:{id:string;name:string;slug:string};failure?:Response}>=>{
   if(!user||user.is_anonymous)return {id:null,failure:json({error:'A registered account is required'},403)};
@@ -268,8 +277,7 @@ Deno.serve(async (req: Request) => {
         p_hash: await tokenDigest(credential),
         p_scope: 'links:read',
       });
-      if (auth.error)
-        return json({ error: 'Credential verification unavailable' }, 503);
+      if (auth.error) return rpcError(auth.error);
       if (!auth.data) return json({ error: 'Read scope is required' }, 403);
       principalId = auth.data.id;
     } else {
@@ -392,7 +400,7 @@ Deno.serve(async (req: Request) => {
    if(kind.startsWith('links')){
     if(req.method!=='GET'||logoEndpoint)return json({error:'Method not supported'},405);
     let principalId:string|null=null;
-    if(tokenCredential){const auth=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:'links:read'});if(auth.error)return json({error:'Credential verification unavailable'},503);if(!auth.data)return json({error:'Read scope is required'},403);principalId=auth.data.id;}
+    if(tokenCredential){const auth=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:'links:read'});if(auth.error)return rpcError(auth.error);if(!auth.data)return json({error:'Read scope is required'},403);principalId=auth.data.id;}
     else{const principal=await sessionPrincipal('links:read');if(principal.failure)return principal.failure;principalId=principal.id;}
     const q=new URL(req.url).searchParams,ids=linkId?[linkId]:(q.get('ids')??'').split(',');
     if([...q.keys()].some(key=>key!=='ids')||linkId&&q.size||!ids.length||ids.length>100||ids.some(id=>!UUID.test(id))||new Set(ids).size!==ids.length)return json({error:'Choose 1–100 distinct link IDs'},400);
@@ -415,7 +423,7 @@ Deno.serve(async (req: Request) => {
   if(path==='/domain-choices'||path==='/linked-domains'){
    if(req.method!=='GET')return json({error:'Method not supported'},405);
    let principalId:string|null=null;
-   if(tokenCredential){const {data,error}=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:'links:read'});if(error)return json({error:'Credential verification unavailable'},503);if(!data)return json({error:'Read scope is required'},403);principalId=data.id;}
+   if(tokenCredential){const {data,error}=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:'links:read'});if(error)return rpcError(error);if(!data)return json({error:'Read scope is required'},403);principalId=data.id;}
    else{const principal=await sessionPrincipal('links:read');if(principal.failure)return principal.failure;principalId=principal.id;}
    const q=new URL(req.url).searchParams,limit=Number(q.get('limit')??100),after=q.get('cursor');
    if([...q.keys()].some(key=>!['limit','cursor'].includes(key))||!Number.isInteger(limit)||limit<1||limit>100||after&&!UUID.test(after))return json({error:'Invalid domain page'},400);
@@ -632,7 +640,7 @@ Deno.serve(async (req: Request) => {
    if(!UUID.test(accessMatch[1]))return json({error:'Invalid folder ID'},400);
    if(!['GET','PATCH'].includes(req.method))return json({error:'Method not supported'},405);
    const accessScope=req.method==='GET'?'workspace:read':'workspace:write';let principalId:string|null=null;
-   if(tokenCredential){const {data,error}=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:accessScope});if(error)return json({error:'Credential verification unavailable'},503);if(!data||data.redirect_ids!==null)return json({error:'Unrestricted workspace scope is required'},403);principalId=data.id;}
+   if(tokenCredential){const {data,error}=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:accessScope});if(error)return rpcError(error);if(!data||data.redirect_ids!==null)return json({error:'Unrestricted workspace scope is required'},403);principalId=data.id;}
    else{const principal=await sessionPrincipal(accessScope);if(principal.failure)return principal.failure;principalId=principal.id;}
    const values=req.method==='PATCH'?await boundedJson(req):null;
    if(req.method==='PATCH'&&(!values||typeof values!=='object'||Array.isArray(values)))return json({error:'Provide access settings'},400);
@@ -641,7 +649,7 @@ Deno.serve(async (req: Request) => {
   const resourceMatch=path.match(/^\/(folders|tags|templates)(?:\/([a-f0-9-]+))?$/i);
   if(resourceMatch){
    const [,kind,id]=resourceMatch, read=req.method==='GET';let tokenId:string|null=null;
-   if(tokenCredential){const {data,error}=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:read?'workspace:read':'workspace:write'});if(error)return json({error:'Credential verification unavailable'},503);if(!data)return json({error:'Workspace scope is required'},403);if(data.redirect_ids!==null)return json({error:'Workspace permissions require an unrestricted credential'},403);tokenId=data.id;}
+   if(tokenCredential){const {data,error}=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:read?'workspace:read':'workspace:write'});if(error)return rpcError(error);if(!data)return json({error:'Workspace scope is required'},403);if(data.redirect_ids!==null)return json({error:'Workspace permissions require an unrestricted credential'},403);tokenId=data.id;}
    else{const principal=await sessionPrincipal(read?'workspace:read':'workspace:write');if(principal.failure)return principal.failure;tokenId=principal.id;}
    if(id&&!UUID.test(id))return json({error:'Invalid resource ID'},400);
    let action:string,values:Record<string,unknown>={},limit=50,after:string|null=null;
@@ -656,7 +664,7 @@ Deno.serve(async (req: Request) => {
   if(path==='/links'||path.startsWith('/links/')) {
    const read=req.method==='GET', scope=read?'links:read':'links:write';
    let tokenId:string|null=null;
-   if(tokenCredential){const {data,error}=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:scope});if(error)return json({error:'Credential verification unavailable'},503);if(!data)return json({error:'Required link scope is missing'},403);tokenId=data.id;}
+   if(tokenCredential){const {data,error}=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:scope});if(error)return rpcError(error);if(!data)return json({error:'Required link scope is missing'},403);tokenId=data.id;}
    else{const principal=await sessionPrincipal(scope);if(principal.failure)return principal.failure;tokenId=principal.id;}
    const variants=path.match(/^\/links\/([a-f0-9-]{36})\/variants$/i);
    if(variants){if(req.method!=='GET')return json({error:'Method not supported'},405);if(!UUID.test(variants[1]))return json({error:'Invalid link ID'},400);const {data,error}=await db.rpc('redirect_scoped_variant_performance',{p_redirect_id:variants[1],p_token_id:tokenId});if(error)return rpcError(error);return json(data);}
@@ -739,7 +747,7 @@ Deno.serve(async (req: Request) => {
    const query=new URL(req.url).searchParams;
    if(new URL(req.url).search.length>16384)return json({error:'Filters are too large'},400);
    let tokenId:string|null=null;
-   if(tokenCredential){const {data,error}=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:'events:read'});if(error)return json({error:'Credential verification unavailable'},503);if(!data)return json({error:'Read scope is required'},403);tokenId=data.id;}
+   if(tokenCredential){const {data,error}=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:'events:read'});if(error)return rpcError(error);if(!data)return json({error:'Read scope is required'},403);tokenId=data.id;}
    else{const principal=await sessionPrincipal('events:read');if(principal.failure)return principal.failure;tokenId=principal.id;}
    let body:Record<string,unknown>|null=null;
    if(req.method==='POST'){body=await boundedJson(req);if(!body||typeof body!=='object'||Array.isArray(body)||new URL(req.url).search||Object.keys(body).some(k=>!(path==='/events'?['filters','limit','snapshot','cursor']:['filters']).includes(k)))return json({error:'Invalid analytics body'},400);}
@@ -770,7 +778,7 @@ Deno.serve(async (req: Request) => {
    let tokenId:string|null=null;
    if(tokenCredential){
     const {data,error}=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:'conversions:write'});
-    if(error)return json({error:'Credential verification unavailable'},503);
+    if(error)return rpcError(error);
     if(!data)return json({error:'Credential expired, revoked, or missing conversion scope'},403);
     tokenId=data.id;
    }else{

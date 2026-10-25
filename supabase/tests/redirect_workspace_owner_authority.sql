@@ -38,7 +38,7 @@ BEGIN
  SET CONSTRAINTS ALL IMMEDIATE;
  IF redirect_internal.workspace_owner(first_workspace,first_owner) OR NOT redirect_internal.workspace_owner(first_workspace,admin) OR NOT redirect_internal.workspace_owner(second_workspace,second_owner) THEN RAISE EXCEPTION 'Atomic owner replacement or unrelated owner changed';END IF;
  PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',first_workspace,'x-qg-redirect-session-actor',admin)::text,true);
- BEGIN PERFORM public.redirect_workspace_context(admin,first_workspace);RAISE EXCEPTION 'Owner model activated an unfinished workspace';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ IF public.redirect_workspace_context(admin,first_workspace)#>>'{principal,role}'<>'owner' THEN RAISE EXCEPTION 'Active explicit Owner context unavailable';END IF;
  IF EXISTS(SELECT FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.proname LIKE '%redirect%' AND p.proname<>'redirect_current_owner' AND p.prosrc LIKE '%public.user_roles%') THEN RAISE EXCEPTION 'Unconverted application-wide owner lookup remains';END IF;
  IF has_function_privilege('anon','redirect_internal.workspace_owner(uuid,uuid)','execute') OR has_function_privilege('authenticated','redirect_internal.workspace_owner_ids(uuid)','execute') OR has_table_privilege('authenticated','redirect_internal.workspace_owners','SELECT') OR has_schema_privilege('authenticated','redirect_internal','USAGE') THEN RAISE EXCEPTION 'Private owner registry exposed';END IF;
 END $$;
