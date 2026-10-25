@@ -23,7 +23,7 @@ export function VenuesHero() {
       className="relative overflow-hidden rounded-container bg-card"
       aria-label={t('venues.hero.label', 'Featured venue')}
     >
-      <div className="grid md:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2">
         {visual.src && (
           <div
             className={`relative h-56 min-h-[240px] overflow-hidden rounded-container bg-center bg-no-repeat md:h-full ${

@@ -80,7 +80,7 @@ export function SearchCalendarView({ results, query, onActivate }: SearchCalenda
     });
 
   return (
-    <div className="grid gap-6 md:grid-cols-[auto_1fr]">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-[auto_1fr]">
       <div className="rounded-element md:self-start bg-surface-container">
         <Calendar
           mode="single"

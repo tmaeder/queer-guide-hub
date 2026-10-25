@@ -127,7 +127,7 @@ export function EmailBrandingTab({ controller }: { controller: DesignSettingsCon
           </CardContent>
         </Card>
         <Link
-          to="/admin/email-templates"
+          to="/admin/email?tab=templates"
           className="flex items-center justify-between rounded-container border p-4 hover:bg-muted"
         >
           <div>
