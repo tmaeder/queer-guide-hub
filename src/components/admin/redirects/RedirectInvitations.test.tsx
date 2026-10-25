@@ -113,6 +113,11 @@ describe('recipient-bound workspace invitations', () => {
             {
               id: invitationId,
               label: 'Campaign teammate',
+              workspace: {
+                id: '20000000-0000-4000-8000-000000000001',
+                name: 'Community workspace',
+                slug: 'community',
+              },
               role: 'viewer',
               expires_at: '2026-10-22T00:00:00Z',
             },
@@ -127,6 +132,7 @@ describe('recipient-bound workspace invitations', () => {
       await screen.findByRole('button', { name: 'Accept invitation for Campaign teammate' }),
     );
     await screen.findByText('Invitation accepted. Workspace access refreshed.');
+    expect(screen.getByText(/Community workspace · Campaign teammate/)).toBeInTheDocument();
     expect(mocks.api).toHaveBeenCalledWith('/invitations/accept', 'POST', { id: invitationId });
     expect(sessionStorage.length).toBe(0);
   });

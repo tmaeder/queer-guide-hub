@@ -212,7 +212,13 @@ export function RedirectInvitationAcceptance({ userId }: { userId: string }) {
     gcTime: 0,
     retry: false,
     queryFn: async ({ signal }) => {
-      const rows: { id: string; label: string; role: string; expires_at: string }[] = [];
+      const rows: {
+        id: string;
+        label: string;
+        role: string;
+        expires_at: string;
+        workspace?: { id: string; name: string; slug: string };
+      }[] = [];
       for (let offset = 0; ; offset += 100) {
         const page = await memberRedirectApi<{ data: typeof rows; count: number }>(
           '/invitations/received?offset=' + offset,
@@ -295,6 +301,7 @@ export function RedirectInvitationAcceptance({ userId }: { userId: string }) {
             className="flex flex-wrap items-center justify-between gap-2 border-t py-2"
           >
             <p>
+              {invitation.workspace && <>{invitation.workspace.name} · </>}
               {invitation.label} · {invitation.role} · expires{' '}
               {new Date(invitation.expires_at).toLocaleDateString()}
             </p>

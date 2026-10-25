@@ -51,7 +51,8 @@ Deno.serve(async (req: Request) => {
  const ownershipRegistry=path==='/workspace-ownership'||/^\/workspace-ownership\/[a-f0-9-]+$/i.test(path);
  // Native signup follows the recorded public click; visitor workspace headers are not attribution authority.
  const nativeSignup=path==='/native/signup'&&req.method==='POST';
- const selectedWorkspace=nativeSignup?redirectWorkspaceSelection(null):ownershipRegistry&&requestedWorkspace!==null&&UUID.test(requestedWorkspace)?{id:requestedWorkspace.toLowerCase()}:redirectWorkspaceSelection(requestedWorkspace);
+ const recipientInvitation=path==='/invitations/accept'&&req.method==='POST'||path==='/invitations/received'&&req.method==='GET';
+ const selectedWorkspace=nativeSignup||recipientInvitation?redirectWorkspaceSelection(null):ownershipRegistry&&requestedWorkspace!==null&&UUID.test(requestedWorkspace)?{id:requestedWorkspace.toLowerCase()}:redirectWorkspaceSelection(requestedWorkspace);
  if('error' in selectedWorkspace)return json({error:selectedWorkspace.error},selectedWorkspace.status);
  db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{global:{headers:{'x-qg-redirect-workspace':selectedWorkspace.id,...(user?{'x-qg-redirect-session-actor':user.id}:{})}}});
  const sessionPrincipal=async(scope:string):Promise<{id:string|null;role?:string;label?:string;workspace?:{id:string;name:string;slug:string};failure?:Response}>=>{

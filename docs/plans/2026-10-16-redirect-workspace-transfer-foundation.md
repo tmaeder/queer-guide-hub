@@ -988,3 +988,21 @@ wrong actors, missing/inactive clicks, registration timing, repeated requests,
 forged payload fields, visitor-header independence and no additional visits.
 All 34 API unit tests, frozen Edge type checking, script lint/formatting and
 2561 migration parses pass. No production signup or tenant activation occurred.
+
+### Recipient-bound invitation source selection
+
+Verified recipients can now discover active pending invitations across workspaces
+and accept their saved source without prior membership or private selection.
+Both recipient flows ignore visitor workspace headers; owner list/create/revoke
+remain selected private operations. Actor, verified email, active source, current
+source Owner, expiry/revocation and current membership checks remain under ACL
+locks. Acceptance replays preserve membership identity and current role. The
+inbox UI names the source workspace and excludes recipient emails/token hashes;
+acceptance returns joined workspace identity for subsequent explicit selection.
+
+Complete SQL and five-language HTTP/SDK suites pass, including independent active
+source, provisioning denial, wrong session/recipient/key denial, stale Owner,
+expiry/revocation, inactive membership, idempotency and visitor-header independence.
+The 41 invitation/API unit tests, frozen Edge type check, targeted lint/format,
+diff checks and all 2562 migration parses pass. Tenant activation and private
+resource fences remain intact. No real invitation was accepted or sent.

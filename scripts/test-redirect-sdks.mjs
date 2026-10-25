@@ -375,6 +375,8 @@ try {
     const response=await fetch(base+path,{method,headers:{Authorization:'Bearer '+credential,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
     const data=await response.json();if(response.status!==expected)throw new Error('Report HTTP '+path+' expected '+expected+' received '+response.status+': '+JSON.stringify(data));return data;
   }
+  const {verifyInvitationSourceWorkspace}=await import('./lib/redirect-invitation-source-fixture.mjs');
+  await verifyInvitationSourceWorkspace(db,base,reportActor,reportOtherActor);
   const {verifyNativeSignupWorkspace}=await import('./lib/redirect-native-signup-fixture.mjs');
   try {await verifyNativeSignupWorkspace(db,base,reportActor,(verified)=>{nativeSignupVerified=verified;});} finally {nativeSignupVerified=false;}
   const {verifyPublicCapabilityWorkspaces}=await import('./lib/redirect-public-capability-fixture.mjs');

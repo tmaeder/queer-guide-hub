@@ -20,6 +20,7 @@ try {
   await db.exec(readFileSync('supabase/tests/redirect_member_integrations.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_owner_admission.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_native_signup_workspace.sql', 'utf8'));
+  await db.exec(readFileSync('supabase/tests/redirect_invitation_source_workspace.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_identity.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_relationships.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_membership_scope.sql', 'utf8'));
