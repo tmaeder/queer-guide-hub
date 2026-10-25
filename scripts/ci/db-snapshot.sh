@@ -62,9 +62,16 @@ dump)
 
 load)
   psql "$db" -X -q -f "$dir/roles.sql" 2>&1 | grep -i error | grep -iv 'already exists' || true
+  # The local Supabase bootstrap grants new public tables to browser roles by
+  # default. pg_dump does not emit REVOKEs for grants production never had, so
+  # those local defaults would survive restoring backend-only table ACLs.
+  # Clear creation-time defaults first; schema.sql restores the actual grants
+  # and production's default privileges. This does not alter existing tables.
+  psqlq -q -c 'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated, service_role;'
   # Not ON_ERROR_STOP: report every schema error, then let the specs decide.
   psql "$db" -X -q -f "$dir/schema.sql" > /tmp/schema-load.log 2>&1 || true
   echo "schema errors: $(grep -c ERROR /tmp/schema-load.log)"; grep ERROR /tmp/schema-load.log | head -20 || true
+  psqlq -q -f "$(dirname "$0")/verify-snapshot-backend-grants.sql"
   {
     echo "set session_replication_role = replica;"
     while IFS='|' read -r t cols _; do
