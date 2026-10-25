@@ -1,12 +1,43 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useLocation, useNavigate } from 'react-router';
 import EmailPlatform from '../EmailPlatform';
 const api = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: { functions: { invoke: api.invoke } },
 }));
+vi.mock('../EmailTemplates', async () => {
+  const { useState } = await import('react');
+  return {
+    default: function TemplateDesigner({ embedded }: { embedded?: boolean }) {
+      const [draft, setDraft] = useState('');
+      return (
+        <section aria-label="Template designer">
+          <p>{embedded ? 'Integrated designer' : 'Standalone designer'}</p>
+          <input
+            aria-label="Designer draft"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+          />
+        </section>
+      );
+    },
+  };
+});
+function LocationProbe() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  return (
+    <>
+      <output aria-label="Current workspace URL">
+        {location.pathname}
+        {location.search}
+      </output>
+      <button onClick={() => navigate(-1)}>Browser back</button>
+    </>
+  );
+}
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 const data = {
   configured: true,
@@ -30,7 +61,7 @@ beforeEach(() => {
   }));
 });
 describe('integrated admin email workspace', () => {
-  it('exposes the provider restriction and links to the existing editor', async () => {
+  it('exposes the provider restriction and the integrated template tab', async () => {
     render(
       <MemoryRouter>
         <EmailPlatform />
@@ -40,11 +71,59 @@ describe('integrated admin email workspace', () => {
     expect(screen.getByRole('status', { name: 'Cloudflare email capability' })).toHaveTextContent(
       'transactional email only',
     );
-    expect(screen.getByRole('link', { name: 'Edit templates' })).toHaveAttribute(
-      'href',
-      '/admin/email-templates',
-    );
+    expect(screen.getByRole('tab', { name: 'Templates', exact: true })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Edit templates' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Send campaign' })).not.toBeInTheDocument();
+  });
+  it('opens deep-linked templates, preserves drafts across tabs and restores browser history', async () => {
+    render(
+      <MemoryRouter initialEntries={['/admin/email?tab=templates&source=branding']}>
+        <EmailPlatform />
+        <LocationProbe />
+      </MemoryRouter>,
+    );
+    const user = userEvent.setup();
+    expect(await screen.findByText('Integrated designer')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Designer draft'), {
+      target: { value: 'Unfinished email' },
+    });
+    await user.click(screen.getByRole('tab', { name: 'Campaigns', exact: true }));
+    expect(screen.getByLabelText('Current workspace URL')).toHaveTextContent(
+      '/admin/email?tab=campaigns&source=branding',
+    );
+    expect(screen.getByLabelText('Designer draft')).toHaveValue('Unfinished email');
+    await user.click(screen.getByRole('button', { name: 'Browser back', exact: true }));
+    await waitFor(() =>
+      expect(screen.getByRole('tab', { name: 'Templates', exact: true })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      ),
+    );
+    expect(screen.getByLabelText('Designer draft')).toHaveValue('Unfinished email');
+  });
+  it('keeps templates usable when the delivery overview fails', async () => {
+    api.invoke.mockResolvedValue({ error: new Error('unavailable') });
+    render(
+      <MemoryRouter initialEntries={['/admin/email?tab=templates']}>
+        <EmailPlatform />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByRole('region', { name: 'Template designer' })).toBeVisible();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('tab', { name: 'Delivery', exact: true }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('could not load');
+  });
+  it('falls back to Campaigns for an unknown tab', async () => {
+    render(
+      <MemoryRouter initialEntries={['/admin/email?tab=missing']}>
+        <EmailPlatform />
+      </MemoryRouter>,
+    );
+    await screen.findByText('Prepare a campaign');
+    expect(screen.getByRole('tab', { name: 'Campaigns', exact: true })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
   });
   it('saves a draft against a real template without dispatching', async () => {
     render(
