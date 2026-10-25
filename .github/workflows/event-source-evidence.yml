@@ -1,0 +1,41 @@
+name: Revalidate event identity sources
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '24 6 * * 2'
+permissions:
+  contents: read
+concurrency:
+  group: event-source-evidence
+  cancel-in-progress: false
+jobs:
+  revalidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Verify curated pages with bounded concurrency
+        run: python3 scripts/data-quality/verify-event-source-evidence.py scripts/data-quality/evidence/event-source-candidates-2026-10-25.json /tmp/event-source-evidence.json
+      - name: Persist current successful evidence
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+          rows = json.load(open('/tmp/event-source-evidence.json'))
+          verified = [r for r in rows if r['status'] == 'verified']
+          # JSON is SQL-quoted as data; no page text becomes executable SQL.
+          data = json.dumps(verified, ensure_ascii=False).replace("'", "''")
+          sql = "select public.apply_event_source_evidence('" + data + "'::jsonb); select public.recover_event_series_sources();"
+          req = urllib.request.Request('https://api.supabase.com/v1/projects/xqeacpakadqfxjxjcewc/database/query',
+            data=json.dumps({'query': sql}).encode(), method='POST',
+            headers={'Authorization':'Bearer '+os.environ['SUPABASE_ACCESS_TOKEN'], 'Content-Type':'application/json'})
+          with urllib.request.urlopen(req, timeout=120) as response:
+            print(response.read().decode())
+          print(f'Verified {len(verified)}/{len(rows)}; unresolved HTTP checks remain in the artifact.')
+          PY
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: event-source-evidence
+          path: /tmp/event-source-evidence.json
+          retention-days: 30
