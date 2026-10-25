@@ -7,6 +7,7 @@
  */
 
 import { analyticsAllowed } from '@/lib/analyticsConsent';
+import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
 
 const SEARCH_URL = import.meta.env?.VITE_SEARCH_PROXY_URL || 'https://search.queer.guide';
 
@@ -55,6 +56,8 @@ async function post<T>(path: string, body: object): Promise<T> {
     body: JSON.stringify(body),
     credentials: WRITE_PATHS.has(path) ? 'include' : 'same-origin',
     keepalive: true,
+    // Same deadline as searchFetch's /search; a hung worker must not hang the UI.
+    signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`${path} ${res.status}: ${await res.text()}`);
   const data = (await res.json()) as T & { session_verified?: boolean };
@@ -244,7 +247,10 @@ export async function fetchAutocomplete(
   if (!query?.trim()) return [];
   const data = await post<{ suggestions: SearchHit[] }>('/autocomplete', {
     query,
-    types,
+    // UI scopes historically use index keys (e.g. cities), whereas this
+    // endpoint validates canonical entity types (city). Preserve unknown keys
+    // so the worker still rejects invalid filters instead of widening them.
+    types: types?.map((type) => CONTENT_TYPES.find(({ indexKey }) => indexKey === type)?.id ?? type),
     limit,
   });
   return data.suggestions ?? [];

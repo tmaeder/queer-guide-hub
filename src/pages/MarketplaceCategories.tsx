@@ -12,7 +12,7 @@ import {
   departmentLabel,
   groupLabel,
 } from '@/lib/marketplaceTaxonomy';
-import { toyGroupMeta } from '@/lib/marketplaceCategoryMeta';
+import { groupIcon, toyGroupMeta } from '@/lib/marketplaceCategoryMeta';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { PageContainer } from '@/components/layout/PageContainer';
 
@@ -161,9 +161,8 @@ export default function MarketplaceCategories() {
 
                 <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-4">
                   {section.stops.map((stop) => {
-                    // Only the two adult departments carry marks today — see
-                    // the scope note in marketplaceCategoryMeta.ts. A group
-                    // without one renders exactly as it did before.
+                    // Every tile carries a mark (groupIcon falls back to the
+                    // department's); only the adult groups carry a blurb.
                     const meta = toyGroupMeta(stop.slug);
                     return (
                       <li key={stop.slug}>
@@ -172,9 +171,11 @@ export default function MarketplaceCategories() {
                           className="card-lift flex h-full min-h-[120px] flex-col justify-between overflow-hidden rounded-container bg-card p-4 no-underline shadow-soft sm:p-6"
                         >
                           <span className="flex flex-col gap-2">
-                            {meta && (
-                              <TransitIcon name={meta.icon} size={28} className="shrink-0" />
-                            )}
+                            <TransitIcon
+                              name={groupIcon(stop.slug, section.slug)}
+                              size={28}
+                              className="shrink-0"
+                            />
                             <span className="text-title font-bold leading-tight text-balance">
                               {groupLabel(stop.slug)}
                             </span>
@@ -209,8 +210,15 @@ export default function MarketplaceCategories() {
                         to={`/marketplace?grp=${stop.slug}`}
                         className="card-lift flex h-full min-h-[120px] flex-col justify-between overflow-hidden rounded-container bg-card p-4 no-underline shadow-soft sm:p-6"
                       >
-                        <span className="text-title font-bold leading-tight text-balance">
-                          {groupLabel(stop.slug)}
+                        <span className="flex flex-col gap-2">
+                          <TransitIcon
+                            name={groupIcon(stop.slug, null)}
+                            size={28}
+                            className="shrink-0"
+                          />
+                          <span className="text-title font-bold leading-tight text-balance">
+                            {groupLabel(stop.slug)}
+                          </span>
                         </span>
                         <span className="mt-4 text-2xs uppercase tracking-label tabular-nums text-muted-foreground">
                           {stop.count.toLocaleString()} listing{stop.count !== 1 ? 's' : ''}

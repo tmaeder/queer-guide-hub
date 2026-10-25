@@ -195,13 +195,25 @@ function OwnTravel() {
       if (m.entity_type === 'venue') {
         const r = entityRows.venue.find((x) => x.id === m.entity_id);
         return r
-          ? { name: r.name, lat: r.latitude, lng: r.longitude, slug: r.slug, type: 'venues' as const }
+          ? {
+              name: r.name,
+              lat: r.latitude,
+              lng: r.longitude,
+              slug: r.slug,
+              type: 'venues' as const,
+            }
           : null;
       }
       if (m.entity_type === 'event') {
         const r = entityRows.event.find((x) => x.id === m.entity_id);
         return r
-          ? { name: r.title, lat: r.latitude, lng: r.longitude, slug: r.slug, type: 'events' as const }
+          ? {
+              name: r.title,
+              lat: r.latitude,
+              lng: r.longitude,
+              slug: r.slug,
+              type: 'events' as const,
+            }
           : null;
       }
       const r = entityRows.village.find((x) => x.id === m.entity_id);
@@ -292,7 +304,7 @@ function OwnTravel() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <TripsSummaryCard />
         <FavoritesSummaryCard />
       </div>
@@ -301,7 +313,8 @@ function OwnTravel() {
         <Card>
           <CardContent className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm">
-              You've saved {savedCount} {savedCount === 1 ? 'place' : 'places'}. Turn them into a trip.
+              You've saved {savedCount} {savedCount === 1 ? 'place' : 'places'}. Turn them into a
+              trip.
             </p>
             <LocalizedLink
               to="/me/trips"
