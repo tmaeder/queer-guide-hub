@@ -89,9 +89,11 @@ the local runtime supports it and repeat before release. No remote calls are mad
 Native tests specifically catch pngjs's private synchronous zlib API incompatibility;
 logo decoding uses its supported streaming API instead.
 
-Revocable live profiles and five-SDK create/list/revoke methods are implemented
-locally, including UI hosted-image publication/copy/revoke. Real Pages binding,
-cold starts/resource limits and controlled production deployment remain follow-ups. The service alone is not full QR parity.
+Revocable live profiles and five-SDK create/list/revoke methods include UI
+publication/copy/revoke. Production Pages binding, hosted profile retrieval,
+PNG/JPG/SVG scan verification and revocation were exercised on 2026-10-25. Image
+requests left the tracked link's visit count unchanged. Resource-budget/load
+testing and native device delivery remain separate verification work.
 Dependencies are pinned in the root lockfile. resvg-wasm is MPL-2.0, jpeg-js is
 BSD-3-Clause, pngjs/node-qrcode/jsQR are MIT; retain their distributed license notices.
 
@@ -105,7 +107,10 @@ The authenticated artwork publisher invokes the fixed site /api/qr POST endpoint
 and validates this header, PNG MIME, bounded body and 1024px dimensions before any
 Storage upload. The site's Pages binding/Worker must therefore be deployed before
 custom publications can succeed. Failure keeps a private draft, never a fallback
-public QR. This dependency is not currently deployed or release-verified.
+public QR. This dependency is now deployed. Saved profile and logo requests use
+`redirect: "manual"` because Workers rejects `redirect: "error"`; non-2xx
+responses remain rejected without following an upstream redirect or forwarding
+the capability to another origin.
 
 
 Browser authoring independently scans the hosted PNG before exposing issued URLs.
