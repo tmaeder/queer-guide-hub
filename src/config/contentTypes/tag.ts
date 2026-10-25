@@ -92,6 +92,8 @@ export const unifiedTagsContentType: ContentTypeConfig = {
   label: { singular: 'Tag', plural: 'Tags' },
   color: 'hsl(var(--foreground))',
   fields: tagFields,
+  // unified_tags has no created_by column; provenance lives in CMS metadata.
+  writeCreatedBy: false,
   defaults: { status: 'active' },
   fieldGroupOrder: ['basic', 'details'],
   translatableFields: ['name', 'description', 'short_description', 'long_description'],

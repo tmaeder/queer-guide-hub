@@ -18,7 +18,7 @@ export const test = base.extend<{ taxonomy: TaxonomyFixture }>({
     const prefix = `Taxonomy Regression ${BigInt('0x' + uuid.replaceAll('-', '')).toString()}`;
     const tables: string[] = [];
     const blocked: string[] = [];
-    let restoreIntimate: (() => void) | undefined;
+    let restoreIntimate: ReturnType<TaxonomyDatabase['enableIntimateAdmin']> | undefined;
     const errors: unknown[] = [];
     await context.route(/\/(?:rest|auth|functions|storage)\/v1\//, async (route) => {
       if (new URL(route.request().url()).origin !== api.origin) {
@@ -57,15 +57,20 @@ export const test = base.extend<{ taxonomy: TaxonomyFixture }>({
           errors.push(error);
         }
       }
+      let eligibility: ReturnType<NonNullable<typeof restoreIntimate>> | undefined;
       try {
-        restoreIntimate?.();
+        eligibility = restoreIntimate?.();
       } catch (error) {
         errors.push(error);
       }
       if (blocked.length)
         errors.push(new Error(`Blocked non-local API requests: ${blocked.join(', ')}`));
       await testInfo.attach('fixture-cleanup', {
-        body: JSON.stringify({ prefix, cleanup, failures: errors.map(String) }, null, 2),
+        body: JSON.stringify(
+          { prefix, cleanup, eligibility, failures: errors.map(String) },
+          null,
+          2,
+        ),
         contentType: 'application/json',
       });
     }

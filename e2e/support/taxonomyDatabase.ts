@@ -120,19 +120,27 @@ export class TaxonomyDatabase {
     return { table, removed: rows.length, remaining, metadataRemaining, guardRestored };
   }
 
-  enableIntimateAdmin(email: string): () => void {
+  enableIntimateAdmin(email: string) {
     const id = this.sql(`select id from auth.users where email=${sqlLiteral(email)};`);
     if (!/^[\da-f-]{36}$/.test(id)) throw new Error('Local synthetic admin is missing');
+    const hadProfile =
+      this.sql(`select exists(select 1 from public.profiles
+      where user_id=${sqlLiteral(id)});`) === 't';
     const before = this.json<Record<
       string,
       unknown
     > | null>(`select coalesce((select jsonb_build_object(
       'opted_in_at',opted_in_at,'consent_18plus_at',consent_18plus_at,'moderation_status',moderation_status)
       from public.intimate_profiles where id=${sqlLiteral(id)}),'null'::jsonb);`);
-    this
-      .sql(`insert into public.intimate_profiles(id,opted_in_at,consent_18plus_at,moderation_status)
+    // Snapshot auth users have no public profile. Seed the real FK prerequisite
+    // atomically with eligibility, so a setup error cannot leave half a fixture.
+    this.sql(`begin;
+      insert into public.profiles(user_id,display_name)
+        values (${sqlLiteral(id)},'Synthetic taxonomy admin') on conflict(user_id) do nothing;
+      insert into public.intimate_profiles(id,opted_in_at,consent_18plus_at,moderation_status)
       values (${sqlLiteral(id)},now(),now(),'approved') on conflict(id) do update
-      set opted_in_at=excluded.opted_in_at,consent_18plus_at=excluded.consent_18plus_at,moderation_status='approved';`);
+      set opted_in_at=excluded.opted_in_at,consent_18plus_at=excluded.consent_18plus_at,moderation_status='approved';
+      commit;`);
     return () => {
       if (!before) this.sql(`delete from public.intimate_profiles where id=${sqlLiteral(id)};`);
       else
@@ -140,6 +148,18 @@ export class TaxonomyDatabase {
         opted_in_at=${before.opted_in_at === null ? 'null' : sqlLiteral(String(before.opted_in_at))},
         consent_18plus_at=${before.consent_18plus_at === null ? 'null' : sqlLiteral(String(before.consent_18plus_at))},
         moderation_status=${sqlLiteral(String(before.moderation_status))} where id=${sqlLiteral(id)};`);
+      if (!hadProfile) this.sql(`delete from public.profiles where user_id=${sqlLiteral(id)};`);
+      const intimateRestored =
+        this.sql(`select coalesce((select jsonb_build_object(
+        'opted_in_at',opted_in_at,'consent_18plus_at',consent_18plus_at,'moderation_status',moderation_status)
+        from public.intimate_profiles where id=${sqlLiteral(id)}),'null'::jsonb)
+        =${sqlLiteral(JSON.stringify(before))}::jsonb;`) === 't';
+      const profileRestored =
+        this.sql(`select exists(select 1 from public.profiles
+        where user_id=${sqlLiteral(id)})=${hadProfile};`) === 't';
+      if (!intimateRestored || !profileRestored)
+        throw new Error('Synthetic admin eligibility cleanup failed');
+      return { intimateRestored, profileRestored };
     };
   }
 }
