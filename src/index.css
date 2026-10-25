@@ -718,18 +718,6 @@
 }
 
 /* ── MapLibre popup theme (Aceternity card vibe) ───────────────────── */
-/* MapLibre's "use two fingers" overlay sits over the whole map at z-index
-   99999 with only opacity:0 while idle, so it still covers the map controls
-   for hit-testing — axe reported "Show my location" as obscured on /people at
-   320px. Hide it outright when not shown; the visibility delay matches
-   MapLibre's own 1s+1s fade-out so the message still fades away. */
-.maplibregl-cooperative-gesture-screen:not(.maplibregl-show) {
-  visibility: hidden;
-  transition:
-    opacity 1s 1s,
-    visibility 0s 2s;
-}
-
 .maplibregl-popup-content {
   background: hsl(var(--popover)) !important;
   color: hsl(var(--popover-foreground)) !important;
