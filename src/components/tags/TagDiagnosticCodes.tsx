@@ -97,7 +97,7 @@ export function TagDiagnosticCodes({ tagId }: { tagId: string }) {
         {t('tags.detail.codes.title', 'Diagnostic codes')}
       </h2>
 
-      <div className="mt-6 grid gap-8 sm:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-8 sm:grid-cols-2">
         {groups.map((group) => (
           <div key={group}>
             <h3 className="text-2xs font-bold uppercase tracking-label text-muted-foreground">

@@ -163,7 +163,7 @@ export function MapNotice({
   if (!body) return null;
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-1/2 z-30 flex -translate-y-1/2 justify-center px-4">
+    <div className="pointer-events-none absolute inset-x-0 top-1/2 z-30 flex -translate-y-1/2 justify-center pl-4 pr-16 md:pr-4">
       <div
         role="status"
         className="pointer-events-auto flex items-center gap-2 bg-card py-1.5 pl-4 pr-2 text-13 text-foreground rounded-container shadow-soft"
