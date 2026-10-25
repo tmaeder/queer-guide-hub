@@ -1,4 +1,8 @@
 import { test as setup, expect } from '@playwright/test';
+// Verification-only diagnostics policy. Never merge this temporary ref.
+setup.use({ trace: 'off', screenshot: 'off', video: 'off' });
+setup.describe.configure({ retries: 0 });
+
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
 import { waitForAppReady } from './support/appReady';
