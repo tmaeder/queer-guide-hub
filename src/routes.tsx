@@ -102,7 +102,6 @@ const AdminTrash = lazyRetry(() => import('./pages/admin/AdminTrash'));
 const ContentGraph = lazyRetry(() => import('./pages/admin/ContentGraph'));
 const EmailUpdates = lazyRetry(() => import('./pages/EmailUpdates'));
 const EmailPlatform = lazyRetry(() => import('./pages/admin/EmailPlatform'));
-const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
 const AdminPipelines = lazyRetry(() => import('./pages/admin/AdminPipelines'));
 
 const AdminSearchIntelligence = lazyRetry(() => import('./pages/admin/AdminSearchIntelligence'));
@@ -597,7 +596,10 @@ export const AppRoutes = () => {
                     element={<Navigate to="/admin/content/redirects" replace />}
                   />
                   <Route path="email" element={<EmailPlatform />} />
-                  <Route path="email-templates" element={<EmailTemplates />} />
+                  <Route
+                    path="email-templates"
+                    element={<Navigate to="/admin/email?tab=templates" replace />}
+                  />
 
                   {/* Settings -- taxonomy management pages */}
                   <Route
