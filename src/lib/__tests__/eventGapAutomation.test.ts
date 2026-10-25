@@ -86,6 +86,18 @@ describe('event gap evidence', () => {
       imageCandidates(ld('2026-12-03T19:00:00Z'), ev, 'https://arts.example.org/show'),
     ).toEqual([]);
   });
+  it('reads published gay.ch originals through the shared event core', () => {
+    const page = 'https://gay.ch/parties/queer-arts-night';
+    const original = `${page}/@@download/image/poster.jpg`;
+    const html = `<html><head><meta property="og:image" content="${original}">
+      <script type="application/ld+json">${JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Event',
+        name: ev.title,
+        startDate: ev.start_date,
+      })}</script></head><body></body></html>`;
+    expect(imageCandidates(html, ev, page)).toEqual([original]);
+  });
   it('uses event-owned landscape or portrait artwork with the same minimum edges', () => {
     const source = {
       source_slug: 'agendaq',

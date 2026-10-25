@@ -193,6 +193,8 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Shared edge evidence parsers keep their pinned Deno npm specifier.
+      'npm:parse5@8.0.1': 'parse5',
     },
     // P0 audit follow-up: boneyard-js/react bundles its own React, which
     // ends up in a separate Vite optimizeDeps cache bucket from the app's
