@@ -17,7 +17,7 @@ migration=(ROOT/'supabase/migrations/20261025175909_complete_security_advisor_ba
 tables=re.search(r'FOREACH t IN ARRAY ARRAY\[(.*?)\] LOOP',migration,re.S)[1]
 names=re.findall(r"'([a-z_]+)'",tables)
 schema="create role anon;create role authenticated;create role service_role;create function public.tag_facet_of(text)returns text language sql as $$select case $1 when 'venues'then 'venue'when 'personalities'then 'person'when 'news_article'then 'news'end$$;"
-for table in names:schema+=f'create table {table}(id int primary key);alter table {table}enable row level security;grant all on {table}to anon,authenticated;'
+for table in names:schema+=f'create table {table}(id int primary key);alter table {table} enable row level security;grant all on {table} to anon,authenticated;'
 checks='''do $$declare t text;begin
  foreach t in array array['''+tables+''']loop
   assert not has_table_privilege('anon',t,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE');
@@ -29,11 +29,11 @@ checks='''do $$declare t text;begin
 end$$;'''
 with tempfile.TemporaryDirectory(prefix='qg-backend-fixture-')as tmp:
  data=Path(tmp)/'data'
- subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale','--wal-segsize=1'],check=True,stdout=subprocess.DEVNULL)
- subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55513 -c listen_addresses= -c min_wal_size=2MB -c max_wal_size=16MB','-w','start'],check=True,stdout=subprocess.DEVNULL)
+ subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
+ subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55513 -c listen_addresses= -c min_wal_size=32MB -c max_wal_size=64MB','-w','start'],check=True,stdout=subprocess.DEVNULL)
  try:
   base=[str(PG/'psql'),'-h',tmp,'-p','55513','-d','postgres','-v','ON_ERROR_STOP=1']
-  subprocess.run(base,input=schema,text=True,check=True,stdout=subprocess.DEVNULL)
+  subprocess.run(base,input="begin;"+schema+"commit;",text=True,check=True,stdout=subprocess.DEVNULL)
   failed=subprocess.run(base+['-1'],input=migration,text=True,capture_output=True)
   assert failed.returncode!=0 and 'Unexpected backend table grants' in failed.stderr,'Guard no longer fails closed'
   subprocess.run(base,input=seed,text=True,check=True,stdout=subprocess.DEVNULL)
