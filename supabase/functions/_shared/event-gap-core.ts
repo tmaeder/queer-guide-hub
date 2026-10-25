@@ -79,6 +79,17 @@ export function structuredEvent(html: string, ev: GapEvent): Record<string, unkn
   return null
 }
 
+/** Only a matching, dated structured event can establish a cancellation signal. */
+export function sourceCancellation(html: string, ev: GapEvent): string | null {
+  const node = structuredEvent(html, ev)
+  const sourceDate = Date.parse(text(node?.startDate))
+  const canonicalDate = Date.parse(text(ev.start_date))
+  if (!Number.isFinite(sourceDate) || !Number.isFinite(canonicalDate)
+    || Math.abs(sourceDate - canonicalDate) > 86400000) return null
+  const status = text(node?.eventStatus)
+  return /^https?:\/\/schema\.org\/Event(?:Cancelled|Postponed)$/.test(status) ? status : null
+}
+
 export function imageCandidates(html: string, ev: GapEvent, pageUrl: string): string[] {
   const originals = extractGaychEventArtwork(html, ev, pageUrl)
   const structured = structuredEvent(html, ev)
