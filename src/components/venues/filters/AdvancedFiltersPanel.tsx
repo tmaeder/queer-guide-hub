@@ -1,4 +1,5 @@
 import { useVocabularyOptions } from '@/hooks/useManagedOptions';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -44,26 +45,35 @@ export interface AdvancedFiltersPanelProps {
   onClearFilters: () => void;
 }
 
-/** Advanced filters — inline on desktop, bottom-sheet on mobile. */
+/**
+ * Advanced filters — inline on desktop, bottom-sheet on mobile.
+ *
+ * Only ONE variant is mounted. Both used to render at once, hidden by CSS
+ * (`md:hidden` / `hidden md:flex`), and that broke both widths: on desktop the
+ * Sheet's overlay covered the page over a zero-size hidden panel, and on mobile
+ * the two copies of every dropdown shared one `open` state, so the hidden
+ * inline popover opened outside the Sheet's focus trap and was closed again
+ * instantly — taking the visible one with it.
+ */
 export function AdvancedFiltersPanel(props: AdvancedFiltersPanelProps) {
   const { open, onOpenChange } = props;
-  return (
-    <>
-      {/* Mobile: bottom sheet */}
-      <Sheet open={open} onOpenChange={(o) => !o && onOpenChange(false)}>
-        <SheetContent side="bottom" className="md:hidden max-h-[85dvh] overflow-y-auto p-4">
-          <SheetHeader>
-            <SheetTitle>Refine</SheetTitle>
-          </SheetHeader>
-          <PanelBody {...props} />
-        </SheetContent>
-      </Sheet>
-
-      {/* Desktop: inline */}
-      <nav aria-label="Venue filters" className="hidden md:flex flex-col gap-6 pt-6 mt-1">
+  const isMobile = useIsMobile();
+  if (!isMobile) {
+    return (
+      <nav aria-label="Venue filters" className="flex flex-col gap-6 pt-6 mt-1">
         <PanelBody {...props} />
       </nav>
-    </>
+    );
+  }
+  return (
+    <Sheet open={open} onOpenChange={(o) => !o && onOpenChange(false)}>
+      <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto p-4">
+        <SheetHeader>
+          <SheetTitle>Refine</SheetTitle>
+        </SheetHeader>
+        <PanelBody {...props} />
+      </SheetContent>
+    </Sheet>
   );
 }
 
