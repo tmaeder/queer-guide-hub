@@ -66,11 +66,17 @@ export interface PostalQueueEntity extends PostalQueuePoint {
 export function postalQueueAction(
   queued: PostalQueuePoint,
   current: PostalQueueEntity | null,
-): 'drop' | 'defer' | 'centroid_hold' | 'refresh' | 'geocode' {
+  entityType: string,
+): 'drop' | 'defer' | 'centroid_hold' | 'unverified_hold' | 'refresh' | 'geocode' {
   if (!current || current.duplicate_of_id || current.postal_code?.trim()) return 'drop'
   if (current.safety_gated || current.latitude == null || current.longitude == null) return 'defer'
   if (current.field_provenance?.latitude?.source === 'derived:city_centroid' ||
     current.field_provenance?.longitude?.source === 'derived:city_centroid') return 'centroid_hold'
+  // Imported events can carry city-level coordinates without provenance at all.
+  // A matching city is not evidence that the point identifies the event venue.
+  if (entityType === 'event' &&
+    (!current.field_provenance?.latitude?.source ||
+      !current.field_provenance?.longitude?.source)) return 'unverified_hold'
   if (Number(current.latitude) !== Number(queued.latitude) ||
     Number(current.longitude) !== Number(queued.longitude)) return 'refresh'
   return 'geocode'

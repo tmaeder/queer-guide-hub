@@ -10,19 +10,23 @@ declare dry_run boolean:=coalesce(nullif(current_setting('matching.overture_dry_
 begin
  perform public.assert_admin_or_internal();
  if auth.uid() is not null then raise exception 'Internal actor required';end if;
+ if not exists(select 1 from supabase_migrations.schema_migrations where version='99991792955040')then raise exception 'Bound contact validation release missing';end if;
  if not pg_try_advisory_xact_lock(hashtext('business_quality_lifecycle'))then raise exception 'Native business producer busy';end if;
  input:=coalesce(nullif(current_setting('matching.overture_proofs',true),''),'[]')::jsonb;
  if jsonb_typeof(input)<>'array' or jsonb_array_length(input)>20 then raise exception 'At most twenty source proofs required';end if;
  for r in
  with inputs as materialized(select value p from jsonb_array_elements(input)),
  unique_ids as(select p->>'venue_id' id from inputs group by 1 having count(*)=1)
- select i.p,to_jsonb(v) old_venue,to_jsonb(o) old_organization,ci.name city_name,c.code country_code
+ select i.p,to_jsonb(v) old_venue,to_jsonb(o) old_organization,public.organization_facts_only_source(o.id)old_source_contract,ci.name city_name,c.code country_code
  from inputs i join unique_ids u on u.id=i.p->>'venue_id'
  join venues v on v.id=(i.p->>'venue_id')::uuid
  join organizations o on o.id=v.organization_id and o.primary_venue_id=v.id
  join countries c on c.id=v.country_id join cities ci on ci.id=v.city_id and ci.country_id=c.id
  where v.duplicate_of_id is null and v.closed_at is null and o.duplicate_of_id is null and o.status='active'
  and o.roles=array['venue']::text[] and o.claim_status='unclaimed' and o.last_verified_at is null
+ and coalesce(to_jsonb(o)->>'claimed_by','')=''
+ and coalesce(to_jsonb(v)->>'verified','false')='false'
+ and coalesce(to_jsonb(v)->>'verification_status','')not in('verified','claimed')
  and o.field_provenance#>>'{identity,source}'='unified_location'
  and lower(btrim(o.name))=lower(btrim(v.name)) and o.city_id=v.city_id and o.country_id=v.country_id
  and v.website is null and v.phone is null and v.phone_e164 is null and v.email is null
@@ -72,8 +76,10 @@ begin
   and revision.changed_fields&&array['website','phone','email'])
  and not exists(select 1 from entity_quality_findings f where f.entity_type='organization'and f.entity_id=o.id
   and f.dimension='contact'and(f.waived_at is not null or f.waived_by is not null))
- and not exists(select 1 from entity_quality_findings f where f.entity_type='organization' and f.entity_id=o.id
+ and(not exists(select 1 from entity_quality_findings f where f.entity_type='organization' and f.entity_id=o.id
   and f.dimension in('editorial','media') and f.state in('source_unavailable','not_applicable'))
+  or(exists(select 1 from supabase_migrations.schema_migrations where version='99991792951000')
+   and public.organization_facts_only_source(o.id)is not null))
  order by v.id limit 20 for update of v,o skip locked
  loop
   p:=r.p;
@@ -127,6 +133,7 @@ begin
    is distinct from r.old_organization-array['phone','quality_checked_at','updated_at','field_provenance']
    or (after_row->'field_provenance')-'phone'is distinct from r.old_organization->'field_provenance'
    then raise exception 'Unexpected direct business mutation';end if;
+  if r.old_source_contract is not null and (public.organization_facts_only_source((r.old_organization->>'id')::uuid)->'unavailable_dimensions')is distinct from(r.old_source_contract->'unavailable_dimensions')then raise exception 'Phone source reopened unrelated quality work';end if;
   changed:=changed+1;changed_ids:=array_append(changed_ids,(p->>'venue_id')::uuid);
  end loop;
  perform set_config('matching.overture_phone_result',jsonb_build_object('dry_run',dry_run,'venues',changed,'venue_ids',changed_ids)::text,false);

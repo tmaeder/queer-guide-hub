@@ -409,7 +409,7 @@ function CMSEditorBody({
       )}
 
       {/* ── Body (main + sidebar) ───────────────────────────── */}
-      <div className="flex-1 min-w-0 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
+      <div className="flex-1 min-w-0 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
         {/* ── Main Column ─────────────────────────────────── */}
         <div className="min-w-0">
           <div className="rounded-container bg-card mt-4 overflow-hidden shadow-soft">

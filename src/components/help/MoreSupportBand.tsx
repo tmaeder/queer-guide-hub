@@ -40,7 +40,7 @@ export function MoreSupportBand({ orgs }: { orgs: SupportOrg[] }) {
         {t('help.more_support', 'More support')}
       </h2>
 
-      <div className="mt-8 grid border-y border-border-hairline md:grid-cols-3 md:divide-x md:divide-border-hairline">
+      <div className="mt-8 grid grid-cols-1 border-y border-border-hairline md:grid-cols-3 md:divide-x md:divide-border-hairline">
         <div className="py-8 md:pr-8">
           <h3 className="text-title font-bold leading-tight">
             {t('help.support_orgs', 'Support organizations')}
