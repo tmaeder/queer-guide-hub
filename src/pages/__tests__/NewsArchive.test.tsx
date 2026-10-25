@@ -168,6 +168,46 @@ describe('NewsArchive page', () => {
     expect(fetchArticles).toHaveBeenLastCalledWith(expect.objectContaining({ tags: undefined }));
   });
 
+  // currentFilters was seeded from the URL without the category, so every
+  // request rebuilt from it (sort, clearing a right, semantic search) lost it.
+  it('clearing the right filter keeps the URL category on the request', async () => {
+    const fetchArticles = vi.fn();
+    useNewsMock.mockReturnValue(
+      makeNewsReturn({
+        fetchArticles,
+        articles: [
+          {
+            id: 'a1',
+            title: 'Test Article',
+            content: null,
+            excerpt: null,
+            url: 'https://example.com',
+            image_url: null,
+            author: null,
+            published_at: '2026-05-01T00:00:00Z',
+            source_id: 's1',
+            views_count: 0,
+            is_featured: false,
+            category: null,
+            country_ids: null,
+            city_ids: null,
+            tags: null,
+            publisher_name: null,
+            created_at: '2026-05-01T00:00:00Z',
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<NewsArchive />, {
+      route: '/news/all?category=politics&right=conversion-therapy',
+    });
+    await waitFor(() => expect(screen.getByText(/Right: Conversion therapy/)).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button', { name: 'Remove Conversion therapy filter' }));
+    expect(fetchArticles).toHaveBeenLastCalledWith(
+      expect.objectContaining({ tags: undefined, category: 'politics' }),
+    );
+  });
+
   // Retry used to call fetchArticles() with no arguments, replacing the
   // filtered request with an unfiltered one. It must re-run what is on screen.
   it('retrying a failed filtered archive refetches it instead of dropping the filters', async () => {
