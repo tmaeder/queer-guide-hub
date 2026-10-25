@@ -961,3 +961,14 @@ admitted or removed, and no new workspace was activated.
 Tenant creation/switching/business activation, reviewed atomic transfer and
 external provider/device/publication proof remain open. Production deployment and
 post-release E2E verification remain pending the coordinated release window.
+
+### Native signup attribution: next activation boundary
+
+The current native signup endpoint still delegates to a conversion writer using
+private request selection. Before business activation, derive its workspace from
+the globally unique recorded click, verify the registering account through a
+narrow private Auth lookup, and write only the fixed native signup event. Reuse
+an explicit-workspace conversion helper so ordinary account/key writes preserve
+their current scope and role checks. Visitor workspace headers cannot choose
+signup attribution. Keep workspace activation and resource fences closed while
+verifying this boundary through SQL and the actual HTTP handler.
