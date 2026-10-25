@@ -195,7 +195,7 @@ export function StepperShell({
               {children}
             </div>
 
-            <div className="mt-12 pt-6 flex items-center justify-between gap-4">
+            <div className="mt-12 pt-6 flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <Button variant="ghost" onClick={onPrev} disabled={!canGoPrev || current === 0}>
                   <ArrowLeft className="w-4 h-4 mr-2" />
@@ -207,7 +207,7 @@ export function StepperShell({
                   </Button>
                 )}
               </div>
-              <div className="flex items-center gap-4">
+              <div className="ml-auto flex flex-wrap items-center gap-4">
                 {footerExtra}
                 <Button onClick={onNext} disabled={!canGoNext}>
                   {nextLabel}
