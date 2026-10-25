@@ -23,6 +23,14 @@ function organizationLd(overrides?: OrgOverrides) {
     '@type': 'Organization',
     name: overrides?.site_name ?? 'Queer Guide',
     url: SITE_ORIGIN,
+    description:
+      'Queer Guide is an independent, community-led guide to LGBTQ+ venues, events, travel, news and community knowledge worldwide.',
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'legal and privacy enquiries',
+      email: 'legal@queer.guide',
+      url: `${SITE_ORIGIN}/contact`,
+    },
     logo: overrides?.org_logo_url ?? `${SITE_ORIGIN}/icons/icon-192.png`,
     sameAs: overrides?.org_sameas ?? [
       'https://www.instagram.com/queer.guide',
