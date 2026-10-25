@@ -163,7 +163,7 @@ describe('transactional gateway', () => {
       expect(message.ack).toHaveBeenCalledTimes(2);
       expect(fetchMock.mock.calls[0][1]).toMatchObject({
         method: 'POST',
-        redirect: 'error',
+        redirect: 'manual',
         body: JSON.stringify(message.body),
       });
     } finally {
