@@ -1,0 +1,13 @@
+# Email production completion
+
+Continue the approved email platform and the user's autonomous completion / production E2E request. Preserve Cloudflare-only sending, independent source permissions, truthful receipt states and the existing email workspace.
+
+The production audit found native delivered events stranded in the dead-letter queue while the application had no provider events. Preserve the original envelopes privately; repair the authenticated receiver with equivalent paired credential rotation, and replay original event identities only. A receiver success must precede queue acknowledgement. No receipt repair can submit or resend email. Remove the temporary recovery consumer after a verified drain.
+
+Expose current event-queue and dead-letter backlog through the existing protected Worker gateway using native Queue bindings and their read-only metrics method. The admin-only operations endpoint forwards bounded counts, bytes and oldest-message timestamps. Missing bindings, unsupported metrics, timeouts and malformed responses mean unavailable, never zero. Retain the incumbent operations layout and shared controls; the existing operational count grid can present the additional evidence without a new dashboard or recovery action.
+
+Test gateway authentication and no-send invariants, independent queue failures, backend response validation and timeouts, and UI unknown-versus-zero states. Finish with production operations refresh, receipt reconciliation/deduplication and a single controlled mailbox send to the currently signed-in Auth owner’s verified address. Verify an inbound round trip only where receiving routes are independently established. Preserve immutable outgoing identities and native receipts; clean only task-owned visible test copies. The designer is being audited independently in its owning chat, with separate fixtures.
+
+Marketing, newsletters and editorial alerts remain provider-blocked. Unimplemented product sources without a current recipient/visibility/permission contract are not enabled by guessing recipients or treating published business addresses as ownership. A destructive production restore is an incident procedure, not a normal E2E step; retain the isolated restore proof and document that boundary.
+
+The native recovery reproduction exposed a workerd-specific failure: `redirect: "error"` throws before network I/O, so all events retry without reaching the receiver. Use `redirect: "manual"` and retain the existing non-2xx retry rule, which rejects redirects without forwarding the shared credential. Add a runtime-contract regression in addition to ordinary Node mocks.
