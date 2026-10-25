@@ -1,4 +1,4 @@
--- 99991792951231_event_quality_publisher_occurrence_copy
+-- 99991792970613_event_quality_publisher_occurrence_copy
 --
 -- TODO: why this migration exists.
 
