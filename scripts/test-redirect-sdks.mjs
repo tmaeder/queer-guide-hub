@@ -378,9 +378,15 @@ try {
   await verifyPublicCapabilityWorkspaces(db,reportRequest,base,policyRuntime.hashLinkPassword);
   const workspaceFixtureConfig={domainConnectEnabled,instructionMailEnabled,sdkHeartbeatEnabled},workspaceFixtureRequests=fixtureExternalRequests;
   domainConnectEnabled=true;instructionMailEnabled=true;sdkHeartbeatEnabled=true;
-  try {await verifyRedirectWorkspaceMembershipHttp(db,reportRequest,reportActor,{cleanupAssets:()=>policyRuntime.dispatchRedirectQrAssetCleanup(service,sdkArtworkStorage,fixtureDnsFetch)});}
+  try {await verifyRedirectWorkspaceMembershipHttp(db,reportRequest,reportActor,{cleanupAssets:(assetId)=>{
+   if(fixtureExternalRequests!==workspaceFixtureRequests)throw new Error('Denied workspace requests reached external transport');
+   return policyRuntime.dispatchRedirectQrAssetCleanup(service,sdkArtworkStorage,async(input,options)=>{
+    if(String(input)!=='https://fixture.supabase.co/storage/v1/object/redirect-brand-assets'||options.method!=='DELETE'||JSON.stringify(JSON.parse(options.body).prefixes)!==JSON.stringify([assetId+'.png']))throw new Error('Workspace retention touched an unexpected object or transport');
+    return fixtureDnsFetch(input,options);
+   });
+  }});}
   finally {domainConnectEnabled=workspaceFixtureConfig.domainConnectEnabled;instructionMailEnabled=workspaceFixtureConfig.instructionMailEnabled;sdkHeartbeatEnabled=workspaceFixtureConfig.sdkHeartbeatEnabled;}
-  if(fixtureExternalRequests!==workspaceFixtureRequests)throw new Error('Workspace boundary fixture reached DNS/provider/Storage/mail transport');
+  if(fixtureExternalRequests!==workspaceFixtureRequests+1)throw new Error('Workspace boundary fixture did not perform exactly its one authorized orphan cleanup');
   const lostRoleEvent='owner-context-race:'+webcrypto.randomUUID();
   loseConversionOwnerAfterContext=true;
   await reportRequest('/track/lead','POST',{clickId:click.rows[0].id,customerExternalId:'owner-context-race',eventId:lostRoleEvent},undefined,403);

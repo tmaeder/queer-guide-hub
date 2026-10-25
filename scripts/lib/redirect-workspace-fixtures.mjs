@@ -924,10 +924,29 @@ export async function verifyRedirectWorkspaceMembershipHttp(
       "UPDATE public.redirect_qr_assets SET next_cleanup_at=clock_timestamp()+interval '1 day' WHERE workspace_id='58aa4340-8f21-4b7f-9a10-90be2da89c01'",
     );
     assert.equal(typeof cleanupAssets, 'function');
-    await cleanupAssets();
     assert.deepEqual(await nativeAssetSnapshot(), nativeAssetsBefore);
+    await cleanupAssets(foreignCleanupAsset);
+    const retained = await nativeAssetSnapshot();
+    const cleaned = retained.redirect_qr_assets.find(
+      ({ row }) => row.id === foreignCleanupAsset,
+    ).row;
+    assert.equal(cleaned.state, 'deleted');
+    assert.equal(cleaned.lease, null);
+    assert.equal(cleaned.lease_until, null);
+    assert.ok(cleaned.last_deleted_at);
+    assert.ok(Date.parse(cleaned.next_cleanup_at) > Date.parse(cleaned.last_deleted_at));
+    const expected = structuredClone(nativeAssetsBefore);
+    const expectedAsset = expected.redirect_qr_assets.find(
+      ({ row }) => row.id === foreignCleanupAsset,
+    ).row;
+    Object.assign(expectedAsset, {
+      state: 'deleted',
+      last_deleted_at: cleaned.last_deleted_at,
+      next_cleanup_at: cleaned.next_cleanup_at,
+    });
+    assert.deepEqual(retained, expected);
     console.log(
-      'Workspace native/asset isolation: actual owner HTTP hides foreign app counts and public associations; foreign app/domain/branding mutations deny before Storage. The actual cleanup dispatcher leaves foreign due assets unclaimed with zero transport calls.',
+      'Workspace native/asset isolation: actual owner HTTP hides foreign app counts and public associations; foreign app/domain/branding mutations deny before Storage. The actual internal cleanup dispatcher deletes exactly the due orphan in the provisioning workspace; referenced artwork and all private app/branding state remain unchanged.',
     );
     console.log(
       'Workspace webhook isolation: actual owner HTTP hides foreign active/archived counts and rejects foreign settings, secret rotation, test events, link filters, payload/attempt history and replay without changing foreign outbox state or budgets. Live source triggers remain enabled.',

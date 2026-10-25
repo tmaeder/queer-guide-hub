@@ -781,3 +781,25 @@ This remains local integration evidence, with production release verification
 pending. Service job/retention authority, member integration installation,
 additional-owner admission, tenant activation, atomic transfer and external
 provider/device evidence still need work.
+
+### 2026-10-25 global bounded retention
+
+Internal native-handoff and QR-history retention now considers expired rows
+across workspaces, including provisioning workspaces. QR asset cleanup derives
+its tenant from the candidate asset and completion from the immutable asset ID
+and exact lease, independent of visitor/account workspace headers. It preserves
+bounded claims, expired-lease exclusion, fresh reference checks, retry/backoff
+and delayed tombstone rechecks. Public role grants remain closed.
+
+The full SQL suite passes with malformed request selection, bounded cross-tenant
+expiry, live-receipt preservation, referenced-artwork preservation and forged-
+lease denial. The actual cleanup dispatcher performs exactly one Storage DELETE
+for the fixture's due orphan in a provisioning workspace; the test requires the
+exact object key and transport and compares all other foreign state unchanged.
+All denied foreground operations still make zero external calls. The complete
+five-SDK HTTP matrix passes, all 2555 migrations parse and script lint/formatting
+pass. These checks use isolated SQL and mocked Storage, not production deletion.
+
+Domain, email and webhook dispatch still need source-row claim/receipt authority
+before workspace activation. Member installation, owner admission, workspace
+activation, atomic domain transfer and live provider/device evidence remain open.
