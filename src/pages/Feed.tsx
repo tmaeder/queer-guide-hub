@@ -124,7 +124,7 @@ export default function Feed({ embedded = false }: { embedded?: boolean }) {
                 <CreatePostDialog>
                   <Button variant="soft" className="w-full justify-start h-14 text-left">
                     <PenSquare className="h-5 w-5 mr-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">
+                    <span className="min-w-0 truncate text-muted-foreground">
                       {t(
                         'pages.feed.createPostPlaceholder',
                         "What's on your mind? Share with the community...",

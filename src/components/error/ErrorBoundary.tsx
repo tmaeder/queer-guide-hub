@@ -14,6 +14,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { fileError } from '@/utils/autoFileError';
+import { PAGE_GUTTER } from '@/components/layout/PageContainer';
 import { healFailedAssets } from '@/utils/assetHeal';
 import { getRecentlyViewed, recentlyViewedHref } from '@/lib/recentlyViewed';
 
@@ -222,7 +223,7 @@ function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () =>
 
   return (
     <div className="min-h-[60vh] bg-background">
-      <div className="max-w-3xl mx-auto px-4 py-16">
+      <div className={`mx-auto max-w-reading py-16 ${PAGE_GUTTER}`}>
         <div className="text-center flex flex-col gap-4">
           <AlertTriangle className="h-12 w-12 text-destructive mx-auto" />
           <h6 className="text-title font-semibold">Something went wrong</h6>
