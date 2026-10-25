@@ -1,0 +1,43 @@
+BEGIN;
+ALTER TABLE public.redirect_webhooks DROP CONSTRAINT redirect_webhooks_pending_tenant_fence;
+ALTER TABLE public.redirect_webhook_events DROP CONSTRAINT redirect_webhook_events_pending_tenant_fence;
+ALTER TABLE public.redirect_webhook_deliveries DROP CONSTRAINT redirect_webhook_deliveries_pending_tenant_fence;
+ALTER TABLE public.redirect_webhook_attempts DROP CONSTRAINT redirect_webhook_attempts_pending_tenant_fence;
+ALTER TABLE public.redirect_webhook_budgets DROP CONSTRAINT redirect_webhook_budgets_pending_tenant_fence;
+DO $$ DECLARE fence text; BEGIN
+ SELECT conname INTO fence FROM pg_constraint WHERE conrelid='public.redirect_workspaces'::regclass AND contype='c' AND pg_get_constraintdef(oid) LIKE '%status%provisioning%is_legacy%';
+ IF fence IS NULL THEN RAISE EXCEPTION 'Missing activation fence';END IF;
+ EXECUTE format('ALTER TABLE public.redirect_workspaces DROP CONSTRAINT %I',fence);
+END $$;
+SET LOCAL ROLE service_role;
+DO $$
+DECLARE workspace uuid:=gen_random_uuid();actor uuid:=gen_random_uuid();hook uuid:=gen_random_uuid();event uuid;delivery uuid;worker_lease uuid;batch jsonb;prepared jsonb;receipt jsonb;secret text:='whsec_'||repeat('Q',43)||'=';
+BEGIN
+ INSERT INTO auth.users(id) VALUES(actor);
+ INSERT INTO public.redirect_workspaces(id,name,slug) VALUES(workspace,'Webhook worker fixture','webhook-worker-fixture');
+ INSERT INTO redirect_internal.workspace_owners(workspace_id,user_id) VALUES(workspace,actor);
+ INSERT INTO public.redirect_webhooks(id,workspace_id,created_by,name,url,event_types,secret) VALUES(hook,workspace,actor,'Future receiver','https://future-receiver.example.org/events',ARRAY['link.clicked'],secret);
+ event:=redirect_internal.enqueue_workspace_webhook(workspace,'webhook.test',NULL,'future-worker-event','{"message":"future-private-payload"}',hook);
+ SELECT id INTO STRICT delivery FROM public.redirect_webhook_deliveries WHERE workspace_id=workspace AND event_id=event;
+ PERFORM set_config('request.headers','{"x-qg-redirect-workspace":"invalid-worker-context"}',true);
+ batch:=public.claim_redirect_webhook_deliveries(1);
+ IF batch<>'[]'::jsonb THEN RAISE EXCEPTION 'Inactive workspace claimed webhook';END IF;
+ UPDATE public.redirect_workspaces SET status='active' WHERE id=workspace;
+ batch:=public.claim_redirect_webhook_deliveries(1);
+ IF jsonb_array_length(batch)<>1 OR batch#>>'{0,id}' IS DISTINCT FROM delivery::text OR batch#>>'{0,url}'<>'https://future-receiver.example.org/events' THEN RAISE EXCEPTION 'Active source delivery claim failed';END IF;
+ worker_lease:=(batch#>>'{0,lease}')::uuid;
+ BEGIN PERFORM public.prepare_redirect_webhook_delivery(delivery,gen_random_uuid());RAISE EXCEPTION 'Forged source lease prepared webhook';EXCEPTION WHEN no_data_found THEN NULL;END;
+ prepared:=public.prepare_redirect_webhook_delivery(delivery,worker_lease);
+ IF prepared->>'secret' IS DISTINCT FROM secret OR prepared->>'body' NOT LIKE '%future-private-payload%' OR prepared->>'eventId' IS DISTINCT FROM event::text THEN RAISE EXCEPTION 'Source payload/signing identity lost';END IF;
+ UPDATE public.redirect_workspaces SET status='provisioning' WHERE id=workspace;
+ BEGIN PERFORM public.prepare_redirect_webhook_delivery(delivery,worker_lease);RAISE EXCEPTION 'Inactive workspace prepared webhook transport';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ DELETE FROM redirect_internal.workspace_owners WHERE workspace_id=workspace;
+ PERFORM public.prune_redirect_webhooks(1);
+ IF NOT EXISTS(SELECT FROM public.redirect_webhook_deliveries WHERE id=delivery AND state='leased' AND lease=worker_lease) THEN RAISE EXCEPTION 'Retention invalidated an in-flight provider receipt';END IF;
+ receipt:=public.finish_redirect_webhook_delivery(delivery,worker_lease,200,NULL,'fixture provider acceptance',7);
+ IF receipt->>'id' IS DISTINCT FROM delivery::text OR receipt->>'state'<>'cancelled' OR receipt->>'httpStatus'<>'200' OR receipt->>'errorCode'<>'scope_changed' THEN RAISE EXCEPTION 'Postflight receipt lost after access/status change';END IF;
+ IF NOT EXISTS(SELECT FROM public.redirect_webhook_attempts WHERE workspace_id=workspace AND delivery_id=delivery AND http_status=200 AND duration_ms=7 AND response_excerpt='fixture provider acceptance' AND finished_at IS NOT NULL) THEN RAISE EXCEPTION 'Exact external attempt outcome was not retained';END IF;
+ BEGIN PERFORM public.finish_redirect_webhook_delivery(delivery,worker_lease,200,NULL,'replay',7);RAISE EXCEPTION 'Webhook receipt replay accepted';EXCEPTION WHEN no_data_found THEN NULL;END;
+ IF has_function_privilege('authenticated','redirect_internal.webhook_delivery_for_workspace(uuid,uuid,boolean)','EXECUTE') OR has_function_privilege('anon','redirect_internal.webhook_delivery_for_workspace(uuid,uuid,boolean)','EXECUTE') THEN RAISE EXCEPTION 'Source-bound receipt helper exposed';END IF;
+END $$;
+ROLLBACK;

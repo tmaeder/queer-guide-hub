@@ -45,8 +45,10 @@ BEGIN
  job:=public.claim_redirect_webhook_deliveries(4)->0;
  old_version:=(sub->>'version')::uuid;
  sub:=public.redirect_webhook_resource('patch',actor,NULL,(sub->>'id')::uuid,jsonb_build_object('version',old_version,'enabled',false));
- IF EXISTS(SELECT FROM public.redirect_webhook_deliveries WHERE webhook_id=(sub->>'id')::uuid AND state IN('queued','retry','leased')) THEN RAISE EXCEPTION 'Pause did not cancel work';END IF;
- BEGIN PERFORM public.prepare_redirect_webhook_delivery((job->>'id')::uuid,(job->>'lease')::uuid);RAISE EXCEPTION 'Cancelled lease prepared';EXCEPTION WHEN no_data_found THEN NULL;END;
+ IF EXISTS(SELECT FROM public.redirect_webhook_deliveries WHERE webhook_id=(sub->>'id')::uuid AND state IN('queued','retry')) THEN RAISE EXCEPTION 'Pause left queued work';END IF;
+ BEGIN PERFORM public.prepare_redirect_webhook_delivery((job->>'id')::uuid,(job->>'lease')::uuid);RAISE EXCEPTION 'Paused lease prepared';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ receipt:=public.finish_redirect_webhook_delivery((job->>'id')::uuid,(job->>'lease')::uuid,NULL,'scope_changed','',0);
+ IF receipt->>'state'<>'cancelled' THEN RAISE EXCEPTION 'Paused lease did not close its denial receipt';END IF;
  BEGIN PERFORM public.redirect_webhook_resource('patch',actor,NULL,(sub->>'id')::uuid,jsonb_build_object('version',old_version,'enabled',true));RAISE EXCEPTION 'Stale settings accepted';EXCEPTION WHEN unique_violation THEN NULL;END;
  receipt:=public.redirect_webhook_resource('test',actor,NULL,(sub->>'id')::uuid,jsonb_build_object('version',sub->>'version'));
  IF NOT (receipt->>'queued')::boolean THEN RAISE EXCEPTION 'Disabled endpoint cannot explicitly test';END IF;
@@ -55,7 +57,9 @@ BEGIN
  DELETE FROM public.user_roles WHERE user_id=actor;
  BEGIN PERFORM public.prepare_redirect_webhook_delivery((job->>'id')::uuid,(job->>'lease')::uuid);RAISE EXCEPTION 'Former owner callback prepared';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
  PERFORM public.prune_redirect_webhooks(100);
- IF EXISTS(SELECT FROM public.redirect_webhook_deliveries WHERE webhook_id=(sub->>'id')::uuid AND state IN('queued','retry','leased')) THEN RAISE EXCEPTION 'Lost owner work not cancelled';END IF;
+ IF EXISTS(SELECT FROM public.redirect_webhook_deliveries WHERE webhook_id=(sub->>'id')::uuid AND state IN('queued','retry')) OR NOT EXISTS(SELECT FROM public.redirect_webhook_deliveries WHERE id=(job->>'id')::uuid AND state='leased') THEN RAISE EXCEPTION 'Lost owner cleanup lost queued cancellation or in-flight receipt';END IF;
+ receipt:=public.finish_redirect_webhook_delivery((job->>'id')::uuid,(job->>'lease')::uuid,200,NULL,'accepted before role loss',1);
+ IF receipt->>'state'<>'cancelled' OR receipt->>'httpStatus'<>'200' THEN RAISE EXCEPTION 'Lost-owner external receipt lost';END IF;
  sub2:=public.redirect_webhook_resource('create',other_actor,NULL,NULL,jsonb_build_object('name','Retry receiver','url','https://receiver.example.org/retry'),secret);
  receipt:=public.redirect_webhook_resource('test',other_actor,NULL,(sub2->>'id')::uuid,jsonb_build_object('version',sub2->>'version'));
  FOR n IN 1..8 LOOP

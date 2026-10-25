@@ -418,9 +418,9 @@ function WebhookEditor({
         <div className="space-y-2" role="group" aria-label="Confirm webhook change">
           <p>
             {confirm === 'archive'
-              ? 'Archive this webhook and cancel pending deliveries?'
+              ? 'Archive this webhook? Pending deliveries will be cancelled. A request already sent may still finish.'
               : confirm === 'pause'
-                ? 'Pause this webhook and cancel pending deliveries?'
+                ? 'Pause this webhook? Pending deliveries will be cancelled. A request already sent may still finish.'
                 : 'Replace the signing secret? The previous key stays valid for 24 hours.'}
           </p>
           <Button disabled={busy} onClick={() => void act(confirm)}>

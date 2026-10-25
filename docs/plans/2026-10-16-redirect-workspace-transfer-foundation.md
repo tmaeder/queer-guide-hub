@@ -858,3 +858,34 @@ No live provider object was created, modified, adopted or deleted by these tests
 Webhook worker authority remains before activation, along with member integration
 installation, owner admission, tenant activation, atomic transfer and external
 provider/device proof.
+
+### 2026-10-25 source-bound webhook workers and receipts
+
+Webhook workers now claim active source subscriptions and derive preparation and
+completion context from the saved delivery and exact lease. Current workspace,
+creator, settings generation and enabled/test state gate send preparation. A
+private explicit-workspace serializer returns the internal receipt without
+opening foreground cross-tenant reads. Claiming takes the exclusive ACL lock
+before subscription updates, avoiding a shared-lock upgrade race.
+
+Expired lease recovery and bounded secret/history/budget retention cover inactive
+workspaces. Settings changes and owner-loss retention cancel queued work while
+preserving unexpired in-flight leases. New preparation is denied immediately by
+current permissions/settings generation. An already-started request can still
+record its exact HTTP outcome and excerpt before its delivery closes with
+scope_changed. Pause/archive confirmation text explains that a request already
+sent may finish.
+
+Complete SQL tests cover isolated future workspaces, malformed headers, inactive
+claim/preparation denial, exact body/secret identity, forged/replayed leases,
+receipt persistence after deactivation/owner loss, and global expiry cleanup that
+preserves live receipts. Foreground denial snapshots are compared before internal
+maintenance; internal retention assertions separately verify only eligible state
+changes. The complete five-SDK HTTP matrix and four webhook UI tests pass. All
+2558 migrations parse; script/component lint, formatting and diff checks pass.
+No real webhook was delivered by these isolated tests.
+
+Member installation, additional-owner admission, tenant creation/switching/
+activation, reviewed atomic domain transfer and external provider/device proof
+remain open. This is local integration evidence, with production release and
+post-deployment E2E verification still pending.
