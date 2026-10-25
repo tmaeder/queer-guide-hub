@@ -5,7 +5,7 @@
  "send_email": [{"name":"EMAIL"}],
  "durable_objects":{"bindings":[{"name":"DELIVERIES","class_name":"EmailDelivery"}]},
  "migrations":[{"tag":"v1","new_sqlite_classes":["EmailDelivery"]}],
- "queues":{"consumers":[{"queue":"queer-guide-email-events","max_batch_size":10,"max_retries":10,"dead_letter_queue":"queer-guide-email-events-dlq"}]},
+ "queues":{"producers":[{"binding":"EVENT_QUEUE","queue":"queer-guide-email-events"},{"binding":"EVENT_DLQ","queue":"queer-guide-email-events-dlq"}],"consumers":[{"queue":"queer-guide-email-events","max_batch_size":10,"max_retries":10,"dead_letter_queue":"queer-guide-email-events-dlq"}]},
  "vars":{"SENDER_DOMAIN":"queer.guide","EMAIL_EVENTS_URL":"https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/cloudflare-email-events"},
  "observability":{"enabled":true}
 }
