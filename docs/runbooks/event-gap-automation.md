@@ -165,3 +165,35 @@ scheduled dates rather than guessed weekly rules.
 Calendar export reads the same next indexed occurrence and uses the explicit
 venue FK. It declines export when a recovered recurrence has no available indexed
 date, instead of generating an all-day or year-long calendar entry.
+
+## Calendar and identity evidence follow-up — 2026-10-25
+
+Parser version 2 supports last-weekday monthly rules, weekly/monthly intervals,
+cancellation dates/ranges/recurrences, equivalent IANA zones for the actual
+materialized instants, and explicit multi-day end dates. A multi-day span becomes
+one occurrence. Malformed historical rows no longer invalidate current calendars.
+Future contradictory periods remain in `omitted_periods`; their valid surrounding
+sessions can be recovered with `outcome=partial`, without hiding the conflict.
+
+The reviewed source manifest covers all 124 records still lacking sources on this
+date (the earlier snapshot counted 125). Each successful attribution has a live
+HTTPS response, a bounded content hash, a short identity quote, and a timestamp.
+These are identity sources. They do not confirm estimated future-edition dates.
+Explicit organizer evidence separately corrects Midsumma, West Pride and Dublin
+festival dates. Week-end Rubber's organizer cancellation supersedes stale listings.
+
+`Revalidate event identity sources` refreshes reviewed pages weekly with three
+concurrent requests and emits an evidence artifact. Apply only verified entries
+with `apply_event_source_evidence`; existing editorial URLs and event dates are
+preserved. A six-hour database job can inherit fresh identity evidence for later
+seed clones only when normalized family title and city both match. It never
+copies dates. New source discovery candidates still require identity review.
+
+Metrics distinguish `identity_only_unconfirmed_editions` and
+`partial_source_calendars` from source URL coverage. Investigate partial calendars
+through `field_provenance.source_schedule_recovery.omitted_periods`. Do not treat
+zero missing URLs as proof that future edition dates have been verified.
+
+Worker pages with matching title/date JSON-LD cancellation or postponement go to
+review before further enrichment. This is a review signal, not permission to
+cancel an unrelated event based on page prose.
