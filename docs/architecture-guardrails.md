@@ -23,6 +23,7 @@ Enabled as of 2026-03-03:
 Already present:
 - `react-hooks/exhaustive-deps` — warns on missing hook dependencies
 - `jsx-a11y/*` — WCAG 2.2 AA accessibility warnings
+- `queerguide/no-hand-rolled-dialog` — `role="dialog"`/`alertdialog`/`aria-modal` on a raw DOM element outside `src/components/ui` is an error; use Dialog/Sheet/AlertDialog/Popover/Drawer. Role overrides on a primitive are allowed.
 
 ## Dependency Rules
 
