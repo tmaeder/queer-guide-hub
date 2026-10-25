@@ -7,6 +7,7 @@
  */
 
 import { analyticsAllowed } from '@/lib/analyticsConsent';
+import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
 
 const SEARCH_URL = import.meta.env?.VITE_SEARCH_PROXY_URL || 'https://search.queer.guide';
 
@@ -246,7 +247,10 @@ export async function fetchAutocomplete(
   if (!query?.trim()) return [];
   const data = await post<{ suggestions: SearchHit[] }>('/autocomplete', {
     query,
-    types,
+    // UI scopes historically use index keys (e.g. cities), whereas this
+    // endpoint validates canonical entity types (city). Preserve unknown keys
+    // so the worker still rejects invalid filters instead of widening them.
+    types: types?.map((type) => CONTENT_TYPES.find(({ indexKey }) => indexKey === type)?.id ?? type),
     limit,
   });
   return data.suggestions ?? [];
