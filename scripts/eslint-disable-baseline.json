@@ -1,5 +1,5 @@
 {
-  "total": 423,
+  "total": 417,
   "files": {
     "src/components/admin/CloudflareDashboard.tsx": {
       "react-hooks/set-state-in-effect": 1
@@ -235,10 +235,6 @@
     "src/components/discovery/RecommendedForYou.tsx": {
       "@typescript-eslint/no-explicit-any": 1,
       "react-hooks/set-state-in-effect": 1
-    },
-    "src/components/entity/EntityDetailLayout.tsx": {
-      "react-hooks/exhaustive-deps": 2,
-      "react-hooks/set-state-in-effect": 2
     },
     "src/components/entity/editorial/EditorialDetailLayout.tsx": {
       "react-hooks/exhaustive-deps": 3
@@ -682,10 +678,6 @@
       "react-hooks/refs": 1
     },
     "src/hooks/useSavedSearches.tsx": {
-      "react-hooks/set-state-in-effect": 1
-    },
-    "src/hooks/useSearch.tsx": {
-      "react-hooks/exhaustive-deps": 1,
       "react-hooks/set-state-in-effect": 1
     },
     "src/hooks/useSearchRecommendations.tsx": {
