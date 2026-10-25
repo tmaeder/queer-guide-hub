@@ -86,6 +86,7 @@ export function RecommendedForYou({
         session_id: sid,
         debug: true,
       }),
+      signal: AbortSignal.timeout(10_000),
     })
       .then((r) => r.json())
       .then((d) => {
