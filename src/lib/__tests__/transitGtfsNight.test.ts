@@ -165,4 +165,18 @@ describe('gtfs-night', () => {
     expect(isLongDistanceRail('2', '', 'RE4')).toBe(false);
     expect(isLongDistanceRail('106', 'IR', 'IR36')).toBe(false);
   });
+
+  it('maps trolleybuses to bus (Lyon C-lines were dropped as unknown)', () => {
+    expect(mapMode('11')?.mode).toBe('bus');
+    expect(mapMode('800')?.mode).toBe('bus');
+    expect(mapMode('1100')).toBeNull();
+  });
+
+  it('a line closing at 03:25 ends there, not "all night" (Toulouse metro)', () => {
+    const h = (x: number) => Math.round(x * 3600);
+    const toulouse = [h(26.5), h(26.75), h(27), h(27.25), h(27.42)];
+    expect(serviceEnd(toulouse)).toEqual({ last: h(27.42), allNight: false });
+    // The same shape on a night line is night service that ran through the night.
+    expect(serviceEnd(toulouse, true).allNight).toBe(true);
+  });
 });
