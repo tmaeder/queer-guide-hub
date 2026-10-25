@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 vi.mock('@/components/theme/ThemeToggle', () => ({ ThemeToggle: () => <button>Theme</button> }));
 vi.mock('@/components/i18n/CurrencySelector', () => ({
@@ -47,6 +47,7 @@ function renderFooter() {
 describe('Footer', () => {
   it('should render footer links', () => {
     renderFooter();
+    fireEvent.click(screen.getByText('Site information'));
     expect(screen.getByText('About')).toBeInTheDocument();
     expect(screen.getByText('Legal')).toBeInTheDocument();
     expect(screen.getByText('Privacy')).toBeInTheDocument();
@@ -55,6 +56,19 @@ describe('Footer', () => {
       'href',
       '/email-updates',
     );
+  });
+
+  it('keeps essentials visible while secondary links are collapsed', () => {
+    renderFooter();
+    expect(screen.getByText('Email updates')).not.toBeVisible();
+    for (const name of ['Report', 'Crisis support', 'Privacy', 'Terms']) {
+      expect(screen.getByRole('link', { name })).toBeVisible();
+    }
+    const summary = screen.getByText('Site information');
+    fireEvent.click(summary);
+    expect(screen.getByRole('link', { name: 'Email updates' })).toBeVisible();
+    fireEvent.click(summary);
+    expect(screen.getByText('Email updates')).not.toBeVisible();
   });
 
   it('should render copyright', () => {
@@ -100,18 +114,15 @@ describe('Footer', () => {
 
   it('keeps crisis support directly reachable', () => {
     renderFooter();
-    expect(screen.getByRole('link', { name: 'Crisis lines, 24 hours' })).toHaveAttribute(
-      'href',
-      '/help',
-    );
+    expect(screen.getByRole('link', { name: 'Crisis support' })).toHaveAttribute('href', '/help');
   });
 
-  // "Report something" pointed at /report for as long as this footer existed
+  // "Report" pointed at /report for as long as this footer existed
   // and no such route was ever registered, so the anti-discrimination block's
   // only call to action landed on the 404 board.
-  it('sends "Report something" to a route that exists', () => {
+  it('sends "Report" to a route that exists', () => {
     renderFooter();
-    const report = screen.getByRole('link', { name: 'Report something' });
+    const report = screen.getByRole('link', { name: 'Report' });
     expect(report).toHaveAttribute('href', '/submit/feedback?category=safety');
   });
 });

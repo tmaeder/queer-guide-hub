@@ -1216,7 +1216,7 @@ async function processPostalQueue(
         return data
       }
       const reconcileQueue = async (current: Awaited<ReturnType<typeof readCurrent>>) => {
-        const action = postalQueueAction(job, current)
+        const action = postalQueueAction(job, current, job.entity_type)
         if (action === 'geocode') return false
         skipped++
         if (action === 'drop') {
@@ -1236,7 +1236,9 @@ async function processPostalQueue(
           // Recheck daily so a source-backed correction can resume automatically.
           const { error: queueError } = await supabase.from('geo_address_queue').update({
             next_attempt_at: new Date(Date.now() + 24 * 3600_000).toISOString(),
-            last_error: action === 'centroid_hold' ? 'city_centroid_not_postal_evidence' : 'geography_review_hold',
+            last_error: action === 'centroid_hold' ? 'city_centroid_not_postal_evidence'
+              : action === 'unverified_hold' ? 'event_coordinates_without_provenance'
+              : 'geography_review_hold',
           }).eq('entity_type', job.entity_type).eq('entity_id', job.entity_id)
           if (queueError) throw queueError
         }

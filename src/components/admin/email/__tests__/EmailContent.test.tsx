@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { EmailContent } from '../EmailContent';
+import { MemoryRouter } from 'react-router';
 const api = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: { functions: { invoke: api.invoke } },
@@ -19,7 +20,9 @@ const translation = {
 };
 function mount() {
   render(
-    <EmailContent templates={[{ template_key: 'welcome', name: 'Welcome', is_active: true }]} />,
+    <MemoryRouter>
+      <EmailContent templates={[{ template_key: 'welcome', name: 'Welcome', is_active: true }]} />
+    </MemoryRouter>,
   );
 }
 beforeEach(() => {
