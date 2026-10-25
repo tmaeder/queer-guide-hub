@@ -78,12 +78,20 @@ export function useFavorites(type: FavoriteType) {
 
   const config = tableMap[type];
 
+  // user object is recreated on each auth-state change but user.id is
+  // stable; key the fetch on the id so it does not re-fire every render.
+  const userId = user?.id;
+  const loadKey = userId && config ? `${userId}|${type}` : null;
+  const [prevLoadKey, setPrevLoadKey] = useState<string | null>(null);
+  if (loadKey !== prevLoadKey) {
+    setPrevLoadKey(loadKey);
+    if (loadKey) setLoading(true);
+  }
+
   useEffect(() => {
-    if (!user || !config) return;
+    if (!userId || !config) return;
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setLoading(true);
-    fetchFavoritesOnce(type, user.id, config).then((set) => {
+    fetchFavoritesOnce(type, userId, config).then((set) => {
       if (cancelled) return;
       setFavoriteIds(set);
       setLoading(false);
@@ -91,10 +99,7 @@ export function useFavorites(type: FavoriteType) {
     return () => {
       cancelled = true;
     };
-    // user object is recreated on each auth-state change but user.id is
-    // stable; depend on the id to avoid re-firing the fetch every render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, type]);
+  }, [userId, type, config]);
 
   const isFavorited = useCallback((itemId: string) => favoriteIds.has(itemId), [favoriteIds]);
 
@@ -154,8 +159,7 @@ export function useFavorites(type: FavoriteType) {
         }
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user, config, favoriteIds, toast],
+    [user, config, favoriteIds, toast, track, type],
   );
 
   return { isFavorited, toggleFavorite, loading, favoriteIds };

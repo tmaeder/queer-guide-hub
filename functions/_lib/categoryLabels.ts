@@ -23,7 +23,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   sexclub: 'nightclub',
   restaurant: 'restaurant',
   cafe: 'café',
-  'café': 'café',
+  café: 'café',
   coffee: 'café',
   coffeeshop: 'café',
   'coffee shop': 'café',
@@ -60,7 +60,9 @@ const CATEGORY_LABELS: Record<string, string> = {
  * 'space' (a neutral catch-all suitable for descriptions).
  */
 export function categoryLabel(subtype?: string | null, category?: string | null): string {
-  const candidates = [subtype, category].filter((s): s is string => typeof s === 'string' && s.length > 0);
+  const candidates = [subtype, category].filter(
+    (s): s is string => typeof s === 'string' && s.length > 0,
+  );
   for (const raw of candidates) {
     const norm = raw.trim().toLowerCase();
     if (norm && norm !== 'other' && CATEGORY_LABELS[norm]) {

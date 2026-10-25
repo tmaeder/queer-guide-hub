@@ -10,8 +10,7 @@
  * rewriting interferes.
  */
 
-const UPSTREAM =
-  'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/umami-analytics';
+const UPSTREAM = 'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/umami-analytics';
 
 interface TrackEnv {
   /**

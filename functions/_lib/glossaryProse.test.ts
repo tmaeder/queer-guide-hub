@@ -24,9 +24,15 @@ const vocab = (...terms: GlossaryLinkTerm[]): GlossaryLinkTerm[] => terms;
  * `data-glossary-link` value, inert. The parser answers the real question.
  */
 function anchorOf(html: string): { href: string | null; attrs: string[]; text: string } | null {
-  const el = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html').querySelector('a');
+  const el = new DOMParser()
+    .parseFromString(`<body>${html}</body>`, 'text/html')
+    .querySelector('a');
   if (!el) return null;
-  return { href: el.getAttribute('href'), attrs: el.getAttributeNames().sort(), text: el.textContent ?? '' };
+  return {
+    href: el.getAttribute('href'),
+    attrs: el.getAttributeNames().sort(),
+    text: el.textContent ?? '',
+  };
 }
 
 describe('paragraphsHtmlLinked — escaping contract', () => {
@@ -114,8 +120,14 @@ describe('paragraphsHtmlLinked — paragraph structure matches paragraphsHtml', 
     ['heading then capitalised line', 'Zugänglichkeit\nDer Eingang ist stufenlos.'],
     ['timetable lines', '23.15h - Milky Diamond\n23.30h - Sado Opera'],
     // Must NOT split: a hard-wrapped single sentence.
-    ['hard-wrapped sentence', 'in the City of Salford in Greater Manchester, England,\n3 miles west.'],
-    ['typewriter double space', 'Population was 60 at the 2000 census.  The area is named for a river.'],
+    [
+      'hard-wrapped sentence',
+      'in the City of Salford in Greater Manchester, England,\n3 miles west.',
+    ],
+    [
+      'typewriter double space',
+      'Population was 60 at the 2000 census.  The area is named for a river.',
+    ],
   ];
 
   const countParagraphs = (html: string) => (html.match(/<p>/g) ?? []).length;
@@ -138,7 +150,9 @@ describe('paragraphsHtmlLinked — paragraph structure matches paragraphsHtml', 
   it('emits more than one paragraph, so the count assertions above are not vacuous', () => {
     const text = 'First paragraph here.\n\nSecond paragraph here.';
     expect(countParagraphs(paragraphsHtml(text))).toBe(2);
-    expect(countParagraphs(paragraphsHtmlLinked(text, vocab({ surfaceForm: 'First', slug: 'f' })))).toBe(2);
+    expect(
+      countParagraphs(paragraphsHtmlLinked(text, vocab({ surfaceForm: 'First', slug: 'f' }))),
+    ).toBe(2);
   });
 
   it('links a term once across the whole document, not once per paragraph', () => {
@@ -153,10 +167,7 @@ describe('paragraphsHtmlLinked — paragraph structure matches paragraphsHtml', 
   });
 
   it('never leaves a blank-line join visible in the output', () => {
-    const html = paragraphsHtmlLinked(
-      'One.\n\nTwo.',
-      vocab({ surfaceForm: 'One', slug: 'one' }),
-    );
+    const html = paragraphsHtmlLinked('One.\n\nTwo.', vocab({ surfaceForm: 'One', slug: 'one' }));
     expect(html).not.toMatch(/<p>\s*<\/p>/);
     expect(html).not.toContain('\n\n');
   });

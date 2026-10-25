@@ -26,10 +26,7 @@ const renderLd = (obj: unknown) =>
 
 // Identity tags are mapped to the venue tag/target_group values that exist
 // in the DB. Add new keys here as the editorial scope grows.
-const IDENTITY_TAGS: Record<
-  string,
-  { label: string; description: string; tagFilter: string }
-> = {
+const IDENTITY_TAGS: Record<string, { label: string; description: string; tagFilter: string }> = {
   'trans-friendly': {
     label: 'trans-friendly',
     description:
@@ -88,29 +85,51 @@ function prideYearMax(): number {
  * src/components/pride/PrideFilterRail.tsx — keep in sync when adding new
  * countries to the seed.
  */
-const PRIDE_REGIONS: Record<
-  string,
-  { name: string; countries: string[] }
-> = {
+const PRIDE_REGIONS: Record<string, { name: string; countries: string[] }> = {
   europe: {
     name: 'Europe',
     countries: [
-      'DE', 'GB', 'FR', 'ES', 'NL', 'SE', 'DK', 'NO', 'FI', 'IT', 'PT', 'AT',
-      'CH', 'BE', 'CZ', 'PL', 'HU', 'GR', 'IE', 'IS', 'EE', 'LV', 'LT', 'RO',
-      'BG', 'SI', 'HR', 'BA', 'RS', 'SK', 'GE', 'TR',
+      'DE',
+      'GB',
+      'FR',
+      'ES',
+      'NL',
+      'SE',
+      'DK',
+      'NO',
+      'FI',
+      'IT',
+      'PT',
+      'AT',
+      'CH',
+      'BE',
+      'CZ',
+      'PL',
+      'HU',
+      'GR',
+      'IE',
+      'IS',
+      'EE',
+      'LV',
+      'LT',
+      'RO',
+      'BG',
+      'SI',
+      'HR',
+      'BA',
+      'RS',
+      'SK',
+      'GE',
+      'TR',
     ],
   },
   americas: {
     name: 'Americas',
-    countries: [
-      'US', 'CA', 'MX', 'BR', 'AR', 'CL', 'CO', 'PE', 'EC', 'UY',
-    ],
+    countries: ['US', 'CA', 'MX', 'BR', 'AR', 'CL', 'CO', 'PE', 'EC', 'UY'],
   },
   asia: {
     name: 'Asia',
-    countries: [
-      'IL', 'JP', 'TW', 'TH', 'HK', 'KR', 'SG', 'PH', 'VN',
-    ],
+    countries: ['IL', 'JP', 'TW', 'TH', 'HK', 'KR', 'SG', 'PH', 'VN'],
   },
   oceania: {
     name: 'Oceania',
@@ -245,7 +264,9 @@ async function identityLanding(env: Env, tag: string): Promise<Response | null> 
         .map((v) => {
           const name = escape(String(v.name ?? ''));
           const slug = escape(String(v.slug));
-          const city = v.city ? ` · ${escape(String(v.city))}${v.country ? ', ' + escape(String(v.country)) : ''}` : '';
+          const city = v.city
+            ? ` · ${escape(String(v.city))}${v.country ? ', ' + escape(String(v.country)) : ''}`
+            : '';
           const subtype = v.venue_subtype ? ` · ${escape(String(v.venue_subtype))}` : '';
           return `<div class="card"><h3><a href="/venues/${slug}">${name}</a></h3><div class="meta">${city}${subtype}</div></div>`;
         })
@@ -463,7 +484,12 @@ async function worldPrideLanding(env: Env, year: number): Promise<Response> {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Queer Guide', item: SITE_ORIGIN },
-      { '@type': 'ListItem', position: 2, name: `Pride ${year}`, item: `${SITE_ORIGIN}/pride/${year}` },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: `Pride ${year}`,
+        item: `${SITE_ORIGIN}/pride/${year}`,
+      },
       { '@type': 'ListItem', position: 3, name: 'WorldPride' },
     ],
   };
@@ -556,7 +582,12 @@ async function prideCityLanding(
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Queer Guide', item: SITE_ORIGIN },
-      { '@type': 'ListItem', position: 2, name: `Pride ${year}`, item: `${SITE_ORIGIN}/pride/${year}` },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: `Pride ${year}`,
+        item: `${SITE_ORIGIN}/pride/${year}`,
+      },
       { '@type': 'ListItem', position: 3, name: cityName },
     ],
   };
@@ -659,7 +690,12 @@ async function prideRegionLanding(
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Queer Guide', item: SITE_ORIGIN },
-      { '@type': 'ListItem', position: 2, name: `Pride ${year}`, item: `${SITE_ORIGIN}/pride/${year}` },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: `Pride ${year}`,
+        item: `${SITE_ORIGIN}/pride/${year}`,
+      },
       { '@type': 'ListItem', position: 3, name: region.name },
     ],
   };
@@ -702,10 +738,7 @@ ${featuredHtml ? `<h2>Featured prides</h2>\n${featuredHtml}` : ''}
 
 // Dispatch
 
-export async function resolveLandingRoute(
-  env: Env,
-  pathname: string,
-): Promise<Response | null> {
+export async function resolveLandingRoute(env: Env, pathname: string): Promise<Response | null> {
   if (!env.SUPABASE_URL || (!env.SUPABASE_ANON_KEY && !env.SUPABASE_SERVICE_ROLE_KEY)) {
     return null;
   }

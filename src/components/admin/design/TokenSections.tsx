@@ -21,13 +21,13 @@ function GlobalTokenInput({
   const overridden = controller.draft.tokens?.global?.[token.key] !== undefined;
   const error = controller.validationErrors[`tokens.global.${token.key}`];
   return (
-    <div>
-      <div className="flex items-center gap-2">
+    <div className="min-w-0 max-w-full">
+      <div className="flex min-w-0 max-w-full items-center gap-2">
         <Input
           value={value}
           aria-invalid={!!error}
           onChange={(e) => controller.setTokenOverride('global', token.key, e.target.value)}
-          className={`h-8 font-mono text-13 ${token.kind === 'transition' ? 'w-72' : 'w-28'} ${error ? 'border border-destructive' : ''}`}
+          className={`h-8 font-mono text-13 min-w-0 shrink ${token.kind === 'transition' ? 'w-72' : 'w-28'} ${error ? 'border border-destructive' : ''}`}
           aria-label={`--${token.key}`}
         />
         {overridden ? (
@@ -72,7 +72,7 @@ export function TypographySection({ controller }: { controller: DesignSettingsCo
               <span className="text-2xs uppercase tracking-wide text-muted-foreground">
                 {token.label} · --{token.key}
               </span>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4">
                 <GlobalTokenInput token={token} controller={controller} />
                 {lhToken && <GlobalTokenInput token={lhToken} controller={controller} />}
               </div>

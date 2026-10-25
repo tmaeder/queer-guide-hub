@@ -12,6 +12,7 @@ const makeNewsReturn = (overrides = {}) => ({
   loading: false,
   error: null,
   fetchArticles: vi.fn(),
+  refetch: vi.fn(),
   loadingTimedOut: false,
   ...overrides,
 });
@@ -44,6 +45,7 @@ vi.mock('@/hooks/useNews', () => ({
       loading: r.loading,
       error: r.error,
       fetchArticles: r.fetchArticles,
+      refetch: r.refetch,
       loadingTimedOut: r.loadingTimedOut,
     };
   },
@@ -164,5 +166,27 @@ describe('NewsArchive page', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Remove Conversion therapy filter' }));
     expect(fetchArticles).toHaveBeenLastCalledWith(expect.objectContaining({ tags: undefined }));
+  });
+
+  // Retry used to call fetchArticles() with no arguments, replacing the
+  // filtered request with an unfiltered one. It must re-run what is on screen.
+  it('retrying a failed filtered archive refetches it instead of dropping the filters', async () => {
+    const fetchArticles = vi.fn();
+    const refetch = vi.fn();
+    useNewsMock.mockReturnValue(
+      makeNewsReturn({
+        fetchArticles,
+        refetch,
+        error: 'Failed to load articles. Please try again.',
+      }),
+    );
+    initialRequests.length = 0;
+    renderWithProviders(<NewsArchive />, { route: '/news/all?category=politics' });
+    // Control: the page really is filtered.
+    expect(initialRequests[0]).toEqual(expect.objectContaining({ category: 'politics' }));
+
+    await userEvent.click(screen.getAllByRole('button', { name: /try again|retry/i })[0]);
+    expect(refetch).toHaveBeenCalledTimes(1);
+    expect(fetchArticles).not.toHaveBeenCalled();
   });
 });

@@ -104,4 +104,15 @@ describe('useNewsArticlesFeed', () => {
       expect(result.current.error).toBe('Failed to load articles. Please try again.'),
     );
   });
+
+  it('refetch re-runs the current request with its filters', async () => {
+    limitMock.mockResolvedValue({ data: [], error: null });
+    const { result } = renderHook(() => useNewsArticlesFeed(() => ({ sourceId: 's1' })), {
+      wrapper: TestProviders,
+    });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    act(() => result.current.refetch());
+    await waitFor(() => expect(limitMock).toHaveBeenCalledTimes(2));
+    expect(hasEq(limitMock.mock.calls[1][0], 'source_id', 's1')).toBe(true);
+  });
 });

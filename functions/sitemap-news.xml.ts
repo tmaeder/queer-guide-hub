@@ -1,4 +1,11 @@
-import { fetchRows, urlsetXml, xmlResponse, ORIGIN, type Env, type SitemapEntry } from './_lib/sitemap';
+import {
+  fetchRows,
+  urlsetXml,
+  xmlResponse,
+  ORIGIN,
+  type Env,
+  type SitemapEntry,
+} from './_lib/sitemap';
 
 /**
  * News detail pages are first-class again (the P1.2 410 Gone handler was
