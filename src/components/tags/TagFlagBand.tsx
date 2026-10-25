@@ -49,7 +49,7 @@ export function TagFlagBand({ tagSlug }: { tagSlug: string }) {
         {t('tags.detail.flag.title', 'The flag')}
       </h2>
 
-      <div className="mt-6 grid gap-8 md:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-2">
         <div>
           <FlagSwatch flag={flag} className="max-w-md" />
           {(flag.designer || flag.year) && (
