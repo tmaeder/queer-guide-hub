@@ -1,3 +1,17 @@
+-- RECOVERED FROM PROD BY scripts/recover-migration-drift.mjs.
+--
+-- Applied to prod as version 20261025200145 with no repo file — the signature of
+-- MCP `apply_migration`, which stamps a version and commits nothing. An applied
+-- version with no file fails migration-versions on every PR in the repo and
+-- makes `db push` refuse to run.
+--
+-- Reconstructed from `schema_migrations.statements`, which holds the PARSED
+-- statements: trailing semicolons are stripped (re-added here) and any original
+-- comment header is NOT recorded, so the reasoning that accompanied this
+-- migration is lost. Verified by md5 against a server-computed digest.
+--
+-- Never re-run: `db push` matches on version and skips an applied one. The file
+-- exists so history is complete and a rebuild from zero works.
 -- Production: prebuild these nine indexes CONCURRENTLY with psql autocommit,
 -- then record this idempotent migration after all builds are valid. Fresh/local
 -- databases may replay this ordinary transactional form.
@@ -61,3 +75,4 @@ BEGIN
    ) THEN RAISE EXCEPTION 'Missing complete FK index coverage: %',r.constraint_name; END IF;
  END LOOP;
 END $verify$;
+;
