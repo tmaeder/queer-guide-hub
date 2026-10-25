@@ -140,7 +140,7 @@ export function CloudflareDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 text-sm [overflow-wrap:anywhere]">
               {Object.entries(stats.errors).map(([section, message]) => (
                 <li key={section}>
                   <strong>
