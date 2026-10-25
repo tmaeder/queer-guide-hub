@@ -89,6 +89,34 @@ export interface RedirectWorkspaceList {
   data: (RedirectWorkspace & { role: RedirectWorkspaceSession['role'] })[];
   currentWorkspaceId: string;
 }
+export type WorkspaceInformationKind = 'domains' | 'tokens' | 'webhooks';
+export interface WorkspaceInformationRow {
+  id: string;
+  name: string;
+  status:
+    | 'active'
+    | 'expired'
+    | 'revoked'
+    | 'archived'
+    | 'disabled'
+    | 'ready'
+    | 'setup_required'
+    | 'unavailable';
+  createdAt: string;
+  prefix?: string;
+  scopes?: string[];
+  linkCount?: number | null;
+  memberBound?: boolean;
+  expiresAt?: string;
+  lastUsedAt?: string | null;
+  receiverHost?: string | null;
+  eventTypes?: string[];
+}
+export interface WorkspaceInformationPage {
+  data: WorkspaceInformationRow[];
+  count: number;
+  nextCursor: string | null;
+}
 export interface CustomerProfile {
   customerExternalId: string;
   name: string | null;
@@ -385,6 +413,13 @@ export class RedirectsClient {
   }
   listWorkspaces(): Promise<RedirectWorkspaceList> {
     return this.request('GET', '/workspaces');
+  }
+  listWorkspaceInformation(
+    kind: WorkspaceInformationKind,
+    limit = 50,
+    after?: string,
+  ): Promise<WorkspaceInformationPage> {
+    return this.request('GET', '/workspace-information', undefined, { kind, limit, after });
   }
   async request<T>(
     method: string,

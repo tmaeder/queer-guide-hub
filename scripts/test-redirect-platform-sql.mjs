@@ -13,6 +13,7 @@ try {
   await db.exec(readFileSync('supabase/tests/redirect_native_builtin_host_owner.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_public_link_identity.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_billing_role.sql', 'utf8'));
+  await db.exec(readFileSync('supabase/tests/redirect_workspace_information.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_identity.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_relationships.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_membership_scope.sql', 'utf8'));

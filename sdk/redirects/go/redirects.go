@@ -67,6 +67,13 @@ func (c *Client) GetSession(ctx context.Context) (Object, error) {
 func (c *Client) ListWorkspaces(ctx context.Context) (Object, error) {
 	return c.Request(ctx, "GET", "/workspaces", nil, nil)
 }
+func (c *Client) ListWorkspaceInformation(ctx context.Context, kind string, limit int, after string) (Object, error) {
+	query := Object{"kind": kind, "limit": limit}
+	if after != "" {
+		query["after"] = after
+	}
+	return c.Request(ctx, "GET", "/workspace-information", nil, query)
+}
 
 var workspacePattern = regexp.MustCompile(`(?i)^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$`)
 

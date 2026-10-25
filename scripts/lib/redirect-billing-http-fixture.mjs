@@ -14,6 +14,30 @@ export async function verifyBillingAndTagHttp(db, request, membership) {
     undefined,
     201,
   );
+  async function information() {
+    for (const kind of ['domains', 'tokens', 'webhooks']) {
+      const page = await request(
+        '/workspace-information?kind=' + kind,
+        'GET',
+        undefined,
+        credential,
+      );
+      assert.ok(Array.isArray(page.data));
+      assert.ok(page.count >= 0);
+      for (const row of page.data) {
+        for (const privateField of [
+          'token_hash',
+          'verification_token',
+          'secret',
+          'previous_secret',
+          'url',
+          'body',
+          'created_by',
+        ])
+          assert.equal(privateField in row, false);
+      }
+    }
+  }
   try {
     await db.query(
       "INSERT INTO public.redirect_folder_members(folder_id,member_id,permission) VALUES($1,$2,'owner')",
@@ -21,6 +45,16 @@ export async function verifyBillingAndTagHttp(db, request, membership) {
     );
     await request('/members/' + membership, 'PATCH', { role: 'billing' });
     assert.equal((await request('/session', 'GET', undefined, credential)).role, 'billing');
+    await information();
+    await request(
+      '/workspace-information?kind=domains&kind=tokens',
+      'GET',
+      undefined,
+      credential,
+      400,
+    );
+    await request('/workspace-information?kind=domains&after=', 'GET', undefined, credential, 400);
+    await request('/workspace-information?kind=domains', 'POST', {}, credential, 405);
     assert.equal(
       (await request('/workspaces', 'GET', undefined, credential)).data[0].role,
       'billing',
@@ -44,6 +78,7 @@ export async function verifyBillingAndTagHttp(db, request, membership) {
     await request('/tokens', 'POST', {}, credential, 403);
     await request('/members', 'GET', undefined, credential, 403);
     await request('/members/' + membership, 'PATCH', { role: 'member' });
+    await information();
     const tag = await request(
       '/tags',
       'POST',
@@ -61,6 +96,7 @@ export async function verifyBillingAndTagHttp(db, request, membership) {
     assert.equal(changed.color, 'blue');
     assert.equal((await request('/tags/' + tag.id, 'DELETE', undefined, credential)).deleted, true);
     await request('/members/' + membership, 'PATCH', { role: 'viewer' });
+    await information();
     await request('/tags', 'POST', { name: 'Denied viewer tag' }, credential, 403);
     console.log(
       'Billing and member tags: actual owner/member HTTP → migrated SQL proves owner-assigned/in-session Billing, read-only links/analytics despite folder-owner overrides, owner-admin denial, member tag CRUD and preserved viewer denial. No billing provider or payout authority is granted.',

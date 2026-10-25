@@ -1,5 +1,6 @@
 import { RedirectInvitationAcceptance } from '@/components/admin/redirects/RedirectInvitations';
 import { RedirectMemberTags } from '@/components/admin/redirects/RedirectMemberTags';
+import { RedirectWorkspaceInformation } from '@/components/admin/redirects/RedirectWorkspaceInformation';
 import { isReadOnlyRedirectRole, type RedirectWorkspaceRole } from '@/lib/redirects/roles';
 import { RedirectOtherInventory } from '@/components/admin/redirects/RedirectOtherInventory';
 import {
@@ -332,6 +333,7 @@ export function MemberWorkspaceContent({
 }) {
   const client = useQueryClient();
   const [manageTags, setManageTags] = useState(false);
+  const [workspaceInformation, setWorkspaceInformation] = useState(false);
   const resources = useMemberRedirectResources(userId);
   const session = useQuery({
     queryKey: ['redirect-member', userId, 'session'],
@@ -518,6 +520,9 @@ export function MemberWorkspaceContent({
           <Button variant="ghost" onClick={() => void refresh()}>
             Refresh workspace
           </Button>
+          <Button variant="outline" onClick={() => setWorkspaceInformation(true)}>
+            Workspace information
+          </Button>
         </div>
       </header>
       {requestView && (
@@ -527,6 +532,13 @@ export function MemberWorkspaceContent({
           initialView={requestView}
           onViewChange={setRequestView}
           onChanged={refresh}
+        />
+      )}
+      {workspaceInformation && (
+        <RedirectWorkspaceInformation
+          key={userId}
+          userId={userId}
+          onClose={() => setWorkspaceInformation(false)}
         />
       )}
       {manageTags && canWrite && resources.data && !resources.isError && (

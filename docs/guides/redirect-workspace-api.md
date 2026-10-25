@@ -1,7 +1,7 @@
 # Redirect workspace resource API
 
 Base: `https://queer.guide/api/redirects`; JSON bodies; bearer server credentials
-or verified admin sessions. `/folders`, `/tags`, `/templates` support GET list and
+or verified workspace account sessions. `/folders`, `/tags`, `/templates` support GET list and
 POST create. `/:uuid` supports GET detail, PATCH supplied fields and DELETE.
 Create returns 201 and a resource object; updates/details return 200 and that object;
 delete returns `{id,deleted:true}`. Missing resources are 404. Names are unique
@@ -90,3 +90,28 @@ to the destination folder too. Hidden and unknown sources both return 404.
 Selected-link credentials see only their selected managed links; they cannot
 browse unrelated automatic, static or client sources. Current roles, membership
 and token scope are checked again in the database for every operation.
+
+## Account roles and shared information
+
+Owner, Member, Viewer and Billing are current workspace roles. Viewer and Billing
+have read-only Links/analytics access; folder-owner overrides and bound credential
+write scopes cannot lift that cap. Members can create, rename, recolor and delete
+shared workspace tags. Folder operations still follow their existing ACL rules,
+and template writes remain owner-controlled. Billing here grants no application
+administrator, billing-provider or payout authority.
+
+`GET /workspace-information?kind=domains|tokens|webhooks&limit=50&after=<uuid>`
+provides paginated information to every current account role. `limit` is 1–100;
+omit `after` for the first page and use the returned `nextCursor` thereafter.
+Unknown/duplicate parameters and invalid cursors fail 400. Writes fail 405, and
+server API keys fail 403. Responses are not cached.
+
+Domain rows expose hostname, organizational/routing state and creation time.
+Key rows expose name, bounded prefix, configured scopes, current link-limit count,
+member-bound status and lifecycle/usage times. Webhooks expose name, receiver
+origin, event types and state. Hashes, signing keys, DNS verification proofs,
+webhook paths/query strings, event bodies and private creator identities are
+excluded. Credentials or active webhooks whose authorizing owner/member access
+has ended are marked unavailable. Reading information never counts as key use.
+The existing owner configuration endpoints keep their owner-only controls, and
+direct Data API grants are unchanged.

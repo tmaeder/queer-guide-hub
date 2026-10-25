@@ -52,6 +52,8 @@ begin;QueerGuide::RedirectsClient.new('token',base_url:'http://example.com/api')
 account=QueerGuide::RedirectsClient.new(ENV.fetch('REDIRECT_TEST_SESSION'),base_url:ENV.fetch('REDIRECT_TEST_BASE'),workspace_id:ENV.fetch('REDIRECT_TEST_WORKSPACE'))
 check(account.get_session['workspace']['id']==ENV.fetch('REDIRECT_TEST_WORKSPACE'))
 check(account.list_workspaces['currentWorkspaceId']==ENV.fetch('REDIRECT_TEST_WORKSPACE'))
+['domains','tokens','webhooks'].each {|kind|check(account.list_workspace_information(kind,1)['data'].is_a?(Array))}
+begin;api.list_workspace_information('tokens');raise 'Key read account metadata';rescue QueerGuide::RedirectApiError=>error;check(error.status==403);end
 begin
   QueerGuide::RedirectsClient.new(ENV.fetch('REDIRECT_TEST_TOKEN'),base_url:ENV.fetch('REDIRECT_TEST_BASE'),workspace_id:'00000000-0000-4000-8000-000000000777').list_links
   raise 'Unavailable workspace accepted'

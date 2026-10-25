@@ -730,3 +730,30 @@ install; no dependency manifest or typecheck baseline was changed.
 All-role domain/key/webhook metadata views, member integration installation,
 additional-owner admission, workspace creation/switching/activation, atomic domain
 transfer and live provider/device evidence remain open.
+
+### 2026-10-25 all-role workspace information
+
+A read-only account endpoint and member-workspace information dialog now let all
+four current roles view domains, bounded API-key metadata and webhook metadata.
+The service-only SQL reader derives its workspace from current account context,
+uses explicit tenant predicates, and paginates by UUID. It never calls credential
+authentication or updates key usage. Its strict serializers exclude hashes,
+signing keys, DNS proofs, receiver paths/query strings, event bodies and creator
+identities. Current owner/member loss closes reader access; saved keys and active
+webhooks whose authorizing access changed are shown unavailable. Configured link
+limits count existing tenant-bound links rather than deleted/stale IDs.
+
+All five SDKs provide account-only information methods and exercise all three
+resource kinds through actual HTTP; server-key attempts are denied. Billing,
+Member and Viewer HTTP cases also read the information and verify field exclusion,
+duplicate/invalid query denial and unsupported writes. SQL fixtures cover all four
+roles, independent foreign rows, secret exclusion, cursor completeness, current
+membership/owner revocation and preserved direct-RPC grant denial. The complete
+SQL suite and five-SDK integration suite pass. Fifteen targeted dialog/workspace
+tests, the frozen API Deno check, SDK TypeScript checking and app typecheck ratchet
+pass; the app build succeeds and all 2553 migrations parse.
+
+This closes the local all-role metadata gap, not tenant activation or live release
+verification. Member integration installation, additional-owner admission,
+workspace creation/switching/activation, atomic transfer and external provider/
+device evidence remain open.

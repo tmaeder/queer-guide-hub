@@ -283,6 +283,7 @@ describe('member redirect workspace', () => {
       expect(screen.getByRole('button', { name: 'Create link' })).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Edit /go/pride' })).toBeDisabled();
       expect(screen.queryByRole('button', { name: 'Manage tags' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Workspace information' })).toBeEnabled();
       fireEvent.click(screen.getByRole('button', { name: 'Link behavior' }));
       expect(
         await screen.findByText(

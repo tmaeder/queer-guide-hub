@@ -64,6 +64,9 @@ except ValueError: pass
 account=RedirectsClient(os.environ['REDIRECT_TEST_SESSION'],os.environ['REDIRECT_TEST_BASE'],workspace_id=os.environ['REDIRECT_TEST_WORKSPACE'])
 assert account.get_session()['workspace']['id']==os.environ['REDIRECT_TEST_WORKSPACE']
 assert account.list_workspaces()['currentWorkspaceId']==os.environ['REDIRECT_TEST_WORKSPACE']
+for kind in ['domains','tokens','webhooks']: assert isinstance(account.list_workspace_information(kind,1)['data'],list)
+try: api.list_workspace_information('tokens'); raise AssertionError('Key read account metadata')
+except RedirectApiError as error: assert error.status==403
 try:
     RedirectsClient(os.environ['REDIRECT_TEST_TOKEN'],os.environ['REDIRECT_TEST_BASE'],workspace_id='00000000-0000-4000-8000-000000000777').list_links()
     raise AssertionError('Unavailable workspace accepted')

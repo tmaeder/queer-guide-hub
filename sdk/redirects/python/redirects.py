@@ -29,6 +29,8 @@ class RedirectsClient:
 
     def get_session(self): return self.request('GET','/session')
     def list_workspaces(self): return self.request('GET','/workspaces')
+    def list_workspace_information(self, kind, limit=50, after=None):
+        return self.request('GET','/workspace-information',query={'kind':kind,'limit':limit,'after':after})
 
     def request(self, method, path, body=None, query=None):
         if not path.startswith('/') or '//' in path or any(not (c.isascii() and (c.isalnum() or c in '/_-')) for c in path):

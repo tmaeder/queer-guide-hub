@@ -217,6 +217,13 @@ func TestSDKIntegration(t *testing.T) {
 		}
 	}
 	_, err = api.ListReports(ctx, 50, "")
+	for _, kind := range []string{"domains", "tokens", "webhooks"} {
+		if _, ok := must(account.ListWorkspaceInformation(ctx, kind, 1, ""))["data"].([]any); !ok {
+			t.Fatal("Workspace information page missing")
+		}
+	}
+	_, metadataError := api.ListWorkspaceInformation(ctx, "tokens", 50, "")
+	expectStatus(metadataError, 403)
 	expectStatus(err, 403)
 	report := must(account.CreateReport(ctx, Object{"name": "SDK Go report", "filters": Object{"linkIds": []any{os.Getenv("REDIRECT_TEST_REPORT_LINK")}}}))
 	second := must(account.CreateReport(ctx, Object{"name": "SDK Go second", "filters": Object{"linkIds": []any{os.Getenv("REDIRECT_TEST_REPORT_LINK")}}}))

@@ -57,6 +57,14 @@ Deno.serve(async (req: Request) => {
   return {id:principal.id,role:principal.role,label:principal.label,workspace:context.workspace};
  };
  try {
+  if(path==='/workspace-information'){
+   if(tokenCredential||!user||user.is_anonymous)return json({error:'Workspace account session required'},403);
+   if(req.method!=='GET')return json({error:'Method not supported'},405);
+   const query=new URL(req.url).searchParams,kind=query.get('kind'),limit=Number(query.get('limit')??50),after=query.get('after');
+   if([...query.keys()].some(key=>!['kind','limit','after'].includes(key)||query.getAll(key).length!==1)||!kind||!['domains','tokens','webhooks'].includes(kind)||!Number.isInteger(limit)||limit<1||limit>100||after!==null&&!UUID.test(after))return json({error:'Choose domains, API keys or webhooks and a valid page'},400);
+   const principal=await sessionPrincipal('workspace:read');if(principal.failure)return principal.failure;
+   const {data,error}=await db.rpc('redirect_workspace_information',{p_actor:user.id,p_kind:kind,p_limit:limit,p_after:after});if(error)return rpcError(error);return json(data);
+  }
   if(path==='/inventory'||path==='/inventory/metadata'||path==='/inventory/organization'){
    const read=req.method==='GET',scope=read?'links:read':'links:write';let principalId:string|null=null;
    if(tokenCredential){const auth=await db.rpc('authenticate_redirect_api_token',{p_hash:await tokenDigest(credential),p_scope:scope});if(auth.error)return rpcError(auth.error);if(!auth.data)return json({error:'Active inventory scope required'},403);principalId=auth.data.id;}

@@ -23,6 +23,9 @@ module QueerGuide
     end
     def get_session; request('GET','/session'); end
     def list_workspaces; request('GET','/workspaces'); end
+    def list_workspace_information(kind, limit = 50, after = nil)
+      request('GET','/workspace-information',nil,{kind:kind,limit:limit,after:after})
+    end
     def request(method, path, body = nil, query = {})
       raise ArgumentError, 'Invalid API path' unless path.match?(%r{\A/[a-zA-Z0-9_/-]+\z}) && !path.include?('//')
       uri = URI(@base + path)

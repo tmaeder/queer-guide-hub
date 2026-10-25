@@ -31,6 +31,16 @@ workspace UUID and role. These account-only methods reject server API keys.
 The server reads current membership/owner state; stale admin claims do not grant
 workspace access.
 
+All current account roles, including Viewer and Billing, can read shared
+configuration through `listWorkspaceInformation(kind, limit, after)` (TypeScript
+and PHP), `list_workspace_information(kind, limit, after)` (Python/Ruby), or
+`ListWorkspaceInformation(ctx, kind, limit, after)` (Go). Choose `domains`, `tokens`
+or `webhooks`; pages contain `data`, `count`, and `nextCursor`. Server API keys
+cannot call this account-only endpoint. Key prefixes are bounded and webhook
+receivers expose only their origin; signing secrets, credential hashes and DNS
+proofs are excluded. Current owner/member authority is rechecked, and access loss
+can mark a saved credential or webhook unavailable.
+
 Bind a client to a discovered UUID with TypeScript `options.workspaceId`, Python
 `workspace_id=`, Ruby `workspace_id:`, PHP `workspaceId:` (fourth constructor
 argument), or Go `client.WithWorkspace(id)`. Go returns a separate client copy;

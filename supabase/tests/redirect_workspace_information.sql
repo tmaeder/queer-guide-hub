@@ -1,0 +1,61 @@
+BEGIN;
+ALTER TABLE public.redirect_domains DROP CONSTRAINT redirect_domains_pending_tenant_fence;
+ALTER TABLE public.redirect_api_tokens DROP CONSTRAINT redirect_api_tokens_pending_tenant_fence;
+ALTER TABLE public.redirect_webhooks DROP CONSTRAINT redirect_webhooks_pending_tenant_fence;
+SET LOCAL ROLE service_role;
+DO $$
+DECLARE owner_id uuid:=gen_random_uuid();human uuid:=gen_random_uuid();outsider uuid:=gen_random_uuid();other uuid:=gen_random_uuid();member uuid;r jsonb;next_page jsonb;kind text;role_value text;actor uuid;i integer;secret text:='whsec_'||repeat('d',43)||'=';
+BEGIN
+ INSERT INTO auth.users(id) VALUES(owner_id),(human),(outsider);INSERT INTO public.user_roles VALUES(owner_id,'admin');
+ INSERT INTO public.redirect_workspace_members(user_id,kind,label) VALUES(human,'user','Information reader') RETURNING id INTO member;
+ INSERT INTO public.redirect_workspaces(id,name,slug) VALUES(other,'Foreign information','foreign-information');
+ FOR i IN 1..2 LOOP
+  INSERT INTO public.redirect_domains(hostname,created_by,verification_token) VALUES('info-'||i||'.example.org',owner_id,repeat('a',64));
+  INSERT INTO public.redirect_api_tokens(name,token_hash,prefix,scopes,created_by,expires_at) VALUES('Visible key '||i,repeat(i::text,64),'qg_redirect_'||repeat('b',64),ARRAY['links:read'],owner_id,now()+interval '1 day');
+  INSERT INTO public.redirect_webhooks(created_by,name,url,event_types,enabled,secret) VALUES(owner_id,'Visible webhook '||i,'https://receiver.example.org/private_receiver_secret?access_token=private_query_secret',ARRAY['link.clicked'],false,secret);
+ END LOOP;
+ INSERT INTO public.redirect_domains(workspace_id,hostname,created_by) VALUES(other,'foreign-info.example.org',owner_id);
+ INSERT INTO public.redirect_api_tokens(workspace_id,name,token_hash,prefix,scopes,created_by,expires_at) VALUES(other,'Foreign hidden key',repeat('c',64),'private-foreign',ARRAY['links:read'],owner_id,now()+interval '1 day');
+ INSERT INTO public.redirect_webhooks(workspace_id,created_by,name,url,event_types,enabled,secret) VALUES(other,owner_id,'Foreign hidden webhook','https://foreign-info.example.org/private',ARRAY['link.clicked'],false,secret);
+ FOREACH role_value IN ARRAY ARRAY['owner','member','viewer','billing'] LOOP
+  actor:=CASE WHEN role_value='owner' THEN owner_id ELSE human END;
+  IF role_value<>'owner' THEN UPDATE public.redirect_workspace_members SET role=role_value WHERE id=member;END IF;
+  PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-session-actor',actor)::text,true);
+  FOREACH kind IN ARRAY ARRAY['domains','tokens','webhooks'] LOOP
+   r:=public.redirect_workspace_information(actor,kind,1);
+   IF r->>'count'<>'2' OR jsonb_array_length(r->'data')<>1 OR r->>'nextCursor' IS NULL THEN RAISE EXCEPTION 'Role % lost % metadata or pagination',role_value,kind;END IF;
+   IF r::text LIKE '%Foreign%' OR r::text LIKE '%foreign-info%' OR r::text LIKE '%private_receiver_secret%' OR r::text LIKE '%private_query_secret%' OR r::text LIKE '%'||secret||'%' OR r::text LIKE '%'||repeat('a',64)||'%' OR r::text LIKE '%'||repeat('b',64)||'%' OR r::text LIKE '%token_hash%' OR r::text LIKE '%verification_token%' THEN RAISE EXCEPTION 'Private fields or foreign metadata leaked';END IF;
+   IF kind='tokens' AND length(r#>>'{data,0,prefix}')>16 THEN RAISE EXCEPTION 'Stored prefix exposed full credential';END IF;
+   IF kind='webhooks' AND r#>>'{data,0,receiverHost}'<>'https://receiver.example.org' THEN RAISE EXCEPTION 'Webhook receiver origin was not sanitized';END IF;
+   next_page:=public.redirect_workspace_information(actor,kind,1,(r->>'nextCursor')::uuid);
+   IF next_page->>'count'<>'2' OR jsonb_array_length(next_page->'data')<>1 OR next_page#>>'{data,0,id}'=r#>>'{data,0,id}' OR next_page->>'nextCursor' IS NOT NULL THEN RAISE EXCEPTION 'Workspace information cursor duplicated or skipped records';END IF;
+  END LOOP;
+ END LOOP;
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-session-actor',outsider)::text,true);
+ BEGIN PERFORM public.redirect_workspace_information(outsider,'tokens');RAISE EXCEPTION 'Outsider read metadata';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-session-actor',human)::text,true);
+ BEGIN PERFORM public.redirect_workspace_information(owner_id,'tokens');RAISE EXCEPTION 'Session actor spoof read metadata';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ UPDATE public.redirect_workspace_members SET active=false WHERE id=member;
+ BEGIN PERFORM public.redirect_workspace_information(human,'domains');RAISE EXCEPTION 'Inactive reader retained metadata';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-session-actor',owner_id,'x-qg-redirect-workspace',other)::text,true);
+ BEGIN PERFORM public.redirect_workspace_information(owner_id,'domains');RAISE EXCEPTION 'Foreign workspace selector activated';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ PERFORM set_config('request.headers','{}',true);
+ UPDATE public.redirect_api_tokens SET member_id=member WHERE name='Visible key 1';
+ r:=public.redirect_workspace_information(owner_id,'tokens');
+ IF NOT EXISTS(SELECT FROM jsonb_array_elements(r->'data') item WHERE item->>'name'='Visible key 1' AND item->>'status'='unavailable') THEN RAISE EXCEPTION 'Inactive member-bound key advertised as active';END IF;
+ UPDATE public.redirect_api_tokens SET member_id=NULL WHERE name='Visible key 1';
+ IF EXISTS(SELECT FROM public.redirect_api_tokens WHERE workspace_id='58aa4340-8f21-4b7f-9a10-90be2da89c01' AND last_used_at IS NOT NULL) THEN RAISE EXCEPTION 'Information read counted as credential use';END IF;
+ UPDATE public.redirect_webhooks SET enabled=true WHERE name='Visible webhook 1';
+ DELETE FROM public.user_roles WHERE user_id=owner_id;
+ BEGIN PERFORM public.redirect_workspace_information(owner_id,'tokens');RAISE EXCEPTION 'Former owner retained metadata';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ UPDATE public.redirect_workspace_members SET active=true WHERE id=member;
+ r:=public.redirect_workspace_information(human,'tokens');
+ IF EXISTS(SELECT FROM jsonb_array_elements(r->'data') item WHERE item->>'status'<>'unavailable') THEN RAISE EXCEPTION 'Former-owner credentials still advertised as active';END IF;
+ r:=public.redirect_workspace_information(human,'webhooks');
+ IF NOT EXISTS(SELECT FROM jsonb_array_elements(r->'data') item WHERE item->>'name'='Visible webhook 1' AND item->>'status'='unavailable') THEN RAISE EXCEPTION 'Former-owner webhook advertised as active';END IF;
+ INSERT INTO public.user_roles VALUES(owner_id,'admin');
+ BEGIN PERFORM public.redirect_workspace_information(owner_id,'secrets');RAISE EXCEPTION 'Unknown information kind accepted';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ BEGIN PERFORM public.redirect_workspace_information(owner_id,'tokens',101);RAISE EXCEPTION 'Unbounded information page accepted';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ IF has_function_privilege('anon','public.redirect_workspace_information(uuid,text,integer,uuid)','execute') OR has_function_privilege('authenticated','public.redirect_workspace_information(uuid,text,integer,uuid)','execute') THEN RAISE EXCEPTION 'Information RPC grants widened';END IF;
+END $$;
+ROLLBACK;

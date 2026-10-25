@@ -47,6 +47,8 @@ try {new QueerGuide\RedirectsClient('token','http://example.com/api');throw new 
 $account=new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_SESSION'),getenv('REDIRECT_TEST_BASE'),workspaceId:getenv('REDIRECT_TEST_WORKSPACE'));
 check($account->getSession()['workspace']['id']===getenv('REDIRECT_TEST_WORKSPACE'));
 check($account->listWorkspaces()['currentWorkspaceId']===getenv('REDIRECT_TEST_WORKSPACE'));
+foreach (['domains','tokens','webhooks'] as $kind) check(is_array($account->listWorkspaceInformation($kind,1)['data']));
+try {$api->listWorkspaceInformation('tokens');throw new RuntimeException('Key read account metadata');} catch(QueerGuide\RedirectApiError $error) {check($error->status===403);}
 try {(new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_TOKEN'),getenv('REDIRECT_TEST_BASE'),workspaceId:'00000000-0000-4000-8000-000000000777'))->listLinks();throw new RuntimeException('Unavailable workspace accepted');} catch(QueerGuide\RedirectApiError $error) {check($error->status===403);}
 try {new QueerGuide\RedirectsClient('fixture',workspaceId:"bad\r\nInjected: header");throw new RuntimeException('Invalid workspace accepted');} catch(InvalidArgumentException $error) {}
 $other=new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_OTHER_SESSION'),getenv('REDIRECT_TEST_BASE'));
