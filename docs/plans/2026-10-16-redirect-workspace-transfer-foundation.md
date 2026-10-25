@@ -644,3 +644,28 @@ preserve future public-share denial, and close publication after folder edit,
 membership or ownership revocation. Full SQL and all five actual HTTP/SDK runtimes
 pass on the revised lock-safe implementation. All 2549 migrations parse. No
 production schema, authenticated grants or tenant activation fences changed.
+
+### 2026-10-25 native host ownership decision
+
+[Dub's current deep-link quickstart](https://dub.co/docs/concepts/deep-links/quickstart)
+requires adding a custom domain to the workspace and hosting its association
+files there (read 2026-10-25). Android's [association documentation](https://developer.android.com/training/app-links/configure-assetlinks)
+describes domain authorization; dynamic server path rules require Android 15+.
+Accordingly, future workspaces must use their registered custom domain for native
+bindings. Only the immutable legacy Queer Guide workspace may use a null domain,
+which denotes the shared first-party host. A database check enforces that model
+for both Android and iOS, including attempts to remove a custom domain binding.
+
+The existing app/App Clip unique indexes remain host-based: each domain UUID has
+one globally unique hostname and one workspace owner. Adding workspace to the
+built-in-host uniqueness key would incorrectly suggest independent authority on
+the same host. Identical app identities remain permitted on different custom
+hosts. The tenant-aware domain FK prevents cross-workspace domain attachment.
+The old foreign native fixture now uses its own custom domain; it still proves
+that forged built-in-host receipts and visitor headers do not grant access.
+
+The full isolated SQL suite passes, including legacy association publication,
+foreign built-in insertion/update denial, cross-tenant domain denial, per-host
+uniqueness and preserved provisioning denial. This is a pre-activation invariant;
+custom-domain public routing activation and signed store/device evidence remain
+open.
