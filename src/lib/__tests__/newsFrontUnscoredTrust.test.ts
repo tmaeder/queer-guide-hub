@@ -19,6 +19,7 @@ describe('get_news_front treats trust_score 0 as unscored', () => {
 
   it('patches the live definition instead of restating it', () => {
     expect(sql).toContain('pg_get_functiondef(');
+    expect(sql).toContain('regexp_replace(');
     expect(sql).not.toMatch(/create or replace function api_private\.get_news_front/i);
   });
 

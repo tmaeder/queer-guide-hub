@@ -29,16 +29,19 @@ declare
   v_from text := 'coalesce(b.trust_score, b.quality_score, 50)/100.0';
   v_to   text := 'coalesce(nullif(b.trust_score, 0), b.quality_score, 50)/100.0';
   v_n    int;
+  v_code text;
 begin
   v_src := pg_get_functiondef(
     'api_private.get_news_front(integer,uuid[],uuid[],integer,boolean)'::regprocedure);
+  -- Assert on code only: pg_get_functiondef returns the body with comments.
+  v_code := regexp_replace(v_src, '--[^' || chr(10) || ']*', '', 'g');
 
-  if position(v_to in v_src) > 0 then
+  if position(v_to in v_code) > 0 then
     raise notice 'get_news_front already treats trust 0 as unscored; nothing to do';
     return;
   end if;
 
-  v_n := (length(v_src) - length(replace(v_src, v_from, ''))) / length(v_from);
+  v_n := (length(v_code) - length(replace(v_code, v_from, ''))) / length(v_from);
   if v_n <> 1 then
     raise exception 'expected exactly one hotness coalesce in api_private.get_news_front, found %', v_n;
   end if;
@@ -49,8 +52,9 @@ $patch$;
 
 do $verify$
 declare
-  v_src text := pg_get_functiondef(
-    'api_private.get_news_front(integer,uuid[],uuid[],integer,boolean)'::regprocedure);
+  v_src text := regexp_replace(pg_get_functiondef(
+    'api_private.get_news_front(integer,uuid[],uuid[],integer,boolean)'::regprocedure),
+    '--[^' || chr(10) || ']*', '', 'g');
 begin
   if position('coalesce(nullif(b.trust_score, 0), b.quality_score, 50)' in v_src) = 0 then
     raise exception 'P1 failed: get_news_front does not treat trust_score 0 as unscored';
