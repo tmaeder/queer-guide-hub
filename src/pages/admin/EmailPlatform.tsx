@@ -151,65 +151,86 @@ export default function EmailPlatform() {
             </p>
           )}
         </div>
-        {data && (
-          <>
-            <TabsContent value="campaigns" forceMount className="data-[state=inactive]:hidden">
-              <EmailCampaigns
-                campaigns={data.campaigns}
-                templates={data.templates}
-                refresh={load}
-                audienceRevision={audienceRevision}
-              />
-            </TabsContent>
-            <TabsContent value="audiences" forceMount className="data-[state=inactive]:hidden">
-              <EmailAudiences onSaved={() => setAudienceRevision((v) => v + 1)} />
-            </TabsContent>
-            <TabsContent value="content" forceMount className="data-[state=inactive]:hidden">
-              <EmailContent templates={data.templates} />
-            </TabsContent>
-            <TabsContent value="journeys" forceMount className="data-[state=inactive]:hidden">
-              <EmailJourneys />
-            </TabsContent>
-            <TabsContent value="measurement">
-              <EmailMeasurement />
-            </TabsContent>
-            <TabsContent value="operations">
-              <EmailOperations />
-            </TabsContent>
-            <TabsContent value="delivery">
-              <section className="py-6">
-                <h2 className="mb-4 font-sans text-title font-bold">
-                  Recent transactional delivery
-                </h2>
-                {!data.messages.length ? (
-                  <AdminEmpty noun="transactional messages" />
-                ) : (
-                  <ul className="divide-y divide-border">
-                    {data.messages.map((m) => (
-                      <li key={m.id} className="space-y-2 py-4">
-                        <div className="flex flex-wrap justify-between gap-2">
-                          <strong>{m.template_key || 'Transactional message'}</strong>
-                          <span>{m.status}</span>
-                        </div>
-                        <p className="break-all text-sm">{m.recipient_email}</p>
-                        <p className="break-all text-sm text-muted-foreground">
-                          Message ID: {m.id}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(m.created_at).toLocaleString()} · {m.attempts} attempts
-                        </p>
-                        {m.last_error && <p className="break-words text-sm">{m.last_error}</p>}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-            </TabsContent>
-            <TabsContent value="subscribers" forceMount className="data-[state=inactive]:hidden">
-              <EmailContacts />
-            </TabsContent>
-          </>
-        )}
+        <TabsContent
+          value="campaigns"
+          forceMount
+          className="data-[state=inactive]:hidden"
+          aria-busy={!data && !error}
+        >
+          {data && (
+            <EmailCampaigns
+              campaigns={data.campaigns}
+              templates={data.templates}
+              refresh={load}
+              audienceRevision={audienceRevision}
+            />
+          )}
+        </TabsContent>
+        <TabsContent
+          value="audiences"
+          forceMount
+          className="data-[state=inactive]:hidden"
+          aria-busy={!data && !error}
+        >
+          {data && <EmailAudiences onSaved={() => setAudienceRevision((v) => v + 1)} />}
+        </TabsContent>
+        <TabsContent
+          value="content"
+          forceMount
+          className="data-[state=inactive]:hidden"
+          aria-busy={!data && !error}
+        >
+          {data && <EmailContent templates={data.templates} />}
+        </TabsContent>
+        <TabsContent
+          value="journeys"
+          forceMount
+          className="data-[state=inactive]:hidden"
+          aria-busy={!data && !error}
+        >
+          {data && <EmailJourneys />}
+        </TabsContent>
+        <TabsContent value="measurement" aria-busy={!data && !error}>
+          {data && <EmailMeasurement />}
+        </TabsContent>
+        <TabsContent value="operations" aria-busy={!data && !error}>
+          {data && <EmailOperations />}
+        </TabsContent>
+        <TabsContent value="delivery" aria-busy={!data && !error}>
+          {data && (
+            <section className="py-6">
+              <h2 className="mb-4 font-sans text-title font-bold">Recent transactional delivery</h2>
+              {!data.messages.length ? (
+                <AdminEmpty noun="transactional messages" />
+              ) : (
+                <ul className="divide-y divide-border">
+                  {data.messages.map((m) => (
+                    <li key={m.id} className="space-y-2 py-4">
+                      <div className="flex flex-wrap justify-between gap-2">
+                        <strong>{m.template_key || 'Transactional message'}</strong>
+                        <span>{m.status}</span>
+                      </div>
+                      <p className="break-all text-sm">{m.recipient_email}</p>
+                      <p className="break-all text-sm text-muted-foreground">Message ID: {m.id}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(m.created_at).toLocaleString()} · {m.attempts} attempts
+                      </p>
+                      {m.last_error && <p className="break-words text-sm">{m.last_error}</p>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+        </TabsContent>
+        <TabsContent
+          value="subscribers"
+          forceMount
+          className="data-[state=inactive]:hidden"
+          aria-busy={!data && !error}
+        >
+          {data && <EmailContacts />}
+        </TabsContent>
       </Tabs>
     </div>
   );
