@@ -51,7 +51,15 @@ export default function EmailPlatform() {
   const [templatesVisited, setTemplatesVisited] = useState(tab === 'templates');
   // Record the first Templates visit during rendering so browser history also retains its draft.
   if (tab === 'templates' && !templatesVisited) setTemplatesVisited(true);
+  // Radix can activate a tab on both pointer-down and focus before navigation renders.
+  // Deduplicate those events so one tab selection creates one history entry.
+  const pendingTab = useRef(tab);
+  useEffect(() => {
+    pendingTab.current = tab;
+  }, [tab]);
   const selectTab = (value: string) => {
+    if (pendingTab.current === value) return;
+    pendingTab.current = value;
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
       next.set('tab', value);

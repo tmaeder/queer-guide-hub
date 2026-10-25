@@ -71,7 +71,7 @@ describe('integrated admin email workspace', () => {
     expect(screen.getByRole('status', { name: 'Cloudflare email capability' })).toHaveTextContent(
       'transactional email only',
     );
-    expect(screen.getByRole('tab', { name: 'Templates', exact: true })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Templates' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Edit templates' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Send campaign' })).not.toBeInTheDocument();
   });
@@ -87,14 +87,14 @@ describe('integrated admin email workspace', () => {
     fireEvent.change(screen.getByLabelText('Designer draft'), {
       target: { value: 'Unfinished email' },
     });
-    await user.click(screen.getByRole('tab', { name: 'Campaigns', exact: true }));
+    await user.click(screen.getByRole('tab', { name: 'Campaigns' }));
     expect(screen.getByLabelText('Current workspace URL')).toHaveTextContent(
       '/admin/email?tab=campaigns&source=branding',
     );
     expect(screen.getByLabelText('Designer draft')).toHaveValue('Unfinished email');
-    await user.click(screen.getByRole('button', { name: 'Browser back', exact: true }));
+    await user.click(screen.getByRole('button', { name: 'Browser back' }));
     await waitFor(() =>
-      expect(screen.getByRole('tab', { name: 'Templates', exact: true })).toHaveAttribute(
+      expect(screen.getByRole('tab', { name: 'Templates' })).toHaveAttribute(
         'aria-selected',
         'true',
       ),
@@ -110,7 +110,7 @@ describe('integrated admin email workspace', () => {
     );
     expect(await screen.findByRole('region', { name: 'Template designer' })).toBeVisible();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('tab', { name: 'Delivery', exact: true }));
+    await userEvent.click(screen.getByRole('tab', { name: 'Delivery' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('could not load');
   });
   it('falls back to Campaigns for an unknown tab', async () => {
@@ -120,10 +120,7 @@ describe('integrated admin email workspace', () => {
       </MemoryRouter>,
     );
     await screen.findByText('Prepare a campaign');
-    expect(screen.getByRole('tab', { name: 'Campaigns', exact: true })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    expect(screen.getByRole('tab', { name: 'Campaigns' })).toHaveAttribute('aria-selected', 'true');
   });
   it('saves a draft against a real template without dispatching', async () => {
     render(
