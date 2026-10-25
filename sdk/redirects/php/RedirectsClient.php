@@ -23,6 +23,10 @@ final class RedirectsClient {
     public function createIntegrationSetup(array $data): array {return $this->request('POST','/integrations',$data);}
     public function lookupIntegrationSetup(string $requestId): array {return $this->request('GET','/integrations',null,['requestId'=>$requestId]);}
     public function revokeIntegrationSetup(string $id): array {return $this->request('DELETE','/integrations/'.rawurlencode($id));}
+    public function listWorkspaceOwners(int $limit=50, ?string $after=null): array {return $this->request('GET','/workspace-ownership',null,['view'=>'owners','limit'=>$limit,'after'=>$after]);}
+    public function listOwnerCandidates(int $limit=50, ?string $after=null): array {return $this->request('GET','/workspace-ownership',null,['view'=>'candidates','limit'=>$limit,'after'=>$after]);}
+    public function admitWorkspaceOwner(string $memberId,string $expectedRole): array {return $this->request('POST','/workspace-ownership',['memberId'=>$memberId,'expectedRole'=>$expectedRole]);}
+    public function removeWorkspaceOwner(string $userId,string $version): array {return $this->request('DELETE','/workspace-ownership/'.rawurlencode($userId),['version'=>$version]);}
     public function request(string $method, string $path, mixed $body = null, array $query = []): array {
         if (!preg_match('~^/[a-zA-Z0-9_/-]+$~D',$path) || str_contains($path,'//')) throw new \InvalidArgumentException('Invalid API path');
         $params=[];foreach ($query as $key=>$value) if ($value!==null) $params[$key] = is_array($value)||is_object($value) ? json_encode($value,JSON_THROW_ON_ERROR) : (is_bool($value)?($value?'true':'false'):(string)$value);

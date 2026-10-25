@@ -45,7 +45,11 @@ Deno.serve(async (req: Request) => {
   if(error || !data.user)return json({error:'Unauthorized'},401);
   user=data.user;
  }
- const selectedWorkspace=redirectWorkspaceSelection(req.headers.get('x-qg-redirect-workspace'));
+ const requestedWorkspace=req.headers.get('x-qg-redirect-workspace');
+ // Registry administration has explicit current-Owner checks and may prepare
+ // co-Owners during provisioning. Business-resource selection stays fenced.
+ const ownershipRegistry=path==='/workspace-ownership'||/^\/workspace-ownership\/[a-f0-9-]+$/i.test(path);
+ const selectedWorkspace=ownershipRegistry&&requestedWorkspace!==null&&UUID.test(requestedWorkspace)?{id:requestedWorkspace.toLowerCase()}:redirectWorkspaceSelection(requestedWorkspace);
  if('error' in selectedWorkspace)return json({error:selectedWorkspace.error},selectedWorkspace.status);
  db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{global:{headers:{'x-qg-redirect-workspace':selectedWorkspace.id,...(user?{'x-qg-redirect-session-actor':user.id}:{})}}});
  const sessionPrincipal=async(scope:string):Promise<{id:string|null;role?:string;label?:string;workspace?:{id:string;name:string;slug:string};failure?:Response}>=>{
@@ -57,6 +61,31 @@ Deno.serve(async (req: Request) => {
   return {id:principal.id,role:principal.role,label:principal.label,workspace:context.workspace};
  };
  try {
+  if(path==='/workspace-ownership'||/^\/workspace-ownership\/[a-f0-9-]+$/i.test(path)){
+   if(tokenCredential||!user||user.is_anonymous)return json({error:'Workspace Owner account session required'},403);
+   const query=new URL(req.url).searchParams,target=path==='/workspace-ownership'?null:path.slice('/workspace-ownership/'.length);
+   if(target&&!UUID.test(target))return json({error:'Choose an Owner account'},400);
+   if(req.method==='GET'&&!target){
+    const view=query.get('view')??'owners',after=query.get('after'),limit=Number(query.get('limit')??50);
+    if([...query.keys()].some(key=>!['view','limit','after'].includes(key)||query.getAll(key).length!==1)||!['owners','candidates'].includes(view)||!Number.isInteger(limit)||limit<1||limit>100||after!==null&&!UUID.test(after))return json({error:'Invalid ownership page'},400);
+    const result=await db.rpc('redirect_workspace_ownership',{p_actor:user.id,p_workspace:selectedWorkspace.id,p_action:view,p_limit:limit,p_after:after});
+    return result.error?rpcError(result.error):json(result.data);
+   }
+   if(query.size)return json({error:'Invalid ownership query'},400);
+   if(req.method==='POST'&&!target){
+    const body=await boundedJson(req,4096);
+    if(!body||Array.isArray(body)||Object.keys(body).some(key=>!['memberId','expectedRole'].includes(key))||typeof body.memberId!=='string'||!UUID.test(body.memberId)||!['member','viewer','billing'].includes(body.expectedRole))return json({error:'Review a current member and their role'},400);
+    const result=await db.rpc('redirect_workspace_ownership',{p_actor:user.id,p_workspace:selectedWorkspace.id,p_action:'admit',p_member:body.memberId,p_expected_role:body.expectedRole});
+    return result.error?rpcError(result.error):json(result.data);
+   }
+   if(req.method==='DELETE'&&target){
+    const body=await boundedJson(req,4096);
+    if(!body||Array.isArray(body)||Object.keys(body).some(key=>key!=='version')||typeof body.version!=='string'||!UUID.test(body.version))return json({error:'Review the current Owner revision'},400);
+    const result=await db.rpc('redirect_workspace_ownership',{p_actor:user.id,p_workspace:selectedWorkspace.id,p_action:'revoke',p_user:target,p_version:body.version});
+    return result.error?rpcError(result.error):json(result.data);
+   }
+   return json({error:'Method not supported'},405);
+  }
   if(path==='/integrations'||/^\/integrations\/[a-f0-9-]+$/i.test(path)){
    if(tokenCredential||!user||user.is_anonymous)return json({error:'Workspace account session required'},403);
    const query=new URL(req.url).searchParams,id=path==='/integrations'?null:path.slice('/integrations/'.length);

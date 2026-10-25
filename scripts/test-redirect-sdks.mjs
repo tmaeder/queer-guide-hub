@@ -376,6 +376,15 @@ try {
   }
   const {verifyPublicCapabilityWorkspaces}=await import('./lib/redirect-public-capability-fixture.mjs');
   await verifyPublicCapabilityWorkspaces(db,reportRequest,base,policyRuntime.hashLinkPassword);
+  const {verifyOwnerAdmissionHttp}=await import('./lib/redirect-owner-admission-fixture.mjs');
+  await verifyOwnerAdmissionHttp(db,base,reportActor,reportOtherActor,token,async(workspace,member,user)=>{
+   const ownershipEnv={...env,REDIRECT_OWNER_WORKSPACE:workspace,REDIRECT_OWNER_MEMBER:member,REDIRECT_OWNER_USER:user};
+   await run(process.execPath,['sdk/redirects/tests/ownership-typescript.mjs'],{env:ownershipEnv});
+   await run('python3',['sdk/redirects/tests/ownership-python.py'],{env:ownershipEnv});
+   await run('ruby',['sdk/redirects/tests/ownership-ruby.rb'],{env:ownershipEnv});
+   await run('php',['sdk/redirects/tests/ownership-php.php'],{env:ownershipEnv});
+   await run(process.env.REDIRECT_GO_BIN??'go',['test','-run','TestWorkspaceOwnershipSDK','./...'],{cwd:'sdk/redirects/go',env:ownershipEnv});
+  });
   const workspaceFixtureConfig={domainConnectEnabled,instructionMailEnabled,sdkHeartbeatEnabled},workspaceFixtureRequests=fixtureExternalRequests;
   domainConnectEnabled=true;instructionMailEnabled=true;sdkHeartbeatEnabled=true;
   try {await verifyRedirectWorkspaceMembershipHttp(db,reportRequest,reportActor,{cleanupAssets:(assetId)=>{

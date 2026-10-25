@@ -9,6 +9,7 @@ export interface RedirectMember {
   label: string;
   role: Exclude<RedirectWorkspaceRole, 'owner'>;
   active: boolean;
+  isWorkspaceOwner?: boolean;
 }
 export function useRedirectMembers() {
   const { user } = useAuth();

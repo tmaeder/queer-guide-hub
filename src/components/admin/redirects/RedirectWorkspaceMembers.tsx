@@ -137,8 +137,12 @@ function MemberEditor() {
               <div>
                 <span className="font-medium">{member.label}</span>
                 <p className="text-xs text-muted-foreground">
-                  {member.kind === 'machine' ? 'Machine' : 'Account'} · {member.role} ·{' '}
-                  {member.active ? 'Active' : 'Inactive'}
+                  {member.isWorkspaceOwner
+                    ? 'Owner account'
+                    : member.kind === 'machine'
+                      ? 'Machine'
+                      : 'Account'}{' '}
+                  · {member.role} · {member.active ? 'Active' : 'Inactive'}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -146,7 +150,7 @@ function MemberEditor() {
                   aria-label={'Role for ' + member.label}
                   className="rounded-element border bg-background p-2 text-sm"
                   value={member.role}
-                  disabled={change.isPending}
+                  disabled={change.isPending || member.isWorkspaceOwner}
                   onChange={(event) =>
                     change.mutate({
                       id: member.id,
@@ -161,19 +165,30 @@ function MemberEditor() {
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={change.isPending}
+                  disabled={change.isPending || member.isWorkspaceOwner}
                   onClick={() =>
                     change.mutate({ id: member.id, values: { active: !member.active } })
                   }
                 >
                   {member.active ? 'Deactivate' : 'Activate'}
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => setRemoving(member.id)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={member.isWorkspaceOwner}
+                  onClick={() => setRemoving(member.id)}
+                >
                   Remove
                 </Button>
               </div>
             </div>
-            {removing === member.id && (
+            {member.isWorkspaceOwner && (
+              <p className="text-sm text-muted-foreground">
+                Remove explicit Owner access in Workspace Owners before changing this membership
+                role or status.
+              </p>
+            )}
+            {removing === member.id && !member.isWorkspaceOwner && (
               <div className="space-y-2">
                 <p className="text-sm">
                   Remove this membership, folder overrides, and all bound API credentials?

@@ -607,3 +607,24 @@ finish the native adapter's provider steps and verify an actual attributed event
 
 A null lookup does not cancel a request that may still be in flight. Retry that
 setup using its original request ID and unchanged input.
+
+## Explicit workspace Owners
+
+Account sessions with current workspace Owner access can use these registry
+methods. Keep the selected workspace in the client's immutable workspace option
+(or Go's `WithWorkspace` clone).
+
+| Operation | TypeScript / PHP | Python / Ruby | Go |
+| --- | --- | --- | --- |
+| Owners | `listWorkspaceOwners` | `list_workspace_owners` | `ListWorkspaceOwners` |
+| Candidates | `listOwnerCandidates` | `list_owner_candidates` | `ListOwnerCandidates` |
+| Admit | `admitWorkspaceOwner` | `admit_workspace_owner` | `AdmitWorkspaceOwner` |
+| Remove | `removeWorkspaceOwner` | `remove_workspace_owner` | `RemoveWorkspaceOwner` |
+
+Admission takes the current member ID and reviewed base role. Removal takes the
+Owner's account UUID and current revision. Recheck metadata after a conflict;
+never substitute a fresh revision without review. At least one Owner must remain.
+Admission does not grant application-admin roles. The legacy workspace's Owners
+remain application admins and cannot be changed through these registry methods.
+Registry administration can prepare co-Owners during provisioning without opening
+any private business-resource route or activating that workspace.

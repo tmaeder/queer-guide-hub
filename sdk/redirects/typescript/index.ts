@@ -90,6 +90,25 @@ export interface RedirectWorkspaceList {
   currentWorkspaceId: string;
 }
 export type WorkspaceInformationKind = 'domains' | 'tokens' | 'webhooks';
+export interface WorkspaceOwner {
+  userId: string;
+  label: string;
+  memberRole: 'member' | 'viewer' | 'billing' | null;
+  grantedAt: string | null;
+  version: string | null;
+  canRemove: boolean;
+}
+export interface OwnerCandidate {
+  memberId: string;
+  userId: string;
+  label: string;
+  role: 'member' | 'viewer' | 'billing';
+  verified: boolean;
+}
+export interface WorkspaceOwnershipPage<T> extends Page<T> {
+  workspace: { id: string; name: string; slug: string; status: 'active' | 'provisioning' };
+  legacy: boolean;
+}
 export interface IntegrationSetupInput {
   requestId: string;
   provider: 'segment' | 'gtm';
@@ -458,6 +477,30 @@ export class RedirectsClient {
   }
   revokeIntegrationSetup(id: string): Promise<IntegrationInstallation> {
     return this.request('DELETE', '/integrations/' + encodeURIComponent(id));
+  }
+  listWorkspaceOwners(limit = 50, after?: string): Promise<WorkspaceOwnershipPage<WorkspaceOwner>> {
+    return this.request('GET', '/workspace-ownership', undefined, { view: 'owners', limit, after });
+  }
+  listOwnerCandidates(limit = 50, after?: string): Promise<WorkspaceOwnershipPage<OwnerCandidate>> {
+    return this.request('GET', '/workspace-ownership', undefined, {
+      view: 'candidates',
+      limit,
+      after,
+    });
+  }
+  admitWorkspaceOwner(
+    memberId: string,
+    expectedRole: OwnerCandidate['role'],
+  ): Promise<WorkspaceOwner> {
+    return this.request('POST', '/workspace-ownership', { memberId, expectedRole });
+  }
+  removeWorkspaceOwner(
+    userId: string,
+    version: string,
+  ): Promise<{ userId: string; removed: boolean; remainingOwners: number }> {
+    return this.request('DELETE', '/workspace-ownership/' + encodeURIComponent(userId), {
+      version,
+    });
   }
   async request<T>(
     method: string,

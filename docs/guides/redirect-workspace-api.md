@@ -154,3 +154,28 @@ adapter/secret from the provider separately.
 A null lookup is not cancellation of an in-flight request. Retain the same
 request ID and input when retrying that setup; do not infer permission to create
 a replacement with a fresh ID from a missing receipt alone.
+
+## Explicit workspace Owner registry
+
+`GET /workspace-ownership?view=owners|candidates&limit=50&after=<uuid>` returns
+sanitized, paginated registry metadata for a current Owner. Owner rows include the
+account UUID, existing member label/role, grant time, revision and removal
+availability. Candidate rows include a current human membership and verified-
+account eligibility; account emails and auth records are excluded.
+
+`POST /workspace-ownership` accepts `{memberId, expectedRole}` to admit a verified,
+active human member. `DELETE /workspace-ownership/<userId>` accepts `{version}`
+and rejects stale revisions and removal of the last Owner. Owner removal
+preserves any existing member role. Member role/status/deletion controls cannot
+silently leave a separate explicit Owner grant in place; remove that grant first.
+
+These account-only registry operations require current explicit ownership under
+the shared ACL lock. An application admin does not inherit another workspace's
+Owner access. The legacy workspace continues to derive Owners from application
+admin roles; this endpoint displays that model but cannot change those roles.
+The owner workspace's membership section includes a reviewed Owner panel.
+
+The registry alone may be managed during provisioning using an explicit immutable
+workspace context. This limited route exception does not authorize business
+resources, activate a workspace or remove tenant-write fences. Every other private
+route retains its existing activation selection guard.

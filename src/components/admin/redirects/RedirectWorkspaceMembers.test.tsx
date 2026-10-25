@@ -28,6 +28,19 @@ beforeEach(() => {
   }));
 });
 describe('workspace membership editor', () => {
+  it('requires separate Owner removal before member-role/status controls', async () => {
+    mocks.invoke.mockImplementation(async (_path, options) => ({
+      data:
+        options.method === 'GET' ? { data: [{ ...member, isWorkspaceOwner: true }], count: 1 } : {},
+      error: null,
+    }));
+    const view = show();
+    expect(await screen.findByLabelText('Role for Sam')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Deactivate' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Remove' })).toBeDisabled();
+    expect(screen.getByText(/Remove explicit Owner access in Workspace Owners/)).toBeVisible();
+    view.unmount();
+  });
   it('lets an owner assign the Billing role to an existing teammate', async () => {
     show();
     fireEvent.change(await screen.findByLabelText('Role for Sam'), {

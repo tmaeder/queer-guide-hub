@@ -927,3 +927,37 @@ runtime/debugger verification, or publish SDK packages. Those remain external
 release evidence alongside custom-domain/device proof. Additional-owner admission,
 workspace creation/switching/activation, atomic domain transfer and final deployed
 production E2E remain open.
+
+### 2026-10-25 explicit Owner registry administration
+
+An account-only, explicitly scoped registry API now supports paginated current
+Owners/candidates, verified human-member admission and revision-bound removal.
+Writes recheck current ownership under the exclusive ACL lock, preserve at least
+one Owner even during provisioning, retain existing base membership on removal,
+and never change application-admin roles. Global admins do not inherit another
+workspace's authority. Legacy ownership is readable but continues to be managed
+through existing application user administration.
+
+Owner rows gain revisions. A guard shared with membership writes prevents member
+role/status/deletion controls from concealing separate explicit Owner access;
+labels remain editable. The membership UI displays that state and disables those
+controls. A dedicated panel reviews the exact target/workspace before changes,
+requires explicit confirmation, disables unverified/last-Owner actions and hides
+cached metadata/reviews after access loss. A bound API-client factory keeps each
+workspace in an immutable closure, with user/workspace-specific query keys.
+
+The route's narrow provisioning-registry exception does not open other private
+routes or tenant resources. Complete SQL tests prove current/stale/foreign/last-
+Owner behavior, preserved base membership, re-admission revisions, verified-
+account checks and unchanged application-role rows. Actual HTTP tests cover an
+independent provisioning registry and prove business selection remains denied.
+All five native SDKs perform positive scoped registry list/candidate/admit/remove
+calls inside that isolated fixture, in addition to the full existing SDK matrix.
+Thirteen UI/client tests, app/SDK/API type checks, the app build and all 2560
+migration parses pass. The app ratchet remains 660 errors with none new; script/
+component lint, formatting and diff checks pass. No real production Owner was
+admitted or removed, and no new workspace was activated.
+
+Tenant creation/switching/business activation, reviewed atomic transfer and
+external provider/device/publication proof remain open. Production deployment and
+post-release E2E verification remain pending the coordinated release window.

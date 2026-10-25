@@ -13,9 +13,11 @@ export async function memberRedirectApi<T>(
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET',
   body?: Record<string, unknown> | Record<string, unknown>[],
   signal?: AbortSignal,
+  workspaceId?: string,
 ): Promise<T> {
   const { data, error } = await supabase.functions.invoke('redirect-api' + path, {
     method,
+    ...(workspaceId ? { headers: { 'X-Qg-Redirect-Workspace': workspaceId } } : {}),
     ...(body !== undefined ? { body } : {}),
     signal,
   });
@@ -35,6 +37,19 @@ export async function memberRedirectApi<T>(
     );
   }
   return data as T;
+}
+// Each closure keeps one immutable workspace context. Never mutate shared
+// Supabase/global headers when the user switches between workspaces.
+export function createWorkspaceRedirectApi(workspaceId: string) {
+  if (!/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(workspaceId))
+    throw new Error('Choose a valid Redirects workspace');
+  const selected = workspaceId.toLowerCase();
+  return <T>(
+    path: string,
+    method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET',
+    body?: Record<string, unknown> | Record<string, unknown>[],
+    signal?: AbortSignal,
+  ) => memberRedirectApi<T>(path, method, body, signal, selected);
 }
 export interface MemberLink {
   id: string;

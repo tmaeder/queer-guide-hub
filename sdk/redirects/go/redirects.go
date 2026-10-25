@@ -92,6 +92,27 @@ func (c *Client) RevokeIntegrationSetup(ctx context.Context, id string) (Object,
 	return c.Request(ctx, "DELETE", "/integrations/"+url.PathEscape(id), nil, nil)
 }
 
+func (c *Client) ListWorkspaceOwners(ctx context.Context, limit int, after string) (Object, error) {
+	query := Object{"view": "owners", "limit": limit}
+	if after != "" {
+		query["after"] = after
+	}
+	return c.Request(ctx, "GET", "/workspace-ownership", nil, query)
+}
+func (c *Client) ListOwnerCandidates(ctx context.Context, limit int, after string) (Object, error) {
+	query := Object{"view": "candidates", "limit": limit}
+	if after != "" {
+		query["after"] = after
+	}
+	return c.Request(ctx, "GET", "/workspace-ownership", nil, query)
+}
+func (c *Client) AdmitWorkspaceOwner(ctx context.Context, memberID, expectedRole string) (Object, error) {
+	return c.Request(ctx, "POST", "/workspace-ownership", Object{"memberId": memberID, "expectedRole": expectedRole}, nil)
+}
+func (c *Client) RemoveWorkspaceOwner(ctx context.Context, userID, version string) (Object, error) {
+	return c.Request(ctx, "DELETE", "/workspace-ownership/"+url.PathEscape(userID), Object{"version": version}, nil)
+}
+
 var workspacePattern = regexp.MustCompile(`(?i)^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$`)
 
 var pathPattern = regexp.MustCompile(`^/[a-zA-Z0-9_/-]+$`)

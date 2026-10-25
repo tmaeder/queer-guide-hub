@@ -1,3 +1,4 @@
+import { RedirectWorkspaceOwnership } from './RedirectWorkspaceOwnership';
 import { RedirectNativeApps } from './RedirectNativeApps';
 import { RedirectInvitations } from '@/components/admin/redirects/RedirectInvitations';
 import { RedirectIntegrationSetup } from './RedirectIntegrationSetup';
@@ -97,6 +98,7 @@ export function RedirectWorkspaceDialog({ onClose }: { onClose: () => void }) {
         </Button>
         {showMembers && (
           <>
+            <RedirectWorkspaceOwnership />
             <RedirectWorkspaceMembers />
             <RedirectInvitations />
           </>
