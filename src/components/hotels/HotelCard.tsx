@@ -1,9 +1,10 @@
 import { memo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MapPin, Star, DollarSign } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { useTranslation } from 'react-i18next';
+import { Badge, badgeVariants } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { Image } from '@/components/ui/Image';
-import { FeaturedBadge } from '@/components/ui/FeaturedBadge';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import type { Hotel } from '@/hooks/useHotels';
 import { Skeleton } from 'boneyard-js/react';
@@ -65,6 +66,7 @@ const HotelCardFixture = () => (
 );
 
 function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
+  const { t } = useTranslation();
   if (loading || !hotel) {
     return (
       <Skeleton
@@ -116,7 +118,13 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
           */}
               {(() => {
                 const fp = (hotel as { featured_priority?: number | null }).featured_priority;
-                return typeof fp === 'number' ? <FeaturedBadge /> : null;
+                return typeof fp === 'number' ? (
+                  <span
+                    className={cn(badgeVariants({ variant: 'overlay' }), 'absolute top-2 right-2')}
+                  >
+                    {t('common.featured', 'Featured')}
+                  </span>
+                ) : null;
               })()}
               {typeLabel && (
                 <Badge

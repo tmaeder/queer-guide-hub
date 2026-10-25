@@ -1,5 +1,7 @@
 import { Heart, Users, Map, Smile, Handshake, Home } from 'lucide-react';
 import { USER_MODE_LABELS } from '@/lib/userMode';
+import { badgeVariants } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface UserModeBadgeProps {
   mode: string;
@@ -9,12 +11,12 @@ interface UserModeBadgeProps {
 // Monochrome — modes are differentiated by icon + label, not color (the former
 // per-mode hues were removed in the monochrome strip).
 const modeConfig = {
-  dating:      { icon: Heart,     label: USER_MODE_LABELS.dating },
-  friends:     { icon: Users,     label: USER_MODE_LABELS.friends },
-  exploration: { icon: Map,       label: USER_MODE_LABELS.exploration },
-  fun:         { icon: Smile,     label: USER_MODE_LABELS.fun },
-  networking:  { icon: Handshake, label: USER_MODE_LABELS.networking },
-  community:   { icon: Home,      label: USER_MODE_LABELS.community },
+  dating: { icon: Heart, label: USER_MODE_LABELS.dating },
+  friends: { icon: Users, label: USER_MODE_LABELS.friends },
+  exploration: { icon: Map, label: USER_MODE_LABELS.exploration },
+  fun: { icon: Smile, label: USER_MODE_LABELS.fun },
+  networking: { icon: Handshake, label: USER_MODE_LABELS.networking },
+  community: { icon: Home, label: USER_MODE_LABELS.community },
 };
 
 const sizeClasses = {
@@ -28,9 +30,7 @@ export function UserModeBadge({ mode, size = 'md' }: UserModeBadgeProps) {
   if (!config) return null;
 
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full bg-muted font-medium text-foreground ${sizeClasses[size]}`}
-    >
+    <span className={cn(badgeVariants({ variant: 'pill' }), sizeClasses[size])}>
       <config.icon style={{ width: 12, height: 12 }} />
       <span>{config.label}</span>
     </span>

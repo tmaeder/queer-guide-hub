@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { AnimatePresence, motion, useScroll, useSpring } from 'motion/react';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
@@ -55,35 +55,13 @@ export function EntityDetailLayout({
   // deep-linkable and browser back/forward steps through tabs naturally.
   // Falls back to the first tab when ?tab is missing or unknown.
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabIds = tabs.map((t) => t.id);
+  // Derived, not stored: every tab change writes ?tab, so the URL is the
+  // single source of truth. Back/forward and late-arriving `tabs` (pages
+  // pass `tabs=[]` while their query is in flight) need no sync effects.
   const urlTab = searchParams.get('tab');
-  const initialTab = urlTab && tabIds.includes(urlTab) ? urlTab : (tabs[0]?.id ?? '');
-  const [activeTab, setActiveTab] = useState<string>(initialTab);
-
-  // Sync state ← URL when the user navigates back/forward.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    if (urlTab && tabIds.includes(urlTab) && urlTab !== activeTab) setActiveTab(urlTab);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urlTab]);
-
-  // D8: on first render the parent page often passes `tabs=[]` while its
-  // data query is in-flight, so `activeTab` initialises to ''. When `tabs`
-  // later populates, snap activeTab to the first tab (or the URL-requested
-  // tab if it's valid). Without this, the AnimatePresence below filters out
-  // every panel and the Overview content renders blank until the user
-  // manually clicks the tab.
-  useEffect(() => {
-    if (tabs.length === 0) return;
-    if (!tabIds.includes(activeTab)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setActiveTab(urlTab && tabIds.includes(urlTab) ? urlTab : (tabs[0]?.id ?? ''));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tabIds.join('|')]);
+  const activeTab = urlTab && tabs.some((t) => t.id === urlTab) ? urlTab : (tabs[0]?.id ?? '');
 
   const handleTabChange = (next: string) => {
-    setActiveTab(next);
     setSearchParams(
       (prev) => {
         const p = new URLSearchParams(prev);

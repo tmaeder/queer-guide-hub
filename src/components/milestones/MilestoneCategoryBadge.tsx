@@ -12,6 +12,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { badgeVariants } from '@/components/ui/badge';
 import { milestoneCategoryLabelKey, type MilestoneCategory } from '@/types/milestone';
 
 const CATEGORY_ICON: Record<MilestoneCategory, LucideIcon> = {
@@ -53,12 +54,7 @@ export function MilestoneCategoryBadge({
   if (!category) return null;
   const Icon = CATEGORY_ICON[category] ?? MilestoneIcon;
   return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 bg-card px-1.5 py-0.5 text-2xs uppercase tracking-label text-foreground rounded-container shadow-soft',
-        className,
-      )}
-    >
+    <span className={cn(badgeVariants({ variant: 'plate' }), className)}>
       <Icon className="h-3 w-3" aria-hidden />
       {label}
     </span>

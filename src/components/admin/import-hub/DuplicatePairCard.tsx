@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Badge, badgeVariants } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { Merge, X, Eye, ChevronUp } from 'lucide-react';
 import { useEntityById, useDismissDuplicate } from '@/hooks/useImportHubQueries';
 import { StructuredFieldDisplay } from './StructuredFieldDisplay';
@@ -15,13 +16,15 @@ interface DuplicatePairCardProps {
 
 function ConfidenceBadge({ confidence }: { confidence: number }) {
   const pct = (confidence * 100).toFixed(0);
-  const color = confidence >= 0.9 ? 'hsl(var(--foreground))' : confidence >= 0.7 ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--destructive))';
+  const tone =
+    confidence >= 0.9
+      ? 'text-foreground'
+      : confidence >= 0.7
+        ? 'text-foreground/55'
+        : 'text-destructive';
   const label = confidence >= 0.9 ? 'High' : confidence >= 0.7 ? 'Medium' : 'Low';
   return (
-    <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-badge text-xs font-semibold"
-      style={{ backgroundColor: `${color}15`, color }}
-    >
+    <span className={cn(badgeVariants({ variant: 'mark' }), 'px-2 text-xs font-semibold', tone)}>
       {pct}% ({label})
     </span>
   );
@@ -33,7 +36,8 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
   const { data: entityB, isLoading: loadingB } = useEntityById(pair.entity_type, pair.entity_b_id);
   const dismissMutation = useDismissDuplicate();
 
-  const nameField = (pair.entity_type === 'events' || pair.entity_type === 'event') ? 'title' : 'name';
+  const nameField =
+    pair.entity_type === 'events' || pair.entity_type === 'event' ? 'title' : 'name';
 
   return (
     <Card>
@@ -69,7 +73,12 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
             <Button
               size="sm"
               onClick={() => onMerge(pair)}
-              style={{ display: 'flex', gap: 6, backgroundColor: 'hsl(var(--muted-foreground))', color: 'white' }}
+              style={{
+                display: 'flex',
+                gap: 6,
+                backgroundColor: 'hsl(var(--muted-foreground))',
+                color: 'white',
+              }}
             >
               <Merge size={14} />
               Merge
@@ -80,14 +89,20 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
         {/* Quick Preview — always visible */}
         <div className="flex gap-4 items-center text-muted-foreground text-sm">
           <p className="font-medium">
-            A: <span className="text-foreground">
-              {entityA ? String(entityA[nameField] || pair.entity_a_id?.slice(0, 8) + '...') : (pair.entity_a_id?.slice(0, 8) ?? 'N/A') + '...'}
+            A:{' '}
+            <span className="text-foreground">
+              {entityA
+                ? String(entityA[nameField] || pair.entity_a_id?.slice(0, 8) + '...')
+                : (pair.entity_a_id?.slice(0, 8) ?? 'N/A') + '...'}
             </span>
           </p>
           <p>vs</p>
           <p className="font-medium">
-            B: <span className="text-foreground">
-              {entityB ? String(entityB[nameField] || pair.entity_b_id?.slice(0, 8) + '...') : (pair.entity_b_id?.slice(0, 8) ?? 'N/A') + '...'}
+            B:{' '}
+            <span className="text-foreground">
+              {entityB
+                ? String(entityB[nameField] || pair.entity_b_id?.slice(0, 8) + '...')
+                : (pair.entity_b_id?.slice(0, 8) ?? 'N/A') + '...'}
             </span>
           </p>
         </div>
@@ -95,7 +110,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
         {/* Expanded Details */}
         {expanded && (
           <div className="mt-4">
-            {(loadingA || loadingB) ? (
+            {loadingA || loadingB ? (
               <AdminTextSkeleton lines={2} />
             ) : !entityA && !entityB ? (
               <p className="text-sm text-muted-foreground text-center">
