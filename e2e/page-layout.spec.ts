@@ -64,26 +64,19 @@ const ROUTES = [
 const WIDTHS = [390, 768, 1440, 1920];
 
 /**
- * How far RIGHT the header's content row starts, relative to the page's.
+ * How far RIGHT the header's content row starts, relative to the page's: zero,
+ * at every width.
  *
- * The header is a floating island inset from the window; the page is not. Both
- * share one cap and one gutter. So the offset is NOT simply the inset — it
- * depends on whether the cap has engaged:
- *
- *   header = inset + max(0, (V - 2*inset - cap)/2) + gutter
- *   page   =         max(0, (V          - cap)/2) + gutter
- *
- *   neither capped  -> offset = inset          (the gutter sets both edges)
- *   both capped     -> offset = 0              (centring absorbs the inset)
- *   page only       -> offset = inset - (V-cap)/2
- *
- * which collapses to the line below. Getting this wrong is not hypothetical:
- * the listing block asserted a constant `inset` and failed on EVERY route at
- * 1920px, while the detail block assumed a constant 0 and failed at 390 and
- * 1440 — the same misreading, in opposite directions, in one file.
+ * Until 2026-10-25 this returned the island inset below the cap, because the
+ * header and footer are islands inset from the window and the page frame was
+ * not — so every page's content started 14px (phone) / 22px (tablet+) further
+ * out than the chrome above and below it, and this spec ASSERTED that as the
+ * design. It was the bug users reported as "pages take more space than the
+ * header and footer". The page frame now uses the island's own width and left
+ * margin (`PAGE_FRAME` in PageContainer.tsx), so the edges are identical.
+ * The signature is kept so the call sites still read as a relationship.
  */
-const expectedHeaderOffset = (viewport: number, cap: number, inset: number) =>
-  inset - Math.min(inset, Math.max(0, (viewport - cap) / 2));
+const expectedHeaderOffset = (_viewport: number, _cap: number, _inset: number) => 0;
 
 /** Left edge of a container's CONTENT (border box + its own gutter). */
 const EDGES = `(() => {
