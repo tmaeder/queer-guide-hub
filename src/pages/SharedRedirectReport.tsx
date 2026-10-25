@@ -75,7 +75,7 @@ function PublicReportDates({
         </Button>
       </div>
       <form
-        className="grid gap-4 sm:grid-cols-2"
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2"
         onSubmit={(event) => {
           event.preventDefault();
           setValidation('');
@@ -324,7 +324,7 @@ export function SharedReportView({ id }: { id: string }) {
                 <span>{data.report.series.at(-1)?.at.slice(0, 10)}</span>
               </div>
             </section>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {Object.entries(data.report.breakdowns).map(([dimension, rows]) => (
                 <section key={dimension} className="space-y-2 border-t pt-4">
                   <h2 className="text-title font-sans font-bold capitalize">
