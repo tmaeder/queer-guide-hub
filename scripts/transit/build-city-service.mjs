@@ -204,10 +204,13 @@ export const FEEDS = {
 };
 
 // France: one urban network per feed, all Licence Ouverte (attribution only) via
-// transport.data.gouv.fr. Paris (IDFM), Lyon, Toulouse, Montpellier and Rennes publish
-// under ODbL / Licence Mobilités (share-alike) and are deliberately not included.
+// transport.data.gouv.fr — except Paris, Lyon, Toulouse, Montpellier and Rennes, which are
+// ODbL / Licence Mobilités (share-alike); their credit states the derived data is ODbL.
 const N_LINES = /^N\d+$/;
-function frenchFeed(key, provider, sourceUrl, licence, city, nightLineName) {
+function frenchFeed(key, provider, sourceUrl, licence, city, nightLineName, extra = {}) {
+  // ODbL and Licence Mobilités are share-alike: the derived rows we publish are ODbL too,
+  // and the credit says so.
+  const shareAlike = /odbl|mobilit/i.test(licence);
   return {
     meta: {
       feed_key: `fr-${key}`,
@@ -215,9 +218,12 @@ function frenchFeed(key, provider, sourceUrl, licence, city, nightLineName) {
       country_code: 'FR',
       source_url: sourceUrl,
       licence,
-      attribution: `Timetable: ${provider} via transport.data.gouv.fr (${licence})`,
+      attribution: shareAlike
+        ? `Timetable: ${provider} via transport.data.gouv.fr (${licence}). Derived late-night data on this page is available under ODbL.`
+        : `Timetable: ${provider} via transport.data.gouv.fr (${licence})`,
     },
     nightLineName,
+    ...extra,
     cities: [{ ...city, radiusKm: 8 }],
   };
 }
@@ -285,6 +291,57 @@ Object.assign(FEEDS, {
       slug: 'bordeaux-france',
       city_id: 'c118881b-5586-40ae-9fe0-89cbc44cacd3',
       centre: [44.84123, -0.58004],
+    },
+    N_LINES,
+  ),
+  'fr-paris': frenchFeed(
+    'idfm',
+    'Île-de-France Mobilités',
+    'https://transport.data.gouv.fr/datasets/reseaux-urbains-et-interurbains-dile-de-france-mobilites',
+    'Licence Mobilités (ODbL)',
+    { slug: 'paris', city_id: 'b46a28a1-5c7a-41ac-a2cc-5b03448f6f69', centre: [48.8566, 2.3522] },
+    N_LINES,
+    { dropBusNamedLikeRail: true },
+  ),
+  'fr-lyon': frenchFeed(
+    'tcl',
+    'TCL',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-tcl',
+    'Licence Mobilités (ODbL)',
+    { slug: 'lyon', city_id: '0218d34e-8b6b-47d6-9f7e-9871065d8c19', centre: [45.764, 4.8357] },
+    /^PL\d+$/, // "Pleine Lune" night buses; Lyon's N18x are regional coaches
+  ),
+  'fr-toulouse': frenchFeed(
+    'tisseo',
+    'Tisséo',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-tisseo',
+    'ODbL',
+    {
+      slug: 'toulouse-fr-6qolh',
+      city_id: 'a399b92d-9fb9-4168-8af7-e84979de1bcc',
+      centre: [43.60426, 1.44367],
+    },
+  ),
+  'fr-montpellier': frenchFeed(
+    'tam',
+    'TaM',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-tam',
+    'ODbL',
+    {
+      slug: 'montpellier-france',
+      city_id: '3d7d0448-7c9f-477e-aa8f-b9f6906db578',
+      centre: [43.61124, 3.87673],
+    },
+  ),
+  'fr-rennes': frenchFeed(
+    'star',
+    'STAR',
+    'https://transport.data.gouv.fr/datasets/reseau-urbain-star',
+    'ODbL',
+    {
+      slug: 'rennes-france',
+      city_id: '8a21d101-0e41-4131-9a8d-0c1b2084d13c',
+      centre: [48.11134, -1.68002],
     },
     N_LINES,
   ),
@@ -423,7 +480,18 @@ async function main() {
   }
 
   const routes = new Map(); // route_id -> {mode, night, ref}
-  for await (const r of rows('routes.txt')) {
+  const routeRows = [];
+  for await (const r of rows('routes.txt')) routeRows.push(r);
+  // Île-de-France names its rail-replacement buses after the line they replace (bus "A"
+  // for RER A at 02:21, "L" for Transilien L): a works diversion, not the last bus.
+  const railRefs = new Set();
+  if (FEEDS[feedArg].dropBusNamedLikeRail) {
+    for (const r of routeRows) {
+      const m = mapMode(r.route_type, r.route_desc);
+      if (m && m.mode !== 'bus') railRefs.add(r.route_short_name || r.route_long_name);
+    }
+  }
+  for (const r of routeRows) {
     const m = mapMode(r.route_type, r.route_desc);
     if (!m) continue;
     const ref = r.route_short_name || r.route_long_name;
@@ -431,6 +499,7 @@ async function main() {
     // German rail-replacement buses carry the train's name ("S8" bus in Düsseldorf at 03:10):
     // a works diversion, not the city's last bus.
     if (NIGHT_BY_NAME && m.mode === 'bus' && /^(SEV|S|RE|RB|U)\s?\d|^SEV\b/i.test(ref)) continue;
+    if (m.mode === 'bus' && railRefs.has(ref)) continue;
     routes.set(r.route_id, {
       ...m,
       night: m.night || !!NIGHT_RE?.test(ref),

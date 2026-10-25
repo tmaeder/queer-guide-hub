@@ -85,7 +85,8 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node --max-old-space-size=2048 scripts/transit/build-city-service.mjs "$RUNNER_TEMP/gtfs-at.zip" --feed at --commit
 
-      # France: one urban network per feed, Licence Ouverte, via transport.data.gouv.fr's
+      # France: one urban network per feed (Licence Ouverte, or ODbL for Paris/Lyon/Toulouse/
+      # Montpellier/Rennes), via transport.data.gouv.fr's
       # stable data.gouv.fr resource links. A failing city is reported and the rest still
       # commit; the step fails at the end so the run is red.
       - name: Download, derive and commit (France)
@@ -96,10 +97,16 @@ jobs:
         run: |
           rm -f "$RUNNER_TEMP/gtfs-at.zip"
           failed=""
-          while read -r feed url; do
+          # Optional third column: a fallback feed, tried when the first has no full
+          # week ahead (Rennes publishes "current" and "upcoming" timetables separately).
+          build() {
+            curl -sSfL --retry 3 -o "$RUNNER_TEMP/$1.zip" "$2" \
+              && node --max-old-space-size=3072 scripts/transit/build-city-service.mjs "$RUNNER_TEMP/$1.zip" --feed "$1" --commit
+          }
+          while read -r feed url fallback; do
             echo "::group::$feed"
-            if curl -sSfL --retry 3 -o "$RUNNER_TEMP/$feed.zip" "$url" \
-              && node --max-old-space-size=2048 scripts/transit/build-city-service.mjs "$RUNNER_TEMP/$feed.zip" --feed "$feed" --commit; then :
+            if build "$feed" "$url"; then :
+            elif [ -n "$fallback" ] && build "$feed" "$fallback"; then echo "$feed: used fallback feed"
             else failed="$failed $feed"; fi
             rm -f "$RUNNER_TEMP/$feed.zip"
             echo "::endgroup::"
@@ -110,5 +117,10 @@ jobs:
           fr-nantes https://www.data.gouv.fr/api/1/datasets/r/65bdd7e4-a8e7-4a54-893a-808e71c34d68
           fr-strasbourg https://www.data.gouv.fr/api/1/datasets/r/eeea9e52-4f8a-459e-aef5-a093a3b05356
           fr-bordeaux https://www.data.gouv.fr/api/1/datasets/r/10b87ffe-e6bb-494d-93df-bb6019e223d9
+          fr-paris https://www.data.gouv.fr/api/1/datasets/r/d34a4b53-5d6d-41b5-9cd9-bb738637b7e9
+          fr-lyon https://www.data.gouv.fr/api/1/datasets/r/abebedc6-28cf-4e2e-9c64-db57a40156f8
+          fr-toulouse https://www.data.gouv.fr/api/1/datasets/r/64318177-f5b5-4144-a6be-2d0f22d26c77
+          fr-montpellier https://www.data.gouv.fr/api/1/datasets/r/93a29ce2-cfc8-44ff-b712-bcfd814b7f00
+          fr-rennes https://www.data.gouv.fr/api/1/datasets/r/0644f537-575e-4cce-9570-06165d6f3b27 https://www.data.gouv.fr/api/1/datasets/r/ef4779c4-d066-40d8-b8d9-fb8c7eea8820
           FEEDS
           if [ -n "$failed" ]; then echo "::error::French feeds failed:$failed"; exit 1; fi

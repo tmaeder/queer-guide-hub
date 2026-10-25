@@ -58,7 +58,8 @@ export function mapMode(routeType, routeDesc = '') {
   if (t === 0 || (t >= 900 && t < 1000)) mode = 'tram';
   else if (t === 1 || (t >= 400 && t < 500)) mode = 'metro';
   else if (t === 2 || (t >= 100 && t < 200)) mode = 'rail';
-  else if (t === 3 || (t >= 700 && t < 800) || (t >= 200 && t < 300)) mode = 'bus';
+  // 11 / 800-899 trolleybus (Lyon's C1-C3, C11, C13) ride the bus network.
+  else if (t === 3 || t === 11 || (t >= 700 && t < 900) || (t >= 200 && t < 300)) mode = 'bus';
   else if (t === 4 || (t >= 1000 && t < 1100) || t === 1200) mode = 'ferry';
   return mode ? { mode, night } : null;
 }
@@ -166,7 +167,10 @@ export function createNightAccumulator(week) {
         if (s.lastOwn === 0 && !Number.isFinite(s.first) && !s.deepNight) continue;
         const i = key.lastIndexOf('|');
         const end = s.times.size
-          ? serviceEnd([...s.times].sort((a, b) => a - b))
+          ? serviceEnd(
+              [...s.times].sort((a, b) => a - b),
+              key.slice(0, i).endsWith('|1'), // routeKey is mode|ref|night
+            )
           : { last: s.lastOwn, allNight: false };
         const { last, allNight } = end; // no evening departures: last = latest of the day
         out.push({
@@ -195,14 +199,18 @@ export const SERVICE_GAP_S = 90 * 60;
  * by a gap of SERVICE_GAP_S or more. No such gap before the night window closes
  * = runs all night. `times` are sorted seconds >= 18:00, next-morning folded +24h.
  */
-export function serviceEnd(times) {
+export function serviceEnd(times, nightLine = false) {
   if (!times.length) return { last: 0, allNight: false };
   for (let i = 0; i < times.length; i++) {
     if (times[i] < END_SEARCH_S) continue;
     const next = times[i + 1];
     if (next === undefined || next - times[i] >= SERVICE_GAP_S) {
-      // Data simply stops at >= 03:00 next day: it ran through the night, not "ended".
-      return { last: times[i], allNight: next === undefined && times[i] >= DAY_S + 3 * 3600 };
+      // Data simply stops late: it ran through the night, not "ended". A night line
+      // counts from 03:00 (Swiss night buses stop ~03:10); a regular line only from
+      // 04:00, because Toulouse's metro closes at 03:21-03:25 on weekend nights and
+      // read as "runs all night", while genuine all-night lines here run to 04:5x.
+      const allNightFrom = DAY_S + (nightLine ? 3 : 4) * 3600;
+      return { last: times[i], allNight: next === undefined && times[i] >= allNightFrom };
     }
   }
   return { last: times[times.length - 1], allNight: false }; // nothing after 20:00
