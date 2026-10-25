@@ -607,7 +607,7 @@ try {
       if(url.href==='https://fixture.supabase.co/functions/v1/redirect-api/public-qr-image')return fetch(base+'/public-qr-image',options);
       const prefix='https://fixture.supabase.co/storage/v1/object/public/redirect-brand-assets/';
       if(url.href.startsWith(prefix)){
-        if(options?.credentials!=='omit'||options?.redirect!=='error'||new Headers(options?.headers).has('Authorization'))throw new Error('Image logo read forwarded credentials');
+        if(options?.credentials!=='omit'||options?.redirect!=='manual'||new Headers(options?.headers).has('Authorization'))throw new Error('Image logo read forwarded credentials or followed redirects');
         const object=logoObjects.get(url.href.slice(prefix.length));return object?new Response(object.bytes,{headers:{'Content-Type':object.mime}}):new Response(null,{status:404});
       }
       throw new Error('Unexpected QR external request');

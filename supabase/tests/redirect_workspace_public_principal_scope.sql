@@ -1,0 +1,50 @@
+BEGIN;
+-- These fences are lifted only inside this rolled-back isolated fixture.
+ALTER TABLE public.redirects DROP CONSTRAINT redirects_pending_tenant_fence;
+ALTER TABLE public.redirect_api_tokens DROP CONSTRAINT redirect_api_tokens_pending_tenant_fence;
+ALTER TABLE public.redirect_workspace_members DROP CONSTRAINT redirect_workspace_members_pending_tenant_fence;
+DO $$ DECLARE fence text; BEGIN
+ SELECT conname INTO fence FROM pg_constraint WHERE conrelid='public.redirect_workspaces'::regclass AND contype='c' AND pg_get_constraintdef(oid) LIKE '%status%provisioning%is_legacy%';
+ IF fence IS NULL THEN RAISE EXCEPTION 'Missing workspace activation fixture fence';END IF;
+ EXECUTE format('ALTER TABLE public.redirect_workspaces DROP CONSTRAINT %I',fence);
+END $$;
+SET LOCAL ROLE service_role;
+DO $$
+DECLARE legacy uuid:='58aa4340-8f21-4b7f-9a10-90be2da89c01';actor uuid:=gen_random_uuid();human uuid:=gen_random_uuid();other_owner uuid:=gen_random_uuid();other uuid:=gen_random_uuid();link uuid;foreign_link uuid;member uuid;foreign_member uuid;key uuid;foreign_key uuid;r jsonb;
+BEGIN
+ INSERT INTO auth.users(id) VALUES(actor),(human),(other_owner);
+ INSERT INTO public.user_roles VALUES(actor,'admin');
+ INSERT INTO public.redirect_workspaces(id,name,slug) VALUES(other,'Public principal fixture','public-principal-fixture');
+ INSERT INTO redirect_internal.workspace_owners(workspace_id,user_id) VALUES(other,other_owner);
+ BEGIN PERFORM redirect_internal.principal_link_scope(other,NULL,'links:read',other_owner);RAISE EXCEPTION 'Provisioning workspace was authorized';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ UPDATE public.redirect_workspaces SET status='active' WHERE id=other;
+ INSERT INTO public.redirects(type,slug,target,created_by) VALUES('SHORT','principal-local-fixture','https://example.org/local',actor) RETURNING id INTO link;
+ INSERT INTO public.redirects(workspace_id,type,slug,target,created_by) VALUES(other,'SHORT','principal-foreign-fixture','https://example.org/foreign',other_owner) RETURNING id INTO foreign_link;
+ INSERT INTO public.redirect_workspace_members(user_id,kind,role,label) VALUES(human,'user','viewer','Public local viewer') RETURNING id INTO member;
+ INSERT INTO public.redirect_workspace_members(workspace_id,user_id,kind,role,label) VALUES(other,human,'user','member','Public foreign member') RETURNING id INTO foreign_member;
+ INSERT INTO public.redirect_api_tokens(name,token_hash,prefix,scopes,redirect_ids,created_by,expires_at) VALUES('Public local key',repeat('1',64),'fixture',ARRAY['links:read'],ARRAY[link],actor,now()+interval '1 day') RETURNING id INTO key;
+ INSERT INTO public.redirect_api_tokens(workspace_id,name,token_hash,prefix,scopes,redirect_ids,created_by,expires_at) VALUES(other,'Public foreign key',repeat('2',64),'fixture',ARRAY['links:read'],ARRAY[foreign_link],other_owner,now()+interval '1 day') RETURNING id INTO foreign_key;
+ IF redirect_internal.principal_link_scope(legacy,key,'links:read') IS DISTINCT FROM ARRAY[link] OR redirect_internal.principal_link_scope(other,foreign_key,'links:read') IS DISTINCT FROM ARRAY[foreign_link] THEN RAISE EXCEPTION 'Workspace credential scope changed';END IF;
+ IF redirect_internal.principal_link_scope(legacy,member,'links:write') IS DISTINCT FROM ARRAY[]::uuid[] THEN RAISE EXCEPTION 'Viewer acquired write access';END IF;
+ BEGIN PERFORM redirect_internal.principal_link_scope(legacy,foreign_key,'links:read');RAISE EXCEPTION 'Foreign key acquired local scope';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ BEGIN PERFORM redirect_internal.principal_link_scope(other,key,'links:read');RAISE EXCEPTION 'Local key acquired foreign scope';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ BEGIN PERFORM redirect_internal.principal_link_scope(other,NULL,'links:read',actor);RAISE EXCEPTION 'Global administrator acquired foreign ownership';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ BEGIN PERFORM redirect_internal.principal_link_scope(legacy,NULL,'links:read');RAISE EXCEPTION 'Public null principal became internal owner';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ IF redirect_internal.principal_link_scope(other,NULL,'links:read',other_owner) IS NOT NULL THEN RAISE EXCEPTION 'Explicit owner lost management authority';END IF;
+ PERFORM public.redirect_qr_image_resource('create',actor,p_values=>jsonb_build_object('linkId',link),p_hash=>repeat('3',64));
+ PERFORM public.redirect_qr_image_resource('create',p_principal=>key,p_values=>jsonb_build_object('linkId',link),p_hash=>repeat('4',64));
+ PERFORM public.redirect_qr_image_resource('create',human,member,p_values=>jsonb_build_object('linkId',link),p_hash=>repeat('5',64));
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',other,'x-qg-redirect-session-actor',other_owner)::text,true);
+ IF public.redirect_public_qr_image(repeat('3',64)) IS NULL OR public.redirect_public_qr_image(repeat('4',64)) IS NULL OR public.redirect_public_qr_image(repeat('5',64)) IS NULL THEN RAISE EXCEPTION 'Visitor headers overrode public creator workspace';END IF;
+ BEGIN PERFORM public.redirect_management_scope(key,'links:read');RAISE EXCEPTION 'Private API activated foreign workspace';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ UPDATE public.redirect_api_tokens SET revoked_at=now() WHERE id=key;
+ IF public.redirect_public_qr_image(repeat('4',64)) IS NOT NULL THEN RAISE EXCEPTION 'Revoked public creator key retained image';END IF;
+ UPDATE public.redirect_workspace_members SET active=false WHERE id=member;
+ IF public.redirect_public_qr_image(repeat('5',64)) IS NOT NULL THEN RAISE EXCEPTION 'Inactive public creator member retained image';END IF;
+ DELETE FROM public.user_roles WHERE user_id=actor;
+ IF public.redirect_public_qr_image(repeat('3',64)) IS NOT NULL THEN RAISE EXCEPTION 'Former public creator owner retained image';END IF;
+ PERFORM set_config('request.headers','{}',true);
+ IF public.redirect_management_scope(NULL,'links:read') IS NOT NULL THEN RAISE EXCEPTION 'Legacy internal compatibility changed';END IF;
+ IF has_function_privilege('anon','redirect_internal.principal_link_scope(uuid,uuid,text,uuid,boolean)','execute') OR has_function_privilege('authenticated','redirect_internal.principal_link_scope(uuid,uuid,text,uuid,boolean)','execute') THEN RAISE EXCEPTION 'Explicit principal helper exposed';END IF;
+END $$;
+ROLLBACK;

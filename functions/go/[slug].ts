@@ -6,6 +6,7 @@ import {
   forwardNativeHeaders,
 } from '../../supabase/functions/_shared/redirect-native-resolution';
 import { signRedirectRelay } from '../../supabase/functions/_shared/redirect-relay';
+import { forwardVisitorGeo } from '../../supabase/functions/_shared/redirect-visitor-geo';
 import type { Env } from '../_lib/sitemap';
 
 /** Keep the public branded URL while the existing resolver owns rules and visits. */
@@ -57,10 +58,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, params, env }) =>
       ? request.cf.country
       : request.headers.get('cf-ipcountry');
   if (country) forwarded.set('x-qg-visitor-country', country);
-  for (const field of ['city', 'region', 'continent'] as const) {
-    const value = request.cf?.[field];
-    if (typeof value === 'string') forwarded.set('x-qg-visitor-' + field, value);
-  }
+  forwardVisitorGeo(forwarded, request.cf);
   forwarded.set('x-qg-visitor-domain', new URL(request.url).hostname);
   const relay = env.REDIRECT_RELAY_SECRET
     ? await signRedirectRelay(

@@ -157,7 +157,7 @@ describe('hosted QR rendering HTTP', () => {
     expect(await response.text()).toContain('data:image/png;base64,' + logo.toString('base64'));
     expect(fetcher).toHaveBeenCalledWith(
       env.SUPABASE_URL + '/storage/v1/object/public/redirect-brand-assets/' + key,
-      expect.objectContaining({ redirect: 'error', credentials: 'omit', cache: 'no-store' }),
+      expect.objectContaining({ redirect: 'manual', credentials: 'omit', cache: 'no-store' }),
     );
     for (const change of [
       { logo: 'https://evil.example/x.png' },
@@ -173,6 +173,27 @@ describe('hosted QR rendering HTTP', () => {
       expect(invalid.status).toBeGreaterThanOrEqual(400);
     }
     expect(fetcher).toHaveBeenCalledTimes(2);
+    for (const status of [301, 302, 307, 308]) {
+      const redirected = vi.fn<typeof fetch>(
+        async () =>
+          new Response(null, {
+            status,
+            headers: { Location: 'https://other.example/logo.png' },
+          }),
+      );
+      const rejected = await qrImageResponse(
+        new Request(imageUrl({ logo: key, logoHash: hash })),
+        env,
+        initialize,
+        redirected,
+      );
+      expect(rejected.status).toBe(422);
+      expect(redirected).toHaveBeenCalledOnce();
+      expect(redirected).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ redirect: 'manual' }),
+      );
+    }
   });
   it('rejects unknown/duplicate parameters, credentials, unsafe schemes, invalid colors and excess bodies before Wasm initialization', async () => {
     for (const url of [
