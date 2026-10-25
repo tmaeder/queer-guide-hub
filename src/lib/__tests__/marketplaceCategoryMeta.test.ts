@@ -108,7 +108,7 @@ describe('marketplace toy category meta', () => {
 
   it('groupIcon prefers toy mark, then override, then department mark', () => {
     expect(groupIcon('dildos', 'intimacy')).toBe('toy-dildo');
-    expect(groupIcon('film', 'books_art')).toBe('theater');
+    expect(groupIcon('film', 'books_art')).toBe('film');
     expect(groupIcon('tops', 'apparel')).toBe('apparel');
     expect(groupIcon('brand_new', null)).toBe('shop');
   });
@@ -130,6 +130,20 @@ describe('marketplace toy category meta', () => {
       expect(TRANSIT_ICON_PATHS[icon]).toBeDefined();
     }
     expect(fineIcon('rope', 'bondage', 'bdsm_fetish')).toBe('rope-play');
-    expect(fineIcon('jeans', 'bottoms', 'apparel')).toBe('apparel');
+    expect(fineIcon('jeans', 'bottoms', 'apparel')).toBe('trousers');
+  });
+
+  it('gives every group in a department its own mark', () => {
+    // The tiles on /marketplace/categories are sectioned by department; two
+    // tiles in one section sharing a glyph is the "icon does not match its
+    // title" defect (every Apparel tile used to be the same T-shirt).
+    for (const [d, groups] of Object.entries(DEPARTMENT_GROUPS)) {
+      const seen = new Map<string, string>();
+      for (const g of groups) {
+        const icon = groupIcon(g, d);
+        expect(seen.get(icon), `${d}: ${g} and ${seen.get(icon)} both use ${icon}`).toBeUndefined();
+        seen.set(icon, g);
+      }
+    }
   });
 });
