@@ -46,7 +46,7 @@ Deno.test('fallback identity reads real document metadata rather than script tex
 })
 Deno.test('recovery fallback refuses private redirects and never follows them automatically',async()=>{
  let calls=0
- const request:typeof fetch=(_url,options)=>{calls++;assertEquals(options?.redirect,'manual');return Promise.resolve(new Response(null,{status:302,headers:{location:'http://127.0.0.1/private'}}))}
+ const request:typeof fetch=(_url,options)=>{calls++;assertEquals(options&&'redirect'in options?options.redirect:undefined,'manual');return Promise.resolve(new Response(null,{status:302,headers:{location:'http://127.0.0.1/private'}}))}
  assertEquals(await fetchRecoveryHtml('https://example.org/story',request),null);assertEquals(calls,1)
  assertEquals(await fetchRecoveryHtml('http://127.0.0.1/private',request),null);assertEquals(calls,1)
 })
