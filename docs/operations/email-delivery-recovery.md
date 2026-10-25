@@ -10,7 +10,7 @@ Terminal messages preserve their opaque identity/provider receipt after body ret
 
 ## Event queue recovery
 
-`queer-guide-email-events` retries ingestion ten times before routing to `queer-guide-email-events-dlq`. An unconsumed DLQ defaults to four days of retention, so inspect promptly. Read depth and oldest age in Cloudflare; database unmatched-event counts do not establish queue depth. [Cloudflare DLQ documentation](https://developers.cloudflare.com/queues/configuration/dead-letter-queues/).
+`queer-guide-email-events` retries ingestion ten times before routing to `queer-guide-email-events-dlq`. An unconsumed DLQ defaults to four days of retention, so inspect promptly. Read depth and oldest age in Admin → Email → Operations or Cloudflare; database unmatched-event counts do not establish queue depth. Operations uses authenticated native queue metrics. Counts are best-effort snapshots; unavailable is not zero, and a positive backlog without a timestamp has unknown age. [Cloudflare DLQ documentation](https://developers.cloudflare.com/queues/configuration/dead-letter-queues/).
 
 1. Restore receiver availability and authentication first. A 401/503 does not justify weakening verification.
 2. Preserve the native event identity, provider ID, recipient and occurrence time. Keep any forensic copy in an access-controlled incident location, never Git or public logs.
@@ -28,3 +28,19 @@ A disposable PostgreSQL 17 dump/restore rehearsal on 2026-10-21 retained an unce
 ## Capacity evidence
 
 The isolated PostgreSQL fixture collects 10,000 contacts in eleven batches, enforces at most 1,000 per batch even when callers request more, verifies replay cannot duplicate membership, and creates no delivery work. Development-machine collection took approximately 0.69 seconds; this is not a production throughput promise. Health reports observed 30-day states and latency percentiles; missing evidence remains null.
+
+## Worker runtime boundary
+
+The 2026-10-25 production investigation preserved two native dead-letter envelopes and verified their authenticated receiver ingestion. The queue consumer used `redirect: "error"`; workerd rejects that mode before sending a request. Use `redirect: "manual"`, then retry every non-2xx response. Never follow a redirect carrying the receiver secret. Node fetch mocks accept more redirect modes, so a passing mocked request alone does not establish production compatibility. See [Cloudflare Request runtime documentation](https://developers.cloudflare.com/workers/runtime-apis/request/).
+
+Native queue bodies may be decoded JSON or JSON text. Normalize once, retain the bounded native envelope, and leave malformed messages unacknowledged for investigation. Diagnostics contain only a status code or a generic transport failure, never payloads, recipient addresses or secrets.
+
+The gateway’s protected `GET /queues/metrics` reads the existing `EVENT_QUEUE` and `EVENT_DLQ` bindings. The admin function enriches its existing health response; if either queue fails, that reading remains unavailable independently. This route cannot send or recover mail. Recovery still requires the deliberate consumer procedure above and removal of the temporary consumer afterward.
+
+A direct local workerd probe (bundled runtime compatibility 2026-10-19) reproduced the pre-network redirect error; the same unauthenticated GET with manual redirects reached the existing gateway and returned its expected 401. This is runtime evidence in addition to Node mocks, not a substitute for the release’s live queue drain. Production compatibility settings are unchanged.
+
+## Controlled recipient evidence
+
+[Email Sending subscriptions](https://developers.cloudflare.com/email-service/reference/event-subscriptions/) exclude Email Routing forwards, replies, Worker routing events and deliveries to verified routing destinations. An Auth-verified application address does not itself establish Cloudflare destination verification. Record the evidence actually observed: a provider-accepted owner test, a canonical Sent copy and no-resend checks do not establish native event correlation or inbox placement. Original native DLQ ingestion is a separate recovery proof. Never fabricate a delivered event or use unrelated contacts to force this test.
+
+The outbox’s oldest-age measurement starts at availability time. A zero value can include mail scheduled for later; Operations labels it as no overdue message, without claiming the outbox is empty. Native queue backlog counts are separate observations.

@@ -21,7 +21,7 @@ Extend the existing Email admin workspace, paper/ink visual system, shared contr
 
 - Marketing/newsletter dispatch cannot be completed while Cloudflare restricts Email Service to transactional mail. Keep API, SQL and transport restrictions; no override or fallback.
 - Predictions without qualifying first-party data, sensitive profiling, inferred gender/sexuality/health and fabricated conversion outcomes are excluded rather than simulated as production capabilities.
-- Real mail requires an expressly authorized recipient. A request for a test inbox is pending; implementation continues independently.
+- Production E2E is authorized as of 2026-10-25. Controlled tests use the signed-in owner’s own mailbox; directory contacts are not test recipients.
 
 ## Verification record
 
@@ -52,7 +52,7 @@ Personal mailbox sends previously marked provider acceptance as delivered and sa
 
 PR #4697 deployed as 62928965aa08839531635945c896d76b35380e23 on 2026-10-23. All twelve required checks and 18,023 tests across 1,883 files passed. Backend, Pages and migration guard succeeded. Migration 99991792788296, source/RPC permissions, receipt/copy triggers, deployed handler and service-role read-only lookup were verified; the live frontend matched the merge commit. No real inbox test was sent.
 
-## Mailbox receipt visibility continuation (local verification; release pending)
+## Mailbox receipt visibility continuation (deployed PR #4708)
 
 The existing message header now reads canonical outgoing delivery status through an authenticated GET mode on the mailbox function. Only an owner/copy-bound private proof can produce a status. Legacy, foreign and absent proof reveal no delivery identity; reads never prepare, claim, finish or dispatch email, and private table permissions are unchanged. The reader rechecks status after copy updates/reconnects and polls pending, proven sends every thirty seconds while foregrounded. Query keys include the owner and copy; identity changes abort prior reads and discard their display. Failed refreshes retain a clearly labeled last verified receipt with a read-only recovery action. Inbound messages and drafts have no outgoing receipt controls. All eleven supported languages include the new labels.
 
@@ -62,3 +62,14 @@ Local evidence: ten handler tests and nineteen focused client tests passed, type
 The receipt continuation also completes its arrival path: the Mail lens reads owner-scoped received and Sent metadata, excluding drafts, trash, archive and deleted copies. Cursor pagination preserves Postgres microseconds and UUID ordering. A successful compose/reply opens the canonical saved copy before the rail refreshes; valid owner mail deep links resolve outside the loaded page. Outgoing replies address the original recipient. Mail search stays within loaded mail metadata, with older pages reachable even when the current page has no match; the mixed incoming feed and unread RPC remain unchanged. The additive owner/date/id index supports this lookup without granting new access.
 
 Final local evidence for this path: 34 focused client tests across ten files passed, including real compose/reader routing, outgoing reply recipients, account switching and pagination. All nineteen SQL suites and eight concurrency scenarios passed in disposable Postgres 17, including RLS and microsecond tie boundaries. Type checking reports 681 pre-existing errors and no new errors against the unchanged 782 baseline. Changed-file lint and all eleven public/source locale copies pass. The existing receipt states and the actual Sent rail/reader were reviewed at desktop and mobile sizes; synthetic browser compose opened its saved copy and read-only retry recovered the mailbox. Review fixtures perform no real delivery. Migration 99991792793842 remains unapplied until the protected release.
+
+
+PR #4708 deployed as 3489ac55d3bc831399c78d8f642b4757a38eb81e. All twelve required checks passed, including 18,058 application tests; backend, Pages and migration guard succeeded. Migration 99991792793842 is applied. A scoped mailbox-function deployment and fresh source download verified the deployed handler after an initial CI/source discrepancy. The earlier local-only statements above describe historical checkpoints, not the current deployment state.
+
+## Production operations continuation (2026-10-25, pre-release checkpoint)
+
+The production audit found two native delivery events in the dead-letter queue. Original envelopes were preserved privately and replayed successfully into the authenticated receiver, with native event identities intact. The Worker had used `redirect: "error"`, which workerd rejects before network I/O. The repair uses manual redirects, retries every non-success response without following it, and normalizes decoded or JSON-text envelopes without double encoding. Status-only diagnostics disclose no recipient or event payload. A live drain remains a release verification step; replay alone does not establish that the queue consumer works.
+
+Operations now reads native queue metrics through the existing authenticated gateway and admin-only backend. Queue reads cannot publish, consume, acknowledge or purge messages. Independent unavailable readings remain null; measured zero and unknown oldest age have distinct UI labels. No new migration, permission grant, delivery identity or promotional dispatch is introduced.
+
+The final protected release and production verification record is maintained on [PR #4856](https://github.com/tmaeder/queer-guide-hub/pull/4856), including exact deployed versions, native-event recovery and the controlled owner-mailbox test. This section records the pre-release checkpoint; it does not infer later delivery outcomes.
