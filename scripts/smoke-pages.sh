@@ -299,22 +299,26 @@ expect_asset_type() {
 
 echo "== SPA routes serve the app, not the error page =="
 # /help is the crisis hub — the one page where a 404 is least acceptable.
-# Guides moved to their own hub. The former venue-specific route is a
-# permanent redirect, declared by the shared route registry.
-for route in / /help /venues /events /map /guides; do
+for route in / /help /venues /events /map; do
 	expect_status "$route" 200
 done
 
-# Check both the redirect contract and the destination page: accepting a 301
-# alone would also accept a redirect to the wrong page or a dead destination.
-expect_status /venues/guides 301
-venue_guides_location=$(curl -sS "${CURL_TIMEOUT[@]}" -I "$SITE/venues/guides" | tr -d '\r' | awk 'tolower($1) == "location:" {print $2}')
-if [ "$venue_guides_location" = "/guides?entity=venue" ]; then
-	echo "  ✓ /venues/guides redirects to /guides?entity=venue"; pass=$((pass+1))
-else
-	echo "  ✗ /venues/guides redirects to $venue_guides_location (expected /guides?entity=venue)"; fail=$((fail+1))
-fi
-expect_status '/guides?entity=venue' 200
+# Legacy aliases redirect at the edge so clients without JavaScript can follow.
+# Check the exact target as well as the destination's status; accepting any 3xx
+# would hide loops or a redirect to the wrong page.
+expect_guide_redirect() {
+	local response code target
+	response=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{http_code} %{redirect_url}' "$SITE/venues/guides")
+	code=${response%% *}
+	target=${response#* }
+	if [ "$code" = 301 ] && [ "$target" = "$SITE/guides?entity=venue" ]; then
+		echo "  ✓ /venues/guides -> 301 /guides?entity=venue"; pass=$((pass+1))
+	else
+		echo "  ✗ /venues/guides -> $response (expected 301 $SITE/guides?entity=venue)"; fail=$((fail+1))
+	fi
+	expect_status '/guides?entity=venue' 200
+}
+expect_guide_redirect
 
 # A deep route can be served a STALE cached index.html — one that references
 # chunk hashes from an older deploy. Those chunk URLs no longer exist, so each
