@@ -1,4 +1,5 @@
-import { VenueCategoryMark, venueCategoryIcon } from './VenueCategoryMark';
+import { VenueCategoryMark } from './VenueCategoryMark';
+import { venueCategoryIcon } from './venueCategoryIcon';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';

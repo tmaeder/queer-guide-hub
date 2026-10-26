@@ -1,63 +1,12 @@
-/* eslint-disable react-refresh/only-export-components -- the icon lookup is shared with the card plate */
 import { useTranslation } from 'react-i18next';
-import {
-  Calendar,
-  Music,
-  Flag,
-  Ship,
-  Users,
-  BookOpen,
-  Mic,
-  Laugh,
-  Presentation,
-  Film,
-  Sparkles,
-  Dumbbell,
-  Palette,
-  Image,
-  Drama,
-  HeartHandshake,
-  Megaphone,
-  Coffee,
-  Handshake,
-  Store,
-  LockKeyhole,
-  type LucideIcon,
-} from '@/components/icons';
-import { useEventTypeOptions, useEventTypeLabel, type EventType } from '@/lib/eventTypes';
+import { useEventTypeOptions, useEventTypeLabel } from '@/lib/eventTypes';
+import { Calendar } from '@/components/icons';
+import { EVENT_TYPE_ICONS } from './eventTypeIcon';
 
-const ICONS: Record<EventType, LucideIcon> = {
-  party: Music,
-  festival: Sparkles,
-  cruise: Ship,
-  pride: Flag,
-  meetup: Users,
-  workshop: BookOpen,
-  concert: Mic,
-  comedy: Laugh,
-  conference: Presentation,
-  film: Film,
-  drag: Sparkles,
-  sports: Dumbbell,
-  art: Palette,
-  exhibition: Image,
-  theater: Drama,
-  fundraiser: HeartHandshake,
-  protest: Megaphone,
-  social: Coffee,
-  community: Handshake,
-  fair: Store,
-  fetish: LockKeyhole,
-  other: Calendar,
-};
-
-/** The type's glyph — also drawn large on a photo-less card's plate. */
-export const eventTypeIcon = (type: string | null | undefined): LucideIcon =>
-  (type && ICONS[type as EventType]) || Calendar;
 
 export function EventTypeMark({ type }: { type: string }) {
   const label = useEventTypeLabel(type);
-  const Icon = ICONS[type] ?? Calendar;
+  const Icon = EVENT_TYPE_ICONS[type as keyof typeof EVENT_TYPE_ICONS] ?? Calendar;
   return (
     <span className="inline-flex items-center gap-1.5 text-13">
       <Icon size={16} aria-hidden="true" className="shrink-0" />

@@ -1,4 +1,5 @@
 import { StationPlate } from './StationPlate';
+import { iconSlug } from '@/components/icons';
 import * as React from 'react';
 import type { LucideIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
@@ -322,8 +323,8 @@ export const Image = ({
       style={heightPx != null ? { height: heightPx } : undefined}
     >
       {showIconTile ? (
-        FallbackIcon?.slug ? (
-          <StationPlate icon={FallbackIcon.slug} fallbackKey={fallbackKey} />
+        iconSlug(FallbackIcon) ? (
+          <StationPlate icon={iconSlug(FallbackIcon)} fallbackKey={fallbackKey} />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-muted-foreground">
             <FallbackIcon className="h-10 w-10" aria-hidden />
