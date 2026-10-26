@@ -319,6 +319,7 @@ export function displaySize(size: number): number {
   // Measured second pass: +4 still read as small next to the marketplace
   // department plates, so small sizes now scale by half (12→18, 16→24) and
   // mid sizes step +6 (20→26, 24→30). 28 and up are deliberate and untouched.
-  if (size <= 16) return Math.round(size * 1.5);
+  // Third pass (user: "still much too small"): nothing drawn under 20px.
+  if (size <= 16) return Math.max(20, Math.round(size * 1.5));
   return size < 28 ? size + 6 : size;
 }

@@ -61,7 +61,7 @@ export function iconFor(slug: TransitIconName, displayName: string): Icon {
   // the export so a test reads the same name the call site imports.
   const kebab = displayName.replace(/([a-z0-9])([A-Z])/g, '$1-$2').replace(/([A-Za-z])(\d)/g, '$1-$2').toLowerCase();
   const C = forwardRef<SVGSVGElement, IconProps>(function IconComponent(
-    { size, strokeWidth: _sw, absoluteStrokeWidth: _asw, hollow, fill, style, className, 'aria-label': ariaLabel, ...rest },
+    { size, strokeWidth: _sw, absoluteStrokeWidth: _asw, hollow, fill, color, style, className, 'aria-label': ariaLabel, ...rest },
     ref,
   ) {
     const fromClass = classSize(className);
@@ -73,8 +73,12 @@ export function iconFor(slug: TransitIconName, displayName: string): Icon {
         style?.fill === 'none' ||
         (TOGGLE_SLUGS.has(slug) && !hasFillClass(className) && (fill == null || fill === 'none')));
     const shown = displaySize(px);
+    // lucide's `color` tinted the stroke. Here it tints the outline (via
+    // currentColor) — passing it to TransitIcon would switch to the
+    // single-colour map-pin rendition and skip the size bump.
+    const tint = color ? { color } : null;
     const sized: CSSProperties | undefined =
-      fromClass === 'css' ? style : { ...style, width: shown, height: shown, flexShrink: 0 };
+      fromClass === 'css' ? { ...style, ...tint } : { ...style, ...tint, width: shown, height: shown, flexShrink: 0 };
     return (
       <TransitIcon
         ref={ref}

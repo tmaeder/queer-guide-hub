@@ -43,10 +43,9 @@ function prettify(slug: string): string {
 function chipLabel(text: string, count: number, active: boolean, icon?: TransitIconName) {
   return (
     <>
-      {/* Monochrome currentColor so the mark inverts with the chip on
-          hover/active; a track-coloured glyph on the ink fill would lose its
-          outline (the `bg-foreground` trap). */}
-      {icon && <TransitIcon name={icon} size={16} color="currentColor" className="shrink-0" />}
+      {/* Full-colour mark: its outline is currentColor, so it inverts with
+          the chip on hover/active while the track-colour fill stays. */}
+      {icon && <TransitIcon name={icon} size={20} className="shrink-0" />}
       {text}{' '}
       <span className={active ? 'text-background/70' : 'text-muted-foreground'}>
         {count.toLocaleString()}
