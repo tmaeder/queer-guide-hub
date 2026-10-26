@@ -97,6 +97,6 @@ describe('EventCard', () => {
         />
       </MemoryRouter>,
     );
-    expect(container.querySelector('[data-station-badge="pride"]')).not.toBeNull();
+    expect(container.querySelector('[data-station-badge="flag"]')).not.toBeNull();
   });
 });

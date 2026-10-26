@@ -2,10 +2,10 @@ import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '@/lib/currency';
 import { Card } from '@/components/ui/card';
-import { eventGlyph } from '@/lib/cardGlyphs';
+import { eventTypeIcon } from './eventTypeIcon';
 import { useEventTypeLabel } from '@/lib/eventTypes';
 import { StationBadge } from '@/components/ui/StationBadge';
-import { Calendar } from '@/components/icons';
+import { Calendar, iconSlug } from '@/components/icons';
 import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -137,7 +137,8 @@ export const EventCard = memo(function EventCard({
     : '';
 
   const eventTypeTag = event && isMeaningfulTag(event.event_type) ? event.event_type : null;
-  const glyph = eventGlyph(eventTypeTag);
+  const typeIcon = eventTypeIcon(eventTypeTag);
+  const glyph = iconSlug(typeIcon) ?? 'events';
   const eventTypeLabel = useEventTypeLabel(eventTypeTag);
 
   return (
@@ -156,8 +157,8 @@ export const EventCard = memo(function EventCard({
               aspect="card"
               imageRole="cover"
               fallbackEntityType="event"
+              fallbackIcon={typeIcon}
               fallbackKey={event.id}
-              fallbackGlyph={glyph}
             >
               {overlay && (
                 <div

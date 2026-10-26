@@ -99,6 +99,6 @@ describe('VenueCard', () => {
         />
       </MemoryRouter>,
     );
-    expect(container.querySelector('[data-station-badge="sauna"]')).not.toBeNull();
+    expect(container.querySelector('[data-station-badge="waves"]')).not.toBeNull();
   });
 });

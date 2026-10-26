@@ -1,8 +1,9 @@
+import { venueCategoryIcon } from './venueCategoryIcon';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { Image } from '@/components/ui/Image';
-import { MapPin, BadgeCheck } from '@/components/icons';
+import { MapPin, BadgeCheck, iconSlug } from '@/components/icons';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
@@ -15,7 +16,6 @@ import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { getVenueVisual } from '@/lib/venueVisual';
-import { venueGlyph } from '@/lib/cardGlyphs';
 import { useVenueCategoryLabel } from '@/lib/venueCategories';
 import { StationBadge } from '@/components/ui/StationBadge';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
@@ -87,7 +87,8 @@ const VenueCardFixture = () => (
 function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps) {
   const { t, i18n } = useTranslation();
   const visual = getVenueVisual(venue);
-  const glyph = venueGlyph(venue?.category);
+  const categoryIcon = venueCategoryIcon(venue?.category);
+  const glyph = iconSlug(categoryIcon) ?? 'pin';
   const categoryLabel = useVenueCategoryLabel(venue?.category ?? null);
   const openNow = venue ? isOpenNow(venue.hours) : null;
   const priceTier =
@@ -124,8 +125,8 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
               aspect="card"
               imageRole="cover"
               fallbackEntityType="venue"
+              fallbackIcon={categoryIcon}
               fallbackKey={venue.id}
-              fallbackGlyph={glyph}
             >
               {overlay && (
                 <div
