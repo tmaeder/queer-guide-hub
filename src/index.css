@@ -553,14 +553,14 @@
      the island within its stated 14-22px range can no longer desynchronise
      the two.
 
-     `--header-pinned-h` is the bar's own height in its PINNED state: 52px on
-     mobile, where it never collapses, and 60px from md, where it does.
+     `--header-pinned-h` is 80px in both layouts, leaving room for 64px
+     illustrated controls without overlapping the content below.
 
      (This comment said 56px, and the override at md said "the mobile row's
      56px", while the token and the markup both said 52. Header.tsx reads the
      token directly now rather than restating either number as a literal, so
      there is one source again.) */
-  --header-pinned-h: 52px;
+  --header-pinned-h: 80px;
   --header-pinned-bottom: calc(var(--island-inset) + var(--header-pinned-h));
 
   --sidebar-background: 60 33% 97%;
@@ -1621,7 +1621,7 @@ h2:not(.font-sans),
     --island-inset: 22px;
     /* The bar collapses to one ink line from md, so its pinned height is the
        compact state's 60px rather than the mobile row's 52px. */
-    --header-pinned-h: 60px;
+    --header-pinned-h: 80px;
   }
 
   .island {
@@ -2723,4 +2723,27 @@ label a:hover {
 }
 .redirect-tag-swatch[data-color='pink'] {
   background: var(--color-pink-500);
+}
+
+/* Illustrated icons need real layout space, not an enlarged drawing inside
+   a former 16px slot. These rules also cover portaled menus and dialogs. */
+:where(button, a, summary, [role='button'], [role='menuitem']):has(svg[data-site-icon]) {
+  min-width: 80px;
+  min-height: 80px;
+  height: auto;
+}
+:where(div, span):has(> svg[data-site-icon]) {
+  min-width: 64px;
+  min-height: 64px;
+}
+
+svg[data-site-icon] {
+  min-width: 64px;
+  min-height: 64px;
+  flex-shrink: 0;
+}
+/* Narrow screens scroll the dock instead of shrinking its symbols. */
+.island-dock:has([data-site-icon]) {
+  overflow-x: auto;
+  overflow-y: hidden;
 }

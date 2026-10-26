@@ -4,11 +4,8 @@ import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { cn } from '@/lib/utils';
 import {
   PLATE_CREST,
-  PLATE_DISC_R,
-  PLATE_GLYPH_SCALE,
   PLATE_H,
   PLATE_MID,
-  PLATE_STATION_X,
   PLATE_W,
   departmentGlyph,
   plateWindow,
@@ -93,27 +90,25 @@ export function DepartmentArt({
     crest: PLATE_CREST,
   });
 
-  const cx = index * PLATE_W + PLATE_STATION_X;
-  const g = PLATE_GLYPH_SCALE;
-
   return (
-    <svg
-      viewBox={plateWindow(index)}
-      className={cn('block h-auto w-full', className)}
-      aria-hidden="true"
-      focusable="false"
-    >
-      {/* Field. Recessed one rung against the card so the plate reads as a
+    <div className={cn('relative w-full min-h-24', className)}>
+      <svg
+        viewBox={plateWindow(index)}
+        className="block h-auto min-h-24 w-full"
+        aria-hidden="true"
+        focusable="false"
+      >
+        {/* Field. Recessed one rung against the card so the plate reads as a
           window rather than as more card. Both rungs invert with the theme. */}
-      <rect
-        x={index * PLATE_W}
-        y={0}
-        width={PLATE_W}
-        height={PLATE_H}
-        className={active ? 'fill-foreground' : 'fill-surface-container-low'}
-      />
+        <rect
+          x={index * PLATE_W}
+          y={0}
+          width={PLATE_W}
+          height={PLATE_H}
+          className={active ? 'fill-foreground' : 'fill-surface-container-low'}
+        />
 
-      {/* This tile's slice of the route, and ONLY it. `segments[i]` is
+        {/* This tile's slice of the route, and ONLY it. `segments[i]` is
           `crest[i] → station[i] → crest[i + 1]` by construction, and crests sit
           at `step * i` — so segment `i` spans exactly the window, no clipping
           arithmetic required. Consecutive segments share their crest
@@ -124,53 +119,29 @@ export function DepartmentArt({
 
           Yellow in BOTH treatments: a track colour is identity and never
           inverts with the surface. */}
-      <path
-        d={line.segments[index] ?? line.segments[0]}
-        fill="none"
-        strokeWidth={12}
-        strokeLinecap="round"
-        className="stroke-track-yellow"
-      />
-
-      {/* The station, drawn as an interchange disc with the department's mark
-          inside it. The line passes BEHIND, which is what ties the mark to the
-          route instead of leaving it floating on a coloured field.
-
-          THE DISC PAIR IS MEASURED, NOT REASONED. The first version used
-          `fill-card stroke-track-ring`, which is the pairing every other plate
-          in the product uses and which reads correctly — paper disc, ink ring.
-          In dark mode it renders NOTHING: `--card` and `--surface-container-low`
-          both resolve to rgb(35,35,31), so the disc fill equalled its own
-          field, and `--track-ring` is ink in BOTH modes by design (that is the
-          point of it) which put a rgb(17,17,17) ring on a rgb(35,35,31) field.
-          The glyph floated with no plate under it. Same family as the
-          `bg-foreground` trap: the class names say "paper disc, ink ring" in
-          both modes and a class-name assertion stays green.
-          `--background` / `--foreground` are the only pair guaranteed to
-          separate from the field in both modes, so the disc uses those. */}
-      <circle
-        cx={cx}
-        cy={PLATE_MID}
-        r={PLATE_DISC_R}
-        strokeWidth={5}
-        className={
-          active ? 'fill-foreground stroke-background' : 'fill-background stroke-foreground'
-        }
-      />
-      <g
-        transform={`translate(${cx - 50 * g} ${PLATE_MID - 50 * g}) scale(${g})`}
-        className={active ? 'text-background' : undefined}
+        <path
+          d={line.segments[index] ?? line.segments[0]}
+          fill="none"
+          strokeWidth={12}
+          strokeLinecap="round"
+          className="stroke-track-yellow"
+        />
+      </svg>
+      <span
+        className={cn(
+          'absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2',
+          active
+            ? 'border-background bg-foreground text-background'
+            : 'border-foreground bg-background',
+        )}
       >
-        {/* `ticks={false}`: the disc is this glyph's boundary, so its tick
-            margin is interior — ticks here read as marks ON the disc, not as
-            motion around the icon. */}
         <TransitIcon
           name={glyph ?? departmentGlyph(slug)}
-          size={100}
+          size={64}
           ticks={false}
           {...(active ? { color: 'currentColor' } : {})}
         />
-      </g>
-    </svg>
+      </span>
+    </div>
   );
 }

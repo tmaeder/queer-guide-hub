@@ -14,8 +14,7 @@ import type { TransitIconName } from './transitIconPaths';
 
 interface TransitIconProps extends Omit<SVGProps<SVGSVGElement>, 'name' | 'color'> {
   name: TransitIconName;
-  /** Rendered box in px. Stroke weight bumps one step below 32px, and motion
-   *  ticks drop out entirely below it (Icon System §5). */
+  /** Requested box in px; on-screen illustrations have a 64px minimum. */
   size?: number;
   /** Accessible label. Omitted = decorative (aria-hidden). */
   label?: string;
@@ -98,11 +97,12 @@ export function TransitIcon({
   color,
   ticks: showTicks = true,
   hollow = false,
+  style,
   ...rest
 }: TransitIconProps) {
   const def = ICON_DEFS[name];
   const mono = Boolean(color);
-  size = mono ? size : displaySize(size);
+  size = displaySize(size);
   // ONE viewBox, and the 8-unit bleed the spec describes is NOT needed.
   //
   // §3 reserves 0-12 and 88-100 for motion ticks — a margin INSIDE the
@@ -131,6 +131,15 @@ export function TransitIcon({
         height={size}
         className={className}
         {...rest}
+        data-site-icon=""
+        style={{
+          ...style,
+          width: size,
+          height: size,
+          minWidth: size,
+          minHeight: size,
+          flexShrink: 0,
+        }}
         {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
       >
         <path
@@ -160,6 +169,15 @@ export function TransitIcon({
       height={size}
       className={className}
       {...rest}
+      data-site-icon=""
+      style={{
+        ...style,
+        width: size,
+        height: size,
+        minWidth: size,
+        minHeight: size,
+        flexShrink: 0,
+      }}
       {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
     >
       {/* Fills first, back to front: a later shape paints over an earlier one,

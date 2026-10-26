@@ -42,26 +42,29 @@ export function StationPlate({
 }) {
   const d = lift(`${theme}:${fallbackKey}`);
   return (
-    <svg
-      viewBox="0 0 400 250"
-      preserveAspectRatio="xMidYMid slice"
-      className={className ?? 'block h-full w-full'}
-      aria-hidden="true"
-      focusable="false"
+    <div
+      className={`relative min-h-20 min-w-20 ${className ?? 'block h-full w-full'}`}
       data-fallback="station"
     >
-      <rect width="400" height="250" className="fill-surface-container-low" />
-      <path
-        d={`M -10 ${110 + d} C 90 ${100 + d} 140 ${145 - d} 200 125 C 260 ${105 + d} 310 ${150 - d} 410 ${140 - d}`}
-        fill="none"
-        strokeWidth={12}
-        strokeLinecap="round"
-        className="stroke-track-yellow"
-      />
-      <circle cx="200" cy="125" r="56" strokeWidth={5} className="fill-background stroke-foreground" />
-      <g transform="translate(170 95) scale(0.6)">
-        <TransitIcon name={icon ?? THEME_ICON[theme]} size={100} ticks={false} />
-      </g>
-    </svg>
+      <svg
+        viewBox="0 0 400 250"
+        preserveAspectRatio="xMidYMid slice"
+        className="block h-full w-full"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <rect width="400" height="250" className="fill-surface-container-low" />
+        <path
+          d={`M -10 ${110 + d} C 90 ${100 + d} 140 ${145 - d} 200 125 C 260 ${105 + d} 310 ${150 - d} 410 ${140 - d}`}
+          fill="none"
+          strokeWidth={12}
+          strokeLinecap="round"
+          className="stroke-track-yellow"
+        />
+      </svg>
+      <span className="absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-foreground bg-background">
+        <TransitIcon name={icon ?? THEME_ICON[theme]} size={64} ticks={false} />
+      </span>
+    </div>
   );
 }

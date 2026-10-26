@@ -1,3 +1,4 @@
+import { ChevronDown } from '@/components/icons';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
@@ -131,20 +132,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               className={cn(footerLink, 'flex w-fit cursor-pointer gap-2 text-background/75')}
             >
               {t('footer.siteInformation', 'Site information')}
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 16 16"
-                fill="none"
-                className="h-4 w-4 shrink-0 group-open:rotate-180"
-              >
-                <path
-                  d="m4 6 4 4 4-4"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <ChevronDown aria-hidden className="shrink-0 group-open:rotate-180" />
             </summary>
             <nav
               aria-label={t('footer.siteInformation', 'Site information')}
