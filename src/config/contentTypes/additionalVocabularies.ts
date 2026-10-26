@@ -121,7 +121,10 @@ export const additionalVocabularies: Record<string, ContentTypeConfig> = {
       label: 'Kind',
       type: 'select',
       group: 'basic',
-      options: ['amenity', 'accessibility', 'queer'].map((value) => ({ value, label: value })),
+      options: ['amenity', 'accessibility', 'queer', 'venue_type'].map((value) => ({
+        value,
+        label: value,
+      })),
     },
     {
       name: 'category_scope',
