@@ -5,6 +5,8 @@ export interface PersonalizedCityRow {
   name: string;
   slug: string | null;
   image_url: string | null;
+  is_capital?: boolean | null;
+  is_regional_capital?: boolean | null;
   population: number | null;
   editorial_hook: string | null;
   best_time_to_visit: string | null;
@@ -18,7 +20,7 @@ export async function fetchPersonalizedCitiesByIds(
   const { data, error } = await supabase
     .from('cities')
     .select(
-      'id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id(name, equality_score)',
+      'id, name, slug, image_url, is_capital, is_regional_capital, population, editorial_hook, best_time_to_visit, countries:country_id(name, equality_score)',
     )
     .is('duplicate_of_id', null)
     .in('id', cityIds);
@@ -66,7 +68,7 @@ export async function fetchTrendingCities(
   const { data: whitelisted, error: whitelistError } = await supabase
     .from('cities')
     .select(
-      'id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id(name, equality_score)',
+      'id, name, slug, image_url, is_capital, is_regional_capital, population, editorial_hook, best_time_to_visit, countries:country_id(name, equality_score)',
     )
     .in('name', FEATURED_CITY_WHITELIST)
     .is('duplicate_of_id', null)
@@ -92,7 +94,7 @@ export async function fetchTrendingCities(
   const { data: filtered, error: filteredError } = await supabase
     .from('cities')
     .select(
-      'id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id!inner(name, equality_score)',
+      'id, name, slug, image_url, is_capital, is_regional_capital, population, editorial_hook, best_time_to_visit, countries:country_id!inner(name, equality_score)',
     )
     .is('duplicate_of_id', null)
     .not('slug', 'like', 'tmp-%')

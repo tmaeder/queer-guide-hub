@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TRANSIT_ICON_PATHS } from '@/components/transit/transitIconPaths';
 import {
+  cityGlyph,
   HOTEL_GLYPH_MAP,
   NEWS_GLYPH_MAP,
   ORG_ROLE_GLYPH_LIST,
@@ -70,5 +71,13 @@ describe('card glyphs', () => {
     expect(orgGlyph(['venue', 'publisher'])).toBe('news');
     expect(orgGlyph([])).toBe('building');
     expect(TRANSIT_ICON_PATHS[orgGlyph(null)]).toBeTruthy();
+  });
+
+  it('marks a city by what kind of city it is, national over regional', () => {
+    expect(cityGlyph({ is_capital: true, is_regional_capital: true })).toBe('crown');
+    expect(cityGlyph({ is_regional_capital: true })).toBe('landmark');
+    expect(cityGlyph({})).toBe('building');
+    expect(cityGlyph(null)).toBe('building');
+    for (const g of ['crown', 'landmark', 'building']) expect(TRANSIT_ICON_PATHS).toHaveProperty(g);
   });
 });

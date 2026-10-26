@@ -147,3 +147,16 @@ export function orgGlyph(roles: readonly string[] | null | undefined): TransitIc
 }
 
 export const ORG_ROLE_GLYPH_LIST = ORG_ROLE_GLYPHS;
+
+/**
+ * A city's mark says what KIND of city it is, which is the one thing the
+ * picture above it cannot: a capital and a market town draw the same plate.
+ * National outranks regional, mirroring the Status line on the city page.
+ */
+export function cityGlyph(
+  city: { is_capital?: boolean | null; is_regional_capital?: boolean | null } | null | undefined,
+): TransitIconName {
+  if (city?.is_capital) return 'crown';
+  if (city?.is_regional_capital) return 'landmark';
+  return 'building';
+}
