@@ -6,8 +6,17 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useEntityTripStatus', () => ({ useEntityTripStatus: () => ({ data: null }) }));
-vi.mock('@/hooks/useVisitedPlaceLookup', () => ({ useVisitedPlaceLookup: () => ({ has: () => false, mark: vi.fn() }) }));
-vi.mock('@/hooks/useActiveTrip', () => ({ useActiveTrip: () => ({ trip: null, addToTrip: vi.fn(), removeFromTrip: vi.fn(), isInTrip: () => false }) }));
+vi.mock('@/hooks/useVisitedPlaceLookup', () => ({
+  useVisitedPlaceLookup: () => ({ has: () => false, mark: vi.fn() }),
+}));
+vi.mock('@/hooks/useActiveTrip', () => ({
+  useActiveTrip: () => ({
+    trip: null,
+    addToTrip: vi.fn(),
+    removeFromTrip: vi.fn(),
+    isInTrip: () => false,
+  }),
+}));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 vi.mock('@/components/trips/QuietAddToTripButton', () => ({ QuietAddToTripButton: () => null }));
 
@@ -26,18 +35,28 @@ const EVENT = {
 
 describe('EventCard', () => {
   it('renders loading state', () => {
-    const { container } = render(<MemoryRouter><EventCard loading /></MemoryRouter>);
+    const { container } = render(
+      <MemoryRouter>
+        <EventCard loading />
+      </MemoryRouter>,
+    );
     expect(container).toBeTruthy();
   });
   it('renders event', () => {
     const { container } = render(
-      <MemoryRouter><EventCard event={EVENT} /></MemoryRouter>,
+      <MemoryRouter>
+        <EventCard event={EVENT} />
+      </MemoryRouter>,
     );
     expect(container).toBeTruthy();
   });
 
   it('exposes exactly one link, pointing at the event detail page', () => {
-    render(<MemoryRouter><EventCard event={EVENT} /></MemoryRouter>);
+    render(
+      <MemoryRouter>
+        <EventCard event={EVENT} />
+      </MemoryRouter>,
+    );
     const links = screen.getAllByRole('link');
     expect(links).toHaveLength(1);
     expect(links[0]).toHaveAttribute('href', '/events/pride');
@@ -46,7 +65,38 @@ describe('EventCard', () => {
   });
 
   it('nests no interactive element inside the card link', () => {
-    const { container } = render(<MemoryRouter><EventCard event={EVENT} /></MemoryRouter>);
+    const { container } = render(
+      <MemoryRouter>
+        <EventCard event={EVENT} />
+      </MemoryRouter>,
+    );
     expectNoNestedInteractive(container);
+  });
+
+  it('draws the event-type mark in the plate when there is no photo', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <EventCard event={{ ...(EVENT as object), event_type: 'pride' } as never} />
+      </MemoryRouter>,
+    );
+    expect(container.querySelector('[data-fallback="station"]')).not.toBeNull();
+    expect(container.querySelector('[data-station-badge]')).toBeNull();
+  });
+
+  it('puts the event-type mark on a station badge when there is a photo', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <EventCard
+          event={
+            {
+              ...(EVENT as object),
+              event_type: 'pride',
+              image_url: 'https://example.com/a.jpg',
+            } as never
+          }
+        />
+      </MemoryRouter>,
+    );
+    expect(container.querySelector('[data-station-badge="pride"]')).not.toBeNull();
   });
 });

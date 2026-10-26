@@ -1,4 +1,3 @@
-import { VenueCategoryMark } from './VenueCategoryMark';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
@@ -16,6 +15,9 @@ import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { getVenueVisual } from '@/lib/venueVisual';
+import { venueGlyph } from '@/lib/cardGlyphs';
+import { useVenueCategoryLabel } from '@/lib/venueCategories';
+import { StationBadge } from '@/components/ui/StationBadge';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
@@ -85,6 +87,8 @@ const VenueCardFixture = () => (
 function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps) {
   const { t, i18n } = useTranslation();
   const visual = getVenueVisual(venue);
+  const glyph = venueGlyph(venue?.category);
+  const categoryLabel = useVenueCategoryLabel(venue?.category ?? null);
   const openNow = venue ? isOpenNow(venue.hours) : null;
   const priceTier =
     typeof venue?.price_range === 'number' && venue.price_range > 0
@@ -121,6 +125,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
               imageRole="cover"
               fallbackEntityType="venue"
               fallbackKey={venue.id}
+              fallbackGlyph={glyph}
             >
               {overlay && (
                 <div
@@ -161,7 +166,17 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
               />
             </Image>
 
-            <div className="p-4">
+            <div
+              className={visual.src ? 'px-4 pb-4 group-has-[[data-fallback=station]]:pt-4' : 'p-4'}
+            >
+              {/* A card with a photo carries its mark on the seam; an image-less
+                  card already has it in the plate's station disc. */}
+              {visual.src && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
+              {venue.category && (
+                <p className="mb-1 text-2xs font-semibold uppercase tracking-wide text-muted-foreground truncate">
+                  {categoryLabel}
+                </p>
+              )}
               <div className="flex items-baseline gap-2 min-w-0">
                 <h3 className="text-title font-bold leading-tight truncate flex-1 min-w-0">
                   {venue.name}
@@ -190,7 +205,6 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                   </span>
                 )}
               </p>
-              <VenueCategoryMark category={venue.category} />
               {(() => {
                 const blurb = localizedField(
                   venue.description,

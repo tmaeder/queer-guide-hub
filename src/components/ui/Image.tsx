@@ -1,4 +1,5 @@
 import { StationPlate } from './StationPlate';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import * as React from 'react';
 import type { LucideIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
@@ -49,6 +50,12 @@ interface ImageProps {
   fallbackKey?: string;
   /** When set, a missing image renders an icon tile instead of a photo. */
   fallbackIcon?: LucideIcon;
+  /**
+   * Mark for the station disc of the image-less plate. Without it the plate
+   * shows the entity type's generic mark, so every bar, sauna and café would
+   * read the same.
+   */
+  fallbackGlyph?: TransitIconName;
 
   // ── Layout ──────────────────────────────────────────────────────────
   alt: string;
@@ -132,6 +139,7 @@ export const Image = ({
   fallbackEntityType = 'default',
   fallbackKey,
   fallbackIcon: FallbackIcon,
+  fallbackGlyph,
   alt,
   aspect = 'card',
   fit = 'cover',
@@ -326,7 +334,7 @@ export const Image = ({
           {FallbackIcon ? <FallbackIcon className="h-10 w-10" aria-hidden /> : null}
         </div>
       ) : showingFallback ? (
-        <StationPlate theme={fallbackEntityType} fallbackKey={fallbackKey} />
+        <StationPlate theme={fallbackEntityType} fallbackKey={fallbackKey} icon={fallbackGlyph} />
       ) : (
         photo
       )}
