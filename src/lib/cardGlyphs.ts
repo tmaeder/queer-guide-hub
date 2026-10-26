@@ -1,4 +1,7 @@
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
+import { iconSlug } from '@/components/icons';
+import { VENUE_CATEGORY_ICONS } from '@/components/venues/venueCategoryIcon';
+import { EVENT_TYPE_ICONS } from '@/components/events/eventTypeIcon';
 
 /**
  * The mark a hotel or personality card stands behind: drawn in the station
@@ -71,3 +74,52 @@ export function newsGlyph(category: string | null | undefined): TransitIconName 
 }
 
 export const NEWS_GLYPH_MAP = NEWS_GLYPHS;
+
+/**
+ * A guide's `category` is free text drawn from whichever family it covers —
+ * a venue category (`bar`, `sauna`), an event type (`pride`) or a shopping
+ * label — so it is resolved against those vocabularies first, then a few
+ * guide-only labels, then the format's own mark.
+ */
+const GUIDE_CATEGORY_GLYPHS: Record<string, TransitIconName> = {
+  shopping: 'shop',
+  products: 'shop',
+  services: 'briefcase',
+};
+/** Shopping lists all share one category, so their title names the department. */
+const SHOPPING_TITLE_GLYPHS: Array<[RegExp, TransitIconName]> = [
+  [/jewel|ring|earring|necklace/i, 'jewelry'],
+  [/underwear|brief|jock|boxer|bra\b/i, 'underwear'],
+  [/swim/i, 'swimwear'],
+  [/apparel|tee|shirt|sock|clothing|wear/i, 'apparel'],
+  [/book|art|print|zine|tarot/i, 'library'],
+  [/home|candle|decor|kitchen/i, 'homeware'],
+  [/groom|skin|care|beauty|fragrance/i, 'selfcare'],
+  [/toy|intima|kink|fetish/i, 'intimacy'],
+];
+
+const GUIDE_FORMAT_GLYPHS: Record<string, TransitIconName> = {
+  guide: 'library',
+  list: 'list',
+  quest: 'flag',
+};
+
+export function guideGlyph(
+  category: string | null | undefined,
+  format: string | null | undefined,
+  title?: string | null,
+): TransitIconName {
+  const c = (category ?? '').toLowerCase();
+  if ((c === 'shopping' || c === 'products') && title) {
+    for (const [re, glyph] of SHOPPING_TITLE_GLYPHS) if (re.test(title)) return glyph;
+  }
+  const fromVocab =
+    iconSlug(VENUE_CATEGORY_ICONS[c as keyof typeof VENUE_CATEGORY_ICONS]) ??
+    iconSlug(EVENT_TYPE_ICONS[c as keyof typeof EVENT_TYPE_ICONS]);
+  return (
+    fromVocab ??
+    GUIDE_CATEGORY_GLYPHS[c] ??
+    (format ? GUIDE_FORMAT_GLYPHS[format] : undefined) ??
+    'library'
+  );
+}

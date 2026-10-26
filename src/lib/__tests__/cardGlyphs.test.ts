@@ -3,6 +3,7 @@ import { TRANSIT_ICON_PATHS } from '@/components/transit/transitIconPaths';
 import {
   HOTEL_GLYPH_MAP,
   NEWS_GLYPH_MAP,
+  guideGlyph,
   hotelGlyph,
   newsGlyph,
   personGlyph,
@@ -39,5 +40,25 @@ describe('card glyphs', () => {
     }
     expect(newsGlyph('general')).toBe('news');
     expect(newsGlyph(null)).toBe('news');
+  });
+
+  it('resolves a guide category against the venue and event vocabularies, then its format', () => {
+    expect(guideGlyph('sauna', 'guide')).toBe('waves');
+    expect(guideGlyph('pride', 'guide')).toBe('flag');
+    expect(guideGlyph('shopping', 'list')).toBe('shop');
+    expect(guideGlyph('shopping', 'list', 'Jewelry shortlist')).toBe('jewelry');
+    expect(guideGlyph('shopping', 'list', 'Underwear shortlist')).toBe('underwear');
+    expect(guideGlyph('products', 'guide', 'Pride briefs: 5 queer-owned underwear picks')).toBe(
+      'underwear',
+    );
+    expect(guideGlyph('shopping', 'list', 'Books & art shortlist')).toBe('library');
+    expect(guideGlyph('shopping', 'list', 'Apparel shortlist')).toBe('apparel');
+    expect(guideGlyph('sauna', 'guide', 'Jewelry')).toBe('waves');
+    expect(guideGlyph('Lost Histories', 'quest')).toBe('flag');
+    expect(guideGlyph(null, 'list')).toBe('list');
+    expect(guideGlyph(null, null)).toBe('library');
+    for (const g of [guideGlyph('bar', 'guide'), guideGlyph('services', 'guide')]) {
+      expect(TRANSIT_ICON_PATHS[g]).toBeTruthy();
+    }
   });
 });
