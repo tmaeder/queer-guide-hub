@@ -75,6 +75,7 @@ create index email_comment_sources_group on public.email_comment_sources(group_i
 alter table public.email_comment_sources enable row level security;
 revoke all on public.email_comment_sources from public,anon,authenticated,service_role;
 grant select on public.email_comment_sources to service_role;
+create policy service_role_backend_read on public.email_comment_sources for select to service_role using (true);
 
 -- Visibility mirrors the product post policy; service_role bypassing RLS is not
 -- permission to expose a private post to a mention target.
@@ -198,6 +199,8 @@ alter table public.email_business_notice_state enable row level security;
 alter table public.email_business_sources enable row level security;
 revoke all on public.email_business_notice_state,public.email_business_sources from public,anon,authenticated,service_role;
 grant select on public.email_business_notice_state,public.email_business_sources to service_role;
+create policy service_role_backend_read on public.email_business_notice_state for select to service_role using (true);
+create policy service_role_backend_read on public.email_business_sources for select to service_role using (true);
 create function email_private.capture_business_notice()
 returns trigger language plpgsql security definer set search_path=pg_catalog as $$
 declare target uuid; revision_key uuid:=gen_random_uuid(); notice uuid; notice_kind text; fingerprint text;
