@@ -365,6 +365,18 @@ map rasteriser and `brandAssetSync` all address icons by slug.
 
 ### The grid
 
+**Optical sizes.** Below 40px, `TransitIcon` uses the compact artwork in
+`compactIcon.ts`: a 7.5-unit outline, one ink stroke per casing/core pair,
+track-coloured filled silhouettes, and no motion ticks. Crowded details have
+dedicated small drawings (chat dots, calendar counter, slider knobs, compass,
+health pulse, information dot, theatre face and disco ball). At 40px and above,
+the original illustration is retained. Monochrome map glyphs use the same
+compact geometry at their fixed size. Preserve the existing display-size ramp;
+increasing every icon's box does not fix crowded artwork.
+
+The contact sheet renders actual CSS sizes of 16, 20, 24 and 32px in light and
+dark rows. Review these alongside the 80px original before adding detail.
+
 - viewBox `0 0 100 100`, rendered with an 8-unit bleed (`-8 -8 116 116`).
 - **The body lives between 12 and 88** on both axes.
 - **Motion ticks live in the margin.** Nothing else goes there; thin tails may
