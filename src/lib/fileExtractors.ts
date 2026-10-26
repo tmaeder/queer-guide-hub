@@ -1,6 +1,6 @@
 /**
  * fileExtractors — lightweight, dependency-free surface for flyer scan:
- * the accept-check + size/copy constants used eagerly by the upload UI.
+ * the accept-check + size constant used eagerly by the upload UI.
  *
  * The heavy extraction pipeline (which lazy-imports `pdfjs-dist` + `mammoth`)
  * lives in `./extractFileContent`. Keeping them in separate modules stops the
@@ -18,8 +18,6 @@ export interface ExtractedContent {
 }
 
 export const MAX_FILE_SIZE_BYTES = MAX_UPLOAD_BYTES;
-export const SUPPORTED_FILES_COPY =
-  'Supported files are images, PDFs, DOC, DOCX, and TXT.';
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 const ACCEPTED_EXTENSIONS = [
