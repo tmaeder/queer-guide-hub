@@ -74,6 +74,8 @@ on:
       - 'supabase/tests/email_platform_trip_invitations.sql'
       - 'supabase/tests/email_platform_operations.sql'
       - 'supabase/tests/email_platform_domain_notices.sql'
+      - 'supabase/tests/email_transactional_domain_integrations.sql'
+      - 'supabase/migrations/*email_transactional_domain_integrations.sql'
       - 'supabase/tests/email_platform_content_contacts.sql'
       - 'supabase/tests/email_operator_account_check.sql'
       - 'supabase/tests/email_group_invitations.sql'
@@ -167,6 +169,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792707766_email_group_invitations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792788296_email_mailbox_delivery.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792793842_email_mailbox_feed_index.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991793042613_email_transactional_domain_integrations.sql
           # Match production; fixture Auth mutations use a test-only helper.
           psql -v ON_ERROR_STOP=1 -c 'REVOKE SELECT ON auth.users FROM service_role'
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform.sql
@@ -179,6 +182,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_trip_invitations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_operations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_domain_notices.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_transactional_domain_integrations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_content_contacts.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_operator_account_check.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_group_invitations.sql
