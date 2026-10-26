@@ -19,6 +19,7 @@ Baseline: the fresh official Is Agentic scan at `2026-10-26T20:05:21.440Z` score
 - Functions and Functions-test TypeScript pass with zero errors. Search Worker TypeScript passes. Application typecheck has no new errors: 660 existing against the unchanged 772 baseline.
 - Production website build and search Worker dry-run bundle pass. Redocly validates OpenAPI; its advisory warnings are missing license metadata and the intentionally unused cross-surface MCP OAuth component (public REST security stays empty).
 - Local Pages and deployed preview pass **42/42 HTTP checks**, including negotiated pricing, downloaded CLI byte equality and catalog filtering. Downloaded preview CLI executes and reads filtered JSON successfully; live public search also succeeds.
+- The HTTP verifier requires the exact, case-insensitive `Accept` token in `Vary`, including negotiated 404, HEAD and 406 responses. Its negative controls reject missing `Vary` and `User-Agent, Accept-Encoding` without `Accept`; the preview still passes **42/42** with these stricter checks.
 - Native MCP runtime lists **102 resources**, reads embedded docs/OpenAPI, preserves 15 tools/two templates, exposes `member` in both discovery documents and passes all four public proxy reads.
 
 Preview: https://agent-readiness-next-review.queer-guide.pages.dev
@@ -37,7 +38,9 @@ node scripts/verify-mcp-readiness.mjs http://127.0.0.1:9908/mcp
 
 ## Release and remaining inputs
 
-Release requires fresh protected-branch CI and coordinated clearance after #4889, then the normal Pages deployment and separately guarded MCP/search Worker deployments. Retain exact source/settings rollback snapshots and verify all public interfaces again. No production DDL is part of this work.
+Release requires fresh protected-branch CI and coordinated clearance after #4889 and #4893, then the normal Pages deployment and separately guarded MCP/search Worker deployments. The existing seven-Worker deployment workflow must be paused only during this isolated release, with its exact prior state restored after verification; Pages and all required CI gates remain enabled. Snapshot and restore any temporary main-lock/auto-merge controls independently of earlier controllers. Retain exact source/settings rollback snapshots and verify all public interfaces again. No production DDL is part of this work.
+
+An expanded read-only production baseline passed **39 native-interface checks** before this follow-up deployment: all sitemap documents, manifests, brand tokens, geographic data, DID, editorial prompt JSON/text/immutable version, valid QR SVG, oEmbed, Atom and invalid-input boundaries. Repeat this matrix after release; the baseline is not proof of this follow-up being deployed.
 
 `api.queer.guide` currently returns Cloudflare 522, has no Worker custom-domain mapping and no repository references. Current credentials cannot inspect its DNS records (403). No DNS or unknown legacy API contract is changed. The documented canonical content API is `https://queer.guide/api/v1/pages`; search uses `https://search.queer.guide`.
 

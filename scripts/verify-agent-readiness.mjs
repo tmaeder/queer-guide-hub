@@ -5,6 +5,14 @@ import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 const base = (process.argv[2] ?? 'http://127.0.0.1:8788').replace(/\/$/, '');
 const results = [];
+function requireVaryAccept(headers) {
+  const tokens = (headers.get('Vary') ?? '').split(',').map((value) => value.trim().toLowerCase());
+  assert(tokens.includes('accept'), 'Vary must explicitly include the Accept token');
+}
+// Negative controls for the original audit evidence: Accept-Encoding is not Accept.
+requireVaryAccept(new Headers({ Vary: 'User-Agent, ACCEPT, Accept-Encoding' }));
+assert.throws(() => requireVaryAccept(new Headers({ Vary: 'User-Agent, Accept-Encoding' })));
+assert.throws(() => requireVaryAccept(new Headers()));
 async function check(name, run) {
   try {
     await run();
@@ -50,7 +58,7 @@ for (const path of ['/', '/about', '/contact', '/privacy']) {
     const { response, text } = await get(path, 'text/markdown');
     assert.equal(response.status, 200);
     assert.match(response.headers.get('Content-Type'), /text\/markdown/);
-    assert.match(response.headers.get('Vary'), /\bAccept\b/i);
+    requireVaryAccept(response.headers);
     assert(text.startsWith('# ') && text.length > 500);
     assert(!/<html|<script/i.test(text));
   });
@@ -65,7 +73,7 @@ await check('Homepage content negotiation quality and 406', async () => {
     const { response } = await get('/', accept);
     assert.equal(response.status, status);
     assert(response.headers.get('Content-Type').includes(type));
-    assert.match(response.headers.get('Vary'), /\bAccept\b/i);
+    requireVaryAccept(response.headers);
   }
 });
 for (const path of [
@@ -81,6 +89,7 @@ for (const path of [
       const { response, text } = await get(path, accept);
       assert.equal(response.status, 404);
       assert(response.headers.get('Content-Type').includes(accept));
+      requireVaryAccept(response.headers);
       assert(text.length > 20);
       if (accept === 'text/markdown') assert.match(text, /llms.txt|sitemap|\/docs/);
     });
@@ -113,7 +122,7 @@ for (const accept of ['text/html', 'text/markdown'])
     const { response, text } = await get('/docs', accept);
     assert.equal(response.status, 200);
     assert(response.headers.get('Content-Type').includes(accept));
-    assert.match(response.headers.get('Vary'), /\bAccept\b/i);
+    requireVaryAccept(response.headers);
     assert(text.includes('authentication') || text.includes('authentication'.replace('a', 'A')));
     assert(text.includes('mcp.queer.guide/mcp') && text.includes('/api/v1/pages'));
   });
@@ -122,15 +131,17 @@ for (const accept of ['text/html', 'text/markdown'])
     const { response, text } = await get('/pricing', accept);
     assert.equal(response.status, 200);
     assert(response.headers.get('Content-Type').includes(accept));
-    assert.match(response.headers.get('Vary'), /\bAccept\b/i);
+    requireVaryAccept(response.headers);
     assert(text.length > 500 && text.includes('Free public access') && text.includes('vendors'));
   });
 await check('Pricing HEAD and unsupported representation', async () => {
   const head = await fetch(new URL('/pricing', base), { method: 'HEAD' });
   assert.equal(head.status, 200);
+  requireVaryAccept(head.headers);
   assert.equal(await head.text(), '');
   const unsupported = await get('/pricing', 'application/json');
   assert.equal(unsupported.response.status, 406);
+  requireVaryAccept(unsupported.response.headers);
 });
 await check('Official CLI is downloadable JavaScript from this deployment', async () => {
   const { response, text } = await get('/cli.mjs');
@@ -203,6 +214,7 @@ await check('HEAD and CORS', async () => {
     const { response, text } = await get(path, 'text/markdown', 'HEAD');
     assert.equal(response.status, 200);
     assert.equal(text, '');
+    if (!path.startsWith('/api/')) requireVaryAccept(response.headers);
   }
   const { response } = await get('/api/v1/pages', undefined, 'OPTIONS');
   assert.equal(response.status, 204);
@@ -224,6 +236,11 @@ for (const path of ['/robots.txt', '/sitemap.xml', '/sitemap-static.xml'])
 const report = {
   base,
   checkedAt: new Date().toISOString(),
+  varyHeaderControls: {
+    acceptsCaseInsensitiveToken: true,
+    rejectsAcceptEncodingOnly: true,
+    rejectsMissingVary: true,
+  },
   passed: results.filter((r) => r.passed).length,
   total: results.length,
   results,
