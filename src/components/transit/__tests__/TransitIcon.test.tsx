@@ -114,6 +114,7 @@ describe('TransitIcon', () => {
       const large = renderToStaticMarkup(<TransitIcon name="rainbow" size={64} />);
       expect(small.match(/<path/g)).toHaveLength((large.match(/<path/g) ?? []).length);
       expect(small).toContain('width="64"');
+
     });
 
     it('draws no ticks for an icon whose set is `none`', () => {
@@ -151,6 +152,7 @@ describe('TransitIcon', () => {
   // Exact count on purpose — it is the guard against a vacuous "every icon
   // renders" pass over an accidentally-empty set.
   it('has 274 icons and uses the large illustration stroke weight', () => {
+
     expect(TRANSIT_ICON_NAMES).toHaveLength(274);
     const w = (size: number) =>
       Number(
@@ -161,6 +163,7 @@ describe('TransitIcon', () => {
     // Small requested sizes are raised to 64px in both colour modes.
     expect(w(20)).toBe(9);
     expect(w(24)).toBe(9);
+
     expect(w(48)).toBe(9);
   });
 

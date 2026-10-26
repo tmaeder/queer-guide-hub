@@ -10,6 +10,7 @@ import {
 } from './iconDefs';
 import type { SVGProps } from 'react';
 import { displaySize } from './iconKit';
+import { compactIcon, COMPACT_ICON_LIMIT, COMPACT_STROKE_WIDTH } from './compactIcon';
 import type { TransitIconName } from './transitIconPaths';
 
 interface TransitIconProps extends Omit<SVGProps<SVGSVGElement>, 'name' | 'color'> {
@@ -100,9 +101,10 @@ export function TransitIcon({
   style,
   ...rest
 }: TransitIconProps) {
-  const def = ICON_DEFS[name];
   const mono = Boolean(color);
   size = displaySize(size);
+  const compact = size < COMPACT_ICON_LIMIT;
+  const def = compact ? compactIcon(name, ICON_DEFS[name]) : ICON_DEFS[name];
   // ONE viewBox, and the 8-unit bleed the spec describes is NOT needed.
   //
   // §3 reserves 0-12 and 88-100 for motion ticks — a margin INSIDE the
@@ -113,8 +115,8 @@ export function TransitIcon({
   // also forced the stroke to be scaled by the same factor to keep its
   // apparent weight, which is why the set looked thin.
   const viewBox = '0 0 100 100';
-  const sw = strokeWidthFor(size);
-  const ticks = !mono && showTicks && def.t !== 'none' && size >= 32 ? TICKS[def.t] : [];
+  const sw = compact ? COMPACT_STROKE_WIDTH : strokeWidthFor(size);
+  const ticks = !compact && !mono && showTicks && def.t !== 'none' ? TICKS[def.t] : [];
 
   // Monochrome renders the DEDUPED flat path as a single element, not the
   // layered shapes recoloured. Recolouring them draws both halves of every
