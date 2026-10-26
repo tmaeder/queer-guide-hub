@@ -17,7 +17,7 @@ import {
   X,
   Loader,
   Circle,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Github as GithubIcon } from '@/components/icons/brand';
 import { timeAgo } from '@/utils/timezone';
 import type { FeedbackHandoff, HandoffStatus, HandoffTarget } from './types';

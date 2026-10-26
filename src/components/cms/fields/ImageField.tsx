@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { FieldWrapper } from './FieldWrapper';
 import type { FieldProps } from './FieldRenderer';
-import { ImageIcon, X, ExternalLink, FolderOpen } from 'lucide-react';
+import { ImageIcon, X, ExternalLink, FolderOpen } from '@/components/icons';
 import MediaPickerDialog from '@/components/cms/media/MediaPickerDialog';
 
 /**

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Target } from 'lucide-react';
+import { Target } from '@/components/icons';
 import { SDGData } from '@/hooks/useSDGData';
 
 interface SDGDataPanelProps {

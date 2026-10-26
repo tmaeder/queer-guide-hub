@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus } from 'lucide-react';
+import { Plus } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Band } from './Band';

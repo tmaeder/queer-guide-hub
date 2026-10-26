@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin } from 'lucide-react';
+import { MapPin } from '@/components/icons';
 import { getMapStyle } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 

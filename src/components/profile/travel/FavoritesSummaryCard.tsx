@@ -1,4 +1,4 @@
-import { ArrowRight, Heart } from 'lucide-react';
+import { ArrowRight, Heart } from '@/components/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';

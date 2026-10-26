@@ -8,7 +8,7 @@ import { useWishlistBySlug } from '@/hooks/useWishlists';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
-import { Heart, Share2, Lock, Globe } from 'lucide-react';
+import { Heart, Share2, Lock, Globe } from '@/components/icons';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';

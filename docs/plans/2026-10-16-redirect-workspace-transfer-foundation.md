@@ -610,3 +610,37 @@ recurring subscription metadata plus persisted donation attribution. All ten
 checkout cases and existing signed-webhook/retry/renewal attribution checks pass;
 Stripe creation is simulated and sends no payments or provider requests. The
 full five-SDK HTTP integration suite also passed on the recovered owner branch.
+
+### 2026-10-25 public QR creator scope
+
+Public QR image creator checks now use a private principal helper with the saved
+image's workspace as an explicit argument. Visitor workspace/account headers do
+not select the creator's authority. The private management wrapper still validates
+its request selector, retains legacy internal compatibility, and denies future
+workspace activation. The helper checks active workspace status under the ACL
+lock, preserves folder/key/member limits and current owner checks, and defaults
+to denying an absent principal without explicit owner context.
+
+Rollback-only fixtures verify independent credentials, viewer write denial,
+provisioning denial, foreign credential/owner denial, conflicting public visitor
+headers, and immediate key/member/owner revocation. Full isolated SQL, actual HTTP
+through all five SDK runtimes, and all 2548 migration parser checks pass locally.
+Public reports and shared-host/native activation still require follow-through;
+this checkpoint does not enable tenant creation or switching.
+
+### 2026-10-25 public report resource context
+
+Public dashboard publisher checks now bind to the public share's fixed legacy
+workspace, and analytics use private helpers with that resource workspace as an
+explicit argument. Member folder edit permission is checked under the existing
+shared ACL lock without invoking a write-locking helper. Visitor workspace/account
+headers cannot change publication authority or select another analytics tenant.
+The authenticated analytics functions retain their existing legacy RLS path;
+the private aggregation helpers preserve the same filters and output contract.
+
+Rollback fixtures compare public owner totals to private analytics, retain member
+conversion privacy, deny cross-workspace link IDs and provisioning workspaces,
+preserve future public-share denial, and close publication after folder edit,
+membership or ownership revocation. Full SQL and all five actual HTTP/SDK runtimes
+pass on the revised lock-safe implementation. All 2549 migrations parse. No
+production schema, authenticated grants or tenant activation fences changed.

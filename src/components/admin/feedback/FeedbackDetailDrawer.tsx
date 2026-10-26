@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, Link2, Ban, RotateCcw, Plus, Sparkles, Lightbulb } from 'lucide-react';
+import { X, Link2, Ban, RotateCcw, Plus, Sparkles, Lightbulb } from '@/components/icons';
 import { Github } from '@/components/icons/brand';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

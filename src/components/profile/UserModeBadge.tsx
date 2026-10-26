@@ -1,4 +1,4 @@
-import { Heart, Users, Map, Smile, Handshake, Home } from 'lucide-react';
+import { Heart, Users, Map, Smile, Handshake, Home } from '@/components/icons';
 import { USER_MODE_LABELS } from '@/lib/userMode';
 import { badgeVariants } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';

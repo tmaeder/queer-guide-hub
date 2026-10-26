@@ -1,6 +1,6 @@
 import { MapShell } from '@/components/map/MapShell';
 import type { MapShellConfig } from '@/components/map/MapShell.types';
-import { Compass, MapPin } from 'lucide-react';
+import { Compass, MapPin } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 

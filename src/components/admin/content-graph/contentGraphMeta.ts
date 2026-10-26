@@ -2,7 +2,7 @@ import {
   Building, Calendar, Users, Newspaper, ShoppingBag, Hotel, Handshake,
   History, MapPin, Globe, Map, Home, PartyPopper, UsersRound, Tag, Image,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/components/icons';
 import { monoChartPalette } from '@/lib/chartPalette';
 
 /** Foreground token as a concrete color string, sourced from the allowlisted

@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { Tag } from 'lucide-react';
+import { Tag } from '@/components/icons';
 import { ContentListTimeline } from '../ContentListTimeline';
 import { ContentListCalendar } from '../ContentListCalendar';
 import { dateFields, dateOf, dayKey, UPDATED_AT } from '../dateFields';

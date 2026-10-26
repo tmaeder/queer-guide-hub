@@ -1,4 +1,4 @@
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp } from '@/components/icons';
 
 interface NewStoriesPillProps {
   count: number;

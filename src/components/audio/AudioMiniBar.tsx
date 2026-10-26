@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Play, Pause, X, RotateCcw, RotateCw, AlertTriangle } from 'lucide-react';
+import { Play, Pause, X, RotateCcw, RotateCw, AlertTriangle } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Slider } from '@/components/ui/slider';
 import { isAdminRoute, isMapRoute } from '@/lib/locale';

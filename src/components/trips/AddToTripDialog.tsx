@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Luggage, Check, Plus, Users, Calendar } from 'lucide-react';
+import { Luggage, Check, Plus, Users, Calendar } from '@/components/icons';
 import {
   Dialog,
   DialogContent,

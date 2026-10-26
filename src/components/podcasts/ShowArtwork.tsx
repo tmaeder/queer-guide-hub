@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Headphones } from 'lucide-react';
+import { Headphones } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 interface ShowArtworkProps {

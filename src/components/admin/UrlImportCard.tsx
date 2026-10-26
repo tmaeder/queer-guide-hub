@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Link2 } from 'lucide-react';
+import { Link2 } from '@/components/icons';
 
 const URL_CONNECTORS: Array<{ test: RegExp; fn: string; label: string }> = [
   { test: /(^|\.)bsky\.app$/i, fn: 'source-bluesky-url', label: 'Bluesky' },

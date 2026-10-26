@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageCircle, ChevronLeft, Search } from 'lucide-react';
+import { MessageCircle, ChevronLeft, Search } from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useSearchParams } from 'react-router';
 import { VibeEditor } from '@/components/messaging/VibeEditor';

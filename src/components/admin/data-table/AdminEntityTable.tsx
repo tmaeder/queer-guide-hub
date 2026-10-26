@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { Link } from 'react-router';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@/components/icons';
 import { AdminIndexFrame } from '@/components/admin/frames/AdminIndexFrame';
 import { AdminCardSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { AdminDataTable } from './AdminDataTable';

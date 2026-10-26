@@ -29,7 +29,7 @@ import {
   ShieldCheck,
   FileText,
   HeartHandshake,
-} from 'lucide-react';
+} from '@/components/icons';
 import type { ComponentType } from 'react';
 import { transitIcon } from '@/components/transit/navTransitIcon';
 

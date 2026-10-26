@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { History, Upload } from 'lucide-react';
+import { History, Upload } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';

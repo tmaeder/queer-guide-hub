@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Lock } from 'lucide-react';
+import { Lock } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';

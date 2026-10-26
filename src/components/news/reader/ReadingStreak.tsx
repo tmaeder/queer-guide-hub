@@ -1,5 +1,5 @@
 import { useReadingStreak } from '@/hooks/useReadingStreak';
-import { Flame } from 'lucide-react';
+import { Flame } from '@/components/icons';
 
 export function ReadingStreak() {
   const { streak, loading } = useReadingStreak();

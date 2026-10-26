@@ -20,7 +20,7 @@ import {
   Lightbulb,
   NotebookPen,
   CalendarRange,
-} from 'lucide-react';
+} from '@/components/icons';
 import { format, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useTrip, canEditTrip, type TripWithDetails } from '@/hooks/useTrips';

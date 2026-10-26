@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users } from 'lucide-react';
+import { Users } from '@/components/icons';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';

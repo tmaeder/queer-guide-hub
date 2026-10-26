@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
-import { ZoomIn, ZoomOut, Maximize, Crosshair, Camera, Download } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize, Crosshair, Camera, Download } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';

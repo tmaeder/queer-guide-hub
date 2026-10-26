@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { Image } from '@/components/ui/Image';
-import { MapPin, BadgeCheck } from 'lucide-react';
+import { MapPin, BadgeCheck } from '@/components/icons';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';

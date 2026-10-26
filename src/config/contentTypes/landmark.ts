@@ -1,4 +1,4 @@
-import { Landmark } from 'lucide-react';
+import { Landmark } from '@/components/icons';
 import { untypedRpc, untypedSupabase } from '@/integrations/supabase/untyped';
 import { LANDMARK_KINDS } from '@/lib/landmarkKinds';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';

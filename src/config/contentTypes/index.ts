@@ -30,7 +30,7 @@ import {
   Sparkles,
   Users,
   Wrench,
-} from 'lucide-react';
+} from '@/components/icons';
 
 const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const asOptions = (values: string[]) => values.map((v) => ({ value: v, label: titleCase(v) }));

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp } from '@/components/icons';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const SHOW_AFTER_PX = 600;

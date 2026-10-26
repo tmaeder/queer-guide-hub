@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { MapPin, CheckCircle, AlertCircle, Globe } from 'lucide-react';
+import { MapPin, CheckCircle, AlertCircle, Globe } from '@/components/icons';
 import { useGeoLink } from '@/hooks/useGeoLink';
 
 const CONTENT_TYPES = [

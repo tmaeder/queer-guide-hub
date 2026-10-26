@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { Plus, AlertCircle, CheckCircle, XCircle, RefreshCw } from '@/components/icons';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';

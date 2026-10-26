@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SkeletonCrossfade } from '@/components/effects';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp } from '@/components/icons';
 import { Image } from '@/components/ui/Image';
 import { type FallbackTheme } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';

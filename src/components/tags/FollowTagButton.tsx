@@ -1,4 +1,4 @@
-import { Check, Plus } from 'lucide-react';
+import { Check, Plus } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { useFollowedTags } from '@/hooks/useFollowedTags';
 import { cn } from '@/lib/utils';

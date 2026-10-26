@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, ShieldAlert, User, Zap } from 'lucide-react';
+import { Clock, ShieldAlert, User, Zap } from '@/components/icons';
 import { toast } from 'sonner';
 import { EntityPreviewCard } from './EntityPreviewCard';
 import { StagingPreview } from './StagingPreview';

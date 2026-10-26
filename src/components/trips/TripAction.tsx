@@ -1,4 +1,4 @@
-import { Check, Luggage, Plane } from 'lucide-react';
+import { Check, Luggage, Plane } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';

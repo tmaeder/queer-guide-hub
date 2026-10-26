@@ -11,7 +11,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
-import { Plus, Inbox, Map as MapIcon } from 'lucide-react';
+import { Plus, Inbox, Map as MapIcon } from '@/components/icons';
 import { differenceInCalendarDays, isSameDay } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';

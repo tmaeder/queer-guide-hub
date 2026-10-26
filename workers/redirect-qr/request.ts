@@ -166,7 +166,9 @@ export async function parseQrImageRequest(
         {
           credentials: 'omit',
           referrerPolicy: 'no-referrer',
-          redirect: 'error',
+          // Workers rejects redirect:"error"; the response check below rejects
+          // redirects while keeping the fixed asset origin authoritative.
+          redirect: 'manual',
           signal: AbortSignal.any([request.signal, AbortSignal.timeout(10000)]),
           cache: 'no-store',
         },

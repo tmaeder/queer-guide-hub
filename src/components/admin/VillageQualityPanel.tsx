@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, ShieldCheck } from 'lucide-react';
+import { MapPin, ShieldCheck } from '@/components/icons';
 import { useVillageQualitySummary } from '@/hooks/useVillageQualitySummary';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';
 

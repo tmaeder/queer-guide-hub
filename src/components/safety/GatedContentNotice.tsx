@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Lock } from 'lucide-react';
+import { Lock } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { untypedRpc } from '@/integrations/supabase/untyped';

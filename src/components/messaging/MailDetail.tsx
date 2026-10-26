@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Reply, Send, X } from 'lucide-react';
+import { Reply, Send, X } from '@/components/icons';
 import { useMailbox, type MailboxEmail } from '@/hooks/useMailbox';
 import { EmailView } from '@/components/inbox/EmailView';
 import { Button } from '@/components/ui/button';

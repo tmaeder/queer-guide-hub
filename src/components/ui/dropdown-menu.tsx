@@ -12,7 +12,7 @@ import {
   RadioGroup as DropdownMenuRadioGroup,
 } from '@radix-ui/react-dropdown-menu';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { Check, ChevronRight, Circle } from 'lucide-react';
+import { Check, ChevronRight, Circle } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 const DropdownMenuSubTrigger = React.forwardRef<

@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useChatGPTConnection } from '@/hooks/useChatGPTConnection';
-import { CheckCircle, XCircle, RefreshCw, Plug, Unplug, Zap, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle, RefreshCw, Plug, Unplug, Zap, AlertTriangle } from '@/components/icons';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 
 export const ChatGPTConnection = () => {

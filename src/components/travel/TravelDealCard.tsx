@@ -1,4 +1,4 @@
-import { Plane, ArrowRight, ExternalLink } from 'lucide-react';
+import { Plane, ArrowRight, ExternalLink } from '@/components/icons';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

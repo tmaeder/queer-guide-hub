@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Building2, MapPin, type LucideIcon } from 'lucide-react';
+import { Building2, MapPin, type LucideIcon } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { OrgRole } from '@/hooks/useOrganization';

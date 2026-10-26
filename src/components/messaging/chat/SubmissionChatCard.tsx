@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { FilePlus2, ArrowRight } from 'lucide-react';
+import { FilePlus2, ArrowRight } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import type { SubmissionMeta } from '@/components/messaging/chat/submissionShare';

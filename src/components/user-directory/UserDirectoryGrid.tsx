@@ -21,7 +21,7 @@ import {
   Briefcase,
   GraduationCap,
   ExternalLink,
-} from 'lucide-react';
+} from '@/components/icons';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';

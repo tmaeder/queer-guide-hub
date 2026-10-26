@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 import { FilterDropdown } from './FilterDropdown';
 import { WhatYouNeedDropdown } from './WhatYouNeedDropdown';
 import { commonAmenities, commonServices, type FilterOption } from './constants';

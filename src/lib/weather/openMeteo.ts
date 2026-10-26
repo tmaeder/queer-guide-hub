@@ -8,7 +8,7 @@ import {
   CloudSnow,
   CloudLightning,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/components/icons';
 
 /**
  * Open-Meteo daily weather client. Keyless + CORS-open — called straight from

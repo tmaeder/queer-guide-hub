@@ -1,4 +1,4 @@
-import { Eye, EyeOff, CheckCheck } from 'lucide-react';
+import { Eye, EyeOff, CheckCheck } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { VisitedFilter } from './visitedFilter';

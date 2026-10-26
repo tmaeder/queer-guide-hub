@@ -186,11 +186,16 @@ export default tseslint.config(
             },
             {
               name: '@mui/icons-material',
-              message: 'MUI migration complete (ADR 0001). Use lucide-react icons instead.',
+              message: 'MUI migration complete (ADR 0001). Use @/components/icons instead.',
             },
             {
               name: '@mui/lab',
               message: 'MUI migration complete (ADR 0001). Use shadcn/ui components + Tailwind.',
+            },
+            {
+              name: 'lucide-react',
+              message:
+                'Every icon is a custom Icon System v2 drawing. Import from @/components/icons (add a name there; draw a glyph in components/transit/defs/).',
             },
           ],
           patterns: [
@@ -222,6 +227,8 @@ export default tseslint.config(
       // CSS variable to resolve against. Drift-tested against src/index.css by
       // src/components/transit/__tests__/iconPalette.test.ts.
       'src/components/transit/iconDefs.ts',
+      'src/components/transit/iconKit.ts',
+      'src/components/transit/defs/**',
       'src/config/mapStyle.ts',
       'src/config/contentTypeRegistry.ts',
       'src/config/submissionRegistry.ts',
@@ -546,6 +553,8 @@ export default tseslint.config(
       // CSS variable to resolve against. Drift-tested against src/index.css by
       // src/components/transit/__tests__/iconPalette.test.ts.
       'src/components/transit/iconDefs.ts',
+      'src/components/transit/iconKit.ts',
+      'src/components/transit/defs/**',
       'src/lib/avatar.ts',
       // Locked drug-interaction risk scale — see the note in the block above.
       'src/lib/substanceRisk.ts',
@@ -719,11 +728,16 @@ export default tseslint.config(
             },
             {
               name: '@mui/icons-material',
-              message: 'MUI migration complete (ADR 0001). Use lucide-react icons instead.',
+              message: 'MUI migration complete (ADR 0001). Use @/components/icons instead.',
             },
             {
               name: '@mui/lab',
               message: 'MUI migration complete (ADR 0001). Use shadcn/ui components + Tailwind.',
+            },
+            {
+              name: 'lucide-react',
+              message:
+                'Every icon is a custom Icon System v2 drawing. Import from @/components/icons (add a name there; draw a glyph in components/transit/defs/).',
             },
           ],
           patterns: [

@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, useRef, useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, Sparkles } from 'lucide-react';
+import { Search, Filter, Sparkles } from '@/components/icons';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';

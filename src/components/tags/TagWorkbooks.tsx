@@ -22,7 +22,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Lock, Users } from 'lucide-react';
+import { ArrowRight, Lock, Users } from '@/components/icons';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';

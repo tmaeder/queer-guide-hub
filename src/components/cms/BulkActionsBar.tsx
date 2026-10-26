@@ -18,7 +18,7 @@
 
 import { useState, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { CheckCheck, Archive, ArchiveRestore, EyeOff, Languages, ChevronDown, X} from 'lucide-react';
+import { CheckCheck, Archive, ArchiveRestore, EyeOff, Languages, ChevronDown, X} from '@/components/icons';
 import { upsertCMSContentMetadata, insertContentActions } from '@/hooks/useCMSContentMetadata';
 import { useBulkColumnEdit } from '@/hooks/useBulkColumnEdit';
 import type { ContentBulkEditField, ContentLifecycleConfig } from '@/types/cms';

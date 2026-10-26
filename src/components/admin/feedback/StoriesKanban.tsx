@@ -3,7 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { MessageSquare, AlertTriangle, Archive, CheckSquare } from 'lucide-react';
+import { MessageSquare, AlertTriangle, Archive, CheckSquare } from '@/components/icons';
 import { storyColumns, priorityFor } from './constants';
 import type {
   AdminProfile,

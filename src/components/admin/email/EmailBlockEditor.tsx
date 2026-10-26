@@ -7,7 +7,7 @@ import EmailInspector from './EmailInspector';
 import Image from '@tiptap/extension-image';
 import type { JSONContent } from '@tiptap/core';
 import { closeHistory } from '@tiptap/pm/history';
-import { ArrowDown, ArrowUp, Copy, ImageIcon, Plus, Redo2, Trash2, Undo2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Copy, ImageIcon, Plus, Redo2, Trash2, Undo2 } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

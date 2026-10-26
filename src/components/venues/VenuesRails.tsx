@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from '@/components/icons';
 import { Rail, RailItem } from '@/components/ui/Rail';
 import { Button } from '@/components/ui/button';
 import { VenueCard } from '@/components/venues/VenueCard';

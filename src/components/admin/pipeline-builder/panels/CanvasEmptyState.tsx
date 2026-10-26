@@ -1,4 +1,4 @@
-import { ArrowLeft, Command as CommandIcon, Upload, Boxes, Workflow } from 'lucide-react';
+import { ArrowLeft, Command as CommandIcon, Upload, Boxes, Workflow } from '@/components/icons';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface CanvasEmptyStateProps {

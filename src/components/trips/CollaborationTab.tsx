@@ -1,4 +1,4 @@
-import { MessageCircle, StickyNote, BarChart3 } from 'lucide-react';
+import { MessageCircle, StickyNote, BarChart3 } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { TripChat } from './TripChat';

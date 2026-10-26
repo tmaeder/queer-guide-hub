@@ -46,7 +46,7 @@ import {
   Image as ImageIcon,
   X,
   Crown,
-} from 'lucide-react';
+} from '@/components/icons';
 import {
   getOptimizationStatusBadge,
   formatFileSize,

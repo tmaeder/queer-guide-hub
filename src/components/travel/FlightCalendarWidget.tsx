@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, TrendingDown } from 'lucide-react';
+import { Calendar, TrendingDown } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';

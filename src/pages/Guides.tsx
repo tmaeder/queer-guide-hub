@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { BookOpen } from 'lucide-react';
+import { BookOpen } from '@/components/icons';
 import { useMeta } from '@/hooks/useMeta';
 import { useGuides, type GuideFormat } from '@/hooks/useGuides';
 import type { GuideEntityType } from '@/lib/guidePickAdapters';

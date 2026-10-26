@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { LifeBuoy, Megaphone, Newspaper, ShoppingBag, Building2 } from 'lucide-react';
+import { LifeBuoy, Megaphone, Newspaper, ShoppingBag, Building2 } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';

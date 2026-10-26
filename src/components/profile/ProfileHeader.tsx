@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
 import type { AvatarConfig } from '@/components/profile/avatarConfig';
-import { MapPin, Calendar, Check } from 'lucide-react';
+import { MapPin, Calendar, Check } from '@/components/icons';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
 import { TrustTierBadge } from '@/components/profile/TrustTierBadge';

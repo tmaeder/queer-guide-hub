@@ -3,7 +3,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {Check, X } from 'lucide-react';
+import {Check, X } from '@/components/icons';
 import { supabase } from '@/integrations/supabase/client';
 import { USERNAME_RE, usernameFormatError } from '@/components/auth/usernameRules';
 

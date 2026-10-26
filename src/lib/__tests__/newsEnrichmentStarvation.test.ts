@@ -243,6 +243,18 @@ describe('the enrichment driver skip branch', () => {
     expect(branch).toMatch(/enrich_skipped_missing_required_fields/);
   });
 
+  it('passes only argument names the success-path call also uses', () => {
+    // PostgREST resolves an RPC by argument NAME; one unknown name 404s the
+    // call silently. The skip call once sent p_enriched_data / p_error.
+    const keys = (s: string) => new Set([...s.matchAll(/\b(p_[a-z_]+):/g)].map((m) => m[1]));
+    const mainAt = code.lastIndexOf("supabase.rpc('apply_enrichment'");
+    const main = keys(code.slice(mainAt, code.indexOf('})', mainAt)));
+    const skip = keys(branch);
+    expect(main.size).toBeGreaterThan(5);
+    expect(skip.size).toBeGreaterThan(3);
+    for (const k of skip) expect(main.has(k), k).toBe(true);
+  });
+
   it('does not write during a dry run', () => {
     // A dry run that stamps rows failed is not a dry run.
     expect(branch).toMatch(/if \(!dryRun\)/);

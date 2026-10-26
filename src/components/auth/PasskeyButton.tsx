@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
-import { Fingerprint} from 'lucide-react';
+import { Fingerprint} from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 

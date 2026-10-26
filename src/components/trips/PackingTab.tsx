@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trash2, ChevronDown, ChevronRight, CheckSquare } from 'lucide-react';
+import { Trash2, ChevronDown, ChevronRight, CheckSquare } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

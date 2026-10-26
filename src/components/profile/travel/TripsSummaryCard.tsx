@@ -1,4 +1,4 @@
-import { ArrowRight, Luggage } from 'lucide-react';
+import { ArrowRight, Luggage } from '@/components/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useTrips } from '@/hooks/useTrips';

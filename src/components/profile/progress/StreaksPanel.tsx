@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Bookmark, Flame, Globe } from 'lucide-react';
+import { ArrowRight, BookOpen, Bookmark, Flame, Globe } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import {

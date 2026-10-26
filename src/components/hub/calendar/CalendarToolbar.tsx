@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { CalendarPlus, ChevronLeft, ChevronRight, Plane } from 'lucide-react';
+import { CalendarPlus, ChevronLeft, ChevronRight, Plane } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCalendarFeed } from '@/hooks/useCalendarFeed';

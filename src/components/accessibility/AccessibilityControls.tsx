@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAccessibility } from '@/hooks/useAccessibility';
-import { RefreshCw, Eye, Volume2, Keyboard, MousePointer, Palette } from 'lucide-react';
+import { RefreshCw, Eye, Volume2, Keyboard, MousePointer, Palette } from '@/components/icons';
 
 export function AccessibilityControls() {
   const { settings, updateSetting, resetToDefaults } = useAccessibility();

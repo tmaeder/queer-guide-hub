@@ -1,6 +1,6 @@
 import { RedirectManagedImportDialog } from './RedirectManagedImportDialog';
 import { useState } from 'react';
-import { Eye, Upload } from 'lucide-react';
+import { Eye, Upload } from '@/components/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { BulkImportDialog } from '@/pages/admin-redirects/BulkImportDialog';

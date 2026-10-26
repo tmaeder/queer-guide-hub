@@ -6,7 +6,7 @@ import * as React from 'react';
 // non-component export and costs the whole file fast refresh.
 import { Root as Accordion } from '@radix-ui/react-accordion';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 const AccordionItem = React.forwardRef<

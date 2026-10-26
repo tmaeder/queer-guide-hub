@@ -1,4 +1,4 @@
-import { Activity, ExternalLink } from 'lucide-react';
+import { Activity, ExternalLink } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 
 const GYG_PARTNER_ID = '2PBDXWH';

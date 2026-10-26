@@ -13,7 +13,7 @@ import {
   Edit,
   AtSign,
   Hash,
-} from 'lucide-react';
+} from '@/components/icons';
 import {
   DropdownMenu,
   DropdownMenuContent,

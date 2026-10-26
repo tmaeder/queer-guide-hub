@@ -2060,19 +2060,6 @@ h2:not(.font-sans),
   }
 }
 
-/* ── Icon weight ───────────────────────────────────────────────────────
-   lucide stamps `.lucide` on every icon it renders. Squaring the caps and
-   joins here — paired with the <LucideProvider strokeWidth={2.5}> that
-   wraps the non-admin branch of LayoutShell — re-cuts every icon on the
-   public site as a chunky flat mark, with no change to any of the 783
-   files that import them and no icon-library swap.
-
-   Scoped under [data-ink-icons] so the admin console, which shares the
-   same lucide build, keeps its softer default. */
-/* Subway-map rule is ROUND terminals ("a line still growing"), which is
-   lucide's own default — so no cap/join override is needed anymore; the
-   [data-ink-icons] hook stays in LayoutShell for the strokeWidth prop only. */
-
 /* ── Aceternity-style monochrome backgrounds ───────────────────────── */
 
 /* Subtle SVG noise — turbulence-based, neutral, transparency-modulated. */

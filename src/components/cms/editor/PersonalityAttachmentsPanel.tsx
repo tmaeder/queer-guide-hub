@@ -10,7 +10,7 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ExternalLink, Trash2, Archive } from 'lucide-react';
+import { ExternalLink, Trash2, Archive } from '@/components/icons';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';

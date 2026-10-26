@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Copy, Check, ThumbsUp } from 'lucide-react';
+import { Copy, Check, ThumbsUp } from '@/components/icons';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

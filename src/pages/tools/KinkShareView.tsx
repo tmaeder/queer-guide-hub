@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { MessageCircle, Star } from 'lucide-react';
+import { MessageCircle, Star } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';

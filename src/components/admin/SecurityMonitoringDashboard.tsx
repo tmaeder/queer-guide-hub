@@ -4,7 +4,7 @@ import { listFrom, countRows } from '@/hooks/usePageFetchers';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, AlertTriangle, Activity, Users } from 'lucide-react';
+import { Shield, AlertTriangle, Activity, Users } from '@/components/icons';
 import { AdminCardSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { formatDistanceToNow } from 'date-fns';
 import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';

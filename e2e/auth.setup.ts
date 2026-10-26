@@ -3,7 +3,10 @@ import path from 'node:path';
 import { readFileSync } from 'node:fs';
 import { waitForAppReady } from './support/appReady';
 
-export const ADMIN_STORAGE_STATE = path.join(process.cwd(), 'playwright/.auth/admin.json');
+export const ADMIN_STORAGE_STATE = path.resolve(
+  process.cwd(),
+  process.env.E2E_AUTH_STATE_OUTPUT || 'playwright/.auth/admin.json',
+);
 
 /**
  * Sign in through the TOKEN ENDPOINT, not the login form.

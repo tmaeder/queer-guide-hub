@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink } from '@/components/icons';
 import { reviewHttpUrl } from './reviewEvidence';
 
 const object = (value: unknown): Record<string, unknown> =>

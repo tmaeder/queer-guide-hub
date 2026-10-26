@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Users, PenSquare, Search, AlertTriangle, RefreshCw, Home, LogIn } from 'lucide-react';
+import { Users, PenSquare, Search, AlertTriangle, RefreshCw, Home, LogIn } from '@/components/icons';
 import { PostCard } from '@/components/posts/PostCard';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';

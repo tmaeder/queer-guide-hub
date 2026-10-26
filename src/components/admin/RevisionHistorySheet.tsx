@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Bot, Clock, RotateCcw, User, Wrench } from 'lucide-react';
+import { Bot, Clock, RotateCcw, User, Wrench } from '@/components/icons';
 import { toast } from 'sonner';
 import {
   Sheet,

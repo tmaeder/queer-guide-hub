@@ -1,5 +1,5 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Star } from 'lucide-react';
+import { Star } from '@/components/icons';
 import { useFeaturedPersonalities, type Personality } from '@/hooks/usePersonalities';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';

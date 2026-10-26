@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Clock, Check, X, Siren, UserPlus } from 'lucide-react';
+import { Users, Clock, Check, X, Siren, UserPlus } from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { fetchProfilesByUserIds } from '@/hooks/usePageFetchers';

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Search, X, RotateCcw, Settings2, BookmarkCheck, Plus, Star } from 'lucide-react';
+import { Search, X, RotateCcw, Settings2, BookmarkCheck, Plus, Star } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';

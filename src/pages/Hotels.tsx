@@ -2,7 +2,7 @@ import { useEffect, useCallback, useMemo, useState, useRef, lazy, Suspense } fro
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { Hotel as HotelIcon, Plus, Map as MapIcon, LayoutGrid } from 'lucide-react';
+import { Hotel as HotelIcon, Plus, Map as MapIcon, LayoutGrid } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { HotelCard } from '@/components/hotels/HotelCard';
 import { HotelFilters } from '@/components/hotels/HotelFilters';

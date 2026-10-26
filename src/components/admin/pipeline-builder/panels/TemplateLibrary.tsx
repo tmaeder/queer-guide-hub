@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Boxes, Save, Trash2, Plus } from 'lucide-react';
+import { Boxes, Save, Trash2, Plus } from '@/components/icons';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';

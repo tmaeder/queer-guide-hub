@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Search, Check, ExternalLink, Camera } from 'lucide-react';
+import { Search, Check, ExternalLink, Camera } from '@/components/icons';
 import { useExternalImageSearch, type ExternalImage } from '@/hooks/useExternalImageSearch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- intentionally co-locates helpers/constants with the primary component */
 
 import { useSearchParams } from 'react-router';
-import { Map, Clock, BookOpen } from 'lucide-react';
+import { Map, Clock, BookOpen } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 

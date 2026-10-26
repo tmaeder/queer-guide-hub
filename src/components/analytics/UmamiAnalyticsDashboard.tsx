@@ -21,7 +21,7 @@ import {
   TrendingUp,
   Filter,
   Download,
-} from 'lucide-react';
+} from '@/components/icons';
 import {
   BarChart,
   Bar,

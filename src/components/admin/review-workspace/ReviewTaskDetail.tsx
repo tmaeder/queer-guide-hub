@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Check, ExternalLink, Pencil, ShieldAlert, SkipForward } from 'lucide-react';
+import { ArrowLeft, Check, ExternalLink, Pencil, ShieldAlert, SkipForward } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';

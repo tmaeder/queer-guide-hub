@@ -1,4 +1,4 @@
-import { AlertTriangle, Skull } from 'lucide-react';
+import { AlertTriangle, Skull } from '@/components/icons';
 import { isCriminalized, deathPenaltyRisk } from '@/utils/equalityScore';
 
 interface SafetyAlertBannerProps {

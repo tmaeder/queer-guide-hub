@@ -1,4 +1,4 @@
-import { Hotel } from 'lucide-react';
+import { Hotel } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 
 export const hotelFields: FieldConfig[] = [

@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { EyeOff } from 'lucide-react';
+import { EyeOff } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import type { PostModeration } from '@/lib/atprotoModeration';
 

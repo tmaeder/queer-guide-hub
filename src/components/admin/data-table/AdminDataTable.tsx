@@ -12,7 +12,7 @@ import {
 } from '@tanstack/react-table';
 import { adminTableFeatures } from './features';
 import { AdminSelectionCheckbox as Checkbox } from '@/components/admin/primitives/AdminSelectionCheckbox';
-import { MoreVertical } from 'lucide-react';
+import { MoreVertical } from '@/components/icons';
 import {
   DropdownMenu,
   DropdownMenuContent,

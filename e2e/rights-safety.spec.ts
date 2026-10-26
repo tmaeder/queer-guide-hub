@@ -198,9 +198,8 @@ async function glyphFor(page, label: string): Promise<string> {
   // getAttribute, so the wait has to be explicit.
   const glyph = row.locator('svg').nth(1);
   await expect(glyph).toBeAttached({ timeout: 30_000 });
-  await expect(glyph).toHaveAttribute('class', /lucide-/, { timeout: 30_000 });
-  const cls = (await glyph.getAttribute('class')) ?? '';
-  return (cls.match(/lucide-[a-z-]+/) ?? [''])[0];
+  await expect(glyph).toHaveAttribute('data-icon', /./, { timeout: 30_000 });
+  return (await glyph.getAttribute('data-icon')) ?? '';
 }
 
 /**
@@ -223,8 +222,8 @@ test('a legal barrier renders as negative, not as a protection', async ({ page }
   await dismiss(page);
   // Afghanistan: expression "Non-Explicit Legal Barriers",
   //              association "Legal Barriers Likely to Exist".
-  expect(await glyphFor(page, 'Freedom of expression')).toBe('lucide-x');
-  expect(await glyphFor(page, 'Freedom of association')).toBe('lucide-x');
+  expect(await glyphFor(page, 'Freedom of expression')).toBe('x');
+  expect(await glyphFor(page, 'Freedom of association')).toBe('x');
 });
 
 test('the best available outcome renders as positive, not partial', async ({ page }) => {
@@ -234,9 +233,9 @@ test('the best available outcome renders as positive, not partial', async ({ pag
   // fell through to the partial default before the vocabulary existed.
   // `adoption` sits in `family`, which now starts collapsed.
   await openRightsSection(page, 'Family & relationships');
-  expect(await glyphFor(page, 'Adoption rights')).toBe('lucide-check');
+  expect(await glyphFor(page, 'Adoption rights')).toBe('check');
   // Control: a genuine "No known legal barriers" must still read positive.
-  expect(await glyphFor(page, 'Freedom of expression')).toBe('lucide-check');
+  expect(await glyphFor(page, 'Freedom of expression')).toBe('check');
 });
 
 test('a collapsed rights section states its count, not just its name', async ({ page }) => {

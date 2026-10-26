@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useContentValidation } from './EnhancedContentValidator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from '@/components/icons';
 
 interface EnhancedFormValidatorProps {
   children: React.ReactNode;

@@ -5,6 +5,8 @@ const hasAdminCreds = Boolean(process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADM
 
 export default defineConfig({
   testDir: './e2e',
+  // This suite writes fixtures and requires the isolated taxonomy config.
+  testIgnore: /taxonomy-management\.spec\.ts$/,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

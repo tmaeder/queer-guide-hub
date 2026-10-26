@@ -1,4 +1,84 @@
 import { decodeEntities } from './html-entities.ts'
+import { parse, type DefaultTreeAdapterTypes } from 'npm:parse5@8.0.1'
+
+/** Only this event page's published Plone artwork, after matching its Event. */
+export function gaychEventArtworkEvidence(
+  html: string,
+  event: { title: string; start_date?: unknown },
+  pageUrl: string,
+): { urls: string[]; sourceEvent: Record<string, unknown> } | null {
+  let page: URL
+  try { page = new URL(pageUrl) } catch { return null }
+  if (html.length > 600_000 || page.origin !== 'https://gay.ch' || page.username || page.password || page.search || page.hash
+    || !/^\/parties\/[^/]+\/?$/.test(page.pathname)) return null
+  const path = page.pathname.replace(/\/$/, '')
+  const key = (value: unknown) => typeof value === 'string'
+    ? value.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') : ''
+  const day = (value: unknown) => {
+    if (typeof value !== 'string' || !Number.isFinite(Date.parse(value))) return null
+    const part = value.slice(0, 10), stamp = Date.parse(part)
+    return /^\d{4}-\d{2}-\d{2}$/.test(part) && Number.isFinite(stamp)
+      && new Date(stamp).toISOString().slice(0, 10) === part ? stamp : null
+  }
+  const expectedDay = day(event.start_date)
+  if (!key(event.title) || expectedDay === null) return null
+  const matches: Record<string, unknown>[] = []
+  const metadata: string[] = []
+  let tooDeep = false
+  function walk(node: DefaultTreeAdapterTypes.Node, inHead = false, depth = 0): void {
+    if (depth > 100) { tooDeep = true; return }
+    if ('tagName' in node) {
+      if (['template', 'noscript', 'iframe', 'svg', 'math'].includes(node.tagName)) return
+      const attribute = (name: string) => node.attrs.find(attr => attr.name === name)?.value
+      if (node.tagName === 'script') {
+        // Parse inert JSON only. Never evaluate a publisher's JavaScript.
+        if (node.attrs.length && attribute('type')?.toLowerCase() !== 'application/ld+json') return
+        const raw = node.childNodes.flatMap(child => child.nodeName === '#text' && 'value' in child ? [child.value] : []).join('')
+        try {
+          const value = JSON.parse(raw)
+          if (!value || Array.isArray(value) || typeof value !== 'object'
+            || !['https://schema.org', 'http://schema.org'].includes(value['@context'])
+            || value['@type'] !== 'Event' || key(value.name) !== key(event.title)) return
+          const sourceDay = day(value.startDate)
+          if (sourceDay !== null && Math.abs(sourceDay - expectedDay!) <= 86400000) matches.push(value)
+        } catch { /* Non-JSON scripts are not evidence. */ }
+        return
+      }
+      if (node.tagName === 'meta' && inHead && attribute('property')?.toLowerCase() === 'og:image') {
+        const value = attribute('content')
+        if (value) metadata.push(value)
+      }
+      inHead ||= node.tagName === 'head'
+    }
+    if ('childNodes' in node) for (const child of node.childNodes) walk(child, inHead, depth + 1)
+  }
+  walk(parse(html))
+  const distinct = [...new Map(matches.map(node => [JSON.stringify(node), node])).values()]
+  if (tooDeep || distinct.length !== 1) return null
+  const owned = (value: unknown, original = false): string | null => {
+    if (typeof value !== 'string' || !value.trim()) return null
+    try {
+      const url = new URL(value, page.href)
+      if (url.origin !== page.origin || url.username || url.password || url.search || url.hash
+        || !url.pathname.startsWith(path + '/')) return null
+      const tail = url.pathname.slice(path.length + 1)
+      if (!(original ? /^@@download\/image\/[^/]+$/ : /^@@(?:download\/image|images)\/[^/]+$/).test(tail)) return null
+      return url.href
+    } catch { return null }
+  }
+  const originals = metadata.flatMap(value => { const url = owned(value, true); return url ? [url] : [] })
+  const image = distinct[0].image
+  const structured = (Array.isArray(image) ? image : [image]).flatMap(value => {
+    const url = owned(value && typeof value === 'object' ? value.url : value)
+    return url ? [url] : []
+  })
+  const uniqueOriginals = [...new Set(originals)]
+  return { urls: [...new Set([...(uniqueOriginals.length === 1 ? uniqueOriginals : []), ...structured])].slice(0, 3), sourceEvent: distinct[0] }
+}
+
+export function extractGaychEventArtwork(html: string, event: { title: string; start_date?: unknown }, pageUrl: string): string[] {
+  return gaychEventArtworkEvidence(html, event, pageUrl)?.urls ?? []
+}
 /**
  * gay.ch category-link extraction.
  *

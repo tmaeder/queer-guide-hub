@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { MessageSquarePlus } from 'lucide-react';
+import { MessageSquarePlus } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ContributeDialog } from '@/components/contribute/ContributeDialog';

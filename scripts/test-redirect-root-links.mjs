@@ -13,6 +13,7 @@ const source = [
   '_shared/redirect-native-resolution.ts',
   '_shared/redirect-native-install-browser.ts',
   '_shared/redirect-native-install-page.ts',
+  '_shared/redirect-visitor-geo.ts',
   '_shared/redirect-visitor.ts',
   '_shared/redirect-relay.ts',
   '_shared/redirect-presentation.ts',
@@ -120,6 +121,7 @@ const relay = await import(
 );
 const sharedCache = new Map();
 const sharedAllow = new Set([
+  'redirect-visitor-geo',
   'redirect-domain-relay',
   'redirect-relay',
   'redirect-native-resolution',

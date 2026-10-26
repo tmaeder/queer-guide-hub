@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import type { SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import type { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';

@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Calendar, MapPin, SlidersHorizontal, ArrowUpRight } from 'lucide-react';
+import { Calendar, MapPin, SlidersHorizontal, ArrowUpRight } from '@/components/icons';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useVenueCategoryOptions, useVenueCategoryLabel } from '@/lib/venueCategories';
 import { useEventTypeOptions, useEventTypeLabel } from '@/lib/eventTypes';

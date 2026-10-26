@@ -7,13 +7,13 @@
  */
 
 import { Link } from 'react-router';
-import { AlertTriangle, Bot, Download, Lock } from 'lucide-react';
+import { AlertTriangle, Bot, Download, Lock } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CockpitList } from '@/components/admin/cockpit/CockpitSection';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import type { CockpitOps } from '@/hooks/useCockpitOps';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/components/icons';
 
 function BrokenRow({
   icon: Icon,

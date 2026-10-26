@@ -1,5 +1,5 @@
 import { MotionCard, Badge } from 'queer-guide';
-import { MapPin, CalendarDays } from 'lucide-react';
+import { MapPin, CalendarDays } from '@/components/icons';
 import { StaticState } from './_static';
 
 export const VenueTeaser = () => (

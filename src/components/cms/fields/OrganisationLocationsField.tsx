@@ -1,6 +1,6 @@
 import { EntityAuditHistory } from '@/components/cms/EntityAuditHistory';
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Plus, MapPin } from 'lucide-react';
+import { Plus, MapPin } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { FieldRenderer, type FieldProps } from './FieldRenderer';
 import { venueFields } from '@/config/contentTypes/venue';

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Webhook, Plus, Trash2, Send, CheckCircle2, XCircle } from 'lucide-react';
+import { Webhook, Plus, Trash2, Send, CheckCircle2, XCircle } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';

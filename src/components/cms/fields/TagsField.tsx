@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { FieldWrapper } from './FieldWrapper';
 import type { FieldProps } from './FieldRenderer';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 
 /**
  * Tags input field for the 'tags' type.

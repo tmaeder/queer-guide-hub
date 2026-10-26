@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import type { Map as MaplibreMap } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { LocateFixed, Search } from 'lucide-react';
+import { LocateFixed, Search } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { getMapStyle } from '@/config/mapStyle';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Sparkles, Wand2 } from 'lucide-react';
+import { Sparkles, Wand2 } from '@/components/icons';
 import {
   Dialog,
   DialogContent,

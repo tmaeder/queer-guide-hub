@@ -1,5 +1,5 @@
 import { createElement } from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { EventProgrammePanel } from '@/components/admin/events/EventProgrammePanel';
 import { validateEvent } from '@/utils/contentValidation';

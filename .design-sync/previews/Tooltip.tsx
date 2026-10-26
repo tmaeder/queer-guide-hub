@@ -1,5 +1,5 @@
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, Button } from 'queer-guide';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from '@/components/icons';
 
 // Capture harness freezes the page clock — settle Radix enter animations.
 // Also restores border-widths: src/index.css ships an UNLAYERED *{border-width:0}

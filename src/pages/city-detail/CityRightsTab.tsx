@@ -1,4 +1,4 @@
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from '@/components/icons';
 import { Trans, useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { InlineLoading } from '@/components/ui/loading';

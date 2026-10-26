@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from '@/components/icons';
 import { supabase } from '@/integrations/supabase/client';
 
 interface DiscoveryResult {

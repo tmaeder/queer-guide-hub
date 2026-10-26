@@ -20,7 +20,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { SizeChipGrid } from '@/components/marketplace/SizeChipGrid';
 import { ColorSwatchGrid } from '@/components/marketplace/ColorSwatchGrid';

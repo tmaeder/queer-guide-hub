@@ -35,7 +35,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, Search } from 'lucide-react';
+import { Menu, Search } from '@/components/icons';
 import { AdminSidebar } from './AdminSidebar';
 import { OPEN_COMMAND_PALETTE_EVENT } from '@/components/admin/command-palette/commandPaletteBus';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
@@ -43,7 +43,7 @@ import { getBreadcrumbsForRoute, getRouteMinRole } from '@/config/adminNavigatio
 import { hasAdoptedFrame } from '@/config/adminArchetypes';
 import { roleAtLeast } from '@/config/adminRoles';
 import { useGranularRoles } from '@/hooks/useGranularRoles';
-import { Lock } from 'lucide-react';
+import { Lock } from '@/components/icons';
 import { AdminCommandPaletteHost } from '@/components/admin/command-palette/AdminCommandPalette';
 import { AdminCommandActionsProvider } from '@/components/admin/command-palette/useAdminCommandActions';
 import { GlobalAdminActions } from '@/components/admin/command-palette/useGlobalAdminActions';

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Languages } from 'lucide-react';
+import { Languages } from '@/components/icons';
 import { useTagVocabularyHealth } from '@/hooks/useTagVocabularyHealth';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';
 

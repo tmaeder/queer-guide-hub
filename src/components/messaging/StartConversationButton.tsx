@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, type ButtonProps } from '@/components/ui/button';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle } from '@/components/icons';
 import { useMessaging } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';

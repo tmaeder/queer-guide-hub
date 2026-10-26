@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Hotel, Ticket } from 'lucide-react';
+import { Hotel, Ticket } from '@/components/icons';
 import { logTripBookingClick } from '@/hooks/useBundledCheckout';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';

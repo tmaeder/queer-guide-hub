@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from '@/components/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';

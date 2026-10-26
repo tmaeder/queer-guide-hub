@@ -2,7 +2,7 @@ import { profileEditPath } from '@/lib/profileEditing';
 import { GroupCard } from '@/components/groups/GroupCard';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Users } from 'lucide-react';
+import { Users } from '@/components/icons';
 import { sectionVisible, type ProfileLens } from '@/lib/profileLens';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';

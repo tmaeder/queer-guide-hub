@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Camera, Upload, AlertCircle, RotateCcw, FileText, Link2 } from 'lucide-react';
+import { Camera, Upload, AlertCircle, RotateCcw, FileText, Link2 } from '@/components/icons';
 import { isAcceptedFile, MAX_FILE_SIZE_BYTES } from '@/lib/fileExtractors';
 import { useToast } from '@/hooks/use-toast';
 import type { ScanState } from '@/hooks/useFlyerScan';

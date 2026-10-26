@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Sparkles, Check, Send, Info} from 'lucide-react';
+import { Sparkles, Check, Send, Info} from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';

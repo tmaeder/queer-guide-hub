@@ -1,4 +1,4 @@
-import { Bookmark, BookmarkCheck } from 'lucide-react';
+import { Bookmark, BookmarkCheck } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';

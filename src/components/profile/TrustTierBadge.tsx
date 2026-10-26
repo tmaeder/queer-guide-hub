@@ -1,4 +1,4 @@
-import { Eye, MapPin, Compass, Shield, ShieldCheck } from "lucide-react";
+import { Eye, MapPin, Compass, Shield, ShieldCheck } from '@/components/icons';
 import { cn } from "@/lib/utils";
 import {
   Tooltip,

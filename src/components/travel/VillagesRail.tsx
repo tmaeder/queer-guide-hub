@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';

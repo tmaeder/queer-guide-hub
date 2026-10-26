@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { Shield, Zap, Server, Package, GitBranch, Workflow } from 'lucide-react';
+import { Shield, Zap, Server, Package, GitBranch, Workflow } from '@/components/icons';
 import {
   useCircuitBreakers,
   useStagingStats,

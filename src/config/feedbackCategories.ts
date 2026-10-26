@@ -1,5 +1,5 @@
-import { Bug, Lightbulb, Sparkles, BookOpen, ShieldAlert } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { Bug, Lightbulb, Sparkles, BookOpen, ShieldAlert } from '@/components/icons';
+import type { LucideIcon } from '@/components/icons';
 
 export interface FeedbackCategory {
   value: string;

@@ -10,7 +10,7 @@
  */
 
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from '@/components/icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import type { AdminCounts } from '@/hooks/useAdminCounts';

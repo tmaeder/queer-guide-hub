@@ -52,6 +52,7 @@ describe('Footer', () => {
     expect(screen.getByText('Legal')).toBeInTheDocument();
     expect(screen.getByText('Privacy')).toBeInTheDocument();
     expect(screen.getByText('Contact')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'API & agents' })).toHaveAttribute('href', '/docs');
     expect(screen.getByRole('link', { name: 'Email updates' })).toHaveAttribute(
       'href',
       '/email-updates',

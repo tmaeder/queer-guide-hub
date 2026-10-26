@@ -17,7 +17,7 @@ import {
   Check,
   Globe,
   FolderOpen,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
 import { supabase } from '@/integrations/supabase/client';
 import type { CMSMedia } from '@/types/cms';

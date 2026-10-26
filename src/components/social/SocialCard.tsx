@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink } from '@/components/icons';
 import { useSocialProfiles } from '@/hooks/useSocialProfiles';
 import {
   platformLabel,

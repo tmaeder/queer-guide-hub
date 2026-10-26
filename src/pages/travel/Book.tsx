@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from '@/components/icons';
 import { BookNowAccordion } from '@/components/travel/BookNowAccordion';
 import { useTripBookingContext } from '@/hooks/useTripBookingContext';
 import { useMeta } from '@/hooks/useMeta';

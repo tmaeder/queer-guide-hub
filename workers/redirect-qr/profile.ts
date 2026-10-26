@@ -28,7 +28,9 @@ export async function readQrImageProfile(
         headers: { Authorization: 'Bearer ' + token, apikey: anonKey },
         credentials: 'omit',
         referrerPolicy: 'no-referrer',
-        redirect: 'error',
+        // Workers implements manual/follow only. Non-2xx responses, including
+        // redirects, are rejected below without sending the capability onward.
+        redirect: 'manual',
         cache: 'no-store',
         signal: AbortSignal.any([signal, AbortSignal.timeout(10000)]),
       },

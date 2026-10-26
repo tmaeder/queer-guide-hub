@@ -5,8 +5,8 @@ import { proxyAppAssociation } from '../supabase/functions/_shared/redirect-app-
  * absolute OG/Twitter tags, hreflang alternates, and (where appropriate)
  * JSON-LD.
  *
- * For crawler user agents on indexable routes we also inject route-specific
- * body content into <div id="root">. Real users get the SPA shell unchanged;
+ * For indexable public introductory pages we inject content for all clients.
+ * Crawlers also receive route-specific detail content and live hub links;
  * React's createRoot() replaces children on mount so the SPA mounts cleanly
  * over the injected content with no hydration mismatch.
  *
@@ -60,6 +60,16 @@ import { bootGuardTag } from './_lib/boot-guard';
 import { placeTagEdgeLocation } from './_lib/placeTagRedirect';
 import { applySecurityHeaders, generateCspNonce } from './_lib/securityHeaders';
 import type { Env } from './_lib/sitemap';
+import {
+  preferredContent,
+  markdownResponse,
+  markdownNotFound,
+  isKnownAppPath,
+  isEdgeEndpoint,
+  appRedirect,
+} from './_lib/agentHttp';
+import { DOCS_MARKDOWN, pageMarkdown } from './_lib/agentContent';
+import { STATIC_ROUTE_BODY } from './_lib/routeBody';
 import { redirectReportPage, setRedirectReportHeaders } from './_lib/redirectReportPage';
 
 // Prefixes that look like static assets. If the SPA catch-all in
@@ -232,8 +242,32 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // and any synthetic 404 we may emit share the same value.
   const cspNonce = generateCspNonce();
 
-  if (SKIP_PREFIXES.some((p) => pathname.startsWith(p))) return next();
-  if (SKIP_SUFFIXES.some((s) => pathname.endsWith(s))) return next();
+  if (
+    SKIP_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+    SKIP_SUFFIXES.some((suffix) => pathname.endsWith(suffix))
+  ) {
+    const machine = await next();
+    // Preserve native JSON/XML, redirects and upstream failures. A successful
+    // HTML SPA fallback is never a valid machine-readable file or API route.
+    if (
+      !(machine.headers.get('Content-Type') ?? '').includes('text/html') ||
+      ![200, 404].includes(machine.status)
+    )
+      return machine;
+    if (preferredContent(request.headers.get('Accept')) === 'markdown') return markdownNotFound();
+    const missing = new Response(notFoundHtml(pathname), {
+      status: 404,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        Vary: 'Accept',
+        'Cache-Control': 'no-store',
+      },
+    });
+    applySecurityHeaders(missing, cspNonce);
+    return missing;
+  }
+
+  if (isEdgeEndpoint(pathname)) return next();
 
   const isAssetLikePath = looksLikeAssetPath(pathname);
 
@@ -255,6 +289,59 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // canonical (default-locale) path. Each translated URL keeps its own
   // self-canonical and exposes hreflang alternates to its 10 siblings.
   const { locale, basePath } = splitLocale(pathname);
+  const representation = preferredContent(request.headers.get('Accept'));
+  const cleanPath = basePath.replace(/\/+$/, '') || '/';
+  const redirect = appRedirect(cleanPath, locale, url.search);
+  if (redirect) return new Response(null, { status: 301, headers: { Location: redirect } });
+
+  // Public HTTP clients receive the same content as crawlers. Negotiate only
+  // explicit, public introductory pages, never private/member or gated data.
+  const publicPage = Object.hasOwn(STATIC_ROUTE_BODY, cleanPath)
+    ? STATIC_ROUTE_BODY[cleanPath]
+    : undefined;
+  const negotiated = !!publicPage || cleanPath === '/docs';
+  if (negotiated && representation === null) {
+    return new Response('Supported representations: text/html, text/markdown. See /docs.', {
+      status: 406,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', Vary: 'Accept' },
+    });
+  }
+  if (negotiated && representation === 'markdown') {
+    const response = markdownResponse(
+      cleanPath === '/docs' ? DOCS_MARKDOWN : pageMarkdown(publicPage!),
+    );
+    return request.method === 'HEAD' ? new Response(null, response) : response;
+  }
+  if (cleanPath === '/docs') {
+    const escape = (text: string) =>
+      text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    const sections = DOCS_MARKDOWN.split('\n\n')
+      .map((block) => {
+        if (block.startsWith('# ')) return `<h1>${escape(block.slice(2))}</h1>`;
+        if (block.startsWith('## ')) return `<h2>${escape(block.slice(3))}</h2>`;
+        // The full Markdown stays readable in HTML with links and commands.
+        return `<p style="white-space:pre-wrap">${escape(block).replace(/\[([^\]]+)\]\((https:\/\/[^)]+)\)/g, '<a href="$2">$1</a>')}</p>`;
+      })
+      .join('\n');
+    const response = new Response(
+      request.method === 'HEAD'
+        ? null
+        : `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Queer Guide public API and agent documentation</title><meta name="description" content="Public REST API, OpenAPI, Markdown and MCP instructions for Queer Guide."><link rel="canonical" href="https://queer.guide/docs"><style>body{font:1rem/1.7 system-ui,sans-serif;max-width:64rem;margin:3rem auto;padding:0 1.5rem}a{color:inherit}p{overflow-wrap:anywhere}</style></head><body><main>${sections}</main></body></html>`,
+      {
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          Vary: 'Accept',
+          'Cache-Control': 'public, max-age=0, must-revalidate',
+        },
+      },
+    );
+    applySecurityHeaders(response, cspNonce);
+    return response;
+  }
 
   // `_redirects` stops applying rules after this project's 100th entry. The
   // place-tag block straddles that boundary, so later slugs otherwise return
@@ -287,11 +374,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // doubled URL. Same treatment as isOwnedLandingShape below, for the same
   // reason: a soft 404 at 200 is worse than a hard one.
   if (startsWithLocale(basePath)) {
+    if (representation === 'markdown') return markdownNotFound();
     const doubledNotFound = new Response(notFoundHtml(basePath), {
       status: 404,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'public, s-maxage=60, max-age=30',
+        Vary: 'Accept',
       },
     });
     applySecurityHeaders(doubledNotFound, cspNonce);
@@ -313,11 +402,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // HTTP 200, and Google keeps a soft 404 while it drops a real one. These URLs
   // were advertised until 2026-09-10, so they will be recrawled.
   if (isOwnedLandingShape(basePath)) {
+    if (representation === 'markdown') return markdownNotFound();
     const landingNotFound = new Response(notFoundHtml(basePath), {
       status: 404,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'public, s-maxage=60, max-age=30',
+        Vary: 'Accept',
       },
     });
     applySecurityHeaders(landingNotFound, cspNonce);
@@ -333,6 +424,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'public, s-maxage=60, max-age=30',
+        Vary: 'Accept',
       },
     });
     applySecurityHeaders(handleNotFound, cspNonce);
@@ -348,6 +440,20 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         'Cache-Control': 'public, s-maxage=300, max-age=60',
       },
     });
+  }
+
+  if (!isKnownAppPath(cleanPath) && !isDetailPath(cleanPath)) {
+    if (representation === 'markdown') return markdownNotFound();
+    const unknown = new Response(notFoundHtml(basePath), {
+      status: 404,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        Vary: 'Accept',
+        'Cache-Control': 'no-store',
+      },
+    });
+    applySecurityHeaders(unknown, cspNonce);
+    return unknown;
   }
 
   let response = await next();
@@ -476,11 +582,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         },
       });
     }
+    if (representation === 'markdown') return markdownNotFound();
     const notFound = new Response(notFoundHtml(basePath), {
       status: 404,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'public, s-maxage=60, max-age=30',
+        Vary: 'Accept',
       },
     });
     applySecurityHeaders(notFound, cspNonce);
@@ -628,20 +736,21 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   let hubLinked = false;
   if (reportPage?.indexable) {
     rewriter.on('#root', new RootBodyInjector(reportPage.body));
-  } else if (isBot) {
+  } else if (isBot || (indexable && !!publicPage)) {
     const bodyHtml =
       detail?.body ?? buildBodyHtml(basePath, { title: meta.title, description: meta.description });
     // Data-driven content links for the hub pages. Inside the isBot branch on
     // purpose: this is a Supabase round-trip, and a human page view must not
     // pay for it. Detail pages already list their own children (cityDetail
     // links its venues and events), so they are skipped.
-    const hubHtml = detail ? '' : await buildHubLinksHtml(env, basePath);
+    const hubHtml = detail || !isBot ? '' : await buildHubLinksHtml(env, basePath);
     hubLinked = hubHtml.length > 0;
     rewriter.on('#root', new RootBodyInjector(bodyHtml + hubHtml));
   }
 
   const rewritten = rewriter.transform(response);
   applySecurityHeaders(rewritten, cspNonce);
+  if (negotiated) rewritten.headers.append('Vary', 'Accept');
 
   // Vary on UA so downstream caches don't serve bot HTML to humans.
   // We branch on User-Agent for indexable HTML responses, so downstream

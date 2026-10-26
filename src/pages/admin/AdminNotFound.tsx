@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router';
-import { Compass } from 'lucide-react';
+import { Compass } from '@/components/icons';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Button } from '@/components/ui/button';
 import { openAdminCommandPalette } from '@/components/admin/command-palette/commandPaletteBus';

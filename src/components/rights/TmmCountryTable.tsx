@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { FilterChip } from '@/components/transit/FilterChip';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import type { TransViolenceRecord } from '@/lib/rights/transSafety';
 import {

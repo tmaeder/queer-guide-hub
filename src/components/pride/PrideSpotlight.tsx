@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { X, MapPin, Calendar, Star, Luggage, Map as MapIcon, ExternalLink } from 'lucide-react';
+import { X, MapPin, Calendar, Star, Luggage, Map as MapIcon, ExternalLink } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { TripAction } from '@/components/trips/TripAction';
 import { rangesOverlap } from '@/components/trips/tripOverlap';

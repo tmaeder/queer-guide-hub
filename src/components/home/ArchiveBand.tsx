@@ -1,6 +1,6 @@
 import { useMemo, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PartyPopper } from 'lucide-react';
+import { PartyPopper } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Skeleton } from '@/components/ui/skeleton';

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, GraduationCap, Heart, Globe, Phone, Shield } from 'lucide-react';
+import { Briefcase, GraduationCap, Heart, Globe, Phone, Shield } from '@/components/icons';
 
 interface SecureProfileViewerProps {
   profile: Record<string, unknown>;

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { CalendarIcon, MapPin, DollarSign, X, Layers, Users, Tag } from 'lucide-react';
+import { CalendarIcon, MapPin, DollarSign, X, Layers, Users, Tag } from '@/components/icons';
 import { formatNewsTag } from '@/lib/newsTags';
 import { SearchFilters, FacetDistribution } from '@/hooks/useSearch';
 import { trackSearchUx } from '@/lib/searchClient';

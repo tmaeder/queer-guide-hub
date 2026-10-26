@@ -1,4 +1,4 @@
-import { UsersRound } from 'lucide-react';
+import { UsersRound } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 
 export const groupFields: FieldConfig[] = [

@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Star, Flag, Image as ImageIcon, ImageOff } from 'lucide-react';
+import { Star, Flag, Image as ImageIcon, ImageOff } from '@/components/icons';
 import { useState } from 'react';
 import type { UnifiedMediaItem, ViewMode } from './types';
 import { formatFileSize, getFileIcon, getOptimizationIcon, getThumbnailUrl } from './utils';

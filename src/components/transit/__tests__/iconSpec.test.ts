@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import { BATCH_A } from '../defs/batch-a';
+import { BATCH_B } from '../defs/batch-b';
+import { BATCH_C } from '../defs/batch-c';
+import { BATCH_D } from '../defs/batch-d';
+import { BATCH_E } from '../defs/batch-e';
+import { BATCH_F } from '../defs/batch-f';
+import { BATCH_G } from '../defs/batch-g';
+
+const BATCHES: Record<string, object> = { a: BATCH_A, b: BATCH_B, c: BATCH_C, d: BATCH_D, e: BATCH_E, f: BATCH_F, g: BATCH_G };
 import {
   ICON_DEFS,
   TICKS,
@@ -48,7 +57,13 @@ import {
 // Typed, because `Object.entries` widens the key to `string` and the record is
 // keyed by a literal union — indexing it back with a `string` is an implicit
 // `any`, which the zero-new-errors typecheck ratchet rejects.
-const entries = Object.entries(ICON_DEFS) as [IconName, (typeof ICON_DEFS)[IconName]][];
+// `ICON_BATCH=c npx vitest run …iconSpec` checks one drawing batch on its own,
+// so an author is not reading another batch's half-finished offenders.
+const BATCH = process.env.ICON_BATCH;
+const batchSlugs = BATCH ? new Set(Object.keys(BATCHES[BATCH] ?? {})) : null;
+const entries = (Object.entries(ICON_DEFS) as [IconName, (typeof ICON_DEFS)[IconName]][]).filter(
+  ([slug]) => !batchSlugs || batchSlugs.has(slug),
+);
 const TRACKS: string[] = [M, C, G, Y];
 
 /** Every path string an icon draws, fills and strokes together. */
@@ -72,7 +87,7 @@ describe('Icon System v2 — spec compliance', () => {
   // category art, and 28 marketplace category glyphs so a category tile's
   // icon names its own title rather than its department's.
   it('covers the whole set', () => {
-    expect(entries).toHaveLength(104);
+    if (!BATCH) expect(entries).toHaveLength(274);
     expect(entries.length).toBeGreaterThan(0);
   });
 
@@ -190,7 +205,7 @@ describe('Icon System v2 — spec compliance', () => {
       // The spec grants that to Pride and says nothing else may join it, so the
       // exemption is asserted as an exact set — a second icon copying the
       // pattern fails here rather than quietly spreading it.
-      expect(literal).toEqual([...MULTI_TRACK_EXEMPT]);
+      expect(literal).toEqual(BATCH ? [] : [...MULTI_TRACK_EXEMPT]);
     });
 
     it('never puts a bare track colour on an un-cased stroke', () => {

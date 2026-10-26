@@ -26,7 +26,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Building2, ChevronRight, Clock, Globe, MapPin, Phone } from 'lucide-react';
+import { Building2, ChevronRight, Clock, Globe, MapPin, Phone } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
