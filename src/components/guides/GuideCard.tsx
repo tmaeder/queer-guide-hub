@@ -126,7 +126,7 @@ export const GuideCard = memo(function GuideCard({
       >
         {hasHero ? (
           <img
-            src={hero}
+            src={hero ?? undefined}
             alt=""
             loading={priority ? 'eager' : 'lazy'}
             // A guide's `hero_image_path` is frequently a MERCHANT CDN url —
