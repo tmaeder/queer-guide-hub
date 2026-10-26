@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "resolveJsonModule": true
+  },
+  "include": [
+    "playwright.taxonomy.config.ts",
+    "e2e/taxonomy-management.spec.ts",
+    "e2e/support/taxonomy*.ts"
+  ]
+}

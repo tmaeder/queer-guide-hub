@@ -7,6 +7,7 @@ import {
   verifyDomainRelay,
 } from '../../../../supabase/functions/_shared/redirect-domain-relay';
 import worker from '../../../../workers/redirect-domains/index';
+import { visitorMetadata } from '../../../../supabase/functions/_shared/redirect-visitor';
 const secret = 'fixture-domain-secret-'.repeat(3);
 const env = {
   SUPABASE_URL: 'https://fixture.supabase.co',
@@ -29,6 +30,30 @@ async function signed(
   };
 }
 describe('domain-separated authenticated branded relay', () => {
+  it('uses encoded geography from Cloudflare metadata on custom domains', async () => {
+    vi.stubGlobal('crypto', webcrypto);
+    let captured: Request | undefined;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url, options) => {
+        captured = new Request(url, options);
+        return new Response(null, { status: 302, headers: { Location: 'https://example.org' } });
+      }),
+    );
+    const request = Object.assign(
+      new Request('https://links.community.com/geo-fixture', {
+        headers: { 'cf-connecting-ip': '192.0.2.1', 'x-qg-visitor-city-utf8': 'Forged' },
+      }),
+      { cf: { city: '東京', region: 'São Paulo', country: 'JP', continent: 'AS' } },
+    );
+    expect((await worker.fetch(request, env)).status).toBe(302);
+    expect(visitorMetadata(captured!, false)).toMatchObject({
+      city: '東京',
+      region: 'São Paulo',
+      continent: 'AS',
+    });
+    expect(captured?.headers.has('x-qg-visitor-city')).toBe(false);
+  });
   it('binds method, actual hostname, path, query, visitor IP and time, rejecting every altered field', async () => {
     const { relay, request } = await signed();
     expect(await verifyDomainRelay(request, secret)).toEqual(relay);

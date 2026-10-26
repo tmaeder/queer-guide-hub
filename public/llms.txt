@@ -1,0 +1,28 @@
+# Queer Guide
+
+> Independent, community-led guide to LGBTQ+ venues, events, travel, news and community knowledge worldwide.
+
+## When to use Queer Guide
+
+Use Queer Guide to discover LGBTQ+ places and events, research travel destinations and learn community terminology. Read introductory pages through the public REST API. Use the public MCP server for live search and entity details. Cite canonical Queer Guide URLs and check dates and sources. Never promise that a location is safe: local conditions and laws change. Do not request or infer members' private identities, messages, dating information or trip plans.
+
+## Getting started
+
+- [Developer documentation](https://queer.guide/docs): Authentication, endpoints, examples and errors. Public REST reads require no account, API key or payment; no separate sandbox is needed for these read-only requests.
+- [OpenAPI](https://queer.guide/openapi.json): OpenAPI 3.1 schemas and unique operation IDs.
+- [Public pages](https://queer.guide/api/v1/pages): GET lists available introductory page slugs.
+- [Homepage content](https://queer.guide/api/v1/pages/home): GET returns title, paragraphs, canonical URL and related links as JSON.
+- [Public MCP](https://mcp.queer.guide/mcp): Streamable HTTP; initialize then tools/list. Anonymous read-only search and details. Discover actual capabilities at runtime.
+- [Authenticated MCP](https://mcp.queer.guide/authed): Separate sign-in flow for member actions.
+
+## Reading the site
+
+- [Homepage](https://queer.guide/): Send Accept: text/markdown for Markdown or Accept: text/html for HTML. Responses vary on Accept.
+- [Sitemap](https://queer.guide/sitemap.xml): Public content discovery.
+- [About](https://queer.guide/about): Project background.
+- [Contact](https://queer.guide/contact): Corrections, questions and reporting.
+- [Privacy](https://queer.guide/privacy): Privacy summary and full policy in the interactive page.
+
+## Usage guidance
+
+REST is a read-only introductory content API, not a database export or member API. Cache reads, avoid bulk polling, honour 429 and Retry-After, and back off on 5xx. Error responses include error.code, error.message, error.hint and a docs URL. Fetch /docs before choosing an endpoint. Do not bypass sign-in, consent or age gates.

@@ -1,0 +1,752 @@
+{
+  "paths": [
+    "/",
+    "/about",
+    "/about-hub",
+    "/accessibility",
+    "/admin",
+    "/admin/accessibility-attributes",
+    "/admin/affiliate",
+    "/admin/affiliates",
+    "/admin/analytics",
+    "/admin/audit",
+    "/admin/automation",
+    "/admin/brands",
+    "/admin/business",
+    "/admin/business/:id",
+    "/admin/cities",
+    "/admin/cloudflare",
+    "/admin/cms",
+    "/admin/content",
+    "/admin/content/:type",
+    "/admin/content/city-quality",
+    "/admin/content/community_groups/requests",
+    "/admin/content/event-quality",
+    "/admin/content/group-requests",
+    "/admin/content/liveness",
+    "/admin/content/marketplace-quality",
+    "/admin/content/milestones",
+    "/admin/content/organizations",
+    "/admin/content/personalities",
+    "/admin/content/personalities/:id/datasheet",
+    "/admin/content/personality-quality",
+    "/admin/content/redirects",
+    "/admin/content/redirects/manual",
+    "/admin/content/unified_tags",
+    "/admin/content/venue-quality",
+    "/admin/content/village-quality",
+    "/admin/countries",
+    "/admin/design",
+    "/admin/diagnostics",
+    "/admin/duplicates",
+    "/admin/editorial-tools",
+    "/admin/email",
+    "/admin/email-templates",
+    "/admin/event-amenities",
+    "/admin/event-services",
+    "/admin/event-types",
+    "/admin/events",
+    "/admin/feedback",
+    "/admin/festivals",
+    "/admin/geography",
+    "/admin/governance",
+    "/admin/graph",
+    "/admin/groups",
+    "/admin/hotels",
+    "/admin/import-hub",
+    "/admin/imports",
+    "/admin/imports/*",
+    "/admin/imports/data",
+    "/admin/imports/email-ingestions",
+    "/admin/inbox",
+    "/admin/ingestion-rules",
+    "/admin/links",
+    "/admin/maps",
+    "/admin/marketplace",
+    "/admin/marketplace/guides",
+    "/admin/media",
+    "/admin/media/:id",
+    "/admin/moderation",
+    "/admin/news-authors",
+    "/admin/news-authors/articles",
+    "/admin/news-sources",
+    "/admin/pages",
+    "/admin/personalities",
+    "/admin/personalities/milestones",
+    "/admin/pipelines",
+    "/admin/pipelines/dashboard",
+    "/admin/places-editorial",
+    "/admin/postfach",
+    "/admin/quality",
+    "/admin/quests",
+    "/admin/redirects",
+    "/admin/review",
+    "/admin/scraping",
+    "/admin/search-intelligence",
+    "/admin/security",
+    "/admin/settings",
+    "/admin/settings/accessibility",
+    "/admin/settings/event-amenities",
+    "/admin/settings/event-services",
+    "/admin/settings/event-types",
+    "/admin/settings/professions",
+    "/admin/settings/target-groups",
+    "/admin/settings/venue-services",
+    "/admin/styleguide",
+    "/admin/submissions",
+    "/admin/tags",
+    "/admin/target-groups",
+    "/admin/taxonomies",
+    "/admin/trash",
+    "/admin/users",
+    "/admin/vendors",
+    "/admin/venue-guides",
+    "/admin/venue-services",
+    "/admin/venues",
+    "/admin/villages",
+    "/admin/workflows",
+    "/africa",
+    "/auth",
+    "/auth/callback",
+    "/auth/reset-password",
+    "/blog",
+    "/bookings",
+    "/brand",
+    "/cities",
+    "/cities/compare",
+    "/city/:slug",
+    "/city/compare",
+    "/claim-username",
+    "/community",
+    "/community/feed",
+    "/community/friends",
+    "/community/groups",
+    "/community/members",
+    "/competitions",
+    "/competitions/drag-kings",
+    "/competitions/drag-pageants",
+    "/competitions/drag-series",
+    "/competitions/gay-titles",
+    "/competitions/leather-titles",
+    "/competitions/trans-pageants",
+    "/competitions/types/:categorySlug",
+    "/contact",
+    "/cookies",
+    "/country/:slug",
+    "/cruising",
+    "/dashboard",
+    "/directory",
+    "/discover",
+    "/dmca",
+    "/donate",
+    "/email-updates",
+    "/europe",
+    "/events",
+    "/events/:slug",
+    "/events/guides",
+    "/events/guides/:slug",
+    "/explore/connections",
+    "/extension",
+    "/favorites",
+    "/feed",
+    "/feedback",
+    "/festivals",
+    "/festivals/:id",
+    "/flights",
+    "/friends",
+    "/geography/:slug",
+    "/going-out",
+    "/groups",
+    "/groups/:groupId",
+    "/groups/invite/:token",
+    "/guides",
+    "/guides/:slug",
+    "/help",
+    "/help-hotlines",
+    "/help/:country",
+    "/history",
+    "/history/:slug",
+    "/home",
+    "/hotels",
+    "/hotels/:slug",
+    "/hub",
+    "/hub/calendar",
+    "/hub/contacts",
+    "/hub/dating",
+    "/hub/dating/:userId",
+    "/hub/dating/onboarding",
+    "/hub/feed",
+    "/hub/friends",
+    "/hub/groups",
+    "/hub/groups/:groupId",
+    "/hub/groups/invite/:token",
+    "/hub/members",
+    "/hub/messages",
+    "/hub/nearby",
+    "/hub/news",
+    "/hub/people",
+    "/hub/plans",
+    "/hub/saved",
+    "/hub/settings",
+    "/hub/travel",
+    "/hub/trips",
+    "/inbox",
+    "/intimate",
+    "/intimate/onboard",
+    "/intimate/u/:userId",
+    "/kink",
+    "/legal",
+    "/links-workspace",
+    "/login",
+    "/mailbox",
+    "/map",
+    "/marketplace",
+    "/marketplace/:slug",
+    "/marketplace/brands",
+    "/marketplace/brands/:slug",
+    "/marketplace/categories",
+    "/marketplace/category/:slug",
+    "/marketplace/collection/:slug",
+    "/marketplace/guides",
+    "/marketplace/guides/:slug",
+    "/marketplace/merchants/:domain",
+    "/marketplace/missions",
+    "/marketplace/share",
+    "/me",
+    "/me/account",
+    "/me/calendar",
+    "/me/contributions",
+    "/me/groups",
+    "/me/leaderboard",
+    "/me/missions",
+    "/me/passport",
+    "/me/progress",
+    "/me/saved",
+    "/me/settings",
+    "/me/tiers",
+    "/me/travel",
+    "/me/trips",
+    "/messages",
+    "/milestones",
+    "/my-groups",
+    "/news",
+    "/news/:slug",
+    "/news/all",
+    "/news/me",
+    "/news/story/:slug",
+    "/oauth/callback",
+    "/onboarding/search",
+    "/onboarding/venues",
+    "/onboarding/welcome",
+    "/organizations",
+    "/organizations/:slug",
+    "/organizer/:slug",
+    "/p/:slug",
+    "/pattern-library",
+    "/people",
+    "/people/dating",
+    "/people/dating/:userId",
+    "/people/dating/onboarding",
+    "/people/feed",
+    "/people/friends",
+    "/people/groups",
+    "/people/groups/:groupId",
+    "/people/groups/invite/:token",
+    "/people/members",
+    "/people/nearby",
+    "/people/travel",
+    "/personalities",
+    "/personalities/:slug",
+    "/personality/:slug",
+    "/place/:slug",
+    "/places",
+    "/podcasts",
+    "/podcasts/:slug",
+    "/posts/:postId",
+    "/press",
+    "/pride",
+    "/pride/:year",
+    "/privacy",
+    "/produkt/:slug",
+    "/profession/:slug",
+    "/professions/:professionName",
+    "/profile/footprint",
+    "/profile/footprint/:userId/public",
+    "/profile/settings",
+    "/profile/tiers",
+    "/quests",
+    "/quests/:slug",
+    "/resources",
+    "/resources/:tagName",
+    "/resources/c/:categorySlug",
+    "/resources/topic/:slug",
+    "/ressources",
+    "/ressources/:tagName",
+    "/rights",
+    "/rights/sources",
+    "/rights/trans",
+    "/search",
+    "/settings",
+    "/settings/privacy",
+    "/share-target",
+    "/share/redirect-report/:reportId",
+    "/shop",
+    "/shop/*",
+    "/signin",
+    "/sitemap",
+    "/styleguide",
+    "/submit",
+    "/submit/:contentType",
+    "/support",
+    "/sustainability",
+    "/tag/:slug",
+    "/tags",
+    "/tags/:tagName",
+    "/tags/c/:categorySlug",
+    "/tags/interactions",
+    "/tags/sti-guide",
+    "/tags/topic/:slug",
+    "/terms",
+    "/tools/checklist",
+    "/tools/checklist/s/:code",
+    "/tools/workbook/:slug",
+    "/travel",
+    "/travel/book",
+    "/trips",
+    "/trips/:tripId",
+    "/trips/:tripId/*",
+    "/trips/:tripId/booklet",
+    "/trips/:tripId/today",
+    "/trips/discover",
+    "/trips/inbox",
+    "/trips/invitations",
+    "/trips/shared/:token",
+    "/user/:userId/:tab?",
+    "/users",
+    "/users/:slug",
+    "/values",
+    "/venues",
+    "/venues/:slug",
+    "/venues/events",
+    "/venues/groups",
+    "/venues/guides",
+    "/venues/guides/:slug",
+    "/venues/hotels",
+    "/venues/leaderboard",
+    "/venues/marketplace",
+    "/venues/news",
+    "/venues/passport",
+    "/venues/resources",
+    "/venues/travel",
+    "/villages",
+    "/villages/:slug",
+    "/vision",
+    "/wiki/:slug",
+    "/wishlists",
+    "/wishlists/:slug"
+  ],
+  "redirects": {
+    "/venues/hotels": {
+      "to": "/hotels",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/venues/events": {
+      "to": "/events",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/venues/news": {
+      "to": "/news",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/venues/marketplace": {
+      "to": "/marketplace",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/venues/travel": {
+      "to": "/travel",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/venues/groups": {
+      "to": "/hub/groups",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/venues/resources": {
+      "to": "/tags",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/venues/leaderboard": {
+      "to": "/me/progress",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/venues/passport": {
+      "to": "/me/progress",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/venues/guides": {
+      "to": "/guides?entity=venue",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/milestones": {
+      "to": "/history",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/events/guides": {
+      "to": "/guides?entity=event",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/marketplace/missions": {
+      "to": "/me/progress",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/marketplace/guides": {
+      "to": "/guides?entity=marketplace",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/villages": {
+      "to": "/places",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/festivals": {
+      "to": "/events",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/support": {
+      "to": "/help",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/shop": {
+      "to": "/marketplace",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/places": {
+      "to": "/travel",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/trips": {
+      "to": "/hub/plans",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/trips/inbox": {
+      "to": "/hub/plans",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/bookings": {
+      "to": "/hub/plans",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/flights": {
+      "to": "/travel",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/cities/compare": {
+      "to": "/city/compare",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/users": {
+      "to": "/hub/members",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/home": {
+      "to": "/",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/dashboard": {
+      "to": "/hub",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/directory": {
+      "to": "/hub/people",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/europe": {
+      "to": "/cities",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/africa": {
+      "to": "/cities",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/quests": {
+      "to": "/guides?format=quest",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/resources": {
+      "to": "/tags",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/ressources": {
+      "to": "/tags",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/news/me": {
+      "to": "/me/progress",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/groups": {
+      "to": "/hub/groups",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/my-groups": {
+      "to": "/hub/groups?tab=mine",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/inbox": {
+      "to": "/hub/messages",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/mailbox": {
+      "to": "/hub/messages",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/messages": {
+      "to": "/hub/messages",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/favorites": {
+      "to": "/hub/saved",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/feed": {
+      "to": "/hub/feed",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/friends": {
+      "to": "/hub/friends",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/community": {
+      "to": "/hub/feed",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/community/feed": {
+      "to": "/hub/feed",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/community/members": {
+      "to": "/hub/members",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/community/friends": {
+      "to": "/hub/friends",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/community/groups": {
+      "to": "/hub/groups",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/calendar": {
+      "to": "/hub/plans",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/trips": {
+      "to": "/hub/plans",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/contacts": {
+      "to": "/hub/messages",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/hub/news": {
+      "to": "/hub/saved",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me": {
+      "to": "/hub",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/saved": {
+      "to": "/hub/saved",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/trips": {
+      "to": "/hub/plans",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/calendar": {
+      "to": "/hub/plans",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/groups": {
+      "to": "/hub/messages",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/people": {
+      "to": "/hub/people",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/people/feed": {
+      "to": "/hub/feed",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/people/members": {
+      "to": "/hub/members",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/people/friends": {
+      "to": "/hub/friends",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/people/groups": {
+      "to": "/hub/groups",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/people/dating": {
+      "to": "/hub/dating",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/people/dating/onboarding": {
+      "to": "/hub/dating/onboarding",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/people/travel": {
+      "to": "/hub/travel",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/people/nearby": {
+      "to": "/hub/nearby",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/intimate": {
+      "to": "/hub/dating?panel=people",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/discover": {
+      "to": "/hub/dating?panel=people",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/cruising": {
+      "to": "/hub/dating",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/intimate/onboard": {
+      "to": "/hub/dating/onboarding",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/kink": {
+      "to": "/tools/checklist",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/profile/tiers": {
+      "to": "/me/progress",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/profile/footprint": {
+      "to": "/me/travel",
+      "localized": false,
+      "preserveQuery": false
+    },
+    "/help-hotlines": {
+      "to": "/help",
+      "localized": true,
+      "preserveQuery": true
+    }
+  },
+  "functionPaths": [
+    "/.well-known/did.json",
+    "/.well-known/webfinger",
+    "/api/csp-report",
+    "/api/geo",
+    "/api/oembed",
+    "/api/qr",
+    "/api/redirects/*",
+    "/api/track",
+    "/api/v1/pages",
+    "/api/v1/pages/*",
+    "/api/v1/styleguide/prompt",
+    "/brand/tokens.css",
+    "/brand/tokens.json",
+    "/feeds/tags/:slug",
+    "/feeds/u/:handle",
+    "/go/:slug",
+    "/manifest.json",
+    "/sitemap-brands.xml",
+    "/sitemap-events.xml",
+    "/sitemap-hotels.xml",
+    "/sitemap-landings.xml",
+    "/sitemap-landmarks.xml",
+    "/sitemap-milestones.xml",
+    "/sitemap-news.xml",
+    "/sitemap-personalities.xml",
+    "/sitemap-places.xml",
+    "/sitemap-podcasts.xml",
+    "/sitemap-static.xml",
+    "/sitemap-tag-categories.xml",
+    "/sitemap-tags.xml",
+    "/sitemap-venues.xml",
+    "/sitemap-villages.xml",
+    "/sitemap.xml",
+    "/xrpc/app.bsky.feed.describeFeedGenerator",
+    "/xrpc/app.bsky.feed.getFeedSkeleton"
+  ]
+}

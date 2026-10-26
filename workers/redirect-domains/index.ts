@@ -8,6 +8,7 @@ import {
   forwardNativeHeaders,
 } from '../../supabase/functions/_shared/redirect-native-resolution';
 import { proxyAppAssociation } from '../../supabase/functions/_shared/redirect-app-association-proxy';
+import { forwardVisitorGeo } from '../../supabase/functions/_shared/redirect-visitor-geo';
 import type { IncomingRequestCfProperties } from '@cloudflare/workers-types';
 import {
   DOMAIN_HEALTH_PATH,
@@ -119,10 +120,9 @@ export default {
         const value = request.headers.get(name);
         if (value) forwarded.set(name, value);
       }
-      for (const name of ['country', 'city', 'region', 'continent'] as const) {
-        const value = (request as Request & { cf?: IncomingRequestCfProperties }).cf?.[name];
-        if (typeof value === 'string') forwarded.set('x-qg-visitor-' + name, value);
-      }
+      const geo = (request as Request & { cf?: IncomingRequestCfProperties }).cf;
+      if (typeof geo?.country === 'string') forwarded.set('x-qg-visitor-country', geo.country);
+      forwardVisitorGeo(forwarded, geo);
       const body = request.method === 'POST' ? await passwordBody(request) : undefined;
       if (body) forwarded.set('Content-Type', 'application/x-www-form-urlencoded');
       const response = await fetch(upstream, {

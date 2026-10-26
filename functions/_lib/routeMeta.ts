@@ -22,6 +22,11 @@ export const DEFAULT_META: RouteMeta = {
 };
 
 export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
+  '/docs': {
+    title: 'Queer Guide public API and agent documentation',
+    description:
+      'Read Queer Guide content without an API key. REST endpoints, OpenAPI, Markdown negotiation, MCP and agent usage examples.',
+  },
   '/': {
     title: 'Queer Guide — LGBTQ+ Safe Spaces, Events & Community',
     description: DEFAULT_DESCRIPTION,

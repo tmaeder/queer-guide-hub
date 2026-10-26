@@ -1,5 +1,6 @@
 // Pure evidence selection shared by both event gap workers.
 import { assertPublicHttpUrl } from './ssrf-guard.ts'
+import { extractGaychEventArtwork } from './gaych-parse.ts'
 
 export type GapLane = 'content' | 'image'
 export type GapEvent = Record<string, unknown> & { id: string; title: string }
@@ -90,6 +91,7 @@ export function sourceCancellation(html: string, ev: GapEvent): string | null {
 }
 
 export function imageCandidates(html: string, ev: GapEvent, pageUrl: string): string[] {
+  const originals = extractGaychEventArtwork(html, ev, pageUrl)
   const structured = structuredEvent(html, ev)
   // Social-preview metadata may be a publisher logo, city cover or profile
   // photo. It cannot establish ownership of an event's artwork.
@@ -99,7 +101,7 @@ export function imageCandidates(html: string, ev: GapEvent, pageUrl: string): st
   const sourceDate = Date.parse(sourceDay), eventDate = Date.parse(eventDay)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(sourceDay) || !Number.isFinite(Date.parse(sourceStart)) || !Number.isFinite(sourceDate)
     || !Number.isFinite(eventDate) || new Date(sourceDate).toISOString().slice(0, 10) !== sourceDay
-    || Math.abs(sourceDate - eventDate) > 86400000) return []
+    || Math.abs(sourceDate - eventDate) > 86400000) return originals
   const image = structured?.image
   const raw = (Array.isArray(image) ? image : [image]).map(v =>
     v && typeof v === 'object' ? (v as Record<string, unknown>).url : v)
@@ -114,7 +116,7 @@ export function imageCandidates(html: string, ev: GapEvent, pageUrl: string): st
       if (!u.username && !u.password) candidates.push(u.href)
     } catch { /* Invalid image URL. */ }
   }
-  return [...new Set(candidates)].slice(0, 3)
+  return [...new Set([...originals, ...candidates])].slice(0, 3)
 }
 
 export function contentPatch(ev: GapEvent, ai: Record<string, unknown>): GapPatch {

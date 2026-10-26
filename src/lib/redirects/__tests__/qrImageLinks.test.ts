@@ -170,7 +170,7 @@ describe('Worker live profile transport and rendering', () => {
       expect.objectContaining({
         headers: { Authorization: 'Bearer ' + token, apikey: 'fixture-anon' },
         credentials: 'omit',
-        redirect: 'error',
+        redirect: 'manual',
         cache: 'no-store',
         referrerPolicy: 'no-referrer',
       }),
@@ -218,6 +218,20 @@ describe('Worker live profile transport and rendering', () => {
           new Response('x'.repeat(16385), { headers: { 'Content-Type': 'application/json' } }),
       ),
     ).rejects.toMatchObject({ status: 503 });
+    for (const status of [301, 302, 307, 308]) {
+      const redirected = vi.fn<typeof fetch>(
+        async () =>
+          new Response(null, { status, headers: { Location: 'https://other.example/profile' } }),
+      );
+      await expect(
+        readQrImageProfile(token, origin, 'key', new AbortController().signal, redirected),
+      ).rejects.toMatchObject({ status: 503 });
+      expect(redirected).toHaveBeenCalledOnce();
+      expect(redirected).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ redirect: 'manual' }),
+      );
+    }
     for (const status of [404, 422])
       await expect(
         readQrImageProfile(

@@ -29,11 +29,23 @@ export function distanceMeters(lat1, lon1, lat2, lon2) {
   return 6371000 * 2 * Math.asin(Math.min(1, Math.sqrt(a)));
 }
 export function classifyClasses(labels = [], description = '') {
+  // Exact municipal forms, not a blanket township/county/district exception.
+  // Ontario lower-tier and Quebec parish/township municipalities are local
+  // municipalities. Italian sources spell the singular "comune", not "commune".
+  const municipalForm = labels.some((label) =>
+    /^(?:lower-tier municipality of Ontario|township municipality in Ontario|parish municipality|township municipality|charter township of Michigan|township of Pennsylvania|township of New Jersey|comune of Italy|city with county rights)$/i.test(label),
+  );
+  // Additional vocabulary must not revive historical places or promote a
+  // conflicting neighbourhood/container identity to a municipal profile.
+  const conflictingForm = labels.some((label) =>
+    /former|historical|ancient|abandoned|ghost town|archaeological|neighbou?rhood|suburb|subdistrict|city district|municipal district|^district of |^area of /i.test(label),
+  );
+  if (municipalForm && !conflictingForm) return 'municipality';
   // These are autonomous municipal forms, including US boroughs. A German
   // kreisfreie Stadt also carries an urban-district class; that is not a suburb.
   const independent = labels.some(
     (l) =>
-      /^(?:city(?:\b|$)|big city$|largest city$|global city$|metropolis$|megacity$|national capital$|federal capital$|charter city$|statutory city\b|urban municipality\b|rural municipality\b|market municipality\b|independent city\b|municipality(?:$| of | in | without )|commune of (?:France|Chile|Italy|Belgium)|borough of (?:Pennsylvania|New Jersey)|township of |civil parish\b|place with town rights)/i.test(
+      /^(?:city(?:\b|$)|big city$|largest city$|global city$|metropolis$|megacity$|national capital$|federal capital$|charter city$|statutory city\b|urban municipality\b|rural municipality\b|market municipality\b|independent city\b|municipality(?:$| of | in | without )|commune of (?:France|Chile|Italy|Belgium)|borough of (?:Pennsylvania|New Jersey)|civil parish\b|place with town rights)/i.test(
         l,
       ) && !/district|county|former|local municipality|municipal district/i.test(l),
   );
@@ -49,7 +61,7 @@ export function classifyClasses(labels = [], description = '') {
     ),
   );
   const administrative = administrativeDistrict || labels.some((l) =>
-    /county$|province|prefecture|local municipality|local government area|metropolitan district|administrative territorial entity|federal state|oblast|district$/i.test(
+    /county$|province|prefecture|local municipality|local government area|metropolitan district|administrative territorial entity|federal state|oblast|district$|^township of /i.test(
       l,
     ),
   );
