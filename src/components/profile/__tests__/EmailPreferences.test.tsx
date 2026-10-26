@@ -245,3 +245,40 @@ it('keeps group invitations independent of group mentions and newsletter subscri
   );
   expect(api.invoke.mock.calls.filter((c) => c[1]?.body?.action === 'subscribe')).toHaveLength(0);
 });
+
+it('saves comment and business topics independently without enabling newsletter or other activity', async () => {
+  api.invoke.mockImplementation((_name, options) =>
+    Promise.resolve({
+      data: options?.body
+        ? { delivery_preferences: { ...options.body, version: 1 } }
+        : { subscription: null, delivery_preferences: delivery },
+      error: null,
+    }),
+  );
+  render(<EmailPreferences />);
+  for (const name of [
+    'Email me mentions and replies in my groups',
+    'Email me mentions and replies in the community',
+    'Email me claim and service updates for businesses I represent',
+  ]) {
+    const toggle = await screen.findByRole('checkbox', { name });
+    expect(toggle).not.toBeChecked();
+    fireEvent.click(toggle);
+  }
+  fireEvent.click(screen.getByRole('button', { name: 'Save activity email settings' }));
+  await waitFor(() =>
+    expect(api.invoke).toHaveBeenCalledWith(
+      'email-subscriptions',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          action: 'delivery_preferences',
+          dm_digest_enabled: false,
+          group_mentions_enabled: false,
+          trip_invites_enabled: false,
+          operational_topics: ['group_comments', 'community_comments', 'business_updates'],
+        }),
+      }),
+    ),
+  );
+  expect(api.invoke.mock.calls.filter((c) => c[1]?.body?.action === 'subscribe')).toHaveLength(0);
+});

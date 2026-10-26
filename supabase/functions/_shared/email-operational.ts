@@ -34,6 +34,29 @@ const notices: Record<
       "Sign in to review the invitation. Opening this email does not join the group.",
     url: "https://queer.guide/hub/groups",
   },
+  group_comment: {
+    subject: "You have a group comment update",
+    message:
+      "Sign in to review a mention or reply. Private group details stay in Queer Guide.",
+    url: "https://queer.guide/hub/groups",
+  },
+  community_comment: {
+    subject: "You have a community comment update",
+    message: "Sign in to review a mention or reply in Queer Guide.",
+    url: "https://queer.guide/community/feed",
+  },
+  business_claim: {
+    subject: "Your business claim has an update",
+    message:
+      "Sign in to review the current claim status with Queer Guide support. This email does not grant access to a business.",
+    url: "https://queer.guide/contact",
+  },
+  business_status: {
+    subject: "Your business listing has a service update",
+    message:
+      "Sign in to review the current listing status with Queer Guide support.",
+    url: "https://queer.guide/contact",
+  },
   contribution: {
     subject: "Your contribution has a decision",
     message: "Sign in to review the outcome of your contribution.",

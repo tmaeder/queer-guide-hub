@@ -1,0 +1,24 @@
+# Transactional domain recipient and event adapters
+
+The operational-notice pipeline also handles saved group/community comment activity and business service events. It uses the existing Cloudflare-only delivery gateway, durable outbox, immediate pre-dispatch authorization and honest receipt states. No adapter accepts a caller-selected address or free-form message.
+
+| Product action | Authoritative recipient | Required permission and current proof |
+| --- | --- | --- |
+| Group comment mention, direct reply, comment on own post | Mentioned current group member, original parent author or post author | `group_comments`; original membership IDs, saved comment/post/parent, unread original group notification, available group and no blocks |
+| Community comment mention, direct reply, comment on own post | Mentioned account, original parent author or post author | `community_comments`; original saved identities, unread notification, current post visibility for both actor and recipient, no blocks |
+| Organization claim transition | Admin-managed claimant, or original claimant when its claim is removed | `business_updates`; current verified account mailbox, exact current claim fields and transition generation |
+| Organization service-status transition | Current admin-managed claimed owner | Same business permission and claim generation |
+| Linked venue closure/review/link transition | Current verified claimant of its organization | Same permission, exact venue fingerprint and organization claim generation |
+| Linked vendor enabled/link transition | Current verified claimant of its organization | Same permission, exact merchant fingerprint and organization claim generation |
+
+The settings are independent, default off, and do not subscribe anyone to marketing. Older settings clients preserve omitted topics. Public directory contacts, marketplace listing contacts and a matching email domain cannot establish ownership. Standalone unclaimed listings remain directory recipients for an actual authorized transaction; they acquire no unsolicited automated business notice. Business mail never grants listing access and contains no private listing details.
+
+Capture occurs in the source transaction; rollback removes the notification and notice too. No existing comments or business records are backfilled. Comment fan-out is bounded at fifty distinct verified recipients, processed in stable account order. Malformed mentions, self activity, outsiders and inaccessible sources are excluded. A recipient gets at most one email identity for one comment, even when also mentioned and replied to. Comment content, names and business names stay out of the email and source proofs.
+
+Every enqueue, claim and final authorization rechecks source eligibility. Independent opt-out permanently cancels a snapshot; read/unread toggles, removal/re-addition of mentions, blocks, source edits, membership replacement and visibility changes cannot resurrect a cancelled comment notice. Business generations invalidate prior ownership snapshots; entity transitions cancel their predecessors, including deletion/reassignment. Account erasure removes owned notices and actor/post-author proofs; exports retain only the owned operational notice representation. Source tables have RLS, no public/member access, service read-only grants and no public mutation RPC. Private triggers own proof creation.
+
+Quiet hours, shared daily activity budget, suppression, mailbox changes, expiry and uncertain provider submission follow the existing notice policy. These are optional immediate service notices, not recurring promotional digests. Capturing a notice does not claim delivery. A terminal provider event or independent receiving evidence is required for delivery claims; verified Routing delivery may leave the Sending receipt at `accepted`.
+
+Existing adapters remain responsible for Auth, welcome/username, personal Mail, contact/support, event/trip invitations and changes/reminders, group requests/invitations, contribution decisions and signature-verified payments. Saved editorial recommendations, newsletters and promotional campaigns remain blocked by the Cloudflare transactional-only policy. New transaction types require a real source and recipient contract, rather than treating an arbitrary database update or published address as permission.
+
+Local verification covers all twenty SQL suites with direct Auth SELECT revoked from service_role, independently saved settings, fixed-link rendering, immutable retry, unread/source/membership/visibility/block invalidation, claimant and entity generations, mailbox change, shared budget and erasure. Production verification must run against the deployed migration and functions. Rollback-only source fixtures do not establish an actual email delivery and must never call a transport from inside a database transaction.
