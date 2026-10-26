@@ -374,10 +374,10 @@ begin
  when 'community_posts' then predicate:='s.scope=''community'' and s.post_id=$1';
  when 'group_memberships' then predicate:='s.recipient_membership_id=$1 or s.actor_membership_id=$1';
  when 'community_groups' then predicate:='s.group_id=$1';
- when 'user_follows' then predicate:='s.scope=''community'' and s.post_author_id=($2->>''following_id'')::uuid and n.user_id=($2->>''follower_id'')::uuid';
+ when 'user_follows' then predicate:='s.scope=''community'' and s.post_author_id=($2->>''following_id'')::uuid and (n.user_id=($2->>''follower_id'')::uuid or s.actor_user_id=($2->>''follower_id'')::uuid)';
  when 'user_relationships' then
   if row_data->>'relationship_type'<>'block' then return new; end if;
-  predicate:='(n.user_id=($2->>''user_id'')::uuid and (s.actor_user_id=($2->>''target_user_id'')::uuid or s.post_author_id=($2->>''target_user_id'')::uuid)) or (n.user_id=($2->>''target_user_id'')::uuid and (s.actor_user_id=($2->>''user_id'')::uuid or s.post_author_id=($2->>''user_id'')::uuid))';
+  predicate:='(n.user_id=($2->>''user_id'')::uuid and (s.actor_user_id=($2->>''target_user_id'')::uuid or s.post_author_id=($2->>''target_user_id'')::uuid)) or (n.user_id=($2->>''target_user_id'')::uuid and (s.actor_user_id=($2->>''user_id'')::uuid or s.post_author_id=($2->>''user_id'')::uuid)) or (s.actor_user_id=($2->>''user_id'')::uuid and s.post_author_id=($2->>''target_user_id'')::uuid) or (s.actor_user_id=($2->>''target_user_id'')::uuid and s.post_author_id=($2->>''user_id'')::uuid)';
  else return case when tg_op='DELETE' then old else new end;
  end case;
  -- Predicate text is exclusively from the fixed cases above. Source values

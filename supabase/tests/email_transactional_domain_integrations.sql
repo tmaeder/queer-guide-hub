@@ -9,6 +9,7 @@ do $$
 declare recipient uuid:='77777777-0000-4000-8000-000000000001'; actor uuid:='77777777-0000-4000-8000-000000000002';
  outsider uuid:='77777777-0000-4000-8000-000000000003'; unverified uuid:='77777777-0000-4000-8000-000000000004';
  group_key uuid:=gen_random_uuid(); post_key uuid:=gen_random_uuid(); comment_key uuid:=gen_random_uuid(); parent_key uuid:=gen_random_uuid();
+ third_party_post uuid:=gen_random_uuid();
  community_post uuid:=gen_random_uuid(); community_comment uuid:=gen_random_uuid(); business uuid:=gen_random_uuid();
  venue_key uuid:=gen_random_uuid(); merchant_key uuid:=gen_random_uuid(); notice uuid; marker uuid; old_notice uuid; membership uuid:=gen_random_uuid(); saved public.email_outbox; again public.email_outbox; claimed public.email_outbox; pref jsonb; count_before integer;
 begin
@@ -91,6 +92,31 @@ begin
  insert into public.user_relationships values(recipient,actor,'block');
  delete from public.user_relationships where user_id=recipient and target_user_id=actor;
  assert not public.email_notice_current(notice),'unblocking revived source';
+ -- Actor access matters independently of recipient access (three parties).
+ insert into public.community_posts(id,user_id,visibility) values(third_party_post,outsider,'followers');
+ insert into public.user_follows values(actor,outsider),(recipient,outsider);
+ community_comment:=gen_random_uuid();
+ insert into public.post_comments(id,post_id,user_id,content,mentions) values(community_comment,third_party_post,actor,'three parties',jsonb_build_array(jsonb_build_object('user_id',recipient)));
+ select id into notice from public.email_operational_notices where source_id=community_comment and user_id=recipient;
+ assert public.email_notice_current(notice),'three-party source missing';
+ delete from public.user_follows where follower_id=actor and following_id=outsider;
+ assert not public.email_notice_current(notice),'actor lost access but source remained eligible';
+ insert into public.user_follows values(actor,outsider);
+ assert not public.email_notice_current(notice),'actor refollow revived source';
+ community_comment:=gen_random_uuid();
+ insert into public.post_comments(id,post_id,user_id,content,mentions) values(community_comment,third_party_post,actor,'three party block',jsonb_build_array(jsonb_build_object('user_id',recipient)));
+ select id into notice from public.email_operational_notices where source_id=community_comment and user_id=recipient;
+ assert public.email_notice_current(notice);
+ insert into public.user_relationships values(actor,outsider,'block');
+ assert not public.email_notice_current(notice),'actor/post-owner block ignored';
+ delete from public.user_relationships where user_id=actor and target_user_id=outsider;
+ assert not public.email_notice_current(notice),'actor/post-owner unblock revived source';
+ community_comment:=gen_random_uuid();
+ insert into public.post_comments(id,post_id,user_id,content,mentions) values(community_comment,third_party_post,actor,'reverse block',jsonb_build_array(jsonb_build_object('user_id',recipient)));
+ select id into notice from public.email_operational_notices where source_id=community_comment and user_id=recipient;
+ insert into public.user_relationships values(outsider,actor,'block');
+ delete from public.user_relationships where user_id=outsider and target_user_id=actor;
+ assert not public.email_notice_current(notice),'post-owner/actor unblock revived source';
  -- A direct community reply uses the original parent identity.
  parent_key:=gen_random_uuid(); community_comment:=gen_random_uuid();
  insert into public.post_comments(id,post_id,user_id,content) values(parent_key,community_post,recipient,'parent');
