@@ -80,6 +80,21 @@ expect_status() {
 	fi
 }
 
+expect_permanent_redirect() {
+	local path=$1 destination=$2 response="" want="301 $SITE$2"
+	for _ in 1 2 3 4 5; do
+		response=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null \
+			-w '%{http_code} %{redirect_url}' "$SITE$path" || true)
+		[ "$response" = "$want" ] && break
+		sleep 5
+	done
+	if [ "$response" = "$want" ]; then
+		echo "  ✓ $path -> 301 $destination"; pass=$((pass+1))
+	else
+		echo "  ✗ $path -> $response (expected $want)"; fail=$((fail+1))
+	fi
+}
+
 # Content types need the same retry as statuses. A chunk hash from the deploy
 # that just finished can briefly miss at the edge, and the SPA fallback answers
 # those with 200 text/html — so a one-shot check reads a propagation lag as a
@@ -299,11 +314,12 @@ expect_asset_type() {
 
 echo "== SPA routes serve the app, not the error page =="
 # /help is the crisis hub — the one page where a 404 is least acceptable.
-# /venues/guides is a static sub-route, so it stays a 200 even once the edge
-# middleware is live and hard-404s unknown entity slugs.
-for route in / /help /venues /events /map /venues/guides; do
+# Venue guides now live in the unified hub; its legacy URL permanently
+# redirects there and must retain the venue filter.
+for route in / /help /venues /events /map '/guides?entity=venue'; do
 	expect_status "$route" 200
 done
+expect_permanent_redirect /venues/guides '/guides?entity=venue'
 
 # A deep route can be served a STALE cached index.html — one that references
 # chunk hashes from an older deploy. Those chunk URLs no longer exist, so each
