@@ -192,6 +192,12 @@ export function EmailPreferences() {
                 ],
                 ['group_invitations', 'Email me when I receive a group invitation'],
                 ['group_requests', 'Email me the outcome of my group join requests'],
+                ['group_comments', 'Email me mentions and replies in my groups'],
+                ['community_comments', 'Email me mentions and replies in the community'],
+                [
+                  'business_updates',
+                  'Email me claim and service updates for businesses I represent',
+                ],
                 ['contributions', 'Email me decisions on my contributions'],
                 ['payments', 'Email me when a verified payment confirmation is ready'],
               ] as const
