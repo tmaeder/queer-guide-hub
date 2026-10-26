@@ -330,7 +330,10 @@ export default function Hotels() {
             <>
               {/* Even columns, the same as venues and events. The mosaic's first
                   tiles spanned half the row and stretched an image-less plate. */}
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              <div
+                data-testid="hotel-results"
+                className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+              >
                 {hotels.map((hotel) => (
                   <HotelCard key={hotel.id} hotel={hotel} />
                 ))}
