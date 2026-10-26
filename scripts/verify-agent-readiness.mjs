@@ -2,7 +2,7 @@
 // Verify the deployed HTTP contract, not just file contents. The same command
 // can target local Pages, a preview URL, and production after release.
 import assert from 'node:assert/strict';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 const base = (process.argv[2] ?? 'http://127.0.0.1:8788').replace(/\/$/, '');
 const results = [];
 async function check(name, run) {
@@ -117,6 +117,27 @@ for (const accept of ['text/html', 'text/markdown'])
     assert(text.includes('authentication') || text.includes('authentication'.replace('a', 'A')));
     assert(text.includes('mcp.queer.guide/mcp') && text.includes('/api/v1/pages'));
   });
+for (const accept of ['text/html', 'text/markdown'])
+  await check(`Pricing ${accept}`, async () => {
+    const { response, text } = await get('/pricing', accept);
+    assert.equal(response.status, 200);
+    assert(response.headers.get('Content-Type').includes(accept));
+    assert.match(response.headers.get('Vary'), /\bAccept\b/i);
+    assert(text.length > 500 && text.includes('Free public access') && text.includes('vendors'));
+  });
+await check('Pricing HEAD and unsupported representation', async () => {
+  const head = await fetch(new URL('/pricing', base), { method: 'HEAD' });
+  assert.equal(head.status, 200);
+  assert.equal(await head.text(), '');
+  const unsupported = await get('/pricing', 'application/json');
+  assert.equal(unsupported.response.status, 406);
+});
+await check('Official CLI is downloadable JavaScript from this deployment', async () => {
+  const { response, text } = await get('/cli.mjs');
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('Content-Type'), /javascript/);
+  assert.equal(text, readFileSync('public/cli.mjs', 'utf8'));
+});
 for (const path of ['/llms.txt', '/agent.txt'])
   await check(path, async () => {
     const { response, text } = await get(path);
@@ -151,6 +172,17 @@ await check('All public page endpoints return schema-shaped content', async () =
     assert(
       record.links.every((link) => typeof link.href === 'string' && typeof link.label === 'string'),
     );
+  }
+});
+await check('Typed catalog prefix filters are optional and validated', async () => {
+  const all = JSON.parse((await get('/api/v1/pages')).text).pages;
+  const filtered = await get('/api/v1/pages?prefix=travel');
+  assert.equal(filtered.response.status, 200);
+  assert.deepEqual(JSON.parse(filtered.text).pages, all.filter((page) => page.slug.startsWith('travel')));
+  for (const suffix of ['prefix=a&prefix=b', 'prefix=' + 'x'.repeat(129)]) {
+    const invalid = await get('/api/v1/pages?' + suffix);
+    assert.equal(invalid.response.status, 400);
+    assert.equal(JSON.parse(invalid.text).error.code, 'INVALID_PARAMETERS');
   }
 });
 for (const [path, method, status] of [

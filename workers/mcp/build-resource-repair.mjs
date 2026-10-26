@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { registerQueerGuideAgentResources } from './agent-resources.mjs';
 import { queryQueerGuidePublicSearch } from './public-queries.mjs';
+import { queerGuideMemberMetadata } from './member-metadata.mjs';
 
 // The MCP service predates this repository's Worker tree. Repair its recovered
 // deployed bundle without rebuilding OAuth, tools or Durable Object code with
@@ -42,16 +43,24 @@ const injection =
   '\n  registerQueerGuideAgentResources(server, ' + JSON.stringify(documents) + ');';
 const rpcAnchor = 'async function rpc(env2, fn, args) {';
 const embedAnchor = 'const p_query_vec = await embedQuery(env2, query);';
+const oauthAnchor = 'var oauth = new OAuthProvider({';
+const metadataAnchor = '{ resource: `${origin}/authed`, authorization_servers: [origin] }';
+for (const value of [oauthAnchor, metadataAnchor])
+  if (source.split(value).length !== 2)
+    throw new Error('Expected exactly one OAuth provider and protected resource metadata declaration.');
 if (source.split(rpcAnchor).length !== 2 || source.split(embedAnchor).length !== 2)
   throw new Error('Expected exactly one RPC helper and search embedding call.');
 const rpcInjection = '\n  if (["search_hybrid", "search_autocomplete", "get_recommendations", "related_entities"].includes(fn)) return queryQueerGuidePublicSearch(fn, args);';
 const repaired =
   registerQueerGuideAgentResources.toString() + '\n' +
   queryQueerGuidePublicSearch.toString() + '\n' +
+  queerGuideMemberMetadata.toString() + '\n' +
   source.replace(anchor, anchor + injection)
     .replace(rpcAnchor, rpcAnchor + rpcInjection)
     // The existing public search service performs its own query embedding.
-    .replace(embedAnchor, 'const p_query_vec = null;');
+    .replace(embedAnchor, 'const p_query_vec = null;')
+    .replace(oauthAnchor, oauthAnchor + '\n  scopesSupported: ["member"],')
+    .replace(metadataAnchor, 'queerGuideMemberMetadata(origin)');
 mkdirSync(destination, { recursive: true });
 writeFileSync(
   destination + '/index.js',
