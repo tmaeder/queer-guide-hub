@@ -33,7 +33,15 @@ const only = process.env.ICON_SLUGS?.split(',').filter(Boolean);
 const slugs = Object.keys(ICON_DEFS).filter((s) => !only || only.includes(s));
 
 const icon = (slug, size) =>
-  renderToStaticMarkup(createElement(TransitIcon, { name: slug, size, label: slug }));
+  renderToStaticMarkup(
+    createElement(TransitIcon, {
+      name: slug,
+      size,
+      label: slug,
+      // Audit the stated CSS size, not the product's automatic size bump.
+      style: { width: size, height: size, flexShrink: 0 },
+    }),
+  );
 
 const byGroup = new Map(ICON_GROUPS.map((g) => [g, []]));
 for (const slug of slugs) {
@@ -51,11 +59,12 @@ const card = ({ slug, def }) => `
       <div class="meta"><span>${def.group}</span><span>t: ${def.t}</span><span class="sw" style="background:${def.hex}"></span></div>
       <div class="small">
         <span title="16px">${icon(slug, 16)}</span>
+        <span title="20px">${icon(slug, 20)}</span>
         <span title="24px">${icon(slug, 24)}</span>
-        <span title="32px — ticks appear here">${icon(slug, 32)}</span>
+        <span title="32px">${icon(slug, 32)}</span>
       </div>
       <div class="small dark" title="on an ink ground: the outline follows the text colour">
-        <span>${icon(slug, 16)}</span><span>${icon(slug, 24)}</span><span>${icon(slug, 32)}</span>
+        <span>${icon(slug, 16)}</span><span>${icon(slug, 20)}</span><span>${icon(slug, 24)}</span><span>${icon(slug, 32)}</span>
       </div>
     </figcaption>
   </figure>`;
@@ -65,10 +74,7 @@ const groups = ICON_GROUPS.filter((g) => (byGroup.get(g) ?? []).length > 0)
     (g) => `
   <section>
     <h2>${g} <small>${byGroup.get(g).length}</small></h2>
-    <div class="row">${byGroup
-      .get(g)
-      .map(card)
-      .join('')}</div>
+    <div class="row">${byGroup.get(g).map(card).join('')}</div>
   </section>`,
   )
   .join('');
@@ -106,8 +112,8 @@ writeFileSync(
            display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
 </style>
 <h1>Icon System v2 &mdash; ${slugs.length} icons</h1>
-<p class="lede">Each card shows the icon at 80px (grid size), then 16 / 24 / 32px.
-  Motion ticks only render at 32px and above. §8: if you cannot NAME it at 24px,
+<p class="lede">Each card shows the icon at 80px (grid size), then actual CSS sizes of 16 / 20 / 24 / 32px.
+  Compact artwork stays quiet below 40px; larger illustrations retain motion ticks. §8: if you cannot NAME it at 24px,
   simplify it. The strip at the bottom is the whole set at 24px &mdash; use it for
   §8.7, the duplicate-silhouette check.</p>
 ${groups}
