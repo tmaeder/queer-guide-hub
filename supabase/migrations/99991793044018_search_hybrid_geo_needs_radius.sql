@@ -19,6 +19,16 @@
 -- "Gay Bar" in Skandia and Xativa. When the query names a city, the
 -- exact-title boost now counts only for rows in that city.
 --
+-- Fourth fix: a query none of whose words match anything (no tsvector hit,
+-- no trigram title hit) still returned the vector arm's 40 nearest
+-- neighbours: `zzxqwplkjhqweri` -> Benken ZH, Mazamitla, research papers.
+-- Measured over real queries (German compound, Japanese, Russian, Spanish,
+-- misspelt, natural-language): every one has >= 1 keyword candidate, while
+-- nonsense has 0. Vector-only candidates are now admitted only when the
+-- keyword arm matched something. The keyword set is materialized once and
+-- reused, so this is also faster (nonsense ~700ms -> ~300ms); totals for real
+-- queries are unchanged.
+--
 -- An origin with no radius is "where the user is": it still feeds dist_m, the
 -- soft distance penalty and sort=distance. Only an explicit radius filters.
 --
@@ -35,6 +45,9 @@ declare
   v_new2 text := '(chr(32)||array_to_string(toks.arr,chr(32))||chr(32)) like (''% ''||lower(unaccent(c.title))||'' %'')) z where z.n>=10 order by length(z.cname) desc, z.n desc limit 1)';
   v_old3 text := 'f.rrf + 0.08 * f.exact_title + ';
   v_new3 text := 'f.rrf + 0.08 * f.exact_title * (case when f.boost_city is null or lower(f.city)=f.boost_city then 1 else 0 end) + ';
+  v_old4 text := 'kwvec as (select sd.doc_id from public.search_documents sd, p2 p where p.eff_q is not null and (sd.search_tsv @@ websearch_to_tsquery(''simple'',unaccent(p.eff_q)) or sd.title % p.eff_q) union select doc_id from vnn),';
+  v_new4 text := 'kwonly as materialized (select sd.doc_id from public.search_documents sd, p2 p where p.eff_q is not null and (sd.search_tsv @@ websearch_to_tsquery(''simple'',unaccent(p.eff_q)) or sd.title % p.eff_q)),
+kwvec as (select doc_id from kwonly union select doc_id from vnn where exists (select 1 from kwonly)),';
   v_n   int;
 begin
   if position(v_new in v_src) = 0 then
@@ -57,6 +70,13 @@ begin
       raise exception 'search_hybrid exact-title boost: expected exactly 1 occurrence of the old expression, found %', v_n;
     end if;
     v_src := replace(v_src, v_old3, v_new3);
+  end if;
+  if position(v_new4 in v_src) = 0 then
+    v_n := (length(v_src) - length(replace(v_src, v_old4, ''))) / length(v_old4);
+    if v_n <> 1 then
+      raise exception 'search_hybrid vector admission: expected exactly 1 occurrence of the old kwvec CTE, found %', v_n;
+    end if;
+    v_src := replace(v_src, v_old4, v_new4);
   end if;
   execute v_src;
 end
@@ -85,6 +105,16 @@ begin
   if jsonb_array_length(v_res->'hits') = 0
      or exists (select 1 from jsonb_array_elements(v_res->'hits') h where lower(coalesce(h->>'city','')) <> 'new york') then
     raise exception 'search_hybrid(gay bar new york) top 5 not all New York';
+  end if;
+  -- Nonsense with a query vector: nothing matches, so nothing is returned.
+  v_res := api_private.search_hybrid('zzxqwplkjhqweri', (select embedding from public.search_embeddings where embedding is not null limit 1), null, '{}'::jsonb, null, null, null, now(), 5, 0);
+  if (v_res->>'total')::int <> 0 then
+    raise exception 'search_hybrid(nonsense) still returns % vector-only hits', v_res->>'total';
+  end if;
+  -- Positive control: a real query with a vector still returns hits.
+  v_res := api_private.search_hybrid('places to dance at night', (select embedding from public.search_embeddings where embedding is not null limit 1), null, '{}'::jsonb, null, null, null, now(), 5, 0);
+  if jsonb_array_length(v_res->'hits') = 0 then
+    raise exception 'search_hybrid(places to dance at night) returns no hits';
   end if;
 end
 $verify$;

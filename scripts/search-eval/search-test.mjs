@@ -151,13 +151,14 @@ async function run() {
   });
 
   await scenario('S4', 'Nonsense query returns gracefully (no crash)', async ({ HARD, SOFT }) => {
-    // Hybrid search: the vector leg always returns nearest neighbours, so a random
-    // string yields low-relevance hits rather than zero — that's expected.
+    // No word of the query matches anything, so the vector arm's nearest
+    // neighbours are not admitted (search_hybrid kwonly gate) and nothing is
+    // padded in: an honest zero, not 40 random towns.
     const r = await search({ query: 'zzxqwplkjhqweri', hitsPerPage: 5 });
     HARD(r.status === 200, `status ${r.status}`);
     HARD(isArr(r.json?.hits), 'hits not array');
-    SOFT((r.json?.hits?.length ?? 0) === 0 || (r.json.hits[0]?._rankingScore ?? 1) < 0.25,
-      'nonsense returned high-score hits (vector-nearest is expected, but score should be low)');
+    HARD((r.json?.hits?.length ?? 0) === 0,
+      `nonsense returned ${r.json?.hits?.length} hits: ${(r.json?.hits ?? []).map((h) => h.title).join('; ')}`);
   });
 
   // 2. Relevance / ranking (SOFT — data-dependent)
