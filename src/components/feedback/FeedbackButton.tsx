@@ -3,12 +3,11 @@ import { MessageSquarePlus } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ContributeDialog } from '@/components/contribute/ContributeDialog';
-import { useIsMobile } from '@/hooks/use-mobile';
+import './FeedbackButton.css';
 
 /** Global contribution trigger. All form implementations live in ContributeDialog branches. */
 export function FeedbackButton() {
   const { t } = useTranslation();
-  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [capturing, setCapturing] = useState(false);
   const [screenshotBlob, setScreenshotBlob] = useState<Blob | null>(null);
@@ -44,12 +43,9 @@ export function FeedbackButton() {
             // z-[45]: above page chrome (z-40) and below every portal (z-50).
             // A prior z-[1200] value painted over the mobile search sheet
             // (#2814). Do not promote this page affordance above modal layers.
-            className="fixed right-6 z-[45] flex h-12 w-12 items-center justify-center rounded-container bg-foreground text-background shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-soft-hover disabled:opacity-50"
+            className="contribution-trigger fixed right-6 z-[45] flex h-12 w-12 items-center justify-center rounded-container bg-foreground text-background shadow-soft transition-[opacity,box-shadow,translate] hover:-translate-y-0.5 hover:shadow-soft-hover disabled:opacity-50"
             style={{
               visibility: capturing ? 'hidden' : 'visible',
-              bottom: isMobile
-                ? 'calc(max(6rem, var(--map-rail-clearance, 0rem) + 1rem) + env(safe-area-inset-bottom, 0px) + var(--audio-bar-clearance, 0rem) + var(--consent-bar-clearance, 0px))'
-                : 'calc(1.5rem + var(--audio-bar-clearance, 0rem) + var(--consent-bar-clearance, 0px))',
             }}
           >
             <MessageSquarePlus size={22} />

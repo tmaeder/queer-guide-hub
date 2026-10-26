@@ -19,14 +19,12 @@
  * which masked the prod-down CSP misconfiguration for hours.
  */
 
-import * as Sentry from '@sentry/react';
+import { withSentry } from '@/lib/sentryClient';
 import { supabase } from '@/integrations/supabase/client';
 
-const SEARCH_PROXY_URL =
-  import.meta.env.VITE_SEARCH_PROXY_URL || 'https://search.queer.guide';
+const SEARCH_PROXY_URL = import.meta.env.VITE_SEARCH_PROXY_URL || 'https://search.queer.guide';
 
-export const SEARCH_UNAVAILABLE_MESSAGE =
-  "Search is temporarily unavailable. We've been notified.";
+export const SEARCH_UNAVAILABLE_MESSAGE = "Search is temporarily unavailable. We've been notified.";
 
 export type SearchFetchError =
   | { kind: 'csp_or_dns_blocked'; message: string; cause: unknown }
@@ -36,7 +34,9 @@ export type SearchFetchError =
 
 export class SearchFetchException extends Error {
   constructor(public readonly detail: SearchFetchError) {
-    super(detail.kind === 'client_error' ? detail.error : detail.message ?? `search ${detail.kind}`);
+    super(
+      detail.kind === 'client_error' ? detail.error : (detail.message ?? `search ${detail.kind}`),
+    );
     this.name = 'SearchFetchException';
   }
 }
@@ -156,16 +156,18 @@ function reportToSentry(path: string, detail: SearchFetchError | undefined) {
           ? 'search.upstream_error'
           : `search.client_error.${detail.code}`;
   try {
-    Sentry.withScope((scope) => {
-      scope.setTag('search.failure_kind', tag);
-      scope.setTag('search.path', path);
-      if (detail.kind === 'upstream_error') scope.setExtra('upstream_status', detail.status);
-      if (detail.kind === 'client_error') {
-        scope.setExtra('client_status', detail.status);
-        if (detail.field) scope.setExtra('field', detail.field);
-      }
-      Sentry.captureMessage(`search-proxy ${tag}`, 'error');
-    });
+    withSentry((Sentry) =>
+      Sentry.withScope((scope) => {
+        scope.setTag('search.failure_kind', tag);
+        scope.setTag('search.path', path);
+        if (detail.kind === 'upstream_error') scope.setExtra('upstream_status', detail.status);
+        if (detail.kind === 'client_error') {
+          scope.setExtra('client_status', detail.status);
+          if (detail.field) scope.setExtra('field', detail.field);
+        }
+        Sentry.captureMessage(`search-proxy ${tag}`, 'error');
+      }),
+    );
   } catch {
     /* sentry init may not have run */
   }
@@ -175,5 +177,5 @@ function reportToSentry(path: string, detail: SearchFetchError | undefined) {
 export function isSearchUnavailable(err: unknown): boolean {
   if (!(err instanceof SearchFetchException)) return false;
   const k = err.detail.kind;
-  return k === 'csp_or_dns_blocked' || k === 'upstream_error' || (k === 'timeout');
+  return k === 'csp_or_dns_blocked' || k === 'upstream_error' || k === 'timeout';
 }

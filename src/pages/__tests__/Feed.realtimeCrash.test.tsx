@@ -20,7 +20,7 @@ import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const captureException = vi.fn();
-vi.mock('@sentry/react', () => ({ captureException: (...a: unknown[]) => captureException(...a) }));
+vi.mock('@/lib/sentryClient', () => ({ captureException: (...a: unknown[]) => captureException(...a) }));
 
 const PROD_MESSAGE =
   "WebSocket not available: Failed to construct 'WebSocket': Failed to create a WebSocket: the provided URL is invalid.";

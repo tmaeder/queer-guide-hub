@@ -100,9 +100,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   // tab switches don't trigger a full fade (only true route changes do).
 
   const tree = (
-    <div
-      className="min-h-screen flex flex-col bg-background"
-    >
+    <div className="min-h-screen flex flex-col bg-background">
       {/* Skip link for keyboard users (a11y: WCAG 2.4.1). AdminShell renders
         its own ("Skip to admin content"), so this one would just be a
         competing first tab stop inside the console. */}
@@ -176,7 +174,12 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           AnimatePresence mode="wait" wrapper here both duplicated that fade
           and held every incoming route's paint hostage to the exit animation,
           while chaining framer-motion onto the entry bundle. */}
-      <div className="relative z-10 flex-1 flex flex-col">{children}</div>
+      {/* Keep the footer below the fold while the lazy homepage is pending.
+          Index already reserves a full viewport once it mounts; a shorter
+          loading shell briefly exposed the footer, then shifted it away. */}
+      <div className={`relative z-10 flex-1 flex flex-col${isHome ? ' min-h-screen' : ''}`}>
+        {children}
+      </div>
       {!isFullBleedMap && !isAdmin && (
         <div className="relative z-10 pb-24 md:pb-0">
           <ErrorBoundary section="footer" fallback={null}>

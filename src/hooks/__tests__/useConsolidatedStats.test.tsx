@@ -11,7 +11,7 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
-vi.mock('@sentry/react', () => ({
+vi.mock('@/lib/sentryClient', () => ({
   captureException: vi.fn(),
 }));
 

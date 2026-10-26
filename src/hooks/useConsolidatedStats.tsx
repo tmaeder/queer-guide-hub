@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import * as Sentry from '@sentry/react';
+import * as Sentry from '@/lib/sentryClient';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ConsolidatedStats {
