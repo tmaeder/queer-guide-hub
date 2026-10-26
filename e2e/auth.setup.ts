@@ -3,6 +3,10 @@ import path from 'node:path';
 import { readFileSync } from 'node:fs';
 import { waitForAppReady } from './support/appReady';
 
+// Temporary production verification: never capture authentication credentials.
+setup.describe.configure({ retries: 0 });
+setup.use({ trace: 'off', screenshot: 'off', video: 'off' });
+
 export const ADMIN_STORAGE_STATE = path.resolve(
   process.cwd(),
   process.env.E2E_AUTH_STATE_OUTPUT || 'playwright/.auth/admin.json',
