@@ -31,6 +31,10 @@ export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'ref' | 'name'>
 }
 
 export type Icon = ForwardRefExoticComponent<IconProps & RefAttributes<SVGSVGElement>>;
+
+/** The v2 drawing an icon component resolves to — lets a plate redraw the same glyph large. */
+export const iconSlug = (icon: unknown): TransitIconName | undefined =>
+  (icon as { slug?: TransitIconName } | null)?.slug;
 /** Kept under the old names so typed props (`icon: LucideIcon`) did not have to move. */
 export type LucideIcon = Icon;
 export type LucideProps = IconProps;
@@ -94,6 +98,7 @@ export function iconFor(slug: TransitIconName, displayName: string): Icon {
     );
   });
   C.displayName = displayName;
+  (C as unknown as { slug: TransitIconName }).slug = slug;
   return C;
 }
 
