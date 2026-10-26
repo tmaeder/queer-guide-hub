@@ -36,6 +36,7 @@ jobs:
       # Native isolated cluster; never connects to an application database.
       # Ubuntu 24.04 ships PG16. Local/prod verification also covers PG17.
       PG_BIN: /usr/lib/postgresql/16/bin
+      PG_BINDIR: /usr/lib/postgresql/16/bin
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -44,6 +45,23 @@ jobs:
           cache: npm
       - run: npm ci --prefer-offline --no-audit
       - run: npm run test:merge-policy
+      - name: Review resolution source, ownership and composition fixtures
+        run: |
+          set -euo pipefail
+          for fixture in \
+            run_publisher_occurrence_copy.py \
+            run_news_source_recovery.py \
+            run_source_venue_recovery.py \
+            run_source_event_formats.py \
+            run_exact_news_source_duplicates.py \
+            run_review_city_context.py \
+            run_event_calendar_recovery.py \
+            run_publisher_venue_websites.py \
+            run_city_identity_recovery.py \
+            run_review_cleanup_composition.py \
+            run_snapshot_backend_grants.py; do
+            python3 "supabase/tests/isolated/$fixture"
+          done
 
   typecheck:
     runs-on: ubuntu-latest
