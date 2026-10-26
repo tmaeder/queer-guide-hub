@@ -7,7 +7,3 @@ export const USER_MODE_LABELS: Record<string, string> = {
   networking: 'Networking',
   community: 'Building Community',
 };
-
-export function userModeLabel(mode: string): string {
-  return USER_MODE_LABELS[mode] ?? 'Exploring';
-}

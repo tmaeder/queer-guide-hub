@@ -66,11 +66,6 @@ export const slideUpLarge: Variants = {
   visible: { opacity: 1, y: 0, transition: springs.soft },
 };
 
-export const slideDownLarge: Variants = {
-  hidden: { opacity: 0, y: -distance.lg },
-  visible: { opacity: 1, y: 0, transition: springs.soft },
-};
-
 // ── Page transition variants ─────────────────────────────────────────────────
 export const pageVariants: Variants = {
   initial: { opacity: 0, y: distance.sm },
@@ -183,15 +178,5 @@ export const defaultViewport = {
 
 // ── Aceternity-inspired hover/tap shorthands ─────────────────────────────────
 // Pass directly into whileHover / whileTap on motion components.
-export const hoverLift = { y: -2, transition: springs.snappy };
 export const hoverScale = { scale: 1.02, transition: springs.snappy };
 export const tapScale = { scale: 0.98, transition: springs.snappy };
-
-// Snappy fade-up with spring tail — for Aceternity card grids.
-export const fadeUpSpring: Variants = {
-  hidden: { opacity: 0, y: distance.md },
-  visible: { opacity: 1, y: 0, transition: springs.snappy },
-};
-
-export const staggerContainer: Variants = staggerContainerVariants(stagger.normal);
-export const staggerContainerFast: Variants = staggerContainerVariants(stagger.fast);

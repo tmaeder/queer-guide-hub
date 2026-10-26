@@ -9,8 +9,6 @@
 
 /** Continent / country overview — show clusters only */
 export const Z_LOW = 8;
-/** Regional / metro — hybrid (cluster density-dependent) */
-export const Z_MID = 12;
 /** City-level — show all individual elements */
 export const Z_CITY = 12;
 /** MapLibre clusterMaxZoom: clusters disappear at this zoom + 1 */

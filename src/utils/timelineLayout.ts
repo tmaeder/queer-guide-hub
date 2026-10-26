@@ -29,13 +29,3 @@ export function placeOnRows<T extends Placeable>(
   }
   return out;
 }
-
-export type ColumnUnit = 'day' | 'week' | 'month' | 'quarter';
-
-export function pickColumnUnit(rangeMs: number): ColumnUnit {
-  const DAY = 86_400_000;
-  if (rangeMs <= 14 * DAY) return 'day';
-  if (rangeMs <= 90 * DAY) return 'week';
-  if (rangeMs <= 730 * DAY) return 'month';
-  return 'quarter';
-}
