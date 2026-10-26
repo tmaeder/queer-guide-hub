@@ -1,4 +1,4 @@
-import { Check, X} from 'lucide-react';
+import { Check, X} from '@/components/icons';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 
 interface Props {

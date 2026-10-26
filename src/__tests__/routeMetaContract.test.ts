@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   DEFAULT_META,
@@ -242,6 +242,12 @@ describe('STATIC_ROUTE_BODY', () => {
   it('never links the crawler at a page that serves the homepage title', () => {
     const offenders = bodyLinks
       .filter(({ href }) => href.startsWith('/'))
+      // Published machine files do not have HTML page titles. Only exempt
+      // a machine-format link when its file really exists in public/.
+      .filter(
+        ({ href }) =>
+          !(/\.(json|txt|xml)$/.test(href) && existsSync(join(process.cwd(), 'public', href))),
+      )
       .filter(({ href }) => isIndexable(href))
       .filter(({ href }) => resolveMeta(href).title === DEFAULT_META.title)
       .map(({ from, href }) => `${from} -> ${href}`);

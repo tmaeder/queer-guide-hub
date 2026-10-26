@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause } from '@/components/icons';
 import { formatDistanceToNow } from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cleanTitle } from '@/utils/htmlDecode';

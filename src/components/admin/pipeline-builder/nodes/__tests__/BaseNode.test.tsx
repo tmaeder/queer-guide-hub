@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { Box } from 'lucide-react';
+import { Box } from '@/components/icons';
 
 vi.mock('@xyflow/react', () => ({
   Handle: () => null,

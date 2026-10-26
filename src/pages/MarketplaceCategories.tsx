@@ -13,8 +13,9 @@ import {
   groupLabel,
 } from '@/lib/marketplaceTaxonomy';
 import { groupIcon, toyGroupMeta } from '@/lib/marketplaceCategoryMeta';
-import { TransitIcon } from '@/components/transit/TransitIcon';
+import { DepartmentArt } from '@/components/marketplace/DepartmentArt';
 import { PageContainer } from '@/components/layout/PageContainer';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 
 /**
  * Every stop on the line, grouped by the line it belongs to.
@@ -120,13 +121,15 @@ export default function MarketplaceCategories() {
 
       <PageContainer>
         {loading ? (
-          <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-4">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <li
-                key={i}
-                aria-hidden="true"
-                className="h-[120px] animate-pulse rounded-container bg-muted"
-              />
+          <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-5">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <li key={i} aria-hidden="true" className="overflow-hidden rounded-container bg-card">
+                <div className="aspect-[16/10] animate-pulse bg-muted" />
+                <div className="flex flex-col gap-2 p-4">
+                  <div className="h-4 w-2/3 animate-pulse bg-muted" />
+                  <div className="h-3 w-1/2 animate-pulse bg-muted" />
+                </div>
+              </li>
             ))}
           </ul>
         ) : sections.length === 0 && orphans.length === 0 ? (
@@ -159,36 +162,21 @@ export default function MarketplaceCategories() {
                   </LocalizedLink>
                 </div>
 
-                <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-4">
-                  {section.stops.map((stop) => {
-                    // Every tile carries a mark (groupIcon falls back to the
-                    // department's); only the adult groups carry a blurb.
+                <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-5">
+                  {section.stops.map((stop, i) => {
                     const meta = toyGroupMeta(stop.slug);
                     return (
                       <li key={stop.slug}>
-                        <LocalizedLink
+                        <CategoryPlateTile
                           to={`/marketplace/category/${section.slug}?g=${stop.slug}`}
-                          className="card-lift flex h-full min-h-[120px] flex-col justify-between overflow-hidden rounded-container bg-card p-4 no-underline shadow-soft sm:p-6"
-                        >
-                          <span className="flex flex-col gap-2">
-                            <TransitIcon
-                              name={groupIcon(stop.slug, section.slug)}
-                              size={28}
-                              className="shrink-0"
-                            />
-                            <span className="text-title font-bold leading-tight text-balance">
-                              {groupLabel(stop.slug)}
-                            </span>
-                            {meta && (
-                              <span className="text-13 leading-snug text-muted-foreground text-pretty">
-                                {meta.blurb}
-                              </span>
-                            )}
-                          </span>
-                          <span className="mt-4 text-2xs uppercase tracking-label tabular-nums text-muted-foreground">
-                            {stop.count.toLocaleString()} listing{stop.count !== 1 ? 's' : ''}
-                          </span>
-                        </LocalizedLink>
+                          plateSlug={section.slug}
+                          glyph={groupIcon(stop.slug, section.slug)}
+                          index={i}
+                          count={section.stops.length}
+                          label={groupLabel(stop.slug)}
+                          listings={stop.count}
+                          blurb={meta?.blurb}
+                        />
                       </li>
                     );
                   })}
@@ -203,27 +191,18 @@ export default function MarketplaceCategories() {
                     More
                   </h2>
                 </div>
-                <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-4">
-                  {orphans.map((stop) => (
+                <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-5">
+                  {orphans.map((stop, i) => (
                     <li key={stop.slug}>
-                      <LocalizedLink
+                      <CategoryPlateTile
                         to={`/marketplace?grp=${stop.slug}`}
-                        className="card-lift flex h-full min-h-[120px] flex-col justify-between overflow-hidden rounded-container bg-card p-4 no-underline shadow-soft sm:p-6"
-                      >
-                        <span className="flex flex-col gap-2">
-                          <TransitIcon
-                            name={groupIcon(stop.slug, null)}
-                            size={28}
-                            className="shrink-0"
-                          />
-                          <span className="text-title font-bold leading-tight text-balance">
-                            {groupLabel(stop.slug)}
-                          </span>
-                        </span>
-                        <span className="mt-4 text-2xs uppercase tracking-label tabular-nums text-muted-foreground">
-                          {stop.count.toLocaleString()} listing{stop.count !== 1 ? 's' : ''}
-                        </span>
-                      </LocalizedLink>
+                        plateSlug="other"
+                        glyph={groupIcon(stop.slug, null)}
+                        index={i}
+                        count={orphans.length}
+                        label={groupLabel(stop.slug)}
+                        listings={stop.count}
+                      />
                     </li>
                   ))}
                 </ul>
@@ -233,5 +212,62 @@ export default function MarketplaceCategories() {
         )}
       </PageContainer>
     </div>
+  );
+}
+
+/**
+ * A group tile drawn the way the hub draws a department tile: a plate with the
+ * group's mark in a station disc on the yellow line, then a numbered title and
+ * the listing count. Same component as the hub (`DepartmentArt`) rather than a
+ * look-alike, so the two pages cannot drift apart. `index`/`count` are the
+ * position within THIS department's section, so each section reads as one
+ * continuous line.
+ */
+function CategoryPlateTile({
+  to,
+  plateSlug,
+  glyph,
+  index,
+  count,
+  label,
+  listings,
+  blurb,
+}: {
+  to: string;
+  plateSlug: string;
+  glyph: TransitIconName;
+  index: number;
+  count: number;
+  label: string;
+  listings: number;
+  blurb?: string;
+}) {
+  return (
+    <LocalizedLink
+      to={to}
+      className="group flex h-full flex-col overflow-hidden rounded-container border border-border-hairline bg-card no-underline card-lift-sm"
+    >
+      <DepartmentArt
+        slug={plateSlug}
+        glyph={glyph}
+        index={index}
+        count={count}
+        className="border-b border-border-hairline"
+      />
+      <div className="flex flex-1 flex-col gap-1 p-4">
+        <span className="flex items-baseline gap-2">
+          <span className="text-2xs tabular-nums text-muted-foreground">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          <span className="text-title font-bold leading-tight text-balance">{label}</span>
+        </span>
+        {blurb && (
+          <span className="text-13 leading-snug text-muted-foreground text-pretty">{blurb}</span>
+        )}
+        <span className="mt-auto pt-2 text-2xs uppercase tracking-label tabular-nums text-muted-foreground">
+          {listings.toLocaleString()} listing{listings !== 1 ? 's' : ''}
+        </span>
+      </div>
+    </LocalizedLink>
   );
 }

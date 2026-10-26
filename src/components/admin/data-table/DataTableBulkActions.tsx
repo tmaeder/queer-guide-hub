@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Pencil, Trash2, X } from 'lucide-react';
+import { Download, Pencil, Trash2, X } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,

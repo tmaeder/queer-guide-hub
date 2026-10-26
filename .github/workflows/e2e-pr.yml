@@ -111,7 +111,7 @@ jobs:
           # database stalled and was crash-restarted twice (2026-10-16 20:03 at
           # 33/hr, 2026-10-17 07:18 at 31/hr; Azure browser traffic was 71% of
           # REST time in that window). A src/-touching PR still runs everything.
-          if echo "$files" | grep -qE '^(src/|public/|e2e/|index\.html$|vite\.config\.ts$|playwright\.config\.ts$|package\.json$|package-lock\.json$|\.github/workflows/e2e-pr\.yml$|\.github/actions/setup-playwright/)'; then
+          if echo "$files" | grep -qE '^(src/|public/|e2e/|index\.html$|vite\.config\.ts$|playwright(\.taxonomy)?\.config\.ts$|tsconfig\.taxonomy-e2e\.json$|package\.json$|package-lock\.json$|\.github/workflows/e2e-pr\.yml$|\.github/actions/setup-playwright/)'; then
             echo "relevant=true" >> "$GITHUB_OUTPUT"
             echo "scope=full" >> "$GITHUB_OUTPUT"
             echo "::notice::Relevant paths changed - running critical-path specs."
@@ -188,11 +188,11 @@ jobs:
             psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-artwork-dependencies.sql
           fi
 
-          # Backend ACLs are absent from the anonymous export. Recreate only
-          # this pending guard's local preconditions; never touch production.
+          # The schema-only snapshot omits ACLs. Local defaults must not invent
+          # browser access to backend tables before their guarded migration.
           if [ -f /tmp/migrations/20261025175909_complete_security_advisor_backend_contracts.sql ] && ! grep -qx '20261025175909' snapshot/versions.txt; then
-            DB_URL="$DB_URL" node scripts/ci/seed-backend-policy-migration.mjs > /tmp/ci-backend-policy-dependencies.sql
-            psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-backend-policy-dependencies.sql
+            DB_URL="$DB_URL" node scripts/ci/seed-backend-migration-grants.mjs /tmp/migrations/20261025175909_complete_security_advisor_backend_contracts.sql > /tmp/ci-backend-grants.sql
+            psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-backend-grants.sql
           fi
 
           # Only the PR's NEW migrations: versions production has not applied.
@@ -225,7 +225,8 @@ jobs:
           [ "$n" = 1 ] || { echo "::error::anon sees no unified_tags in the local DB"; exit 1; }
 
           { echo "VITE_SUPABASE_URL=$API_URL"; echo "VITE_SUPABASE_ANON_KEY=$ANON_KEY";
-            echo "E2E_ADMIN_EMAIL=$email"; echo "E2E_ADMIN_PASSWORD=$pw"; } >> "$GITHUB_ENV"
+            echo "E2E_ADMIN_EMAIL=$email"; echo "E2E_ADMIN_PASSWORD=$pw";
+            echo "E2E_TAXONOMY_DB_URL=$DB_URL"; } >> "$GITHUB_ENV"
           echo "mode=local" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         if: steps.changes.outputs.relevant == 'true'
@@ -241,6 +242,32 @@ jobs:
         run: npm run build
         env:
           NODE_OPTIONS: --max-old-space-size=4096
+      - name: Run all 53 taxonomy mutation regressions on the isolated backend
+        if: steps.db.outputs.mode == 'local'
+        env:
+          E2E_BASE_URL: http://127.0.0.1:4174
+        run: |
+          npm run test:e2e:taxonomies:contracts
+          npx tsc -p tsconfig.taxonomy-e2e.json
+          npx vite preview --host 127.0.0.1 --port 4174 --strictPort &
+          taxonomy_preview_pid=$!
+          trap 'kill "$taxonomy_preview_pid"' EXIT
+          for i in $(seq 30); do
+            curl -fsS "$E2E_BASE_URL/" -o /dev/null && break
+            sleep 1
+          done
+          npm run test:e2e:taxonomies
+      - name: Upload taxonomy persistence and cleanup evidence
+        if: always() && steps.db.outputs.mode == 'local'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        continue-on-error: true
+        with:
+          name: taxonomy-e2e-report
+          path: |
+            playwright-report/taxonomies/
+            test-results/taxonomies.json
+            test-results/taxonomies/
+          retention-days: 7
       - name: Run critical-path specs
         if: steps.changes.outputs.relevant == 'true'
         env:

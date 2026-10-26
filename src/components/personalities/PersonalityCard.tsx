@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Star } from 'lucide-react';
+import { Star } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { RouteBullet } from '@/components/transit/RouteBullet';

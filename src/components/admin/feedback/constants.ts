@@ -1,5 +1,5 @@
-import { Zap, AlertCircle, ArrowUpCircle, Minus } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { Zap, AlertCircle, ArrowUpCircle, Minus } from '@/components/icons';
+import type { LucideIcon } from '@/components/icons';
 
 export const kanbanColumns = [
   { id: 'new', label: 'New', color: 'hsl(var(--muted-foreground))' },

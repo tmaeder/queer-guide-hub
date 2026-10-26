@@ -9,7 +9,7 @@ import {
   ClipboardCheck,
   Plug,
   History,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary, SectionErrorFallback } from '@/components/error/ErrorBoundary';
 

@@ -26,7 +26,7 @@ import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import { exportAdminUser } from '@/lib/adminUsersExport';
 import { UserModerationActions } from './UserModerationActions';
 import { UserDangerZone } from './UserDangerZone';
-import { X, MapPin, Calendar, Clock, User as UserIcon, Shield, Trash2 } from 'lucide-react';
+import { X, MapPin, Calendar, Clock, User as UserIcon, Shield, Trash2 } from '@/components/icons';
 import type { Database } from '@/integrations/supabase/types';
 
 type AppRole = Database['public']['Enums']['app_role'];

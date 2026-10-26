@@ -1,6 +1,6 @@
 import React from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import i18next from 'i18next';
 import { cn } from '@/lib/utils';

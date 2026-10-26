@@ -25,7 +25,7 @@ import {
   User,
   Folder,
   Scale,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useGroups, Group } from '@/hooks/useGroups';
 import { useGroupPosts } from '@/hooks/useGroupPosts';

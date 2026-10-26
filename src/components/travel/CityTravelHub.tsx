@@ -1,4 +1,4 @@
-import { Plane, Hotel, Ticket, ArrowRight } from 'lucide-react';
+import { Plane, Hotel, Ticket, ArrowRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';

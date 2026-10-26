@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { CalendarDays, Sparkles } from 'lucide-react';
+import { CalendarDays, Sparkles } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,

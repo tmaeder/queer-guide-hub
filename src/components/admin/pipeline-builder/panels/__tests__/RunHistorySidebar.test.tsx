@@ -58,7 +58,7 @@ describe('RunHistorySidebar', () => {
     useRunsMock.mockReturnValue({ data: [], isLoading: false });
     render(wrap(<RunHistorySidebar pipelineId="p1" activeRunId={null} onSelectRun={vi.fn()} />));
     const collapseBtns = screen.getAllByRole('button');
-    fireEvent.click(collapseBtns.find(b => b.querySelector('svg.lucide-chevron-right'))!);
+    fireEvent.click(collapseBtns.find(b => b.querySelector('svg[data-icon="chevron-right"]'))!);
     expect(screen.queryByText(/Run History/)).toBeNull();
   });
 });

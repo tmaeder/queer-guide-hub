@@ -1,4 +1,4 @@
-import { Crown, ChevronUp, Minus, ChevronDown, AlertTriangle, X, UserRound } from 'lucide-react';
+import { Crown, ChevronUp, Minus, ChevronDown, AlertTriangle, X, UserRound } from '@/components/icons';
 
 import type { DragOutcome } from '@/lib/dragOutcome';
 

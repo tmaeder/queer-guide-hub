@@ -219,11 +219,17 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
           // cost of it becoming true is a silently frozen pipeline, which is
           // exactly what this file already carries a fix for one branch down.
           if (!dryRun) {
+            // Argument names must match apply_enrichment exactly: PostgREST
+            // resolves by NAME, and this call once passed p_enriched_data /
+            // p_error, which matched no overload and 404'd silently.
             const { error: skipStatusErr } = await supabase.rpc('apply_enrichment', {
               p_staging_id: item.id,
+              p_pipeline_run_id: pipelineRunId ?? null,
+              p_stage: stage,
+              p_new_enriched: null,
+              p_actor: config.fnName,
               p_status: 'failed',
-              p_enriched_data: null,
-              p_error: 'enrich_skipped_missing_required_fields',
+              p_error_message: 'enrich_skipped_missing_required_fields',
               p_duration_ms: 0,
               p_merged_normalized: null,
             })

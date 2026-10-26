@@ -6,7 +6,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { History } from 'lucide-react';
+import { History } from '@/components/icons';
 import type { PreviousEdition } from '@/hooks/submission/useEventSeries';
 
 interface SeriesCarryoverProps {

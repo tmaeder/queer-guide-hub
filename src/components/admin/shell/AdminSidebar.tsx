@@ -19,7 +19,7 @@ import {
   Pin,
   Moon,
   Sun,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';

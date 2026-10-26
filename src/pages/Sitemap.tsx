@@ -2,7 +2,7 @@ import { slugify } from '@/lib/slugify';
 import { serializeJsonLd } from '@/lib/serializeJsonLd';
 import { useEffect, useMemo, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Search, Link2, Hash } from 'lucide-react';
+import { Search, Link2, Hash } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useDynamicSitemap } from '@/hooks/useDynamicSitemap';

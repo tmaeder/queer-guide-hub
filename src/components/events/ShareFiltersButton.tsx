@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Share2, Check } from 'lucide-react';
+import { Share2, Check } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTranslation } from 'react-i18next';

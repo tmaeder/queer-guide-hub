@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { Calendar as CalendarIcon, MapPin, Star, Ticket, Users, Plus, Check } from 'lucide-react';
+import { Calendar as CalendarIcon, MapPin, Star, Ticket, Users, Plus, Check } from '@/components/icons';
 import type { Database } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';

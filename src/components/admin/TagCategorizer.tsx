@@ -3,7 +3,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import {Tag, CheckCircle, AlertCircle } from 'lucide-react';
+import {Tag, CheckCircle, AlertCircle } from '@/components/icons';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 

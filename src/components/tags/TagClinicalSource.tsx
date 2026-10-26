@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink } from '@/components/icons';
 import { SidebarCard, SidebarRow } from '@/components/transit/SidebarCard';
 import type { TagLegalSourceRow } from '@/hooks/usePageFetchers';
 

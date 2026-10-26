@@ -1,9 +1,9 @@
 /**
- * Route-specific body content served to crawler user agents in Phase 2.
+ * Public introductory content shared by HTML, Markdown and the read-only API.
  *
  * The SPA shell ships an empty <div id="root"></div> — Googlebot's first-pass
- * indexer sees nothing. The middleware injects this content only for bot UAs;
- * real users get the SPA shell unchanged. React 18's createRoot() (used by
+ * indexer sees nothing. The middleware injects static introductions for every client and adds live
+ * hub links for crawler user agents. React 18's createRoot() (used by
  * src/main.tsx) replaces children rather than hydrating, so when the bot
  * eventually does its JS-rendering pass, the SPA mounts cleanly over our
  * injected content with no hydration mismatch.
@@ -43,6 +43,8 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       { href: '/marketplace', label: 'Shop the LGBTQ+ marketplace' },
       { href: '/news', label: 'Read curated LGBTQ+ news' },
       { href: '/about', label: 'About Queer Guide' },
+      { href: '/docs', label: 'Public API and agent documentation' },
+      { href: '/openapi.json', label: 'OpenAPI specification' },
     ],
   },
 
@@ -458,6 +460,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     h1: 'About Queer Guide',
     paragraphs: [
       'Queer Guide exists because the LGBTQ+ community deserves a resource that is queer-owned, ad-free, tracker-free, and built to last. We are independent — not venture-backed, not advertising-driven, not for sale.',
+      'Use Queer Guide to explore LGBTQ+ venues, events, destinations, news and community knowledge. Public information is available without an account; member features have their own sign-in and privacy controls. Contributions and corrections help keep the guide useful. Contact the team to report a problem with a listing, ask about the project, or discuss a contribution.',
       'The platform is run by a small team and a wider network of contributors. Editorial decisions are made by queer people. We publish our funding sources, our moderation policies, and our limits in plain language.',
     ],
     links: [
@@ -465,6 +468,30 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       { href: '/values', label: 'Our values' },
       { href: '/press', label: 'Press' },
       { href: '/donate', label: 'Support the project' },
+    ],
+  },
+
+  '/contact': {
+    h1: 'Contact Queer Guide',
+    paragraphs: [
+      'Contact the Queer Guide team about the platform, a listing, a correction, a partnership or a technical problem. The contact page provides a form with a category so the message reaches the right team inbox. Give the page address and enough detail to reproduce a problem, including what you expected to happen. You can browse the public guide without sending a message or creating an account.',
+      'The contact form asks for your name, email address and message. Replies go to the email address you provide. This is ordinary email at our end: avoid including sensitive identity information or private travel details that are not needed to investigate the issue. For a security vulnerability, use the published security reporting address, security@queer.guide. Read the privacy policy before sharing personal information.',
+    ],
+    links: [
+      { href: '/privacy', label: 'Privacy policy' },
+      { href: '/about', label: 'About Queer Guide' },
+      { href: 'mailto:security@queer.guide', label: 'Report a security vulnerability' },
+    ],
+  },
+  '/privacy': {
+    h1: 'Queer Guide privacy policy',
+    paragraphs: [
+      'This is a summary of the privacy information for Queer Guide. Most public guide content can be browsed without an account. Account and community features process the information you choose to provide, and optional identity and intimate-profile fields can include sensitive personal data. Review the full published policy in the interactive page before using these features, and share only what you are comfortable disclosing.',
+      'The published policy explains account information, optional sensitive information, service providers and international processing. It also covers first-party usage analytics: with consent, these include page views, interactions and searches. Account-linked interaction records and temporary session records are described separately. Cookie preferences let you change analytics consent. For questions about your information or a privacy request, use the contact page. Linked booking and shopping sites have their own privacy policies.',
+    ],
+    links: [
+      { href: '/contact', label: 'Privacy questions and requests' },
+      { href: '/cookies', label: 'Cookie policy' },
     ],
   },
 
@@ -541,7 +568,7 @@ export function buildNoscriptHtml(pathname: string): string | null {
     .join('');
 
   return `<div style="max-width:640px;margin:2rem auto;padding:1rem;font-family:system-ui,sans-serif;border:1px solid currentColor;border-radius:8px">
-  <h1 style="margin:0 0 .5rem;font-size:1.25rem">${escape(entry.h1)}</h1>
+  <p style="margin:0 0 .5rem;font-size:1.25rem">${escape(entry.h1)}</p>
   <p style="margin:0 0 .75rem">${escape(intro)}</p>
   <ul style="margin:0;padding-left:1.25rem;line-height:1.7">${linksHtml}</ul>
   <p style="margin-top:1rem">Enable JavaScript to see the full interactive page. For crisis support, see <a href="/help">help hotlines</a>.</p>

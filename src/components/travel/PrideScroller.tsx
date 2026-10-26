@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Calendar, MapPin } from 'lucide-react';
+import { Calendar, MapPin } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUpcomingPrideEvents } from '@/hooks/useUpcomingPrideEvents';

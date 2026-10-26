@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 import { useMutedProfiles, useSocialModeration } from '@/hooks/useSocialModeration';
 import {
   SELF_LABELS,

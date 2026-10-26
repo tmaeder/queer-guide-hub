@@ -7,7 +7,7 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Trash2, ExternalLink } from 'lucide-react';
+import { Trash2, ExternalLink } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { useWatchedUrls } from '@/hooks/useWatchedUrls';
 import { Skeleton } from '@/components/ui/skeleton';

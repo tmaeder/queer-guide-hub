@@ -1,4 +1,4 @@
-import { Heart, X, Sparkles } from 'lucide-react';
+import { Heart, X, Sparkles } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 

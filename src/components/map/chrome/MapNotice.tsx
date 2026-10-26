@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import type { ExploreMapFilters } from '@/hooks/useExploreMapData';

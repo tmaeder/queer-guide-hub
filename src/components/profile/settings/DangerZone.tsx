@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Download, Trash2 } from 'lucide-react';
+import { Download, Trash2 } from '@/components/icons';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

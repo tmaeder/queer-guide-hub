@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tags, AlertTriangle } from 'lucide-react';
+import { Tags, AlertTriangle } from '@/components/icons';
 import { useCategoryCoverage } from '@/hooks/useCategoryCoverage';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';
 import {

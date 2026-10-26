@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { MultiCombobox } from '@/components/events/MultiCombobox';
 import { TagSelector } from '@/components/tags/TagSelector';
-import { CalendarIcon, X } from 'lucide-react';
+import { CalendarIcon, X } from '@/components/icons';
 import { format } from 'date-fns';
 import { useEventTypeOptions } from '@/lib/eventTypes';
 

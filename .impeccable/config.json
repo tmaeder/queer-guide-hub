@@ -17,6 +17,15 @@
         ],
         "createdAt": "2026-10-12T20:05:36.441Z",
         "reason": "Codex: this CSS file mentions an image element only in prose documenting the data-URI background; it contains no HTML image tag."
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "supabase/functions/_shared/berlin-events-parse.ts"
+        ],
+        "createdAt": "2026-10-25T19:47:46.677Z",
+        "reason": "Codex: these matches are HTML parsing regex literals and parser documentation; this source file renders no image elements."
       }
     ]
   }

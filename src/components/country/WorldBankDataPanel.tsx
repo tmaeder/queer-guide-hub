@@ -14,7 +14,7 @@ import {
   Building2,
   DollarSign,
   BarChart3,
-} from 'lucide-react';
+} from '@/components/icons';
 import { WorldBankData } from '@/hooks/useWorldBankData';
 
 interface WorldBankDataPanelProps {

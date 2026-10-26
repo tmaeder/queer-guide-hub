@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from '@/components/icons';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
 import { MilestoneRow } from '@/components/milestones/MilestoneRow';
 import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';

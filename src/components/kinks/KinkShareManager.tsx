@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, Link2, XCircle } from 'lucide-react';
+import { Copy, Link2, XCircle } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   Select,

@@ -1,5 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plane, ArrowRight } from 'lucide-react';
+import { Plane, ArrowRight } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { TravelDealCard } from './TravelDealCard';
 import { useTravelDeals } from '@/hooks/useTravelDeals';

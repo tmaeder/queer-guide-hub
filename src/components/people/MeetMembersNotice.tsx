@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { UserPlus, Radio } from 'lucide-react';
+import { UserPlus, Radio } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';

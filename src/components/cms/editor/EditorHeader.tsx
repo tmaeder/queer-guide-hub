@@ -15,7 +15,7 @@ import {
   ThumbsDown,
   FileText,
   SquareArrowOutUpRight,
-} from 'lucide-react';
+} from '@/components/icons';
 import type { ContentTypeConfig, EditorState } from '@/types/cms';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

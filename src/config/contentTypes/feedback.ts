@@ -1,4 +1,4 @@
-import { MessageSquarePlus } from 'lucide-react';
+import { MessageSquarePlus } from '@/components/icons';
 import type { ContentTypeConfig } from '@/types/cms';
 
 export const feedbackContentType: ContentTypeConfig = {

@@ -3,7 +3,7 @@ import { useCMSComments } from '@/hooks/useCMSComments';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Check, CornerDownRight, MessageSquare } from 'lucide-react';
+import { Check, CornerDownRight, MessageSquare } from '@/components/icons';
 import type { CMSReviewComment, CommentType } from '@/types/cms';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 

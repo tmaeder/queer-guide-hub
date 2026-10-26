@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
-import { GitCompare, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { GitCompare, CheckCircle2, XCircle, Clock } from '@/components/icons';
 import {
   Dialog,
   DialogContent,

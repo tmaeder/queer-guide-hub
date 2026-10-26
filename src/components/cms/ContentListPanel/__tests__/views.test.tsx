@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { Tag } from 'lucide-react';
+import { Tag } from '@/components/icons';
 import { ContentListGallery } from '../ContentListGallery';
 import { ContentListBoard } from '../ContentListBoard';
 import { groupableFields } from '../boardGrouping';

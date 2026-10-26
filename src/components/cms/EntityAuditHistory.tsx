@@ -8,7 +8,7 @@
  * audit entries, this surfaces a real trail.
  */
 import { useEffect, useState } from 'react';
-import { History, ChevronDown, ChevronRight } from 'lucide-react';
+import { History, ChevronDown, ChevronRight } from '@/components/icons';
 import { useCMSAudit } from '@/hooks/useCMSAudit';
 import { formatRelativeTime, formatAction } from '@/lib/audit-format';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';

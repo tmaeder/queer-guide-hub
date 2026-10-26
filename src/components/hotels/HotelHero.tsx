@@ -1,5 +1,5 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { MapPin, ArrowRight } from 'lucide-react';
+import { MapPin, ArrowRight } from '@/components/icons';
 import type { Hotel } from '@/hooks/useHotels';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';

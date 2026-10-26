@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Archive, RotateCcw, ExternalLink } from 'lucide-react';
+import { Archive, RotateCcw, ExternalLink } from '@/components/icons';
 import { timeAgo } from '@/utils/timezone';
 import { useUnarchiveStory } from '@/hooks/useStoryRoutine';
 import type { AdminProfile, StoryWithCounts } from './types';

@@ -1,4 +1,4 @@
-import { BadgeCheck } from 'lucide-react';
+import { BadgeCheck } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 
 /**

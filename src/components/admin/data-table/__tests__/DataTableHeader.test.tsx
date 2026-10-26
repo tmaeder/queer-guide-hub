@@ -78,7 +78,7 @@ describe('DataTableHeaderCell', () => {
   it('renders the ArrowUpDown indicator when unsorted + canSort', () => {
     const { container } = render(inTable(<DataTableHeaderCell header={makeHeader({})} />));
     expect(
-      container.querySelector('svg.lucide-arrow-up-down, svg.lucide-arrow-up-narrow-wide'),
+      container.querySelector('svg[data-icon="arrow-up-down"], svg[data-icon="arrow-up-narrow-wide"]'),
     ).not.toBeNull();
   });
 
@@ -86,7 +86,7 @@ describe('DataTableHeaderCell', () => {
     const { container } = render(
       inTable(<DataTableHeaderCell header={makeHeader({ sorted: 'asc' })} />),
     );
-    expect(container.querySelector('svg.lucide-arrow-up')).not.toBeNull();
+    expect(container.querySelector('svg[data-icon="arrow-up"]')).not.toBeNull();
   });
 
   it('fires onSort with column id when clicked + sortable', () => {

@@ -10,7 +10,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Repeat, CalendarRange, X } from 'lucide-react';
+import { Repeat, CalendarRange, X } from '@/components/icons';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

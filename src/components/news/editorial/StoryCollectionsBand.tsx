@@ -1,6 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { StoryCard } from '@/components/news/StoryCard';
-import { Layers } from 'lucide-react';
+import { Layers } from '@/components/icons';
 
 type Story = {
   id: string;

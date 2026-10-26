@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Search, MapPin, Star, Clock, X, Sparkles } from 'lucide-react';
+import { Search, MapPin, Star, Clock, X, Sparkles } from '@/components/icons';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

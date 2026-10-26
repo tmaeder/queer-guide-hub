@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
 } from '@/components/ui/command';
-import { Check, Copy, UserPlus, Link as LinkIcon } from 'lucide-react';
+import { Check, Copy, UserPlus, Link as LinkIcon } from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRelationships } from '@/hooks/useUserRelationships';
 import { useGroupInvites } from '@/hooks/useGroupInvites';

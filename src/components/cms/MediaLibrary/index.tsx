@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Trash2, Zap } from 'lucide-react';
+import { AlertTriangle, Trash2, Zap } from '@/components/icons';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useUnifiedMedia, PAGE_SIZE } from '@/hooks/useUnifiedMedia';

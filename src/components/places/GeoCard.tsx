@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Card, CardImage } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Bookmark, Check, Globe, Building2, MapPin } from 'lucide-react';
+import { Crown, Bookmark, Check, Globe, Building2, MapPin } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { getLegalityBadge } from '@/lib/lgbtLegality';
 import { useFavorites } from '@/hooks/useFavorites';

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Globe, Mail, Phone, Newspaper, ShoppingBag } from 'lucide-react';
+import { Globe, Mail, Phone, Newspaper, ShoppingBag } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';

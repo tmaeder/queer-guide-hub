@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { badgeVariants } from '@/components/ui/badge';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, MapPin, Hotel, CalendarDays, Star, Clock, X, Check } from 'lucide-react';
+import { GripVertical, MapPin, Hotel, CalendarDays, Star, Clock, X, Check } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useTripReservations, type Reservation } from '@/hooks/useTripReservations';

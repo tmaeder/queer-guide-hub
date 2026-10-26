@@ -13,7 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SkeletonCrossfade } from '@/components/effects';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from '@/components/icons';
 import { Image } from '@/components/ui/Image';
 import type { FallbackTheme } from '@/utils/fallbackImages';
 import { decodeHtmlEntities } from '@/lib/decodeHtmlEntities';

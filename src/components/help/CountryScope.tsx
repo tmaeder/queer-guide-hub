@@ -19,7 +19,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react';
+import { Search } from '@/components/icons';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import {
   Dialog,

@@ -129,25 +129,6 @@ export const optimizeImageForCloudflare = (
 };
 
 /**
- * Optimize fetch requests for Cloudflare edge caching
- */
-export const cloudflareOptimizedFetch = async (
-  url: string,
-  options: RequestInit = {},
-  cacheTime = 300 // 5 minutes default
-) => {
-  const optimizedOptions: RequestInit = {
-    ...options,
-    headers: {
-      ...options.headers,
-      'CF-Cache-TTL': cacheTime.toString(),
-    },
-  };
-
-  return fetch(url, optimizedOptions);
-};
-
-/**
  * Get visitor's geolocation from Cloudflare headers (when available)
  */
 export const getCloudflareGeoData = () => {

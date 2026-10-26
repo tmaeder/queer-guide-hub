@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Flag } from 'lucide-react';
+import { Flag } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ReportDialog } from './ReportDialog';

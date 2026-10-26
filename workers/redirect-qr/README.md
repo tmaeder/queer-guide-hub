@@ -1,13 +1,21 @@
 # Redirect QR image service
 
-Local implementation; not deployed. A service binding named `REDIRECT_QR` from the
+The production Worker was first deployed on 2026-10-25 (version
+`900e62d2-f9fb-43b1-a9a8-e481cdf91137`). A service binding named `REDIRECT_QR` from the
 Pages project to `qg-redirect-qr` exposes `functions/api/qr.ts` at `/api/qr`.
 The Worker deliberately has no public route or workers.dev/preview URL. Configure
 `SUPABASE_URL` and `SUPABASE_ANON_KEY` to the same fixed project/publishable key as
 the app for saved profile/logo reads. It needs no service-role key, destination
 fetch, database write or click lookup.
-The rate-limit namespace ID in wrangler.jsonc is reserved for this service; verify
-it is unused in the deployment account before release.
+The rate-limit namespace ID in wrangler.jsonc was verified unused across the
+account's 27 existing Workers before that first deployment.
+
+`.github/workflows/redirect-qr.yml` verifies and deploys changes to this Worker on
+main. `node scripts/redirect-qr-deployment-config.mjs` generates its ignored
+deployment configuration from the application's public production project
+fallback, rejecting any non-anon key or mismatched project. The renderer receives
+no service-role credentials. Pages' production `services.REDIRECT_QR` binding
+must point to this Worker; redeploy Pages after changing the binding.
 
 ## HTTP contract
 
@@ -81,9 +89,11 @@ the local runtime supports it and repeat before release. No remote calls are mad
 Native tests specifically catch pngjs's private synchronous zlib API incompatibility;
 logo decoding uses its supported streaming API instead.
 
-Revocable live profiles and five-SDK create/list/revoke methods are implemented
-locally, including UI hosted-image publication/copy/revoke. Real Pages binding,
-cold starts/resource limits and controlled production deployment remain follow-ups. The service alone is not full QR parity.
+Revocable live profiles and five-SDK create/list/revoke methods include UI
+publication/copy/revoke. Production Pages binding, hosted profile retrieval,
+PNG/JPG/SVG scan verification and revocation were exercised on 2026-10-25. Image
+requests left the tracked link's visit count unchanged. Resource-budget/load
+testing and native device delivery remain separate verification work.
 Dependencies are pinned in the root lockfile. resvg-wasm is MPL-2.0, jpeg-js is
 BSD-3-Clause, pngjs/node-qrcode/jsQR are MIT; retain their distributed license notices.
 
@@ -97,7 +107,10 @@ The authenticated artwork publisher invokes the fixed site /api/qr POST endpoint
 and validates this header, PNG MIME, bounded body and 1024px dimensions before any
 Storage upload. The site's Pages binding/Worker must therefore be deployed before
 custom publications can succeed. Failure keeps a private draft, never a fallback
-public QR. This dependency is not currently deployed or release-verified.
+public QR. This dependency is now deployed. Saved profile and logo requests use
+`redirect: "manual"` because Workers rejects `redirect: "error"`; non-2xx
+responses remain rejected without following an upstream redirect or forwarding
+the capability to another origin.
 
 
 Browser authoring independently scans the hosted PNG before exposing issued URLs.

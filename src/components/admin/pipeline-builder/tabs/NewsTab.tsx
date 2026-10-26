@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { untypedFrom } from '@/integrations/supabase/untyped';
-import { Newspaper, AlertCircle, GitMerge } from 'lucide-react';
+import { Newspaper, AlertCircle, GitMerge } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { NewsQualityPanel } from '@/components/admin/news/NewsQualityPanel';
 import {

@@ -13,7 +13,7 @@ import {
   Stethoscope,
   Users,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/components/icons';
 
 /**
  * The 18 rights we hold, as data.

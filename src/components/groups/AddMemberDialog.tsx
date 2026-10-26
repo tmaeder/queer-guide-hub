@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { UserPlus } from 'lucide-react';
+import { UserPlus } from '@/components/icons';
 import { useSearchProfiles, useGroupMemberManagement } from '@/hooks/useGroupMemberManagement';
 
 interface AddMemberDialogProps { groupId: string; existingMemberIds: string[]; onMemberAdded: () => void; }

@@ -9,7 +9,7 @@ import {
   Download,
   AlertTriangle,
   Clock,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import {

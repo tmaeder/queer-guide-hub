@@ -1,5 +1,5 @@
 import { Button } from 'queer-guide';
-import { Heart, MapPin, Plus } from 'lucide-react';
+import { Heart, MapPin, Plus } from '@/components/icons';
 
 export const Variants = () => (
   <div className="flex flex-wrap items-center gap-2">

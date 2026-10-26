@@ -7,7 +7,7 @@
  * previously duplicated in `mapShellAdapters.ts`).
  */
 import type React from 'react';
-import { MapPin, Calendar, Building2, Globe, Accessibility, Hotel, Landmark } from 'lucide-react';
+import { MapPin, Calendar, Building2, Globe, Accessibility, Hotel, Landmark } from '@/components/icons';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import type { BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
 

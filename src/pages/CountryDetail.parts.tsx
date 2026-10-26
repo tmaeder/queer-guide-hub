@@ -1,4 +1,4 @@
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from '@/components/icons';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { EntityMap } from '@/components/map/EntityMap';
 import { MapInset } from '@/components/transit/MapInset';

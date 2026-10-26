@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning } from 'lucide-react';
+import { Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning } from '@/components/icons';
 import { weatherKind, weatherIconFor, weatherLabelKeyFor, roundCoord } from '../openMeteo';
 
 describe('weatherKind (WMO code mapping)', () => {

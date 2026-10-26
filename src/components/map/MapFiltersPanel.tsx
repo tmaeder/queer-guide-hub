@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check } from '@/components/icons';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import {
   Command,

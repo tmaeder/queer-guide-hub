@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, Hotel, Ticket, ExternalLink, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Hotel, Ticket, ExternalLink, ArrowRight } from '@/components/icons';
 import {
   Dialog,
   DialogContent,

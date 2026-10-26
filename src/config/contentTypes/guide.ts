@@ -1,5 +1,5 @@
 import { createElement } from 'react';
-import { BookOpen } from 'lucide-react';
+import { BookOpen } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { GuidePicksPanel } from '@/components/admin/guides/GuidePicksPanel';
 import { GuideSectionsPanel } from '@/components/admin/guides/GuideSectionsPanel';

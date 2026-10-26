@@ -1,4 +1,4 @@
-import { CheckCircle2, Compass, Target } from 'lucide-react';
+import { CheckCircle2, Compass, Target } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { useMissions, type MissionStatus } from '@/hooks/useMissions';
 

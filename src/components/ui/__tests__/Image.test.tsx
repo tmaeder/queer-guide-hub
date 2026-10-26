@@ -94,7 +94,7 @@ describe('Image', () => {
     act(() => {
       vi.advanceTimersByTime(9000);
     });
-    expect(container.querySelector('img')!.getAttribute('src')).toContain('/images/fallback/');
+    expect(container.querySelector('[data-fallback="station"]')).not.toBeNull();
   });
 
   it('does not force-fail a lazy image that is simply still off-screen', () => {
@@ -136,7 +136,7 @@ describe('Image', () => {
     act(() => {
       container.querySelector('img')!.dispatchEvent(new Event('error'));
     });
-    expect(container.querySelector('img')!.getAttribute('src')).toContain('/images/fallback/');
+    expect(container.querySelector('[data-fallback="station"]')).not.toBeNull();
   });
 
   describe('source ladder', () => {
@@ -174,7 +174,7 @@ describe('Image', () => {
       // The whole point: a dead mirror host must not cost us the merchant's image.
       expect(src()).toBe(ORIGINAL);
       failRung(container);
-      expect(src()).toContain('/images/fallback/');
+      expect(container.querySelector('[data-fallback="station"]')).not.toBeNull();
     });
 
     it('does not point the srcset at a source that already failed', () => {

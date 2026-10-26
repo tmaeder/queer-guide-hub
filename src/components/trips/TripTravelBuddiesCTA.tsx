@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Users } from 'lucide-react';
+import { Users } from '@/components/icons';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useStatus } from '@/hooks/useStatus';
 

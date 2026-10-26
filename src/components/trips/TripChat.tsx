@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Reply, X, MessageCircle } from 'lucide-react';
+import { Send, Reply, X, MessageCircle } from '@/components/icons';
 import { format, isToday, isYesterday } from 'date-fns';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';

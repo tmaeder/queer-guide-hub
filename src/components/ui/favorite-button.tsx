@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart } from '@/components/icons';
 import { Button } from './button';
 import { useFavorites, FavoriteType } from '@/hooks/useFavorites';
 import { useHaptics } from '@/hooks/useHaptics';

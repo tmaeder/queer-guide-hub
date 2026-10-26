@@ -1,5 +1,5 @@
 import { createElement } from 'react';
-import { Milestone } from 'lucide-react';
+import { Milestone } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { MilestoneLinksPanel } from '@/components/admin/milestones/MilestoneLinksPanel';
 

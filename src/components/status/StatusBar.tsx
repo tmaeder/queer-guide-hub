@@ -1,4 +1,4 @@
-import { MapPin, Moon } from 'lucide-react';
+import { MapPin, Moon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { AVAILABILITY_TAG_LABELS, type UserStatus } from '@/hooks/useStatus';
 

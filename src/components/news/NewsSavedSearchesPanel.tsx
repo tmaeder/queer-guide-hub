@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Bookmark, Bell, BellOff, Trash2, BookOpen } from 'lucide-react';
+import { Bookmark, Bell, BellOff, Trash2, BookOpen } from '@/components/icons';
 import { useNewsSavedSearches, type SavedSearch } from '@/hooks/useNewsSavedSearches';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';

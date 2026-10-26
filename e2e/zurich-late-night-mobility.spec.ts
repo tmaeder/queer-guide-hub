@@ -1,4 +1,8 @@
-import { test, expect } from '@playwright/test';
+import { test, expect as baseExpect } from '@playwright/test';
+
+// The city page takes ~30 s to settle under load; the 5 s default made every
+// fact after the first one flaky while the data was correct.
+const expect = baseExpect.configure({ timeout: 20_000 });
 
 /**
  * Zürich late-night mobility, end to end on the deployed site.

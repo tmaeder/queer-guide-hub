@@ -11,7 +11,7 @@ import {
   Filter,
   CheckCircle2,
   XCircle,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';

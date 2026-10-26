@@ -20,6 +20,12 @@ function runtime() {
   const visitor = readFileSync(
     join(__dirname, '../../../../supabase/functions/_shared/redirect-visitor.ts'),
     'utf8',
+  )
+    .replace(/^import .*;\s*$/gm, '')
+    .replace(/^export\s+/gm, '');
+  const visitorGeo = readFileSync(
+    join(__dirname, '../../../../supabase/functions/_shared/redirect-visitor-geo.ts'),
+    'utf8',
   ).replace(/^export\s+/gm, '');
   const relay = readFileSync(
     join(__dirname, '../../../../supabase/functions/_shared/redirect-relay.ts'),
@@ -54,6 +60,8 @@ function runtime() {
     nativeResolution +
       '\n' +
       shared +
+      '\n' +
+      visitorGeo +
       '\n' +
       visitor +
       '\n' +

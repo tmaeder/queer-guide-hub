@@ -1,4 +1,4 @@
-import { ShieldCheck, ShieldAlert, ShieldQuestion, Skull } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, ShieldQuestion, Skull } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { GatedContentNotice } from '@/components/safety/GatedContentNotice';

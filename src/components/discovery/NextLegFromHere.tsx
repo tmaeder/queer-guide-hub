@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Plane, ShieldAlert } from 'lucide-react';
+import { Plane, ShieldAlert } from '@/components/icons';
 import { hasCriminalizationFlag } from '@/lib/lgbtLegality';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { detailHref } from '@/lib/searchRoutes';

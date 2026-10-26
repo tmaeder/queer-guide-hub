@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo, Suspense } fr
 import { lazyOptional } from '@/utils/lazyRetry';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
-import { Search, X, Mic } from 'lucide-react';
+import { Search, X, Mic } from '@/components/icons';
 // The primitive directly, not ui/dialog's DialogContent: that one is a
 // vertically-centred, radiused, padded card with its own X close button, and
 // the command plate is a top-pinned squared plate whose close affordance is

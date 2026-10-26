@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { UserPlus, UserMinus, Shield, ShieldCheck, Check, X } from 'lucide-react';
+import { UserPlus, UserMinus, Shield, ShieldCheck, Check, X } from '@/components/icons';
 import { useUserRelationships } from '@/hooks/useUserRelationships';
 import { useAuth } from '@/hooks/useAuth';
 import {

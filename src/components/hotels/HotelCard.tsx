@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { MapPin, Star, DollarSign } from 'lucide-react';
+import { MapPin, Star, DollarSign } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';

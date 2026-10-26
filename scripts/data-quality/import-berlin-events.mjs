@@ -477,6 +477,11 @@ function siegPayloads() {
         url: r.url,
         source: 'siegessaeule',
         category: r.category,
+        // Preserve the publisher map as evidence for guarded venue/pin recovery.
+        // The resolver owns explicit pin changes and their provenance checks.
+        venue_url: d.venueUrl,
+        ...(Number.isFinite(d.venueLatitude) && Number.isFinite(d.venueLongitude)
+          ? { venue_location: { latitude: d.venueLatitude, longitude: d.venueLongitude } } : {}),
         series: `${r.category}/${r.slug}`,
         adult,
       },

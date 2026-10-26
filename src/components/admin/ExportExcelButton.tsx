@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download } from '@/components/icons';
 import { toast } from 'sonner';
 
 interface ExportExcelButtonProps {

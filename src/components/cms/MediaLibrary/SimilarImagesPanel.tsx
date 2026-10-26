@@ -3,7 +3,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Link } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {Images } from 'lucide-react';
+import {Images } from '@/components/icons';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 
 interface SimilarRow {

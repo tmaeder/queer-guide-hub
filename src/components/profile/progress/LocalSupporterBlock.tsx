@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalSupporterCities, type LocalSupporterCity } from '@/hooks/useLocalSupporter';
 import { Skeleton } from '@/components/ui/skeleton';

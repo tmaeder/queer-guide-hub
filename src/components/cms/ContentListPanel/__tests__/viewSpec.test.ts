@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Tag } from 'lucide-react';
+import { Tag } from '@/components/icons';
 import {
   buildDefaultSpec,
   normalizeSpec,

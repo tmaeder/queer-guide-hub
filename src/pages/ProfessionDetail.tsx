@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Users, MapPin, Calendar, User } from 'lucide-react';
+import { ArrowLeft, Users, MapPin, Calendar, User } from '@/components/icons';
 import { PersonalityCard } from '@/components/personalities/PersonalityCard';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { PageContainer } from '@/components/layout/PageContainer';

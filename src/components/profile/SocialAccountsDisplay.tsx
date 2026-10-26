@@ -1,4 +1,4 @@
-import { Globe, Music, BadgeCheck, ShieldCheck, EyeOff } from 'lucide-react';
+import { Globe, Music, BadgeCheck, ShieldCheck, EyeOff } from '@/components/icons';
 import { Twitter, Instagram, Linkedin, Github, Facebook, Youtube } from '@/components/icons/brand';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { displayHandle, isSensitivePlatform, readAccounts, type SocialAccount } from '@/lib/socialAccounts';

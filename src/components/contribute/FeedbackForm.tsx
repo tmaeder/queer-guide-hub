@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

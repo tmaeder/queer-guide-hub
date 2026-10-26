@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { X, ChevronDown } from 'lucide-react';
+import { X, ChevronDown } from '@/components/icons';
 import { FilterList } from './FilterList';
 
 interface WhatYouNeedProps {

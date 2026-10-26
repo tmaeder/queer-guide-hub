@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { AlertTriangle, Clock } from 'lucide-react';
+import { AlertTriangle, Clock } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router';
 import { useTripDocuments, type TripDocument } from '@/hooks/useTripDocuments';

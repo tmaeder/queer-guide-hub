@@ -1,4 +1,4 @@
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon } from '@/components/icons';
 import { DateRange } from 'react-day-picker';
 
 import { Button } from '@/components/ui/button';

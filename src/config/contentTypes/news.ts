@@ -1,4 +1,4 @@
-import { Newspaper } from 'lucide-react';
+import { Newspaper } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { validateNewsArticle } from '@/utils/contentValidation';
 

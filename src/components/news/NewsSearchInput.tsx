@@ -10,7 +10,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
-import { Search, X, Newspaper } from 'lucide-react';
+import { Search, X, Newspaper } from '@/components/icons';
 import { fetchAutocomplete, type SearchHit } from '@/lib/searchClient';
 
 interface NewsSearchInputProps {

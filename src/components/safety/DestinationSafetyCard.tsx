@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useTripSafety, worstCountryOf } from '@/hooks/useTripSafety';
 import { useRiskVisual, type OverallRisk } from '@/hooks/useRiskVisual';

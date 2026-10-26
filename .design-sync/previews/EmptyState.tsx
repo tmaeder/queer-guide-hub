@@ -1,5 +1,5 @@
 import { EmptyState } from 'queer-guide';
-import { CalendarX, MapPin } from 'lucide-react';
+import { CalendarX, MapPin } from '@/components/icons';
 import { StaticState as Settle } from './_static';
 
 export const NoData = () => (

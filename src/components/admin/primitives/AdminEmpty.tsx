@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Inbox, type LucideIcon } from 'lucide-react';
+import { Inbox, type LucideIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 export interface AdminEmptyProps {

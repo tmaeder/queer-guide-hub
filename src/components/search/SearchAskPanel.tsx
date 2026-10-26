@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Sparkles, CornerDownLeft } from 'lucide-react';
+import { ArrowLeft, Sparkles, CornerDownLeft } from '@/components/icons';
 import { SearchResultRow } from './SearchResultRow';
 import type { AssistantMessage } from '@/hooks/useAssistant';
 import type { AssistantCard } from '@/lib/assistantClient';

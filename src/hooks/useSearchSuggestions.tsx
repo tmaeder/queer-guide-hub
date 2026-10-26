@@ -8,7 +8,7 @@ import {
   Building2,
   CalendarDays,
   ShoppingBag,
-} from 'lucide-react';
+} from '@/components/icons';
 import { fetchAutocomplete, type SearchHit } from '@/lib/searchClient';
 import { toIndexKeys } from '@/lib/searchTaxonomy';
 import { useDebounce } from '@/hooks/useDebounce';

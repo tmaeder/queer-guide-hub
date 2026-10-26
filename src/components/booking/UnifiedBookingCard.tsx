@@ -1,4 +1,4 @@
-import { Plane, ArrowRight, ExternalLink, Hotel, MapPin, Star, Ticket } from 'lucide-react';
+import { Plane, ArrowRight, ExternalLink, Hotel, MapPin, Star, Ticket } from '@/components/icons';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

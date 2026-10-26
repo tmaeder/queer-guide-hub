@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MoreHorizontal, Plus, Star } from 'lucide-react';
+import { MoreHorizontal, Plus, Star } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {

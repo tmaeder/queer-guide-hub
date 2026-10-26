@@ -3,7 +3,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { MapPin, Check, Navigation } from 'lucide-react';
+import { MapPin, Check, Navigation } from '@/components/icons';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 

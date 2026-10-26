@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TransitIcon } from '@/components/transit/TransitIcon';

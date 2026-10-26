@@ -22,7 +22,7 @@ import {
   Phone,
   type LucideIcon,
   type LucideProps,
-} from 'lucide-react';
+} from '@/components/icons';
 
 /**
  * Curated icon vocabulary for day notes (`trip_places.icon`). Slugs are

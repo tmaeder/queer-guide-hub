@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {MessageCircle, Search, X, CalendarClock, Users } from 'lucide-react';
+import { ChevronLeft, MessageCircle, Search, X, CalendarClock, Users } from '@/components/icons';
 import { supabase } from '@/integrations/supabase/client';
 import { useMessaging, type Message } from '@/hooks/useMessaging';
 import { useChatImageUpload, type ChatImage } from '@/hooks/useChatImageUpload';
@@ -265,20 +265,9 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
               style={{ height: 36, width: 36 }}
               className="p-0 md:hidden"
               onClick={onBack}
+              aria-label="Back"
             >
-              <svg
-                style={{ height: 20, width: 20 }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
+              <ChevronLeft size={20} aria-hidden />
             </Button>
 
             <div className="relative">

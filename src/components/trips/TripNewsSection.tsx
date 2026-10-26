@@ -1,4 +1,4 @@
-import { AlertTriangle, ExternalLink, Newspaper } from 'lucide-react';
+import { AlertTriangle, ExternalLink, Newspaper } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';

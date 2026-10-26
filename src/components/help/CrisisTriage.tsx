@@ -23,7 +23,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Phone, MessageSquare, MessageCircle, Mail, Globe } from 'lucide-react';
+import { Phone, MessageSquare, MessageCircle, Mail, Globe } from '@/components/icons';
 import type { Hotline, HotlineChannel } from '@/types/cms';
 import {
   channelHref,

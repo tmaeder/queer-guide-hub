@@ -22,7 +22,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Check, Eye, EyeOff, Users } from 'lucide-react';
+import { ArrowLeft, Check, Eye, EyeOff, Users } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';

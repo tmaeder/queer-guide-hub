@@ -23,7 +23,7 @@ import {
   Highlighter,
   Paintbrush,
   Code2,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Youtube } from '@/components/icons/brand';
 
 /* ------------------------------------------------------------------ */

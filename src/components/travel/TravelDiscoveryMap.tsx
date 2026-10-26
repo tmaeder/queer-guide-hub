@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { DeferredSection } from '@/components/home/DeferredSection';

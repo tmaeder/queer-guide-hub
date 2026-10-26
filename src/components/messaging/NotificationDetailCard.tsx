@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
-import { Map, CalendarClock, FileCheck, FileX, FileQuestion, Share2 } from 'lucide-react';
+import { Map, CalendarClock, FileCheck, FileX, FileQuestion, Share2 } from '@/components/icons';
 import { ShareEntityDialog } from '@/components/messaging/ShareEntityDialog';
 import { useSubmissionNotifMeta, type SubmissionNotifMeta } from '@/hooks/useSubmissionNotifMeta';
 import type { InboxItem } from '@/hooks/useInboxFeed';

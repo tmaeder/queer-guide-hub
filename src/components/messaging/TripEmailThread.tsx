@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Ticket, Check, X, Send, ExternalLink, Calendar, MapPin, Plus } from 'lucide-react';
+import { Ticket, Check, X, Send, ExternalLink, Calendar, MapPin, Plus } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';

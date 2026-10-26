@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Users, UserPlus, Lock } from 'lucide-react';
+import { Users, UserPlus, Lock } from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useResolveGroupInvite, useGroupInvites } from '@/hooks/useGroupInvites';

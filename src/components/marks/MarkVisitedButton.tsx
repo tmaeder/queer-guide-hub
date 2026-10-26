@@ -1,4 +1,4 @@
-import { Check, Bookmark} from 'lucide-react';
+import { Check, Bookmark} from '@/components/icons';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';

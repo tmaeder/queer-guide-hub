@@ -1,4 +1,4 @@
-import { Plane, CalendarDays, Cake, Sparkles, Newspaper, type LucideIcon } from 'lucide-react';
+import { Plane, CalendarDays, Cake, Sparkles, Newspaper, type LucideIcon } from '@/components/icons';
 import type { CalendarLayerId } from './types';
 
 export interface CalendarLayer {

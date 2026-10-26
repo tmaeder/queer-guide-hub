@@ -658,6 +658,13 @@ test.describe('page layout — nothing wider than the header', () => {
           undefined,
           { timeout: 15_000 },
         );
+        if (route === '/tags') {
+          // The capped glossary loader also satisfies the container check.
+          // Measure its loaded navigation and content, retaining the box checks.
+          await expect(page.getByRole('navigation', { name: 'Topic lines' })).toBeVisible({
+            timeout: 15_000,
+          });
+        }
         await page.waitForTimeout(1500);
 
         const r = await page.evaluate(() => {

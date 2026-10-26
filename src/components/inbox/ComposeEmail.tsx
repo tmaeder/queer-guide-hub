@@ -3,7 +3,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Send } from 'lucide-react';
+import { Send } from '@/components/icons';
 import { useMailbox } from '@/hooks/useMailbox';
 import { useMailboxAddress } from '@/hooks/useMailboxAddress';
 import { RichTextEditor } from '@/components/cms/editor/RichTextEditor';

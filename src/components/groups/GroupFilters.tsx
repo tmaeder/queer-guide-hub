@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Search, Users, Lock, Globe, X } from 'lucide-react';
+import { Search, Users, Lock, Globe, X } from '@/components/icons';
 import { TagSelector } from '@/components/tags/TagSelector';
 
 interface GroupFiltersProps {

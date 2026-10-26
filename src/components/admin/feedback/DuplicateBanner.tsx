@@ -1,4 +1,4 @@
-import { Copy, ArrowRightLeft, Layers } from 'lucide-react';
+import { Copy, ArrowRightLeft, Layers } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import type { FeedbackSubmission, SubmissionStoryRef } from './types';
 

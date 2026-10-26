@@ -1,5 +1,5 @@
 import { useParams } from 'react-router';
-import { MessageSquareOff } from 'lucide-react';
+import { MessageSquareOff } from '@/components/icons';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';

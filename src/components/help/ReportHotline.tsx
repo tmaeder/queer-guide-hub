@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Flag } from 'lucide-react';
+import { Flag } from '@/components/icons';
 import {
   Dialog,
   DialogContent,

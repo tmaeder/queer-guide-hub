@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
-import { History, RotateCcw, User } from 'lucide-react';
+import { History, RotateCcw, User } from '@/components/icons';
 import {
   Dialog,
   DialogContent,
