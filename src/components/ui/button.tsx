@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 // retain motion for press and shadow feedback. Opacity must also switch
 // immediately when a disabled control becomes enabled, preserving contrast.
 const buttonVariants = cva(
-  'group relative inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-element text-sm font-semibold tracking-tight ring-offset-background transition-[transform,box-shadow] duration-fast ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 active:scale-[0.98] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'group relative inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-element text-sm font-semibold tracking-tight ring-offset-background transition-[transform,box-shadow] duration-fast ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 active:scale-[0.98] [&_svg]:pointer-events-none [&_svg]:shrink-0',
   {
     variants: {
       variant: {

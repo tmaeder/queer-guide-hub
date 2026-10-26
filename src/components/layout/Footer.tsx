@@ -8,6 +8,7 @@ import { INTENT_NAV, INTENT_TRACK, isIntentActive } from '@/config/navigation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 import { Wordmark } from '@/components/brand/Wordmark';
+import { ChevronDown } from '@/components/icons';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
 import { paper } from '@/components/transit/iconDefs';
@@ -131,20 +132,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               className={cn(footerLink, 'flex w-fit cursor-pointer gap-2 text-background/75')}
             >
               {t('footer.siteInformation', 'Site information')}
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 16 16"
-                fill="none"
-                className="h-4 w-4 shrink-0 group-open:rotate-180"
-              >
-                <path
-                  d="m4 6 4 4 4-4"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <ChevronDown size={16} className="shrink-0 group-open:rotate-180" aria-hidden />
             </summary>
             <nav
               aria-label={t('footer.siteInformation', 'Site information')}
