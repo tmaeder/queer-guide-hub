@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { TRANSIT_ICON_PATHS } from '@/components/transit/transitIconPaths';
-import { HOTEL_GLYPH_MAP, hotelGlyph, personGlyph } from '@/lib/cardGlyphs';
+import {
+  HOTEL_GLYPH_MAP,
+  NEWS_GLYPH_MAP,
+  hotelGlyph,
+  newsGlyph,
+  personGlyph,
+} from '@/lib/cardGlyphs';
 
 describe('card glyphs', () => {
   it('maps every hotel type to a real icon', () => {
@@ -25,5 +31,13 @@ describe('card glyphs', () => {
       expect(personGlyph(p), String(p)).toBe(g);
       expect(TRANSIT_ICON_PATHS[personGlyph(p)]).toBeTruthy();
     }
+  });
+
+  it('maps every news category to a real icon', () => {
+    for (const c of Object.keys(NEWS_GLYPH_MAP)) {
+      expect(TRANSIT_ICON_PATHS[newsGlyph(c)], c).toBeTruthy();
+    }
+    expect(newsGlyph('general')).toBe('news');
+    expect(newsGlyph(null)).toBe('news');
   });
 });

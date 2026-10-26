@@ -51,3 +51,23 @@ export function personGlyph(profession: string | null | undefined): TransitIconN
 }
 
 export const HOTEL_GLYPH_MAP = HOTEL_GLYPHS;
+
+/** News `category_canonical` (closed list); anything else gets the news mark. */
+const NEWS_GLYPHS: Record<string, TransitIconName> = {
+  'culture-arts': 'palette',
+  'rights-legal': 'landmark',
+  community: 'community',
+  politics: 'megaphone',
+  'health-wellness': 'health',
+  technology: 'screen',
+  sports: 'gym',
+  education: 'education',
+  'business-economy': 'briefcase',
+  international: 'globe',
+};
+
+export function newsGlyph(category: string | null | undefined): TransitIconName {
+  return (category && NEWS_GLYPHS[category]) || 'news';
+}
+
+export const NEWS_GLYPH_MAP = NEWS_GLYPHS;
