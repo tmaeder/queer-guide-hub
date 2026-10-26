@@ -13,6 +13,12 @@
 -- Orleans, Provincetown, York. It now matches the title as a whole-word phrase
 -- inside the query and prefers the longest match ("New York" over "York").
 --
+-- Third fix: with a city in the query, the exact-title boost (+0.08) went to
+-- rows titled exactly like the rest of the query ANYWHERE, beating the city
+-- boost (+0.05): `gay bar new york` led with two venues literally named
+-- "Gay Bar" in Skandia and Xativa. When the query names a city, the
+-- exact-title boost now counts only for rows in that city.
+--
 -- An origin with no radius is "where the user is": it still feeds dist_m, the
 -- soft distance penalty and sort=distance. Only an explicit radius filters.
 --
@@ -27,6 +33,8 @@ declare
   v_new text := '(p.origin is null or $7 is null or (sd.geog is not null and st_dwithin(sd.geog,p.origin,$7*1000)))';
   v_old2 text := 'lower(unaccent(c.title))=any(toks.arr)) z where z.n>=10 order by z.n desc limit 1)';
   v_new2 text := '(chr(32)||array_to_string(toks.arr,chr(32))||chr(32)) like (''% ''||lower(unaccent(c.title))||'' %'')) z where z.n>=10 order by length(z.cname) desc, z.n desc limit 1)';
+  v_old3 text := 'f.rrf + 0.08 * f.exact_title + ';
+  v_new3 text := 'f.rrf + 0.08 * f.exact_title * (case when f.boost_city is null or lower(f.city)=f.boost_city then 1 else 0 end) + ';
   v_n   int;
 begin
   if position(v_new in v_src) = 0 then
@@ -42,6 +50,13 @@ begin
       raise exception 'search_hybrid city detector: expected exactly 1 occurrence of the old predicate, found %', v_n;
     end if;
     v_src := replace(v_src, v_old2, v_new2);
+  end if;
+  if position(v_new3 in v_src) = 0 then
+    v_n := (length(v_src) - length(replace(v_src, v_old3, ''))) / length(v_old3);
+    if v_n <> 1 then
+      raise exception 'search_hybrid exact-title boost: expected exactly 1 occurrence of the old expression, found %', v_n;
+    end if;
+    v_src := replace(v_src, v_old3, v_new3);
   end if;
   execute v_src;
 end
@@ -64,6 +79,12 @@ begin
   if jsonb_array_length(v_res->'hits') = 0
      or exists (select 1 from jsonb_array_elements(v_res->'hits') h where lower(coalesce(h->>'city','')) <> 'new york') then
     raise exception 'search_hybrid(new york) top 10 not all New York';
+  end if;
+  -- A city in the query outranks an exact title elsewhere.
+  v_res := api_private.search_hybrid('gay bar new york', null, null, '{}'::jsonb, null, null, null, now(), 5, 0);
+  if jsonb_array_length(v_res->'hits') = 0
+     or exists (select 1 from jsonb_array_elements(v_res->'hits') h where lower(coalesce(h->>'city','')) <> 'new york') then
+    raise exception 'search_hybrid(gay bar new york) top 5 not all New York';
   end if;
 end
 $verify$;

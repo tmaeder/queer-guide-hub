@@ -187,6 +187,15 @@ async function run() {
     });
   }
 
+  // A city in the query beats an exact title elsewhere: `gay bar new york` used
+  // to lead with venues literally named "Gay Bar" in Skandia and Xativa.
+  await scenario('R1-gay-bar-new-york', '"gay bar new york" top 5 all in New York', async ({ HARD }) => {
+    const r = await search({ query: 'gay bar new york', hitsPerPage: 5 });
+    HARD(r.status === 200 && isArr(r.json?.hits) && r.json.hits.length >= 3, 'fewer than 3 hits');
+    const off = (r.json?.hits ?? []).filter((h) => (h.city || '').toLowerCase() !== 'new york');
+    HARD(off.length === 0, `non-New York rows: ${off.map((h) => `${h.title}@${h.city}`).join('; ')}`);
+  });
+
   await scenario('R2', 'Semantic leg: concept query returns venues', async ({ HARD, SOFT }) => {
     const r = await search({ query: 'places to dance at night', hitsPerPage: 10 });
     HARD(r.status === 200 && isArr(r.json?.hits), 'bad response');
