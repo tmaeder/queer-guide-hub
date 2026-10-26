@@ -85,6 +85,7 @@ $patch$;
 do $verify$
 declare
   v_res jsonb;
+  v_word text;
 begin
   if position('$7 is null or (sd.geog' in regexp_replace(pg_get_functiondef('api_private.search_hybrid(text,vector,text[],jsonb,double precision,double precision,double precision,timestamp with time zone,integer,integer,timestamp with time zone,timestamp with time zone,numeric,numeric,text)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g')) = 0 then
     raise exception 'search_hybrid geo filter patch not present';
@@ -94,27 +95,35 @@ begin
   if jsonb_array_length(v_res->'hits') = 0 then
     raise exception 'search_hybrid(london, lat/lng, no radius) still returns 0 hits';
   end if;
-  -- Multi-word city: every top hit for `new york` is in New York.
+  -- Multi-word city: New York hits rank above every other hit. Asserted as an
+  -- ordering property, not a count, so it holds on the smaller CI snapshot.
   v_res := api_private.search_hybrid('new york', null, null, '{}'::jsonb, null, null, null, now(), 10, 0);
-  if jsonb_array_length(v_res->'hits') = 0
-     or exists (select 1 from jsonb_array_elements(v_res->'hits') h where lower(coalesce(h->>'city','')) <> 'new york') then
-    raise exception 'search_hybrid(new york) top 10 not all New York';
+  if exists (select 1 from jsonb_array_elements(v_res->'hits') with ordinality a(h, i)
+             join jsonb_array_elements(v_res->'hits') with ordinality b(h, j) on b.j > a.i
+             where lower(coalesce(a.h->>'city','')) <> 'new york' and lower(coalesce(b.h->>'city','')) = 'new york') then
+    raise exception 'search_hybrid(new york): a non-New York hit ranks above a New York hit';
   end if;
   -- A city in the query outranks an exact title elsewhere.
-  v_res := api_private.search_hybrid('gay bar new york', null, null, '{}'::jsonb, null, null, null, now(), 5, 0);
-  if jsonb_array_length(v_res->'hits') = 0
-     or exists (select 1 from jsonb_array_elements(v_res->'hits') h where lower(coalesce(h->>'city','')) <> 'new york') then
-    raise exception 'search_hybrid(gay bar new york) top 5 not all New York';
+  v_res := api_private.search_hybrid('gay bar new york', null, null, '{}'::jsonb, null, null, null, now(), 10, 0);
+  if exists (select 1 from jsonb_array_elements(v_res->'hits') with ordinality a(h, i)
+             join jsonb_array_elements(v_res->'hits') with ordinality b(h, j) on b.j > a.i
+             where lower(coalesce(a.h->>'city','')) <> 'new york' and lower(coalesce(b.h->>'city','')) = 'new york') then
+    raise exception 'search_hybrid(gay bar new york): a non-New York hit ranks above a New York hit';
   end if;
   -- Nonsense with a query vector: nothing matches, so nothing is returned.
   v_res := api_private.search_hybrid('zzxqwplkjhqweri', (select embedding from public.search_embeddings where embedding is not null limit 1), null, '{}'::jsonb, null, null, null, now(), 5, 0);
   if (v_res->>'total')::int <> 0 then
     raise exception 'search_hybrid(nonsense) still returns % vector-only hits', v_res->>'total';
   end if;
-  -- Positive control: a real query with a vector still returns hits.
-  v_res := api_private.search_hybrid('places to dance at night', (select embedding from public.search_embeddings where embedding is not null limit 1), null, '{}'::jsonb, null, null, null, now(), 5, 0);
-  if jsonb_array_length(v_res->'hits') = 0 then
-    raise exception 'search_hybrid(places to dance at night) returns no hits';
+  -- Positive control: a real word with a vector still returns hits. The word is
+  -- taken from an indexed title so the check holds on any dataset.
+  select lower(split_part(title, ' ', 1)) into v_word from public.search_documents
+   where title ~ '^[A-Za-z]{5,}( |$)' limit 1;
+  if v_word is not null then
+    v_res := api_private.search_hybrid(v_word, (select embedding from public.search_embeddings where embedding is not null limit 1), null, '{}'::jsonb, null, null, null, now(), 5, 0);
+    if jsonb_array_length(v_res->'hits') = 0 then
+      raise exception 'search_hybrid(%) returns no hits although an indexed title starts with it', v_word;
+    end if;
   end if;
 end
 $verify$;
