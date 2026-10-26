@@ -52,6 +52,20 @@ const EVENT_GLYPHS: Record<string, TransitIconName> = {
   other: 'events',
 } satisfies Record<Exclude<EventType, string & {}> | string, TransitIconName>;
 
+const HOTEL_GLYPHS: Record<string, TransitIconName> = {
+  hotel: 'housing',
+  bnb: 'home-base',
+  hostel: 'community',
+  guesthouse: 'home-base',
+  apartment: 'home-base',
+  resort: 'waves',
+  other: 'housing',
+};
+
+export function hotelGlyph(type: string | null | undefined): TransitIconName {
+  return (type && HOTEL_GLYPHS[type]) || 'housing';
+}
+
 export function venueGlyph(category: string | null | undefined): TransitIconName {
   return (category && VENUE_GLYPHS[category]) || 'pin';
 }
@@ -60,5 +74,6 @@ export function eventGlyph(type: string | null | undefined): TransitIconName {
   return (type && EVENT_GLYPHS[type]) || 'events';
 }
 
+export const HOTEL_GLYPH_MAP = HOTEL_GLYPHS;
 export const VENUE_GLYPH_MAP = VENUE_GLYPHS;
 export const EVENT_GLYPH_MAP = EVENT_GLYPHS;
