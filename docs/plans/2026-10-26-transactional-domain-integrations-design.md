@@ -1,0 +1,13 @@
+# Remaining transactional recipient/event integrations
+
+Continues the approved integrated email design and the user's explicit 2026-10-26 instruction to finish remaining recipient/event integrations and test production autonomously.
+
+Use the existing operational notice/outbox pipeline rather than a parallel sender or caller-supplied recipient API. Three alternatives were considered: sending directly from product handlers (loses durable policy checks), a general event bus with arbitrary payloads (unnecessary scope and privacy exposure), and typed source adapters on the existing pipeline (selected).
+
+Add independent, default-off topics for group comment activity, community comment activity and verified business service updates. Capture mentions, direct replies and comments on one's own post from actual saved rows. Capture business claim decisions and service-status changes from admin-controlled organization mutations; the organization spine covers linked venues and merchants. Never infer a claimant from a public address. A claimant's current verified Auth mailbox is the recipient, with no transfer of permission from an entity contact.
+
+Persist only opaque source proofs: original actor, post/parent identities, membership IDs, unread notification identity and a business transition generation. Enqueue, claim and immediate dispatch revalidate current source, visibility, unread state, blocks, live membership, independent permission and account state. Existing suppression, quiet hours, cancellation, daily budget, immutable payload and delivery uncertainty rules remain authoritative. No backfill or resurrection after opt-out, read, leave/rejoin or business ownership replacement.
+
+Production verification first exercises source capture, policy invalidation, enqueue/idempotency and permissions in rollback-only transactions so ordinary users receive no test mail. Any controlled real delivery is separately bounded to verified test accounts, uniquely marked, and cannot reuse the previously consumed Mail verification reservation. Never send a test to a directory contact. Check deployed source/schema and actual queue health, preserve original receipts and clean up exact fixtures.
+
+Existing event/trip reminders/changes, group invitations/requests, contribution/payment, support/contact, Auth/welcome/username and personal Mail producers remain covered by their current contracts. Saved editorial/catalog recommendations and newsletters are promotional and remain blocked by Cloudflare policy. A product domain without an actual transaction/owner source does not acquire a fabricated notice.
