@@ -171,7 +171,7 @@ async function run() {
 
   // A bare city query must rank that city's results first — also when the
   // caller sends its own location (lat/lng, no radius). Before
-  // 99991793042566 the location turned `london` into zero matches, padded with
+  // 99991793044018 the location turned `london` into zero matches, padded with
   // popular Barcelona/Sydney/Paris rows; and `new york` matched the city
   // "York" and searched "new" (New Orleans). Madrid origin is far from all.
   for (const city of ['London', 'Berlin', 'Paris', 'New York']) {
