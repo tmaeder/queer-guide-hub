@@ -70,6 +70,17 @@ begin
  assert not public.email_notice_current(notice),'post author read marker ignored';
  update public.profiles set post_engagement_seen_at=null where user_id=recipient;
  assert not public.email_notice_current(notice),'author unread reset revived source';
+ -- Caller-supplied future timestamps must never bypass author read state.
+ community_comment:=gen_random_uuid();
+ insert into public.post_comments(id,post_id,user_id,content,created_at) values(community_comment,community_post,actor,'future comment',now()+interval '1 day');
+ select id into notice from public.email_operational_notices where source_id=community_comment and user_id=recipient;
+ update public.profiles set post_engagement_seen_at=clock_timestamp() where user_id=recipient;
+ assert not public.email_notice_current(notice),'future comment bypassed author read';
+ assert not exists(select 1 from public.email_operational_notices where source_id=community_comment),'future-dated comment captured';
+ update public.profiles set post_engagement_seen_at=null where user_id=recipient;
+ comment_key:=gen_random_uuid();
+ insert into public.group_post_comments(id,post_id,user_id,content,mentions,created_at) values(comment_key,post_key,actor,'future group comment',jsonb_build_array(jsonb_build_object('user_id',recipient)),now()+interval '1 day');
+ assert not exists(select 1 from public.email_operational_notices where source_id=comment_key),'future group comment captured';
  community_post:=gen_random_uuid(); community_comment:=gen_random_uuid();
  -- Community visibility is checked for actor and recipient, despite service RLS bypass.
  insert into public.community_posts(id,user_id,visibility) values(community_post,actor,'private');

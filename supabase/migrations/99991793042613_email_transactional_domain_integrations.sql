@@ -121,7 +121,9 @@ begin
    select user_id into parent_author from public.post_comments where id=new.parent_comment_id and post_id=new.post_id;
   end if;
  end if;
- if new.created_at is null or post_author is null or (new.parent_comment_id is not null and parent_author is null)
+ -- Source timestamps are caller-writable; reject future dates rather than
+ -- allowing them to keep the post-author read marker perpetually behind.
+ if new.created_at is null or new.created_at>clock_timestamp() or post_author is null or (new.parent_comment_id is not null and parent_author is null)
   or not email_private.comment_post_visible(scope_name,new.post_id,new.user_id) then return new; end if;
  targets:=case when jsonb_typeof(new.mentions)='array' then new.mentions else '[]' end;
  -- Bounded fan-out, sorted recipient locks; malformed UUID strings never cast.
@@ -159,8 +161,8 @@ begin
    values(target.id,'system','Comment activity','Open Queer Guide to review a mention or reply.',new.id,'/community/feed') returning id into marker;
   end if;
   if not exists(select 1 from public.email_delivery_preferences where user_id=target.id and topic_name=any(operational_topics)) then continue; end if;
-  insert into public.email_operational_notices(event_key,user_id,source_id,kind,topic,source_version)
-   values('comment:'||scope_name||':'||new.id::text||':'||target.id::text,target.id,new.id,scope_name||'_comment',topic_name,'1')
+  insert into public.email_operational_notices(event_key,user_id,source_id,kind,topic,source_version,created_at)
+   values('comment:'||scope_name||':'||new.id::text||':'||target.id::text,target.id,new.id,scope_name||'_comment',topic_name,'1',clock_timestamp())
    on conflict do nothing returning id into notice;
   if notice is null then continue; end if;
   insert into public.email_comment_sources(notice_id,scope,group_comment_id,community_comment_id,post_id,comment_created_at,community_post_author_read,post_author_id,actor_user_id,parent_comment_id,reason,group_id,recipient_membership_id,actor_membership_id,group_notification_id,community_notification_id)
@@ -306,7 +308,7 @@ begin
        and md5(jsonb_build_array(m.organization_id,m.is_enabled)::text)=b.entity_version))))));
  end if;
  select * into s from public.email_comment_sources where notice_id=n.id;
- if not found or n.kind<>s.scope||'_comment' or n.topic<>s.scope||'_comments'
+ if not found or s.comment_created_at>n.created_at or n.kind<>s.scope||'_comment' or n.topic<>s.scope||'_comments'
   or n.source_id<>coalesce(s.group_comment_id,s.community_comment_id) then return false; end if;
  if exists(select 1 from public.email_disabled_accounts where user_id in (s.actor_user_id,s.post_author_id))
   or public.is_blocked(n.user_id,s.actor_user_id)

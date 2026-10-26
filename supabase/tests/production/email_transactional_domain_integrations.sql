@@ -76,6 +76,12 @@ begin
  assert not public.email_notice_current(old_notice),'post author read not applied';
  update public.profiles set post_engagement_seen_at=original_seen where user_id=recipient;
  assert not public.email_notice_current(old_notice),'post author unread revived source';
+ -- Caller timestamps cannot bypass the author's normal read marker.
+ author_comment:=gen_random_uuid();
+ insert into public.post_comments(id,post_id,user_id,content,created_at) values(author_comment,author_post,actor,marker,clock_timestamp()+interval '1 day');
+ update public.profiles set post_engagement_seen_at=clock_timestamp() where user_id=recipient;
+ assert not exists(select 1 from public.email_operational_notices where source_id=author_comment),'future-dated comment captured';
+ update public.profiles set post_engagement_seen_at=original_seen where user_id=recipient;
  insert into public.organizations(id,name,slug,status,roles) values(business,marker,marker,'draft',array['community']);
  update public.organizations set claimed_by=recipient,claim_status='claimed' where id=business;
  select id into strict old_notice from public.email_operational_notices where source_id=business and kind='business_claim';
@@ -119,4 +125,4 @@ begin
 end $$;
 rollback;
 select jsonb_build_object('status','PASS','mode','rollback-only','source_kinds',array['group_comment','community_comment','business_claim','business_status','linked_venue_status','linked_vendor_status'],
- 'post_author_existing_read_contract',true,'due_candidate_selection',true,'provider_calls',0,'committed_fixtures',0,'source_to_outbox_claim_authorization',true,'immutable_replay',true,'permanent_invalidation',true,'shared_budget',true,'opt_out',true) verification;
+ 'future_timestamp_rejection',true,'post_author_existing_read_contract',true,'due_candidate_selection',true,'provider_calls',0,'committed_fixtures',0,'source_to_outbox_claim_authorization',true,'immutable_replay',true,'permanent_invalidation',true,'shared_budget',true,'opt_out',true) verification;
