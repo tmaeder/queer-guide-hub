@@ -389,7 +389,7 @@ create trigger email_cancel_community_comment_read after update of read,user_id,
 create trigger email_cancel_group_comment_post after update of user_id,group_id on public.group_posts for each row execute function email_private.cancel_changed_comment_notices();
 create trigger email_cancel_community_comment_post after update of user_id,visibility on public.community_posts for each row execute function email_private.cancel_changed_comment_notices();
 create trigger email_cancel_comment_membership after update of user_id,group_id or delete on public.group_memberships for each row execute function email_private.cancel_changed_comment_notices();
-create trigger email_cancel_comment_group after update of archived_at,duplicate_of_id on public.community_groups for each row execute function email_private.cancel_changed_comment_notices();
+create trigger email_cancel_comment_group after update on public.community_groups for each row execute function email_private.cancel_changed_comment_notices();
 create trigger email_cancel_comment_follow after update of follower_id,following_id or delete on public.user_follows for each row execute function email_private.cancel_changed_comment_notices();
 create trigger email_cancel_comment_block after insert or update on public.user_relationships for each row execute function email_private.cancel_changed_comment_notices();
 create function email_private.cancel_removed_domain_source()
