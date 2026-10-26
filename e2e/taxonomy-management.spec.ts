@@ -147,6 +147,10 @@ for (const family of taxonomyFamilies) {
       await page.getByRole('button', { name: /^New / }).press('Enter');
       await page.getByRole('textbox', { name: target.titleInput, exact: true }).fill(name);
       if (target.hasSlug) await page.getByRole('textbox', { name: /^Slug\*?$/ }).fill(taxonomy.key);
+      // Gay Bar is stored as venue_type in production. Unrelated edits used
+      // to fail because the editor omitted this database-supported Kind.
+      if (target.id === 'amenities')
+        await page.getByRole('combobox', { name: 'Kind', exact: true }).selectOption('venue_type');
       if (target.taxonomy) {
         // Directory filters scope the list; the shared new-record editor
         // exposes the taxonomy choice explicitly rather than prefilling it.
@@ -188,6 +192,7 @@ for (const family of taxonomyFamilies) {
     }
     const created = await test.step('create through the editor', () => create(family, createdName));
     expect(String(created[family.titleColumn]).toLowerCase()).toBe(createdName.toLowerCase());
+    if (family.id === 'amenities') expect(created.kind).toBe('venue_type');
     if (family.id === 'unified_tags') {
       expect(created.publication_role).toBe('utility');
       expect(created.seo_indexable).toBe(false);
@@ -204,6 +209,10 @@ for (const family of taxonomyFamilies) {
         await expect(slug).toHaveValue(taxonomy.key);
         await expect(slug).toBeDisabled();
       }
+      if (family.id === 'amenities')
+        await expect(page.getByRole('combobox', { name: 'Kind', exact: true })).toHaveValue(
+          'venue_type',
+        );
       if (family.taxonomy) {
         await expect(page.getByRole('combobox', { name: 'Taxonomy*', exact: true })).toBeDisabled();
         await expect(
@@ -233,9 +242,14 @@ for (const family of taxonomyFamilies) {
     }
     const edited = await test.step('save the edit', () => save(page, family, 'PATCH'));
     expect(edited.id).toBe(created.id);
+    if (family.id === 'amenities') expect(edited.kind).toBe('venue_type');
     expect(String(edited[family.titleColumn]).toLowerCase()).toBe(editedName.toLowerCase());
     await test.step('verify persistence after another full reload', async () => {
       await reopenAfterReload(page, family, String(edited[family.titleColumn]), String(edited.id));
+      if (family.id === 'amenities')
+        await expect(page.getByRole('combobox', { name: 'Kind', exact: true })).toHaveValue(
+          'venue_type',
+        );
       if (family.id !== 'unified_tags') {
         await page.getByRole('tab', { name: /^Settings / }).press('Enter');
         await expect(page.getByRole('spinbutton', { name: /^Sort order$/i })).toHaveValue('9876');
@@ -249,6 +263,7 @@ for (const family of taxonomyFamilies) {
       const records = taxonomy.database.rows(family.id, taxonomy.prefix);
       expect(records).toHaveLength(1);
       expect(records[0].id).toBe(created.id);
+      if (family.id === 'amenities') expect(records[0].kind).toBe('venue_type');
       expect(records[0][family.titleColumn]).toBe(edited[family.titleColumn]);
       if (family.hasSlug) expect(records[0].slug).toBe(created.slug);
       if (family.taxonomy) {
