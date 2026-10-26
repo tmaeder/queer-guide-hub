@@ -109,13 +109,13 @@ describe('TransitIcon', () => {
       expect((plain.match(/<path/g) ?? []).length - (quiet.match(/<path/g) ?? []).length).toBe(3);
     });
 
-    it('drops motion ticks below 32px and draws them at and above it', () => {
+    it('keeps compact artwork quiet and reserves ticks for illustrations', () => {
       const count = (size: number) =>
         (renderToStaticMarkup(<TransitIcon name="rainbow" size={size} />).match(/<path/g) ?? [])
           .length;
-      // `rainbow` is two strokes with a `crown` tick set, so the difference
-      // between the two is exactly the three ticks.
-      expect(count(32) - count(24)).toBe(3);
+      expect(count(32)).toBe(count(24));
+      const quiet = renderToStaticMarkup(<TransitIcon name="rainbow" size={40} ticks={false} />);
+      expect(count(40) - (quiet.match(/<path/g) ?? []).length).toBe(3);
     });
 
     it('draws no ticks for an icon whose set is `none`', () => {
@@ -152,7 +152,7 @@ describe('TransitIcon', () => {
 
   // Exact count on purpose — it is the guard against a vacuous "every icon
   // renders" pass over an accidentally-empty set.
-  it('has 274 icons and bumps stroke weight below 32px', () => {
+  it('has 274 icons and opens counters with a lighter compact stroke', () => {
     expect(TRANSIT_ICON_NAMES).toHaveLength(274);
     const w = (size: number) =>
       Number(
@@ -160,11 +160,9 @@ describe('TransitIcon', () => {
           .container.querySelector('path')!
           .getAttribute('stroke-width'),
       );
-    // 9 / 11 / 13 — see the ramp comment in TransitIcon. A v2 mark is an
-    // outline around a fill, so it needs more weight at small sizes than v1's
-    // single stroke did.
-    expect(w(20)).toBe(13);
-    expect(w(24)).toBe(11);
+    expect(w(16)).toBe(7.5);
+    expect(w(20)).toBe(7.5);
+    expect(w(24)).toBe(7.5);
     expect(w(48)).toBe(9);
   });
 
