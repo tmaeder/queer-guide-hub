@@ -299,11 +299,26 @@ expect_asset_type() {
 
 echo "== SPA routes serve the app, not the error page =="
 # /help is the crisis hub — the one page where a 404 is least acceptable.
-# /venues/guides is a static sub-route, so it stays a 200 even once the edge
-# middleware is live and hard-404s unknown entity slugs.
-for route in / /help /venues /events /map /venues/guides; do
+for route in / /help /venues /events /map; do
 	expect_status "$route" 200
 done
+
+# Legacy aliases redirect at the edge so clients without JavaScript can follow.
+# Check the exact target as well as the destination's status; accepting any 3xx
+# would hide loops or a redirect to the wrong page.
+expect_guide_redirect() {
+	local response code target
+	response=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{http_code} %{redirect_url}' "$SITE/venues/guides")
+	code=${response%% *}
+	target=${response#* }
+	if [ "$code" = 301 ] && [ "$target" = "$SITE/guides?entity=venue" ]; then
+		echo "  ✓ /venues/guides -> 301 /guides?entity=venue"; pass=$((pass+1))
+	else
+		echo "  ✗ /venues/guides -> $response (expected 301 $SITE/guides?entity=venue)"; fail=$((fail+1))
+	fi
+	expect_status '/guides?entity=venue' 200
+}
+expect_guide_redirect
 
 # A deep route can be served a STALE cached index.html — one that references
 # chunk hashes from an older deploy. Those chunk URLs no longer exist, so each
