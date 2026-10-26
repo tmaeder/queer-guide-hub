@@ -2,9 +2,10 @@ import { test, expect } from '@playwright/test';
 
 // Read-only live verification. Source capture/enqueue/authorization is exercised
 // separately in the mandatory-rollback SQL contract; this spec never sends mail.
+test.use({ trace: 'off', video: 'off', screenshot: 'off' });
+
 test.describe('transactional domain email settings', () => {
   test.describe.configure({ retries: 0, mode: 'serial' });
-  test.use({ trace: 'off', video: 'off', screenshot: 'off' });
 
   test('shows independent comment and business controls on desktop and mobile without email writes', async ({ page }, testInfo) => {
     test.setTimeout(90_000);
