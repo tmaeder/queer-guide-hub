@@ -3,9 +3,11 @@ import { TRANSIT_ICON_PATHS } from '@/components/transit/transitIconPaths';
 import {
   HOTEL_GLYPH_MAP,
   NEWS_GLYPH_MAP,
+  ORG_ROLE_GLYPH_LIST,
   guideGlyph,
   hotelGlyph,
   newsGlyph,
+  orgGlyph,
   personGlyph,
 } from '@/lib/cardGlyphs';
 
@@ -60,5 +62,13 @@ describe('card glyphs', () => {
     for (const g of [guideGlyph('bar', 'guide'), guideGlyph('services', 'guide')]) {
       expect(TRANSIT_ICON_PATHS[g]).toBeTruthy();
     }
+  });
+
+  it('picks an organization mark by role priority', () => {
+    for (const [, g] of ORG_ROLE_GLYPH_LIST) expect(TRANSIT_ICON_PATHS[g], g).toBeTruthy();
+    expect(orgGlyph(['seller', 'support'])).toBe('lifebuoy');
+    expect(orgGlyph(['venue', 'publisher'])).toBe('news');
+    expect(orgGlyph([])).toBe('building');
+    expect(TRANSIT_ICON_PATHS[orgGlyph(null)]).toBeTruthy();
   });
 });

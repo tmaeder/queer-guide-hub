@@ -123,3 +123,27 @@ export function guideGlyph(
     'library'
   );
 }
+
+/**
+ * An organization holds several roles; the card shows the one a reader most
+ * needs to know first, so support and advocacy outrank trading roles.
+ */
+const ORG_ROLE_GLYPHS: Array<[string, TransitIconName]> = [
+  ['support', 'lifebuoy'],
+  ['advocacy', 'megaphone'],
+  ['publisher', 'news'],
+  ['organizer', 'events'],
+  ['community', 'community'],
+  ['venue', 'pin'],
+  ['hotel', 'housing'],
+  ['seller', 'shop'],
+  ['brand', 'tag'],
+  ['affiliate_partner', 'link'],
+];
+
+export function orgGlyph(roles: readonly string[] | null | undefined): TransitIconName {
+  for (const [role, glyph] of ORG_ROLE_GLYPHS) if (roles?.includes(role)) return glyph;
+  return 'building';
+}
+
+export const ORG_ROLE_GLYPH_LIST = ORG_ROLE_GLYPHS;
