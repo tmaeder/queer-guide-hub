@@ -11,6 +11,7 @@ declare recipient uuid:=current_setting('qg.email_test_recipient')::uuid;
  marker text:='qg-email-domain-e2e-'||gen_random_uuid()::text;
  group_key uuid:=gen_random_uuid(); group_post uuid:=gen_random_uuid(); group_comment uuid:=gen_random_uuid();
  community_post uuid:=gen_random_uuid(); community_comment uuid:=gen_random_uuid(); business uuid:=gen_random_uuid();
+ fixture_city uuid; fixture_country uuid;
  venue_key uuid:=gen_random_uuid(); vendor_key uuid:=gen_random_uuid(); notice uuid; old_notice uuid;
  pref jsonb; address text; saved public.email_outbox; again public.email_outbox; leased public.email_outbox;
  baseline_outboxes integer; baseline_attempts integer;
@@ -69,7 +70,11 @@ begin
  update public.organizations set status='archived' where id=business;
  select id into strict notice from public.email_operational_notices where source_id=business and kind='business_status';
  assert public.email_notice_current(notice),'business status source not eligible';
- insert into public.venues(id,name,slug,address,category,organization_id) values(venue_key,marker,marker,'Verification fixture','other',business);
+ select id,country_id into strict fixture_city,fixture_country from public.cities where country_id is not null and duplicate_of_id is null order by id limit 1;
+ -- A consistent existing public city/country prevents the geocode webhook
+ -- from being queued. The test never writes that city or country.
+ insert into public.venues(id,name,slug,address,category,organization_id,city_id,country_id)
+  values(venue_key,marker,marker,'Verification fixture','other',business,fixture_city,fixture_country);
  update public.venues set closed_at=now() where id=venue_key;
  select id into strict old_notice from public.email_operational_notices where source_id=venue_key and kind='business_status';
  assert public.email_notice_current(old_notice),'venue source not eligible';
