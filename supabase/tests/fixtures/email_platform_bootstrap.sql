@@ -138,3 +138,5 @@ alter table public.organizations add column claim_status text not null default '
 grant all on public.community_posts,public.post_comments,public.group_post_comments,public.user_follows to service_role;
 
 alter table public.venues add column organization_id uuid references public.organizations(id);
+
+alter table public.profiles add column post_engagement_seen_at timestamptz;

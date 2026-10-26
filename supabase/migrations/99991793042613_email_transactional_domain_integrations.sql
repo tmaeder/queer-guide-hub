@@ -46,6 +46,8 @@ create table public.email_comment_sources (
  group_comment_id uuid references public.group_post_comments(id) on delete cascade,
  community_comment_id uuid references public.post_comments(id) on delete cascade,
  post_id uuid not null,
+ comment_created_at timestamptz not null,
+ community_post_author_read boolean not null default false,
  post_author_id uuid not null references auth.users(id) on delete cascade,
  actor_user_id uuid not null references auth.users(id) on delete cascade,
  parent_comment_id uuid,
@@ -56,9 +58,10 @@ create table public.email_comment_sources (
  group_notification_id uuid unique references public.group_notifications(id) on delete cascade,
  community_notification_id uuid unique references public.notifications(id) on delete cascade,
  check((scope='group' and group_comment_id is not null and community_comment_id is null and group_id is not null
-   and recipient_membership_id is not null and actor_membership_id is not null and group_notification_id is not null and community_notification_id is null)
+   and recipient_membership_id is not null and actor_membership_id is not null and group_notification_id is not null and community_notification_id is null and not community_post_author_read)
   or (scope='community' and community_comment_id is not null and group_comment_id is null and group_id is null
-   and recipient_membership_id is null and actor_membership_id is null and group_notification_id is null and community_notification_id is not null))
+   and recipient_membership_id is null and actor_membership_id is null and group_notification_id is null
+   and ((community_post_author_read and community_notification_id is null) or (not community_post_author_read and community_notification_id is not null))))
 );
 create index email_comment_sources_post on public.email_comment_sources(post_id);
 create index email_comment_sources_parent on public.email_comment_sources(parent_comment_id) where parent_comment_id is not null;
@@ -117,7 +120,7 @@ begin
    select user_id into parent_author from public.post_comments where id=new.parent_comment_id and post_id=new.post_id;
   end if;
  end if;
- if post_author is null or (new.parent_comment_id is not null and parent_author is null)
+ if new.created_at is null or post_author is null or (new.parent_comment_id is not null and parent_author is null)
   or not email_private.comment_post_visible(scope_name,new.post_id,new.user_id) then return new; end if;
  targets:=case when jsonb_typeof(new.mentions)='array' then new.mentions else '[]' end;
  -- Bounded fan-out, sorted recipient locks; malformed UUID strings never cast.
@@ -146,6 +149,10 @@ begin
   if scope_name='group' then
    insert into public.group_notifications(group_id,user_id,notification_type,related_post_id,related_comment_id,triggered_by_user_id,content)
    values(group_key,target.id,case when reason_name='mention' then 'mention' else 'comment_reply' end,new.post_id,new.id,new.user_id,'You have a comment activity update. Open Queer Guide to read it.') returning id into marker;
+  elsif target.id=post_author then
+   -- Post-author inbox items already derive from the saved comment and the
+   -- profile engagement read marker. Do not create a second inbox notification.
+   marker:=null;
   else
    insert into public.notifications(user_id,type,title,content,related_id,action_url)
    values(target.id,'system','Comment activity','Open Queer Guide to review a mention or reply.',new.id,'/community/feed') returning id into marker;
@@ -155,8 +162,8 @@ begin
    values('comment:'||scope_name||':'||new.id::text||':'||target.id::text,target.id,new.id,scope_name||'_comment',topic_name,'1')
    on conflict do nothing returning id into notice;
   if notice is null then continue; end if;
-  insert into public.email_comment_sources(notice_id,scope,group_comment_id,community_comment_id,post_id,post_author_id,actor_user_id,parent_comment_id,reason,group_id,recipient_membership_id,actor_membership_id,group_notification_id,community_notification_id)
-   values(notice,scope_name,case when scope_name='group' then new.id end,case when scope_name='community' then new.id end,new.post_id,post_author,new.user_id,new.parent_comment_id,reason_name,group_key,target_membership,actor_membership,case when scope_name='group' then marker end,case when scope_name='community' then marker end);
+  insert into public.email_comment_sources(notice_id,scope,group_comment_id,community_comment_id,post_id,comment_created_at,community_post_author_read,post_author_id,actor_user_id,parent_comment_id,reason,group_id,recipient_membership_id,actor_membership_id,group_notification_id,community_notification_id)
+   values(notice,scope_name,case when scope_name='group' then new.id end,case when scope_name='community' then new.id end,new.post_id,new.created_at,(scope_name='community' and target.id=post_author),post_author,new.user_id,new.parent_comment_id,reason_name,group_key,target_membership,actor_membership,case when scope_name='group' then marker end,case when scope_name='community' then marker end);
  end loop;
  return new;
 end $$;
@@ -273,7 +280,7 @@ alter function public.email_notice_current(uuid) rename to email_notice_current_
 create function public.email_notice_current(p_id uuid)
 returns boolean language plpgsql stable security invoker set search_path=pg_catalog as $$
 declare n public.email_operational_notices; s public.email_comment_sources;
- comment_actor uuid; comment_post uuid; comment_parent uuid; mentions jsonb; post_author uuid; current_group uuid;
+ comment_actor uuid; comment_post uuid; comment_parent uuid; comment_created timestamptz; mentions jsonb; post_author uuid; current_group uuid;
 begin
  select * into n from public.email_operational_notices where id=p_id;
  if not found then return false; end if;
@@ -303,7 +310,7 @@ begin
   or not email_private.comment_post_visible(s.scope,s.post_id,n.user_id)
   or not email_private.comment_post_visible(s.scope,s.post_id,s.actor_user_id) then return false; end if;
  if s.scope='group' then
-  select user_id,post_id,parent_comment_id,c.mentions into comment_actor,comment_post,comment_parent,mentions from public.group_post_comments c where id=s.group_comment_id;
+  select user_id,post_id,parent_comment_id,c.created_at,c.mentions into comment_actor,comment_post,comment_parent,comment_created,mentions from public.group_post_comments c where id=s.group_comment_id;
   select user_id,group_id into post_author,current_group from public.group_posts where id=s.post_id;
   if current_group is distinct from s.group_id or not exists(select 1 from public.group_memberships where id=s.recipient_membership_id and group_id=s.group_id and user_id=n.user_id)
    or not exists(select 1 from public.group_memberships where id=s.actor_membership_id and group_id=s.group_id and user_id=s.actor_user_id)
@@ -311,13 +318,16 @@ begin
     and gn.group_id=s.group_id and gn.related_comment_id=s.group_comment_id and gn.related_post_id=s.post_id
     and gn.triggered_by_user_id=s.actor_user_id and gn.notification_type=case when s.reason='mention' then 'mention' else 'comment_reply' end and gn.read_at is null) then return false; end if;
  else
-  select user_id,post_id,parent_comment_id,c.mentions into comment_actor,comment_post,comment_parent,mentions from public.post_comments c where id=s.community_comment_id;
+  select user_id,post_id,parent_comment_id,c.created_at,c.mentions into comment_actor,comment_post,comment_parent,comment_created,mentions from public.post_comments c where id=s.community_comment_id;
   select user_id into post_author from public.community_posts where id=s.post_id;
-  if not exists(select 1 from public.notifications x where x.id=s.community_notification_id and x.user_id=n.user_id
+  if s.community_post_author_read then
+   if n.user_id<>s.post_author_id or not exists(select 1 from public.profiles p where p.user_id=n.user_id
+    and s.comment_created_at>coalesce(p.post_engagement_seen_at,'1970-01-01'::timestamptz)) then return false; end if;
+  elsif not exists(select 1 from public.notifications x where x.id=s.community_notification_id and x.user_id=n.user_id
    and x.type='system' and x.related_id=s.community_comment_id and not x.read
    and x.action_url='/community/feed') then return false; end if;
  end if;
- if comment_actor is distinct from s.actor_user_id or comment_post is distinct from s.post_id
+ if comment_created is distinct from s.comment_created_at or comment_actor is distinct from s.actor_user_id or comment_post is distinct from s.post_id
   or comment_parent is distinct from s.parent_comment_id or post_author is distinct from s.post_author_id then return false; end if;
  if s.reason='mention' then return coalesce(mentions @> jsonb_build_array(jsonb_build_object('user_id',n.user_id::text)),false); end if;
  if s.reason='post_reply' then return s.post_author_id=n.user_id; end if;
@@ -351,12 +361,13 @@ returns trigger language plpgsql security definer set search_path=pg_catalog as 
 declare affected record; row_key uuid; row_data jsonb; predicate text;
 begin
  row_data:=case when tg_op='DELETE' or (tg_table_name='user_follows' and tg_op='UPDATE') then to_jsonb(old) else to_jsonb(new) end;
- row_key:=(row_data->>'id')::uuid;
+ row_key:=(case when tg_table_name='profiles' then row_data->>'user_id' else row_data->>'id' end)::uuid;
  -- Each trigger selects through its own source index; unrelated inbox reads
  -- and likes must not scan every active comment proof.
  case tg_table_name
  when 'group_notifications' then predicate:='s.group_notification_id=$1';
  when 'notifications' then predicate:='s.community_notification_id=$1';
+ when 'profiles' then predicate:='s.community_post_author_read and n.user_id=$1';
  when 'group_post_comments' then predicate:='s.scope=''group'' and (s.group_comment_id=$1 or s.parent_comment_id=$1)';
  when 'post_comments' then predicate:='s.scope=''community'' and (s.community_comment_id=$1 or s.parent_comment_id=$1)';
  when 'group_posts' then predicate:='s.scope=''group'' and s.post_id=$1';
@@ -382,9 +393,10 @@ begin
  return case when tg_op='DELETE' then old else new end;
 end $$;
 revoke all on function email_private.cancel_changed_comment_notices() from public,anon,authenticated,service_role;
-create trigger email_cancel_group_comment after update of post_id,user_id,parent_comment_id,mentions on public.group_post_comments for each row execute function email_private.cancel_changed_comment_notices();
-create trigger email_cancel_community_comment after update of post_id,user_id,parent_comment_id,mentions on public.post_comments for each row execute function email_private.cancel_changed_comment_notices();
+create trigger email_cancel_group_comment after update of post_id,user_id,parent_comment_id,mentions,created_at on public.group_post_comments for each row execute function email_private.cancel_changed_comment_notices();
+create trigger email_cancel_community_comment after update of post_id,user_id,parent_comment_id,mentions,created_at on public.post_comments for each row execute function email_private.cancel_changed_comment_notices();
 create trigger email_cancel_group_comment_read after update of read_at,user_id,group_id,notification_type,related_post_id,related_comment_id,triggered_by_user_id on public.group_notifications for each row execute function email_private.cancel_changed_comment_notices();
+create trigger email_cancel_comment_author_read after update of post_engagement_seen_at on public.profiles for each row execute function email_private.cancel_changed_comment_notices();
 create trigger email_cancel_community_comment_read after update of read,user_id,type,related_id,action_url on public.notifications for each row execute function email_private.cancel_changed_comment_notices();
 create trigger email_cancel_group_comment_post after update of user_id,group_id on public.group_posts for each row execute function email_private.cancel_changed_comment_notices();
 create trigger email_cancel_community_comment_post after update of user_id,visibility on public.community_posts for each row execute function email_private.cancel_changed_comment_notices();

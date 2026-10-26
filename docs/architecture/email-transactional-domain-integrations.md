@@ -5,7 +5,7 @@ The operational-notice pipeline also handles saved group/community comment activ
 | Product action | Authoritative recipient | Required permission and current proof |
 | --- | --- | --- |
 | Group comment mention, direct reply, comment on own post | Mentioned current group member, original parent author or post author | `group_comments`; original membership IDs, saved comment/post/parent, unread original group notification, available group and no blocks |
-| Community comment mention, direct reply, comment on own post | Mentioned account, original parent author or post author | `community_comments`; original saved identities, unread notification, current post visibility for both actor and recipient, no blocks |
+| Community comment mention, direct reply, comment on own post | Mentioned account, original parent author or post author | `community_comments`; original saved identities, unread notification (or the existing post-author engagement read marker), current post visibility for both actor and recipient, no blocks |
 | Organization claim transition | Admin-managed claimant, or original claimant when its claim is removed | `business_updates`; current verified account mailbox, exact current claim fields and transition generation |
 | Organization service-status transition | Current admin-managed claimed owner | Same business permission and claim generation |
 | Linked venue closure/review/link transition | Current verified claimant of its organization | Same permission, exact venue fingerprint and organization claim generation |

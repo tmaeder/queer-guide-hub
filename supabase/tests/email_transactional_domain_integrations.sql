@@ -58,6 +58,18 @@ begin
  update public.group_post_comments set mentions=jsonb_build_array(jsonb_build_object('user_id',recipient)) where id=comment_key;
  assert not public.email_notice_current(notice),'mention restoration revived source';
  assert (select count(*)=1 from public.email_operational_notices where source_id=comment_key),'readd duplicated notice';
+ -- Existing post-author inbox/read state is reused without duplicate notices.
+ insert into public.community_posts(id,user_id,visibility) values(community_post,recipient,'public');
+ select count(*) into count_before from public.notifications where user_id=recipient;
+ insert into public.post_comments(id,post_id,user_id,content) values(community_comment,community_post,actor,'comment on own post');
+ select id into notice from public.email_operational_notices where source_id=community_comment and user_id=recipient;
+ assert public.email_notice_current(notice),'post author comment missing';
+ assert (select count(*)=count_before from public.notifications where user_id=recipient),'post author received duplicate inbox notification';
+ update public.profiles set post_engagement_seen_at=now() where user_id=recipient;
+ assert not public.email_notice_current(notice),'post author read marker ignored';
+ update public.profiles set post_engagement_seen_at=null where user_id=recipient;
+ assert not public.email_notice_current(notice),'author unread reset revived source';
+ community_post:=gen_random_uuid(); community_comment:=gen_random_uuid();
  -- Community visibility is checked for actor and recipient, despite service RLS bypass.
  insert into public.community_posts(id,user_id,visibility) values(community_post,actor,'private');
  insert into public.post_comments(id,post_id,user_id,content,mentions) values(community_comment,community_post,actor,'private',jsonb_build_array(jsonb_build_object('user_id',recipient)));
@@ -79,6 +91,23 @@ begin
  insert into public.user_relationships values(recipient,actor,'block');
  delete from public.user_relationships where user_id=recipient and target_user_id=actor;
  assert not public.email_notice_current(notice),'unblocking revived source';
+ -- A direct community reply uses the original parent identity.
+ parent_key:=gen_random_uuid(); community_comment:=gen_random_uuid();
+ insert into public.post_comments(id,post_id,user_id,content) values(parent_key,community_post,recipient,'parent');
+ insert into public.post_comments(id,post_id,user_id,parent_comment_id,content) values(community_comment,community_post,actor,parent_key,'reply');
+ select id into notice from public.email_operational_notices where source_id=community_comment and user_id=recipient;
+ assert public.email_notice_current(notice),'community direct reply missing';
+ delete from public.post_comments where id=parent_key;
+ assert not public.email_notice_current(notice),'deleted parent left reply eligible';
+ -- Source timestamps cannot be changed and restored to evade read-state proof.
+ community_comment:=gen_random_uuid();
+ insert into public.post_comments(id,post_id,user_id,content,mentions) values(community_comment,community_post,actor,'created proof',jsonb_build_array(jsonb_build_object('user_id',recipient)));
+ select id into notice from public.email_operational_notices where source_id=community_comment and user_id=recipient;
+ assert public.email_notice_current(notice);
+ update public.post_comments set created_at=created_at+interval '1 second' where id=community_comment;
+ assert not public.email_notice_current(notice),'timestamp rewrite ignored';
+ update public.post_comments set created_at=created_at-interval '1 second' where id=community_comment;
+ assert not public.email_notice_current(notice),'timestamp restoration revived source';
  -- New independent opt-in is not retroactive.
  insert into public.post_comments(post_id,user_id,content,mentions) values(community_post,actor,'unverified',jsonb_build_array(jsonb_build_object('user_id',unverified)));
  assert not exists(select 1 from public.email_operational_notices where user_id=unverified);
