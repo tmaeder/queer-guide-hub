@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { TransitIcon } from '@/components/transit/TransitIcon';
+import { StationPlate } from '@/components/ui/StationPlate';
 import { tagPreviewText } from '@/lib/tags/tagsIndexState';
 import { DEFAULT_CATEGORY_ICON } from '@/lib/tags/categoryIdentity';
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
@@ -50,27 +51,28 @@ export function TagIndexCard({ tag, uses, icon, categoryLabel, aliasMatch }: Tag
   return (
     <LocalizedLink
       to={`/tags/${encodeURIComponent(tag.slug)}`}
-      className="card-lift group flex h-full min-h-56 flex-col gap-4 rounded-container bg-card p-4 text-inherit no-underline shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+      className="card-lift group flex h-full flex-col overflow-hidden rounded-container bg-card text-inherit no-underline shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
     >
-      <div className="flex items-center justify-between gap-4">
-        {/* No plate. The muted square under this was a v1 affordance: a single
-            thin ink stroke needs a ground to read against, a filled mark with
-            an ink outline does not. Dropping it is what buys the size. */}
-        <TransitIcon name={icon ?? DEFAULT_CATEGORY_ICON} size={44} ticks={false} />
+      {/* The marketplace department tile's plate: a stretch of line and one
+          station, the term's own glyph inside the disc. */}
+      <StationPlate
+        icon={icon ?? DEFAULT_CATEGORY_ICON}
+        fallbackKey={tag.slug}
+        className="block aspect-[16/7] w-full"
+      />
+      <div className="flex flex-1 flex-col gap-2 p-4">
         {categoryLabel && (
-          <span className="text-right text-2xs font-medium text-muted-foreground">
+          <span className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
             {categoryLabel}
           </span>
         )}
-      </div>
-      <div className="flex flex-1 flex-col gap-2">
         <span className="break-words text-title font-bold leading-tight text-pretty">
           {tag.name}
         </span>
         {blurb && (
           <p className="line-clamp-3 text-13 leading-relaxed text-muted-foreground">{blurb}</p>
         )}
-        <span className="mt-auto flex items-center gap-2 pt-4 text-2xs tabular-nums text-muted-foreground">
+        <span className="mt-auto flex items-center gap-2 pt-2 text-2xs uppercase tracking-wide tabular-nums text-muted-foreground">
           {t('tags.card.uses', '{{count}} uses', { count: uses })}
           {aliasMatch && <AliasPip label={t('tags.alias.badge', 'alias')} />}
         </span>

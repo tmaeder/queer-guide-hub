@@ -28,13 +28,24 @@ function lift(key: string): number {
   return (Math.abs(h) % 5) * 6 - 12;
 }
 
-export function StationPlate({ theme = 'default', fallbackKey = '' }: { theme?: FallbackTheme; fallbackKey?: string }) {
+export function StationPlate({
+  theme = 'default',
+  fallbackKey = '',
+  icon,
+  className,
+}: {
+  theme?: FallbackTheme;
+  fallbackKey?: string;
+  /** Overrides the theme's icon — a card that has its own glyph (a glossary term). */
+  icon?: TransitIconName;
+  className?: string;
+}) {
   const d = lift(`${theme}:${fallbackKey}`);
   return (
     <svg
       viewBox="0 0 400 250"
       preserveAspectRatio="xMidYMid slice"
-      className="block h-full w-full"
+      className={className ?? 'block h-full w-full'}
       aria-hidden="true"
       focusable="false"
       data-fallback="station"
@@ -49,7 +60,7 @@ export function StationPlate({ theme = 'default', fallbackKey = '' }: { theme?: 
       />
       <circle cx="200" cy="125" r="56" strokeWidth={5} className="fill-background stroke-foreground" />
       <g transform="translate(170 95) scale(0.6)">
-        <TransitIcon name={THEME_ICON[theme]} size={100} ticks={false} />
+        <TransitIcon name={icon ?? THEME_ICON[theme]} size={100} ticks={false} />
       </g>
     </svg>
   );
