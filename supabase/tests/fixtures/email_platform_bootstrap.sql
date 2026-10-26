@@ -124,3 +124,19 @@ alter table public.mailbox_emails enable row level security;
 grant all on public.mailbox_emails to service_role;
 grant select,insert,update,delete on public.mailbox_emails to authenticated;
 create policy mailbox_owner_fixture on public.mailbox_emails to authenticated using(owner_id=auth.uid()) with check(owner_id=auth.uid());
+
+-- Saved comment/visibility and verified business claim source columns.
+create table public.community_posts(id uuid primary key default gen_random_uuid(),user_id uuid not null references auth.users(id) on delete cascade,visibility text not null default 'public',content text);
+create table public.post_comments(id uuid primary key default gen_random_uuid(),post_id uuid not null references public.community_posts(id) on delete cascade,user_id uuid not null references auth.users(id) on delete cascade,content text not null,parent_comment_id uuid references public.post_comments(id) on delete cascade,mentions jsonb default '[]',created_at timestamptz default now());
+create table public.group_post_comments(id uuid primary key default gen_random_uuid(),post_id uuid not null references public.group_posts(id) on delete cascade,user_id uuid not null references auth.users(id) on delete cascade,content text not null,parent_comment_id uuid references public.group_post_comments(id) on delete cascade,mentions jsonb default '[]',created_at timestamptz default now());
+create table public.user_follows(follower_id uuid not null,following_id uuid not null,primary key(follower_id,following_id));
+alter table public.notifications add column title text;
+alter table public.notifications add column content text;
+alter table public.notifications add column action_url text;
+alter table public.organizations add column claimed_by uuid;
+alter table public.organizations add column claim_status text not null default 'unclaimed';
+grant all on public.community_posts,public.post_comments,public.group_post_comments,public.user_follows to service_role;
+
+alter table public.venues add column organization_id uuid references public.organizations(id);
+
+alter table public.profiles add column post_engagement_seen_at timestamptz;

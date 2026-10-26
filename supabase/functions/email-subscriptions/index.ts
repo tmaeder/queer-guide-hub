@@ -241,7 +241,7 @@ Deno.serve(async (req: Request) => {
           typeof body.group_mentions_enabled !== "boolean") ||
         (body.operational_topics !== undefined &&
           (!Array.isArray(body.operational_topics) ||
-            body.operational_topics.length > 6 ||
+            body.operational_topics.length > 9 ||
             new Set(body.operational_topics).size !==
               body.operational_topics.length ||
             body.operational_topics.some((topic: unknown) =>
@@ -253,6 +253,9 @@ Deno.serve(async (req: Request) => {
                 "contributions",
                 "payments",
                 "group_invitations",
+                "group_comments",
+                "community_comments",
+                "business_updates",
               ].includes(topic)
             ))) ||
         typeof body.quiet_hours_enabled !== "boolean" ||
