@@ -172,8 +172,9 @@ async function run() {
   // A bare city query must rank that city's results first — also when the
   // caller sends its own location (lat/lng, no radius). Before
   // 99991793042566 the location turned `london` into zero matches, padded with
-  // popular Barcelona/Sydney/Paris rows. Berlin origin is far from all three.
-  for (const city of ['London', 'Berlin', 'Paris']) {
+  // popular Barcelona/Sydney/Paris rows; and `new york` matched the city
+  // "York" and searched "new" (New Orleans). Madrid origin is far from all.
+  for (const city of ['London', 'Berlin', 'Paris', 'New York']) {
     await scenario(`R1-${city}`, `"${city.toLowerCase()}" ranks ${city} first, with and without a user location`, async ({ HARD }) => {
       for (const filters of [undefined, { lat: 40.4168, lng: -3.7038 }]) {
         const r = await search({ query: city.toLowerCase(), hitsPerPage: 10, ...(filters ? { filters } : {}) });
