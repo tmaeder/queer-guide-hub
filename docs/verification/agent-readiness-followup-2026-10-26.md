@@ -13,7 +13,7 @@ Baseline: the fresh official Is Agentic scan at `2026-10-26T20:05:21.440Z` score
 
 ## Verification at this checkpoint
 
-- **138 focused tests** pass (API, pricing middleware, CLI and route metadata).
+- **139 focused tests** pass (API, pricing middleware, CLI and route metadata).
 - **16 native MCP tests** pass, including executing the guarded built bundle and preserving original provider endpoints/RPC dispatch.
 - **128 search Worker tests** pass; quota tests cover observed counters, reset seconds, exhausted quota, no increment on 429, CORS and bypasses.
 - Functions and Functions-test TypeScript pass with zero errors. Search Worker TypeScript passes. Application typecheck has no new errors: 660 existing against the unchanged 772 baseline.

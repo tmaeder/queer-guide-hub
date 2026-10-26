@@ -114,7 +114,8 @@ export async function run(args, io = {}) {
     return 0;
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Request failed.';
-    const code = e?.code ?? 'CLI_ERROR';
+    const code = ['TimeoutError', 'AbortError'].includes(e?.name) ? 'TIMEOUT'
+      : typeof e?.code === 'string' ? e.code : 'CLI_ERROR';
     error(json ? JSON.stringify({ error: { code, message, hint: 'See https://queer.guide/docs or run --help.' } }) : plain(message));
     return 1;
   }

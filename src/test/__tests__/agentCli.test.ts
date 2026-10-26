@@ -4,6 +4,13 @@ import { run } from '../../../public/cli.mjs';
 const output = (fetch = vi.fn()) => ({ fetch, write: vi.fn(), error: vi.fn() });
 
 describe('official public read-only CLI', () => {
+  it('reports deadlines with a stable string error code', async () => {
+    const io = output(
+      vi.fn().mockRejectedValue(new DOMException('Request deadline exceeded', 'TimeoutError')),
+    );
+    expect(await run(['pages', '--json'], io)).toBe(1);
+    expect(JSON.parse(io.error.mock.calls[0][0]).error.code).toBe('TIMEOUT');
+  });
   it('keeps useful search references when the service does not supply a URL', async () => {
     const io = output(
       vi.fn().mockResolvedValue(
