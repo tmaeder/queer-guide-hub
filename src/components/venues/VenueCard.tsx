@@ -1,4 +1,4 @@
-import { VenueCategoryMark } from './VenueCategoryMark';
+import { VenueCategoryMark, venueCategoryIcon } from './VenueCategoryMark';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
@@ -120,6 +120,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
               aspect="card"
               imageRole="cover"
               fallbackEntityType="venue"
+              fallbackIcon={venueCategoryIcon(venue.category)}
               fallbackKey={venue.id}
             >
               {overlay && (

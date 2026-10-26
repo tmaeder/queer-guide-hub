@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- the icon lookup is shared with the card plate */
 import {
   Wine,
   Music,
@@ -39,6 +40,10 @@ const ICONS: Record<VenueCategory, LucideIcon> = {
   toilet: Accessibility,
   other: MapPin,
 };
+/** The category's glyph — also drawn large on a photo-less card's plate. */
+export const venueCategoryIcon = (category: string | null | undefined): LucideIcon =>
+  (category && ICONS[category as VenueCategory]) || MapPin;
+
 export function VenueCategoryMark({ category }: { category: string | null }) {
   const label = useVenueCategoryLabel(category);
   if (!category) return null;

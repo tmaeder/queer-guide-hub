@@ -322,9 +322,13 @@ export const Image = ({
       style={heightPx != null ? { height: heightPx } : undefined}
     >
       {showIconTile ? (
-        <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-          {FallbackIcon ? <FallbackIcon className="h-10 w-10" aria-hidden /> : null}
-        </div>
+        FallbackIcon?.slug ? (
+          <StationPlate icon={FallbackIcon.slug} fallbackKey={fallbackKey} />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+            <FallbackIcon className="h-10 w-10" aria-hidden />
+          </div>
+        )
       ) : showingFallback ? (
         <StationPlate theme={fallbackEntityType} fallbackKey={fallbackKey} />
       ) : (

@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '@/lib/currency';
 import { Card } from '@/components/ui/card';
-import { EventTypeMark } from './EventTypeMark';
+import { EventTypeMark, eventTypeIcon } from './EventTypeMark';
 import { Calendar } from '@/components/icons';
 import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
@@ -152,6 +152,7 @@ export const EventCard = memo(function EventCard({
               aspect="card"
               imageRole="cover"
               fallbackEntityType="event"
+              fallbackIcon={eventTypeIcon(event.event_type)}
               fallbackKey={event.id}
             >
               {overlay && (

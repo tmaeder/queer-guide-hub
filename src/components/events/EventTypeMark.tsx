@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- the icon lookup is shared with the card plate */
 import { useTranslation } from 'react-i18next';
 import {
   Calendar,
@@ -49,6 +50,10 @@ const ICONS: Record<EventType, LucideIcon> = {
   fetish: LockKeyhole,
   other: Calendar,
 };
+
+/** The type's glyph — also drawn large on a photo-less card's plate. */
+export const eventTypeIcon = (type: string | null | undefined): LucideIcon =>
+  (type && ICONS[type as EventType]) || Calendar;
 
 export function EventTypeMark({ type }: { type: string }) {
   const label = useEventTypeLabel(type);
