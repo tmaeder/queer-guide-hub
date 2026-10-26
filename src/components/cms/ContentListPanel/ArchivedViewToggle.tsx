@@ -11,7 +11,7 @@
  * misdescribe the row. A ghost city is not an archived place, it is not a
  * place.
  */
-import { Archive } from 'lucide-react';
+import { Archive } from '@/components/icons';
 import {
   Select,
   SelectContent,

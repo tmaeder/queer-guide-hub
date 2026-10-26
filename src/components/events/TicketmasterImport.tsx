@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Ticket } from 'lucide-react';
+import { Ticket } from '@/components/icons';
 
 interface TicketmasterImportProps {
   onImportComplete?: () => void;

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Clock } from 'lucide-react';
+import { Clock } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 

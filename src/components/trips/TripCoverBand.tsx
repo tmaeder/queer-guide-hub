@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import type { TripWithDetails } from '@/hooks/useTrips';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

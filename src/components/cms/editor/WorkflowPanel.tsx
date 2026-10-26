@@ -7,7 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Clock, Eye, EyeOff, Lock, Globe, CalendarClock } from 'lucide-react';
+import { Clock, Eye, EyeOff, Lock, Globe, CalendarClock } from '@/components/icons';
 import { useCMSWorkflow } from '@/hooks/useCMSWorkflow';
 import { loadCMSContentMetadata, upsertCMSContentMetadata } from '@/hooks/useCMSContentMetadata';
 import { getStateColor, getStateLabel } from '@/config/workflowConfig';

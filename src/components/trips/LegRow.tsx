@@ -7,7 +7,7 @@ import {
   Ship,
   Plane,
   CarTaxiFront,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { useTripMutations } from '@/hooks/useTrips';
 import {

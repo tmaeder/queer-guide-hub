@@ -1,5 +1,5 @@
 import { useCallback, useState, useSyncExternalStore } from 'react';
-import { Image as ImageIcon, MapPin, ShieldOff, Sparkles, X } from 'lucide-react';
+import { Image as ImageIcon, MapPin, ShieldOff, Sparkles, X } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';

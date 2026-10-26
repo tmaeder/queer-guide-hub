@@ -3,7 +3,7 @@
  *
  * Pipeline node types store an icon name as a string (in the
  * `pipeline_node_types` table or inline JSON in pipeline definitions).
- * Rendering used to do `import * as Icons from 'lucide-react'` and look
+ * Rendering used to do `import * as Icons from '@/components/icons'` and look
  * up `Icons[d.icon]` at runtime — which forced Rollup to mark every icon
  * in lucide-react as live, ballooning the `lucide` chunk to ~600 KB raw
  * (the entire library) and shipping all of it on initial page load.
@@ -89,7 +89,7 @@ import {
   Users,
   Workflow,
   Zap,
-} from 'lucide-react';
+} from '@/components/icons';
 
 import type { ComponentType } from 'react';
 

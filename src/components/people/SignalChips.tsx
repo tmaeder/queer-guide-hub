@@ -1,4 +1,4 @@
-import { Users, Calendar, Hash, Flame, type LucideIcon } from 'lucide-react';
+import { Users, Calendar, Hash, Flame, type LucideIcon } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { PeopleMatchShared } from '@/hooks/usePeopleDiscovery';

@@ -10,7 +10,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Filter,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';

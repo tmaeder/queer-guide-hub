@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Image } from '@/components/ui/Image';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';

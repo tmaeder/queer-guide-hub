@@ -7,7 +7,7 @@ import { PodcastPlayer } from '@/components/news/PodcastPlayer';
 import { podcastEpisodeJsonLd } from '@/lib/podcastJsonLd';
 import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ExternalLink, Clock, Eye, Calendar, User, BookOpen } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Clock, Eye, Calendar, User, BookOpen } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { Badge } from '@/components/ui/badge';

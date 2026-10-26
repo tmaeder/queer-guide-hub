@@ -14,8 +14,10 @@ interface BentoSectionProps {
 
 // Featured: first item wide+tall, rest uniform thirds
 const FEATURED_PATTERN: EntitySpan[] = ['wide', 'md', 'md', 'sm', 'sm', 'sm', 'sm'];
-// Mosaic: alternating wide / thirds for visual rhythm
-const MOSAIC_PATTERN: EntitySpan[] = ['lg', 'md', 'sm', 'sm', 'sm', 'md', 'lg', 'sm', 'sm', 'sm'];
+// Mosaic: a row of halves, two rows of thirds, a row of halves. Every row
+// sums to 12 columns — the old pattern (lg, md, sm …) put a half beside a
+// third and left a two-column hole on every desktop row.
+const MOSAIC_PATTERN: EntitySpan[] = ['lg', 'lg', 'md', 'md', 'md', 'md', 'md', 'md', 'lg', 'lg'];
 
 export function spansForPreset(preset: Preset, index: number, _total: number): EntitySpan {
   if (preset === 'uniform') return 'sm';

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from '@/components/icons';
 import { useMeta } from '@/hooks/useMeta';
 import {
   type EditorialEntityType,

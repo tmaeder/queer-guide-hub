@@ -3,7 +3,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Mail, MailX, AlertTriangle } from 'lucide-react';
+import { Send, Mail, MailX, AlertTriangle } from '@/components/icons';
 import { Github } from '@/components/icons/brand';
 import { timeAgo } from '@/utils/timezone';
 import type { FeedbackReply } from './types';

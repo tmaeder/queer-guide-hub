@@ -1,5 +1,5 @@
 import { useState, type MouseEvent } from 'react';
-import { ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ThumbsUp, ThumbsDown } from '@/components/icons';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useFeedbackVote, type Entity } from '@/hooks/useSearchActions';
 

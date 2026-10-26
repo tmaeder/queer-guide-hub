@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Copy, Trash2, Settings, ClipboardCopy, ClipboardPaste } from 'lucide-react';
+import { Copy, Trash2, Settings, ClipboardCopy, ClipboardPaste } from '@/components/icons';
 
 interface NodeContextMenuProps {
   x: number;

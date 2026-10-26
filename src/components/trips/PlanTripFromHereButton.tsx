@@ -1,4 +1,4 @@
-import { Plane } from 'lucide-react';
+import { Plane } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import type { GeoSelection } from '@/components/trips/create/CityCountryAutocomplete';

@@ -99,7 +99,11 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
       // 'completed' is written by an older enrich path. A row whose empty verdict
       // was reset for a retry can carry it, and selecting 'enriched' alone left
       // those rows unjudgeable forever (64 measured on 2026-10-23).
-      .in('enrichment_status', ['enriched', 'completed'])
+      // 'failed' is included because the verdict reads nothing the enrichment
+      // stage produces: a news row whose summary/tags call returned no data is
+      // still judgeable, and enrichment failure is terminal, so excluding it
+      // parked those rows as "awaiting_llm_verdict" forever (7 on 2026-10-25).
+      .in('enrichment_status', ['enriched', 'completed', 'failed'])
       // Never spend an LLM call on a row a deterministic gate already discarded:
       // validate-reject stamps disposition='rejected', dedup marks duplicates
       // (disposition stays 'pending' there, hence the separate neq). validate

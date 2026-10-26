@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Monitor, Smartphone, ExternalLink, RefreshCw } from 'lucide-react';
+import { Monitor, Smartphone, ExternalLink, RefreshCw } from '@/components/icons';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import {

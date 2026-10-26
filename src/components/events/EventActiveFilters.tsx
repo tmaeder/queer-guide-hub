@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
-import { X, MapPin } from 'lucide-react';
+import { X, MapPin } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { dateFnsLocaleFor } from '@/i18n/dateFnsLocale';
 import { displayCityName } from '@/utils/cityDisplay';

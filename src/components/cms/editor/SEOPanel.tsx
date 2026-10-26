@@ -5,7 +5,7 @@
  */
 
 import React, { useCallback, useMemo } from 'react';
-import { Globe, Search } from 'lucide-react';
+import { Globe, Search } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import type { CMSContentMetadata } from '@/types/cms';

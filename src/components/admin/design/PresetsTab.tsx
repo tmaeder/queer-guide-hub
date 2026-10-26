@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CalendarClock, Trash2 } from 'lucide-react';
+import { CalendarClock, Trash2 } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

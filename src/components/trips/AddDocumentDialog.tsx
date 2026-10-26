@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Upload, FileText, Sparkles } from 'lucide-react';
+import { Upload, FileText, Sparkles } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,

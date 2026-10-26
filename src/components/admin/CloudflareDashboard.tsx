@@ -25,7 +25,7 @@ import {
   AlertTriangle,
   CheckCircle,
   RefreshCw,
-} from 'lucide-react';
+} from '@/components/icons';
 
 interface CloudflareStats {
   analytics?: CloudflareAnalytics | null;

@@ -12,7 +12,7 @@ import { useFeedbackVoteCounts } from '@/hooks/useFeedbackVote';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { fetchFeedbackBoardItems, toggleFeedbackVote } from '@/hooks/usePageFetchers';
-import { Bug, Lightbulb, Sparkles, BookOpen, ChevronUp, Clock } from 'lucide-react';
+import { Bug, Lightbulb, Sparkles, BookOpen, ChevronUp, Clock } from '@/components/icons';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 const columns = [

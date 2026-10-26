@@ -1,0 +1,300 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Queer Guide public content API",
+    "version": "1.0.0",
+    "description": "Anonymous, read-only access to Queer Guide introductory guide pages and canonical links. See /docs for MCP search, privacy limits and usage guidance.",
+    "contact": {
+      "name": "Queer Guide",
+      "url": "https://queer.guide/contact"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://queer.guide",
+      "description": "Production public read-only service."
+    }
+  ],
+  "externalDocs": {
+    "description": "Authentication, examples, Markdown and MCP instructions.",
+    "url": "https://queer.guide/docs"
+  },
+  "security": [],
+  "paths": {
+    "/api/v1/pages": {
+      "get": {
+        "operationId": "listPublicPages",
+        "summary": "List available public introductory pages.",
+        "description": "List available public introductory pages. Public read-only access: no API key, account or payment required. Cache responses and honour platform 429/Retry-After responses. This is introductory content rather than a full venue/event data export.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful public content response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or URL encoding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or endpoint not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed; use GET or HEAD.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal failure; retry with backoff.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pages/{slug}": {
+      "get": {
+        "operationId": "getPublicPage",
+        "summary": "Read an introductory page and related links.",
+        "description": "Read an introductory page and related links. Public read-only access: no API key, account or payment required. Cache responses and honour platform 429/Retry-After responses. This is introductory content rather than a full venue/event data export.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful public content response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters or URL encoding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or endpoint not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed; use GET or HEAD.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal failure; retry with backoff.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "description": "A slug from listPublicPages; use home for the homepage. Encode any slash in a category slug.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "example": "home"
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Link": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "href",
+          "label"
+        ],
+        "properties": {
+          "href": {
+            "type": "string",
+            "description": "Canonical related resource URL.",
+            "format": "uri"
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable link label."
+          }
+        }
+      },
+      "PageSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "slug",
+          "title",
+          "url"
+        ],
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Public introductory page identifier; use home for the homepage."
+          },
+          "title": {
+            "type": "string",
+            "description": "Page heading."
+          },
+          "url": {
+            "type": "string",
+            "description": "Canonical website URL.",
+            "format": "uri"
+          }
+        }
+      },
+      "Page": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "slug",
+          "title",
+          "url",
+          "paragraphs",
+          "links"
+        ],
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Public introductory page identifier; use home for the homepage."
+          },
+          "title": {
+            "type": "string",
+            "description": "Page heading."
+          },
+          "url": {
+            "type": "string",
+            "description": "Canonical website URL.",
+            "format": "uri"
+          },
+          "paragraphs": {
+            "type": "array",
+            "description": "Introductory content; privacy is a policy summary.",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "links": {
+            "type": "array",
+            "description": "Related public pages and resources.",
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            }
+          }
+        }
+      },
+      "PageList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pages"
+        ],
+        "properties": {
+          "pages": {
+            "type": "array",
+            "description": "Available introductory pages.",
+            "items": {
+              "$ref": "#/components/schemas/PageSummary"
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error",
+          "docs"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message",
+              "hint"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Stable machine-readable error code."
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable failure reason."
+              },
+              "hint": {
+                "type": "string",
+                "description": "Suggested recovery action."
+              }
+            }
+          },
+          "docs": {
+            "type": "string",
+            "description": "Documentation URL.",
+            "format": "uri"
+          }
+        }
+      }
+    }
+  }
+}

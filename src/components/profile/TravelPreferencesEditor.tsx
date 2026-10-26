@@ -20,7 +20,7 @@ import {
   Accessibility,
   Plane,
   MapPin,
-} from 'lucide-react';
+} from '@/components/icons';
 import {
   fetchProfileTravelPreferences,
   fetchTravelPrefsHomeCity,

@@ -17,7 +17,7 @@ import {
   Search,
   Globe,
   Gauge,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

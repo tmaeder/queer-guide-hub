@@ -7,7 +7,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { ExternalLink, ChevronDown } from 'lucide-react';
+import { ExternalLink, ChevronDown } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FieldDiffView, computeFieldDiffs } from './FieldDiffView';

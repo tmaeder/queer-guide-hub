@@ -36,7 +36,7 @@ import {
   Plus,
   AtSign,
   Hash,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useCommunityPosts, CreatePostData } from '@/hooks/useCommunityPosts';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';

@@ -1,7 +1,7 @@
 import { formatDistanceToNow } from 'date-fns';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Activity, BarChart3, Trash2, CheckCircle } from 'lucide-react';
+import { AlertTriangle, Activity, BarChart3, Trash2, CheckCircle } from '@/components/icons';
 import { supabase } from '@/integrations/supabase/client';
 import { listFrom } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';

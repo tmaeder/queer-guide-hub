@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { getNavItemByRoute } from '@/config/adminNavigation';
 

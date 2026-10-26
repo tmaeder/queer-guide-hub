@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Heart, Plus, Check } from 'lucide-react';
+import { Heart, Plus, Check } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gauge } from 'lucide-react';
+import { Gauge } from '@/components/icons';
 import { useTagQualityScorecard } from '@/hooks/useTagQualityScorecard';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';
 

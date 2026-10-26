@@ -10,7 +10,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, FileText, Download, AlertCircle, CheckCircle } from "lucide-react";
+import { Upload, FileText, Download, AlertCircle, CheckCircle } from '@/components/icons';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {

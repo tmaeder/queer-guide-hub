@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Sparkles, MapPin, Calendar, Wallet, RefreshCw} from 'lucide-react';
+import { Sparkles, MapPin, Calendar, Wallet, RefreshCw} from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';

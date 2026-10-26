@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
-import { Inbox, Mail, Check, X, MessageCircle } from 'lucide-react';
+import { Inbox, Mail, Check, X, MessageCircle } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Textarea } from '@/components/ui/textarea';

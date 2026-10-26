@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { MarketplaceCard } from './MarketplaceCard';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';

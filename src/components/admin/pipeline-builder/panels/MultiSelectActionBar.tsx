@@ -1,4 +1,4 @@
-import { Trash2, LayoutGrid, Boxes, X, Copy } from 'lucide-react';
+import { Trash2, LayoutGrid, Boxes, X, Copy } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 

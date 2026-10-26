@@ -2,7 +2,7 @@ import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@/components/icons';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { useDetailMeta } from '@/hooks/useDetailMeta';

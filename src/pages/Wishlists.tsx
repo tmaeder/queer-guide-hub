@@ -6,7 +6,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
-import { Heart, Plus, Lock, Globe, Link2 } from 'lucide-react';
+import { Heart, Plus, Lock, Globe, Link2 } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { PageContainer } from '@/components/layout/PageContainer';
 

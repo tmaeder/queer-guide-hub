@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Clock, Flag } from 'lucide-react';
+import { Clock, Flag } from '@/components/icons';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { PicksPlate } from '@/components/marketplace/PicksPlate';
 import type { GuideFormat } from '@/hooks/useGuides';

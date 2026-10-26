@@ -1,6 +1,6 @@
 import { profileEditPath, profileEditorSection } from '@/lib/profileEditing';
 import { useState } from 'react';
-import { AtSign, Sparkles, Luggage } from 'lucide-react';
+import { AtSign, Sparkles, Luggage } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';

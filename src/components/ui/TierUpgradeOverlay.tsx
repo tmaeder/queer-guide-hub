@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 

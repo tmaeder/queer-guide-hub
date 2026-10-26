@@ -193,6 +193,8 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Shared edge evidence parsers keep their pinned Deno npm specifier.
+      'npm:parse5@8.0.1': 'parse5',
     },
     // P0 audit follow-up: boneyard-js/react bundles its own React, which
     // ends up in a separate Vite optimizeDeps cache bucket from the app's
@@ -303,7 +305,6 @@ export default defineConfig(({ mode }) => ({
             { name: 'framer-motion', test: /node_modules\/(motion|motion-dom|motion-utils)\// },
             { name: 'radix', test: /node_modules\/@radix-ui\// },
             { name: 'react-query', test: /node_modules\/@tanstack\/(react-query|query-)/ },
-            { name: 'lucide', test: /node_modules\/lucide-react\// },
             { name: 'supabase', test: /node_modules\/@supabase\// },
             { name: 'recharts', test: /node_modules\/(recharts|victory-vendor)\// },
             { name: 'xyflow', test: /node_modules\/@xyflow\// },

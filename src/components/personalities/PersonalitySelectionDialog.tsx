@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Calendar, Briefcase, MapPin } from "lucide-react";
+import { User, Calendar, Briefcase, MapPin } from '@/components/icons';
 
 interface Candidate {
   id: string;

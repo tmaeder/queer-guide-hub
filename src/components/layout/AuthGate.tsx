@@ -8,7 +8,7 @@
 import React from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
-import { Lock } from 'lucide-react';
+import { Lock } from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 
 interface AuthGateProps {

@@ -18,7 +18,7 @@
  * refactor routing that page through the CMS list would hide exactly the rows
  * it exists to show.
  */
-import { GitMerge } from 'lucide-react';
+import { GitMerge } from '@/components/icons';
 import {
   Select,
   SelectContent,

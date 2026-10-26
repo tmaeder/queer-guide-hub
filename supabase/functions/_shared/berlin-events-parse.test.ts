@@ -109,6 +109,25 @@ Deno.test('parseBkaSpielplan: reads a lazyloaded row', () => {
   assertEquals(e.detailUrl, 'https://www.bka-theater.de/content_start.php?id=495&tid=4437')
 })
 
+Deno.test('parseBkaSpielplan: numeric performance IDs retain explicit date/time and modern links', () => {
+  const epoch = Date.parse('2026-10-01T20:00:00+02:00') / 1000
+  const modern = BKA_LAZY.replace('data-tid="2026-10-01 20:00:00"', `data-tid="4437" data-start-ts="${epoch}"`)
+    .replaceAll('/content_start.php?id=495&tid=4437', '/prg/495?tid=4437')
+  const [event] = parseBkaSpielplan(modern)
+  assertEquals(event.productionId, '495')
+  assertEquals(event.tid, '4437')
+  assertEquals(event.startIso, '2026-10-01T20:00:00+02:00')
+  assertEquals(event.detailUrl, 'https://www.bka-theater.de/prg/495?tid=4437')
+  assertEquals(parseBkaSpielplan(modern.replace(`data-start-ts="${epoch}"`, `data-start-ts="${epoch+3600}"`)), [])
+  assertEquals(parseBkaSpielplan(modern.replace('data-eventdate="20261001"', '')), [])
+  assertEquals(parseBkaSpielplan(modern.replace('data-eventtime="2000"', '')), [])
+})
+
+Deno.test('parseBkaSpielplan: conflicting date attributes never choose one silently', () => {
+  assertEquals(parseBkaSpielplan(BKA_LAZY.replace('data-eventdate="20261001"', 'data-eventdate="20261002"')), [])
+  assertEquals(parseBkaSpielplan(BKA_LAZY.replace('data-eventtime="2000"', 'data-eventtime="2100"')), [])
+})
+
 Deno.test('parseBkaSpielplan: an eager row keeps its src image', () => {
   // Reading only data-src silently dropped the seven above-the-fold
   // productions, image and all.
@@ -143,6 +162,7 @@ Deno.test('parseBkaSpielplan: drops dark nights, not shows', () => {
 Deno.test('parseBkaSpielplan: production id alone is not an identity', () => {
   // One production runs many nights; pid + date is what source_entity_id uses.
   const two = BKA_LAZY + BKA_LAZY.replace('2026-10-01 20:00:00', '2026-10-02 20:00:00')
+    .replace('data-eventdate="20261001"', 'data-eventdate="20261002"')
   const rows = parseBkaSpielplan(two)
   assertEquals(rows.length, 2)
   assertEquals(new Set(rows.map((r) => r.productionId)).size, 1)
@@ -250,6 +270,21 @@ Deno.test('parseSiegessaeuleDetail: image is the CDN path, never the signed og:i
 Deno.test('parseSiegessaeuleDetail: the footer never leaks into the venue', () => {
   const d = parseSiegessaeuleDetail(SIEG_DETAIL)
   assertEquals(d.venueUrl?.includes('siegessaeule.de'), false)
+})
+
+Deno.test('parseSiegessaeuleDetail: preserves the typed publisher venue point without evaluating scripts', () => {
+  const location='location:{lat:52.4656105,lng:13.38597012,__typename:"LocationPoint"}'
+  const d=parseSiegessaeuleDetail(SIEG_DETAIL+`<script>${location};throw Error("never execute")</script>`)
+  assertEquals(d.venueLatitude,52.4656105)
+  assertEquals(d.venueLongitude,13.38597012)
+  assertEquals(parseSiegessaeuleDetail(SIEG_DETAIL+location+location).venueLatitude,52.4656105)
+})
+Deno.test('parseSiegessaeuleDetail: refuses competing, absent and invalid map points', () => {
+  for(const extra of ['', 'location:{lat:91,lng:8,__typename:"LocationPoint"}', 'location:{lat:0,lng:0,__typename:"LocationPoint"}', 'location:{lat:52,lng:13,__typename:"OtherPoint"}', '52.46561 13.38597', 'location:{lat:52,lng:13,__typename:"LocationPoint"}location:{lat:53,lng:13,__typename:"LocationPoint"}', 'location:{lat:52,lng:13,__typename:"LocationPoint"}location:{lat:91,lng:13,__typename:"LocationPoint"}']){
+    const d=parseSiegessaeuleDetail(SIEG_DETAIL+extra)
+    assertEquals(d.venueLatitude,null,extra)
+    assertEquals(d.venueLongitude,null,extra)
+  }
 })
 
 // ----------------------------------------------------------- Lab.oratory

@@ -1,4 +1,4 @@
-import { Star, MapPin, Phone, Globe, Mail, Navigation2, Sparkles } from 'lucide-react';
+import { Star, MapPin, Phone, Globe, Mail, Navigation2, Sparkles } from '@/components/icons';
 import { Card, CardContent } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { buildProfileUrl, normalizeHandle } from '@/lib/social/registry';

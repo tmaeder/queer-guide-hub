@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { UserRound } from 'lucide-react';
+import { UserRound } from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useRedirectCustomerJourney } from '@/hooks/useRedirectConversions';
 import {

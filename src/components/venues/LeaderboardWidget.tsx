@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useCityLeaderboard } from '@/hooks/useVenuesV2Data';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy } from 'lucide-react';
+import { Trophy } from '@/components/icons';
 
 interface LeaderboardWidgetProps {
   cityId: string | null;

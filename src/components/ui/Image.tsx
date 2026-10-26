@@ -1,5 +1,6 @@
+import { StationPlate } from './StationPlate';
 import * as React from 'react';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
 import { imageReferrerPolicy } from '@/utils/imageHost';
@@ -324,6 +325,8 @@ export const Image = ({
         <div className="flex h-full w-full items-center justify-center text-muted-foreground">
           {FallbackIcon ? <FallbackIcon className="h-10 w-10" aria-hidden /> : null}
         </div>
+      ) : showingFallback ? (
+        <StationPlate theme={fallbackEntityType} fallbackKey={fallbackKey} />
       ) : (
         photo
       )}

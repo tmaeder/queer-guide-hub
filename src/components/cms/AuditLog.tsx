@@ -7,7 +7,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useSearchParams } from 'react-router';
-import { History, Clock, User } from 'lucide-react';
+import { History, Clock, User } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { useCMSAudit } from '@/hooks/useCMSAudit';
 import { formatRelativeTime, formatAction } from '@/lib/audit-format';

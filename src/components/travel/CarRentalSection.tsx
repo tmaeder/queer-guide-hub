@@ -1,4 +1,4 @@
-import { Car, ExternalLink } from 'lucide-react';
+import { Car, ExternalLink } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 

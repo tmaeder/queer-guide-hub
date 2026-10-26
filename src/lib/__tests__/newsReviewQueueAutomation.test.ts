@@ -37,12 +37,18 @@ describe('news review queue automation migration', () => {
 
   it('patches the podcast verdict to stamp auto_publish, from the live definition', () => {
     expect(apply).toContain("'public.run_podcast_deterministic_verdict(integer)'::regprocedure");
-    expect(apply).toMatch(/execute replace\(v_src, v_anchor, v_anchor \|\| ' ''auto_publish'', true,'\);/);
-    expect(apply).toMatch(/raise exception 'podcast auto_publish patch: anchor not found exactly once'/);
+    expect(apply).toMatch(
+      /execute replace\(v_src, v_anchor, v_anchor \|\| ' ''auto_publish'', true,'\);/,
+    );
+    expect(apply).toMatch(
+      /raise exception 'podcast auto_publish patch: anchor not found exactly once'/,
+    );
   });
 
   it('stamps auto_publish on existing passed verdicts with nothing blocking', () => {
-    expect(apply).toMatch(/jsonb_build_object\('auto_publish', true\)\s+where s\.target_table = 'news_articles'/);
+    expect(apply).toMatch(
+      /jsonb_build_object\('auto_publish', true\)\s+where s\.target_table = 'news_articles'/,
+    );
   });
 
   it('raises only the quality-enhance batch, never the enrich-news one', () => {
@@ -59,7 +65,9 @@ describe('news review queue automation migration', () => {
 
   it('relaxes only verdicts whose blocks are all image/entity-link', () => {
     expect(apply).toMatch(/<@ '\["image_unusable","entity_links_pending_review"\]'::jsonb;/);
-    expect(apply).toMatch(/jsonb_array_length\(s\.enriched_data->'auto_publish_blocked_reasons'\) > 0/);
+    expect(apply).toMatch(
+      /jsonb_array_length\(s\.enriched_data->'auto_publish_blocked_reasons'\) > 0/,
+    );
     expect(apply).toMatch(/s\.enriched_data->>'quality_status' = 'review'/);
   });
 
@@ -71,8 +79,12 @@ describe('news review queue automation migration', () => {
   });
 
   it('sentinel is service_role only', () => {
-    expect(sql).toMatch(/revoke all on function public\.news_staging_review_signals\(\) from public, anon, authenticated;/);
-    expect(sql).toMatch(/grant execute on function public\.news_staging_review_signals\(\) to service_role;/);
+    expect(sql).toMatch(
+      /revoke all on function public\.news_staging_review_signals\(\) from public, anon, authenticated;/,
+    );
+    expect(sql).toMatch(
+      /grant execute on function public\.news_staging_review_signals\(\) to service_role;/,
+    );
   });
 });
 
@@ -83,12 +95,15 @@ describe('pipeline code half', () => {
   });
 
   it('quality-enhance retries empty/failed verdicts and uses staging relaxations', () => {
-    expect(enhance).toMatch(/\(!decision \|\| extractionIsEmpty\(decision\)\) && prevAttempts \+ 1 < MAX_QUALITY_ATTEMPTS/);
+    expect(enhance).toMatch(
+      /\(!decision \|\| extractionIsEmpty\(decision\)\) && prevAttempts \+ 1 < MAX_QUALITY_ATTEMPTS/,
+    );
     expect(enhance).toMatch(/stagingRelaxations: true/);
     expect(enhance).toMatch(/image_suppressed: gate\.suppressImage && !replacementImage/);
     expect(enhance).toMatch(/\.order\('enriched_data->quality_attempts'/);
-    // A reset row may carry the older 'completed' status; it must stay selectable.
-    expect(enhance).toMatch(/\.in\('enrichment_status', \['enriched', 'completed'\]\)/);
+    // A reset row may carry the older 'completed' status, and a row whose
+    // enrichment returned no data is 'failed' (terminal): both stay judgeable.
+    expect(enhance).toMatch(/\.in\('enrichment_status', \['enriched', 'completed', 'failed'\]\)/);
   });
 });
 

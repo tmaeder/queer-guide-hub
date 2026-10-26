@@ -9,7 +9,7 @@ import {
   DropdownMenuShortcut,
   Button,
 } from 'queer-guide';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal } from '@/components/icons';
 
 // Capture harness freezes the page clock — settle Radix enter animations.
 // Also restores border-widths: src/index.css ships an UNLAYERED *{border-width:0}

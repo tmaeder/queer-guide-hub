@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Fingerprint, Scale, Shield, Skull } from 'lucide-react';
+import { Check, Fingerprint, Scale, Shield, Skull } from '@/components/icons';
 import { parseSsuDetails, deathPenaltyRisk } from '@/utils/equalityScore';
 import {
   RIGHT_SECTION_LABEL,

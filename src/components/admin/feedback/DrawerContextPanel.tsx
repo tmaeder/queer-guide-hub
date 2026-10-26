@@ -9,7 +9,7 @@ import {
   ExternalLink,
   ChevronDown,
   ChevronRight,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { timeAgo } from '@/utils/timezone';

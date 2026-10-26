@@ -24,7 +24,8 @@
     "noImplicitReturns": true,
 
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "npm:parse5@8.0.1": ["./node_modules/parse5/dist/index.d.ts"]
     }
   },
   "include": ["src"]

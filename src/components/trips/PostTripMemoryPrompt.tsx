@@ -3,7 +3,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';

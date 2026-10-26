@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Cloud, Droplets, Wind, Gauge} from 'lucide-react';
+import { Cloud, Droplets, Wind, Gauge} from '@/components/icons';
 import { supabase } from '@/integrations/supabase/client';
 
 interface WeatherDay {

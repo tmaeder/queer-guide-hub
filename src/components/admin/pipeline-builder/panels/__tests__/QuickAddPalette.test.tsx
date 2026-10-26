@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from '@/components/icons';
 
 vi.mock('../../icon-registry', () => ({
   resolvePipelineIcon: () => Sparkles,

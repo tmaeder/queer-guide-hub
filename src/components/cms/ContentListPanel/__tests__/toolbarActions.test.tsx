@@ -16,7 +16,7 @@ const render = (ui: React.ReactElement) =>
   );
 import { MemoryRouter } from 'react-router';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Tag } from 'lucide-react';
+import { Tag } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import type { Filter } from '../viewSpec';
 import {

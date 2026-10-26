@@ -1,5 +1,5 @@
 import { validateReferenceTerm } from '@/lib/referenceTaxonomyDefinitions';
-import { ListTree } from 'lucide-react';
+import { ListTree } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { CLASSIFICATION_LABELS } from '@/config/taxonomyCatalog';
 

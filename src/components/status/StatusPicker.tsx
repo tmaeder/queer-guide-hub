@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import {X } from 'lucide-react';
+import {X } from '@/components/icons';
 import {
   Dialog,
   DialogContent,

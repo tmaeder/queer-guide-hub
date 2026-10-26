@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload } from '@/components/icons';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

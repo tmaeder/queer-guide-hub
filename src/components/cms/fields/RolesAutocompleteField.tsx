@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Check, ChevronsUpDown, X } from 'lucide-react';
+import { Check, ChevronsUpDown, X } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {

@@ -10,7 +10,7 @@
  */
 
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from '@/components/icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { CockpitList } from '@/components/admin/cockpit/CockpitSection';
 import { CockpitQueueRow } from '@/components/admin/cockpit/CockpitQueueRow';

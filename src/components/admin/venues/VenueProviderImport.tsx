@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download } from '@/components/icons';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { VenueImportDialog } from './VenueImportDialog';

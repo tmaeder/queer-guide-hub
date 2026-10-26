@@ -1,6 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Badge } from '@/components/ui/badge';
-import { Layers, Clock } from 'lucide-react';
+import { Layers, Clock } from '@/components/icons';
 import { formatDistanceToNow } from 'date-fns';
 import { safeText } from '@/utils/safeDisplay';
 import { cleanTitle } from '@/utils/htmlDecode';

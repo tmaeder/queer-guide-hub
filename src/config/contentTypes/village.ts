@@ -1,4 +1,4 @@
-import { Home } from 'lucide-react';
+import { Home } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { countLink } from './countLink';
 import { venueContentType } from './venue';

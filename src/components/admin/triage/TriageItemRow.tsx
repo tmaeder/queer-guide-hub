@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from '@/components/icons';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { splitQualityTitle, fieldBadgeLabel } from '@/lib/qualityQueue';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ArrowRight, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, X } from '@/components/icons';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { EditorActions } from './EditorActions';
 import type { EditorProps } from './types';

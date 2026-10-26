@@ -17,7 +17,7 @@ import {
   FileText,
   Zap,
   Key,
-} from 'lucide-react';
+} from '@/components/icons';
 
 const SOURCE_TYPE_ICONS: Record<string, React.ReactNode> = {
   api: <Database size={16} />,

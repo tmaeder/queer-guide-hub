@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { LogOut, Shield, UserRound, Users } from 'lucide-react';
+import { LogOut, Shield, UserRound, Users } from '@/components/icons';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';

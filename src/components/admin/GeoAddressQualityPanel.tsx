@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPinned, AlertTriangle, Globe2 } from 'lucide-react';
+import { MapPinned, AlertTriangle, Globe2 } from '@/components/icons';
 import { useGeoAddressGaps, type GeoAddressEntityGap } from '@/hooks/useGeoAddressGaps';
 import { useGeoHygiene } from '@/hooks/useGeoHygiene';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';

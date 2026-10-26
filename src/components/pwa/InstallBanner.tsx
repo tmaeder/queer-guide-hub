@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { X, Download } from 'lucide-react';
+import { X, Download } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { usePWA } from './PWAProvider';
 

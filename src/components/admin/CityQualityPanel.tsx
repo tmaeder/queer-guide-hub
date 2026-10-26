@@ -2,7 +2,7 @@ import { cityCodesText } from '@/lib/cityCodes';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, MapPin, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, MapPin, ShieldCheck } from '@/components/icons';
 import { useCityQualitySummary } from '@/hooks/useCityQualitySummary';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';
 

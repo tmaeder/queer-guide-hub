@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Check, ChevronsUpDown, MapPin, X } from 'lucide-react';
+import { Check, ChevronsUpDown, MapPin, X } from '@/components/icons';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

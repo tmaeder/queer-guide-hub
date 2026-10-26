@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { NodeResizer, type NodeProps } from '@xyflow/react';
-import { StickyNote, Palette } from 'lucide-react';
+import { StickyNote, Palette } from '@/components/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { CommentNodeData, CommentNodeType } from '../types';
 

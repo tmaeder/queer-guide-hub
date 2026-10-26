@@ -6,8 +6,8 @@
  * reason renders as the raw key in monospace, never prettified.
  */
 
-import { useState, type ReactNode } from 'react';
-import { ChevronDown, ExternalLink } from 'lucide-react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { ChevronDown, ExternalLink } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { RenderedContent } from '@/components/cms/fields/RenderedContent';
@@ -92,6 +92,32 @@ export function NewsStagingPreview({ news, editor }: NewsStagingPreviewProps) {
   ];
   const { data: explanations } = useExplanations(keys);
   const img = d?.imageAssessment;
+  const recovery = news.sourceRecovery;
+  const [asOf, setAsOf] = useState(() => Date.now());
+  useEffect(() => {
+    if (!recovery?.expiresAt) return;
+    const delay = Date.parse(recovery.expiresAt) - Date.now();
+    if (!Number.isFinite(delay)) return;
+    const timer = setTimeout(
+      () => setAsOf(Date.now()),
+      Math.max(0, Math.min(delay + 1, 2_147_483_647)),
+    );
+    return () => clearTimeout(timer);
+  }, [recovery?.expiresAt]);
+  const expired =
+    recovery?.status === 'running' && !!recovery.expiresAt && Date.parse(recovery.expiresAt) < asOf;
+  const recoveryHeading =
+    recovery?.status === 'recovered'
+      ? d
+        ? 'Full article recovered'
+        : 'Full article recovered; quality check pending'
+      : recovery?.status === 'running'
+        ? expired
+          ? recovery.attempts < 2
+            ? 'Source recovery will retry automatically'
+            : 'Automatic source recovery was interrupted'
+          : 'Recovering the full article'
+        : 'The full article could not be confirmed';
 
   const host = (() => {
     try {
@@ -158,6 +184,54 @@ export function NewsStagingPreview({ news, editor }: NewsStagingPreviewProps) {
           <p className="text-13 text-muted-foreground">No article body was extracted.</p>
         )}
       </article>
+
+      {recovery && (
+        <Section title="Source recovery">
+          <p className="text-13 font-semibold">{recoveryHeading}</p>
+          <p className="text-13 text-muted-foreground">
+            {recovery.status === 'recovered'
+              ? d
+                ? 'The verdict below uses the recovered article.'
+                : 'A fresh quality check must pass before this article can be published. No decision is needed while it runs.'
+              : recovery.status === 'running' && (!expired || recovery.attempts < 2)
+                ? 'The original text is preserved while the publisher page is checked. No decision is needed while recovery runs.'
+                : recovery.reason === 'page_identity_unconfirmed'
+                  ? 'The publisher page could not be matched to this headline. Check the original source and correct its URL before approving.'
+                  : 'The original text is preserved. Check the publisher page for a complete article before approving.'}
+          </p>
+          {recovery.pageTitle && (
+            <p className="text-13 break-words">
+              <span className="text-muted-foreground">Publisher headline: </span>
+              {recovery.pageTitle}
+            </p>
+          )}
+          {recovery.originalLength !== undefined && recovery.extractedLength !== undefined && (
+            <p className="text-13 tabular-nums">
+              Original text: {recovery.originalLength.toLocaleString()} characters · Source text
+              found: {recovery.extractedLength.toLocaleString()} characters
+            </p>
+          )}
+          {recovery.checkedAt && Number.isFinite(Date.parse(recovery.checkedAt)) && (
+            <p className="text-2xs text-muted-foreground">
+              Last attempt:{' '}
+              <time dateTime={recovery.checkedAt}>
+                {new Date(recovery.checkedAt).toLocaleString('en-GB')}
+              </time>
+            </p>
+          )}
+          {recovery.url && (
+            <a
+              href={recovery.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs underline underline-offset-4"
+            >
+              Check the publisher page
+              <ExternalLink className="h-3 w-3" aria-hidden="true" />
+            </a>
+          )}
+        </Section>
+      )}
 
       {/* LLM verdict */}
       <Section title="Verdict">

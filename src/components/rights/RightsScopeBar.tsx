@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronsUpDown } from 'lucide-react';
+import { ChevronsUpDown } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import {

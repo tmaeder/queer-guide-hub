@@ -10,7 +10,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { LogOut } from 'lucide-react';
+import { LogOut } from '@/components/icons';
 import { performQuickExit } from './perform-quick-exit';
 
 export function QuickExit() {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Lock, Scale, Unlock } from 'lucide-react';
+import { Lock, Scale, Unlock } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

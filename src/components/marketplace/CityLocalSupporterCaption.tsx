@@ -1,6 +1,6 @@
 import { useLocalSupporter } from '@/hooks/useLocalSupporter';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@/components/icons';
 
 /**
  * Quiet one-line caption on CityDetail when the signed-in user has any

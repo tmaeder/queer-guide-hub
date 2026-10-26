@@ -4,6 +4,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInt
 import { extractArticle } from '../_shared/news-quality/extract.ts'
 import { extractContent } from '../_shared/extract-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { fetchRecoveryHtml, recoveryPageTitle, recoverySource, sourceRecoveryProposal } from './source-recovery.ts'
 
 // Pipeline Extract Full-Text — fetch the source URL and recover the full body +
 // metadata + cleaned markdown that RSS truncates. Runs AFTER pipeline-normalize
@@ -71,11 +72,20 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string | undefined
-    const batchSize     = Math.min(50, body.batch_size ?? 15)
+    const repairTruncated = body.repair_truncated === true
+    const batchSize     = Math.min(repairTruncated ? 4 : 50, body.batch_size ?? (repairTruncated ? 4 : 15))
     const dryRun        = body.dry_run === true
     const targetTable   = (body.target_table as string | undefined) ?? 'news_articles'
+    if (repairTruncated && targetTable !== 'news_articles') return errorResponse('Source recovery is news-only',400,req)
 
-    let q = supabase
+    type Item = { id:string; normalized_data:unknown; lease_token?:string }
+    let items:Item[]
+    if (repairTruncated) {
+      const {data,error}=await supabase.rpc('claim_review_news_source_recovery',{p_batch:batchSize,p_dry_run:dryRun})
+      if(error)return errorResponse(`claim: ${error.message}`,500,req)
+      items=(data??[])as Item[]
+    } else {
+      let q = supabase
       .from('ingestion_staging')
       .select('id, normalized_data')
       .eq('target_table', targetTable)
@@ -85,22 +95,35 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
       .limit(batchSize)
     if (pipelineRunId) q = q.eq('pipeline_run_id', pipelineRunId)
 
-    const { data: items, error } = await q
-    if (error) return errorResponse(`load: ${error.message}`, 500, req)
-    if (!items || items.length === 0) {
+      const { data, error } = await q
+      if (error) return errorResponse(`load: ${error.message}`, 500, req)
+      items=(data??[])as Item[]
+    }
+    if (items.length === 0) {
       return jsonResponse({ success: true, items: 0, message: 'nothing to extract' }, 200, req)
     }
 
-    let extracted = 0, skipped = 0, failed = 0, alreadyDone = 0
+    let extracted = 0, skipped = 0, failed = 0, alreadyDone = 0, stale = 0
+    async function finishRecovery(item:Item,proposal:ReturnType<typeof sourceRecoveryProposal>){
+      if(dryRun){if(proposal.extraction_meta.applied)extracted++;else skipped++;return}
+      const{data,error}=await supabase.rpc('finish_review_news_source_recovery',{
+        p_id:item.id,p_lease_token:item.lease_token,p_normalized:proposal,
+      })
+      if(error)throw Error(`source recovery persistence: ${error.message}`)
+      if(data?.saved!==true){stale++;return}
+      if(data.recovered===true)extracted++;else skipped++
+    }
 
     for (const item of items) {
       const n = (item.normalized_data ?? {}) as Record<string, unknown>
+      const recoveryInput=repairTruncated?recoverySource(n):null
+      let persistenceAttempted=false
 
       // Idempotency: already processed in a prior run.
       if (n.extraction_meta) { alreadyDone++; continue }
 
       // News rows carry `url`; venue/event rows carry `website`. Accept both.
-      const url = String(
+      const url = repairTruncated ? recoveryInput?.url??'' : String(
         n.url ??
         n.website ??
         n.source_url ??
@@ -108,11 +131,16 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
         '',
       ).trim()
 
-      if (!/^https?:\/\//i.test(url)) { skipped++; continue }
-
-      const rssContent = String(n.content ?? n.description ?? '')
+      const rssContent = repairTruncated?recoveryInput?.content??'':String(n.content ?? n.description ?? '')
 
       try {
+        if (!/^https?:\/\//i.test(url)) {
+          if(repairTruncated){
+            persistenceAttempted=true
+            await finishRecovery(item,sourceRecoveryProposal(n,{body:'',method:'invalid_source_url',url:recoveryInput?.capturedUrl??'',at:new Date().toISOString()}))
+          }else skipped++
+          continue
+        }
         // Primary: the extract worker (cleaned markdown + plain-text body + meta).
         const ext = await extractContent(supabase, { url })
 
@@ -124,15 +152,17 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
         let metaPublished: string | null = null
         let metaImage: string | null = null
         let metaLang: string | null = null
+        let pageTitle: string | null = null
 
         if (ext) {
           markdown = ext.markdown || null
           bodyText = ext.markdown ? markdownToText(ext.markdown) : ''
           extractMethod = `worker:${ext.method}`
+          pageTitle=ext.meta.title
           metaAuthor = personAuthorCandidate(ext.meta.author, [n.source_name as string, n.publisher_name as string])
           // The extract worker's metadata can be a profile URL or team credit.
           // Recover a visible person byline even when its body extraction succeeded.
-          if (!metaAuthor && !personAuthorCandidate(n.author) && targetTable === 'news_articles') {
+          if (!repairTruncated && !metaAuthor && !personAuthorCandidate(n.author) && targetTable === 'news_articles') {
             const html = await fetchHtml(url)
             metaAuthor = html ? extractArticle(html, url).author : null
           }
@@ -140,14 +170,22 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
           metaImage = ext.meta.image
           metaLang = ext.meta.lang
         } else {
-          const html = await fetchHtml(url)
+          const html = repairTruncated ? await fetchRecoveryHtml(url) : await fetchHtml(url)
           const art = html ? extractArticle(html, url) : null
           bodyText = art?.content ?? ''
           extractMethod = art ? `local:${art.method}` : 'fetch_failed'
+          pageTitle=repairTruncated&&html?recoveryPageTitle(html):null
           metaAuthor = art?.author ?? null
           metaPublished = art?.publishedAt ?? null
           metaImage = art?.imageUrl ?? null
           metaLang = art?.lang ?? null
+        }
+
+        if(repairTruncated){
+          const proposal=sourceRecoveryProposal(n,{body:bodyText,markdown,method:extractMethod,url,pageTitle,at:new Date().toISOString()})
+          persistenceAttempted=true
+          await finishRecovery(item,proposal)
+          continue
         }
 
         const meta: Record<string, unknown> = {
@@ -200,8 +238,14 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
           if (upErr) { failed++; console.error(`extract update ${item.id}: ${upErr.message}`); continue }
         }
       } catch (e) {
-        failed++
+        let recorded=false
         console.error(`extract ${item.id}: ${(e as Error).message}`)
+        if(repairTruncated&&!dryRun&&!persistenceAttempted){
+          // A failed fetch is a bounded source outcome, never a new publication verdict.
+          try {await finishRecovery(item,sourceRecoveryProposal(n,{body:'',method:'fetch_failed',url:recoveryInput?.capturedUrl??'',at:new Date().toISOString()}));recorded=true}
+          catch(error){console.error(`source recovery outcome ${item.id}: ${(error as Error).message}`)}
+        }
+        if(!recorded)failed++
       }
     }
 
@@ -209,11 +253,12 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
       success: true,
       items: extracted + skipped + alreadyDone,
       items_total: items.length,
-      items_processed: extracted + skipped + failed + alreadyDone,
+      items_processed: extracted + skipped + failed + alreadyDone + stale,
       items_succeeded: extracted,
       items_failed: failed,
       extracted, skipped, already_done: alreadyDone, failed,
       dry_run: dryRun,
+      ...(repairTruncated?{repair_truncated:true,stale}:{}),
     }, 200, req)
   } catch (error) {
     console.error('pipeline-extract-fulltext:', error)

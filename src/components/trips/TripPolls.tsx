@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, X, Lock, Clock, BarChart3 } from 'lucide-react';
+import { Plus, X, Lock, Clock, BarChart3 } from '@/components/icons';
 import { formatDistanceToNow, isPast } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

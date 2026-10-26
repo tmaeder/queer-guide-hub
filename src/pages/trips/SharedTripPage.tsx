@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link as RouterLink } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { MapPin, AlertTriangle, Heart, Sparkles } from 'lucide-react';
+import { MapPin, AlertTriangle, Heart, Sparkles } from '@/components/icons';
 import { format } from 'date-fns';
 import { SUPABASE_URL } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';

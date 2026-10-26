@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { FilterChip } from '@/components/transit/FilterChip';

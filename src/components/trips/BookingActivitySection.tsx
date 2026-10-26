@@ -6,7 +6,7 @@ import {
   Plane,
   UtensilsCrossed,
   Link2,
-} from 'lucide-react';
+} from '@/components/icons';
 import { formatDistanceToNow } from 'date-fns';
 import { useTripBookingClicks, type TripBookingClick } from '@/hooks/useTripBookingClicks';
 

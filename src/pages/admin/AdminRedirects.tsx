@@ -4,7 +4,7 @@ import { exportToExcel, type ExportColumnDef } from '@/utils/excelExport';
 import { RedirectBulkActions } from '@/components/admin/redirects/RedirectBulkActions';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { Plus, RefreshCw } from 'lucide-react';
+import { Plus, RefreshCw } from '@/components/icons';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { useAdminShell } from '@/components/admin/shell/AdminShell';
 import { RedirectToolbarActions } from '@/components/admin/redirects/RedirectToolbarActions';

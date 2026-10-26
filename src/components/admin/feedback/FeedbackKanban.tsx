@@ -11,7 +11,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Badge } from '@/components/ui/badge';
-import { Inbox, Eye, Calendar, Activity, CheckCircle2 } from 'lucide-react';
+import { Inbox, Eye, Calendar, Activity, CheckCircle2 } from '@/components/icons';
 import { FeedbackCard } from './FeedbackCard';
 import { kanbanColumns, type KanbanStatus } from './constants';
 import type { AdminProfile, FeedbackSubmission, SubmissionStoryRef } from './types';

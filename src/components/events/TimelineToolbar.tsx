@@ -7,7 +7,7 @@ import {
   Maximize2,
   ZoomIn,
   ZoomOut,
-} from 'lucide-react';
+} from '@/components/icons';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';

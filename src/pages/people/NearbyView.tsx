@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, EyeOff, ShieldAlert } from 'lucide-react';
+import { MapPin, EyeOff, ShieldAlert } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { useNearMe } from '@/hooks/useNearMe';
 import { PeopleModeView } from './PeopleModeView';

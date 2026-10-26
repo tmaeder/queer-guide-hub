@@ -19,7 +19,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ArrowRight, Check, Lock, Share2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Lock, Share2 } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';

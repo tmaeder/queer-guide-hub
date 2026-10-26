@@ -1,5 +1,5 @@
 import { Alert, AlertTitle, AlertDescription } from 'queer-guide';
-import { Info, ShieldAlert, CalendarClock } from 'lucide-react';
+import { Info, ShieldAlert, CalendarClock } from '@/components/icons';
 
 export const Default = () => (
   <Alert className="max-w-md">

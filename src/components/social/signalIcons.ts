@@ -1,4 +1,4 @@
-import { Heart, MapPin, UserCheck, Users } from 'lucide-react';
+import { Heart, MapPin, UserCheck, Users } from '@/components/icons';
 
 // Common lucide icons used by SocialSignalBar consumers. Keep this module
 // component-free so the bar can benefit from fast-refresh.

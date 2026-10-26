@@ -1,5 +1,5 @@
 import { Collapsible, CollapsibleTrigger, CollapsibleContent, Button } from 'queer-guide';
-import { ChevronsUpDown } from 'lucide-react';
+import { ChevronsUpDown } from '@/components/icons';
 
 // Inline border — 1px hsl(var(--border)) class borders wash out in the
 // downscaled capture sheet; the muted fill keeps the rows legible.

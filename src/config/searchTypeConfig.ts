@@ -20,7 +20,7 @@ import {
   Clock,
   ArrowUp,
   ArrowDown,
-} from 'lucide-react';
+} from '@/components/icons';
 
 export type SearchViewMode = 'list' | 'grid' | 'map' | 'calendar';
 export type SearchSortId =

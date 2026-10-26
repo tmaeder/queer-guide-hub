@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ExternalLink, MapPin, RefreshCw } from 'lucide-react';
+import { ExternalLink, MapPin, RefreshCw } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useDebounce } from '@/hooks/useDebounce';

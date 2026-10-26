@@ -18,7 +18,7 @@ import {
   Smile,
   ShieldCheck,
   ArrowUpRight,
-} from 'lucide-react';
+} from '@/components/icons';
 import { formatDistanceToNow } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';

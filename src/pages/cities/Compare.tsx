@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ArrowLeftRight, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ArrowLeftRight, ArrowRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Skeleton } from '@/components/ui/skeleton';
 import {

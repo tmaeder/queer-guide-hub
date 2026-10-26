@@ -4,7 +4,7 @@ import * as React from 'react';
 // accordion.tsx. Same value either way; only this form keeps fast refresh.
 import { Root as Select, Group as SelectGroup, Value as SelectValue } from '@radix-ui/react-select';
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 const SelectTrigger = React.forwardRef<

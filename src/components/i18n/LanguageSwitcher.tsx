@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
-import { Globe } from 'lucide-react';
+import { Globe } from '@/components/icons';
 import {
   Select,
   SelectContent,

@@ -7,7 +7,7 @@
 import { useState, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, FileText } from 'lucide-react';
+import { Upload, X, FileText } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCMSMedia } from '@/hooks/useCMSMedia';

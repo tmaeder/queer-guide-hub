@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus } from '@/components/icons';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';

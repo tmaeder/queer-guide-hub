@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Check, X, SkipForward } from 'lucide-react';
+import { Check, X, SkipForward } from '@/components/icons';
 import { CannedResponsePicker } from './CannedResponsePicker';
 import type { TriageDecisionGuidance } from './triageDecisionGuidance';
 import type { TriageAction, TriageAnswers } from './resolveDecision';

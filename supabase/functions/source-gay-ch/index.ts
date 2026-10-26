@@ -3,7 +3,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInt
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
-import { extractCategoryKeywords } from '../_shared/gaych-parse.ts'
+import { extractCategoryKeywords, extractGaychEventArtwork } from '../_shared/gaych-parse.ts'
 
 // ============================================================
 // Source: gay.ch/parties — the Swiss queer party agenda
@@ -191,7 +191,7 @@ function parseEvent(html: string, url: string): ParsedEvent | null {
     end: (ld?.endDate as string) || html.match(/<abbr class="dtend" title="([^"]+)"/)?.[1] || null,
     description: stripTags(ld?.description) || stripTags(html.match(/<div class="documentDescription">([\s\S]*?)<\/div>/)?.[1]) || null,
     body: stripTags(html.match(/mosaic-IRichTextBehavior-text-tile">\s*<div class="mosaic-tile-content">([\s\S]*?)<\/div>\s*<\/div>/)?.[1]) || null,
-    image: (ld?.image as string) || html.match(/<meta property="og:image" content="([^"]+)"/)?.[1] || null,
+    image: extractGaychEventArtwork(html, { title, start_date: start }, url)[0] ?? null,
     cost: stripTags(side).match(/Eintritt:\s*([^\n]+)/)?.[1]?.trim() || null,
     website: links.find((l) => !/facebook|instagram|tiktok|twitter|x\.com|youtube/i.test(l)) || null,
     // Extracted to _shared/gaych-parse.ts so it can be unit-tested (importing
@@ -260,7 +260,7 @@ const eventAdapter: SourceAdapter = {
       start_date: e.start,
       end_date: e.end,
       dates: { start: e.start, end: e.end ?? undefined },
-      venue_name: v?.name ?? null,
+      venue_name: v?.name,
       website: e.website,
       ticket_url: e.url,
       location: {

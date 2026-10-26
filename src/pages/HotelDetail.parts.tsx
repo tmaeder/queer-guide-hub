@@ -1,6 +1,6 @@
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { ParallaxHero } from '@/components/effects/ParallaxHero';
-import { Star, MapPin, Phone, Globe, Mail, DollarSign, ExternalLink, Shield } from 'lucide-react';
+import { Star, MapPin, Phone, Globe, Mail, DollarSign, ExternalLink, Shield } from '@/components/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

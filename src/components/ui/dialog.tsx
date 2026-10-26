@@ -9,7 +9,7 @@ import {
   Close as DialogClose,
 } from '@radix-ui/react-dialog';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 const DialogOverlay = React.forwardRef<

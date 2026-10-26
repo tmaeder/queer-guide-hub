@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Box } from 'lucide-react';
+import { Box } from '@/components/icons';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 vi.mock('../icon-registry', () => ({ resolvePipelineIcon: () => Box }));

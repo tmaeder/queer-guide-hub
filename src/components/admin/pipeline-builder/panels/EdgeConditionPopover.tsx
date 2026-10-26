@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, GitBranch, X } from 'lucide-react';
+import { Trash2, GitBranch, X } from '@/components/icons';
 import type { AppEdge } from '../types';
 
 const EXAMPLES = [

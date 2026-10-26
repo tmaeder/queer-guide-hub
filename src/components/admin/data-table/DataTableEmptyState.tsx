@@ -1,4 +1,4 @@
-import { type LucideIcon } from 'lucide-react';
+import { type LucideIcon } from '@/components/icons';
 import type { ReactNode } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Copy, Check, Inbox as InboxIcon } from 'lucide-react';
+import { Mail, Copy, Check, Inbox as InboxIcon } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

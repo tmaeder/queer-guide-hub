@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from '@/components/icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { RIGHT_SECTION_LABEL, type RightSection } from '@/lib/rights/rightsCatalog';
 import type { SectionSummary } from '@/lib/rights/sectionSummary';

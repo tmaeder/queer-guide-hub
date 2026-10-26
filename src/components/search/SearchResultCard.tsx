@@ -14,7 +14,7 @@ import {
   Users,
   Tag,
   HelpCircle,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { formatDistance } from '@/lib/formatDistance';

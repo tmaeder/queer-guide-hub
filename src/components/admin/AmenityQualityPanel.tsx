@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Accessibility, ShieldCheck, Sparkles, Play } from 'lucide-react';
+import { Accessibility, ShieldCheck, Sparkles, Play } from '@/components/icons';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAmenityQualitySummary } from '@/hooks/useAmenityQualitySummary';

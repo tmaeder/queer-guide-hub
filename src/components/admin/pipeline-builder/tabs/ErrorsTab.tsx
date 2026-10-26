@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { untypedFrom } from '@/integrations/supabase/untyped';
-import { AlertTriangle, AlertCircle, Info, Bug, Search, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, Bug, Search, CheckCircle2 } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {

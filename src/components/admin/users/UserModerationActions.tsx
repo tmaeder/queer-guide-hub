@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ShieldCheck, ShieldBan, ShieldAlert } from 'lucide-react';
+import { ShieldCheck, ShieldBan, ShieldAlert } from '@/components/icons';
 
 type ModerationStatus = 'approved' | 'suspended' | 'banned';
 

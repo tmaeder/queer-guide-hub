@@ -1,7 +1,7 @@
 import { useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Calendar, MapPin, Star } from 'lucide-react';
+import { Calendar, MapPin, Star } from '@/components/icons';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 import { cn } from '@/lib/utils';
 import { codeToFlagEmoji } from '@/lib/countryFlag';

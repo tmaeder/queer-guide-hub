@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Sparkles, MapPin, Heart, Tag, Star } from 'lucide-react';
+import { Sparkles, MapPin, Heart, Tag, Star } from '@/components/icons';
 import type { SearchResult } from '@/hooks/useSearch';
 
 const ICONS: Record<NonNullable<SearchResult['_boostReason']>, typeof Sparkles> = {

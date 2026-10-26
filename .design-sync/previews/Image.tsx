@@ -1,5 +1,5 @@
 import { Image } from 'queer-guide';
-import { Landmark } from 'lucide-react';
+import { Landmark } from '@/components/icons';
 import { StaticState } from './_static';
 
 // Deterministic placeholder photo (no network in static capture).

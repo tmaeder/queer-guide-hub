@@ -1,7 +1,7 @@
 import { useEffect, useRef, useMemo, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Maximize2 } from 'lucide-react';
+import { Maximize2 } from '@/components/icons';
 import { createRoot } from 'react-dom/client';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';

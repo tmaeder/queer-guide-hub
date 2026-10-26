@@ -11,7 +11,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink } from '@/components/icons';
 import type { Hotline } from '@/types/cms';
 import { countryLabel } from './helpData';
 

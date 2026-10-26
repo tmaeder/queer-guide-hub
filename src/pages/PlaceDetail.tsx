@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams } from 'react-router';
-import { ExternalLink, MapPin, Accessibility } from 'lucide-react';
+import { ExternalLink, MapPin, Accessibility } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import {
   EntityDetailLayout,

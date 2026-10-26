@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CalendarDays, Check, RefreshCw, Sunrise, Sun, Sunset, Moon } from 'lucide-react';
+import { CalendarDays, Check, RefreshCw, Sunrise, Sun, Sunset, Moon } from '@/components/icons';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

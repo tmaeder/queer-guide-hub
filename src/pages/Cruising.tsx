@@ -1,6 +1,6 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useSearchParams } from 'react-router';
-import { Compass, List, MapPin, Search, ShieldCheck, Users } from 'lucide-react';
+import { Compass, List, MapPin, Search, ShieldCheck, Users } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

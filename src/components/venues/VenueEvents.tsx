@@ -3,7 +3,7 @@ import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Users } from 'lucide-react';
+import { Calendar, Clock, Users } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';

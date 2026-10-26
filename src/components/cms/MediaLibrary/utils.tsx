@@ -9,7 +9,7 @@ import {
   AlertTriangle,
   CheckCircle,
   Globe,
-} from 'lucide-react';
+} from '@/components/icons';
 import { supabase } from '@/integrations/supabase/client';
 import type { UnifiedMediaItem, OptimizationStatus } from './types';
 import { cmsEditPath, cmsListPath } from '@/lib/cmsLinks';

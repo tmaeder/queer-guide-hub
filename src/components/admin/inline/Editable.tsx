@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { Pencil } from 'lucide-react';
+import { Pencil } from '@/components/icons';
 import { useAdminEditMode } from '@/hooks/useAdminEditMode';
 import { useInlineSave } from '@/hooks/useInlineSave';
 import { getContentType } from '@/config/contentTypes';

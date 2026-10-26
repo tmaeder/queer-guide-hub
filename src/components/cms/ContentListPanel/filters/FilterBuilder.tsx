@@ -1,4 +1,4 @@
-import { Filter as FilterIcon, Plus } from 'lucide-react';
+import { Filter as FilterIcon, Plus } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';

@@ -74,7 +74,8 @@ describe('TransitIcon', () => {
             unoutlined += 1;
             expect(p.getAttribute('stroke'), `${name} f[${i}]`).toBe('none');
           } else {
-            expect(p.getAttribute('stroke'), `${name} f[${i}]`).toBe(ink);
+            // The outline follows the text colour so it contrasts on dark grounds too.
+            expect(p.getAttribute('stroke'), `${name} f[${i}]`).toBe('currentColor');
           }
           expect(p.getAttribute('fill'), `${name} f[${i}]`).not.toBe('none');
         });
@@ -143,14 +144,16 @@ describe('TransitIcon', () => {
       // ticks sideways off a bell, `disco` radiates off a sphere and
       // `rainbow` radiates off an arc — none of them has an upright for a
       // tick to sit on top of.
-      expect(ticked).toEqual(['alerts', 'disco', 'rainbow']);
+      // `party` joined with the v2 interface set: its burst radiates off the
+      // popper's mouth, the same free-ended case as `disco`.
+      expect(ticked).toEqual(['alerts', 'disco', 'party', 'rainbow']);
     });
   });
 
   // Exact count on purpose — it is the guard against a vacuous "every icon
   // renders" pass over an accidentally-empty set.
-  it('has 104 icons and bumps stroke weight below 32px', () => {
-    expect(TRANSIT_ICON_NAMES).toHaveLength(104);
+  it('has 274 icons and bumps stroke weight below 32px', () => {
+    expect(TRANSIT_ICON_NAMES).toHaveLength(274);
     const w = (size: number) =>
       Number(
         render(<TransitIcon name="search" size={size} color={ink} />)

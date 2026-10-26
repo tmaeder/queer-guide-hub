@@ -1,4 +1,4 @@
-import { FileText } from 'lucide-react';
+import { FileText } from '@/components/icons';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 
 export const pageFields: FieldConfig[] = [

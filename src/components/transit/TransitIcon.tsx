@@ -2,16 +2,17 @@ import {
   ICON_DEFS,
   TICKS,
   TICK_WEIGHT,
-  ink,
   inkPathOf,
   paper,
   strokeWidthFor,
   type FillKind,
   type Stroke,
 } from './iconDefs';
+import type { SVGProps } from 'react';
+import { displaySize } from './iconKit';
 import type { TransitIconName } from './transitIconPaths';
 
-interface TransitIconProps {
+interface TransitIconProps extends Omit<SVGProps<SVGSVGElement>, 'name' | 'color'> {
   name: TransitIconName;
   /** Rendered box in px. Stroke weight bumps one step below 32px, and motion
    *  ticks drop out entirely below it (Icon System §5). */
@@ -46,7 +47,24 @@ interface TransitIconProps {
    * screen.
    */
   ticks?: boolean;
+  /**
+   * Draw the outline only, with no track colour: the "off" half of a toggle
+   * (an unsaved heart, an unstarred star) where the filled icon is "on".
+   */
+  hollow?: boolean;
 }
+
+/**
+ * The outline follows the surrounding text colour, not a fixed ink.
+ *
+ * A fixed #111 outline vanished on every dark surface (ink buttons, the footer,
+ * dark mode) while lucide glyphs beside it drew in the text colour, so one
+ * background showed black-outlined and white-outlined icons side by side. The
+ * outline is the part of the icon that has to contrast with its ground, and the
+ * text colour is already chosen to do exactly that. The track-colour fill inside
+ * stays fixed: that is the icon's identity.
+ */
+const OUTLINE = 'currentColor';
 
 /** Resolve `"T"` / `"P"` / a literal track colour against this icon's own hex. */
 function fillOf(kind: FillKind, hex: string): string {
@@ -57,9 +75,9 @@ function fillOf(kind: FillKind, hex: string): string {
 
 /** Normalise the three stroke forms of §2 into one shape. */
 function strokeOf(s: Stroke, hex: string): { d: string; color: string; weight: number } {
-  if (typeof s === 'string') return { d: s, color: ink, weight: 1 };
+  if (typeof s === 'string') return { d: s, color: OUTLINE, weight: 1 };
   const [d, c, weight] = s;
-  const color = c === null ? ink : c === 'T' ? hex : c === 'P' ? paper : c;
+  const color = c === null ? OUTLINE : c === 'T' ? hex : c === 'P' ? paper : c;
   return { d, color, weight };
 }
 
@@ -79,9 +97,12 @@ export function TransitIcon({
   className,
   color,
   ticks: showTicks = true,
+  hollow = false,
+  ...rest
 }: TransitIconProps) {
   const def = ICON_DEFS[name];
   const mono = Boolean(color);
+  size = mono ? size : displaySize(size);
   // ONE viewBox, and the 8-unit bleed the spec describes is NOT needed.
   //
   // §3 reserves 0-12 and 88-100 for motion ticks — a margin INSIDE the
@@ -109,6 +130,7 @@ export function TransitIcon({
         width={size}
         height={size}
         className={className}
+        {...rest}
         {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
       >
         <path
@@ -137,6 +159,7 @@ export function TransitIcon({
       width={size}
       height={size}
       className={className}
+      {...rest}
       {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
     >
       {/* Fills first, back to front: a later shape paints over an earlier one,
@@ -148,11 +171,11 @@ export function TransitIcon({
         <path
           key={`f${i}`}
           d={d}
-          fill={fillOf(kind, def.hex)}
+          fill={hollow && kind !== 'P' ? 'none' : fillOf(kind, def.hex)}
           {...(outline === 0
             ? { stroke: 'none' }
             : {
-                stroke: ink,
+                stroke: OUTLINE,
                 strokeWidth: sw * outline,
                 strokeLinecap: 'round' as const,
                 strokeLinejoin: 'round' as const,
@@ -160,6 +183,7 @@ export function TransitIcon({
         />
       ))}
       {(def.l ?? []).map((s, i) => {
+        if (hollow && typeof s !== 'string' && s[1] !== null && s[1] !== 'P') return null;
         const { d, color: c, weight } = strokeOf(s, def.hex);
         return (
           <path
@@ -182,7 +206,7 @@ export function TransitIcon({
           key={`t${i}`}
           d={d}
           fill="none"
-          stroke={ink}
+          stroke={OUTLINE}
           strokeWidth={sw * TICK_WEIGHT}
           strokeLinecap="round"
           strokeLinejoin="round"

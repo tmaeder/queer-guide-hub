@@ -8,7 +8,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from 'queer-guide';
-import { MapPin, CalendarDays } from 'lucide-react';
+import { MapPin, CalendarDays } from '@/components/icons';
 
 // Capture harness freezes the page clock — settle any enter animations.
 // Also restores border-widths: src/index.css ships an UNLAYERED *{border-width:0}

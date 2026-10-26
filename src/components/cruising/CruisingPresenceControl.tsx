@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Clock3, Eye, EyeOff, MapPin } from 'lucide-react';
+import { Clock3, Eye, EyeOff, MapPin } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';

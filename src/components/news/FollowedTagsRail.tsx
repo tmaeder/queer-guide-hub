@@ -12,7 +12,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Rss, X, Plus } from 'lucide-react';
+import { Rss, X, Plus } from '@/components/icons';
 import { formatNewsTag } from '@/lib/newsTags';
 import { useAuth } from '@/hooks/useAuth';
 

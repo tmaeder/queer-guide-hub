@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FloatingInput } from '@/components/effects';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from '@/components/icons';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';

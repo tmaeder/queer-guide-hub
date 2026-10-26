@@ -5,7 +5,7 @@ import {
   Plus,
   ShoppingBag,
   X,
-} from 'lucide-react';
+} from '@/components/icons';
 import { Twitter, Instagram, Linkedin, Github, Facebook, Youtube } from '@/components/icons/brand';
 import { FieldWrapper } from './FieldWrapper';
 import { Input } from '@/components/ui/input';

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Mail, Send, Trash2, Plus } from 'lucide-react';
+import { Mail, Send, Trash2, Plus } from '@/components/icons';
 import { toast } from 'sonner';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';

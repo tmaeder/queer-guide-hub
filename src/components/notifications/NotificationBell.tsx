@@ -1,4 +1,4 @@
-import { Bell, BellRing } from 'lucide-react';
+import { Bell, BellRing } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {

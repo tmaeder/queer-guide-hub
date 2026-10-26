@@ -1,4 +1,4 @@
-import { Eye, MapPin, Compass, Shield, ShieldCheck, Lock } from 'lucide-react';
+import { Eye, MapPin, Compass, Shield, ShieldCheck, Lock } from '@/components/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import {

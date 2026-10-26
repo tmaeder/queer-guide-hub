@@ -1,6 +1,6 @@
 import { RichTextField } from '../RichTextField';
 import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';

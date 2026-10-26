@@ -23,7 +23,7 @@ import { useDuplicateCheck } from '@/hooks/submission/useDuplicateCheck';
 import { SeriesCarryover } from '@/components/submission/SeriesCarryover';
 import { useEventSeries, cloneFieldsFromEdition } from '@/hooks/submission/useEventSeries';
 import { EventSeriesFields } from '@/components/submission/EventSeriesFields';
-import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, Send } from '@/components/icons';
 import { useEventTypeOptions } from '@/lib/eventTypes';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { useTranslation } from 'react-i18next';

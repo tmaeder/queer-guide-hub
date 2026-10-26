@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { localDayKey } from './types';
 import type { CalendarItem } from './types';
 import { EventChip } from './EventChip';
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from '@/components/icons';
 
 const MAX_CHIPS = 3;
 

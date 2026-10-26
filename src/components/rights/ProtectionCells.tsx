@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { ProtectionAttr } from '@/lib/rights/rightsCatalog';
 import { getProtectionStatus } from '@/utils/equalityScore';
-import { Check, Minus, X } from 'lucide-react';
+import { Check, Minus, X } from '@/components/icons';
 
 const ALL_ATTRS: readonly ProtectionAttr[] = ['so', 'gi', 'ge', 'sc'];
 

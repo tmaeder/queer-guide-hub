@@ -12,7 +12,7 @@ import {
   UserPlus,
   UserMinus,
   Trash2,
-} from 'lucide-react';
+} from '@/components/icons';
 import { formatEventDateTime } from '@/lib/event-time';
 import { GroupEvent } from '@/hooks/useGroupEvents';
 import { useAuth } from '@/hooks/useAuth';

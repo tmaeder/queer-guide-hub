@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import type { Edge } from '@xyflow/react';
-import { Waypoints, Search } from 'lucide-react';
+import { Waypoints, Search } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
