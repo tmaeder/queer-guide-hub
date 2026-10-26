@@ -66,6 +66,37 @@ export function hotelGlyph(type: string | null | undefined): TransitIconName {
   return (type && HOTEL_GLYPHS[type]) || 'housing';
 }
 
+/**
+ * Professions are an open vocabulary, so this matches by keyword, in order —
+ * `singer-songwriter` hits `singer`, `drag king` hits `drag`. The list covers
+ * the professions that make up ~90% of public profiles (measured 2026-10-26);
+ * anything else gets the neutral person mark rather than a guess.
+ */
+const PERSON_GLYPHS: Array<[RegExp, TransitIconName]> = [
+  [/\bdrag\b/, 'wig'],
+  [/activist/, 'march'],
+  [/politician|military/, 'megaphone'],
+  [/\bactor|actress|tv presenter|entertainer/, 'theater'],
+  [/singer|rapper/, 'mic'],
+  [/musician|composer|producer|dj\b/, 'music'],
+  [/writer|poet|author|journalist/, 'library'],
+  [/artist|designer|architect/, 'palette'],
+  [/photograph/, 'image'],
+  [/director|filmmaker|youtuber/, 'film'],
+  [/research|scientist|physician|teacher/, 'chart'],
+  [/athlete/, 'gym'],
+  [/comedian/, 'smile'],
+  [/collective/, 'community'],
+  [/dancer/, 'disco'],
+  [/chef/, 'restaurant'],
+];
+
+export function personGlyph(profession: string | null | undefined): TransitIconName {
+  const p = (profession ?? '').toLowerCase();
+  for (const [re, glyph] of PERSON_GLYPHS) if (re.test(p)) return glyph;
+  return 'profile';
+}
+
 export function venueGlyph(category: string | null | undefined): TransitIconName {
   return (category && VENUE_GLYPHS[category]) || 'pin';
 }

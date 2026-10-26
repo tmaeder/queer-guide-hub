@@ -8,6 +8,7 @@ import {
   VENUE_GLYPH_MAP,
   eventGlyph,
   hotelGlyph,
+  personGlyph,
   venueGlyph,
 } from '@/lib/cardGlyphs';
 
@@ -31,6 +32,23 @@ describe('card glyphs', () => {
       expect(TRANSIT_ICON_PATHS[hotelGlyph(t)], t).toBeTruthy();
     }
     expect(hotelGlyph(null)).toBe('housing');
+  });
+
+  it('maps professions by keyword to real icons', () => {
+    const cases: Array<[string | null, string]> = [
+      ['Drag Queen', 'wig'],
+      ['drag king', 'wig'],
+      ['activist', 'march'],
+      ['singer-songwriter', 'mic'],
+      ['writer', 'library'],
+      ['athlete', 'gym'],
+      ['adult performer', 'profile'],
+      [null, 'profile'],
+    ];
+    for (const [p, g] of cases) {
+      expect(personGlyph(p), String(p)).toBe(g);
+      expect(TRANSIT_ICON_PATHS[personGlyph(p)]).toBeTruthy();
+    }
   });
 
   it('falls back for unknown or missing values', () => {
