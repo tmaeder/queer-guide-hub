@@ -123,7 +123,7 @@ begin
  -- Bounded fan-out, sorted recipient locks; malformed UUID strings never cast.
  for target in
   with candidates as (
-   select u.id,1 priority from jsonb_array_elements(targets) j join auth.users u on u.id::text=j->>'user_id'
+   select u.id,1 priority from jsonb_array_elements(targets) j join auth.users u on u.id=case when j->>'user_id' ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then (j->>'user_id')::uuid end
     where not old_mentions @> jsonb_build_array(jsonb_build_object('user_id',u.id::text))
    union all select parent_author,2 where tg_op='INSERT' and parent_author is not null
    union all select post_author,3 where tg_op='INSERT'
@@ -348,26 +348,31 @@ create trigger email_erase_domain_notice_sources after insert on public.email_di
 -- a snapshot captured before that transition.
 create function email_private.cancel_changed_comment_notices()
 returns trigger language plpgsql security definer set search_path=pg_catalog as $$
-declare affected record; row_key uuid; row_data jsonb;
+declare affected record; row_key uuid; row_data jsonb; predicate text;
 begin
  row_data:=case when tg_op='DELETE' or (tg_table_name='user_follows' and tg_op='UPDATE') then to_jsonb(old) else to_jsonb(new) end;
  row_key:=(row_data->>'id')::uuid;
- for affected in
-  select n.id,n.user_id from public.email_comment_sources s join public.email_operational_notices n on n.id=s.notice_id
-  where not n.cancelled and (
-   (tg_table_name='group_notifications' and s.group_notification_id=row_key)
-   or (tg_table_name='notifications' and s.community_notification_id=row_key)
-   or (tg_table_name='group_post_comments' and s.scope='group' and (s.group_comment_id=row_key or s.parent_comment_id=row_key))
-   or (tg_table_name='post_comments' and s.scope='community' and (s.community_comment_id=row_key or s.parent_comment_id=row_key))
-   or (tg_table_name='group_posts' and s.scope='group' and s.post_id=row_key)
-   or (tg_table_name='community_posts' and s.scope='community' and s.post_id=row_key)
-   or (tg_table_name='group_memberships' and (s.recipient_membership_id=row_key or s.actor_membership_id=row_key))
-   or (tg_table_name='community_groups' and s.group_id=row_key)
-   or (tg_table_name='user_follows' and s.scope='community' and s.post_author_id=(row_data->>'following_id')::uuid and n.user_id=(row_data->>'follower_id')::uuid)
-   or (tg_table_name='user_relationships' and row_data->>'relationship_type'='block' and (
-    (n.user_id=(row_data->>'user_id')::uuid and (s.actor_user_id=(row_data->>'target_user_id')::uuid or s.post_author_id=(row_data->>'target_user_id')::uuid))
-    or (n.user_id=(row_data->>'target_user_id')::uuid and (s.actor_user_id=(row_data->>'user_id')::uuid or s.post_author_id=(row_data->>'user_id')::uuid)))))
-  order by n.user_id,n.id
+ -- Each trigger selects through its own source index; unrelated inbox reads
+ -- and likes must not scan every active comment proof.
+ case tg_table_name
+ when 'group_notifications' then predicate:='s.group_notification_id=$1';
+ when 'notifications' then predicate:='s.community_notification_id=$1';
+ when 'group_post_comments' then predicate:='s.scope=''group'' and (s.group_comment_id=$1 or s.parent_comment_id=$1)';
+ when 'post_comments' then predicate:='s.scope=''community'' and (s.community_comment_id=$1 or s.parent_comment_id=$1)';
+ when 'group_posts' then predicate:='s.scope=''group'' and s.post_id=$1';
+ when 'community_posts' then predicate:='s.scope=''community'' and s.post_id=$1';
+ when 'group_memberships' then predicate:='s.recipient_membership_id=$1 or s.actor_membership_id=$1';
+ when 'community_groups' then predicate:='s.group_id=$1';
+ when 'user_follows' then predicate:='s.scope=''community'' and s.post_author_id=($2->>''following_id'')::uuid and n.user_id=($2->>''follower_id'')::uuid';
+ when 'user_relationships' then
+  if row_data->>'relationship_type'<>'block' then return new; end if;
+  predicate:='(n.user_id=($2->>''user_id'')::uuid and (s.actor_user_id=($2->>''target_user_id'')::uuid or s.post_author_id=($2->>''target_user_id'')::uuid)) or (n.user_id=($2->>''target_user_id'')::uuid and (s.actor_user_id=($2->>''user_id'')::uuid or s.post_author_id=($2->>''user_id'')::uuid))';
+ else return case when tg_op='DELETE' then old else new end;
+ end case;
+ -- Predicate text is exclusively from the fixed cases above. Source values
+ -- remain bound parameters, never interpolated SQL or caller-supplied names.
+ for affected in execute 'select n.id,n.user_id from public.email_comment_sources s join public.email_operational_notices n on n.id=s.notice_id where not n.cancelled and ('||predicate||') order by n.user_id,n.id'
+  using row_key,row_data
  loop
   perform pg_advisory_xact_lock(hashtextextended(affected.user_id::text,914));
   if not public.email_notice_current(affected.id) then
@@ -377,15 +382,15 @@ begin
  return case when tg_op='DELETE' then old else new end;
 end $$;
 revoke all on function email_private.cancel_changed_comment_notices() from public,anon,authenticated,service_role;
-create trigger email_cancel_group_comment after update on public.group_post_comments for each row execute function email_private.cancel_changed_comment_notices();
-create trigger email_cancel_community_comment after update on public.post_comments for each row execute function email_private.cancel_changed_comment_notices();
-create trigger email_cancel_group_comment_read after update on public.group_notifications for each row execute function email_private.cancel_changed_comment_notices();
-create trigger email_cancel_community_comment_read after update on public.notifications for each row execute function email_private.cancel_changed_comment_notices();
-create trigger email_cancel_group_comment_post after update on public.group_posts for each row execute function email_private.cancel_changed_comment_notices();
-create trigger email_cancel_community_comment_post after update on public.community_posts for each row execute function email_private.cancel_changed_comment_notices();
-create trigger email_cancel_comment_membership after update or delete on public.group_memberships for each row execute function email_private.cancel_changed_comment_notices();
-create trigger email_cancel_comment_group after update on public.community_groups for each row execute function email_private.cancel_changed_comment_notices();
-create trigger email_cancel_comment_follow after update or delete on public.user_follows for each row execute function email_private.cancel_changed_comment_notices();
+create trigger email_cancel_group_comment after update of post_id,user_id,parent_comment_id,mentions on public.group_post_comments for each row execute function email_private.cancel_changed_comment_notices();
+create trigger email_cancel_community_comment after update of post_id,user_id,parent_comment_id,mentions on public.post_comments for each row execute function email_private.cancel_changed_comment_notices();
+create trigger email_cancel_group_comment_read after update of read_at,user_id,group_id,notification_type,related_post_id,related_comment_id,triggered_by_user_id on public.group_notifications for each row execute function email_private.cancel_changed_comment_notices();
+create trigger email_cancel_community_comment_read after update of read,user_id,type,related_id,action_url on public.notifications for each row execute function email_private.cancel_changed_comment_notices();
+create trigger email_cancel_group_comment_post after update of user_id,group_id on public.group_posts for each row execute function email_private.cancel_changed_comment_notices();
+create trigger email_cancel_community_comment_post after update of user_id,visibility on public.community_posts for each row execute function email_private.cancel_changed_comment_notices();
+create trigger email_cancel_comment_membership after update of user_id,group_id or delete on public.group_memberships for each row execute function email_private.cancel_changed_comment_notices();
+create trigger email_cancel_comment_group after update of archived_at,duplicate_of_id on public.community_groups for each row execute function email_private.cancel_changed_comment_notices();
+create trigger email_cancel_comment_follow after update of follower_id,following_id or delete on public.user_follows for each row execute function email_private.cancel_changed_comment_notices();
 create trigger email_cancel_comment_block after insert or update on public.user_relationships for each row execute function email_private.cancel_changed_comment_notices();
 create function email_private.cancel_removed_domain_source()
 returns trigger language plpgsql security definer set search_path=pg_catalog as $$

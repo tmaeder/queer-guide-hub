@@ -22,6 +22,7 @@ begin
  assert exists(select 1 from public.profiles where user_id=recipient);
  assert exists(select 1 from public.profiles where user_id=actor);
  select lower(btrim(email)) into strict address from auth.users where id=recipient and email_confirmed_at is not null;
+ perform set_config('role','service_role',true);
  select count(*),coalesce(sum(attempts),0) into baseline_outboxes,baseline_attempts from public.email_outbox;
  pref:=public.email_delivery_preferences_get(recipient);
  pref:=public.email_delivery_preferences_save(recipient,false,'Etc/UTC',false,22,8,(pref->>'version')::integer,false,false,array['group_comments','community_comments','business_updates']);
