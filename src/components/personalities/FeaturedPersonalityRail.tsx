@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Star } from '@/components/icons';
 import { useFeaturedPersonalities, type Personality } from '@/hooks/usePersonalities';
@@ -34,6 +35,8 @@ function FeaturedItem({
   thumbnailUrl?: string | null;
 }) {
   const href = `/personalities/${p.slug ?? p.id}`;
+  // A dead image URL left an empty grey disc; fall back to the initials.
+  const [failed, setFailed] = useState(false);
   const resolvedSrc = resolveImageUrl({
     imageUrl: p.image_url,
     optimizedUrl,
@@ -53,8 +56,9 @@ function FeaturedItem({
       {/* A station ring at portrait scale — `rounded-full` is sanctioned for
           avatars, and the 3px ink ring is the same one StationRing draws. */}
       <div className="featured-avatar relative mb-2 flex h-40 w-40 items-center justify-center overflow-hidden rounded-full bg-muted transition-colors group-hover:bg-surface-container">
-        {resolvedSrc ? (
+        {resolvedSrc && !failed ? (
           <img
+            onError={() => setFailed(true)}
             src={resolvedSrc}
             srcSet={srcSet}
             sizes="160px"
