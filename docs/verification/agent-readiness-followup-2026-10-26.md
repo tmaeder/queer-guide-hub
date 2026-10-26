@@ -5,7 +5,7 @@ Baseline: the fresh official Is Agentic scan at `2026-10-26T20:05:21.440Z` score
 ## Changes
 
 - Advertise the existing broad authenticated MCP capability as `member` in OAuth authorization-server and RFC 9728 protected-resource metadata. Publish its actual account-level meaning in docs and OpenAPI; public REST/MCP reads remain anonymous. Existing grants, sign-in and account authorization are unchanged; separate read/write scopes are not invented.
-- Add a typed optional `prefix` filter to the public page catalog, including duplicate/unknown/overlong parameter errors. Existing unfiltered reads retain their shape. OpenAPI 1.1.0 documents typed inputs on both operations.
+- Add a typed optional `prefix` filter to the public page catalog, including duplicate/unknown/overlong parameter errors. Existing unfiltered reads retain their shape. The OpenAPI 3.1 description for API version 1.1.0 documents typed inputs on both operations.
 - Publish a free-public-access pricing page, negotiated as HTML or Markdown and indexed in the static sitemap. Its styling follows the existing documentation page. Vendor purchases have separate prices and terms; no subscription plans or postal address are fabricated.
 - Publish a dependency-free Node.js 22+ CLI at `/cli.mjs` for catalog/page reads and live public search. It supports JSON output, bounded payloads, request deadlines, safe error messages and explicit loopback overrides for local testing. It does not authenticate or write member data. The standalone script is usable without a registry; npm registry publication requires an authorized publishing account.
 - Document compatible v1 additions, major versions for breaking changes and a 90-day removal notice with Deprecation/Sunset/migration guidance. There is no current v1 removal scheduled.
@@ -13,7 +13,7 @@ Baseline: the fresh official Is Agentic scan at `2026-10-26T20:05:21.440Z` score
 
 ## Verification at this checkpoint
 
-- **137 focused tests** pass (API, pricing middleware, CLI and route metadata).
+- **138 focused tests** pass (API, pricing middleware, CLI and route metadata).
 - **16 native MCP tests** pass, including executing the guarded built bundle and preserving original provider endpoints/RPC dispatch.
 - **128 search Worker tests** pass; quota tests cover observed counters, reset seconds, exhausted quota, no increment on 429, CORS and bypasses.
 - Functions and Functions-test TypeScript pass with zero errors. Search Worker TypeScript passes. Application typecheck has no new errors: 660 existing against the unchanged 772 baseline.

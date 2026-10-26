@@ -4,6 +4,17 @@ import { run } from '../../../public/cli.mjs';
 const output = (fetch = vi.fn()) => ({ fetch, write: vi.fn(), error: vi.fn() });
 
 describe('official public read-only CLI', () => {
+  it('keeps useful search references when the service does not supply a URL', async () => {
+    const io = output(
+      vi.fn().mockResolvedValue(
+        Response.json({
+          hits: [{ title: 'Zurich', type: 'city', slug: 'zurich', objectID: '123' }],
+        }),
+      ),
+    );
+    expect(await run(['search', 'Zurich'], io)).toBe(0);
+    expect(io.write.mock.calls[0][0]).toContain('Zurich\tcity\tzurich');
+  });
   it('shows help and version without credentials or network access', async () => {
     const io = output();
     expect(await run(['--help'], io)).toBe(0);

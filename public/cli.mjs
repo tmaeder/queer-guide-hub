@@ -108,7 +108,9 @@ export async function run(args, io = {}) {
     if (json) write(JSON.stringify(data, null, 2));
     else if (command === 'pages') write(data.pages.map((p) => `${plain(p.slug)}\t${plain(p.title)}\t${plain(p.url)}`).join('\n'));
     else if (command === 'page') write([plain(data.title), ...data.paragraphs.map(plain), plain(data.url)].join('\n\n'));
-    else write(data.hits.map((h) => `${plain(h.title ?? h.name ?? h.objectID)}\t${plain(h.url ?? h.metadata?.url)}`).join('\n'));
+    else write(data.hits.map((h) => [h.title ?? h.name ?? h.objectID,
+      h.type ?? h.content_type, h.slug ?? h.objectID ?? h.id, h.url ?? h.metadata?.url]
+      .map(plain).join('\t')).join('\n'));
     return 0;
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Request failed.';
