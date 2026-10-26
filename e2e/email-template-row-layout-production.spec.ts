@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { waitForAppReady } from './support/appReady';
 
-const FINAL_BUILD = '6730900f1beac10ae708b067e0bde5e7b82c4bde';
+const FINAL_BUILD = 'fdcee5f9d030a8c732ae36637a48f7f044e7e72f';
 
 // The unchanged workflow still runs its existing real-credential auth setup.
 // This spec deliberately uses a fresh context and the normal sign-in form.
