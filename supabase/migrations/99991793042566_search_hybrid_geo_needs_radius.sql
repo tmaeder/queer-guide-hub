@@ -36,7 +36,7 @@ do $verify$
 declare
   v_res jsonb;
 begin
-  if position('$7 is null or (sd.geog' in pg_get_functiondef('api_private.search_hybrid(text,vector,text[],jsonb,double precision,double precision,double precision,timestamp with time zone,integer,integer,timestamp with time zone,timestamp with time zone,numeric,numeric,text)'::regprocedure)) = 0 then
+  if position('$7 is null or (sd.geog' in regexp_replace(pg_get_functiondef('api_private.search_hybrid(text,vector,text[],jsonb,double precision,double precision,double precision,timestamp with time zone,integer,integer,timestamp with time zone,timestamp with time zone,numeric,numeric,text)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g')) = 0 then
     raise exception 'search_hybrid geo filter patch not present';
   end if;
   -- Behaviour: origin (Berlin) with no radius must still return london matches.
