@@ -203,6 +203,9 @@ async function run() {
   for (const q of ['london', 'sauna']) {
     await scenario(`R1-venue-order-${q}`, `venue tab "${q}" is in score order`, async ({ HARD }) => {
       const r = await search({ query: q, hitsPerPage: 10, filters: { types: ['venue'] } });
+      // The popular fallback (search RPC timed out) is also flat-scored, so it
+      // would pass the order check; require real matches.
+      HARD((r.json?.totalHits ?? 0) > 0, `totalHits ${r.json?.totalHits} — served the fallback, not matches`);
       const s = (r.json?.hits ?? []).map((h) => h._rankingScore);
       HARD(s.length >= 5 && s.every((x) => typeof x === 'number'), 'missing _rankingScore');
       HARD(s.every((x, i) => i === 0 || x <= s[i - 1] + 1e-9), `not in score order: ${s.join(', ')}`);
