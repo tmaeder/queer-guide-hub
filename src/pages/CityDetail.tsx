@@ -25,6 +25,8 @@ import { SimilarCities } from '@/components/personalization/SimilarCities';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
 import { SinglePage } from '@/components/transit/SinglePage';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { SeeAllLink } from '@/components/ui/SectionHeader';
@@ -410,6 +412,11 @@ export default function CityDetail() {
           i18n.language,
         )}
         lead={introduction.lead ? <GlossaryLinkedText text={introduction.lead} /> : undefined}
+        backdrop={
+          hasCityNetwork(city.slug) ? (
+            <CityNetwork slug={city.slug} variant="backdrop" className="py-4" />
+          ) : undefined
+        }
         action={
           <>
             <PlanTripFromHereButton
