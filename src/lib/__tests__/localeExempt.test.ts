@@ -1,5 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import { isLocaleExemptPath } from '../locale';
+import { isLocaleExemptPath, stripLocale } from '../locale';
+
+describe('stripLocale', () => {
+  it.each([
+    ['/', '/'],
+    ['/de', '/'],
+    ['/de/', '/'],
+    ['/de/events', '/events'],
+    ['/events', '/events'],
+    ['/me', '/me'],
+    ['/help/ch', '/help/ch'],
+  ])('normalizes %s to %s', (path, expected) => {
+    expect(stripLocale(path)).toBe(expected);
+  });
+});
 
 /**
  * These roots are mounted at the TOP LEVEL of routes.tsx, outside the

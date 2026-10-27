@@ -174,7 +174,12 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           AnimatePresence mode="wait" wrapper here both duplicated that fade
           and held every incoming route's paint hostage to the exit animation,
           while chaining framer-motion onto the entry bundle. */}
-      <div className="relative z-10 flex-1 flex flex-col">{children}</div>
+      {/* Keep the footer below the fold while the lazy homepage is pending.
+          Index already reserves a full viewport once it mounts; a shorter
+          loading shell briefly exposed the footer, then shifted it away. */}
+      <div className={`relative z-10 flex-1 flex flex-col${isHome ? ' min-h-screen' : ''}`}>
+        {children}
+      </div>
       {!isFullBleedMap && !isAdmin && (
         <div className="relative z-10 pb-32 md:pb-0">
           <ErrorBoundary section="footer" fallback={null}>

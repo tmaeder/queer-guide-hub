@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import type { ReactElement } from 'react';
 
-vi.mock('@sentry/react', () => ({ captureException: vi.fn() }));
+vi.mock('@/lib/sentryClient', () => ({ captureException: vi.fn() }));
 const healFailedAssets = vi.fn(() => Promise.resolve());
 vi.mock('@/utils/assetHeal', () => ({ healFailedAssets: () => healFailedAssets() }));
 
-import * as Sentry from '@sentry/react';
+import * as Sentry from '@/lib/sentryClient';
 import { ErrorBoundary, SectionErrorFallback } from '../ErrorBoundary';
 
 function ThrowingComponent(): ReactElement {
