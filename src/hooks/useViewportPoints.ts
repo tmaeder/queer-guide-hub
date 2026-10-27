@@ -18,7 +18,7 @@
 import { mapDebug } from '@/components/map/mapDebug';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import * as Sentry from '@sentry/react';
+import * as Sentry from '@/lib/sentryClient';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import type { ExploreMapFilters, LayerType } from '@/hooks/useExploreMapData';

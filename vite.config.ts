@@ -300,6 +300,10 @@ export default defineConfig(({ mode }) => ({
             { name: 'pdfjs', test: /node_modules\/pdfjs-dist\// },
             { name: 'mammoth', test: /node_modules\/mammoth\// },
             { name: 'boneyard', test: /node_modules\/boneyard-js\// },
+            // Both our field metrics and Sentry use web-vitals. Give it a
+            // neutral home so the startup metrics import cannot pull in the
+            // entire optional diagnostics SDK through a shared dependency.
+            { name: 'web-vitals', test: /node_modules\/web-vitals\// },
             { name: 'sentry', test: /node_modules\/@sentry\// },
             { name: 'i18n', test: /node_modules\/(i18next|react-i18next)/ },
             { name: 'framer-motion', test: /node_modules\/(motion|motion-dom|motion-utils)\// },

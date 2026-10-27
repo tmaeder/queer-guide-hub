@@ -48,8 +48,8 @@ describe('LayoutShell', () => {
     expect(screen.getByRole('link', { name: /skip to main content/i })).toBeTruthy();
   });
 
-  it('does not render the route context on home', () => {
-    renderAt('/');
+  it.each(['/', '/de', '/de/'])('does not render the route context on home %s', (path) => {
+    renderAt(path);
     expect(screen.queryByTestId('public-breadcrumbs')).toBeNull();
   });
 

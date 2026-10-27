@@ -100,11 +100,14 @@ for (const f of indexChunks) {
 // Heavy route-only chunks must never become reachable (the clsx-in-recharts
 // homing bug made entry → utils → recharts → graph + tiptap; see
 // docs/perf/recharts-cross-route-leak.md).
-const HEAVY_UNREACHABLE = /^(recharts|tiptap|graph|exceljs|pdfjs|mammoth|maplibre|xyflow|dnd-kit|framer-motion)-/;
+const HEAVY_UNREACHABLE = /^(recharts|tiptap|graph|exceljs|pdfjs|mammoth|maplibre|xyflow|dnd-kit|framer-motion|sentry)-/;
 
 const importRe = /from\s*"\.\/([A-Za-z0-9._-]+\.js)"|import\s*"\.\/([A-Za-z0-9._-]+\.js)"/g;
 const closure = new Set();
-const queue = [...indexChunks];
+// Web Vitals is dynamically imported at boot, so it has the same performance
+// budget as the static shell. Shared web-vitals helpers once landed in Sentry,
+// bypassing the consent-gated SDK loader through this startup import.
+const queue = [...indexChunks, ...files.filter((f) => /^webVitals-.*\.js$/.test(f))];
 while (queue.length) {
   const f = queue.pop();
   if (closure.has(f)) continue;
