@@ -3,9 +3,8 @@ import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
-  EMPTY_STYLE_HASH,
   SONNER_STYLE_HASH,
-  SONNER_STYLE_SOURCES,
+  EMPTY_STYLE_HASH,
   CSP_REPORT_GROUP,
   CSP_REPORT_PATH,
   STATIC_SECURITY_HEADERS,
@@ -47,11 +46,13 @@ describe('security headers', () => {
 
   it('requires a nonce for stylesheet blocks, retaining only the attribute exception', () => {
     const policy = directives(buildContentSecurityPolicy('abc'));
-    expect(policy.get('style-src')).toBe(`'self' 'nonce-abc' ${SONNER_STYLE_SOURCES}`);
+    expect(policy.get('style-src')).toBe(
+      `'self' 'nonce-abc' ${SONNER_STYLE_HASH} ${EMPTY_STYLE_HASH}`,
+    );
     expect(policy.get('style-src-attr')).toBe("'unsafe-inline'");
     const file = readFileSync(resolve(process.cwd(), 'public/_headers'), 'utf8');
     const fallback = directives(file.match(/^ {2}Content-Security-Policy: (.+)$/m)?.[1] ?? '');
-    expect(fallback.get('style-src')).toBe(`'self' ${SONNER_STYLE_SOURCES}`);
+    expect(fallback.get('style-src')).toBe(`'self' ${SONNER_STYLE_HASH} ${EMPTY_STYLE_HASH}`);
     expect(fallback.get('style-src-attr')).toBe("'unsafe-inline'");
   });
 
@@ -64,14 +65,6 @@ describe('security headers', () => {
     ).toBeTruthy();
     const css = JSON.parse(literal!);
     expect(`'sha256-${createHash('sha256').update(css).digest('base64')}'`).toBe(SONNER_STYLE_HASH);
-  });
-
-  it('allows the empty stylesheet Sonner appends before filling it', () => {
-    const file = readFileSync(resolve(process.cwd(), 'node_modules/sonner/dist/index.mjs'), 'utf8');
-    // The injector appends the element first and adds the text afterwards; if
-    // Sonner ever fills it before appending, the empty-hash allowance is moot.
-    expect(file).toMatch(/appendChild\(style\)[\s\S]{0,200}createTextNode\(code\)/);
-    expect(`'sha256-${createHash('sha256').update('').digest('base64')}'`).toBe(EMPTY_STYLE_HASH);
   });
 
   it('reports CSP violations via report-uri and report-to, backed by Reporting-Endpoints', () => {
@@ -122,5 +115,8 @@ describe('security headers', () => {
   it('static public/_headers fallback carries the same report-only policy', () => {
     const file = readFileSync(resolve(process.cwd(), 'public/_headers'), 'utf8');
     expect(file).toContain(`  Content-Security-Policy-Report-Only: ${buildReportOnlyPolicy()}`);
+  });
+  it('EMPTY_STYLE_HASH is the hash of the empty string, so it authorizes no CSS', () => {
+    expect(`'sha256-${createHash('sha256').update('').digest('base64')}'`).toBe(EMPTY_STYLE_HASH);
   });
 });
