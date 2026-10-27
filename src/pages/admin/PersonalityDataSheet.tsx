@@ -1,3 +1,4 @@
+import { getCspNonce } from '@/lib/cspNonce';
 import { useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
@@ -139,7 +140,7 @@ export default function PersonalityDataSheet() {
 
   return (
     <>
-      <style>{`
+      <style nonce={getCspNonce()}>{`
         @page { size: A4; margin: 18mm 16mm; }
         @media print {
           body * { visibility: hidden !important; }
