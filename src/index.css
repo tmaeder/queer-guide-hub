@@ -2742,6 +2742,56 @@ svg[data-site-icon] {
   min-height: 64px;
   flex-shrink: 0;
 }
+/* Absolute input adornments need space for the same 64px glyph. Legacy
+   callers include inline padding for 16px icons, so these layout minima
+   intentionally override that padding on the adorned side only. */
+:where(div, label, span):has(> input):has(
+    > svg[data-site-icon]:is(.absolute, [style*='position: absolute']),
+    > button:is(.absolute, [style*='position: absolute']) svg[data-site-icon]
+  ),
+:where(div, label, span):has(
+    > svg[data-site-icon]:is(.absolute, [style*='position: absolute']),
+    > button:is(.absolute, [style*='position: absolute']) svg[data-site-icon]
+  )
+  > input {
+  min-height: 80px;
+}
+:where(div, label, span):has(
+    > svg[data-site-icon]:is(.absolute, [style*='position: absolute']):is(
+        [class*='left-'],
+        [style*='left:']
+      ),
+    > button:is(.absolute, [style*='position: absolute']):is([class*='left-'], [style*='left:'])
+      svg[data-site-icon]
+  )
+  > input {
+  padding-left: 96px !important;
+}
+:where(div, label, span):has(
+    > svg[data-site-icon]:is(.absolute, [style*='position: absolute']):is(
+        [class*='right-'],
+        [style*='right:']
+      ),
+    > button:is(.absolute, [style*='position: absolute']):is([class*='right-'], [style*='right:'])
+      svg[data-site-icon]
+  )
+  > input {
+  padding-right: 96px !important;
+}
+:where(div, label, span):has(
+    > svg[data-site-icon]:is(.absolute, [style*='position: absolute'])[class*='start-'],
+    > button:is(.absolute, [style*='position: absolute'])[class*='start-'] svg[data-site-icon]
+  )
+  > input {
+  padding-inline-start: 96px !important;
+}
+:where(div, label, span):has(
+    > svg[data-site-icon]:is(.absolute, [style*='position: absolute'])[class*='end-'],
+    > button:is(.absolute, [style*='position: absolute'])[class*='end-'] svg[data-site-icon]
+  )
+  > input {
+  padding-inline-end: 96px !important;
+}
 /* Narrow screens scroll the dock instead of shrinking its symbols. */
 .island-dock:has([data-site-icon]) {
   overflow-x: auto;

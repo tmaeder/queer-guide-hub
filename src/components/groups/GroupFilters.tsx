@@ -72,8 +72,8 @@ export const GroupFilters = ({
   return (
     <Card>
       <div className="p-4 flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative w-full sm:w-auto sm:flex-1">
             <Search
               style={{ left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16 }}
               className="absolute"

@@ -36,20 +36,23 @@ export function NewsSearchInput({
   useEffect(() => {
     const q = value.trim();
     if (debounce.current) clearTimeout(debounce.current);
-    debounce.current = setTimeout(async () => {
-      if (q.length < 2) {
-        setSuggestions([]);
-        setOpen(false);
-        return;
-      }
-      try {
-        const hits = await fetchAutocomplete(q, ['news'], 6);
-        setSuggestions(hits);
-        setOpen(hits.length > 0);
-      } catch {
-        /* best-effort */
-      }
-    }, q.length < 2 ? 0 : 250);
+    debounce.current = setTimeout(
+      async () => {
+        if (q.length < 2) {
+          setSuggestions([]);
+          setOpen(false);
+          return;
+        }
+        try {
+          const hits = await fetchAutocomplete(q, ['news'], 6);
+          setSuggestions(hits);
+          setOpen(hits.length > 0);
+        } catch {
+          /* best-effort */
+        }
+      },
+      q.length < 2 ? 0 : 250,
+    );
     return () => {
       if (debounce.current) clearTimeout(debounce.current);
     };
@@ -66,7 +69,7 @@ export function NewsSearchInput({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <div className="relative flex-1 md:max-w-md">
+      <div className="relative w-full sm:w-auto sm:flex-1 md:max-w-md">
         <Search
           className="absolute text-muted-foreground"
           style={{

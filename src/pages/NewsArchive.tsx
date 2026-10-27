@@ -700,7 +700,7 @@ export default function NewsArchive() {
             panel scrolls with the content. */}
         <div className="rounded-element p-4 mb-6 bg-surface-container">
           <div className="flex flex-col md:flex-row gap-4 md:items-center">
-            <div className="flex items-center gap-2 flex-1 md:max-w-[26rem]">
+            <div className="flex flex-wrap items-center gap-2 flex-1 md:max-w-[26rem]">
               <NewsSearchInput
                 inputRef={searchInputRef}
                 value={quickSearch}
