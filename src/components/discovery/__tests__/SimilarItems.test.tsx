@@ -51,4 +51,41 @@ describe('SimilarItems', () => {
     );
     await waitFor(() => expect(screen.getByText('new york')).toBeTruthy());
   });
+
+  it('draws a country without a photo as the station plate with the globe', async () => {
+    fetchSimilarMock.mockResolvedValueOnce([
+      {
+        content_type: 'country',
+        content_id: '33333333-3333-3333-3333-333333333333',
+        score: 0.8,
+        metadata: { title: 'Austria', slug: 'austria' },
+      },
+    ]);
+    const { container } = render(
+      <SimilarItems entity={{ type: 'country', id: 'src' } as never} contentTypes={['country']} />,
+    );
+    await waitFor(() => expect(screen.getByText('Austria')).toBeTruthy());
+    expect(container.querySelector('[data-fallback="station"]')).not.toBeNull();
+    expect(container.querySelector('[data-station-badge]')).toBeNull();
+  });
+
+  it('puts the mark on the seam when a country has a photo', async () => {
+    fetchSimilarMock.mockResolvedValueOnce([
+      {
+        content_type: 'country',
+        content_id: '44444444-4444-4444-4444-444444444444',
+        score: 0.8,
+        metadata: {
+          title: 'Spain',
+          slug: 'spain',
+          image_url: 'https://img.queer.guide/countries/spain.jpg',
+        },
+      },
+    ]);
+    const { container } = render(
+      <SimilarItems entity={{ type: 'country', id: 'src' } as never} contentTypes={['country']} />,
+    );
+    await waitFor(() => expect(screen.getByText('Spain')).toBeTruthy());
+    expect(container.querySelector('[data-station-badge="globe"]')).not.toBeNull();
+  });
 });

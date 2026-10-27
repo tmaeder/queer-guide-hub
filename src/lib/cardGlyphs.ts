@@ -160,3 +160,39 @@ export function cityGlyph(
   if (city?.is_regional_capital) return 'landmark';
   return 'building';
 }
+
+/**
+ * The mark for a mixed-type card, such as a "More like this" neighbour, where
+ * the only facts at hand are the content type and maybe a category. A venue
+ * keeps its own category mark; every other type takes its family's mark, which
+ * is the same disc that type's own card draws when it has no finer signal.
+ */
+const CONTENT_TYPE_GLYPHS: Record<string, TransitIconName> = {
+  venue: 'pin',
+  event: 'events',
+  hotel: 'housing',
+  news: 'news',
+  marketplace: 'shop',
+  personality: 'profile',
+  person: 'profile',
+  city: 'building',
+  country: 'globe',
+  queer_village: 'pin',
+  village: 'pin',
+  landmark: 'landmark',
+  guide: 'library',
+  organization: 'building',
+  group: 'community',
+  milestone: 'flag',
+  tag: 'tag',
+};
+
+export function contentTypeGlyph(type: string, category?: string | null): TransitIconName {
+  if (type === 'venue' && category) {
+    const fromVocab = iconSlug(
+      VENUE_CATEGORY_ICONS[category.toLowerCase() as keyof typeof VENUE_CATEGORY_ICONS],
+    );
+    if (fromVocab) return fromVocab;
+  }
+  return CONTENT_TYPE_GLYPHS[type] ?? 'pin';
+}

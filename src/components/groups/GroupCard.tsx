@@ -130,9 +130,11 @@ export const GroupCard = ({
         />
       </LocalizedLink>
       <CardHeader
-        className={group.image_url ? 'pt-0 group-has-[[data-fallback=station]]:pt-6' : undefined}
+        className={
+          group.image_url ? 'pt-0 group-has-[[data-fallback=station]]/card:pt-6' : undefined
+        }
       >
-        {group.image_url && <StationBadge glyph="community" className="-mt-8 mb-2" />}
+        {group.image_url && <StationBadge glyph="community" className="-mt-10 mb-2" />}
         <div className="pb-4">
           <div className="flex items-start gap-4">
             <div className="flex-1 min-w-0">
