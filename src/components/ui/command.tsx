@@ -1,3 +1,4 @@
+import { getCspNonce } from '@/lib/cspNonce';
 import * as React from 'react';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Search } from '@/components/icons';
@@ -81,7 +82,7 @@ const cmdkStyles = {
 
 /* ── Global CSS for cmdk data-attribute states ───────────────────────── */
 const CmdkGlobalStyles = () => (
-  <style>{`
+  <style nonce={getCspNonce()}>{`
     [cmdk-item][data-selected='true'] {
       background-color: hsl(var(--accent));
       color: hsl(var(--accent-foreground));
