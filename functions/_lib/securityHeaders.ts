@@ -141,6 +141,12 @@ export const CSP_REPORT_GROUP = 'csp-endpoint';
 // this hash from the installed package so upgrades cannot silently break it.
 export const SONNER_STYLE_HASH = "'sha256-StEaX+se6YS7pqjzrzMIA0KaX9zF/8zAhvQXZAe5epY='";
 
+// Sonner appends its <style> to <head> while still EMPTY and fills it in the
+// next statement, so the browser checks the empty element first and logs a
+// violation (and sends a CSP report) on every page view. The empty-string hash
+// authorizes zero CSS; the filled sheet is still held to SONNER_STYLE_HASH.
+export const EMPTY_STYLE_HASH = "'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='";
+
 export function buildContentSecurityPolicy(nonce: string): string {
   return [
     "default-src 'none'",
@@ -148,7 +154,7 @@ export function buildContentSecurityPolicy(nonce: string): string {
     `script-src ${SCRIPT_SRC_HOSTS.join(' ')} 'nonce-${nonce}' ${CF_PAGES_INLINE_SCRIPT_HASHES.join(' ')}`,
     // Keep attributes separate: allowing style= must not authorize arbitrary
     // stylesheet blocks. Runtime styles use the document nonce (get-nonce).
-    `style-src 'self' 'nonce-${nonce}' ${SONNER_STYLE_HASH}`,
+    `style-src 'self' 'nonce-${nonce}' ${SONNER_STYLE_HASH} ${EMPTY_STYLE_HASH}`,
     "style-src-attr 'unsafe-inline'",
     `img-src ${IMG_SRC.join(' ')}`,
     `media-src ${MEDIA_SRC.join(' ')}`,
