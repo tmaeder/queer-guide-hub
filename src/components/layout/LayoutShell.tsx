@@ -181,7 +181,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
         {children}
       </div>
       {!isFullBleedMap && !isAdmin && (
-        <div className="relative z-10 pb-24 md:pb-0">
+        <div className="relative z-10 pb-32 md:pb-0">
           <ErrorBoundary section="footer" fallback={null}>
             <Footer variant={footerVariant} />
           </ErrorBoundary>
