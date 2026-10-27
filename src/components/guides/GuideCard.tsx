@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Clock, Flag } from '@/components/icons';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
-import { PicksPlate } from '@/components/marketplace/PicksPlate';
+import { StationPlate } from '@/components/ui/StationPlate';
+import { StationBadge } from '@/components/ui/StationBadge';
+import { guideGlyph } from '@/lib/cardGlyphs';
 import type { GuideFormat } from '@/hooks/useGuides';
 import type { GuideBoostReason } from '@/hooks/useRecommendedGuides';
 
@@ -102,13 +104,15 @@ export const GuideCard = memo(function GuideCard({
   const isHero = size === 'hero';
   const detailUrl = `/guides/${guide.slug}`;
   const isQuest = guide.format === 'quest';
+  const hasHero = Boolean(hero) && !heroFailed;
+  const glyph = guideGlyph(guide.category, guide.format, guide.title);
 
   return (
     <article
       className={
         isHero
           ? 'col-span-12 grid grid-cols-12 gap-6 rounded-container overflow-hidden bg-card'
-          : 'group flex flex-col rounded-container overflow-hidden bg-surface-container'
+          : 'group flex flex-col rounded-container overflow-hidden bg-card shadow-soft'
       }
     >
       <LocalizedLink
@@ -120,9 +124,9 @@ export const GuideCard = memo(function GuideCard({
         }
         aria-label={`${t('guides.card.open', 'Open guide:')} ${guide.title}`}
       >
-        {hero && !heroFailed ? (
+        {hasHero ? (
           <img
-            src={hero}
+            src={hero ?? undefined}
             alt=""
             loading={priority ? 'eager' : 'lazy'}
             // A guide's `hero_image_path` is frequently a MERCHANT CDN url —
@@ -137,13 +141,12 @@ export const GuideCard = memo(function GuideCard({
           />
         ) : (
           // Drawn, not captioned. This branch is the common case, not the edge:
-          // 10 of the 12 published guides carry no `hero_image_path`, and it
-          // used to render a grey box with the word "Editorial" in it — the
-          // weakest surface in the family, on most of the family. The plate
-          // draws the guide's picks as stops on the line, so a card with no
-          // photograph still says something true about what is inside it.
-          <div className="absolute inset-0 grid place-items-center">
-            <PicksPlate stops={guide.pick_count} tone="paper" />
+          // 13 of the 14 guides carry no `hero_image_path`. It used to draw the
+          // guide's picks as stops on a line; it now draws the same station
+          // plate as every other card, with the guide's category mark in the
+          // disc — the pick count is still in the footer.
+          <div className="absolute inset-0">
+            <StationPlate theme="default" fallbackKey={guide.id} icon={glyph} />
           </div>
         )}
       </LocalizedLink>
@@ -152,9 +155,14 @@ export const GuideCard = memo(function GuideCard({
         className={
           isHero
             ? 'col-span-12 md:col-span-5 flex flex-col gap-4 p-8'
-            : 'flex flex-1 flex-col gap-4 p-6'
+            : hasHero
+              ? 'flex flex-1 flex-col gap-4 px-6 pb-6'
+              : 'flex flex-1 flex-col gap-4 p-6'
         }
       >
+        {/* A photo card carries the category's mark on the seam; the plate
+            already draws it when there is no photo. */}
+        {!isHero && hasHero && <StationBadge glyph={glyph} className="-mt-8" />}
         <Eyebrow guide={guide} />
         <h3 className={isHero ? 'text-headline leading-tight' : 'text-title leading-tight'}>
           <LocalizedLink to={detailUrl} className="no-underline hover:underline underline-offset-4">

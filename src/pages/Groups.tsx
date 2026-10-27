@@ -198,7 +198,7 @@ export default function Groups() {
 
           {hasActiveFilters ? (
             isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <GroupCard key={i} loading />
                 ))}
@@ -222,7 +222,7 @@ export default function Groups() {
                 }}
               />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {filteredGroups.map((group) => (
                   <GroupCard
                     key={group.id}
@@ -239,7 +239,7 @@ export default function Groups() {
               </div>
             )
           ) : isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <GroupCard key={i} loading />
               ))}
@@ -311,7 +311,7 @@ export default function Groups() {
                   <Users className="h-5 w-5 text-foreground" />
                   {t('pages.groups.allGroups', 'All groups')}
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {groups.map((group) => (
                     <GroupCard
                       key={group.id}
@@ -351,7 +351,7 @@ export default function Groups() {
               }}
             />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {userGroups.map((group) => (
                 <GroupCard
                   key={group.id}
@@ -382,7 +382,7 @@ export default function Groups() {
                   {t('pages.groups.noPopularYet', 'No popular groups available yet.')}
                 </p>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {popularGroups.map((group) => (
                     <GroupCard
                       key={group.id}

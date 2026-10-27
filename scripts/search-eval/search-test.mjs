@@ -277,6 +277,19 @@ async function run() {
     HARD(isArr(r.json?.suggestions), 'no suggestions array');
     HARD((r.json?.suggestions?.length ?? 0) <= 5, 'limit not respected');
   });
+  // Importance, not a one-per-type rotation: `par` used to offer the village
+  // of Par as its only city (Paris absent); `new y` led with a venue named
+  // "New York" in Greece. Venue + organization twins must not both show.
+  await scenario('A1b', 'Autocomplete ranks the big city first and shows no twins', async ({ HARD }) => {
+    for (const [q, want] of [['par', 'Paris'], ['new y', 'New York'], ['berl', 'Berlin'], ['barc', 'Barcelona']]) {
+      const r = await autocomplete({ query: q, limit: 8 });
+      const s = r.json?.suggestions ?? [];
+      HARD(s[0]?.type === 'city' && s[0]?.title === want, `${q}: first is ${s[0]?.type}/${s[0]?.title}, want city ${want}`);
+      const keys = s.map((x) => `${x.title}|${x.city ?? ''}|${x.country ?? ''}`.toLowerCase());
+      HARD(new Set(keys).size === keys.length, `${q}: duplicate suggestions ${keys.join('; ')}`);
+    }
+  });
+
   await scenario('A2', 'Autocomplete too-short query rejected gracefully (not 500)', async ({ HARD }) => {
     const r = await autocomplete({ query: 'a', limit: 5 });
     HARD(r.status === 400 || (r.status === 200 && isArr(r.json?.suggestions)),

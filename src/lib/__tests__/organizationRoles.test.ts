@@ -81,7 +81,8 @@ describe('organization roles vocabulary', () => {
     // An advocacy group filed under the Support tab would be handed to a reader
     // looking for help. The separation is the point, so assert it holds.
     const page = readFileSync(join(process.cwd(), 'src/pages/Organizations.tsx'), 'utf8');
-    expect(page).toMatch(/advocacy:\s*'Advocacy group'/);
+    const card = readFileSync(join(process.cwd(), 'src/components/organizations/OrganizationCard.tsx'), 'utf8');
+    expect(card).toMatch(/advocacy:\s*'Advocacy group'/);
     expect(page).toMatch(/id:\s*'advocacy'[^}]*role:\s*'advocacy'/);
     expect(page).toMatch(/id:\s*'support'[^}]*role:\s*'support'/);
   });

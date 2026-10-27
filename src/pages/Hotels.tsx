@@ -19,16 +19,8 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useMeta } from '@/hooks/useMeta';
 import { EmptyState, type EmptyStateFilterChip } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
-import { PageHero, BentoSection, spansForPreset } from '@/components/discovery';
+import { PageHero } from '@/components/discovery';
 import { PageContainer } from '@/components/layout/PageContainer';
-
-const HOTEL_SPAN_CLASS: Record<string, string> = {
-  sm: 'col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3',
-  md: 'col-span-12 sm:col-span-6 md:col-span-4',
-  lg: 'col-span-12 sm:col-span-6 md:col-span-6',
-  wide: 'col-span-12 md:col-span-8',
-  tall: 'col-span-12 sm:col-span-6 md:col-span-4 row-span-2',
-};
 
 // Map view is heavy (maplibre-gl ~200kb). Only load when toggled.
 const HotelsMap = lazy(() =>
@@ -336,16 +328,16 @@ export default function Hotels() {
             )
           ) : (
             <>
-              <BentoSection preset="mosaic">
-                {hotels.map((hotel, i) => (
-                  <div
-                    key={hotel.id}
-                    className={HOTEL_SPAN_CLASS[spansForPreset('mosaic', i, hotels.length)]}
-                  >
-                    <HotelCard hotel={hotel} />
-                  </div>
+              {/* Even columns, the same as venues and events. The mosaic's first
+                  tiles spanned half the row and stretched an image-less plate. */}
+              <div
+                data-testid="hotel-results"
+                className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+              >
+                {hotels.map((hotel) => (
+                  <HotelCard key={hotel.id} hotel={hotel} />
                 ))}
-              </BentoSection>
+              </div>
 
               {hasMore && (
                 <div className="flex justify-center mt-8">
