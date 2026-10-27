@@ -71,7 +71,7 @@ export function EventsControlBar({
     <div
       role="group"
       aria-label={t('pages.events.filtersAriaLabel', 'Filter events')}
-      className="flex flex-col gap-2 md:gap-4"
+      className="flex flex-col gap-1 md:gap-4"
     >
       {/* Row 1 — search, and one door to everything else. */}
       <div className="flex items-center gap-2">
@@ -86,7 +86,7 @@ export function EventsControlBar({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && onSearchSubmit()}
-            style={{ paddingLeft: 36 }}
+            style={{ paddingLeft: 88 }}
           />
         </div>
         <Button

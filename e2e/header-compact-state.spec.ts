@@ -234,7 +234,7 @@ test.describe('Header, compact ink state', () => {
   }
 });
 
-test.describe('Header intent tabs, 768–1279px', () => {
+test.describe('Header intent tabs, text navigation at 1100px', () => {
   test.setTimeout(120_000);
 
   test('every tab is 44×44 and named by more than its title', async ({ page }) => {
@@ -269,16 +269,14 @@ test.describe('Header intent tabs, 768–1279px', () => {
       });
     });
 
-    // Control: the labels really ARE visually hidden at this width, so the
-    // aria-label assertion below is testing the case it was written for. If a
-    // future change shows them here, this spec should be re-pointed rather
-    // than silently passing for the wrong reason.
+    // Navigation is intentionally text-only at this width. Each destination
+    // must have a visible name as well as its 44px minimum interactive target.
     expect(
-      report.every((t) => t.innerText === ''),
-      'labels are visible at 1100px — this spec targets the icon-only band',
+      report.every((t) => t.innerText.length > 0),
+      'text navigation must label every destination at 1100px',
     ).toBe(true);
 
-    const unnamed = report.filter((t) => !t.ariaLabel);
+    const unnamed = report.filter((t) => !t.ariaLabel && !t.innerText);
     expect(
       unnamed,
       `Tabs named only by \`title\`. \`title\` is last-resort in accname, is not\n` +
