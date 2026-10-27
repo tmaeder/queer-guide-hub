@@ -1,3 +1,4 @@
+import { getCspNonce } from '@/lib/cspNonce';
 import { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router';
 import { format } from 'date-fns';
@@ -113,7 +114,7 @@ export default function TripBookletPage() {
 
   return (
     <>
-      <style>{`
+      <style nonce={getCspNonce()}>{`
         @page { size: A4; margin: 18mm 16mm; }
         @media print {
           body { background: #fff !important; }

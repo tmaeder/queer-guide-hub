@@ -175,9 +175,9 @@ class RootBodyInjector {
   }
 }
 
-// Stamps a fresh CSP nonce on every <script> element in the rewritten
-// HTML so the nonce-based CSP can drop 'unsafe-inline' from script-src
-// without breaking the theme bootstrap or the umami loader.
+// Stamps the response nonce on authored script and style blocks. Markup
+// appended by HeadInjector is not revisited by HTMLRewriter, so branding
+// and other injected blocks must include their nonce when constructed.
 class ScriptNonceInjector {
   constructor(private readonly nonce: string) {}
   element(el: Element) {
@@ -255,7 +255,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     )
       return machine;
     if (preferredContent(request.headers.get('Accept')) === 'markdown') return markdownNotFound();
-    const missing = new Response(notFoundHtml(pathname), {
+    const missing = new Response(notFoundHtml(pathname, cspNonce), {
       status: 404,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
@@ -332,7 +332,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const response = new Response(
       request.method === 'HEAD'
         ? null
-        : `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escape(document.title)}</title><meta name="description" content="${escape(document.description)}"><link rel="canonical" href="https://queer.guide${cleanPath}"><style>body{font:1rem/1.7 system-ui,sans-serif;max-width:64rem;margin:3rem auto;padding:0 1.5rem}a{color:inherit}p{overflow-wrap:anywhere}</style></head><body><main>${sections}</main></body></html>`,
+        : `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escape(document.title)}</title><meta name="description" content="${escape(document.description)}"><link rel="canonical" href="https://queer.guide${cleanPath}"><style nonce="${cspNonce}">body{font:1rem/1.7 system-ui,sans-serif;max-width:64rem;margin:3rem auto;padding:0 1.5rem}a{color:inherit}p{overflow-wrap:anywhere}</style></head><body><main>${sections}</main></body></html>`,
       {
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
@@ -377,7 +377,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // reason: a soft 404 at 200 is worse than a hard one.
   if (startsWithLocale(basePath)) {
     if (representation === 'markdown') return markdownNotFound();
-    const doubledNotFound = new Response(notFoundHtml(basePath), {
+    const doubledNotFound = new Response(notFoundHtml(basePath, cspNonce), {
       status: 404,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
@@ -394,8 +394,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // document.
   const landing = await resolveLandingRoute(env, basePath);
   if (landing) {
-    applySecurityHeaders(landing, cspNonce);
-    return landing;
+    // Standalone documents bypass the SPA rewriter. Stamp their authored
+    // styles and JSON-LD too, without buffering the body.
+    const secured = new HTMLRewriter()
+      .on('script, style', new ScriptNonceInjector(cspNonce))
+      .transform(landing);
+    applySecurityHeaders(secured, cspNonce);
+    return secured;
   }
 
   // A /pride/:year/:city (or /region/:slug) URL this module declined — an
@@ -405,7 +410,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // were advertised until 2026-09-10, so they will be recrawled.
   if (isOwnedLandingShape(basePath)) {
     if (representation === 'markdown') return markdownNotFound();
-    const landingNotFound = new Response(notFoundHtml(basePath), {
+    const landingNotFound = new Response(notFoundHtml(basePath, cspNonce), {
       status: 404,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
@@ -421,7 +426,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // would otherwise render its catch-all at 200); renamed handles 301.
   const handleRoute = await resolveHandleRoute(env, basePath);
   if (handleRoute?.status === 404) {
-    const handleNotFound = new Response(notFoundHtml(basePath), {
+    const handleNotFound = new Response(notFoundHtml(basePath, cspNonce), {
       status: 404,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
@@ -446,7 +451,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   if (!isKnownAppPath(cleanPath) && !isDetailPath(cleanPath)) {
     if (representation === 'markdown') return markdownNotFound();
-    const unknown = new Response(notFoundHtml(basePath), {
+    const unknown = new Response(notFoundHtml(basePath, cspNonce), {
       status: 404,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
@@ -585,7 +590,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       });
     }
     if (representation === 'markdown') return markdownNotFound();
-    const notFound = new Response(notFoundHtml(basePath), {
+    const notFound = new Response(notFoundHtml(basePath, cspNonce), {
       status: 404,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
@@ -695,7 +700,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       `<meta name="theme-color" media="(prefers-color-scheme: dark)" content="${escapeAttr(bMeta.theme_color_dark)}">`,
     );
   }
-  const brandStyle = brandStyleTag(branding);
+  const brandStyle = brandStyleTag(branding, cspNonce);
   if (brandStyle) {
     headInjections.push(brandStyle);
   }
@@ -721,7 +726,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     .on('meta[name="twitter:title"]', new ElementRemover())
     .on('meta[name="twitter:description"]', new ElementRemover())
     .on('meta[name="twitter:image"]', new ElementRemover())
-    .on('script', new ScriptNonceInjector(cspNonce))
+    .on('script, style', new ScriptNonceInjector(cspNonce))
     .on('head', new HeadInjector(headInjections.join('\n    ')));
   if (reportPage) rewriter.on('meta[name="robots"]', new ElementRemover());
 
@@ -938,12 +943,11 @@ function ghostStationLabel(pathname: string): string {
  * ignore list, so the design rules do not guard it and
  * src/test/__tests__/edgeNotFoundTokens.test.ts does instead.
  *
- * CSP: the response gets a nonce policy, but `style-src` keeps
- * `'unsafe-inline'` (functions/_lib/securityHeaders.ts), so the inline
- * `<style>` runs, and `font-src 'self'` covers the two woff2 files. There is
+ * CSP: the inline stylesheet carries the response nonce, and
+ * `font-src 'self'` covers the two woff2 files. There is
  * deliberately no script here at all.
  */
-function notFoundHtml(pathname: string): string {
+function notFoundHtml(pathname: string, nonce: string): string {
   const safePath = escapeAttr(pathname);
   const kind = notFoundKindFor(pathname);
   const track = kind.track ?? '0 0% 6.7%';
@@ -956,7 +960,7 @@ function notFoundHtml(pathname: string): string {
 <meta name="theme-color" content="hsl(60 33% 97%)">
 <title>${escapeAttr(kind.title)} · Queer Guide</title>
 <link rel="canonical" href="https://queer.guide${safePath}">
-<style>
+<style nonce="${nonce}">
   @font-face { font-family: 'Anton'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/anton/anton-latin-wght-normal.woff2') format('woff2'); }
   @font-face { font-family: 'Anton'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/anton/anton-latin-ext-wght-normal.woff2') format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
   @font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('/fonts/space-grotesk/space-grotesk-latin-wght-normal.woff2') format('woff2'); }
