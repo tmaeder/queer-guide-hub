@@ -90,7 +90,7 @@ export function decodeBytes(
     }
   }
   try {
-    const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes, { stream: !!opts.truncated })
+    const text = new TextDecoder('utf-8', { fatal: true, ignoreBOM: false }).decode(bytes, { stream: !!opts.truncated })
     return { text, charset: 'utf-8', source: 'default' }
   } catch {
     return { text: new TextDecoder('windows-1252').decode(bytes), charset: 'windows-1252', source: 'fallback' }
