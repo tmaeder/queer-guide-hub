@@ -23,6 +23,7 @@ function renderAt(path: string) {
           path="/:locale?/personalities"
           element={<KnowledgeHeader section="personalities" />}
         />
+        <Route path="/:locale?/history" element={<KnowledgeHeader section="history" />} />
       </Routes>
       <HistoryControls />
     </MemoryRouter>,
@@ -49,7 +50,15 @@ describe('Knowledge section navigation', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Knowledge');
   });
 
-  it('keeps the locale when moving between the two directories', () => {
+  it('includes the history timeline as a section', () => {
+    renderAt('/tags');
+    fireEvent.click(screen.getByRole('link', { name: 'History' }));
+    expect(screen.getByLabelText('Current URL')).toHaveTextContent('/history');
+    expect(screen.getByRole('link', { name: 'History' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Terms' })).not.toHaveAttribute('aria-current');
+  });
+
+  it('keeps the locale when moving between the directories', () => {
     renderAt('/de/personalities?era=stonewall');
     expect(screen.getByRole('link', { name: 'Terms' })).toHaveAttribute('href', '/de/tags');
     fireEvent.click(screen.getByRole('link', { name: 'Terms' }));
