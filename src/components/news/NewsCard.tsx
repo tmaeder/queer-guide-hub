@@ -562,7 +562,7 @@ const NewsCardImpl = ({
         <CardContent style={{ flexDirection: 'column' }} className="flex gap-2 p-6">
           {/* A photo card carries the category's mark on the seam; the plate
               already draws it when there is no photo. */}
-          {hasImage && <StationBadge glyph={glyph} className="-mt-16" />}
+          {hasImage && <StationBadge glyph={glyph} className="-mt-12" />}
           {eyebrowParts.length > 0 && (
             <p className="text-2xs uppercase tracking-wider text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
               {eyebrowParts.join(' · ')}

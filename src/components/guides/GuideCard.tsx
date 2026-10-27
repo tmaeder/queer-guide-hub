@@ -162,7 +162,7 @@ export const GuideCard = memo(function GuideCard({
       >
         {/* A photo card carries the category's mark on the seam; the plate
             already draws it when there is no photo. */}
-        {!isHero && hasHero && <StationBadge glyph={glyph} className="-mt-10" />}
+        {!isHero && hasHero && <StationBadge glyph={glyph} className="-mt-8" />}
         <Eyebrow guide={guide} />
         <h3 className={isHero ? 'text-headline leading-tight' : 'text-title leading-tight'}>
           <LocalizedLink to={detailUrl} className="no-underline hover:underline underline-offset-4">
