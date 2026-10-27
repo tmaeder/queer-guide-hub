@@ -45,6 +45,23 @@ describe('CityNetwork', () => {
     ).toBe(true);
   });
 
+  it('backdrop variant crops, anchors right and draws heavier non-scaling lines', () => {
+    const { container } = render(<CityNetwork slug={subjectSlug} variant="backdrop" />);
+    const { crop } = subject;
+    const svg = svgOf(container);
+    expect(svg?.getAttribute('viewBox')).toBe(`${crop.x} ${crop.y} ${crop.w} ${crop.h}`);
+    expect(svg?.getAttribute('preserveAspectRatio')).toBe('xMaxYMid meet');
+    const paths = pathsOf(container);
+    expect(paths).toHaveLength(subject.lines.length);
+    expect(paths.every((p) => p.getAttribute('vector-effect') === 'non-scaling-stroke')).toBe(true);
+    expect(paths.every((p) => Number(p.getAttribute('stroke-width')) > 2.5)).toBe(true);
+  });
+
+  it('backdrop never falls back to the template line — it must be city-specific', () => {
+    const { container } = render(<CityNetwork slug="no-such-city" variant="backdrop" index={0} />);
+    expect(svgOf(container)).toBeNull();
+  });
+
   it('renders nothing for an unknown city unless a template index is given', () => {
     const { container } = render(<CityNetwork slug="no-such-city" />);
     expect(svgOf(container)).toBeNull();
