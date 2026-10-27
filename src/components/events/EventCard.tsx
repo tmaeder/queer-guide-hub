@@ -2,9 +2,10 @@ import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '@/lib/currency';
 import { Card } from '@/components/ui/card';
-import { EventTypeMark } from './EventTypeMark';
 import { eventTypeIcon } from './eventTypeIcon';
-import { Calendar } from '@/components/icons';
+import { useEventTypeLabel } from '@/lib/eventTypes';
+import { StationBadge } from '@/components/ui/StationBadge';
+import { Calendar, iconSlug } from '@/components/icons';
 import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -136,6 +137,9 @@ export const EventCard = memo(function EventCard({
     : '';
 
   const eventTypeTag = event && isMeaningfulTag(event.event_type) ? event.event_type : null;
+  const typeIcon = eventTypeIcon(eventTypeTag);
+  const glyph = iconSlug(typeIcon) ?? 'events';
+  const eventTypeLabel = useEventTypeLabel(eventTypeTag);
 
   return (
     <Skeleton
@@ -153,7 +157,7 @@ export const EventCard = memo(function EventCard({
               aspect="card"
               imageRole="cover"
               fallbackEntityType="event"
-              fallbackIcon={eventTypeIcon(event.event_type)}
+              fallbackIcon={typeIcon}
               fallbackKey={event.id}
             >
               {overlay && (
@@ -191,7 +195,19 @@ export const EventCard = memo(function EventCard({
               />
             </Image>
 
-            <div className="p-4">
+            <div
+              className={
+                resolvedImage ? 'px-4 pb-4 group-has-[[data-fallback=station]]:pt-4' : 'p-4'
+              }
+            >
+              {/* Photo cards carry the type's mark on the seam; an image-less
+                  card already shows it in the plate's station disc. */}
+              {resolvedImage && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
+              {eventTypeTag && (
+                <p className="mb-1 text-2xs font-semibold uppercase tracking-wide text-muted-foreground truncate">
+                  {eventTypeLabel}
+                </p>
+              )}
               <div className="flex items-baseline gap-2 min-w-0">
                 <h3 className="text-title font-bold leading-tight truncate flex-1 min-w-0">
                   {title}
@@ -221,11 +237,6 @@ export const EventCard = memo(function EventCard({
                 )}
                 {locationLabel && <> · {locationLabel}</>}
               </p>
-              {eventTypeTag && (
-                <p className="mt-2 text-2xs text-muted-foreground truncate capitalize">
-                  <EventTypeMark type={eventTypeTag} />
-                </p>
-              )}
               {event.tags && event.tags.length > 0 && (
                 <TagChipRow tags={event.tags} max={2} size="sm" className="mt-2" linkless />
               )}

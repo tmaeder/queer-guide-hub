@@ -88,4 +88,24 @@ describe('GeoCard', () => {
     expect(link).toHaveAttribute('href', '/city/berlin');
     expect(link).toHaveAccessibleName('Berlin');
   });
+
+  it('draws the station plate with the city mark when a city has no picture', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <GeoCard variant="city" id="x1" slug="nowhere-at-all" name="Nowhere" />
+      </MemoryRouter>,
+    );
+    expect(container.querySelector('[data-fallback="station"]')).not.toBeNull();
+    expect(container.querySelector('[data-station-badge]')).toBeNull();
+  });
+
+  it('puts the city mark on the seam when the picture is its transit network', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <GeoCard variant="city" id="b1" slug="berlin" name="Berlin" isCapital />
+      </MemoryRouter>,
+    );
+    expect(container.querySelector('[data-fallback="station"]')).toBeNull();
+    expect(container.querySelector('[data-station-badge="crown"]')).not.toBeNull();
+  });
 });
