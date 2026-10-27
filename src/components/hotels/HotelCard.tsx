@@ -139,7 +139,7 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
             >
               {/* Photo cards carry the type's mark on the seam; an image-less
                   card already shows it in the plate's station disc. */}
-              {imageUrl && <StationBadge glyph={glyph} className="-mt-10 mb-1" />}
+              {imageUrl && <StationBadge glyph={glyph} className="-mt-8 mb-1" />}
               {typeLabel && (
                 <p className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground truncate">
                   {typeLabel}

@@ -196,7 +196,7 @@ export function SimilarItems({
                               : 'p-4'
                           }
                         >
-                          {badge && <StationBadge glyph={glyph} className="-mt-10 mb-2" />}
+                          {badge && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
                           <div className="text-title font-bold leading-tight truncate">
                             {it.metadata?.title || it.metadata?.slug?.replace(/-/g, ' ')}
                           </div>

@@ -174,7 +174,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
             >
               {/* A card with a photo carries its mark on the seam; an image-less
                   card already has it in the plate's station disc. */}
-              {visual.src && <StationBadge glyph={glyph} className="-mt-10 mb-2" />}
+              {visual.src && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
               {venue.category && (
                 <p className="mb-1 text-2xs font-semibold uppercase tracking-wide text-muted-foreground truncate">
                   {categoryLabel}
