@@ -151,7 +151,7 @@ function PersonalityCardImpl({
          sibling overlay — this card has no nested interactive elements, so the
          whole anchor is the target and a nested lift wrapper only meant the
          border sat on one element while a different one moved. */
-      className="personality-card card-lift group flex h-full cursor-pointer touch-manipulation flex-col bg-card text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 rounded-container shadow-soft"
+      className="personality-card card-lift group group/card flex h-full cursor-pointer touch-manipulation flex-col bg-card text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 rounded-container shadow-soft"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       {/* Portrait. `aspect-[3/4]` replaces a `paddingTop: 133.33%` box and an

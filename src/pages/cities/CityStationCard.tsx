@@ -68,7 +68,7 @@ function CityStationCardImpl({ city, nextPride, selected = false }: CityStationC
   return (
     <article
       className={cn(
-        'group relative flex flex-col overflow-hidden rounded-container',
+        'group group/card relative flex flex-col overflow-hidden rounded-container',
         // "A card fills ink on hover or lifts — never both." The selected card is
         // already filled, so it does not lift.
         selected ? 'bg-foreground text-background' : 'bg-card shadow-soft card-lift',

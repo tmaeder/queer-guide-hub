@@ -112,7 +112,7 @@ export const GuideCard = memo(function GuideCard({
       className={
         isHero
           ? 'col-span-12 grid grid-cols-12 gap-6 rounded-container overflow-hidden bg-card'
-          : 'group flex flex-col rounded-container overflow-hidden bg-card shadow-soft'
+          : 'group group/card flex flex-col rounded-container overflow-hidden bg-card shadow-soft'
       }
     >
       <LocalizedLink

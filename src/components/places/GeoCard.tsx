@@ -152,7 +152,7 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
         <div
           className={cn(
             'flex flex-1 flex-col gap-2',
-            badge ? 'px-4 pb-4 group-has-[[data-fallback=station]]:pt-4' : 'p-4',
+            badge ? 'px-4 pb-4 group-has-[[data-fallback=station]]/card:pt-4' : 'p-4',
           )}
         >
           {badge && <StationBadge glyph={glyph} className="-mt-8" />}

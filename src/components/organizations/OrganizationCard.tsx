@@ -57,7 +57,7 @@ export function OrganizationCard({ org }: { org: OrgListItem }) {
         <div
           className={
             src
-              ? 'flex flex-col gap-2 px-4 pb-4 group-has-[[data-fallback=station]]:pt-4'
+              ? 'flex flex-col gap-2 px-4 pb-4 group-has-[[data-fallback=station]]/card:pt-4'
               : 'flex flex-col gap-2 p-4'
           }
         >

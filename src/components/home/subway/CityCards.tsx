@@ -149,7 +149,7 @@ export function CityCards() {
             return (
               <div
                 key={city.id}
-                className="card-lift group relative flex flex-col overflow-hidden bg-card rounded-container shadow-soft"
+                className="card-lift group group/card relative flex flex-col overflow-hidden bg-card rounded-container shadow-soft"
               >
                 <CityPicture id={city.id} slug={city.slug} name={city.name} glyph={glyph} />
                 <div className={badge ? 'px-4 pb-4' : 'p-4'}>

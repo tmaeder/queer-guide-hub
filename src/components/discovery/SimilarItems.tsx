@@ -9,7 +9,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { detailHref } from '@/lib/searchRoutes';
 import { useTrackClick, type Entity } from '@/hooks/useSearchActions';
 import { useSimilarQuery } from '@/hooks/useDiscoveryQueries';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
@@ -17,8 +17,10 @@ import { SkeletonCrossfade } from '@/components/effects';
 import { Image } from '@/components/ui/Image';
 import { type FallbackTheme } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
-import { CityNetwork } from '@/components/home/subway/CityNetwork';
-import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
+import { CityPicture } from '@/components/places/CityPicture';
+import { cityPictureHasBadge } from '@/components/places/cityPictureHasBadge';
+import { StationBadge } from '@/components/ui/StationBadge';
+import { contentTypeGlyph } from '@/lib/cardGlyphs';
 
 interface Props {
   entity: Entity;
@@ -123,7 +125,7 @@ export function SimilarItems({
             skeleton={
               <div className="flex gap-4 overflow-hidden pb-4">
                 {Array.from({ length: limit }).map((_, i) => (
-                  <Skeleton key={i} className="h-40 w-56 shrink-0 rounded-element" />
+                  <Skeleton key={i} className="h-56 w-56 shrink-0 rounded-container" />
                 ))}
               </div>
             }
@@ -141,11 +143,21 @@ export function SimilarItems({
                     title: it.metadata?.title,
                   });
                   if (!to) return null;
+                  const imageUrl = isValidImageUrl(it.metadata?.image_url)
+                    ? (it.metadata!.image_url as string)
+                    : null;
+                  const glyph = contentTypeGlyph(it.content_type, it.metadata?.category);
+                  const isCity = it.content_type === 'city';
+                  // A photo (or a city's own transit network) is a picture, so the
+                  // mark sits on the seam; the station plate already draws it.
+                  const badge = isCity
+                    ? cityPictureHasBadge(it.metadata?.slug, imageUrl)
+                    : Boolean(imageUrl);
                   return (
                     <LocalizedLink
                       key={`${it.content_type}:${it.content_id}`}
                       to={to}
-                      className="shrink-0 w-56"
+                      className="group shrink-0 w-56 no-underline"
                       onClick={() =>
                         trackClick({ type: it.content_type, id: it.content_id }, 'similar', {
                           score: it.score,
@@ -153,44 +165,49 @@ export function SimilarItems({
                         })
                       }
                     >
-                      <Card className="h-40 overflow-hidden transition">
-                        {!isValidImageUrl(it.metadata?.image_url) &&
-                        it.content_type === 'city' &&
-                        hasCityNetwork(it.metadata?.slug as string | undefined) ? (
-                          <div className="flex h-24 items-center justify-center bg-background p-2">
-                            <CityNetwork
-                              slug={it.metadata?.slug as string}
-                              variant="thumb"
-                              className="h-full"
-                            />
-                          </div>
+                      <Card className="h-full overflow-hidden whitespace-normal">
+                        {isCity ? (
+                          <CityPicture
+                            id={it.content_id}
+                            slug={it.metadata?.slug}
+                            name={it.metadata?.title ?? ''}
+                            glyph={glyph}
+                            imageUrl={imageUrl}
+                          />
                         ) : (
                           <Image
-                            imageUrl={
-                              isValidImageUrl(it.metadata?.image_url)
-                                ? (it.metadata!.image_url as string)
-                                : null
-                            }
+                            imageUrl={imageUrl}
                             optimizedUrl={it.metadata?.optimized_url}
                             thumbnailUrl={it.metadata?.thumbnail_url}
                             preferThumb
                             alt=""
-                            heightPx={96}
+                            aspect="card"
                             imageRole="thumb"
-                            rounded="none"
+                            rounded="top"
                             fallbackEntityType={fallbackTheme(it.content_type)}
+                            fallbackGlyph={glyph}
                             fallbackKey={it.content_id}
                           />
                         )}
-                        <CardContent className="p-2">
-                          <div className="text-sm font-medium truncate">
+                        <div
+                          className={
+                            badge
+                              ? 'px-4 pb-4 group-has-[[data-fallback=station]]/card:pt-4'
+                              : 'p-4'
+                          }
+                        >
+                          {badge && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
+                          <div className="text-title font-bold leading-tight truncate">
                             {it.metadata?.title || it.metadata?.slug?.replace(/-/g, ' ')}
                           </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {[it.metadata?.city, it.metadata?.country].filter(Boolean).join(', ') ||
-                              it.metadata?.category}
+                          <div className="mt-1 text-13 text-muted-foreground truncate">
+                            {[it.metadata?.city, it.metadata?.country]
+                              // A country's own `country` is its name; repeating
+                              // the title as a subtitle says nothing.
+                              .filter((v) => v && v !== it.metadata?.title)
+                              .join(', ') || it.metadata?.category}
                           </div>
-                        </CardContent>
+                        </div>
                       </Card>
                     </LocalizedLink>
                   );

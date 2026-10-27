@@ -100,7 +100,7 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
     <Skeleton name="hotel-card" loading={false} fixture={<HotelCardFixture />}>
       <LocalizedLink to={`/hotels/${hotel.slug}`} className="no-underline">
         <CardHoverEffect>
-          <div className="group overflow-hidden rounded-container bg-card transition-colors duration-normal h-full flex flex-col">
+          <div className="group group/card overflow-hidden rounded-container bg-card transition-colors duration-normal h-full flex flex-col">
             {/* Image */}
             <Image
               src={imageUrl}
@@ -134,7 +134,7 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
             <div
               className={cn(
                 'flex flex-1 flex-col gap-1',
-                imageUrl ? 'px-4 pb-4 group-has-[[data-fallback=station]]:pt-4' : 'p-4',
+                imageUrl ? 'px-4 pb-4 group-has-[[data-fallback=station]]/card:pt-4' : 'p-4',
               )}
             >
               {/* Photo cards carry the type's mark on the seam; an image-less

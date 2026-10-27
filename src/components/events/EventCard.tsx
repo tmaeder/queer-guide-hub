@@ -197,7 +197,7 @@ export const EventCard = memo(function EventCard({
 
             <div
               className={
-                resolvedImage ? 'px-4 pb-4 group-has-[[data-fallback=station]]:pt-4' : 'p-4'
+                resolvedImage ? 'px-4 pb-4 group-has-[[data-fallback=station]]/card:pt-4' : 'p-4'
               }
             >
               {/* Photo cards carry the type's mark on the seam; an image-less
