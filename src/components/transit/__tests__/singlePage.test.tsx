@@ -19,6 +19,24 @@ describe('SinglePage', () => {
     expect(screen.getByLabelText('Venue')).toBeInTheDocument();
   });
 
+  it('draws a backdrop behind the masthead, hidden from assistive tech', () => {
+    const { container } = render(
+      <SinglePage type="city" title="Berlin" backdrop={<svg data-testid="art" />} body={<div />} />,
+    );
+    const layer = screen.getByTestId('single-backdrop');
+    expect(layer).toHaveAttribute('aria-hidden');
+    expect(layer.className).toMatch(/-z-10/);
+    expect(layer.className).toMatch(/pointer-events-none/);
+    // The masthead block must isolate, or -z-10 sinks under the page ground.
+    expect(layer.parentElement?.className).toMatch(/\bisolate\b/);
+    expect(container.querySelector('[data-testid="art"]')).not.toBeNull();
+  });
+
+  it('renders no backdrop layer when none is given', () => {
+    render(<SinglePage type="city" title="Berlin" body={<div />} />);
+    expect(screen.queryByTestId('single-backdrop')).toBeNull();
+  });
+
   it('keeps the rail in the DOM on every breakpoint', () => {
     // "Every single works at 390px with the same modules in the same order,
     // stacked. No mobile-only cuts." A `hidden lg:block` rail would drop

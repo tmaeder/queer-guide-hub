@@ -27,6 +27,7 @@ export function SinglePage({
   lead,
   tags,
   action,
+  backdrop,
   body,
   rail,
   footer,
@@ -45,6 +46,9 @@ export function SinglePage({
   tags?: React.ReactNode;
   /** S5 — one concrete verb. */
   action?: React.ReactNode;
+  /** Decorative art drawn behind the masthead block — e.g. a city's own
+   *  transit network. Must be `aria-hidden`; it is positioned, never read. */
+  backdrop?: React.ReactNode;
   body: React.ReactNode;
   rail?: React.ReactNode;
   /** S8 — safety footer. */
@@ -63,8 +67,21 @@ export function SinglePage({
         className={cn(
           'border-b border-border-hairline',
           density === 'dense' ? 'py-4' : density === 'compact' ? 'py-6' : 'py-8',
+          // `isolate` gives the backdrop's -z-10 a stacking context of its
+          // own, so it sits under the masthead text without dropping below
+          // the page ground.
+          backdrop && 'relative isolate',
         )}
       >
+        {backdrop && (
+          <div
+            data-testid="single-backdrop"
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 -z-10 w-full opacity-20 md:w-3/5 md:opacity-35"
+          >
+            {backdrop}
+          </div>
+        )}
         <DetailMasthead
           type={type}
           letter={letter}
