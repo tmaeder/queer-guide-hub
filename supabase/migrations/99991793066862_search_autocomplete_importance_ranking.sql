@@ -77,22 +77,30 @@ $fn$;
 do $verify$
 declare
   v jsonb;
+  q text;
 begin
-  -- `par` leads with Paris, France (featured place), not the village of Par.
-  v := api_private.search_autocomplete('par', null, 8, now(), false);
-  if v->0->>'type' <> 'city' or v->0->>'title' <> 'Paris' then
-    raise exception 'autocomplete(par) first is %/%, expected city Paris', v->0->>'type', v->0->>'title';
-  end if;
-  -- `new y` leads with the city.
-  v := api_private.search_autocomplete('new y', null, 8, now(), false);
-  if v->0->>'type' <> 'city' or v->0->>'title' <> 'New York' then
-    raise exception 'autocomplete(new y) first is %/%, expected city New York', v->0->>'type', v->0->>'title';
-  end if;
-  -- No row appears twice on (title, city, country).
-  v := api_private.search_autocomplete('berghain', null, 8, now(), false);
-  if (select count(*) from jsonb_array_elements(v) e) <>
-     (select count(distinct lower(e->>'title')||'|'||lower(coalesce(e->>'city',''))||'|'||lower(coalesce(e->>'country',''))) from jsonb_array_elements(v) e) then
-    raise exception 'autocomplete(berghain) still returns duplicate title/city/country rows';
-  end if;
+  -- Properties, not data counts, so this holds on the small CI snapshot too.
+  foreach q in array array['par', 'new y', 'berl', 'lon', 'berghain'] loop
+    v := api_private.search_autocomplete(q, null, 8, now(), false);
+    -- If a featured place (city/country/village) matches the prefix, a featured
+    -- place is the first suggestion.
+    if exists (select 1 from public.search_documents
+               where is_featured and entity_type in ('city','country','queer_village')
+                 and not safety_gated and title ilike q || '%')
+       and not exists (select 1 from public.search_documents d
+                       where d.entity_id::text = v->0->>'objectID' and d.entity_type = v->0->>'type'
+                         and d.is_featured and d.entity_type in ('city','country','queer_village')) then
+      raise exception 'autocomplete(%) first is %/%, expected a featured place', q, v->0->>'type', v->0->>'title';
+    end if;
+    -- No suggestion appears twice on (title, city, country).
+    if (select count(*) from jsonb_array_elements(v) e) <>
+       (select count(distinct lower(e->>'title')||'|'||lower(coalesce(e->>'city',''))||'|'||lower(coalesce(e->>'country',''))) from jsonb_array_elements(v) e) then
+      raise exception 'autocomplete(%) returns duplicate title/city/country rows', q;
+    end if;
+    -- At most 3 suggestions per type.
+    if exists (select 1 from jsonb_array_elements(v) e group by e->>'type' having count(*) > 3) then
+      raise exception 'autocomplete(%) returns more than 3 suggestions of one type', q;
+    end if;
+  end loop;
 end
 $verify$;
