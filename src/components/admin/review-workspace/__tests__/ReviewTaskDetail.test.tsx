@@ -69,11 +69,9 @@ describe('inline decisions', () => {
       }),
     );
   });
-  it('requires explicit confirmation before indexing a sensitive tag', () => {
+  it('sends the confirmation with the approval for a sensitive tag, with no extra checkbox', () => {
     const decide = renderTask('sensitive-tags', { risk_flags: { requires_confirm: true } });
-    fireEvent.click(screen.getByRole('button', { name: 'Approve & index' }));
-    expect(decide).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByLabelText(/I checked the evidence/));
+    expect(screen.queryByLabelText(/I checked the evidence/)).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Approve & index' }));
     expect(decide).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'approve', confirm: true }),
@@ -86,17 +84,19 @@ describe('inline decisions', () => {
       expect.objectContaining({ action: 'reject', confirm: false }),
     );
   });
-  it('requires evidence and confirmation before sensitive ownership claims publish', () => {
+  it('requires evidence before sensitive ownership claims publish', () => {
     const decide = renderTask('brand-ownership', { meta: { suggested_tags: ['queer_owned'] } });
     fireEvent.click(screen.getByRole('button', { name: 'Verify & publish' }));
     expect(decide).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText('Evidence or review note'), {
       target: { value: 'Verified public ownership source' },
     });
-    fireEvent.click(screen.getByLabelText(/I checked the evidence/));
     fireEvent.click(screen.getByRole('button', { name: 'Verify & publish' }));
     expect(decide).toHaveBeenCalledWith(
-      expect.objectContaining({ payload: expect.objectContaining({ tags: ['queer_owned'] }) }),
+      expect.objectContaining({
+        confirm: true,
+        payload: expect.objectContaining({ tags: ['queer_owned'] }),
+      }),
     );
   });
   it('does not mint a business without an explicit choice', () => {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Check, ExternalLink, Pencil, ShieldAlert, SkipForward } from '@/components/icons';
+import { ArrowLeft, Check, ExternalLink, Pencil, SkipForward } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -98,7 +98,6 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
   const venueMatch = isVenueMatchReview(item);
   const [venueSelection, setVenueSelection] = useState<VenueMatchSelection | null>(null);
   const [notes, setNotes] = useState('');
-  const [confirmed, setConfirmed] = useState(false);
   const [description, setDescription] = useState(String(meta.draft_long ?? meta.description ?? ''));
   const [draftHook, setDraftHook] = useState(String(meta.draft_hook ?? ''));
   const [category, setCategory] = useState(
@@ -179,12 +178,6 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
     )
       problem = 'Add an evidence or review note before saving this decision.';
     if (
-      (action === 'approve' || Boolean(item.risk_flags?.confirm_rejection)) &&
-      requiresConfirm &&
-      !confirmed
-    )
-      problem = 'Confirm the consequences before approving.';
-    if (
       action === 'approve' &&
       workflow === 'org-link-review' &&
       (!adoptionChoice || (adoptionChoice === 'existing' && !orgId))
@@ -210,7 +203,10 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
       item,
       action,
       notes,
-      confirm: (action === 'approve' || Boolean(item.risk_flags?.confirm_rejection)) && confirmed,
+      // Clicking the decision button is the confirmation; the server still
+      // requires the flag on risk-gated items, so it is sent with the action.
+      confirm:
+        (action === 'approve' || Boolean(item.risk_flags?.confirm_rejection)) && requiresConfirm,
       payload: {
         ...(venueMatch ? venueSelection : {}),
         city_id: cityId || null,
@@ -477,23 +473,6 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
               className="min-h-24 font-normal"
             />
           </label>
-          {requiresConfirm && (
-            <label
-              htmlFor="review-confirm"
-              className="flex items-start gap-4 rounded-element border border-border p-4 text-sm leading-relaxed"
-            >
-              <Checkbox
-                id="review-confirm"
-                checked={confirmed}
-                onCheckedChange={(v) => setConfirmed(v === true)}
-                className="mt-0.5"
-              />
-              <span>
-                <ShieldAlert size={15} className="mr-1.5 inline" />I checked the evidence and
-                understand the approval’s consequences.
-              </span>
-            </label>
-          )}
           {typeof meta.sample_url === 'string' &&
             typeof meta.sample_url === 'string' &&
             /^https?:\/\//.test(meta.sample_url) && (
