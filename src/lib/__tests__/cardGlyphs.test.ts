@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TRANSIT_ICON_PATHS } from '@/components/transit/transitIconPaths';
 import {
+  contentTypeGlyph,
   cityGlyph,
   HOTEL_GLYPH_MAP,
   NEWS_GLYPH_MAP,
@@ -79,5 +80,30 @@ describe('card glyphs', () => {
     expect(cityGlyph({})).toBe('building');
     expect(cityGlyph(null)).toBe('building');
     for (const g of ['crown', 'landmark', 'building']) expect(TRANSIT_ICON_PATHS).toHaveProperty(g);
+  });
+
+  it('gives a mixed-type card its family mark, and a venue its category mark', () => {
+    expect(contentTypeGlyph('country')).toBe('globe');
+    expect(contentTypeGlyph('city')).toBe('building');
+    expect(contentTypeGlyph('venue', 'sauna')).not.toBe('pin');
+    expect(contentTypeGlyph('venue')).toBe('pin');
+    expect(contentTypeGlyph('something-new')).toBe('pin');
+    for (const t of [
+      'venue',
+      'event',
+      'hotel',
+      'news',
+      'marketplace',
+      'personality',
+      'city',
+      'country',
+      'queer_village',
+      'guide',
+      'organization',
+      'group',
+      'milestone',
+      'tag',
+    ])
+      expect(TRANSIT_ICON_PATHS).toHaveProperty(contentTypeGlyph(t));
   });
 });

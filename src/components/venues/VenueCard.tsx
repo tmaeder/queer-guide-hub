@@ -168,11 +168,13 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
             </Image>
 
             <div
-              className={visual.src ? 'px-4 pb-4 group-has-[[data-fallback=station]]:pt-4' : 'p-4'}
+              className={
+                visual.src ? 'px-4 pb-4 group-has-[[data-fallback=station]]/card:pt-4' : 'p-4'
+              }
             >
               {/* A card with a photo carries its mark on the seam; an image-less
                   card already has it in the plate's station disc. */}
-              {visual.src && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
+              {visual.src && <StationBadge glyph={glyph} className="-mt-10 mb-2" />}
               {venue.category && (
                 <p className="mb-1 text-2xs font-semibold uppercase tracking-wide text-muted-foreground truncate">
                   {categoryLabel}

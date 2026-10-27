@@ -48,7 +48,10 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       // never a card. Assert on the component, not on one of its classes.
       data-slot="card"
       className={cn(
-        'bg-card text-card-foreground rounded-container shadow-soft transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)]',
+        // `group/card` scopes StationBadge's hide-when-a-plate-shows rule to THIS
+        // card; an unnamed `group` matches any ancestor, so a section that is
+        // itself a group would let one card's plate hide every card's badge.
+        'group/card bg-card text-card-foreground rounded-container shadow-soft transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)]',
         hoverable === 'group' && 'group-hover:bg-surface-container-low',
         hoverable === true && 'card-lift cursor-pointer',
         className,

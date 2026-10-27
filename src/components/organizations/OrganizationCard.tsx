@@ -57,13 +57,13 @@ export function OrganizationCard({ org }: { org: OrgListItem }) {
         <div
           className={
             src
-              ? 'flex flex-col gap-2 px-4 pb-4 group-has-[[data-fallback=station]]:pt-4'
+              ? 'flex flex-col gap-2 px-4 pb-4 group-has-[[data-fallback=station]]/card:pt-4'
               : 'flex flex-col gap-2 p-4'
           }
         >
           {/* With a picture the role mark sits on the seam; without one the
               plate already draws it. */}
-          {src && <StationBadge glyph={glyph} className="-mt-8" />}
+          {src && <StationBadge glyph={glyph} className="-mt-10" />}
           {roleLabels.length > 0 && (
             <p className="truncate text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
               {roleLabels.join(' · ')}
