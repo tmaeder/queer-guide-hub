@@ -7,11 +7,18 @@ import {
   appRedirect,
   markdownNotFound,
 } from './agentHttp';
-import { pageMarkdown, PUBLIC_PAGES, pageRecord, DOCS_MARKDOWN } from './agentContent';
+import {
+  pageMarkdown,
+  PUBLIC_PAGES,
+  pageRecord,
+  DOCS_MARKDOWN,
+  PUBLIC_DOCUMENTS,
+} from './agentContent';
 import { publicPages } from '../api/v1/pages';
 import { homepageJsonLd } from './jsonLd';
 import { buildBodyHtml, buildNoscriptHtml } from './routeBody';
 import { onRequest as apiMiddleware } from '../api/_middleware';
+import { onRequest as siteMiddleware } from '../_middleware';
 
 const request = (path: string, method = 'GET') =>
   new Request('https://queer.guide' + path, { method });
@@ -115,6 +122,31 @@ describe('public content and discovery', () => {
 });
 
 describe('public REST API', () => {
+  it('filters catalog slugs without changing the unfiltered response', async () => {
+    const all = (await publicPages(request('/api/v1/pages')).json()) as {
+      pages: { slug: string }[];
+    };
+    for (const prefix of ['', 'travel', 'venues', 'not-a-page', '__proto__', '🌈'.repeat(100)]) {
+      const response = publicPages(request('/api/v1/pages?prefix=' + encodeURIComponent(prefix)));
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({
+        pages: all.pages.filter((p: { slug: string }) => p.slug.startsWith(prefix)),
+      });
+    }
+    const head = publicPages(request('/api/v1/pages?prefix=travel', 'HEAD'));
+    expect(head.status).toBe(200);
+    expect(await head.text()).toBe('');
+  });
+  it.each(['prefix=a&prefix=b', 'prefix=' + 'x'.repeat(129), 'unexpected=true'])(
+    'rejects unsupported filters: %s',
+    async (query) => {
+      const response = publicPages(request('/api/v1/pages?' + query));
+      expect(response.status).toBe(400);
+      expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+        'INVALID_PARAMETERS',
+      );
+    },
+  );
   it('lists and reads every published page', async () => {
     const list = (await publicPages(request('/api/v1/pages')).json()) as {
       pages: { slug: string }[];
@@ -204,5 +236,76 @@ describe('public REST API', () => {
       Object.values(node).forEach(walk);
     };
     walk(spec);
+  });
+});
+
+describe('published agent policies and schemas', () => {
+  it.each(['text/html', 'text/markdown'])(
+    'serves real pricing content negotiated as %s',
+    async (accept) => {
+      const response = await siteMiddleware({
+        request: new Request('https://queer.guide/pricing', { headers: { Accept: accept } }),
+        env: {},
+        next: () => {
+          throw new Error('pricing must be served without an app-shell fallback');
+        },
+      } as unknown as Parameters<typeof siteMiddleware>[0]);
+      expect(response.status).toBe(200);
+      expect(response.headers.get('Content-Type')).toContain(accept);
+      expect(response.headers.get('Vary')).toContain('Accept');
+      const text = await response.text();
+      expect(text.length).toBeGreaterThan(500);
+      expect(text).toContain('Free public access');
+      if (accept === 'text/html') {
+        const doc = new DOMParser().parseFromString(text, 'text/html');
+        expect(doc.querySelectorAll('h1').length).toBe(1);
+        expect(doc.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
+          'https://queer.guide/pricing',
+        );
+      }
+    },
+  );
+  it('preserves HEAD and returns 406 for unsupported pricing representations', async () => {
+    for (const [method, accept, status] of [
+      ['HEAD', 'text/html', 200],
+      ['GET', 'application/json', 406],
+    ] as const) {
+      const r = await siteMiddleware({
+        request: new Request('https://queer.guide/pricing', {
+          method,
+          headers: { Accept: accept },
+        }),
+        env: {},
+        next: () => {
+          throw new Error('unexpected fallback');
+        },
+      } as unknown as Parameters<typeof siteMiddleware>[0]);
+      expect(r.status).toBe(status);
+      if (method === 'HEAD') expect(await r.text()).toBe('');
+    }
+  });
+  it('publishes truthful pricing, existing member scope and versioning guidance', () => {
+    expect(PUBLIC_DOCUMENTS['/pricing'].markdown.length).toBeGreaterThan(500);
+    expect(PUBLIC_DOCUMENTS['/pricing'].markdown).toContain('free');
+    expect(PUBLIC_DOCUMENTS['/pricing'].markdown).toContain('vendors');
+    expect(DOCS_MARKDOWN).toContain('90 days');
+    expect(DOCS_MARKDOWN).toContain('No v1 deprecation');
+    expect(DOCS_MARKDOWN).toContain('broad member access');
+    expect(DOCS_MARKDOWN).toContain('https://queer.guide/cli.mjs');
+  });
+  it('gives every operation typed inputs while keeping REST reads anonymous', () => {
+    const spec = JSON.parse(readFileSync('public/openapi.json', 'utf8'));
+    expect(spec.security).toEqual([]);
+    for (const value of Object.values(spec.paths) as {
+      get: { security: unknown[]; parameters: { schema: { type: string } }[] };
+    }[]) {
+      expect(value.get.security).toEqual([]);
+      expect(value.get.parameters.length).toBeGreaterThan(0);
+      for (const p of value.get.parameters) expect(p.schema.type).toBe('string');
+    }
+    expect(
+      Object.keys(spec.components.securitySchemes.MemberMcpOAuth.flows.authorizationCode.scopes),
+    ).toEqual(['member']);
+    expect(readFileSync('public/llms.txt', 'utf8')).toBe(readFileSync('public/agent.txt', 'utf8'));
   });
 });
