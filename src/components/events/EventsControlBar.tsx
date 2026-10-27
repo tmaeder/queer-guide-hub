@@ -86,7 +86,7 @@ export function EventsControlBar({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && onSearchSubmit()}
-            style={{ paddingLeft: 36 }}
+            style={{ paddingLeft: 88 }}
           />
         </div>
         <Button

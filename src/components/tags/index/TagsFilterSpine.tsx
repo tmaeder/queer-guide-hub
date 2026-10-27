@@ -109,7 +109,7 @@ export function TagsFilterSpine({
               value={q}
               onChange={(e) => onQ(e.target.value)}
               placeholder={t('tags.spine.searchPlaceholder', 'Search terms, or a synonym')}
-              className="min-h-12 pr-12"
+              className="min-h-12 pr-24"
             />
             <TransitIcon
               name="search"
