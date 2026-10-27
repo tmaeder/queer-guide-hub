@@ -5,11 +5,11 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cn } from '@/lib/utils';
 
 interface KnowledgeHeaderProps {
-  section: 'terms' | 'personalities';
+  section: 'terms' | 'personalities' | 'history';
   children?: ReactNode;
 }
 
-/** The glossary and people directory share one URL-backed workspace. */
+/** The glossary, people directory and history timeline share one URL-backed workspace. */
 export function KnowledgeHeader({ section, children }: KnowledgeHeaderProps) {
   const { t } = useTranslation();
   const sections = [
@@ -19,6 +19,7 @@ export function KnowledgeHeader({ section, children }: KnowledgeHeaderProps) {
       to: '/personalities',
       label: t('knowledge.personalities', 'Personalities'),
     },
+    { id: 'history', to: '/history', label: t('knowledge.history', 'History') },
   ] as const;
 
   return (
@@ -27,7 +28,10 @@ export function KnowledgeHeader({ section, children }: KnowledgeHeaderProps) {
         {t('knowledge.title', 'Knowledge')}
       </h1>
       <p className="mt-4 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
-        {t('knowledge.lede', 'The words we use and the people who shaped queer life.')}
+        {t(
+          'knowledge.lede',
+          'The words we use, the people who shaped queer life, and the history behind both.',
+        )}
       </p>
       <nav
         aria-label={t('knowledge.navigation', 'Knowledge sections')}

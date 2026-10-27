@@ -8,7 +8,14 @@ test.use(REDUCED_MOTION);
 test.describe('/history era timeline', () => {
   test('renders era chapters with jump nav and single Home breadcrumb', async ({ page }) => {
     await page.goto('/history');
-    await expect(page.getByRole('heading', { level: 1, name: /queer history/i })).toBeVisible();
+    // /history is a section of the Knowledge workspace, beside /tags.
+    await expect(page.getByRole('heading', { level: 1, name: /knowledge/i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: /queer history/i })).toBeVisible();
+    await expect(
+      page
+        .getByRole('navigation', { name: /knowledge sections/i })
+        .getByRole('link', { name: 'History' }),
+    ).toHaveAttribute('aria-current', 'page');
 
     // Era jump nav + at least 8 era sections
     await expect(page.getByRole('navigation', { name: /jump to era/i })).toBeVisible({

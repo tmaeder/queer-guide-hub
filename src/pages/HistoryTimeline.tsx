@@ -16,6 +16,7 @@ import { EraSection } from '@/components/milestones/EraSection';
 import { OnThisDayBand } from '@/components/milestones/OnThisDayBand';
 import { cn } from '@/lib/utils';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { KnowledgeHeader } from '@/components/knowledge/KnowledgeHeader';
 
 const IMPACTS = ['positive', 'neutral', 'negative'] as const;
 
@@ -24,6 +25,10 @@ const IMPACTS = ['positive', 'neutral', 'negative'] as const;
  * pink line. One slim server-filtered spine fetch (significance>=4, ~450 rows)
  * plus a per-year histogram for era counts; each era expands on demand to its
  * full chronology.
+ *
+ * It is the third section of the Knowledge workspace (Terms · Personalities ·
+ * History), so it opens under the shared KnowledgeHeader like /tags and
+ * /personalities; the URL stays /history.
  *
  * The page is a stack of full-bleed bands, each owning its own PageContainer —
  * the SubwayHero/CityCards idiom — rather than one container wrapping
@@ -122,38 +127,29 @@ export default function HistoryTimeline() {
 
   return (
     <>
-      <header className="border-b border-border-hairline">
-        <PageContainer flush className="pb-8 pt-8 md:pb-12 md:pt-16">
-          <p className="text-2xs uppercase tracking-label text-muted-foreground">
-            {t('milestones.eyebrow', 'Queer history')}
-          </p>
-          {/* text-hero flat, no md:text-hero-xl — hero-xl is reserved for
-              marketing covers, and /history is a page. */}
-          <h1 className="mt-2 max-w-4xl font-display text-hero">
-            {t('milestones.pageTitle', 'Queer history')}
-          </h1>
-          <p className="mt-4 max-w-reading text-body-lg leading-relaxed">
-            {t(
-              'milestones.pageDescription',
-              'Milestones that shaped LGBTQ+ life — uprisings, laws, setbacks. Dated and sourced.',
-            )}
-          </p>
-          {totalCount > 0 && (
-            <p className="mt-6 flex items-center gap-2 text-13 text-muted-foreground">
-              {/* The one place on the page that NAMES the line — which is what
-                  earns the pink here rather than it being decoration. */}
-              <span
-                aria-hidden
-                className="inline-block h-2 w-6 shrink-0 rounded-full bg-track-pink"
-              />
-              {t('milestones.stats', '{{count}} milestones across {{eras}} eras', {
-                count: totalCount,
-                eras: visibleEras.length,
-              })}
-            </p>
+      <KnowledgeHeader section="history">
+        <h2 className="text-title font-bold">{t('milestones.pageTitle', 'Queer history')}</h2>
+        <p className="mt-4 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
+          {t(
+            'milestones.pageDescription',
+            'Milestones that shaped LGBTQ+ life — uprisings, laws, setbacks. Dated and sourced.',
           )}
-        </PageContainer>
-      </header>
+        </p>
+        {totalCount > 0 && (
+          <p className="mt-4 flex items-center gap-2 text-13 text-muted-foreground">
+            {/* The one place on the page that NAMES the line — which is what
+                earns the pink here rather than it being decoration. */}
+            <span
+              aria-hidden
+              className="inline-block h-2 w-6 shrink-0 rounded-full bg-track-pink"
+            />
+            {t('milestones.stats', '{{count}} milestones across {{eras}} eras', {
+              count: totalCount,
+              eras: visibleEras.length,
+            })}
+          </p>
+        )}
+      </KnowledgeHeader>
 
       <OnThisDayBand />
 
