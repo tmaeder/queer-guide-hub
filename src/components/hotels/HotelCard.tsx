@@ -10,8 +10,9 @@ import type { Hotel } from '@/hooks/useHotels';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { safeText } from '@/utils/safeDisplay';
-import { getFallbackImage } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+import { hotelGlyph } from '@/lib/cardGlyphs';
+import { StationBadge } from '@/components/ui/StationBadge';
 
 interface HotelCardProps {
   hotel?: Hotel;
@@ -82,7 +83,7 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
 
   const rawImage = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
   const imageUrl = isValidImageUrl(rawImage) ? rawImage : null;
-  const hotelFallback = getFallbackImage('hotel', hotel.id);
+  const glyph = hotelGlyph(hotel.hotel_type);
   const hotelName = safeText(hotel.name);
   const city = safeText(hotel.city);
   const country = safeText(hotel.country);
@@ -102,13 +103,14 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
           <div className="group overflow-hidden rounded-container bg-card transition-colors duration-normal h-full flex flex-col">
             {/* Image */}
             <Image
-              src={imageUrl || hotelFallback}
+              src={imageUrl}
               alt={hotelName}
               aspect="card"
               imageRole="cover"
               rounded="none"
               fallbackEntityType="hotel"
               fallbackKey={hotel.slug ?? hotel.id}
+              fallbackGlyph={glyph}
             >
               {/*
             Featured badge is now driven by the curated `featured_priority`
@@ -126,36 +128,33 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
                   </span>
                 ) : null;
               })()}
-              {typeLabel && (
-                <Badge
-                  variant="outline"
-                  style={{ top: 8, left: 8, backgroundColor: 'hsl(var(--background))' }}
-                  className="absolute"
-                >
-                  {typeLabel}
-                </Badge>
-              )}
             </Image>
 
             {/* Content */}
-            <div className="p-4 flex-1 flex flex-col gap-1">
+            <div
+              className={cn(
+                'flex flex-1 flex-col gap-1',
+                imageUrl ? 'px-4 pb-4 group-has-[[data-fallback=station]]:pt-4' : 'p-4',
+              )}
+            >
+              {/* Photo cards carry the type's mark on the seam; an image-less
+                  card already shows it in the plate's station disc. */}
+              {imageUrl && <StationBadge glyph={glyph} className="-mt-8 mb-1" />}
+              {typeLabel && (
+                <p className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground truncate">
+                  {typeLabel}
+                </p>
+              )}
               {hotelName && (
-                <h3
-                  className="font-semibold truncate text-base"
-                  style={{ lineHeight: 1.3 }}
-                  title={hotelName}
-                >
+                <h3 className="text-title font-bold leading-tight truncate" title={hotelName}>
                   {hotelName}
                 </h3>
               )}
 
               {location && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <MapPin size={14} className="shrink-0" />
-                  <p className="text-sm truncate" title={location}>
-                    {location}
-                  </p>
-                </div>
+                <p className="text-xs text-muted-foreground truncate" title={location}>
+                  {location}
+                </p>
               )}
 
               <div className="flex items-center gap-2 mt-auto pt-2">

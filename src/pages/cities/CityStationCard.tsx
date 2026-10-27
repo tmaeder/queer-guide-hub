@@ -2,8 +2,10 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cn } from '@/lib/utils';
-import { CityNetwork } from '@/components/home/subway/CityNetwork';
-import { templateIndexFor } from '@/components/home/subway/templateIndex';
+import { CityPicture } from '@/components/places/CityPicture';
+import { cityPictureHasBadge } from '@/components/places/cityPictureHasBadge';
+import { StationBadge } from '@/components/ui/StationBadge';
+import { cityGlyph } from '@/lib/cardGlyphs';
 import { CITY_NETWORKS } from '@/components/home/subway/cityNetworkGeometry';
 import type { NetworkMode } from '@/components/home/subway/cityNetworkGeometry';
 import { EqualityChip } from './EqualityChip';
@@ -30,8 +32,8 @@ const NETWORK_MODE_KEY: Record<NetworkMode, { key: string; fallback: string }> =
 function CityStationCardImpl({ city, nextPride, selected = false }: CityStationCardProps) {
   const { t } = useTranslation();
 
-  // 22 of the 2,142 cities have a network generated from OpenStreetMap; the rest
-  // fall back to a template line. Reading `mode` here is what makes the difference
+  // A few hundred cities have a network generated from OpenStreetMap; the rest
+  // draw the station plate. Reading `mode` here is what makes the difference
   // visible — see the caption below.
   const network = city.slug ? CITY_NETWORKS[city.slug] : undefined;
   const mode = network ? NETWORK_MODE_KEY[network.mode] : null;
@@ -49,9 +51,7 @@ function CityStationCardImpl({ city, nextPride, selected = false }: CityStationC
     : city.is_regional_capital
       ? t('cities.regionalCapital', 'Regional capital')
       : null;
-  const place = [capitalLabel, countryName, city.region_name]
-    .filter(Boolean)
-    .join(' · ');
+  const place = [capitalLabel, countryName, city.region_name].filter(Boolean).join(' · ');
 
   const venueLabel =
     city.venue_count > 0
@@ -62,52 +62,59 @@ function CityStationCardImpl({ city, nextPride, selected = false }: CityStationC
       ? t('cities.villageCount', '{{count}} districts', { count: city.village_count })
       : null;
 
+  const glyph = cityGlyph(city);
+  const badge = cityPictureHasBadge(city.slug);
+
   return (
     <article
       className={cn(
-        'group relative flex flex-col bg-muted rounded-element p-4',
-        // "A card fills ink on hover or lifts with the hard shadow — never both."
-        // The selected card is already filled, so it does not lift.
-        selected ? 'bg-foreground text-background' : 'bg-background card-lift',
+        'group relative flex flex-col overflow-hidden rounded-container',
+        // "A card fills ink on hover or lifts — never both." The selected card is
+        // already filled, so it does not lift.
+        selected ? 'bg-foreground text-background' : 'bg-card shadow-soft card-lift',
       )}
       data-city-id={city.id}
     >
-      <div className="flex items-baseline justify-between gap-2">
-        <h3 className="m-0 truncate font-display text-headline">{city.name}</h3>
-        <EqualityChip score={city.countries?.equality_score} variant="ink" className="shrink-0" />
-      </div>
+      <CityPicture id={city.id} slug={city.slug} name={city.name} glyph={glyph} />
 
-      {/* Decorative even though it is the card's largest element: the card already
-          carries the city's name as text, and a screen-reader user gains nothing
-          from a description of an abstracted rail diagram. */}
-      <CityNetwork slug={city.slug} index={templateIndexFor(city.slug)} />
+      <div className={cn('flex flex-1 flex-col px-4 pb-4', badge ? '' : 'pt-4')}>
+        {/* A network is a picture, so the city's mark sits on the seam; the
+            station plate already carries it. */}
+        {badge && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
 
-      {/* The caption is the honesty mechanism. A real network gets its mode named;
-          a template line gets NOTHING, so the page never claims that a city with
-          no rail has a metro. The absence is the signal — do not add a caption for
-          the fallback. */}
-      <div className="min-h-4 text-2xs uppercase tracking-label opacity-70">
-        {mode ? t(mode.key, mode.fallback) : ''}
-      </div>
+        {/* The caption is the honesty mechanism. A real network gets its mode
+            named; a city with no rail gets NOTHING, so the page never claims that
+            a city with no rail has a metro. Do not add a caption for the plate. */}
+        <div className="min-h-4 text-2xs font-semibold uppercase tracking-wide opacity-70">
+          {mode ? t(mode.key, mode.fallback) : ''}
+        </div>
 
-      <p className="mt-2 truncate text-13 opacity-80">{city.editorial_hook || place}</p>
+        <div className="flex items-baseline justify-between gap-2">
+          <h3 className="m-0 truncate text-title font-bold leading-tight">{city.name}</h3>
+          <EqualityChip score={city.countries?.equality_score} variant="ink" className="shrink-0" />
+        </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-13">
-        {city.high_risk && (
-          // Stated in words, never as a hue. The four track colours on the diagram
-          // above mean "line 1..4" on every card; loading a fifth meaning onto
-          // colour here is exactly what the design system forbids.
-          <span className="font-bold text-destructive">{t('cities.highRisk', 'Criminalized')}</span>
-        )}
-        {venueLabel && <span className="tabular-nums">{venueLabel}</span>}
-        {villageLabel && <span className="tabular-nums opacity-70">{villageLabel}</span>}
-        {nextPride && (
-          <span className="tabular-nums opacity-70">
-            {t('cities.pridePill', 'Pride · {{date}}', {
-              date: formatPrideDate(nextPride.date),
-            })}
-          </span>
-        )}
+        <p className="mt-2 truncate text-13 opacity-80">{city.editorial_hook || place}</p>
+
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-13">
+          {city.high_risk && (
+            // Stated in words, never as a hue. The four track colours on the diagram
+            // above mean "line 1..4" on every card; loading a fifth meaning onto
+            // colour here is exactly what the design system forbids.
+            <span className="font-bold text-destructive">
+              {t('cities.highRisk', 'Criminalized')}
+            </span>
+          )}
+          {venueLabel && <span className="tabular-nums">{venueLabel}</span>}
+          {villageLabel && <span className="tabular-nums opacity-70">{villageLabel}</span>}
+          {nextPride && (
+            <span className="tabular-nums opacity-70">
+              {t('cities.pridePill', 'Pride · {{date}}', {
+                date: formatPrideDate(nextPride.date),
+              })}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Sibling overlay, never a wrapper: an <a> around the card would put every
@@ -118,7 +125,7 @@ function CityStationCardImpl({ city, nextPride, selected = false }: CityStationC
         to={`/city/${city.slug || city.id}`}
         aria-label={city.name}
         aria-current={selected ? 'true' : undefined}
-        className="absolute inset-0 no-underline"
+        className="absolute inset-0 rounded-container no-underline"
       />
     </article>
   );

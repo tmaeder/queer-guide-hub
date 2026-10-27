@@ -7,7 +7,9 @@ import { test, expect } from '@playwright/test';
  * Also verifies pagination deduplication and search relevance.
  */
 
-const RESULT_CARDS = '[data-bento-preset="mosaic"] a[href^="/hotels/"]';
+// The paginated result grid only — the page's editorial sections also link
+// hotels and legitimately repeat ones in the grid.
+const RESULT_CARDS = '[data-testid="hotel-results"] a[href^="/hotels/"]';
 
 test.describe('Hotels — Phase 1 quick wins', () => {
   test('apartment filter returns at least one card and reflects in the URL', async ({ page }) => {
@@ -94,7 +96,7 @@ test.describe('Hotels — Phase 1 quick wins', () => {
     const collectIds = () =>
       page.evaluate(() =>
         Array.from(
-          document.querySelectorAll('[data-bento-preset="mosaic"] a[href^="/hotels/"]'),
+          document.querySelectorAll('[data-testid="hotel-results"] a[href^="/hotels/"]'),
         ).map((a) => (a as HTMLAnchorElement).getAttribute('href') ?? ''),
       );
 

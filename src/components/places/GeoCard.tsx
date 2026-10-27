@@ -1,14 +1,18 @@
 import { memo } from 'react';
-import { Card, CardImage } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import { Image } from '@/components/ui/Image';
+import { StationBadge } from '@/components/ui/StationBadge';
+import { CityPicture } from '@/components/places/CityPicture';
+import { cityPictureHasBadge } from '@/components/places/cityPictureHasBadge';
+import { cityGlyph } from '@/lib/cardGlyphs';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Bookmark, Check, Globe, Building2, MapPin } from '@/components/icons';
+import { Crown, Bookmark, Check } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { getLegalityBadge } from '@/lib/lgbtLegality';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
-import { CityNetwork } from '@/components/home/subway/CityNetwork';
-import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 
 export type GeoCardVariant = 'country' | 'city' | 'village';
 
@@ -40,10 +44,10 @@ const VARIANT_HREF: Record<GeoCardVariant, (slug: string) => string> = {
   village: (s) => `/villages/${s}`,
 };
 
-const VARIANT_ICON: Record<GeoCardVariant, typeof Globe> = {
-  country: Globe,
-  city: Building2,
-  village: MapPin,
+/** A queer village is a district on the line, so it takes the plain stop. */
+const VARIANT_GLYPH: Record<Exclude<GeoCardVariant, 'city'>, TransitIconName> = {
+  country: 'globe',
+  village: 'pin',
 };
 
 const FAVORITE_TYPE: Record<GeoCardVariant, 'country' | 'city' | 'queer_village'> = {
@@ -72,7 +76,7 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
   const { user } = useAuth();
   const { isFavorited, toggleFavorite } = useFavorites(FAVORITE_TYPE[variant]);
   const saved = isFavorited(id);
-  const FallbackIcon = VARIANT_ICON[variant];
+  const glyph = variant === 'city' ? cityGlyph({ is_capital: isCapital }) : VARIANT_GLYPH[variant];
 
   const subtitleFallback =
     variant === 'country' ? capital : variant === 'city' ? countryName : description?.slice(0, 80);
@@ -81,7 +85,9 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
   const legality = variant === 'country' && legalityData ? getLegalityBadge(legalityData) : null;
 
   const href = slug || id;
-  const showNetwork = variant === 'city' && !imageUrl && hasCityNetwork(slug);
+  // A photo or a city's own network is a picture and gets the mark on the seam;
+  // the station plate already draws it.
+  const badge = variant === 'city' ? cityPictureHasBadge(slug, imageUrl) : Boolean(imageUrl);
 
   return (
     // No `h-full` here: the old root anchor was `block`, so adding it would make
@@ -89,24 +95,24 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
     <div className="relative group">
       <Card hoverable="group" className="overflow-hidden h-full flex flex-col">
         <div className="relative">
-          {/* A city with no image of its own gets a deterministic stock photo
-              from the shared pool — a generic skyline that is not this city.
-              When we have its real transit network, that is a truer picture of
-              the place than someone else's cityscape. A REAL photo always wins. */}
-          {showNetwork ? (
-            <div
-              className="flex items-center justify-center rounded-container bg-background px-4"
-              style={{ height: 180 }}
-            >
-              <CityNetwork slug={slug} variant="thumb" className="h-full" />
-            </div>
-          ) : (
-            <CardImage
-              src={imageUrl ?? null}
-              alt={`${name} ${variant === 'city' ? 'cityscape' : 'landscape'}`}
-              fallbackIcon={FallbackIcon}
-              height={180}
+          {variant === 'city' ? (
+            <CityPicture
+              id={id}
+              slug={slug}
+              name={name}
+              glyph={glyph}
+              imageUrl={imageUrl}
               priority={priority}
+            />
+          ) : (
+            <Image
+              src={imageUrl ?? undefined}
+              alt={`${name} landscape`}
+              aspect="card"
+              imageRole="cover"
+              priority={priority}
+              fallbackGlyph={glyph}
+              fallbackKey={id}
             />
           )}
           {/* Save button — top-right of image */}
@@ -143,9 +149,15 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
           )}
         </div>
 
-        <div className="flex flex-col gap-2 p-4 flex-1">
+        <div
+          className={cn(
+            'flex flex-1 flex-col gap-2',
+            badge ? 'px-4 pb-4 group-has-[[data-fallback=station]]:pt-4' : 'p-4',
+          )}
+        >
+          {badge && <StationBadge glyph={glyph} className="-mt-8" />}
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-headline font-semibold leading-tight truncate">{name}</h3>
+            <h3 className="text-title font-bold leading-tight truncate">{name}</h3>
             {variant === 'city' && isCapital && (
               <Crown
                 className="h-4 w-4 mt-1 shrink-0 text-muted-foreground"

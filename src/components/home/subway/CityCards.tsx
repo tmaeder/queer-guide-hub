@@ -6,8 +6,10 @@ import { fetchTrendingCities, fetchPersonalizedCitiesByIds } from '@/hooks/usePe
 import { Band } from '@/components/home/Band';
 import { useHomeRegionContext } from '@/components/home/homeRegionContext';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
-import { CityNetwork } from './CityNetwork';
-import { NETWORK_VIEWBOX } from './cityNetworkGeometry';
+import { CityPicture } from '@/components/places/CityPicture';
+import { cityPictureHasBadge } from '@/components/places/cityPictureHasBadge';
+import { StationBadge } from '@/components/ui/StationBadge';
+import { cityGlyph } from '@/lib/cardGlyphs';
 import { tierForScore, EQUALITY_TIER_LABEL } from '@/utils/equalityScore';
 
 const CARDS = 8;
@@ -117,14 +119,15 @@ export function CityCards() {
             // Same shell + an empty diagram box, so the skeleton is exactly
             // as tall as the loaded card at every breakpoint instead of a
             // fixed height that only matches at one.
-            <div key={i} className="motion-safe:animate-pulse bg-muted p-4">
-              <div className="h-8 w-2/3 bg-muted" />
-              <svg
-                viewBox={`0 0 ${NETWORK_VIEWBOX.w} ${NETWORK_VIEWBOX.h}`}
-                className="my-2 w-full"
-                aria-hidden
-              />
-              <div className="h-4 w-1/2 bg-muted" />
+            <div
+              key={i}
+              className="motion-safe:animate-pulse overflow-hidden rounded-container bg-card"
+            >
+              <div className="aspect-[16/10] w-full bg-muted" />
+              <div className="p-4">
+                <div className="h-6 w-2/3 bg-muted" />
+                <div className="mt-2 h-4 w-1/2 bg-muted" />
+              </div>
             </div>
           ))
         ) : isError ? (
@@ -138,31 +141,37 @@ export function CityCards() {
             {t('home.cities.empty', 'No city guides are available right now.')}
           </p>
         ) : (
-          cities.map((city, i) => (
-            <div
-              key={city.id}
-              className="card-lift group relative bg-card p-4 rounded-container shadow-soft"
-            >
-              {/* The name owns the row now. The score used to sit here as a
-                      bare "90" with only a hover title — a number a reader
-                      cannot calibrate, on a metric that is safety-adjacent.
-                      EqualityScoreBadge learned the same lesson in 2026-07
-                      ("every size now carries its meaning"); it is a 48-88px
-                      ring, too big for this card, so the meaning moves to the
-                      footer line instead. */}
-              <span className="block truncate font-display text-headline">{city.name}</span>
-              <CityNetwork slug={city.slug} index={i} />
-              <div className="truncate text-13 text-muted-foreground">
-                {city.editorial_hook || city.countries?.name || ''}
+          cities.map((city) => {
+            const glyph = cityGlyph(city);
+            // The band is about transit, so the city's network leads even when
+            // it has a photo: no imageUrl is passed on purpose.
+            const badge = cityPictureHasBadge(city.slug);
+            return (
+              <div
+                key={city.id}
+                className="card-lift group relative flex flex-col overflow-hidden bg-card rounded-container shadow-soft"
+              >
+                <CityPicture id={city.id} slug={city.slug} name={city.name} glyph={glyph} />
+                <div className={badge ? 'px-4 pb-4' : 'p-4'}>
+                  {badge && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
+                  {/* The score's meaning lives on the footer line, not as a bare
+                      number beside the name — see EqualityLine. */}
+                  <span className="block truncate text-title font-bold leading-tight">
+                    {city.name}
+                  </span>
+                  <div className="mt-1 truncate text-13 text-muted-foreground">
+                    {city.editorial_hook || city.countries?.name || ''}
+                  </div>
+                  <EqualityLine score={city.countries?.equality_score} />
+                </div>
+                <LocalizedLink
+                  to={`/city/${city.slug || city.id}`}
+                  className="absolute inset-0 rounded-container no-underline"
+                  aria-label={equalityAriaLabel(city.name, city.countries?.equality_score, t)}
+                />
               </div>
-              <EqualityLine score={city.countries?.equality_score} />
-              <LocalizedLink
-                to={`/city/${city.slug || city.id}`}
-                className="absolute inset-0 no-underline"
-                aria-label={equalityAriaLabel(city.name, city.countries?.equality_score, t)}
-              />
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </Band>

@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { useGridColumns } from '@/components/ui/useGridColumns';
-import { NETWORK_VIEWBOX } from '@/components/home/subway/cityNetworkGeometry';
 import { CityStationCard } from './CityStationCard';
 import type { DirectoryCity } from '@/hooks/useCitiesDirectory';
 import type { NextPride } from '@/utils/prideForCity';
@@ -26,24 +25,23 @@ const CITIES_GRID_BREAKPOINTS = [
 
 const GRID_CLASS = 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pb-4';
 
-/** Diagram (~205px at the 4-up width) + title + caption + two meta rows + padding.
+/** 16:10 picture (~190px at the 4-up width) + seam badge + caption + title + two
+ *  meta rows + padding.
  *  measureElement corrects from here, so this only has to be close. */
 const ESTIMATE_ROW_HEIGHT = 336;
 
 function CardSkeleton() {
   return (
-    <div aria-hidden="true" className="animate-pulse bg-muted p-4">
-      <div className="h-8 w-2/3 bg-muted" />
-      {/* The same empty diagram box the real card reserves, so the skeleton is
+    <div aria-hidden="true" className="animate-pulse overflow-hidden rounded-container bg-card">
+      {/* The same 16:10 picture slot the real card reserves, so the skeleton is
           exactly as tall as the loaded card at EVERY breakpoint rather than at one
           hardcoded height. */}
-      <svg
-        viewBox={`0 0 ${NETWORK_VIEWBOX.w} ${NETWORK_VIEWBOX.h}`}
-        className="my-2 w-full"
-        aria-hidden
-      />
-      <div className="mt-2 h-4 w-1/2 bg-muted" />
-      <div className="mt-2 h-4 w-1/3 bg-muted" />
+      <div className="aspect-[16/10] w-full bg-muted" />
+      <div className="p-4">
+        <div className="h-6 w-2/3 bg-muted" />
+        <div className="mt-2 h-4 w-1/2 bg-muted" />
+        <div className="mt-2 h-4 w-1/3 bg-muted" />
+      </div>
     </div>
   );
 }

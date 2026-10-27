@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
@@ -19,12 +19,18 @@ const ARTICLE = {
 
 describe('NewsCard', () => {
   it('renders loading state', () => {
-    const { container } = render(<MemoryRouter><NewsCard loading /></MemoryRouter>);
+    const { container } = render(
+      <MemoryRouter>
+        <NewsCard loading />
+      </MemoryRouter>,
+    );
     expect(container).toBeTruthy();
   });
   it('renders article', () => {
     const { container } = render(
-      <MemoryRouter><NewsCard article={ARTICLE} /></MemoryRouter>,
+      <MemoryRouter>
+        <NewsCard article={ARTICLE} />
+      </MemoryRouter>,
     );
     expect(container).toBeTruthy();
   });
@@ -35,7 +41,9 @@ describe('NewsCard', () => {
     'nests no interactive element inside the card link (%s variant)',
     (variant) => {
       const { container } = render(
-        <MemoryRouter><NewsCard article={ARTICLE} variant={variant} /></MemoryRouter>,
+        <MemoryRouter>
+          <NewsCard article={ARTICLE} variant={variant} />
+        </MemoryRouter>,
       );
       expectNoNestedInteractive(container);
       expect(screen.getByRole('link')).toHaveAttribute('href', '/news/story');
@@ -45,7 +53,47 @@ describe('NewsCard', () => {
   // The default variant navigated via onClick on a <div> — no href, no
   // keyboard access. It must now be a real link.
   it('makes the default variant keyboard-reachable via a real link', () => {
-    render(<MemoryRouter><NewsCard article={ARTICLE} /></MemoryRouter>);
+    render(
+      <MemoryRouter>
+        <NewsCard article={ARTICLE} />
+      </MemoryRouter>,
+    );
     expect(screen.getByRole('link', { name: 'Story' })).toBeInTheDocument();
+  });
+
+  it.each(['default', 'section-hero', 'featured', 'compact'] as const)(
+    'draws the category plate instead of a stock texture when there is no photo (%s)',
+    (variant) => {
+      const { container } = render(
+        <MemoryRouter>
+          <NewsCard
+            article={{ ...(ARTICLE as object), category_canonical: 'politics' } as never}
+            variant={variant}
+          />
+        </MemoryRouter>,
+      );
+      expect(container.querySelector('[data-fallback="station"]')).not.toBeNull();
+      expect(container.querySelector('img')).toBeNull();
+    },
+  );
+
+  it('puts the category mark on a badge over a photo, and drops it if the photo fails', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <NewsCard
+          article={
+            {
+              ...(ARTICLE as object),
+              category_canonical: 'politics',
+              image_url: 'https://example.com/a.jpg',
+            } as never
+          }
+        />
+      </MemoryRouter>,
+    );
+    expect(container.querySelector('[data-station-badge="megaphone"]')).not.toBeNull();
+    fireEvent.error(container.querySelector('img')!);
+    expect(container.querySelector('[data-station-badge]')).toBeNull();
+    expect(container.querySelector('[data-fallback="station"]')).not.toBeNull();
   });
 });

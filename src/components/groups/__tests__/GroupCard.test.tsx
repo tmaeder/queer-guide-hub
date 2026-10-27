@@ -3,7 +3,8 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 vi.mock('boneyard-js/react', () => ({
-  Skeleton: ({ children, loading, fixture }: Record<string, unknown>) => loading ? fixture : children,
+  Skeleton: ({ children, loading, fixture }: Record<string, unknown>) =>
+    loading ? fixture : children,
 }));
 
 vi.mock('@/components/layout/PageLoadingState', () => ({
@@ -35,7 +36,9 @@ describe('GroupCard', () => {
   it('should render group name', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']} />
+        <GroupCard
+          group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']}
+        />
       </MemoryRouter>,
     );
     expect(screen.getByText('Zurich Queers')).toBeInTheDocument();
@@ -44,7 +47,9 @@ describe('GroupCard', () => {
   it('should render member count', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']} />
+        <GroupCard
+          group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']}
+        />
       </MemoryRouter>,
     );
     expect(screen.getByText('42')).toBeInTheDocument();
@@ -54,7 +59,9 @@ describe('GroupCard', () => {
   it('should render description', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']} />
+        <GroupCard
+          group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']}
+        />
       </MemoryRouter>,
     );
     expect(screen.getByText(/community group/i)).toBeInTheDocument();
@@ -63,7 +70,9 @@ describe('GroupCard', () => {
   it('should render tags', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']} />
+        <GroupCard
+          group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']}
+        />
       </MemoryRouter>,
     );
     expect(screen.getByText('zurich')).toBeInTheDocument();
@@ -73,7 +82,10 @@ describe('GroupCard', () => {
   it('should show Join button when not a member', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']} onJoin={vi.fn()} />
+        <GroupCard
+          group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']}
+          onJoin={vi.fn()}
+        />
       </MemoryRouter>,
     );
     expect(screen.getByText('Join')).toBeInTheDocument();
@@ -82,7 +94,14 @@ describe('GroupCard', () => {
   it('should show Leave button when a member', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup({ is_member: true }) as unknown as React.ComponentProps<typeof GroupCard>['group']} onLeave={vi.fn()} />
+        <GroupCard
+          group={
+            makeGroup({ is_member: true }) as unknown as React.ComponentProps<
+              typeof GroupCard
+            >['group']
+          }
+          onLeave={vi.fn()}
+        />
       </MemoryRouter>,
     );
     expect(screen.getByText('Leave')).toBeInTheDocument();
@@ -100,7 +119,9 @@ describe('GroupCard', () => {
   it('should link to group detail page', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']} />
+        <GroupCard
+          group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']}
+        />
       </MemoryRouter>,
     );
     const links = screen.getAllByRole('link');
@@ -111,7 +132,11 @@ describe('GroupCard', () => {
     render(
       <MemoryRouter>
         <GroupCard
-          group={makeGroup({ is_private: true }) as unknown as React.ComponentProps<typeof GroupCard>['group']}
+          group={
+            makeGroup({ is_private: true }) as unknown as React.ComponentProps<
+              typeof GroupCard
+            >['group']
+          }
           onRequestJoin={vi.fn()}
         />
       </MemoryRouter>,
@@ -125,7 +150,10 @@ describe('GroupCard', () => {
       <MemoryRouter>
         <GroupCard
           group={
-            makeGroup({ is_private: true, has_pending_request: true }) as unknown as React.ComponentProps<typeof GroupCard>['group']
+            makeGroup({
+              is_private: true,
+              has_pending_request: true,
+            }) as unknown as React.ComponentProps<typeof GroupCard>['group']
           }
           onRequestJoin={vi.fn()}
         />
@@ -140,9 +168,45 @@ describe('GroupCard', () => {
   it('should show +N more for excess tags', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup({ tags: ['a', 'b', 'c', 'd', 'e'] }) as unknown as React.ComponentProps<typeof GroupCard>['group']} />
+        <GroupCard
+          group={
+            makeGroup({ tags: ['a', 'b', 'c', 'd', 'e'] }) as unknown as React.ComponentProps<
+              typeof GroupCard
+            >['group']
+          }
+        />
       </MemoryRouter>,
     );
     expect(screen.getByText('+2 more')).toBeInTheDocument();
+  });
+
+  it('draws the community plate without a picture, and the badge over one', () => {
+    const G = (o: Record<string, unknown>) =>
+      makeGroup(o) as unknown as React.ComponentProps<typeof GroupCard>['group'];
+    const bare = render(
+      <MemoryRouter>
+        <GroupCard group={G({})} />
+      </MemoryRouter>,
+    );
+    expect(bare.container.querySelector('[data-fallback="station"]')).not.toBeNull();
+    expect(bare.container.querySelector('[data-station-badge]')).toBeNull();
+
+    const pic = render(
+      <MemoryRouter>
+        <GroupCard group={G({ image_url: 'https://example.com/g.jpg' })} />
+      </MemoryRouter>,
+    );
+    expect(pic.container.querySelector('[data-station-badge="community"]')).not.toBeNull();
+  });
+
+  it('does not invent an "active" member count', () => {
+    render(
+      <MemoryRouter>
+        <GroupCard
+          group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByText(/active/i)).toBeNull();
   });
 });
