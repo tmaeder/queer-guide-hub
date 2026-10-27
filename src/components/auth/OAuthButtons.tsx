@@ -33,8 +33,17 @@ export function OAuthButtons({ onError }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      <Button type="button" variant="outline" onClick={handle} disabled={loading}>
-        {loading ? <TrackLoader size={18} className="mr-2" /> : <AppleIcon />}
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handle}
+        disabled={loading}
+      >
+        {loading ? (
+          <TrackLoader size={18} className="mr-2" />
+        ) : (
+          <AppleIcon />
+        )}
         {t('auth.oauth.apple', 'Continue with Apple')}
       </Button>
     </div>
@@ -44,10 +53,8 @@ export function OAuthButtons({ onError }: Props) {
 function AppleIcon() {
   return (
     <svg
-      width="64"
-      height="64"
-      data-site-icon=""
-      style={{ minWidth: 64, minHeight: 64, flexShrink: 0 }}
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       className="mr-2"
       aria-hidden

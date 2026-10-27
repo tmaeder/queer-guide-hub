@@ -18,8 +18,6 @@ const base = (children: JSX.Element, props: SVGProps<SVGSVGElement>) => (
     strokeLinejoin="round"
     aria-hidden="true"
     {...props}
-    data-site-icon=""
-    style={{ ...props.style, minWidth: 64, minHeight: 64, flexShrink: 0 }}
   >
     {children}
   </svg>

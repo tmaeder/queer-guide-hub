@@ -15,7 +15,7 @@ import type { TransitIconName } from './transitIconPaths';
 
 interface TransitIconProps extends Omit<SVGProps<SVGSVGElement>, 'name' | 'color'> {
   name: TransitIconName;
-  /** Requested box in px; on-screen illustrations have a 64px minimum. */
+  /** Requested box in px. Small uses receive optically simplified artwork. */
   size?: number;
   /** Accessible label. Omitted = decorative (aria-hidden). */
   label?: string;
@@ -98,11 +98,10 @@ export function TransitIcon({
   color,
   ticks: showTicks = true,
   hollow = false,
-  style,
   ...rest
 }: TransitIconProps) {
   const mono = Boolean(color);
-  size = displaySize(size);
+  size = mono ? size : displaySize(size);
   const compact = size < COMPACT_ICON_LIMIT;
   const def = compact ? compactIcon(name, ICON_DEFS[name]) : ICON_DEFS[name];
   // ONE viewBox, and the 8-unit bleed the spec describes is NOT needed.
@@ -133,15 +132,6 @@ export function TransitIcon({
         height={size}
         className={className}
         {...rest}
-        data-site-icon=""
-        style={{
-          ...style,
-          width: size,
-          height: size,
-          minWidth: size,
-          minHeight: size,
-          flexShrink: 0,
-        }}
         {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
       >
         <path
@@ -171,15 +161,6 @@ export function TransitIcon({
       height={size}
       className={className}
       {...rest}
-      data-site-icon=""
-      style={{
-        ...style,
-        width: size,
-        height: size,
-        minWidth: size,
-        minHeight: size,
-        flexShrink: 0,
-      }}
       {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
     >
       {/* Fills first, back to front: a later shape paints over an earlier one,
