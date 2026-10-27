@@ -14,32 +14,31 @@ describe('compact icon artwork', () => {
     expect(inkPathOf(compact)).toBe(inkPathOf(source));
   });
 
-  it('gives compact calendar artwork a wider counter without changing large markup', () => {
+  it('gives a calendar a wider counter in colour and standalone map markup', () => {
     const small = compactIcon('events', ICON_DEFS.events);
     expect(small.f![0]).toBe(ICON_DEFS.events.f![0]);
     expect(small.f![1][0]).toContain('a 11 11');
     const mono = renderToStaticMarkup(<TransitIcon name="events" size={20} color="#111111" />);
-    expect(inkPathOf(small)).toContain('a 11 11');
-    expect(mono).not.toContain('a 11 11');
+    expect(mono).toContain('a 11 11');
     expect(mono).not.toContain('currentColor');
-    expect(mono).toContain('width="64"');
+    expect(mono).toContain('width="20"');
   });
 
-  it('keeps hollow saved states distinct at the 64px rendered minimum', () => {
+  it('keeps hollow saved states distinct without losing the small-size casing', () => {
     const off = renderToStaticMarkup(<TransitIcon name="saved" size={16} hollow />);
     const on = renderToStaticMarkup(<TransitIcon name="saved" size={16} />);
     expect(off).toContain('fill="none"');
     expect(on).toContain(`fill="${ICON_DEFS.saved.hex}"`);
-    expect(off).toContain('stroke-width="9"');
-    expect(on).toContain('stroke-width="9"');
+    expect(off).toContain('stroke-width="7.5"');
+    expect(on).toContain('stroke-width="7.5"');
   });
 
-  it('preserves large details when a small requested size is raised to 64px', () => {
+  it('restores original details for a large illustration', () => {
     const large = renderToStaticMarkup(<TransitIcon name="chat" size={64} />);
     const small = renderToStaticMarkup(<TransitIcon name="chat" size={16} />);
     expect(large).toContain('a 3.5 3.5');
-    expect(small).toContain('a 3.5 3.5');
-    expect(small).toContain('width="64"');
+    expect(small).not.toContain('a 3.5 3.5');
+    expect(small).toContain('a 1 1');
     expect(large).toContain('width="64"');
   });
 });
