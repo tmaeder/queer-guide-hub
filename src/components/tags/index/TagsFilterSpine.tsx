@@ -95,7 +95,7 @@ export function TagsFilterSpine({
       >
         <div
           className={cn(
-            'mx-auto flex max-w-page flex-wrap items-center gap-x-4 gap-y-2 py-2',
+            'mx-auto flex max-w-page flex-wrap items-center gap-x-4 gap-y-2 py-1 md:py-2',
             PAGE_BLEED_GUTTER,
           )}
         >
