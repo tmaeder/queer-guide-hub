@@ -52,10 +52,23 @@ test.describe('Guides — unified hub', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
   });
 
+  test('an event guide loads its event picks', async ({ page }) => {
+    // Events reference venues both as locations and as organizers. Hydrating
+    // this published seed guide must resolve the location relationship.
+    await page.goto('/guides/berlin-pride-circuit-2026');
+    await expect(
+      page.getByRole('heading', { level: 1, name: /^Berlin Pride circuit 2026/ }),
+    ).toBeVisible({ timeout: 30_000 });
+    await expect(
+      page.locator('article[id^="pick-"] h3 a[href^="/events/"]').first(),
+    ).toBeVisible({ timeout: 30_000 });
+  });
+
   test('legacy /venues/guides redirects into /guides', async ({ page }) => {
     await page.goto('/venues/guides');
-    await page.waitForURL(/\/guides/, { timeout: 30_000 });
-    expect(page.url()).toContain('/guides');
+    await page.waitForURL('**/guides?entity=venue', { timeout: 30_000 });
+    expect(new URL(page.url()).pathname).toBe('/guides');
+    expect(new URL(page.url()).searchParams.get('entity')).toBe('venue');
   });
 
   test('legacy /marketplace/guides redirects into /guides', async ({ page }) => {
