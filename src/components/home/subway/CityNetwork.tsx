@@ -20,6 +20,9 @@ const LINE_WIDTH = 5;
  *  bounding box, so the same user-unit width would render at a different
  *  thickness per city. `vector-effect: non-scaling-stroke` pins it instead. */
 const THUMB_LINE_PX = 2.5;
+/** The backdrop is drawn large behind a masthead, so its lines are heavier
+ *  than the thumb's — same non-scaling reason, wider stroke. */
+const BACKDROP_LINE_PX = 7;
 
 /** Template lines for cities with no rail network of their own — the geometry
  *  this component replaced. Four shapes cycled by card index so neighbouring
@@ -41,7 +44,12 @@ type Variant =
   | 'card'
   /** Cropped to the city's own bounding box and fitted to the container, for
    *  square or small boxes where the full frame would letterbox to nothing. */
-  | 'thumb';
+  | 'thumb'
+  /** Cropped like `thumb` but heavier and anchored right, for drawing the
+   *  city's own network behind a page masthead (`/city/:slug`). Never falls
+   *  back to the template line — a backdrop that is the same for every
+   *  unmapped city would not be city-specific. */
+  | 'backdrop';
 
 interface Props {
   /** `cities.slug` — the key into the generated geometry. */
@@ -66,14 +74,14 @@ interface Props {
   index?: number;
 }
 
-function TrackLine({ d, track, thumb }: { d: string; track: Track; thumb?: boolean }) {
+function TrackLine({ d, track, strokePx }: { d: string; track: Track; strokePx?: number }) {
   return (
     <path
       d={d}
       fill="none"
       className={TRACK_STROKE[track]}
-      strokeWidth={thumb ? THUMB_LINE_PX : LINE_WIDTH}
-      vectorEffect={thumb ? 'non-scaling-stroke' : undefined}
+      strokeWidth={strokePx ?? LINE_WIDTH}
+      vectorEffect={strokePx ? 'non-scaling-stroke' : undefined}
       strokeLinecap="round"
       strokeLinejoin="round"
     />
@@ -102,7 +110,7 @@ function CityNetworkImpl({ slug, variant = 'card', index, className }: Props) {
   const network = slug ? CITY_NETWORKS[slug] : undefined;
 
   if (!network) {
-    if (index === undefined) return null;
+    if (index === undefined || variant === 'backdrop') return null;
     return (
       <svg
         viewBox={`0 0 ${NETWORK_VIEWBOX.w} ${NETWORK_VIEWBOX.h}`}
@@ -120,7 +128,9 @@ function CityNetworkImpl({ slug, variant = 'card', index, className }: Props) {
     );
   }
 
-  const thumb = variant === 'thumb';
+  const backdrop = variant === 'backdrop';
+  const thumb = variant === 'thumb' || backdrop;
+  const strokePx = backdrop ? BACKDROP_LINE_PX : thumb ? THUMB_LINE_PX : undefined;
   const { crop } = network;
   // The ring is drawn in user units, and the thumb's units differ per city, so
   // scale it off the crop instead of hard-coding a radius that would be a dot
@@ -134,12 +144,12 @@ function CityNetworkImpl({ slug, variant = 'card', index, className }: Props) {
           ? `${crop.x} ${crop.y} ${crop.w} ${crop.h}`
           : `0 0 ${NETWORK_VIEWBOX.w} ${NETWORK_VIEWBOX.h}`
       }
-      preserveAspectRatio="xMidYMid meet"
+      preserveAspectRatio={backdrop ? 'xMaxYMid meet' : 'xMidYMid meet'}
       className={cn(thumb ? 'h-full w-full' : 'my-2 w-full', className)}
       aria-hidden
     >
       {network.lines.map((line) => (
-        <TrackLine key={line.ref} d={line.d} track={line.track} thumb={thumb} />
+        <TrackLine key={line.ref} d={line.d} track={line.track} strokePx={strokePx} />
       ))}
       <Station x={network.interchange.x} y={network.interchange.y} r={stationRadius} />
     </svg>
