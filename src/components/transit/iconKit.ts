@@ -264,22 +264,12 @@ export function rot(d: string, turns = 1): string {
     for (let i = 0; i < t; i++) q = absolute ? [100 - q[1], q[0]] : [-q[1], q[0]];
     return q;
   };
-  return transformPath(
-    d,
-    (x, y) => turn([x, y], true),
-    (x, y) => turn([x, y], false),
-    false,
-  );
+  return transformPath(d, (x, y) => turn([x, y], true), (x, y) => turn([x, y], false), false);
 }
 
 /** Mirror a path left-to-right about x = 50. Same command coverage as `rot`. */
 export function flipX(d: string): string {
-  return transformPath(
-    d,
-    (x, y) => [100 - x, y],
-    (x, y) => [-x, y],
-    true,
-  );
+  return transformPath(d, (x, y) => [100 - x, y], (x, y) => [-x, y], true);
 }
 
 function transformPath(
@@ -306,15 +296,7 @@ function transformPath(
     } else if (cmd === 'a') {
       const [rx, ry, xr, large, sweep] = [num(), num(), num(), num(), num()];
       const [dx, dy] = rel(num(), num());
-      out.push(
-        fmt(rx),
-        fmt(ry),
-        fmt(xr),
-        String(large),
-        String(mirror ? 1 - sweep : sweep),
-        fmt(dx),
-        fmt(dy),
-      );
+      out.push(fmt(rx), fmt(ry), fmt(xr), String(large), String(mirror ? 1 - sweep : sweep), fmt(dx), fmt(dy));
     } else {
       throw new Error(`rot/flipX: unsupported command ${cmd}`);
     }
@@ -322,12 +304,25 @@ function transformPath(
   return out.join(' ');
 }
 
-/** Minimum illustration size: twice the approximately 32px reference icons.
- * Shared by direct TransitIcon calls and the icon component adapters.
- * Larger artwork keeps its requested size.
+/**
+ * The size an icon is DRAWN at for a requested size.
+ *
+ * Every icon below 28px renders larger than asked (see the ramp below). Measured on the live
+ * site, the bulk of the product asked for 12-16px — a lucide habit, where a
+ * 1.5-unit hairline glyph needs no room — and a filled v2 icon with an outline
+ * reads as a speck at that size. One rule here moves the whole product a step
+ * up instead of editing ~1,500 call sites. Large, deliberate sizes are left
+ * alone, and so is a monochrome render (map pins, the favicon), which is drawn
+ * into a container of fixed size.
  */
-export const MIN_ICON_SIZE = 64;
-
 export function displaySize(size: number): number {
-  return Math.max(MIN_ICON_SIZE, size);
+  // Measured second pass: +4 still read as small next to the marketplace
+  // department plates, so small sizes now scale by half (12→18, 16→24) and
+  // mid sizes step +6 (20→26, 24→30). 28 and up are deliberate and untouched.
+  // Third pass (user: "still much too small"): nothing drawn under 20px.
+  // Fourth pass, 2026-10-27: a 64px floor was tried and dwarfed the 10-15px
+  // labels icons sit beside. The ramp is now proportional — about 1.4x the
+  // request below 16px (≈1.4x the adjacent text), +4 up to 27px.
+  if (size <= 16) return Math.round(size * 1.4);
+  return size < 28 ? size + 4 : size;
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -36,31 +36,16 @@ function rankPoints(points: MapPointSummary[]): MapPointSummary[] {
 
 /** Publish the rail's current height as a CSS var so fixed chrome (feedback
  *  FAB, nav controls) can clear it without hardcoded offsets. */
-function useRailClearance(
-  state: 'hidden' | 'collapsed' | 'expanded',
-  railRef: RefObject<HTMLDivElement | null>,
-) {
+function useRailClearance(state: 'hidden' | 'collapsed' | 'expanded') {
   useEffect(() => {
     const root = document.documentElement;
-    const rail = railRef.current;
-    if (state === 'hidden' || !rail) {
-      root.style.removeProperty('--map-rail-clearance');
-      return;
-    }
-    // Text wrapping and the 64px icon floor can both make this taller than
-    // its old fixed estimate. Include the bottom-4 inset in the clearance.
-    const measure = () => {
-      const height = Math.ceil(rail.getBoundingClientRect().height) + 16;
-      root.style.setProperty('--map-rail-clearance', `${height}px`);
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(rail);
+    const value = state === 'expanded' ? '9.5rem' : state === 'collapsed' ? '4.5rem' : null;
+    if (value) root.style.setProperty('--map-rail-clearance', value);
+    else root.style.removeProperty('--map-rail-clearance');
     return () => {
-      observer.disconnect();
       root.style.removeProperty('--map-rail-clearance');
     };
-  }, [state, railRef]);
+  }, [state]);
 }
 
 /**
@@ -81,7 +66,6 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect, ordere
   const reducedMotion = useReducedMotion();
   const [collapsed, setCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const railRef = useRef<HTMLDivElement | null>(null);
   /**
    * Roving tabindex keyed on the station ID, not on an index.
    *
@@ -102,7 +86,7 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect, ordere
   const total = points.length;
 
   const visible = total > 0 || !!loading;
-  useRailClearance(!visible ? 'hidden' : collapsed ? 'collapsed' : 'expanded', railRef);
+  useRailClearance(!visible ? 'hidden' : collapsed ? 'collapsed' : 'expanded');
 
   useEffect(() => {
     if (!selectedId || !scrollRef.current) return;
@@ -157,10 +141,7 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect, ordere
   // First-load skeleton — avoids a 0→data pop before the first fetch resolves.
   if (loading && total === 0) {
     return (
-      <div
-        ref={railRef}
-        className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4"
-      >
+      <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4">
         <div className={shell}>
           <div className="rounded-container bg-logo-plate-ink px-4 py-1.5">
             <span className="inline-block h-3 w-28 animate-pulse bg-logo-plate/40" />
@@ -183,10 +164,7 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect, ordere
   });
 
   return (
-    <div
-      ref={railRef}
-      className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4"
-    >
+    <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4">
       <div className={shell}>
         {/* Board header — reversed plate, the way a station board names itself. */}
         {/* This is a physical ink plate, so its polarity must not invert with
