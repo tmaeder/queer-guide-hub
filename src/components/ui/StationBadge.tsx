@@ -23,11 +23,11 @@ export function StationBadge({ glyph, className }: { glyph: TransitIconName; cla
       aria-hidden="true"
       data-station-badge={glyph}
       className={cn(
-        'relative z-10 flex size-14 group-has-[[data-fallback=station]]/card:hidden shrink-0 items-center justify-center rounded-full border-[3px] border-foreground bg-background',
+        'relative z-10 flex size-20 group-has-[[data-fallback=station]]/card:hidden shrink-0 items-center justify-center rounded-full border-[3px] border-foreground bg-background',
         className,
       )}
     >
-      <TransitIcon name={glyph} size={32} ticks={false} />
+      <TransitIcon name={glyph} size={64} ticks={false} />
     </span>
   );
 }

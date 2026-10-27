@@ -292,7 +292,7 @@ function MarketplaceCardImpl({
         <div className="flex flex-col gap-2 px-4 pb-4 group-has-[[data-fallback=station]]/card:pt-4">
           {/* The subcategory's mark on the seam; it hides itself when the photo
               falls back to the plate, which already draws it. */}
-          <StationBadge glyph={glyph} className="-mt-8" />
+          <StationBadge glyph={glyph} className="-mt-10" />
           <CardBadges isAdult={isAdult} isAffiliate={isAffiliate} queerOwned={queerOwned} />
 
           <p className="text-2xs uppercase tracking-label text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">

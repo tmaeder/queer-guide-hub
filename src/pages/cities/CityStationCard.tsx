@@ -80,7 +80,7 @@ function CityStationCardImpl({ city, nextPride, selected = false }: CityStationC
       <div className={cn('flex flex-1 flex-col px-4 pb-4', badge ? '' : 'pt-4')}>
         {/* A network is a picture, so the city's mark sits on the seam; the
             station plate already carries it. */}
-        {badge && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
+        {badge && <StationBadge glyph={glyph} className="-mt-10 mb-2" />}
 
         {/* The caption is the honesty mechanism. A real network gets its mode
             named; a city with no rail gets NOTHING, so the page never claims that

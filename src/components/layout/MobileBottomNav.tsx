@@ -132,7 +132,7 @@ export function MobileBottomNav() {
             the raised contribute button, which is pulled 16px above this row.
             The class was named in the island spec's own comments for months
             and never written. */}
-        <ul className="island island-dock island-ink flex items-center gap-0.5 bg-foreground px-1.5 text-background">
+        <ul className="island island-dock island-ink no-scrollbar flex items-center gap-0.5 bg-foreground px-1.5 text-background">
           {BOTTOM_NAV_TABS.map((tab) => {
             const isExplore = tab.id === 'explore';
             const anonGated = tab.authGated && !user;

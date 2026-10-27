@@ -252,9 +252,9 @@ export function usePointLayers({
           ['linear'],
           ['zoom'],
           11,
-          ['case', ['==', ['get', 'featured'], true], 11, 9],
+          ['case', ['==', ['get', 'featured'], true], 42, 40],
           16,
-          ['case', ['==', ['get', 'featured'], true], 13, 11],
+          ['case', ['==', ['get', 'featured'], true], 44, 42],
         ],
         'circle-color': ['get', 'color'],
         // The ink border, not a halo. Blue/green/yellow measure 2.25 / 1.64
@@ -284,7 +284,7 @@ export function usePointLayers({
       filter: ['!', ['has', 'point_count']],
       layout: {
         'icon-image': ['coalesce', ['image', ['get', 'iconKey']], ['image', 'type:venues']],
-        'icon-size': ['case', ['==', ['get', 'featured'], true], 0.5, 0.42],
+        'icon-size': 1,
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
       },
@@ -309,9 +309,9 @@ export function usePointLayers({
       filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'favorited'], true]],
       layout: {
         'icon-image': 'state:saved',
-        'icon-size': 0.26,
+        'icon-size': 1,
         // Up and to the right of the dot, in icon-size units.
-        'icon-offset': [26, -26],
+        'icon-offset': [42, -42],
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
       },

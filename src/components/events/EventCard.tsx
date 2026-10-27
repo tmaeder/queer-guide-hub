@@ -202,7 +202,7 @@ export const EventCard = memo(function EventCard({
             >
               {/* Photo cards carry the type's mark on the seam; an image-less
                   card already shows it in the plate's station disc. */}
-              {resolvedImage && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
+              {resolvedImage && <StationBadge glyph={glyph} className="-mt-10 mb-2" />}
               {eventTypeTag && (
                 <p className="mb-1 text-2xs font-semibold uppercase tracking-wide text-muted-foreground truncate">
                   {eventTypeLabel}

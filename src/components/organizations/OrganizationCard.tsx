@@ -63,7 +63,7 @@ export function OrganizationCard({ org }: { org: OrgListItem }) {
         >
           {/* With a picture the role mark sits on the seam; without one the
               plate already draws it. */}
-          {src && <StationBadge glyph={glyph} className="-mt-8" />}
+          {src && <StationBadge glyph={glyph} className="-mt-10" />}
           {roleLabels.length > 0 && (
             <p className="truncate text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
               {roleLabels.join(' · ')}

@@ -307,7 +307,7 @@ function CollapsedCrumbsMenu({
           track={track}
           className={`${ringClass} transition-colors group-hover:bg-surface-container`}
         />
-        <span className="bg-background px-1">
+        <span className="rounded-badge bg-background px-1">
           <BreadcrumbEllipsis />
         </span>
       </DropdownMenuTrigger>
