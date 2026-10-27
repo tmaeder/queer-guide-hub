@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  SONNER_STYLE_HASH,
   CSP_REPORT_GROUP,
   CSP_REPORT_PATH,
   STATIC_SECURITY_HEADERS,
@@ -19,6 +21,49 @@ const directives = (csp: string) =>
   );
 
 describe('security headers', () => {
+  it('denies unspecified resources while allowing the same-origin PWA manifest', () => {
+    const dynamic = directives(buildContentSecurityPolicy('abc'));
+    const file = readFileSync(resolve(process.cwd(), 'public/_headers'), 'utf8');
+    const fallback = directives(file.match(/^ {2}Content-Security-Policy: (.+)$/m)?.[1] ?? '');
+    for (const policy of [dynamic, fallback]) {
+      expect(policy.get('default-src')).toBe("'none'");
+      expect(policy.get('manifest-src')).toBe("'self'");
+      for (const name of [
+        'script-src',
+        'style-src',
+        'img-src',
+        'media-src',
+        'font-src',
+        'connect-src',
+        'frame-src',
+        'worker-src',
+      ]) {
+        expect(policy.has(name), `${name} must not inherit default-src`).toBe(true);
+      }
+    }
+  });
+
+  it('requires a nonce for stylesheet blocks, retaining only the attribute exception', () => {
+    const policy = directives(buildContentSecurityPolicy('abc'));
+    expect(policy.get('style-src')).toBe(`'self' 'nonce-abc' ${SONNER_STYLE_HASH}`);
+    expect(policy.get('style-src-attr')).toBe("'unsafe-inline'");
+    const file = readFileSync(resolve(process.cwd(), 'public/_headers'), 'utf8');
+    const fallback = directives(file.match(/^ {2}Content-Security-Policy: (.+)$/m)?.[1] ?? '');
+    expect(fallback.get('style-src')).toBe(`'self' ${SONNER_STYLE_HASH}`);
+    expect(fallback.get('style-src-attr')).toBe("'unsafe-inline'");
+  });
+
+  it('authorizes only the exact installed Sonner stylesheet', () => {
+    const file = readFileSync(resolve(process.cwd(), 'node_modules/sonner/dist/index.mjs'), 'utf8');
+    const literal = file.match(/__insertCSS\((".*")\);/)?.[1];
+    expect(
+      literal,
+      'Sonner changed its injector; re-audit before updating the allowlist',
+    ).toBeTruthy();
+    const css = JSON.parse(literal!);
+    expect(`'sha256-${createHash('sha256').update(css).digest('base64')}'`).toBe(SONNER_STYLE_HASH);
+  });
+
   it('reports CSP violations via report-uri and report-to, backed by Reporting-Endpoints', () => {
     const csp = directives(buildContentSecurityPolicy('abc'));
     expect(csp.get('report-uri')).toBe(CSP_REPORT_PATH);
