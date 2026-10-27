@@ -303,7 +303,7 @@ export default function AdminReviewQueue() {
       changeParams({ page: String(pages), selected: null }, false);
   }, [query.data, filters.page, pages, changeParams]);
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
+    <div className="flex h-full min-h-0 flex-col overflow-y-auto bg-background md:overflow-hidden">
       <header className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-border px-4 py-4 md:px-6">
         <div>
           {/* eslint-disable-next-line queerguide/admin-ui-primitives -- compact title inside the full-height review workspace */}
@@ -510,7 +510,7 @@ export default function AdminReviewQueue() {
           <AdminTableSkeleton />
         </div>
       ) : (
-        <div className="flex min-h-0 flex-1">
+        <div className="flex min-h-[50dvh] flex-1 md:min-h-0">
           {(!mobile || !selected) && (
             <section
               className="flex min-h-0 w-full flex-col border-r border-border md:w-[38%] md:min-w-72 md:max-w-lg"

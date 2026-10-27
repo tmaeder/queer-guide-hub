@@ -95,7 +95,7 @@ export function TagsFilterSpine({
       >
         <div
           className={cn(
-            'mx-auto flex max-w-page flex-wrap items-center gap-x-4 gap-y-2 py-2',
+            'mx-auto flex max-w-page flex-wrap items-center gap-x-4 gap-y-2 py-1 md:py-2',
             PAGE_BLEED_GUTTER,
           )}
         >
@@ -109,7 +109,7 @@ export function TagsFilterSpine({
               value={q}
               onChange={(e) => onQ(e.target.value)}
               placeholder={t('tags.spine.searchPlaceholder', 'Search terms, or a synonym')}
-              className="min-h-12 pr-12"
+              className="min-h-12 pr-24"
             />
             <TransitIcon
               name="search"
