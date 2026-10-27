@@ -25,10 +25,12 @@ update public.llm_budget
 
 do $verify$
 begin
-  if not exists (select 1 from public.admin_automations
-                  where slug = 'news_orphan_reclaim'
-                    and action->>'command' like '%pipeline-enrich-news%"batch_size":20,"concurrency":4%') then
-    raise exception 'news_orphan_reclaim does not post enrich-news batch_size 20';
+  -- Asserts the old setting is gone rather than that the new one exists: a
+  -- database without this registry row (the CI snapshot) has nothing to fix.
+  if exists (select 1 from public.admin_automations
+              where slug = 'news_orphan_reclaim'
+                and action->>'command' like '%"batch_size":5,"concurrency":1%') then
+    raise exception 'news_orphan_reclaim still posts enrich-news batch_size 5';
   end if;
   if exists (select 1 from public.llm_budget where caller_key = 'pipeline-enrich-news' and daily_cap < 900) then
     raise exception 'pipeline-enrich-news budget cap below 900';
