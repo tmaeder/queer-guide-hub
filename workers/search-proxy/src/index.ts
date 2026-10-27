@@ -532,10 +532,13 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// for bug #4.
 	let ranked = explicitSort ? fused : personalizedRank(fused, signal, recent, q);
 
-	// Cold-start fallback if starved (relevance order only). v_popular_entities
-	// rows are under-hydrated ({content_type, content_id, score}); hydrate them to
-	// full hits so they don't render as empty (type/title/objectID null) cards.
-	if (!explicitSort && ranked.length < 5) {
+	// Degraded-service fallback: only when search_hybrid itself failed (timeout /
+	// error → pg null). A SUCCESSFUL answer with few or zero matches is the answer;
+	// padding it with unrelated popular rows is how `q=london` with a geo filter
+	// that matched nothing rendered "20 results" of Barcelona/Sydney/Paris.
+	// v_popular_entities rows are under-hydrated ({content_type, content_id,
+	// score}); hydrate them so they don't render as empty cards.
+	if (!explicitSort && pg === null && ranked.length < 5) {
 		const popular = await popularEntities(env, pgTypes, 30);
 		ranked = dedupeById([...ranked, ...(await hydratePopular(env, popular))]);
 	}
