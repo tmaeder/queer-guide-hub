@@ -151,13 +151,14 @@ async function run() {
   });
 
   await scenario('S4', 'Nonsense query returns gracefully (no crash)', async ({ HARD, SOFT }) => {
-    // Hybrid search: the vector leg always returns nearest neighbours, so a random
-    // string yields low-relevance hits rather than zero — that's expected.
+    // No word of the query matches anything, so the vector arm's nearest
+    // neighbours are not admitted (search_hybrid kwonly gate) and nothing is
+    // padded in: an honest zero, not 40 random towns.
     const r = await search({ query: 'zzxqwplkjhqweri', hitsPerPage: 5 });
     HARD(r.status === 200, `status ${r.status}`);
     HARD(isArr(r.json?.hits), 'hits not array');
-    SOFT((r.json?.hits?.length ?? 0) === 0 || (r.json.hits[0]?._rankingScore ?? 1) < 0.25,
-      'nonsense returned high-score hits (vector-nearest is expected, but score should be low)');
+    HARD((r.json?.hits?.length ?? 0) === 0,
+      `nonsense returned ${r.json?.hits?.length} hits: ${(r.json?.hits ?? []).map((h) => h.title).join('; ')}`);
   });
 
   // 2. Relevance / ranking (SOFT — data-dependent)
@@ -168,6 +169,45 @@ async function run() {
     SOFT(titles(r).some((t) => t.includes('berlin')) || types(r).includes('city'),
       'no Berlin-ish result in top 10');
   });
+
+  // A bare city query must rank that city's results first — also when the
+  // caller sends its own location (lat/lng, no radius). Before
+  // 99991793063124 the location turned `london` into zero matches, padded with
+  // popular Barcelona/Sydney/Paris rows; and `new york` matched the city
+  // "York" and searched "new" (New Orleans). Madrid origin is far from all.
+  for (const city of ['London', 'Berlin', 'Paris', 'New York']) {
+    await scenario(`R1-${city}`, `"${city.toLowerCase()}" ranks ${city} first, with and without a user location`, async ({ HARD }) => {
+      for (const filters of [undefined, { lat: 40.4168, lng: -3.7038 }]) {
+        const r = await search({ query: city.toLowerCase(), hitsPerPage: 10, ...(filters ? { filters } : {}) });
+        HARD(r.status === 200 && isArr(r.json?.hits), `bad response (${filters ? 'geo' : 'plain'})`);
+        const hits = r.json?.hits ?? [];
+        HARD(hits.length >= 5, `fewer than 5 hits (${filters ? 'geo' : 'plain'}): ${hits.length}`);
+        const off = hits.filter((h) => (h.city || '').toLowerCase() !== city.toLowerCase());
+        HARD(off.length === 0, `${filters ? 'geo' : 'plain'}: top 10 has non-${city} rows: ${off.map((h) => `${h.title}@${h.city}`).join('; ')}`);
+      }
+    });
+  }
+
+  // A city in the query beats an exact title elsewhere: `gay bar new york` used
+  // to lead with venues literally named "Gay Bar" in Skandia and Xativa.
+  await scenario('R1-gay-bar-new-york', '"gay bar new york" top 5 all in New York', async ({ HARD }) => {
+    const r = await search({ query: 'gay bar new york', hitsPerPage: 5 });
+    HARD(r.status === 200 && isArr(r.json?.hits) && r.json.hits.length >= 3, 'fewer than 3 hits');
+    const off = (r.json?.hits ?? []).filter((h) => (h.city || '').toLowerCase() !== 'new york');
+    HARD(off.length === 0, `non-New York rows: ${off.map((h) => `${h.title}@${h.city}`).join('; ')}`);
+  });
+
+  // Venue tab, anonymous session: no personal boosts apply, so hits must come
+  // back in SQL score order. The worker's old title-substring boost put
+  // "Cozy double-bed room close to Central London" above every London bar.
+  for (const q of ['london', 'sauna']) {
+    await scenario(`R1-venue-order-${q}`, `venue tab "${q}" is in score order`, async ({ HARD }) => {
+      const r = await search({ query: q, hitsPerPage: 10, filters: { types: ['venue'] } });
+      const s = (r.json?.hits ?? []).map((h) => h._rankingScore);
+      HARD(s.length >= 5 && s.every((x) => typeof x === 'number'), 'missing _rankingScore');
+      HARD(s.every((x, i) => i === 0 || x <= s[i - 1] + 1e-9), `not in score order: ${s.join(', ')}`);
+    });
+  }
 
   await scenario('R2', 'Semantic leg: concept query returns venues', async ({ HARD, SOFT }) => {
     const r = await search({ query: 'places to dance at night', hitsPerPage: 10 });
