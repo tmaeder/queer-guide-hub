@@ -14,6 +14,7 @@
     "/umami.js",
     "/favicon.ico",
     "/robots.txt",
+    "/cli.mjs",
     "/build-id.txt",
     "/placeholder.svg",
     "/design-audit.json",
