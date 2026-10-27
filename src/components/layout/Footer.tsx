@@ -11,7 +11,7 @@ import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
-import { paper } from '@/components/transit/iconDefs';
+import { ink, paper } from '@/components/transit/iconDefs';
 import './Footer.css';
 
 const legalLinks = [
@@ -99,7 +99,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               <span
                 aria-hidden="true"
                 className="footer-destination-icon inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-badge"
-                style={{ backgroundColor: paper }}
+                style={{ backgroundColor: paper, color: ink }}
               >
                 <intent.icon size={24} />
               </span>
