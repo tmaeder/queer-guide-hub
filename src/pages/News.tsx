@@ -28,7 +28,7 @@ import { StoryCollectionsBand } from '@/components/news/editorial/StoryCollectio
 import { WeekInReview } from '@/components/news/editorial/WeekInReview';
 import { ReaderRail } from '@/components/news/editorial/ReaderRail';
 import { NewStoriesPill } from '@/components/news/editorial/NewStoriesPill';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { PageContainer, STICKY_RAIL_UNDER_HEADER } from '@/components/layout/PageContainer';
 
 type Article = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
 
@@ -230,7 +230,7 @@ export default function News() {
             </div>
           </main>
 
-          <aside className="hidden xl:block sticky top-24 self-start">
+          <aside className={`hidden xl:block sticky ${STICKY_RAIL_UNDER_HEADER} self-start`}>
             <ReaderRail />
           </aside>
         </div>

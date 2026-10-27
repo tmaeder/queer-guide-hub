@@ -30,17 +30,8 @@ const HUMAN_UA =
 const HUBS = [
   { path: '/venues', prefix: '/venues/', min: 20 },
   { path: '/cities', prefix: '/city/', min: 20 },
-  // '/places' used to sit here asserting '/city/' links with min 20 — the
-  // byte-identical expectation to the '/cities' row above, so it covered nothing
-  // '/cities' did not, while NO row here ever asserted a country link.
-  //
-  // That combination is why #4314 could noindex /places (it LocalizedRedirects
-  // to /travel) and produce two misleading signals at once: this row went red
-  // for a route that is now correctly bodyless, and the thing that actually
-  // broke stayed invisible — /places held the only country-prefixed spec in
-  // hubLinks.ts, so every country page lost its single crawler hub link and
-  // nothing here was looking for one. See the '/countries' note there.
-  { path: '/countries', prefix: '/country/', min: 20 },
+  // The public country index is /rights; /countries is a genuine 404.
+  { path: '/rights', prefix: '/country/', min: 20 },
   { path: '/tags', prefix: '/tags/', min: 20 },
   { path: '/personalities', prefix: '/personalities/', min: 20 },
   { path: '/hotels', prefix: '/hotels/', min: 20 },

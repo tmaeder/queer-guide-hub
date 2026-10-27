@@ -9,15 +9,15 @@
  *   - the synthetic 404 for missing static-asset paths (F2)
  *
  * The CSP is generated per-request with a fresh nonce that is also
- * applied to every <script> tag in the HTML by the middleware's
+ * applied to every <script> and <style> tag in the HTML by the middleware's
  * HTMLRewriter. This removes the long-standing `'unsafe-inline'` on
  * `script-src` from the CSP — the only inline scripts now run with the
  * nonce, every other script is hashed-URL same-origin.
  *
  * Notes:
- *  - `style-src` keeps `'unsafe-inline'` for now. Removing it is more
- *    invasive (Tailwind v4 + a few inline `style=…` attributes in
- *    third-party widgets) and is tracked separately.
+ *  - Stylesheet blocks require a nonce. `style-src-attr` retains the
+ *    inline-attribute exception needed by rich content and widgets. This
+ *    does not authorize an injected <style> block.
  *  - The connect/script/frame allow-lists have been trimmed: every
  *    host that no front-end code actually loads (Microsoft Clarity,
  *    Google Analytics / Tag Manager, ipapi.co) has been removed so the
@@ -136,13 +136,20 @@ const FONT_SRC = ["'self'", 'data:', 'https://protomaps.github.io', 'https://*.s
 export const CSP_REPORT_PATH = '/api/csp-report';
 export const CSP_REPORT_GROUP = 'csp-endpoint';
 
+// Sonner 2.0.8 inserts one fixed stylesheet at module evaluation, before React
+// renders. Authorize only those exact bytes; the regression test recomputes
+// this hash from the installed package so upgrades cannot silently break it.
+export const SONNER_STYLE_HASH = "'sha256-StEaX+se6YS7pqjzrzMIA0KaX9zF/8zAhvQXZAe5epY='";
+
 export function buildContentSecurityPolicy(nonce: string): string {
   return [
-    "default-src 'self'",
+    "default-src 'none'",
+    "manifest-src 'self'",
     `script-src ${SCRIPT_SRC_HOSTS.join(' ')} 'nonce-${nonce}' ${CF_PAGES_INLINE_SCRIPT_HASHES.join(' ')}`,
-    // style-src keeps 'unsafe-inline' for Tailwind / a few inline
-    // style= attributes — tightening this is tracked separately.
-    "style-src 'self' 'unsafe-inline'",
+    // Keep attributes separate: allowing style= must not authorize arbitrary
+    // stylesheet blocks. Runtime styles use the document nonce (get-nonce).
+    `style-src 'self' 'nonce-${nonce}' ${SONNER_STYLE_HASH}`,
+    "style-src-attr 'unsafe-inline'",
     `img-src ${IMG_SRC.join(' ')}`,
     `media-src ${MEDIA_SRC.join(' ')}`,
     `font-src ${FONT_SRC.join(' ')}`,

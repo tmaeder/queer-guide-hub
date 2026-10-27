@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
-import * as Sentry from '@sentry/react';
+import * as Sentry from '@/lib/sentryClient';
 
 type RequestError = Error & { status?: number; code?: string };
 
