@@ -44,6 +44,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       { href: '/news', label: 'Read curated LGBTQ+ news' },
       { href: '/about', label: 'About Queer Guide' },
       { href: '/docs', label: 'Public API and agent documentation' },
+      { href: '/pricing', label: 'Pricing and free public access' },
       { href: '/openapi.json', label: 'OpenAPI specification' },
     ],
   },

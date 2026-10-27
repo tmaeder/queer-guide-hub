@@ -22,6 +22,11 @@ export const DEFAULT_META: RouteMeta = {
 };
 
 export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
+  '/pricing': {
+    title: 'Queer Guide pricing and free public access',
+    description:
+      'Free public guide, REST API and MCP access, optional donations and external vendor pricing.',
+  },
   '/docs': {
     title: 'Queer Guide public API and agent documentation',
     description:
