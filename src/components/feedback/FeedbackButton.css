@@ -1,0 +1,18 @@
+/* Resolve the breakpoint before first paint. A post-mount mobile check and
+   transition-all used to animate `bottom` through multiple layout shifts. */
+.contribution-trigger {
+  bottom: calc(
+    max(6rem, var(--map-rail-clearance, 0rem) + 1rem) + env(safe-area-inset-bottom, 0px)
+  );
+  /* Measured banners can change after mount. Transforms clear them without
+     relayout; Tailwind's separate `translate` property still owns hover. */
+  transform: translateY(
+    calc(0px - var(--audio-bar-clearance, 0rem) - var(--consent-bar-clearance, 0px))
+  );
+}
+
+@media (min-width: 768px) {
+  .contribution-trigger {
+    bottom: 1.5rem;
+  }
+}

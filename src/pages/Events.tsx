@@ -144,7 +144,7 @@ const Events = () => {
           STICKY_UNDER_HEADER,
         )}
       >
-        <PageContainer flush className="py-2 md:py-4">
+        <PageContainer flush className="py-0 md:py-4">
           <EventsControlBar
             search={f.search}
             onSearchChange={f.setSearch}

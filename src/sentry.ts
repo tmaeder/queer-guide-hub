@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/react';
+import { withSentry } from '@/lib/sentryClient';
 import { hasAnalyticsConsent } from '@/lib/analyticsConsent';
 
 /**
@@ -24,38 +24,41 @@ let initialized = false;
 function initSentry(): void {
   if (initialized) return;
   if (!import.meta.env.VITE_SENTRY_DSN) return;
-  initialized = true;
-  Sentry.init({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
-    environment: import.meta.env.MODE,
-    release: import.meta.env.VITE_SENTRY_RELEASE || undefined,
-    integrations: [
-      Sentry.browserTracingIntegration(),
-      // Session replay disabled: captures user content which may include PII.
-      // Re-enable with maskAllText:true + blockAllMedia:true after a privacy review.
-      Sentry.feedbackIntegration({ autoInject: false }),
-    ],
-    tracesSampleRate: 0.1,
-    // Session replay off.
-    replaysSessionSampleRate: 0,
-    replaysOnErrorSampleRate: 0,
-    beforeSend(event) {
-      // Strip user context that may contain PII before sending to Sentry.
-      if (event.user) {
-        // Keep only a stable anonymous id; drop email, username, ip_address.
-        const { id } = event.user;
-        event.user = id ? { id } : undefined;
-      }
-      return event;
-    },
-    ignoreErrors: [
-      'ResizeObserver loop limit exceeded',
-      'ResizeObserver loop completed with undelivered notifications',
-      /Loading chunk .* failed/,
-      /Failed to fetch dynamically imported module/,
-      'Lock was stolen by another request',
-      'AbortError: Lock was stolen by another request',
-    ],
+  withSentry((Sentry) => {
+    if (initialized) return;
+    initialized = true;
+    Sentry.init({
+      dsn: import.meta.env.VITE_SENTRY_DSN,
+      environment: import.meta.env.MODE,
+      release: import.meta.env.VITE_SENTRY_RELEASE || undefined,
+      integrations: [
+        Sentry.browserTracingIntegration(),
+        // Session replay disabled: captures user content which may include PII.
+        // Re-enable with maskAllText:true + blockAllMedia:true after a privacy review.
+        Sentry.feedbackIntegration({ autoInject: false }),
+      ],
+      tracesSampleRate: 0.1,
+      // Session replay off.
+      replaysSessionSampleRate: 0,
+      replaysOnErrorSampleRate: 0,
+      beforeSend(event) {
+        // Strip user context that may contain PII before sending to Sentry.
+        if (event.user) {
+          // Keep only a stable anonymous id; drop email, username, ip_address.
+          const { id } = event.user;
+          event.user = id ? { id } : undefined;
+        }
+        return event;
+      },
+      ignoreErrors: [
+        'ResizeObserver loop limit exceeded',
+        'ResizeObserver loop completed with undelivered notifications',
+        /Loading chunk .* failed/,
+        /Failed to fetch dynamically imported module/,
+        'Lock was stolen by another request',
+        'AbortError: Lock was stolen by another request',
+      ],
+    });
   });
 }
 

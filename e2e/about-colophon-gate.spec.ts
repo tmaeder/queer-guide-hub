@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFileSync, existsSync } from 'node:fs';
+import { authenticated } from './support/adminAuth';
 
 /**
  * The /about colophon is members-only, and as of 2026-09-04 it is the ONLY
@@ -10,10 +11,9 @@ import { readFileSync, existsSync } from 'node:fs';
  *
  * Runs against the DEPLOYED site (config baseURL is https://queer.guide).
  *
- * The signed-in half needs a session. It is SKIPPED rather than failed when no
- * session file is present, because CI has no credentials and a hard failure
- * there would be noise — but the skip is loud, and the signed-out half plus
- * `e2e/removed-ui-elements.spec.ts` still run. Seed it with:
+ * The signed-in half uses the configured reviewer storage state minted by
+ * auth.setup.ts. Without it, the signed-out half still runs. A standalone
+ * Supabase session file remains supported for local runs:
  *
  *   E2E_SESSION_FILE=/path/to/session.json npx playwright test about-colophon-gate
  *
@@ -91,8 +91,9 @@ test.describe('/about colophon gate', () => {
   });
 
   test('signed in: colophon renders in full', async ({ page }) => {
-    test.skip(!SESSION_FILE || !existsSync(SESSION_FILE), 'no E2E_SESSION_FILE — see file header');
-    await seedSession(page);
+    const standaloneSession = Boolean(SESSION_FILE && existsSync(SESSION_FILE));
+    test.skip(!authenticated && !standaloneSession, 'Requires the configured reviewer session');
+    if (standaloneSession) await seedSession(page);
     await page.goto('/about', { waitUntil: 'domcontentloaded' });
 
     const colophon = page.locator('#sources');

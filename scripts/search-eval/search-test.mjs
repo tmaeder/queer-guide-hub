@@ -284,7 +284,7 @@ async function run() {
   // of Par as its only city (Paris absent); `new y` led with a venue named
   // "New York" in Greece. Venue + organization twins must not both show.
   await scenario('A1b', 'Autocomplete ranks the big city first and shows no twins', async ({ HARD }) => {
-    for (const [q, want] of [['par', 'Paris'], ['new y', 'New York'], ['berl', 'Berlin'], ['barc', 'Barcelona']]) {
+    for (const [q, want] of [['ber', 'Berlin'], ['par', 'Paris'], ['new y', 'New York'], ['berl', 'Berlin'], ['barc', 'Barcelona'], ['san', 'San Francisco']]) {
       const r = await autocomplete({ query: q, limit: 8 });
       const s = r.json?.suggestions ?? [];
       HARD(s[0]?.type === 'city' && s[0]?.title === want, `${q}: first is ${s[0]?.type}/${s[0]?.title}, want city ${want}`);

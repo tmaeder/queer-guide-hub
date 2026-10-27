@@ -90,6 +90,13 @@ test.describe('doubled locale prefix', () => {
       'target does not execute Pages Functions (vite preview)',
     );
     const res = await request.get('/fr/places', { maxRedirects: 0 });
-    expect(res.status(), '/fr/places must still be served').toBe(200);
+    // /places is retired; its single-prefix form must preserve the locale
+    // through the canonical redirect, rather than being rejected by the guard.
+    expect(res.status(), '/fr/places must redirect to the travelling hub').toBe(301);
+    const destination = new URL(res.headers().location, res.url());
+    expect(destination.origin).toBe(new URL(res.url()).origin);
+    expect(destination.pathname).toBe('/fr/travel');
+    const canonical = await request.get(destination.href, { maxRedirects: 0 });
+    expect(canonical.status(), '/fr/travel must be served without another redirect').toBe(200);
   });
 });
