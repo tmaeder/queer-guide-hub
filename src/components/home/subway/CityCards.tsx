@@ -153,7 +153,7 @@ export function CityCards() {
               >
                 <CityPicture id={city.id} slug={city.slug} name={city.name} glyph={glyph} />
                 <div className={badge ? 'px-4 pb-4' : 'p-4'}>
-                  {badge && <StationBadge glyph={glyph} className="-mt-10 mb-2" />}
+                  {badge && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
                   {/* The score's meaning lives on the footer line, not as a bare
                       number beside the name — see EqualityLine. */}
                   <span className="block truncate text-title font-bold leading-tight">

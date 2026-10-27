@@ -188,7 +188,7 @@ function PersonalityCardImpl({
       <div className={showImage ? 'flex-grow px-4 pb-4' : 'flex-grow p-4'}>
         {/* A portrait card carries the profession's mark on the seam; the
             plate already draws it when there is no portrait. */}
-        {showImage && <StationBadge glyph={glyph} className="-mt-10 mb-2" />}
+        {showImage && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
         <h3 className="truncate text-title font-bold leading-tight text-foreground">
           {personality.name}
         </h3>
