@@ -17,6 +17,13 @@ async function originalSearch(query) {
   const p_query_vec = await embedQuery(env2, query);
   return p_query_vec;
 }
+class OAuthProvider { constructor(options) { this.options = options; } }
+var oauth = new OAuthProvider({
+  tokenEndpoint: '/token'
+});
+function protectedResource(origin) {
+  return { resource: \`\${origin}/authed\`, authorization_servers: [origin] };
+}
 //# sourceMappingURL=index.js.map
 `;
 
@@ -26,7 +33,7 @@ function project(t, source = fixture) {
   const directory = join(root, 'workers/mcp');
   mkdirSync(directory, { recursive: true });
   mkdirSync(join(root, 'public'));
-  for (const name of ['build-resource-repair.mjs', 'agent-resources.mjs', 'public-queries.mjs'])
+  for (const name of ['build-resource-repair.mjs', 'agent-resources.mjs', 'public-queries.mjs', 'member-metadata.mjs'])
     copyFileSync(new URL(name, import.meta.url), join(directory, name));
   writeFileSync(join(root, 'public/llms.txt'), '# Queer Guide\nWhen to use the guide.');
   writeFileSync(join(root, 'public/openapi.json'), '{"openapi":"3.1.0"}');
@@ -76,6 +83,9 @@ test('built recovery bundle registers docs, dispatches only public reads and pre
   assert.deepEqual(json(await context.rpc({}, 'get_entity_detail', {})), { original: 'get_entity_detail' });
   assert.equal(calls.length, count);
   assert.equal(await context.originalSearch('city'), null);
+  assert.deepEqual(json(context.oauth.options.scopesSupported), ['member']);
+  assert.equal(context.oauth.options.tokenEndpoint, '/token');
+  assert.deepEqual(json(context.protectedResource('https://mcp.queer.guide')).scopes_supported, ['member']);
 });
 
 test('builder refuses code changed after the recorded fingerprint', (t) => {
@@ -90,5 +100,6 @@ test('builder refuses missing or ambiguous registration/RPC/embedding anchors', 
     fixture + fixture,
     fixture.replace('async function rpc(env2, fn, args)', 'async function renamedRpc(env2, fn, args)'),
     fixture.replace('const p_query_vec = await embedQuery(env2, query);', 'const p_query_vec = null;'),
+    fixture.replace('var oauth = new OAuthProvider({', 'var oauth = new OAuthProviderChanged({'),
   ]) assert.throws(project(t, source).build, /Expected exactly one/);
 });

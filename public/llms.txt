@@ -15,6 +15,13 @@ Use Queer Guide to discover LGBTQ+ places and events, research travel destinatio
 - [Public MCP](https://mcp.queer.guide/mcp): Streamable HTTP; initialize then tools/list. Anonymous read-only search and details. Discover actual capabilities at runtime.
 - [Authenticated MCP](https://mcp.queer.guide/authed): Separate sign-in flow for member actions.
 
+## CLI, pricing and API policy
+
+- [Official CLI](https://queer.guide/cli.mjs): Dependency-free Node.js 22+ script for public pages and live search; usage and examples are in /docs.
+- [Pricing and access](https://queer.guide/pricing): Public REST and MCP reads are free, with no account, key or trial. Vendor purchases have separate prices and terms.
+- [Versioning and deprecation](https://queer.guide/docs): v1 additive changes preserve compatibility. Breaking changes use a new major version; removal is announced at least 90 days ahead with Deprecation/Sunset and migration guidance.
+- [Member OAuth metadata](https://mcp.queer.guide/.well-known/oauth-protected-resource): The member scope describes the existing broad signed-in MCP access level; use anonymous MCP for public reads.
+
 ## Reading the site
 
 - [Homepage](https://queer.guide/): Send Accept: text/markdown for Markdown or Accept: text/html for HTML. Responses vary on Accept.

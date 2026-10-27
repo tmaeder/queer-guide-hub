@@ -8,6 +8,16 @@ Live tool verification also found that search, autocomplete, recommendations and
 
 All 15 tool definitions, the existing templates, OAuth, member actions, Durable Objects and bindings remain present. No database grant or backend configuration is changed. Public HTTP is used so the recovered service requires no new binding or secret.
 
+The follow-up discovery repair publishes the existing signed-in capability as
+the OAuth scope `member` in authorization-server metadata (`scopesSupported` in
+the deployed provider) and RFC 9728 protected-resource metadata. This is broad
+member access under existing account rules, not a new granular authorization
+model. Public reads remain anonymous, existing grants keep their original scope
+values, and token exchange/sign-in behavior is unchanged. `member-metadata.mjs`
+is self-contained tested source; the builder guards both OAuth metadata anchors
+against the original recovered fingerprint. Do not advertise narrower scopes
+unless their restrictions are implemented and tested.
+
 ## Source and reproducibility
 
 - `agent-resources.mjs` is the readable and tested resource registration source.

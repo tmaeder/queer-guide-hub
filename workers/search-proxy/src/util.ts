@@ -6,7 +6,7 @@ import type { Env } from "./index";
  * `getCorsHeadersOriginLocked` for write endpoints (`/track`, `/feedback`,
  * `/onboarding`) where we want browser-side origin enforcement.
  */
-export function getCorsHeaders(_request: Request, _env: Env): HeadersInit {
+export function getCorsHeaders(_request: Request, _env: Env): Record<string, string> {
 	return {
 		"Access-Control-Allow-Origin": "*",
 		"Access-Control-Allow-Headers": "content-type, authorization",
@@ -16,7 +16,7 @@ export function getCorsHeaders(_request: Request, _env: Env): HeadersInit {
 	};
 }
 
-export function getCorsHeadersOriginLocked(request: Request, env: Env): HeadersInit {
+export function getCorsHeadersOriginLocked(request: Request, env: Env): Record<string, string> {
 	const origin = request.headers.get("Origin") || "";
 	const allowed = new Set((env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean));
 	const isAllowed = origin && allowed.has(origin);

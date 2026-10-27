@@ -49,7 +49,9 @@ export function personalizedRank(
 				if (homeCity && c === homeCity) { boost += 0.1; reasons.push({ kind: 'home_city', weight: 0.1 }); }
 				else if (recentCitySet.has(c)) { boost += 0.1; reasons.push({ kind: 'recent_city', weight: 0.1 }); }
 			}
-			if (h.featured) { boost += 0.04; reasons.push({ kind: 'featured', weight: 0.04 }); }
+			// Featured is already scored in search_hybrid (+0.02); adding it again here
+			// let a featured bar outrank saunas for `sauna`. Badge only.
+			if (h.featured) reasons.push({ kind: 'featured', weight: 0 });
 			if (seenRecently.has(`${h.content_type}:${h.id || h.content_id}`)) boost -= 0.15;
 			// Top-weighted reason wins — UI shows at most one badge per hit.
 			const topReason = reasons
@@ -65,11 +67,10 @@ export function personalizedRank(
 				if (Array.isArray(h.aliases)) {
 					for (const a of h.aliases) candidates.push(normalize(String(a)));
 				}
-				for (const t of candidates) {
-					if (t === q) { boost += 1.0; break; }
-					if (t.startsWith(q + " ") || t.startsWith(q + ",")) { boost += 0.5; break; }
-					if (t.includes(" " + q + " ") || t.endsWith(" " + q)) { boost += 0.25; break; }
-				}
+				// Exact match only. The old prefix/infix tiers (+0.5/+0.25) dwarfed the
+				// SQL scores (~0.15): for `london`, any listing titled "...Central
+				// London" outranked every real London venue.
+				if (candidates.includes(q)) boost += 1.0;
 			}
 			return { ...h, _personalScore: (h._fused || 0) + boost, _boostReason: topReason };
 		})

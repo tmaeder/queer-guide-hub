@@ -9,6 +9,9 @@ import { FavoriteButton } from '@/components/ui/favorite-button';
 import { memo, useState, useMemo } from 'react';
 import { cleanTitle, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
 import { getFallbackImage } from '@/utils/fallbackImages';
+import { StationPlate } from '@/components/ui/StationPlate';
+import { StationBadge } from '@/components/ui/StationBadge';
+import { newsGlyph } from '@/lib/cardGlyphs';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
@@ -183,6 +186,16 @@ const NewsCardImpl = ({
     thumbnailUrl: imageAsset?.thumbnail_url ?? null,
   });
   const effectiveImage = resolvedSrc && !imgFailed ? resolvedSrc : fallbackSrc;
+  // Every variant but `lead` draws the station plate instead of a stock
+  // texture when there is no usable photo. `lead` keeps the texture: its title
+  // sits in white over the image, and a plate's disc would sit under it.
+  const hasImage = Boolean(resolvedSrc) && !imgFailed;
+  const glyph = newsGlyph(
+    typeof articleAny.category_canonical === 'string' ? articleAny.category_canonical : null,
+  );
+  const plate = (className: string) => (
+    <StationPlate theme="news" fallbackKey={article.id} icon={glyph} className={className} />
+  );
 
   const readingTime = estimateReadingTime(
     article.content as string | null | undefined,
@@ -336,19 +349,23 @@ const NewsCardImpl = ({
           </div>
         </div>
         <div className="md:col-span-5 overflow-hidden rounded-container bg-muted">
-          <img
-            loading={priority ? 'eager' : 'lazy'}
-            fetchPriority={priority ? 'high' : 'auto'}
-            decoding="async"
-            referrerPolicy="no-referrer"
-            src={effectiveImage}
-            alt=""
-            role="presentation"
-            width={800}
-            height={600}
-            className="block w-full h-full object-cover aspect-[4/3] transition-transform duration-slow ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-            onError={() => setImgFailed(true)}
-          />
+          {hasImage ? (
+            <img
+              loading={priority ? 'eager' : 'lazy'}
+              fetchPriority={priority ? 'high' : 'auto'}
+              decoding="async"
+              referrerPolicy="no-referrer"
+              src={effectiveImage}
+              alt=""
+              role="presentation"
+              width={800}
+              height={600}
+              className="block w-full h-full object-cover aspect-[4/3] transition-transform duration-slow ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            plate('block w-full h-auto aspect-[4/3]')
+          )}
         </div>
       </LocalizedLink>
     );
@@ -381,20 +398,23 @@ const NewsCardImpl = ({
     return (
       <div className="relative flex flex-col md:flex-row gap-6 cursor-pointer transition-opacity hover:opacity-90">
         <div className="md:flex-[0_0_45%] rounded-container overflow-hidden">
-          {}
-          <img
-            loading={priority ? 'eager' : 'lazy'}
-            fetchPriority={priority ? 'high' : 'auto'}
-            decoding="async"
-            referrerPolicy="no-referrer"
-            src={effectiveImage}
-            alt={safeTitle}
-            width={800}
-            height={320}
-            style={{ width: '100%', height: 320, objectFit: 'cover' }}
-            className="block"
-            onError={() => setImgFailed(true)}
-          />
+          {hasImage ? (
+            <img
+              loading={priority ? 'eager' : 'lazy'}
+              fetchPriority={priority ? 'high' : 'auto'}
+              decoding="async"
+              referrerPolicy="no-referrer"
+              src={effectiveImage}
+              alt={safeTitle}
+              width={800}
+              height={320}
+              style={{ width: '100%', height: 320, objectFit: 'cover' }}
+              className="block"
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            plate('block w-full h-[320px]')
+          )}
         </div>
         <div className="flex-1 flex flex-col justify-center gap-2">
           {eyebrowParts.length > 0 && (
@@ -444,19 +464,23 @@ const NewsCardImpl = ({
   if (variant === 'compact') {
     return (
       <div className="relative flex gap-4 p-4 rounded-container hover:bg-muted">
-        <img
-          loading="lazy"
-          decoding="async"
-          referrerPolicy="no-referrer"
-          src={effectiveImage}
-          alt=""
-          role="presentation"
-          width={160}
-          height={120}
-          className="rounded-element shrink-0"
-          style={{ width: 160, height: 120, objectFit: 'cover' }}
-          onError={() => setImgFailed(true)}
-        />
+        {hasImage ? (
+          <img
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            src={effectiveImage}
+            alt=""
+            role="presentation"
+            width={160}
+            height={120}
+            className="rounded-element shrink-0"
+            style={{ width: 160, height: 120, objectFit: 'cover' }}
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          plate('block h-[120px] w-[160px] shrink-0 rounded-element')
+        )}
         <div className="flex flex-col gap-2 min-w-0 flex-1">
           {eyebrowParts.length > 0 && (
             <p className="text-2xs uppercase tracking-wider text-muted-foreground truncate">
@@ -510,28 +534,35 @@ const NewsCardImpl = ({
       <Card className="cursor-pointer transition-all duration-normal group-hover:-translate-y-0.5 group-hover:shadow-soft-hover">
         <CardHeader style={{ flexDirection: 'column' }} className="flex gap-2 p-0">
           <div className="relative overflow-hidden rounded-container">
-            <img
-              loading={priority ? 'eager' : 'lazy'}
-              fetchPriority={priority ? 'high' : 'auto'}
-              decoding="async"
-              referrerPolicy="no-referrer"
-              role="presentation"
-              src={effectiveImage}
-              alt={safeTitle}
-              width={400}
-              height={density === 'compact' ? 140 : 192}
-              style={{
-                width: '100%',
-                height: density === 'compact' ? 140 : 192,
-                objectFit: 'cover',
-                display: 'block',
-              }}
-              onError={() => setImgFailed(true)}
-            />
+            {hasImage ? (
+              <img
+                loading={priority ? 'eager' : 'lazy'}
+                fetchPriority={priority ? 'high' : 'auto'}
+                decoding="async"
+                referrerPolicy="no-referrer"
+                role="presentation"
+                src={effectiveImage}
+                alt={safeTitle}
+                width={400}
+                height={density === 'compact' ? 140 : 192}
+                style={{
+                  width: '100%',
+                  height: density === 'compact' ? 140 : 192,
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
+                onError={() => setImgFailed(true)}
+              />
+            ) : (
+              plate(density === 'compact' ? 'block w-full h-[140px]' : 'block w-full h-[192px]')
+            )}
           </div>
         </CardHeader>
 
         <CardContent style={{ flexDirection: 'column' }} className="flex gap-2 p-6">
+          {/* A photo card carries the category's mark on the seam; the plate
+              already draws it when there is no photo. */}
+          {hasImage && <StationBadge glyph={glyph} className="-mt-12" />}
           {eyebrowParts.length > 0 && (
             <p className="text-2xs uppercase tracking-wider text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
               {eyebrowParts.join(' · ')}

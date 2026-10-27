@@ -20,6 +20,8 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useFxRates } from '@/hooks/useFxRates';
 import { isAdultListing } from '@/hooks/useAdultContent';
 import { brandSlug, departmentLabel, departmentOf } from '@/lib/marketplaceTaxonomy';
+import { fineIcon } from '@/lib/marketplaceCategoryMeta';
+import { StationBadge } from '@/components/ui/StationBadge';
 import type { MarketplaceSurface } from '@/lib/affiliate/marketplace';
 import { formatListingPrice, getOutboundLink, highlightMatches } from './marketplaceHelpers';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
@@ -176,6 +178,10 @@ function MarketplaceCardImpl({
   const isAffiliate = outbound?.isAffiliate ?? false;
   const isAdult = isAdultListing(listing);
   const outOfStock = listing.in_stock === false;
+  // The same mark as the listing's subcategory chip on the category page, so a
+  // product card and the filter it was found under show one icon.
+  const department = listing.department ?? departmentOf(listing.subcategory_slug);
+  const glyph = fineIcon(listing.subcategory_fine, listing.subcategory_group, department);
 
   const queerOwned = (listing.community_owned_tags ?? []).some(
     (t) => t === 'queer_owned' || t === 'trans_owned',
@@ -209,6 +215,7 @@ function MarketplaceCardImpl({
               priority={priority}
               fallbackEntityType="marketplace"
               fallbackKey={listing.id}
+              fallbackGlyph={glyph}
             />
             {secondImage && hovered && (
               <img
@@ -252,6 +259,7 @@ function MarketplaceCardImpl({
                 rounded="none"
                 fallbackEntityType="marketplace"
                 fallbackKey={listing.id}
+                fallbackGlyph={glyph}
               />
             </LocalizedLink>
             {showFavoriteButton && (
@@ -281,7 +289,10 @@ function MarketplaceCardImpl({
       <Card className="group overflow-hidden" onMouseEnter={() => setHovered(true)}>
         {imageBlock}
 
-        <div className="p-4 flex flex-col gap-2">
+        <div className="flex flex-col gap-2 px-4 pb-4 group-has-[[data-fallback=station]]:pt-4">
+          {/* The subcategory's mark on the seam; it hides itself when the photo
+              falls back to the plate, which already draws it. */}
+          <StationBadge glyph={glyph} className="-mt-8" />
           <CardBadges isAdult={isAdult} isAffiliate={isAffiliate} queerOwned={queerOwned} />
 
           <p className="text-2xs uppercase tracking-label text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">

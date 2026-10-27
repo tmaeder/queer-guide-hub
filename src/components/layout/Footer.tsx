@@ -44,7 +44,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
 
   if (variant === 'compact') {
     return (
-      <footer className="mt-auto py-4 md:py-8">
+      <footer data-site-footer className="mt-auto py-4 md:py-8">
         <div className={cn('island-capped rounded-panel bg-card py-4', PAGE_GUTTER)}>
           <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-0 md:gap-y-2">
             <LocalizedLink to="/" className={footerLink} aria-label={siteName}>
@@ -74,7 +74,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
   }
 
   return (
-    <footer className="mt-auto py-4 md:py-8">
+    <footer data-site-footer className="mt-auto py-4 md:py-8">
       <div
         className={cn(
           'island-capped rounded-panel bg-foreground py-2 text-background md:py-4',

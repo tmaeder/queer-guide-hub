@@ -264,4 +264,26 @@ describe('MarketplaceCard', () => {
     expect(getByText('18+')).toBeTruthy();
     expect(getByRole('heading', { level: 3 }).textContent).toBe('Discreet Thing');
   });
+
+  it('carries the subcategory mark: on the plate without a photo, on a badge with one', () => {
+    const base = {
+      id: 'm9',
+      title: 'Jeans',
+      slug: 'jeans',
+      price: 10,
+      currency: 'USD',
+      department: 'apparel',
+      subcategory_group: 'bottoms',
+      subcategory_fine: 'jeans',
+    };
+    const bare = render(wrap(<MarketplaceCard listing={base as never} />));
+    expect(bare.container.querySelector('[data-fallback="station"]')).not.toBeNull();
+
+    const photo = render(
+      wrap(
+        <MarketplaceCard listing={{ ...base, images: ['https://example.com/a.jpg'] } as never} />,
+      ),
+    );
+    expect(photo.container.querySelector('[data-station-badge="trousers"]')).not.toBeNull();
+  });
 });

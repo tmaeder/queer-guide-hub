@@ -75,6 +75,21 @@ assert(
     (template) => template.uriTemplate === 'queerguide://country/{slug}',
   ),
 );
+const origin = new URL(endpoint).origin;
+const discovery = [];
+for (const path of ['/.well-known/oauth-protected-resource', '/.well-known/oauth-authorization-server']) {
+  const response = await fetch(origin + path, { signal: AbortSignal.timeout(15000) });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('Content-Type'), /application\/json/);
+  const metadata = await response.json();
+  assert.deepEqual(metadata.scopes_supported, ['member']);
+  if (path.endsWith('oauth-protected-resource')) {
+    assert.equal(metadata.resource, origin + '/authed');
+    assert.deepEqual(metadata.bearer_methods_supported, ['header']);
+    assert.equal(metadata.resource_documentation, 'https://queer.guide/docs');
+  }
+  discovery.push({ path, scopes: metadata.scopes_supported });
+}
 const report = {
   endpoint,
   checkedAt: new Date().toISOString(),
@@ -84,6 +99,7 @@ const report = {
   existingTools: tools.result.tools.map((tool) => tool.name),
   existingTemplates: templates.result.resourceTemplates.map((template) => template.uriTemplate),
   unknownResourceError: invalid.error.code,
+  discovery,
   passed: true,
 };
 if (process.argv[3]) writeFileSync(process.argv[3], JSON.stringify(report, null, 2) + '\n');

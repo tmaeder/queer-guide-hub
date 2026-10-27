@@ -2,8 +2,18 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Lock, Globe, UserPlus, UserMinus, Settings, ExternalLink } from '@/components/icons';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Image } from '@/components/ui/Image';
+import { StationBadge } from '@/components/ui/StationBadge';
+import {
+  Users,
+  Lock,
+  Globe,
+  UserPlus,
+  UserMinus,
+  Settings,
+  ExternalLink,
+} from '@/components/icons';
 import { Group } from '@/hooks/useGroups';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -97,51 +107,56 @@ export const GroupCard = ({
   const canManage = group.user_role === 'admin' || group.user_role === 'moderator';
 
   return (
-    <Card className="relative overflow-hidden">
+    <Card className="group relative overflow-hidden">
       {joy && <JoyBurst onDone={() => setJoy(false)} />}
-      <CardHeader>
+      {/* Same plate as every other card: the group's picture, or the station
+          plate with the community mark when it has none. The picture is a second
+          route to the group page, so it is out of the tab order. */}
+      <LocalizedLink
+        to={`/hub/groups/${group.id}`}
+        tabIndex={-1}
+        aria-hidden="true"
+        className="block"
+      >
+        <Image
+          src={group.image_url}
+          alt=""
+          aspect="card"
+          imageRole="cover"
+          rounded="none"
+          fallbackEntityType="default"
+          fallbackKey={group.id}
+          fallbackGlyph="community"
+        />
+      </LocalizedLink>
+      <CardHeader
+        className={group.image_url ? 'pt-0 group-has-[[data-fallback=station]]:pt-6' : undefined}
+      >
+        {group.image_url && <StationBadge glyph="community" className="-mt-8 mb-2" />}
         <div className="pb-4">
           <div className="flex items-start gap-4">
-            <Avatar>
-              <AvatarImage src={group.image_url || undefined} />
-              <AvatarFallback>{group.name.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <LocalizedLink to={`/hub/groups/${group.id}`} style={{ flex: 1 }}>
-                  <p
-                    className="font-semibold overflow-hidden hover:underline"
-                    style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 1,
-                      WebkitBoxOrient: 'vertical',
-                    }}
-                  >
-                    {group.name}
-                  </p>
-                </LocalizedLink>
+              <p className="mb-1 flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {group.is_private ? (
-                  <Lock size={16} color="hsl(var(--muted-foreground))" />
+                  <Lock size={12} aria-hidden="true" />
                 ) : (
-                  <Globe size={16} color="hsl(var(--muted-foreground))" />
+                  <Globe size={12} aria-hidden="true" />
                 )}
-              </div>
+                {group.is_private ? 'Private group' : 'Public group'}
+                {group.city ? ` · ${group.city}` : ''}
+              </p>
+              <LocalizedLink to={`/hub/groups/${group.id}`} className="no-underline">
+                <h3 className="text-title font-bold leading-tight truncate hover:underline">
+                  {group.name}
+                </h3>
+              </LocalizedLink>
 
-              <div className="flex items-center gap-4">
+              <div className="mt-1 flex items-center gap-4">
                 <div className="flex items-center gap-1">
                   <Users size={12} />
                   <p className="text-sm font-medium">{group.member_count}</p>
                   <p className="text-sm text-muted-foreground">members</p>
                 </div>
-                {group.member_count > 0 && (
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
-                    <p className="text-xs text-muted-foreground">
-                      {Math.floor(group.member_count * 0.3)} active
-                    </p>
-                  </div>
-                )}
                 {group.user_role && (
                   <Badge variant="secondary" className="border-0">
                     <span className="text-xs">{group.user_role}</span>
