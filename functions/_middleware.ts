@@ -68,7 +68,7 @@ import {
   isEdgeEndpoint,
   appRedirect,
 } from './_lib/agentHttp';
-import { DOCS_MARKDOWN, pageMarkdown } from './_lib/agentContent';
+import { PUBLIC_DOCUMENTS, pageMarkdown } from './_lib/agentContent';
 import { STATIC_ROUTE_BODY } from './_lib/routeBody';
 import { redirectReportPage, setRedirectReportHeaders } from './_lib/redirectReportPage';
 
@@ -299,7 +299,10 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const publicPage = Object.hasOwn(STATIC_ROUTE_BODY, cleanPath)
     ? STATIC_ROUTE_BODY[cleanPath]
     : undefined;
-  const negotiated = !!publicPage || cleanPath === '/docs';
+  const document = Object.hasOwn(PUBLIC_DOCUMENTS, cleanPath)
+    ? PUBLIC_DOCUMENTS[cleanPath]
+    : undefined;
+  const negotiated = !!publicPage || !!document;
   if (negotiated && representation === null) {
     return new Response('Supported representations: text/html, text/markdown. See /docs.', {
       status: 406,
@@ -307,19 +310,18 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     });
   }
   if (negotiated && representation === 'markdown') {
-    const response = markdownResponse(
-      cleanPath === '/docs' ? DOCS_MARKDOWN : pageMarkdown(publicPage!),
-    );
+    const response = markdownResponse(document?.markdown ?? pageMarkdown(publicPage!));
     return request.method === 'HEAD' ? new Response(null, response) : response;
   }
-  if (cleanPath === '/docs') {
+  if (document) {
     const escape = (text: string) =>
       text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
-    const sections = DOCS_MARKDOWN.split('\n\n')
+    const sections = document.markdown
+      .split('\n\n')
       .map((block) => {
         if (block.startsWith('# ')) return `<h1>${escape(block.slice(2))}</h1>`;
         if (block.startsWith('## ')) return `<h2>${escape(block.slice(3))}</h2>`;
@@ -330,7 +332,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const response = new Response(
       request.method === 'HEAD'
         ? null
-        : `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Queer Guide public API and agent documentation</title><meta name="description" content="Public REST API, OpenAPI, Markdown and MCP instructions for Queer Guide."><link rel="canonical" href="https://queer.guide/docs"><style>body{font:1rem/1.7 system-ui,sans-serif;max-width:64rem;margin:3rem auto;padding:0 1.5rem}a{color:inherit}p{overflow-wrap:anywhere}</style></head><body><main>${sections}</main></body></html>`,
+        : `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escape(document.title)}</title><meta name="description" content="${escape(document.description)}"><link rel="canonical" href="https://queer.guide${cleanPath}"><style>body{font:1rem/1.7 system-ui,sans-serif;max-width:64rem;margin:3rem auto;padding:0 1.5rem}a{color:inherit}p{overflow-wrap:anywhere}</style></head><body><main>${sections}</main></body></html>`,
       {
         headers: {
           'Content-Type': 'text/html; charset=utf-8',

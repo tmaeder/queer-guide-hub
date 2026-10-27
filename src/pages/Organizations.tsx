@@ -1,28 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { LifeBuoy, Megaphone, Newspaper, ShoppingBag, Building2 } from '@/components/icons';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { LifeBuoy, Megaphone, Newspaper, ShoppingBag } from '@/components/icons';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { OrganizationCard } from '@/components/organizations/OrganizationCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
-import { useOrganizationsList, type OrgListItem, type OrgRole } from '@/hooks/useOrganization';
+import { useOrganizationsList, type OrgRole } from '@/hooks/useOrganization';
 import { PageContainer } from '@/components/layout/PageContainer';
-
-const ROLE_LABEL: Partial<Record<OrgRole, string>> = {
-  support: 'Support organization',
-  advocacy: 'Advocacy group',
-  publisher: 'News outlet',
-  seller: 'Shop',
-  venue: 'Physical venue',
-  organizer: 'Organiser',
-  community: 'Community',
-  hotel: 'Accommodation',
-  brand: 'Brand',
-  affiliate_partner: 'Partner',
-};
 
 const TABS: { id: string; label: string; role?: OrgRole }[] = [
   { id: 'all', label: 'All' },
@@ -36,58 +21,6 @@ const TABS: { id: string; label: string; role?: OrgRole }[] = [
   { id: 'publisher', label: 'News outlets', role: 'publisher' },
   { id: 'seller', label: 'Shops', role: 'seller' },
 ];
-
-/** `2011-04-01` / `2011` -> `2011`. Wikidata gives a full date; only the year is honest. */
-function lifespanYear(value: string | null): string | null {
-  const m = value?.match(/^(\d{4})/);
-  return m ? m[1] : null;
-}
-
-function OrgCard({ org }: { org: OrgListItem }) {
-  const blurb = org.editorial_hook || org.description;
-  const dissolved = lifespanYear(org.dissolved_at);
-  return (
-    <LocalizedLink to={`/organizations/${org.slug}`}>
-      <Card className="h-full transition-colors hover:bg-muted">
-        <CardContent className="flex flex-col gap-2 p-4">
-          <div className="flex items-center gap-2">
-            {org.logo_url ? (
-              <img
-                src={org.logo_url}
-                alt=""
-                className="h-10 w-10 shrink-0 rounded-element object-contain"
-              />
-            ) : (
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-element text-muted-foreground bg-surface-container">
-                <Building2 size={18} aria-hidden="true" />
-              </span>
-            )}
-            <div className="min-w-0">
-              <div className="truncate font-medium">{org.name}</div>
-              {org.website_domain && (
-                <div className="truncate text-13 text-muted-foreground">{org.website_domain}</div>
-              )}
-            </div>
-          </div>
-          {blurb && <p className="line-clamp-2 text-15 text-muted-foreground">{blurb}</p>}
-          <div className="mt-1 flex flex-wrap gap-2">
-            {org.roles.map((r) =>
-              ROLE_LABEL[r] ? (
-                <Badge key={r} variant="secondary">
-                  {ROLE_LABEL[r]}
-                </Badge>
-              ) : null,
-            )}
-            {/* A dissolved organization must say so on the card. Without this it
-                reads as a body you can still contact — the reason dissolved rows
-                are deranked in search rather than presented as live. */}
-            {dissolved && <Badge variant="outline">Dissolved {dissolved}</Badge>}
-          </div>
-        </CardContent>
-      </Card>
-    </LocalizedLink>
-  );
-}
 
 export default function Organizations() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -154,17 +87,17 @@ export default function Organizations() {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 9 }).map((_, i) => (
-            <Skeleton key={i} variant="rectangular" height={140} className="rounded-container" />
+            <Skeleton key={i} variant="rectangular" height={300} className="rounded-container" />
           ))}
         </div>
       ) : orgs.length === 0 ? (
         <p className="text-muted-foreground">No organizations yet.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {orgs.map((org) => (
-            <OrgCard key={org.id} org={org} />
+            <OrganizationCard key={org.id} org={org} />
           ))}
         </div>
       )}

@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Queer Guide public content API",
-    "version": "1.0.0",
-    "description": "Anonymous, read-only access to Queer Guide introductory guide pages and canonical links. See /docs for MCP search, privacy limits and usage guidance.",
+    "version": "1.1.0",
+    "description": "Anonymous, read-only access to Queer Guide introductory guide pages and canonical links. See /docs for MCP search, privacy limits and usage guidance. Versioning: additive changes stay in v1; breaking changes use a new major URL. Deprecation is announced at least 90 days before removal using Deprecation, Sunset and migration links; no removal is currently scheduled.",
     "contact": {
       "name": "Queer Guide",
       "url": "https://queer.guide/contact"
@@ -78,7 +78,20 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "prefix",
+            "in": "query",
+            "required": false,
+            "description": "Return only catalog slugs starting with this prefix. Omit it to list all pages.",
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "example": "travel"
+          }
+        ]
       }
     },
     "/api/v1/pages/{slug}": {
@@ -292,6 +305,22 @@
             "type": "string",
             "description": "Documentation URL.",
             "format": "uri"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "MemberMcpOAuth": {
+        "type": "oauth2",
+        "description": "Only for the separately deployed authenticated MCP endpoint. Public REST operations are anonymous (security: []). The single member scope describes existing account-level member reads and writes, subject to account rules; it does not provide granular read/write separation.",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://mcp.queer.guide/authorize",
+            "tokenUrl": "https://mcp.queer.guide/token",
+            "refreshUrl": "https://mcp.queer.guide/token",
+            "scopes": {
+              "member": "Access the signed-in member MCP tools, including submissions, favorites and trips, subject to existing account permissions."
+            }
           }
         }
       }

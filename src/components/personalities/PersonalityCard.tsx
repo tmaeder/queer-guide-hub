@@ -3,7 +3,9 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Star } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
-import { RouteBullet } from '@/components/transit/RouteBullet';
+import { StationPlate } from '@/components/ui/StationPlate';
+import { StationBadge } from '@/components/ui/StationBadge';
+import { personGlyph } from '@/lib/cardGlyphs';
 import type { Personality } from '@/hooks/usePersonalities';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
@@ -100,6 +102,7 @@ function PersonalityCardImpl({
       (thumbnailUrl ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w` : undefined))
     : undefined;
   const showImage = Boolean(resolvedImageUrl) && !imgError;
+  const glyph = personGlyph(personality.profession);
   const metaParts = [era, personality.nationality].filter(Boolean) as string[];
   const href = `/personalities/${personality.slug ?? personality.id}`;
 
@@ -168,20 +171,10 @@ function PersonalityCardImpl({
             className="personality-card-image absolute inset-0 h-full w-full object-cover object-top"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span aria-hidden="true" className="font-display text-headline text-muted-foreground">
-              {getInitials(personality.name)}
-            </span>
-          </div>
+          // No portrait: the station plate with the profession's mark, the
+          // same image-less art as venue, event and hotel cards.
+          <StationPlate theme="person" fallbackKey={personality.id} icon={glyph} />
         )}
-
-        {/* The station marker. Makes a person legible as a P-line stop
-            wherever this card travels — tag pages, profession pages, search. */}
-        <RouteBullet
-          type="personality"
-          size={26}
-          className="pointer-events-none absolute left-2 top-2"
-        />
 
         {personality.is_featured && (
           <div className="pointer-events-none absolute right-2 top-2 flex select-none items-center gap-1 rounded-badge bg-foreground px-2 py-1 text-2xs font-bold text-background">
@@ -192,7 +185,10 @@ function PersonalityCardImpl({
       </div>
 
       {/* Content */}
-      <div className="flex-grow p-4">
+      <div className={showImage ? 'flex-grow px-4 pb-4' : 'flex-grow p-4'}>
+        {/* A portrait card carries the profession's mark on the seam; the
+            plate already draws it when there is no portrait. */}
+        {showImage && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
         <h3 className="truncate text-title font-bold leading-tight text-foreground">
           {personality.name}
         </h3>

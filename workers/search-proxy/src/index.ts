@@ -55,6 +55,7 @@ import {
 	type ValidatedFilters,
 } from "./validation";
 import { timingSafeEqual } from "../../_shared/timing-safe";
+import { quotaHeaders } from "./quota";
 
 export interface Env {
 	AI: Ai;
@@ -106,14 +107,15 @@ const KEYWORD_ONLY_RPC_TIMEOUT_MS = 9000;
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		const url = new URL(request.url);
-		const cors = WRITE_PATHS.has(url.pathname)
+		const cors = { ...(WRITE_PATHS.has(url.pathname)
 			? getCorsHeadersOriginLocked(request, env)
-			: getCorsHeaders(request, env);
+			: getCorsHeaders(request, env)) };
 		if (request.method === "OPTIONS") return new Response(null, { headers: cors });
 
-		// Rate limit: per-IP, per-endpoint sliding 1m window. /health bypasses.
+		// Existing per-IP, per-endpoint fixed-minute quota. /health bypasses.
 		if (url.pathname !== "/health") {
 			const rl = await rateLimit(env, request);
+			Object.assign(cors, quotaHeaders(rl.limit, rl.remaining, rl.reset));
 			if (!rl.ok) {
 				return json(
 					{ error: "rate_limited", code: "rate_limited", retry_after: rl.retryAfter, limit: rl.limit, window_seconds: 60 },
@@ -530,10 +532,13 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// for bug #4.
 	let ranked = explicitSort ? fused : personalizedRank(fused, signal, recent, q);
 
-	// Cold-start fallback if starved (relevance order only). v_popular_entities
-	// rows are under-hydrated ({content_type, content_id, score}); hydrate them to
-	// full hits so they don't render as empty (type/title/objectID null) cards.
-	if (!explicitSort && ranked.length < 5) {
+	// Degraded-service fallback: only when search_hybrid itself failed (timeout /
+	// error → pg null). A SUCCESSFUL answer with few or zero matches is the answer;
+	// padding it with unrelated popular rows is how `q=london` with a geo filter
+	// that matched nothing rendered "20 results" of Barcelona/Sydney/Paris.
+	// v_popular_entities rows are under-hydrated ({content_type, content_id,
+	// score}); hydrate them so they don't render as empty cards.
+	if (!explicitSort && pg === null && ranked.length < 5) {
 		const popular = await popularEntities(env, pgTypes, 30);
 		ranked = dedupeById([...ranked, ...(await hydratePopular(env, popular))]);
 	}
@@ -1401,7 +1406,7 @@ const RATE_LIMITS: Record<string, number> = {
 };
 const RATE_LIMIT_DEFAULT = 60;
 
-async function rateLimit(env: Env, request: Request): Promise<{ ok: boolean; retryAfter: number; limit: number }> {
+async function rateLimit(env: Env, request: Request): Promise<{ ok: boolean; retryAfter: number; limit: number; remaining: number; reset: number }> {
 	const ip = request.headers.get("CF-Connecting-IP") || "anon";
 	const path = new URL(request.url).pathname;
 	const limit = RATE_LIMITS[path] ?? RATE_LIMIT_DEFAULT;
@@ -1409,8 +1414,9 @@ async function rateLimit(env: Env, request: Request): Promise<{ ok: boolean; ret
 	const nowMin = Math.floor(nowSec / 60);
 	const key = `rl:${path}:${ip}:${nowMin}`;
 	const cur = Number((await env.SESSION_CACHE.get(key)) ?? 0);
-	if (cur >= limit) return { ok: false, retryAfter: 60 - (nowSec % 60), limit };
+	const reset = 60 - (nowSec % 60);
+	if (cur >= limit) return { ok: false, retryAfter: reset, limit, remaining: 0, reset };
 	// Fire and forget increment. Lossy under contention but fine for rate limit.
 	env.SESSION_CACHE.put(key, String(cur + 1), { expirationTtl: 120 }).catch(() => void 0);
-	return { ok: true, retryAfter: 0, limit };
+	return { ok: true, retryAfter: 0, limit, remaining: Math.max(0, limit - cur - 1), reset };
 }

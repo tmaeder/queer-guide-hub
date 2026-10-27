@@ -21,12 +21,18 @@ export function publicPages(request: Request): Response {
     return response;
   }
   const url = new URL(request.url);
-  if (url.search)
+  const prefix = url.searchParams.get('prefix') ?? '';
+  if (
+    [...url.searchParams.keys()].some((key) => key !== 'prefix') ||
+    url.searchParams.getAll('prefix').length > 1 ||
+    Array.from(prefix).length > 128 ||
+    (url.pathname.replace(/\/$/, '') !== '/api/v1/pages' && url.search)
+  )
     return apiError(
       400,
       'INVALID_PARAMETERS',
-      'Query parameters are not supported.',
-      'Use /api/v1/pages or /api/v1/pages/home without a query string.',
+      'Only a single prefix filter of at most 128 characters is supported on the page list.',
+      'Use /api/v1/pages?prefix=travel; individual page requests do not accept query parameters.',
     );
   let slug: string;
   try {
@@ -42,10 +48,12 @@ export function publicPages(request: Request): Response {
   const body = slug
     ? pageRecord(slug)
     : {
-        pages: Object.keys(PUBLIC_PAGES).map((key) => {
-          const page = pageRecord(key)!;
-          return { slug: key, title: page.title, url: page.url };
-        }),
+        pages: Object.keys(PUBLIC_PAGES)
+          .filter((key) => key.startsWith(prefix))
+          .map((key) => {
+            const page = pageRecord(key)!;
+            return { slug: key, title: page.title, url: page.url };
+          }),
       };
   if (!body)
     return apiError(

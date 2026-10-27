@@ -1,17 +1,8 @@
 import { EventCard } from '@/components/events/EventCard';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import { spansForPreset } from '@/components/discovery';
 import type { Database } from '@/integrations/supabase/types';
 
 type Event = Database['public']['Tables']['events']['Row'];
-
-const EVENT_SPAN_CLASS: Record<string, string> = {
-  sm: 'col-span-12 sm:col-span-6 md:col-span-4',
-  md: 'col-span-12 sm:col-span-6 md:col-span-4',
-  lg: 'col-span-12 sm:col-span-6 md:col-span-6',
-  wide: 'col-span-12 md:col-span-8',
-  tall: 'col-span-12 sm:col-span-6 md:col-span-4 row-span-2',
-};
 
 interface EventGridViewProps {
   events: Event[];
@@ -19,13 +10,15 @@ interface EventGridViewProps {
   onUpdateAttendance?: (eventId: string, status: 'going' | 'interested' | 'not_going') => void;
 }
 
-/** Mosaic grid of EventCards. */
+/**
+ * Even grid of EventCards — the same columns as the venues grid. It was a
+ * mosaic whose first tiles spanned half the row, which blew an image-less
+ * card's station plate up to ~650px and, on a short list, left two giant
+ * cards and nothing else.
+ */
 export function EventGridView({ events, onViewDetails, onUpdateAttendance }: EventGridViewProps) {
   return (
-    <StaggerGrid
-      className="grid grid-cols-12 gap-4 md:gap-4"
-      itemClassName={(i) => EVENT_SPAN_CLASS[spansForPreset('mosaic', i, events.length)]}
-    >
+    <StaggerGrid className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {events.map((event) => (
         <EventCard
           key={event.id}

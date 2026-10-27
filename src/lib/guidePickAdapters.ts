@@ -134,7 +134,7 @@ const ADAPTERS: Partial<Record<GuideEntityType, Adapter>> = {
   event: {
     table: 'events',
     select:
-      'id, slug, title, images, event_type, start_date, end_date, venue_name, city, latitude, longitude, venues(latitude, longitude)',
+      'id, slug, title, images, event_type, start_date, end_date, venue_name, city, latitude, longitude, venues!events_venue_id_fkey(latitude, longitude)',
     toDisplay: (r) => {
       const start = fmtDate(r.start_date);
       const end = fmtDate(r.end_date);
