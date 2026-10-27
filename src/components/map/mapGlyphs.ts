@@ -1,7 +1,6 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { Map as MaplibreMap } from 'maplibre-gl';
-import { MIN_ICON_SIZE } from '@/components/transit/iconKit';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { GLYPH_DEFS } from './mapIcons';
@@ -22,7 +21,7 @@ import { ink } from '@/lib/mapTokens';
  * still renders). Never throws into the map lifecycle.
  */
 
-const GLYPH_PX = MIN_ICON_SIZE; // logical size; rendered at 2× for retina
+const GLYPH_PX = 20; // logical size; rendered at 2× for retina
 const SCALE = 2;
 
 function rasterize(name: TransitIconName): Promise<ImageData | null> {
