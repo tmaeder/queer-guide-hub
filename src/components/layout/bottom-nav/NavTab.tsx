@@ -41,11 +41,11 @@ interface NavTabProps {
 // (`li a:not(.no-underline)` in index.css) forces `display:inline`, which would
 // override the `flex` utility and left-align the icon under the centred label.
 const linkBase =
-  'group flex h-16 flex-col items-center justify-center gap-1 rounded-container no-underline select-none text-2xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-background';
+  'group flex h-24 flex-col items-center justify-center gap-1 rounded-container no-underline select-none text-2xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-background';
 // The active cue is a pill behind the ICON only (not a paper slab over the
 // whole slot): the slab read as a second button beside the contribute button.
 const iconWrap =
-  'relative flex h-8 w-14 items-center justify-center rounded-full transition-colors';
+  'relative flex h-16 w-16 items-center justify-center rounded-full transition-colors';
 
 /**
  * One bottom-nav slot: a localized link with an active pill, icon (or avatar),

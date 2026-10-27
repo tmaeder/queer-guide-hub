@@ -289,24 +289,9 @@ export function Header() {
   // PRIMARY_NAV, leaving /venues (the largest catalog) and /people unreachable
   // from desktop chrome. Never re-inline it.
   //
-  // Colour appears once as the active route rule. At tablet widths the labels
-  // collapse to icons; from xl upward the row has room to show all seven
-  // labels without a second bar.
-  //
-  // The collapse is VISUAL ONLY, and that now needs saying precisely, because
-  // an earlier version of this comment claimed the labels "remain the links'
-  // accessible names and native titles" — conflating the two. They did not:
-  // the label span is `hidden xl:inline`, i.e. `display: none`, which
-  // contributes nothing to the accessible name. Measured on prod at 1100px,
-  // every tab's `innerText` was `""` and the only name source was `title` —
-  // the textbook accname antipattern, since `title` is last-resort, is not
-  // surfaced to touch, and is suppressed by several AT configurations. The
-  // explicit `aria-label` below is what makes the name real; `title` stays
-  // for the native tooltip only.
-  //
-  // It also brings the tabs into `e2e/ux-accessibility-remediation.spec.ts`,
-  // whose 44×44 sweep selects `header a[aria-label]` and so could never see
-  // them while they were named by `title`.
+  // Navigation is text-only at every desktop width. Keep every label visible
+  // and let the row scroll when space is tight rather than replacing it with
+  // a small illustration.
   const renderDesktopNav = (onInk: boolean) => (
     // Distinct landmark name — the mobile bottom bar owns "Navigation";
     // duplicate nav landmark names break rotor navigation (landmark-unique).
@@ -314,10 +299,10 @@ export function Header() {
     // md:hidden, so `hidden lg:flex` left 768–1023px with no primary nav.
     <nav
       aria-label={t('header.primaryNavigation', 'Primary')}
-      className="hidden h-12 min-w-0 items-center md:flex"
+      className="no-scrollbar hidden h-12 min-w-0 items-center overflow-x-auto md:flex"
     >
       {INTENT_NAV.map((intent) => {
-        const { to, labelKey, fallback, id, icon: Icon } = intent;
+        const { to, labelKey, fallback, id } = intent;
         const active = isIntentActive(intent, path);
         const label = t(labelKey, fallback);
         const track = INTENT_TRACK[id] ?? 'pink';
@@ -329,12 +314,7 @@ export function Header() {
             aria-label={label}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              // `w-11`, not `w-10`. The base rule in index.css only applies its
-              // 44px min-WIDTH arm to `button[aria-label]` / `[role=button]`,
-              // so these anchors matched neither arm and sat at 40px for the
-              // whole 768–1279 band. 7×44 = 308px, 28px more than before,
-              // which the row's width budget absorbs.
-              'group relative grid h-11 w-11 shrink-0 place-items-center rounded-container no-underline transition-colors xl:w-auto xl:min-w-11 xl:px-2',
+              'group relative grid h-11 min-w-11 shrink-0 place-items-center rounded-container px-2 no-underline transition-colors',
               active
                 ? onInk
                   ? 'text-background'
@@ -347,12 +327,7 @@ export function Header() {
                   : 'text-muted-foreground hover:bg-surface-container hover:text-foreground',
             )}
           >
-            {/* The icon and label are both sourced from INTENT_NAV, so the
-                compact row cannot drift from the mobile/navigation model. */}
-            <span className="flex items-center gap-1.5 whitespace-nowrap text-13 font-bold">
-              <Icon size={18} className="shrink-0" />
-              <span className="hidden xl:inline">{label}</span>
-            </span>
+            <span className="whitespace-nowrap text-13 font-bold">{label}</span>
             <span
               aria-hidden
               className={cn(
