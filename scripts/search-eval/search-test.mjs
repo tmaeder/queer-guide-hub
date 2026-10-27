@@ -209,6 +209,13 @@ async function run() {
     });
   }
 
+  // A bare city name on a type that carries no city (news, people) used to
+  // return 0: the city was stripped and only rows located there matched.
+  await scenario('R1-news-city', 'News tab "berlin" returns articles, newest-leaning', async ({ HARD }) => {
+    const r = await search({ query: 'berlin', hitsPerPage: 5, filters: { types: ['news'] } });
+    HARD(r.status === 200 && (r.json?.hits?.length ?? 0) > 0, `news/berlin returned ${r.json?.hits?.length ?? 0} hits`);
+  });
+
   await scenario('R2', 'Semantic leg: concept query returns venues', async ({ HARD, SOFT }) => {
     const r = await search({ query: 'places to dance at night', hitsPerPage: 10 });
     HARD(r.status === 200 && isArr(r.json?.hits), 'bad response');
