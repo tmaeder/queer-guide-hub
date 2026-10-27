@@ -1,3 +1,4 @@
+import { getCspNonce } from '@/lib/cspNonce';
 import * as React from 'react';
 import { ChevronLeft, ChevronRight } from '@/components/icons';
 import { DayPicker } from 'react-day-picker';
@@ -21,7 +22,7 @@ function Calendar({ showOutsideDays = true, style, ...props }: CalendarProps) {
         }}
         {...props}
       />
-      <style>{`
+      <style nonce={getCspNonce()}>{`
         .rdp-root {
           --rdp-accent-color: hsl(var(--foreground));
           --rdp-accent-background-color: hsl(var(--foreground));

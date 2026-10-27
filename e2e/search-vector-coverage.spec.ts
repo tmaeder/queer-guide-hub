@@ -22,25 +22,20 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
  * observe index state at all. Nothing else in the suite would notice the
  * vector index decaying.
  *
- * WHY THE CONTROL IS THE LOAD-BEARING HALF. The obvious assertion — "a
- * semantic query returns results" — is VACUOUS here, and that was measured
- * rather than reasoned about: `"zxqvwk plorbnat frumious"` returns 40 total
- * hits, because a nearest-neighbour arm returns neighbours for any vector,
- * including one built from gibberish. So presence proves nothing and only
- * COMPOSITION does. Measured on prod 2026-09-20, three consecutive runs each:
+ * The meaningful query must retrieve organizations, not merely arbitrary
+ * results. Measured on prod 2026-09-20, three consecutive runs each:
  *
  *   "nonprofit advocacy group supporting trans rights"  ->  12 of 20 organization
  *   "zxqvwk plorbnat frumious"                          ->   0 of 20 organization
  *
- * The control shares the `search_hybrid` path, the fusion and the limit with
- * the real query and differs only in carrying meaning, so a run where both
- * pass is a run where retrieval is genuinely discriminating. Assert the
- * control FIRST: if it ever starts returning organizations, the main
- * assertion has stopped meaning anything and must not be read as a pass.
+ * The control shares the live search path but carries no meaning. Search now
+ * preserves a successful empty RPC result instead of topping it up with
+ * unrelated popular entities. Requiring neighbours for gibberish asserted
+ * that removed padding bug. The control must stay empty; the meaningful query
+ * below remains the positive control for organization retrieval.
  *
- * Thresholds sit well inside the measured gap (>= 4 against 12, <= 1 against
- * 0) so ordinary corpus drift does not flake this, while a type dropping out
- * of the vector index does fail it.
+ * The organization threshold sits well inside the measured gap (>= 4 against
+ * 12), while a type dropping out of the vector index still fails it.
  */
 
 const SEARCH_URL = process.env.E2E_SEARCH_URL ?? 'https://search.queer.guide/search';
@@ -53,7 +48,6 @@ const SEMANTIC_QUERY = 'nonprofit advocacy group supporting trans rights';
 const CONTROL_QUERY = 'zxqvwk plorbnat frumious';
 
 const MIN_ORGS = 4; // measured 12
-const MAX_CONTROL_ORGS = 1; // measured 0
 
 type Hit = { type?: string; title?: string };
 
@@ -73,16 +67,11 @@ async function search(request: APIRequestContext, query: string): Promise<Hit[]>
 const orgCount = (hits: Hit[]) => hits.filter((h) => h.type === 'organization').length;
 
 test.describe('search vector coverage (live worker, prod)', () => {
-  test('a meaningless query retrieves no organizations — the control', async ({ request }) => {
+  test('a meaningless query returns no unrelated results — the control', async ({ request }) => {
     const hits = await search(request, CONTROL_QUERY);
-    // Not an assertion about emptiness: this query DOES return a full page of
-    // nearest neighbours. It must simply not return the type the next test
-    // looks for, or that test passes on noise.
-    expect(hits.length, 'control should still return a page of neighbours').toBeGreaterThan(0);
-    expect(
-      orgCount(hits),
-      `control query returned organizations — the coverage assertion below is no longer discriminating`,
-    ).toBeLessThanOrEqual(MAX_CONTROL_ORGS);
+    expect(hits, 'successful empty search must not be padded with unrelated popular results').toEqual(
+      [],
+    );
   });
 
   test('a semantic organization query retrieves organizations', async ({ request }) => {

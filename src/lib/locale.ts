@@ -1,3 +1,5 @@
+import { isSupportedLocale } from '@/i18n/languages';
+
 /**
  * Locale-path helpers. The router mounts routes under an optional `/:locale`
  * prefix (e.g. `/de/events`), so any code that matches on the pathname must
@@ -29,6 +31,9 @@ export function isRtlLocale(lang: string | undefined | null): boolean {
 
 /** Strip the optional leading `/:locale` so path matching is locale-agnostic. */
 export function stripLocale(pathname: string): string {
+  // A bare locale is also a homepage. Do not mistake two-letter routes such
+  // as /me for locale roots.
+  if (isSupportedLocale(pathname.slice(1))) return '/';
   return pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/');
 }
 

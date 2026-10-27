@@ -203,6 +203,9 @@ async function run() {
   for (const q of ['london', 'sauna']) {
     await scenario(`R1-venue-order-${q}`, `venue tab "${q}" is in score order`, async ({ HARD }) => {
       const r = await search({ query: q, hitsPerPage: 10, filters: { types: ['venue'] } });
+      // The popular fallback (search RPC timed out) is also flat-scored, so it
+      // would pass the order check; require real matches.
+      HARD((r.json?.totalHits ?? 0) > 0, `totalHits ${r.json?.totalHits} — served the fallback, not matches`);
       const s = (r.json?.hits ?? []).map((h) => h._rankingScore);
       HARD(s.length >= 5 && s.every((x) => typeof x === 'number'), 'missing _rankingScore');
       HARD(s.every((x, i) => i === 0 || x <= s[i - 1] + 1e-9), `not in score order: ${s.join(', ')}`);
@@ -281,7 +284,7 @@ async function run() {
   // of Par as its only city (Paris absent); `new y` led with a venue named
   // "New York" in Greece. Venue + organization twins must not both show.
   await scenario('A1b', 'Autocomplete ranks the big city first and shows no twins', async ({ HARD }) => {
-    for (const [q, want] of [['par', 'Paris'], ['new y', 'New York'], ['berl', 'Berlin'], ['barc', 'Barcelona']]) {
+    for (const [q, want] of [['ber', 'Berlin'], ['par', 'Paris'], ['new y', 'New York'], ['berl', 'Berlin'], ['barc', 'Barcelona'], ['san', 'San Francisco']]) {
       const r = await autocomplete({ query: q, limit: 8 });
       const s = r.json?.suggestions ?? [];
       HARD(s[0]?.type === 'city' && s[0]?.title === want, `${q}: first is ${s[0]?.type}/${s[0]?.title}, want city ${want}`);

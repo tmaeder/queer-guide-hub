@@ -1,5 +1,5 @@
 import { Component, ErrorInfo, ReactNode, useMemo, useState } from 'react';
-import * as Sentry from '@sentry/react';
+import * as Sentry from '@/lib/sentryClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';

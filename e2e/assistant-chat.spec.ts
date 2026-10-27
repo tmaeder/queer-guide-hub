@@ -30,14 +30,16 @@ test('ask panel returns a prose reply without tool-call JSON', async ({ page }) 
   await expect(thinking).toBeVisible({ timeout: 15_000 });
   await expect(thinking).toBeHidden({ timeout: REPLY_TIMEOUT_MS });
 
-  // No error state (Turnstile fail-open, no rate-limit trip).
-  await expect(page.getByRole('alert')).toHaveCount(0);
+  // Assert the chat's error state. A search request behind the open panel can
+  // fail independently even when the assistant has returned a valid reply.
+  const messages = page.getByTestId('ask-messages');
+  await expect(messages.getByRole('alert')).toHaveCount(0);
 
   // An assistant reply rendered, and it is prose — not leaked tool JSON.
   // Scoped to the message log: the bare `p.text-sm.leading-relaxed` selector
   // also matched the cookie-consent banner's paragraph, so this assertion
   // passed on the banner alone even when the assistant produced NOTHING.
-  const replies = page.getByTestId('ask-messages').locator('p.text-sm.leading-relaxed');
+  const replies = messages.locator('p.text-sm.leading-relaxed');
   await expect(replies.first()).toBeVisible();
   const text = (await replies.allInnerTexts()).join('\n');
   expect(text.length).toBeGreaterThan(20);

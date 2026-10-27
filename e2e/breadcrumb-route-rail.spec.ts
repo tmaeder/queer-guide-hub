@@ -43,6 +43,9 @@ for (const vp of [
     await page.setViewportSize({ width: vp.width, height: vp.height });
     await page.goto(URL);
     await expect(page.getByTestId('breadcrumb-route')).toBeVisible();
+    // The route fallback appears before the event publishes its full trail.
+    // Wait for the entity stations before measuring their geometry.
+    await expect(page.locator('.route-network-rail__crumb-ring:visible')).toHaveCount(vp.stops);
     const r = await measure(page);
     expect(r).not.toBeNull();
     // Positive control: the trail actually rendered its stations.

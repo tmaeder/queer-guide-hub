@@ -54,23 +54,10 @@ test.describe('Mobile dock a11y', () => {
     expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
   });
 
-  test('the raised contribute button is not clipped by the island', async ({ page }) => {
-    // `.island` carries `overflow: hidden` — correct for the top bar, whose
-    // ink flood has to stop at the rounded corners — and the contribute button
-    // is pulled above the row with `-mt-4`. For months the dock ran on bare
-    // `.island`, so the top of the only brand CTA on a phone sat outside the
-    // clip box. The `.island-dock` class that was supposed to prevent this was
-    // referenced in two comments in index.css and defined nowhere.
-    //
-    // MEASURED crop against prod before the fix: **4px** off a 48px button,
-    // with `hasDockClass: false`. Not the 16px the `-mt-4` suggests — the row's
-    // own height absorbs most of the negative margin, so only the last 4px
-    // overhang gets cropped. Small, visible, and worth stating accurately
-    // rather than quoting the class name as if it were the measurement.
-    //
-    // The TARGET was never affected (the box model is intact and the tap area
-    // is 48×48), so this is measured on the clip relationship rather than on
-    // the button's own size — a size assertion would have passed throughout.
+  test('the contribute button is not clipped by the island', async ({ page }) => {
+    // The old raised control was cropped by 4px despite an intact hit target.
+    // Its current 80px replacement sits inside a horizontally scrolling dock;
+    // verify the clip relationship rather than requiring either arrangement.
     await page.setViewportSize(PHONE);
     await page.goto('/');
     await waitForAppReady(page);
@@ -86,26 +73,17 @@ test.describe('Mobile dock a11y', () => {
       return {
         overflow: getComputedStyle(ul).overflow,
         hasDockClass: ul.classList.contains('island-dock'),
-        // Positive when the button's top edge is above the ul's — i.e. the
-        // amount that a clipping ancestor would crop.
-        above: Math.round(u.top - b.top),
+        clipped: Math.max(0, u.top - b.top) + Math.max(0, b.bottom - u.bottom),
         btnH: Math.round(b.height),
       };
     });
 
     expect(probe, 'could not find the dock or its contribute button').not.toBeNull();
-    // Control: the button really IS pulled above the row, so the assertion
-    // below is about the case it was written for. If the `-mt-4` is ever
-    // removed this spec should be revisited rather than passing trivially.
-    expect(probe!.above, 'the contribute button is no longer raised above the row').toBeGreaterThan(
-      0,
-    );
-    expect(
-      probe!.overflow,
-      `the dock's <ul> computes \`overflow: ${probe!.overflow}\`, which crops ` +
-        `${probe!.above}px off a ${probe!.btnH}px button. It needs \`island-dock\` ` +
-        `(hasDockClass: ${probe!.hasDockClass}).`,
-    ).not.toBe('hidden');
+    // The current 80px control sits inside the scrollable dock instead of
+    // overhanging it. Measure clipping directly so either layout stays covered.
+    expect(probe!.hasDockClass).toBe(true);
+    expect(probe!.btnH).toBeGreaterThanOrEqual(80);
+    expect(probe!.clipped, `contribute control clipped by ${probe!.overflow} overflow`).toBe(0);
   });
 });
 

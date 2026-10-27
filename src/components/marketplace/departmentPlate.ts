@@ -61,5 +61,11 @@ export const PLATE_CREST = 34;
  */
 export const plateWindow = (index: number): string => `${index * PLATE_W} 0 ${PLATE_W} ${PLATE_H}`;
 
-// Icons and their station discs render in CSS pixels outside this scalable
-// background; see DepartmentArt. This keeps every glyph at least 64px wide.
+/** Where the disc lands inside that window: the station, in window coordinates. */
+export const PLATE_STATION_X = PLATE_W / 2;
+
+/** Radius of the paper disc the glyph sits in. */
+export const PLATE_DISC_R = 62;
+
+/** Glyph box inside the disc. The mark is drawn on a 100x100 grid. */
+export const PLATE_GLYPH_SCALE = 0.74;

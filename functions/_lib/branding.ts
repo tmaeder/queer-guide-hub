@@ -3,7 +3,7 @@
  *
  * Reads the single-row `site_branding` table (published sparse override doc,
  * validated at write time by the `branding_validate` Postgres function) and
- * turns it into a `<style id="brand-overrides">` block plus meta-identity
+ * turns it into a nonced `<style id="brand-overrides">` block plus meta-identity
  * overrides for the Pages middleware.
  *
  * Fail-open contract: every error path returns null / stock values so a
@@ -195,11 +195,14 @@ function cssDecls(
     .join(';');
 }
 
+const escapeAttr = (value: string) =>
+  value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
 /**
  * Compose the override style block. Returns null when the doc contains no
  * valid token overrides so an empty doc emits nothing (byte-identical head).
  */
-export function brandStyleTag(doc: BrandingDoc | null): string | null {
+export function brandStyleTag(doc: BrandingDoc | null, nonce?: string): string | null {
   const tokens = doc?.tokens;
   const fonts = doc?.fonts;
   const light = cssDecls(tokens?.light, (k, v) => COLOR_KEYS.has(k) && HSL_RE.test(v));
@@ -228,7 +231,7 @@ export function brandStyleTag(doc: BrandingDoc | null): string | null {
   if (rootDecls) parts.push(`:root{${rootDecls}}`);
   if (dark) parts.push(`.dark{${dark}}`);
   if (parts.length === 0) return null;
-  return `<style id="brand-overrides">${parts.join('')}</style>`;
+  return `<style id="brand-overrides"${nonce ? ` nonce="${escapeAttr(nonce)}"` : ''}>${parts.join('')}</style>`;
 }
 
 /** Preload the first file of each valid font slot (perf; avoids FOUT flash). */

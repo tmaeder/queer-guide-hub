@@ -1,4 +1,6 @@
 import './es2022-shims';
+import { setNonce } from 'get-nonce';
+import { getCspNonce } from '@/lib/cspNonce';
 import { installSentry } from './sentry';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
@@ -10,6 +12,11 @@ import { installGlobalErrorSurfacing } from '@/utils/globalErrorSurfacing';
 import { installBuildVersionCheck } from '@/utils/buildVersion';
 import { installAnalyticsConsentLoader } from '@/utils/analyticsLoader';
 import { healBootAssets, healFailedAssets } from '@/utils/assetHeal';
+
+// Radix scroll locking creates stylesheet blocks through react-style-singleton.
+// Pass the document nonce before React renders any dialogs or popovers.
+const cspNonce = getCspNonce();
+if (cspNonce) setNonce(cspNonce);
 
 installSentry();
 installErrorBuffer();

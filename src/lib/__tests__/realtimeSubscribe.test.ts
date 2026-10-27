@@ -4,7 +4,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const captureException = vi.fn();
-vi.mock('@sentry/react', () => ({ captureException: (...a: unknown[]) => captureException(...a) }));
+vi.mock('@/lib/sentryClient', () => ({ captureException: (...a: unknown[]) => captureException(...a) }));
 
 const fileError = vi.fn();
 vi.mock('@/utils/autoFileError', () => ({ fileError: (...a: unknown[]) => fileError(...a) }));
