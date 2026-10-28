@@ -28,6 +28,16 @@ changes the detector, not the original descriptions, source evidence or ceilings
 The view owner, grants and options and the selector's service-only ACL remain
 unchanged.
 
+Before increasing the drain rate, the native worker now reads service-only
+factual snapshots carrying PostgreSQL row versions. Its writer locks the city
+and existing review rows, rechecks human holds and the original row version,
+timestamp and provenance/status, and commits facts plus fill-only aliases in
+one transaction. Row versions catch edits even on paths that leave `updated_at`
+unchanged. The RPC cannot change publication, lifecycle, names or ownership;
+stale/held work is deferred. Database/provider failures produce failing HTTP
+responses rather than an apparently healthy completed run. Reconcile native
+receipts and audits before retrying any failed or unknown partial batch.
+
 Run the isolated regression suite with:
 
 ```sh
@@ -39,6 +49,10 @@ listener. Set `PG_BIN` to a PostgreSQL binary directory when Homebrew PG17 is no
 installed. Tests cover fairness, cooldown, existing scopes, terminal exclusions,
 content membership, limits, tracking, failure history, manual-pause refusal, view
 options, function privileges and positive/negative description cases.
+It also proves atomic city/alias rollback, rejection of stale provenance and
+row versions, replay refusal across committed transactions, human-decision and
+confirmation holds, protected-field rejection, and exclusion of private city
+columns from the snapshot response.
 
 After ordinary CI deployment, verify the exact applied migration version,
 selector execution time and candidates, registry/live-cron parity, fresh native

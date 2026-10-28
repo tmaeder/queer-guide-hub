@@ -1,7 +1,5 @@
 -- 99991793214974_city_refresh_fair_bounded_drain
 --
--- TODO: why this migration exists.
-
 -- Gap passes repeatedly selected fresh, high-population unresolved rows while
 -- the quality backlog grew. On 2026-10-28, 55/60 candidates had been visited
 -- within two days and only 18/60 were indexable. The shared selector also hit
@@ -9,6 +7,127 @@
 -- Keep identity/classification adoption in the existing Edge Function. This
 -- migration changes queue selection and bounded scheduling, never city facts,
 -- publication flags, evidence requirements, issue counts or quality ceilings.
+
+-- A machine identity finding is work for this resolver. Explicit human holds,
+-- confirmation requirements and human decisions remain protected.
+create or replace view public.city_factual_protected_ids
+with (security_invoker=true, security_barrier=true) as
+select distinct q.entity_id as city_id
+from public.review_queue q join public.cities c on c.id=q.entity_id
+where q.entity_type='city' and (
+  q.resolved_by is not null
+  or lower(q.details->>'requires_confirm')='true'
+  or lower(q.details->>'force_review')='true'
+  or lower(q.details->>'manual_hold')='true'
+  or lower(q.details->>'human_reviewed')='true'
+  or (lower(q.details->>'hard_blocker')='true' and not coalesce(
+    q.status='pending' and q.review_type='CITY_IDENTITY_AMBIGUOUS'
+    and q.details->>'source'='city_quality_profile'
+    and q.details->>'city_name'=c.name and q.details->>'city_slug'=c.slug
+    and q.details->>'publication_ready'='false'
+    and q.details-array['source','city_name','city_slug','hard_blocker','publication_ready','observed_at']='{}'::jsonb,
+    false))
+);
+revoke all on public.city_factual_protected_ids from public,anon,authenticated;
+grant select on public.city_factual_protected_ids to service_role;
+
+create or replace function public.city_factual_research_allowed(p_city_id uuid)
+returns boolean language sql stable security invoker as $allowed$
+  select not exists(select 1 from public.city_factual_protected_ids where city_id=p_city_id);
+$allowed$;
+revoke all on function public.city_factual_research_allowed(uuid) from public,anon,authenticated;
+grant execute on function public.city_factual_research_allowed(uuid) to service_role;
+
+-- xmin detects every committed edit, including paths that do not maintain
+-- updated_at. Expose only the native resolver's existing factual projection.
+create or replace function public.get_city_factual_snapshots(p_ids uuid[])
+returns setof jsonb language sql stable security definer set search_path to 'public'
+as $snapshots$
+  select (select jsonb_object_agg(k,v) from jsonb_each(to_jsonb(c)) fields(k,v)
+    where k=any(array['id','name','slug','updated_at','latitude','longitude','description',
+      'image_url','curated_image_url','population','area_km2','elevation_m','official_website',
+      'postal_codes','area_codes','sister_cities','economy_sectors','universities','local_language',
+      'climate_type','airport_codes','major_airport_code','transportation_info','is_regional_capital',
+      'capital_of_region','field_provenance','enrichment_status','wikidata_qid','wikipedia_title',
+      'country_id','name_local','name_local_lang']))
+    || jsonb_build_object('row_version',c.xmin::text,'countries',
+      (select jsonb_build_object('code',country.code,'name',country.name,'languages',country.languages)
+        from public.countries country where country.id=c.country_id))
+  from public.cities c where c.id=any(p_ids[1:300]) and c.duplicate_of_id is null
+    and public.city_factual_research_allowed(c.id)
+  order by array_position(p_ids,c.id);
+$snapshots$;
+revoke all on function public.get_city_factual_snapshots(uuid[]) from public,anon,authenticated;
+grant execute on function public.get_city_factual_snapshots(uuid[]) to service_role;
+
+create or replace function public.apply_city_factual_patch(
+  p_city_id uuid, p_expected_row_version text, p_expected_updated_at timestamptz,
+  p_expected_provenance jsonb, p_expected_status jsonb,
+  p_patch jsonb, p_aliases jsonb default '[]'::jsonb
+)
+returns jsonb language plpgsql security definer set search_path to 'public'
+as $write$
+declare
+  v_city public.cities%rowtype;
+  v_assignments text;
+  v_aliases integer := 0;
+  v_row_version text;
+begin
+  if not pg_try_advisory_xact_lock(hashtext('review_automatic_resolution')) then
+    return jsonb_build_object('status','blocked','reason','review_sweep_running');
+  end if;
+  select * into v_city from public.cities where id=p_city_id for update;
+  if not found or v_city.duplicate_of_id is not null or v_city.shell_status='merged'
+    or coalesce(v_city.enrichment_status#>>'{disposition,state}','')='not_a_city' then
+    return jsonb_build_object('status','blocked','reason','missing_or_retired_city');
+  end if;
+  select xmin::text into v_row_version from public.cities where id=p_city_id;
+  if p_expected_row_version is null or v_row_version<>p_expected_row_version
+    or v_city.updated_at is distinct from p_expected_updated_at
+    or v_city.field_provenance is distinct from p_expected_provenance
+    or v_city.enrichment_status is distinct from p_expected_status then
+    return jsonb_build_object('status','blocked','reason','stale_snapshot');
+  end if;
+  begin
+    perform 1 from public.review_queue where entity_type='city' and entity_id=p_city_id for update nowait;
+  exception when lock_not_available then
+    return jsonb_build_object('status','blocked','reason','review_sweep_running');
+  end;
+  if not public.city_factual_research_allowed(p_city_id) then
+    return jsonb_build_object('status','blocked','reason','human_hold');
+  end if;
+  if jsonb_typeof(p_patch) is distinct from 'object' or p_patch='{}'::jsonb then
+    raise exception 'Nonempty city factual patch required' using errcode='22023';
+  end if;
+  if exists(select 1 from jsonb_object_keys(p_patch) key where key<>all(array[
+    'wikidata_qid','wikipedia_title','latitude','longitude','population','area_km2','elevation_m',
+    'official_website','postal_codes','area_codes','sister_cities','economy_sectors','universities',
+    'local_language','climate_type','airport_codes','major_airport_code','transportation_info',
+    'is_regional_capital','capital_of_region','description','field_provenance','enrichment_status',
+    'last_refreshed_at','name_local','name_local_lang','needs_attention'
+  ])) then raise exception 'Unsupported city factual patch field' using errcode='22023'; end if;
+  if jsonb_typeof(p_aliases) is distinct from 'array' or jsonb_array_length(p_aliases)>1000 then
+    raise exception 'Bounded city alias array required' using errcode='22023';
+  end if;
+  perform set_config('app.actor','system:city-factual-backfill',true);
+  select string_agg(format('%I=patched.%I',key,key),', ' order by key)
+    into v_assignments from jsonb_object_keys(p_patch) key;
+  execute 'update public.cities c set '||v_assignments||
+    ' from jsonb_populate_record(null::public.cities,$1) patched where c.id=$2'
+    using p_patch,p_city_id;
+  -- Fill-only aliases share the city transaction and ownership checks. A failed
+  -- city write must not leave unguarded side effects on a stale/held identity.
+  insert into public.city_aliases(city_id,alias,locale)
+    select p_city_id,a.alias,a.locale from jsonb_to_recordset(p_aliases) a(alias text,locale text)
+    where nullif(btrim(a.alias),'') is not null
+      and lower(btrim(a.alias))<>lower(btrim(v_city.name))
+    on conflict(city_id,alias_key) do nothing;
+  get diagnostics v_aliases=row_count;
+  return jsonb_build_object('status','updated','aliases_written',v_aliases);
+end;
+$write$;
+revoke all on function public.apply_city_factual_patch(uuid,text,timestamptz,jsonb,jsonb,jsonb,jsonb) from public,anon,authenticated;
+grant execute on function public.apply_city_factual_patch(uuid,text,timestamptz,jsonb,jsonb,jsonb,jsonb) to service_role;
 
 create or replace function public.cities_due_for_refresh(
   p_limit integer default 25,
@@ -29,7 +148,8 @@ begin
 
   if p_scope in ('qid_gap', 'alias_gap', 'all') then
     return query
-    with candidates as materialized (
+    with protected as materialized (select city_id from public.city_factual_protected_ids),
+    candidates as materialized (
       select c.id, c.name, c.slug, c.latitude, c.longitude, c.country_id,
         c.description, c.official_website, c.completeness_score, c.shell_status,
         c.last_refreshed_at, c.wikidata_qid,
@@ -42,6 +162,7 @@ begin
         ) as queue_position
       from public.cities c
       where c.duplicate_of_id is null and c.shell_status <> 'merged'
+        and not exists(select 1 from protected p where p.city_id=c.id)
         and coalesce(c.enrichment_status->'wikidata_link'->>'state', '') <> 'data_unavailable'
         and coalesce(c.enrichment_status->'disposition'->>'state', '') <> 'not_a_city'
         and (p_scope <> 'qid_gap' or c.wikidata_qid is null)
@@ -77,7 +198,8 @@ begin
   -- were evaluated while sorting the full city population and again for the
   -- result, even when a gap scope did not order by content at all.
   return query
-  with content_cities as materialized (
+  with protected as materialized (select city_id from public.city_factual_protected_ids),
+  content_cities as materialized (
     select v.city_id from public.venues v where v.city_id is not null
     union
     select e.city_id from public.events e where e.city_id is not null
@@ -93,6 +215,7 @@ begin
   from public.cities c
   left join content_cities content on content.city_id = c.id
   where c.duplicate_of_id is null and c.shell_status <> 'merged'
+    and not exists(select 1 from protected p where p.city_id=c.id)
     and coalesce(c.enrichment_status->'wikidata_link'->>'state', '') <> 'data_unavailable'
     and coalesce(c.enrichment_status->'disposition'->>'state', '') <> 'not_a_city'
     and (p_scope <> 'content_only' or content.city_id is not null)

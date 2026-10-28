@@ -16,9 +16,17 @@ create table public.cities(
  country_id uuid, description text, official_website text, completeness_score smallint,
  shell_status text default 'real', last_refreshed_at timestamptz, wikidata_qid text,
  population bigint, duplicate_of_id uuid, enrichment_status jsonb default '{}',
- seo_indexable boolean default true);
+ seo_indexable boolean default true, updated_at timestamptz default now(),
+ field_provenance jsonb default '{}', needs_attention boolean default false);
+alter table public.cities add column private_city_note text default 'DO_NOT_EXPORT';
+create table public.countries(id uuid,name text,code text,languages text[]);
 create table public.venues(city_id uuid); create table public.events(city_id uuid);
-create table public.city_aliases(city_id uuid);
+create table public.city_aliases(city_id uuid,alias text check(alias<>'reject-alias'),locale text,
+ alias_key text generated always as (lower(alias)) stored,unique(city_id,alias_key));
+create table public.review_queue(entity_id uuid,entity_type text,review_type text,status text,
+ details jsonb default '{}',resolved_by uuid);
+grant select on public.review_queue to service_role;
+grant select on public.cities to service_role;
 create view public.city_quality_profile with(security_barrier=true) as
  select f.id,case when f.description ~* '(^|[[:space:]])(may refer to|refers to multiple|disambiguation)([[:space:]]|$)'
  or f.description ~* '(as an ai|i cannot provide|provided sources do not contain|sources do not provide)'
@@ -49,7 +57,7 @@ values
  (md5('notcity')::uuid,'Not a city','notcity',999999999,null,true,null,'{"disposition":{"state":"not_a_city"}}'),
  (md5('alias')::uuid,'Alias','alias',10,null,true,'Q1','{}'),
  (md5('hasalias')::uuid,'Has alias','hasalias',20,null,true,'Q2','{}');
-insert into public.city_aliases values(md5('hasalias')::uuid);
+insert into public.city_aliases(city_id,alias,locale) values(md5('hasalias')::uuid,'Existing','en');
 insert into public.events values(md5('old')::uuid);
 insert into public.venues values(md5('hidden')::uuid);
 """
@@ -105,6 +113,97 @@ do $$declare ids uuid[];begin
  if has_function_privilege('authenticated','public.cities_due_for_refresh(integer,text)','EXECUTE')
  then raise exception 'Selector service-only boundary lost';end if;
 end$$;
+create temp table replay_snapshot as
+ select s as snapshot from public.get_city_factual_snapshots(array[md5('untouched')::uuid]) s;
+select public.apply_city_factual_patch((snapshot->>'id')::uuid,snapshot->>'row_version',
+ (snapshot->>'updated_at')::timestamptz,snapshot->'field_provenance',snapshot->'enrichment_status',
+ '{"description":"One native update"}','[{"alias":"Only once","locale":"en"}]') from replay_snapshot;
+do $$declare s jsonb;result jsonb;begin
+ select snapshot into s from replay_snapshot;
+ result:=public.apply_city_factual_patch((s->>'id')::uuid,s->>'row_version',(s->>'updated_at')::timestamptz,
+  s->'field_provenance',s->'enrichment_status','{"description":"One native update"}',
+  '[{"alias":"Only once","locale":"en"}]');
+ if result->>'reason'<>'stale_snapshot'
+ or(select count(*) from public.city_aliases where city_id=(s->>'id')::uuid and alias='Only once')<>1
+ then raise exception 'Repeated receipt produced duplicate native writes';end if;
+end$$;
+do $$declare c public.cities;result jsonb;version text;snapshot jsonb;begin
+ select * into c from public.cities where id=md5('old')::uuid;
+ select s into snapshot from public.get_city_factual_snapshots(array[c.id]) s;
+ version:=snapshot->>'row_version';
+ if version is null or snapshot ? 'private_city_note' then raise exception 'Snapshot version/projection failed';end if;
+ result:=public.apply_city_factual_patch(c.id,version,c.updated_at,c.field_provenance,c.enrichment_status,
+  '{"description":"Sourced fixture description"}', '[{"alias":"Fixture alias","locale":"en"}]');
+ if result->>'status'<>'updated' or (result->>'aliases_written')::int<>1
+ then raise exception 'Guarded city/alias write failed: %',result;end if;
+ if(select name from public.cities where id=c.id)<>c.name
+ or(select slug from public.cities where id=c.id)<>c.slug
+ or(select count(*) from public.city_aliases where city_id=c.id)<>1
+ then raise exception 'Unrelated values changed or alias duplicated';end if;
+ select * into c from public.cities where id=c.id;
+ select xmin::text into version from public.cities where id=c.id;
+ result:=public.apply_city_factual_patch(c.id,'0',c.updated_at,c.field_provenance,c.enrichment_status,
+  '{"description":"Stale row version overwrite"}');
+ if result->>'reason'<>'stale_snapshot' then raise exception 'Stale row version accepted';end if;
+ result:=public.apply_city_factual_patch(c.id,version,c.updated_at-interval '1 second',c.field_provenance,c.enrichment_status,
+  '{"description":"Stale overwrite"}');
+ if result->>'reason'<>'stale_snapshot' then raise exception 'Stale timestamp accepted';end if;
+ result:=public.apply_city_factual_patch(c.id,version,c.updated_at,'{"human":"changed"}',c.enrichment_status,
+  '{"description":"Stale metadata overwrite"}');
+ if result->>'reason'<>'stale_snapshot' then raise exception 'Stale provenance accepted';end if;
+ insert into public.review_queue values(c.id,'city','manual','pending','{"manual_hold":true}',null);
+ result:=public.apply_city_factual_patch(c.id,version,c.updated_at,c.field_provenance,c.enrichment_status,
+  '{"description":"Held overwrite"}','[{"alias":"Held alias","locale":"en"}]');
+ if result->>'reason'<>'human_hold'
+ or(select description from public.cities where id=c.id)<>'Sourced fixture description'
+ or(select count(*) from public.city_aliases where city_id=c.id)<>1
+ then raise exception 'Human hold changed city or aliases';end if;
+ if exists(select 1 from public.cities_due_for_refresh(100,'all') where id=c.id)
+ then raise exception 'Human-held city selected';end if;
+ delete from public.review_queue where entity_id=c.id;
+ insert into public.review_queue values(c.id,'city','CITY_IDENTITY_AMBIGUOUS','pending',
+  jsonb_build_object('source','city_quality_profile','city_name',c.name,'city_slug',c.slug,
+   'publication_ready',false,'hard_blocker',true,'observed_at',now()),null);
+ if not public.city_factual_research_allowed(c.id)
+ then raise exception 'Native machine identity work was mistaken for a human hold';end if;
+ update public.review_queue set details=details||'{"requires_confirm":true}' where entity_id=c.id;
+ if public.city_factual_research_allowed(c.id)
+ then raise exception 'Confirmation requirement ignored';end if;
+ delete from public.review_queue where entity_id=c.id;
+ insert into public.review_queue values(c.id,'city','manual','resolved','{}',md5('staff')::uuid);
+ if public.city_factual_research_allowed(c.id)
+ then raise exception 'Human decision ownership ignored';end if;
+ delete from public.review_queue where entity_id=c.id;
+ begin
+  perform public.apply_city_factual_patch(c.id,version,c.updated_at,c.field_provenance,c.enrichment_status,'{"seo_indexable":false}');
+  raise exception 'Publication patch accepted';
+ exception when invalid_parameter_value then null;end;
+ begin
+  perform public.apply_city_factual_patch(c.id,version,c.updated_at,c.field_provenance,c.enrichment_status,
+   '{"description":"Must roll back"}','[{"alias":"reject-alias","locale":"en"}]');
+ exception when others then null;end;
+ if(select description from public.cities where id=c.id)<>'Sourced fixture description'
+ then raise exception 'Failed alias transaction left a city write';end if;
+end$$;
+set role authenticated;
+do $$begin
+ perform public.apply_city_factual_patch(null,null,null,null,null,'{}');
+ raise exception 'Authenticated role reached service writer';
+exception when insufficient_privilege then null;end$$;
+reset role;
+create temp table before_human_edit as
+ select s as snapshot from public.get_city_factual_snapshots(array[md5('untouched')::uuid]) s;
+-- Deliberately leave updated_at/provenance unchanged: xmin must still notice.
+update public.cities set description='Human changed this between requests'
+ where id=md5('untouched')::uuid;
+do $$declare s jsonb;result jsonb;begin
+ select snapshot into s from before_human_edit;
+ result:=public.apply_city_factual_patch((s->>'id')::uuid,s->>'row_version',(s->>'updated_at')::timestamptz,
+  s->'field_provenance',s->'enrichment_status','{"description":"Stale machine overwrite"}');
+ if result->>'reason'<>'stale_snapshot'
+ or(select description from public.cities where id=(s->>'id')::uuid)<>'Human changed this between requests'
+ then raise exception 'Concurrent edit without timestamp change was overwritten';end if;
+end$$;
 """
 
 with tempfile.TemporaryDirectory(prefix='city-refresh-pg-') as tmp:
@@ -124,6 +223,6 @@ with tempfile.TemporaryDirectory(prefix='city-refresh-pg-') as tmp:
         result = subprocess.run([str(PG / 'psql'), '-h', str(sock), '-p', '55447', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1'], input=refusal, text=True, capture_output=True)
         if result.returncode == 0 or 'refuses to override a manually disabled job' not in result.stderr:
             raise AssertionError('Manual pause protection was not enforced')
-        print('PASS: queue fairness, cooldown, scopes, terminal guards, content membership, limits, tracked bounded schedules, historical counters and manual pause refusal')
+        print('PASS: fair bounded queues; scopes/ACL/view options; guarded city+alias transactions; xmin/provenance staleness and replay refusal; human decisions/holds; protected fields; rollback; manual pause refusal')
     finally:
         subprocess.run([str(PG / 'pg_ctl'), '-D', str(data), '-m', 'fast', '-w', 'stop'], check=True, stdout=subprocess.DEVNULL)
