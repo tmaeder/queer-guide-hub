@@ -5,15 +5,17 @@
 // hand reads is measured by scripts/data-quality/compare-accessibility-typesafe.ts
 // against the live API, not asserted with invented probabilities.
 
-import { assertEquals, assertRejects } from 'https://deno.land/std@0.224.0/assert/mod.ts'
+import { assertEquals, assertRejects, assertThrows } from 'https://deno.land/std@0.224.0/assert/mod.ts'
 import { EVIDENCE_SLUGS } from './accessibility-evidence.ts'
 import { LIVE_QUEUE } from './accessibility-evidence.fixtures.ts'
 import {
   buildClaimRequest,
   callTypeSafe,
+  createRequestBudget,
   CLAIMS,
   decideClaim,
   quoteQuestionId,
+  relationProbs,
   type RelationProbs,
   sourceQuestionId,
   TypeSafeError,
@@ -136,4 +138,30 @@ Deno.test('retries stop at maxAttempts and throw', async () => {
   const { f, calls } = fakeFetch([503])
   await assertRejects(() => callTypeSafe({ model: 'm', state: { venue_name: '', venue_description: '' }, questions: {} }, 'k', { fetchImpl: f, sleep: noSleep, maxAttempts: 3 }), TypeSafeError)
   assertEquals(calls(), 3)
+})
+
+Deno.test('one comparison budget counts retries and refuses the next HTTP attempt', async () => {
+  const { f, calls } = fakeFetch([503])
+  const budget = createRequestBudget(2, f)
+  await assertRejects(() => callTypeSafe({ model: 'm', state: { venue_name: '', venue_description: '' }, questions: {} }, 'k', { fetchImpl: budget.fetchImpl, sleep: noSleep }), TypeSafeError, 'budget exhausted')
+  assertEquals(calls(), 2)
+  assertEquals(budget.used(), 2)
+  await assertRejects(() => callTypeSafe({ model: 'm', state: { venue_name: '', venue_description: '' }, questions: {} }, 'k', { fetchImpl: budget.fetchImpl, sleep: noSleep }), TypeSafeError, 'budget exhausted')
+  assertEquals(calls(), 2)
+})
+
+Deno.test('invalid spending and retry limits are rejected before any HTTP call', async () => {
+  for (const value of [NaN, Infinity, -1, 1.5]) assertThrows(() => createRequestBudget(value), RangeError)
+  const { f, calls } = fakeFetch([200])
+  for (const value of [NaN, Infinity, 0, 5, 1.5]) await assertRejects(() => callTypeSafe({ model: 'm', state: { venue_name: '', venue_description: '' }, questions: {} }, 'k', { fetchImpl: f, maxAttempts: value }), RangeError)
+  assertEquals(calls(), 0)
+})
+
+Deno.test('missing model answers are a provider failure rather than no evidence', async () => {
+  const { f } = fakeFetch([200])
+  await assertRejects(() => callTypeSafe({ model: 'm', state: { venue_name: '', venue_description: '' }, questions: { claim: {} } }, 'k', { fetchImpl: f }), TypeSafeError, 'invalid answers')
+  for (const probabilities of [
+    { supports: 2, contradicts: -1, says_nothing: 0 },
+    { supports: 0.9, contradicts: 0.9, says_nothing: 0.9 },
+  ]) assertEquals(relationProbs({ type: 'choice', probabilities }), undefined)
 })

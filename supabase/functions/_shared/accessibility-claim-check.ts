@@ -245,7 +245,8 @@ export function relationProbs(answer: unknown): RelationProbs | undefined {
   if (!p || (answer as { type?: string }).type !== 'choice') return undefined
   const num = (k: Relation) => (typeof p[k] === 'number' ? (p[k] as number) : NaN)
   const out = { supports: num('supports'), contradicts: num('contradicts'), says_nothing: num('says_nothing') }
-  return Object.values(out).every(Number.isFinite) ? out : undefined
+  return Object.values(out).every(n => Number.isFinite(n) && n >= 0 && n <= 1)
+    && Math.abs(Object.values(out).reduce((a, b) => a + b, 0) - 1) <= 0.02 ? out : undefined
 }
 
 // Plain fields rather than constructor parameter properties: the comparison
@@ -258,6 +259,18 @@ export class TypeSafeError extends Error {
     this.status = status
     this.body = body
   }
+}
+
+/** Count actual HTTP attempts, including retries, across the whole comparison. */
+export function createRequestBudget(maxRequests: number, fetchImpl: typeof fetch = fetch) {
+  if (!Number.isSafeInteger(maxRequests) || maxRequests < 0) throw new RangeError('Request budget must be a nonnegative safe integer')
+  let used = 0
+  const budgeted: typeof fetch = (...args) => {
+    if (used >= maxRequests) throw new TypeSafeError('TypeSafe HTTP request budget exhausted', 0, '')
+    used++
+    return fetchImpl(...args)
+  }
+  return { fetchImpl: budgeted, used: () => used }
 }
 
 /**
@@ -274,14 +287,23 @@ export async function callTypeSafe(
   const doFetch = opts.fetchImpl ?? fetch
   const sleep = opts.sleep ?? ((ms: number) => new Promise((r) => setTimeout(r, ms)))
   const maxAttempts = opts.maxAttempts ?? 4
+  if (!Number.isSafeInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 4) throw new RangeError('maxAttempts must be between 1 and 4')
   for (let attempt = 1; ; attempt++) {
     const res = await doFetch(TYPESAFE_ENDPOINT, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(20_000),
     })
     const text = await res.text()
-    if (res.ok) return JSON.parse(text)
+    if (res.ok) {
+      const result = JSON.parse(text)
+      if (!result || typeof result.model !== 'string' || !result.answers || typeof result.answers !== 'object'
+        || Array.isArray(result.answers) || Object.keys(body.questions).some(id => !relationProbs(result.answers[id]))) {
+        throw new TypeSafeError('TypeSafe returned invalid answers', res.status, '')
+      }
+      return result
+    }
     const retryable = res.status === 429 || res.status >= 500
     if (!retryable || attempt >= maxAttempts) {
       throw new TypeSafeError(`TypeSafe HTTP ${res.status}`, res.status, text.slice(0, 500))

@@ -35,6 +35,7 @@ import { LIVE_QUEUE, type Row } from '../../supabase/functions/_shared/accessibi
 import {
   buildClaimRequest,
   callTypeSafe,
+  createRequestBudget,
   type ClaimVerdict,
   decideClaim,
   quoteQuestionId,
@@ -49,6 +50,7 @@ function arg(name: string): string | undefined {
 }
 const DRY = process.argv.includes('--dry-run')
 const MAX_REQUESTS = Number(arg('--max-requests') ?? 30)
+const budget = createRequestBudget(MAX_REQUESTS)
 const OUT = resolve(arg('--out') ?? 'scripts/data-quality/out/typesafe-accessibility')
 const KEY = process.env.TYPESAFE_API_KEY ?? ''
 
@@ -92,7 +94,7 @@ if (needLive.length > MAX_REQUESTS) {
 let inputTokens = 0
 for (const { row, req } of needLive) {
   try {
-    const res = await callTypeSafe(req.body, KEY)
+    const res = await callTypeSafe(req.body, KEY, { fetchImpl: budget.fetchImpl })
     cache[hashOf(req.body)] = res
     inputTokens += res.usage?.input_tokens ?? 0
     writeFileSync(cachePath, JSON.stringify(cache, null, 2))
@@ -159,7 +161,7 @@ writeFileSync(join(OUT, 'report.json'), JSON.stringify({
   lines,
 }, null, 2))
 
-console.log(`models: ${[...modelsSeen].join(', ') || '(none answered)'}; live input tokens this run: ${inputTokens}`)
+console.log(`models: ${[...modelsSeen].join(', ') || '(none answered)'}; live input tokens this run: ${inputTokens}; HTTP attempts: ${budget.used()}/${MAX_REQUESTS}`)
 for (const s of sets) {
   for (const judge of ['regex', 'typesafe'] as const) {
     const x = summary[s][judge]
