@@ -1,4 +1,10 @@
 import { test, expect, type Page } from '@playwright/test';
+import { preventMessageDelivery } from './support/noMessageDelivery';
+
+// Routing cannot stop service-worker-owned requests. Disable those so no send
+// can bypass the transport fixtures, including delayed DM-digest source writes.
+test.use({ serviceWorkers: 'block' });
+const deliveryGuards = new WeakMap<Page, Awaited<ReturnType<typeof preventMessageDelivery>>>();
 
 /**
  * E2E coverage for the Unified Inbox at /messages.
@@ -25,6 +31,7 @@ import { test, expect, type Page } from '@playwright/test';
 
 const BASE = process.env.E2E_BASE_URL || 'https://queer.guide';
 const SIGNED_IN = Boolean(process.env.E2E_ADMIN_EMAIL || process.env.E2E_STORAGE_STATE);
+const UUID = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 
 const SEED = {
   conversationId: 'e2e00000-0000-4000-8000-0000000000c0',
@@ -96,14 +103,12 @@ test.describe('/messages — auth gate (anonymous)', () => {
 // Signed-in suite.
 // ---------------------------------------------------------------------------
 test.describe('/messages — unified inbox (signed in)', () => {
-  test.skip(
-    !SIGNED_IN,
-    'Requires a signed-in session (E2E_ADMIN_EMAIL / E2E_STORAGE_STATE).',
-  );
+  test.skip(!SIGNED_IN, 'Requires a signed-in session (E2E_ADMIN_EMAIL / E2E_STORAGE_STATE).');
 
   // Pre-seed cookie consent so the fixed bottom banner never mounts — it
   // otherwise races page load and intercepts clicks on the Send buttons.
   test.beforeEach(async ({ page }) => {
+    deliveryGuards.set(page, await preventMessageDelivery(page.context(), SEED.conversationId));
     await page.addInitScript(() => {
       try {
         localStorage.setItem(
@@ -120,12 +125,18 @@ test.describe('/messages — unified inbox (signed in)', () => {
     });
   });
 
-  test('renders the two-pane shell: header, rail, compose, search, filter tabs', async ({ page }) => {
+  test.afterEach(async ({ page }) => {
+    const guard = deliveryGuards.get(page);
+    if (guard)
+      expect(guard.blockedWrites, 'Unexpected delivery-producing mutation was blocked').toEqual([]);
+  });
+
+  test('renders the two-pane shell: header, rail, compose, search, filter tabs', async ({
+    page,
+  }) => {
     await gotoInbox(page);
     // Hub shell renders the module nav around the inbox workspace.
-    await expect(
-      page.getByRole('navigation', { name: /hub modules/i }).first(),
-    ).toBeVisible();
+    await expect(page.getByRole('navigation', { name: /hub modules/i }).first()).toBeVisible();
     // Rail header now carries a vibe chip + compose + a search box (the old
     // static "Inbox" label was replaced by the vibe editor).
     await expect(page.getByRole('button', { name: /compose/i })).toBeVisible();
@@ -154,7 +165,10 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
   test('vibe editor opens from the rail header', async ({ page }) => {
     await gotoInbox(page);
-    await page.getByRole('button', { name: /set a vibe|✨/i }).first().click();
+    await page
+      .getByRole('button', { name: /set a vibe|✨/i })
+      .first()
+      .click();
     await expect(page.getByText(/your vibe/i)).toBeVisible({ timeout: 10_000 });
   });
 
@@ -204,7 +218,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await expect(send).toBeEnabled();
   });
 
-  test('compose New email sends a correctly-shaped request (object payload, not positional)', async ({
+  test('compose New email constructs a correctly-shaped request without delivery', async ({
     page,
   }) => {
     await gotoInbox(page);
@@ -241,10 +255,15 @@ test.describe('/messages — unified inbox (signed in)', () => {
     expect(body.to).toBe(SEED.selfEmail);
     expect(body.subject).toBe(subject);
     expect(typeof body.body_text).toBe('string');
+    expect(body.request_id).toMatch(UUID);
+    const guard = deliveryGuards.get(page)!;
+    await expect.poll(() => guard.mailFulfilled).toBe(1);
+    expect(guard.mailRequests).toEqual([body]);
+    await expect(page.getByPlaceholder('recipient@example.com')).toBeHidden();
   });
 
-  test('chat: open seeded thread, send a message, add a reaction', async ({ page }) => {
-    test.setTimeout(60_000); // prod round-trips (send + reaction) can be slow
+  test('chat: construct a message and reaction without notifying recipients', async ({ page }) => {
+    test.setTimeout(60_000); // Seeded inbox reads can be slow; send/reaction transport stays local.
     await gotoInbox(page, `?conversation=${SEED.conversationId}`);
     const partner = page.getByText(SEED.partnerName).first();
     const ok = await partner
@@ -273,6 +292,19 @@ test.describe('/messages — unified inbox (signed in)', () => {
     const bubble = page.locator('div.relative', { has: messageP });
     await bubble.getByRole('button', { name: '👍' }).first().click({ force: true });
     await expect(page.getByText('👍 1').first()).toBeVisible({ timeout: 15_000 });
+    const guard = deliveryGuards.get(page)!;
+    expect(guard.chatRequests).toHaveLength(1);
+    expect(guard.chatRequests[0]).toMatchObject({
+      conversation_id: SEED.conversationId,
+      content: body,
+    });
+    expect(guard.chatRequests[0].sender_id).toMatch(UUID);
+    expect(guard.reactionRequests).toHaveLength(1);
+    expect(guard.reactionRequests[0]).toMatchObject({
+      message_id: guard.messageId,
+      user_id: guard.chatRequests[0].sender_id,
+      emoji: '👍',
+    });
   });
 
   test('chat: reply affordance shows the reply banner', async ({ page }) => {
@@ -324,11 +356,15 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await toggle.click();
   });
 
-  test('mail: open seeded inbound, reply (correct payload), then archive', async ({ page }) => {
+  test('mail: build a reply without delivery, then archive the seeded inbound', async ({
+    page,
+  }) => {
     await gotoInbox(page);
     await tab(page, /^mail$/i).click();
     const item = await requireRailItem(page, SEED.mailOpen);
     await item.click();
+    const inboundEmailId = new URL(page.url()).searchParams.get('email');
+    expect(inboundEmailId).toBeTruthy();
 
     await expect(page.getByRole('button', { name: /reply/i })).toBeVisible({ timeout: 15_000 });
     await page.getByRole('button', { name: /reply/i }).click();
@@ -343,6 +379,12 @@ test.describe('/messages — unified inbox (signed in)', () => {
     expect(typeof replyBody).toBe('object');
     expect(replyBody.to).toBe(SEED.selfEmail);
     expect(String(replyBody.subject)).toMatch(/^Re:/i);
+    expect(replyBody.in_reply_to_email_id).toBe(inboundEmailId);
+    expect(replyBody.request_id).toMatch(UUID);
+    const guard = deliveryGuards.get(page)!;
+    await expect.poll(() => guard.mailFulfilled).toBe(1);
+    expect(guard.mailRequests).toEqual([replyBody]);
+    await expect(page.getByPlaceholder(/write your reply/i)).toBeHidden();
 
     // Archive removes it from the inbox folder; a fresh load must not list it.
     await page.getByRole('button', { name: /archive/i }).click();
