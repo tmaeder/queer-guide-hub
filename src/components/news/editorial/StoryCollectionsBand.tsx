@@ -1,5 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { StoryCard } from '@/components/news/StoryCard';
+import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { Layers } from '@/components/icons';
 
 type Story = {
@@ -18,12 +19,10 @@ interface StoryCollectionsBandProps {
   limit?: number;
 }
 
-export function StoryCollectionsBand({
-  stories,
-  heroes,
-  limit = 3,
-}: StoryCollectionsBandProps) {
+export function StoryCollectionsBand({ stories, heroes, limit = 3 }: StoryCollectionsBandProps) {
   const visible = stories.slice(0, limit);
+  const ids = visible.flatMap((s) => (s.hero_article_id ? [s.hero_article_id] : []));
+  const { assets } = useEntityImageAssets('news_article', ids);
   if (visible.length === 0) return null;
 
   return (
@@ -52,8 +51,13 @@ export function StoryCollectionsBand({
         {visible.map((s) => (
           <StoryCard
             key={s.id}
+            imageAsset={s.hero_article_id ? assets.get(s.hero_article_id) : undefined}
             story={s as Parameters<typeof StoryCard>[0]['story']}
-            hero={s.hero_article_id ? (heroes[s.hero_article_id] as Parameters<typeof StoryCard>[0]['hero']) : undefined}
+            hero={
+              s.hero_article_id
+                ? (heroes[s.hero_article_id] as Parameters<typeof StoryCard>[0]['hero'])
+                : undefined
+            }
           />
         ))}
       </div>

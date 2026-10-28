@@ -1,14 +1,19 @@
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { MessageSquarePlus } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { ContributeDialog } from '@/components/contribute/ContributeDialog';
+import { lazyRetry } from '@/utils/lazyRetry';
 import './FeedbackButton.css';
+
+const ContributeDialog = lazyRetry(() =>
+  import('@/components/contribute/ContributeDialog').then((m) => ({ default: m.ContributeDialog })),
+);
 
 /** Global contribution trigger. All form implementations live in ContributeDialog branches. */
 export function FeedbackButton() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const [dialogMounted, setDialogMounted] = useState(false);
   const [capturing, setCapturing] = useState(false);
   const [screenshotBlob, setScreenshotBlob] = useState<Blob | null>(null);
   const [footerVisible, setFooterVisible] = useState(false);
@@ -53,6 +58,7 @@ export function FeedbackButton() {
       setScreenshotBlob(await captureScreenshot());
     } finally {
       setCapturing(false);
+      setDialogMounted(true);
       setOpen(true);
     }
   }, []);
@@ -84,7 +90,11 @@ export function FeedbackButton() {
         </Tooltip>
       )}
 
-      <ContributeDialog open={open} onOpenChange={setOpen} screenshotBlob={screenshotBlob} />
+      {dialogMounted && (
+        <Suspense fallback={null}>
+          <ContributeDialog open={open} onOpenChange={setOpen} screenshotBlob={screenshotBlob} />
+        </Suspense>
+      )}
     </>
   );
 }

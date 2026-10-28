@@ -85,7 +85,7 @@ describe('NewsCard', () => {
             {
               ...(ARTICLE as object),
               category_canonical: 'politics',
-              image_url: 'https://example.com/a.jpg',
+              image_url: 'https://img.queer.guide/images/a.jpg',
             } as never
           }
         />
@@ -95,5 +95,35 @@ describe('NewsCard', () => {
     fireEvent.error(container.querySelector('img')!);
     expect(container.querySelector('[data-station-badge]')).toBeNull();
     expect(container.querySelector('[data-fallback="station"]')).not.toBeNull();
+  });
+  it('waits for a first-party mirror rather than requesting the publisher photo', () => {
+    const article = {
+      ...(ARTICLE as object),
+      image_url: 'https://images.pexels.com/a.jpg',
+    } as never;
+    const { container, rerender } = render(
+      <MemoryRouter>
+        <NewsCard article={article} />
+      </MemoryRouter>,
+    );
+    expect(container.querySelector('img')).toBeNull();
+    rerender(
+      <MemoryRouter>
+        <NewsCard
+          article={article}
+          imageAsset={{
+            id: 'asset',
+            url: 'https://images.pexels.com/a.jpg',
+            optimized_url: 'https://img.queer.guide/images/a.jpg',
+            thumbnail_url: null,
+            optimization_status: 'optimized',
+          }}
+        />
+      </MemoryRouter>,
+    );
+    expect(container.querySelector('img')).toHaveAttribute(
+      'src',
+      'https://img.queer.guide/images/a.jpg',
+    );
   });
 });
