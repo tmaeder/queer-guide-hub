@@ -103,7 +103,12 @@ const closure = new Set();
 // Web Vitals is dynamically imported at boot, so it has the same performance
 // budget as the static shell. Shared web-vitals helpers once landed in Sentry,
 // bypassing the consent-gated SDK loader through this startup import.
-const queue = [...indexChunks, ...files.filter((f) => /^webVitals-.*\.js$/.test(f))];
+// The application bootstrap is imported just after the public document paints;
+// retain the startup budget even though its graph no longer blocks that paint.
+const queue = [
+  ...indexChunks,
+  ...files.filter((f) => /^(?:webVitals|app-bootstrap)-.*\.js$/.test(f)),
+];
 while (queue.length) {
   const f = queue.pop();
   if (closure.has(f)) continue;
