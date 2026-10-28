@@ -936,7 +936,9 @@ async function runLinkPhase(
       })
     } catch (e) {
       if (e instanceof CircuitOpenError) {
-        return jsonResponse({ phase: 'link', revision: FN_REVISION, processed, updated, skipped, failed, circuit_open: e.apiName, results }, 503, req)
+        return jsonResponse({ phase: 'link', revision: FN_REVISION, processed, updated, skipped, failed,
+          scope, dry_run: dryRun, aliases_written: aliasesWritten, name_local_filled: nativeFilled,
+          localities_registered: localitiesRegistered, circuit_open: e.apiName, results }, 503, req)
       }
       status = 'failed'; failed++
       if (e instanceof WikidataReadError) { providerFailure = e; wdTransient++ }
@@ -962,6 +964,7 @@ async function runLinkPhase(
       const response = jsonResponse({
         phase: 'link', revision: FN_REVISION, processed, updated, skipped, failed, scope,
         aliases_written: aliasesWritten, name_local_filled: nativeFilled,
+        localities_registered: localitiesRegistered,
         wikidata_fetch_failed: wdTransient, source_error: providerFailure.code,
         retry_after_seconds: providerFailure.retryAfterSeconds, dry_run: dryRun, results,
       }, 503, req)
