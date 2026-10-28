@@ -97,6 +97,22 @@ async function enterCompact(page: import('@playwright/test').Page) {
     header,
     'the header never entered its compact state — every assertion after this would be vacuous',
   ).toHaveClass(/island-ink/);
+  // Contrast is a settled-state assertion: wait for actual finite colour
+  // transitions rather than sampling an intermediate frame or sleeping 600ms.
+  await page.waitForFunction(
+    (selector) => {
+      const node = document.querySelector(selector);
+      return (
+        node &&
+        node
+          .getAnimations({ subtree: true })
+          .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
+          .every((animation) => !animation.pending && animation.playState !== 'running')
+      );
+    },
+    SITE_HEADER_SEL,
+    { timeout: 5_000 },
+  );
   return header;
 }
 
