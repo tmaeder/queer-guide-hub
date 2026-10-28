@@ -76,6 +76,13 @@ test.describe('Mobile dock a11y', () => {
           ? Math.max(0, u.top - b.top) + Math.max(0, b.bottom - u.bottom)
           : 0,
         btnH: Math.round(b.height),
+        // Positive control for the SELECTOR, not the geometry. The probe above
+        // takes the FIRST `button[aria-label]` in the dock, which is the
+        // contribute control only because every NavTab renders a LocalizedLink
+        // with a visible label and no aria-label. If a sibling button ever
+        // lands ahead of it, the height and clip checks would silently start
+        // measuring that one and keep passing.
+        labelledButtons: ul.querySelectorAll('button[aria-label]').length,
       };
     });
 
@@ -83,6 +90,11 @@ test.describe('Mobile dock a11y', () => {
     // Visible overflow permits an overhanging control; clipped overflow must
     // contain it. Both arrangements retain the accessible interactive target.
     expect(probe!.hasDockClass).toBe(true);
+    expect(
+      probe!.labelledButtons,
+      'expected exactly one aria-labelled button in the dock (the contribute control); ' +
+        'a sibling button would make the height/clip probe measure the wrong element',
+    ).toBe(1);
     expect(probe!.btnH).toBeGreaterThanOrEqual(44);
     expect(probe!.clipped, `contribute control clipped by ${probe!.overflow} overflow`).toBe(0);
   });
