@@ -61,6 +61,7 @@ jobs:
             run_publisher_venue_websites.py \
             run_city_identity_recovery.py \
             run_city_refresh.py \
+            run_profiles_social_grants.py \
             run_review_cleanup_composition.py \
             run_snapshot_backend_grants.py; do
             python3 "supabase/tests/isolated/$fixture"
