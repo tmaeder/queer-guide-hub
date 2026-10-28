@@ -150,7 +150,37 @@ begin
         v_update_ok := false;
         raise notice 'P5 probe error: % %', sqlstate, sqlerrm;
     end;
-    reset role;
+    -- NO role reset here, DELIBERATELY, and it is not a tidy-up.
+    --
+    -- This migration applied cleanly on prod on 2026-10-28 — the GRANTs ran and
+    -- all five postconditions passed (its own OK notice is in the deploy log) —
+    -- and then `supabase db push` died recording it:
+    --
+    --   ERROR: permission denied for schema supabase_migrations (SQLSTATE 42501)
+    --   INSERT INTO supabase_migrations.schema_migrations(version, name, statements)
+    --
+    -- which rolled the whole transaction back, so the grants vanished and the
+    -- feature stayed broken while the file sat merged on main. That INSERT runs
+    -- in the SAME session, after this block, and the statement removed from here
+    -- was the only one that can lower the privileges it runs with: RESET ROLE
+    -- returns to the LOGIN role, discarding any SET ROLE the CLI established for
+    -- the session. A plain `set local role` is not enough on its own to cause it
+    -- — 99991791735864_feedback_board_projection does exactly that and applied
+    -- fine — so the suspect is specifically resetting afterwards.
+    --
+    -- It is REMOVED rather than replaced because it is redundant, and that was
+    -- measured rather than assumed: a plpgsql block with an EXCEPTION handler is
+    -- a subtransaction, and aborting one rolls back GUCs set inside it, `role`
+    -- among them. Traced on prod through both exit paths — current_user reads
+    -- `postgres` before the block, immediately after the subtransaction abort,
+    -- and after the then-still-present reset. The abort restores the role by
+    -- itself, on the ZP005 path and the `when others` path alike. Four other
+    -- migrations in this tree use `set local role` with no reset for that reason.
+    --
+    -- Root cause is evidenced, not proven: only this run shows that error across
+    -- the last six deploys, and only this migration reset a role. If a future
+    -- apply still dies on the bookkeeping INSERT, question the forced ZP005
+    -- abort next, not the role.
     if not v_update_ok then
       raise exception 'P5 failed: authenticated still cannot write the social columns';
     end if;
