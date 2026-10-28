@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { loadHomeContent } from './support/homeContent';
 
 const dismissCookieBanner = async (page: Page) => {
   await page
@@ -13,6 +14,14 @@ const gotoReady = async (page: Page, path: string) => {
   await page.waitForSelector('main', { state: 'attached', timeout: 30_000 });
   await dismissCookieBanner(page);
 };
+
+/** Activate the deferred content as a reader does before probing a real card. */
+async function firstHomeCard(page: Page) {
+  await loadHomeContent(page);
+  const card = page.locator('.card-lift').first();
+  await expect(card).toBeVisible();
+  return card;
+}
 
 const observeRouteJourneys = (page: Page) =>
   page.evaluate(() => {
@@ -179,8 +188,7 @@ test.describe('production subway design-system contract', () => {
   test('interactive cards use the authored diagonal lift', async ({ page }) => {
     await gotoReady(page, '/');
 
-    const card = page.locator('.card-lift').first();
-    await expect(card).toBeVisible();
+    const card = await firstHomeCard(page);
     await card.hover();
     await expect
       .poll(() => card.evaluate((element) => getComputedStyle(element).transform))
@@ -288,7 +296,7 @@ test.describe('production subway design-system contract', () => {
     }));
     expect(networkMotion).toEqual({ track: 'none', station: 'none' });
 
-    const card = page.locator('.card-lift').first();
+    const card = await firstHomeCard(page);
     await card.hover();
     expect(await card.evaluate((element) => getComputedStyle(element).transform)).toBe('none');
   });

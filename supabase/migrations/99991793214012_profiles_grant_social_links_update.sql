@@ -150,7 +150,9 @@ begin
         v_update_ok := false;
         raise notice 'P5 probe error: % %', sqlstate, sqlerrm;
     end;
-    reset role;
+    -- The subtransaction restored the caller's role. RESET ROLE here would
+    -- instead select session_user: the CLI's login role cannot write migration
+    -- history, even though its original SET ROLE migration role can.
     if not v_update_ok then
       raise exception 'P5 failed: authenticated still cannot write the social columns';
     end if;

@@ -45,6 +45,8 @@ jobs:
           cache: npm
       - run: npm ci --prefer-offline --no-audit
       - run: npm run test:merge-policy
+      - name: Snapshot fixture locality and anonymous-data contracts
+        run: node --test scripts/ci/snapshot-fixtures.test.mjs
       - name: Review resolution source, ownership and composition fixtures
         run: |
           set -euo pipefail
@@ -58,6 +60,8 @@ jobs:
             run_event_calendar_recovery.py \
             run_publisher_venue_websites.py \
             run_city_identity_recovery.py \
+            run_city_refresh.py \
+            run_profiles_social_grants.py \
             run_review_cleanup_composition.py \
             run_snapshot_backend_grants.py; do
             python3 "supabase/tests/isolated/$fixture"

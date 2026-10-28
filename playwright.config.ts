@@ -18,7 +18,9 @@ export default defineConfig({
   // failures and 4 timeouts unreadable. `list` streams each result to stdout as
   // it completes, so the job log stays a usable record even when the run is cut
   // off mid-suite. Keep both: list for the log, html for the artifact.
-  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'html',
+  reporter: process.env.CI
+    ? [['list', { printFailuresInline: true }], ['html', { open: 'never' }]]
+    : 'html',
   use: {
     baseURL: process.env.E2E_BASE_URL || 'https://queer.guide',
     trace: 'on-first-retry',
