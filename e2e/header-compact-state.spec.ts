@@ -82,15 +82,37 @@ const SITE_HEADER_SEL = 'header[class*="site-header"]';
  * stayed unmeasured.
  */
 async function enterCompact(page: import('@playwright/test').Page) {
-  await page.evaluate((y) => window.scrollTo(0, y), PAST_THRESHOLD);
-  // The hysteresis read happens in a passive scroll listener, so give React a
-  // frame to commit rather than racing it.
-  await page.waitForTimeout(600);
+  // App chrome can mount before the rights data replaces its short loader.
+  // Wait for the real page before asking the browser to scroll it.
+  await page
+    .getByRole('heading', { name: 'LGBTQ+ rights and safety, country by country', exact: true })
+    .waitFor({ state: 'visible', timeout: 15_000 });
+  // ScrollManager deliberately abandons its landing-position settle only on a
+  // real wheel/touch/key gesture. A programmatic scroll races that settle and
+  // can be put back at zero, never exercising the compact header at all.
+  await page.mouse.wheel(0, PAST_THRESHOLD);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(80);
   const header = siteHeader(page);
   await expect(
     header,
     'the header never entered its compact state — every assertion after this would be vacuous',
   ).toHaveClass(/island-ink/);
+  // Contrast is a settled-state assertion: wait for actual finite colour
+  // transitions rather than sampling an intermediate frame or sleeping 600ms.
+  await page.waitForFunction(
+    (selector) => {
+      const node = document.querySelector(selector);
+      return (
+        node &&
+        node
+          .getAnimations({ subtree: true })
+          .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
+          .every((animation) => !animation.pending && animation.playState !== 'running')
+      );
+    },
+    SITE_HEADER_SEL,
+    { timeout: 5_000 },
+  );
   return header;
 }
 
@@ -185,8 +207,8 @@ test.describe('Header, compact ink state', () => {
 
     const header = await enterCompact(page);
 
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.waitForTimeout(600);
+    await page.mouse.wheel(0, -PAST_THRESHOLD * 2);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 
     await expect(
       header,
