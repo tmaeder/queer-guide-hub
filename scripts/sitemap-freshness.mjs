@@ -54,19 +54,37 @@ const SITEMAPS = [
   { path: '/sitemap-places.xml', minEntries: 1500, kind: 'urlset' },
   { path: '/sitemap-hotels.xml', minEntries: 200, kind: 'urlset' },
   { path: '/sitemap-villages.xml', minEntries: 90, kind: 'urlset' },
-  // Re-derived 2026-10-14: live 1,211, down from the 2,604 measured 2026-09-10,
-  // and this gate had failed on EVERY run since ~09-25 against that stale floor.
-  // The drop is DELIBERATE, not a generator collapse — the sitemap matches the
-  // database exactly (1,211 = active AND seo_indexable), and every one of the
-  // 7,220 active-but-deindexed tags carries an attributed reason: 6,601
-  // `publication_role:utility`, 170 `publication_role:entity_redirect`, 385
-  // across the kinktionary prose/overlap retraction migrations. The count is
-  // also RISING (1,196 → 1,195 → 1,211 over three weeks), so this was a floor
-  // that outlived its corpus rather than a corpus that fell through its floor.
-  // 1000 is deliberately tighter than the ~60% convention above (≈730): this
-  // number is stable and slowly growing, so a 17% fall really is a collapse,
-  // whereas a 60% floor would no longer detect one.
-  { path: '/sitemap-tags.xml', minEntries: 1000, kind: 'urlset' },
+  // Re-derived 2026-10-28: live 422. SECOND time this floor has outlived its
+  // corpus — the 2026-10-14 revision below set 1000 against a then-live 1,211,
+  // and an owner-directed editorial pass has since deindexed most of that.
+  // The drop is DELIBERATE and fully attributed, which is what separates it from
+  // the collapse this floor exists to catch. `tag_change_log` names the writers:
+  // 99991792777267_tag_sensitive_proposals_excel_2026_10_23 deindexed 708 on
+  // 10-23, 99991792772531_tag_redirect_targets_repair 104, and batch13/16 plus
+  // four merges another ~56. All 708 of the big one were verified individually:
+  // 708/708 are is_sensitive, 708/708 moved to publication_role='utility',
+  // 708/708 carry a seo_deindex_reason, 0/708 are still indexable. Deindexing a
+  // sensitive glossary term is this repo's documented convention (faggot,
+  // shemale, breeder predate it), so the corpus is right and the floor was stale.
+  // NOT a generator fault: the sitemap matches the database exactly
+  // (422 = active AND seo_indexable AND publication_role='article', and
+  // active+indexable+utility is 0, so the role IS the deindex driver).
+  //
+  // 350 is DERIVED, not chosen. The series was reconstructed out of
+  // tag_change_log by replaying every seo_indexable flip backwards from the live
+  // count rather than asserting stability: 1,295 (10-04) … 1,306 (10-22) → 478
+  // (10-23) → 422 on 10-24, 10-25, 10-26, 10-27, 10-28 — one step change, then
+  // exactly flat for five days. On a number that provably does not drift, the
+  // previous revision's ratio is the right sensitivity to keep: 1000/1211 was
+  // 82.6%, and 82.6% of 422 is 349. So a further fall of ~72 tags still reads as
+  // a collapse, where the ~60% convention (≈253) would no longer detect one.
+  //
+  // Honest residue the previous comment could claim and this one cannot: it said
+  // EVERY active-but-deindexed tag carries an attributed reason. Measured today
+  // 20 of 6,596 carry none (6,292 publication_role:utility, 162
+  // entity_redirect, 98 kinktionary migrations, 24 placeholder-stamp removal).
+  // Twenty unattributed rows are a work list, not a reason to hold the floor.
+  { path: '/sitemap-tags.xml', minEntries: 350, kind: 'urlset' },
   { path: '/sitemap-landings.xml', minEntries: 5, kind: 'urlset', maxAgeDays: 14 },
   // Previously absent from this list entirely, so nothing checked them at all.
   // Landmarks is content-limited rather than broken: only 6 landmark rows exist
