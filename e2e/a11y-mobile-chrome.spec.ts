@@ -55,17 +55,8 @@ test.describe('Mobile dock a11y', () => {
   });
 
   test('the contribute button is not clipped by the island', async ({ page }) => {
-    // The old raised control was cropped by 4px despite an intact hit target,
-    // so what this test is FOR is the clip relationship, not a particular size.
-    // It used to assert `btnH >= 80` and that pinned a transient: #4888
-    // ("enlarge website icons") took the control 56px -> 80px, this spec was
-    // written against that state in #4904, and #4912 ("revert the 64px floor")
-    // deliberately put it back to `-mt-8 h-14 w-14` = 56px. The spec then failed
-    // nightly for the revert having worked. The durable claim is the TAP TARGET
-    // FLOOR, which both designs clear: `src/index.css` gives every bare <button>
-    // min-height 44px, the dock's own comment specifies "48px targets", and
-    // WCAG 2.5.8 AA asks 24px. 44 is this repo's own floor, so it holds whether
-    // the control is 56px or 80px and still catches a genuine collapse.
+    // The old raised control was cropped by 4px despite an intact hit target.
+    // Verify the clip relationship for both raised and in-row arrangements.
     await page.setViewportSize(PHONE);
     await page.goto('/');
     await waitForAppReady(page);
@@ -81,51 +72,31 @@ test.describe('Mobile dock a11y', () => {
       return {
         overflow: getComputedStyle(ul).overflow,
         hasDockClass: ul.classList.contains('island-dock'),
-        // NOTE this is OVERHANG, not clipping. The contribute control is
-        // deliberately raised above the row (`-mt-8`), so a non-zero value here
-        // is the intended design; it only becomes a crop if the row's overflow
-        // clips. Asserting `overhang === 0` is what made this test fail with the
-        // self-contradicting message "clipped by visible overflow".
-        overhang: Math.max(0, u.top - b.top) + Math.max(0, b.bottom - u.bottom),
+        clipped: ['hidden', 'clip', 'auto', 'scroll'].includes(getComputedStyle(ul).overflowY)
+          ? Math.max(0, u.top - b.top) + Math.max(0, b.bottom - u.bottom)
+          : 0,
         btnH: Math.round(b.height),
-        // Positive control: the contribute button is the ONLY <button aria-label>
-        // in the dock (every NavTab renders a LocalizedLink with a visible label
-        // and no aria-label). If a sibling button ever lands before it, the
-        // selector above would silently start measuring that one instead, so
-        // assert the count rather than trusting first-match.
+        // Positive control for the SELECTOR, not the geometry. The probe above
+        // takes the FIRST `button[aria-label]` in the dock, which is the
+        // contribute control only because every NavTab renders a LocalizedLink
+        // with a visible label and no aria-label. If a sibling button ever
+        // lands ahead of it, the height and clip checks would silently start
+        // measuring that one and keep passing.
         labelledButtons: ul.querySelectorAll('button[aria-label]').length,
       };
     });
 
     expect(probe, 'could not find the dock or its contribute button').not.toBeNull();
-    // The control is raised above the dock row (`-mt-8`), so what has to hold is
-    // that the row does not CLIP it — `.island-dock` exists for exactly this and
-    // its own CSS comment says "`overflow: visible` is the whole rule". Bare
-    // `.island` is `overflow: hidden`, which is the crop this test was written
-    // after. Overhang on its own is the intended raised design.
+    // Visible overflow permits an overhanging control; clipped overflow must
+    // contain it. Both arrangements retain the accessible interactive target.
     expect(probe!.hasDockClass).toBe(true);
-    expect(
-      probe!.overflow,
-      `dock overflow is "${probe!.overflow}"; bare .island is overflow:hidden and ` +
-        `would crop the raised control — .island-dock must win`,
-    ).toBe('visible');
     expect(
       probe!.labelledButtons,
       'expected exactly one aria-labelled button in the dock (the contribute control); ' +
         'a sibling button would make the height/clip probe measure the wrong element',
     ).toBe(1);
-    expect(
-      probe!.btnH,
-      `contribute control is ${probe!.btnH}px, under this repo's 44px button floor`,
-    ).toBeGreaterThanOrEqual(44);
-    // Second half of the same invariant, so either failure mode is caught: if the
-    // row ever goes back to a clipping overflow, nothing may overhang it.
-    const clips = !['visible', 'clip'].includes(probe!.overflow) ? probe!.overhang : 0;
-    expect(
-      clips,
-      `contribute control overhangs its row by ${probe!.overhang}px while overflow ` +
-        `is "${probe!.overflow}", so ${probe!.overhang}px is cropped`,
-    ).toBe(0);
+    expect(probe!.btnH).toBeGreaterThanOrEqual(44);
+    expect(probe!.clipped, `contribute control clipped by ${probe!.overflow} overflow`).toBe(0);
   });
 });
 
