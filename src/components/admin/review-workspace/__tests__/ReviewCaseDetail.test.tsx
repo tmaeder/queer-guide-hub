@@ -9,6 +9,7 @@ const state = vi.hoisted(() => ({
   error: null as Error | null,
   venueQuery: {} as Record<string, unknown>,
 }));
+vi.mock('../JevReviewStatus', () => ({ JevReviewStatus: () => null }));
 vi.mock('@/hooks/useReviewCase', () => ({
   reviewCaseInfo: (item: ReviewItem) => item.meta.review_case,
   useReviewCase: () => ({ ...state, isError: !!state.error, isLoading: false, refetch: vi.fn() }),

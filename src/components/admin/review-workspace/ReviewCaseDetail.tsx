@@ -1,3 +1,4 @@
+import { JevReviewStatus } from './JevReviewStatus';
 import { useState } from 'react';
 import { ArrowLeft, ExternalLink, RefreshCw, SkipForward } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -131,6 +132,7 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
           <p>This case is no longer pending. Refresh the queue to continue.</p>
         ) : (
           <div className="space-y-6">
+            <JevReviewStatus caseId={info.id} />
             <div>
               <p className="text-sm font-medium">
                 {info.family === 'artwork'

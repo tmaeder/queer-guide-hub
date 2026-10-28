@@ -5,19 +5,26 @@ import { formatDistanceToNow } from 'date-fns';
 import { safeText } from '@/utils/safeDisplay';
 import { cleanTitle } from '@/utils/htmlDecode';
 import { getFallbackImage } from '@/utils/fallbackImages';
-import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+import { resolveNewsImage } from '@/utils/resolveNewsImage';
+import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { useMemo, useState } from 'react';
 import type { NewsStory, NewsStoryArticle } from '@/hooks/useNewsStories';
 
 interface StoryCardProps {
   story: NewsStory;
   hero?: NewsStoryArticle;
+  imageAsset?: EntityImageAsset;
 }
 
-export const StoryCard = ({ story, hero }: StoryCardProps) => {
+export const StoryCard = ({ story, hero, imageAsset }: StoryCardProps) => {
   const [imgFailed, setImgFailed] = useState(false);
   const fallback = useMemo(() => getFallbackImage('news', story.slug), [story.slug]);
-  const img = isValidImageUrl(hero?.image_url) && !imgFailed ? hero!.image_url! : fallback;
+  const source = resolveNewsImage({
+    imageUrl: hero?.image_url,
+    optimizedUrl: imageAsset?.optimized_url,
+    thumbnailUrl: imageAsset?.thumbnail_url,
+  });
+  const img = source && !imgFailed ? source : fallback;
   const title = safeText(cleanTitle(story.title));
 
   return (
