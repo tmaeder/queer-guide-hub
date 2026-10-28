@@ -267,8 +267,20 @@ export default defineConfig(({ mode }) => ({
           groups: [
             // __vitePreload helper → vendor (must win, hence highest priority)
             { name: 'vendor', test: /preload-helper/, priority: 100 },
+            // Map glyph serialization uses react-dom/server only on map routes.
+            // The broad React group below otherwise pulls the server renderers
+            // into every public page, including the text-only homepage hero.
+            {
+              name: 'react-server',
+              test: /node_modules\/react-dom\/(?:server(?:\.|\/)|cjs\/react-dom-server)/,
+              priority: 10,
+            },
             // React core MUST be in its own chunk to avoid circular deps
-            { name: 'vendor', test: /node_modules\/react(-dom)?\// },
+            {
+              name: 'vendor',
+              test: /node_modules\/(?:react\/|react-dom\/(?!(?:server|cjs\/react-dom-server)))/,
+              priority: 20,
+            },
             { name: 'router', test: /node_modules\/react-router\// },
             // Styling micro-deps (clsx + tailwind-merge + cva) → shared-utils-v2, which
             // is already on every page's preload list. Without this rolldown

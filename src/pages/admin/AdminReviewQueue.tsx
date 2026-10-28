@@ -1,3 +1,4 @@
+import { JevReviewStatus } from '@/components/admin/review-workspace/JevReviewStatus';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import {
@@ -338,6 +339,7 @@ export default function AdminReviewQueue() {
                 ` · Updated ${new Date(summary.worklist_as_of).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
             </p>
           )}
+          <JevReviewStatus />
         </div>
         <div className="flex items-center gap-2">
           {lastActed && (

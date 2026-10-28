@@ -6,11 +6,16 @@ import { render, screen, fireEvent } from '@testing-library/react';
 
 vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
-    <a href={to} {...rest}>{children}</a>
+    <a href={to} {...rest}>
+      {children}
+    </a>
   ),
 }));
 vi.mock('@/utils/safeDisplay', () => ({ safeText: (s: string) => s }));
-vi.mock('@/utils/htmlDecode', () => ({ decodeHtmlEntities: (s: string) => s, cleanTitle: (s: string) => s }));
+vi.mock('@/utils/htmlDecode', () => ({
+  decodeHtmlEntities: (s: string) => s,
+  cleanTitle: (s: string) => s,
+}));
 vi.mock('@/utils/fallbackImages', () => ({ getFallbackImage: () => '/fallback.png' }));
 
 import { StoryCard } from '../StoryCard';
@@ -35,19 +40,47 @@ describe('StoryCard', () => {
   it('uses hero image when provided', () => {
     // Image has role="presentation" (decorative — story title carries semantics).
     const { container } = render(
-      <StoryCard story={story} hero={{ image_url: 'https://img.test/hero.jpg', excerpt: 'lead' } as never} />,
+      <StoryCard
+        story={story}
+        hero={{ image_url: 'https://img.queer.guide/images/hero.jpg', excerpt: 'lead' } as never}
+      />,
     );
     const img = container.querySelector('img');
-    expect(img).toHaveAttribute('src', 'https://img.test/hero.jpg');
+    expect(img).toHaveAttribute('src', 'https://img.queer.guide/images/hero.jpg');
     expect(screen.getByText('lead')).toBeInTheDocument();
   });
 
   it('falls back to placeholder on image error', () => {
     const { container } = render(
-      <StoryCard story={story} hero={{ image_url: 'https://img.test/broken.jpg' } as never} />,
+      <StoryCard
+        story={story}
+        hero={{ image_url: 'https://img.queer.guide/images/broken.jpg' } as never}
+      />,
     );
     const img = container.querySelector('img')!;
     fireEvent.error(img);
     expect(img).toHaveAttribute('src', '/fallback.png');
+  });
+  it('shows local artwork until the publisher photo has a first-party mirror', () => {
+    const hero = { image_url: 'https://images.pexels.com/a.jpg' } as never;
+    const { container, rerender } = render(<StoryCard story={story} hero={hero} />);
+    expect(container.querySelector('img')).toHaveAttribute('src', '/fallback.png');
+    rerender(
+      <StoryCard
+        story={story}
+        hero={hero}
+        imageAsset={{
+          id: 'a',
+          url: 'https://images.pexels.com/a.jpg',
+          optimized_url: 'https://img.queer.guide/images/a.jpg',
+          thumbnail_url: null,
+          optimization_status: 'optimized',
+        }}
+      />,
+    );
+    expect(container.querySelector('img')).toHaveAttribute(
+      'src',
+      'https://img.queer.guide/images/a.jpg',
+    );
   });
 });

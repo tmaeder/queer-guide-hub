@@ -729,3 +729,7 @@ verify_jwt = false
 
 [functions.bluesky-mentions]
 verify_jwt = false
+
+# Internal cron secret or verified admin authentication is checked in the handler.
+[functions.review-automation]
+verify_jwt = false
