@@ -16,8 +16,7 @@ export function inlineCssUrls(css: string, stylesheetHref: string): string {
 
 /** Inline only the app's generated global stylesheet; route CSS stays cached. */
 export function inlineEntryCssHtml(html: string, readAsset: (href: string) => string): string {
-  const styles: string[] = [];
-  const document = html.replace(/<link\b[^>]*>/gi, (tag) => {
+  return html.replace(/<link\b[^>]*>/gi, (tag) => {
     const rel = /\brel=["']([^"']+)["']/i.exec(tag)?.[1];
     const href = /\bhref=["']([^"']+)["']/i.exec(tag)?.[1];
     if (rel !== 'stylesheet' || !href || !/^\/?assets\/css\/index-[\w-]+\.css$/.test(href)) {
@@ -26,23 +25,15 @@ export function inlineEntryCssHtml(html: string, readAsset: (href: string) => st
     const css = inlineCssUrls(readAsset(href), href)
       .replace(/\/\*# sourceMappingURL=[^\n]*\*\/\s*$/, '')
       .replace(/<\/style/gi, (closing) => closing.replace('/', '\\/'));
-    // The Pages middleware's existing ScriptNonceInjector stamps this original
-    // style element with the response nonce, just as it does authored styles.
-    styles.push(`<style data-inlined-entry-css="${href}">${css}</style>`);
-    // A disabled link does not fetch or apply CSS. Its URL lets Vite's lazy
-    // preload helper recognize that these rules are already supplied by HTML.
-    // https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/link#disabled
-    return tag.replace(/\/?>$/, ' disabled data-inlined-entry-css-marker>');
+    // Pages stamps both original style and script elements with its response
+    // nonce. Keep the generated dependency URL out of the speculative parser:
+    // assign it only after creating a disabled link, which never fetches CSS.
+    // Vite's lazy preload helper can then reuse the rules already in the HTML.
+    const marker = tag
+      .replace(/\s+href=["'][^"']+["']/i, '')
+      .replace(/\/?>$/, ` disabled data-inlined-entry-css-marker="${href}">`);
+    return `<style data-inlined-entry-css="${href}">${css}</style>${marker}<script>document.currentScript.previousElementSibling.href=document.currentScript.previousElementSibling.dataset.inlinedEntryCssMarker</script>`;
   });
-  if (styles.length === 0) return html;
-  // Supply styles before module discovery so initial rendering does not compete
-  // with the full startup graph. Keep existing theme/font boot hints ahead.
-  const module = document.search(
-    /<(?:script\b[^>]*\btype=["']module["']|link\b[^>]*\brel=["']modulepreload["'])/i,
-  );
-  const headEnd = document.search(/<\/head>/i);
-  const insertion = module >= 0 ? module : headEnd >= 0 ? headEnd : 0;
-  return document.slice(0, insertion) + styles.join('\n') + '\n' + document.slice(insertion);
 }
 
 export function inlineEntryCss(): Plugin {
