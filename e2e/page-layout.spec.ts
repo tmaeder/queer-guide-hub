@@ -665,6 +665,17 @@ test.describe('page layout — nothing wider than the header', () => {
             timeout: 15_000,
           });
         }
+        if (route === '/rights') {
+          // The loading frame is capped too; audit the loaded country surface,
+          // whose labels and controls are the boxes this assertion must cover.
+          await page
+            .getByRole('heading', {
+              name: 'LGBTQ+ rights and safety, country by country',
+              exact: true,
+            })
+            .waitFor({ state: 'visible', timeout: 15_000 });
+        }
+        await page.evaluate(() => document.fonts.ready);
         await page.waitForTimeout(1500);
 
         const r = await page.evaluate(() => {
