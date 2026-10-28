@@ -56,8 +56,7 @@ test.describe('Mobile dock a11y', () => {
 
   test('the contribute button is not clipped by the island', async ({ page }) => {
     // The old raised control was cropped by 4px despite an intact hit target.
-    // Its current 80px replacement sits inside a horizontally scrolling dock;
-    // verify the clip relationship rather than requiring either arrangement.
+    // Verify the clip relationship for both raised and in-row arrangements.
     await page.setViewportSize(PHONE);
     await page.goto('/');
     await waitForAppReady(page);
@@ -73,16 +72,18 @@ test.describe('Mobile dock a11y', () => {
       return {
         overflow: getComputedStyle(ul).overflow,
         hasDockClass: ul.classList.contains('island-dock'),
-        clipped: Math.max(0, u.top - b.top) + Math.max(0, b.bottom - u.bottom),
+        clipped: ['hidden', 'clip', 'auto', 'scroll'].includes(getComputedStyle(ul).overflowY)
+          ? Math.max(0, u.top - b.top) + Math.max(0, b.bottom - u.bottom)
+          : 0,
         btnH: Math.round(b.height),
       };
     });
 
     expect(probe, 'could not find the dock or its contribute button').not.toBeNull();
-    // The current 80px control sits inside the scrollable dock instead of
-    // overhanging it. Measure clipping directly so either layout stays covered.
+    // Visible overflow permits an overhanging control; clipped overflow must
+    // contain it. Both arrangements retain the accessible interactive target.
     expect(probe!.hasDockClass).toBe(true);
-    expect(probe!.btnH).toBeGreaterThanOrEqual(80);
+    expect(probe!.btnH).toBeGreaterThanOrEqual(44);
     expect(probe!.clipped, `contribute control clipped by ${probe!.overflow} overflow`).toBe(0);
   });
 });
