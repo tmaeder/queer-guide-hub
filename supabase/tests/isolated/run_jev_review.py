@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Run the real Jev migration and transaction refusal/rollback tests in isolated PG17."""
+"""Run the real Jev migrations and transaction refusal/rollback tests in isolated PostgreSQL."""
 import os, subprocess, tempfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[3]
-PG=Path('/opt/homebrew/opt/postgresql@17/bin')
+PG=Path(os.environ.get('PG_BIN','/opt/homebrew/opt/postgresql@17/bin'))
 schema="""
 create role anon;create role authenticated;create role service_role;
 create schema api_private;create schema auth;create schema cron;
@@ -110,7 +110,7 @@ do $$declare value jsonb; projected jsonb;begin
   if projected is not null then raise exception 'Non-object projection escaped: %',projected;end if;
  end loop;
  projected:=api_private.jev_public_record(jsonb_build_object('name','Public name','description',repeat('x',19000),'email','DO_NOT_EXPORT','reporter_id','DO_NOT_EXPORT','raw_data',jsonb_build_object('private','DO_NOT_EXPORT')));
- if projected->>'name'<>'Public name' or length(projected->>'description')<>18000 or projected::text like '%DO_NOT_EXPORT%'then
+ if projected->>'name' is distinct from 'Public name' or length(projected->>'description') is distinct from 18000 or projected::text like '%DO_NOT_EXPORT%'then
   raise exception 'Object projection changed its public allow-list or bounds: %',projected;
  end if;
 end $$;
@@ -128,7 +128,7 @@ insert into admin_review_cases(id,fingerprint,active,item,members,family,stage)v
  jsonb_build_object('id',md5('staging-source')::uuid,'queue_type','staging','title','Public staging event','entity_table','news_articles','risk','integrity'),'[]','staging','research');
 do $$declare ctx jsonb;begin
  ctx:=api_private.jev_context(md5('staging-case')::uuid);
- if ctx#>>'{proposal,source_content,normalized,title}'<>'Public staging event'
+ if ctx#>>'{proposal,source_content,normalized,title}' is distinct from 'Public staging event'
  or ctx#>'{proposal,source_content,enriched}' is distinct from 'null'::jsonb
  or nullif(ctx->>'input_hash','')is null or ctx::text like '%DO_NOT_EXPORT%'then
   raise exception 'Nullable staging projection failed: %',ctx;
