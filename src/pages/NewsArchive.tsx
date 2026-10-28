@@ -550,8 +550,9 @@ export default function NewsArchive() {
     const ids = new Set<string>();
     for (const a of paginatedArticles as Array<{ id: string }>) ids.add(a.id);
     for (const a of featuredArticles) ids.add(a.id);
+    for (const story of stories) if (story.hero_article_id) ids.add(story.hero_article_id);
     return Array.from(ids);
-  }, [paginatedArticles, featuredArticles]);
+  }, [paginatedArticles, featuredArticles, stories]);
   const { assets: articleAssets } = useEntityImageAssets('news_article', visibleArticleIds);
 
   const handleLoadMore = () => {
@@ -1038,6 +1039,11 @@ export default function NewsArchive() {
                               <StoryCard
                                 key={s.id}
                                 story={s}
+                                imageAsset={
+                                  s.hero_article_id
+                                    ? articleAssets.get(s.hero_article_id)
+                                    : undefined
+                                }
                                 hero={
                                   s.hero_article_id ? storyHeroes[s.hero_article_id] : undefined
                                 }

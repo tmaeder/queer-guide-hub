@@ -1,18 +1,18 @@
-import { useEffect, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { Suspense, useEffect, useState } from 'react';
 import { Cookie, Settings } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { easing } from '@/lib/motion';
-import { duration, distance } from '@/lib/animation';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
-import { CookiePreferencesDialog } from './CookiePreferencesDialog';
+import { lazyRetry } from '@/utils/lazyRetry';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+const CookiePreferencesDialog = lazyRetry(() =>
+  import('./CookiePreferencesDialog').then((m) => ({ default: m.CookiePreferencesDialog })),
+);
 
 /**
  * Window event any surface can dispatch to reopen the preferences dialog.
  *
- * The dialog is rendered here, outside the banner's own AnimatePresence, so it
+ * The dialog is rendered here, outside the banner's conditional rendering, so it
  * survives the banner being dismissed — but until 2026-09-12 the ONLY thing
  * that could open it was the banner's "Customize" button, and the banner never
  * renders again after a first choice is stored. So a visitor who pressed
@@ -30,7 +30,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 export function CookieConsentBanner() {
   const { showBanner, acceptAll, acceptNecessary } = useCookieConsent();
   const [showPreferences, setShowPreferences] = useState(false);
-  const reduced = useReducedMotion() ?? false;
 
   useEffect(() => {
     const open = () => setShowPreferences(true);
@@ -54,10 +53,8 @@ export function CookieConsentBanner() {
    * three legal links and wraps differently in every locale. A hardcoded value
    * is correct for exactly one language at one width.
    *
-   * Cleared as soon as `showBanner` flips rather than on unmount: the exit
-   * animation keeps the node mounted for another ~200ms, and releasing the
-   * offset at the same moment lets the player settle down as the bar slides
-   * out instead of jumping afterwards.
+   * Cleared as soon as the banner is dismissed so the other controls settle
+   * into their normal positions immediately.
    */
   const [barEl, setBarEl] = useState<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -67,7 +64,7 @@ export function CookieConsentBanner() {
       clear();
       return;
     }
-    // Height is unaffected by the enter/exit transform — motion animates `y`,
+    // Height is unaffected by the enter/exit transform — CSS animates translate,
     // not the box — so this measures the settled height from the first frame.
     const publish = () => {
       const inset =
@@ -93,65 +90,61 @@ export function CookieConsentBanner() {
       {/* Monochrome bottom island. Its inset, panel radius and shadow match the
           rest of the floating chrome; tonal fill + blur replace the old
           full-width hard edge. */}
-      <AnimatePresence>
-        {showBanner && (
-          <motion.div
-            role="region"
-            aria-label="Cookie settings"
-            initial={reduced ? false : { opacity: 0, y: distance.lg }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={reduced ? { opacity: 0 } : { opacity: 0, y: distance.lg }}
-            transition={
-              reduced ? { duration: 0 } : { duration: duration.normal, ease: easing.decel }
-            }
-            ref={setBarEl}
-            className="fixed bottom-[var(--island-inset)] left-[var(--island-inset)] right-[var(--island-inset)] z-[var(--z-sticky)] overflow-hidden rounded-panel bg-surface-container-highest/95 shadow-island backdrop-blur-md"
-          >
-            <div className="mx-auto flex max-w-6xl flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6">
-              <div className="flex items-start gap-2 md:items-center">
-                <Cookie size={18} className="mt-0.5 shrink-0 text-muted-foreground md:mt-0" />
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  We use cookies to keep you signed in and remember your preferences — and, only
-                  with your consent, to measure anonymous usage. No ad trackers, no data selling.
-                  See our{' '}
-                  <LocalizedLink to="/legal" className="underline hover:text-foreground">
-                    Legal Hub
-                  </LocalizedLink>
-                  ,{' '}
-                  <LocalizedLink to="/privacy" className="underline hover:text-foreground">
-                    Privacy
-                  </LocalizedLink>{' '}
-                  and{' '}
-                  <LocalizedLink to="/cookies" className="underline hover:text-foreground">
-                    Cookie Policy
-                  </LocalizedLink>
-                  .
-                </p>
-              </div>
 
-              <div className="flex shrink-0 flex-wrap items-center gap-2 md:ml-auto">
-                <Button
-                  onClick={() => setShowPreferences(true)}
-                  variant="ghost"
-                  size="sm"
-                  className="gap-2"
-                >
-                  <Settings size={16} />
-                  Customize
-                </Button>
-                <Button onClick={acceptNecessary} variant="outline" size="sm">
-                  Necessary Only
-                </Button>
-                <Button onClick={acceptAll} size="sm">
-                  Accept All
-                </Button>
-              </div>
+      {showBanner && (
+        <div
+          role="region"
+          aria-label="Cookie settings"
+          ref={setBarEl}
+          className="animate-in fade-in-0 slide-in-from-bottom-4 duration-normal motion-reduce:animate-none fixed bottom-[var(--island-inset)] left-[var(--island-inset)] right-[var(--island-inset)] z-[var(--z-sticky)] overflow-hidden rounded-panel bg-surface-container-highest/95 shadow-island backdrop-blur-md"
+        >
+          <div className="mx-auto flex max-w-6xl flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6">
+            <div className="flex items-start gap-2 md:items-center">
+              <Cookie size={18} className="mt-0.5 shrink-0 text-muted-foreground md:mt-0" />
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                We use cookies to keep you signed in and remember your preferences — and, only with
+                your consent, to measure anonymous usage. No ad trackers, no data selling. See our{' '}
+                <LocalizedLink to="/legal" className="underline hover:text-foreground">
+                  Legal Hub
+                </LocalizedLink>
+                ,{' '}
+                <LocalizedLink to="/privacy" className="underline hover:text-foreground">
+                  Privacy
+                </LocalizedLink>{' '}
+                and{' '}
+                <LocalizedLink to="/cookies" className="underline hover:text-foreground">
+                  Cookie Policy
+                </LocalizedLink>
+                .
+              </p>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      <CookiePreferencesDialog open={showPreferences} onOpenChange={setShowPreferences} />
+            <div className="flex shrink-0 flex-wrap items-center gap-2 md:ml-auto">
+              <Button
+                onClick={() => setShowPreferences(true)}
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+              >
+                <Settings size={16} />
+                Customize
+              </Button>
+              <Button onClick={acceptNecessary} variant="outline" size="sm">
+                Necessary Only
+              </Button>
+              <Button onClick={acceptAll} size="sm">
+                Accept All
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPreferences && (
+        <Suspense fallback={null}>
+          <CookiePreferencesDialog open={showPreferences} onOpenChange={setShowPreferences} />
+        </Suspense>
+      )}
     </>
   );
 }

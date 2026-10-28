@@ -69,3 +69,47 @@ test('localized homepage keeps its locale through navigation', async ({ page }) 
   await page.locator('.subway-hero a[href="/de/search"]').click();
   await expect(page).toHaveURL(/\/de\/search(?:\?|$)/);
 });
+
+test('mobile consent and contribution controls load only when opened', async ({ page }) => {
+  await page.setViewportSize({ width: 412, height: 844 });
+  const scripts: string[] = [];
+  page.on('request', (request) => {
+    if (request.resourceType() === 'script') scripts.push(request.url());
+  });
+  await page.goto('/');
+  await expect(page.getByRole('region', { name: 'Cookie settings' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  expect(
+    scripts.filter((url) => /\/(?:framer-motion|react-server|ContributeDialog|CookiePreferencesDialog)-/.test(url)),
+  ).toEqual([]);
+  await page.getByRole('button', { name: 'Customize', exact: true }).click();
+  const preferences = page.getByRole('dialog', { name: 'Cookie Preferences' });
+  await expect(preferences).toBeVisible();
+  await preferences.getByRole('button', { name: 'Necessary Only', exact: true }).click();
+  await expect(preferences).toBeHidden();
+  await expect(page.getByRole('region', { name: 'Cookie settings' })).toBeHidden();
+  await page.getByRole('button', { name: 'Contribute to Queer Guide', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Contribute to Queer Guide' })).toBeVisible({
+    timeout: 20000,
+  });
+});
+
+test('news photos never request publisher image hosts before or after mirror lookup', async ({
+  page,
+}) => {
+  const imageHosts = new Set<string>();
+  page.on('request', (request) => {
+    if (request.resourceType() === 'image') imageHosts.add(new URL(request.url()).hostname);
+  });
+  await page.goto('/news');
+  await expect(page.locator('main').getByRole('heading').first()).toBeVisible();
+  await expect(page.locator('main a[href^="/news/"]').first()).toBeVisible({ timeout: 20000 });
+  for (let i = 0; i < 8; i++) {
+    await page.mouse.wheel(0, 700);
+    await page.waitForTimeout(250);
+  }
+  const ownHost = new URL(page.url()).hostname;
+  expect([...imageHosts].filter((host) => ![ownHost, 'img.queer.guide'].includes(host))).toEqual(
+    [],
+  );
+});
