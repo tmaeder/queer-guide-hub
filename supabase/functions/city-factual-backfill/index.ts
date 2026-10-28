@@ -31,6 +31,7 @@ import { plausibleCityScalar } from '../_shared/city-scalar-bounds.ts'
 import { cityClassVerdict, cityCoordVerdict, isCityRefreshScope } from '../_shared/city-class-guard.ts'
 import { countryLanguageCodes } from '../_shared/language-codes.ts'
 import { applyCityFactualPatch, type CityLocalityProposal } from './write.ts'
+import { readWikidataJson, WikidataReadError } from './wikidata.ts'
 import {
   airportQuery, applyLabels, bestStatement, capitalQuery, parseCityFacts, parseCityNames, parseCityNativeName, pickAirports,
   pickCapitals, pickUniversities, resolveLabels, sparqlUrl, universityQuery,
@@ -43,7 +44,7 @@ import {
 // runtime keeps serving an older bundle (seen 2026-10-07: v214 held the
 // name_local code and answered in the old shape), so the only proof a change
 // is live is the response itself. Bump this when the link/sparql output changes.
-const FN_REVISION = '2026-10-28.guarded-fair-city-drain'
+const FN_REVISION = '2026-10-28.wikidata-backpressure'
 
 const DEFAULT_BATCH_LIMIT = 40
 // 300 is the repo-wide ceiling for city writes: one cities UPDATE fans out
@@ -143,23 +144,8 @@ async function fetchWikipediaExtract(title: string): Promise<string | null> {
 // damage was contained only because bumpMiss is a no-op on already-resolved
 // rows. So: retry 429/5xx/network with backoff, and report what is left as
 // 'transient', which the caller must never count as an attempt.
-const WD_RETRIES = 3
-
 async function fetchWbEntities(url: string): Promise<{ ok: true; data: Json } | { ok: false }> {
-  for (let i = 0; i < WD_RETRIES; i++) {
-    const ctl = new AbortController()
-    const t = setTimeout(() => ctl.abort(), FETCH_TIMEOUT)
-    try {
-      const r = await fetch(url, { headers: { 'User-Agent': WP_UA, Accept: 'application/json' }, signal: ctl.signal })
-      if (r.ok) return { ok: true, data: await r.json() as Json }
-      if (r.status !== 429 && r.status < 500) return { ok: false }
-      const ra = Number(r.headers.get('retry-after'))
-      await new Promise(res => setTimeout(res, Number.isFinite(ra) && ra > 0 ? Math.min(ra, 5) * 1000 : 1000 * 2 ** i))
-    } catch {
-      await new Promise(res => setTimeout(res, 1000 * 2 ** i))
-    } finally { clearTimeout(t) }
-  }
-  return { ok: false }
+  return { ok: true, data: await readWikidataJson(url, WP_UA) }
 }
 
 async function fetchEntity(qid: string, extraLangs: readonly string[] = []): Promise<
@@ -464,6 +450,7 @@ async function runLinkPhase(
     const started = Date.now()
     let status: string
     let missReason: string | null = null
+    let providerFailure: WikidataReadError | null = null
 
     try {
       const { data: allowed, error: holdError } = await supabase.rpc('city_factual_research_allowed', { p_city_id: c.id })
@@ -946,10 +933,12 @@ async function runLinkPhase(
         return jsonResponse({ phase: 'link', revision: FN_REVISION, processed, updated, skipped, failed, circuit_open: e.apiName, results }, 503, req)
       }
       status = 'failed'; failed++
+      if (e instanceof WikidataReadError) { providerFailure = e; wdTransient++ }
       // enrichment_log is service-role-only and is the durable diagnostic
       // record, so it keeps the raw text; the HTTP body gets the safe code.
       missReason = (e instanceof Error ? e.message : String(e)).slice(0, 200)
-      results.push({ id: c.id, name: c.name, status: 'error', error: errCode(e) })
+      results.push({ id: c.id, name: c.name, status: 'error', error: errCode(e),
+        ...(providerFailure ? { source_error: providerFailure.code } : {}) })
     }
 
     processed++
@@ -962,6 +951,16 @@ async function runLinkPhase(
         error_message: status === 'done' ? null : missReason,
         duration_ms: Date.now() - started,
       }).then(() => {}, () => {})
+    }
+    if (providerFailure) {
+      const response = jsonResponse({
+        phase: 'link', revision: FN_REVISION, processed, updated, skipped, failed, scope,
+        aliases_written: aliasesWritten, name_local_filled: nativeFilled,
+        wikidata_fetch_failed: wdTransient, source_error: providerFailure.code,
+        retry_after_seconds: providerFailure.retryAfterSeconds, dry_run: dryRun, results,
+      }, 503, req)
+      response.headers.set('Retry-After', String(providerFailure.retryAfterSeconds))
+      return response
     }
   }
 
