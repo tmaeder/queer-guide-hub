@@ -5,7 +5,7 @@ describe('entry stylesheet delivery', () => {
   it('makes the generated app styles available in the document and preserves route styles', () => {
     const read = vi.fn(() => 'body{font-family:Space Grotesk}');
     const html = inlineEntryCssHtml(
-      '<head><link rel="stylesheet" crossorigin href="/assets/css/index-abc.css"><link rel="stylesheet" href="/assets/css/News-xyz.css"><script type="module" src="/assets/js/index-abc.js"></script></head>',
+      '<head><script>theme()</script><script type="module" src="/assets/js/index-abc.js"></script><link rel="modulepreload" href="/assets/js/vendor-x.js"><link rel="stylesheet" crossorigin href="/assets/css/index-abc.css"><link rel="stylesheet" href="/assets/css/News-xyz.css"></head>',
       read,
     );
     expect(html).toContain(
@@ -14,6 +14,12 @@ describe('entry stylesheet delivery', () => {
     expect(html).toContain('<link rel="stylesheet" href="/assets/css/News-xyz.css">');
     expect(html).toContain('<script type="module" src="/assets/js/index-abc.js"></script>');
     expect(read).toHaveBeenCalledExactlyOnceWith('/assets/css/index-abc.css');
+    expect(html).toContain(
+      'href="/assets/css/index-abc.css" disabled data-inlined-entry-css-marker',
+    );
+    expect(html.indexOf('<style')).toBeGreaterThan(html.indexOf('theme()</script>'));
+    expect(html.indexOf('<style')).toBeLessThan(html.indexOf('<script type="module"'));
+    expect(html.indexOf('<style')).toBeLessThan(html.indexOf('<link rel="modulepreload"'));
   });
 
   it('keeps CSS image/font paths correct on deep routes and leaves data URLs intact', () => {
