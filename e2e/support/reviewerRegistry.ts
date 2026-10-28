@@ -6,7 +6,6 @@ import { authenticated } from './adminAuth';
 let renewedSession: { sourceToken: string; accessToken: string } | undefined;
 
 async function renewReviewer(
-  request: APIRequestContext,
   headers: Awaited<ReturnType<typeof anonHeaders>>,
   session: { access_token: string; refresh_token?: string },
 ): Promise<string> {
@@ -21,15 +20,20 @@ async function renewReviewer(
 
   let accessToken: unknown;
   try {
-    const response = await request.post(
+    // Playwright records APIRequestContext POST bodies in retry traces. Keep
+    // passwords and refresh tokens out of those artifacts by using native fetch.
+    const response = await fetch(
       `${SUPABASE_REST_URL}/auth/v1/token?grant_type=${credentials ? 'password' : 'refresh_token'}`,
       {
-        headers,
-        data: credentials ? { email, password } : { refresh_token: session.refresh_token },
-        timeout: 20_000,
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify(
+          credentials ? { email, password } : { refresh_token: session.refresh_token },
+        ),
+        signal: AbortSignal.timeout(20_000),
       },
     );
-    if (!response.ok()) throw new Error('Rejected');
+    if (!response.ok) throw new Error('Rejected');
     accessToken = (await response.json()).access_token;
   } catch {
     // Never include request bodies, response bodies or credentials in failures.
@@ -71,7 +75,7 @@ export async function reviewerTagRows<T>(request: APIRequestContext, query: stri
   const url = `${SUPABASE_REST_URL}/rest/v1/unified_tags?${query}`;
   let response = await request.get(url, { headers });
   if (session && response.status() === 401) {
-    headers.Authorization = `Bearer ${await renewReviewer(request, publicHeaders, session)}`;
+    headers.Authorization = `Bearer ${await renewReviewer(publicHeaders, session)}`;
     response = await request.get(url, { headers });
   }
   expect(response.ok(), 'Reviewer glossary registry must be readable').toBe(true);
