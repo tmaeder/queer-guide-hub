@@ -19,6 +19,17 @@ function NavigationHarness({ destination }: { destination: string }) {
 }
 
 describe('RouteFade', () => {
+  it('does not hide the heading behind arrival motion on cold load', () => {
+    const { container } = render(
+      <MemoryRouter initialEntries={['/']}>
+        <RouteFade>
+          <h1>Homepage</h1>
+        </RouteFade>
+      </MemoryRouter>,
+    );
+    expect(container.firstChild).not.toHaveClass('station-arrive');
+    expect(screen.getByRole('heading', { level: 1 })).toBeVisible();
+  });
   it('keeps admin and safety routes motion-free', () => {
     expect(isRouteMotionAllowed('/admin')).toBe(false);
     expect(isRouteMotionAllowed('/help')).toBe(false);
