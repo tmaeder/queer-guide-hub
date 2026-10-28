@@ -47,6 +47,14 @@ describe('entry stylesheet delivery', () => {
     expect(result).toContain(data);
   });
 
+  it('handles long unterminated escaped URLs without overlapping regex alternatives', () => {
+    const malformed = 'url(' + '\\('.repeat(20000);
+    expect(inlineCssUrls(malformed, '/assets/css/index-a.css')).toBe(malformed);
+    expect(() => inlineCssUrls('url(icons\\(new\\).svg)', '/assets/css/index-a.css')).toThrow(
+      'Unsupported escaped relative CSS asset URL',
+    );
+  });
+
   it('does not let stylesheet text terminate its HTML style element', () => {
     const result = inlineEntryCssHtml(
       '<link href="/assets/css/index-a.css" rel="stylesheet">',
