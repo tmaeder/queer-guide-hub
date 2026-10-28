@@ -62,3 +62,10 @@ operator batches. Keep its receipt journal, reconcile every unknown outcome
 before retrying, and retain native country, coordinates, settlement-class,
 source/provenance and human-ownership guards. A successful HTTP response alone
 does not prove that an identity or review was resolved.
+
+Both review owners confirmed no overlapping city cohorts, jobs or advisory
+locks on 28 October. Their business-review work continues independently. This
+repair does not apply the held 321-row lifecycle continuation manifest, change
+business exceptions, or fill the protected 233 event-coordinate NULLs marked
+`retracted_wrong_city_centroid`. It makes no event, venue or organization
+relationship writes and does not implement the held actor-FK or QCal designs.
