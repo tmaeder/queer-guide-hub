@@ -50,6 +50,11 @@ describe('entry stylesheet delivery', () => {
   it('handles long unterminated escaped URLs without overlapping regex alternatives', () => {
     const malformed = 'url(' + '\\('.repeat(20000);
     expect(inlineCssUrls(malformed, '/assets/css/index-a.css')).toBe(malformed);
+    for (const prefix of ['url(', 'url("', "url('"]) {
+      const spaces = prefix + ' '.repeat(30000);
+      expect(inlineCssUrls(spaces, '/assets/css/index-a.css')).toBe(spaces);
+    }
+    expect(inlineCssUrls('url(   )', '/assets/css/index-a.css')).toBe('url(   )');
     expect(() => inlineCssUrls('url(icons\\(new\\).svg)', '/assets/css/index-a.css')).toThrow(
       'Unsupported escaped relative CSS asset URL',
     );

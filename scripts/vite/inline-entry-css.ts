@@ -4,7 +4,7 @@ import type { Plugin } from 'vite';
 
 /** Preserve asset resolution when a generated stylesheet moves into HTML. */
 export function inlineCssUrls(css: string, stylesheetHref: string): string {
-  const urls = /url\(\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|((?:\\.|[^)\\])*))\s*\)/gi;
+  const urls = /url\(\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|((?:\\.|[^()\\\s"'])+))\s*\)/gi;
   return css.replace(urls, (original, doubleQuoted, singleQuoted, bare) => {
     const value = String(doubleQuoted ?? singleQuoted ?? bare).trim();
     if (!value || /^(?:[a-z][a-z0-9+.-]*:|\/|#)/i.test(value)) return original;
