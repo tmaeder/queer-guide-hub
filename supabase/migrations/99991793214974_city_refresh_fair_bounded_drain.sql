@@ -72,6 +72,7 @@ declare
   v_assignments text;
   v_aliases integer := 0;
   v_localities integer := 0;
+  v_updated integer;
   v_row_version text;
 begin
   if not pg_try_advisory_xact_lock(hashtext('review_automatic_resolution')) then
@@ -116,6 +117,10 @@ begin
   execute 'update public.cities c set '||v_assignments||
     ' from jsonb_populate_record(null::public.cities,$1) patched where c.id=$2'
     using p_patch,p_city_id;
+  get diagnostics v_updated=row_count;
+  if v_updated<>1 then
+    raise exception 'City factual update did not affect exactly one row' using errcode='40001';
+  end if;
   -- Fill-only aliases share the city transaction and ownership checks. A failed
   -- city write must not leave unguarded side effects on a stale/held identity.
   insert into public.city_aliases(city_id,alias,locale)

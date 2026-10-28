@@ -213,6 +213,23 @@ do $$declare c public.cities;version text;result jsonb;proposal jsonb;begin
  if result->>'reason'<>'human_hold' or exists(select 1 from public.city_localities where locality_qid='Q999')
  then raise exception 'Human-held city registered a locality';end if;
 end$$;
+create function public.fixture_cancel_city_update() returns trigger language plpgsql as $$
+begin if new.description='reject-city-update' then return null;end if;return new;end$$;
+create trigger fixture_cancel_city_update before update on public.cities
+ for each row execute function public.fixture_cancel_city_update();
+do $$declare c public.cities;version text;begin
+ select * into c from public.cities where id=md5('hidden')::uuid;
+ select xmin::text into version from public.cities where id=c.id;
+ begin
+  perform public.apply_city_factual_patch(c.id,version,c.updated_at,c.field_provenance,c.enrichment_status,
+   '{"description":"reject-city-update"}','[{"alias":"Cancelled city alias","locale":"en"}]');
+  raise exception 'Cancelled city update was reported as successful';
+ exception when serialization_failure then null;end;
+ if exists(select 1 from public.city_aliases where alias='Cancelled city alias')
+ then raise exception 'Cancelled city update committed an alias';end if;
+end$$;
+drop trigger fixture_cancel_city_update on public.cities;
+drop function public.fixture_cancel_city_update();
 set role authenticated;
 do $$begin
  perform public.apply_city_factual_patch(null,null,null,null,null,'{}');
