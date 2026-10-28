@@ -1,0 +1,168 @@
+import React from 'react';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import { Skeleton } from '@/components/ui/skeleton';
+import { YourLines } from '@/components/home/YourLines';
+import { DeferredSection } from '@/components/home/DeferredSection';
+import { FadeIn } from '@/components/motion';
+import { lazyRetry } from '@/utils/lazyRetry';
+import { DeparturesBoard } from '@/components/home/subway/DeparturesBoard';
+import { CityCards } from '@/components/home/subway/CityCards';
+import { SupportBand } from '@/components/home/subway/SupportBand';
+import { HomeRegionProvider } from '@/components/home/HomeRegionProvider';
+import { HomeSectionError } from '@/components/home/HomeSectionError';
+import { PageContainer } from '@/components/layout/PageContainer';
+
+// Homepage bands are content, not optional chrome. A final chunk failure must
+// surface through the section boundary so the visitor receives a recovery
+// action instead of an unexplained gap in the page.
+const NewsMagazine = lazyRetry(() => import('@/components/home/NewsMagazine'));
+const HomeShoppingSection = lazyRetry(() => import('@/components/home/HomeShoppingSection'));
+const ArchiveBand = lazyRetry(() => import('@/components/home/ArchiveBand'));
+const GlossaryBand = lazyRetry(() => import('@/components/home/GlossaryBand'));
+
+// ── Section shells ───────────────────────────────────────────────────────────
+
+// Mirrors NewsMagazine's own loading state: a topic chip row over a lead image
+// beside five dense rows. The band swaps in at the DeferredSection boundary, so
+// a skeleton that does not match its shape is measurable CLS.
+const magazineSkeleton = (
+  <PageContainer>
+    <div className="mb-6 flex gap-2">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Skeleton key={i} className="h-8 w-24 rounded-element" />
+      ))}
+    </div>
+    <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr]">
+      <Skeleton className="aspect-[16/10] w-full rounded-container" />
+      <div className="flex flex-col gap-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full rounded-element" />
+        ))}
+      </div>
+    </div>
+  </PageContainer>
+);
+
+const railSkeleton = (
+  <PageContainer>
+    <Skeleton className="mb-8 h-9 w-64" />
+    <div className="flex gap-4 overflow-hidden">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Skeleton
+          key={i}
+          className="aspect-[3/4] w-[200px] sm:w-[240px] shrink-0 rounded-container"
+        />
+      ))}
+    </div>
+  </PageContainer>
+);
+
+function HomeBoundaryError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <PageContainer>
+      <HomeSectionError onRetry={onRetry} />
+    </PageContainer>
+  );
+}
+
+/** Shared wrapper: error isolation + near-viewport deferral (code AND data)
+ *  + scroll-in reveal for every below-fold homepage section. */
+function HomeDeferred({
+  section,
+  skeleton,
+  children,
+}: {
+  section: string;
+  skeleton: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <ErrorBoundary
+      section={section}
+      fallback={({ onRetry }) => <HomeBoundaryError onRetry={onRetry} />}
+    >
+      <DeferredSection fallback={skeleton}>
+        <React.Suspense fallback={skeleton}>
+          <FadeIn>{children}</FadeIn>
+        </React.Suspense>
+      </DeferredSection>
+    </ErrorBoundary>
+  );
+}
+
+/**
+ * Homepage — subway-map edition (2026-08-09 rebrand).
+ *
+ * The template's shape: Anton hero + search entry + the four-track network
+ * drawing, then band after band separated by 4px ink rules — departures
+ * (real events), cities, news, history, marketplace, support. The old
+ * map-hero was replaced by a "/map" entry point in the hero, which also
+ * drops the ~1MB maplibre chunk from the homepage entirely.
+ */
+const HomeContent = React.memo(() => {
+  return (
+    <div className="min-h-screen">
+      {/* ── Region — resolved ONCE here and shared by every band below, so no
+           two bands can disagree about where the visitor is and the geo call
+           is paid for once. Its own boundary: a geo failure degrades to the
+           global page (the provider's neutral value), never a blank one. */}
+      <ErrorBoundary
+        section="home-region"
+        fallback={({ onRetry }) => <HomeBoundaryError onRetry={onRetry} />}
+      >
+        <HomeRegionProvider>
+          {/* ── Near you — region-scoped places, local events promoted ───── */}
+          <ErrorBoundary
+            section="departures"
+            fallback={({ onRetry }) => <HomeBoundaryError onRetry={onRetry} />}
+          >
+            <DeparturesBoard />
+          </ErrorBoundary>
+
+          {/* ── Your lines — the visitor's own thread (self-hides) ───────── */}
+          <ErrorBoundary
+            section="your-lines"
+            fallback={({ onRetry }) => <HomeBoundaryError onRetry={onRetry} />}
+          >
+            <YourLines />
+          </ErrorBoundary>
+
+          {/* ── Cities — bordered cards with bending track lines ─────────── */}
+          <ErrorBoundary
+            section="cities"
+            fallback={({ onRetry }) => <HomeBoundaryError onRetry={onRetry} />}
+          >
+            <CityCards />
+          </ErrorBoundary>
+
+          {/* ── Latest news — ranked, region-scoped, rotating ───────────── */}
+          <HomeDeferred section="news-magazine" skeleton={magazineSkeleton}>
+            <NewsMagazine />
+          </HomeDeferred>
+        </HomeRegionProvider>
+      </ErrorBoundary>
+
+      {/* ── Marketplace — brand-safe spotlight + rail with explicit states ── */}
+      <HomeDeferred section="home-shopping" skeleton={railSkeleton}>
+        <HomeShoppingSection />
+      </HomeDeferred>
+
+      {/* ── From the archive — milestones + birthdays in ONE band, so a
+           quiet day loses a column instead of two whole sections ──────── */}
+      <HomeDeferred section="archive" skeleton={null}>
+        <ArchiveBand />
+      </HomeDeferred>
+
+      {/* ── Glossary — rotating terms from the tags wiki ─────── */}
+      <HomeDeferred section="glossary" skeleton={null}>
+        <GlossaryBand />
+      </HomeDeferred>
+
+      {/* ── Support — the closing band ────────────────────────────────── */}
+      <SupportBand />
+    </div>
+  );
+});
+
+HomeContent.displayName = 'HomeContent';
+export default HomeContent;

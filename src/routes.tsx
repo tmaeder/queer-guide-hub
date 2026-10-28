@@ -17,7 +17,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { legacySettingsDestination } from '@/lib/profileEditing';
 
 const TripInvitationsPage = lazyRetry(() => import('./pages/trips/TripInvitationsPage'));
-const Index = lazyRetry(() => import('./pages/Index'));
+// The homepage hero is critical content; its below-fold bands split separately.
+import Index from './pages/Index';
 const Venues = lazyRetry(() => import('./pages/Venues'));
 const EntityDetail = lazyRetry(() => import('./pages/EntityDetail'));
 const Guides = lazyRetry(() => import('./pages/Guides'));
