@@ -27,7 +27,7 @@ Automatic visual judgment is deliberately disabled: TypeSafe describes its image
 Run:
 
 ```sh
-node_modules/.bin/tsx --test supabase/functions/review-automation/policy.test.ts
+node_modules/.bin/tsx --test supabase/functions/review-automation/*.test.ts
 python3 supabase/tests/isolated/run_jev_review.py
 deno check --no-lock --node-modules-dir=none supabase/functions/review-automation/index.ts
 node_modules/.bin/vitest run src/components/admin/review-workspace/__tests__/ReviewCaseDetail.test.tsx
