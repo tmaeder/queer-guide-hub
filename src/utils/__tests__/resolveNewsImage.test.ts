@@ -19,6 +19,7 @@ describe('news image privacy boundary', () => {
     expect(resolveNewsImage({ imageUrl: '/images/news.webp' })).toBe('/images/news.webp');
     for (const imageUrl of [
       '//publisher.example/a.jpg',
+      '/\\publisher.example/a.jpg',
       'https://img.queer.guide.evil.test/a.jpg',
       'http://img.queer.guide/a.jpg',
       'data:image/png;base64,foo',

@@ -9,7 +9,7 @@ export function resolveNewsImage(opts: ResolveImageUrlOpts): string | null {
     ? [opts.thumbnailUrl, opts.optimizedUrl, opts.imageUrl]
     : [opts.optimizedUrl, opts.thumbnailUrl, opts.imageUrl];
   for (const candidate of candidates) {
-    if (!candidate) continue;
+    if (!candidate || candidate.includes('\\')) continue;
     if (candidate.startsWith('/') && !candidate.startsWith('//')) return candidate;
     try {
       const url = new URL(candidate);
