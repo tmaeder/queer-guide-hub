@@ -72,7 +72,7 @@ for (const status of [402, 429, 503]) test(`Jev ${status} stops provider calls, 
   assert.equal(response.status, 503); assert.equal(body.success, false)
   assert.equal(body.retry, 2); assert.equal(body.applied, 0); assert.equal(body.blocked, 0)
   assert.equal(fetched.filter(url => url.includes('typesafe.ai')).length, 1)
-  assert.equal(fetched.filter(url => url.includes('example.org')).length, 1)
+  assert.equal(fetched.filter(url => new URL(url).hostname === 'example.org').length, 1)
   assert.equal(finished.length, 2)
   for (const call of finished) assert.equal((call.p_result as { retry: string }).retry, `Jev HTTP ${status}`)
   assert.equal(updates.find(update => update.table === 'admin_automation_runs')?.value.status, 'error')
