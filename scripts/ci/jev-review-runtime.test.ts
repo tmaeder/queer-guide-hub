@@ -26,7 +26,7 @@ function evaluation(conflicting = false) {
     reason: choice(conflicting ? 'conflicting_identity' : 'verified', ['verified', 'missing_source', 'conflicting_identity', 'protected_review', 'insufficient_confidence', 'invalid_proposal']),
   } }
 }
-async function run(options: { status?: number; context?: unknown; noJobs?: boolean; conflicting?: boolean; body?: unknown; denied?: boolean; sourceStatus?: number; sourceRedirect?: string } = {}) {
+async function run(options: { status?: number; context?: unknown; noJobs?: boolean; conflicting?: boolean; body?: unknown; rawBody?: string; denied?: boolean; sourceStatus?: number; sourceRedirect?: string } = {}) {
   const jobs = options.noJobs ? [] : [1, 2].map(n => ({ case_id: `case-${n}`, lease_token: 'lease', queue_type: 'event-quality' }))
   const updates: Array<{ table: string; value: Record<string, unknown> }> = []
   const finished: Array<Record<string, unknown>> = []
@@ -67,7 +67,7 @@ async function run(options: { status?: number; context?: unknown; noJobs?: boole
     Response, URL, AbortSignal, TextDecoder, console,
   })
   assert.ok(handler)
-  const response = await handler(new Request('https://example.test', { method: 'POST', body: JSON.stringify(options.body ?? { run_id: 123, dry_run: false, batch: 2 }) }))
+  const response = await handler(new Request('https://example.test', { method: 'POST', body: options.rawBody ?? JSON.stringify(options.body ?? { run_id: 123, dry_run: false, batch: 2 }) }))
   return { response, body: await response.json(), finished, updates, fetched, env, rpcCalls }
 }
 
@@ -113,6 +113,14 @@ function assertReadOnly(result: Awaited<ReturnType<typeof run>>) {
   assert.deepEqual(result.env, [])
   assert.ok(result.fetched.every(url => new URL(url).hostname === 'example.org'))
 }
+test('malformed or empty JSON cannot fall through to claiming jobs or recording a run', async () => {
+  for (const rawBody of ['{', '', '{"source_probe":']) {
+    const result = await run({ rawBody })
+    assert.equal(result.response.status, 400)
+    assert.equal(result.fetched.length, 0)
+    assertReadOnly(result)
+  }
+})
 test('authenticated source probe returns metadata only with no DB/model/key access, even when decision flags are supplied', async () => {
   const result = await run({ body: probeBody })
   assert.equal(result.response.status, 200); assert.equal(result.body.success, true)

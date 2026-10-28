@@ -18,7 +18,7 @@ Deno.serve(async req => {
   if (req.method !== 'POST') return errorResponse('Use POST', 405, req)
   const db = getServiceClient(); const auth = await requireInternalOrAdmin(req, db)
   if (auth instanceof Response) return auth
-  const body = await req.json().catch(() => ({}))
+  const body = await req.json().catch(() => null)
   if (!body || typeof body !== 'object' || Array.isArray(body)) return errorResponse('Invalid request body', 400, req)
   // Read-only deployment diagnostic: no model, leases, decisions or automation-state writes.
   // Deliberately outside the job/run error handler so even a probe failure cannot update the registry.
