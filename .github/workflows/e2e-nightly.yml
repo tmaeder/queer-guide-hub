@@ -39,7 +39,10 @@ jobs:
     # skips. At `workers: 1` (deliberate — this suite runs against PRODUCTION,
     # so concurrency here is load on the live site) plus `retries: 2`, every
     # failing test costs 3 executions, and the run no longer fits in 45m.
-    timeout-minutes: 75
+    # The suite now has ~1,600 tests. The 2026-10-28 run hit 75m after
+    # completing only 1,335 of 1,582 tests. Keep one worker against production;
+    # give the test step its own deadline so report upload retains headroom.
+    timeout-minutes: 120
     env:
       BASE_URL_INPUT: ${{ inputs.base_url }}
     steps:
@@ -51,21 +54,25 @@ jobs:
       - run: npm ci
       - uses: ./.github/actions/setup-playwright
       - name: Run e2e suite
+        timeout-minutes: 110
         env:
           E2E_BASE_URL: ${{ env.BASE_URL_INPUT || 'https://queer.guide' }}
           E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
           E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
           E2E_TEST_FILE: ${{ inputs.test_file }}
         run: |
-          if [[ -n "$E2E_TEST_FILE" ]]; then
-            if [[ ! "$E2E_TEST_FILE" =~ ^e2e/[A-Za-z0-9._/-]+\.spec\.ts$ ]]; then
-              echo "::error::test_file must be an e2e/*.spec.ts path"
-              exit 1
+          set -o pipefail
+          {
+            if [[ -n "$E2E_TEST_FILE" ]]; then
+              if [[ ! "$E2E_TEST_FILE" =~ ^e2e/[A-Za-z0-9._/-]+\.spec\.ts$ ]]; then
+                echo "::error::test_file must be an e2e/*.spec.ts path"
+                exit 1
+              fi
+              npx playwright test e2e/auth.setup.ts "$E2E_TEST_FILE"
+            else
+              npm run test:e2e
             fi
-            npx playwright test e2e/auth.setup.ts "$E2E_TEST_FILE"
-          else
-            npm run test:e2e
-          fi
+          } 2>&1 | tee playwright-run.log
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
@@ -78,5 +85,10 @@ jobs:
         continue-on-error: true
         with:
           name: playwright-report
-          path: playwright-report/
+          # The console log and per-test files exist before HTML generation,
+          # so an interrupted run still leaves assertion errors and screenshots.
+          path: |
+            playwright-report/
+            test-results/
+            playwright-run.log
           retention-days: 14

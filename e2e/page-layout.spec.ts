@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { neutralizeVisitorGeo } from './support/visitorGeo';
+import { loadHomeContent } from './support/homeContent';
 
 /**
  * Page-layout standard (see docs/design-system/README.md §Page layout).
@@ -82,15 +83,13 @@ const expectedHeaderOffset = (_viewport: number, _cap: number, _inset: number) =
 const EDGES = `(() => {
   const cs = (n, k) => Math.round(parseFloat(getComputedStyle(n)[k]) || 0);
   const contentLeft = (n) => Math.round(n.getBoundingClientRect().left) + cs(n, 'paddingLeft');
-  const header = document.querySelector('header .max-w-page');
+  const header = document.querySelector('header.site-header .max-w-page');
   const main = document.querySelector('main');
-  // Any capped row belonging to a <header> is chrome, not page content, and
-  // must not be counted as an outer page container. This was written for
-  // /help's bespoke HelpSafetyHeader, which has since been removed in favour
-  // of the ordinary site header — the filter stays because it is the general
-  // rule, not a special case for one route.
+  // Semantic page headers are content too: the homepage hero owns a real
+  // PageContainer before its below-fold bands mount. Exclude only site chrome,
+  // not every <header> (the old filter hid the hero and waited for lazy bands).
   const all = main
-    ? Array.from(main.querySelectorAll('.max-w-page')).filter((n) => !n.closest('header'))
+    ? Array.from(main.querySelectorAll('.max-w-page')).filter((n) => !n.closest('.site-header'))
     : [];
   // Outermost only — a container nested inside another is a legitimate inner
   // block (a hero inside a band), not the page's own frame.
@@ -122,10 +121,11 @@ test.describe('page layout — one gutter, one cap, one rhythm', () => {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(route);
         await page.waitForLoadState('domcontentloaded');
+        if (route === '/') await loadHomeContent(page);
         await page.waitForFunction(
           () =>
             Array.from(document.querySelectorAll('main .max-w-page')).some(
-              (node) => !node.closest('header'),
+              (node) => !node.closest('.site-header'),
             ),
           undefined,
           { timeout: 15_000 },
