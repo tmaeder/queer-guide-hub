@@ -63,7 +63,7 @@ grant execute on function public.get_city_factual_snapshots(uuid[]) to service_r
 create or replace function public.apply_city_factual_patch(
   p_city_id uuid, p_expected_row_version text, p_expected_updated_at timestamptz,
   p_expected_provenance jsonb, p_expected_status jsonb,
-  p_patch jsonb, p_aliases jsonb default '[]'::jsonb
+  p_patch jsonb, p_aliases jsonb default '[]'::jsonb, p_locality jsonb default null
 )
 returns jsonb language plpgsql security definer set search_path to 'public'
 as $write$
@@ -71,6 +71,7 @@ declare
   v_city public.cities%rowtype;
   v_assignments text;
   v_aliases integer := 0;
+  v_localities integer := 0;
   v_row_version text;
 begin
   if not pg_try_advisory_xact_lock(hashtext('review_automatic_resolution')) then
@@ -123,11 +124,28 @@ begin
       and lower(btrim(a.alias))<>lower(btrim(v_city.name))
     on conflict(city_id,alias_key) do nothing;
   get diagnostics v_aliases=row_count;
-  return jsonb_build_object('status','updated','aliases_written',v_aliases);
+  if p_locality is not null then
+    if jsonb_typeof(p_locality) is distinct from 'object'
+      or nullif(btrim(p_locality->>'municipality_name'),'') is null
+      or coalesce(p_locality->>'locality_qid','') !~ '^Q[0-9]+$'
+      or coalesce(p_locality->>'municipality_qid','') !~ '^Q[0-9]+$'
+      or not coalesce((p_locality->>'anchor_lat')::numeric between -90 and 90,false)
+      or not coalesce((p_locality->>'anchor_lng')::numeric between -180 and 180,false) then
+      raise exception 'Corroborated city locality proposal required' using errcode='22023';
+    end if;
+    insert into public.city_localities(country_id,locality_name,locality_qid,kind,
+      municipality_name,municipality_qid,anchor_lat,anchor_lng,radius_m,source,note)
+    values(v_city.country_id,v_city.name,p_locality->>'locality_qid','locality',
+      p_locality->>'municipality_name',p_locality->>'municipality_qid',
+      (p_locality->>'anchor_lat')::numeric,(p_locality->>'anchor_lng')::numeric,
+      3000,'city-factual-backfill',p_locality->>'note') on conflict do nothing;
+    get diagnostics v_localities=row_count;
+  end if;
+  return jsonb_build_object('status','updated','aliases_written',v_aliases,'localities_written',v_localities);
 end;
 $write$;
-revoke all on function public.apply_city_factual_patch(uuid,text,timestamptz,jsonb,jsonb,jsonb,jsonb) from public,anon,authenticated;
-grant execute on function public.apply_city_factual_patch(uuid,text,timestamptz,jsonb,jsonb,jsonb,jsonb) to service_role;
+revoke all on function public.apply_city_factual_patch(uuid,text,timestamptz,jsonb,jsonb,jsonb,jsonb,jsonb) from public,anon,authenticated;
+grant execute on function public.apply_city_factual_patch(uuid,text,timestamptz,jsonb,jsonb,jsonb,jsonb,jsonb) to service_role;
 
 create or replace function public.cities_due_for_refresh(
   p_limit integer default 25,

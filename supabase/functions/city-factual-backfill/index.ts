@@ -30,7 +30,7 @@ import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import { plausibleCityScalar } from '../_shared/city-scalar-bounds.ts'
 import { cityClassVerdict, cityCoordVerdict, isCityRefreshScope } from '../_shared/city-class-guard.ts'
 import { countryLanguageCodes } from '../_shared/language-codes.ts'
-import { applyCityFactualPatch } from './write.ts'
+import { applyCityFactualPatch, type CityLocalityProposal } from './write.ts'
 import {
   airportQuery, applyLabels, bestStatement, capitalQuery, parseCityFacts, parseCityNames, parseCityNativeName, pickAirports,
   pickCapitals, pickUniversities, resolveLabels, sparqlUrl, universityQuery,
@@ -485,6 +485,7 @@ async function runLinkPhase(
       const update: Record<string, unknown> = {}
       const rankFixed: string[] = []
       let pendingAliases: CityNameAlias[] = []
+      let pendingLocality: CityLocalityProposal | null = null
       const country = c.countries?.name ?? null
       const langInfo = countryLanguageCodes(c.countries?.languages)
       for (const u of langInfo.unmapped) nativeUnmapped.add(u)
@@ -685,20 +686,14 @@ async function runLinkPhase(
                 parentName = m.get(parentQid) ?? null
               } catch { parentName = null }
               if (parentName) {
-                const { error } = await supabase.from('city_localities').insert({
-                  country_id: c.country_id,
-                  locality_name: c.name,
+                pendingLocality = {
                   locality_qid: qid,
-                  kind: 'locality',
                   municipality_name: parentName,
                   municipality_qid: parentQid,
                   anchor_lat: Number(p625.latitude),
                   anchor_lng: Number(p625.longitude),
-                  radius_m: 3000,
-                  source: 'city-factual-backfill',
                   note: cls.label,
-                })
-                if (!error) localitiesRegistered++
+                }
               }
             }
             qid = null
@@ -898,7 +893,7 @@ async function runLinkPhase(
         update.field_provenance = prov
         update.enrichment_status = state
         update.last_refreshed_at = new Date().toISOString()
-        let write = await applyCityFactualPatch(supabase, c, update, pendingAliases)
+        let write = await applyCityFactualPatch(supabase, c, update, pendingAliases, pendingLocality)
         let upErr = write.error
 
         // Two live cities resolving to the same Wikidata entity — caught by
@@ -915,7 +910,7 @@ async function runLinkPhase(
           }
           update.enrichment_status = { ...state, qid_conflict: { qid, at: new Date().toISOString() } }
           update.needs_attention = true
-          write = await applyCityFactualPatch(supabase, c, update, pendingAliases)
+          write = await applyCityFactualPatch(supabase, c, update, pendingAliases, pendingLocality)
           upErr = write.error
           missReason = `qid_conflict:${qid}`
         }
@@ -926,6 +921,7 @@ async function runLinkPhase(
         }
         if (upErr) throw new Error(upErr.message)
         aliasesWritten += write.aliasesWritten
+        localitiesRegistered += write.localitiesWritten
         await supabase.from('city_quality_signals').insert({
           city_id: c.id, signal_type: 'enrichment',
           value: Math.min(1, filled.length / 8),

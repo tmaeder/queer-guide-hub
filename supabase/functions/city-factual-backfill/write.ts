@@ -10,13 +10,23 @@ export interface CityWriteSnapshot {
   enrichment_status: Record<string, unknown> | null
 }
 
+export interface CityLocalityProposal {
+  locality_qid: string
+  municipality_name: string
+  municipality_qid: string
+  anchor_lat: number
+  anchor_lng: number
+  note: string | null
+}
+
 /** The database locks/rechecks the snapshot and review holds before any write. */
 export async function applyCityFactualPatch(
   client: RpcClient,
   city: CityWriteSnapshot,
   patch: Record<string, unknown>,
   aliases: Array<{ alias: string; locale: string | null }> = [],
-): Promise<{ error: RpcError | null; blocked: string | null; aliasesWritten: number }> {
+  locality: CityLocalityProposal | null = null,
+): Promise<{ error: RpcError | null; blocked: string | null; aliasesWritten: number; localitiesWritten: number }> {
   const { data, error } = await client.rpc('apply_city_factual_patch', {
     p_city_id: city.id,
     p_expected_row_version: city.row_version,
@@ -25,19 +35,22 @@ export async function applyCityFactualPatch(
     p_expected_status: city.enrichment_status,
     p_patch: patch,
     p_aliases: aliases,
+    p_locality: locality,
   })
-  if (error) return { error, blocked: null, aliasesWritten: 0 }
+  if (error) return { error, blocked: null, aliasesWritten: 0, localitiesWritten: 0 }
   if (data && typeof data === 'object' && 'status' in data) {
     if (data.status === 'updated') {
       const count = 'aliases_written' in data ? data.aliases_written : null
-      if (typeof count === 'number' && Number.isInteger(count) && count >= 0 && count <= aliases.length) {
-        return { error: null, blocked: null, aliasesWritten: count }
+      const localities = 'localities_written' in data ? data.localities_written : null
+      if (typeof localities === 'number' && Number.isInteger(localities) && localities >= 0 && localities <= (locality ? 1 : 0)
+        && typeof count === 'number' && Number.isInteger(count) && count >= 0 && count <= aliases.length) {
+        return { error: null, blocked: null, aliasesWritten: count, localitiesWritten: localities }
       }
     }
     if (data.status === 'blocked' && 'reason' in data && typeof data.reason === 'string'
       && ['human_hold','stale_snapshot','missing_or_retired_city','review_sweep_running'].includes(data.reason)) {
-      return { error: null, blocked: data.reason, aliasesWritten: 0 }
+      return { error: null, blocked: data.reason, aliasesWritten: 0, localitiesWritten: 0 }
     }
   }
-  return { error: { message: 'city_factual_patch_response_invalid' }, blocked: null, aliasesWritten: 0 }
+  return { error: { message: 'city_factual_patch_response_invalid' }, blocked: null, aliasesWritten: 0, localitiesWritten: 0 }
 }

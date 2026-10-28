@@ -23,6 +23,9 @@ create table public.countries(id uuid,name text,code text,languages text[]);
 create table public.venues(city_id uuid); create table public.events(city_id uuid);
 create table public.city_aliases(city_id uuid,alias text check(alias<>'reject-alias'),locale text,
  alias_key text generated always as (lower(alias)) stored,unique(city_id,alias_key));
+create table public.city_localities(country_id uuid,locality_name text,locality_qid text unique,kind text,
+ municipality_name text,municipality_qid text,anchor_lat numeric,anchor_lng numeric,radius_m integer,
+ source text,note text check(note<>'reject-locality'));
 create table public.review_queue(entity_id uuid,entity_type text,review_type text,status text,
  details jsonb default '{}',resolved_by uuid);
 grant select on public.review_queue to service_role;
@@ -184,6 +187,31 @@ do $$declare c public.cities;result jsonb;version text;snapshot jsonb;begin
  exception when others then null;end;
  if(select description from public.cities where id=c.id)<>'Sourced fixture description'
  then raise exception 'Failed alias transaction left a city write';end if;
+end$$;
+do $$declare c public.cities;version text;result jsonb;proposal jsonb;begin
+ select * into c from public.cities where id=md5('alias')::uuid;
+ select xmin::text into version from public.cities where id=c.id;
+ proposal:='{"locality_qid":"Q123","municipality_qid":"Q456","municipality_name":"Parent","anchor_lat":47,"anchor_lng":8,"note":"source"}';
+ result:=public.apply_city_factual_patch(c.id,version,c.updated_at,c.field_provenance,c.enrichment_status,
+  '{"description":"Locality evidence"}','[]',proposal);
+ if (result->>'localities_written')::int<>1
+ or not exists(select 1 from public.city_localities where locality_qid='Q123' and locality_name=c.name)
+ then raise exception 'Guarded locality registration failed';end if;
+ select xmin::text into version from public.cities where id=c.id;
+ begin
+  perform public.apply_city_factual_patch(c.id,version,c.updated_at,c.field_provenance,c.enrichment_status,
+   '{"description":"Must roll back locality failure"}','[{"alias":"Locality rollback","locale":"en"}]',
+   proposal||'{"locality_qid":"Q789","note":"reject-locality"}');
+  raise exception 'Invalid locality unexpectedly accepted';
+ exception when check_violation then null;end;
+ if(select description from public.cities where id=c.id)<>'Locality evidence'
+ or exists(select 1 from public.city_aliases where alias='Locality rollback')
+ then raise exception 'Locality failure did not roll back city and alias';end if;
+ insert into public.review_queue values(c.id,'city','manual','pending','{"manual_hold":true}',null);
+ result:=public.apply_city_factual_patch(c.id,version,c.updated_at,c.field_provenance,c.enrichment_status,
+  '{"description":"Held locality"}','[]',proposal||'{"locality_qid":"Q999"}');
+ if result->>'reason'<>'human_hold' or exists(select 1 from public.city_localities where locality_qid='Q999')
+ then raise exception 'Human-held city registered a locality';end if;
 end$$;
 set role authenticated;
 do $$begin

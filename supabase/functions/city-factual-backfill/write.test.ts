@@ -13,18 +13,18 @@ Deno.test('guarded writer sends the original snapshot and scoped aliases', async
     assertEquals(name, 'apply_city_factual_patch')
     assertEquals(args, { p_city_id: city.id, p_expected_row_version: city.row_version, p_expected_updated_at: city.updated_at,
       p_expected_provenance: city.field_provenance, p_expected_status: city.enrichment_status,
-      p_patch: patch, p_aliases: aliases })
-    return Promise.resolve({ data: { status: 'updated', aliases_written: 1 }, error: null })
+      p_patch: patch, p_aliases: aliases, p_locality: null })
+    return Promise.resolve({ data: { status: 'updated', aliases_written: 1, localities_written: 0 }, error: null })
   } }
   assertEquals(await applyCityFactualPatch(client, city, patch, aliases),
-    { error: null, blocked: null, aliasesWritten: 1 })
+    { error: null, blocked: null, aliasesWritten: 1, localitiesWritten: 0 })
 })
 
 for (const reason of ['human_hold','stale_snapshot','missing_or_retired_city','review_sweep_running']) {
   Deno.test(`guarded writer preserves ${reason} as a deferral`, async () => {
     const client = { rpc: () => Promise.resolve({ data: { status: 'blocked', reason }, error: null }) }
     assertEquals(await applyCityFactualPatch(client, city, {}),
-      { error: null, blocked: reason, aliasesWritten: 0 })
+      { error: null, blocked: reason, aliasesWritten: 0, localitiesWritten: 0 })
   })
 }
 
@@ -42,6 +42,17 @@ Deno.test('database refusal remains an error and never retries a write', async (
   let calls = 0
   const error = { message: 'unique constraint', code: '23505' }
   const client = { rpc: () => { calls++; return Promise.resolve({ data: null, error }) } }
-  assertEquals(await applyCityFactualPatch(client, city, {}), { error, blocked: null, aliasesWritten: 0 })
+  assertEquals(await applyCityFactualPatch(client, city, {}), { error, blocked: null, aliasesWritten: 0, localitiesWritten: 0 })
   assertEquals(calls, 1)
+})
+
+Deno.test('locality proposals share the guarded RPC and return actual insert counts', async () => {
+  const locality = { locality_qid: 'Q1', municipality_name: 'Parent', municipality_qid: 'Q2',
+    anchor_lat: 47, anchor_lng: 8, note: 'Verified class' }
+  const client = { rpc(_name: string, args: Record<string, unknown>) {
+    assertEquals(args.p_locality, locality)
+    return Promise.resolve({ data: { status: 'updated', aliases_written: 0, localities_written: 1 }, error: null })
+  } }
+  assertEquals(await applyCityFactualPatch(client, city, { description: 'Evidence' }, [], locality),
+    { error: null, blocked: null, aliasesWritten: 0, localitiesWritten: 1 })
 })
