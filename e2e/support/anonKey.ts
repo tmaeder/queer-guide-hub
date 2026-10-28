@@ -57,8 +57,28 @@ import { expect, type APIRequestContext } from '@playwright/test';
  * so a spec can never again quietly do nothing.
  */
 
-/** Resolved once per worker: discovery costs two requests, not two per test. */
+/** Resolve once per worker; deferred builds may require following module imports. */
 let cached: string | null | undefined;
+
+const MAX_CHUNKS = 64;
+const MAX_IMPORT_DEPTH = 4;
+
+function importedChunks(source: string, importer: string): string[] {
+  const origin = 'https://e2e-assets.invalid';
+  const paths: string[] = [];
+  for (const match of source.matchAll(/\b(?:from|import)\s*(?:\(\s*)?["']([^"'\r\n]+)["']/g)) {
+    try {
+      const url = new URL(match[1], new URL(importer, origin));
+      // Follow only module files in this application's asset directory. Never
+      // follow external imports, API routes or arbitrary URLs found in a bundle.
+      if (url.origin === origin && /^\/assets\/js\/[A-Za-z0-9._-]+\.js$/.test(url.pathname))
+        paths.push(url.pathname + url.search);
+    } catch {
+      // An invalid module specifier cannot help discover the public key.
+    }
+  }
+  return paths;
+}
 
 export async function resolveAnonKey(request: APIRequestContext): Promise<string | null> {
   if (cached !== undefined) return cached;
@@ -76,16 +96,26 @@ async function discover(request: APIRequestContext): Promise<string | null> {
     ...new Set((await index.text()).match(/\/assets\/js\/[A-Za-z0-9._-]+\.js/g) ?? []),
   ];
 
-  for (const path of chunks) {
+  const queue = chunks.map((path) => ({ path, depth: 0 }));
+  const seen = new Set<string>();
+  while (queue.length && seen.size < MAX_CHUNKS) {
+    const { path, depth } = queue.shift()!;
+    if (seen.has(path)) continue;
+    seen.add(path);
     const res = await request.get(path);
     // Trap 1: a missing asset is answered with the SPA shell at status 200.
-    if (!/javascript/i.test(res.headers()['content-type'] ?? '')) continue;
-    for (const jwt of (await res.text()).match(
+    if (!res.ok() || !/javascript/i.test(res.headers()['content-type'] ?? '')) continue;
+    const source = await res.text();
+    for (const jwt of source.match(
       /eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}/g,
     ) ?? []) {
       // Trap 3: verify the role rather than trusting the shape.
       if (roleOf(jwt) === 'anon') return jwt;
     }
+    if (depth < MAX_IMPORT_DEPTH)
+      queue.push(
+        ...importedChunks(source, path).map((child) => ({ path: child, depth: depth + 1 })),
+      );
   }
   return null;
 }
