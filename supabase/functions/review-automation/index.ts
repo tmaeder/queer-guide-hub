@@ -2,15 +2,15 @@ import { corsResponse, errorResponse, getServiceClient, jsonResponse, requireInt
 import { buildQuestions, decide, parseEvaluation, POLICY_VERSION, SOURCES, type Context, type Evidence } from './policy.ts'
 import { fetchEvidence } from './evidence.ts'
 import { recoverSources } from './research.ts'
+import { ProviderError } from './provider.ts'
 
 type Job = { case_id: string; lease_token: string; queue_type: string }
-class JevError extends Error { constructor(readonly status: number) { super(`Jev HTTP ${status}`) } }
 async function evaluate(body: unknown) {
   const response = await fetch('https://api.typesafe.ai/v1/systemone', {
     method: 'POST', redirect: 'error', headers: { Authorization: `Bearer ${Deno.env.get('JEV_API_KEY')}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body), signal: AbortSignal.timeout(20000),
   })
-  if (!response.ok) { await response.body?.cancel(); throw new JevError(response.status) }
+  if (!response.ok) { await response.body?.cancel(); throw new ProviderError('Jev', response.status) }
   return await response.json()
 }
 Deno.serve(async req => {
@@ -81,7 +81,7 @@ Deno.serve(async req => {
         }
       } catch (error) {
         // Auth, balance, quotas and provider failures are operational failures, retried without data changes.
-        if (error instanceof JevError && [401, 402, 403, 429, 500, 502, 503, 504, 529].includes(error.status)) globalFailure = error.message
+        if (error instanceof ProviderError && ([401, 402, 403, 429].includes(error.status) || error.status >= 500 && error.status <= 599)) globalFailure = error.message
         result = { retry: error instanceof Error ? error.message : 'Review evaluation failed' }
       }
       const saved = await rpc<{ status: keyof typeof summary }>('finish_jev_review_job', { p_case_id: job.case_id, p_lease_token: job.lease_token,
