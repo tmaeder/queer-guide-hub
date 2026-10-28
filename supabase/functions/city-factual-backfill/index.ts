@@ -547,8 +547,11 @@ async function runLinkPhase(
             if (p31Qids.length > 0 && p31Labels.length === 0) {
               p31Labels = ['(class has no English label)']
             }
-          } catch {
-            // Breaker open or transport failure. Stays null -> 'undetermined'.
+          } catch (error) {
+            // Provider backpressure must reach the batch deferral handler;
+            // treating it as an optional missing label would retry too early.
+            if (error instanceof WikidataReadError || error instanceof CircuitOpenError) throw error
+            // Other optional label failures stay null -> 'undetermined'.
             p31Labels = null
           }
           const cls = cityClassVerdict(p31Labels)
@@ -671,7 +674,10 @@ async function runLinkPhase(
                   supabase, 'wikidata.api', () => resolveLabels(wdFetch, [parentQid], labelCache),
                 )
                 parentName = m.get(parentQid) ?? null
-              } catch { parentName = null }
+              } catch (error) {
+                if (error instanceof WikidataReadError || error instanceof CircuitOpenError) throw error
+                parentName = null
+              }
               if (parentName) {
                 pendingLocality = {
                   locality_qid: qid,
