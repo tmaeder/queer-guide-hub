@@ -23,11 +23,9 @@ const PUBLIC_ROUTE_LIMITS = {
   // bad import surfaces but normal growth doesn't.
   index: 1500,
   maplibre: 1200,
-  // `vendor` is React core only (react + react-dom + scheduler — see the
-  // manualChunks rule in vite.config.ts). react-dom 19 is ~360KB raw and can't
-  // be split, so the old 200KB cap was unreachable and failed every PR. Capped
-  // ~15% above current real size to still catch a stray heavy import landing in
-  // React core. Verified contents are React-only (no admin/heavy libs leaked).
+  // React browser core + scheduler. The map-only server renderer now has its
+  // own react-server chunk, forbidden in the entry closure below. Keep the
+  // existing cap while the closure guard enforces that separation.
   vendor: 420,
   router: 80,
   exceljs: 1100,
@@ -81,10 +79,7 @@ for (const f of indexChunks) {
   // dependency map ("assets/css/xyflow-*.css" etc.) for route-level dynamic
   // imports. Those strings are metadata, not code — actual code leakage is
   // still caught here (module source mentions) and by the closure walk below.
-  const contents = readFileSync(join(dist, f), 'utf8').replace(
-    /assets\/(?:js|css)\/[\w.-]+/g,
-    '',
-  );
+  const contents = readFileSync(join(dist, f), 'utf8').replace(/assets\/(?:js|css)\/[\w.-]+/g, '');
   for (const banned of FORBIDDEN_IN_PUBLIC) {
     if (contents.includes(banned)) {
       console.error(`::error::Public chunk ${f} contains forbidden string "${banned}"`);
@@ -100,14 +95,20 @@ for (const f of indexChunks) {
 // Heavy route-only chunks must never become reachable (the clsx-in-recharts
 // homing bug made entry → utils → recharts → graph + tiptap; see
 // docs/perf/recharts-cross-route-leak.md).
-const HEAVY_UNREACHABLE = /^(recharts|tiptap|graph|exceljs|pdfjs|mammoth|maplibre|xyflow|dnd-kit|framer-motion|sentry)-/;
+const HEAVY_UNREACHABLE =
+  /^(recharts|tiptap|graph|exceljs|pdfjs|mammoth|maplibre|xyflow|dnd-kit|framer-motion|sentry|react-server)-/;
 
 const importRe = /from\s*"\.\/([A-Za-z0-9._-]+\.js)"|import\s*"\.\/([A-Za-z0-9._-]+\.js)"/g;
 const closure = new Set();
 // Web Vitals is dynamically imported at boot, so it has the same performance
 // budget as the static shell. Shared web-vitals helpers once landed in Sentry,
 // bypassing the consent-gated SDK loader through this startup import.
-const queue = [...indexChunks, ...files.filter((f) => /^webVitals-.*\.js$/.test(f))];
+// The application bootstrap is imported just after the public document paints;
+// retain the startup budget even though its graph no longer blocks that paint.
+const queue = [
+  ...indexChunks,
+  ...files.filter((f) => /^(?:webVitals|app-bootstrap)-.*\.js$/.test(f)),
+];
 while (queue.length) {
   const f = queue.pop();
   if (closure.has(f)) continue;

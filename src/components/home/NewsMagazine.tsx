@@ -18,7 +18,7 @@ import { useFollowedTags } from '@/hooks/useFollowedTags';
 import { useTagSearch } from '@/hooks/useTagSearch';
 import { useAuth } from '@/hooks/useAuth';
 import { ExternalImg } from '@/components/ui/ExternalImg';
-import { resolveImageUrl } from '@/utils/resolveImageUrl';
+import { resolveNewsImage } from '@/utils/resolveNewsImage';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { decodeHtmlEntities } from '@/lib/decodeHtmlEntities';
 import { resolvePublisherName } from '@/lib/publisherName';
@@ -442,7 +442,7 @@ const NewsMagazine = React.memo(() => {
   const leadTitle = localizedNewsTitle(lead, i18n.language);
 
   const leadImg =
-    resolveImageUrl({
+    resolveNewsImage({
       imageUrl: lead.image_url,
       optimizedUrl: assets.get(lead.id)?.optimized_url ?? null,
       thumbnailUrl: assets.get(lead.id)?.thumbnail_url ?? null,

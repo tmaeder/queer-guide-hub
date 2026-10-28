@@ -30,6 +30,7 @@ import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import { plausibleCityScalar } from '../_shared/city-scalar-bounds.ts'
 import { cityClassVerdict, cityCoordVerdict, isCityRefreshScope } from '../_shared/city-class-guard.ts'
 import { countryLanguageCodes } from '../_shared/language-codes.ts'
+import { applyCityFactualPatch, type CityLocalityProposal } from './write.ts'
 import {
   airportQuery, applyLabels, bestStatement, capitalQuery, parseCityFacts, parseCityNames, parseCityNativeName, pickAirports,
   pickCapitals, pickUniversities, resolveLabels, sparqlUrl, universityQuery,
@@ -42,7 +43,7 @@ import {
 // runtime keeps serving an older bundle (seen 2026-10-07: v214 held the
 // name_local code and answered in the old shape), so the only proof a change
 // is live is the response itself. Bump this when the link/sparql output changes.
-const FN_REVISION = '2026-10-24.corrected-country-subject'
+const FN_REVISION = '2026-10-28.guarded-fair-city-drain'
 
 const DEFAULT_BATCH_LIMIT = 40
 // 300 is the repo-wide ceiling for city writes: one cities UPDATE fans out
@@ -193,39 +194,6 @@ async function fetchEntity(qid: string, extraLangs: readonly string[] = []): Pro
   }
 }
 
-/**
- * Write harvested names to city_aliases.
- *
- * Fill-only: `ignoreDuplicates` leans on the pre-existing unique index
- * (city_id, alias_key) so a re-visit is a no-op rather than a rewrite, and a
- * curated or merge-minted alias is never overwritten by a Wikidata label.
- *
- * A failure here is logged and swallowed on purpose. The aliases are an
- * optimisation for a LATER write's resolution; losing a batch of them costs a
- * repeat harvest, whereas letting the error propagate would abandon the facts
- * this run already fetched for the city itself.
- */
-async function writeCityAliases(
-  supabase: Db,
-  cityId: string,
-  cityName: string,
-  names: CityNameAlias[],
-): Promise<number> {
-  const own = cityName.trim().toLowerCase()
-  const rows = names
-    .filter(n => n.alias.toLowerCase() !== own)
-    .map(n => ({ city_id: cityId, alias: n.alias, locale: n.locale }))
-  if (rows.length === 0) return 0
-  const { error } = await supabase
-    .from('city_aliases')
-    .upsert(rows, { onConflict: 'city_id,alias_key', ignoreDuplicates: true })
-  if (error) {
-    console.warn(`[city-factual-backfill] alias write failed for ${cityId}: ${error.message}`)
-    return 0
-  }
-  return rows.length
-}
-
 // ------------------------------------------------------------------ state
 
 interface ProvenanceCandidate {
@@ -359,6 +327,7 @@ function applyRankFix(
 
 interface CityRow {
   id: string; name: string; slug: string | null
+  updated_at: string; row_version: string
   latitude: number | null; longitude: number | null
   description: string | null; image_url: string | null; curated_image_url: string | null
   population: number | null; area_km2: number | null; elevation_m: number | null
@@ -374,15 +343,6 @@ interface CityRow {
   country_id: string | null; countries: { code?: string; name?: string; languages?: string[] | null } | null
   name_local: string | null; name_local_lang: string | null
 }
-
-const CITY_COLUMNS =
-  'id, name, slug, latitude, longitude, description, image_url, curated_image_url, ' +
-  'population, area_km2, elevation_m, official_website, postal_codes, area_codes, ' +
-  'sister_cities, economy_sectors, universities, local_language, climate_type, ' +
-  'airport_codes, major_airport_code, transportation_info, ' +
-  'is_regional_capital, capital_of_region, ' +
-  'field_provenance, enrichment_status, wikidata_qid, wikipedia_title, country_id, ' +
-  'name_local, name_local_lang, countries(code, name, languages)'
 
 /**
  * An array counts as empty when it holds nothing usable, not merely when it has
@@ -438,8 +398,7 @@ Deno.serve(async (req: Request) => {
   }
   if (!ids.length) return jsonResponse({ processed: 0, message: 'nothing due', phase }, 200, req)
 
-  const { data: cities, error } = await supabase
-    .from('cities').select(CITY_COLUMNS).in('id', ids).is('duplicate_of_id', null)
+  const { data: cities, error } = await supabase.rpc('get_city_factual_snapshots', { p_ids: ids })
   if (error) return jsonResponse({ error: error.message, success: false }, 500, req)
   const rows = (cities ?? []) as unknown as CityRow[]
 
@@ -507,6 +466,13 @@ async function runLinkPhase(
     let missReason: string | null = null
 
     try {
+      const { data: allowed, error: holdError } = await supabase.rpc('city_factual_research_allowed', { p_city_id: c.id })
+      if (holdError) throw new Error('city_review_hold_check_unavailable')
+      if (allowed !== true) {
+        processed++; skipped++
+        results.push({ id: c.id, name: c.name, status: 'deferred', reason: 'human_hold' })
+        continue
+      }
       const prov: Prov = { ...(c.field_provenance ?? {}) }
       // Staleness must be judged against provenance as it was BEFORE this run.
       // addCandidate() rewrites prov[field] with the freshly-fetched value, and
@@ -518,6 +484,8 @@ async function runLinkPhase(
       const state: Status = { ...(c.enrichment_status ?? {}) }
       const update: Record<string, unknown> = {}
       const rankFixed: string[] = []
+      let pendingAliases: CityNameAlias[] = []
+      let pendingLocality: CityLocalityProposal | null = null
       const country = c.countries?.name ?? null
       const langInfo = countryLanguageCodes(c.countries?.languages)
       for (const u of langInfo.unmapped) nativeUnmapped.add(u)
@@ -669,14 +637,8 @@ async function runLinkPhase(
             markResolved(state, 'wikidata_link', 'wikidata', qid)
             if (c.wikidata_qid !== qid) update.wikidata_qid = qid
             if (enwikiTitle && c.wikipedia_title !== enwikiTitle) update.wikipedia_title = enwikiTitle
-            // Names ride in the same response. Written immediately rather than
-            // batched with `update`: they go to a different table, they are
-            // fill-only, and they must survive a later failure in this city's
-            // own column write -- an alias is useful to the NEXT city that gets
-            // created, not to this row.
-            if (!dryRun && ent.names.length > 0) {
-              aliasesWritten += await writeCityAliases(supabase, c.id, c.name, ent.names)
-            }
+            // Fill-only aliases share the guarded city transaction.
+            pendingAliases = ent.names
             // Native name, from the SAME adopted entity -- only inside the
             // settlement branch, so a refused namesake or a non-place can never
             // contribute one. Fill-if-empty: a curated value is never replaced.
@@ -689,7 +651,6 @@ async function runLinkPhase(
               if (!c.name_local) {
                 update.name_local = native.name
                 update.name_local_lang = native.lang
-                nativeFilled++
               }
             }
           } else if (cls.verdict === 'locality') {
@@ -725,20 +686,14 @@ async function runLinkPhase(
                 parentName = m.get(parentQid) ?? null
               } catch { parentName = null }
               if (parentName) {
-                const { error } = await supabase.from('city_localities').insert({
-                  country_id: c.country_id,
-                  locality_name: c.name,
+                pendingLocality = {
                   locality_qid: qid,
-                  kind: 'locality',
                   municipality_name: parentName,
                   municipality_qid: parentQid,
                   anchor_lat: Number(p625.latitude),
                   anchor_lng: Number(p625.longitude),
-                  radius_m: 3000,
-                  source: 'city-factual-backfill',
                   note: cls.label,
-                })
-                if (!error) localitiesRegistered++
+                }
               }
             }
             qid = null
@@ -938,7 +893,8 @@ async function runLinkPhase(
         update.field_provenance = prov
         update.enrichment_status = state
         update.last_refreshed_at = new Date().toISOString()
-        let { error: upErr } = await supabase.from('cities').update(update).eq('id', c.id)
+        let write = await applyCityFactualPatch(supabase, c, update, pendingAliases, pendingLocality)
+        let upErr = write.error
 
         // Two live cities resolving to the same Wikidata entity — caught by
         // uq_cities_wikidata_qid. In practice these are duplicate ROWS for one
@@ -954,10 +910,18 @@ async function runLinkPhase(
           }
           update.enrichment_status = { ...state, qid_conflict: { qid, at: new Date().toISOString() } }
           update.needs_attention = true
-          ;({ error: upErr } = await supabase.from('cities').update(update).eq('id', c.id))
+          write = await applyCityFactualPatch(supabase, c, update, pendingAliases, pendingLocality)
+          upErr = write.error
           missReason = `qid_conflict:${qid}`
         }
+        if (write.blocked) {
+          processed++; skipped++
+          results.push({ id: c.id, name: c.name, status: 'deferred', reason: write.blocked })
+          continue
+        }
         if (upErr) throw new Error(upErr.message)
+        aliasesWritten += write.aliasesWritten
+        localitiesRegistered += write.localitiesWritten
         await supabase.from('city_quality_signals').insert({
           city_id: c.id, signal_type: 'enrichment',
           value: Math.min(1, filled.length / 8),
@@ -966,6 +930,7 @@ async function runLinkPhase(
         }).then(() => {}, () => {})
       }
 
+      if (update.name_local) nativeFilled++
       if (filled.length) { status = 'done'; updated++ }
       else {
         status = 'skipped'; skipped++
@@ -978,7 +943,7 @@ async function runLinkPhase(
       })
     } catch (e) {
       if (e instanceof CircuitOpenError) {
-        return jsonResponse({ processed, updated, skipped, failed, circuit_open: e.apiName, results }, 200, req)
+        return jsonResponse({ phase: 'link', revision: FN_REVISION, processed, updated, skipped, failed, circuit_open: e.apiName, results }, 503, req)
       }
       status = 'failed'; failed++
       // enrichment_log is service-role-only and is the durable diagnostic
@@ -1017,7 +982,7 @@ async function runLinkPhase(
     implausible_scalars_rejected: implausibleScalars.length,
     implausible_scalars: implausibleScalars.slice(0, 20),
     dry_run: dryRun, results,
-  }, 200, req)
+  }, failed > 0 ? 500 : 200, req)
 }
 
 // ------------------------------------------------------------------ phase: sparql
@@ -1075,9 +1040,9 @@ async function runSparqlPhase(
     }
   } catch (e) {
     if (e instanceof CircuitOpenError) {
-      return jsonResponse({ phase: 'sparql', circuit_open: e.apiName, processed: 0 }, 200, req)
+      return jsonResponse({ phase: 'sparql', revision: FN_REVISION, circuit_open: e.apiName, processed: 0 }, 503, req)
     }
-    return jsonResponse({ phase: 'sparql', error: errCode(e) }, 200, req)
+    return jsonResponse({ phase: 'sparql', revision: FN_REVISION, error: errCode(e), processed: 0 }, 503, req)
   }
 
   // P931 ("place served by transport hub") says nothing about passenger traffic,
@@ -1093,11 +1058,11 @@ async function runSparqlPhase(
     const { data: gateRows, error: gateErr } = await supabase
       .from('airport_service').select('iata_code, name').in('iata_code', seenCodes)
     // Fail CLOSED: an unreadable gate must not be treated as "everything passes".
-    if (gateErr) return jsonResponse({ phase: 'sparql', error: 'airport_gate_unavailable', processed: 0 }, 200, req)
+    if (gateErr) return jsonResponse({ phase: 'sparql', revision: FN_REVISION, error: 'airport_gate_unavailable', processed: 0 }, 503, req)
     for (const g of (gateRows ?? []) as Array<{ iata_code: string; name: string }>) gate.set(g.iata_code, g.name)
   }
 
-  let updated = 0, skipped = 0
+  let updated = 0, skipped = 0, failed = 0
   const results: Array<Record<string, unknown>> = []
 
   for (const [qid, c] of byQid) {
@@ -1191,7 +1156,17 @@ async function runSparqlPhase(
       update.field_provenance = prov
       update.enrichment_status = state
       update.last_refreshed_at = new Date().toISOString()
-      await supabase.from('cities').update(update).eq('id', c.id)
+      const write = await applyCityFactualPatch(supabase, c, update)
+      if (write.blocked) {
+        skipped++
+        results.push({ id: c.id, name: c.name, qid, status: 'deferred', reason: write.blocked })
+        continue
+      }
+      if (write.error) {
+        failed++
+        results.push({ id: c.id, name: c.name, qid, status: 'error', error: errCode(new Error(write.error.message)) })
+        continue
+      }
       await supabase.from('enrichment_log').insert({
         entity_type: 'city', entity_id: c.id, step: `${STEP}:sparql`,
         status: filled.length ? 'done' : 'skipped',
@@ -1204,6 +1179,6 @@ async function runSparqlPhase(
   }
 
   return jsonResponse(
-    { phase: 'sparql', revision: FN_REVISION, processed: byQid.size, updated, skipped, dry_run: dryRun, results }, 200, req,
+    { phase: 'sparql', revision: FN_REVISION, processed: byQid.size, updated, skipped, failed, dry_run: dryRun, results }, failed > 0 ? 500 : 200, req,
   )
 }

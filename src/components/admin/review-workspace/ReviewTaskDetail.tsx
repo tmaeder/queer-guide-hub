@@ -1,3 +1,4 @@
+import { JevReviewStatus } from './JevReviewStatus';
 import { useState } from 'react';
 import { ArrowLeft, Check, ExternalLink, Pencil, SkipForward } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -277,6 +278,9 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
             selection={venueSelection}
             onSelect={setVenueSelection}
           />
+        )}
+        {!!(item.meta.review_case as { id?: string } | undefined)?.id && (
+          <JevReviewStatus caseId={(item.meta.review_case as { id: string }).id} />
         )}
         <ReviewEvidencePanel
           item={item}

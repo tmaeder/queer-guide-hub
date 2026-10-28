@@ -12,8 +12,7 @@ import { getFallbackImage } from '@/utils/fallbackImages';
 import { StationPlate } from '@/components/ui/StationPlate';
 import { StationBadge } from '@/components/ui/StationBadge';
 import { newsGlyph } from '@/lib/cardGlyphs';
-import { resolveImageUrl } from '@/utils/resolveImageUrl';
-import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+import { resolveNewsImage } from '@/utils/resolveNewsImage';
 import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { safeText } from '@/utils/safeDisplay';
 import { resolvePublisherName } from '@/lib/publisherName';
@@ -180,8 +179,8 @@ const NewsCardImpl = ({
   const categoryDisplay = displayCategory ? getCategoryLabel(displayCategory) : null;
   const isPremium = (article as Record<string, unknown>).is_premium === true;
 
-  const resolvedSrc = resolveImageUrl({
-    imageUrl: isValidImageUrl(article.image_url) ? article.image_url : null,
+  const resolvedSrc = resolveNewsImage({
+    imageUrl: article.image_url,
     optimizedUrl: imageAsset?.optimized_url ?? null,
     thumbnailUrl: imageAsset?.thumbnail_url ?? null,
   });
