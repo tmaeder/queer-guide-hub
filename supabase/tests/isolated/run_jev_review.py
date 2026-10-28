@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Run the real Jev migration and transaction refusal/rollback tests in isolated PG17."""
+"""Run the real Jev migrations and transaction refusal/rollback tests in isolated PostgreSQL."""
 import os, subprocess, tempfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[3]
-PG=Path('/opt/homebrew/opt/postgresql@17/bin')
+PG=Path(os.environ.get('PG_BIN','/opt/homebrew/opt/postgresql@17/bin'))
 schema="""
 create role anon;create role authenticated;create role service_role;
 create schema api_private;create schema auth;create schema cron;
@@ -102,12 +102,45 @@ do $$begin
  exception when insufficient_privilege then null;end $$;
 reset role;
 """
+projection_checks="""
+-- Projection must ignore non-object values without exporting scalar/array payloads.
+do $$declare value jsonb; projected jsonb;begin
+ foreach value in array array[null::jsonb,'null'::jsonb,'"DO_NOT_EXPORT"'::jsonb,'42'::jsonb,'true'::jsonb,'[{"email":"DO_NOT_EXPORT"}]'::jsonb]loop
+  projected:=api_private.jev_public_record(value);
+  if projected is not null then raise exception 'Non-object projection escaped: %',projected;end if;
+ end loop;
+ projected:=api_private.jev_public_record(jsonb_build_object('name','Public name','description',repeat('x',19000),'email','DO_NOT_EXPORT','reporter_id','DO_NOT_EXPORT','raw_data',jsonb_build_object('private','DO_NOT_EXPORT')));
+ if projected->>'name' is distinct from 'Public name' or length(projected->>'description') is distinct from 18000 or projected::text like '%DO_NOT_EXPORT%'then
+  raise exception 'Object projection changed its public allow-list or bounds: %',projected;
+ end if;
+end $$;
+
+-- Production shape: normalized_data is an object, enriched_data is SQL NULL.
+-- to_jsonb(row) represents that column as JSON null inside the staging context.
+create table ingestion_staging(id uuid primary key,normalized_data jsonb,enriched_data jsonb,raw_data jsonb,review_status text default 'pending');
+create function api_private.review_news_machine_outcome(jsonb)returns text language sql as $$select 'review'::text$$;
+create view triage_staging_test as select id from ingestion_staging where review_status='pending';
+insert into admin_review_sources values('staging','triage_staging_test','ingestion_staging',true);
+insert into ingestion_staging(id,normalized_data,enriched_data,raw_data)values(md5('staging-source')::uuid,
+ jsonb_build_object('title','Public staging event','description','Public source description','email','DO_NOT_EXPORT'),null,
+ jsonb_build_object('private_note','DO_NOT_EXPORT'));
+insert into admin_review_cases(id,fingerprint,active,item,members,family,stage)values(md5('staging-case')::uuid,'staging-fingerprint',true,
+ jsonb_build_object('id',md5('staging-source')::uuid,'queue_type','staging','title','Public staging event','entity_table','news_articles','risk','integrity'),'[]','staging','research');
+do $$declare ctx jsonb;begin
+ ctx:=api_private.jev_context(md5('staging-case')::uuid);
+ if ctx#>>'{proposal,source_content,normalized,title}' is distinct from 'Public staging event'
+ or ctx#>'{proposal,source_content,enriched}' is distinct from 'null'::jsonb
+ or nullif(ctx->>'input_hash','')is null or ctx::text like '%DO_NOT_EXPORT%'then
+  raise exception 'Nullable staging projection failed: %',ctx;
+ end if;
+end $$;
+"""
 with tempfile.TemporaryDirectory(prefix='jev-review-pg-')as tmp:
  data=Path(tmp)/'data';sock=Path(tmp)/'sock';sock.mkdir()
  subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
  subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'pg.log'),'-o',f'-k {sock} -p 55439 -h ""','-w','start'],check=True,stdout=subprocess.DEVNULL)
  try:
-  sql=schema+(ROOT/'supabase/migrations/99991793212707_jev_review_automation.sql').read_text()+(ROOT/'supabase/migrations/99991793212905_jev_review_runtime_guards.sql').read_text()+(ROOT/'supabase/migrations/99991793213334_jev_proposal_integrity_decisions.sql').read_text()+(ROOT/'supabase/migrations/99991793213540_jev_review_targeted_retry.sql').read_text()+(ROOT/'supabase/migrations/99991793213979_jev_review_operational_visibility.sql').read_text()+checks
+  sql=schema+(ROOT/'supabase/migrations/99991793212707_jev_review_automation.sql').read_text()+(ROOT/'supabase/migrations/99991793212905_jev_review_runtime_guards.sql').read_text()+(ROOT/'supabase/migrations/99991793213334_jev_proposal_integrity_decisions.sql').read_text()+(ROOT/'supabase/migrations/99991793213540_jev_review_targeted_retry.sql').read_text()+(ROOT/'supabase/migrations/99991793213979_jev_review_operational_visibility.sql').read_text()+(ROOT/'supabase/migrations/99991793222393_jev_research_projection_json_shapes.sql').read_text()+checks+projection_checks
   subprocess.run([str(PG/'psql'),'-X','-v','ON_ERROR_STOP=1','-h',str(sock),'-p','55439','postgres'],input=sql,text=True,check=True,stdout=subprocess.DEVNULL)
  finally:subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
-print('PASS: migration, source-backed apply, dry run, stale source refusal, duplicate refusal, atomic rollback, pause, machine audit, service permissions')
+print('PASS: migration, source-backed apply, dry run, stale source refusal, duplicate refusal, atomic rollback, pause, machine audit, service permissions, JSON shape/privacy projection, nullable staging context')

@@ -6,6 +6,7 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { inlineEntryCss } from './scripts/vite/inline-entry-css.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -160,6 +161,7 @@ export default defineConfig(({ mode }) => ({
     tailwindcss(),
     cfRocketLoaderBypass(),
     emitBuildIdFile(),
+    inlineEntryCss(),
     mode === 'production' &&
       sentryVitePlugin({
         org: process.env.SENTRY_ORG || 'maedertobiassimon',
