@@ -17,7 +17,8 @@ create table public.cities(
  shell_status text default 'real', last_refreshed_at timestamptz, wikidata_qid text,
  population bigint, duplicate_of_id uuid, enrichment_status jsonb default '{}',
  seo_indexable boolean default true, updated_at timestamptz default now(),
- field_provenance jsonb default '{}', needs_attention boolean default false);
+ field_provenance jsonb default '{}', needs_attention boolean default false,
+ name_local text,name_local_lang text);
 alter table public.cities add column private_city_note text default 'DO_NOT_EXPORT';
 create table public.countries(id uuid,name text,code text,languages text[]);
 create table public.venues(city_id uuid); create table public.events(city_id uuid);
@@ -61,6 +62,8 @@ values
  (md5('alias')::uuid,'Alias','alias',10,null,true,'Q1','{}'),
  (md5('hasalias')::uuid,'Has alias','hasalias',20,null,true,'Q2','{}');
 insert into public.city_aliases(city_id,alias,locale) values(md5('hasalias')::uuid,'Existing','en');
+insert into public.countries values(md5('country')::uuid,'Norway','NO',array['nb']);
+update public.cities set country_id=md5('country')::uuid,name_local='Native fixture',name_local_lang='nb' where id=md5('old')::uuid;
 insert into public.events values(md5('old')::uuid);
 insert into public.venues values(md5('hidden')::uuid);
 """
@@ -135,6 +138,9 @@ do $$declare c public.cities;result jsonb;version text;snapshot jsonb;begin
  select s into snapshot from public.get_city_factual_snapshots(array[c.id]) s;
  version:=snapshot->>'row_version';
  if version is null or snapshot ? 'private_city_note' then raise exception 'Snapshot version/projection failed';end if;
+ if snapshot->>'name_local' is distinct from 'Native fixture' or snapshot->>'name_local_lang' is distinct from 'nb'
+ or snapshot#>'{countries,languages}' is distinct from '["nb"]'::jsonb
+ then raise exception 'Native names/country languages missing from guarded snapshot';end if;
  result:=public.apply_city_factual_patch(c.id,version,c.updated_at,c.field_provenance,c.enrichment_status,
   '{"description":"Sourced fixture description"}', '[{"alias":"Fixture alias","locale":"en"}]');
  if result->>'status'<>'updated' or (result->>'aliases_written')::int<>1

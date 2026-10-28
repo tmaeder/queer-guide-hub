@@ -121,6 +121,9 @@ describe('link-phase writer', () => {
   });
 
   it('selects the country languages the native-name parser needs', () => {
-    expect(fn).toContain("'name_local, name_local_lang, countries(code, name, languages)'");
+    // The guarded snapshot RPC now owns the field projection; its isolated
+    // database fixture checks that native names and country languages survive.
+    expect(fn).toContain("supabase.rpc('get_city_factual_snapshots', { p_ids: ids })");
+    expect(fn).toContain('countryLanguageCodes(c.countries?.languages)');
   });
 });
