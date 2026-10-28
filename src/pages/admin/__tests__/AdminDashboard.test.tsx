@@ -47,6 +47,9 @@ vi.mock('@/components/admin/triage/TriageDetailPanel', () => ({ TriageDetailPane
 vi.mock('@/components/admin/review-workspace/ReviewTaskDetail', () => ({
   ReviewTaskDetail: () => null,
 }));
+vi.mock('@/components/admin/review-workspace/JevReviewStatus', () => ({
+  JevReviewStatus: () => null,
+}));
 vi.mock('@/hooks/useNewsStagingSummaries', () => ({
   useNewsReviewList: () => ({
     newsOf: () => undefined,
