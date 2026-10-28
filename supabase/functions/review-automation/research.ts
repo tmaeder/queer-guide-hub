@@ -1,4 +1,4 @@
-import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
+import { fetchEvidence } from './evidence.ts'
 import type { Context, Evidence } from './policy.ts'
 /** Search recovers missing source URLs; snippets alone are never accepted as evidence. */
 export async function recoverSources(context: Context): Promise<Evidence[]> {
@@ -9,17 +9,15 @@ export async function recoverSources(context: Context): Promise<Evidence[]> {
   const response = await fetch('https://api.firecrawl.dev/v2/search', {
     method: 'POST', redirect: 'error', signal: AbortSignal.timeout(18000),
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: [name, place?.city, place?.country, 'official'].filter(Boolean).join(' '), limit: 2, sources: ['web'],
-      scrapeOptions: { formats: ['markdown'], onlyMainContent: true, maxAge: 0, timeout: 12000 } }),
+    body: JSON.stringify({ query: [name, place?.city, place?.country, 'official'].filter(Boolean).join(' '), limit: 2, sources: ['web'] }),
   })
   if (!response.ok) { await response.body?.cancel(); throw new Error(`Source recovery HTTP ${response.status}`) }
-  const body = await response.json() as { success?: boolean; data?: { web?: { url?: string; markdown?: string }[] } }
+  const body = await response.json() as { success?: boolean; data?: { web?: { url?: string }[] } }
   if (body.success === false) throw new Error('Source recovery failed')
   const evidence: Evidence[] = []
   for (const item of body.data?.web ?? []) {
-    if (typeof item.url !== 'string' || typeof item.markdown !== 'string' || item.markdown.length < 100) continue
-    try { assertPublicHttpUrl(item.url) } catch { continue }
-    evidence.push({ url: item.url, text: item.markdown.slice(0, 18000), retrieved_at: new Date().toISOString() })
+    if (typeof item.url !== 'string') continue
+    try { evidence.push(await fetchEvidence(item.url)) } catch { continue }
     if (evidence.length === 2) break
   }
   return evidence

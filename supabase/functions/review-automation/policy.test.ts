@@ -23,3 +23,12 @@ test('proposal integrity stays separate from historical fact verification', () =
 })
 
 test('credential-bearing and nonstandard-port source URLs are refused before fetching', async () => { let called = false; const forbidden = async () => { called = true; return new Response('unused') }; await assert.rejects(fetchEvidence('https://example.com:8443', forbidden)); await assert.rejects(fetchEvidence('https://reader@example.com', forbidden)); assert.equal(called, false) });
+test('evidence requires HTTPS on initial URLs and every redirect', async () => {
+  let calls = 0
+  const redirect = async () => { calls++; return new Response(null, { status: 302, headers: { location: 'http://example.org/source' } }) }
+  await assert.rejects(fetchEvidence('http://example.com/source', redirect), /Unsupported source URL/)
+  await assert.rejects(fetchEvidence('https://example.com:80/source', redirect), /Unsupported source URL/)
+  assert.equal(calls, 0)
+  await assert.rejects(fetchEvidence('https://example.com/source', redirect), /Unsupported source URL/)
+  assert.equal(calls, 1)
+});

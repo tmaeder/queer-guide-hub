@@ -3,8 +3,8 @@ import type { Evidence } from './policy.ts'
 function sourceUrl(raw: string): URL {
   const url = assertPublicHttpUrl(raw)
   const hasCredentials = Boolean(url.username) || Boolean(url.password)
-  const allowedPort = !url.port || ['80', '443'].includes(url.port)
-  if (hasCredentials || !allowedPort) throw new Error('Unsupported source URL')
+  const allowedPort = !url.port || url.port === '443'
+  if (url.protocol !== 'https:' || hasCredentials || !allowedPort) throw new Error('Unsupported source URL')
   return url
 }
 /** Bound memory, redirects, response time and destinations; source text never becomes instructions. */
