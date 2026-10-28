@@ -9,7 +9,7 @@ const compiled = build({
   plugins: [{ name: 'synthetic-service-boundary', setup(builder) {
     builder.onLoad({ filter: /_shared\/supabase-client\.ts$/ }, () => ({ contents: `
       export const getServiceClient = () => globalThis.testDb;
-      export const requireInternalOrAdmin = async () => ({});
+      export const requireInternalOrAdmin = async () => globalThis.testAuth;
       export const corsResponse = () => new Response();
       export const jsonResponse = (body, status) => new Response(JSON.stringify(body), {status});
       export const errorResponse = (error, status) => new Response(JSON.stringify({error}), {status});
@@ -26,14 +26,15 @@ function evaluation(conflicting = false) {
     reason: choice(conflicting ? 'conflicting_identity' : 'verified', ['verified', 'missing_source', 'conflicting_identity', 'protected_review', 'insufficient_confidence', 'invalid_proposal']),
   } }
 }
-async function run(options: { status?: number; context?: unknown; noJobs?: boolean; conflicting?: boolean } = {}) {
+async function run(options: { status?: number; context?: unknown; noJobs?: boolean; conflicting?: boolean; body?: unknown; denied?: boolean; sourceStatus?: number; sourceRedirect?: string } = {}) {
   const jobs = options.noJobs ? [] : [1, 2].map(n => ({ case_id: `case-${n}`, lease_token: 'lease', queue_type: 'event-quality' }))
   const updates: Array<{ table: string; value: Record<string, unknown> }> = []
   const finished: Array<Record<string, unknown>> = []
-  const fetched: string[] = [], env: string[] = []
+  const fetched: string[] = [], env: string[] = [], rpcCalls: string[] = []
   let handler: ((request: Request) => Promise<Response>) | undefined
   const db = {
     rpc: async (name: string, args: Record<string, unknown>) => {
+      rpcCalls.push(name)
       let data: unknown
       if (name === 'claim_jev_review_jobs') data = jobs
       else if (name === 'get_jev_review_context') data = options.context ?? context
@@ -51,10 +52,13 @@ async function run(options: { status?: number; context?: unknown; noJobs?: boole
     } }),
   }
   runInNewContext(await compiled, {
-    testDb: db, Deno: { env: { get: (key: string) => { env.push(key); assert.notEqual(key, 'FIRECRAWL_API_KEY'); return key === 'JEV_API_KEY' ? 'synthetic' : undefined } }, serve: (fn: typeof handler) => { handler = fn } },
+    testDb: db, testAuth: options.denied ? new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }) : {}, Deno: { env: { get: (key: string) => { env.push(key); assert.notEqual(key, 'FIRECRAWL_API_KEY'); return key === 'JEV_API_KEY' ? 'synthetic' : undefined } }, serve: (fn: typeof handler) => { handler = fn } },
     fetch: async (url: string | URL, init?: RequestInit) => {
       const target = String(url); fetched.push(target)
-      if (target === 'https://example.org/source') return new Response('Publisher source with exact identity and venue address. '.repeat(10), { headers: { 'content-type': 'text/html' } })
+      if (new URL(target).hostname === 'example.org') {
+        if (options.sourceRedirect) return new Response(null, { status: 302, headers: { location: options.sourceRedirect } })
+        return new Response('PRIVATE_PAGE_TEXT Publisher source with exact identity and venue address. '.repeat(10), { status: options.sourceStatus ?? 200, headers: { 'content-type': 'text/html' } })
+      }
       assert.equal(target, 'https://api.typesafe.ai/v1/systemone')
       const state = JSON.parse(String(init?.body)).state
       assert.equal(state.fetched_sources[0].url, 'https://example.org/source')
@@ -63,8 +67,8 @@ async function run(options: { status?: number; context?: unknown; noJobs?: boole
     Response, URL, AbortSignal, TextDecoder, console,
   })
   assert.ok(handler)
-  const response = await handler(new Request('https://example.test', { method: 'POST', body: JSON.stringify({ run_id: 123, dry_run: false, batch: 2 }) }))
-  return { response, body: await response.json(), finished, updates, fetched, env }
+  const response = await handler(new Request('https://example.test', { method: 'POST', body: JSON.stringify(options.body ?? { run_id: 123, dry_run: false, batch: 2 }) }))
+  return { response, body: await response.json(), finished, updates, fetched, env, rpcCalls }
 }
 
 for (const status of [402, 429, 503]) test(`Jev ${status} stops provider calls, retries leased jobs and records a failed run`, async () => {
@@ -101,4 +105,43 @@ test('paused registry yielding no leases dispatches no network or decisions and 
   const { body, fetched, finished, updates } = await run({ noJobs: true })
   assert.equal(body.examined, 0); assert.equal(fetched.length, 0); assert.equal(finished.length, 0)
   for (const update of updates) { assert.equal(update.value.enabled, undefined); assert.equal(update.value.consecutive_failures, undefined) }
+})
+
+const probeBody = { source_probe: true, urls: ['https://example.org/source?token=DO_NOT_ECHO'], run_id: 123, dry_run: false, probe: true }
+function assertReadOnly(result: Awaited<ReturnType<typeof run>>) {
+  assert.deepEqual(result.rpcCalls, []); assert.deepEqual(result.updates, []); assert.deepEqual(result.finished, [])
+  assert.deepEqual(result.env, [])
+  assert.ok(result.fetched.every(url => new URL(url).hostname === 'example.org'))
+}
+test('authenticated source probe returns metadata only with no DB/model/key access, even when decision flags are supplied', async () => {
+  const result = await run({ body: probeBody })
+  assert.equal(result.response.status, 200); assert.equal(result.body.success, true)
+  assert.equal(result.body.readable, 1); assert.equal(result.body.attempted, 1)
+  assert.equal(result.body.sources[0].host, 'example.org'); assert.ok(result.body.sources[0].characters > 100)
+  assert.deepEqual(Object.keys(result.body.sources[0]).sort(), ['characters', 'host', 'retrieved_at'])
+  assert.doesNotMatch(JSON.stringify(result.body), /PRIVATE_PAGE_TEXT|DO_NOT_ECHO|token=|source_errors/)
+  assertReadOnly(result)
+})
+test('source probe denies unauthenticated callers before network or DB operations', async () => {
+  const result = await run({ body: probeBody, denied: true })
+  assert.equal(result.response.status, 401); assert.equal(result.fetched.length, 0); assertReadOnly(result)
+})
+test('source probe refuses unbounded, malformed and unsafe inputs without network or DB operations', async () => {
+  for (const urls of [undefined, [], Array(5).fill('https://example.org/source'), [123], ['x'.repeat(2049)], ['http://example.org'], ['https://localhost'], ['https://reader@example.org'], ['https://example.org:8443']]) {
+    const result = await run({ body: { source_probe: true, urls } })
+    assert.equal(result.response.status, 400); assert.equal(result.fetched.length, 0); assertReadOnly(result)
+  }
+})
+test('source probe caps successful pages and direct attempts through the same retrieval path', async () => {
+  const result = await run({ body: { source_probe: true, urls: ['a','b','c','d'].map(x => `https://example.org/${x}`) } })
+  assert.equal(result.body.readable, 2); assert.equal(result.body.attempted, 2); assert.equal(result.fetched.length, 2); assertReadOnly(result)
+  const failed = await run({ body: { source_probe: true, urls: ['a','b','c','d'].map(x => `https://example.org/${x}`) }, sourceStatus: 403 })
+  assert.equal(failed.body.readable, 0); assert.equal(failed.body.attempted, 4); assert.equal(failed.body.failed, 4); assertReadOnly(failed)
+})
+test('failed source probe rejects private redirects and omits page content and raw errors without state writes', async () => {
+  const result = await run({ body: probeBody, sourceRedirect: 'http://169.254.169.254/SECRET_REDIRECT' })
+  assert.equal(result.response.status, 200); assert.equal(result.body.success, false)
+  assert.equal(result.body.failed, 1); assert.equal(result.fetched.length, 1)
+  assert.doesNotMatch(JSON.stringify(result.body), /SECRET_REDIRECT|169.254|PRIVATE_PAGE_TEXT|Source|Unsupported/)
+  assertReadOnly(result)
 })
