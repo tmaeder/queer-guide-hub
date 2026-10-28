@@ -136,6 +136,9 @@ jobs:
       - name: Run merchant and server-script regressions
         if: matrix.shard == 1
         run: npm run test:merchant-sync
+      - name: Run Jev provider backpressure regressions
+        if: matrix.shard == 1
+        run: node --import tsx --test scripts/ci/jev-review-runtime.test.ts
       - name: Collect unit results and coverage
         run: |
           npm run test:coverage -- \
