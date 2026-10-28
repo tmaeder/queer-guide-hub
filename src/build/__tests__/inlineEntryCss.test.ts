@@ -1,7 +1,25 @@
 import { describe, expect, it, vi } from 'vitest';
-import { inlineCssUrls, inlineEntryCssHtml } from '../../../scripts/vite/inline-entry-css';
+import {
+  inlineCssUrls,
+  inlineEntryCssHtml,
+  reuseInlinedCss,
+} from '../../../scripts/vite/inline-entry-css';
 
 describe('entry stylesheet delivery', () => {
+  it('registers actual inline styles with the preload helper and rejects unknown helpers', () => {
+    const code = 'const links = document.getElementsByTagName("link");';
+    const rewritten = reuseInlinedCss(code);
+    document.head.innerHTML =
+      '<style data-inlined-entry-css="/assets/css/index-x.css">body{color:red}</style>';
+    const preloadedHrefs = { all: new Set(), styles: new Set() };
+    new Function('document', 'preloadedHrefs', rewritten)(document, preloadedHrefs);
+    expect([...preloadedHrefs.styles]).toEqual([
+      new URL('/assets/css/index-x.css', document.baseURI).href,
+    ]);
+    expect(preloadedHrefs.all).toEqual(preloadedHrefs.styles);
+    expect(() => reuseInlinedCss('changed upstream helper')).toThrow('Vite preload helper changed');
+    document.head.innerHTML = '';
+  });
   it('makes the generated app styles available in the document and preserves route styles', () => {
     const read = vi.fn(() => 'body{font-family:Space Grotesk}');
     const html = inlineEntryCssHtml(
@@ -14,11 +32,8 @@ describe('entry stylesheet delivery', () => {
     expect(html).toContain('<link rel="stylesheet" href="/assets/css/News-xyz.css">');
     expect(html).toContain('<script type="module" src="/assets/js/index-abc.js"></script>');
     expect(read).toHaveBeenCalledExactlyOnceWith('/assets/css/index-abc.css');
-    expect(html).toContain('disabled data-inlined-entry-css-marker="/assets/css/index-abc.css"');
-    const document = new DOMParser().parseFromString(html, 'text/html');
-    expect(document.querySelector('[data-inlined-entry-css-marker]')?.hasAttribute('href')).toBe(
-      false,
-    );
+    expect(html).not.toContain('data-inlined-entry-css-marker');
+    expect(html).not.toContain('rel="stylesheet" crossorigin');
   });
 
   it('keeps CSS image/font paths correct on deep routes and leaves data URLs intact', () => {

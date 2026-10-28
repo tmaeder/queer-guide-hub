@@ -25,19 +25,32 @@ export function inlineEntryCssHtml(html: string, readAsset: (href: string) => st
     const css = inlineCssUrls(readAsset(href), href)
       .replace(/\/\*# sourceMappingURL=[^\n]*\*\/\s*$/, '')
       .replace(/<\/style/gi, (closing) => closing.replace('/', '\\/'));
-    // Pages stamps both original style and script elements with its response
-    // nonce. Keep the generated dependency URL out of the speculative parser:
-    // assign it only after creating a disabled link, which never fetches CSS.
-    // Vite's lazy preload helper can then reuse the rules already in the HTML.
-    const marker = tag
-      .replace(/\s+href=["'][^"']+["']/i, '')
-      .replace(/\/?>$/, ` disabled data-inlined-entry-css-marker="${href}">`);
-    return `<style data-inlined-entry-css="${href}">${css}</style>${marker}<script>document.currentScript.previousElementSibling.href=document.currentScript.previousElementSibling.dataset.inlinedEntryCssMarker</script>`;
+    // Pages stamps the original style element with the response CSP nonce.
+    return `<style data-inlined-entry-css="${href}">${css}</style>`;
   });
+}
+
+/** Teach Vite's preload helper about styles already supplied by this document. */
+export function reuseInlinedCss(code: string): string {
+  const anchor = 'const links = document.getElementsByTagName("link");';
+  if (code.split(anchor).length !== 2) {
+    throw new Error('Vite preload helper changed: review inline entry CSS reuse before building');
+  }
+  return code.replace(
+    anchor,
+    `
+    for (const style of document.querySelectorAll('head style[data-inlined-entry-css]')) {
+      const href = new URL(style.getAttribute('data-inlined-entry-css'), document.baseURI).href;
+      preloadedHrefs.styles.add(href);
+      preloadedHrefs.all.add(href);
+    }
+    ${anchor}`,
+  );
 }
 
 export function inlineEntryCss(): Plugin {
   let outDir: string;
+  let preloadHelperPatched = false;
   return {
     name: 'inline-entry-css',
     apply: 'build',
@@ -45,7 +58,13 @@ export function inlineEntryCss(): Plugin {
     configResolved(config) {
       outDir = path.resolve(config.root, config.build.outDir);
     },
+    transform(code, id) {
+      if (id !== '\0vite/preload-helper.js') return;
+      preloadHelperPatched = true;
+      return { code: reuseInlinedCss(code), map: null };
+    },
     closeBundle() {
+      if (!preloadHelperPatched) throw new Error('Vite preload helper was not transformed');
       const htmlPath = path.join(outDir, 'index.html');
       const html = fs.readFileSync(htmlPath, 'utf8');
       const inlined = inlineEntryCssHtml(html, (href) =>
