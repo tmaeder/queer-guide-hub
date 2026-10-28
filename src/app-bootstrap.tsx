@@ -140,35 +140,30 @@ window.addEventListener('vite:preloadError', (event) => {
 // Mark the app as booted and clear the boot-reload gate after first load,
 // so a later transient preload failure doesn't permanently disable the
 // boot-time auto-reload recovery for the next cold start.
-window.addEventListener(
-  'load',
-  () => {
-    appBooted = true;
-    try {
-      sessionStorage.removeItem('preload-error-reload');
-    } catch {
-      /* sandboxed */
+function markAppBooted() {
+  appBooted = true;
+  try {
+    sessionStorage.removeItem('preload-error-reload');
+  } catch {
+    /* sandboxed */
+  }
+  // Drop the cache-busting param the stale-chunk recovery added, so it never
+  // reaches the address bar, a shared link, canonical URLs or analytics.
+  // replaceState (not a navigation) — the app has already booted from this
+  // document and must not re-fetch anything.
+  try {
+    const u = new URL(window.location.href);
+    if (u.searchParams.has('__fresh')) {
+      u.searchParams.delete('__fresh');
+      window.history.replaceState(window.history.state, '', u.pathname + (u.search || '') + u.hash);
     }
-    // Drop the cache-busting param the stale-chunk recovery added, so it never
-    // reaches the address bar, a shared link, canonical URLs or analytics.
-    // replaceState (not a navigation) — the app has already booted from this
-    // document and must not re-fetch anything.
-    try {
-      const u = new URL(window.location.href);
-      if (u.searchParams.has('__fresh')) {
-        u.searchParams.delete('__fresh');
-        window.history.replaceState(
-          window.history.state,
-          '',
-          u.pathname + (u.search || '') + u.hash,
-        );
-      }
-    } catch {
-      /* URL unavailable */
-    }
-  },
-  { once: true },
-);
+  } catch {
+    /* URL unavailable */
+  }
+}
+// A dynamically loaded application may start after the document load event.
+if (document.readyState === 'complete') markAppBooted();
+else window.addEventListener('load', markAppBooted, { once: true });
 
 // Non-English locales lazy-load from /locales/<lang>.json via the http
 // backend wired in src/i18n. Wait for the active locale before first
