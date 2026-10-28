@@ -70,4 +70,39 @@ test.describe('stylesheet reuse after app startup', () => {
     expect(documents).toBe(1);
     expect(entryStylesheets).toEqual([]);
   });
+  test('public introduction stays usable while the application graph is pending', async ({
+    page,
+    baseURL,
+  }) => {
+    test.skip(
+      Boolean(baseURL && new URL(baseURL).hostname === '127.0.0.1'),
+      'Static Vite preview has no Pages introductory content',
+    );
+    let release!: () => void;
+    let requested = false;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route(/\/assets\/js\/app-bootstrap-[^/]+\.js$/, async (route) => {
+      requested = true;
+      await gate;
+      await route.continue();
+    });
+    try {
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+      await expect.poll(() => requested).toBe(true);
+      const introduction = page.locator('main[data-prerendered]');
+      await expect(introduction.getByRole('heading', { level: 1 })).toHaveText(
+        'Queer Guide — the global guide to LGBTQ+ life',
+      );
+      await expect(introduction.getByText(/Find a bar in a city/)).toBeVisible();
+      await expect(
+        introduction.getByRole('link', { name: 'Read curated LGBTQ+ news' }),
+      ).toHaveAttribute('href', '/news');
+      release();
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('No straight lines here.');
+    } finally {
+      release();
+    }
+  });
 });
