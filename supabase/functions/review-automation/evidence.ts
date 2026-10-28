@@ -1,6 +1,6 @@
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import type { Evidence } from './policy.ts'
-function sourceUrl(raw: string): URL {
+export function sourceUrl(raw: string): URL {
   const url = assertPublicHttpUrl(raw)
   const hasCredentials = Boolean(url.username) || Boolean(url.password)
   const allowedPort = !url.port || url.port === '443'

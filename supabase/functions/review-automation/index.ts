@@ -1,6 +1,5 @@
 import { corsResponse, errorResponse, getServiceClient, jsonResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { buildQuestions, decide, parseEvaluation, POLICY_VERSION, SOURCES, type Context, type Evidence } from './policy.ts'
-import { fetchEvidence } from './evidence.ts'
 import { recoverSources } from './research.ts'
 import { ProviderError } from './provider.ts'
 
@@ -61,16 +60,14 @@ Deno.serve(async req => {
         context = await rpc<Context>('get_jev_review_context', { p_case_id: job.case_id, p_lease_token: job.lease_token })
         if (context.blocker) result = { blocker: context.blocker }
         else {
-          const errors: string[] = []
+          let errors: string[] = []; let attempted = 0
           const integrityOnly = context.candidates.length === 1 && context.candidates[0].action === 'reject' && typeof context.candidates[0].payload.integrity_rule === 'string'
           if (integrityOnly) evidence.push({ url: 'https://queer.guide/admin', retrieved_at: new Date().toISOString(), kind: 'proposal_integrity', text: JSON.stringify({ rule: context.candidates[0].explanation, proposal: context.proposal, current_text: context.record?.description, scope: 'Proposal integrity only. No underlying historical or entity facts are certified.' }) })
-          // Read only application-supplied source URLs. No model-generated destinations.
-          for (const url of integrityOnly ? [] : context.urls.slice(0, 2)) {
-            try { evidence.push(await fetchEvidence(url)) }
-            catch (error) { errors.push(error instanceof Error ? error.message : 'Source fetch failed') }
+          if (!integrityOnly) {
+            const sources = await recoverSources(context)
+            evidence = sources.evidence; errors = sources.errors; attempted = sources.attempted
           }
-          if (!evidence.length) evidence = await recoverSources(context)
-          if (!evidence.length) result = { blocker: context.urls.length ? 'source_unavailable' : 'missing_source_url', source_errors: errors }
+          if (!evidence.length) result = { blocker: attempted ? 'source_unavailable' : 'missing_source_url', source_errors: errors }
           else {
             const request = buildQuestions(context, evidence)
             request.model = Deno.env.get('JEV_MODEL') || request.model
