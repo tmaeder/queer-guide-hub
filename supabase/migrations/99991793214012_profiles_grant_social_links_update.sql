@@ -1,4 +1,4 @@
--- 99991793210560_profiles_grant_social_links_update
+-- 99991793214012_profiles_grant_social_links_update
 --
 -- /profile/settings -> Social Links could not save. Every attempt failed with a
 -- generic "Failed to save. Please try again." toast, and had done since
@@ -54,6 +54,7 @@ declare
   v_missing text;
   v_leak text;
   v_update_ok boolean := false;
+  v_updated_rows integer;
   v_anon_select text;
   v_links jsonb;
   v_accounts jsonb;
@@ -119,7 +120,8 @@ begin
   -- (`updateRowsBy` issues `.update(...).eq(...)` with no trailing `.select()`,
   -- so PostgREST sends no RETURNING either). The values are captured here BEFORE
   -- dropping to `authenticated` so the probe assigns literals exactly as the app
-  -- does, and remains a no-op write.
+  -- does. Even assigning unchanged values fires UPDATE triggers, so force a
+  -- subtransaction rollback after checking exactly one row was writable.
   select user_id, social_links, social_accounts
     into v_uid, v_links, v_accounts
     from public.profiles limit 1;
@@ -134,10 +136,19 @@ begin
          set social_accounts = v_accounts,
              social_links = v_links
        where user_id = v_uid;
-      v_update_ok := true;
-    exception when others then
-      v_update_ok := false;
-      raise notice 'P5 probe error: % %', sqlstate, sqlerrm;
+      get diagnostics v_updated_rows = row_count;
+      if v_updated_rows <> 1 then
+        raise exception 'P5 expected one writable profile, found %', v_updated_rows;
+      end if;
+      raise exception using errcode = 'ZP005', message = 'P5 rollback successful probe';
+    exception
+      when sqlstate 'ZP005' then
+        -- The write, transactional trigger effects, role and JWT changes have
+        -- already rolled back before this handler records success.
+        v_update_ok := true;
+      when others then
+        v_update_ok := false;
+        raise notice 'P5 probe error: % %', sqlstate, sqlerrm;
     end;
     reset role;
     if not v_update_ok then

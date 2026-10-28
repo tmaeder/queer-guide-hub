@@ -246,7 +246,7 @@ export function BasicInfoTab({
           // this review hunting a bug that was somewhere else entirely: the real
           // defect was that `authenticated` held no UPDATE grant on either
           // column after 20540101100000, so every save failed 42501 behind a
-          // generic toast (fixed in 99991793210560).
+          // generic toast (fixed in 99991793214012).
           //
           // Adding a parent-side write would make this a SECOND writer of the
           // same two columns, which is the hazard this repo keeps paying for.

@@ -263,7 +263,7 @@ declare
     'travel_mode','presence_visibility','onboarding_completed_at','interests','languages',
     'looking_for','dm_push_enabled','preferences','mailbox_address','travel_preferences',
     'updated_at','user_id',
-    -- 99991793210560: /profile/settings -> Social Links could not save at all.
+    -- 99991793214012: /profile/settings -> Social Links could not save at all.
     -- SocialLinksManager writes both of these in one statement through
     -- `updateRowsBy('profiles', ...)`, not through `updateProfile`, so
     -- 20540101100000's sweep of updateProfile call sites could not see it and
