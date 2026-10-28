@@ -196,6 +196,15 @@ jobs:
           fi
 
           # Only the PR's NEW migrations: versions production has not applied.
+          # Private native city jobs are absent from the anonymous snapshot.
+          # Synthetic local SQL commands exercise the guarded migration without
+          # contacting any provider or production endpoint.
+          if [ -f /tmp/migrations/99991793214974_city_refresh_fair_bounded_drain.sql ] && ! grep -qx '99991793214974' snapshot/versions.txt; then
+            DB_URL="$DB_URL" node scripts/ci/seed-city-refresh-migration.mjs > /tmp/ci-city-refresh-dependencies.sql
+            psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-city-refresh-dependencies.sql
+          fi
+
+          # Only the PR's NEW migrations: versions production has not applied.
           for f in $(ls /tmp/migrations/*.sql | sort); do
             v=$(basename "$f" | cut -d_ -f1)
             grep -qx "$v" snapshot/versions.txt && continue
