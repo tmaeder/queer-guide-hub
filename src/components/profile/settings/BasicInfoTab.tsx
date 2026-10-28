@@ -88,7 +88,10 @@ export function BasicInfoTab({
                   onValueChange={onPronounTagsChange}
                 />
                 <div className="flex items-center gap-2 mt-1">
-                  <Label htmlFor="pronouns-visibility" className="text-xs text-muted-foreground shrink-0">
+                  <Label
+                    htmlFor="pronouns-visibility"
+                    className="text-xs text-muted-foreground shrink-0"
+                  >
                     Visible to
                   </Label>
                   <Select
@@ -216,9 +219,7 @@ export function BasicInfoTab({
                   onValueChange={(v) => onChange('occupation', v)}
                   placeholder="Pick one or type your own"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Stored exactly as you write it.
-                </p>
+                <p className="text-xs text-muted-foreground">Stored exactly as you write it.</p>
               </div>
               <FormField
                 id="education"
@@ -237,9 +238,20 @@ export function BasicInfoTab({
         initialSocialLinks={profile?.social_links || {}}
         initialSocialAccounts={(profile as { social_accounts?: unknown })?.social_accounts}
         onUpdate={() => {
-          // TODO: persist updates to profile.social_links via the profile
-          // mutation hook. Component currently emits but the parent doesn't
-          // catch — was a debug-only console.log.
+          // Deliberately empty, and NOT a missing persist. SocialLinksManager
+          // writes `social_accounts` + `social_links` to `profiles` itself in
+          // its own `save()` and only then fires this, so `onUpdate` is a
+          // post-save notification — nothing is dropped here. The previous TODO
+          // said the parent "doesn't catch" and read as data loss, which sent
+          // this review hunting a bug that was somewhere else entirely: the real
+          // defect was that `authenticated` held no UPDATE grant on either
+          // column after 20540101100000, so every save failed 42501 behind a
+          // generic toast (fixed in 99991793210560).
+          //
+          // Adding a parent-side write would make this a SECOND writer of the
+          // same two columns, which is the hazard this repo keeps paying for.
+          // If the editor ever needs to re-render from the saved values, refetch
+          // through `get_my_profile()` rather than writing again.
         }}
       />
     </div>

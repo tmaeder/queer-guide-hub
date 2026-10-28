@@ -262,7 +262,17 @@ declare
     'status_emoji','status_text','status_expires_at','availability_tags','dnd_until',
     'travel_mode','presence_visibility','onboarding_completed_at','interests','languages',
     'looking_for','dm_push_enabled','preferences','mailbox_address','travel_preferences',
-    'updated_at','user_id'
+    'updated_at','user_id',
+    -- 99991793210560: /profile/settings -> Social Links could not save at all.
+    -- SocialLinksManager writes both of these in one statement through
+    -- `updateRowsBy('profiles', ...)`, not through `updateProfile`, so
+    -- 20540101100000's sweep of updateProfile call sites could not see it and
+    -- the allowlist shipped two columns short. Measured as `authenticated` with
+    -- a real JWT: 42501 permission denied, against a `bio` control that
+    -- succeeded. This is the "a subset means a write path the editor still uses
+    -- has been cut off" half of the comment above, and it is why this array is
+    -- exact-set-equality in both directions rather than a superset check.
+    'social_links','social_accounts'
   ];
   escalation text[] := array['verified_identity','moderation_status','verified_email',
     'verified_phone','is_business','profile_completion_percentage','welcome_email_sent_at',
@@ -286,7 +296,7 @@ begin
       raise exception 'FAIL(10): self-escalation column(s) writable via %: %', priv, leaked;
     end if;
   end loop;
-  raise notice 'PASS 10: authenticated writes exactly the 52-column allowlist (UPDATE + INSERT)';
+  raise notice 'PASS 10: authenticated writes exactly the 54-column allowlist (UPDATE + INSERT)';
 end $$;
 
 rollback;
