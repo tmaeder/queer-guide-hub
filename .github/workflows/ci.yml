@@ -147,7 +147,7 @@ jobs:
       - name: Run Jev provider backpressure regressions
         if: matrix.shard == 1
         run: |
-          node --import tsx --test scripts/ci/jev-review-runtime.test.ts scripts/ci/jev-validation-runtime.test.ts scripts/ci/jev-pipeline-gate-runtime.test.ts scripts/ci/marketplace-relevance-runtime.test.ts supabase/functions/_shared/jev-client.test.ts supabase/functions/_shared/jev-evidence-judgments.test.ts supabase/functions/_shared/jev-pipeline-judgments.test.ts supabase/functions/_shared/jev-product-relevance.test.ts supabase/functions/marketplace-relevance/decision.test.ts
+          node --import tsx --test scripts/ci/jev-review-runtime.test.ts scripts/ci/jev-validation-runtime.test.ts scripts/ci/jev-pipeline-gate-runtime.test.ts scripts/ci/marketplace-relevance-runtime.test.ts scripts/ci/marketplace-rescore-runtime.test.ts supabase/functions/_shared/jev-client.test.ts supabase/functions/_shared/jev-evidence-judgments.test.ts supabase/functions/_shared/jev-pipeline-judgments.test.ts supabase/functions/_shared/jev-product-relevance.test.ts supabase/functions/marketplace-relevance/decision.test.ts
           node --test scripts/ci/jev-audit-artifacts.test.mjs
       - name: Collect unit results and coverage
         run: |

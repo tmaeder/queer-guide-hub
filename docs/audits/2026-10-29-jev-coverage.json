@@ -6,7 +6,9 @@
     "automations": 369,
     "pipelines": 18,
     "review_sources": 41,
-    "shared_review_gate_dags": 18
+    "shared_review_gate_dags": 18,
+    "deterministic_exclusions_reviewed": 9,
+    "additional_implementations_audited_with_followups": 4
   },
   "automations": [
     {
@@ -50,8 +52,10 @@
       "jobname": "admin_counts_refresh",
       "action_type": "rpc",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "deterministic_exclusion",
+      "remaining": "Preserve deterministic policy; do not add model calls to exact operations",
+      "implementation_evidence": "docs/audits/2026-10-29-jev-automation-implementations.json",
+      "decision_rationale": "Writes aggregate dashboard cache only. Existing database count/view predicates remain code; a model must not invent counts or certify underlying records."
     },
     {
       "name": "Expire admin Trash snapshots",
@@ -72,8 +76,10 @@
       "jobname": "admin_review_counts_refresh",
       "action_type": "rpc",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "deterministic_exclusion",
+      "remaining": "Preserve deterministic policy; do not add model calls to exact operations",
+      "implementation_evidence": "docs/audits/2026-10-29-jev-automation-implementations.json",
+      "decision_rationale": "Registry-driven count/SLA aggregation into a cache. Reads source-view decisions without changing them. Preserve exact counts and deterministic deadlines."
     },
     {
       "name": "Admin review queue page-1 snapshot",
@@ -83,8 +89,10 @@
       "jobname": null,
       "action_type": "rpc",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "deterministic_exclusion",
+      "remaining": "Preserve deterministic policy; do not add model calls to exact operations",
+      "implementation_evidence": "docs/audits/2026-10-29-jev-automation-implementations.json",
+      "decision_rationale": "Cache of code-defined scope, ordering and bounded ranks, not a factual approval. Registry views supply evidence upstream; no model judgment belongs in cache refresh."
     },
     {
       "name": "Affiliate conversions sync (Awin + Travelpayouts)",
@@ -1425,8 +1433,10 @@
       "jobname": "existence_signals_purge",
       "action_type": "rpc",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "deterministic_exclusion",
+      "remaining": "Preserve deterministic policy; do not add model calls to exact operations",
+      "implementation_evidence": "docs/audits/2026-10-29-jev-automation-implementations.json",
+      "decision_rationale": "Retains newest 20 signals per entity and removes older-than-180-day surplus. No entity closure or factual inference. Unbounded statement timeout/loop remains an operational review item."
     },
     {
       "name": "expand-event-recurrences",
@@ -1733,8 +1743,10 @@
       "jobname": "marketplace_catalog_prune",
       "action_type": "rpc",
       "lifecycle_state": "completed",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "audited_followup_required",
+      "remaining": "Live native functions inspected separately: explicit domain allowlist, recent classified_at, score<0.6, featured/brand/wishlist exclusions. Currently completed/disabled with no active cron. Preserve disabled state; a score alone is not new validated publication authority.",
+      "implementation_evidence": "docs/audits/2026-10-29-jev-automation-implementations.json",
+      "decision_rationale": "Live native functions inspected separately: explicit domain allowlist, recent classified_at, score<0.6, featured/brand/wishlist exclusions. Currently completed/disabled with no active cron. Preserve disabled state; a score alone is not new validated publication authority."
     },
     {
       "name": "Marketplace categorize",
@@ -1865,8 +1877,10 @@
       "jobname": "marketplace_ownership_apply",
       "action_type": "rpc",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "deterministic_exclusion",
+      "remaining": "Preserve deterministic policy; do not add model calls to exact operations",
+      "implementation_evidence": "docs/audits/2026-10-29-jev-automation-implementations.json",
+      "decision_rationale": "Copies ownership tags only from approved canonical brand registry matches. Never replace explicit approval with model identity/ownership inference. Registry authorization and brand matching remain separate trust dependencies."
     },
     {
       "name": "Marketplace quality completion supervisor",
@@ -1931,8 +1945,10 @@
       "jobname": "marketplace_relevance_rescore_weekly",
       "action_type": "edge",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "audited_followup_required",
+      "remaining": "Legacy audience-fit scoring directly changes canonical scores. Version73 adds strict parsing, snapshot guards and accurate counters, but Jev adoption needs a separate audience-fit evaluation; explicit LGBTQ-topic scores are not interchangeable with adult scene/brand audience fit.",
+      "implementation_evidence": "docs/audits/2026-10-29-jev-automation-implementations.json",
+      "decision_rationale": "Legacy audience-fit scoring directly changes canonical scores. Version73 adds strict parsing, snapshot guards and accurate counters, but Jev adoption needs a separate audience-fit evaluation; explicit LGBTQ-topic scores are not interchangeable with adult scene/brand audience fit."
     },
     {
       "name": "Marketplace review auto-triage",
@@ -1942,8 +1958,10 @@
       "jobname": "marketplace_review_autotriage",
       "action_type": "rpc",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "audited_followup_required",
+      "remaining": "Automatically applies proposed subcategory when regex/rating gate permits. It does not verify that proposed taxonomy is actually correct. Needs an evaluated typed taxonomy judgment at the native apply boundary, preserving adult-content protections.",
+      "implementation_evidence": "docs/audits/2026-10-29-jev-automation-implementations.json",
+      "decision_rationale": "Automatically applies proposed subcategory when regex/rating gate permits. It does not verify that proposed taxonomy is actually correct. Needs an evaluated typed taxonomy judgment at the native apply boundary, preserving adult-content protections."
     },
     {
       "name": "Marketplace tag backfill (extract)",
@@ -3152,8 +3170,10 @@
       "jobname": "review_queue_retention",
       "action_type": "rpc",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "deterministic_exclusion",
+      "remaining": "Preserve deterministic policy; do not add model calls to exact operations",
+      "implementation_evidence": "docs/audits/2026-10-29-jev-automation-implementations.json",
+      "decision_rationale": "Existing status, age and staging referential state drive retention. Jev should not decide expiry. The existing age>90-day predicate also deletes pending rows and merits a separate retention-policy review; this audit does not approve that behavior."
     },
     {
       "name": "Research incomplete review cases",
@@ -3284,8 +3304,10 @@
       "jobname": "staging_reconcile_committed",
       "action_type": "rpc",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "audited_followup_required",
+      "remaining": "Target-row existence reconciles lifecycle metadata without changing canonical content, but can close stale review on legacy wrongly admitted rows. Preserve classification corrections separately; do not count reconciliation as factual verification.",
+      "implementation_evidence": "docs/audits/2026-10-29-jev-automation-implementations.json",
+      "decision_rationale": "Target-row existence reconciles lifecycle metadata without changing canonical content, but can close stale review on legacy wrongly admitted rows. Preserve classification corrections separately; do not count reconciliation as factual verification."
     },
     {
       "name": "Purge old rejected staging rows",
@@ -3295,8 +3317,10 @@
       "jobname": "staging_rejected_purge",
       "action_type": "rpc",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "deterministic_exclusion",
+      "remaining": "Preserve deterministic policy; do not add model calls to exact operations",
+      "implementation_evidence": "docs/audits/2026-10-29-jev-automation-implementations.json",
+      "decision_rationale": "Existing rejected disposition plus age>90 days selects retention deletion. No new rejection judgment. Keep evidence-retention policy in code; audit/event preservation is a separate requirement."
     },
     {
       "name": "Staging review sweep",
@@ -3526,8 +3550,10 @@
       "jobname": "umami_retention",
       "action_type": "rpc",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "deterministic_exclusion",
+      "remaining": "Preserve deterministic policy; do not add model calls to exact operations",
+      "implementation_evidence": "docs/audits/2026-10-29-jev-automation-implementations.json",
+      "decision_rationale": "Exact timestamp retention and orphan-session cleanup, bounded with a 30-day minimum. No need to send visitor/session data to a model."
     },
     {
       "name": "Prune aged user_events rows",
@@ -3537,8 +3563,10 @@
       "jobname": "user_events_retention",
       "action_type": "rpc",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "deterministic_exclusion",
+      "remaining": "Preserve deterministic policy; do not add model calls to exact operations",
+      "implementation_evidence": "docs/audits/2026-10-29-jev-automation-implementations.json",
+      "decision_rationale": "Exact age cutoff with >=30-day floor and bounded deletion. No semantic judgment; keep retention in code. No retention policy changes authorized by this audit."
     },
     {
       "name": "Username deadline auto-assign",

@@ -86,7 +86,7 @@ Deployment must not alter the current enabled state or schedules incidentally.
 
 ## Pipeline shadow adoption
 
-`pipeline-review-gate` version 1936 runs bounded public-record faithfulness checks
+`pipeline-review-gate` version 1937 runs bounded public-record faithfulness checks
 in shadow mode, including callers through the `review-gate` node alias. It makes
 at most four checks among up to sixteen selected batch rows, using the shared production account.
 `JEV_PIPELINE_SHADOW=false` disables this addition. Existing approval behavior is
@@ -100,6 +100,9 @@ The projection separates original adapter text from normalized/generated title,
 description and summary, omits author/account/contact metadata, and refuses
 oversized text instead of silently truncating qualifications. Other sources are
 excluded. This sampling is not complete per-record or per-domain enforcement.
+Version 1937 includes all 23 verified public Shopify/WooCommerce product adapters
+in the source projection allowlist; primary product relevance remains limited to
+the two evaluated adapters below.
 
 Migration `20261029220732` adds private shadow leases and cached typed answers;
 raw source text is not retained there. Evidence/model/question hashes invalidate
@@ -266,6 +269,29 @@ symlink. Targeted runtime tests, the three Review status component tests, Deno
 checks and the isolated database contract tests pass.
 
 ## Remaining implementation
+
+Implementation inspection now records nine deterministic exclusions and four
+follow-up audits in `docs/audits/2026-10-29-jev-automation-implementations.json`.
+The cache/count, fixed retention and approved-curation propagation operations
+keep their exact rules in code. Their source definitions and hashes are recorded;
+this does not certify the underlying evidence, retention policy or dependencies.
+The existing Review retention can delete pending rows older than 90 days; that
+policy deserves a separate review. The marketplace taxonomy autotriage can apply
+a proposed category when an adult-content regex permits it, without validating
+the category's meaning, and still needs an evaluated judgment at its write boundary.
+
+The nightly `marketplace-relevance-rescore` version 73 retains its existing
+legacy audience-fit policy while adding strict score/index types, duplicate and
+out-of-batch refusal, exact snapshot comparisons, and separate stale/failure counts.
+The table has no universal `updated_at` trigger, so the same UPDATE compares every
+model input, previous score/classification time and review/publication state.
+Database failures no longer count as scored or raised/lowered results. Three
+runtime regressions pass; live unauthenticated and authenticated invalid-body
+canaries returned 401 and 400 respectively, with no paid inference/source writes.
+Its existing authentication, enabled state and nightly schedule are preserved.
+Jev adoption there remains unfinished: audience fit for adult scene merchandise
+is a different decision from explicit LGBTQ subject matter and needs its own
+evaluation. The catalog prune remains completed/disabled with no active cron.
 
 Evidence discovery/repair across the main blocker families; per-field positive
 correction handlers; marketplace and other pipeline adoption; guards for SQL/direct
