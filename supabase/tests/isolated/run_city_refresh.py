@@ -8,6 +8,27 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 PG = Path(os.environ.get('PG_BIN', '/opt/homebrew/opt/postgresql@17/bin'))
 MIGRATION = ROOT / 'supabase/migrations/99991793214974_city_refresh_fair_bounded_drain.sql'
+INDEX_MIGRATION = ROOT / 'supabase/migrations/99991793230333_city_refresh_index_only_candidates.sql'
+SELECTOR_BEFORE = """
+create temp table selector_before as
+select scope,lim,(select coalesce(jsonb_agg(to_jsonb(d)-'ordinality' order by d.ordinality),'[]'::jsonb)
+ from public.cities_due_for_refresh(lim,scope) with ordinality d) as receipt
+from unnest(array['qid_gap','alias_gap','all','content_first','content_only',null,'unknown']::text[]) scope
+cross join unnest(array[null,0,1,3,20,5000]::integer[]) lim;
+"""
+SELECTOR_AFTER = """
+set plan_cache_mode=force_generic_plan;
+do $$declare r record;actual jsonb;begin
+ for r in select * from selector_before loop
+  select coalesce(jsonb_agg(to_jsonb(d)-'ordinality' order by d.ordinality),'[]'::jsonb)
+  into actual from public.cities_due_for_refresh(r.lim,r.scope) with ordinality d;
+  if actual is distinct from r.receipt then
+   raise exception 'Indexed selector changed full rows/order for scope %, limit %',r.scope,r.lim;
+  end if;
+ end loop;
+end$$;
+reset plan_cache_mode;
+"""
 SCHEMA = """
 create role anon; create role authenticated; create role service_role;
 create schema cron;
@@ -265,7 +286,7 @@ with tempfile.TemporaryDirectory(prefix='city-refresh-pg-') as tmp:
     try:
         command = [str(PG / 'psql'), '-h', str(sock), '-p', '55447', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1']
         try:
-            subprocess.run(command, input=SCHEMA + MIGRATION.read_text() + CHECKS, text=True, check=True, stdout=subprocess.DEVNULL)
+            subprocess.run(command, input=SCHEMA + MIGRATION.read_text() + SELECTOR_BEFORE + INDEX_MIGRATION.read_text() + SELECTOR_AFTER + CHECKS, text=True, check=True, stdout=subprocess.DEVNULL)
         except subprocess.CalledProcessError:
             subprocess.run(command + ['-c', "select pg_get_viewdef('public.city_quality_profile'::regclass,true)"], check=True)
             raise
@@ -298,6 +319,6 @@ end$$;
         result = subprocess.run([str(PG / 'psql'), '-h', str(sock), '-p', '55447', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1'], input=refusal, text=True, capture_output=True)
         if result.returncode == 0 or 'refuses to override a manually disabled job' not in result.stderr:
             raise AssertionError('Manual pause protection was not enforced')
-        print('PASS: fair bounded queues; scopes/ACL/view options; guarded city+alias transactions; xmin/provenance staleness and replay refusal; human decisions/holds; protected fields; rollback; manual pause refusal')
+        print('PASS: indexed selector full-row/order equivalence across scopes/limits and generic plans; fair bounded queues; scopes/ACL/view options; guarded city+alias transactions; xmin/provenance staleness and replay refusal; human decisions/holds; protected fields; rollback; manual pause refusal')
     finally:
         subprocess.run([str(PG / 'pg_ctl'), '-D', str(data), '-m', 'fast', '-w', 'stop'], check=True, stdout=subprocess.DEVNULL)
