@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { Globe } from '@/components/icons';
 import {
@@ -18,6 +19,7 @@ import type { SupportedLocale } from '@/i18n/languages';
 
 export function LanguageSwitcher() {
   const { i18n, t } = useTranslation();
+  const [optionsReady, setOptionsReady] = useState(false);
   // Raw navigate: handleChange already computes the fully locale-prefixed
   // target. useLocalizedNavigate would re-prefix with the CURRENT route locale
   // (still set at click time), so switching away from a non-default locale
@@ -52,8 +54,16 @@ export function LanguageSwitcher() {
   };
 
   return (
-    <Select value={currentLocale} onValueChange={handleChange}>
+    <Select
+      value={currentLocale}
+      onValueChange={handleChange}
+      onOpenChange={(open) => {
+        if (open) setOptionsReady(true);
+      }}
+    >
       <SelectTrigger
+        onFocus={() => setOptionsReady(true)}
+        onPointerEnter={() => setOptionsReady(true)}
         // Translated — this was hardcoded English on the LANGUAGE switcher,
         // i.e. unreadable to exactly the user reaching for it.
         aria-label={t('i18n.selectLanguage', 'Select language')}
@@ -76,7 +86,9 @@ export function LanguageSwitcher() {
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {SUPPORTED_LOCALES.map((lang) => (
+        {/* The current value stays available immediately. Prime the remaining
+            closed-menu collection on focus, pointer entry, or first opening. */}
+        {SUPPORTED_LOCALES.filter((lang) => optionsReady || lang === currentLocale).map((lang) => (
           <SelectItem key={lang} value={lang}>
             <span className="text-13">{LANGUAGE_NAMES[lang]}</span>
           </SelectItem>

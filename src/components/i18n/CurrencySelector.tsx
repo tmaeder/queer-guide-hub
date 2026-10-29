@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Wallet } from '@/components/icons';
 import {
@@ -19,6 +20,7 @@ interface CurrencyRow {
 export function CurrencySelector() {
   const { currency, setCurrency } = useCurrency();
   const { t } = useTranslation();
+  const [optionsReady, setOptionsReady] = useState(false);
 
   const { data: currencies = [] } = useQuery({
     queryKey: ['currencies-list'],
@@ -30,8 +32,16 @@ export function CurrencySelector() {
   if (!currencies.length) return null;
 
   return (
-    <Select value={currency} onValueChange={setCurrency}>
+    <Select
+      value={currency}
+      onValueChange={setCurrency}
+      onOpenChange={(open) => {
+        if (open) setOptionsReady(true);
+      }}
+    >
       <SelectTrigger
+        onFocus={() => setOptionsReady(true)}
+        onPointerEnter={() => setOptionsReady(true)}
         aria-label={t('i18n.selectCurrency', 'Select currency')}
         // See LanguageSwitcher: `height: 36` is declared intent, and the base
         // 44px min-height in index.css is what actually renders.
@@ -49,14 +59,20 @@ export function CurrencySelector() {
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {currencies.map((c) => (
-          <SelectItem key={c.code} value={c.code}>
-            <span className="text-13">
-              {c.code}
-              {c.symbol && c.symbol !== c.code ? ` (${c.symbol})` : ''}
-            </span>
-          </SelectItem>
-        ))}
+        {/* Keep the selected item registered for its label/native value. The
+            unopened Radix collection otherwise mounts every option on every
+            page. Focus primes all items before closed-menu keyboard typeahead;
+            opening or pointer entry primes the same complete collection. */}
+        {currencies
+          .filter((c) => optionsReady || c.code === currency)
+          .map((c) => (
+            <SelectItem key={c.code} value={c.code}>
+              <span className="text-13">
+                {c.code}
+                {c.symbol && c.symbol !== c.code ? ` (${c.symbol})` : ''}
+              </span>
+            </SelectItem>
+          ))}
       </SelectContent>
     </Select>
   );
