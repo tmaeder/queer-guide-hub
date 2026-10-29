@@ -1,14 +1,16 @@
-name: Lighthouse CI
+# Isolated diagnostic branch only. Never merge this over production Lighthouse.
+name: Lighthouse preview diagnostic
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 7 * * 1"
-  workflow_run:
-    workflows: [Deploy to Cloudflare Pages]
-    types: [completed]
-    branches: [main]
+    inputs:
+      preview_url:
+        description: Immutable project Pages preview origin
+        required: true
+      expected_sha:
+        description: Exact clean preview source commit
+        required: true
 concurrency:
-  group: lighthouse-ci-${{ github.ref }}
+  group: lighthouse-preview-${{ github.ref }}
   cancel-in-progress: false
 permissions:
   contents: read
@@ -17,7 +19,10 @@ jobs:
     name: audit (${{ matrix.form_factor }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    env:
+      QG_PREVIEW_URL: ${{ inputs.preview_url }}
+      QG_PREVIEW_EXPECTED_SHA: ${{ inputs.expected_sha }}
+      QG_PREVIEW_PROFILE: ${{ matrix.form_factor }}
     strategy:
       fail-fast: false
       matrix:
@@ -35,13 +40,21 @@ jobs:
           node-version: "22"
       - name: Install Lighthouse CI
         run: npm install -g "@lhci/cli@0.13.x"
+      - name: Preserve original budgets and map only preview origins
+        run: node scripts/lighthouse-preview-probe.mjs prepare
+      - name: Verify immutable preview source before collection
+        run: node scripts/lighthouse-preview-probe.mjs verify before
       - name: Collect
-        run: lhci collect --config=${{ matrix.config }}
+        run: lhci collect --config=.preview-lhci-${{ matrix.form_factor }}.json
       - name: Assert budgets
-        run: lhci assert --config=${{ matrix.config }}
+        # No-index preview SEO failures intentionally remain visible as errors.
+        run: lhci assert --config=.preview-lhci-${{ matrix.form_factor }}.json
+      - name: Verify immutable preview source after collection
+        if: always()
+        run: node scripts/lighthouse-preview-probe.mjs verify after
       - name: Write filesystem report
         if: always()
-        run: lhci upload --config=${{ matrix.config }} || true
+        run: lhci upload --config=.preview-lhci-${{ matrix.form_factor }}.json || true
       - name: Upload Lighthouse reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
@@ -53,8 +66,11 @@ jobs:
         # baselines) are deliberately NOT given this treatment.
         continue-on-error: true
         with:
-          name: lighthouse-reports-${{ matrix.form_factor }}
-          path: .lighthouseci/
+          name: preview-lighthouse-${{ matrix.form_factor }}
+          path: |
+            .lighthouseci/
+            .preview-lhci-*.json
+            lhci-preview-*.json
           # .lighthouseci is a dot-dir; upload-artifact v4+ skips hidden files
           # by default, so without this the reports were never uploaded.
           include-hidden-files: true
