@@ -3,10 +3,17 @@ import { JEV_MODEL, type JevRequest, type JevResponse } from './jev-client.ts'
 export const PIPELINE_QUESTION_VERSION = 'jev-pipeline-faithfulness-v1'
 // These adapters ingest public publisher/operator records. Private/community
 // sources require a separate authorized projection; never serialize a whole row.
-const PUBLIC_SOURCES = new Set([
+export const PUBLIC_MARKETPLACE_SOURCES = [
+  'adamssceptre', 'autostraddle', 'backroomgear', 'beefcakeswimwear',
+  'bigbudpress', 'charliebymz', 'effenberger', 'fetchshop', 'gfwclothing',
+  'mr-riegillio', 'ohmyfantasy', 'orttu', 'peaudeloup', 'pridesocks',
+  'prowlerred', 'puppyplayexpert', 'regulation', 'rubbertwunk', 'rufskin',
+  'ryvkstudio', 'spectrumoutfitters', 'twink-x', 'wetforher',
+] as const // Verified public Shopify/WooCommerce adapter nodes, 2026-10-29.
+const PUBLIC_SOURCES = new Set<string>([
   'rss-news', 'eventfrog', 'gay-ch', 'gaybasel', 'gayout', 'gaytravel4u',
   'haz-ch', 'lgbtnetwork', 'milchjugend', 'queer-kalender', 'rheinfetisch',
-  'abuniverse', 'adamssceptre', 'ryvkstudio', 'friend-of-dorothy',
+  'abuniverse', 'friend-of-dorothy', ...PUBLIC_MARKETPLACE_SOURCES,
 ])
 type Json = Record<string, unknown>
 export interface PipelineEvidence {
@@ -21,14 +28,21 @@ function object(value: unknown): Json {
 function text(value: unknown): string { return typeof value === 'string' ? value.trim() : '' }
 
 /** Raw adapter text is the evidence; enriched/generated text is never evidence. */
-export function projectPipelineEvidence(row: Json): { evidence: PipelineEvidence | null; reason?: string } {
+export function projectPublicSource(row: Json): { evidence: Omit<PipelineEvidence, 'candidate'> | null; reason?: string } {
   if (!PUBLIC_SOURCES.has(String(row.source_name)) || !['news_article', 'event', 'marketplace'].includes(String(row.entity_type))) return { evidence: null, reason: 'source_not_authorized' }
-  const raw = object(row.raw_data), normalized = object(row.normalized_data), enriched = object(row.enriched_data)
+  const raw = object(row.raw_data)
   const title = text(raw.title) || text(raw.name) || text(raw.summary)
   const original = text(raw.content) || text(raw.body) || text(raw.description) || text(raw.excerpt)
   // A bounded whole excerpt is preferable to silently removing qualifications.
   if (!title || original.length < 40) return { evidence: null, reason: 'missing_original_text' }
   if (title.length > 500 || original.length > 12000) return { evidence: null, reason: 'source_exceeds_bounds' }
+  return { evidence: { entity_type: String(row.entity_type), source_name: String(row.source_name), original: { title, text: original } } }
+}
+
+export function projectPipelineEvidence(row: Json): { evidence: PipelineEvidence | null; reason?: string } {
+  const source = projectPublicSource(row)
+  if (!source.evidence) return { evidence: null, reason: source.reason }
+  const normalized = object(row.normalized_data), enriched = object(row.enriched_data)
   const candidate: Record<string, string> = {}
   for (const [key, value] of Object.entries({
     title: normalized.title || normalized.name,
@@ -40,7 +54,7 @@ export function projectPipelineEvidence(row: Json): { evidence: PipelineEvidence
     if (value.trim()) candidate[key] = value.trim()
   }
   if (Object.keys(candidate).length === 0) return { evidence: null, reason: 'missing_candidate' }
-  return { evidence: { entity_type: String(row.entity_type), source_name: String(row.source_name), original: { title, text: original }, candidate } }
+  return { evidence: { ...source.evidence, candidate } }
 }
 
 export function buildPipelineRequest(evidence: PipelineEvidence): JevRequest {

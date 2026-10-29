@@ -41,7 +41,7 @@ async function run(body: unknown, options: { denied?: boolean; budgetDenied?: bo
       return options.providerStatus ? new Response('PRIVATE_PROVIDER_ERROR', { status: options.providerStatus }) : Response.json({
         model: 'jev-1.14.0', usage: { input_tokens: 100, output_tokens: 10 }, answers: historical
         ? Object.fromEntries(Object.keys(payload.questions).map(key => [key, { type: 'choice', choice: 'says_nothing', confidence: 1, probabilities: { supports: 0, contradicts: 0, says_nothing: 1 } }]))
-        : Object.fromEntries(Object.keys(payload.questions).map(key => [key, { type: 'noul', noul: ['contradicts_value', 'contradicted'].includes(key) ? 0 : 1 }])),
+        : Object.fromEntries(Object.keys(payload.questions).map(key => [key, { type: 'noul', noul: ['contradicts_value', 'contradicted', 'brand_affiliation_claim', 'explicit_adult', 'medical_claim', 'legal_claim'].includes(key) ? 0 : 1 }])),
       })
     },
     Response, URL, AbortSignal, TextEncoder, TextDecoder, crypto,
@@ -64,6 +64,14 @@ test('fixed pipeline validation uses the production question builder without sen
   assert.equal(result.status, 200); assert.equal(result.body.results[0].matches, true)
   assert.equal(result.body.results[0].verdict, 'supported')
   assert.doesNotMatch(JSON.stringify(result.requests), /expected|held_out|development|SERVER_KEY/)
+})
+test('product relevance validation uses the fixed catalog and isolates ownership/sensitivity judgments', async () => {
+  const r = await run({ fixtures: ['product-pride-flag'], execute: true })
+  assert.equal(r.status, 200); assert.equal(r.body.results[0].kind, 'synthetic_product')
+  assert.equal(r.body.results[0].verdict.route, 'approve')
+  assert.equal(r.body.results[0].question_version, 'jev-product-relevance-v1')
+  assert.equal(Object.keys(r.requests[0].questions as object).length, 8)
+  assert.doesNotMatch(JSON.stringify(r.requests), /expected|held_out|development|SERVER_KEY/)
 })
 test('unauthenticated and malformed requests never reach a model, budget or source table', async () => {
   assert.equal((await run({ fixtures: ['event-supported'], execute: true }, { denied: true })).status, 401)

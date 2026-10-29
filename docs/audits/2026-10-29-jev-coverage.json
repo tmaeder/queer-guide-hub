@@ -2173,8 +2173,8 @@
       "jobname": "mp-drain-propagate",
       "action_type": "cron",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "native_positive_direction_guard_live",
+      "remaining": "Latest completed/approved numeric positive evidence only; publication status and existing scores preserved. Broader source freshness/domain re-evaluation remains pending."
     },
     {
       "name": "mp-drain-quality",
@@ -2195,8 +2195,8 @@
       "jobname": "mp-drain-relevance-backlog",
       "action_type": "cron",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "typed_public_relevance_pilot_live",
+      "remaining": "Primary Jev uses only evaluated ohmyfantasy/autostraddle public records; other source/provider adoption and historical re-evaluation remain pending."
     },
     {
       "name": "mp-drain-relevance-fresh",
@@ -2206,8 +2206,8 @@
       "jobname": "mp-drain-relevance-fresh",
       "action_type": "cron",
       "lifecycle_state": "active",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "integration_status": "typed_public_relevance_pilot_live",
+      "remaining": "Primary Jev uses only evaluated ohmyfantasy/autostraddle public records; other source/provider adoption and historical re-evaluation remain pending."
     },
     {
       "name": "mp-drain-review",

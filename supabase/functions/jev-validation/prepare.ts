@@ -5,17 +5,34 @@ import type { JevRequest, JevResponse } from '../_shared/jev-client.ts'
 import { VALIDATION_FIXTURES } from './fixtures.ts'
 import { PIPELINE_FIXTURES } from './pipeline-fixtures.ts'
 import { PIPELINE_QUESTION_VERSION, pipelineJudgment } from '../_shared/jev-pipeline-judgments.ts'
+import { PRODUCT_FIXTURES } from './product-fixtures.ts'
+import { PUBLIC_PRODUCT_FIXTURES } from './product-public-fixtures.ts'
+import { PRODUCT_RELEVANCE_VERSION, productRelevanceJudgment } from '../_shared/jev-product-relevance.ts'
 
 export interface ValidationCase {
   name: string
   questionVersion: string
-  kind: 'synthetic_field' | 'historical_accessibility' | 'synthetic_pipeline'
+  kind: 'synthetic_field' | 'historical_accessibility' | 'synthetic_pipeline' | 'synthetic_product' | 'public_product'
   expected: unknown
   request: JevRequest
   judge(response: JevResponse): { verdict: unknown; matches: boolean; reason_matches?: boolean }
 }
 /** Historical labels are evaluation data only; no live facts or publication rights are asserted. */
 export function prepareValidationCase(name: string): ValidationCase | null {
+  if (Object.hasOwn(PUBLIC_PRODUCT_FIXTURES, name)) {
+    const { request, expected } = PUBLIC_PRODUCT_FIXTURES[name]
+    return { name, questionVersion: PRODUCT_RELEVANCE_VERSION, kind: 'public_product', expected, request, judge(response) {
+      const verdict = productRelevanceJudgment(response)
+      return { verdict, matches: verdict.route === expected }
+    } }
+  }
+  if (Object.hasOwn(PRODUCT_FIXTURES, name)) {
+    const { request, expected } = PRODUCT_FIXTURES[name]
+    return { name, questionVersion: PRODUCT_RELEVANCE_VERSION, kind: 'synthetic_product', expected, request, judge(response) {
+      const verdict = productRelevanceJudgment(response)
+      return { verdict, matches: verdict.route === expected }
+    } }
+  }
   if (Object.hasOwn(PIPELINE_FIXTURES, name)) {
     const { request, expected } = PIPELINE_FIXTURES[name]
     return { name, questionVersion: PIPELINE_QUESTION_VERSION, kind: 'synthetic_pipeline', expected, request, judge(response) {

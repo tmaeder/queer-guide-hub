@@ -8,7 +8,7 @@ domain-wide adoption and sensitive-action validation remain in progress.
 Production verification on 29 October: the first two migrations are applied as
 `20261029213554` (budget ledger) and `20261029214157` (normalized source URLs),
 matching the observed Supabase migration history. The isolated validator is
-deployed at version 4. Eight synthetic calls used 4,949 input tokens, charging
+deployed at version 6. Eight synthetic calls used 4,949 input tokens, charging
 207,858 nano-USD (US$0.000207858); no reservations remain unsettled. Anonymous
 execution returned HTTP 401, and the three budget RPCs are service-only.
 
@@ -134,6 +134,63 @@ The Review UI changes are repository source work and need the normal frontend
 release. They show actual blocker/retry reasons, budget usage, and distinguish an
 unchanged blocked case from an operational retry.
 
+## Primary marketplace relevance pilot
+
+`marketplace-relevance` version 390 uses typed Jev questions for the evaluated
+`ohmyfantasy` and `autostraddle` public adapters, at most four attempts per run.
+`JEV_MARKETPLACE_RELEVANCE=false` restores the legacy-provider path. Other sources
+retain their existing provider; source curations remain explicit code inputs.
+No brand ownership or personal identity is inferred from a name. Product evidence
+can establish relevance independently of an ownership claim; affiliation alone
+requires authorization. Medical, legal, adult and unresolved cases stay in review.
+
+Eight Nouls describe product signals and source claims; code routes their results.
+The maximum product-signal score is not a calibrated probability of a union.
+Starting 0.7/0.3 bands are unchanged by evaluation. Twenty-four fixed synthetic
+cases matched all routing labels (eight development, sixteen held out). Twenty
+captured public records matched sixteen labels; four deferred to review. All
+sixteen automated routes agreed with their labels. Related publisher templates
+and a small sample limit what these results establish. Exact payloads and answers
+are in the product validation audit files; no sensitive canonical fields are
+certified by those labels.
+
+Normal Jev processing charges the shared monthly production account; dry runs
+charge the fixed lifetime validation account. The legacy Cloudflare unit allowance
+remains separate. `relevance_jev` events do not consume that legacy allowance.
+Provider/accounting failures stop Jev traffic without falling through to another
+provider; budget deferral remains a healthy queued outcome. Attempts and completed
+evaluations are separate counters. Routine declines are successful processing,
+with `rejected` separate from operational `items_failed`.
+
+Migration `20261029225917` permits explicit null only for review admission, which
+cannot pass the native positive-Boolean commit guard. `20261029230831` filters
+staff-reviewed sources before LIMIT and rechecks staff decisions during atomic
+application. Source-version comparison prevents stale writes; classification and
+event are transactional. New records include the exact request hash, source version,
+model/questions/policy and typed answers, linking to settled budget reservations.
+Concurrent inference can still produce a budgeted duplicate attempt; compare-and-set
+allows only one application. A reusable inference lease is remaining work.
+
+Migration `20261029231857` guards the alternate SQL propagation cron: it considers
+the latest classification before eligibility, requires completed approved positive
+evidence with numeric score at least 0.7, fills only an empty canonical score, and
+preserves publication status. A newer unresolved result cannot fall back to an
+older positive. The registered command and live cron were updated together without
+changing enabled state or schedule.
+
+A live one-row dry run left its staging version unchanged. The write canary
+classified one pending item as a routine decline with a `relevance_jev` event;
+scheduled runs brought the count to thirteen by 23:33 UTC. Review and the restored
+commit drain remained healthy with zero failure streaks. The production account
+charged US$0.031286934 and validation US$0.003438834 at that snapshot, with no
+outstanding reservations. See `docs/audits/2026-10-29-jev-product-primary-rollout.json`.
+
+Audit exports must omit credentials, lease tokens and private account identifiers.
+GitGuardian identified an unnecessary completed shadow-lease UUID in an early
+rollout export. It was removed from the draft branch history and invalidated in
+the completed server record; no provider API key was exposed. The artifact
+regression reports forbidden key locations without printing their values.
+
 ## Runtime validation
 
 `jev-validation` has internal-secret/admin authentication, no scheduler, no
@@ -175,7 +232,7 @@ unknown usage, idempotent settlement, disabled accounts, UTC rollover and ACLs.
 The runtime tests exercise the actual handlers with only service/network
 boundaries replaced, including denial before inference and settlement failure.
 
-## Remaining implementation
+## Marketplace repair verification
 
 Marketplace investigation: migration `20261029222136` materializes the taxonomy
 classifiers' intermediate results once. The actual production function snapshot
@@ -196,8 +253,8 @@ its confidence was high. Version 386 and migration `20261029223309` now validate
 typed Booleans, separate negative/uncertain results, save classification and audit
 atomically against the source version, and require a positive Boolean at the native
 SQL commit boundary. Migration `20261029223724` bounds and corrects the drain's
-outcome counts. The provider remains Cloudflare for this classifier; primary typed
-Jev relevance is pending. A population of 341 already-committed staging rows carries
+outcome counts. Primary typed Jev is now active only for the two evaluated adapters;
+other sources retain Cloudflare. A population of 341 already-committed staging rows carries
 that negative label; re-evaluate it rather than treating the label as proof to
 unpublish. The fixture/regression and rollout measurements are recorded in
 `docs/audits/2026-10-29-jev-marketplace-drain.json`.
@@ -207,6 +264,8 @@ typecheck ratchet passes: 660 existing errors, none new against the 772-error
 baseline. Do not rewrite the baseline to hide errors from a shared dependency
 symlink. Targeted runtime tests, the three Review status component tests, Deno
 checks and the isolated database contract tests pass.
+
+## Remaining implementation
 
 Evidence discovery/repair across the main blocker families; per-field positive
 correction handlers; marketplace and other pipeline adoption; guards for SQL/direct

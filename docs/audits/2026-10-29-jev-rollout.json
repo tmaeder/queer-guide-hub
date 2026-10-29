@@ -1,7 +1,7 @@
 {
   "review_worker_version": 11,
   "pipeline_gate_version": 1936,
-  "validator_version": 4,
+  "validator_version": 6,
   "production_cap_usd_per_utc_month": 25,
   "validation_lifetime_cap_usd": 5,
   "requeued_cases": 288,
@@ -186,5 +186,6 @@
       }
     ],
     "updated_at": "2026-05-10T06:59:18.22088+00:00"
-  }
+  },
+  "marketplace_relevance_version": 390
 }
