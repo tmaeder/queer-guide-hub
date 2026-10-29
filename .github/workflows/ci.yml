@@ -63,6 +63,7 @@ jobs:
             run_city_refresh.py \
             run_profiles_social_grants.py \
             run_jev_review.py \
+            run_city_description_cache.py \
             run_review_cleanup_composition.py \
             run_snapshot_backend_grants.py; do
             python3 "supabase/tests/isolated/$fixture"
