@@ -5,17 +5,70 @@ on:
     inputs:
       preview_url:
         description: Immutable project Pages preview origin
-        required: true
+        required: false
       expected_sha:
         description: Exact clean preview source commit
         required: true
+      build_preview:
+        description: Build only the reviewed candidate on an isolated preview branch
+        type: boolean
+        default: false
 concurrency:
   group: lighthouse-preview-${{ github.ref }}
   cancel-in-progress: false
 permissions:
   contents: read
 jobs:
+  build-preview:
+    if: ${{ inputs.build_preview }}
+    name: Build immutable candidate preview (no production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ inputs.expected_sha }}
+          fetch-depth: 1
+      - name: Fence the exact reviewed candidate branch
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SHA" =~ ^[a-f0-9]{40}$ ]]
+          git fetch origin codex/public-offscreen-work-20261029 --depth=1
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          test "$(git rev-parse FETCH_HEAD)" = "$EXPECTED_SHA"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --prefer-offline --no-audit
+      - name: Build the reviewed source
+        run: npm run build
+        env:
+          CF_PAGES_COMMIT_SHA: ${{ inputs.expected_sha }}
+          VITE_AMBIENT_TRIP_RELEASE: ${{ vars.VITE_AMBIENT_TRIP_RELEASE || '1' }}
+          VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          NODE_OPTIONS: --max-old-space-size=4096
+      - name: Keep private source maps out of the preview
+        run: find dist -type f -name '*.map' -delete
+      - name: Deploy only to the isolated preview branch
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.152.0'
+          command: pages deploy dist --project-name queer-guide --branch codex-public-offscreen-preview-20261029 --commit-hash ${{ inputs.expected_sha }} --commit-message "Reviewed offscreen performance preview" --commit-dirty=true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: reviewed-preview-dist
+          path: dist/
+          retention-days: 14
   audit:
+    if: ${{ !inputs.build_preview }}
     name: audit (${{ matrix.form_factor }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
