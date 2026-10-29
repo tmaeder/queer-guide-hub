@@ -5,6 +5,31 @@ budget on 29 October 2026. Implementation lives in the isolated
 `codex/jev-integration-20261029` branch. This document tracks the foundation;
 domain-wide adoption and sensitive-action validation remain in progress.
 
+Production verification on 29 October: the two migrations are applied as
+`20261029213554` (budget ledger) and `20261029214157` (normalized source URLs),
+matching the observed Supabase migration history. The isolated validator is
+deployed at version 1. Eight synthetic calls used 4,949 input tokens, charging
+207,858 nano-USD (US$0.000207858); no reservations remain unsettled. Anonymous
+execution returned HTTP 401, and the three budget RPCs are service-only.
+
+All eight synthetic cases abstained at the initial routing thresholds, including
+clear positives and contradictions. Three matched their expected uncertainty
+labels. This exposes a calibration/coverage problem; it is not a reason to claim
+accuracy or to tune the thresholds against eight cases. Exact requests, model
+answers and accounting are in `docs/audits/2026-10-29-jev-runtime-canary.json`.
+
+Source recovery analysis found 283 blocked staging cases with normalized URL
+arrays that the projection and reader ignored, including 282 RSS cases. The
+bounded projection now preserves up to four safe URL strings; the reader change
+is tested locally. A subsequent live count found 284 projectable cases, reflecting
+normal queue movement between snapshots. The updated Review worker is **not yet
+deployed**: it needs a production budget account and a bounded canary first.
+
+The security advisor reports intentional no-policy informational entries for the
+three private ledger tables. They have RLS and no client grants; service-only
+RPCs own access. Do not add public policies to remove these notices. See
+[Supabase's RLS advisory](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
+
 ## Spending contract
 
 `_shared/jev-client.ts` is the server-only transport for Jev 1.14.0. Before every

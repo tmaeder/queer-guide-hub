@@ -31,7 +31,7 @@ with tempfile.TemporaryDirectory(prefix='jev-budget-pg-') as tmp:
         return json.loads(sql(f"select public.get_jev_budget_status('{account}');"))
     try:
         sql('create role anon; create role authenticated; create role service_role;')
-        sql((ROOT / 'supabase/migrations/99991793309543_jev_shared_budget_ledger.sql').read_text())
+        sql((ROOT / 'supabase/migrations/20261029213554_jev_shared_budget_ledger.sql').read_text())
         assert status('validation-2026-10-29')['cap_nano_usd'] == 5_000_000_000
         assert status('validation-2026-10-29')['period'] == 'lifetime'
         sql(f"select public.reserve_jev_budget('unknown','{uuid.uuid4()}','test',repeat('a',64));", fail=True)

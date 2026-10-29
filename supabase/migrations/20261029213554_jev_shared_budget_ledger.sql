@@ -1,4 +1,5 @@
 -- Durable hard caps for Jev. No source payload, credentials, or model output is stored here.
+-- Version matches the verified production apply_migration history entry.
 create schema if not exists api_private;
 create table api_private.jev_budget_accounts (
  account text primary key check (account ~ '^[a-z0-9][a-z0-9._:-]{0,79}$'),
