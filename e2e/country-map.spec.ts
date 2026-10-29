@@ -166,6 +166,7 @@ test.describe('country map', () => {
 
     // Drive the real control. The toggle lives in the footer.
     const openThemeMenu = async () => {
+      await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
       const trigger = page.getByRole('button', { name: /toggle theme/i }).first();
       await trigger.scrollIntoViewIfNeeded();
       await trigger.click();

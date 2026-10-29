@@ -98,6 +98,13 @@ test.describe('Footer a11y', () => {
     await page.goto('/');
     await waitForAppReady(page);
 
+    const footer = page.getByRole('contentinfo');
+    await footer.scrollIntoViewIfNeeded();
+    await expect(footer.getByRole('button', { name: 'Toggle theme' })).toBeVisible();
+    // This subtree mounts after the initial readiness probe; settle its styles
+    // and fonts before sampling the composited colours.
+    await waitForAppReady(page);
+
     const bad = await page.evaluate(
       ({ helpers, floor }) => {
         // The helper is injected as source and eval'd in page scope: a
