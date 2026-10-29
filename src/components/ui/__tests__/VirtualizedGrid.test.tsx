@@ -60,6 +60,33 @@ describe('VirtualizedGrid', () => {
     // Contiguous window: no gaps between first and last rendered item.
     expect(sorted[sorted.length - 1] - sorted[0] + 1).toBe(sorted.length);
   });
+
+  it('switches between plain and windowed results as the result set changes', () => {
+    const grid = (count: number) => (
+      <VirtualizedGrid
+        items={items.slice(0, count)}
+        columns={1}
+        rowClassName="grid grid-cols-1 gap-4 pb-4"
+        estimateRowHeight={300}
+        virtualizeAfter={12}
+        itemKey={(it) => it.id}
+        renderItem={(it) => <div>{it.label}</div>}
+      />
+    );
+    const { rerender } = render(grid(12));
+    expect(screen.getAllByText(/^Item \d+$/)).toHaveLength(12);
+    expect(document.querySelectorAll('[data-index]')).toHaveLength(0);
+
+    rerender(grid(24));
+    const count = screen.getAllByText(/^Item \d+$/).length;
+    expect(count).toBeGreaterThan(0);
+    expect(count).toBeLessThan(24);
+    expect(document.querySelectorAll('[data-index]').length).toBeGreaterThan(0);
+
+    rerender(grid(8));
+    expect(screen.getAllByText(/^Item \d+$/)).toHaveLength(8);
+    expect(document.querySelectorAll('[data-index]')).toHaveLength(0);
+  });
 });
 
 describe('useGridColumns', () => {

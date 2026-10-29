@@ -1,4 +1,12 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from 'react';
 import type { ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -131,12 +139,11 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   );
 
   const formatPriceCents = useCallback(
-    (cents: number, overrideCurrency?: string) =>
-      formatCents(cents, overrideCurrency || currency),
+    (cents: number, overrideCurrency?: string) => formatCents(cents, overrideCurrency || currency),
     [currency],
   );
 
-  const symbol = getCurrencySymbol(currency);
+  const symbol = useMemo(() => getCurrencySymbol(currency), [currency]);
 
   // Memoize the context value so consumers (price displays across the app)
   // don't re-render when this provider re-renders for unrelated reasons

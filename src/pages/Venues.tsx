@@ -614,6 +614,8 @@ const Venues = () => {
                   columns={gridColumns}
                   rowClassName={gridClass}
                   estimateRowHeight={420}
+                  virtualizeAfter={12}
+                  overscan={2}
                   itemKey={(venue) => venue.id}
                   renderItem={(venue, index) => (
                     <div className={index >= PAGE_SIZE ? 'content-enter' : undefined}>
