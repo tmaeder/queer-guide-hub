@@ -8,7 +8,7 @@ domain-wide adoption and sensitive-action validation remain in progress.
 Production verification on 29 October: the first two migrations are applied as
 `20261029213554` (budget ledger) and `20261029214157` (normalized source URLs),
 matching the observed Supabase migration history. The isolated validator is
-deployed at version 2. Eight synthetic calls used 4,949 input tokens, charging
+deployed at version 4. Eight synthetic calls used 4,949 input tokens, charging
 207,858 nano-USD (US$0.000207858); no reservations remain unsettled. Anonymous
 execution returned HTTP 401, and the three budget RPCs are service-only.
 
@@ -27,7 +27,7 @@ the budget and recovery changes. The previous deployed files matched main before
 replacement. Its authenticated probe and one-case dry run passed; the previously
 missing URL yielded one readable page, but support remained insufficient. The
 source row hash and case audit count were unchanged. A one-job production canary
-also returned HTTP 200 (one blocked, zero applied). At 22:01 UTC, 288 blocked
+also returned HTTP 200 (one blocked, zero applied). Subsequently, 288 blocked
 cases were requeued because their existing normalized URL arrays became readable;
 no source records were changed or evidence prerequisites waived.
 
@@ -84,7 +84,57 @@ unavailable accounting stops provider traffic and reports an operational error.
 The existing transactional apply, evidence, privacy, pause and lease guards remain.
 Deployment must not alter the current enabled state or schedules incidentally.
 
-## Synthetic runtime validation
+## Pipeline shadow adoption
+
+`pipeline-review-gate` version 1936 runs bounded public-record faithfulness checks
+in shadow mode, including callers through the `review-gate` node alias. It makes
+at most four checks among up to sixteen selected batch rows, using the shared production account.
+`JEV_PIPELINE_SHADOW=false` disables this addition. Existing approval behavior is
+unchanged; a shadow error is returned in the summary without becoming a verdict.
+Ordinary dry runs make no shadow calls or writes. An authenticated
+`jev_shadow_only=true` canary uses the fixed validation account, with zero source
+writes or reconciliation. Budget account names in request data are ignored.
+
+Only explicitly allowed public news/event/marketplace adapters are projected.
+The projection separates original adapter text from normalized/generated title,
+description and summary, omits author/account/contact metadata, and refuses
+oversized text instead of silently truncating qualifications. Other sources are
+excluded. This sampling is not complete per-record or per-domain enforcement.
+
+Migration `20261029220732` adds private shadow leases and cached typed answers;
+raw source text is not retained there. Evidence/model/question hashes invalidate
+cache reuse. Completed results expire after 24 hours; failures defer one hour.
+Concurrent workers cannot own the same unchanged snapshot simultaneously. A
+failed or expired worker cannot overwrite a newer lease. These judgments certify
+fidelity to the supplied adapter snapshot, not current real-world truth.
+
+Twelve fixed synthetic pipeline cases agreed on nine labels: four of four
+development probes and five of eight held-out cases. Three abstained, including
+one faithful qualified news summary and two contradictions whose subject match
+was uncertain. There were no unsupported `supported` verdicts against the labels.
+No wording or thresholds were changed after observing these results. The 7,971
+input tokens cost US$0.000334782. The small sample supports shadow operation only.
+Exact payloads and answers are in `docs/audits/2026-10-29-jev-pipeline-validation.json`.
+
+A one-row real RSS canary returned HTTP 200 and one shadow judgment, with the
+before/after source row hash identical. The rollout artifact records the result
+and the tags DAG before migration. Migration `20261029220927` inserts the shared
+gate between tags deduplication and commit, preserving existing configuration.
+Live reconciliation now finds the shared review gate in **all 18 DAGs**, including
+aliases and disabled DAGs. Tags still need their own authorized Jev projection.
+
+`docs/audits/2026-10-29-jev-coverage.json` enumerates all 369 automations, 18 DAGs
+and 41 Review sources. Uninspected automation implementations explicitly remain
+`pending_audit`; presence in this manifest does not count as adoption. Existing
+Review registration likewise does not establish positive repair capability.
+
+Migration `20261029221113` extends the existing admin-only Review status RPC with
+the shared monthly production cap, charged/reserved amounts and deferral state.
+The Review UI changes are repository source work and need the normal frontend
+release. They show actual blocker/retry reasons, budget usage, and distinguish an
+unchanged blocked case from an operational retry.
+
+## Runtime validation
 
 `jev-validation` has internal-secret/admin authentication, no scheduler, no
 queue claims, and no source-table writes. It accepts only one to four unique
@@ -96,8 +146,9 @@ returns the exact payload without reading a vendor key or spending funds.
 ```
 
 `execute=true` uses the server's existing Jev key and the fixed lifetime validation
-account. Fixtures are synthetic, including the accessibility, ownership and
-admission-policy examples. Labels are not sent to Jev. Responses include raw typed
+account. Field fixtures are synthetic, including the accessibility, ownership and
+admission-policy examples; historical accessibility and synthetic pipeline
+fixtures are also available. Labels are not sent to Jev. Responses include raw typed
 judgments, model/usage and agreement with fixture labels. Agreement on this small
 synthetic set is a transport/policy canary; it does not validate production accuracy,
 sensitive-action eligibility or completion of the overall integration.
@@ -112,7 +163,7 @@ not measured precision guarantees.
 ## Verification
 
 ```sh
-node --import tsx --test scripts/ci/jev-review-runtime.test.ts scripts/ci/jev-validation-runtime.test.ts supabase/functions/_shared/jev-client.test.ts supabase/functions/_shared/jev-evidence-judgments.test.ts
+node --import tsx --test scripts/ci/jev-review-runtime.test.ts scripts/ci/jev-validation-runtime.test.ts scripts/ci/jev-pipeline-gate-runtime.test.ts supabase/functions/_shared/jev-client.test.ts supabase/functions/_shared/jev-evidence-judgments.test.ts supabase/functions/_shared/jev-pipeline-judgments.test.ts
 python3 supabase/tests/isolated/run_jev_budget.py
 python3 supabase/tests/isolated/run_jev_review.py
 deno check --no-lock --node-modules-dir=none supabase/functions/jev-validation/index.ts supabase/functions/review-automation/index.ts

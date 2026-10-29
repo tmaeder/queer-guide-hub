@@ -1,0 +1,190 @@
+{
+  "review_worker_version": 11,
+  "pipeline_gate_version": 1936,
+  "validator_version": 4,
+  "production_cap_usd_per_utc_month": 25,
+  "validation_lifetime_cap_usd": 5,
+  "requeued_cases": 288,
+  "requeue_reason": "Existing normalized source URLs are now supported; no source changes or waived checks",
+  "pipeline_source_canary": [
+    {
+      "id": "899b794b-d7e6-43be-a28a-187e05a661aa",
+      "hash": "ea7ede47efbb02fb10e460be21e30962"
+    }
+  ],
+  "shadow_canary": {
+    "id": 102380,
+    "response": {
+      "success": true,
+      "jev_shadow": {
+        "mode": "shadow",
+        "errors": 0,
+        "excluded": 0,
+        "evaluated": 1,
+        "supported": 1,
+        "uncertain": 0,
+        "contradicted": 0,
+        "budget_deferred": 0,
+        "cached_or_leased": 0
+      },
+      "source_writes": 0
+    },
+    "status_code": 200
+  },
+  "shadow_audit": [
+    {
+      "model": "jev-1.14.0",
+      "answers": {
+        "faithful": {
+          "noul": 0.78,
+          "type": "noul"
+        },
+        "contradicted": {
+          "noul": 0.06,
+          "type": "noul"
+        },
+        "same_subject": {
+          "noul": 0.97,
+          "type": "noul"
+        },
+        "explicit_lgbtq_context": {
+          "noul": 0.02,
+          "type": "noul"
+        }
+      },
+      "verdict": "supported",
+      "checked_at": "2026-10-29T22:07:57.798393+00:00",
+      "expires_at": "2026-10-30T22:07:57.798393+00:00",
+      "input_hash": "e699f710ba951ea56c016fbbd868fdf95a20674db0437d2f3e186d10e3a41ce3",
+      "staging_id": "899b794b-d7e6-43be-a28a-187e05a661aa",
+      "entity_type": "news_article",
+      "source_name": "rss-news",
+      "input_tokens": 735,
+      "policy_version": "jev-pipeline-faithfulness-v1"
+    }
+  ],
+  "tags_before": {
+    "id": "005d61b3-9fa4-421e-a3fa-1aa42f362618",
+    "edges": [
+      {
+        "id": "e1",
+        "source": "src-extract",
+        "target": "normalize"
+      },
+      {
+        "id": "e2",
+        "source": "src-csv",
+        "target": "normalize"
+      },
+      {
+        "id": "e3",
+        "source": "normalize",
+        "target": "validate"
+      },
+      {
+        "id": "e4",
+        "source": "validate",
+        "target": "dedupe"
+      },
+      {
+        "id": "e5",
+        "source": "dedupe",
+        "target": "commit"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "src-extract",
+        "data": {
+          "label": "Extract Tags",
+          "config": {
+            "batch_size": 500,
+            "entity_type": "tag"
+          }
+        },
+        "type": "source-tags-extract",
+        "position": {
+          "x": 40,
+          "y": 40
+        }
+      },
+      {
+        "id": "src-csv",
+        "data": {
+          "label": "CSV Upload",
+          "config": {
+            "batch_size": 500,
+            "entity_type": "tag"
+          }
+        },
+        "type": "source-csv-upload",
+        "position": {
+          "x": 40,
+          "y": 160
+        }
+      },
+      {
+        "id": "normalize",
+        "data": {
+          "label": "Normalize",
+          "config": {
+            "batch_size": 500,
+            "entityType": "tag"
+          }
+        },
+        "type": "pipeline-normalize",
+        "position": {
+          "x": 320,
+          "y": 100
+        }
+      },
+      {
+        "id": "validate",
+        "data": {
+          "label": "Validate",
+          "config": {
+            "entityType": "tag"
+          }
+        },
+        "type": "pipeline-validate",
+        "position": {
+          "x": 580,
+          "y": 100
+        }
+      },
+      {
+        "id": "dedupe",
+        "data": {
+          "label": "Deduplicate",
+          "config": {
+            "batch_size": 500,
+            "review_min": 0.85,
+            "auto_merge_min": 0.95
+          }
+        },
+        "type": "pipeline-deduplicate",
+        "position": {
+          "x": 840,
+          "y": 100
+        }
+      },
+      {
+        "id": "commit",
+        "data": {
+          "label": "Commit",
+          "config": {
+            "strategy": "upsert",
+            "conflictKey": "slug",
+            "targetTable": "unified_tags"
+          }
+        },
+        "type": "pipeline-commit",
+        "position": {
+          "x": 1100,
+          "y": 100
+        }
+      }
+    ],
+    "updated_at": "2026-05-10T06:59:18.22088+00:00"
+  }
+}

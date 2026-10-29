@@ -1,6 +1,5 @@
 import { corsResponse, errorResponse, getServiceClient, jsonResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { callJev, createJevBudget, JevBudgetDeferred } from '../_shared/jev-client.ts'
-import { EVIDENCE_QUESTION_VERSION } from '../_shared/jev-evidence-judgments.ts'
 import { prepareValidationCase } from './prepare.ts'
 
 /** Approved $5 lifetime validation; fixed fixtures only, never claims or source writes. */
@@ -29,7 +28,8 @@ Deno.serve(async req => {
   if (body.execute !== undefined && typeof body.execute !== 'boolean') return errorResponse('execute must be boolean', 400, req)
   const prepared = (names as string[]).map(prepareValidationCase)
   if (prepared.some(fixture => fixture === null)) return errorResponse('Unknown validation fixture', 400, req)
-  if (body.execute !== true) return jsonResponse({ source_writes: 0, inference_calls: 0, question_version: EVIDENCE_QUESTION_VERSION, fixtures: prepared.map(fixture => ({ name: fixture!.name, kind: fixture!.kind, expected: fixture!.expected, request: fixture!.request })) }, 200, req)
+  const versions = [...new Set(prepared.map(fixture => fixture!.questionVersion))]
+  if (body.execute !== true) return jsonResponse({ source_writes: 0, inference_calls: 0, question_versions: versions, fixtures: prepared.map(fixture => ({ name: fixture!.name, question_version: fixture!.questionVersion, kind: fixture!.kind, expected: fixture!.expected, request: fixture!.request })) }, 200, req)
   const results: Record<string, unknown>[] = []
   try {
     const budget = createJevBudget(db, 'validation-2026-10-29')
@@ -38,9 +38,9 @@ Deno.serve(async req => {
       const response = await callJev(fixture.request, {
         apiKey: Deno.env.get('JEV_API_KEY') || Deno.env.get('TYPESAFE_API_KEY') || '', caller: 'jev-validation', budget,
       })
-      results.push({ fixture: fixture.name, kind: fixture.kind, expected: fixture.expected, ...fixture.judge(response), response })
+      results.push({ fixture: fixture.name, question_version: fixture.questionVersion, kind: fixture.kind, expected: fixture.expected, ...fixture.judge(response), response })
     }
-    return jsonResponse({ success: true, source_writes: 0, question_version: EVIDENCE_QUESTION_VERSION, results }, 200, req)
+    return jsonResponse({ success: true, source_writes: 0, question_versions: versions, results }, 200, req)
   } catch (error) {
     return jsonResponse({ success: false, source_writes: 0, results, error: error instanceof JevBudgetDeferred ? 'budget_deferred' : 'validation_failed' }, error instanceof JevBudgetDeferred ? 429 : 503, req)
   }

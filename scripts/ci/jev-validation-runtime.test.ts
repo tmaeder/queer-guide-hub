@@ -40,9 +40,8 @@ async function run(body: unknown, options: { denied?: boolean; budgetDenied?: bo
       const historical = Object.values(payload.questions).some((question: unknown) => (question as { type: string }).type === 'choice')
       return options.providerStatus ? new Response('PRIVATE_PROVIDER_ERROR', { status: options.providerStatus }) : Response.json({
         model: 'jev-1.14.0', usage: { input_tokens: 100, output_tokens: 10 }, answers: historical
-        ? Object.fromEntries(Object.keys(payload.questions).map(key => [key, { type: 'choice', choice: 'says_nothing', confidence: 1, probabilities: { supports: 0, contradicts: 0, says_nothing: 1 } }])) : {
-          same_subject: { type: 'noul', noul: 1 }, supports_value: { type: 'noul', noul: 1 }, contradicts_value: { type: 'noul', noul: 0 },
-        },
+        ? Object.fromEntries(Object.keys(payload.questions).map(key => [key, { type: 'choice', choice: 'says_nothing', confidence: 1, probabilities: { supports: 0, contradicts: 0, says_nothing: 1 } }]))
+        : Object.fromEntries(Object.keys(payload.questions).map(key => [key, { type: 'noul', noul: ['contradicts_value', 'contradicted'].includes(key) ? 0 : 1 }])),
       })
     },
     Response, URL, AbortSignal, TextEncoder, TextDecoder, crypto,
@@ -56,6 +55,15 @@ test('preview is authenticated and returns exact fixed fixture payloads with no 
   assert.equal(r.body.fixtures[0].request.questions.same_subject.type, 'noul')
   assert.equal(r.calls.length, 0); assert.equal(r.requests.length, 0)
   assert.doesNotMatch(JSON.stringify(r.body), /SERVER_KEY/)
+})
+test('fixed pipeline validation uses the production question builder without sending labels', async () => {
+  const preview = await run({ fixtures: ['pipeline-news-faithful'] })
+  assert.equal(preview.status, 200); assert.equal(preview.calls.length, 0)
+  assert.equal(preview.body.fixtures[0].kind, 'synthetic_pipeline')
+  const result = await run({ fixtures: ['pipeline-news-faithful'], execute: true })
+  assert.equal(result.status, 200); assert.equal(result.body.results[0].matches, true)
+  assert.equal(result.body.results[0].verdict, 'supported')
+  assert.doesNotMatch(JSON.stringify(result.requests), /expected|held_out|development|SERVER_KEY/)
 })
 test('unauthenticated and malformed requests never reach a model, budget or source table', async () => {
   assert.equal((await run({ fixtures: ['event-supported'], execute: true }, { denied: true })).status, 401)

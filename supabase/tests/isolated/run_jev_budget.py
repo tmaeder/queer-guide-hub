@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise the real Jev cap migration, concurrent reservations and service-only RPCs."""
+"""Exercise real Jev cap and pipeline-shadow migrations, concurrency and ACLs."""
 import concurrent.futures
 import json
 import os
@@ -79,6 +79,62 @@ with tempfile.TemporaryDirectory(prefix='jev-budget-pg-') as tmp:
             sql(f"set role {role}; select * from api_private.jev_budget_accounts;", fail=True)
         sql("set role service_role; set request.jwt.claims='{\"role\":\"authenticated\"}'; select public.get_jev_budget_status('daily');", fail=True)
         assert 'configured' in sql("set role service_role; set request.jwt.claims='{\"role\":\"service_role\"}'; select public.get_jev_budget_status('daily');")
+        sql((ROOT / 'supabase/migrations/20261029220732_jev_pipeline_shadow.sql').read_text())
+        staging_id = uuid.uuid4()
+        def claim(token, hash_char='c', policy='shadow-v1'):
+            return sql(f"select public.claim_jev_pipeline_check('{staging_id}',repeat('{hash_char}',64),'jev-1.14.0','{policy}','{token}','rss-news','news_article');") == 't'
+        tokens = [uuid.uuid4() for _ in range(12)]
+        with concurrent.futures.ThreadPoolExecutor(max_workers=12) as pool:
+            claims = list(pool.map(claim, tokens))
+        assert sum(claims) == 1, 'Concurrent shadow workers repeated unchanged input'
+        winning_token = tokens[claims.index(True)]
+        def finish(token, verdict='supported', answers="'{\"faithful\":{\"type\":\"noul\",\"noul\":1}}'::jsonb", usage='100', fail=False):
+            return sql(f"select public.finish_jev_pipeline_check('{staging_id}',repeat('c',64),'jev-1.14.0','shadow-v1','{token}','{verdict}',{answers},{usage});", fail=fail)
+        assert finish(uuid.uuid4()) == 'f', 'Wrong shadow lease completed'
+        finish(winning_token, verdict='approved', fail=True)
+        finish(winning_token, answers="'{}'::jsonb", fail=True)
+        assert finish(winning_token) == 't'
+        assert finish(winning_token) == 'f', 'Completed audit was overwritten'
+        assert not claim(uuid.uuid4()), 'Unchanged complete input was re-evaluated'
+        assert claim(uuid.uuid4(), hash_char='d'), 'Changed evidence did not invalidate cache'
+        assert claim(uuid.uuid4(), policy='shadow-v2'), 'Changed policy did not invalidate cache'
+        sql("update api_private.jev_pipeline_checks set expires_at=now()-interval '1 second' where input_hash=repeat('c',64) and policy_version='shadow-v1';")
+        replacement = uuid.uuid4()
+        assert claim(replacement), 'Expired shadow entry could not be rechecked'
+        assert finish(winning_token) == 'f', 'Expired lease overwrote the new worker'
+        assert finish(replacement, verdict='error', answers="'{}'::jsonb", usage='null') == 't'
+        assert not claim(uuid.uuid4()), 'Error retry backoff was ignored'
+        for role in ['anon', 'authenticated']:
+            sql(f"set role {role}; select public.claim_jev_pipeline_check('{staging_id}',repeat('c',64),'jev-1.14.0','shadow-v1','{uuid.uuid4()}','rss-news','news_article');", fail=True)
+            sql(f"set role {role}; select public.finish_jev_pipeline_check('{staging_id}',repeat('c',64),'jev-1.14.0','shadow-v1','{replacement}','error','{{}}'::jsonb,null);", fail=True)
+            sql(f"set role {role}; select * from api_private.jev_pipeline_checks;", fail=True)
+        print('PASS: pipeline shadow concurrent leases, unchanged-input cache, evidence/policy invalidation, expiry, stale lease rejection, retry backoff and client ACLs')
+        sql("create table public.pipeline_definitions(id uuid primary key,name text,nodes jsonb,edges jsonb,updated_at timestamptz); insert into public.pipeline_definitions values(gen_random_uuid(),'tags-ingestion','[{\"id\":\"dedupe\",\"type\":\"pipeline-deduplicate\",\"data\":{\"config\":{\"batch_size\":500}}},{\"id\":\"commit\",\"type\":\"pipeline-commit\"}]','[{\"id\":\"e5\",\"source\":\"dedupe\",\"target\":\"commit\",\"animated\":true}]',now());")
+        tag_migration = (ROOT / 'supabase/migrations/20261029220927_tags_shared_review_gate.sql').read_text()
+        sql(tag_migration)
+        first = json.loads(sql("select jsonb_build_object('nodes',nodes,'edges',edges) from pipeline_definitions;"))
+        sql(tag_migration)
+        assert first == json.loads(sql("select jsonb_build_object('nodes',nodes,'edges',edges) from pipeline_definitions;")), 'Tags gate migration not idempotent'
+        assert sum(n['type'] == 'pipeline-review-gate' for n in first['nodes']) == 1
+        assert first['nodes'][0]['data']['config']['batch_size'] == 500
+        assert first['nodes'][-1]['data']['config']['entityType'] == 'tag'
+        assert first['edges'][0]['animated'] is True
+        assert not any(e['source'] == 'dedupe' and e['target'] == 'commit' for e in first['edges'])
+        assert any(e['source'] == 'dedupe' and e['target'] == 'jev-review-gate' for e in first['edges'])
+        assert any(e['source'] == 'jev-review-gate' and e['target'] == 'commit' for e in first['edges'])
+        print('PASS: tags DAG gate routing, configuration/edge metadata preservation and idempotency')
+        sql("create type public.app_role as enum('admin'); create function public.has_role_jwt(public.app_role) returns boolean language sql as $$select coalesce(current_setting('request.jwt.claims',true)::jsonb->>'app_role','')='admin'$$; create table public.admin_automations(slug text,enabled boolean); insert into public.admin_automations values('review_jev',true); create table public.admin_review_cases(id uuid,active boolean,fingerprint text); create table public.admin_review_automation_jobs(case_id uuid,status text,fingerprint text);")
+        sql((ROOT / 'supabase/migrations/20261029221113_jev_review_budget_visibility.sql').read_text())
+        admin_status = json.loads(sql("set role authenticated; set request.jwt.claims='{\"role\":\"authenticated\",\"app_role\":\"admin\"}'; select public.get_jev_review_status();"))
+        assert admin_status['production_budget']['cap_nano_usd'] == 25_000_000_000
+        assert admin_status['production_budget']['period'] == 'month'
+        assert admin_status['production_budget']['reserved_nano_usd'] == MAXIMUM
+        assert not admin_status['production_budget']['deferred']
+        sql("set role authenticated; set request.jwt.claims='{\"role\":\"authenticated\"}'; select public.get_jev_review_status();", fail=True)
+        sql("set role anon; select public.get_jev_review_status();", fail=True)
+        sql("update api_private.jev_budget_accounts set enabled=false where account='production';")
+        assert json.loads(sql("set role authenticated; set request.jwt.claims='{\"role\":\"authenticated\",\"app_role\":\"admin\"}'; select public.get_jev_review_status();"))['production_budget']['deferred']
+        print('PASS: admin-only budget visibility, charged/reserved usage and disabled-budget deferral')
         print('PASS: real migration, lifetime $5 cap, 12 concurrent workers, reservation replay refusal, exact/unknown charges, idempotent settlement, disabled account, midnight rollover, RLS/ACL and actor checks')
     finally:
         subprocess.run([str(PG / 'pg_ctl'), '-D', str(data), '-m', 'fast', '-w', 'stop'], check=True, stdout=subprocess.DEVNULL)
