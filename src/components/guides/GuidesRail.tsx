@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { GuideCard } from '@/components/guides/GuideCard';
@@ -24,17 +23,13 @@ export function GuidesRail({
   title,
   filters = {},
   alwaysRender = false,
-  loadingFallback,
 }: {
   title?: string;
   filters?: GuidesFilter;
   alwaysRender?: boolean;
-  /** Preserve the host reservation while a deferred rail fetches. */
-  loadingFallback?: ReactNode;
 }) {
   const { t } = useTranslation();
-  const { data: guides = [], isPending } = useGuides({ limit: 6, ...filters });
-  if (isPending && loadingFallback) return <>{loadingFallback}</>;
+  const { data: guides = [] } = useGuides({ limit: 6, ...filters });
   if (guides.length === 0 && !alwaysRender) return null;
 
   const params = new URLSearchParams();

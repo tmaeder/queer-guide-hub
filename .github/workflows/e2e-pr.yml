@@ -415,7 +415,7 @@ jobs:
             --grep "public route keeps its footer below the viewport|public footer mounts its contents" \
             --reporter=line
           # These exercise actual offscreen query owners and their linked content.
-          # Keep separate from the entry-style grep so all four cases execute.
+          # Keep separate from the entry-style grep so both viewport cases execute.
           npx playwright test e2e/offscreen-discovery.spec.ts --reporter=line
       - name: Upload report
         if: failure()

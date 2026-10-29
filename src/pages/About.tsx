@@ -13,7 +13,6 @@ import { TransitIcon } from '@/components/transit/TransitIcon';
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { useAuth } from '@/hooks/useAuth';
-import { DeferredSection } from '@/components/home/DeferredSection';
 
 /**
  * /about, drawn as the network itself.
@@ -66,132 +65,13 @@ function SectionHead({
 
 export default function About() {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  return (
-    <div className="min-h-screen">
-      {/* Masthead.
-
-          `flush` + an explicit top, never `className="pb-0"`: tailwind-merge
-          drops the base `py-8` but leaves `md:py-12` standing (different
-          modifier, different merge key), so the bottom padding silently came
-          back at md and the masthead sat ~48px further from the scale band
-          than the class claimed. Same trap as `px-0` against the gutter
-          ladder, which is the only half docs/design-system/README.md names. */}
-      <PageContainer as="section" flush className="pt-8 md:pt-12">
-        <Eyebrow variant="kicker" as="div">
-          {t('about.eyebrow', 'About')}
-        </Eyebrow>
-        <h1 className="mt-6 text-hero leading-[0.95] md:text-hero-xl">
-          {t('about.title', 'Built by queers, for everyone.')}
-        </h1>
-        {/* "verified by the community" stood here and was not true: zero
-            venue reviews, zero check-ins, zero user submissions. What IS
-            true is the sourcing, and saying so is a stronger claim than the
-            one it replaces, because the colophon further down proves it. */}
-        <p className="mt-6 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
-          {t(
-            'about.lede',
-            'Queer Guide maps the places, events and people that make up queer life. Built from open data and public feeds, credited source by source, free for everyone, everywhere in the world.',
-          )}
-        </p>
-        <NetworkDiagram
-          className="mt-10"
-          label={t(
-            'about.diagram.label',
-            'Four lines — venues, events, community and places — converging on one station.',
-          )}
-        />
-      </PageContainer>
-
-      <div
-        data-about-section="scale"
-        className="[--section-height:340px] md:[--section-height:306px]"
-      >
-        <DeferredSection minHeight="var(--section-height)" rootMargin="0px">
-          <AboutScale />
-        </DeferredSection>
-      </div>
-
-      <div
-        data-about-section="lines"
-        className="[--section-height:825px] md:[--section-height:488px]"
-      >
-        <DeferredSection minHeight="var(--section-height)" rootMargin="0px">
-          <AboutLines />
-        </DeferredSection>
-      </div>
-
-      <div
-        data-about-section="story"
-        className="[--section-height:706px] md:[--section-height:571px]"
-      >
-        <DeferredSection minHeight="var(--section-height)" rootMargin="0px">
-          <AboutStory />
-        </DeferredSection>
-      </div>
-
-      <div
-        data-about-section="legend"
-        className="[--section-height:637px] md:[--section-height:403px]"
-      >
-        <DeferredSection minHeight="var(--section-height)" rootMargin="0px">
-          <AboutLegend />
-        </DeferredSection>
-      </div>
-
-      <div
-        data-about-section="history"
-        className="[--section-height:811px] md:[--section-height:441px]"
-      >
-        <DeferredSection minHeight="var(--section-height)" rootMargin="0px">
-          <AboutHistory />
-        </DeferredSection>
-      </div>
-
-      <div
-        data-about-section="values"
-        className="[--section-height:1253px] md:[--section-height:570px]"
-      >
-        <DeferredSection minHeight="var(--section-height)" rootMargin="0px">
-          <AboutValues />
-        </DeferredSection>
-      </div>
-
-      <div
-        data-about-section="people"
-        className="[--section-height:815px] md:[--section-height:435px]"
-      >
-        <DeferredSection minHeight="var(--section-height)" rootMargin="0px">
-          <AboutPeople />
-        </DeferredSection>
-      </div>
-      {user && (
-        <div
-          data-about-section="sources"
-          id="sources"
-          className="[--section-height:1800px] md:[--section-height:1400px]"
-        >
-          <DeferredSection minHeight="var(--section-height)" rootMargin="0px">
-            <AboutSources />
-          </DeferredSection>
-        </div>
-      )}
-
-      <div
-        data-about-section="getinvolved"
-        className="[--section-height:1052px] md:[--section-height:624px]"
-      >
-        <DeferredSection minHeight="var(--section-height)" rootMargin="0px">
-          <AboutGetInvolved />
-        </DeferredSection>
-      </div>
-    </div>
-  );
-}
-
-function AboutScale() {
-  const { t } = useTranslation();
   const { stats, loading } = useConsolidatedStats();
+  // The colophon below is members-only. Gate on a resolved user rather than on
+  // `!loading`: while auth is still resolving `user` is null and the section
+  // stays out, so a signed-in reader sees it appear a beat late instead of a
+  // signed-out one seeing it flash and vanish.
+  const { user } = useAuth();
+
   // `events` is the full 40k archive and 99% of it is in the past — the hook
   // says so in as many words. `events_upcoming` is the one a reader can act on.
   const statItems = useMemo(
@@ -204,36 +84,6 @@ function AboutScale() {
     [stats, t],
   );
 
-  return (
-    <>
-      {/* Scale board — full-bleed ink band, content row takes the cap */}
-      <div className="mt-12 overflow-hidden rounded-panel bg-foreground text-background md:mt-16">
-        <PageContainer>
-          <Eyebrow as="p" className="text-background/70">
-            {t('about.scale.kicker', 'The network today')}
-          </Eyebrow>
-          <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4">
-            {statItems.map((stat) => (
-              <div key={stat.label}>
-                <dd className="font-display text-display leading-none tabular-nums md:text-hero">
-                  {loading || typeof stat.value !== 'number' || stat.value <= 0
-                    ? '—'
-                    : `${stat.value.toLocaleString()}+`}
-                </dd>
-                <dt className="mt-2 text-2xs uppercase tracking-label text-background/70">
-                  {stat.label}
-                </dt>
-              </div>
-            ))}
-          </dl>
-        </PageContainer>
-      </div>
-    </>
-  );
-}
-
-function AboutLines() {
-  const { t } = useTranslation();
   const lines: { key: string; type: string; to: string; name: string; description: string }[] = [
     {
       key: 'venues',
@@ -290,182 +140,6 @@ function AboutLines() {
     },
   ];
 
-  return (
-    <>
-      {/* Line index */}
-      <PageContainer as="section">
-        <SectionHead
-          kicker={t('about.lines.kicker', 'The network')}
-          title={t('about.lines.title', 'Five lines')}
-          lede={t(
-            'about.lines.lede',
-            'Each part of the platform runs on its own line. Take whichever one you need.',
-          )}
-        />
-        <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
-          {lines.map((line) => (
-            <li key={line.key}>
-              <NestedEntityCard
-                type={line.type}
-                name={line.name}
-                description={line.description}
-                href={line.to}
-                actionLabel={t('about.lines.action', 'Open')}
-              />
-            </li>
-          ))}
-        </ul>
-      </PageContainer>
-    </>
-  );
-}
-
-function AboutStory() {
-  const { t } = useTranslation();
-  return (
-    <>
-      {/* Our story */}
-      <PageContainer as="section" flush className="py-16 md:py-24">
-        <div className="rule-heavy pt-10">
-          <SectionHead
-            kicker={t('about.story.kicker', 'Our story')}
-            title={t('about.story.title', 'How this started')}
-          />
-          <div className="mt-8 flex max-w-reading flex-col gap-6">
-            {/* No `.dek-dropcap` here: its `::first-letter { float: left }` is
-                unconditional, so on /ar it would drop the cap at the END of the
-                line. Not worth an RTL wart for one flourish. */}
-            <p className="text-body-lg leading-relaxed">
-              {t(
-                'about.story.p1',
-                "Finding a queer-friendly bar shouldn't take a group chat, three forum threads and a leap of faith. We started Queer Guide because we were tired of guessing which spaces were actually safe — and which just put a rainbow on the logo in June.",
-              )}
-            </p>
-            {/* "verified by the community, built on real experience" was the
-                second false version of the same claim. The honest sentence is
-                about method, and it sets up the colophon rather than
-                contradicting it. */}
-            <p className="text-body-lg leading-relaxed text-muted-foreground">
-              {t(
-                'about.story.p2',
-                'That list became a directory the only way one person can build a global one: by pulling from every open dataset and public feed that would give up a queer venue, and crediting each of them. Travelling solo, moving city, or just looking for somewhere to be on a Friday night, start here.',
-              )}
-            </p>
-          </div>
-        </div>
-      </PageContainer>
-    </>
-  );
-}
-
-function AboutLegend() {
-  const { t } = useTranslation();
-  return (
-    <>
-      {/* Legend */}
-      <PageContainer as="section" flush className="pb-16 md:pb-24">
-        <SectionHead
-          kicker={t('about.legend.kicker', 'Legend')}
-          title={t('about.legend.title', 'What makes us different')}
-        />
-        <FactGrid
-          className="mt-8"
-          // "Community-verified: every venue is reviewed by real LGBTQ+
-          // people, not an algorithm" used to lead this grid. There are zero
-          // venue reviews in the database and 98.6% of venues carry a
-          // recorded upstream source, so it was false in both halves — and
-          // the half that denied being algorithmic was the falser one. What
-          // replaced it is the set of promises this codebase actually keeps
-          // and enforces, each traceable to a mechanism rather than a value.
-          facts={[
-            {
-              label: t('about.legend.sourced.label', 'Sourced, not asserted'),
-              value: t(
-                'about.legend.sourced.body',
-                'Almost every venue and event records where it came from. The list of sources is on this page.',
-              ),
-            },
-            {
-              label: t('about.legend.safety.label', 'Safety-first'),
-              value: t(
-                'about.legend.safety.body',
-                'Local laws, rights and risk notes on every country page. In criminalising countries, listings are hidden from anonymous visitors.',
-              ),
-            },
-            {
-              label: t('about.legend.gaps.label', 'Gaps stay visible'),
-              value: t(
-                'about.legend.gaps.body',
-                'A missing opening time is left blank rather than guessed, and "not step-free" is recorded as carefully as "step-free".',
-              ),
-            },
-            {
-              label: t('about.legend.free.label', 'Always free'),
-              value: t(
-                'about.legend.free.body',
-                'No paywall, no premium tier, no selling your data.',
-              ),
-            },
-          ]}
-        />
-      </PageContainer>
-    </>
-  );
-}
-
-function AboutHistory() {
-  const { t } = useTranslation();
-  return (
-    <>
-      {/* How we got here */}
-      <PageContainer as="section" flush className="pb-16 md:pb-24">
-        <SectionHead
-          kicker={t('about.history.kicker', 'How we got here')}
-          title={t('about.history.title', 'The line so far')}
-          lede={t('about.history.lede', 'A side-project that became a global directory.')}
-        />
-        <HistoryLine
-          className="mt-10"
-          stops={[
-            {
-              year: t('about.history.y2021.year', '2021'),
-              body: t(
-                'about.history.y2021.body',
-                'Three contributors, one spreadsheet. Safe bars in five European cities, shared in a Telegram group.',
-              ),
-            },
-            {
-              year: t('about.history.y2023.year', '2023'),
-              body: t(
-                'about.history.y2023.body',
-                'A thousand venues across eighty cities. The events pipeline and the community submissions extension shipped.',
-              ),
-            },
-            {
-              year: t('about.history.y2025.year', '2025'),
-              body: t(
-                'about.history.y2025.body',
-                'Tens of thousands of venues on every continent. Marketplace, trip planner, safety briefings and country-by-country rights.',
-              ),
-            },
-            {
-              year: t('about.history.y2026.year', '2026'),
-              // "join the contributor circle" named a thing that does not
-              // exist. The two routes below do.
-              body: t(
-                'about.history.y2026.body',
-                'You are here. Add a place, or tell us what we got wrong.',
-              ),
-            },
-          ]}
-        />
-      </PageContainer>
-    </>
-  );
-}
-
-function AboutValues() {
-  const { t } = useTranslation();
   const values: { key: string; icon: TransitIconName; title: string; description: string }[] = [
     {
       key: 'inclusivity',
@@ -523,30 +197,6 @@ function AboutValues() {
     },
   ];
 
-  return (
-    <>
-      {/* What we value */}
-      <PageContainer as="section" flush className="pb-16 md:pb-24">
-        <SectionHead
-          kicker={t('about.values.kicker', 'What we stand for')}
-          title={t('about.values.title', 'What we value')}
-        />
-        <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
-          {values.map((value) => (
-            <li key={value.key} className="flex h-full flex-col gap-2 p-6">
-              <TransitIcon name={value.icon} size={32} className="text-foreground" />
-              <h3 className="mt-2 text-title font-bold leading-tight">{value.title}</h3>
-              <p className="text-13 leading-relaxed text-muted-foreground">{value.description}</p>
-            </li>
-          ))}
-        </ul>
-      </PageContainer>
-    </>
-  );
-}
-
-function AboutPeople() {
-  const { t } = useTranslation();
   /**
    * Who actually runs this.
    *
@@ -599,41 +249,6 @@ function AboutPeople() {
     },
   ];
 
-  return (
-    <>
-      {/* The people behind it */}
-      <PageContainer as="section" flush className="pb-16 md:pb-24">
-        <SectionHead
-          kicker={t('about.people.kicker', 'Who runs it')}
-          title={t('about.people.title', 'The people behind it')}
-          lede={t(
-            'about.people.lede',
-            'No corporation, and no volunteer army either. It is a small team and a lot of machinery.',
-          )}
-        />
-        <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-3">
-          {people.map((member) => (
-            <li key={member.key} className="p-6">
-              <p className="flex items-center gap-2">
-                <StationRing state="done" />
-                <span className="text-2xs uppercase tracking-label text-muted-foreground">
-                  {member.role}
-                </span>
-              </p>
-              <h3 className="mt-4 text-title font-bold leading-tight">{member.name}</h3>
-              <p className="mt-2 text-13 leading-relaxed text-muted-foreground">
-                {member.description}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </PageContainer>
-    </>
-  );
-}
-
-function AboutSources() {
-  const { t } = useTranslation();
   /**
    * The colophon, in two tiers.
    *
@@ -884,78 +499,6 @@ function AboutSources() {
     },
   ];
 
-  return (
-    <>
-      {/* Data & sources — the colophon. MEMBERS ONLY: a signed-out reader gets
-          nothing here, not a teaser and not a sign-in prompt.
-
-          Read the next paragraph before deleting the footer's credits row.
-          This section held the ODbL attribution for the city-card transit
-          diagrams from 2026-08-30, when it came out of the footer, until the
-          gate landed. Those diagrams are a derived work of OpenStreetMap route
-          relations and the licence asks for the credit to reach the reader —
-          anonymous readers included — so the obligated subset went BACK to the
-          footer, where it renders unconditionally on every page. That is the
-          only reason it is safe to hide this whole section. The two are one
-          change: gating this without the footer half publishes OSM-derived
-          artwork with no credit anywhere.
-
-          What stays here is the fuller story — the courtesy credits, the prose
-          saying what each source was used for, and tier 2. */}
-
-      <PageContainer as="section" flush className="pb-16 md:pb-24">
-        <SectionHead
-          kicker={t('about.sources.kicker', 'Where the data comes from')}
-          title={t('about.sources.title', 'Data & sources')}
-          lede={t(
-            'about.sources.lede',
-            'Open data does a lot of the work here. The projects below carry a licence that asks to be credited; everything else the guide was built from is named underneath.',
-          )}
-        />
-        <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
-          {sources.map((source) => (
-            <li key={source.key} className="flex h-full flex-col gap-2 p-6">
-              <h3 className="text-title font-bold leading-tight">
-                <a href={source.href} target="_blank" rel="noopener noreferrer">
-                  {source.name}
-                </a>
-              </h3>
-              <p className="text-13 leading-relaxed text-muted-foreground">{source.used}</p>
-              <p className="mt-auto pt-2 text-2xs uppercase tracking-label text-muted-foreground">
-                {source.licence}
-              </p>
-            </li>
-          ))}
-        </ul>
-
-        {/* Tier 2. Two columns, not three: these are prose-and-links rows, and
-            a third column shortens the measure past comfortable reading. */}
-        <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2">
-          {moreSources.map((group) => (
-            <section key={group.key}>
-              <h3 className="text-2xs uppercase tracking-label text-muted-foreground">
-                {group.title}
-              </h3>
-              <p className="mt-2 text-13 leading-relaxed text-muted-foreground">{group.note}</p>
-              <ul className="m-0 mt-4 flex list-none flex-wrap gap-x-4 gap-y-2 p-0 text-13">
-                {group.items.map((item) => (
-                  <li key={item.href}>
-                    <a href={item.href} target="_blank" rel="noopener noreferrer">
-                      {item.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
-      </PageContainer>
-    </>
-  );
-}
-
-function AboutGetInvolved() {
-  const { t } = useTranslation();
   const getInvolved: {
     key: string;
     icon: TransitIconName;
@@ -1000,7 +543,323 @@ function AboutGetInvolved() {
   ];
 
   return (
-    <>
+    <div className="min-h-screen">
+      {/* Masthead.
+
+          `flush` + an explicit top, never `className="pb-0"`: tailwind-merge
+          drops the base `py-8` but leaves `md:py-12` standing (different
+          modifier, different merge key), so the bottom padding silently came
+          back at md and the masthead sat ~48px further from the scale band
+          than the class claimed. Same trap as `px-0` against the gutter
+          ladder, which is the only half docs/design-system/README.md names. */}
+      <PageContainer as="section" flush className="pt-8 md:pt-12">
+        <Eyebrow variant="kicker" as="div">
+          {t('about.eyebrow', 'About')}
+        </Eyebrow>
+        <h1 className="mt-6 text-hero leading-[0.95] md:text-hero-xl">
+          {t('about.title', 'Built by queers, for everyone.')}
+        </h1>
+        {/* "verified by the community" stood here and was not true: zero
+            venue reviews, zero check-ins, zero user submissions. What IS
+            true is the sourcing, and saying so is a stronger claim than the
+            one it replaces, because the colophon further down proves it. */}
+        <p className="mt-6 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
+          {t(
+            'about.lede',
+            'Queer Guide maps the places, events and people that make up queer life. Built from open data and public feeds, credited source by source, free for everyone, everywhere in the world.',
+          )}
+        </p>
+        <NetworkDiagram
+          className="mt-10"
+          label={t(
+            'about.diagram.label',
+            'Four lines — venues, events, community and places — converging on one station.',
+          )}
+        />
+      </PageContainer>
+
+      {/* Scale board — full-bleed ink band, content row takes the cap */}
+      <div className="mt-12 overflow-hidden rounded-panel bg-foreground text-background md:mt-16">
+        <PageContainer>
+          <Eyebrow as="p" className="text-background/70">
+            {t('about.scale.kicker', 'The network today')}
+          </Eyebrow>
+          <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4">
+            {statItems.map((stat) => (
+              <div key={stat.label}>
+                <dd className="font-display text-display leading-none tabular-nums md:text-hero">
+                  {loading || typeof stat.value !== 'number' || stat.value <= 0
+                    ? '—'
+                    : `${stat.value.toLocaleString()}+`}
+                </dd>
+                <dt className="mt-2 text-2xs uppercase tracking-label text-background/70">
+                  {stat.label}
+                </dt>
+              </div>
+            ))}
+          </dl>
+        </PageContainer>
+      </div>
+
+      {/* Line index */}
+      <PageContainer as="section">
+        <SectionHead
+          kicker={t('about.lines.kicker', 'The network')}
+          title={t('about.lines.title', 'Five lines')}
+          lede={t(
+            'about.lines.lede',
+            'Each part of the platform runs on its own line. Take whichever one you need.',
+          )}
+        />
+        <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+          {lines.map((line) => (
+            <li key={line.key}>
+              <NestedEntityCard
+                type={line.type}
+                name={line.name}
+                description={line.description}
+                href={line.to}
+                actionLabel={t('about.lines.action', 'Open')}
+              />
+            </li>
+          ))}
+        </ul>
+      </PageContainer>
+
+      {/* Our story */}
+      <PageContainer as="section" flush className="py-16 md:py-24">
+        <div className="rule-heavy pt-10">
+          <SectionHead
+            kicker={t('about.story.kicker', 'Our story')}
+            title={t('about.story.title', 'How this started')}
+          />
+          <div className="mt-8 flex max-w-reading flex-col gap-6">
+            {/* No `.dek-dropcap` here: its `::first-letter { float: left }` is
+                unconditional, so on /ar it would drop the cap at the END of the
+                line. Not worth an RTL wart for one flourish. */}
+            <p className="text-body-lg leading-relaxed">
+              {t(
+                'about.story.p1',
+                "Finding a queer-friendly bar shouldn't take a group chat, three forum threads and a leap of faith. We started Queer Guide because we were tired of guessing which spaces were actually safe — and which just put a rainbow on the logo in June.",
+              )}
+            </p>
+            {/* "verified by the community, built on real experience" was the
+                second false version of the same claim. The honest sentence is
+                about method, and it sets up the colophon rather than
+                contradicting it. */}
+            <p className="text-body-lg leading-relaxed text-muted-foreground">
+              {t(
+                'about.story.p2',
+                'That list became a directory the only way one person can build a global one: by pulling from every open dataset and public feed that would give up a queer venue, and crediting each of them. Travelling solo, moving city, or just looking for somewhere to be on a Friday night, start here.',
+              )}
+            </p>
+          </div>
+        </div>
+      </PageContainer>
+
+      {/* Legend */}
+      <PageContainer as="section" flush className="pb-16 md:pb-24">
+        <SectionHead
+          kicker={t('about.legend.kicker', 'Legend')}
+          title={t('about.legend.title', 'What makes us different')}
+        />
+        <FactGrid
+          className="mt-8"
+          // "Community-verified: every venue is reviewed by real LGBTQ+
+          // people, not an algorithm" used to lead this grid. There are zero
+          // venue reviews in the database and 98.6% of venues carry a
+          // recorded upstream source, so it was false in both halves — and
+          // the half that denied being algorithmic was the falser one. What
+          // replaced it is the set of promises this codebase actually keeps
+          // and enforces, each traceable to a mechanism rather than a value.
+          facts={[
+            {
+              label: t('about.legend.sourced.label', 'Sourced, not asserted'),
+              value: t(
+                'about.legend.sourced.body',
+                'Almost every venue and event records where it came from. The list of sources is on this page.',
+              ),
+            },
+            {
+              label: t('about.legend.safety.label', 'Safety-first'),
+              value: t(
+                'about.legend.safety.body',
+                'Local laws, rights and risk notes on every country page. In criminalising countries, listings are hidden from anonymous visitors.',
+              ),
+            },
+            {
+              label: t('about.legend.gaps.label', 'Gaps stay visible'),
+              value: t(
+                'about.legend.gaps.body',
+                'A missing opening time is left blank rather than guessed, and "not step-free" is recorded as carefully as "step-free".',
+              ),
+            },
+            {
+              label: t('about.legend.free.label', 'Always free'),
+              value: t(
+                'about.legend.free.body',
+                'No paywall, no premium tier, no selling your data.',
+              ),
+            },
+          ]}
+        />
+      </PageContainer>
+
+      {/* How we got here */}
+      <PageContainer as="section" flush className="pb-16 md:pb-24">
+        <SectionHead
+          kicker={t('about.history.kicker', 'How we got here')}
+          title={t('about.history.title', 'The line so far')}
+          lede={t('about.history.lede', 'A side-project that became a global directory.')}
+        />
+        <HistoryLine
+          className="mt-10"
+          stops={[
+            {
+              year: t('about.history.y2021.year', '2021'),
+              body: t(
+                'about.history.y2021.body',
+                'Three contributors, one spreadsheet. Safe bars in five European cities, shared in a Telegram group.',
+              ),
+            },
+            {
+              year: t('about.history.y2023.year', '2023'),
+              body: t(
+                'about.history.y2023.body',
+                'A thousand venues across eighty cities. The events pipeline and the community submissions extension shipped.',
+              ),
+            },
+            {
+              year: t('about.history.y2025.year', '2025'),
+              body: t(
+                'about.history.y2025.body',
+                'Tens of thousands of venues on every continent. Marketplace, trip planner, safety briefings and country-by-country rights.',
+              ),
+            },
+            {
+              year: t('about.history.y2026.year', '2026'),
+              // "join the contributor circle" named a thing that does not
+              // exist. The two routes below do.
+              body: t(
+                'about.history.y2026.body',
+                'You are here. Add a place, or tell us what we got wrong.',
+              ),
+            },
+          ]}
+        />
+      </PageContainer>
+
+      {/* What we value */}
+      <PageContainer as="section" flush className="pb-16 md:pb-24">
+        <SectionHead
+          kicker={t('about.values.kicker', 'What we stand for')}
+          title={t('about.values.title', 'What we value')}
+        />
+        <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+          {values.map((value) => (
+            <li key={value.key} className="flex h-full flex-col gap-2 p-6">
+              <TransitIcon name={value.icon} size={32} className="text-foreground" />
+              <h3 className="mt-2 text-title font-bold leading-tight">{value.title}</h3>
+              <p className="text-13 leading-relaxed text-muted-foreground">{value.description}</p>
+            </li>
+          ))}
+        </ul>
+      </PageContainer>
+
+      {/* The people behind it */}
+      <PageContainer as="section" flush className="pb-16 md:pb-24">
+        <SectionHead
+          kicker={t('about.people.kicker', 'Who runs it')}
+          title={t('about.people.title', 'The people behind it')}
+          lede={t(
+            'about.people.lede',
+            'No corporation, and no volunteer army either. It is a small team and a lot of machinery.',
+          )}
+        />
+        <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-3">
+          {people.map((member) => (
+            <li key={member.key} className="p-6">
+              <p className="flex items-center gap-2">
+                <StationRing state="done" />
+                <span className="text-2xs uppercase tracking-label text-muted-foreground">
+                  {member.role}
+                </span>
+              </p>
+              <h3 className="mt-4 text-title font-bold leading-tight">{member.name}</h3>
+              <p className="mt-2 text-13 leading-relaxed text-muted-foreground">
+                {member.description}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </PageContainer>
+
+      {/* Data & sources — the colophon. MEMBERS ONLY: a signed-out reader gets
+          nothing here, not a teaser and not a sign-in prompt.
+
+          Read the next paragraph before deleting the footer's credits row.
+          This section held the ODbL attribution for the city-card transit
+          diagrams from 2026-08-30, when it came out of the footer, until the
+          gate landed. Those diagrams are a derived work of OpenStreetMap route
+          relations and the licence asks for the credit to reach the reader —
+          anonymous readers included — so the obligated subset went BACK to the
+          footer, where it renders unconditionally on every page. That is the
+          only reason it is safe to hide this whole section. The two are one
+          change: gating this without the footer half publishes OSM-derived
+          artwork with no credit anywhere.
+
+          What stays here is the fuller story — the courtesy credits, the prose
+          saying what each source was used for, and tier 2. */}
+      {user && (
+        <PageContainer as="section" flush className="pb-16 md:pb-24" id="sources">
+          <SectionHead
+            kicker={t('about.sources.kicker', 'Where the data comes from')}
+            title={t('about.sources.title', 'Data & sources')}
+            lede={t(
+              'about.sources.lede',
+              'Open data does a lot of the work here. The projects below carry a licence that asks to be credited; everything else the guide was built from is named underneath.',
+            )}
+          />
+          <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+            {sources.map((source) => (
+              <li key={source.key} className="flex h-full flex-col gap-2 p-6">
+                <h3 className="text-title font-bold leading-tight">
+                  <a href={source.href} target="_blank" rel="noopener noreferrer">
+                    {source.name}
+                  </a>
+                </h3>
+                <p className="text-13 leading-relaxed text-muted-foreground">{source.used}</p>
+                <p className="mt-auto pt-2 text-2xs uppercase tracking-label text-muted-foreground">
+                  {source.licence}
+                </p>
+              </li>
+            ))}
+          </ul>
+
+          {/* Tier 2. Two columns, not three: these are prose-and-links rows, and
+            a third column shortens the measure past comfortable reading. */}
+          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2">
+            {moreSources.map((group) => (
+              <section key={group.key}>
+                <h3 className="text-2xs uppercase tracking-label text-muted-foreground">
+                  {group.title}
+                </h3>
+                <p className="mt-2 text-13 leading-relaxed text-muted-foreground">{group.note}</p>
+                <ul className="m-0 mt-4 flex list-none flex-wrap gap-x-4 gap-y-2 p-0 text-13">
+                  {group.items.map((item) => (
+                    <li key={item.href}>
+                      <a href={item.href} target="_blank" rel="noopener noreferrer">
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        </PageContainer>
+      )}
+
       {/* Extend the line */}
       <div className="overflow-hidden rounded-panel bg-foreground text-background">
         <PageContainer className="py-16 md:py-24">
@@ -1057,6 +916,6 @@ function AboutGetInvolved() {
           </div>
         </PageContainer>
       </div>
-    </>
+    </div>
   );
 }
