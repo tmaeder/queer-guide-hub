@@ -36,6 +36,13 @@ const baseline = JSON.parse(
   readFileSync(join(process.cwd(), 'scripts/city-quality-baseline.json'), 'utf8'),
 );
 
+// Located BY DATE, never by `revisions.at(-1)`. This file is an append-only ledger, so
+// position pins a transient: the 2026-10-29 thin-page revision appended a legitimate entry
+// and turned all three `at(-1)` assertions below red on correct code. Assert what must never
+// stop being true about THIS revision, not that it is still the newest one.
+const REVISED_AT = '2026-09-29T00:00:00Z';
+const rev = baseline.revisions.find((r: { revised_at: string }) => r.revised_at === REVISED_AT);
+
 describe('the city-quality baseline revision', () => {
   it('never raises a zero-invariant', () => {
     // A zero-invariant gets repaired, never renegotiated. These two are the whole
@@ -48,17 +55,20 @@ describe('the city-quality baseline revision', () => {
     expect(baseline.issues.CITY_PLACEHOLDER_EXPOSED).toBe(0);
   });
 
-  it('raises exactly the five import-driven counters', () => {
-    expect(baseline.publication_blocked).toBe(1122);
-    expect(baseline.issues.CITY_IDENTITY_AMBIGUOUS).toBe(501);
-    expect(baseline.issues.CITY_IMAGE_REUSED).toBe(343);
-    expect(baseline.operations.unlinked_venues).toBe(10163);
-    expect(baseline.operations.unlinked_events).toBe(851);
+  it('holds the five import-driven ceilings at or above what this revision derived', () => {
+    // Monotonic, not frozen. A later revision may derive a HIGHER ceiling (2026-10-29 did,
+    // for a corpus that had tripled); what must never happen is one of these falling back
+    // below the value this revision measured and justified, which would silently re-arm the
+    // coin flip it was raised to remove.
+    expect(baseline.publication_blocked).toBeGreaterThanOrEqual(1122);
+    expect(baseline.issues.CITY_IDENTITY_AMBIGUOUS).toBeGreaterThanOrEqual(501);
+    expect(baseline.issues.CITY_IMAGE_REUSED).toBeGreaterThanOrEqual(343);
+    expect(baseline.operations.unlinked_venues).toBeGreaterThanOrEqual(10163);
+    expect(baseline.operations.unlinked_events).toBeGreaterThanOrEqual(851);
   });
 
   it('records a reason for the revision that names the measured cause', () => {
-    const rev = baseline.revisions.at(-1);
-    expect(rev.revised_at).toBe('2026-09-29T00:00:00Z');
+    expect(rev).toBeDefined();
     // Every raise must be accounted for by a measurement, not by "it went up".
     for (const needle of ['gayout', '3,336', '72.3%', 'venue-city-match', 'queer_image_backfill']) {
       expect(rev.reason).toContain(needle);
@@ -74,7 +84,6 @@ describe('the city-quality baseline revision', () => {
     // headroom it needs could hide a real producer regression. That cost is stated and
     // the existing right instrument is named, rather than the number being quietly
     // loosened.
-    const rev = baseline.revisions.at(-1);
     expect(rev.reason).toContain('image_automation_no_progress');
     expect(rev.reason).toMatch(/could hide|worse trade|real cost/i);
   });
