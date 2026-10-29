@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
 import { useCitiesDirectory } from '@/hooks/useCitiesDirectory';
 import { useCitiesUrlState } from '@/hooks/useCitiesUrlState';
+import { usePrideCalendar } from '@/hooks/usePrideCalendar';
+import { buildPrideByCity } from '@/utils/prideForCity';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { RouteBullet } from '@/components/transit/RouteBullet';
@@ -10,8 +12,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cn } from '@/lib/utils';
 import { CitiesControlBar } from './cities/CitiesControlBar';
 import { CitiesLineIndex } from './cities/CitiesLineIndex';
-import { CityCardGrid, CityCardGridWithPride, CityGridPlaceholder } from './cities/CityCardGrid';
-import { DeferredSection } from '@/components/home/DeferredSection';
+import { CityCardGrid } from './cities/CityCardGrid';
 import { PageContainer, PAGE_BLEED, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 
 // Map pane stays lazy: maplibre-gl is ~1.1 s of scripting on first load
@@ -41,6 +42,18 @@ export default function Cities() {
 
   const { cities, filtered, continents, continentFacets, loading, error } =
     useCitiesDirectory(filterParams);
+
+  // Pride-soon pill data — current year, plus next year only when the 90-day
+  // window from today crosses into January.
+  const today = useMemo(() => new Date(), []);
+  const currentYear = today.getFullYear();
+  const needsNextYear = today.getMonth() >= 9; // Oct (0-indexed) and later
+  const prideCurrent = usePrideCalendar({ year: currentYear });
+  const prideNext = usePrideCalendar({ year: currentYear + 1, enabled: needsNextYear });
+  const prideByCity = useMemo(
+    () => buildPrideByCity([...(prideCurrent.data ?? []), ...(prideNext.data ?? [])], today),
+    [prideCurrent.data, prideNext.data, today],
+  );
 
   useMeta({
     title: t('cities.metaTitle', 'Cities'),
@@ -200,25 +213,13 @@ export default function Cities() {
               <h2 id="cities-grid-heading" className="sr-only">
                 {t('cities.listLabel', 'Cities')}
               </h2>
-              {loading || filtered.length === 0 ? (
-                <CityCardGrid
-                  cities={filtered}
-                  loading={loading}
-                  hasActiveFilters={hasActiveFilters}
-                />
-              ) : (
-                <DeferredSection
-                  rootMargin="0px"
-                  fallback={<CityGridPlaceholder count={filtered.length} />}
-                >
-                  <CityCardGridWithPride
-                    cities={filtered}
-                    loading={false}
-                    selectedCityId={url.city || null}
-                    hasActiveFilters={hasActiveFilters}
-                  />
-                </DeferredSection>
-              )}
+              <CityCardGrid
+                cities={filtered}
+                loading={loading}
+                prideByCity={prideByCity}
+                selectedCityId={url.city || null}
+                hasActiveFilters={hasActiveFilters}
+              />
             </section>
           </PageContainer>
         </>

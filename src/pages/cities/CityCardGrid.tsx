@@ -1,11 +1,9 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { useGridColumns } from '@/components/ui/useGridColumns';
 import { CityStationCard } from './CityStationCard';
 import type { DirectoryCity } from '@/hooks/useCitiesDirectory';
-import { buildPrideByCity, type NextPride } from '@/utils/prideForCity';
-import { usePrideCalendar } from '@/hooks/usePrideCalendar';
+import type { NextPride } from '@/utils/prideForCity';
 
 interface CityCardGridProps {
   cities: DirectoryCity[];
@@ -103,30 +101,4 @@ export function CityCardGrid({
       )}
     />
   );
-}
-
-/** Reserve the same estimated full grid before its virtualizer mounts. The
- * directory query and all filter counts remain owned by the visible page. */
-export function CityGridPlaceholder({ count }: { count: number }) {
-  const columns = useGridColumns(CITIES_GRID_BREAKPOINTS);
-  return (
-    <div
-      aria-hidden="true"
-      style={{ height: Math.ceil(count / columns) * ESTIMATE_ROW_HEIGHT }}
-    />
-  );
-}
-
-/** Pride data belongs to the card surface, which may be below the viewport.
- * Mounting this owner on approach also avoids calendar requests in map view. */
-export function CityCardGridWithPride(props: Omit<CityCardGridProps, 'prideByCity'>) {
-  const today = useMemo(() => new Date(), []);
-  const year = today.getFullYear();
-  const current = usePrideCalendar({ year });
-  const next = usePrideCalendar({ year: year + 1, enabled: today.getMonth() >= 9 });
-  const prideByCity = useMemo(
-    () => buildPrideByCity([...(current.data ?? []), ...(next.data ?? [])], today),
-    [current.data, next.data, today],
-  );
-  return <CityCardGrid {...props} prideByCity={prideByCity} />;
 }
