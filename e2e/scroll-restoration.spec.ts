@@ -51,6 +51,9 @@ const toBottom = async (page: Page) => {
  */
 const followLink = async (page: Page, href: string) => {
   const link = page.locator(`a[href="${href}"]`).first();
+  // Some links live in the deferred footer; reach its permanent landmark
+  // before following them, as a reader would.
+  if ((await link.count()) === 0) await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
   await expect(link).toHaveCount(1);
   await link.evaluate((a: HTMLElement) => a.click());
   await page.waitForURL(`**${href}`);

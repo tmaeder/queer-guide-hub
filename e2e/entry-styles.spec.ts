@@ -145,13 +145,18 @@ test.describe('stylesheet reuse after app startup', () => {
   }
 });
 
-test('public footer mounts its contents when the reader reaches its landmark', async ({ page }) => {
-  await page.goto('/about');
-  await expect(page.locator('main#main-content h1')).toBeVisible();
-  const footer = page.locator('[data-site-footer]');
-  await expect(footer).toBeAttached();
-  await expect(footer.getByRole('link', { name: 'Privacy', exact: true })).toHaveCount(0);
-  await footer.scrollIntoViewIfNeeded();
-  await expect(footer.getByRole('link', { name: 'Privacy', exact: true })).toBeVisible();
-  await expect(footer.getByRole('combobox', { name: 'Select language' })).toBeVisible();
+test.describe('Footer viewport activation', () => {
+  test.use({ javaScriptEnabled: true });
+  test('public footer mounts its contents when the reader reaches its landmark', async ({
+    page,
+  }) => {
+    await page.goto('/about');
+    await expect(page.locator('main#main-content h1')).toBeVisible();
+    const footer = page.locator('[data-site-footer]');
+    await expect(footer).toBeAttached();
+    await expect(footer.getByRole('link', { name: 'Privacy', exact: true })).toHaveCount(0);
+    await footer.scrollIntoViewIfNeeded();
+    await expect(footer.getByRole('link', { name: 'Privacy', exact: true })).toBeVisible();
+    await expect(footer.getByRole('combobox', { name: 'Select language' })).toBeVisible();
+  });
 });
