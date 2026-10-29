@@ -5286,288 +5286,370 @@
       "active": true,
       "queue_key": "ai-suggestions",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "suggestion"
+      "remaining": "Needs atomic positive field/translation/tag application with registry validation, machine provenance and source-specific held-out evaluation.",
+      "policy_kind": "suggestion",
+      "native_capability_audited": "invalid existing suggestion rejection only",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "automation",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "private"
+      "remaining": "Keep private submissions, membership, account data and consent decisions outside this approved public-data rollout.",
+      "policy_kind": "private",
+      "native_capability_audited": "private workflow excluded before evidence/model traffic",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "brand-ownership",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "human"
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review.",
+      "policy_kind": "human",
+      "native_capability_audited": "existing mandatory human publication gate",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "business-quality",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "recheck"
+      "remaining": "Can only resolve an invariant already corrected by its authoritative input. Need exact source-backed field repair for continuing defects.",
+      "policy_kind": "recheck",
+      "native_capability_audited": "refresh native business quality and verify finding cleared",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "cms-issues",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "recheck"
+      "remaining": "Needs issue-specific correction handlers and verified post-change invariants.",
+      "policy_kind": "recheck",
+      "native_capability_audited": "generic recheck explicitly refuses unresolved source finding",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "content",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "human"
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review.",
+      "policy_kind": "human",
+      "native_capability_audited": "existing mandatory human publication gate",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "dedup-review",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "merge"
+      "remaining": "Other entities, especially personal identity, are excluded. Audit native merge dependencies and evaluate identity collisions; preserve existing attention flags.",
+      "policy_kind": "merge",
+      "native_capability_audited": "native venue/city keep/drop approval or rejection",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "duplicates",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "merge"
+      "remaining": "Needs entity-specific positive merge with collision/foreign-key and reviewed-field preservation checks; generic duplicate confidence is insufficient.",
+      "policy_kind": "merge",
+      "native_capability_audited": "mark existing proposal not_duplicate only",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "editorial",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "human"
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review.",
+      "policy_kind": "human",
+      "native_capability_audited": "existing mandatory human publication gate",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "entity-links",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "link"
+      "remaining": "Positive relationship repair requires an actual canonical candidate, identity/relationship evidence and atomic application. Structural rejection verifies proposal usability only.",
+      "policy_kind": "link",
+      "native_capability_audited": "relationship rejection; structural missing-candidate rejection",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "event-quality",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "event"
+      "remaining": "Other defects still require actual correction; artwork is excluded without visual evidence. Validate exact occurrence/date/venue, reviewed fields and programme reuse independently.",
+      "policy_kind": "event",
+      "native_capability_audited": "source-supported activity category or bounded canonical venue link; legitimate description series reuse",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "feedback",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "private"
+      "remaining": "Keep private submissions, membership, account data and consent decisions outside this approved public-data rollout.",
+      "policy_kind": "private",
+      "native_capability_audited": "private workflow excluded before evidence/model traffic",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "general-review",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "recheck"
+      "remaining": "Needs review_type-specific positive correction handlers. Never dismiss an unresolved finding merely because the model approves a recheck.",
+      "policy_kind": "recheck",
+      "native_capability_audited": "exact current-date extraction rejection or cleared city lifecycle invariant; other generic rechecks refuse",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "geography",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "recheck"
+      "remaining": "Missing/review/stale outcomes cannot resolve. Need source-based place/country/city correction candidates and native identity boundary checks.",
+      "policy_kind": "recheck",
+      "native_capability_audited": "existing geography verifier recheck only",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "group-requests",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "private"
+      "remaining": "Keep private submissions, membership, account data and consent decisions outside this approved public-data rollout.",
+      "policy_kind": "private",
+      "native_capability_audited": "private workflow excluded before evidence/model traffic",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "liveness",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "liveness"
+      "remaining": "No positive closure/archive path. Missing/dead URL is not closure evidence; gather current independent operating/closure sources.",
+      "policy_kind": "liveness",
+      "native_capability_audited": "reject an archive/closure flag with current operating evidence",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "milestone-duplicates",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "merge"
+      "remaining": "Confirmation is not a merge. Any positive occurrence merge needs an evaluated separate transactional workflow.",
+      "policy_kind": "merge",
+      "native_capability_audited": "confirm or dismiss duplicate candidate without merging occurrences",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "milestone-links",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "link"
+      "remaining": "Validate exact historical entities and relationship, review native helper guards and gather held-out evidence; no invented target.",
+      "policy_kind": "link",
+      "native_capability_audited": "native proposed relationship approval or rejection",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "milestone-review",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "milestone"
+      "remaining": "A description needs a supplied source-supported replacement. uncertainty_language-only proposal rejection preserves original text and does not verify historical facts.",
+      "policy_kind": "milestone",
+      "native_capability_audited": "existing category or supplied description replacement apply; invalid detector rejection",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "moderation",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "private"
+      "remaining": "Keep private submissions, membership, account data and consent decisions outside this approved public-data rollout.",
+      "policy_kind": "private",
+      "native_capability_audited": "private workflow excluded before evidence/model traffic",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "news-quality",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "news"
+      "remaining": "Needs source recovery and supported positive article repair; network failure alone cannot justify rejection.",
+      "policy_kind": "news",
+      "native_capability_audited": "reject demonstrably invalid current article only",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "org-link-review",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "organization"
+      "remaining": "Must establish operator identity and the actual relationship, not similar names/addresses. Audit native adoption dependency and held-out namesake cases.",
+      "policy_kind": "organization",
+      "native_capability_audited": "native proposed canonical organization relationship approval or rejection",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "personality-publication",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "human"
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review.",
+      "policy_kind": "human",
+      "native_capability_audited": "existing mandatory human publication gate",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "quality-city",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "field"
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded.",
+      "policy_kind": "field",
+      "native_capability_audited": "exact existing proposal apply or rejection through field registry and native audit",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "quality-marketplace",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "field"
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded.",
+      "policy_kind": "field",
+      "native_capability_audited": "exact existing proposal apply or rejection through field registry and native audit",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "quality-other",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "field"
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded.",
+      "policy_kind": "field",
+      "native_capability_audited": "exact existing proposal apply or rejection through field registry and native audit",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "quality-personality",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "field"
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded.",
+      "policy_kind": "field",
+      "native_capability_audited": "exact existing proposal apply or rejection through field registry and native audit",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "quality-tag",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "field"
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded.",
+      "policy_kind": "field",
+      "native_capability_audited": "exact existing proposal apply or rejection through field registry and native audit",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "quality-venue",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "field"
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded.",
+      "policy_kind": "field",
+      "native_capability_audited": "exact existing proposal apply or rejection through field registry and native audit",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "quality-village",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "field"
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded.",
+      "policy_kind": "field",
+      "native_capability_audited": "exact existing proposal apply or rejection through field registry and native audit",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "sensitive-tags",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "human"
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review.",
+      "policy_kind": "human",
+      "native_capability_audited": "existing mandatory human publication gate",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "staging",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "staging"
+      "remaining": "Does not repair content or provide a general approval for other entity types. Publication stays in native commit path; source authorization and positive domain repair remain.",
+      "policy_kind": "staging",
+      "native_capability_audited": "reject invalid staged record or acknowledge an already passing news machine gate",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "submissions",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "private"
+      "remaining": "Keep private submissions, membership, account data and consent decisions outside this approved public-data rollout.",
+      "policy_kind": "private",
+      "native_capability_audited": "private workflow excluded before evidence/model traffic",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "tag-editorial",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "human"
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review.",
+      "policy_kind": "human",
+      "native_capability_audited": "existing mandatory human publication gate",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "tag-enrichment",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "suggestion"
+      "remaining": "Needs atomic positive field/translation/tag application with registry validation, machine provenance and source-specific held-out evaluation.",
+      "policy_kind": "suggestion",
+      "native_capability_audited": "invalid existing suggestion rejection only",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "tag-merges",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "merge"
+      "remaining": "Audit canonical taxonomy/alias and sensitive tag dependencies; evaluate per-domain equivalence before widening authority.",
+      "policy_kind": "merge",
+      "native_capability_audited": "native canonical tag merge approval or rejection",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "tag-restoration",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "human"
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review.",
+      "policy_kind": "human",
+      "native_capability_audited": "existing mandatory human publication gate",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "tags",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "tag"
+      "remaining": "Needs evaluated positive assignment, taxonomy/alias validation and sensitive-identity field guards.",
+      "policy_kind": "tag",
+      "native_capability_audited": "invalid tag suggestion rejection only",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "trip-geography",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "private"
+      "remaining": "Keep private submissions, membership, account data and consent decisions outside this approved public-data rollout.",
+      "policy_kind": "private",
+      "native_capability_audited": "private workflow excluded before evidence/model traffic",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "venue-category",
       "integration_status": "existing_policy_registered",
-      "remaining": "Reconcile policy kind and transactional action coverage; queue registration does not imply positive autonomous repair.",
-      "policy_kind": "category"
+      "remaining": "Evaluate activity taxonomy with concrete source evidence, preserve human-reviewed fields and audit the native helper.",
+      "policy_kind": "category",
+      "native_capability_audited": "native existing category proposal approval or rejection",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     },
     {
       "active": true,
       "queue_key": "venue-kind",
       "integration_status": "existing_policy_registered",
-      "remaining": "Action-specific authorization/projection and validation required before automatic execution.",
-      "policy_kind": "human"
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review.",
+      "policy_kind": "human",
+      "native_capability_audited": "existing mandatory human publication gate",
+      "capability_evidence": "docs/audits/2026-10-29-jev-review-capabilities.json"
     }
   ]
 }

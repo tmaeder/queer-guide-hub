@@ -270,6 +270,24 @@ checks and the isolated database contract tests pass.
 
 ## Remaining implementation
 
+The actual live context builder and apply dispatcher were inspected for every
+one of the 41 Review sources. The source-by-source matrix and exact definition
+hashes are in `docs/audits/2026-10-29-jev-review-capabilities.json`. Fourteen sources
+have some conditional positive application path; this is a capability count,
+not an evaluated success rate. Suggestion/tag application, entity links, generic
+CMS/geography repairs and several other branches still lack positive corrections.
+Private workflows and existing mandatory human gates remain explicit. Artwork
+also remains excluded without visual evidence. The matrix identifies the native
+helper/dependency audits and source-specific evaluations that each path still needs.
+
+The privacy audit identified shallow nested JSON projection and unprojected issue
+metadata/prior research as hardening work before broader model-state adoption.
+A read-only check of 20 recent public Review contexts found no credential/account
+key paths under the checked key list; it does not certify every context or free
+text. All current active staging Review source names were public publisher/adapters
+in that snapshot. An explicit adapter authorization guard is still needed for
+future private staging sources; a queue name alone cannot establish public origin.
+
 Implementation inspection now records nine deterministic exclusions and four
 follow-up audits in `docs/audits/2026-10-29-jev-automation-implementations.json`.
 The cache/count, fixed retention and approved-curation propagation operations

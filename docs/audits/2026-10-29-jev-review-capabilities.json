@@ -1,0 +1,287 @@
+{
+  "snapshot_date_utc": "2026-10-29",
+  "scope": "All 41 source branches inspected in the actual live context builder and native apply dispatcher. This is a capability audit, not domain validation or a claim that all proposals can be repaired. Underlying source resolvers, approval helpers and triggers still require their own audits.",
+  "definitions": [
+    {
+      "signature": "api_private.jev_apply(admin_review_cases,jsonb,jsonb,text)",
+      "definition": "CREATE OR REPLACE FUNCTION api_private.jev_apply(c admin_review_cases, k jsonb, ctx jsonb, note text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare q text:=c.item->>'queue_type';a text:=k->>'action';i uuid:=(c.item->>'id')::uuid;e uuid:=nullif(c.item->>'entity_id','')::uuid;\n p jsonb:=ctx->'proposal';r jsonb;v text;reg public.review_field_registry;proposal public.entity_review_queue;keep_attention boolean;provenance_table text;\nbegin\n perform api_private.assert_jev_internal();\n perform set_config('app.actor','ai:jev:review-automation',true);\n if c.family='venue' and k#>>'{payload,venue_id}' is not null then\n if not exists(select 1 from public.venues v join public.events ev on ev.id=e where v.id=(k#>>'{payload,venue_id}')::uuid and v.city_id=ev.city_id and v.country_id=ev.country_id and ev.venue_id is null and v.duplicate_of_id is null and v.closed_at is null)then raise exception 'canonical_venue_conflict';end if;\n if exists(select 1 from public.events other join public.events ev on ev.id=e where other.id<>e and other.venue_id=(k#>>'{payload,venue_id}')::uuid and lower(btrim(other.title))=lower(btrim(ev.title)) and other.start_date=ev.start_date and other.status<>'archived')then raise exception 'venue_occurrence_collision';end if;\n update public.events set venue_id=(k#>>'{payload,venue_id}')::uuid,field_provenance=coalesce(field_provenance,'{}')||jsonb_build_object('venue_id',jsonb_build_object('source','jev-review-v1','human_reviewed',false,'at',now(),'note',note))where id=e;\n update public.event_quality_issues set status='resolved',resolved_at=now(),resolution=note,reviewed_at=now(),reviewed_by=null where event_id=e and issue_code='NAMED_VENUE_UNLINKED'and status='open';\n update public.review_queue set status='resolved',resolved_at=now(),resolved_by=null,details=coalesce(details,'{}')||jsonb_build_object('resolution','jev_venue_link','review_note',note)where entity_type='event' and entity_id=e and review_type='venue_link_candidate'and status='pending';\n elsif q='event-quality' then\n if a='approve' and c.item#>>'{meta,issue_code}'='CATEGORY_UNRESOLVED' then\n if exists(select 1 from public.events where id=e and field_provenance#>>'{event_type,human_reviewed}'='true') then raise exception 'protected_human_field';end if;\n update public.events set event_type=k#>>'{payload,event_type}',field_provenance=coalesce(field_provenance,'{}')||jsonb_build_object('event_type',\n jsonb_build_object('source','jev-review-v1','human_reviewed',false,'previous',event_type,'at',now(),'note',note))where id=e;\n perform public.decide_event_quality_issue(i,'resolved',note);\n elsif a='reject' and c.item#>>'{meta,issue_code}' in ('DESCRIPTION_REUSED','IMAGE_REUSED','IMAGE_CONTENT_REUSED') then\n if c.item#>>'{meta,issue_code}'<>'DESCRIPTION_REUSED' then raise exception 'visual_evidence_required';end if;\n perform public.decide_event_quality_issue(i,'accepted',note);\n else raise exception 'invariant_still_requires_repair';end if;\n elsif q='org-link-review' then\n if a='approve' and p->>'organization_id' is null then raise exception 'missing_canonical_organization';end if;\n r:=public.decide_org_adoption(i,a='approve',nullif(p->>'organization_id','')::uuid,note);\n elsif q='venue-category' then r:=public.decide_venue_category(i,a='approve',null,note);\n elsif q='dedup-review' then\n if a='approve' then\n if p->>'entity_type' not in ('venue','city')then raise exception 'personal_identity_requires_human_review';end if;\n if p->>'entity_type'='venue' then select needs_attention into keep_attention from public.venues where id=(p->>'keep_id')::uuid;end if;\n r:=public.approve_dedup_review(i,(p->>'keep_id')::uuid);\n if keep_attention then update public.venues set needs_attention=true where id=(p->>'keep_id')::uuid;end if;\n else perform public.reject_dedup_review(i,note);end if;\n elsif q='tag-merges' then\n if a='approve' then perform public.approve_tag_merge(i,'ai:jev');else perform public.reject_tag_merge(i,false,'ai:jev');end if;\n elsif q like 'quality-%' then\n select * into strict proposal from public.entity_review_queue where id=i and status='open' for update;\n if a='approve' then\n if public._review_risk_blocked(proposal.entity_type,proposal.field,proposal.entity_id)then raise exception 'protected_destination_requires_confirmation';end if;\n if ctx#>>'{record,human_reviewed}'='true' then raise exception 'protected_human_field';end if;\n if proposal.field not in ('name','title','description','short_description','long_description','website','address','category','event_type','best_time_to_visit')then raise exception 'safety_or_unregistered_field_requires_review';end if;\n select * into strict reg from public.review_field_registry where entity_type=proposal.entity_type and field=proposal.field and active;\n perform public._apply_review_value(reg,proposal.entity_id,proposal.proposed_value);\n -- The staff helper writes llm+human; machine provenance must use a separate explicit actor.\n provenance_table:=case proposal.entity_type when 'city'then 'cities'when 'venue'then 'venues'when 'village'then 'queer_villages'when 'marketplace'then 'marketplace_listings'when 'personality'then 'personalities' end;\n if provenance_table is not null and exists(select 1 from information_schema.columns where table_schema='public'and table_name=provenance_table and column_name='field_provenance')then\n execute format('update public.%I set field_provenance=jsonb_set(coalesce(field_provenance,''{}''::jsonb),array[$1],$2,true)where id=$3',provenance_table)using proposal.field,jsonb_build_object('source','jev-review-v1','human_reviewed',false,'value',proposal.proposed_value->'value','citations',proposal.citations,'at',now()),proposal.entity_id;end if;\n end if;\n update public.entity_review_queue set status=case when a='approve' then 'approved' else 'rejected' end,reviewer_id=null,reviewed_at=now(),reviewer_note=note where id=i;\n perform public._review_write_audit(proposal.entity_type,proposal.entity_id,proposal.field,proposal.proposed_value,proposal.confidence,\n case when a='approve' then 'auto_commit' else 'no_change' end,'llm',jsonb_build_object('actor','ai:jev','human_reviewed',false,'note',note,'citations',proposal.citations));\n elsif q='milestone-review' then\n if a='approve' then\n if p->>'field'='category' then\n update public.milestones set category=p#>>'{proposed_value,value}',field_provenance=coalesce(field_provenance,'{}')||jsonb_build_object('category',jsonb_build_object('source','jev-review-v1','human_reviewed',false,'at',now()))where id=e;\n perform public.backfill_milestone_topic_tags(1,false,e);\n elsif p->>'field'='description' and length(trim(coalesce(p#>>'{proposed_value,replacement}','')))>30 then\n update public.milestones set description=p#>>'{proposed_value,replacement}'where id=e;\n else raise exception 'missing_supported_replacement';end if;end if;\n update public.milestone_review_queue set status=case when a='approve' then 'approved' else 'rejected' end,reviewer_id=null,reviewed_at=now(),reviewer_note=note where id=i and status='open';\n update public.milestones set last_verified_at=null where id=e;\n elsif q='milestone-links' then\n if a='approve' then perform public.approve_milestone_link_proposal(i,null);else perform public.reject_milestone_link_proposal(i);end if;\n elsif q='milestone-duplicates' then\n -- Confirming this candidate does not merge two occurrences.\n update public.milestone_duplicate_candidates set status=case when a='approve' then 'confirmed' else 'dismissed' end,reviewed_by=null,reviewed_at=now(),reviewer_note=note where id=i and status='pending';\n elsif q in ('ai-suggestions','tag-enrichment') then\n if a<>'reject' then raise exception 'suggestion_requires_atomic_application';end if;\n update public.ai_suggestions set status='rejected',reviewer_id=null,rejected_at=now(),review_notes=note where id=i and status in ('pending','approved');\n elsif q='staging' then\n if a='approve' and api_private.review_news_machine_outcome((select enriched_data from public.ingestion_staging where id=i)) is distinct from 'publish' then raise exception 'publication_gate_not_passed';end if;\n update public.ingestion_staging set review_status=case when a='approve' then 'approved' else 'rejected' end,\n disposition=case when a='reject' then 'rejected' else disposition end,reviewed_by=null,reviewed_at=now(),review_notes=note where id=i;\n elsif q='entity-links' and a='reject' then\n update public.entity_link_review set status='rejected',resolved_by=null,resolved_at=now()where id=i;\n elsif q='tags' and a='reject' then\n update public.tag_suggestions set status='rejected',reviewed_by=null,reviewed_at=now()where id=i;\n elsif q='duplicates' and a='reject' then\n update public.scraper_dedupe_decisions set decision='not_duplicate',decided_by='ai:jev'where id=i;\n elsif q='news-quality' and a='reject' then update public.news_articles set quality_status='rejected'where id=i;\n elsif q='liveness' and a='reject' then\n -- A source-backed machine rejection is not an admin-alive signal; preserve other attention flags.\n update public.entity_existence_audit set reverted_at=now(),reverted_by=null,reason=note where id=(c.item#>>'{meta,audit_id}')::bigint and action='flag' and reverted_at is null;\n elsif q='geography' then\n r:=public.geo_cms_verify((c.item#>>'{meta,place_id}')::uuid);\n if r->>'verification_status' in ('review','missing','stale') then raise exception 'geography_evidence_still_missing';end if;\n elsif q='business-quality' then\n perform public.refresh_business_brand_quality();\n if exists(select 1 from public.entity_quality_findings where id=(c.item#>>'{meta,finding_id}')::bigint and state in ('fail','pending')and waived_at is null)then raise exception 'business_invariant_still_failed';end if;\n elsif q='general-review' and k->>'id'='retain_current_date' then\n update public.review_queue set status='rejected',resolved_at=now(),resolved_by=null,details=coalesce(details,'{}')||jsonb_build_object('resolution','jev_current_date_source_supported','review_note',note)where id=i;\n elsif q='general-review' and c.item#>>'{meta,review_type}'='CITY_LIFECYCLE_UNRESOLVED' then\n if exists(select 1 from public.city_quality_profile p where p.id=e and not('CITY_LIFECYCLE_UNRESOLVED'=any(p.issue_codes)))then\n update public.review_queue set status='resolved',resolved_at=now(),resolved_by=null,details=coalesce(details,'{}')||jsonb_build_object('resolution','jev_recheck_signal_cleared','review_note',note)where id=i;\n else raise exception 'city_identity_still_requires_corroboration';end if;\n elsif q in ('general-review','cms-issues') then\n -- Generic recheck never dismisses or marks an uncorrected source finding resolved.\n raise exception 'specific_record_correction_required';\n else raise exception 'mandatory_human_workflow';end if;\n return coalesce(r,jsonb_build_object('ok',true));\nend $function$\n",
+      "sha256": "3c6940aae885a87ee649021e0cf0726964efb2dc7cb02258fccf6973f61ec593"
+    },
+    {
+      "signature": "api_private.jev_context(uuid,boolean)",
+      "definition": "CREATE OR REPLACE FUNCTION api_private.jev_context(p_case uuid, p_lock boolean DEFAULT false)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare c public.admin_review_cases; q text;t text;s jsonb;e jsonb;rel jsonb:='{}';rawrel jsonb:='{}';\n candidates jsonb:='[]';urls jsonb;blocker text;entity_table text;source_table text;full_input jsonb;research jsonb;\nbegin\n select * into c from public.admin_review_cases where id=p_case and active;\n if not found then raise exception 'Case is no longer active' using errcode='40001';end if;\n q:=c.item->>'queue_type';\n -- Consent, private membership and mandatory human publication gates are not factual model decisions.\n if q=any(array['group-requests','moderation','submissions','automation','feedback','trip-geography']) then blocker:='private_consent_or_moderation';\n elsif q=any(array['content','sensitive-tags','tag-editorial','tag-restoration','brand-ownership','venue-kind','personality-publication','editorial']) then blocker:='mandatory_human_publication_review';end if;\n if c.family='artwork' then blocker:='visual_evidence_requires_human_review';end if;\n if blocker is not null then return jsonb_build_object('item',jsonb_build_object('queue_type',q),'record',null,'proposal',null,'related','{}'::jsonb,'candidates','[]'::jsonb,'urls','[]'::jsonb,'input_hash',md5(c.fingerprint),'blocker',blocker);end if;\n select coalesce(r.lock_table,case\n when q in ('quality-city','quality-venue','quality-village','quality-personality','quality-marketplace','quality-tag','quality-other') then 'entity_review_queue'\n when q in ('tag-enrichment','ai-suggestions') then 'ai_suggestions'\n when q='dedup-review' then 'dedup_review_queue' when q='event-quality' then 'event_quality_issues'\n when q='milestone-review' then 'milestone_review_queue' when q='milestone-links' then 'milestone_link_proposals'\n when q='milestone-duplicates' then 'milestone_duplicate_candidates' when q='entity-links' then 'entity_link_review'\n when q='staging' then 'ingestion_staging' when q='duplicates' then 'scraper_dedupe_decisions'\n when q='news-quality' then 'news_articles' when q='tags' then 'tag_suggestions' end)\n into source_table from public.admin_review_sources r where queue_key=q and active;\n s:=api_private.jev_record(source_table,(c.item->>'id')::uuid,p_lock);\n entity_table:=c.item->>'entity_table';\n entity_table:=case entity_table when 'venue' then 'venues' when 'city' then 'cities' when 'country' then 'countries' when 'event' then 'events' when 'organization' then 'organizations' else entity_table end;\n e:=api_private.jev_record(entity_table,nullif(c.item->>'entity_id','')::uuid,p_lock);\n select outcome into research from public.admin_review_research_jobs where case_id=c.id and fingerprint=c.fingerprint;\n if q='staging' then\n -- Only source content projections, never raw scraped metadata or user submissions.\n rel:=jsonb_build_object('normalized',api_private.jev_public_record(s->'normalized_data'),'enriched',api_private.jev_public_record(s->'enriched_data'));\n s:=s-'raw_data'-'normalized_data'-'enriched_data' || jsonb_build_object('source_content',rel);\n end if;\n if entity_table='events' then\n select jsonb_build_object('publisher_sources',coalesce(jsonb_agg(jsonb_build_object('source_url',z.source_url,'captured',api_private.jev_public_record(coalesce(z.payload->'raw',z.payload->'normalized')))),'[]')) into rawrel from(select source_url,payload from public.event_sources where event_id=(c.item->>'entity_id')::uuid order by id limit 2)z;\n end if;\n if q='org-link-review' then rawrel:=jsonb_build_object('organization',api_private.jev_record('organizations',nullif(s->>'organization_id','')::uuid,p_lock));\n elsif q in ('dedup-review','tag-merges') then\n t:=case when q='tag-merges' then 'unified_tags' when s->>'entity_type'='venue' then 'venues' when s->>'entity_type'='city' then 'cities' else null end;\n rawrel:=jsonb_build_object('canonical',api_private.jev_record(t,coalesce(nullif(s->>'keep_id',''),nullif(s->>'canonical_id',''))::uuid,p_lock),'duplicate',api_private.jev_record(t,coalesce(nullif(s->>'drop_id',''),nullif(s->>'duplicate_id',''))::uuid,p_lock));\n elsif q='milestone-duplicates' then rawrel:=jsonb_build_object('first',api_private.jev_record('milestones',(s->>'milestone_id_1')::uuid,p_lock),'second',api_private.jev_record('milestones',(s->>'milestone_id_2')::uuid,p_lock));\n end if;\n select coalesce(jsonb_object_agg(key,case when key='publisher_sources' then value else api_private.jev_public_record(value) end),'{}') into rel from jsonb_each(rawrel);\n rel:=rel||jsonb_build_object('location',jsonb_build_object('city',(select name from public.cities where id=(e->>'city_id')::uuid),'country',(select name from public.countries where id=(e->>'country_id')::uuid)));\n full_input:=jsonb_build_object('case_fingerprint',c.fingerprint,'members',c.members,'source',s,'record',e,'related',rawrel,'research',research);\n if q in ('geography','business-quality','cms-issues','general-review') then\n candidates:=jsonb_build_array(jsonb_build_object('id','recheck','action','recheck','payload','{}'::jsonb,'explanation','Re-run the existing invariant checker. Resolve only if the actual defect is gone; otherwise keep researching.'));\n elsif q='event-quality' then\n if c.item#>>'{meta,issue_code}'='CATEGORY_UNRESOLVED' then\n select jsonb_agg(jsonb_build_object('id','category_'||x,'action','approve','payload',jsonb_build_object('event_type',x),'explanation','Set the explicit source-supported activity category to '||x)) into candidates\n from unnest(array['party','drag','concert','festival','pride','workshop','social','sports','art','theatre','film','comedy','karaoke','bingo','meetup','other'])x;\n elsif c.item#>>'{meta,issue_code}' in ('DESCRIPTION_REUSED','IMAGE_REUSED','IMAGE_CONTENT_REUSED') then\n candidates:=jsonb_build_array(jsonb_build_object('id','accept_series_reuse','action','reject','payload','{}'::jsonb,'explanation','Accept legitimate reuse for the same verified recurring programme; preserve every independent date, image, venue and completeness finding.'));\n else candidates:=jsonb_build_array(jsonb_build_object('id','recheck','action','recheck','payload','{}'::jsonb,'explanation','Recheck the actual invariant, never waive it.'));end if;\n elsif q='liveness' then\n candidates:=jsonb_build_array(jsonb_build_object('id','reject','action','reject','payload','{}'::jsonb,'explanation','Retain the exact entity because current source evidence establishes it is operating. A dead URL alone is not evidence either way.'));\n else\n candidates:=jsonb_build_array(jsonb_build_object('id','reject','action','reject','payload','{}'::jsonb,'explanation','Reject this demonstrably invalid or contradicted proposal, preserving the existing record and its other quality findings.'));\n if q not in ('entity-links','duplicates','tags','news-quality','tag-enrichment','ai-suggestions') and s is not null then\n candidates:=candidates||jsonb_build_array(jsonb_build_object('id','approve','action','approve','payload','{}'::jsonb,'explanation','Apply exactly the existing proposal after its identity, field values and relationship are corroborated by source evidence.'));\n end if;\n -- Staging approval cannot promote or publish around the pipeline quality gate.\n if q='staging' and api_private.review_news_machine_outcome((select enriched_data from public.ingestion_staging where id=(c.item->>'id')::uuid))='publish' then\n candidates:=candidates||jsonb_build_array(jsonb_build_object('id','approve','action','approve','payload','{}'::jsonb,'explanation','Approve the existing completed passing publication gate; retain the native commit pipeline and duplicate guards.'));end if;\n end if;\n -- Bounded canonical venue candidates; exact identities are revalidated again when applied.\n if c.family='venue' and e->>'venue_id' is null then\n select coalesce(jsonb_agg(to_jsonb(v)),'[]') into rawrel from(select v.id,v.name,v.address,v.website,v.city_id,v.country_id from public.venues v\n where v.city_id=(e->>'city_id')::uuid and v.country_id=(e->>'country_id')::uuid and v.duplicate_of_id is null and v.closed_at is null\n and (lower(btrim(v.name))=lower(btrim(e->>'venue_name')) or v.id::text in(select x->>'id'from jsonb_array_elements(coalesce(research->'candidates','[]'))x))order by v.id limit 5)v;\n rel:=rel||jsonb_build_object('venue_candidates',rawrel);\n full_input:=full_input||jsonb_build_object('venue_candidates',rawrel);\n select coalesce(jsonb_agg(jsonb_build_object('id','venue_'||(x->>'id'),'action','approve','payload',jsonb_build_object('venue_id',x->>'id'),\n 'explanation','Link the event to '||(x->>'name')||' at '||coalesce(x->>'address','unknown address')||' only if publisher evidence establishes this exact canonical venue.')),'[]')into candidates from jsonb_array_elements(rawrel)x;\n end if;\n if q='general-review' and c.item#>>'{meta,review_type}'='date_mismatch' then\n candidates:=jsonb_build_array(jsonb_build_object('id','retain_current_date','action','reject','payload','{}'::jsonb,\n 'explanation','Reject the conflicting extraction ONLY if live publisher evidence for this exact occurrence confirms the current stored start date, including year and local date. Do not reject because the source is unavailable.'));\n end if;\n\n if q='milestone-review' and s->>'field'='description' and s#>'{proposed_value,issues}'='[\"uncertainty_language\"]'::jsonb\n and nullif(btrim(s#>>'{proposed_value,replacement}'),'')is null then\n candidates:=jsonb_build_array(jsonb_build_object('id','reject','action','reject',\n 'payload',jsonb_build_object('integrity_rule','uncertainty_without_replacement'),\n 'explanation','Reject only the detector proposal that flags qualified historical wording solely for uncertainty_language and supplies no replacement or contradictory evidence. Qualified prose is not defective merely for saying possibly. Keep the current text and every factual verification status unchanged; do not claim its historical assertions were checked.'));\n elsif q='entity-links' and s->>'candidate_id'is null then\n candidates:=jsonb_build_array(jsonb_build_object('id','reject','action','reject',\n 'payload',jsonb_build_object('integrity_rule','missing_link_candidate'),\n 'explanation','Reject this unusable relationship proposal because it has no canonical candidate ID. Retain the source mention and do not assert that the named entity does not exist.'));\n end if;\n -- Never overwrite protected review or infer a safety-critical field.\n\n if q like 'quality-%' and s is not null and public._review_risk_blocked(s->>'entity_type',s->>'field',(s->>'entity_id')::uuid) then\n select jsonb_agg(x) into candidates from jsonb_array_elements(candidates)x where x->>'action'<>'approve';end if;\n select coalesce(jsonb_agg(distinct x),'[]') into urls from (\n select jsonb_path_query(jsonb_build_object('record',api_private.jev_public_record(e),'proposal',api_private.jev_public_record(s),'related',rel,'meta',c.item->'meta'),'strict $.**.url')x\n union all select jsonb_path_query(rel,'strict $.**.source_url')\n union all select jsonb_path_query(s->'source_content','strict $.**.url')\n union all select jsonb_path_query(s->'source_content','strict $.**.source_url')\n union all select to_jsonb(e->>'website') where e->>'website' ~ '^https?://'\n union all select to_jsonb(e->>'source_url') where e->>'source_url' ~ '^https?://'\n union all select to_jsonb(c.item#>>'{meta,details,page}') where c.item#>>'{meta,details,page}' ~ '^https?://'\n )u where jsonb_typeof(x)='string' and x#>>'{}' ~ '^https?://';\n return jsonb_build_object('item',c.item-'reporter_id','record',api_private.jev_public_record(e),'proposal',api_private.jev_public_record(s),'related',rel,\n 'research',research,'candidates',coalesce(candidates,'[]'),'urls',urls,'input_hash',md5(full_input::text));\nend $function$\n",
+      "sha256": "1b548c193517e5f99b28805694fddc25455d8b9cf4fd7ae7a1cb8b521173e66e"
+    }
+  ],
+  "limitations": [
+    "Existing field projection is shallow for nested JSON; issue metadata and prior research need an explicit model-state projection audit before broader adoption.",
+    "All currently active staging Review rows in the read-only snapshot came from public publisher/adapters. A future private staging adapter must be excluded by source authorization, not merely by queue name.",
+    "Registered policy and a generic candidate do not imply a working positive correction handler.",
+    "Existing .97/.99 decision thresholds remain; small validation samples do not certify those precision levels."
+  ],
+  "sources": [
+    {
+      "queue_key": "ai-suggestions",
+      "native_capability": "invalid existing suggestion rejection only",
+      "positive_correction": false,
+      "remaining": "Needs atomic positive field/translation/tag application with registry validation, machine provenance and source-specific held-out evaluation."
+    },
+    {
+      "queue_key": "automation",
+      "native_capability": "private workflow excluded before evidence/model traffic",
+      "positive_correction": false,
+      "remaining": "Keep private submissions, membership, account data and consent decisions outside this approved public-data rollout."
+    },
+    {
+      "queue_key": "brand-ownership",
+      "native_capability": "existing mandatory human publication gate",
+      "positive_correction": false,
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review."
+    },
+    {
+      "queue_key": "business-quality",
+      "native_capability": "refresh native business quality and verify finding cleared",
+      "positive_correction": false,
+      "remaining": "Can only resolve an invariant already corrected by its authoritative input. Need exact source-backed field repair for continuing defects."
+    },
+    {
+      "queue_key": "cms-issues",
+      "native_capability": "generic recheck explicitly refuses unresolved source finding",
+      "positive_correction": false,
+      "remaining": "Needs issue-specific correction handlers and verified post-change invariants."
+    },
+    {
+      "queue_key": "content",
+      "native_capability": "existing mandatory human publication gate",
+      "positive_correction": false,
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review."
+    },
+    {
+      "queue_key": "dedup-review",
+      "native_capability": "native venue/city keep/drop approval or rejection",
+      "positive_correction": true,
+      "remaining": "Other entities, especially personal identity, are excluded. Audit native merge dependencies and evaluate identity collisions; preserve existing attention flags."
+    },
+    {
+      "queue_key": "duplicates",
+      "native_capability": "mark existing proposal not_duplicate only",
+      "positive_correction": false,
+      "remaining": "Needs entity-specific positive merge with collision/foreign-key and reviewed-field preservation checks; generic duplicate confidence is insufficient."
+    },
+    {
+      "queue_key": "editorial",
+      "native_capability": "existing mandatory human publication gate",
+      "positive_correction": false,
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review."
+    },
+    {
+      "queue_key": "entity-links",
+      "native_capability": "relationship rejection; structural missing-candidate rejection",
+      "positive_correction": false,
+      "remaining": "Positive relationship repair requires an actual canonical candidate, identity/relationship evidence and atomic application. Structural rejection verifies proposal usability only."
+    },
+    {
+      "queue_key": "event-quality",
+      "native_capability": "source-supported activity category or bounded canonical venue link; legitimate description series reuse",
+      "positive_correction": true,
+      "remaining": "Other defects still require actual correction; artwork is excluded without visual evidence. Validate exact occurrence/date/venue, reviewed fields and programme reuse independently."
+    },
+    {
+      "queue_key": "feedback",
+      "native_capability": "private workflow excluded before evidence/model traffic",
+      "positive_correction": false,
+      "remaining": "Keep private submissions, membership, account data and consent decisions outside this approved public-data rollout."
+    },
+    {
+      "queue_key": "general-review",
+      "native_capability": "exact current-date extraction rejection or cleared city lifecycle invariant; other generic rechecks refuse",
+      "positive_correction": false,
+      "remaining": "Needs review_type-specific positive correction handlers. Never dismiss an unresolved finding merely because the model approves a recheck."
+    },
+    {
+      "queue_key": "geography",
+      "native_capability": "existing geography verifier recheck only",
+      "positive_correction": false,
+      "remaining": "Missing/review/stale outcomes cannot resolve. Need source-based place/country/city correction candidates and native identity boundary checks."
+    },
+    {
+      "queue_key": "group-requests",
+      "native_capability": "private workflow excluded before evidence/model traffic",
+      "positive_correction": false,
+      "remaining": "Keep private submissions, membership, account data and consent decisions outside this approved public-data rollout."
+    },
+    {
+      "queue_key": "liveness",
+      "native_capability": "reject an archive/closure flag with current operating evidence",
+      "positive_correction": false,
+      "remaining": "No positive closure/archive path. Missing/dead URL is not closure evidence; gather current independent operating/closure sources."
+    },
+    {
+      "queue_key": "milestone-duplicates",
+      "native_capability": "confirm or dismiss duplicate candidate without merging occurrences",
+      "positive_correction": false,
+      "remaining": "Confirmation is not a merge. Any positive occurrence merge needs an evaluated separate transactional workflow."
+    },
+    {
+      "queue_key": "milestone-links",
+      "native_capability": "native proposed relationship approval or rejection",
+      "positive_correction": true,
+      "remaining": "Validate exact historical entities and relationship, review native helper guards and gather held-out evidence; no invented target."
+    },
+    {
+      "queue_key": "milestone-review",
+      "native_capability": "existing category or supplied description replacement apply; invalid detector rejection",
+      "positive_correction": true,
+      "remaining": "A description needs a supplied source-supported replacement. uncertainty_language-only proposal rejection preserves original text and does not verify historical facts."
+    },
+    {
+      "queue_key": "moderation",
+      "native_capability": "private workflow excluded before evidence/model traffic",
+      "positive_correction": false,
+      "remaining": "Keep private submissions, membership, account data and consent decisions outside this approved public-data rollout."
+    },
+    {
+      "queue_key": "news-quality",
+      "native_capability": "reject demonstrably invalid current article only",
+      "positive_correction": false,
+      "remaining": "Needs source recovery and supported positive article repair; network failure alone cannot justify rejection."
+    },
+    {
+      "queue_key": "org-link-review",
+      "native_capability": "native proposed canonical organization relationship approval or rejection",
+      "positive_correction": true,
+      "remaining": "Must establish operator identity and the actual relationship, not similar names/addresses. Audit native adoption dependency and held-out namesake cases."
+    },
+    {
+      "queue_key": "personality-publication",
+      "native_capability": "existing mandatory human publication gate",
+      "positive_correction": false,
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review."
+    },
+    {
+      "queue_key": "quality-city",
+      "native_capability": "exact existing proposal apply or rejection through field registry and native audit",
+      "positive_correction": true,
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded."
+    },
+    {
+      "queue_key": "quality-marketplace",
+      "native_capability": "exact existing proposal apply or rejection through field registry and native audit",
+      "positive_correction": true,
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded."
+    },
+    {
+      "queue_key": "quality-other",
+      "native_capability": "exact existing proposal apply or rejection through field registry and native audit",
+      "positive_correction": true,
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded."
+    },
+    {
+      "queue_key": "quality-personality",
+      "native_capability": "exact existing proposal apply or rejection through field registry and native audit",
+      "positive_correction": true,
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded."
+    },
+    {
+      "queue_key": "quality-tag",
+      "native_capability": "exact existing proposal apply or rejection through field registry and native audit",
+      "positive_correction": true,
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded."
+    },
+    {
+      "queue_key": "quality-venue",
+      "native_capability": "exact existing proposal apply or rejection through field registry and native audit",
+      "positive_correction": true,
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded."
+    },
+    {
+      "queue_key": "quality-village",
+      "native_capability": "exact existing proposal apply or rejection through field registry and native audit",
+      "positive_correction": true,
+      "remaining": "Positive apply limited to registered ordinary text/location/category fields, protected-destination/human guards and existing values. Missing candidates, source discovery and calibrated atomic field evaluation remain; sensitive fields are excluded."
+    },
+    {
+      "queue_key": "sensitive-tags",
+      "native_capability": "existing mandatory human publication gate",
+      "positive_correction": false,
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review."
+    },
+    {
+      "queue_key": "staging",
+      "native_capability": "reject invalid staged record or acknowledge an already passing news machine gate",
+      "positive_correction": false,
+      "remaining": "Does not repair content or provide a general approval for other entity types. Publication stays in native commit path; source authorization and positive domain repair remain."
+    },
+    {
+      "queue_key": "submissions",
+      "native_capability": "private workflow excluded before evidence/model traffic",
+      "positive_correction": false,
+      "remaining": "Keep private submissions, membership, account data and consent decisions outside this approved public-data rollout."
+    },
+    {
+      "queue_key": "tag-editorial",
+      "native_capability": "existing mandatory human publication gate",
+      "positive_correction": false,
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review."
+    },
+    {
+      "queue_key": "tag-enrichment",
+      "native_capability": "invalid existing suggestion rejection only",
+      "positive_correction": false,
+      "remaining": "Needs atomic positive field/translation/tag application with registry validation, machine provenance and source-specific held-out evaluation."
+    },
+    {
+      "queue_key": "tag-merges",
+      "native_capability": "native canonical tag merge approval or rejection",
+      "positive_correction": true,
+      "remaining": "Audit canonical taxonomy/alias and sensitive tag dependencies; evaluate per-domain equivalence before widening authority."
+    },
+    {
+      "queue_key": "tag-restoration",
+      "native_capability": "existing mandatory human publication gate",
+      "positive_correction": false,
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review."
+    },
+    {
+      "queue_key": "tags",
+      "native_capability": "invalid tag suggestion rejection only",
+      "positive_correction": false,
+      "remaining": "Needs evaluated positive assignment, taxonomy/alias validation and sensitive-identity field guards."
+    },
+    {
+      "queue_key": "trip-geography",
+      "native_capability": "private workflow excluded before evidence/model traffic",
+      "positive_correction": false,
+      "remaining": "Keep private submissions, membership, account data and consent decisions outside this approved public-data rollout."
+    },
+    {
+      "queue_key": "venue-category",
+      "native_capability": "native existing category proposal approval or rejection",
+      "positive_correction": true,
+      "remaining": "Evaluate activity taxonomy with concrete source evidence, preserve human-reviewed fields and audit the native helper."
+    },
+    {
+      "queue_key": "venue-kind",
+      "native_capability": "existing mandatory human publication gate",
+      "positive_correction": false,
+      "remaining": "Broader authority requires individually evaluated public evidence, explicit field authorization and a native workflow; model confidence cannot grant consent or override protected review."
+    }
+  ],
+  "summary": {
+    "sources": 41,
+    "with_some_native_positive_apply": 14,
+    "note": "Positive capability is conditional and is not measured success, complete coverage or sensitive-action validation."
+  },
+  "privacy_read_only_sample": {
+    "cases": 20,
+    "queues": [
+      "staging",
+      "event-quality",
+      "general-review",
+      "quality-city"
+    ],
+    "selection": "most recently updated active cases across the listed queues",
+    "credential_or_account_key_paths_found": 0,
+    "scope": "Key-path check only; not a guarantee about all cases, free text or other private fields. No leases, paid model calls or source writes."
+  }
+}
