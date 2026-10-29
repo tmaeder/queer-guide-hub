@@ -1,7 +1,7 @@
 import { corsResponse, errorResponse, getServiceClient, jsonResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { buildQuestions, decide, parseEvaluation, POLICY_VERSION, SOURCES, type Context, type Evidence } from './policy.ts'
-import { fetchEvidence } from './evidence.ts'
 import { recoverSources } from './research.ts'
+import { sourceUrl } from './evidence.ts'
 import { ProviderError } from './provider.ts'
 
 type Job = { case_id: string; lease_token: string; queue_type: string }
@@ -18,6 +18,21 @@ Deno.serve(async req => {
   if (req.method !== 'POST') return errorResponse('Use POST', 405, req)
   const db = getServiceClient(); const auth = await requireInternalOrAdmin(req, db)
   if (auth instanceof Response) return auth
+  const body = await req.json().catch(() => null)
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return errorResponse('Invalid request body', 400, req)
+  // Read-only deployment diagnostic: no model, leases, decisions or automation-state writes.
+  // Deliberately outside the job/run error handler so even a probe failure cannot update the registry.
+  if (body.source_probe === true) {
+    if (!Array.isArray(body.urls) || body.urls.length < 1 || body.urls.length > 4 || body.urls.some((url: unknown) => typeof url !== 'string' || url.length > 2048)) return errorResponse('Provide one to four public HTTPS source URLs', 400, req)
+    try { for (const url of body.urls) sourceUrl(url) }
+    catch { return errorResponse('Unsupported source URL', 400, req) }
+    try {
+      const sources = await recoverSources({ item: { queue_type: 'event-quality', title: 'Read-only source probe' }, record: null, proposal: null, related: {}, research: null, candidates: [], urls: body.urls, input_hash: '' })
+      return jsonResponse({ success: sources.evidence.length > 0, probe: 'sources', attempted: sources.attempted,
+        failed: sources.errors.length, readable: sources.evidence.length,
+        sources: sources.evidence.map(page => ({ host: new URL(page.url).hostname, characters: page.text.length, retrieved_at: page.retrieved_at })) }, 200, req)
+    } catch { return errorResponse('source_probe_failed', 502, req) }
+  }
   if (!Deno.env.get('JEV_API_KEY')) return errorResponse('JEV_API_KEY is not configured', 503, req)
   const started = new Date().toISOString()
   const budgetStarted = Date.now()
@@ -37,7 +52,6 @@ Deno.serve(async req => {
     if (error) console.error('Jev automation status failed:', error.message)
   }
   try {
-    const body = await req.json().catch(() => ({}))
     runId = Number.isSafeInteger(body.run_id) ? body.run_id : null
     if (body.probe === true) {
       const answer = await evaluate({ model: Deno.env.get('JEV_MODEL') || 'jev-1.14.0', state: 'Synthetic integration test only: 2 + 2 = 4.', questions: { answer: { type: 'choice', instructions: 'Is the arithmetic statement correct?', criteria: { correct: 'The arithmetic is correct.', incorrect: 'The arithmetic is incorrect.' } } } })
@@ -61,16 +75,14 @@ Deno.serve(async req => {
         context = await rpc<Context>('get_jev_review_context', { p_case_id: job.case_id, p_lease_token: job.lease_token })
         if (context.blocker) result = { blocker: context.blocker }
         else {
-          const errors: string[] = []
+          let errors: string[] = []; let attempted = 0
           const integrityOnly = context.candidates.length === 1 && context.candidates[0].action === 'reject' && typeof context.candidates[0].payload.integrity_rule === 'string'
           if (integrityOnly) evidence.push({ url: 'https://queer.guide/admin', retrieved_at: new Date().toISOString(), kind: 'proposal_integrity', text: JSON.stringify({ rule: context.candidates[0].explanation, proposal: context.proposal, current_text: context.record?.description, scope: 'Proposal integrity only. No underlying historical or entity facts are certified.' }) })
-          // Read only application-supplied source URLs. No model-generated destinations.
-          for (const url of integrityOnly ? [] : context.urls.slice(0, 2)) {
-            try { evidence.push(await fetchEvidence(url)) }
-            catch (error) { errors.push(error instanceof Error ? error.message : 'Source fetch failed') }
+          if (!integrityOnly) {
+            const sources = await recoverSources(context)
+            evidence = sources.evidence; errors = sources.errors; attempted = sources.attempted
           }
-          if (!evidence.length) evidence = await recoverSources(context)
-          if (!evidence.length) result = { blocker: context.urls.length ? 'source_unavailable' : 'missing_source_url', source_errors: errors }
+          if (!evidence.length) result = { blocker: attempted ? 'source_unavailable' : 'missing_source_url', source_errors: errors }
           else {
             const request = buildQuestions(context, evidence)
             request.model = Deno.env.get('JEV_MODEL') || request.model

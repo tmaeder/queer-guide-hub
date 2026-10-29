@@ -183,6 +183,9 @@ const NEGATIVE_TWIN: Record<string, string> = {
   'no-accessible-restroom': 'accessible-restroom',
 }
 
+/** Every slug this guard can judge. Read by accessibility-claim-check.test.ts to keep the two vocabularies in step. */
+export const EVIDENCE_SLUGS: readonly string[] = [...Object.keys(EVIDENCE), ...Object.keys(NEGATIVE_TWIN)]
+
 /**
  * Negators scanned in the ~30 characters BEFORE an evidence match.
  *

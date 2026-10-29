@@ -1,25 +1,44 @@
-import { fetchEvidence } from './evidence.ts'
+import { fetchEvidence, sourceUrl } from './evidence.ts'
 import type { Context, Evidence } from './policy.ts'
-import { ProviderError } from './provider.ts'
-/** Search recovers missing source URLs; snippets alone are never accepted as evidence. */
-export async function recoverSources(context: Context): Promise<Evidence[]> {
-  const key = Deno.env.get('FIRECRAWL_API_KEY')
-  if (!key) throw new ProviderError('Source recovery configuration', 503)
-  const name = String(context.record?.name ?? context.record?.title ?? context.item.title).slice(0, 180)
-  const place = context.related.location as { city?: string; country?: string } | undefined
-  const response = await fetch('https://api.firecrawl.dev/v2/search', {
-    method: 'POST', redirect: 'error', signal: AbortSignal.timeout(18000),
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: [name, place?.city, place?.country, 'official'].filter(Boolean).join(' '), limit: 2, sources: ['web'] }),
-  })
-  if (!response.ok) { await response.body?.cancel(); throw new ProviderError('Source recovery', response.status) }
-  const body = await response.json() as { success?: boolean; data?: { web?: { url?: string }[] } }
-  if (body.success === false) throw new ProviderError('Source recovery', 503)
-  const evidence: Evidence[] = []
-  for (const item of body.data?.web ?? []) {
-    if (typeof item.url !== 'string') continue
-    try { evidence.push(await fetchEvidence(item.url)) } catch { continue }
-    if (evidence.length === 2) break
+
+const MAX_ATTEMPTS = 4
+const MAX_EVIDENCE = 2
+/** Discover only explicit URLs from the public context; never guess a domain or trust a search snippet. */
+export function sourceCandidates(context: Context): string[] {
+  const urls = new Set<string>()
+  const add = (value: unknown) => {
+    if (typeof value !== 'string' || value.length > 2048) return
+    try {
+      const url = sourceUrl(value)
+      url.hash = ''
+      urls.add(url.href)
+    } catch { /* Invalid/private/HTTP URLs are not destinations. */ }
   }
-  return evidence
+  for (const url of context.urls) add(url)
+  let visited = 0
+  const walk = (value: unknown, depth = 0) => {
+    if (++visited > 2000 || depth > 6 || !value || typeof value !== 'object') return
+    if (Array.isArray(value)) { for (const entry of value) walk(entry, depth + 1); return }
+    for (const [key, entry] of Object.entries(value)) {
+      if (['url', 'source_url', 'website'].includes(key)) add(entry)
+      else if (entry && typeof entry === 'object') walk(entry, depth + 1)
+    }
+  }
+  // These are service-projected public fields. Do not crawl item metadata, raw payloads or free text.
+  for (const value of [context.record, context.proposal, context.related, context.research]) walk(value)
+  return [...urls].slice(0, MAX_ATTEMPTS)
+}
+
+/** Direct, bounded retrieval has no search-provider or API-key dependency. Stored captures are not live evidence. */
+export async function recoverSources(context: Context, fetcher: typeof fetch = fetch): Promise<{ evidence: Evidence[]; errors: string[]; attempted: number }> {
+  const evidence: Evidence[] = [], errors: string[] = []
+  const urls = sourceCandidates(context)
+  let attempted = 0
+  for (const url of urls) {
+    attempted++
+    try { evidence.push(await fetchEvidence(url, fetcher)) }
+    catch (error) { errors.push(error instanceof Error ? error.message : 'Source fetch failed') }
+    if (evidence.length === MAX_EVIDENCE) break
+  }
+  return { evidence, errors, attempted }
 }

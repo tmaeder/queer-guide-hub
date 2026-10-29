@@ -9,7 +9,7 @@ const compiled = build({
   plugins: [{ name: 'synthetic-service-boundary', setup(builder) {
     builder.onLoad({ filter: /_shared\/supabase-client\.ts$/ }, () => ({ contents: `
       export const getServiceClient = () => globalThis.testDb;
-      export const requireInternalOrAdmin = async () => ({});
+      export const requireInternalOrAdmin = async () => globalThis.testAuth;
       export const corsResponse = () => new Response();
       export const jsonResponse = (body, status) => new Response(JSON.stringify(body), {status});
       export const errorResponse = (error, status) => new Response(JSON.stringify({error}), {status});
@@ -17,19 +17,32 @@ const compiled = build({
   } }],
 }).then(result => result.outputFiles[0].text)
 
-for (const status of [402, 429, 503]) test(`Firecrawl ${status} stops provider calls, retries leased jobs and records a failed run`, async () => {
-  const jobs = [1, 2].map(n => ({ case_id: `case-${n}`, lease_token: 'lease', queue_type: 'event-quality' }))
+const context = { item: { queue_type: 'event-quality', title: 'Synthetic', risk: 'integrity' }, record: null, proposal: null, related: { venue_candidates: [{ website: 'https://example.org/source' }] }, research: null, candidates: [{ id: 'approve', action: 'approve', payload: {}, explanation: 'Synthetic' }], urls: [], input_hash: 'synthetic' }
+function evaluation(conflicting = false) {
+  const choice = (selected: string, options: string[]) => ({ type: 'choice', choice: selected, confidence: 0.999, probabilities: Object.fromEntries(options.map(x => [x, x === selected ? 1 : 0])) })
+  return { model: 'jev-test', answers: {
+    decision: choice('approve', ['approve', 'abstain']), support: choice(conflicting ? 'conflicting' : 'supported', ['supported', 'missing', 'conflicting']),
+    support_approve: choice('supported', ['supported', 'missing', 'conflicting']), risk: choice('routine', ['routine', 'human', 'sensitive']),
+    reason: choice(conflicting ? 'conflicting_identity' : 'verified', ['verified', 'missing_source', 'conflicting_identity', 'protected_review', 'insufficient_confidence', 'invalid_proposal']),
+  } }
+}
+async function run(options: { status?: number; context?: unknown; noJobs?: boolean; conflicting?: boolean; body?: unknown; rawBody?: string; denied?: boolean; sourceStatus?: number; sourceRedirect?: string } = {}) {
+  const jobs = options.noJobs ? [] : [1, 2].map(n => ({ case_id: `case-${n}`, lease_token: 'lease', queue_type: 'event-quality' }))
   const updates: Array<{ table: string; value: Record<string, unknown> }> = []
   const finished: Array<Record<string, unknown>> = []
-  let providerCalls = 0
+  const fetched: string[] = [], env: string[] = [], rpcCalls: string[] = []
   let handler: ((request: Request) => Promise<Response>) | undefined
   const db = {
     rpc: async (name: string, args: Record<string, unknown>) => {
+      rpcCalls.push(name)
       let data: unknown
       if (name === 'claim_jev_review_jobs') data = jobs
-      else if (name === 'get_jev_review_context') data = { item: { queue_type: 'event-quality', title: 'Synthetic', risk: 'integrity' }, record: null, proposal: null, related: {}, research: null, candidates: [{ id: 'approve', action: 'approve', payload: {}, explanation: 'Synthetic' }], urls: [], input_hash: 'synthetic' }
-      else if (name === 'finish_jev_review_job') { finished.push(args); data = { status: 'retry' } }
-      else throw new Error(`Unexpected RPC ${name}`)
+      else if (name === 'get_jev_review_context') data = options.context ?? context
+      else if (name === 'finish_jev_review_job') {
+        finished.push(args)
+        const result = args.p_result as { retry?: string; blocker?: string }
+        data = { status: result.retry ? 'retry' : result.blocker ? 'blocked' : 'applied' }
+      } else throw new Error(`Unexpected RPC ${name}`)
       return { error: null, data }
     },
     from: (table: string) => ({ update: (value: Record<string, unknown>) => {
@@ -39,21 +52,104 @@ for (const status of [402, 429, 503]) test(`Firecrawl ${status} stops provider c
     } }),
   }
   runInNewContext(await compiled, {
-    testDb: db, Deno: { env: { get: () => 'synthetic' }, serve: (fn: typeof handler) => { handler = fn } },
-    fetch: async (url: string) => { assert.equal(url, 'https://api.firecrawl.dev/v2/search'); providerCalls++; return new Response(null, { status }) },
+    testDb: db, testAuth: options.denied ? new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }) : {}, Deno: { env: { get: (key: string) => { env.push(key); assert.notEqual(key, 'FIRECRAWL_API_KEY'); return key === 'JEV_API_KEY' ? 'synthetic' : undefined } }, serve: (fn: typeof handler) => { handler = fn } },
+    fetch: async (url: string | URL, init?: RequestInit) => {
+      const target = String(url); fetched.push(target)
+      if (new URL(target).hostname === 'example.org') {
+        if (options.sourceRedirect) return new Response(null, { status: 302, headers: { location: options.sourceRedirect } })
+        return new Response('PRIVATE_PAGE_TEXT Publisher source with exact identity and venue address. '.repeat(10), { status: options.sourceStatus ?? 200, headers: { 'content-type': 'text/html' } })
+      }
+      assert.equal(target, 'https://api.typesafe.ai/v1/systemone')
+      const state = JSON.parse(String(init?.body)).state
+      assert.equal(state.fetched_sources[0].url, 'https://example.org/source')
+      return options.status ? new Response(null, { status: options.status }) : new Response(JSON.stringify(evaluation(options.conflicting)))
+    },
     Response, URL, AbortSignal, TextDecoder, console,
   })
   assert.ok(handler)
-  const response = await handler(new Request('https://example.test', { method: 'POST', body: JSON.stringify({ run_id: 123, dry_run: false, batch: 2 }) }))
-  const body = await response.json()
-  assert.equal(response.status, 503)
-  assert.equal(body.success, false)
-  assert.equal(body.retry, 2)
-  assert.equal(body.applied, 0)
-  assert.equal(body.blocked, 0)
-  assert.equal(providerCalls, 1)
+  const response = await handler(new Request('https://example.test', { method: 'POST', body: options.rawBody ?? JSON.stringify(options.body ?? { run_id: 123, dry_run: false, batch: 2 }) }))
+  return { response, body: await response.json(), finished, updates, fetched, env, rpcCalls }
+}
+
+for (const status of [402, 429, 503]) test(`Jev ${status} stops provider calls, retries leased jobs and records a failed run`, async () => {
+  const { response, body, finished, updates, fetched } = await run({ status })
+  assert.equal(response.status, 503); assert.equal(body.success, false)
+  assert.equal(body.retry, 2); assert.equal(body.applied, 0); assert.equal(body.blocked, 0)
+  assert.equal(fetched.filter(url => url.includes('typesafe.ai')).length, 1)
+  assert.equal(fetched.filter(url => new URL(url).hostname === 'example.org').length, 1)
   assert.equal(finished.length, 2)
-  for (const call of finished) assert.equal((call.p_result as { retry: string }).retry, `Source recovery HTTP ${status}`)
+  for (const call of finished) assert.equal((call.p_result as { retry: string }).retry, `Jev HTTP ${status}`)
   assert.equal(updates.find(update => update.table === 'admin_automation_runs')?.value.status, 'error')
   assert.equal(updates.find(update => update.table === 'admin_automations')?.value.last_run_status, 'error')
+})
+test('known canonical source reaches the unchanged decision gates without Firecrawl configuration', async () => {
+  const { body, finished, fetched } = await run()
+  assert.equal(body.applied, 2); assert.equal(body.retry, 0)
+  assert.equal(fetched.length, 4)
+  for (const call of finished) { assert.equal((call.p_result as { blocker?: string | null }).blocker, null); assert.equal((call.p_evidence as unknown[]).length, 1) }
+})
+test('conflicting identity stays blocked despite a confident action and readable source', async () => {
+  const { body } = await run({ conflicting: true })
+  assert.equal(body.applied, 0); assert.equal(body.blocked, 2)
+})
+test('no source stays explicitly blocked with no outbound requests', async () => {
+  const { body, fetched, finished } = await run({ context: { ...context, related: {} } })
+  assert.equal(body.blocked, 2); assert.equal(body.retry, 0); assert.equal(fetched.length, 0)
+  for (const call of finished) assert.equal((call.p_result as { blocker: string }).blocker, 'missing_source_url')
+})
+test('protected context never reaches a source or Jev', async () => {
+  const { body, fetched } = await run({ context: { ...context, blocker: 'private_review_requires_human' } })
+  assert.equal(body.blocked, 2); assert.equal(fetched.length, 0)
+})
+test('paused registry yielding no leases dispatches no network or decisions and never enables automation', async () => {
+  const { body, fetched, finished, updates } = await run({ noJobs: true })
+  assert.equal(body.examined, 0); assert.equal(fetched.length, 0); assert.equal(finished.length, 0)
+  for (const update of updates) { assert.equal(update.value.enabled, undefined); assert.equal(update.value.consecutive_failures, undefined) }
+})
+
+const probeBody = { source_probe: true, urls: ['https://example.org/source?token=DO_NOT_ECHO'], run_id: 123, dry_run: false, probe: true }
+function assertReadOnly(result: Awaited<ReturnType<typeof run>>) {
+  assert.deepEqual(result.rpcCalls, []); assert.deepEqual(result.updates, []); assert.deepEqual(result.finished, [])
+  assert.deepEqual(result.env, [])
+  assert.ok(result.fetched.every(url => new URL(url).hostname === 'example.org'))
+}
+test('malformed or empty JSON cannot fall through to claiming jobs or recording a run', async () => {
+  for (const rawBody of ['{', '', '{"source_probe":']) {
+    const result = await run({ rawBody })
+    assert.equal(result.response.status, 400)
+    assert.equal(result.fetched.length, 0)
+    assertReadOnly(result)
+  }
+})
+test('authenticated source probe returns metadata only with no DB/model/key access, even when decision flags are supplied', async () => {
+  const result = await run({ body: probeBody })
+  assert.equal(result.response.status, 200); assert.equal(result.body.success, true)
+  assert.equal(result.body.readable, 1); assert.equal(result.body.attempted, 1)
+  assert.equal(result.body.sources[0].host, 'example.org'); assert.ok(result.body.sources[0].characters > 100)
+  assert.deepEqual(Object.keys(result.body.sources[0]).sort(), ['characters', 'host', 'retrieved_at'])
+  assert.doesNotMatch(JSON.stringify(result.body), /PRIVATE_PAGE_TEXT|DO_NOT_ECHO|token=|source_errors/)
+  assertReadOnly(result)
+})
+test('source probe denies unauthenticated callers before network or DB operations', async () => {
+  const result = await run({ body: probeBody, denied: true })
+  assert.equal(result.response.status, 401); assert.equal(result.fetched.length, 0); assertReadOnly(result)
+})
+test('source probe refuses unbounded, malformed and unsafe inputs without network or DB operations', async () => {
+  for (const urls of [undefined, [], Array(5).fill('https://example.org/source'), [123], ['x'.repeat(2049)], ['http://example.org'], ['https://localhost'], ['https://reader@example.org'], ['https://example.org:8443']]) {
+    const result = await run({ body: { source_probe: true, urls } })
+    assert.equal(result.response.status, 400); assert.equal(result.fetched.length, 0); assertReadOnly(result)
+  }
+})
+test('source probe caps successful pages and direct attempts through the same retrieval path', async () => {
+  const result = await run({ body: { source_probe: true, urls: ['a','b','c','d'].map(x => `https://example.org/${x}`) } })
+  assert.equal(result.body.readable, 2); assert.equal(result.body.attempted, 2); assert.equal(result.fetched.length, 2); assertReadOnly(result)
+  const failed = await run({ body: { source_probe: true, urls: ['a','b','c','d'].map(x => `https://example.org/${x}`) }, sourceStatus: 403 })
+  assert.equal(failed.body.readable, 0); assert.equal(failed.body.attempted, 4); assert.equal(failed.body.failed, 4); assertReadOnly(failed)
+})
+test('failed source probe rejects private redirects and omits page content and raw errors without state writes', async () => {
+  const result = await run({ body: probeBody, sourceRedirect: 'http://169.254.169.254/SECRET_REDIRECT' })
+  assert.equal(result.response.status, 200); assert.equal(result.body.success, false)
+  assert.equal(result.body.failed, 1); assert.equal(result.fetched.length, 1)
+  assert.doesNotMatch(JSON.stringify(result.body), /SECRET_REDIRECT|169.254|PRIVATE_PAGE_TEXT|Source|Unsupported/)
+  assertReadOnly(result)
 })

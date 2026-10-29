@@ -269,6 +269,30 @@ with tempfile.TemporaryDirectory(prefix='city-refresh-pg-') as tmp:
         except subprocess.CalledProcessError:
             subprocess.run(command + ['-c', "select pg_get_viewdef('public.city_quality_profile'::regclass,true)"], check=True)
             raise
+        # Recovery of a known automatic pause preserves its recorded failures.
+        resume = (ROOT / 'supabase/migrations/99991793226740_city_wikidata_backpressure_resume.sql').read_text()
+        paused = """
+update public.admin_automations set enabled=false,last_run_status='auto_paused',consecutive_failures=3,
+ action=jsonb_set(action,'{command}',to_jsonb('select length(''/functions/v1/city-factual-backfill {"scope":"qid_gap","batch_limit":20}'')'::text))
+ where slug='city_qid_gap_link';
+delete from cron.job where jobname='city_qid_gap_link';
+"""
+        check_resume = """
+do $$begin
+ if not exists(select 1 from public.admin_automations where slug='city_qid_gap_link' and enabled and consecutive_failures=3 and last_run_status='auto_paused')
+ or not exists(select 1 from cron.job where jobname='city_qid_gap_link' and schedule='*/10 * * * *' and command like 'tracked:%')
+ then raise exception 'Automatic resume lost history/tracking/cadence';end if;
+end$$;
+"""
+        subprocess.run(command, input=paused+resume+check_resume, text=True, check=True, stdout=subprocess.DEVNULL)
+        manual = "update public.admin_automations set enabled=false,last_run_status='disabled' where slug='city_qid_gap_link';delete from cron.job where jobname='city_qid_gap_link';"
+        check_manual = "do $$begin if exists(select 1 from public.admin_automations where slug='city_qid_gap_link' and enabled) or exists(select 1 from cron.job where jobname='city_qid_gap_link') then raise exception 'Resume overrode a human disable';end if;end$$;"
+        subprocess.run(command, input=manual+resume+check_manual, text=True, check=True, stdout=subprocess.DEVNULL)
+        unexpected = "update public.admin_automations set enabled=false,last_run_status='auto_paused',action=jsonb_set(action,'{command}',to_jsonb('select 1'::text)) where slug='city_qid_gap_link';"
+        invalid = subprocess.run(command, input=unexpected+resume, text=True, capture_output=True)
+        if invalid.returncode == 0 or 'refuses an unexpected native command' not in invalid.stderr:
+            raise AssertionError('Resume accepted a replaced native command')
+        subprocess.run(command, input=paused+resume, text=True, check=True, stdout=subprocess.DEVNULL)
         # A human-disabled automation must refuse the whole scheduling repair.
         refusal = "update public.admin_automations set enabled=false,last_run_status='disabled' where slug='city_alias_harvest';\n" + MIGRATION.read_text()
         result = subprocess.run([str(PG / 'psql'), '-h', str(sock), '-p', '55447', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1'], input=refusal, text=True, capture_output=True)
