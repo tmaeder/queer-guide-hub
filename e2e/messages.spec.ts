@@ -1,9 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
 import { preventMessageDelivery } from './support/noMessageDelivery';
+import { preserveInboxFixtures } from './support/inboxFixtureTransport';
 
 // Routing cannot stop service-worker-owned requests. Disable those so no send
 // can bypass the transport fixtures, including delayed DM-digest source writes.
 test.use({ serviceWorkers: 'block' });
+const fixtureGuards = new WeakMap<Page, Awaited<ReturnType<typeof preserveInboxFixtures>>>();
 const deliveryGuards = new WeakMap<Page, Awaited<ReturnType<typeof preventMessageDelivery>>>();
 
 /**
@@ -16,11 +18,11 @@ const deliveryGuards = new WeakMap<Page, Awaited<ReturnType<typeof preventMessag
  * `claude-test` admin user. They are skipped when no signed-in session is
  * available (e.g. PR runs without admin creds).
  *
- * Most mutation flows depend on seeded, test-user-owned fixtures. Re-apply with
- * the SQL below (Supabase MCP / SQL editor) before running locally:
+ * The transport checks read existing, test-user-owned fixtures. Their write
+ * requests are intercepted locally; do not reseed or move production rows:
  *
  *   -- claude-test:   dfec8c70-5b7d-4e31-bf0e-1fc1521a0720  (mailbox_address 'claudetest')
- *   -- claude-test-2: e2e00002-0000-4000-8000-000000000002  (chat partner "Claude Test Two")
+ *   -- claude-test-2: e2e00002-0000-4000-8000-000000000002  (chat partner; display name is mutable)
  *   -- conversation:  e2e00000-0000-4000-8000-0000000000c0  (+ seed message ...c1 from u2)
  *   -- inbound mail:  ...c4 "E2E seeded inbound — open me", ...c5 "E2E seeded inbound — delete me"
  *   -- notification:  ...c3 "E2E seeded alert" (action_url /events)
@@ -35,7 +37,10 @@ const UUID = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 
 const SEED = {
   conversationId: 'e2e00000-0000-4000-8000-0000000000c0',
-  partnerName: 'Claude Test Two',
+  ownerId: 'dfec8c70-5b7d-4e31-bf0e-1fc1521a0720',
+  partnerId: 'e2e00002-0000-4000-8000-000000000002',
+  mailOpenId: 'e2e00000-0000-4000-8000-0000000000c4',
+  mailDeleteId: 'e2e00000-0000-4000-8000-0000000000c5',
   partnerMessage: 'Seeded E2E partner message',
   mailOpen: 'E2E seeded inbound — open me',
   mailDelete: 'E2E seeded inbound — delete me',
@@ -76,6 +81,52 @@ async function requireRailItem(page: Page, label: string) {
   return item;
 }
 
+/** Wait for a completed fresh mail feed before asserting an item is absent. */
+async function gotoMailRail(page: Page) {
+  await gotoInbox(page);
+  const loaded = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === '/rest/v1/mailbox_emails' &&
+      response.request().method() === 'GET' &&
+      url.searchParams.get('folder') === 'in.(inbox,sent)'
+    );
+  });
+  await tab(page, /^mail$/i).click();
+  const response = await loaded;
+  expect(response.ok(), 'Reviewer mail rail must be readable').toBe(true);
+  await response.finished();
+  await expect(page.getByRole('status', { name: 'Loading messages', exact: true })).toHaveCount(0);
+}
+
+/** Resolve the current rail title by stable identity, then verify the real chat. */
+async function gotoSeedConversation(page: Page) {
+  const feed = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === '/rest/v1/rpc/get_inbox_feed' &&
+      response.request().method() === 'POST' &&
+      response.request().postDataJSON()?.p_filter === 'all',
+  );
+  await gotoInbox(page, `?conversation=${SEED.conversationId}`);
+  const response = await feed;
+  expect(response.ok(), 'Reviewer inbox feed must be readable').toBe(true);
+  expect(response.request().postDataJSON().p_user).toBe(SEED.ownerId);
+  const items = await response.json();
+  const conversation = items.find(
+    (item: { id: string }) => item.id === `conv_${SEED.conversationId}`,
+  );
+  test.skip(!conversation, 'Seeded conversation not present in the reviewer inbox.');
+  expect(conversation.kind).toBe('chat');
+  expect(conversation.other_user_id).toBe(SEED.partnerId);
+  expect(conversation.title).toEqual(expect.any(String));
+  expect(conversation.title.trim()).not.toBe('');
+  await expect(
+    page.getByText(conversation.title, { exact: true }).and(page.locator('p.font-medium')),
+  ).toBeVisible();
+  await expect(page.getByText(SEED.partnerMessage).first()).toBeVisible();
+  expect(new URL(page.url()).searchParams.get('conversation')).toBe(SEED.conversationId);
+}
+
 // ---------------------------------------------------------------------------
 // Auth gate — runs without a session.
 // ---------------------------------------------------------------------------
@@ -109,6 +160,14 @@ test.describe('/messages — unified inbox (signed in)', () => {
   // otherwise races page load and intercepts clicks on the Send buttons.
   test.beforeEach(async ({ page }) => {
     deliveryGuards.set(page, await preventMessageDelivery(page.context(), SEED.conversationId));
+    fixtureGuards.set(
+      page,
+      await preserveInboxFixtures(page.context(), {
+        ownerId: SEED.ownerId,
+        conversationId: SEED.conversationId,
+        mailIds: [SEED.mailOpenId, SEED.mailDeleteId],
+      }),
+    );
     await page.addInitScript(() => {
       try {
         localStorage.setItem(
@@ -126,6 +185,10 @@ test.describe('/messages — unified inbox (signed in)', () => {
   });
 
   test.afterEach(async ({ page }) => {
+    expect(
+      fixtureGuards.get(page)?.blockedWrites,
+      'Unexpected fixture mutation was blocked',
+    ).toEqual([]);
     const guard = deliveryGuards.get(page);
     if (guard)
       expect(guard.blockedWrites, 'Unexpected delivery-producing mutation was blocked').toEqual([]);
@@ -183,14 +246,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
   });
 
   test('changing the filter clears a deep-linked selection from the URL', async ({ page }) => {
-    await gotoInbox(page, `?conversation=${SEED.conversationId}`);
-    // Deep-link selects the chat — partner name shows in the detail header.
-    const partner = page.getByText(SEED.partnerName).first();
-    const selected = await partner
-      .waitFor({ state: 'visible', timeout: 15_000 })
-      .then(() => true)
-      .catch(() => false);
-    test.skip(!selected, 'Seeded conversation not present.');
+    await gotoSeedConversation(page);
     await expect(page).toHaveURL(/conversation=/);
     await tab(page, /^mail$/i).click();
     await expect(page).not.toHaveURL(/conversation=/);
@@ -264,15 +320,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
   test('chat: construct a message and reaction without notifying recipients', async ({ page }) => {
     test.setTimeout(60_000); // Seeded inbox reads can be slow; send/reaction transport stays local.
-    await gotoInbox(page, `?conversation=${SEED.conversationId}`);
-    const partner = page.getByText(SEED.partnerName).first();
-    const ok = await partner
-      .waitFor({ state: 'visible', timeout: 15_000 })
-      .then(() => true)
-      .catch(() => false);
-    test.skip(!ok, 'Seeded conversation not present.');
-
-    await expect(page.getByText(SEED.partnerMessage).first()).toBeVisible();
+    await gotoSeedConversation(page);
 
     // Send a message.
     const body = `e2e chat ${Date.now()}`;
@@ -308,14 +356,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
   });
 
   test('chat: reply affordance shows the reply banner', async ({ page }) => {
-    await gotoInbox(page, `?conversation=${SEED.conversationId}`);
-    const seeded = page.getByText(SEED.partnerMessage).first();
-    const ok = await seeded
-      .waitFor({ state: 'visible', timeout: 15_000 })
-      .then(() => true)
-      .catch(() => false);
-    test.skip(!ok, 'Seeded conversation not present.');
-
+    await gotoSeedConversation(page);
     const bubble = page
       .locator('div.relative', { has: page.locator('p.text-sm', { hasText: SEED.partnerMessage }) })
       .last();
@@ -326,45 +367,50 @@ test.describe('/messages — unified inbox (signed in)', () => {
   });
 
   test('chat: sticker picker opens', async ({ page }) => {
-    await gotoInbox(page, `?conversation=${SEED.conversationId}`);
-    const ok = await page
-      .getByText(SEED.partnerName)
-      .first()
-      .waitFor({ state: 'visible', timeout: 15_000 })
-      .then(() => true)
-      .catch(() => false);
-    test.skip(!ok, 'Seeded conversation not present.');
+    await gotoSeedConversation(page);
     await page.getByRole('button', { name: /^stickers$/i }).click();
     await expect(page.getByText(/^stickers$/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test('chat: free-to-meet toggle reveals the ribbon', async ({ page }) => {
-    await gotoInbox(page, `?conversation=${SEED.conversationId}`);
-    const ok = await page
-      .getByText(SEED.partnerName)
-      .first()
-      .waitFor({ state: 'visible', timeout: 15_000 })
-      .then(() => true)
-      .catch(() => false);
-    test.skip(!ok, 'Seeded conversation not present.');
+    await gotoSeedConversation(page);
     const toggle = page.getByRole('button', { name: /free to meet|free now/i }).first();
     await toggle.click();
     await expect(page.getByText(/free to meet right now|marked free to meet/i)).toBeVisible({
       timeout: 10_000,
     });
-    // Reset so re-runs start clean.
+    // Reset the browser-only availability fixture and verify both RPC payloads.
     await toggle.click();
+    await expect.poll(() => fixtureGuards.get(page)?.availabilityRequests).toEqual([60, 0]);
   });
 
-  test('mail: build a reply without delivery, then archive the seeded inbound', async ({
+  test('mail: reply to the existing inbound from its current folder without delivery', async ({
     page,
   }) => {
-    await gotoInbox(page);
-    await tab(page, /^mail$/i).click();
-    const item = await requireRailItem(page, SEED.mailOpen);
-    await item.click();
+    const emailRead = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname === '/rest/v1/mailbox_emails' &&
+        response.request().method() === 'GET' &&
+        url.searchParams.get('id') === `eq.${SEED.mailOpenId}`
+      );
+    });
+    // MailDetail reads by ID independently of the rail's Inbox/Sent folder scope.
+    // This exercises the actual archived row without moving it back to Inbox.
+    await gotoInbox(page, `?email=${SEED.mailOpenId}`);
+    const response = await emailRead;
+    expect(response.ok(), 'Existing inbound fixture must remain reviewer-readable').toBe(true);
+    const email = await response.json();
+    expect(email).toMatchObject({
+      id: SEED.mailOpenId,
+      owner_id: SEED.ownerId,
+      direction: 'inbound',
+      subject: SEED.mailOpen,
+    });
+    expect(['inbox', 'archive']).toContain(email.folder);
     const inboundEmailId = new URL(page.url()).searchParams.get('email');
-    expect(inboundEmailId).toBeTruthy();
+    expect(inboundEmailId).toBe(SEED.mailOpenId);
+    await expect(page.getByRole('heading', { name: SEED.mailOpen, exact: true })).toBeVisible();
 
     await expect(page.getByRole('button', { name: /reply/i })).toBeVisible({ timeout: 15_000 });
     await page.getByRole('button', { name: /reply/i }).click();
@@ -386,10 +432,12 @@ test.describe('/messages — unified inbox (signed in)', () => {
     expect(guard.mailRequests).toEqual([replyBody]);
     await expect(page.getByPlaceholder(/write your reply/i)).toBeHidden();
 
-    // Archive removes it from the inbox folder; a fresh load must not list it.
+    // Keep the archive action and payload assertion, with no production write.
     await page.getByRole('button', { name: /archive/i }).click();
-    await gotoInbox(page);
-    await tab(page, /^mail$/i).click();
+    await expect
+      .poll(() => fixtureGuards.get(page)?.folderRequests)
+      .toEqual([{ id: SEED.mailOpenId, folder: 'archive' }]);
+    await gotoMailRail(page);
     await expect(page.getByText(SEED.mailOpen)).toHaveCount(0, { timeout: 15_000 });
   });
 
@@ -400,9 +448,11 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await item.click();
     await expect(page.getByRole('button', { name: /delete/i })).toBeVisible({ timeout: 15_000 });
     await page.getByRole('button', { name: /delete/i }).click();
+    await expect
+      .poll(() => fixtureGuards.get(page)?.folderRequests)
+      .toEqual([{ id: SEED.mailDeleteId, folder: 'trash' }]);
 
-    await gotoInbox(page);
-    await tab(page, /^mail$/i).click();
+    await gotoMailRail(page);
     await expect(page.getByText(SEED.mailDelete)).toHaveCount(0, { timeout: 15_000 });
   });
 
