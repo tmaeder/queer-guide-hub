@@ -27,6 +27,16 @@ test('normalized source URL arrays retain existing attempt bounds and reject nes
   const result = await recoverSources({ ...context, proposal: { source_content: { normalized: { urls: ['https://example.org/canonical'] } } } }, async () => page())
   assert.equal(result.attempted, 1); assert.equal(result.evidence[0].url, 'https://example.org/canonical')
 })
+test('exact normalized source URL precedes stale detector alternatives without expanding the fetch budget', async () => {
+  const calls: string[] = []
+  const result = await recoverSources({ ...context, urls: ['one','two','three','four'].map(n => `https://example.org/${n}`),
+    proposal: { source_content: { normalized: { urls: ['https://example.org/article'] } } } }, async url => {
+    calls.push(String(url))
+    return String(url).endsWith('/article') ? page() : new Response(null, { status: 404 })
+  })
+  assert.equal(calls[0], 'https://example.org/article')
+  assert.equal(calls.length, 4); assert.equal(result.evidence.length, 1)
+})
 
 test('deduplicates fragments, validates destinations before fetch and bounds attempts', async () => {
   const calls: string[] = []

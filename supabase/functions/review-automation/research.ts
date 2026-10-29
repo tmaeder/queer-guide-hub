@@ -14,6 +14,15 @@ export function sourceCandidates(context: Context): string[] {
       urls.add(url.href)
     } catch { /* Invalid/private/HTTP URLs are not destinations. */ }
   }
+  // The ingested article/event URL is more specific than detector metadata or
+  // a generic operator homepage. Do not let four stale alternatives hide it.
+  const sourceContent = context.proposal?.source_content as { normalized?: unknown } | null | undefined
+  const normalized = sourceContent?.normalized
+  if (normalized && typeof normalized === 'object' && !Array.isArray(normalized)) {
+    const source = normalized as Record<string, unknown>
+    if (Array.isArray(source.urls)) for (const url of source.urls.slice(0, 4)) add(url)
+    add(source.source_url); add(source.url)
+  }
   for (const url of context.urls) add(url)
   let visited = 0
   const walk = (value: unknown, depth = 0) => {

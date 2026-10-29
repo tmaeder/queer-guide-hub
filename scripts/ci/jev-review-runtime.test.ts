@@ -31,6 +31,7 @@ async function run(options: { status?: number; context?: unknown; noJobs?: boole
   const updates: Array<{ table: string; value: Record<string, unknown> }> = []
   const finished: Array<Record<string, unknown>> = []
   const fetched: string[] = [], env: string[] = [], rpcCalls: string[] = []
+  const reservations: Array<Record<string, unknown>> = []
   let handler: ((request: Request) => Promise<Response>) | undefined
   const db = {
     rpc: async (name: string, args: Record<string, unknown>) => {
@@ -38,6 +39,7 @@ async function run(options: { status?: number; context?: unknown; noJobs?: boole
       let data: unknown
       if (name === 'claim_jev_review_jobs') data = jobs
       else if (name === 'reserve_jev_budget') {
+        reservations.push(args)
         if (options.budgetUnavailable) return { data: null, error: { message: 'PRIVATE_DB_ERROR' } }
         data = !options.budgetDenied
       }
@@ -76,7 +78,7 @@ async function run(options: { status?: number; context?: unknown; noJobs?: boole
   })
   assert.ok(handler)
   const response = await handler(new Request('https://example.test', { method: 'POST', body: options.rawBody ?? JSON.stringify(options.body ?? { run_id: 123, dry_run: false, batch: 2 }) }))
-  return { response, body: await response.json(), finished, updates, fetched, env, rpcCalls }
+  return { response, body: await response.json(), finished, updates, fetched, env, rpcCalls, reservations }
 }
 
 for (const status of [402, 429, 503]) test(`Jev ${status} stops provider calls, retries leased jobs and records a failed run`, async () => {
@@ -130,6 +132,13 @@ test('accounting outage and settlement failure stop the batch without applying o
     assert.doesNotMatch(JSON.stringify(body), /PRIVATE_DB_ERROR/)
     assert.equal(fetched.filter(url => url.includes('typesafe.ai')).length, options.budgetUnavailable ? 0 : 1)
   }
+})
+test('previews use the fixed validation cap while production dispatches use the configured production account', async () => {
+  const preview = await run({ body: { dry_run: true, batch: 2, budget_account: 'UNTRUSTED_ACCOUNT' } })
+  assert.equal(preview.reservations.length, 2)
+  for (const reservation of preview.reservations) assert.equal(reservation.p_account, 'validation-2026-10-29')
+  const production = await run()
+  for (const reservation of production.reservations) assert.equal(reservation.p_account, 'synthetic-account')
 })
 
 const probeBody = { source_probe: true, urls: ['https://example.org/source?token=DO_NOT_ECHO'], run_id: 123, dry_run: false, probe: true }

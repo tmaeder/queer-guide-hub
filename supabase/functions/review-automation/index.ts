@@ -6,11 +6,11 @@ import { ProviderError } from './provider.ts'
 import { callJev, createJevBudget, JevBudgetDeferred, JevBudgetError, type JevRequest } from '../_shared/jev-client.ts'
 
 type Job = { case_id: string; lease_token: string; queue_type: string }
-async function evaluate(body: JevRequest, db: ReturnType<typeof getServiceClient>) {
+async function evaluate(body: JevRequest, db: ReturnType<typeof getServiceClient>, account: string) {
   return await callJev(body, {
     apiKey: Deno.env.get('JEV_API_KEY') || Deno.env.get('TYPESAFE_API_KEY') || '',
     caller: 'review-automation',
-    budget: createJevBudget(db, Deno.env.get('JEV_BUDGET_ACCOUNT') || ''),
+    budget: createJevBudget(db, account),
   })
 }
 Deno.serve(async req => {
@@ -34,6 +34,10 @@ Deno.serve(async req => {
     } catch { return errorResponse('source_probe_failed', 502, req) }
   }
   if (!Deno.env.get('JEV_API_KEY') && !Deno.env.get('TYPESAFE_API_KEY')) return errorResponse('Jev API key is not configured', 503, req)
+  // Manual probes/previews consume the lifetime experiment budget, never the
+  // unattended production allowance. Callers cannot supply arbitrary account names.
+  const account = body.probe === true || body.dry_run !== false
+    ? 'validation-2026-10-29' : Deno.env.get('JEV_BUDGET_ACCOUNT') || 'production'
   const started = new Date().toISOString()
   const budgetStarted = Date.now()
   const summary = { examined: 0, applied: 0, blocked: 0, retry: 0, stale: 0, preview: 0, budget_deferred: 0 }
@@ -54,7 +58,7 @@ Deno.serve(async req => {
   try {
     runId = Number.isSafeInteger(body.run_id) ? body.run_id : null
     if (body.probe === true) {
-      const answer = await evaluate({ model: Deno.env.get('JEV_MODEL') || Deno.env.get('TYPESAFE_MODEL') || 'jev-1.14.0', state: 'Synthetic integration test only: 2 + 2 = 4.', questions: { answer: { type: 'choice', instructions: 'Is the arithmetic statement correct?', criteria: { correct: 'The arithmetic is correct.', incorrect: 'The arithmetic is incorrect.' } } } }, db)
+      const answer = await evaluate({ model: Deno.env.get('JEV_MODEL') || Deno.env.get('TYPESAFE_MODEL') || 'jev-1.14.0', state: 'Synthetic integration test only: 2 + 2 = 4.', questions: { answer: { type: 'choice', instructions: 'Is the arithmetic statement correct?', criteria: { correct: 'The arithmetic is correct.', incorrect: 'The arithmetic is incorrect.' } } } }, db, account)
       const probe = answer as { model?: string; answers?: { answer?: { choice?: string } } }
       if (!probe.model || probe.answers?.answer?.choice !== 'correct') throw new Error('Jev synthetic probe failed')
       return jsonResponse({ success: true, configured: true, model: probe.model, probe: 'passed' }, 200, req)
@@ -88,7 +92,7 @@ Deno.serve(async req => {
           else {
             const request = buildQuestions(context, evidence)
             request.model = Deno.env.get('JEV_MODEL') || Deno.env.get('TYPESAFE_MODEL') || request.model
-            const evaluation = parseEvaluation(await evaluate(request, db), context.candidates)
+            const evaluation = parseEvaluation(await evaluate(request, db, account), context.candidates)
             const decision = decide(context, evaluation)
             result = { evaluation, blocker: decision.blocker, policy_version: POLICY_VERSION, source_errors: errors }
           }
