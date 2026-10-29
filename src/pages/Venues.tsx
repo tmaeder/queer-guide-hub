@@ -33,6 +33,7 @@ import { VenuesHero } from '@/components/venues/VenuesHero';
 import { QuickFilters, type QuickFiltersValue } from '@/components/venues/QuickFilters';
 import { VenuesPersonalStrip } from '@/components/venues/VenuesPersonalStrip';
 import { VenuesRails } from '@/components/venues/VenuesRails';
+import { DeferredSection } from '@/components/home/DeferredSection';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { LeaderboardWidget } from '@/components/venues/LeaderboardWidget';
 import { AchievementToast } from '@/components/venues/AchievementToast';
@@ -510,7 +511,21 @@ const Venues = () => {
             >
               {error && !loading && <ErrorState message={error} onRetry={refetch} />}
 
-              {showRails && <GuidesRail filters={{ entityType: 'venue', limit: 6 }} />}
+              {showRails && (
+                <div
+                  data-venue-discovery="guides"
+                  className="flow-root [--guides-height:1106px] md:[--guides-height:651px]"
+                >
+                  <DeferredSection rootMargin="0px" minHeight="var(--guides-height)">
+                    <GuidesRail
+                      filters={{ entityType: 'venue', limit: 6 }}
+                      loadingFallback={
+                        <div aria-hidden="true" style={{ minHeight: 'var(--guides-height)' }} />
+                      }
+                    />
+                  </DeferredSection>
+                </div>
+              )}
 
               {showRails && (
                 <VenuesRails
@@ -521,7 +536,11 @@ const Venues = () => {
               )}
 
               {showRails && (
-                <LeaderboardWidget cityId={primaryCity.id} cityName={primaryCity.name} />
+                <div data-venue-discovery="leaderboard">
+                  <DeferredSection rootMargin="0px" minHeight={316}>
+                    <LeaderboardWidget cityId={primaryCity.id} cityName={primaryCity.name} />
+                  </DeferredSection>
+                </div>
               )}
 
               {loading && (

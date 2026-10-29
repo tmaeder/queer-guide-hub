@@ -1,8 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 // Mirrors ConsolidatedStats: every field is `number | null`, and the page must
@@ -10,7 +10,7 @@ import { MemoryRouter } from 'react-router';
 // 99% of it in the past). The two are deliberately different here so a
 // regression back to `events` shows up as the wrong number on screen.
 vi.mock('@/hooks/useConsolidatedStats', () => ({
-  useConsolidatedStats: () => ({
+  useConsolidatedStats: vi.fn(() => ({
     stats: {
       venues: 21000,
       profiles: null,
@@ -29,7 +29,7 @@ vi.mock('@/hooks/useConsolidatedStats', () => ({
     loading: false,
     error: null,
     refetch: vi.fn(),
-  }),
+  })),
 }));
 vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => false }));
 
@@ -43,6 +43,7 @@ vi.mock('@/hooks/useAuth', () => ({
 }));
 
 import About from '../About';
+import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { REQUIRED_ATTRIBUTION } from '@/lib/attribution';
 import { submissionRegistry } from '@/config/submissionRegistry';
 
@@ -54,7 +55,10 @@ const renderAbout = () =>
   );
 
 describe('About', () => {
+  afterEach(() => vi.unstubAllGlobals());
   beforeEach(() => {
+    // Content contracts exercise the immediate no-observer fallback.
+    vi.stubGlobal('IntersectionObserver', undefined);
     // Signed in by DEFAULT, so the pre-existing colophon assertions keep
     // measuring the colophon. A signed-out default would turn every one of
     // them into a vacuous pass against a section that no longer renders.
@@ -185,6 +189,46 @@ describe('About', () => {
     renderAbout();
     for (const label of ['Venue', 'Event', 'Marketplace', 'Group', 'City']) {
       expect(screen.getByRole('img', { name: label })).toBeInTheDocument();
+    }
+  });
+});
+
+describe('About viewport query ownership', () => {
+  it('renders the masthead first and mounts each approached section independently', () => {
+    const callbacks: IntersectionObserverCallback[] = [];
+    class Observer {
+      constructor(cb: IntersectionObserverCallback) {
+        callbacks.push(cb);
+      }
+      observe() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('IntersectionObserver', Observer);
+    vi.mocked(useConsolidatedStats).mockClear();
+    mockUser = null;
+    try {
+      renderAbout();
+      expect(screen.getByRole('heading', { level: 1 })).toBeVisible();
+      expect(screen.queryByRole('heading', { name: 'Five lines' })).toBeNull();
+      expect(useConsolidatedStats).not.toHaveBeenCalled();
+      act(() =>
+        callbacks[0](
+          [{ isIntersecting: true } as IntersectionObserverEntry],
+          {} as IntersectionObserver,
+        ),
+      );
+      expect(useConsolidatedStats).toHaveBeenCalledTimes(1);
+      expect(screen.queryByRole('heading', { name: 'Five lines' })).toBeNull();
+      act(() =>
+        callbacks[1](
+          [{ isIntersecting: true } as IntersectionObserverEntry],
+          {} as IntersectionObserver,
+        ),
+      );
+      expect(screen.getByRole('heading', { name: 'Five lines' })).toBeVisible();
+      expect(document.querySelector('#sources')).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
     }
   });
 });

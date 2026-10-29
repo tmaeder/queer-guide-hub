@@ -53,7 +53,15 @@ const followLink = async (page: Page, href: string) => {
   const link = page.locator(`a[href="${href}"]`).first();
   // Some links live in the deferred footer; reach its permanent landmark
   // before following them, as a reader would.
-  if ((await link.count()) === 0) await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
+  if ((await link.count()) === 0) {
+    const aboutLines = page.locator('[data-about-section="lines"]');
+    if (href === '/venues' && (await aboutLines.count()) > 0) {
+      // The About line index mounts when a reader approaches it.
+      await aboutLines.scrollIntoViewIfNeeded();
+    } else {
+      await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
+    }
+  }
   await expect(link).toHaveCount(1);
   await link.evaluate((a: HTMLElement) => a.click());
   await page.waitForURL(`**${href}`);
