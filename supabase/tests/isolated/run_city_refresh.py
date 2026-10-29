@@ -8,6 +8,27 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 PG = Path(os.environ.get('PG_BIN', '/opt/homebrew/opt/postgresql@17/bin'))
 MIGRATION = ROOT / 'supabase/migrations/99991793214974_city_refresh_fair_bounded_drain.sql'
+INDEX_MIGRATION = ROOT / 'supabase/migrations/99991793230333_city_refresh_index_only_candidates.sql'
+SELECTOR_BEFORE = """
+create temp table selector_before as
+select scope,lim,(select coalesce(jsonb_agg(to_jsonb(d)-'ordinality' order by d.ordinality),'[]'::jsonb)
+ from public.cities_due_for_refresh(lim,scope) with ordinality d) as receipt
+from unnest(array['qid_gap','alias_gap','all','content_first','content_only',null,'unknown']::text[]) scope
+cross join unnest(array[null,0,1,3,20,5000]::integer[]) lim;
+"""
+SELECTOR_AFTER = """
+set plan_cache_mode=force_generic_plan;
+do $$declare r record;actual jsonb;begin
+ for r in select * from selector_before loop
+  select coalesce(jsonb_agg(to_jsonb(d)-'ordinality' order by d.ordinality),'[]'::jsonb)
+  into actual from public.cities_due_for_refresh(r.lim,r.scope) with ordinality d;
+  if actual is distinct from r.receipt then
+   raise exception 'Indexed selector changed full rows/order for scope %, limit %',r.scope,r.lim;
+  end if;
+ end loop;
+end$$;
+reset plan_cache_mode;
+"""
 SCHEMA = """
 create role anon; create role authenticated; create role service_role;
 create schema cron;
@@ -39,6 +60,8 @@ create view public.city_quality_profile with(security_barrier=true) as
 grant select on public.city_quality_profile to service_role;
 create table public.admin_automations(id uuid,slug text,enabled boolean,
  last_run_status text,consecutive_failures integer,schedule text,action jsonb,description text);
+create table public.admin_automation_runs(id bigint,automation_slug text,status text,summary jsonb,
+ started_at timestamptz,finished_at timestamptz);
 create table cron.job(jobname text primary key,schedule text,command text);
 create function cron.schedule(text,text,text) returns bigint language sql as $$
  insert into cron.job values($1,$2,$3) on conflict(jobname) do update
@@ -265,7 +288,7 @@ with tempfile.TemporaryDirectory(prefix='city-refresh-pg-') as tmp:
     try:
         command = [str(PG / 'psql'), '-h', str(sock), '-p', '55447', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1']
         try:
-            subprocess.run(command, input=SCHEMA + MIGRATION.read_text() + CHECKS, text=True, check=True, stdout=subprocess.DEVNULL)
+            subprocess.run(command, input=SCHEMA + MIGRATION.read_text() + SELECTOR_BEFORE + INDEX_MIGRATION.read_text() + SELECTOR_AFTER + CHECKS, text=True, check=True, stdout=subprocess.DEVNULL)
         except subprocess.CalledProcessError:
             subprocess.run(command + ['-c', "select pg_get_viewdef('public.city_quality_profile'::regclass,true)"], check=True)
             raise
@@ -293,11 +316,47 @@ end$$;
         if invalid.returncode == 0 or 'refuses an unexpected native command' not in invalid.stderr:
             raise AssertionError('Resume accepted a replaced native command')
         subprocess.run(command, input=paused+resume, text=True, check=True, stdout=subprocess.DEVNULL)
+        # The subsequent provider recovery must match the latest recorded cause.
+        busy_resume = (ROOT / 'supabase/migrations/99991793230334_city_cirrus_busy_recovery.sql').read_text()
+        busy = paused + """
+update public.admin_automations set consecutive_failures=4 where slug='city_qid_gap_link';
+insert into public.admin_automations values(md5('jev')::uuid,'review_jev',false,'error',3,'4-59/5 * * * *','{}','Keep paused');
+insert into public.admin_automation_runs values(1,'city_qid_gap_link','error',
+ jsonb_build_object('requests',jsonb_build_array(jsonb_build_object('status_code',503,
+ 'body','{"source_error": "cirrussearch-too-busy-error"}'))),now(),now());
+"""
+        check_busy = """
+do $$begin
+ if not exists(select 1 from public.admin_automations where slug='city_qid_gap_link' and enabled and consecutive_failures=4 and last_run_status='auto_paused')
+ or not exists(select 1 from cron.job where jobname='city_qid_gap_link' and schedule='*/10 * * * *' and command like 'tracked:%')
+ or(select count(*) from public.admin_automation_runs)<>1
+ or exists(select 1 from public.admin_automations where slug='review_jev' and (enabled or consecutive_failures<>3 or last_run_status<>'error'))
+ or exists(select 1 from cron.job where jobname='review_jev')
+ then raise exception 'Known busy recovery changed history, cadence, runs or Jev pause';end if;
+end$$;
+"""
+        subprocess.run(command, input=busy+busy_resume+busy_resume+check_busy, text=True, check=True, stdout=subprocess.DEVNULL)
+        no_resume = "do $$begin if exists(select 1 from public.admin_automations where slug='city_qid_gap_link' and enabled) or exists(select 1 from cron.job where jobname='city_qid_gap_link') then raise exception 'Provider recovery overrode a human/unknown/different cause';end if;end$$;"
+        subprocess.run(command, input=manual+busy_resume+no_resume, text=True, check=True, stdout=subprocess.DEVNULL)
+        disable_busy = "update public.admin_automations set enabled=false,last_run_status='auto_paused' where slug='city_qid_gap_link';delete from cron.job where jobname='city_qid_gap_link';"
+        known_again = "update public.admin_automation_runs set status='error',summary=jsonb_build_object('requests',jsonb_build_array(jsonb_build_object('status_code',503,'body','{\"source_error\":\"cirrussearch-too-busy-error\"}')));"
+        for outcome in [
+            "update public.admin_automation_runs set summary='{}';",
+            "update public.admin_automation_runs set summary='{" + '"requests":{}' + "}';",
+            "update public.admin_automation_runs set summary='{" + '"requests":[{"status_code":503,"body":"unrelated provider failure"}]' + "}';",
+            known_again + "update public.admin_automation_runs set status='success';",
+            known_again + "update public.admin_automation_runs set summary=jsonb_set(summary,'{requests,0,status_code}','500'::jsonb);",
+        ]:
+            subprocess.run(command, input=disable_busy+outcome+busy_resume+no_resume, text=True, check=True, stdout=subprocess.DEVNULL)
+        invalid_busy = subprocess.run(command, input=unexpected+known_again+busy_resume, text=True, capture_output=True)
+        if invalid_busy.returncode == 0 or 'refuses an unexpected native command' not in invalid_busy.stderr:
+            raise AssertionError('Provider recovery accepted a replaced native command')
+        subprocess.run(command, input=paused+resume, text=True, check=True, stdout=subprocess.DEVNULL)
         # A human-disabled automation must refuse the whole scheduling repair.
         refusal = "update public.admin_automations set enabled=false,last_run_status='disabled' where slug='city_alias_harvest';\n" + MIGRATION.read_text()
         result = subprocess.run([str(PG / 'psql'), '-h', str(sock), '-p', '55447', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1'], input=refusal, text=True, capture_output=True)
         if result.returncode == 0 or 'refuses to override a manually disabled job' not in result.stderr:
             raise AssertionError('Manual pause protection was not enforced')
-        print('PASS: fair bounded queues; scopes/ACL/view options; guarded city+alias transactions; xmin/provenance staleness and replay refusal; human decisions/holds; protected fields; rollback; manual pause refusal')
+        print('PASS: indexed selector full-row/order equivalence across scopes/limits and generic plans; fair bounded queues; scopes/ACL/view options; guarded city+alias transactions; xmin/provenance staleness and replay refusal; human decisions/holds; protected fields; rollback; manual/unknown-cause pause refusal and Jev pause preserved')
     finally:
         subprocess.run([str(PG / 'pg_ctl'), '-D', str(data), '-m', 'fast', '-w', 'stop'], check=True, stdout=subprocess.DEVNULL)

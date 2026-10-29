@@ -41,3 +41,26 @@ Deno.test('HTTP429 respects the same bounded backoff and preserves request heade
   } }), valid)
   equal(delays, [5000])
 })
+Deno.test('observed CirrusSearch busy and documented temporary backend errors back off before retry', async () => {
+  for (const code of ['cirrussearch-too-busy-error', 'cirrussearch-regex-too-busy-error', 'cirrussearch-backend-error']) {
+    let calls = 0; const delays: number[] = []
+    equal(await readWikidataJson(url, 'fixture', { sleep: ms => { delays.push(ms); return Promise.resolve() }, fetcher: () => Promise.resolve(++calls === 1 ? response({ error: { code } }) : response(valid)) }), valid)
+    equal(calls, 2); equal(delays, [5000])
+  }
+})
+Deno.test('persistent CirrusSearch busy stops after the retry budget and honors long deferral', async () => {
+  for (const wait of [5, 90]) {
+    let calls = 0; const delays: number[] = []
+    await rejects(() => readWikidataJson(url, 'fixture', { sleep: ms => { delays.push(ms); return Promise.resolve() }, fetcher: () => {
+      calls++; return Promise.resolve(response({ error: { code: 'cirrussearch-too-busy-error' } }, { 'Retry-After': String(wait) }))
+    } }), (e: unknown) => e instanceof WikidataReadError && e.retryable && e.retryAfterSeconds === wait)
+    equal(calls, wait === 5 ? 3 : 1); equal(delays, wait === 5 ? [5000, 5000] : [])
+  }
+})
+Deno.test('a permanent CirrusSearch syntax error is never retried as overload', async () => {
+  let calls = 0
+  await rejects(() => readWikidataJson(url, 'fixture', { sleep: () => { throw Error('must not retry') }, fetcher: () => {
+    calls++; return Promise.resolve(response({ error: { code: 'cirrussearch-query-too-complex-error' } }))
+  } }), (e: unknown) => e instanceof WikidataReadError && !e.retryable)
+  equal(calls, 1)
+})
