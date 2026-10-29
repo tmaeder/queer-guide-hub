@@ -1,12 +1,15 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { screen, fireEvent, act } from '@testing-library/react';
 import { renderWithProviders } from '@/test/test-utils';
 import type { DirectoryCity } from '@/hooks/useCitiesDirectory';
 
-const { useDirectoryMock } = vi.hoisted(() => ({ useDirectoryMock: vi.fn() }));
+const { useDirectoryMock, usePrideMock } = vi.hoisted(() => ({
+  useDirectoryMock: vi.fn(),
+  usePrideMock: vi.fn(),
+}));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -23,6 +26,7 @@ vi.mock('@/hooks/useCitiesDirectory', () => ({
   useCitiesDirectory: useDirectoryMock,
 }));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
+vi.mock('@/hooks/usePrideCalendar', () => ({ usePrideCalendar: usePrideMock }));
 vi.mock('../cities/CitiesMapPane', () => ({
   CitiesMapPane: () => <div data-testid="map-pane" />,
 }));
@@ -82,9 +86,43 @@ function directory(over: Record<string, unknown> = {}) {
   };
 }
 
-beforeEach(() => useDirectoryMock.mockReset());
+beforeEach(() => {
+  useDirectoryMock.mockReset();
+  usePrideMock.mockReset().mockReturnValue({ data: [] });
+  vi.stubGlobal('IntersectionObserver', undefined);
+});
+afterEach(() => vi.unstubAllGlobals());
 
 describe('Cities page', () => {
+  it('keeps full directory controls ready while cards and Pride queries wait for the viewport', () => {
+    const callbacks: IntersectionObserverCallback[] = [];
+    vi.stubGlobal('IntersectionObserver', class {
+      constructor(callback: IntersectionObserverCallback) { callbacks.push(callback); }
+      observe() {}
+      disconnect() {}
+    });
+    useDirectoryMock.mockReturnValue(directory());
+    renderWithProviders(<Cities />, { route: '/cities' });
+    expect(screen.getByRole('status')).toHaveTextContent('2 of 2 cities');
+    expect(screen.getByRole('textbox', { name: 'Search cities' })).toBeVisible();
+    expect(screen.queryByText('Berlin')).not.toBeInTheDocument();
+    expect(usePrideMock).not.toHaveBeenCalled();
+    expect(callbacks.length).toBeGreaterThan(0);
+    act(() => callbacks.forEach((callback) => callback(
+      [{ isIntersecting: true }] as IntersectionObserverEntry[],
+      {} as IntersectionObserver,
+    )));
+    expect(screen.getByText('Berlin')).toBeInTheDocument();
+    expect(screen.getByText('Madrid')).toBeInTheDocument();
+    expect(usePrideMock).toHaveBeenCalled();
+    expect(screen.getByRole('status')).toHaveTextContent('2 of 2 cities');
+    act(() => callbacks.forEach((callback) => callback(
+      [{ isIntersecting: false }] as IntersectionObserverEntry[],
+      {} as IntersectionObserver,
+    )));
+    expect(screen.getByText('Berlin')).toBeInTheDocument();
+  });
+
   it('renders skeletons while loading, not city cards', () => {
     useDirectoryMock.mockReturnValue(
       directory({ cities: [], filtered: [], continents: [], loading: true }),
