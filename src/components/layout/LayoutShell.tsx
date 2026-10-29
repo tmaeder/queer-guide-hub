@@ -89,6 +89,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   const isFullBleedMap = isMapRoute(pathname);
   const isAdmin = isAdminRoute(pathname);
   const isHome = stripLocale(pathname) === '/';
+  const isCitiesIndex = /^\/cities\/?$/.test(stripLocale(pathname));
   // Panel 09: single-purpose flows and account screens get the one-line paper
   // footer instead of the full ink plate. See isCompactFooterRoute.
   const footerVariant = isCompactFooterRoute(pathname) ? 'compact' : 'full';
@@ -100,9 +101,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   // tab switches don't trigger a full fade (only true route changes do).
 
   const tree = (
-    <div
-      className="min-h-screen flex flex-col bg-background"
-    >
+    <div className="min-h-screen flex flex-col bg-background">
       {/* Skip link for keyboard users (a11y: WCAG 2.4.1). AdminShell renders
         its own ("Skip to admin content"), so this one would just be a
         competing first tab stop inside the console. */}
@@ -176,10 +175,12 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           AnimatePresence mode="wait" wrapper here both duplicated that fade
           and held every incoming route's paint hostage to the exit animation,
           while chaining framer-motion onto the entry bundle. */}
-      {/* Keep the footer below the fold while the lazy homepage is pending.
-          Index already reserves a full viewport once it mounts; a shorter
-          loading shell briefly exposed the footer, then shifted it away. */}
-      <div className={`relative z-10 flex-1 flex flex-col${isHome ? ' min-h-screen' : ''}`}>
+      {/* Keep the footer below the fold while the lazy homepage or cities
+          directory is pending. Both reserve a tall viewport once mounted;
+          a shorter loading shell exposes the footer, then shifts it away. */}
+      <div
+        className={`relative z-10 flex-1 flex flex-col${isHome || isCitiesIndex ? ' min-h-screen' : ''}`}
+      >
         {children}
       </div>
       {!isFullBleedMap && !isAdmin && (
