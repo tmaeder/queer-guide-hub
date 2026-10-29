@@ -20,13 +20,13 @@ const compiled = build({
 const context = { item: { queue_type: 'event-quality', title: 'Synthetic', risk: 'integrity' }, record: null, proposal: null, related: { venue_candidates: [{ website: 'https://example.org/source' }] }, research: null, candidates: [{ id: 'approve', action: 'approve', payload: {}, explanation: 'Synthetic' }], urls: [], input_hash: 'synthetic' }
 function evaluation(conflicting = false) {
   const choice = (selected: string, options: string[]) => ({ type: 'choice', choice: selected, confidence: 0.999, probabilities: Object.fromEntries(options.map(x => [x, x === selected ? 1 : 0])) })
-  return { model: 'jev-test', answers: {
+  return { model: 'jev-1.14.0', usage: { input_tokens: 100, output_tokens: 50 }, answers: {
     decision: choice('approve', ['approve', 'abstain']), support: choice(conflicting ? 'conflicting' : 'supported', ['supported', 'missing', 'conflicting']),
     support_approve: choice('supported', ['supported', 'missing', 'conflicting']), risk: choice('routine', ['routine', 'human', 'sensitive']),
     reason: choice(conflicting ? 'conflicting_identity' : 'verified', ['verified', 'missing_source', 'conflicting_identity', 'protected_review', 'insufficient_confidence', 'invalid_proposal']),
   } }
 }
-async function run(options: { status?: number; context?: unknown; noJobs?: boolean; conflicting?: boolean; body?: unknown; rawBody?: string; denied?: boolean; sourceStatus?: number; sourceRedirect?: string } = {}) {
+async function run(options: { status?: number; context?: unknown; noJobs?: boolean; conflicting?: boolean; body?: unknown; rawBody?: string; denied?: boolean; sourceStatus?: number; sourceRedirect?: string; budgetDenied?: boolean; budgetUnavailable?: boolean; settlementUnavailable?: boolean } = {}) {
   const jobs = options.noJobs ? [] : [1, 2].map(n => ({ case_id: `case-${n}`, lease_token: 'lease', queue_type: 'event-quality' }))
   const updates: Array<{ table: string; value: Record<string, unknown> }> = []
   const finished: Array<Record<string, unknown>> = []
@@ -37,6 +37,14 @@ async function run(options: { status?: number; context?: unknown; noJobs?: boole
       rpcCalls.push(name)
       let data: unknown
       if (name === 'claim_jev_review_jobs') data = jobs
+      else if (name === 'reserve_jev_budget') {
+        if (options.budgetUnavailable) return { data: null, error: { message: 'PRIVATE_DB_ERROR' } }
+        data = !options.budgetDenied
+      }
+      else if (name === 'settle_jev_budget') {
+        if (options.settlementUnavailable) return { data: null, error: { message: 'PRIVATE_DB_ERROR' } }
+        data = true
+      }
       else if (name === 'get_jev_review_context') data = options.context ?? context
       else if (name === 'finish_jev_review_job') {
         finished.push(args)
@@ -52,7 +60,7 @@ async function run(options: { status?: number; context?: unknown; noJobs?: boole
     } }),
   }
   runInNewContext(await compiled, {
-    testDb: db, testAuth: options.denied ? new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }) : {}, Deno: { env: { get: (key: string) => { env.push(key); assert.notEqual(key, 'FIRECRAWL_API_KEY'); return key === 'JEV_API_KEY' ? 'synthetic' : undefined } }, serve: (fn: typeof handler) => { handler = fn } },
+    testDb: db, testAuth: options.denied ? new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }) : {}, Deno: { env: { get: (key: string) => { env.push(key); assert.notEqual(key, 'FIRECRAWL_API_KEY'); return key === 'JEV_API_KEY' ? 'synthetic' : key === 'JEV_BUDGET_ACCOUNT' ? 'synthetic-account' : undefined } }, serve: (fn: typeof handler) => { handler = fn } },
     fetch: async (url: string | URL, init?: RequestInit) => {
       const target = String(url); fetched.push(target)
       if (new URL(target).hostname === 'example.org') {
@@ -64,7 +72,7 @@ async function run(options: { status?: number; context?: unknown; noJobs?: boole
       assert.equal(state.fetched_sources[0].url, 'https://example.org/source')
       return options.status ? new Response(null, { status: options.status }) : new Response(JSON.stringify(evaluation(options.conflicting)))
     },
-    Response, URL, AbortSignal, TextDecoder, console,
+    Response, URL, AbortSignal, TextDecoder, TextEncoder, crypto, console,
   })
   assert.ok(handler)
   const response = await handler(new Request('https://example.test', { method: 'POST', body: options.rawBody ?? JSON.stringify(options.body ?? { run_id: 123, dry_run: false, batch: 2 }) }))
@@ -105,6 +113,23 @@ test('paused registry yielding no leases dispatches no network or decisions and 
   const { body, fetched, finished, updates } = await run({ noJobs: true })
   assert.equal(body.examined, 0); assert.equal(fetched.length, 0); assert.equal(finished.length, 0)
   for (const update of updates) { assert.equal(update.value.enabled, undefined); assert.equal(update.value.consecutive_failures, undefined) }
+})
+test('budget exhaustion defers leased cases without a provider call, evidence blocker or auto-pause failure', async () => {
+  const { response, body, finished, fetched, updates, rpcCalls } = await run({ budgetDenied: true })
+  assert.equal(response.status, 200); assert.equal(body.success, true)
+  assert.equal(body.budget_deferred, 2); assert.equal(body.retry, 2); assert.equal(body.blocked, 0); assert.equal(body.applied, 0)
+  assert.equal(fetched.filter(url => url.includes('typesafe.ai')).length, 0)
+  assert.equal(rpcCalls.filter(name => name === 'reserve_jev_budget').length, 1)
+  for (const call of finished) assert.equal((call.p_result as { retry: string }).retry, 'Jev budget deferred')
+  assert.equal(updates.find(update => update.table === 'admin_automation_runs')?.value.status, 'success')
+})
+test('accounting outage and settlement failure stop the batch without applying or leaking errors', async () => {
+  for (const options of [{ budgetUnavailable: true }, { settlementUnavailable: true }]) {
+    const { response, body, fetched } = await run(options)
+    assert.equal(response.status, 503); assert.equal(body.applied, 0); assert.equal(body.retry, 2)
+    assert.doesNotMatch(JSON.stringify(body), /PRIVATE_DB_ERROR/)
+    assert.equal(fetched.filter(url => url.includes('typesafe.ai')).length, options.budgetUnavailable ? 0 : 1)
+  }
 })
 
 const probeBody = { source_probe: true, urls: ['https://example.org/source?token=DO_NOT_ECHO'], run_id: 123, dry_run: false, probe: true }

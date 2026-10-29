@@ -1,6 +1,2 @@
-/** Operational provider failures stop the batch without turning cases into evidence blockers. */
-export class ProviderError extends Error {
-  constructor(provider: string, readonly status: number) {
-    super(`${provider} HTTP ${status}`)
-  }
-}
+/** Compatibility export: all Jev consumers share the same provider error identity. */
+export { JevProviderError as ProviderError } from '../_shared/jev-client.ts'
