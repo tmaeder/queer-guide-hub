@@ -51,10 +51,20 @@ export function reuseInlinedCss(code: string): string {
 export function inlineEntryCss(): Plugin {
   let outDir: string;
   let preloadHelperPatched = false;
+  let bundlingFailed = false;
   return {
     name: 'inline-entry-css',
     apply: 'build',
     enforce: 'post',
+    buildStart() {
+      bundlingFailed = false;
+    },
+    buildEnd(error) {
+      if (error) bundlingFailed = true;
+    },
+    renderError() {
+      bundlingFailed = true;
+    },
     configResolved(config) {
       outDir = path.resolve(config.root, config.build.outDir);
     },
@@ -64,6 +74,8 @@ export function inlineEntryCss(): Plugin {
       return { code: reuseInlinedCss(code), map: null };
     },
     closeBundle() {
+      // Preserve the original compiler failure when no HTML was emitted.
+      if (bundlingFailed) return;
       if (!preloadHelperPatched) throw new Error('Vite preload helper was not transformed');
       const htmlPath = path.join(outDir, 'index.html');
       const html = fs.readFileSync(htmlPath, 'utf8');

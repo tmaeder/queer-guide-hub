@@ -1,11 +1,23 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  inlineEntryCss,
   inlineCssUrls,
   inlineEntryCssHtml,
   reuseInlinedCss,
 } from '../../../scripts/vite/inline-entry-css';
 
 describe('entry stylesheet delivery', () => {
+  it('does not replace a compiler failure with a missing-output cleanup error', () => {
+    for (const hook of ['buildEnd', 'renderError'] as const) {
+      const plugin = inlineEntryCss();
+      const handler = plugin[hook];
+      const close = plugin.closeBundle;
+      if (typeof handler !== 'function' || typeof close !== 'function')
+        throw new Error('Expected build lifecycle handlers');
+      Reflect.apply(handler, {}, [new Error('Original compiler error')]);
+      expect(() => Reflect.apply(close, {}, [])).not.toThrow();
+    }
+  });
   it('registers actual inline styles with the preload helper and rejects unknown helpers', () => {
     const code = 'const links = document.getElementsByTagName("link");';
     const rewritten = reuseInlinedCss(code);

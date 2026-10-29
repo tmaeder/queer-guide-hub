@@ -7,8 +7,10 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { inlineEntryCss } from './scripts/vite/inline-entry-css.ts';
+import { startupChunk } from './scripts/vite/startup-chunk.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const startup = startupChunk(path.join(__dirname, 'src'));
 
 // The commit this bundle was built from. Names the build in /build-id.txt
 // (src/utils/buildVersion.ts) and is the Sentry release, both for the
@@ -162,6 +164,7 @@ export default defineConfig(({ mode }) => ({
     cfRocketLoaderBypass(),
     emitBuildIdFile(),
     inlineEntryCss(),
+    startup.plugin,
     mode === 'production' &&
       sentryVitePlugin({
         org: process.env.SENTRY_ORG || 'maedertobiassimon',
@@ -267,6 +270,9 @@ export default defineConfig(({ mode }) => ({
           minModuleSize: 0,
           minShareCount: 1,
           groups: [
+            // Consolidate only source modules already statically needed by the
+            // app bootstrap. The tiny first-paint closure and lazy routes stay out.
+            startup.group,
             // __vitePreload helper → vendor (must win, hence highest priority)
             { name: 'vendor', test: /preload-helper/, priority: 100 },
             // Map glyph serialization uses react-dom/server only on map routes.

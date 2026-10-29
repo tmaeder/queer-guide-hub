@@ -105,4 +105,33 @@ test.describe('stylesheet reuse after app startup', () => {
       release();
     }
   });
+  for (const path of ['/cities', '/de/cities']) {
+    test(`cities route keeps its footer below the viewport while code is pending on ${path}`, async ({
+      page,
+    }) => {
+      let release!: () => void;
+      let requested = false;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      await page.route(/\/assets\/js\/Cities-[^/]+\.js$/, async (route) => {
+        requested = true;
+        await gate;
+        await route.continue();
+      });
+      try {
+        await page.goto(path, { waitUntil: 'domcontentloaded' });
+        await expect.poll(() => requested).toBe(true);
+        const footer = page.locator('[data-site-footer]');
+        await expect(footer).toBeAttached();
+        const bounds = await footer.boundingBox();
+        expect(bounds).not.toBeNull();
+        expect(bounds!.y).toBeGreaterThanOrEqual(page.viewportSize()!.height);
+        release();
+        await expect(page.locator('main#main-content h1')).toBeVisible();
+      } finally {
+        release();
+      }
+    });
+  }
 });

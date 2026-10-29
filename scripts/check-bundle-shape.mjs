@@ -99,31 +99,44 @@ const HEAVY_UNREACHABLE =
   /^(recharts|tiptap|graph|exceljs|pdfjs|mammoth|maplibre|xyflow|dnd-kit|framer-motion|sentry|react-server)-/;
 
 const importRe = /from\s*"\.\/([A-Za-z0-9._-]+\.js)"|import\s*"\.\/([A-Za-z0-9._-]+\.js)"/g;
-const closure = new Set();
+function staticClosure(initialFiles) {
+  const visited = new Set();
+  const pending = [...initialFiles];
+  while (pending.length) {
+    const file = pending.pop();
+    if (visited.has(file)) continue;
+    visited.add(file);
+    const contents = readFileSync(join(dist, file), 'utf8');
+    for (const match of contents.matchAll(importRe)) {
+      const dependency = match[1] || match[2];
+      if (dependency && !visited.has(dependency)) pending.push(dependency);
+    }
+  }
+  return visited;
+}
+
+// Keep the early document enhancement entry small. A chunking group that
+// accidentally captures its shared cache healer can eagerly import the whole
+// app while still passing the full-startup byte budget below.
+const paintClosure = staticClosure(indexChunks);
+const paintKb = [...paintClosure].reduce(
+  (total, file) => total + statSync(join(dist, file)).size / 1024,
+  0,
+);
+if (paintKb > 24) {
+  console.error(`::error::First-paint entry closure (${paintKb.toFixed(0)}KB) exceeds 24KB`);
+  failed = true;
+}
+
 // Web Vitals is dynamically imported at boot, so it has the same performance
 // budget as the static shell. Shared web-vitals helpers once landed in Sentry,
 // bypassing the consent-gated SDK loader through this startup import.
 // The application bootstrap is imported just after the public document paints;
 // retain the startup budget even though its graph no longer blocks that paint.
-const queue = [
+const closure = staticClosure([
   ...indexChunks,
-  ...files.filter((f) => /^(?:webVitals|app-bootstrap)-.*\.js$/.test(f)),
-];
-while (queue.length) {
-  const f = queue.pop();
-  if (closure.has(f)) continue;
-  closure.add(f);
-  let contents;
-  try {
-    contents = readFileSync(join(dist, f), 'utf8');
-  } catch {
-    continue;
-  }
-  for (const m of contents.matchAll(importRe)) {
-    const dep = m[1] || m[2];
-    if (dep && !closure.has(dep)) queue.push(dep);
-  }
-}
+  ...files.filter((file) => /^(?:webVitals|app-bootstrap)-.*\.js$/.test(file)),
+]);
 
 let closureKb = 0;
 for (const f of closure) {
