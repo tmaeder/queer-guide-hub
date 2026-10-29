@@ -1,14 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { Globe } from '@/components/icons';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Globe, ChevronDown } from '@/components/icons';
+
 import {
   SUPPORTED_LOCALES,
   DEFAULT_LOCALE,
@@ -19,7 +12,6 @@ import type { SupportedLocale } from '@/i18n/languages';
 
 export function LanguageSwitcher() {
   const { i18n, t } = useTranslation();
-  const [optionsReady, setOptionsReady] = useState(false);
   // Raw navigate: handleChange already computes the fully locale-prefixed
   // target. useLocalizedNavigate would re-prefix with the CURRENT route locale
   // (still set at click time), so switching away from a non-default locale
@@ -54,46 +46,28 @@ export function LanguageSwitcher() {
   };
 
   return (
-    <Select
-      value={currentLocale}
-      onValueChange={handleChange}
-      onOpenChange={(open) => {
-        if (open) setOptionsReady(true);
-      }}
-    >
-      <SelectTrigger
-        onFocus={() => setOptionsReady(true)}
-        onPointerEnter={() => setOptionsReady(true)}
-        // Translated — this was hardcoded English on the LANGUAGE switcher,
-        // i.e. unreadable to exactly the user reaching for it.
-        aria-label={t('i18n.selectLanguage', 'Select language')}
-        // `height: 36` is the DECLARED intent and is not what renders: the base
-        // rule in index.css gives every `select`/`button` a 44px min-height,
-        // which wins over `height` at the box-model level. Left as-is because
-        // the 44px target is the correct outcome; noted so a reader does not
-        // believe this is a 36px control.
-        style={{
-          width: 'auto',
-          minWidth: 0,
-          height: 36,
-          padding: '0 8px',
-          border: 'none',
-          background: 'transparent',
-        }}
-        className="gap-1"
-      >
-        <Globe size={16} className="shrink-0" />
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {/* The current value stays available immediately. Prime the remaining
-            closed-menu collection on focus, pointer entry, or first opening. */}
-        {SUPPORTED_LOCALES.filter((lang) => optionsReady || lang === currentLocale).map((lang) => (
-          <SelectItem key={lang} value={lang}>
-            <span className="text-13">{LANGUAGE_NAMES[lang]}</span>
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="inline-flex items-center gap-1">
+      <Globe size={16} className="shrink-0" aria-hidden="true" />
+      <div className="relative">
+        <select
+          value={currentLocale}
+          onChange={(event) => handleChange(event.target.value)}
+          aria-label={t('i18n.selectLanguage', 'Select language')}
+          className="cursor-pointer appearance-none rounded-element bg-transparent py-0 pl-1 pr-6 text-13 text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          style={{ height: 36, border: 'none' }}
+        >
+          {SUPPORTED_LOCALES.map((lang) => (
+            <option key={lang} value={lang} className="bg-background text-foreground">
+              {LANGUAGE_NAMES[lang]}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          size={14}
+          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 opacity-50"
+          aria-hidden="true"
+        />
+      </div>
+    </div>
   );
 }

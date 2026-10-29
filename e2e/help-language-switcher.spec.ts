@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 // including /help. Switch DE → EN → DE on /help and assert the
 // active locale carries through each time.
 //
-// The switcher is a Radix Select (src/components/i18n/LanguageSwitcher.tsx). The
+// The switcher is a native select (src/components/i18n/LanguageSwitcher.tsx). The
 // default locale (en) is UNPREFIXED — switching to English lands on /help, not
 // /en/help.
 //
@@ -38,11 +38,7 @@ test.describe('@p3-9 /help language switcher round-trip', () => {
 
     const switcher = page.getByRole('combobox', { name: LANGUAGE_SWITCHER }).first();
     await switcher.scrollIntoViewIfNeeded();
-    await switcher.click();
-    await page
-      .getByRole('option', { name: /english/i })
-      .first()
-      .click();
+    await switcher.selectOption('en');
     // English is unprefixed: the URL must become /help with no /de/ segment.
     // Anchor to the host so /de/help can't spuriously satisfy a substring
     // /help match, and give the SPA navigation time to settle (the bare
@@ -52,11 +48,7 @@ test.describe('@p3-9 /help language switcher round-trip', () => {
     // Switch back to DE.
     const switcher2 = page.getByRole('combobox', { name: LANGUAGE_SWITCHER }).first();
     await switcher2.scrollIntoViewIfNeeded();
-    await switcher2.click();
-    await page
-      .getByRole('option', { name: /deutsch/i })
-      .first()
-      .click();
+    await switcher2.selectOption('de');
     await expect(page).toHaveURL(/\/de\/help/, { timeout: 10_000 });
   });
 });

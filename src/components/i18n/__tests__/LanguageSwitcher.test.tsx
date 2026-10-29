@@ -32,22 +32,25 @@ function setup() {
 }
 
 describe('LanguageSwitcher', () => {
-  it('opens every language on the first click and preserves the route and query when switching', async () => {
+  it('offers every language and preserves the route and query when switching', async () => {
     const user = setup();
-    const trigger = screen.getByRole('combobox', { name: 'Select language' });
-    expect(trigger).toHaveTextContent('Deutsch');
-    await user.click(trigger);
+    const select = screen.getByRole('combobox', { name: 'Select language' });
+    expect(select).toHaveValue('de');
     expect(screen.getAllByRole('option')).toHaveLength(SUPPORTED_LOCALES.length);
-    await user.click(screen.getByRole('option', { name: 'English' }));
-    expect(trigger).toHaveTextContent('English');
+    await user.selectOptions(select, 'en');
+    expect(select).toHaveValue('en');
     expect(screen.getByLabelText('Location')).toHaveTextContent('/cities?sort=name');
   });
 
-  it('supports language typeahead before the first menu opening', async () => {
+  it('keeps keyboard focus and replaces an existing locale prefix', async () => {
     const user = setup();
     await user.tab();
-    await user.keyboard('e');
-    expect(screen.getByRole('combobox')).toHaveTextContent('English');
-    expect(screen.getByLabelText('Location')).toHaveTextContent('/cities?sort=name');
+    const select = screen.getByRole('combobox', { name: 'Select language' });
+    expect(select).toHaveFocus();
+    await user.selectOptions(select, 'fr');
+    expect(select).toHaveValue('fr');
+    expect(screen.getByLabelText('Location')).toHaveTextContent('/fr/cities?sort=name');
+    await user.selectOptions(select, 'de');
+    expect(screen.getByLabelText('Location')).toHaveTextContent('/de/cities?sort=name');
   });
 });

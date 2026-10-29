@@ -38,26 +38,25 @@ function setup() {
 }
 
 describe('CurrencySelector', () => {
-  it('shows the current value and all choices on the first pointer opening', async () => {
+  it('shows every currency and retains a changed selection', async () => {
     const user = setup();
-    const trigger = screen.getByRole('combobox', { name: 'Select currency' });
-    expect(trigger).toHaveTextContent('USD');
-    await user.click(trigger);
+    const select = screen.getByRole('combobox', { name: 'Select currency' });
+    expect(select).toHaveValue('USD');
     expect(screen.getAllByRole('option')).toHaveLength(3);
-    await user.click(screen.getByRole('option', { name: /EUR/ }));
-    expect(trigger).toHaveTextContent('EUR');
-    await user.click(trigger);
+    await user.selectOptions(select, 'EUR');
+    expect(select).toHaveValue('EUR');
+    expect((screen.getByRole('option', { name: /EUR/ }) as HTMLOptionElement).selected).toBe(true);
     expect(screen.getAllByRole('option')).toHaveLength(3);
   });
 
-  it('supports closed-menu typeahead immediately after keyboard focus', async () => {
+  it('keeps the control keyboard-focusable while changing currency', async () => {
     const user = setup();
     await user.tab();
-    const trigger = screen.getByRole('combobox', { name: 'Select currency' });
-    expect(trigger).toHaveFocus();
-    await user.keyboard('g');
-    expect(trigger).toHaveTextContent('GBP');
-    await user.keyboard('{ArrowDown}');
-    expect(screen.getAllByRole('option')).toHaveLength(3);
+    const select = screen.getByRole('combobox', { name: 'Select currency' });
+    expect(select).toHaveFocus();
+    await user.selectOptions(select, 'GBP');
+    expect(select).toHaveValue('GBP');
+    await user.selectOptions(select, 'USD');
+    expect(select).toHaveValue('USD');
   });
 });
