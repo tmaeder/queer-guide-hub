@@ -1,13 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { consumeLlmBudget } from '../_shared/llm-budget.ts'
-
-interface RelevanceResult {
-  queer_relevant: boolean
-  confidence: number
-  reasoning: string
-  suggested_tags: string[]
-  sensitivity_flags: { category: 'legal'|'medical'|'nsfw'; confidence: number; severity: 'low'|'medium'|'high'; indicators: string[] }[]
-}
+import { readRelevanceResult, relevanceDisposition, type RelevanceResult } from './decision.ts'
 
 const SYSTEM_PROMPT = `You are a data quality validator for queer.guide marketplace.
 Assess whether a product is relevant to the LGBTQ+ community.
@@ -56,14 +49,7 @@ async function validateRelevance(item: { title: string; description: string; bra
   const text = coerceText((data as { result?: { response?: unknown } })?.result?.response ?? (data as { result?: unknown })?.result)
   const match = text.match(/\{[\s\S]*\}/)
   if (!match) throw new Error('non-json LLM response')
-  const parsed = JSON.parse(match[0])
-  return {
-    queer_relevant: !!parsed.queer_relevant,
-    confidence: Math.min(1, Math.max(0, Number(parsed.confidence) || 0)),
-    reasoning: String(parsed.reasoning || ''),
-    suggested_tags: Array.isArray(parsed.suggested_tags) ? parsed.suggested_tags.slice(0, 10) : [],
-    sensitivity_flags: Array.isArray(parsed.sensitivity_flags) ? parsed.sensitivity_flags.filter((f: Record<string, unknown>) => ['legal','medical','nsfw'].includes(f.category as string)).slice(0, 5) : [],
-  }
+  return readRelevanceResult(JSON.parse(match[0]))
 }
 
 Deno.serve(async (req) => {
@@ -98,6 +84,7 @@ Deno.serve(async (req) => {
     // rows for real. Trust stamps neither consume nor are bounded by daily_cap.
     const trustSources: string[] = body.trust_sources ?? []
     const trustScore = Number(body.trust_score ?? 0.75) // > 0.60 so marketplace_prune_candidates() won't sweep them
+    if (![threshold, aggregatorThreshold, trustScore].every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1)) return errorResponse('Invalid relevance thresholds', 400, req)
 
     // Daily cap / circuit-breaker: this node has no per-call rate limit beyond
     // batch_size + a 200ms sleep. With the recurring registry engine now driving
@@ -137,7 +124,7 @@ Deno.serve(async (req) => {
     // so the current DAG order (relevance BEFORE dedup) keeps working; once the
     // DAG moves dedup ahead of this node, duplicates are filtered here for free.
     // (Column is NOT NULL DEFAULT 'pending', so .in() has no NULL trap.)
-    let query = supabase.from('ingestion_staging').select('id, normalized_data').eq('target_table', 'marketplace_listings').eq('ai_validation_status', 'approved').is('classification_result', null).in('dedup_status', ['pending', 'unique', 'merge_candidate']).order('created_at', { ascending }).limit(effectiveBatch)
+    let query = supabase.from('ingestion_staging').select('id, normalized_data, updated_at').eq('target_table', 'marketplace_listings').eq('disposition', 'pending').eq('ai_validation_status', 'approved').is('classification_result', null).in('dedup_status', ['pending', 'unique', 'merge_candidate']).order('created_at', { ascending }).limit(effectiveBatch)
     if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     // Scope the batch to specific merchants. Without this a trust-stamp backfill still
     // pulls a mixed batch and spends most of it on LLM calls for unrelated sources —
@@ -147,7 +134,7 @@ Deno.serve(async (req) => {
     const { data: items, error } = await query
     if (error) return errorResponse(error.message, 500, req)
     if (!items || items.length === 0) return jsonResponse({ success: true, items: 0, message: 'nothing to classify' }, 200, req)
-    let approved = 0, rejected = 0, trusted = 0, capSkipped = 0, llmUsed = 0
+    let approved = 0, rejected = 0, review = 0, failed = 0, stale = 0, trusted = 0, capSkipped = 0, llmUsed = 0
     for (const item of items) {
       const n = (item.normalized_data ?? {}) as Record<string, unknown>
       const meta = (n.metadata ?? {}) as Record<string, unknown>
@@ -168,16 +155,14 @@ Deno.serve(async (req) => {
         }
         // disposition stays 'pending' and review_status stays 'auto', so the row
         // satisfies the commit gate on the next pipeline-commit tick.
-        const { error: tErr } = await supabase.from('ingestion_staging')
-          .update({ classification_result: classification, ai_confidence_score: trustScore })
-          .eq('id', item.id)
-        if (tErr) { console.error(`trust-stamp ${item.id}:`, tErr.message); continue }
+        const { data: stamped, error: tErr } = await supabase.rpc('record_marketplace_relevance', {
+          p_staging_id: item.id, p_expected_updated_at: item.updated_at,
+          p_classification: classification, p_decision: 'trust',
+        })
+        if (tErr) { failed++; continue }
+        if (stamped !== true) { stale++; continue }
         // stage='relevance_trust', NOT 'relevance' — the daily-cap query counts only
         // 'relevance', so stamps must not eat tomorrow's LLM budget.
-        await supabase.from('ingestion_events').insert({
-          staging_id: item.id, stage: 'relevance_trust', new_status: 'approved',
-          actor: 'marketplace-relevance', payload: classification,
-        })
         trusted++
         continue
       }
@@ -194,36 +179,37 @@ Deno.serve(async (req) => {
           tags: (n.tags as string[]) || [],
         })
         const classification = {
-          lgbti_relevant: r.queer_relevant, lgbti_relevance_score: r.confidence, lgbti_reasoning: r.reasoning,
+          lgbti_relevant: r.queer_relevant, lgbti_relevance_score: r.queer_relevant ? r.confidence : 1 - r.confidence, lgbti_reasoning: r.reasoning,
+          answer_confidence: r.confidence, classifier: 'legacy_cf_validated_v2',
           sensitivity_flags: r.sensitivity_flags,
           review_priority: r.sensitivity_flags.some(f => f.severity === 'high') ? 'high' : r.sensitivity_flags.length > 0 ? 'medium' : 'normal',
           suggested_tags: r.suggested_tags, classified_at: new Date().toISOString(),
         }
         if (dryRun) continue
-        const update: Record<string, unknown> = { classification_result: classification, ai_confidence_score: r.confidence }
         const effectiveThreshold = aggregatorSources.includes(itemSource) ? aggregatorThreshold : threshold
-        if (r.confidence < effectiveThreshold) {
-          update.disposition = 'rejected'
-          update.error_message = `relevance_below_${effectiveThreshold}: ${r.reasoning.slice(0, 120)}`
-          rejected++
-        } else if (r.sensitivity_flags.some(f => f.severity === 'high')) {
-          update.review_status = 'pending_review'
-        } else { approved++ }
-        await supabase.from('ingestion_staging').update(update).eq('id', item.id)
-        await supabase.from('ingestion_events').insert({ staging_id: item.id, stage: 'relevance', new_status: r.queer_relevant ? 'approved' : 'rejected', actor: 'marketplace-relevance', payload: classification })
+        const disposition = relevanceDisposition(r, effectiveThreshold)
+        const saved = await supabase.rpc('record_marketplace_relevance', {
+          p_staging_id: item.id, p_expected_updated_at: item.updated_at,
+          p_classification: classification, p_decision: disposition,
+        })
+        if (saved.error) { failed++; continue }
+        if (saved.data !== true) { stale++; continue }
+        if (disposition === 'reject') rejected++
+        else if (disposition === 'review') review++
+        else approved++
         await new Promise(r => setTimeout(r, 200))
-      } catch (err) { console.error(`relevance ${item.id}:`, (err as Error).message) }
+      } catch (err) { failed++; console.error(`relevance ${item.id}:`, (err as Error).message) }
     }
     // Record the actual LLM spend in the central ledger (fail-open; the
     // legacy ingestion_events count above remains the degraded fallback).
     if (llmUsed > 0 && !dryRun) {
       await consumeLlmBudget(supabase, 'marketplace-relevance', llmUsed)
     }
-    const handled = approved + rejected + trusted
+    const handled = approved + rejected + review + trusted
     return jsonResponse({
       success: true, items: handled, items_processed: handled,
-      items_succeeded: approved + trusted, items_failed: rejected,
-      approved, rejected, trusted, llm_used: llmUsed, cap_skipped: capSkipped,
+      items_succeeded: approved + trusted + review, items_failed: rejected + failed,
+      approved, rejected, review, failed, stale, trusted, llm_used: llmUsed, cap_skipped: capSkipped,
       daily_cap: dailyCap, dry_run: dryRun,
     }, 200, req)
   } catch (error) { return errorResponse((error as Error).message, 500, req) }

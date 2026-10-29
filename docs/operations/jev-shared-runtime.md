@@ -185,9 +185,19 @@ commit canary completed in 235 ms with every database change rolled back. A
 20-limit rollback canary found only two currently eligible rows; both updated
 successfully in 2.73 s with matching before/after staging hashes. The larger
 approved staging backlog still requires classification; its size is not the
-commit-ready count. The drain remains paused pending classification-boundary
-review. The current relevance worker can admit a negative relevance answer when
-its confidence is high. A population of 341 already-committed staging rows carries
+commit-ready count. A further rollback canary passed the positive-direction guard
+in 275 ms. The drain was then resumed at its existing hourly schedule, with a
+maximum of 50 records per invocation and accurate success/failure counts. A live
+two-row canary committed two approved updates with zero failures and zero remaining
+commit-ready rows. No unrelated paused job was resumed.
+
+The legacy relevance worker previously admitted a negative relevance answer when
+its confidence was high. Version 386 and migration `20261029223309` now validate
+typed Booleans, separate negative/uncertain results, save classification and audit
+atomically against the source version, and require a positive Boolean at the native
+SQL commit boundary. Migration `20261029223724` bounds and corrects the drain's
+outcome counts. The provider remains Cloudflare for this classifier; primary typed
+Jev relevance is pending. A population of 341 already-committed staging rows carries
 that negative label; re-evaluate it rather than treating the label as proof to
 unpublish. The fixture/regression and rollout measurements are recorded in
 `docs/audits/2026-10-29-jev-marketplace-drain.json`.

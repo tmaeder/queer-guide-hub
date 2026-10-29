@@ -65,6 +65,7 @@ jobs:
             run_jev_review.py \
             run_jev_budget.py \
             run_jev_marketplace_taxonomy.py \
+            run_jev_marketplace_relevance.py \
             run_review_cleanup_composition.py \
             run_snapshot_backend_grants.py; do
             python3 "supabase/tests/isolated/$fixture"
@@ -145,7 +146,7 @@ jobs:
         run: npm run test:merchant-sync
       - name: Run Jev provider backpressure regressions
         if: matrix.shard == 1
-        run: node --import tsx --test scripts/ci/jev-review-runtime.test.ts scripts/ci/jev-validation-runtime.test.ts scripts/ci/jev-pipeline-gate-runtime.test.ts supabase/functions/_shared/jev-client.test.ts supabase/functions/_shared/jev-evidence-judgments.test.ts supabase/functions/_shared/jev-pipeline-judgments.test.ts
+        run: node --import tsx --test scripts/ci/jev-review-runtime.test.ts scripts/ci/jev-validation-runtime.test.ts scripts/ci/jev-pipeline-gate-runtime.test.ts scripts/ci/marketplace-relevance-runtime.test.ts supabase/functions/_shared/jev-client.test.ts supabase/functions/_shared/jev-evidence-judgments.test.ts supabase/functions/_shared/jev-pipeline-judgments.test.ts supabase/functions/marketplace-relevance/decision.test.ts
       - name: Collect unit results and coverage
         run: |
           npm run test:coverage -- \

@@ -142,7 +142,7 @@
       "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
     },
     {
-      "name": "Automation → cron reconciler",
+      "name": "Automation \u2192 cron reconciler",
       "slug": "automation_cron_sync",
       "enabled": true,
       "handler": null,
@@ -1363,7 +1363,7 @@
       "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
     },
     {
-      "name": "Existence decision — events",
+      "name": "Existence decision \u2014 events",
       "slug": "existence_decision_event",
       "enabled": true,
       "handler": "run_existence_decision_event",
@@ -1374,7 +1374,7 @@
       "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
     },
     {
-      "name": "Existence decision — marketplace",
+      "name": "Existence decision \u2014 marketplace",
       "slug": "existence_decision_marketplace",
       "enabled": true,
       "handler": "run_existence_decision_marketplace",
@@ -1385,7 +1385,7 @@
       "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
     },
     {
-      "name": "Existence decision — venues",
+      "name": "Existence decision \u2014 venues",
       "slug": "existence_decision_venue",
       "enabled": true,
       "handler": "run_existence_decision_venue",
@@ -1550,7 +1550,7 @@
       "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
     },
     {
-      "name": "Geo address queue — backlog top-up",
+      "name": "Geo address queue \u2014 backlog top-up",
       "slug": "geo_address_enqueue_backlog",
       "enabled": true,
       "handler": "run_geo_address_enqueue_backlog",
@@ -1750,13 +1750,13 @@
     {
       "name": "Marketplace commit drain",
       "slug": "marketplace_commit_drain",
-      "enabled": false,
+      "enabled": true,
       "handler": "run_marketplace_commit_drain",
       "jobname": "marketplace_commit_drain",
       "action_type": "rpc",
-      "lifecycle_state": "auto_paused",
-      "integration_status": "pending_audit",
-      "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
+      "lifecycle_state": "active",
+      "integration_status": "native_positive_direction_guard_live",
+      "remaining": "Primary Jev relevance integration and evaluation pending; native drain repaired and bounded at 50 per hourly batch."
     },
     {
       "name": "marketplace_dedup_sweep",
@@ -2375,7 +2375,7 @@
       "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
     },
     {
-      "name": "News keyword alerts — daily",
+      "name": "News keyword alerts \u2014 daily",
       "slug": "news_keyword_alerts_daily",
       "enabled": true,
       "handler": "news-keyword-alerts",
@@ -2386,7 +2386,7 @@
       "remaining": "Inspect actual implementation and record deterministic exclusion or judgment/mutation boundary; names alone are insufficient evidence"
     },
     {
-      "name": "News keyword alerts — weekly",
+      "name": "News keyword alerts \u2014 weekly",
       "slug": "news_keyword_alerts_weekly",
       "enabled": true,
       "handler": "news-keyword-alerts",

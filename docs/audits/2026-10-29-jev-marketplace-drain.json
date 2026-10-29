@@ -30,6 +30,6 @@
     "listings": 71910,
     "source_hash": "bf48247f74411f2542cc243391d202cf"
   },
-  "drain_state": "Remains auto-paused while classification/mutation safeguards are reviewed.",
+  "drain_state": "Resumed after direction guard and further rollback-only canaries, at maximum 50 per hourly batch. A real two-row canary committed two source-approved updates with zero failures.",
   "additional_finding": "The existing relevance worker can approve queer_relevant=false when model confidence exceeds the threshold. 341 committed staging rows carry lgbti_relevant=false; this is a flagged population, not proof that every corresponding listing is irrelevant. Do not unpublish them from that label alone."
 }
