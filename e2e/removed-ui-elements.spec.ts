@@ -192,6 +192,7 @@ test.describe('the footer carries no data attribution', () => {
     await open(page, '/');
     const footer = page.locator('footer');
     await expect(footer).toBeVisible({ timeout: BOOT });
+    await footer.scrollIntoViewIfNeeded();
     // Positive control: "no ODbL in the footer" also passes on a footer that
     // failed to render at all.
     await expect(footer.getByText(/Queer Guide/).first()).toBeVisible();

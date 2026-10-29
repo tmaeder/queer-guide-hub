@@ -105,8 +105,17 @@ test.describe('stylesheet reuse after app startup', () => {
       release();
     }
   });
-  for (const path of ['/cities', '/de/cities']) {
-    test(`cities route keeps its footer below the viewport while code is pending on ${path}`, async ({
+  for (const [path, chunk] of [
+    ['/cities', 'Cities'],
+    ['/de/cities', 'Cities'],
+    ['/venues', 'Venues'],
+    ['/events', 'Events'],
+    ['/travel', 'Travel'],
+    ['/news', 'News'],
+    ['/about', 'About'],
+    ['/de/about', 'About'],
+  ]) {
+    test(`public route keeps its footer below the viewport while code is pending on ${path}`, async ({
       page,
     }) => {
       let release!: () => void;
@@ -114,7 +123,7 @@ test.describe('stylesheet reuse after app startup', () => {
       const gate = new Promise<void>((resolve) => {
         release = resolve;
       });
-      await page.route(/\/assets\/js\/Cities-[^/]+\.js$/, async (route) => {
+      await page.route(new RegExp('/assets/js/' + chunk + '-[^/]+\\.js$'), async (route) => {
         requested = true;
         await gate;
         await route.continue();
@@ -134,4 +143,20 @@ test.describe('stylesheet reuse after app startup', () => {
       }
     });
   }
+});
+
+test.describe('Footer viewport activation', () => {
+  test.use({ javaScriptEnabled: true });
+  test('public footer mounts its contents when the reader reaches its landmark', async ({
+    page,
+  }) => {
+    await page.goto('/about');
+    await expect(page.locator('main#main-content h1')).toBeVisible();
+    const footer = page.locator('[data-site-footer]');
+    await expect(footer).toBeAttached();
+    await expect(footer.getByRole('link', { name: 'Privacy', exact: true })).toHaveCount(0);
+    await footer.scrollIntoViewIfNeeded();
+    await expect(footer.getByRole('link', { name: 'Privacy', exact: true })).toBeVisible();
+    await expect(footer.getByRole('combobox', { name: 'Select language' })).toBeVisible();
+  });
 });

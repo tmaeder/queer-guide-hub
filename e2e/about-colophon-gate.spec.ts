@@ -54,6 +54,8 @@ async function seedSession(page: Page) {
 async function expectNoFooterAttribution(page: Page) {
   const footer = page.locator('footer');
   await expect(footer).toBeVisible({ timeout: BOOT });
+  await footer.scrollIntoViewIfNeeded();
+  await expect(footer.getByRole('link').first()).toBeVisible();
   for (const source of REQUIRED) {
     await expect(footer.getByRole('link', { name: source.name })).toHaveCount(0);
   }

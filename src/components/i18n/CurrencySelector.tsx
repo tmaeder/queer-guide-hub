@@ -1,13 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Wallet } from '@/components/icons';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Wallet, ChevronDown } from '@/components/icons';
+
 import { listFrom } from '@/hooks/usePageFetchers';
 import { useCurrency } from '@/hooks/useCurrency';
 
@@ -30,34 +24,29 @@ export function CurrencySelector() {
   if (!currencies.length) return null;
 
   return (
-    <Select value={currency} onValueChange={setCurrency}>
-      <SelectTrigger
-        aria-label={t('i18n.selectCurrency', 'Select currency')}
-        // See LanguageSwitcher: `height: 36` is declared intent, and the base
-        // 44px min-height in index.css is what actually renders.
-        style={{
-          width: 'auto',
-          minWidth: 0,
-          height: 36,
-          padding: '0 8px',
-          border: 'none',
-          background: 'transparent',
-        }}
-        className="gap-1"
-      >
-        <Wallet size={16} className="shrink-0" />
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {currencies.map((c) => (
-          <SelectItem key={c.code} value={c.code}>
-            <span className="text-13">
+    <div className="inline-flex items-center gap-1">
+      <Wallet size={16} className="shrink-0" aria-hidden="true" />
+      <div className="relative">
+        <select
+          value={currency}
+          onChange={(event) => setCurrency(event.target.value)}
+          aria-label={t('i18n.selectCurrency', 'Select currency')}
+          className="cursor-pointer appearance-none rounded-element bg-transparent py-0 ps-1 pe-6 text-13 text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          style={{ height: 36, border: 'none' }}
+        >
+          {currencies.map((c) => (
+            <option key={c.code} value={c.code} className="bg-background text-foreground">
               {c.code}
               {c.symbol && c.symbol !== c.code ? ` (${c.symbol})` : ''}
-            </span>
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          size={14}
+          className="pointer-events-none absolute end-0 top-1/2 -translate-y-1/2 opacity-50"
+          aria-hidden="true"
+        />
+      </div>
+    </div>
   );
 }

@@ -43,6 +43,7 @@ export function VirtualizedGrid<T>({
   renderItem,
   itemKey,
 }: VirtualizedGridProps<T>) {
+  const virtualize = items.length > virtualizeAfter;
   const [scrollMargin, setScrollMargin] = React.useState(0);
   const listRef = React.useCallback((el: HTMLDivElement | null) => {
     if (el) setScrollMargin(el.offsetTop);
@@ -50,13 +51,16 @@ export function VirtualizedGrid<T>({
   const rowCount = Math.ceil(items.length / Math.max(1, columns));
 
   const virtualizer = useWindowVirtualizer({
+    // Plain grids need neither window observations nor the initial scroll read.
+    // Keep the hook mounted so crossing the threshold is safe in either direction.
+    enabled: virtualize,
     count: rowCount,
     estimateSize: () => estimateRowHeight,
     overscan,
     scrollMargin,
   });
 
-  if (items.length <= virtualizeAfter) {
+  if (!virtualize) {
     return (
       <div className={rowClassName}>
         {items.map((item, i) => (

@@ -63,6 +63,8 @@ test.describe('Footer a11y', () => {
       const count = await footer.count();
       test.skip(count === 0, `no <footer> on ${path} — nothing to sweep`);
       await expect(footer.first()).toBeAttached();
+      await footer.first().scrollIntoViewIfNeeded();
+      await expect(footer.first().getByRole('link').first()).toBeVisible();
 
       // Second control: the footer must have real CONTENT, not just exist. An
       // empty landmark also passes axe.
@@ -94,6 +96,13 @@ test.describe('Footer a11y', () => {
     // was found — read the computed colour, read the nearest painted
     // background, and compute the ratio in the browser.
     await page.goto('/');
+    await waitForAppReady(page);
+
+    const footer = page.getByRole('contentinfo');
+    await footer.scrollIntoViewIfNeeded();
+    await expect(footer.getByRole('button', { name: 'Toggle theme' })).toBeVisible();
+    // This subtree mounts after the initial readiness probe; settle its styles
+    // and fonts before sampling the composited colours.
     await waitForAppReady(page);
 
     const bad = await page.evaluate(
