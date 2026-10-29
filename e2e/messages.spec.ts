@@ -330,17 +330,17 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await expect(page.getByText(body).first()).toBeVisible({ timeout: 15_000 });
     await expect(input).toHaveValue('');
 
-    // React to the message we just sent (fresh + own → deterministic 0→1, so
-    // the toggle behaviour can't flip an existing reaction off on re-runs).
-    // The quick-react buttons are always in the DOM (opacity-0 until hover), so
-    // a force-click works without hovering; re-resolving the locator at action
-    // time tolerates the optimistic temp→persisted node swap.
-    const messageP = page.locator('p.text-sm', { hasText: body }).last();
-    await expect(messageP).toBeVisible({ timeout: 15_000 });
-    const bubble = page.locator('div.relative', { has: messageP });
-    await bubble.getByRole('button', { name: '👍' }).first().click({ force: true });
-    await expect(page.getByText('👍 1').first()).toBeVisible({ timeout: 15_000 });
     const guard = deliveryGuards.get(page)!;
+    // Wait for the intercepted receipt's stable message ID, then scope both
+    // the reaction and badge to it. A relative ancestor can contain the seeded
+    // partner message too, whose reaction must stay blocked and unchanged.
+    const message = page.locator(`#msg-${guard.messageId}`);
+    await expect(message.getByText(body, { exact: true })).toBeVisible({ timeout: 15_000 });
+    await message.hover();
+    await message.getByRole('button', { name: '👍', exact: true }).click();
+    await expect(message.getByRole('button', { name: '👍 1', exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
     expect(guard.chatRequests).toHaveLength(1);
     expect(guard.chatRequests[0]).toMatchObject({
       conversation_id: SEED.conversationId,
