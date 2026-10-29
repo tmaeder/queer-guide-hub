@@ -16,7 +16,11 @@ type Options = {
   attempts?: number
 }
 const apiCode = (value: unknown) => typeof value === 'string' && /^[\w-]{1,80}$/.test(value) ? value : 'api_error_unknown'
-const transient = (code: string) => ['maxlag', 'ratelimited', 'readonly', 'readonlytext'].includes(code) || code.startsWith('internal_api_error_')
+// Wikimedia's PoolCounter rejects transient traffic spikes with HTTP200 too.
+// https://wikitech.wikimedia.org/wiki/Search/Elasticsearch_Administration#Pool_Counter_rejections_(search_is_currently_too_busy)
+const transient = (code: string) => ['maxlag', 'ratelimited', 'readonly', 'readonlytext',
+  'cirrussearch-too-busy-error', 'cirrussearch-regex-too-busy-error', 'cirrussearch-backend-error',
+].includes(code) || code.startsWith('internal_api_error_')
 function retryAfter(value: string | null, now: number): number {
   if (!value) return 5
   const numeric = Number(value)
