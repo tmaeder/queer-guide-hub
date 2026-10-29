@@ -324,7 +324,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
     // Send a message.
     const body = `e2e chat ${Date.now()}`;
-    const input = page.getByPlaceholder('Type a message...');
+    const input = page.getByPlaceholder('Type a message…', { exact: true });
     await input.fill(body);
     await input.press('Enter');
     await expect(page.getByText(body).first()).toBeVisible({ timeout: 15_000 });
@@ -412,8 +412,10 @@ test.describe('/messages — unified inbox (signed in)', () => {
     expect(inboundEmailId).toBe(SEED.mailOpenId);
     await expect(page.getByRole('heading', { name: SEED.mailOpen, exact: true })).toBeVisible();
 
-    await expect(page.getByRole('button', { name: /reply/i })).toBeVisible({ timeout: 15_000 });
-    await page.getByRole('button', { name: /reply/i }).click();
+    await expect(page.getByRole('button', { name: 'Reply', exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
+    await page.getByRole('button', { name: 'Reply', exact: true }).click();
     await expect(page.getByText(new RegExp(`reply to ${SEED.selfEmail}`, 'i'))).toBeVisible();
     await page.getByPlaceholder(/write your reply/i).fill('Reply from the e2e spec.');
 
@@ -433,7 +435,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await expect(page.getByPlaceholder(/write your reply/i)).toBeHidden();
 
     // Keep the archive action and payload assertion, with no production write.
-    await page.getByRole('button', { name: /archive/i }).click();
+    await page.getByRole('button', { name: 'Archive', exact: true }).click();
     await expect
       .poll(() => fixtureGuards.get(page)?.folderRequests)
       .toEqual([{ id: SEED.mailOpenId, folder: 'archive' }]);
@@ -446,8 +448,12 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await tab(page, /^mail$/i).click();
     const item = await requireRailItem(page, SEED.mailDelete);
     await item.click();
-    await expect(page.getByRole('button', { name: /delete/i })).toBeVisible({ timeout: 15_000 });
-    await page.getByRole('button', { name: /delete/i }).click();
+    await expect(page).toHaveURL(new RegExp(`email=${SEED.mailDeleteId}`));
+    await expect(page.getByRole('heading', { name: SEED.mailDelete, exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Delete', exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
+    await page.getByRole('button', { name: 'Delete', exact: true }).click();
     await expect
       .poll(() => fixtureGuards.get(page)?.folderRequests)
       .toEqual([{ id: SEED.mailDeleteId, folder: 'trash' }]);
