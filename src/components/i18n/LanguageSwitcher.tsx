@@ -53,7 +53,7 @@ export function LanguageSwitcher() {
           value={currentLocale}
           onChange={(event) => handleChange(event.target.value)}
           aria-label={t('i18n.selectLanguage', 'Select language')}
-          className="cursor-pointer appearance-none rounded-element bg-transparent py-0 pl-1 pr-6 text-13 text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="cursor-pointer appearance-none rounded-element bg-transparent py-0 ps-1 pe-6 text-13 text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           style={{ height: 36, border: 'none' }}
         >
           {SUPPORTED_LOCALES.map((lang) => (
@@ -64,7 +64,7 @@ export function LanguageSwitcher() {
         </select>
         <ChevronDown
           size={14}
-          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 opacity-50"
+          className="pointer-events-none absolute end-0 top-1/2 -translate-y-1/2 opacity-50"
           aria-hidden="true"
         />
       </div>

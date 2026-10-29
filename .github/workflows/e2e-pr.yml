@@ -408,11 +408,11 @@ jobs:
             e2e/rounded-surface-contract.spec.ts \
             --grep-invert "visual snapshots" \
             --reporter=line
-          # Exercise the lazy city route against this PR's build. The other
+          # Exercise lazy public routes against this PR's build. The other
           # entry-style checks include Pages-only document content, so select
-          # the two pending-route footer regressions for the static preview.
+          # pending-route/footer activation regressions for the static preview.
           npx playwright test e2e/entry-styles.spec.ts \
-            --grep "cities route keeps its footer below the viewport" \
+            --grep "public route keeps its footer below the viewport|public footer mounts its contents" \
             --reporter=line
       - name: Upload report
         if: failure()

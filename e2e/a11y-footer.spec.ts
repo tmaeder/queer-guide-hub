@@ -63,6 +63,8 @@ test.describe('Footer a11y', () => {
       const count = await footer.count();
       test.skip(count === 0, `no <footer> on ${path} — nothing to sweep`);
       await expect(footer.first()).toBeAttached();
+      await footer.first().scrollIntoViewIfNeeded();
+      await expect(footer.first().getByRole('link').first()).toBeVisible();
 
       // Second control: the footer must have real CONTENT, not just exist. An
       // empty landmark also passes axe.

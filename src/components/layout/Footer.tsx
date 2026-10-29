@@ -10,6 +10,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
+import { DeferredSection } from '@/components/home/DeferredSection';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
 import { ink, paper } from '@/components/transit/iconDefs';
 import './Footer.css';
@@ -75,108 +76,116 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
 
   return (
     <footer data-site-footer className="mt-auto py-4 md:py-8">
-      <div
-        className={cn(
-          'island-capped rounded-panel bg-foreground py-2 text-background md:py-4',
-          PAGE_GUTTER,
-        )}
+      {/* Keep the landmark and its space present. Mount the full navigation and
+          settings when the reader reaches the footer, rather than during the
+          route's first render. Without IntersectionObserver it mounts at once. */}
+      <DeferredSection
+        rootMargin="0px"
+        fallback={<div aria-hidden="true" className="h-96 md:h-48" />}
       >
-        <nav
-          aria-label="Footer navigation"
-          className="grid grid-cols-2 gap-x-4 gap-y-0 md:flex md:flex-wrap md:gap-x-6"
+        <div
+          className={cn(
+            'island-capped rounded-panel bg-foreground py-2 text-background md:py-4',
+            PAGE_GUTTER,
+          )}
         >
-          {INTENT_NAV.map((intent) => (
-            <LocalizedLink
-              key={intent.to}
-              to={intent.to}
-              data-track={INTENT_TRACK[intent.id]}
-              aria-current={isIntentActive(intent, localePath) ? 'page' : undefined}
-              className={cn(
-                footerLink,
-                'footer-destination gap-1 text-15 font-bold leading-snug text-background md:gap-2 md:text-title aria-[current=page]:underline',
-              )}
-            >
-              <span
-                aria-hidden="true"
-                className="footer-destination-icon inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-badge"
-                style={{ backgroundColor: paper, color: ink }}
-              >
-                <intent.icon size={24} />
-              </span>
-              <span>{t(intent.labelKey, intent.fallback)}</span>
-            </LocalizedLink>
-          ))}
-        </nav>
-        <div className="mt-2 flex flex-wrap items-start gap-x-2 md:gap-x-6">
-          <LocalizedLink to={REPORT_HREF} className={footerLink}>
-            {t('footer.report', 'Report')}
-          </LocalizedLink>
-          <LocalizedLink to="/help" className={footerLink}>
-            {t('footer.crisisSupport', 'Crisis support')}
-          </LocalizedLink>
-          <LocalizedLink to="/privacy" className={footerLink}>
-            {t('footer.privacy', 'Privacy')}
-          </LocalizedLink>
-          <LocalizedLink to="/terms" className={footerLink}>
-            {t('footer.terms', 'Terms')}
-          </LocalizedLink>
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
-            className={cn(footerLink, 'text-start')}
+          <nav
+            aria-label="Footer navigation"
+            className="grid grid-cols-2 gap-x-4 gap-y-0 md:flex md:flex-wrap md:gap-x-6"
           >
-            {t('footer.cookiePreferences', 'Cookie preferences')}
-          </button>
-          <details className="group min-w-0 max-w-full open:basis-full">
-            <summary
-              className={cn(footerLink, 'flex w-fit cursor-pointer gap-2 text-background/75')}
-            >
-              {t('footer.siteInformation', 'Site information')}
-              <ChevronDown aria-hidden className="shrink-0 group-open:rotate-180" />
-            </summary>
-            <nav
-              aria-label={t('footer.siteInformation', 'Site information')}
-              className="grid grid-cols-2 gap-x-4 pb-2 md:flex md:flex-wrap md:gap-x-6"
-            >
-              {legalLinks
-                .filter((link) => link.href !== '/privacy' && link.href !== '/terms')
-                .map((link) => (
-                  <LocalizedLink
-                    key={link.href}
-                    to={link.href}
-                    aria-current={localePath === link.href ? 'page' : undefined}
-                    className={cn(footerLink, 'text-background/75 hover:text-background')}
-                  >
-                    {t(link.labelKey, link.fallback)}
-                  </LocalizedLink>
-                ))}
-              <a
-                href="/docs"
-                className={cn(footerLink, 'text-background/75 hover:text-background')}
+            {INTENT_NAV.map((intent) => (
+              <LocalizedLink
+                key={intent.to}
+                to={intent.to}
+                data-track={INTENT_TRACK[intent.id]}
+                aria-current={isIntentActive(intent, localePath) ? 'page' : undefined}
+                className={cn(
+                  footerLink,
+                  'footer-destination gap-1 text-15 font-bold leading-snug text-background md:gap-2 md:text-title aria-[current=page]:underline',
+                )}
               >
-                {t('footer.apiDocs', 'API & agents')}
-              </a>
-            </nav>
-          </details>
-        </div>
-        <div className="flex flex-col gap-0 md:mt-2 md:flex-row md:items-center md:justify-between md:gap-x-8">
-          <div className="flex flex-wrap items-center gap-0 sm:gap-2 [&_button]:!px-1 sm:[&_button]:!px-2 [&_button]:min-h-11 [&_button]:min-w-11 [&_button]:text-background [&_button:hover]:underline">
-            <LanguageSwitcher />
-            <CurrencySelector />
-            <ThemeToggle />
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-x-6 md:gap-x-8">
-            <LocalizedLink
-              to="/"
-              className={cn(footerLink, 'hover:no-underline')}
-              aria-label={siteName}
-            >
-              <Wordmark className="text-title text-background" />
+                <span
+                  aria-hidden="true"
+                  className="footer-destination-icon inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-badge"
+                  style={{ backgroundColor: paper, color: ink }}
+                >
+                  <intent.icon size={24} />
+                </span>
+                <span>{t(intent.labelKey, intent.fallback)}</span>
+              </LocalizedLink>
+            ))}
+          </nav>
+          <div className="mt-2 flex flex-wrap items-start gap-x-2 md:gap-x-6">
+            <LocalizedLink to={REPORT_HREF} className={footerLink}>
+              {t('footer.report', 'Report')}
             </LocalizedLink>
-            <p className="text-2xs text-background/70">&copy; {currentYear} Queer Guide</p>
+            <LocalizedLink to="/help" className={footerLink}>
+              {t('footer.crisisSupport', 'Crisis support')}
+            </LocalizedLink>
+            <LocalizedLink to="/privacy" className={footerLink}>
+              {t('footer.privacy', 'Privacy')}
+            </LocalizedLink>
+            <LocalizedLink to="/terms" className={footerLink}>
+              {t('footer.terms', 'Terms')}
+            </LocalizedLink>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
+              className={cn(footerLink, 'text-start')}
+            >
+              {t('footer.cookiePreferences', 'Cookie preferences')}
+            </button>
+            <details className="group min-w-0 max-w-full open:basis-full">
+              <summary
+                className={cn(footerLink, 'flex w-fit cursor-pointer gap-2 text-background/75')}
+              >
+                {t('footer.siteInformation', 'Site information')}
+                <ChevronDown aria-hidden className="shrink-0 group-open:rotate-180" />
+              </summary>
+              <nav
+                aria-label={t('footer.siteInformation', 'Site information')}
+                className="grid grid-cols-2 gap-x-4 pb-2 md:flex md:flex-wrap md:gap-x-6"
+              >
+                {legalLinks
+                  .filter((link) => link.href !== '/privacy' && link.href !== '/terms')
+                  .map((link) => (
+                    <LocalizedLink
+                      key={link.href}
+                      to={link.href}
+                      aria-current={localePath === link.href ? 'page' : undefined}
+                      className={cn(footerLink, 'text-background/75 hover:text-background')}
+                    >
+                      {t(link.labelKey, link.fallback)}
+                    </LocalizedLink>
+                  ))}
+                <a
+                  href="/docs"
+                  className={cn(footerLink, 'text-background/75 hover:text-background')}
+                >
+                  {t('footer.apiDocs', 'API & agents')}
+                </a>
+              </nav>
+            </details>
+          </div>
+          <div className="flex flex-col gap-0 md:mt-2 md:flex-row md:items-center md:justify-between md:gap-x-8">
+            <div className="flex flex-wrap items-center gap-0 sm:gap-2 [&_button]:!px-1 sm:[&_button]:!px-2 [&_button]:min-h-11 [&_button]:min-w-11 [&_button]:text-background [&_button:hover]:underline">
+              <LanguageSwitcher />
+              <CurrencySelector />
+              <ThemeToggle />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-x-6 md:gap-x-8">
+              <LocalizedLink
+                to="/"
+                className={cn(footerLink, 'hover:no-underline')}
+                aria-label={siteName}
+              >
+                <Wordmark className="text-title text-background" />
+              </LocalizedLink>
+              <p className="text-2xs text-background/70">&copy; {currentYear} Queer Guide</p>
+            </div>
           </div>
         </div>
-      </div>
+      </DeferredSection>
     </footer>
   );
 }

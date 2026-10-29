@@ -89,10 +89,10 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   const isFullBleedMap = isMapRoute(pathname);
   const isAdmin = isAdminRoute(pathname);
   const isHome = stripLocale(pathname) === '/';
-  const isCitiesIndex = /^\/cities\/?$/.test(stripLocale(pathname));
   // Panel 09: single-purpose flows and account screens get the one-line paper
   // footer instead of the full ink plate. See isCompactFooterRoute.
   const footerVariant = isCompactFooterRoute(pathname) ? 'compact' : 'full';
+  const reservePublicViewport = !isAdmin && !isFullBleedMap && footerVariant === 'full';
   // Broadcast the current user's global presence (only if they opted into the
   // global dot) so inbox/discovery surfaces can show "active now".
   useGlobalPresence();
@@ -175,11 +175,11 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           AnimatePresence mode="wait" wrapper here both duplicated that fade
           and held every incoming route's paint hostage to the exit animation,
           while chaining framer-motion onto the entry bundle. */}
-      {/* Keep the footer below the fold while the lazy homepage or cities
-          directory is pending. Both reserve a tall viewport once mounted;
-          a shorter loading shell exposes the footer, then shifts it away. */}
+      {/* Public content reserves its viewport while lazy route code is pending.
+          A shorter shell exposes the footer, then shifts it away when the
+          actual page arrives. Compact account flows and maps keep their sizing. */}
       <div
-        className={`relative z-10 flex-1 flex flex-col${isHome || isCitiesIndex ? ' min-h-screen' : ''}`}
+        className={`relative z-10 flex-1 flex flex-col${reservePublicViewport ? ' min-h-screen' : ''}`}
       >
         {children}
       </div>

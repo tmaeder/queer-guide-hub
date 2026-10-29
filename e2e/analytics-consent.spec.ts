@@ -334,6 +334,7 @@ test.describe('analytics consent gate', () => {
     await page.goto('/');
     await waitForAppReady(page);
 
+    await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
     const opener = page.getByRole('button', { name: /cookie preferences/i });
     await expect(opener, 'the footer must expose a way back into consent').toBeVisible();
     await opener.click();

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 vi.mock('@/components/theme/ThemeToggle', () => ({ ThemeToggle: () => <button>Theme</button> }));
 vi.mock('@/components/i18n/CurrencySelector', () => ({
@@ -45,6 +45,33 @@ function renderFooter() {
 }
 
 describe('Footer', () => {
+  // Content contracts also cover the no-IntersectionObserver fallback. Real
+  // viewport activation is checked below and in the public browser regressions.
+  beforeEach(() => vi.stubGlobal('IntersectionObserver', undefined));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('keeps the footer landmark present and loads its contents at intersection', () => {
+    let callback: IntersectionObserverCallback | undefined;
+    class Observer {
+      constructor(cb: IntersectionObserverCallback) {
+        callback = cb;
+      }
+      observe() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('IntersectionObserver', Observer);
+    renderFooter();
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Privacy' })).toBeNull();
+    act(() =>
+      callback?.(
+        [{ isIntersecting: true } as IntersectionObserverEntry],
+        {} as IntersectionObserver,
+      ),
+    );
+    expect(screen.getByRole('link', { name: 'Privacy' })).toBeVisible();
+  });
+
   it('should render footer links', () => {
     renderFooter();
     fireEvent.click(screen.getByText('Site information'));

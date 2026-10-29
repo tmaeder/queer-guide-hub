@@ -36,6 +36,7 @@ test.describe('@p3-9 /help language switcher round-trip', () => {
       .click({ timeout: 3000 })
       .catch(() => {});
 
+    await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
     const switcher = page.getByRole('combobox', { name: LANGUAGE_SWITCHER }).first();
     await switcher.scrollIntoViewIfNeeded();
     await switcher.selectOption('en');

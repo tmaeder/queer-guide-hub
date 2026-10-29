@@ -43,6 +43,7 @@ test.describe('glossary in navigation', () => {
 
   test('footer keeps the glossary reachable from its compact Knowledge link', async ({ page }) => {
     await page.goto('/');
+    await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
     const footer = page.locator('footer nav[aria-label="Footer navigation"]');
     const knowledge = footer.getByRole('link', { name: 'Knowledge' });
     await expect(knowledge).toBeVisible();
