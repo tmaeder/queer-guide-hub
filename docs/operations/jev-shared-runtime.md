@@ -177,6 +177,27 @@ boundaries replaced, including denial before inference and settlement failure.
 
 ## Remaining implementation
 
+Marketplace investigation: migration `20261029222136` materializes the taxonomy
+classifiers' intermediate results once. The actual production function snapshot
+returned identical group/fine values for 78 isolated cases; the batch improved
+from 11.2 s to 0.38 s locally. Live read-only checks passed, and a one-row native
+commit canary completed in 235 ms with every database change rolled back. A
+20-limit rollback canary found only two currently eligible rows; both updated
+successfully in 2.73 s with matching before/after staging hashes. The larger
+approved staging backlog still requires classification; its size is not the
+commit-ready count. The drain remains paused pending classification-boundary
+review. The current relevance worker can admit a negative relevance answer when
+its confidence is high. A population of 341 already-committed staging rows carries
+that negative label; re-evaluate it rather than treating the label as proof to
+unpublish. The fixture/regression and rollout measurements are recorded in
+`docs/audits/2026-10-29-jev-marketplace-drain.json`.
+
+With an isolated `npm ci --ignore-scripts` dependency installation, the frontend
+typecheck ratchet passes: 660 existing errors, none new against the 772-error
+baseline. Do not rewrite the baseline to hide errors from a shared dependency
+symlink. Targeted runtime tests, the three Review status component tests, Deno
+checks and the isolated database contract tests pass.
+
 Evidence discovery/repair across the main blocker families; per-field positive
 correction handlers; marketplace and other pipeline adoption; guards for SQL/direct
 mutation routes; stalled-drain repairs; domain/automation coverage reconciliation;

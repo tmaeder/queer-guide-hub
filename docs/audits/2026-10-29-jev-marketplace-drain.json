@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-29",
+  "migration": "20261029222136",
+  "change": "Materialize one-row intermediate CTEs in marketplace_subcategory_group(text) and marketplace_subcategory_fine(text,text); no rule or stored listing changes.",
+  "isolated": {
+    "cases": 78,
+    "semantic_mismatches": 0,
+    "baseline_ms": 11212.36,
+    "optimized_ms": 377.8
+  },
+  "live_read_only": {
+    "four_items_before_ms": 466.922,
+    "four_items_after_ms": 372.757,
+    "eighty_items_after_ms": 293.867,
+    "note": "Separate queries and cold planning; the isolated speed ratio is not a production throughput guarantee."
+  },
+  "one_row_commit_canary": {
+    "canary": {
+      "results": [
+        {
+          "action": "updated",
+          "listing_id": "79122ff2-a3e9-49c5-9a81-3edaa53978b4",
+          "staging_id": "32030a6f-629f-4277-8551-4475927bcff3"
+        }
+      ],
+      "elapsed_ms": 235.298,
+      "rolled_back": true
+    },
+    "paused": true,
+    "listings": 71910,
+    "source_hash": "bf48247f74411f2542cc243391d202cf"
+  },
+  "drain_state": "Remains auto-paused while classification/mutation safeguards are reviewed.",
+  "additional_finding": "The existing relevance worker can approve queer_relevant=false when model confidence exceeds the threshold. 341 committed staging rows carry lgbti_relevant=false; this is a flagged population, not proof that every corresponding listing is irrelevant. Do not unpublish them from that label alone."
+}
