@@ -1,4 +1,5 @@
 -- Owner approved US$25/month ongoing Jev processing on 2026-10-29.
+-- Version matches verified production apply_migration history.
 -- Keep the US$5 lifetime validation account separate and unchanged.
 alter table api_private.jev_budget_accounts drop constraint jev_budget_accounts_period_check;
 alter table api_private.jev_budget_accounts add constraint jev_budget_accounts_period_check check(period in ('lifetime','day','month'));

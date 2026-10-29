@@ -5,10 +5,10 @@ budget on 29 October 2026. Implementation lives in the isolated
 `codex/jev-integration-20261029` branch. This document tracks the foundation;
 domain-wide adoption and sensitive-action validation remain in progress.
 
-Production verification on 29 October: the two migrations are applied as
+Production verification on 29 October: the first two migrations are applied as
 `20261029213554` (budget ledger) and `20261029214157` (normalized source URLs),
 matching the observed Supabase migration history. The isolated validator is
-deployed at version 1. Eight synthetic calls used 4,949 input tokens, charging
+deployed at version 2. Eight synthetic calls used 4,949 input tokens, charging
 207,858 nano-USD (US$0.000207858); no reservations remain unsettled. Anonymous
 execution returned HTTP 401, and the three budget RPCs are service-only.
 
@@ -22,8 +22,22 @@ Source recovery analysis found 283 blocked staging cases with normalized URL
 arrays that the projection and reader ignored, including 282 RSS cases. The
 bounded projection now preserves up to four safe URL strings; the reader change
 is tested locally. A subsequent live count found 284 projectable cases, reflecting
-normal queue movement between snapshots. The updated Review worker is **not yet
-deployed**: it needs a production budget account and a bounded canary first.
+normal queue movement between snapshots. Review version 11 is now deployed with
+the budget and recovery changes. The previous deployed files matched main before
+replacement. Its authenticated probe and one-case dry run passed; the previously
+missing URL yielded one readable page, but support remained insufficient. The
+source row hash and case audit count were unchanged. A one-job production canary
+also returned HTTP 200 (one blocked, zero applied). At 22:01 UTC, 288 blocked
+cases were requeued because their existing normalized URL arrays became readable;
+no source records were changed or evidence prerequisites waived.
+
+The separate historical accessibility comparison covered 21 rows and 30 claims
+(the legacy fixture header incorrectly says 22 rows). It agreed on 28 decisions,
+with zero unsupported adoptions and two conservative refusals against the fixture
+labels. Reasons agreed on 25 claims. The 18,305 input tokens cost US$0.00076881.
+Exact requests and responses are retained in
+`docs/audits/2026-10-29-jev-accessibility-validation.json`. These historical labels
+do not establish current venue facts or validate broader sensitive automation.
 
 The security advisor reports intentional no-policy informational entries for the
 three private ledger tables. They have RLS and no client grants; service-only
@@ -43,6 +57,13 @@ amounts. The `validation-2026-10-29` account has a **lifetime** cap of
 5,000,000,000 nano-USD. It does not reset at midnight. Only service-role RPCs
 can reserve or settle; public and signed-in users have no ledger access.
 
+The owner separately approved a **US$25/month production cap**. Migration
+`20261029215343` provisions the `production` account with a 25,000,000,000 nano-USD
+cap per UTC calendar month. Reservations settle against their original month,
+including calls that finish after rollover. Validation remains a separate lifetime
+US$5 account. On the release snapshot, validation charged US$0.00109305 and
+production charged US$0.000859362, with no outstanding reservations.
+
 Valid responses settle at reported input usage. Failed/ambiguous requests charge
 the entire reservation. A settlement failure keeps the full reservation counted
 and withholds the answer. An orphaned reservation never expires into spendable
@@ -51,10 +72,10 @@ No source text, credentials or model response is saved in the budget tables.
 
 ## Review worker adoption
 
-The updated `review-automation` uses this transport with `JEV_BUDGET_ACCOUNT`.
-Provision a separate production account with an explicitly chosen cap and period
-before deploying that worker. Do not use the validation account for unattended
-production Review. Key precedence is `JEV_API_KEY`, then `TYPESAFE_API_KEY`;
+The deployed `review-automation` uses `JEV_BUDGET_ACCOUNT` or defaults to
+`production` for actual processing. Probes and dry runs always charge the fixed
+validation account; callers cannot select a different account in request data.
+Key precedence is `JEV_API_KEY`, then `TYPESAFE_API_KEY`;
 model precedence is `JEV_MODEL`, then `TYPESAFE_MODEL`, then `jev-1.14.0`.
 
 Exhausted/disabled budgets defer leased jobs and report `budget_deferred`; they

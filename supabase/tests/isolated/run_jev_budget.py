@@ -32,7 +32,7 @@ with tempfile.TemporaryDirectory(prefix='jev-budget-pg-') as tmp:
     try:
         sql('create role anon; create role authenticated; create role service_role;')
         sql((ROOT / 'supabase/migrations/20261029213554_jev_shared_budget_ledger.sql').read_text())
-        sql((ROOT / 'supabase/migrations/20261029214924_jev_monthly_production_budget.sql').read_text())
+        sql((ROOT / 'supabase/migrations/20261029215343_jev_monthly_production_budget.sql').read_text())
         assert status('validation-2026-10-29')['cap_nano_usd'] == 5_000_000_000
         assert status('validation-2026-10-29')['period'] == 'lifetime'
         assert status('production')['cap_nano_usd'] == 25_000_000_000
