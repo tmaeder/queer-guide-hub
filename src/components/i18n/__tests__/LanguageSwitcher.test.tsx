@@ -38,7 +38,7 @@ describe('LanguageSwitcher', () => {
     expect(trigger).toHaveTextContent('Deutsch');
     await user.click(trigger);
     expect(screen.getAllByRole('option')).toHaveLength(SUPPORTED_LOCALES.length);
-    await user.click(screen.getByRole('option', { name: 'English', exact: true }));
+    await user.click(screen.getByRole('option', { name: 'English' }));
     expect(trigger).toHaveTextContent('English');
     expect(screen.getByLabelText('Location')).toHaveTextContent('/cities?sort=name');
   });
