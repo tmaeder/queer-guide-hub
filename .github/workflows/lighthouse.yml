@@ -45,7 +45,9 @@ jobs:
       - name: Verify immutable preview source before collection
         run: node scripts/lighthouse-preview-probe.mjs verify before
       - name: Collect
-        run: lhci collect --config=.preview-lhci-${{ matrix.form_factor }}.json
+        # Save trace/devtools artifacts after each audit for task attribution.
+        # This reporter flag changes no audit, throttling, device or budget.
+        run: lhci collect --config=.preview-lhci-${{ matrix.form_factor }}.json --settings.saveAssets=true
       - name: Assert budgets
         # No-index preview SEO failures intentionally remain visible as errors.
         run: lhci assert --config=.preview-lhci-${{ matrix.form_factor }}.json
@@ -71,6 +73,8 @@ jobs:
             .lighthouseci/
             .preview-lhci-*.json
             lhci-preview-*.json
+            *-*.trace.json
+            *-*.devtoolslog.json
           # .lighthouseci is a dot-dir; upload-artifact v4+ skips hidden files
           # by default, so without this the reports were never uploaded.
           include-hidden-files: true
