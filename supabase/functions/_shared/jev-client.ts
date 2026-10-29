@@ -104,7 +104,10 @@ export async function callJev(request: JevRequest, options: {
   if (!questionEntries.length || questionEntries.length > 128) throw new Error('Invalid Jev question count')
   for (const raw of questionEntries) {
     const question = object(raw)
-    if (!['choice', 'noul'].includes(String(question.type)) || typeof question.instructions !== 'string' || !question.instructions.trim()) throw new Error('Invalid Jev question')
+    const instructions = question.instructions
+    const hasInstructions = typeof instructions === 'string' ? instructions.trim().length > 0
+      : instructions !== null && typeof instructions === 'object' && Object.keys(instructions).length > 0
+    if (!['choice', 'noul'].includes(String(question.type)) || !hasInstructions) throw new Error('Invalid Jev question')
     if (question.type === 'choice' && !Object.keys(object(question.criteria)).length) throw new Error('Empty Jev choice')
   }
   const requestId = crypto.randomUUID()

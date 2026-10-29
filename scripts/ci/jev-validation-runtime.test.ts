@@ -35,9 +35,12 @@ async function run(body: unknown, options: { denied?: boolean; budgetDenied?: bo
     },
     fetch: async (url: string, init: RequestInit) => {
       assert.equal(url, 'https://api.typesafe.ai/v1/systemone')
-      requests.push(JSON.parse(String(init.body)))
+      const payload = JSON.parse(String(init.body))
+      requests.push(payload)
+      const historical = Object.values(payload.questions).some((question: unknown) => (question as { type: string }).type === 'choice')
       return options.providerStatus ? new Response('PRIVATE_PROVIDER_ERROR', { status: options.providerStatus }) : Response.json({
-        model: 'jev-1.14.0', usage: { input_tokens: 100, output_tokens: 10 }, answers: {
+        model: 'jev-1.14.0', usage: { input_tokens: 100, output_tokens: 10 }, answers: historical
+        ? Object.fromEntries(Object.keys(payload.questions).map(key => [key, { type: 'choice', choice: 'says_nothing', confidence: 1, probabilities: { supports: 0, contradicts: 0, says_nothing: 1 } }])) : {
           same_subject: { type: 'noul', noul: 1 }, supports_value: { type: 'noul', noul: 1 }, contradicts_value: { type: 'noul', noul: 0 },
         },
       })
@@ -77,4 +80,18 @@ test('budget denial and provider failures never become passed validation results
   assert.equal(failed.status, 503); assert.equal(failed.body.success, false); assert.equal(failed.body.results.length, 0)
   assert.equal(failed.calls.at(-1)?.args.p_input_tokens, null)
   assert.doesNotMatch(JSON.stringify(failed.body), /PRIVATE_PROVIDER_ERROR/)
+})
+test('historical benchmark preserves structured questions and hides labels from the model', async () => {
+  const preview = await run({ fixtures: ['accessibility-benchmark-01'] })
+  assert.equal(preview.status, 200)
+  assert.equal(preview.body.fixtures[0].kind, 'historical_accessibility')
+  assert.equal(preview.calls.length, 0)
+  const live = await run({ fixtures: ['accessibility-benchmark-01'], execute: true })
+  assert.equal(live.status, 200); assert.equal(live.body.results[0].matches, true)
+  assert.equal(live.body.results[0].verdict['service-animals-welcome'].kept, false)
+  assert.doesNotMatch(JSON.stringify(live.requests), /expected|keep|why|SERVER_KEY/)
+  for (const name of ['accessibility-benchmark--1', 'accessibility-benchmark-99', 'accessibility-benchmark-01x']) {
+    const result = await run({ fixtures: [name], execute: true })
+    assert.equal(result.status, 400); assert.equal(result.requests.length, 0)
+  }
 })

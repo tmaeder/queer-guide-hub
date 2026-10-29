@@ -89,3 +89,19 @@ test('oversized responses cannot escape accounting or accumulate unbounded memor
   await assert.rejects(callJev(request, { apiKey: 'test', caller: 'review', budget, fetcher: async () => new Response('x'.repeat(262145)) }), /256 KiB/)
   assert.equal((events.at(-1) as unknown[])[2], null)
 })
+test('structured instructions are preserved and in-flight mutations cannot change the request contract', async () => {
+  const prepared = structuredClone(request)
+  prepared.questions.category = { type: 'choice', instructions: { task: 'Which activity is described?', definition: { games: 'Board games' } }, criteria: { games: 'Board games', music: 'Music' } }
+  const expected = structuredClone(prepared)
+  const { budget } = ledger()
+  const result = await callJev(prepared, { apiKey: 'test', caller: 'review', budget: {
+    ...budget,
+    reserve: async input => { prepared.questions = { replaced: { type: 'noul', instructions: 'Changed after reservation' } }; return budget.reserve(input) },
+  }, fetcher: async (_url, init) => {
+    assert.deepEqual(JSON.parse(String(init?.body)), expected)
+    return Response.json({ model: JEV_MODEL, usage: { input_tokens: 100, output_tokens: 20 }, answers: {
+      category: { type: 'choice', choice: 'games', confidence: 0.9, probabilities: { games: 0.9, music: 0.1 } }, supported: { type: 'noul', noul: 0.9 },
+    } })
+  } })
+  assert.ok(result.answers.category)
+})
