@@ -153,7 +153,11 @@ export default function MarketplaceBrand() {
                       <ImageCredit
                         attribution={brand.logo_credit.attribution}
                         license={brand.logo_credit.license}
-                        source="wikimedia"
+                        source={
+                          hostnameOf(brand.logo_credit.source_url) === 'commons.wikimedia.org'
+                            ? 'wikimedia'
+                            : hostnameOf(brand.logo_credit.source_url)
+                        }
                       />
                     </a>
                   ) : (
