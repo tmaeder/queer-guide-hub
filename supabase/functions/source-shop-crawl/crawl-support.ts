@@ -19,6 +19,17 @@ export function allowedSitemap(raw: string, shopDomain: string): boolean {
   } catch { return false }
 }
 
+/** Exact canonical destination used by configured storefronts for removed items. */
+export function readCanonicalPageUrl(html: string, pageUrl: string): string | null {
+  const $ = cheerio.load(html)
+  const href = $('link[rel~="canonical" i]').first().attr('href')
+  if (!href) return null
+  try {
+    const url = new URL(href, pageUrl)
+    return url.protocol === 'https:' ? url.href : null
+  } catch { return null }
+}
+
 export interface Selectors {
   name?: string
   description?: string

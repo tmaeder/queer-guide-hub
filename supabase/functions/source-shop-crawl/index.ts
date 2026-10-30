@@ -4,7 +4,7 @@ import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { extractContent } from '../_shared/extract-client.ts'
 import { splitAuthor } from '../_shared/book-title.ts'
-import { allowedSitemap, readSelectedProduct, readStaticSchema, type Selectors } from './crawl-support.ts'
+import { allowedSitemap, readCanonicalPageUrl, readSelectedProduct, readStaticSchema, type Selectors } from './crawl-support.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
@@ -55,6 +55,7 @@ const UA = 'QueerGuideBot/1.0 (+https://queer.guide/bot)'
 
 interface CrawlConfig {
   strategy: string
+  unavailable_canonical_urls?: string[]
   selectors?: Selectors
   sitemap: string
   url_include?: string
@@ -346,6 +347,11 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
     const delayMs = Math.max(0, Number(cfg.crawl_delay_ms ?? DEFAULT_CRAWL_DELAY_MS))
     const items: RawItem[] = []
     let extractFailures = 0, noPrice = 0, missingPages = 0, consumed = 0, budgetHit = false
+    const failureSamples: Array<{ url: string; reason: string }> = []
+    const recordFailure = (url: string, reason: string) => {
+      extractFailures++
+      if (failureSamples.length < 5) failureSamples.push({ url, reason })
+    }
     let next = 0
     let lastStart = 0
 
@@ -368,20 +374,32 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
           try {
             const html = await fetchText(url, 12_000)
             read = readSelectedProduct(html, url, cfg.selectors ?? {}, cfg.currency)
+            // Some shops return their homepage with HTTP 200 for a removed
+            // product. Only treat explicitly configured canonical destinations
+            // as unavailable, and only when the product title is absent.
+            const canonical = !read ? readCanonicalPageUrl(html, url) : null
+            if (canonical && Array.isArray(cfg.unavailable_canonical_urls) && cfg.unavailable_canonical_urls.includes(canonical)) {
+              missingPages++
+              continue
+            }
           } catch (error) {
             if (error instanceof CrawlFetchError && [404, 410].includes(error.status)) missingPages++
-            else extractFailures++
+            else recordFailure(url, error instanceof CrawlFetchError ? `fetch_http_${error.status}` : 'fetch_failed')
             continue
           }
         } else {
           read = null
+          let staticFailure: string | undefined
           if (cfg.render !== true) {
-            try { read = reader(readStaticSchema(await fetchText(url, 12_000)), url) }
-            catch (error) {
+            try {
+              read = reader(readStaticSchema(await fetchText(url, 12_000)), url)
+              if (!read) staticFailure = 'static_product_schema_missing'
+            } catch (error) {
               if (error instanceof CrawlFetchError && [404, 410].includes(error.status)) {
                 missingPages++
                 continue
               }
+              staticFailure = error instanceof CrawlFetchError ? `fetch_http_${error.status}` : 'fetch_failed'
               // Preserve the extract-worker fallback for transient fetch failures.
             }
           }
@@ -391,11 +409,11 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
               render: cfg.render === true,
               timeoutMs: 12_000,
             })
-            if (!ex) { extractFailures++; continue }
+            if (!ex) { recordFailure(url, staticFailure ?? 'extract_worker_returned_no_result'); continue }
             read = reader(ex as unknown as Extracted, url)
           }
         }
-        if (!read || !read.name) { extractFailures++; continue }
+        if (!read || !read.name) { recordFailure(url, 'product_name_missing'); continue }
         // A priceless row would commit (validateMarketplaceNormalized only WARNS on a
         // missing price) and render a blank price on the card. Skip instead.
         if (read.price == null) { noPrice++; continue }
@@ -488,7 +506,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
             crawl_cursor: { index: nextCursor, total: urls.length, wraps, updated_at: new Date().toISOString() },
           },
           last_sync_at: new Date().toISOString(),
-          last_sync_status: extractFailures > 0 && items.length === 0 ? 'error' : 'ok',
+          last_sync_status: extractFailures > 0 ? (items.length === 0 ? 'error' : 'partial') : 'ok',
           last_sync_items: written,
         })
         .eq('provider', 'crawl').eq('slug', sourceSlug)
@@ -508,6 +526,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
       cursor: nextCursor, wraps,
       skipped_fresh: fresh.size,
       extract_failures: extractFailures,
+      extract_failure_samples: failureSamples,
       skipped_no_price: noPrice,
       budget_hit: budgetHit,
       elapsed_ms: Date.now() - runStarted,
