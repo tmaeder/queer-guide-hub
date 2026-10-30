@@ -59,7 +59,7 @@ export function ZeroResultRescue({
   }, [hasFacetsBeyondSearch, filters.search, filters.includeAdult]);
   const nearestFour = nearest.slice(0, 4);
   const nearestIds = useMemo(() => nearestFour.map((l) => l.id), [nearestFour]);
-  const { assets } = useEntityImageAssets('marketplace_listing', nearestIds);
+  const { assets } = useEntityImageAssets('marketplace_listing', nearestIds, nearestFour);
 
   return (
     <div className="flex flex-col gap-10">
@@ -68,9 +68,7 @@ export function ZeroResultRescue({
           {active ? buildEmptyTitle(filters) : 'No listings yet.'}
         </h2>
         <p className="mt-2 max-w-reading text-muted-foreground">
-          {active
-            ? buildLooseningSuggestion(filters)
-            : 'Nothing is listed on this line right now.'}
+          {active ? buildLooseningSuggestion(filters) : 'Nothing is listed on this line right now.'}
         </p>
         <div className="mt-6 flex flex-wrap gap-2">
           {didYouMean && (

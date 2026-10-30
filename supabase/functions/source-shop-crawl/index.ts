@@ -4,6 +4,7 @@ import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { extractContent } from '../_shared/extract-client.ts'
 import { splitAuthor } from '../_shared/book-title.ts'
+import { allowedSitemap, readSelectedProduct, readStaticSchema, type Selectors } from './crawl-support.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
@@ -26,7 +27,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 // verify_jwt=false, which is an SSRF hole this function does not reproduce.
 //
 // config keys (per merchant):
-//   strategy          'jsonld' | 'microdata'   which reader parses a product page
+//   strategy          'jsonld' | 'microdata' | 'selector'   which reader parses a product page
 //   sitemap           absolute URL of the product sitemap (or a sitemapindex)
 //   url_include       regex a URL must match to be treated as a product page
 //   entity_id_from    'isbn' | undefined       how to derive source_entity_id
@@ -54,6 +55,7 @@ const UA = 'QueerGuideBot/1.0 (+https://queer.guide/bot)'
 
 interface CrawlConfig {
   strategy: string
+  selectors?: Selectors
   sitemap: string
   url_include?: string
   entity_id_from?: string
@@ -93,12 +95,16 @@ function locs(xml: string): string[] {
   )
 }
 
+class CrawlFetchError extends Error {
+  constructor(public status: number, url: string) { super(`${url} -> HTTP ${status}`) }
+}
+
 async function fetchText(url: string, timeoutMs: number): Promise<string> {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), timeoutMs)
   try {
     const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/xml,text/xml,*/*' }, signal: ctrl.signal })
-    if (!res.ok) throw new Error(`${url} -> HTTP ${res.status}`)
+    if (!res.ok) throw new CrawlFetchError(res.status, url)
     return await res.text()
   } finally { clearTimeout(timer) }
 }
@@ -291,17 +297,14 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
     const missing = [!cfg.sitemap && 'config.sitemap', !cfg.strategy && 'config.strategy'].filter(Boolean) as string[]
     if (missing.length) return jsonResponse(skippedResponse('missing_config', missing), 200, req)
     const reader = READERS[cfg.strategy]
-    if (!reader) return jsonResponse(skippedResponse('unknown_strategy', [cfg.strategy]), 200, req)
+    if (!reader && cfg.strategy !== 'selector') return jsonResponse(skippedResponse('unknown_strategy', [cfg.strategy]), 200, req)
 
     const shopDomain = String(merchant.shop_domain ?? '')
     if (!shopDomain) return jsonResponse(skippedResponse('missing_config', ['shop_domain']), 200, req)
     // The sitemap must belong to the registered merchant.
-    try {
-      const sh = new URL(cfg.sitemap).hostname.replace(/^www\./, '')
-      if (sh !== shopDomain.replace(/^www\./, '')) {
-        return jsonResponse(skippedResponse('sitemap_host_mismatch', [cfg.sitemap]), 200, req)
-      }
-    } catch { return jsonResponse(skippedResponse('invalid_sitemap_url', [cfg.sitemap]), 200, req) }
+    if (!allowedSitemap(cfg.sitemap, shopDomain)) {
+      return jsonResponse(skippedResponse('sitemap_host_mismatch', [cfg.sitemap]), 200, req)
+    }
 
     const dryRun = body.dry_run === true
     const urls = await collectProductUrls(cfg, shopDomain)
@@ -342,7 +345,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
     const concurrency = Math.max(1, Number(cfg.concurrency ?? DEFAULT_CONCURRENCY))
     const delayMs = Math.max(0, Number(cfg.crawl_delay_ms ?? DEFAULT_CRAWL_DELAY_MS))
     const items: RawItem[] = []
-    let extractFailures = 0, noPrice = 0, consumed = 0, budgetHit = false
+    let extractFailures = 0, noPrice = 0, missingPages = 0, consumed = 0, budgetHit = false
     let next = 0
     let lastStart = 0
 
@@ -360,14 +363,38 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
         lastStart = Math.max(Date.now(), lastStart + delayMs)
         if (wait > 0) await new Promise(r => setTimeout(r, wait))
 
-        const ex = await extractContent(supabase, {
-          url,
-          render: cfg.render === true,
-          timeoutMs: 12_000,
-        })
-        if (!ex) { extractFailures++; continue }
-
-        const read = reader(ex as unknown as Extracted, url)
+        let read: ProductRead | null
+        if (cfg.strategy === 'selector') {
+          try {
+            const html = await fetchText(url, 12_000)
+            read = readSelectedProduct(html, url, cfg.selectors ?? {}, cfg.currency)
+          } catch (error) {
+            if (error instanceof CrawlFetchError && [404, 410].includes(error.status)) missingPages++
+            else extractFailures++
+            continue
+          }
+        } else {
+          read = null
+          if (cfg.render !== true) {
+            try { read = reader(readStaticSchema(await fetchText(url, 12_000)), url) }
+            catch (error) {
+              if (error instanceof CrawlFetchError && [404, 410].includes(error.status)) {
+                missingPages++
+                continue
+              }
+              // Preserve the extract-worker fallback for transient fetch failures.
+            }
+          }
+          if (!read) {
+            const ex = await extractContent(supabase, {
+              url,
+              render: cfg.render === true,
+              timeoutMs: 12_000,
+            })
+            if (!ex) { extractFailures++; continue }
+            read = reader(ex as unknown as Extracted, url)
+          }
+        }
         if (!read || !read.name) { extractFailures++; continue }
         // A priceless row would commit (validateMarketplaceNormalized only WARNS on a
         // missing price) and render a blank price on the card. Skip instead.
@@ -474,7 +501,9 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
       items_total: items.length,
       items_processed: dryRun ? items.length : written,
       items_succeeded: dryRun ? items.length : written,
-      items_failed: extractFailures + noPrice,
+      items_failed: extractFailures,
+      items_skipped: noPrice + missingPages,
+      skipped_unavailable: missingPages,
       total_urls: urls.length,
       cursor: nextCursor, wraps,
       skipped_fresh: fresh.size,
