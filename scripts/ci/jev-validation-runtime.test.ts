@@ -37,9 +37,15 @@ async function run(body: unknown, options: { denied?: boolean; budgetDenied?: bo
       assert.equal(url, 'https://api.typesafe.ai/v1/systemone')
       const payload = JSON.parse(String(init.body))
       requests.push(payload)
+      const review = payload.state?.state_version === 'jev-review-public-state-v2'
       const historical = Object.values(payload.questions).some((question: unknown) => (question as { type: string }).type === 'choice')
       return options.providerStatus ? new Response('PRIVATE_PROVIDER_ERROR', { status: options.providerStatus }) : Response.json({
-        model: 'jev-1.14.0', usage: { input_tokens: 100, output_tokens: 10 }, answers: historical
+        model: 'jev-1.14.0', usage: { input_tokens: 100, output_tokens: 10 }, answers: review
+        ? Object.fromEntries(Object.entries(payload.questions).map(([key, raw]) => {
+          const options = Object.keys((raw as { criteria: Record<string, string> }).criteria)
+          const choice = key === 'decision' ? 'reject' : key === 'risk' ? 'routine' : key === 'reason' ? 'invalid_proposal' : 'supported'
+          return [key, { type: 'choice', choice, confidence: 1, probabilities: Object.fromEntries(options.map(option => [option, option === choice ? 1 : 0])) }]
+        })) : historical
         ? Object.fromEntries(Object.keys(payload.questions).map(key => [key, { type: 'choice', choice: 'says_nothing', confidence: 1, probabilities: { supports: 0, contradicts: 0, says_nothing: 1 } }]))
         : Object.fromEntries(Object.keys(payload.questions).map(key => [key, { type: 'noul', noul: ['contradicts_value', 'contradicted', 'brand_affiliation_claim', 'explicit_adult', 'medical_claim', 'legal_claim'].includes(key) ? 0 : 1 }])),
       })
@@ -55,6 +61,19 @@ test('preview is authenticated and returns exact fixed fixture payloads with no 
   assert.equal(r.body.fixtures[0].request.questions.same_subject.type, 'noul')
   assert.equal(r.calls.length, 0); assert.equal(r.requests.length, 0)
   assert.doesNotMatch(JSON.stringify(r.body), /SERVER_KEY/)
+})
+test('fixed Review canaries use the actual minimized production state without widening native decision authority', async () => {
+  const preview = await run({ fixtures: ['review-integrity-uncertainty', 'review-integrity-missing-target', 'review-access-qualification', 'review-city-namesake'] })
+  assert.equal(preview.status, 200); assert.equal(preview.calls.length, 0)
+  assert.equal(preview.body.fixtures.length, 4)
+  for (const fixture of preview.body.fixtures) {
+    assert.equal(fixture.request.state.state_version, 'jev-review-public-state-v2')
+    assert.equal(fixture.kind, 'synthetic_review')
+    assert.doesNotMatch(JSON.stringify(fixture.request), /prior_research|expected|input_hash|lease_token/)
+  }
+  const live = await run({ fixtures: ['review-integrity-uncertainty', 'review-integrity-missing-target'], execute: true })
+  assert.equal(live.status, 200); assert.equal(live.body.source_writes, 0)
+  assert.ok(live.body.results.every((r: { matches: boolean }) => r.matches))
 })
 test('fixed pipeline validation uses the production question builder without sending labels', async () => {
   const preview = await run({ fixtures: ['pipeline-news-faithful'] })

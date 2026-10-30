@@ -1,4 +1,5 @@
 /** Jev chooses among application-defined actions; it never writes SQL or invents values. */
+import { publicReviewState } from './state.ts'
 export const POLICY_VERSION = 'jev-review-v1'
 export const SOURCES = {
   'dedup-review': 'merge', 'tag-enrichment': 'suggestion', 'ai-suggestions': 'suggestion',
@@ -49,6 +50,7 @@ const rules: Record<string, string> = {
 export function buildQuestions(context: Context, evidence: Evidence[]) {
   const kind = SOURCES[context.item.queue_type as QueueSource]
   if (!kind) throw new Error(`Unregistered Review source: ${context.item.queue_type}`)
+  if (kind === 'private' || kind === 'human') throw new Error('Protected Review context cannot be sent to Jev')
   const integrityRule = context.candidates.length === 1 && context.candidates[0].action === 'reject' ? context.candidates[0].payload.integrity_rule : null
   const integrityCheck = integrityRule === 'uncertainty_without_replacement'
     ? 'Check only this structural condition: proposal.field is description, proposal.proposed_value.issues contains only uncertainty_language, and no replacement is supplied. The owner policy says qualified historical wording alone is not a defect. Rejection closes only this detector proposal; it does not verify or alter the historical text.'
@@ -58,9 +60,7 @@ export function buildQuestions(context: Context, evidence: Evidence[]) {
   const criteria = Object.fromEntries(context.candidates.map(c => [c.id, c.explanation]))
   return {
     model: 'jev-1.14.0',
-    state: { policy_version: POLICY_VERSION, queue: context.item.queue_type, issue: context.item,
-      current_record: context.record, proposal: context.proposal, related: context.related,
-      prior_research: context.research, fetched_sources: evidence,
+    state: { policy_version: POLICY_VERSION, queue: context.item.queue_type, ...publicReviewState(context, evidence),
       warning: integrityCheck ?? 'Stored model-generated descriptions, confidence scores and unverified citations are not independent source verification.' },
     questions: {
       decision: { type: 'choice', instructions: `${instructions} Select one permitted action, or abstain.`, criteria: { ...criteria, abstain: 'No permitted action is fully supported; more evidence or a person is needed.' } },

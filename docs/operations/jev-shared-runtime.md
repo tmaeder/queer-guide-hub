@@ -1,14 +1,61 @@
 # Shared Jev runtime
 
 The owner approved the shared integration design and a US$5 total live-validation
-budget on 29 October 2026. Implementation lives in the isolated
-`codex/jev-integration-20261029` branch. This document tracks the foundation;
+budget on 29 October 2026. The foundation merged in PR #4946; the public-state
+follow-up lives in `codex/jev-review-public-state-20261030`. This document tracks the foundation;
 domain-wide adoption and sensitive-action validation remain in progress.
+
+## Review public-state boundary — 30 October
+
+Review version 15 and validator version 9 use `jev-review-public-state-v2`.
+The existing apply policy remains `jev-review-v1`, including its .97/.99 gates.
+An explicit recursive field projection excludes arbitrary nested metadata, account
+fields and prior generated research from vendor requests. Research can still
+discover candidates/URLs internally; it is not independent factual evidence.
+Structural integrity evidence is rebuilt from the minimized proposal rather than
+forwarding arbitrary JSON inside a text field. Credential/signed/account URL
+parameters are refused before retrieval, including the source-probe route.
+Ordinary public article ID and language query parameters remain usable.
+
+Migration `20261030060527` authorizes explicit public source/entity pairs before
+staging content reaches evidence/model processing. It includes the inspected
+publisher venue outputs as well as news/events/products. Unknown/private sources
+and mismatched types return a minimal blocker; changing a source to an unauthorized
+adapter also changes its native apply hash. All 581 current staging Review cases
+passed the read-only preflight. Browser inserts are denied and read/update/delete
+require admin, so arbitrary users cannot stamp an authorized source name. Protected
+queues also have an application guard before evidence retrieval, and the question
+builder independently refuses their model traffic.
+
+Four fixed synthetic canaries used 6,124 input tokens (US$0.000257208), with three
+label matches and one safe abstention on an unusable relationship proposal. There
+were no unsupported accepted actions. These results do not validate new factual
+authority; thresholds were unchanged. A real one-case RSS dry run remained blocked
+for insufficient confidence, with its complete staging-row hash unchanged. Native
+transactions and source correction requirements remain. No blocked-case mass retry
+was introduced. Outcomes now include the exact request hash and state version;
+runtime tests verify the hash matches the transactional accounting reservation.
+
+All 85 targeted runtime/policy/retrieval tests, the audit-export privacy regression,
+Deno checks, changed-file lint and the isolated native PostgreSQL contracts pass.
+Security advisor findings are unchanged. Exact canaries, raw typed answers and
+release hashes are in `docs/audits/2026-10-30-jev-review-public-state.json`.
+
+Migration `20261030062311` also fixes the native historical integrity rejection:
+closing an uncertainty-language-only description proposal with no replacement
+preserves the milestone's existing `last_verified_at`. It previously cleared that
+timestamp even though the structural rejection certified no historical facts.
+The exact proposal shape is checked in the apply dispatcher; a structural label
+alone cannot preserve verification on an ordinary factual rejection. The isolated
+regression failed against the old dispatcher and passes with the migration. A
+live native-apply canary preserved the complete canonical-row hash, verified the
+proposal transition and rolled that transition back. Both existing verified
+proposals remain for normal processing; no facts or verification dates were invented.
 
 Production verification on 29 October: the first two migrations are applied as
 `20261029213554` (budget ledger) and `20261029214157` (normalized source URLs),
 matching the observed Supabase migration history. The isolated validator is
-deployed at version 6. Eight synthetic calls used 4,949 input tokens, charging
+was then deployed at version 6. Eight synthetic calls used 4,949 input tokens, charging
 207,858 nano-USD (US$0.000207858); no reservations remain unsettled. Anonymous
 execution returned HTTP 401, and the three budget RPCs are service-only.
 
@@ -280,13 +327,14 @@ Private workflows and existing mandatory human gates remain explicit. Artwork
 also remains excluded without visual evidence. The matrix identifies the native
 helper/dependency audits and source-specific evaluations that each path still needs.
 
-The privacy audit identified shallow nested JSON projection and unprojected issue
-metadata/prior research as hardening work before broader model-state adoption.
+The 29 October privacy audit identified shallow nested JSON projection and unprojected issue
+metadata/prior research. The vendor boundary and staging source authorization are
+now hardened as described above; the internal SQL context remains separately protected.
 A read-only check of 20 recent public Review contexts found no credential/account
 key paths under the checked key list; it does not certify every context or free
 text. All current active staging Review source names were public publisher/adapters
-in that snapshot. An explicit adapter authorization guard is still needed for
-future private staging sources; a queue name alone cannot establish public origin.
+in that snapshot. The new explicit source/entity guard now protects the boundary
+for future private staging sources. A queue name alone cannot establish public origin.
 
 Implementation inspection now records nine deterministic exclusions and four
 follow-up audits in `docs/audits/2026-10-29-jev-automation-implementations.json`.
