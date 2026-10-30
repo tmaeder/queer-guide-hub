@@ -1,5 +1,11 @@
 import * as cheerio from 'npm:cheerio@1.0.0-rc.12'
 
+/** Read URL locations from sitemap entries, including XML CDATA text. */
+export function readSitemapLocations(xml: string): string[] {
+  const $ = cheerio.load(xml, { xmlMode: true })
+  return $('loc').map((_i, node) => $(node).text().trim()).get().filter(Boolean)
+}
+
 // These are first-party, operator-maintained snapshots already registered on the
 // three Salzgeber merchants. Product URLs are still restricted to shop_domain.
 const OWNED_SITEMAPS = new Set([

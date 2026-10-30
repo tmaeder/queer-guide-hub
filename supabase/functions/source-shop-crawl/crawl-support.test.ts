@@ -1,7 +1,11 @@
-import { allowedSitemap, readCanonicalPageUrl, readSelectedProduct, readStaticSchema } from './crawl-support.ts'
+import { allowedSitemap, readCanonicalPageUrl, readSelectedProduct, readSitemapLocations, readStaticSchema } from './crawl-support.ts'
 function equal(actual: unknown, expected: unknown) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(`${JSON.stringify(actual)} != ${JSON.stringify(expected)}`)
 }
+Deno.test('sitemap locations preserve CDATA URLs and decode ordinary XML entities', () => {
+  equal(readSitemapLocations(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc><![CDATA[https://shop.example/en/socks/11-socks.html?a=1&b=2]]></loc></url><url><loc> https://shop.example/product?a=1&amp;b=2 </loc></url><url><loc> </loc></url></urlset>`), ['https://shop.example/en/socks/11-socks.html?a=1&b=2', 'https://shop.example/product?a=1&b=2'])
+  equal(readSitemapLocations('<sitemapindex><sitemap><loc><![CDATA[https://shop.example/products.xml]]></loc></sitemap></sitemapindex>'), ['https://shop.example/products.xml'])
+})
 Deno.test('sitemap trust allows only the merchant and exact owned Salzgeber snapshots', () => {
   equal(allowedSitemap('https://www.shop.example/sitemap.xml', 'shop.example'), true)
   equal(allowedSitemap('https://img.queer.guide/imports/salzgeber-film-sitemap.xml', 'salzgeber.shop'), true)
