@@ -163,7 +163,7 @@ Deno.serve(async (req: Request) => {
       if (!src) continue
       const ids = pickRows.filter((p) => p.entity_type === t).map((p) => p.entity_id)
       const { data: rows } = await supabase.from(src.table).select(src.select).in('id', ids)
-      for (const r of (rows ?? []) as Array<Record<string, unknown>>) {
+      for (const r of (rows ?? []) as unknown as Array<Record<string, unknown>>) {
         ctxById.set(`${t}:${r.id}`, src.toCtx(r))
       }
     }
