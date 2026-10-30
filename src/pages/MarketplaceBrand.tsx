@@ -142,7 +142,7 @@ export default function MarketplaceBrand() {
               </div>
 
               {brand.logo_credit && (
-                <div className="mt-3 max-w-reading">
+                <div className="mt-4 max-w-reading">
                   {brand.logo_credit.source_url ? (
                     <a
                       href={brand.logo_credit.source_url}
