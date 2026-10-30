@@ -61,12 +61,12 @@ begin
     select 1 from pg_proc where oid=helper_oid
       and prosrc=optimized_view and prorettype='public.city_quality_profile'::regtype
       and proretset and not prosecdef and provolatile='s'
-      and proconfig=array['search_path=public, pg_temp']
+      and proconfig=array['search_path=public, extensions, pg_temp']
   ) then raise exception 'Existing city full-profile helper changed';end if;
   execute format($ddl$
     create or replace function public._city_quality_full_profile()
     returns setof public.city_quality_profile
-    language sql stable security invoker set search_path to public,pg_temp
+    language sql stable security invoker set search_path to public,extensions,pg_temp
     as %L
   $ddl$,optimized_view);
   revoke all on function public._city_quality_full_profile() from public,anon,authenticated;
