@@ -57,14 +57,23 @@ interface PickRow {
  * CMS editor. Polymorphic entity search, tier select, rationale, reorder,
  * plus the "AI draft" trigger (guide-draft edge fn hydrates picks context).
  */
-export function GuidePicksPanel({ guideId }: { guideId: string }) {
+export function GuidePicksPanel({
+  guideId,
+  onChanged,
+}: {
+  guideId: string;
+  onChanged?: () => void | Promise<void>;
+}) {
   const qc = useQueryClient();
   const [type, setType] = useState<GuideEntityType>('venue');
   const [search, setSearch] = useState('');
   const [tier, setTier] = useState<PickTier | 'none'>('top');
   const [drafting, setDrafting] = useState(false);
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['admin-guide-picks', guideId] });
+  const invalidate = async () => {
+    await qc.invalidateQueries({ queryKey: ['admin-guide-picks', guideId] });
+    await onChanged?.();
+  };
 
   const { data: picks } = useQuery({
     queryKey: ['admin-guide-picks', guideId],

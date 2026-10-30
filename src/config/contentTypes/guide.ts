@@ -193,12 +193,14 @@ export const guideContentType: ContentTypeConfig = {
     {
       id: 'picks',
       label: 'Picks',
-      render: (contentId) => createElement(GuidePicksPanel, { guideId: contentId }),
+      render: (contentId, onChanged) =>
+        createElement(GuidePicksPanel, { guideId: contentId, onChanged }),
     },
     {
       id: 'sections',
       label: 'Sections',
-      render: (contentId) => createElement(GuideSectionsPanel, { guideId: contentId }),
+      render: (contentId, onChanged) =>
+        createElement(GuideSectionsPanel, { guideId: contentId, onChanged }),
     },
     {
       id: 'quest',
