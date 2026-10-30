@@ -112,6 +112,12 @@ test('protected queues cannot fetch sources or call Jev even if their native con
   const mismatch = await run({ context: { ...context, item: { queue_type: 'submissions', title: 'Private' } } })
   assert.equal(mismatch.fetched.length, 0); assert.equal(mismatch.reservations.length, 0)
 })
+test('missing or ambiguous action catalogs block before source fetching and paid inference', async () => {
+  for (const candidates of [[], [context.candidates[0], context.candidates[0]]]) {
+    const result = await run({ context: { ...context, candidates } })
+    assert.equal(result.body.blocked, 2); assert.equal(result.fetched.length, 0); assert.equal(result.reservations.length, 0)
+  }
+})
 test('conflicting identity stays blocked despite a confident action and readable source', async () => {
   const { body } = await run({ conflicting: true })
   assert.equal(body.applied, 0); assert.equal(body.blocked, 2)

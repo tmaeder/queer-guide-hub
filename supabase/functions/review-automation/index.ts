@@ -84,6 +84,8 @@ Deno.serve(async req => {
         const sourceKind = SOURCES[job.queue_type as keyof typeof SOURCES]
         if (context.blocker) result = { blocker: context.blocker }
         else if (sourceKind === 'private' || sourceKind === 'human') result = { blocker: 'protected_review_context' }
+        else if (!context.candidates.length) result = { blocker: 'missing_action_candidate' }
+        else if (new Set(context.candidates.map(c => c.id)).size !== context.candidates.length) result = { blocker: 'ambiguous_action_catalog' }
         else {
           let errors: string[] = []; let attempted = 0
           const integrityOnly = context.candidates.length === 1 && context.candidates[0].action === 'reject' && typeof context.candidates[0].payload.integrity_rule === 'string'

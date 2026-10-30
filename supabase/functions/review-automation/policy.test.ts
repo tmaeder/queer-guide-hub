@@ -17,6 +17,10 @@ test('evidence and risk are independent gates even with a confident decision', (
 test('lower confidence and unknown action abstain; safety uses a stricter threshold', () => { const e = evaluation(); e.answers.decision.confidence = 0.98; assert.ok(decide(context, e).candidate); assert.equal(decide({ ...context, item: { ...context.item, risk: 'safety' } }, e).candidate, null); e.answers.decision.choice = 'injected_action'; assert.equal(decide(context, e).candidate, null) })
 test('reject malformed, nonfinite, missing and inconsistent distributions', () => { for (const mutate of [(e: Evaluation) => { e.answers.support.confidence = NaN }, (e: Evaluation) => { delete e.answers.risk }, (e: Evaluation) => { e.answers.decision.probabilities.approve = 0.4 }, (e: Evaluation) => { e.answers.decision.probabilities = { approve: 0, abstain: 1 } }, (e: Evaluation) => { e.answers.support.probabilities.injected = 0 }]) { const e = evaluation(); mutate(e); assert.throws(() => parseEvaluation(e, context.candidates)) } assert.equal(parseEvaluation(evaluation(), context.candidates).model, 'jev-test') })
 test('unknown source fails closed', () => assert.throws(() => buildQuestions({ ...context, item: { queue_type: 'future-source', title: 'Example' } }, [])))
+test('ambiguous and missing action catalogs cannot become vendor choice questions', () => {
+  assert.throws(() => buildQuestions({ ...context, candidates: [] }, []), /action catalog/)
+  assert.throws(() => buildQuestions({ ...context, candidates: [context.candidates[0], context.candidates[0]] }, []), /action catalog/)
+})
 test('signed/account URLs are refused before fetching while ordinary public article IDs remain usable', async () => {
   let calls = 0
   for (const url of ['https://example.org/page?access_token=private', 'https://example.org/page?X-Amz-Signature=private',
