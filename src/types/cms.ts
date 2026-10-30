@@ -400,7 +400,7 @@ export interface ContentTypeConfig {
   extraPanels?: Array<{
     id: string;
     label: string;
-    render: (contentId: string) => ReactNode;
+    render: (contentId: string, onChanged?: () => void | Promise<void>) => ReactNode;
   }>;
   /**
    * Per-row actions in the list, beside Edit.

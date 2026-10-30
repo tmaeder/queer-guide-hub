@@ -21,9 +21,18 @@ interface SectionRow {
 }
 
 /** Relation editor for guide_sections — prose/callout blocks interleaved with picks. */
-export function GuideSectionsPanel({ guideId }: { guideId: string }) {
+export function GuideSectionsPanel({
+  guideId,
+  onChanged,
+}: {
+  guideId: string;
+  onChanged?: () => void | Promise<void>;
+}) {
   const qc = useQueryClient();
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['admin-guide-sections', guideId] });
+  const invalidate = async () => {
+    await qc.invalidateQueries({ queryKey: ['admin-guide-sections', guideId] });
+    await onChanged?.();
+  };
 
   const { data: sections } = useQuery({
     queryKey: ['admin-guide-sections', guideId],

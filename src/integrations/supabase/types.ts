@@ -8948,6 +8948,8 @@ export type Database = {
       }
       guide_picks: {
         Row: {
+          source_urls: string[]
+          verified_at: string | null
           cons: string[]
           created_at: string
           entity_id: string
@@ -8962,6 +8964,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          source_urls?: string[]
+          verified_at?: string | null
           cons?: string[]
           created_at?: string
           entity_id: string
@@ -8976,6 +8980,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          source_urls?: string[]
+          verified_at?: string | null
           cons?: string[]
           created_at?: string
           entity_id?: string
@@ -9097,6 +9103,8 @@ export type Database = {
       }
       guides: {
         Row: {
+          selection_method: string | null
+          last_verified_at: string | null
           audience_tags: string[]
           author_id: string | null
           category: string | null
@@ -9125,6 +9133,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          selection_method?: string | null
+          last_verified_at?: string | null
           audience_tags?: string[]
           author_id?: string | null
           category?: string | null
@@ -9153,6 +9163,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          selection_method?: string | null
+          last_verified_at?: string | null
           audience_tags?: string[]
           author_id?: string | null
           category?: string | null
