@@ -733,3 +733,7 @@ verify_jwt = false
 # Internal cron secret or verified admin authentication is checked in the handler.
 [functions.review-automation]
 verify_jwt = false
+
+# Fixed synthetic validation fixtures; same internal-secret/admin handler authentication.
+[functions.jev-validation]
+verify_jwt = false

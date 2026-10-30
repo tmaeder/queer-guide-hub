@@ -1,0 +1,1051 @@
+{
+  "summary": {
+    "rows": 12,
+    "agreement": 9,
+    "development_agreement": 4,
+    "held_out_agreement": 5,
+    "unsupported_supported_verdicts": 0,
+    "input_tokens": 7971
+  },
+  "results": [
+    {
+      "kind": "synthetic_pipeline",
+      "fixture": "pipeline-news-faithful",
+      "matches": true,
+      "verdict": "supported",
+      "expected": "supported",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 652,
+          "output_tokens": 79
+        },
+        "answers": {
+          "faithful": {
+            "noul": 0.97,
+            "type": "noul"
+          },
+          "contradicted": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "same_subject": {
+            "noul": 0.98,
+            "type": "noul"
+          },
+          "explicit_lgbtq_context": {
+            "noul": 0.83,
+            "type": "noul"
+          }
+        }
+      }
+    },
+    {
+      "kind": "synthetic_pipeline",
+      "fixture": "pipeline-news-contradicted",
+      "matches": true,
+      "verdict": "contradicted",
+      "expected": "contradicted",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 653,
+          "output_tokens": 79
+        },
+        "answers": {
+          "faithful": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "contradicted": {
+            "noul": 0.98,
+            "type": "noul"
+          },
+          "same_subject": {
+            "noul": 0.91,
+            "type": "noul"
+          },
+          "explicit_lgbtq_context": {
+            "noul": 0.79,
+            "type": "noul"
+          }
+        }
+      }
+    },
+    {
+      "kind": "synthetic_pipeline",
+      "fixture": "pipeline-event-faithful",
+      "matches": true,
+      "verdict": "supported",
+      "expected": "supported",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 669,
+          "output_tokens": 79
+        },
+        "answers": {
+          "faithful": {
+            "noul": 0.93,
+            "type": "noul"
+          },
+          "contradicted": {
+            "noul": 0.04,
+            "type": "noul"
+          },
+          "same_subject": {
+            "noul": 0.97,
+            "type": "noul"
+          },
+          "explicit_lgbtq_context": {
+            "noul": 0.95,
+            "type": "noul"
+          }
+        }
+      }
+    },
+    {
+      "kind": "synthetic_pipeline",
+      "fixture": "pipeline-product-added-claim",
+      "matches": true,
+      "verdict": "uncertain",
+      "expected": "uncertain",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 656,
+          "output_tokens": 79
+        },
+        "answers": {
+          "faithful": {
+            "noul": 0.05,
+            "type": "noul"
+          },
+          "contradicted": {
+            "noul": 0.05,
+            "type": "noul"
+          },
+          "same_subject": {
+            "noul": 0.76,
+            "type": "noul"
+          },
+          "explicit_lgbtq_context": {
+            "noul": 0.02,
+            "type": "noul"
+          }
+        }
+      }
+    },
+    {
+      "kind": "synthetic_pipeline",
+      "fixture": "pipeline-news-qualified",
+      "matches": false,
+      "verdict": "uncertain",
+      "expected": "supported",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 657,
+          "output_tokens": 79
+        },
+        "answers": {
+          "faithful": {
+            "noul": 0.69,
+            "type": "noul"
+          },
+          "contradicted": {
+            "noul": 0.04,
+            "type": "noul"
+          },
+          "same_subject": {
+            "noul": 0.97,
+            "type": "noul"
+          },
+          "explicit_lgbtq_context": {
+            "noul": 0.98,
+            "type": "noul"
+          }
+        }
+      }
+    },
+    {
+      "kind": "synthetic_pipeline",
+      "fixture": "pipeline-news-lost-qualification",
+      "matches": true,
+      "verdict": "contradicted",
+      "expected": "contradicted",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 653,
+          "output_tokens": 79
+        },
+        "answers": {
+          "faithful": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "contradicted": {
+            "noul": 0.91,
+            "type": "noul"
+          },
+          "same_subject": {
+            "noul": 0.89,
+            "type": "noul"
+          },
+          "explicit_lgbtq_context": {
+            "noul": 0.98,
+            "type": "noul"
+          }
+        }
+      }
+    },
+    {
+      "kind": "synthetic_pipeline",
+      "fixture": "pipeline-event-wrong-time",
+      "matches": false,
+      "verdict": "uncertain",
+      "expected": "contradicted",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 670,
+          "output_tokens": 79
+        },
+        "answers": {
+          "faithful": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "contradicted": {
+            "noul": 0.97,
+            "type": "noul"
+          },
+          "same_subject": {
+            "noul": 0.69,
+            "type": "noul"
+          },
+          "explicit_lgbtq_context": {
+            "noul": 0.21,
+            "type": "noul"
+          }
+        }
+      }
+    },
+    {
+      "kind": "synthetic_pipeline",
+      "fixture": "pipeline-event-added-accessibility",
+      "matches": true,
+      "verdict": "uncertain",
+      "expected": "uncertain",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 676,
+          "output_tokens": 79
+        },
+        "answers": {
+          "faithful": {
+            "noul": 0.04,
+            "type": "noul"
+          },
+          "contradicted": {
+            "noul": 0.04,
+            "type": "noul"
+          },
+          "same_subject": {
+            "noul": 0.94,
+            "type": "noul"
+          },
+          "explicit_lgbtq_context": {
+            "noul": 0.18,
+            "type": "noul"
+          }
+        }
+      }
+    },
+    {
+      "kind": "synthetic_pipeline",
+      "fixture": "pipeline-product-faithful",
+      "matches": true,
+      "verdict": "supported",
+      "expected": "supported",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 672,
+          "output_tokens": 79
+        },
+        "answers": {
+          "faithful": {
+            "noul": 0.98,
+            "type": "noul"
+          },
+          "contradicted": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "same_subject": {
+            "noul": 0.98,
+            "type": "noul"
+          },
+          "explicit_lgbtq_context": {
+            "noul": 0.02,
+            "type": "noul"
+          }
+        }
+      }
+    },
+    {
+      "kind": "synthetic_pipeline",
+      "fixture": "pipeline-product-wrong-material",
+      "matches": false,
+      "verdict": "uncertain",
+      "expected": "contradicted",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 670,
+          "output_tokens": 79
+        },
+        "answers": {
+          "faithful": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "contradicted": {
+            "noul": 0.96,
+            "type": "noul"
+          },
+          "same_subject": {
+            "noul": 0.42,
+            "type": "noul"
+          },
+          "explicit_lgbtq_context": {
+            "noul": 0.02,
+            "type": "noul"
+          }
+        }
+      }
+    },
+    {
+      "kind": "synthetic_pipeline",
+      "fixture": "pipeline-event-german",
+      "matches": true,
+      "verdict": "supported",
+      "expected": "supported",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 675,
+          "output_tokens": 79
+        },
+        "answers": {
+          "faithful": {
+            "noul": 0.97,
+            "type": "noul"
+          },
+          "contradicted": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "same_subject": {
+            "noul": 0.98,
+            "type": "noul"
+          },
+          "explicit_lgbtq_context": {
+            "noul": 0.94,
+            "type": "noul"
+          }
+        }
+      }
+    },
+    {
+      "kind": "synthetic_pipeline",
+      "fixture": "pipeline-news-french",
+      "matches": true,
+      "verdict": "supported",
+      "expected": "supported",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 668,
+          "output_tokens": 79
+        },
+        "answers": {
+          "faithful": {
+            "noul": 0.98,
+            "type": "noul"
+          },
+          "contradicted": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "same_subject": {
+            "noul": 0.98,
+            "type": "noul"
+          },
+          "explicit_lgbtq_context": {
+            "noul": 0.94,
+            "type": "noul"
+          }
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Synthetic adapter fixtures only: four development probes and eight held-out cases.",
+    "No threshold or wording changes after these results. Three conservative abstentions remain.",
+    "Shadow supported verdicts grant no approval or publication authority."
+  ],
+  "requests": {
+    "pipeline-news-faithful": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-pipeline-faithfulness-v1",
+          "entity_type": "news_article",
+          "source_name": "rss-news",
+          "original": {
+            "title": "Pride march in Bern",
+            "text": "The Pride march in Bern takes place on Saturday. Organizers expect 200 participants."
+          },
+          "candidate": {
+            "title": "Pride march in Bern",
+            "description": "The Pride march in Bern is on Saturday."
+          }
+        },
+        "questions": {
+          "same_subject": {
+            "type": "noul",
+            "instructions": "Do `candidate` and `original` describe the same specific subject?",
+            "criteria": {
+              "true": "Both texts identify the same entity, article subject or event occurrence.",
+              "false": "The candidate describes another entity, a namesake or another occurrence."
+            }
+          },
+          "faithful": {
+            "type": "noul",
+            "instructions": "Are the factual assertions in `candidate` supported by `original`?",
+            "criteria": {
+              "true": "The candidate faithfully paraphrases or translates the original, preserving its scope and qualifications.",
+              "false": "The candidate adds facts absent from the original, changes the meaning or removes a qualification."
+            }
+          },
+          "contradicted": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly contradict a factual assertion in `candidate`?",
+            "criteria": {
+              "true": "A concrete original statement is incompatible with a candidate assertion.",
+              "false": "No original statement contradicts the candidate. An omitted fact alone is not a contradiction."
+            }
+          },
+          "explicit_lgbtq_context": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly discuss LGBTQ people, communities or topics?",
+            "criteria": {
+              "true": "The text expressly discusses LGBTQ people, communities, culture, rights or related topics.",
+              "false": "The text has no explicit LGBTQ context. Names, appearance, a rainbow color or an inclusive slogan alone do not establish it."
+            }
+          }
+        }
+      },
+      "expected": "supported",
+      "split": "development"
+    },
+    "pipeline-news-contradicted": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-pipeline-faithfulness-v1",
+          "entity_type": "news_article",
+          "source_name": "rss-news",
+          "original": {
+            "title": "Pride march in Bern",
+            "text": "The Pride march in Bern is cancelled. The organizers confirmed there will be no march this year."
+          },
+          "candidate": {
+            "title": "Pride march in Bern",
+            "description": "The Pride march in Bern will take place this year."
+          }
+        },
+        "questions": {
+          "same_subject": {
+            "type": "noul",
+            "instructions": "Do `candidate` and `original` describe the same specific subject?",
+            "criteria": {
+              "true": "Both texts identify the same entity, article subject or event occurrence.",
+              "false": "The candidate describes another entity, a namesake or another occurrence."
+            }
+          },
+          "faithful": {
+            "type": "noul",
+            "instructions": "Are the factual assertions in `candidate` supported by `original`?",
+            "criteria": {
+              "true": "The candidate faithfully paraphrases or translates the original, preserving its scope and qualifications.",
+              "false": "The candidate adds facts absent from the original, changes the meaning or removes a qualification."
+            }
+          },
+          "contradicted": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly contradict a factual assertion in `candidate`?",
+            "criteria": {
+              "true": "A concrete original statement is incompatible with a candidate assertion.",
+              "false": "No original statement contradicts the candidate. An omitted fact alone is not a contradiction."
+            }
+          },
+          "explicit_lgbtq_context": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly discuss LGBTQ people, communities or topics?",
+            "criteria": {
+              "true": "The text expressly discusses LGBTQ people, communities, culture, rights or related topics.",
+              "false": "The text has no explicit LGBTQ context. Names, appearance, a rainbow color or an inclusive slogan alone do not establish it."
+            }
+          }
+        }
+      },
+      "expected": "contradicted",
+      "split": "development"
+    },
+    "pipeline-event-faithful": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-pipeline-faithfulness-v1",
+          "entity_type": "event",
+          "source_name": "eventfrog",
+          "original": {
+            "title": "Queer poetry night",
+            "text": "Queer poetry night at the River Hall starts on Friday at 19:00. Admission costs CHF 10."
+          },
+          "candidate": {
+            "title": "Queer poetry night",
+            "description": "Queer poetry night at River Hall on Friday at 19:00. Admission CHF 10."
+          }
+        },
+        "questions": {
+          "same_subject": {
+            "type": "noul",
+            "instructions": "Do `candidate` and `original` describe the same specific subject?",
+            "criteria": {
+              "true": "Both texts identify the same entity, article subject or event occurrence.",
+              "false": "The candidate describes another entity, a namesake or another occurrence."
+            }
+          },
+          "faithful": {
+            "type": "noul",
+            "instructions": "Are the factual assertions in `candidate` supported by `original`?",
+            "criteria": {
+              "true": "The candidate faithfully paraphrases or translates the original, preserving its scope and qualifications.",
+              "false": "The candidate adds facts absent from the original, changes the meaning or removes a qualification."
+            }
+          },
+          "contradicted": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly contradict a factual assertion in `candidate`?",
+            "criteria": {
+              "true": "A concrete original statement is incompatible with a candidate assertion.",
+              "false": "No original statement contradicts the candidate. An omitted fact alone is not a contradiction."
+            }
+          },
+          "explicit_lgbtq_context": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly discuss LGBTQ people, communities or topics?",
+            "criteria": {
+              "true": "The text expressly discusses LGBTQ people, communities, culture, rights or related topics.",
+              "false": "The text has no explicit LGBTQ context. Names, appearance, a rainbow color or an inclusive slogan alone do not establish it."
+            }
+          }
+        }
+      },
+      "expected": "supported",
+      "split": "development"
+    },
+    "pipeline-product-added-claim": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-pipeline-faithfulness-v1",
+          "entity_type": "marketplace",
+          "source_name": "ryvkstudio",
+          "original": {
+            "title": "Purple cotton shirt",
+            "text": "This purple shirt is made from cotton and comes in sizes S to XL. Wash at 30 degrees."
+          },
+          "candidate": {
+            "title": "Purple cotton shirt",
+            "description": "A purple cotton shirt made by a queer-owned business."
+          }
+        },
+        "questions": {
+          "same_subject": {
+            "type": "noul",
+            "instructions": "Do `candidate` and `original` describe the same specific subject?",
+            "criteria": {
+              "true": "Both texts identify the same entity, article subject or event occurrence.",
+              "false": "The candidate describes another entity, a namesake or another occurrence."
+            }
+          },
+          "faithful": {
+            "type": "noul",
+            "instructions": "Are the factual assertions in `candidate` supported by `original`?",
+            "criteria": {
+              "true": "The candidate faithfully paraphrases or translates the original, preserving its scope and qualifications.",
+              "false": "The candidate adds facts absent from the original, changes the meaning or removes a qualification."
+            }
+          },
+          "contradicted": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly contradict a factual assertion in `candidate`?",
+            "criteria": {
+              "true": "A concrete original statement is incompatible with a candidate assertion.",
+              "false": "No original statement contradicts the candidate. An omitted fact alone is not a contradiction."
+            }
+          },
+          "explicit_lgbtq_context": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly discuss LGBTQ people, communities or topics?",
+            "criteria": {
+              "true": "The text expressly discusses LGBTQ people, communities, culture, rights or related topics.",
+              "false": "The text has no explicit LGBTQ context. Names, appearance, a rainbow color or an inclusive slogan alone do not establish it."
+            }
+          }
+        }
+      },
+      "expected": "uncertain",
+      "split": "development"
+    },
+    "pipeline-news-qualified": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-pipeline-faithfulness-v1",
+          "entity_type": "news_article",
+          "source_name": "rss-news",
+          "original": {
+            "title": "Festival proposal",
+            "text": "The city council is considering a proposal for an LGBTQ film festival next summer. No decision or date has been confirmed."
+          },
+          "candidate": {
+            "title": "Festival proposal",
+            "description": "The city council is considering an LGBTQ film festival next summer; no decision is confirmed."
+          }
+        },
+        "questions": {
+          "same_subject": {
+            "type": "noul",
+            "instructions": "Do `candidate` and `original` describe the same specific subject?",
+            "criteria": {
+              "true": "Both texts identify the same entity, article subject or event occurrence.",
+              "false": "The candidate describes another entity, a namesake or another occurrence."
+            }
+          },
+          "faithful": {
+            "type": "noul",
+            "instructions": "Are the factual assertions in `candidate` supported by `original`?",
+            "criteria": {
+              "true": "The candidate faithfully paraphrases or translates the original, preserving its scope and qualifications.",
+              "false": "The candidate adds facts absent from the original, changes the meaning or removes a qualification."
+            }
+          },
+          "contradicted": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly contradict a factual assertion in `candidate`?",
+            "criteria": {
+              "true": "A concrete original statement is incompatible with a candidate assertion.",
+              "false": "No original statement contradicts the candidate. An omitted fact alone is not a contradiction."
+            }
+          },
+          "explicit_lgbtq_context": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly discuss LGBTQ people, communities or topics?",
+            "criteria": {
+              "true": "The text expressly discusses LGBTQ people, communities, culture, rights or related topics.",
+              "false": "The text has no explicit LGBTQ context. Names, appearance, a rainbow color or an inclusive slogan alone do not establish it."
+            }
+          }
+        }
+      },
+      "expected": "supported",
+      "split": "held_out"
+    },
+    "pipeline-news-lost-qualification": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-pipeline-faithfulness-v1",
+          "entity_type": "news_article",
+          "source_name": "rss-news",
+          "original": {
+            "title": "Festival proposal",
+            "text": "The city council is considering a proposal for an LGBTQ film festival next summer. No decision or date has been confirmed."
+          },
+          "candidate": {
+            "title": "Festival proposal",
+            "description": "The city council has confirmed an LGBTQ film festival for next summer."
+          }
+        },
+        "questions": {
+          "same_subject": {
+            "type": "noul",
+            "instructions": "Do `candidate` and `original` describe the same specific subject?",
+            "criteria": {
+              "true": "Both texts identify the same entity, article subject or event occurrence.",
+              "false": "The candidate describes another entity, a namesake or another occurrence."
+            }
+          },
+          "faithful": {
+            "type": "noul",
+            "instructions": "Are the factual assertions in `candidate` supported by `original`?",
+            "criteria": {
+              "true": "The candidate faithfully paraphrases or translates the original, preserving its scope and qualifications.",
+              "false": "The candidate adds facts absent from the original, changes the meaning or removes a qualification."
+            }
+          },
+          "contradicted": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly contradict a factual assertion in `candidate`?",
+            "criteria": {
+              "true": "A concrete original statement is incompatible with a candidate assertion.",
+              "false": "No original statement contradicts the candidate. An omitted fact alone is not a contradiction."
+            }
+          },
+          "explicit_lgbtq_context": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly discuss LGBTQ people, communities or topics?",
+            "criteria": {
+              "true": "The text expressly discusses LGBTQ people, communities, culture, rights or related topics.",
+              "false": "The text has no explicit LGBTQ context. Names, appearance, a rainbow color or an inclusive slogan alone do not establish it."
+            }
+          }
+        }
+      },
+      "expected": "contradicted",
+      "split": "held_out"
+    },
+    "pipeline-event-wrong-time": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-pipeline-faithfulness-v1",
+          "entity_type": "event",
+          "source_name": "gay-ch",
+          "original": {
+            "title": "Rainbow choir concert",
+            "text": "The Rainbow choir concert starts at 18:00 on Sunday at the community hall. Doors open at 17:30."
+          },
+          "candidate": {
+            "title": "Rainbow choir concert",
+            "description": "The Rainbow choir concert starts at 21:00 on Sunday at the community hall."
+          }
+        },
+        "questions": {
+          "same_subject": {
+            "type": "noul",
+            "instructions": "Do `candidate` and `original` describe the same specific subject?",
+            "criteria": {
+              "true": "Both texts identify the same entity, article subject or event occurrence.",
+              "false": "The candidate describes another entity, a namesake or another occurrence."
+            }
+          },
+          "faithful": {
+            "type": "noul",
+            "instructions": "Are the factual assertions in `candidate` supported by `original`?",
+            "criteria": {
+              "true": "The candidate faithfully paraphrases or translates the original, preserving its scope and qualifications.",
+              "false": "The candidate adds facts absent from the original, changes the meaning or removes a qualification."
+            }
+          },
+          "contradicted": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly contradict a factual assertion in `candidate`?",
+            "criteria": {
+              "true": "A concrete original statement is incompatible with a candidate assertion.",
+              "false": "No original statement contradicts the candidate. An omitted fact alone is not a contradiction."
+            }
+          },
+          "explicit_lgbtq_context": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly discuss LGBTQ people, communities or topics?",
+            "criteria": {
+              "true": "The text expressly discusses LGBTQ people, communities, culture, rights or related topics.",
+              "false": "The text has no explicit LGBTQ context. Names, appearance, a rainbow color or an inclusive slogan alone do not establish it."
+            }
+          }
+        }
+      },
+      "expected": "contradicted",
+      "split": "held_out"
+    },
+    "pipeline-event-added-accessibility": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-pipeline-faithfulness-v1",
+          "entity_type": "event",
+          "source_name": "gay-ch",
+          "original": {
+            "title": "Rainbow choir concert",
+            "text": "The Rainbow choir concert starts at 18:00 on Sunday at the community hall. Doors open at 17:30."
+          },
+          "candidate": {
+            "title": "Rainbow choir concert",
+            "description": "The Rainbow choir concert is at 18:00 on Sunday. The venue has a wheelchair-accessible toilet."
+          }
+        },
+        "questions": {
+          "same_subject": {
+            "type": "noul",
+            "instructions": "Do `candidate` and `original` describe the same specific subject?",
+            "criteria": {
+              "true": "Both texts identify the same entity, article subject or event occurrence.",
+              "false": "The candidate describes another entity, a namesake or another occurrence."
+            }
+          },
+          "faithful": {
+            "type": "noul",
+            "instructions": "Are the factual assertions in `candidate` supported by `original`?",
+            "criteria": {
+              "true": "The candidate faithfully paraphrases or translates the original, preserving its scope and qualifications.",
+              "false": "The candidate adds facts absent from the original, changes the meaning or removes a qualification."
+            }
+          },
+          "contradicted": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly contradict a factual assertion in `candidate`?",
+            "criteria": {
+              "true": "A concrete original statement is incompatible with a candidate assertion.",
+              "false": "No original statement contradicts the candidate. An omitted fact alone is not a contradiction."
+            }
+          },
+          "explicit_lgbtq_context": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly discuss LGBTQ people, communities or topics?",
+            "criteria": {
+              "true": "The text expressly discusses LGBTQ people, communities, culture, rights or related topics.",
+              "false": "The text has no explicit LGBTQ context. Names, appearance, a rainbow color or an inclusive slogan alone do not establish it."
+            }
+          }
+        }
+      },
+      "expected": "uncertain",
+      "split": "held_out"
+    },
+    "pipeline-product-faithful": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-pipeline-faithfulness-v1",
+          "entity_type": "marketplace",
+          "source_name": "ryvkstudio",
+          "original": {
+            "title": "Rainbow cotton tote",
+            "text": "This rainbow tote is made of cotton. Its dimensions are 35 by 40 cm. It has two long handles."
+          },
+          "candidate": {
+            "title": "Rainbow cotton tote",
+            "description": "A cotton rainbow tote measuring 35 by 40 cm, with two long handles."
+          }
+        },
+        "questions": {
+          "same_subject": {
+            "type": "noul",
+            "instructions": "Do `candidate` and `original` describe the same specific subject?",
+            "criteria": {
+              "true": "Both texts identify the same entity, article subject or event occurrence.",
+              "false": "The candidate describes another entity, a namesake or another occurrence."
+            }
+          },
+          "faithful": {
+            "type": "noul",
+            "instructions": "Are the factual assertions in `candidate` supported by `original`?",
+            "criteria": {
+              "true": "The candidate faithfully paraphrases or translates the original, preserving its scope and qualifications.",
+              "false": "The candidate adds facts absent from the original, changes the meaning or removes a qualification."
+            }
+          },
+          "contradicted": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly contradict a factual assertion in `candidate`?",
+            "criteria": {
+              "true": "A concrete original statement is incompatible with a candidate assertion.",
+              "false": "No original statement contradicts the candidate. An omitted fact alone is not a contradiction."
+            }
+          },
+          "explicit_lgbtq_context": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly discuss LGBTQ people, communities or topics?",
+            "criteria": {
+              "true": "The text expressly discusses LGBTQ people, communities, culture, rights or related topics.",
+              "false": "The text has no explicit LGBTQ context. Names, appearance, a rainbow color or an inclusive slogan alone do not establish it."
+            }
+          }
+        }
+      },
+      "expected": "supported",
+      "split": "held_out"
+    },
+    "pipeline-product-wrong-material": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-pipeline-faithfulness-v1",
+          "entity_type": "marketplace",
+          "source_name": "ryvkstudio",
+          "original": {
+            "title": "Rainbow cotton tote",
+            "text": "This rainbow tote is made of cotton. Its dimensions are 35 by 40 cm. It has two long handles."
+          },
+          "candidate": {
+            "title": "Rainbow cotton tote",
+            "description": "A rainbow tote made of polyester, measuring 35 by 40 cm."
+          }
+        },
+        "questions": {
+          "same_subject": {
+            "type": "noul",
+            "instructions": "Do `candidate` and `original` describe the same specific subject?",
+            "criteria": {
+              "true": "Both texts identify the same entity, article subject or event occurrence.",
+              "false": "The candidate describes another entity, a namesake or another occurrence."
+            }
+          },
+          "faithful": {
+            "type": "noul",
+            "instructions": "Are the factual assertions in `candidate` supported by `original`?",
+            "criteria": {
+              "true": "The candidate faithfully paraphrases or translates the original, preserving its scope and qualifications.",
+              "false": "The candidate adds facts absent from the original, changes the meaning or removes a qualification."
+            }
+          },
+          "contradicted": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly contradict a factual assertion in `candidate`?",
+            "criteria": {
+              "true": "A concrete original statement is incompatible with a candidate assertion.",
+              "false": "No original statement contradicts the candidate. An omitted fact alone is not a contradiction."
+            }
+          },
+          "explicit_lgbtq_context": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly discuss LGBTQ people, communities or topics?",
+            "criteria": {
+              "true": "The text expressly discusses LGBTQ people, communities, culture, rights or related topics.",
+              "false": "The text has no explicit LGBTQ context. Names, appearance, a rainbow color or an inclusive slogan alone do not establish it."
+            }
+          }
+        }
+      },
+      "expected": "contradicted",
+      "split": "held_out"
+    },
+    "pipeline-event-german": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-pipeline-faithfulness-v1",
+          "entity_type": "event",
+          "source_name": "gaybasel",
+          "original": {
+            "title": "Queerer Spieleabend",
+            "text": "Der queere Spieleabend findet am Donnerstag ab 19 Uhr im Kulturhaus statt. Der Eintritt ist kostenlos."
+          },
+          "candidate": {
+            "title": "Queerer Spieleabend",
+            "description": "A queer games evening at the Kulturhaus on Thursday from 19:00, with free admission."
+          }
+        },
+        "questions": {
+          "same_subject": {
+            "type": "noul",
+            "instructions": "Do `candidate` and `original` describe the same specific subject?",
+            "criteria": {
+              "true": "Both texts identify the same entity, article subject or event occurrence.",
+              "false": "The candidate describes another entity, a namesake or another occurrence."
+            }
+          },
+          "faithful": {
+            "type": "noul",
+            "instructions": "Are the factual assertions in `candidate` supported by `original`?",
+            "criteria": {
+              "true": "The candidate faithfully paraphrases or translates the original, preserving its scope and qualifications.",
+              "false": "The candidate adds facts absent from the original, changes the meaning or removes a qualification."
+            }
+          },
+          "contradicted": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly contradict a factual assertion in `candidate`?",
+            "criteria": {
+              "true": "A concrete original statement is incompatible with a candidate assertion.",
+              "false": "No original statement contradicts the candidate. An omitted fact alone is not a contradiction."
+            }
+          },
+          "explicit_lgbtq_context": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly discuss LGBTQ people, communities or topics?",
+            "criteria": {
+              "true": "The text expressly discusses LGBTQ people, communities, culture, rights or related topics.",
+              "false": "The text has no explicit LGBTQ context. Names, appearance, a rainbow color or an inclusive slogan alone do not establish it."
+            }
+          }
+        }
+      },
+      "expected": "supported",
+      "split": "held_out"
+    },
+    "pipeline-news-french": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-pipeline-faithfulness-v1",
+          "entity_type": "news_article",
+          "source_name": "rss-news",
+          "original": {
+            "title": "Festival de cinéma queer",
+            "text": "Le festival de cinéma queer se déroule à Lausanne du 4 au 6 juin. Les séances sont proposées en français."
+          },
+          "candidate": {
+            "title": "Festival de cinéma queer",
+            "description": "A queer film festival in Lausanne from 4 to 6 June, with screenings in French."
+          }
+        },
+        "questions": {
+          "same_subject": {
+            "type": "noul",
+            "instructions": "Do `candidate` and `original` describe the same specific subject?",
+            "criteria": {
+              "true": "Both texts identify the same entity, article subject or event occurrence.",
+              "false": "The candidate describes another entity, a namesake or another occurrence."
+            }
+          },
+          "faithful": {
+            "type": "noul",
+            "instructions": "Are the factual assertions in `candidate` supported by `original`?",
+            "criteria": {
+              "true": "The candidate faithfully paraphrases or translates the original, preserving its scope and qualifications.",
+              "false": "The candidate adds facts absent from the original, changes the meaning or removes a qualification."
+            }
+          },
+          "contradicted": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly contradict a factual assertion in `candidate`?",
+            "criteria": {
+              "true": "A concrete original statement is incompatible with a candidate assertion.",
+              "false": "No original statement contradicts the candidate. An omitted fact alone is not a contradiction."
+            }
+          },
+          "explicit_lgbtq_context": {
+            "type": "noul",
+            "instructions": "Does `original` explicitly discuss LGBTQ people, communities or topics?",
+            "criteria": {
+              "true": "The text expressly discusses LGBTQ people, communities, culture, rights or related topics.",
+              "false": "The text has no explicit LGBTQ context. Names, appearance, a rainbow color or an inclusive slogan alone do not establish it."
+            }
+          }
+        }
+      },
+      "expected": "supported",
+      "split": "held_out"
+    }
+  }
+}

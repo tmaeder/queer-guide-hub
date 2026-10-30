@@ -10,11 +10,32 @@ test('recovers explicit publisher, staging, canonical and prior-research URLs wi
   for (const patch of [
     { related: { publisher_sources: [{ source_url: 'https://example.org/event' }] } },
     { proposal: { source_content: { normalized: { website: 'https://example.org/event' }, enriched: null } } },
+    { proposal: { source_content: { normalized: { urls: ['https://example.org/event'] }, enriched: null } } },
     { related: { venue_candidates: [{ website: 'https://example.org/event' }] } },
     { research: { candidates: [{ source_url: 'https://example.org/event' }] } },
     { record: { website: 'https://example.org/event' } },
   ]) assert.deepEqual(sourceCandidates({ ...context, ...patch }), ['https://example.org/event'])
   assert.deepEqual(sourceCandidates({ ...context, record: { description: 'Use https://example.org/event', name: 'example.org' } }), [])
+})
+
+test('normalized source URL arrays retain existing attempt bounds and reject nested metadata', async () => {
+  const urls = sourceCandidates({ ...context, proposal: { source_content: { normalized: {
+    urls: ['http://example.org/unsafe', 'https://localhost', { url: 'https://example.org/DO_NOT_FETCH' }, 'https://example.org/canonical', 'https://example.org/over-array-limit'],
+    arbitrary_metadata: 'DO_NOT_EXPORT',
+  } } } })
+  assert.deepEqual(urls, ['https://example.org/canonical'])
+  const result = await recoverSources({ ...context, proposal: { source_content: { normalized: { urls: ['https://example.org/canonical'] } } } }, async () => page())
+  assert.equal(result.attempted, 1); assert.equal(result.evidence[0].url, 'https://example.org/canonical')
+})
+test('exact normalized source URL precedes stale detector alternatives without expanding the fetch budget', async () => {
+  const calls: string[] = []
+  const result = await recoverSources({ ...context, urls: ['one','two','three','four'].map(n => `https://example.org/${n}`),
+    proposal: { source_content: { normalized: { urls: ['https://example.org/article'] } } } }, async url => {
+    calls.push(String(url))
+    return String(url).endsWith('/article') ? page() : new Response(null, { status: 404 })
+  })
+  assert.equal(calls[0], 'https://example.org/article')
+  assert.equal(calls.length, 4); assert.equal(result.evidence.length, 1)
 })
 
 test('deduplicates fragments, validates destinations before fetch and bounds attempts', async () => {
