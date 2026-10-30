@@ -189,7 +189,7 @@ do $$declare consumer record;begin
  then raise exception 'Helper execute boundary incorrect';end if;
  if not exists(select 1 from pg_proc where oid='public._city_quality_full_profile()'::regprocedure
   and proretset and prorettype='public.city_quality_profile'::regtype and provolatile='s' and not prosecdef
-  and proconfig=array['search_path=public, pg_temp'])
+  and proconfig=array['search_path=public, extensions, pg_temp'])
  then raise exception 'Helper shape/invoker/inlining fence changed';end if;
  if (select value from baseline_scorecard) is distinct from (public._city_quality_scorecard()-'generated_at')
  then raise exception 'Native scorecard output changed';end if;
