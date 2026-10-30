@@ -257,10 +257,9 @@ export async function fetchPickEntities(picks: PickRef[]): Promise<Map<string, P
       const adapter = ADAPTERS[type];
       if (!adapter) return;
       let query = untypedFrom(adapter.table).select(adapter.select).in('id', ids);
+      if (type === 'marketplace') query = query.eq('overview_eligible', true);
       if (type === 'marketplace')
-        query = query
-          .eq('overview_eligible', true)
-          .or('availability.is.null,availability.neq.out_of_stock');
+        query = query.or('availability.is.null,availability.neq.out_of_stock');
       const { data, error } = await query;
       if (error) throw error;
       for (const row of (data ?? []) as AdapterRow[]) {
