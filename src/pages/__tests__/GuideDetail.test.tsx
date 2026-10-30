@@ -106,3 +106,34 @@ describe('GuideDetail — admin menu', () => {
     expect(btn).toHaveAttribute('data-exportable', 'true');
   });
 });
+
+describe('GuideDetail — resolved recommendations', () => {
+  it('counts only visible picks and gives a useful state when every target is hidden', async () => {
+    useGuideMock.mockReturnValue({
+      data: {
+        guide: {
+          id: 'g2',
+          title: 'Verified guide',
+          slug: 'verified',
+          format: 'guide',
+          status: 'published',
+          meta: {},
+          pick_count: 4,
+          audience_tags: [],
+          category: null,
+          intro_md: 'Evidence is being checked.',
+          updated_at: '2026-10-30',
+        },
+        picks: [{ id: 'p1', entity: null }],
+        sections: [],
+      },
+      isLoading: false,
+      error: null,
+    });
+    renderAt('verified');
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Recommendations are being reviewed',
+    );
+    expect(screen.queryByText(/4 picks/)).toBeNull();
+  });
+});

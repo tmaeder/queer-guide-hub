@@ -1,3 +1,4 @@
+import { GuideProse } from '@/components/guides/GuideProse';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Clock, BookOpen } from '@/components/icons';
@@ -11,32 +12,17 @@ import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { GlossaryLinkedProse } from '@/components/tags/GlossaryLinkedText';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { ShareMenu } from '@/components/share/ShareMenu';
 
 function SectionBlock({ section }: { section: GuideSection }) {
   if (!section.body_md) return null;
-  const paras = section.body_md.split(/\n\n+/);
-  if (section.kind === 'callout') {
-    return (
-      <aside className="rounded-container bg-muted/40 p-6 space-y-4">
-        {paras.map((p, i) => (
-          <p key={i} className="text-body-lg leading-relaxed">
-            {p}
-          </p>
-        ))}
-      </aside>
-    );
-  }
-  return (
-    <div className="space-y-6">
-      {paras.map((p, i) => (
-        <p key={i} className="text-body-lg leading-relaxed">
-          {p}
-        </p>
-      ))}
-    </div>
+  return section.kind === 'callout' ? (
+    <aside className="rounded-container bg-muted/40 p-6">
+      <GuideProse text={section.body_md} />
+    </aside>
+  ) : (
+    <GuideProse text={section.body_md} />
   );
 }
 
@@ -96,7 +82,8 @@ const GuideDetail = () => {
     );
   }
 
-  const { guide, picks, sections } = data;
+  const { guide, sections } = data;
+  const picks = data.picks.filter((p) => p.entity);
   const hero = resolveImageUrl({ imageUrl: guide.hero_image_path });
   const isQuest = guide.format === 'quest';
   const phase = questPhase(guide);
@@ -116,9 +103,9 @@ const GuideDetail = () => {
       ),
     );
   }
-  if (!isQuest && guide.pick_count > 0) {
+  if (!isQuest && picks.length > 0) {
     eyebrowParts.push(
-      t('guides.card.picks', '{{count}} picks').replace('{{count}}', String(guide.pick_count)),
+      t('guides.card.picks', '{{count}} picks').replace('{{count}}', String(picks.length)),
     );
   }
   if (isQuest && phase) {
@@ -183,14 +170,30 @@ const GuideDetail = () => {
 
       {guide.intro_md && (
         <PageContainer as="section" flush size="reading" className="mb-16">
-          {/* One matcher pass over the whole intro, then distributed back into
-              paragraphs — so the link cap and first-mention-only apply to the
-              document rather than to each paragraph. */}
-          <GlossaryLinkedProse
-            text={guide.intro_md}
-            className="space-y-6"
-            paragraphClassName="text-body-lg leading-relaxed"
-          />
+          <GuideProse text={guide.intro_md} />
+        </PageContainer>
+      )}
+
+      {guide.selection_method && (
+        <PageContainer as="section" flush size="reading" className="mb-12 space-y-4">
+          <h2 className="text-heading-sm">{t('guides.method', 'How we selected these')}</h2>
+          <GuideProse text={guide.selection_method} />
+          {guide.last_verified_at && (
+            <p className="text-13 text-muted-foreground">
+              {t('guides.verified', 'Sources checked')}{' '}
+              {new Date(guide.last_verified_at).toLocaleDateString()}
+            </p>
+          )}
+        </PageContainer>
+      )}
+      {!isQuest && picks.length === 0 && (
+        <PageContainer flush size="reading" className="mb-12">
+          <p role="status">
+            {t(
+              'guides.noVerifiedPicks',
+              'Recommendations are being reviewed. Check back for an updated selection.',
+            )}
+          </p>
         </PageContainer>
       )}
 

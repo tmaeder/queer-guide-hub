@@ -1,0 +1,425 @@
+[
+  {
+    "slug": "berlin-gay-saunas-2026",
+    "title": "Visiting BOILER Berlin: hours and what to check first",
+    "dek": "A practical guide to one verified sauna, with the limits of our information made clear.",
+    "intro_md": "If you are planning a sauna visit in Berlin, start with the operator’s current timetable rather than a claim about which venue has the best crowd. BOILER publishes weekday and weekend opening arrangements, last-entry rules and dated activities. These are useful planning facts; they do not predict attendance or guarantee that a particular evening will suit you.\n\nThis page covers BOILER only. It does not rank Berlin’s saunas or claim a quieter atmosphere than an unreviewed competitor. Read the operator’s latest information before travelling, especially on holidays or for a ticketed event.",
+    "picks": [
+      {
+        "entity_type": "venue",
+        "entity_id": "804ca587-74eb-4533-9e85-4190ff4362e4",
+        "rationale_md": "Choose BOILER if its published timetable fits your visit. The operator lists Monday–Thursday from noon to 06:00 the following morning, then continuous opening from Friday noon until Monday 06:00. Last admission is one hour before closing; holidays can differ.",
+        "source_urls": [
+          "https://de.boiler-berlin.com/"
+        ],
+        "pros": [
+          "Published weekday and weekend opening information",
+          "Dated activities on the operator’s calendar"
+        ],
+        "cons": [
+          "No first-hand assessment of crowd, cleanliness or atmosphere",
+          "Admission prices and individual access needs must be confirmed with the operator"
+        ]
+      }
+    ],
+    "selection_method": "We checked the operator’s published timetable and activity calendar on 30 October 2026. This is source-based planning information for one venue, not a visit report or a comparison of every Berlin sauna.",
+    "format": "guide",
+    "sections": [
+      [
+        "prose",
+        "## Plan the visit\n\nCheck the calendar for your exact date and distinguish standard opening from special-event admission. If a particular facility matters to you, confirm that it is operating before you travel. A calendar listing does not establish that the whole venue is step-free.\n\n## Questions to resolve before paying\n\n- Ask about the current admission price, payment methods and what is included.\n- Check entry policies for your age and circumstances directly with the operator.\n- Ask about step-free routes, changing facilities or any other access requirement you need confirmed.\n\nWe have not verified these details and do not assume that missing information means a requirement is met."
+      ]
+    ]
+  },
+  {
+    "slug": "berlin-queer-nightlife-starter",
+    "title": "Berlin club nights: choose the event before the venue",
+    "dek": "Two programme-led starting points, plus an update on SchwuZ.",
+    "intro_md": "A venue name is not a complete plan for a night out. Check the event, rooms, music and admission information for the date you want to go. Different nights at the same address can serve different audiences, and a queer-associated venue is not a promise that every programme will match your interests.\n\nThese are two places to begin that research. They are not ranked for friendliness or guaranteed entry. We removed unsupported claims about easier doors, fixed closing times and budget admission rather than presenting them as local knowledge.",
+    "picks": [
+      {
+        "entity_type": "venue",
+        "entity_id": "1eda4bee-653b-4d0e-939d-a62fe11aff31",
+        "rationale_md": "Use Berghain’s official programme to identify the specific event and room. The operator distinguishes Berghain, Panorama Bar, Säule, Halle and Kantine; do not treat them as one interchangeable bar experience.",
+        "source_urls": [
+          "https://www.berghain.berlin/en/"
+        ],
+        "pros": [
+          "Room-specific programme and awareness information"
+        ],
+        "cons": [
+          "Event availability and admission require a separate check"
+        ]
+      },
+      {
+        "entity_type": "venue",
+        "entity_id": "034a16c3-5c50-4397-a25d-f36cbce8b828",
+        "rationale_md": "Start with ://about blank’s programme preview and FAQ. Select a particular event before making travel plans; the venue’s name alone does not tell you the music, audience or entry arrangements that night.",
+        "source_urls": [
+          "https://aboutblank.li/"
+        ],
+        "pros": [
+          "Programme preview and FAQ linked by the operator"
+        ],
+        "cons": [
+          "No verified fixed cover charge or closing time in this guide"
+        ]
+      }
+    ],
+    "selection_method": "We checked the operators’ public programme entry points and SchwuZ’s current announcement. This is a planning shortlist based on primary sources, not first-hand door or atmosphere testing.",
+    "format": "list",
+    "sections": [
+      [
+        "callout",
+        "## SchwuZ has changed\n\nSchwuZ’s official site describes rebuilding and advertises events at other locations. Do not use an old Rollbergstraße listing as a current party plan. Check [SchwuZ’s own announcements](https://www.schwuz.de/) for the venue attached to a particular date."
+      ]
+    ]
+  },
+  {
+    "slug": "berlin-pride-circuit-2026",
+    "title": "Berlin CSD 2026: the archived parade route",
+    "dek": "The corrected date and route for the 2026 demonstration. This event has ended.",
+    "intro_md": "This is an archive of the 2026 Berlin CSD demonstration, not a schedule for an upcoming Pride. The organiser confirms that the parade took place on Saturday, 25 July 2026. Our earlier guide incorrectly placed it on 18 July and described Nollendorfplatz as the starting point. The corrected starting area was Leipziger Straße at Charlottenstraße.\n\nKeep the year attached to any date you reuse from this page. Future editions can change their route, programme and arrangements. Use the organiser’s current announcement when planning a new trip.",
+    "picks": [
+      {
+        "entity_type": "event",
+        "entity_id": "d09a7eb2-f7ec-4a96-b091-9a6e784af33e",
+        "rationale_md": "The organiser’s 2026 schedule gives an opening at 11:30 and the first vehicles departing at noon. The route passed Potsdamer Platz, Nollendorfplatz and the Siegessäule, with the final rally at the Brandenburg Gate. These are historical arrangements.",
+        "source_urls": [
+          "https://csd-berlin.de/demo-route-2026/"
+        ],
+        "pros": [
+          "Official route and timetable retained for reference"
+        ],
+        "cons": [
+          "Past event; the route is not a plan for a later edition"
+        ]
+      }
+    ],
+    "selection_method": "The correction uses the organiser’s published 2026 demonstration route. We retained the verified parade record and removed unsourced party rankings. No attendance or first-hand review is implied.",
+    "format": "guide",
+    "sections": [
+      [
+        "callout",
+        "## Planning a future visit\n\nCheck the [official CSD Berlin website](https://csd-berlin.de/) for the next edition. Do not assume that an old party listing, route, timetable or ticket link remains valid."
+      ]
+    ],
+    "historical": true
+  },
+  {
+    "slug": "trans-affirming-gear-2026",
+    "title": "Gender-affirming clothing: a chest binder and packing underwear",
+    "dek": "Two different functions, with the product and sizing limits explained.",
+    "intro_md": "Choose the function you need before comparing prices: a chest binder changes the outline of the chest, while packing underwear holds a separate packer. They solve different clothing needs and should not be ranked as interchangeable upgrades. The two source-linked options below replace products whose features or availability we could not substantiate.\n\nThis is a product-information comparison, not a clinical recommendation or a claim that one size or garment is suitable for every body. Use the current manufacturer’s measurements, care information and intended-use instructions. If you need advice about a health condition or recovery, ask an appropriately qualified professional.",
+    "picks": [
+      {
+        "entity_type": "marketplace",
+        "entity_id": "29c8995f-f37e-4ca9-ad08-840918f07771",
+        "rationale_md": "TomboyX now lists this formerly named Compression Plus Top as the Essential Chest Binder in Chai. Choose it for chest compression, rather than for holding a packer. Check the current size chart; this guide has not established individual fit or a safe wearing duration.",
+        "source_urls": [
+          "https://tomboyx.com/products/essential-chest-binder-chai-x"
+        ],
+        "pros": [
+          "Manufacturer provides a size chart and product instructions"
+        ],
+        "cons": [
+          "Compression and fit need individual assessment",
+          "Not presented here as swimwear"
+        ]
+      },
+      {
+        "entity_type": "marketplace",
+        "entity_id": "42a6de37-6df6-4023-9320-5ae249cd0d1c",
+        "rationale_md": "RodeoH’s Shift Jock is an open-back underwear option with a side-loading pocket for XS–medium soft packers. It is a holder, not a packer or stand-to-pee device. The maker lists a cotton/spandex blend; confirm compatibility with the packer you already own.",
+        "source_urls": [
+          "https://rodeoh.com/products/shift-jock-packer-underwear-slate-blue"
+        ],
+        "pros": [
+          "Packing pocket with a stated compatibility range"
+        ],
+        "cons": [
+          "Packer must be purchased separately",
+          "Open-back cut offers less coverage than boxer-style underwear"
+        ]
+      }
+    ],
+    "selection_method": "We compared the linked product specifications for distinct uses, rather than filling a fixed number of slots. This is desk research, not a wear test. Sizes, stock and delivery depend on the selected variant and destination; confirm them with the seller. Displayed prices are recorded in the seller’s currency and exclude any additional delivery or import costs.",
+    "format": "guide",
+    "sections": [
+      [
+        "prose",
+        "## Before ordering\n\n- Decide whether you need compression, a packing pocket or another function.\n- Compare your measurements with the chart for that exact product.\n- Confirm the return policy for intimate garments before opening or wearing the item.\n- Check shipping to your destination and whether the selected size is available.\n\nWe have not tested these garments, established medical performance or verified that they suit swimming or post-operative use."
+      ]
+    ]
+  },
+  {
+    "slug": "lgbtq-services-that-get-it",
+    "title": "Finding LGBTQ+ counselling and support in Berlin",
+    "dek": "Start with a named organisation and check the service that fits your question.",
+    "intro_md": "If you need LGBTQ+ support in Berlin, begin with a provider that publishes its actual services and who they are for. Counselling, social support and clinical treatment are different services; a broad claim of friendliness does not establish professional qualifications, availability or the right scope for your needs.\n\nThis page now focuses on Schwulenberatung Berlin. It replaces three unsupported marketplace service examples, rather than treating an unnamed therapist, trainer and wedding planner as comparable recommendations. Read the organisation’s current programme and contact the relevant service before making arrangements.",
+    "picks": [
+      {
+        "entity_type": "organization",
+        "entity_id": "74ba9127-e021-4666-990d-ad554cd56b53",
+        "rationale_md": "Schwulenberatung Berlin describes support on identity, coming out, discrimination, social-law questions, ageing and health-related concerns. Its programme includes queer-refugee support and Checkpoint BLN. Use the organisation’s service pages to find the relevant team; programmes operate at different locations.",
+        "source_urls": [
+          "https://schwulenberatungberlin.de/"
+        ],
+        "pros": [
+          "Named organisation with published service information"
+        ],
+        "cons": [
+          "Current capacity, fees and suitability need direct confirmation",
+          "A service listing is not an assessment of an individual clinician"
+        ]
+      }
+    ],
+    "selection_method": "We checked the organisation’s own description of its remit and programme. This is a source-based starting point for Berlin support, not an endorsement of treatment outcomes or a comparison of clinical providers.",
+    "format": "guide",
+    "sections": [
+      [
+        "prose",
+        "## Ask before booking\n\n- Does this team handle the question you want help with?\n- Is support available in your language and preferred format?\n- Are there eligibility rules, fees or a waiting list?\n- Which location should you attend, and can it meet your access needs?\n\nUse [the organisation’s current service information](https://schwulenberatungberlin.de/) to choose the right contact. We have not verified current appointment capacity."
+      ]
+    ]
+  },
+  {
+    "slug": "pride-briefs-queer-owned-underwear-2026",
+    "title": "Pride underwear: mesh or adjustable leather?",
+    "dek": "Compare two constructions, without unsupported ownership or under-$40 promises.",
+    "intro_md": "Decide first whether you want a lightweight mesh garment or an adjustable leather piece. These two jockstraps have different coverage, materials and care requirements, so the useful comparison is construction rather than an invented best-to-worst ranking. Prices are shown in each seller’s recorded currency; converting the number alone does not account for shipping or duties.\n\nWe replaced the earlier five-product selection after finding unavailable items and descriptions that did not match the garments. This guide does not claim a universal fit, proven wash durability or queer ownership without a separately documented source.",
+    "picks": [
+      {
+        "entity_type": "marketplace",
+        "entity_id": "c839f4f8-963c-402d-a97b-f592f284edd0",
+        "rationale_md": "The Void Mesh jockstrap is the fabric option: the retailer specifies a semi-transparent nylon/spandex pouch with elastic straps. Choose this construction if you want mesh rather than leather. Compare the actual waist measurements and follow the retailer’s cold-wash, hang-dry instructions.",
+        "pros": [
+          "Mesh construction with a published fabric breakdown"
+        ],
+        "cons": [
+          "Open-back coverage",
+          "No hands-on durability test"
+        ],
+        "source_urls": [
+          "https://jockstraps.com/products/cellblock-13-void-mesh-jockstrap"
+        ]
+      },
+      {
+        "entity_type": "marketplace",
+        "entity_id": "4acf09f9-f777-4ae2-8a4d-37ba74c256a9",
+        "rationale_md": "The Leather Jock Strap offers an adjustable leather construction rather than a stretch-mesh garment. The maker specifies three adjustment positions and hand washing. It is the option to examine if adjustability and a leather finish matter more than conventional fabric-underwear care.",
+        "pros": [
+          "Adjustable construction"
+        ],
+        "cons": [
+          "Hand-wash care",
+          "Check leather suitability and sizing before purchase"
+        ],
+        "source_urls": [
+          "https://strappmetal.com/products/leather-jock-strap"
+        ]
+      }
+    ],
+    "selection_method": "We compared the linked product specifications for distinct uses, rather than filling a fixed number of slots. This is desk research, not a wear test. Sizes, stock and delivery depend on the selected variant and destination; confirm them with the seller. Displayed prices are recorded in the seller’s currency and exclude any additional delivery or import costs.",
+    "format": "list",
+    "sections": []
+  },
+  {
+    "slug": "shop-underwear-shortlist",
+    "title": "Jockstraps: compare mesh and leather construction",
+    "dek": "Two source-linked options with different materials and care needs.",
+    "intro_md": "This is a narrow shortlist for someone choosing between mesh and leather jockstraps. Both are open-back styles; neither replaces a full-coverage brief or a bra. If that is the coverage you need, use a different garment category rather than treating a more expensive jockstrap as an upgrade.\n\nCheck the seller’s waist measurements, adjustment range and intimate-garment return rules before ordering. We have not tested comfort over a full day or verified every size in stock. The reasons below explain why each construction is included, with care requirements that can change the buying decision.",
+    "picks": [
+      {
+        "entity_type": "marketplace",
+        "entity_id": "c839f4f8-963c-402d-a97b-f592f284edd0",
+        "rationale_md": "The Void Mesh jockstrap is the fabric option: the retailer specifies a semi-transparent nylon/spandex pouch with elastic straps. Choose this construction if you want mesh rather than leather. Compare the actual waist measurements and follow the retailer’s cold-wash, hang-dry instructions.",
+        "pros": [
+          "Mesh construction with a published fabric breakdown"
+        ],
+        "cons": [
+          "Open-back coverage",
+          "No hands-on durability test"
+        ],
+        "source_urls": [
+          "https://jockstraps.com/products/cellblock-13-void-mesh-jockstrap"
+        ]
+      },
+      {
+        "entity_type": "marketplace",
+        "entity_id": "4acf09f9-f777-4ae2-8a4d-37ba74c256a9",
+        "rationale_md": "The Leather Jock Strap offers an adjustable leather construction rather than a stretch-mesh garment. The maker specifies three adjustment positions and hand washing. It is the option to examine if adjustability and a leather finish matter more than conventional fabric-underwear care.",
+        "pros": [
+          "Adjustable construction"
+        ],
+        "cons": [
+          "Hand-wash care",
+          "Check leather suitability and sizing before purchase"
+        ],
+        "source_urls": [
+          "https://strappmetal.com/products/leather-jock-strap"
+        ]
+      }
+    ],
+    "selection_method": "We compared the linked product specifications for distinct uses, rather than filling a fixed number of slots. This is desk research, not a wear test. Sizes, stock and delivery depend on the selected variant and destination; confirm them with the seller. Displayed prices are recorded in the seller’s currency and exclude any additional delivery or import costs.",
+    "format": "list",
+    "sections": []
+  },
+  {
+    "slug": "shop-apparel-shortlist",
+    "title": "Statement clothing: a cotton tee and calf-length socks",
+    "dek": "Choose a garment category first, then check measurements and care.",
+    "intro_md": "These are two different ways to add a graphic or colour detail to an outfit: a cotton T-shirt and calf-length socks. They are not competing solutions to the same fit problem, and we have not ranked them as though they were. Use the shirt’s chest measurements and the sock maker’s fit description before relying on a size label.\n\nThis selection has been reduced to products with a clear source and an individual reason for inclusion. We have not wear-tested them or established a label-wide ownership claim. Delivery, available colours and return costs should be checked for your destination.",
+    "picks": [
+      {
+        "entity_type": "marketplace",
+        "entity_id": "a1a272a8-1a78-4c80-a20c-d1ae2d8cb068",
+        "rationale_md": "The Bruiser Flag Tee is the conventional top option. TIMOTEO lists cotton fabric, a transferred flag graphic and chest measurements. Check those measurements rather than assuming that its letter size matches another brand. Avoid ironing the transfer.",
+        "pros": [
+          "Published chest measurements"
+        ],
+        "cons": [
+          "Graphic needs care when washing and ironing"
+        ],
+        "source_urls": [
+          "https://timoteo.net/products/cb13-bruiser-flag-tee"
+        ]
+      },
+      {
+        "entity_type": "marketplace",
+        "entity_id": "412f09ec-8f07-4b5f-bef4-cc1e6a0775d3",
+        "rationale_md": "Motorcross Socks add a calf-length colour detail without changing the rest of an outfit. Strapp Metal specifies a cotton/spandex blend and a ribbed top. The maker describes a single fit, so check suitability if generic sock sizing is often a problem for you.",
+        "pros": [
+          "Cotton/spandex construction"
+        ],
+        "cons": [
+          "Single-fit sizing may not suit everyone"
+        ],
+        "source_urls": [
+          "https://strappmetal.com/products/motorcross-socks"
+        ]
+      }
+    ],
+    "selection_method": "We compared the linked product specifications for distinct uses, rather than filling a fixed number of slots. This is desk research, not a wear test. Sizes, stock and delivery depend on the selected variant and destination; confirm them with the seller. Displayed prices are recorded in the seller’s currency and exclude any additional delivery or import costs.",
+    "format": "list",
+    "sections": []
+  },
+  {
+    "slug": "shop-jewelry-shortlist",
+    "title": "Automic Gold: choose a ring or a separate charm",
+    "dek": "Two pieces with different sizing and attachment decisions.",
+    "intro_md": "Choose a complete ring if you want a piece that can be worn on its own. A charm is a different purchase: it needs an appropriate chain or earring attachment, and the compatibility details matter as much as its appearance. The two Automic Gold pieces below make that distinction concrete.\n\nThis is a focused comparison within one maker’s catalogue, not a ranking of queer jewellery brands. We used the maker’s specifications and have not tested long-term wear. Check the selected metal, ring size or attachment option and final price before ordering; photographs of a styled combination do not establish what is included.",
+    "picks": [
+      {
+        "entity_type": "marketplace",
+        "entity_id": "eaa96c50-5eb6-4877-b1f4-9066511e8d0a",
+        "rationale_md": "The Infinity Ring is the standalone option. Automic Gold offers gold and platinum variants and quarter-size increments across a wide range. Choose your metal and measured ring size before comparing prices; those choices affect the order.",
+        "pros": [
+          "Detailed sizing and material options"
+        ],
+        "cons": [
+          "Requires an accurate ring measurement"
+        ],
+        "source_urls": [
+          "https://www.automicgold.com/products/infinity-ring"
+        ]
+      },
+      {
+        "entity_type": "marketplace",
+        "entity_id": "109caca7-6c19-4185-82f2-d51248c333d5",
+        "rationale_md": "The Butterfly Charm is sold individually. Select the chain or earring version to match an existing piece, and check the maker’s attachment dimensions. It is an add-on choice, not a complete necklace at the displayed charm price.",
+        "pros": [
+          "Separate attachment options"
+        ],
+        "cons": [
+          "Chain or earring needed separately"
+        ],
+        "source_urls": [
+          "https://www.automicgold.com/products/butterfly-charm"
+        ]
+      }
+    ],
+    "selection_method": "We compared the linked product specifications for distinct uses, rather than filling a fixed number of slots. This is desk research, not a wear test. Sizes, stock and delivery depend on the selected variant and destination; confirm them with the seller. Displayed prices are recorded in the seller’s currency and exclude any additional delivery or import costs.",
+    "format": "list",
+    "sections": []
+  },
+  {
+    "slug": "shop-books-art-shortlist",
+    "title": "Queer reading and illustration: a memoir or an oracle deck",
+    "dek": "Two different formats, with creator context and contents explained.",
+    "intro_md": "Choose a memoir if you want sustained reading about one person’s life; choose an illustrated deck if you want a visual object with a different way of browsing. Combining the two under a general books-and-art label should not obscure what actually arrives in the parcel. These two entries identify the format and intended experience.\n\nOur selection uses the creators’ and sellers’ descriptions. We have not independently reviewed either work cover to cover, and we are not claiming a definitive account of queer history. Check the edition, language, contents and delivery details before buying a gift.",
+    "picks": [
+      {
+        "entity_type": "marketplace",
+        "entity_id": "183a6278-d55d-43f3-a1b8-a7e5f0b28dc9",
+        "rationale_md": "Sodomy Gods is David Lauterstein’s memoir of gay life in 1990s New York and founding Nasty Pig. The linked edition is a softcover with colour images. Choose it for a personal narrative, rather than expecting a reference history of the whole community.",
+        "pros": [
+          "Personal memoir with a defined setting"
+        ],
+        "cons": [
+          "One author’s perspective"
+        ],
+        "source_urls": [
+          "https://store.nastypig.com/products/sodomy-gods-book"
+        ]
+      },
+      {
+        "entity_type": "marketplace",
+        "entity_id": "79c66886-2c2c-47ae-b529-5004e16e7724",
+        "rationale_md": "Queer Animal Oracle is an illustrated deck and guidebook by Ashley Molesso and Chess Needham of Ash + Chess. The seller specifies 60 cards and a 160-page guide. Choose it for the artwork and deck format, not as a substitute for a conventional narrative book.",
+        "pros": [
+          "Deck and accompanying guidebook"
+        ],
+        "cons": [
+          "Oracle format may not suit someone expecting a reading book"
+        ],
+        "source_urls": [
+          "https://ashandchess.com/products/queer-animal-oracle-an-inclusive-deck-guidebook"
+        ]
+      }
+    ],
+    "selection_method": "We compared the linked product specifications for distinct uses, rather than filling a fixed number of slots. This is desk research, not a wear test. Sizes, stock and delivery depend on the selected variant and destination; confirm them with the seller. Displayed prices are recorded in the seller’s currency and exclude any additional delivery or import costs.",
+    "format": "list",
+    "sections": []
+  },
+  {
+    "slug": "shop-swimwear-shortlist",
+    "title": "Two-piece swimwear: compare top shape and ties",
+    "dek": "Two swim sets, with coverage and sizing checks before you order.",
+    "intro_md": "For a two-piece swimsuit, compare the top’s construction and the bottom’s coverage before choosing a print. Adjustable ties change fit at particular points; they do not mean that every size fits every body. Read the size information for both pieces rather than assuming that the same letter size will suit both.\n\nThis shortlist covers two swim sets and does not promise tucking performance, compression or support that the linked product pages do not establish. We removed everyday tucking underwear from the swimming selection. The comparison is based on product information, not a chlorine-resistance or in-water wear test.",
+    "picks": [
+      {
+        "entity_type": "marketplace",
+        "entity_id": "01f8beaf-ea6d-4849-9355-d20436734325",
+        "rationale_md": "The Harper and Lilo set pairs a bandana-style, wireless top with an adjustable removable strap and tie-side bottoms. D.FRANKLIN flags a larger-than-usual fit. Check both size charts, especially if your top and bottom measurements usually need different sizes.",
+        "pros": [
+          "Adjustable top strap and side ties"
+        ],
+        "cons": [
+          "Limited bottom coverage",
+          "Size warning needs attention"
+        ],
+        "source_urls": [
+          "https://www.dfranklincreation.com/products/harper-top-lilo-bottom-black-bikini"
+        ]
+      },
+      {
+        "entity_type": "marketplace",
+        "entity_id": "d802532c-9d42-41c7-9762-599d5ea0f7ac",
+        "rationale_md": "The Cherrykitten striped set is the triangle-top alternative. Compare its coverage and tie-side bottom with the bandana-style Harper top before ordering. Confirm the selected size and current delivery/return terms on the seller’s page.",
+        "pros": [
+          "Different top shape from the other selection"
+        ],
+        "cons": [
+          "No verified compression or tucking function"
+        ],
+        "source_urls": [
+          "https://www.cherrykitten.com/products/blue-and-white-stripes-y2k-print-bikini-set-cherrykitten"
+        ]
+      }
+    ],
+    "selection_method": "We compared the linked product specifications for distinct uses, rather than filling a fixed number of slots. This is desk research, not a wear test. Sizes, stock and delivery depend on the selected variant and destination; confirm them with the seller. Displayed prices are recorded in the seller’s currency and exclude any additional delivery or import costs.",
+    "format": "list",
+    "sections": []
+  }
+]

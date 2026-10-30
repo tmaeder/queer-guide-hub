@@ -20,6 +20,7 @@ import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 const ENTITY_TABLES: Record<string, { table: string; nameCol: string }> = {
   venue: { table: 'venues', nameCol: 'name' },
+  organization: { table: 'organizations', nameCol: 'name' },
   event: { table: 'events', nameCol: 'title' },
   marketplace: { table: 'marketplace_listings', nameCol: 'title' },
   city: { table: 'cities', nameCol: 'name' },
@@ -46,6 +47,8 @@ interface PickRow {
   cons: string[];
   position: number;
   is_orphaned: boolean;
+  source_urls: string[];
+  verified_at: string | null;
   resolved_name?: string;
 }
 
@@ -67,7 +70,9 @@ export function GuidePicksPanel({ guideId }: { guideId: string }) {
     queryKey: ['admin-guide-picks', guideId],
     queryFn: async (): Promise<PickRow[]> => {
       const { data, error } = await untypedFrom('guide_picks')
-        .select('id, entity_type, entity_id, tier, rationale_md, pros, cons, position, is_orphaned')
+        .select(
+          'id, entity_type, entity_id, tier, rationale_md, pros, cons, position, is_orphaned, source_urls, verified_at',
+        )
         .eq('guide_id', guideId)
         .order('position');
       if (error) throw error;
@@ -220,6 +225,33 @@ export function GuidePicksPanel({ guideId }: { guideId: string }) {
                 <Trash2 size={14} />
               </Button>
             </div>
+            <label htmlFor={`sources-${p.id}`} className="text-sm">
+              Primary source URLs (one per line)
+              <Textarea
+                id={`sources-${p.id}`}
+                defaultValue={(p.source_urls ?? []).join('\n')}
+                onBlur={(e) => {
+                  const urls = e.target.value
+                    .split('\n')
+                    .map((v) => v.trim())
+                    .filter(Boolean);
+                  if (JSON.stringify(urls) !== JSON.stringify(p.source_urls ?? []))
+                    updatePick.mutate({ id: p.id, source_urls: urls });
+                }}
+              />
+            </label>
+            <label htmlFor={`verified-${p.id}`} className="text-sm">
+              Sources checked on
+              <Input
+                type="date"
+                id={`verified-${p.id}`}
+                defaultValue={p.verified_at?.slice(0, 10) ?? ''}
+                onBlur={(e) => {
+                  const date = e.target.value ? new Date(e.target.value).toISOString() : null;
+                  if (date !== p.verified_at) updatePick.mutate({ id: p.id, verified_at: date });
+                }}
+              />
+            </label>
             <Textarea
               defaultValue={p.rationale_md ?? ''}
               placeholder="Why this pick? (markdown)"
