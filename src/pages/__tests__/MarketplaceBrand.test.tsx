@@ -105,6 +105,36 @@ describe('MarketplaceBrand', () => {
       'href',
       'https://commons.wikimedia.org/wiki/File:Portrait.jpg',
     );
+    expect(screen.getByText(/via Wikimedia Commons/)).toBeInTheDocument();
+  });
+
+  it.each([
+    ['https://www.author.example/press', 'author.example'],
+    ['https://commons.wikimedia.org.author.example/press', 'commons.wikimedia.org.author.example'],
+  ])('credits the actual portrait source at %s', (sourceUrl, sourceLabel) => {
+    brandState.value = {
+      slug: 'author',
+      display_name: 'Author',
+      brand_key: 'author',
+      product_count: 1,
+      website: null,
+      logo_url: 'https://images.example/portrait.jpg',
+      story: null,
+      ownership_tags: [],
+      is_approved: true,
+      logo_credit: {
+        attribution: 'Photographer',
+        license: null,
+        source_url: sourceUrl,
+        license_url: null,
+      },
+    };
+    renderAt('/marketplace/brands/author');
+    expect(screen.getByRole('link', { name: `Photographer · ${sourceLabel}` })).toHaveAttribute(
+      'href',
+      sourceUrl,
+    );
+    expect(screen.queryByText(/via Wikimedia Commons/)).not.toBeInTheDocument();
   });
 
   it('shows not-found for unknown brand', () => {
