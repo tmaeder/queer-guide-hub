@@ -18,6 +18,12 @@ Deno.test('sitemap decoding handles raw gzip and bounds expanded data', async ()
   try { await decodeSitemapBytes(compressed, 1000) } catch (e) { error = (e as Error).message }
   equal(error, 'Expanded sitemap exceeds size limit')
 })
+Deno.test('opt-in mixed sitemap filtering keeps product URLs with image metadata only', () => {
+  const xml = `<urlset xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"><url><loc>https://shop.example/category</loc></url><url><loc><![CDATA[https://shop.example/product]]></loc><image:image><image:loc>https://shop.example/photo.jpg</image:loc></image:image></url><url><loc>https://shop.example/policy</loc><image:image><image:title>Empty image</image:title></image:image></url></urlset>`
+  equal(readSitemapLocations(xml, true), ['https://shop.example/product'])
+  equal(readSitemapLocations(xml), ['https://shop.example/category', 'https://shop.example/product', 'https://shop.example/policy'])
+  equal(readSitemapLocations('<urlset><url><loc>https://shop.example/product</loc><img:image xmlns:img="http://www.google.com/schemas/sitemap-image/1.1"><img:loc>https://shop.example/photo.jpg</img:loc></img:image></url></urlset>', true), ['https://shop.example/product'])
+})
 Deno.test('sitemap trust allows only the merchant and exact owned Salzgeber snapshots', () => {
   equal(allowedSitemap('https://www.shop.example/sitemap.xml', 'shop.example'), true)
   equal(allowedSitemap('https://img.queer.guide/imports/salzgeber-film-sitemap.xml', 'salzgeber.shop'), true)

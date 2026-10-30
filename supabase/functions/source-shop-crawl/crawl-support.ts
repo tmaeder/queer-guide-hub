@@ -1,8 +1,14 @@
 import * as cheerio from 'npm:cheerio@1.0.0-rc.12'
 
 /** Read URL locations from sitemap entries, including XML CDATA text. */
-export function readSitemapLocations(xml: string): string[] {
+export function readSitemapLocations(xml: string, requireProductImages = false): string[] {
   const $ = cheerio.load(xml, { xmlMode: true })
+  if (requireProductImages) {
+    return $('url').filter((_i, node) => $(node).children().toArray().some(child =>
+      child.type === 'tag' && /(^|:)image$/.test(child.name) &&
+      $(child).children().toArray().some(field => field.type === 'tag' && /(^|:)loc$/.test(field.name) && Boolean($(field).text().trim()))
+    )).children('loc').map((_i, node) => $(node).text().trim()).get().filter(Boolean)
+  }
   return $('loc').map((_i, node) => $(node).text().trim()).get().filter(Boolean)
 }
 
