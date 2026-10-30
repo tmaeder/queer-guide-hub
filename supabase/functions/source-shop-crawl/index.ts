@@ -4,7 +4,7 @@ import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { extractContent } from '../_shared/extract-client.ts'
 import { splitAuthor } from '../_shared/book-title.ts'
-import { allowedSitemap, readCanonicalPageUrl, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
+import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
@@ -104,7 +104,7 @@ async function fetchText(url: string, timeoutMs: number): Promise<string> {
   try {
     const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/xml,text/xml,*/*' }, signal: ctrl.signal })
     if (!res.ok) throw new CrawlFetchError(res.status, url)
-    return await res.text()
+    return await decodeSitemapBytes(new Uint8Array(await res.arrayBuffer()))
   } finally { clearTimeout(timer) }
 }
 
