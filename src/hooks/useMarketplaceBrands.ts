@@ -17,6 +17,12 @@ export interface MarketplaceBrand {
   story: string | null;
   ownership_tags: string[];
   is_approved: boolean;
+  logo_credit?: {
+    attribution: string | null;
+    license: string | null;
+    source_url: string | null;
+    license_url: string | null;
+  } | null;
 }
 
 export interface SpotlightBrand {

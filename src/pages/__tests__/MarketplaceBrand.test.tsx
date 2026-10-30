@@ -82,6 +82,31 @@ function renderAt(path: string) {
 }
 
 describe('MarketplaceBrand', () => {
+  it('shows a linked photographer and license for an attributed portrait', () => {
+    brandState.value = {
+      slug: 'author',
+      display_name: 'Author',
+      brand_key: 'author',
+      product_count: 1,
+      website: null,
+      logo_url: 'https://upload.wikimedia.org/portrait.jpg',
+      story: null,
+      ownership_tags: [],
+      is_approved: true,
+      logo_credit: {
+        attribution: 'Photographer',
+        license: 'CC BY 4.0',
+        source_url: 'https://commons.wikimedia.org/wiki/File:Portrait.jpg',
+        license_url: 'https://creativecommons.org/licenses/by/4.0/',
+      },
+    };
+    renderAt('/marketplace/brands/author');
+    expect(screen.getByRole('link', { name: /Photographer.*CC BY 4.0/ })).toHaveAttribute(
+      'href',
+      'https://commons.wikimedia.org/wiki/File:Portrait.jpg',
+    );
+  });
+
   it('shows not-found for unknown brand', () => {
     brandState.value = null;
     renderAt('/marketplace/brands/nope');

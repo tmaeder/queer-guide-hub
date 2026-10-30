@@ -7,6 +7,7 @@ import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFil
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { BrandMark } from '@/components/marketplace/BrandMark';
+import { ImageCredit } from '@/components/ui/ImageCredit';
 import { COMMUNITY_OWNED_OPTIONS } from '@/components/marketplace/marketplaceFilterOptions';
 import { MarketplaceLineArt } from '@/components/marketplace/MarketplaceLineArt';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -139,6 +140,30 @@ export default function MarketplaceBrand() {
                   {brand.display_name}
                 </h1>
               </div>
+
+              {brand.logo_credit && (
+                <div className="mt-4 max-w-reading">
+                  {brand.logo_credit.source_url ? (
+                    <a
+                      href={brand.logo_credit.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-2"
+                    >
+                      <ImageCredit
+                        attribution={brand.logo_credit.attribution}
+                        license={brand.logo_credit.license}
+                        source="wikimedia"
+                      />
+                    </a>
+                  ) : (
+                    <ImageCredit
+                      attribution={brand.logo_credit.attribution}
+                      license={brand.logo_credit.license}
+                    />
+                  )}
+                </div>
+              )}
 
               {brand.story && <p className="mt-6 max-w-reading text-body-lg">{brand.story}</p>}
 
