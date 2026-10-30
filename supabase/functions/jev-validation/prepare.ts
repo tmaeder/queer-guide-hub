@@ -8,17 +8,29 @@ import { PIPELINE_QUESTION_VERSION, pipelineJudgment } from '../_shared/jev-pipe
 import { PRODUCT_FIXTURES } from './product-fixtures.ts'
 import { PUBLIC_PRODUCT_FIXTURES } from './product-public-fixtures.ts'
 import { PRODUCT_RELEVANCE_VERSION, productRelevanceJudgment } from '../_shared/jev-product-relevance.ts'
+import { REVIEW_FIXTURES, reviewFixtureRequest } from './review-fixtures.ts'
+import { decide, parseEvaluation } from '../review-automation/policy.ts'
+import { STATE_VERSION } from '../review-automation/state.ts'
 
 export interface ValidationCase {
   name: string
   questionVersion: string
-  kind: 'synthetic_field' | 'historical_accessibility' | 'synthetic_pipeline' | 'synthetic_product' | 'public_product'
+  kind: 'synthetic_field' | 'historical_accessibility' | 'synthetic_pipeline' | 'synthetic_product' | 'public_product' | 'synthetic_review'
   expected: unknown
   request: JevRequest
   judge(response: JevResponse): { verdict: unknown; matches: boolean; reason_matches?: boolean }
 }
 /** Historical labels are evaluation data only; no live facts or publication rights are asserted. */
 export function prepareValidationCase(name: string): ValidationCase | null {
+  if (Object.hasOwn(REVIEW_FIXTURES, name)) {
+    const fixture = REVIEW_FIXTURES[name as keyof typeof REVIEW_FIXTURES]
+    return { name, questionVersion: STATE_VERSION, kind: 'synthetic_review', expected: fixture.expected,
+      request: reviewFixtureRequest(fixture), judge(response) {
+        const result = decide(fixture.context, parseEvaluation(response, fixture.context.candidates))
+        const verdict = result.candidate?.id ?? 'blocked'
+        return { verdict, matches: verdict === fixture.expected }
+      } }
+  }
   if (Object.hasOwn(PUBLIC_PRODUCT_FIXTURES, name)) {
     const { request, expected } = PUBLIC_PRODUCT_FIXTURES[name]
     return { name, questionVersion: PRODUCT_RELEVANCE_VERSION, kind: 'public_product', expected, request, judge(response) {

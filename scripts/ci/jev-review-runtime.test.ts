@@ -26,8 +26,8 @@ function evaluation(conflicting = false) {
     reason: choice(conflicting ? 'conflicting_identity' : 'verified', ['verified', 'missing_source', 'conflicting_identity', 'protected_review', 'insufficient_confidence', 'invalid_proposal']),
   } }
 }
-async function run(options: { status?: number; context?: unknown; noJobs?: boolean; conflicting?: boolean; body?: unknown; rawBody?: string; denied?: boolean; sourceStatus?: number; sourceRedirect?: string; budgetDenied?: boolean; budgetUnavailable?: boolean; settlementUnavailable?: boolean } = {}) {
-  const jobs = options.noJobs ? [] : [1, 2].map(n => ({ case_id: `case-${n}`, lease_token: 'lease', queue_type: 'event-quality' }))
+async function run(options: { status?: number; context?: unknown; queue?: string; noJobs?: boolean; conflicting?: boolean; body?: unknown; rawBody?: string; denied?: boolean; sourceStatus?: number; sourceRedirect?: string; budgetDenied?: boolean; budgetUnavailable?: boolean; settlementUnavailable?: boolean } = {}) {
+  const jobs = options.noJobs ? [] : [1, 2].map(n => ({ case_id: `case-${n}`, lease_token: 'lease', queue_type: options.queue ?? 'event-quality' }))
   const updates: Array<{ table: string; value: Record<string, unknown> }> = []
   const finished: Array<Record<string, unknown>> = []
   const fetched: string[] = [], env: string[] = [], rpcCalls: string[] = []
@@ -92,11 +92,25 @@ for (const status of [402, 429, 503]) test(`Jev ${status} stops provider calls, 
   assert.equal(updates.find(update => update.table === 'admin_automation_runs')?.value.status, 'error')
   assert.equal(updates.find(update => update.table === 'admin_automations')?.value.last_run_status, 'error')
 })
-test('known canonical source reaches the unchanged decision gates without Firecrawl configuration', async () => {
-  const { body, finished, fetched } = await run()
+test('known canonical source reaches the unchanged decision gates with exact request/accounting provenance', async () => {
+  const { body, finished, fetched, reservations } = await run()
   assert.equal(body.applied, 2); assert.equal(body.retry, 0)
   assert.equal(fetched.length, 4)
   for (const call of finished) { assert.equal((call.p_result as { blocker?: string | null }).blocker, null); assert.equal((call.p_evidence as unknown[]).length, 1) }
+  finished.forEach((call, i) => {
+    const result = call.p_result as Record<string, unknown>
+    assert.equal(result.state_version, 'jev-review-public-state-v2')
+    assert.equal(result.request_hash, reservations[i].p_request_hash)
+  })
+})
+test('protected queues cannot fetch sources or call Jev even if their native context accidentally lacks a blocker', async () => {
+  for (const queue of ['submissions', 'brand-ownership', 'personality-publication', 'moderation']) {
+    const r = await run({ queue, context: { ...context, item: { ...context.item, queue_type: queue } } })
+    assert.equal(r.body.blocked, 2); assert.equal(r.fetched.length, 0)
+    assert.equal(r.reservations.length, 0)
+  }
+  const mismatch = await run({ context: { ...context, item: { queue_type: 'submissions', title: 'Private' } } })
+  assert.equal(mismatch.fetched.length, 0); assert.equal(mismatch.reservations.length, 0)
 })
 test('conflicting identity stays blocked despite a confident action and readable source', async () => {
   const { body } = await run({ conflicting: true })
@@ -141,7 +155,7 @@ test('previews use the fixed validation cap while production dispatches use the 
   for (const reservation of production.reservations) assert.equal(reservation.p_account, 'synthetic-account')
 })
 
-const probeBody = { source_probe: true, urls: ['https://example.org/source?token=DO_NOT_ECHO'], run_id: 123, dry_run: false, probe: true }
+const probeBody = { source_probe: true, urls: ['https://example.org/source?ref=DO_NOT_ECHO'], run_id: 123, dry_run: false, probe: true }
 function assertReadOnly(result: Awaited<ReturnType<typeof run>>) {
   assert.deepEqual(result.rpcCalls, []); assert.deepEqual(result.updates, []); assert.deepEqual(result.finished, [])
   assert.deepEqual(result.env, [])
@@ -169,7 +183,7 @@ test('source probe denies unauthenticated callers before network or DB operation
   assert.equal(result.response.status, 401); assert.equal(result.fetched.length, 0); assertReadOnly(result)
 })
 test('source probe refuses unbounded, malformed and unsafe inputs without network or DB operations', async () => {
-  for (const urls of [undefined, [], Array(5).fill('https://example.org/source'), [123], ['x'.repeat(2049)], ['http://example.org'], ['https://localhost'], ['https://reader@example.org'], ['https://example.org:8443']]) {
+  for (const urls of [undefined, [], Array(5).fill('https://example.org/source'), [123], ['x'.repeat(2049)], ['http://example.org'], ['https://localhost'], ['https://reader@example.org'], ['https://example.org:8443'], ['https://example.org/source?token=DO_NOT_ECHO']]) {
     const result = await run({ body: { source_probe: true, urls } })
     assert.equal(result.response.status, 400); assert.equal(result.fetched.length, 0); assertReadOnly(result)
   }

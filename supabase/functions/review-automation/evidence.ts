@@ -4,7 +4,10 @@ export function sourceUrl(raw: string): URL {
   const url = assertPublicHttpUrl(raw)
   const hasCredentials = Boolean(url.username) || Boolean(url.password)
   const allowedPort = !url.port || url.port === '443'
-  if (url.protocol !== 'https:' || hasCredentials || !allowedPort) throw new Error('Unsupported source URL')
+  const credentialKey = /^(?:access_token|refresh_token|token|auth|authorization|api_?key|key|password|secret|signature|sig|session(?:_?id)?|user_id|account_id|email|code|x-amz-.+|x-goog-.+)$/i
+  const credentialQuery = [...url.searchParams.keys()].some(key => credentialKey.test(key))
+  const credentialFragment = /(?:^|[?&])(?:access_token|refresh_token|token|auth|password|secret|session(?:_?id)?)=/i.test(url.hash.slice(1))
+  if (url.protocol !== 'https:' || hasCredentials || !allowedPort || credentialQuery || credentialFragment) throw new Error('Unsupported source URL')
   return url
 }
 /** Bound memory, redirects, response time and destinations; source text never becomes instructions. */
