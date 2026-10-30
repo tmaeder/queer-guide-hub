@@ -51,6 +51,7 @@ export function buildQuestions(context: Context, evidence: Evidence[]) {
   const kind = SOURCES[context.item.queue_type as QueueSource]
   if (!kind) throw new Error(`Unregistered Review source: ${context.item.queue_type}`)
   if (kind === 'private' || kind === 'human') throw new Error('Protected Review context cannot be sent to Jev')
+  if (!context.candidates.length || new Set(context.candidates.map(c => c.id)).size !== context.candidates.length) throw new Error('Invalid Review action catalog')
   const integrityRule = context.candidates.length === 1 && context.candidates[0].action === 'reject' ? context.candidates[0].payload.integrity_rule : null
   const integrityCheck = integrityRule === 'uncertainty_without_replacement'
     ? 'Check only this structural condition: proposal.field is description, proposal.proposed_value.issues contains only uncertainty_language, and no replacement is supplied. The owner policy says qualified historical wording alone is not a defect. Rejection closes only this detector proposal; it does not verify or alter the historical text.'
