@@ -29,6 +29,17 @@ BEGIN
   RAISE EXCEPTION 'UNSAFE SOURCE WAS PUBLISHED';
  EXCEPTION WHEN check_violation THEN NULL;
  END;
+ UPDATE public.guide_picks SET source_urls=ARRAY['https://de.boiler-berlin.com/'] WHERE id=pid;
+ UPDATE public.guides SET last_verified_at=now(),status='published' WHERE id=gid;
+ UPDATE public.cms_content_metadata SET visibility_level='private' WHERE source_table='guides' AND source_id=gid;
+ IF (SELECT status FROM public.guides WHERE id=gid) <> 'draft' THEN RAISE EXCEPTION 'PRIVATE GUIDE REMAINED PUBLIC'; END IF;
+ BEGIN
+  UPDATE public.guides SET status='published' WHERE id=gid;
+  RAISE EXCEPTION 'PRIVATE GUIDE WAS PUBLISHED';
+ EXCEPTION WHEN check_violation THEN NULL;
+ END;
+ UPDATE public.cms_content_metadata SET visibility_level='public',workflow_state='published' WHERE source_table='guides' AND source_id=gid;
+ IF (SELECT status FROM public.guides WHERE id=gid) <> 'published' THEN RAISE EXCEPTION 'PUBLIC GUIDE COULD NOT REPUBLISH'; END IF;
  IF has_function_privilege('anon','api_private.guide_publication_guard()','EXECUTE') THEN RAISE EXCEPTION 'PRIVATE FUNCTION EXPOSED'; END IF;
 END $test$;
 ROLLBACK;
