@@ -150,6 +150,42 @@ do $$declare r jsonb;ctx jsonb;begin
  raise exception 'Normalized source URL did not reach staging context: %',ctx;end if;
 end $$;
 """
+source_guard_checks="""
+alter table ingestion_staging add column source_name text default 'rss-news',add column entity_type text default 'news_article';
+"""
+source_guard_assertions="""
+do $$declare ctx jsonb;public_hash text;source text;begin
+ ctx:=api_private.jev_context(md5('staging-case')::uuid);
+ if ctx->>'blocker' is not null or ctx#>>'{proposal,source_content,normalized,title}' is distinct from 'Public staging event' then
+  raise exception 'Authorized public staging context regressed';end if;
+ public_hash:=ctx->>'input_hash';
+ foreach source in array array['community-submissions','csv-upload','unknown-new-adapter','',null::text]loop
+  update ingestion_staging set source_name=source where id=md5('staging-source')::uuid;
+  ctx:=api_private.jev_context(md5('staging-case')::uuid);
+  if ctx->>'blocker' is distinct from 'source_not_authorized' or ctx->'proposal'<>'null'::jsonb
+   or ctx->'record'<>'null'::jsonb or ctx->'related'<>'{}'::jsonb or ctx->'urls'<>'[]'::jsonb
+   or ctx->'candidates'<>'[]'::jsonb or ctx->>'input_hash'=public_hash or ctx::text like '%Public source description%' then
+   raise exception 'Unapproved source escaped or retained a stale apply hash';end if;
+ end loop;
+ update ingestion_staging set source_name='rss-news',entity_type='event'where id=md5('staging-source')::uuid;
+ ctx:=api_private.jev_context(md5('staging-case')::uuid);
+ if ctx->>'blocker' is distinct from 'source_not_authorized' then raise exception 'Cross-entity source reuse escaped';end if;
+ update ingestion_staging set source_name='qcal',entity_type='event'where id=md5('staging-source')::uuid;
+ ctx:=api_private.jev_context(md5('staging-case')::uuid);
+ if ctx->>'blocker' is not null then raise exception 'Verified public event adapter blocked';end if;
+ if api_private.jev_staging_source_allowed('ohmyfantasy','marketplace') is distinct from true
+ or api_private.jev_staging_source_allowed('ohmyfantasy','news_article') is distinct from false
+ or api_private.jev_staging_source_allowed(null,'marketplace') is distinct from false
+ or api_private.jev_staging_source_allowed('gaybasel','venue') is distinct from true
+ or api_private.jev_staging_source_allowed('qcal','venue') is distinct from false then
+  raise exception 'Public adapter/entity truth table failed';end if;
+end $$;
+set role authenticated;
+do $$begin
+ perform api_private.jev_staging_source_allowed('rss-news','news_article');
+ raise exception 'Public role accessed source authorization helper';exception when insufficient_privilege then null;end $$;
+reset role;
+"""
 with tempfile.TemporaryDirectory(prefix='jev-review-pg-')as tmp:
  data=Path(tmp)/'data';sock=Path(tmp)/'sock';sock.mkdir()
  subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
@@ -157,6 +193,8 @@ with tempfile.TemporaryDirectory(prefix='jev-review-pg-')as tmp:
  try:
   sql=schema+(ROOT/'supabase/migrations/99991793212707_jev_review_automation.sql').read_text()+(ROOT/'supabase/migrations/99991793212905_jev_review_runtime_guards.sql').read_text()+(ROOT/'supabase/migrations/99991793213334_jev_proposal_integrity_decisions.sql').read_text()+(ROOT/'supabase/migrations/99991793213540_jev_review_targeted_retry.sql').read_text()+(ROOT/'supabase/migrations/99991793213979_jev_review_operational_visibility.sql').read_text()+(ROOT/'supabase/migrations/99991793222393_jev_research_projection_json_shapes.sql').read_text()+checks+projection_checks
   sql+=(ROOT/'supabase/migrations/20261029214157_jev_normalized_source_urls.sql').read_text()+url_projection_checks
+  guard=(ROOT/'supabase/migrations/20261030060527_jev_review_public_source_guard.sql').read_text()
+  sql+=source_guard_checks+guard+guard+source_guard_assertions
   subprocess.run([str(PG/'psql'),'-X','-v','ON_ERROR_STOP=1','-h',str(sock),'-p','55439','postgres'],input=sql,text=True,check=True,stdout=subprocess.DEVNULL)
  finally:subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
-print('PASS: migration, source-backed apply, dry run, stale source refusal, duplicate refusal, atomic rollback, pause, machine audit, service permissions, JSON shape/privacy projection, nullable staging context')
+print('PASS: migration, source-backed apply, dry run, stale source refusal, duplicate refusal, atomic rollback, pause, machine audit, service permissions, JSON shape/privacy projection, nullable staging context, public adapter/entity authorization and stale-input hash refusal')

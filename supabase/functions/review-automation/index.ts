@@ -3,6 +3,7 @@ import { buildQuestions, decide, parseEvaluation, POLICY_VERSION, SOURCES, type 
 import { recoverSources } from './research.ts'
 import { sourceUrl } from './evidence.ts'
 import { ProviderError } from './provider.ts'
+import { STATE_VERSION } from './state.ts'
 import { callJev, createJevBudget, JevBudgetDeferred, JevBudgetError, type JevRequest } from '../_shared/jev-client.ts'
 
 type Job = { case_id: string; lease_token: string; queue_type: string }
@@ -79,7 +80,10 @@ Deno.serve(async req => {
         if (budgetDeferred) throw new JevBudgetDeferred('Jev budget deferred')
         if (!(job.queue_type in SOURCES)) throw new Error(`Unregistered Review source: ${job.queue_type}`)
         context = await rpc<Context>('get_jev_review_context', { p_case_id: job.case_id, p_lease_token: job.lease_token })
+        if (context.item.queue_type !== job.queue_type) throw new Error('Review queue context mismatch')
+        const sourceKind = SOURCES[job.queue_type as keyof typeof SOURCES]
         if (context.blocker) result = { blocker: context.blocker }
+        else if (sourceKind === 'private' || sourceKind === 'human') result = { blocker: 'protected_review_context' }
         else {
           let errors: string[] = []; let attempted = 0
           const integrityOnly = context.candidates.length === 1 && context.candidates[0].action === 'reject' && typeof context.candidates[0].payload.integrity_rule === 'string'
@@ -92,9 +96,12 @@ Deno.serve(async req => {
           else {
             const request = buildQuestions(context, evidence)
             request.model = Deno.env.get('JEV_MODEL') || Deno.env.get('TYPESAFE_MODEL') || request.model
+            const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify({ model: request.model, state: request.state, questions: request.questions })))
+            const requestHash = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('')
             const evaluation = parseEvaluation(await evaluate(request, db, account), context.candidates)
             const decision = decide(context, evaluation)
-            result = { evaluation, blocker: decision.blocker, policy_version: POLICY_VERSION, source_errors: errors }
+            result = { evaluation, blocker: decision.blocker, policy_version: POLICY_VERSION,
+              state_version: STATE_VERSION, request_hash: requestHash, source_errors: errors }
           }
         }
       } catch (error) {
