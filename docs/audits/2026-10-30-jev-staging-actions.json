@@ -1,0 +1,63 @@
+{
+  "date_utc": "2026-10-30",
+  "scope": "Permitted Review action catalogs, without widening publication authority.",
+  "problem": [
+    "Staging was offered a generic approval even when the native publication gate was absent.",
+    "Passing the native news gate added a second approval with the same ID; the strict response parser then expected more distribution options than the request contained."
+  ],
+  "changes": [
+    "Generic approvals exclude staging; its single explicit approval is offered only after the existing native gate returns publish.",
+    "The worker blocks empty/duplicate action catalogs before source fetching or paid inference.",
+    "The question builder independently rejects missing or duplicate options."
+  ],
+  "migration": "20261030074741_jev_staging_permitted_candidates.sql",
+  "releases": {
+    "review": {
+      "version": 17,
+      "sha256": "6e0eb314f3bbb3eb4ba078c4aa6428fafbfd16d2d198124623fb379a84e3af1b"
+    },
+    "validator": {
+      "version": 11,
+      "sha256": "8e60fa095d059cb0e146bc473386f7208ff088233a12f1d263818d79c062b386"
+    }
+  },
+  "checks": {
+    "targeted_tests": 87,
+    "isolated_postgresql": {
+      "result": "PASS",
+      "actual_helper_snapshot": "supabase/tests/fixtures/jev_news_machine_outcome_baseline.sql",
+      "controls": [
+        "Ungated source has no approval",
+        "Passing gate has exactly one unique approval",
+        "Manual-review gate has no approval",
+        "Migration is idempotent"
+      ],
+      "fixture_repair": "A missing statement terminator in the new helper snapshot initially failed the fixture; corrected native contracts passed before deploying the worker update."
+    },
+    "deno": "PASS",
+    "changed_file_eslint": "PASS",
+    "security_advisor_findings_unchanged": true
+  },
+  "postdeploy": {
+    "health": {
+      "enabled": true,
+      "last_run_status": "success",
+      "consecutive_failures": 0
+    },
+    "checked_at": "2026-10-30T07:50:14.156933+00:00",
+    "gate_outcomes": [
+      {
+        "count": 655,
+        "outcome": null
+      }
+    ],
+    "sampled_contexts": 16,
+    "current_staging_cases": 655,
+    "sample_approval_options": 0,
+    "duplicate_action_catalogs": 0
+  },
+  "paid_validation_calls": 0,
+  "source_writes": 0,
+  "authority": "Existing evidence/identity/risk thresholds, source hashes, protected-source boundary and native publication gate remain. Catalog correction does not make unfinished quality work publishable.",
+  "remaining": "All 655 current staging Review cases lacked a passing/rejecting native news outcome at the snapshot. Diagnose and repair upstream quality/evidence readiness; do not bypass it or describe this backlog as commit-ready."
+}

@@ -216,6 +216,29 @@ do $$declare c admin_review_cases;ctx jsonb;k jsonb;begin
   raise exception 'Ordinary rejection incorrectly gained structural preservation';end if;
 end $$;
 """
+staging_catalog_checks="""
+update ingestion_staging set source_name='rss-news',entity_type='news_article',enriched_data='{}'where id=md5('staging-source')::uuid;
+do $$declare ctx jsonb;begin
+ ctx:=api_private.jev_context(md5('staging-case')::uuid);
+ if exists(select 1 from jsonb_array_elements(ctx->'candidates')x where x->>'action'='approve')then
+  raise exception 'Ungated staging was offered an impossible approval';end if;
+end $$;
+update ingestion_staging set enriched_data='{"quality_status":"passed","auto_publish":true,"auto_publish_blocked_reasons":[],"quality_decision":{"confidence":0.98,"relevanceScore":0.95,"qualityScoreAfter":0.9,"needsManualReview":false,"isRelevant":true,"isSatire":false,"isAdvertorial":false}}'
+ where id=md5('staging-source')::uuid;
+do $$declare ctx jsonb;begin
+ ctx:=api_private.jev_context(md5('staging-case')::uuid);
+ if jsonb_array_length(ctx->'candidates')<>2 or
+  (select count(distinct x->>'id') from jsonb_array_elements(ctx->'candidates')x)<>2 or
+  (select count(*) from jsonb_array_elements(ctx->'candidates')x where x->>'action'='approve')<>1 then
+  raise exception 'Passing native gate must expose one unique approval';end if;
+end $$;
+update ingestion_staging set enriched_data=jsonb_set(enriched_data,'{quality_decision,needsManualReview}','true')where id=md5('staging-source')::uuid;
+do $$declare ctx jsonb;begin
+ ctx:=api_private.jev_context(md5('staging-case')::uuid);
+ if exists(select 1 from jsonb_array_elements(ctx->'candidates')x where x->>'action'='approve')then
+  raise exception 'Manual-review gate was bypassed by candidate construction';end if;
+end $$;
+"""
 with tempfile.TemporaryDirectory(prefix='jev-review-pg-')as tmp:
  data=Path(tmp)/'data';sock=Path(tmp)/'sock';sock.mkdir()
  subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
@@ -227,6 +250,8 @@ with tempfile.TemporaryDirectory(prefix='jev-review-pg-')as tmp:
   sql+=source_guard_checks+guard+guard+source_guard_assertions
   integrity_fix=(ROOT/'supabase/migrations/20261030062311_jev_integrity_preserve_milestone_verification.sql').read_text()
   sql+=integrity_fix+integrity_fix+milestone_integrity_checks
+  catalog_fix=(ROOT/'supabase/migrations/20261030074741_jev_staging_permitted_candidates.sql').read_text()
+  sql+=catalog_fix+catalog_fix+(ROOT/'supabase/tests/fixtures/jev_news_machine_outcome_baseline.sql').read_text()+staging_catalog_checks
   subprocess.run([str(PG/'psql'),'-X','-v','ON_ERROR_STOP=1','-h',str(sock),'-p','55439','postgres'],input=sql,text=True,check=True,stdout=subprocess.DEVNULL)
  finally:subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
 print('PASS: migration, source-backed apply, dry run, stale source refusal, duplicate refusal, atomic rollback, pause, machine audit, service permissions, JSON shape/privacy projection, nullable staging context, public adapter/entity authorization and stale-input hash refusal')

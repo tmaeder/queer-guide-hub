@@ -1,9 +1,28 @@
 # Shared Jev runtime
 
 The owner approved the shared integration design and a US$5 total live-validation
-budget on 29 October 2026. The foundation merged in PR #4946; the public-state
-follow-up lives in `codex/jev-review-public-state-20261030`. This document tracks the foundation;
+budget on 29 October 2026. The foundation and public-state follow-up merged in
+PRs #4946 and #4949. The action-catalog follow-up lives in
+`codex/jev-staging-actions-20261030`. This document tracks the foundation;
 domain-wide adoption and sensitive-action validation remain in progress.
+
+## Permitted staging actions — 30 October
+
+Review version 17 and validator version 11 reject empty or duplicate action
+catalogs before any source fetch or paid inference. Migration `20261030074741`
+removes the impossible generic staging approval; only the explicit approval
+backed by the native news publication gate remains. Previously a passing gate
+added a duplicate approval ID, making its provider distribution inconsistent
+with the parser's expected option count. Native publication authority and its
+quality/evidence requirements are unchanged.
+
+The actual native context and production helper snapshot pass isolated tests
+for ungated, passing and manual-review outcomes. All 87 targeted tests, Deno
+checks and changed-file lint pass. Live read-only inspection of 16 contexts found
+zero duplicate catalogs and zero unqualified approvals; Review remained healthy.
+The 655 current staging cases had no conclusive native news outcome, so upstream
+evidence/quality readiness remains work. This fix does not make that backlog
+publishable. See `docs/audits/2026-10-30-jev-staging-actions.json`.
 
 ## Review public-state boundary — 30 October
 
