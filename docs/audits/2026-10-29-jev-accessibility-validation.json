@@ -1,0 +1,2493 @@
+{
+  "summary": {
+    "rows": 21,
+    "row_agreement": 19,
+    "claims": 30,
+    "decision_agreement": 28,
+    "reason_agreement": 25,
+    "false_adoptions": 0,
+    "false_refusals": 2,
+    "input_tokens": 18305
+  },
+  "results": [
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-00",
+      "matches": false,
+      "verdict": {
+        "ramp-access": {
+          "kept": false,
+          "reason": "refuted"
+        },
+        "wide-doorways": {
+          "kept": false,
+          "reason": "no_evidence"
+        },
+        "elevator-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        },
+        "accessible-restroom": {
+          "kept": false,
+          "reason": "unsettled"
+        }
+      },
+      "expected": {
+        "ramp-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        },
+        "wide-doorways": {
+          "kept": false,
+          "reason": "no_evidence"
+        },
+        "elevator-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        },
+        "accessible-restroom": {
+          "kept": true,
+          "reason": "supported"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 2325,
+          "output_tokens": 606
+        },
+        "answers": {
+          "source__ramp-access": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.38,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0.41,
+              "says_nothing": 0.59
+            }
+          },
+          "quote__ramp-access__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.95,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0.03,
+              "says_nothing": 0.97
+            }
+          },
+          "quote__ramp-access__1": {
+            "type": "choice",
+            "choice": "contradicts",
+            "confidence": 0.55,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0.7,
+              "says_nothing": 0.3
+            }
+          },
+          "source__wide-doorways": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.97,
+            "probabilities": {
+              "supports": 0.01,
+              "contradicts": 0.01,
+              "says_nothing": 0.98
+            }
+          },
+          "quote__wide-doorways__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.97,
+            "probabilities": {
+              "supports": 0.02,
+              "contradicts": 0,
+              "says_nothing": 0.98
+            }
+          },
+          "quote__wide-doorways__1": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.97,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0.02,
+              "says_nothing": 0.98
+            }
+          },
+          "source__elevator-access": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.95,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0.03,
+              "says_nothing": 0.97
+            }
+          },
+          "quote__elevator-access__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.98,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0.01,
+              "says_nothing": 0.99
+            }
+          },
+          "quote__elevator-access__1": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.38,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0.41,
+              "says_nothing": 0.59
+            }
+          },
+          "source__accessible-restroom": {
+            "type": "choice",
+            "choice": "supports",
+            "confidence": 0.49,
+            "probabilities": {
+              "supports": 0.66,
+              "contradicts": 0,
+              "says_nothing": 0.34
+            }
+          },
+          "quote__accessible-restroom__0": {
+            "type": "choice",
+            "choice": "supports",
+            "confidence": 0.45,
+            "probabilities": {
+              "supports": 0.63,
+              "contradicts": 0.01,
+              "says_nothing": 0.36
+            }
+          },
+          "quote__accessible-restroom__1": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.94,
+            "probabilities": {
+              "supports": 0.04,
+              "contradicts": 0,
+              "says_nothing": 0.96
+            }
+          }
+        }
+      },
+      "reason_matches": false
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-01",
+      "matches": true,
+      "verdict": {
+        "service-animals-welcome": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "service-animals-welcome": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 624,
+          "output_tokens": 111
+        },
+        "answers": {
+          "source__service-animals-welcome": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__service-animals-welcome__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-02",
+      "matches": true,
+      "verdict": {
+        "gender-neutral-restroom": {
+          "kept": true,
+          "reason": "supported"
+        }
+      },
+      "expected": {
+        "gender-neutral-restroom": {
+          "kept": true,
+          "reason": "supported"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 893,
+          "output_tokens": 152
+        },
+        "answers": {
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "choice": "supports",
+            "confidence": 0.92,
+            "probabilities": {
+              "supports": 0.95,
+              "contradicts": 0,
+              "says_nothing": 0.05
+            }
+          },
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.67,
+            "probabilities": {
+              "supports": 0.21,
+              "contradicts": 0.01,
+              "says_nothing": 0.78
+            }
+          },
+          "quote__gender-neutral-restroom__1": {
+            "type": "choice",
+            "choice": "supports",
+            "confidence": 0.97,
+            "probabilities": {
+              "supports": 0.98,
+              "contradicts": 0.01,
+              "says_nothing": 0.01
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-03",
+      "matches": true,
+      "verdict": {
+        "wide-doorways": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "wide-doorways": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 626,
+          "output_tokens": 105
+        },
+        "answers": {
+          "source__wide-doorways": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__wide-doorways__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.97,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0.02,
+              "says_nothing": 0.98
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-04",
+      "matches": true,
+      "verdict": {
+        "gender-neutral-restroom": {
+          "kept": true,
+          "reason": "supported"
+        }
+      },
+      "expected": {
+        "gender-neutral-restroom": {
+          "kept": true,
+          "reason": "supported"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 691,
+          "output_tokens": 99
+        },
+        "answers": {
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "choice": "supports",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 1,
+              "contradicts": 0,
+              "says_nothing": 0
+            }
+          },
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "choice": "supports",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 1,
+              "contradicts": 0,
+              "says_nothing": 0
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-05",
+      "matches": true,
+      "verdict": {
+        "wheelchair-accessible": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "wheelchair-accessible": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 655,
+          "output_tokens": 109
+        },
+        "answers": {
+          "source__wheelchair-accessible": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.98,
+            "probabilities": {
+              "supports": 0.01,
+              "contradicts": 0,
+              "says_nothing": 0.99
+            }
+          },
+          "quote__wheelchair-accessible__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-06",
+      "matches": true,
+      "verdict": {
+        "ramp-access": {
+          "kept": false,
+          "reason": "ungrounded"
+        },
+        "wide-doorways": {
+          "kept": false,
+          "reason": "ungrounded"
+        },
+        "elevator-access": {
+          "kept": false,
+          "reason": "ungrounded"
+        }
+      },
+      "expected": {
+        "ramp-access": {
+          "kept": false,
+          "reason": "ungrounded"
+        },
+        "wide-doorways": {
+          "kept": false,
+          "reason": "ungrounded"
+        },
+        "elevator-access": {
+          "kept": false,
+          "reason": "ungrounded"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 777,
+          "output_tokens": 152
+        },
+        "answers": {
+          "source__ramp-access": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "source__wide-doorways": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "source__elevator-access": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-07",
+      "matches": true,
+      "verdict": {
+        "gender-neutral-restroom": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "gender-neutral-restroom": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 664,
+          "output_tokens": 107
+        },
+        "answers": {
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.98,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0.01,
+              "says_nothing": 0.99
+            }
+          },
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-08",
+      "matches": true,
+      "verdict": {
+        "ramp-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        },
+        "wide-doorways": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "ramp-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        },
+        "wide-doorways": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 1259,
+          "output_tokens": 308
+        },
+        "answers": {
+          "source__ramp-access": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__ramp-access__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__ramp-access__1": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "source__wide-doorways": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__wide-doorways__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.98,
+            "probabilities": {
+              "supports": 0.01,
+              "contradicts": 0,
+              "says_nothing": 0.99
+            }
+          },
+          "quote__wide-doorways__1": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-09",
+      "matches": true,
+      "verdict": {
+        "ramp-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        },
+        "wide-doorways": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "ramp-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        },
+        "wide-doorways": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 1296,
+          "output_tokens": 308
+        },
+        "answers": {
+          "source__ramp-access": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__ramp-access__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__ramp-access__1": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "source__wide-doorways": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__wide-doorways__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__wide-doorways__1": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-10",
+      "matches": true,
+      "verdict": {
+        "wheelchair-accessible": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "wheelchair-accessible": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 623,
+          "output_tokens": 109
+        },
+        "answers": {
+          "source__wheelchair-accessible": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__wheelchair-accessible__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-11",
+      "matches": true,
+      "verdict": {
+        "gender-neutral-restroom": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "gender-neutral-restroom": {
+          "kept": false,
+          "reason": "miscited"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 654,
+          "output_tokens": 103
+        },
+        "answers": {
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "choice": "supports",
+            "confidence": 0.46,
+            "probabilities": {
+              "supports": 0.64,
+              "contradicts": 0.01,
+              "says_nothing": 0.35
+            }
+          },
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.95,
+            "probabilities": {
+              "supports": 0.03,
+              "contradicts": 0,
+              "says_nothing": 0.97
+            }
+          }
+        }
+      },
+      "reason_matches": false
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-12",
+      "matches": true,
+      "verdict": {
+        "gender-neutral-restroom": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "gender-neutral-restroom": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 670,
+          "output_tokens": 107
+        },
+        "answers": {
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.97,
+            "probabilities": {
+              "supports": 0.02,
+              "contradicts": 0,
+              "says_nothing": 0.98
+            }
+          },
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-13",
+      "matches": true,
+      "verdict": {
+        "wide-doorways": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "wide-doorways": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 640,
+          "output_tokens": 105
+        },
+        "answers": {
+          "source__wide-doorways": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__wide-doorways__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-14",
+      "matches": true,
+      "verdict": {
+        "service-animals-welcome": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "service-animals-welcome": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 626,
+          "output_tokens": 111
+        },
+        "answers": {
+          "source__service-animals-welcome": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__service-animals-welcome__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-15",
+      "matches": true,
+      "verdict": {
+        "wide-doorways": {
+          "kept": false,
+          "reason": "no_evidence"
+        },
+        "elevator-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "wide-doorways": {
+          "kept": false,
+          "reason": "no_evidence"
+        },
+        "elevator-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 1292,
+          "output_tokens": 311
+        },
+        "answers": {
+          "source__wide-doorways": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__wide-doorways__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__wide-doorways__1": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "source__elevator-access": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__elevator-access__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__elevator-access__1": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-16",
+      "matches": true,
+      "verdict": {
+        "ramp-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "ramp-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 649,
+          "output_tokens": 103
+        },
+        "answers": {
+          "source__ramp-access": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__ramp-access__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-17",
+      "matches": true,
+      "verdict": {
+        "gender-neutral-restroom": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "gender-neutral-restroom": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 668,
+          "output_tokens": 107
+        },
+        "answers": {
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.97,
+            "probabilities": {
+              "supports": 0.01,
+              "contradicts": 0.01,
+              "says_nothing": 0.98
+            }
+          },
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.97,
+            "probabilities": {
+              "supports": 0.01,
+              "contradicts": 0.01,
+              "says_nothing": 0.98
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-18",
+      "matches": false,
+      "verdict": {
+        "gender-neutral-restroom": {
+          "kept": false,
+          "reason": "miscited"
+        }
+      },
+      "expected": {
+        "gender-neutral-restroom": {
+          "kept": true,
+          "reason": "supported"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 693,
+          "output_tokens": 99
+        },
+        "answers": {
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "choice": "supports",
+            "confidence": 0.94,
+            "probabilities": {
+              "supports": 0.96,
+              "contradicts": 0,
+              "says_nothing": 0.04
+            }
+          },
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "choice": "supports",
+            "confidence": 0.53,
+            "probabilities": {
+              "supports": 0.69,
+              "contradicts": 0.01,
+              "says_nothing": 0.3
+            }
+          }
+        }
+      },
+      "reason_matches": false
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-19",
+      "matches": true,
+      "verdict": {
+        "ramp-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        },
+        "elevator-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "expected": {
+        "ramp-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        },
+        "elevator-access": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 1301,
+          "output_tokens": 308
+        },
+        "answers": {
+          "source__ramp-access": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__ramp-access__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__ramp-access__1": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "source__elevator-access": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 0.98,
+            "probabilities": {
+              "supports": 0.01,
+              "contradicts": 0,
+              "says_nothing": 0.99
+            }
+          },
+          "quote__elevator-access__0": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          },
+          "quote__elevator-access__1": {
+            "type": "choice",
+            "choice": "says_nothing",
+            "confidence": 1,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0,
+              "says_nothing": 1
+            }
+          }
+        }
+      },
+      "reason_matches": true
+    },
+    {
+      "kind": "historical_accessibility",
+      "fixture": "accessibility-benchmark-20",
+      "matches": true,
+      "verdict": {
+        "gender-neutral-restroom": {
+          "kept": false,
+          "reason": "refuted"
+        }
+      },
+      "expected": {
+        "gender-neutral-restroom": {
+          "kept": false,
+          "reason": "no_evidence"
+        }
+      },
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 679,
+          "output_tokens": 103
+        },
+        "answers": {
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "choice": "contradicts",
+            "confidence": 0.92,
+            "probabilities": {
+              "supports": 0.02,
+              "contradicts": 0.95,
+              "says_nothing": 0.03
+            }
+          },
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "choice": "contradicts",
+            "confidence": 0.98,
+            "probabilities": {
+              "supports": 0,
+              "contradicts": 0.99,
+              "says_nothing": 0.01
+            }
+          }
+        }
+      },
+      "reason_matches": false
+    }
+  ],
+  "limitations": [
+    "Historical fixture labels, not current venue fact verification.",
+    "21 rows and 30 claims; the legacy fixture header incorrectly says 22 rows.",
+    "Thresholds were unchanged; no production sensitive-action authorization follows from this comparison."
+  ],
+  "input_cost_nano_usd": 768810,
+  "requests": [
+    {
+      "fixture": "accessibility-benchmark-00",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "Bar Phoebe",
+          "venue_description": "Could be easy to slip in, but the host/bartenders are also right there when you walk in. Shared sinks and individual rooms. There is a handicap sign on the restroom door but I wasn’t sure where the elevator was to get up to the bar.  - Look for the door that says Phoebe, up the concrete stairs and immediately on left. "
+        },
+        "questions": {
+          "quote__wide-doorways__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "There is a handicap sign on the restroom door",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__wide-doorways__1": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "up the concrete stairs and immediately on left",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__wide-doorways": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__ramp-access__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "There is a handicap sign on the restroom door",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__ramp-access__1": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "up the concrete stairs and immediately on left",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__ramp-access": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__elevator-access__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "There is a handicap sign on the restroom door",
+              "claim": "The venue has an elevator (lift) to reach its other floors."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__elevator-access__1": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "up the concrete stairs and immediately on left",
+              "claim": "The venue has an elevator (lift) to reach its other floors."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__elevator-access": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has an elevator (lift) to reach its other floors."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__accessible-restroom__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "There is a handicap sign on the restroom door",
+              "claim": "The venue has a restroom built for disabled people to use."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__accessible-restroom__1": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "up the concrete stairs and immediately on left",
+              "claim": "The venue has a restroom built for disabled people to use."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__accessible-restroom": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a restroom built for disabled people to use."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-01",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "Bar59",
+          "venue_description": "Small gay bar in a quiet side alley of the historical center of Nuremberg. Friendly, intimate atmosphere. Mixed ages. queer-friendly"
+        },
+        "questions": {
+          "quote__service-animals-welcome__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Friendly, intimate atmosphere.",
+              "claim": "Service animals such as guide dogs are allowed in this venue."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__service-animals-welcome": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "Service animals such as guide dogs are allowed in this venue."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-02",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "Chestnut Beach",
+          "venue_description": "Looks like a standard pit toilet but has running water with flush toilets. Park locked dusk to 7:30 AM. Not sure of the seasonality of park as it's primarily a swimming location. - At the very end of the Chestnut Beach parking lot is a restroom. Two unisex rooms. "
+        },
+        "questions": {
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "running water with flush toilets",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__gender-neutral-restroom__1": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Two unisex rooms",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-03",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "Chicken Salad Chick",
+          "venue_description": "When you go in the front door, stay to the left and go down the hall past the registers. Single stall men/ women’s bathrooms "
+        },
+        "questions": {
+          "quote__wide-doorways__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Single stall men/ women's bathrooms",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__wide-doorways": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-04",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "Clinton Market/Conoco Gas Station",
+          "venue_description": "Very inclusive signs - just wash your hands - Back of the market - two gender neutral, single stall, accessible restrooms "
+        },
+        "questions": {
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Very inclusive signs - just wash your hands - Back of the market - two gender neutral, single stall, accessible restrooms",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-05",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "El Burro",
+          "venue_description": "not sure if you have to buy something to use the restrooms, always end up doing so when we've gone to eat there :< Seems to be accessible but I'm not a wheelchair user so don't want to mislead anyone. - Down past the counter and towards the back patio "
+        },
+        "questions": {
+          "quote__wheelchair-accessible__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Seems to be accessible",
+              "claim": "A wheelchair user can get into and use this venue."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__wheelchair-accessible": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "A wheelchair user can get into and use this venue."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-06",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "Gais Positius",
+          "venue_description": "Association of gay and bisexual men with HIV working for the LGTBI community with a rights-based approach since 1994. Its services include legal information, psychological support, treatment counseling and rapid tests. queer-friendly"
+        },
+        "questions": {
+          "source__ramp-access": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__elevator-access": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has an elevator (lift) to reach its other floors."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__wide-doorways": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-07",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "HamMan",
+          "venue_description": "Only exclusive gay sauna in Panamá City. Mostly locals with some foreigners, popular 18-21h. queer-friendly sauna"
+        },
+        "questions": {
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "mostly locals with some foreigners",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-08",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "Indy Clover",
+          "venue_description": "A nice single bathroom with changing table and hand rails.  - Back of store by dressing rooms, ask an employee to unlock it for you. "
+        },
+        "questions": {
+          "quote__wide-doorways__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "hand rails",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__wide-doorways__1": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "changing table",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__wide-doorways": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__ramp-access__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "hand rails",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__ramp-access__1": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "changing table",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__ramp-access": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-09",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "Midtowne Spa",
+          "venue_description": "Located in an old warehouse built in 1910. Lots of fantasy rooms and beautiful rooftop with view of downtown. queer-friendly sauna"
+        },
+        "questions": {
+          "quote__wide-doorways__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Lots of fantasy rooms and beautiful rooftop with view of downtown",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__wide-doorways__1": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Located in an old warehouse built in 1910",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__wide-doorways": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__ramp-access__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Lots of fantasy rooms and beautiful rooftop with view of downtown",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__ramp-access__1": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Located in an old warehouse built in 1910",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__ramp-access": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-10",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "Millenium Sauna in Millennium Hotel Sirih",
+          "venue_description": "Sauna and steam room is very popular especially among Chinese men. Located in Millennium Hotel Sirih. queer-friendly sauna"
+        },
+        "questions": {
+          "quote__wheelchair-accessible__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "especially among Chinese men",
+              "claim": "A wheelchair user can get into and use this venue."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__wheelchair-accessible": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "A wheelchair user can get into and use this venue."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-11",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "Mobil - Rosemont",
+          "venue_description": "Probably not wheelchair accessible but gender neutral with a single, clean, restroom "
+        },
+        "questions": {
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Probably not wheelchair accessible",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-12",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "Mutschmanns",
+          "venue_description": "Especially popular with the leather & fetish crowd. Special theme parties. Entrance free. queer-friendly sauna"
+        },
+        "questions": {
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Especially popular with the leather & fetish crowd.",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-13",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "North Spokane Library",
+          "venue_description": "First stall has a very low toilet, be aware if you have mobility issues getting back up OR if you have kids who need the lower seat - Directly inside the lobby, look for the green wall "
+        },
+        "questions": {
+          "quote__wide-doorways__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "if you have mobility issues getting back up",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__wide-doorways": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-14",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "ParlamentsBuchhandlung",
+          "venue_description": "Large selection of political literature, a wide selection of daily newspapers and last-minute gifts. Cigarettes and postcards... queer-friendly"
+        },
+        "questions": {
+          "quote__service-animals-welcome__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "queer-friendly",
+              "claim": "Service animals such as guide dogs are allowed in this venue."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__service-animals-welcome": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "Service animals such as guide dogs are allowed in this venue."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-15",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "RE/MAX field",
+          "venue_description": "Visited during edmonton riverhawks baseball game. Unsure of availability outside game time - Second floor, near section I/H "
+        },
+        "questions": {
+          "quote__wide-doorways__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Second floor, near section I/H",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__wide-doorways__1": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Second floor, near section I/H",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__wide-doorways": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The doorways are wide enough for a wheelchair."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__elevator-access__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Second floor, near section I/H",
+              "claim": "The venue has an elevator (lift) to reach its other floors."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__elevator-access__1": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Second floor, near section I/H",
+              "claim": "The venue has an elevator (lift) to reach its other floors."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__elevator-access": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has an elevator (lift) to reach its other floors."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-16",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "Sara's Tearooms",
+          "venue_description": "No purchase necessarily. Radar key needed. Blue key available from staff at counter.  - Door opens out onto the path around our Tearooms. There is a sign that reads`accessibile toilet above it. "
+        },
+        "questions": {
+          "quote__ramp-access__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "There is a sign that reads`accessibile toilet above it.",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__ramp-access": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-17",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "The Sauna @ Flower Hotel",
+          "venue_description": "Japanese-style bathhouse on the first floor of the hotel. Some locals go here to meet visitors. Be discreet! queer-friendly sauna"
+        },
+        "questions": {
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Japanese-style bathhouse",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-18",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "Tilt Studio",
+          "venue_description": "Hours: Sunday 11am to 8pm. \r\nMonday-Thursday 10am to 9pm\r\nFriday-Saturday 10am to 10pm - Family restroom located in northeast corner of building. "
+        },
+        "questions": {
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Family restroom located in northeast corner of building.",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-19",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "West Side Club",
+          "venue_description": "Located on the 3rd floor. No signs. Ask the concierge. Steam room and finnish sauna closed. Cabins only for club members with annual pass. We received bad reports. queer-friendly sauna"
+        },
+        "questions": {
+          "quote__ramp-access__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Located on the 3rd floor.",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__ramp-access__1": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Ask the concierge.",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__ramp-access": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a ramp for getting in."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__elevator-access__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Located on the 3rd floor.",
+              "claim": "The venue has an elevator (lift) to reach its other floors."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "quote__elevator-access__1": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "Ask the concierge.",
+              "claim": "The venue has an elevator (lift) to reach its other floors."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__elevator-access": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has an elevator (lift) to reach its other floors."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fixture": "accessibility-benchmark-20",
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "venue_name": "WNB Factory",
+          "venue_description": "They are gendered bathrooms but they are single stalls. Staff don’t care and it’s pretty quiet most the time. - To the right of the counter "
+        },
+        "questions": {
+          "quote__gender-neutral-restroom__0": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does this quoted passage from `venue_description` relate to the claim?",
+              "quote": "They are gendered bathrooms but they are single stalls.",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          },
+          "source__gender-neutral-restroom": {
+            "type": "choice",
+            "instructions": {
+              "task": "How does `venue_description` relate to the claim?",
+              "claim": "The venue has a restroom that people of any gender can use. A single-occupancy room that is still labelled for men or for women does not count."
+            },
+            "criteria": {
+              "supports": "The text states, as a fact about this venue, that the claim is true",
+              "contradicts": "The text states, as a fact about this venue, that the claim is false",
+              "says_nothing": "The text is about something else, or only guesses (for example \"seems to be\" from someone who says they are not sure)"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

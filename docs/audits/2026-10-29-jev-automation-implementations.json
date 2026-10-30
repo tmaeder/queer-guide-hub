@@ -1,0 +1,379 @@
+{
+  "snapshot_window_utc": "2026-10-29 23:43\u201323:50",
+  "scope": "Implementation evidence for the selected automation decisions. This is not a full security, trigger/dependency or policy audit. Other registry implementations remain unfinished.",
+  "routes": [
+    {
+      "slug": "user_events_retention",
+      "enabled": true,
+      "handler": "prune_user_events",
+      "jobname": "user_events_retention",
+      "schedule": "5 3 * * *",
+      "action_type": "rpc",
+      "command_hash": "42605d847e3cab4660d160444563a251",
+      "http_handler": null,
+      "function_refs": [
+        "public.prune_user_events"
+      ]
+    },
+    {
+      "slug": "admin_review_counts_refresh",
+      "enabled": true,
+      "handler": "refresh_admin_review_queue_counts",
+      "jobname": "admin_review_counts_refresh",
+      "schedule": "*/10 * * * *",
+      "action_type": "rpc",
+      "command_hash": "626010a43d5cc03468c8236b70dff979",
+      "http_handler": null,
+      "function_refs": [
+        "public.refresh_admin_review_queue_counts"
+      ]
+    },
+    {
+      "slug": "staging_reconcile_committed",
+      "enabled": true,
+      "handler": "run_staging_reconcile_committed",
+      "jobname": "staging_reconcile_committed",
+      "schedule": "4-59/5 * * * *",
+      "action_type": "rpc",
+      "command_hash": "cd45a1b33f2c9fb19cf8178084b4793c",
+      "http_handler": null,
+      "function_refs": [
+        "public.run_staging_reconcile_committed"
+      ]
+    },
+    {
+      "slug": "staging_rejected_purge",
+      "enabled": true,
+      "handler": "run_staging_rejected_purge",
+      "jobname": "staging_rejected_purge",
+      "schedule": "35 4 * * *",
+      "action_type": "rpc",
+      "command_hash": "cd1b484619ed991d3549b2e087accd49",
+      "http_handler": null,
+      "function_refs": [
+        "public.run_staging_rejected_purge"
+      ]
+    },
+    {
+      "slug": "review_queue_retention",
+      "enabled": true,
+      "handler": "run_review_queue_retention",
+      "jobname": "review_queue_retention",
+      "schedule": "35 3 * * *",
+      "action_type": "rpc",
+      "command_hash": "46839e88079c4f666a424aca26b67627",
+      "http_handler": null,
+      "function_refs": [
+        "public.run_review_queue_retention"
+      ]
+    },
+    {
+      "slug": "admin_review_queue_top_refresh",
+      "enabled": true,
+      "handler": "refresh_admin_review_queue_top",
+      "jobname": null,
+      "schedule": "*/2 * * * *",
+      "action_type": "rpc",
+      "command_hash": "211dba522bba530a8b9947321c8756be",
+      "http_handler": null,
+      "function_refs": [
+        "public.refresh_admin_review_queue_top"
+      ]
+    },
+    {
+      "slug": "marketplace_ownership_apply",
+      "enabled": true,
+      "handler": "run_marketplace_ownership_apply",
+      "jobname": "marketplace_ownership_apply",
+      "schedule": "20 4 * * *",
+      "action_type": "rpc",
+      "command_hash": "2160e7744638d70a5e31e8346fcb972c",
+      "http_handler": null,
+      "function_refs": [
+        "public.run_marketplace_ownership_apply"
+      ]
+    },
+    {
+      "slug": "umami_retention",
+      "enabled": true,
+      "handler": "prune_umami_events",
+      "jobname": "umami_retention",
+      "schedule": "55 2 * * *",
+      "action_type": "rpc",
+      "command_hash": "edbe885ad46c469114d22574e6b5f977",
+      "http_handler": null,
+      "function_refs": [
+        "public.prune_umami_events"
+      ]
+    },
+    {
+      "slug": "existence_signals_purge",
+      "enabled": true,
+      "handler": "run_existence_signals_purge",
+      "jobname": "existence_signals_purge",
+      "schedule": "15 5 * * *",
+      "action_type": "rpc",
+      "command_hash": "8eb4ed2f6084b3c1bdfc3ef206abda14",
+      "http_handler": null,
+      "function_refs": [
+        "public.run_existence_signals_purge"
+      ]
+    },
+    {
+      "slug": "marketplace_catalog_prune",
+      "enabled": false,
+      "handler": "run_marketplace_catalog_prune",
+      "jobname": "marketplace_catalog_prune",
+      "schedule": "*/15 * * * *",
+      "action_type": "rpc",
+      "command_hash": null,
+      "http_handler": null,
+      "function_refs": null
+    },
+    {
+      "slug": "marketplace_review_autotriage",
+      "enabled": true,
+      "handler": "run_marketplace_review_autotriage",
+      "jobname": "marketplace_review_autotriage",
+      "schedule": "15 5 * * *",
+      "action_type": "rpc",
+      "command_hash": "5c46a03d52a9ee2318061db7fea6db9e",
+      "http_handler": null,
+      "function_refs": [
+        "public.run_marketplace_review_autotriage"
+      ]
+    },
+    {
+      "slug": "marketplace_relevance_rescore_weekly",
+      "enabled": true,
+      "handler": "marketplace-relevance-rescore",
+      "jobname": "marketplace_relevance_rescore_weekly",
+      "schedule": "20 2 * * *",
+      "action_type": "edge",
+      "command_hash": "21573bbfedfc3e2e429c9459bf56d75a",
+      "http_handler": "marketplace-relevance-rescore",
+      "function_refs": null
+    },
+    {
+      "slug": "admin_counts_refresh",
+      "enabled": true,
+      "handler": "refresh_admin_counts",
+      "jobname": "admin_counts_refresh",
+      "schedule": "*/5 * * * *",
+      "action_type": "rpc",
+      "command_hash": "6fd297b4db37a3032bbec4f6c3f485c8",
+      "http_handler": null,
+      "function_refs": [
+        "public.refresh_admin_counts"
+      ]
+    }
+  ],
+  "definitions": [
+    {
+      "signature": "prune_umami_events(integer,integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.prune_umami_events(p_older_than_days integer, p_limit integer DEFAULT 20000)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'umami', 'public'\nAS $function$\ndeclare\n  v_cutoff   timestamptz;\n  v_events   integer;\n  v_sessions integer;\nbegin\n  -- Floor guard. The delete is irreversible and umami is the only record of\n  -- site traffic we keep, so a fat-fingered small value must not be able to\n  -- erase the working set. 30 is below any window we would deliberately choose.\n  if p_older_than_days is null or p_older_than_days < 30 then\n    raise exception 'p_older_than_days must be >= 30 (got %) \u2014 this delete cannot be undone',\n      p_older_than_days;\n  end if;\n  if p_limit is null or p_limit < 1 or p_limit > 200000 then\n    raise exception 'p_limit must be between 1 and 200000, got %', p_limit;\n  end if;\n\n  v_cutoff := now() - make_interval(days => p_older_than_days);\n\n  -- umami.event_data has an FK to website_event ON DELETE CASCADE, so custom\n  -- event payloads go with their event and need no separate pass.\n  with victims as (\n    select event_id\n      from umami.website_event\n     where created_at < v_cutoff\n     order by created_at\n     limit p_limit\n  )\n  delete from umami.website_event e\n   using victims v\n   where e.event_id = v.event_id;\n  get diagnostics v_events = row_count;\n\n  -- Sessions second, and only ones with no events left. A session row is ~470\n  -- bytes against an event's ~270, so leaving them behind would make the\n  -- session table the larger residue. Bounded by the same p_limit: an\n  -- unbounded anti-join over 400k sessions is a seq scan per run.\n  with orphans as (\n    select s.session_id\n      from umami.session s\n     where s.created_at < v_cutoff\n       and not exists (\n         select 1 from umami.website_event e where e.session_id = s.session_id\n       )\n     order by s.created_at\n     limit p_limit\n  )\n  delete from umami.session s\n   using orphans o\n   where s.session_id = o.session_id;\n  get diagnostics v_sessions = row_count;\n\n  return jsonb_build_object(\n    'ok', true,\n    'cutoff', v_cutoff,\n    'events_deleted', v_events,\n    'sessions_deleted', v_sessions,\n    -- Reported so a run that hit the cap is distinguishable from a run that\n    -- finished the backlog. A capped run means the next one still has work.\n    'capped', v_events >= p_limit\n  );\nend;\n$function$\n",
+      "sha256": "d26313b5a5c1075f3f6121aa1a5629a04d56f382489dabba996af7f571f34431"
+    },
+    {
+      "signature": "prune_user_events(integer,integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.prune_user_events(p_older_than_days integer, p_limit integer DEFAULT 20000)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  v_cutoff  timestamptz;\n  v_deleted integer;\nbegin\n  -- 90 days is generous for every reader this table has:\n  --   recommendation-engine    reads the last 50 events for one visitor\n  --   get_trending_entities    reads a 7-day window\n  --   get_user_signal          reads a 30-day window\n  -- so nothing here is sized by the retention window. The floor guard exists\n  -- because that is easy to forget when someone later \"tunes\" the number.\n  if p_older_than_days is null or p_older_than_days < 30 then\n    raise exception 'p_older_than_days must be >= 30 (got %) \u2014 get_user_signal reads a 30-day window',\n      p_older_than_days;\n  end if;\n  if p_limit is null or p_limit < 1 or p_limit > 200000 then\n    raise exception 'p_limit must be between 1 and 200000, got %', p_limit;\n  end if;\n\n  v_cutoff := now() - make_interval(days => p_older_than_days);\n\n  with victims as (\n    select id from public.user_events\n     where created_at < v_cutoff\n     order by created_at\n     limit p_limit\n  )\n  delete from public.user_events u\n   using victims v\n   where u.id = v.id;\n  get diagnostics v_deleted = row_count;\n\n  return jsonb_build_object(\n    'ok', true,\n    'cutoff', v_cutoff,\n    'deleted', v_deleted,\n    'capped', v_deleted >= p_limit\n  );\nend;\n$function$\n",
+      "sha256": "7ba2427e69c835dca5bb811999922bfdfa3d236c73fea2a66e117d3329a0b71c"
+    },
+    {
+      "signature": "refresh_admin_counts()",
+      "definition": "CREATE OR REPLACE FUNCTION public.refresh_admin_counts()\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare\n  v_payload jsonb;\n  v_t0 timestamptz := clock_timestamp();\nbegin\n  -- TRY, not blocking. pg_cron does not serialise across jobs, and a queued\n  -- worker turns a stall into a pile-up; a skipped tick is free because the\n  -- next one recomputes from scratch anyway (the admin_automation_tracking\n  -- precedent).\n  if not pg_try_advisory_xact_lock(hashtext('admin_counts_refresh')) then\n    return jsonb_build_object('ok', true, 'skipped', 'another refresh holds the lock');\n  end if;\n\n  v_payload := public.admin_counts_compute();\n\n  insert into public.admin_counts_cache (id, payload, computed_at)\n  values (true, v_payload, now())\n  on conflict (id) do update\n    set payload = excluded.payload, computed_at = excluded.computed_at;\n\n  return jsonb_build_object(\n    'ok', true,\n    'keys', (select count(*) from jsonb_object_keys(v_payload)),\n    'elapsed_ms', round(extract(epoch from (clock_timestamp()-v_t0))*1000));\nend\n$function$\n",
+      "sha256": "ea1b74ac863ba61b9b74dad72fcb729a6ca6dbe53f335009b167d1fcd49c15fb"
+    },
+    {
+      "signature": "refresh_admin_review_queue_counts()",
+      "definition": "CREATE OR REPLACE FUNCTION public.refresh_admin_review_queue_counts()\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare\n  v_union text;\n  v_rows  integer;\n  v_t0    timestamptz := clock_timestamp();\nbegin\n  -- Only one refresh at a time. pg_cron does not serialise its own jobs, and\n  -- this one does a full-corpus scan: two overlapping runs would double the\n  -- load this migration exists to remove and then fight over the same 41 rows.\n  -- TRY, not blocking -- a skipped tick is free, a queued pg_cron worker turns\n  -- a stall into a pile-up (the admin_automation_tracking precedent).\n  if not pg_try_advisory_xact_lock(hashtext('admin_review_queue_counts')) then\n    return jsonb_build_object('ok', true, 'skipped', 'another refresh holds the lock');\n  end if;\n\n  -- THE SHAPE HERE IS LOAD-BEARING AND THE OBVIOUS ONE IS MEASURABLY WORSE.\n  -- This is get_admin_review_summary's own pre-cache query, moved behind a\n  -- cron: ONE union, ONE hash join to admin_review_finding_codes, group by.\n  --\n  -- The first draft instead asked each view for its own counts with\n  -- `count(*) filter (where exists (select 1 from admin_review_finding_codes\n  -- ...))`. That is an aggregate FILTER expression, so it cannot be planned as\n  -- a semi-join -- it becomes a correlated subplan evaluated per row, 324k\n  -- times, and it does the codes join 41 times instead of once. Measured: it\n  -- did not finish inside 60s, against roughly ten for this shape. It is the\n  -- same \"narrow per-branch count aggregate\" that measured 8.03s -- WORSE than\n  -- the unpatched function -- while I was choosing between candidate fixes,\n  -- and I rebuilt it here without recognising it. Do not re-derive it.\n  --\n  -- Reusing the old query verbatim also makes the correctness argument short:\n  -- the cached numbers are not a reimplementation of the counts, they ARE the\n  -- counts, computed by the same expressions over the same views.\n  select string_agg(\n    format(\n      'select u.queue_type,u.subtitle,u.created_at,'\n      'coalesce(u.risk_flags->>''risk'',%L)::text risk,%L::integer sla_hours'\n      ' from public.%I u',\n      r.risk, r.sla_hours, r.view_name),\n    ' union all ' order by r.queue_key)\n  into v_union\n  from public.admin_review_sources r\n  where r.active;\n\n  if v_union is null then\n    return jsonb_build_object('ok', false, 'reason', 'no active review sources');\n  end if;\n\n  -- Driven FROM admin_review_sources with a LEFT JOIN, so a source with zero\n  -- items still gets a row of zeros. `group by queue_type` alone emits nothing\n  -- for an empty source, which would leave the cache incomplete and make\n  -- \"every active source has a cached row\" unassertable -- the reader\n  -- coalesces anyway, but a complete cache is the difference between a\n  -- sentinel that can see a missing source and one that cannot.\n  execute format($q$\n    with authorized as (\n      select u.*,\n        sla_hours is not null and u.created_at < now()-make_interval(hours=>sla_hours) as overdue,\n        (f.queue_key is not null) as is_finding\n      from (%s) u\n      left join public.admin_review_finding_codes f\n        on f.queue_key=u.queue_type and f.subtitle_match=u.subtitle),\n    agg as (\n      select queue_type, count(*) n, count(*) filter(where overdue) late,\n        count(*) filter(where is_finding) findings,\n        count(*) filter(where not is_finding) decisions,\n        count(*) filter(where risk='safety') safety\n      from authorized group by queue_type),\n    fresh as (\n      select r.queue_key, coalesce(a.n,0) n, coalesce(a.late,0) late,\n        coalesce(a.findings,0) findings, coalesce(a.decisions,0) decisions,\n        coalesce(a.safety,0) safety\n      from public.admin_review_sources r\n      left join agg a on a.queue_type = r.queue_key\n      where r.active)\n    insert into public.admin_review_queue_counts\n      (queue_key, n, late, findings, decisions, safety, computed_at)\n    select queue_key, n, late, findings, decisions, safety, now() from fresh\n    on conflict (queue_key) do update\n      set n = excluded.n, late = excluded.late, findings = excluded.findings,\n          decisions = excluded.decisions, safety = excluded.safety,\n          computed_at = excluded.computed_at\n  $q$, v_union);\n  get diagnostics v_rows = row_count;\n\n  delete from public.admin_review_queue_counts c\n  where not exists (\n    select 1 from public.admin_review_sources r\n    where r.active and r.queue_key = c.queue_key);\n\n  return jsonb_build_object(\n    'ok', true,\n    'sources', v_rows,\n    'elapsed_ms', round(extract(epoch from clock_timestamp() - v_t0) * 1000));\nend\n$function$\n",
+      "sha256": "c63a2a28f74d1612ab7339769b74094a29e9e60910d999511c5c6f8c64abd44e"
+    },
+    {
+      "signature": "refresh_admin_review_queue_top()",
+      "definition": "CREATE OR REPLACE FUNCTION public.refresh_admin_review_queue_top()\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare\n  v_union text;\n  v_rows  integer;\n  v_depth integer := public.admin_review_queue_top_depth();\n  v_t0    timestamptz := clock_timestamp();\nbegin\n  if not pg_try_advisory_xact_lock(hashtext('admin_review_queue_top')) then\n    return jsonb_build_object('ok', true, 'skipped', 'another refresh holds the lock');\n  end if;\n\n  select string_agg(format(\n    'select u.id,u.queue_type,u.content_type,u.title,u.subtitle,u.created_at,u.confidence_score,'\n    ' case u.risk_flags->>''severity'' when ''critical'' then 4 when ''high'' then 3'\n    ' else case coalesce(u.risk_flags->>''risk'',%L) when ''safety'' then 2'\n    ' when ''integrity'' then 1 else 0 end end urgency_rank,'\n    ' %L::text source_label,coalesce(u.risk_flags->>''risk'',%L)::text risk,'\n    ' %L::boolean public_impact,%L::integer sla_hours,%L::integer priority_weight,'\n    ' %L::boolean can_reopen from public.%I u',\n    r.risk, r.label, r.risk, r.public_impact, r.sla_hours, r.priority_weight,\n    r.can_reopen, r.view_name), ' union all ' order by r.queue_key)\n  into v_union\n  from public.admin_review_sources r\n  where r.active;\n\n  if v_union is null then\n    return jsonb_build_object('ok', false, 'reason', 'no active review sources');\n  end if;\n\n  delete from public.admin_review_queue_top;\n\n  -- ONE union execution, fifteen bounded top-N sorts over the materialized result. The obvious\n  -- shape -- one statement per (scope,sort) -- re-executes the union fifteen times; a single pass\n  -- is ~950ms warm, so that alone would be a 14s tick. `as materialized` is load-bearing: the CTE\n  -- is referenced from inside a LATERAL that runs once per combination, and without the hint\n  -- Postgres is free to inline it and re-plan the union fifteen times, which is the same defect\n  -- wearing a CTE's clothes.\n  --\n  -- The scope and sort expressions are transcribed from get_admin_review_queue. P6 asserts the\n  -- resulting order matches the live path by executing both and comparing, rather than trusting\n  -- the transcription -- a copied ORDER BY that drifts is invisible to every structural check.\n  execute format($q$\n    insert into public.admin_review_queue_top\n      (scope, sort, rank, queue_type, id, urgency_rank, source_label, risk,\n       public_impact, sla_hours, priority_weight, can_reopen, is_finding, created_at, computed_at)\n    with authorized as materialized (\n      select a.*,\n        a.sla_hours is not null and a.created_at < now()-make_interval(hours=>a.sla_hours) as overdue,\n        (f.queue_key is not null) as is_finding\n      from (%s) a\n      left join public.admin_review_finding_codes f\n        on f.queue_key = a.queue_type and f.subtitle_match = a.subtitle)\n    select s.scope, o.sort, r.rank, r.queue_type, r.id, r.urgency_rank, r.source_label, r.risk,\n           r.public_impact, r.sla_hours, r.priority_weight, r.can_reopen, r.is_finding,\n           r.created_at, now()\n    from (values ('all'),('safety'),('overdue'),('public'),('decisions')) s(scope)\n    cross join (values ('priority'),('age'),('confidence')) o(sort)\n    cross join lateral (\n      -- THE LIMIT MUST APPLY BEFORE row_number(), AND THE OBVIOUS SHAPE GETS THIS WRONG.\n      -- A window function sorts its whole partition and no LIMIT can be pushed through it, so\n      -- `row_number() over (order by ...) ... limit 250` in ONE level is fifteen full sorts of\n      -- 335k rows. Measured on prod: 20,640 ms. Ranking the already-bounded 250-row subquery\n      -- instead makes each pass a bounded top-N: 5,871 ms, a 3.5x difference from nesting alone.\n      select sub.*, row_number() over (\n        order by\n          case when o.sort='priority' then sub.urgency_rank else 0 end desc,\n          case when o.sort='priority' then sub.overdue else false end desc,\n          case when o.sort='priority' then sub.priority_weight else 0 end desc,\n          case when o.sort='confidence' then sub.confidence_score end asc nulls last,\n          sub.created_at asc nulls last, sub.queue_type, sub.id) as rank\n      from (\n        select t.* from authorized t\n        where case s.scope\n                when 'all'     then true\n                when 'safety'  then t.risk = 'safety'\n                when 'public'  then t.public_impact\n                when 'overdue' then t.overdue\n                else                not t.is_finding\n              end\n        order by\n          case when o.sort='priority' then t.urgency_rank else 0 end desc,\n          case when o.sort='priority' then t.overdue else false end desc,\n          case when o.sort='priority' then t.priority_weight else 0 end desc,\n          case when o.sort='confidence' then t.confidence_score end asc nulls last,\n          t.created_at asc nulls last, t.queue_type, t.id\n        limit %s\n      ) sub\n    ) r\n  $q$, v_union, v_depth);\n  get diagnostics v_rows = row_count;\n\n  return jsonb_build_object(\n    'ok', true,\n    'rows', v_rows,\n    'depth', v_depth,\n    'elapsed_ms', round(extract(epoch from clock_timestamp() - v_t0) * 1000));\nend\n$function$\n",
+      "sha256": "8311d869d43e6f98729e7179e354eda8081a47bad9778c6a6978828690ff41c6"
+    },
+    {
+      "signature": "run_existence_signals_purge()",
+      "definition": "CREATE OR REPLACE FUNCTION public.run_existence_signals_purge()\n RETURNS jsonb\n LANGUAGE sql\n SET search_path TO ''\nAS $function$SELECT api_private.run_existence_signals_purge()$function$\n",
+      "sha256": "75769ee0e76679bb53b7ef1db4d1a9978926979d41fce7f51dff1c0054cee6b3"
+    },
+    {
+      "signature": "run_marketplace_ownership_apply(integer,boolean)",
+      "definition": "CREATE OR REPLACE FUNCTION public.run_marketplace_ownership_apply(p_batch integer DEFAULT 300, p_force boolean DEFAULT false)\n RETURNS jsonb\n LANGUAGE sql\n SET search_path TO ''\nAS $function$SELECT api_private.run_marketplace_ownership_apply(p_batch => $1, p_force => $2)$function$\n",
+      "sha256": "92cf5d231a3ad1b5d133b03256d5310ad8dacd7e618b0b4d1233bf0a968bb6c6"
+    },
+    {
+      "signature": "run_marketplace_review_autotriage(integer,boolean)",
+      "definition": "CREATE OR REPLACE FUNCTION public.run_marketplace_review_autotriage(p_batch integer DEFAULT 200, p_force boolean DEFAULT false)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE\n  v_automation_id uuid; v_run_id bigint; v_enabled boolean;\n  v_started timestamptz := now(); v_approved int := 0; v_rejected int := 0;\nBEGIN\n  SELECT id, enabled INTO v_automation_id, v_enabled\n  FROM public.admin_automations WHERE slug = 'marketplace_review_autotriage';\n\n  INSERT INTO public.admin_automation_runs\n    (automation_id, automation_slug, started_at, status, items_examined, items_changed)\n  VALUES (v_automation_id, 'marketplace_review_autotriage', v_started, 'success', 0, 0)\n  RETURNING id INTO v_run_id;\n\n  IF (v_enabled IS DISTINCT FROM true) AND NOT p_force THEN\n    UPDATE public.admin_automation_runs SET finished_at=now(),\n      summary=jsonb_build_object('skipped',true,'reason','paused') WHERE id=v_run_id;\n    UPDATE public.admin_automations SET last_run_at=v_started, last_run_status='paused' WHERE id=v_automation_id;\n    RETURN jsonb_build_object('skipped',true,'reason','paused');\n  END IF;\n\n  -- Rejections (no listing writes \u2014 uncapped).\n  WITH cls AS (\n    SELECT q.id, q.model, q.proposed_value->>'subcategory' AS proposed, l.subcategory_slug AS cur,\n      public.marketplace_content_rating(q.proposed_value->>'subcategory', l.title, l.description) AS wouldbe,\n      (lower(coalesce(l.title,'')||' '||coalesce(l.description,'')) ~\n       '(latex|wetlook|gummi|rubber|leder|leather|lack|lacquer|pvc|vinyl|fetisch|fetish|harness|ouvert|crotch|nippel|nipple|\\mpup\\M|puppy|sling|chaps|neopren|bondage|bdsm|dildo|anal|plug|vibrat|cock|penis|keuschheit|chastity|slave|sklav|pinwheel|wartenberg)') AS adult_residual\n    FROM public.marketplace_review_queue q JOIN public.marketplace_listings l ON l.id=q.listing_id\n    WHERE q.status='open'\n  ),\n  to_reject AS (\n    SELECT id FROM cls\n    WHERE (model='extract' AND proposed='Books and Art')\n       OR (model='extract' AND proposed='Jewelry and Pins'\n           AND cur IN ('sex_toys','anal_toys','cock_rings_and_stretchers','chastity','pumps_and_enlargement','bdsm_and_bondage','fetish_wear'))\n       OR (wouldbe NOT IN ('adult','explicit') AND adult_residual)\n  )\n  UPDATE public.marketplace_review_queue q\n  SET status='rejected', reviewed_at=now(),\n      reviewer_note='autotriage: rating would cross the 18+ gate with residual adult markers (or extract books/jewelry false positive) \u2014 keeping current bucket'\n  FROM to_reject t WHERE q.id=t.id;\n  GET DIAGNOSTICS v_rejected = ROW_COUNT;\n\n  -- Approvals (listing writes \u2014 capped batch protects the search sync).\n  WITH cls AS (\n    SELECT q.id, q.listing_id, q.created_at, q.proposed_value->>'subcategory' AS proposed,\n      public.marketplace_content_rating(q.proposed_value->>'subcategory', l.title, l.description) AS wouldbe,\n      (lower(coalesce(l.title,'')||' '||coalesce(l.description,'')) ~\n       '(latex|wetlook|gummi|rubber|leder|leather|lack|lacquer|pvc|vinyl|fetisch|fetish|harness|ouvert|crotch|nippel|nipple|\\mpup\\M|puppy|sling|chaps|neopren|bondage|bdsm|dildo|anal|plug|vibrat|cock|penis|keuschheit|chastity|slave|sklav|pinwheel|wartenberg)') AS adult_residual\n    FROM public.marketplace_review_queue q JOIN public.marketplace_listings l ON l.id=q.listing_id\n    WHERE q.status='open'\n  ),\n  batch AS (\n    SELECT id, listing_id, proposed FROM cls\n    WHERE wouldbe IN ('adult','explicit') OR NOT adult_residual\n    ORDER BY created_at\n    LIMIT GREATEST(1, LEAST(p_batch, 500))\n  ),\n  upd AS (\n    UPDATE public.marketplace_listings l SET subcategory = b.proposed\n    FROM batch b WHERE l.id = b.listing_id RETURNING l.id\n  )\n  UPDATE public.marketplace_review_queue q\n  SET status='approved', reviewed_at=now(),\n      reviewer_note='autotriage: applied \u2014 post-change rating stays 18+-gated, or text clean of residual adult markers'\n  FROM batch b WHERE q.id=b.id;\n  GET DIAGNOSTICS v_approved = ROW_COUNT;\n\n  UPDATE public.admin_automation_runs SET finished_at=now(),\n    items_examined=v_approved+v_rejected, items_changed=v_approved,\n    summary=jsonb_build_object('approved',v_approved,'rejected',v_rejected) WHERE id=v_run_id;\n  UPDATE public.admin_automations SET last_run_at=v_started, last_run_status='success' WHERE id=v_automation_id;\n  RETURN jsonb_build_object('approved', v_approved, 'rejected', v_rejected);\nEND; $function$\n",
+      "sha256": "80b2612279af4f499a97aace0e24481d9ca56d6c5dd78d222a7ff8540dfbcb0e"
+    },
+    {
+      "signature": "run_review_queue_retention(integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.run_review_queue_retention(p_max_batches integer DEFAULT 10)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE\n  v_total   bigint := 0;\n  v_deleted bigint;\n  v_batch   int := 0;\nBEGIN\n  LOOP\n    v_batch := v_batch + 1;\n    EXIT WHEN v_batch > p_max_batches;\n\n    DELETE FROM review_queue rq WHERE rq.id IN (\n      SELECT id FROM review_queue r2\n      WHERE r2.status <> 'pending'\n         OR r2.created_at < now() - interval '90 days'\n         OR (r2.entity_type = 'ingestion_staging' AND NOT EXISTS (\n               SELECT 1 FROM ingestion_staging s\n               WHERE s.id = r2.entity_id\n                 AND s.review_status = 'pending_review'\n                 AND s.disposition = 'pending'))\n      LIMIT 20000\n    );\n    GET DIAGNOSTICS v_deleted = ROW_COUNT;\n    v_total := v_total + v_deleted;\n    EXIT WHEN v_deleted < 20000;\n  END LOOP;\n\n  RETURN jsonb_build_object('deleted', v_total, 'batches', v_batch);\nEND;\n$function$\n",
+      "sha256": "03ddded3eefb2e4a4cc37274cac42d5f35b7df4a54b613aa5097155dfde1d965"
+    },
+    {
+      "signature": "run_staging_reconcile_committed(integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.run_staging_reconcile_committed(p_batch integer DEFAULT 2000)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE\n  v_committed int := 0;\n  v_rejected  int := 0;\nBEGIN\n  -- At */5 a slow pass can still be running when the next one fires. TRY, never\n  -- block: a skipped tick is free (the work is idempotent and the next tick is\n  -- 5 minutes away), whereas a queued pg_cron worker turns one slow run into a\n  -- pile-up \u2014 the failure that deadlocked the projector and the reaper.\n  IF NOT pg_try_advisory_xact_lock(hashtext('staging_reconcile_committed')) THEN\n    RETURN jsonb_build_object('skipped', 'another run holds the lock');\n  END IF;\n\n  -- Class A: the pipeline committed it and the target row still exists.\n  WITH cand AS (\n    SELECT s.id\n      FROM public.ingestion_staging s\n     WHERE s.review_status = 'pending_review'\n       AND s.target_record_id IS NOT NULL\n       -- Re-resolve the pointer per target table. A dangling uuid is not proof.\n       AND (\n            (s.target_table = 'news_articles'        AND EXISTS (SELECT 1 FROM public.news_articles        x WHERE x.id = s.target_record_id))\n         OR (s.target_table = 'venues'               AND EXISTS (SELECT 1 FROM public.venues               x WHERE x.id = s.target_record_id))\n         OR (s.target_table = 'marketplace_listings' AND EXISTS (SELECT 1 FROM public.marketplace_listings x WHERE x.id = s.target_record_id))\n         OR (s.target_table = 'events'               AND EXISTS (SELECT 1 FROM public.events               x WHERE x.id = s.target_record_id))\n         OR (s.target_table = 'personalities'        AND EXISTS (SELECT 1 FROM public.personalities        x WHERE x.id = s.target_record_id))\n         OR (s.target_table = 'cities'               AND EXISTS (SELECT 1 FROM public.cities               x WHERE x.id = s.target_record_id))\n         OR (s.target_table = 'countries'            AND EXISTS (SELECT 1 FROM public.countries            x WHERE x.id = s.target_record_id))\n       )\n     ORDER BY s.created_at\n     LIMIT p_batch\n  )\n  UPDATE public.ingestion_staging s\n     SET review_status = 'auto',\n         disposition   = 'committed',\n         reviewed_by   = NULL,\n         reviewed_at   = now(),\n         review_notes  = left(\n           'auto-reconcile: already committed to ' || s.target_table ||\n           ' (' || s.target_record_id::text || '); review_status was stale'\n           || CASE WHEN s.review_notes IS NULL OR length(trim(s.review_notes)) = 0\n                   THEN '' ELSE ' | ' || s.review_notes END, 2000)\n    FROM cand\n   WHERE s.id = cand.id;\n  GET DIAGNOSTICS v_committed = ROW_COUNT;\n\n  -- Class B: the pipeline already rejected it; only the status lagged.\n  WITH cand AS (\n    SELECT s.id\n      FROM public.ingestion_staging s\n     WHERE s.review_status = 'pending_review'\n       AND s.target_record_id IS NULL\n       AND s.disposition = 'rejected'\n     ORDER BY s.created_at\n     LIMIT p_batch\n  )\n  UPDATE public.ingestion_staging s\n     SET review_status = 'rejected',\n         reviewed_by   = NULL,\n         reviewed_at   = now(),\n         review_notes  = left(\n           'auto-reconcile: pipeline already rejected this row; review_status was stale'\n           || CASE WHEN s.review_notes IS NULL OR length(trim(s.review_notes)) = 0\n                   THEN '' ELSE ' | ' || s.review_notes END, 2000)\n    FROM cand\n   WHERE s.id = cand.id;\n  GET DIAGNOSTICS v_rejected = ROW_COUNT;\n\n  RETURN jsonb_build_object(\n    'reconciled_committed', v_committed,\n    'reconciled_rejected',  v_rejected,\n    'still_pending', (SELECT count(*) FROM public.ingestion_staging WHERE review_status = 'pending_review')\n  );\nEND\n$function$\n",
+      "sha256": "f5095ec1d7bfe4e13ced385a7e769afe1ca3a6e98ff08a404698405ac5474b1c"
+    },
+    {
+      "signature": "run_staging_rejected_purge(integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.run_staging_rejected_purge(p_batch integer DEFAULT 20000)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE\n  v_automation_id uuid; v_run_id bigint; v_enabled boolean;\n  v_started_at timestamptz := now();\n  v_total int := 0; v_batch_n int;\nBEGIN\n  SELECT id, enabled INTO v_automation_id, v_enabled\n  FROM public.admin_automations WHERE slug = 'staging_rejected_purge';\n\n  INSERT INTO public.admin_automation_runs\n    (automation_id, automation_slug, started_at, status, items_examined, items_changed)\n  VALUES (v_automation_id, 'staging_rejected_purge', v_started_at, 'success', 0, 0)\n  RETURNING id INTO v_run_id;\n\n  IF v_enabled IS DISTINCT FROM true THEN\n    UPDATE public.admin_automation_runs\n    SET finished_at = now(), summary = jsonb_build_object('skipped', true, 'reason', 'paused')\n    WHERE id = v_run_id;\n    UPDATE public.admin_automations SET last_run_at = v_started_at, last_run_status = 'paused'\n    WHERE id = v_automation_id;\n    RETURN jsonb_build_object('skipped', true, 'reason', 'paused');\n  END IF;\n\n  LOOP\n    WITH del AS (\n      DELETE FROM public.ingestion_staging\n      WHERE id IN (\n        SELECT id FROM public.ingestion_staging\n        WHERE disposition = 'rejected'\n          AND created_at < now() - interval '90 days'\n        LIMIT least(p_batch, 20000)\n      )\n      RETURNING 1\n    )\n    SELECT count(*) INTO v_batch_n FROM del;\n    v_total := v_total + v_batch_n;\n    EXIT WHEN v_batch_n = 0 OR v_total >= 40000;  -- bound one run's work\n  END LOOP;\n\n  UPDATE public.admin_automation_runs\n  SET finished_at = now(), items_changed = v_total,\n      summary = jsonb_build_object('deleted', v_total, 'threshold_days', 90,\n        'rule', 'disposition=rejected AND age>90d -> delete (batched, \u2264100k/run)')\n  WHERE id = v_run_id;\n  UPDATE public.admin_automations SET last_run_at = v_started_at, last_run_status = 'success'\n  WHERE id = v_automation_id;\n\n  RETURN jsonb_build_object('deleted', v_total);\nEXCEPTION WHEN OTHERS THEN\n  UPDATE public.admin_automation_runs\n  SET finished_at = now(), status = 'error', error = SQLERRM WHERE id = v_run_id;\n  UPDATE public.admin_automations SET last_run_at = v_started_at, last_run_status = 'error'\n  WHERE id = v_automation_id;\n  RAISE;\nEND;\n$function$\n",
+      "sha256": "70ec1c2575889fe9fcaacc0fc40df092d976fe09b89dfc7fdae640c6cc4661f3"
+    },
+    {
+      "signature": "admin_review_queue_top_depth()",
+      "definition": "CREATE OR REPLACE FUNCTION public.admin_review_queue_top_depth()\n RETURNS integer\n LANGUAGE sql\n IMMUTABLE PARALLEL SAFE\n SET search_path TO 'public', 'pg_temp'\nAS $function$ select 250 $function$\n",
+      "sha256": "2ed64f587b8c1019dff4322b72f6f8657b98aac4cba9fb7747c6cb3c271e231f"
+    },
+    {
+      "signature": "marketplace_content_rating(text,text,text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.marketplace_content_rating(p_subcategory text, p_title text, p_description text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO 'public', 'extensions'\nAS $function$\n  WITH s AS (\n    SELECT lower(regexp_replace(coalesce(p_subcategory,''),'[\\s\\-]+','_','g')) slug,\n      lower(coalesce(p_title,'')||' '||coalesce(p_description,'')) txt\n  ), ranked AS (\n    SELECT greatest(\n      CASE\n        WHEN slug IN('sex_toys','anal_toys','cock_rings','cock_rings_and_stretchers',\n          'dildos','vibrators','masturbators','pumps_and_enlargement','chastity',\n          'cage','bdsm_and_bondage','bondage','bdsm','butt_plugs','penis_rings',\n          'penis_pumps','pumps','pup_and_pet_play','pup_play','impact_play','gags',\n          'hoods_masks','sound','intim_body','penis_extender','male_chastity_device')\n          OR slug ~ '(^|_)(dildos?|ovipositors?)$' THEN 4\n        WHEN slug ~ '^pup_play_' THEN 3\n        WHEN slug ~ '(^|_)(pup_(hoods?|masks?)|pain_(&|and)_punishment)($|_)' THEN 3\n        WHEN slug IN('fetish_wear','fetish_gear','lubricants','lubes','condoms',\n          'safer_sex','poppers','adult_magazines','adult_digital_magazines',\n          'adult_photo_books','adult_art_prints','adult_zines','adult_photography',\n          'adult_polaroids','adult_subscriptions') THEN 3\n        WHEN slug IN('underwear_and_swimwear','underwear','swimwear') THEN 2\n        ELSE 1 END,\n      CASE\n        WHEN txt ~ '(dildo|butt ?plug|silicone plug|vibrat|cock ?(ring|sling)|ball ?stretch|chastity|bondage|\\mbdsm\\M|fisting|prostate|masturbat|fleshlight|\\mstrap[- ]?ons?\\M|anal (plug|bead|douche|hook|fastener|speculum)|nipple.{0,32}(plier|torture|clamp|forcep|suction|suck|pull|crush)|(?:clamp|plier|forcep|pincer).{0,32}nipple|tit (torture|suckers?|clamps?)|nips? pump|nipsuck|clit.{0,20}(sucker|clamp)|urethral|\\me[- ]?stim\\M|\\mestim\\M|stroker|onanism|analplug|analkette|analkugel|analdusche|penisring|hodenring|keuschheit|penisk\u00e4fig|handschellen|peitsche|\\mfessel|\\mknebel\\M|nippelklemme|liebeskugel|penispumpe|prostata|umschnall|spreizstange|flogger|elastrator|\\mwhips?\\M|spreader ?bar|\\mball ?gag|\\mgimp\\M|humbler|hogtie|\\mcock\\M|penis[- ]?extender|penisvergr|klitoris|clitoris|clitoral|stimulator|love ?egg|liebesei|sexspielzeug|lovetoys?|\\mg[- ]?spot|\\mg[- ]?punkt|handcuffs?|restraints?|maglock|fu\u00dffessel|fussfessel|sperm stopper|penis sleeve|pack[- ]and[- ]play)' THEN 4\n        WHEN txt ~ '(fetish|pup play|leather harness|pup hood|puppy hood|\\mlube\\M|lubricant|\\menema|latex (gear|suit)|rubber (gear|suit)|erotic|\\mkink\\M|fetisch|gleitgel|gleitmittel|catsuit|wetlook|erotik|\\manal\\M|(silicone|wooden|leather|boot|spanking) paddle|nose hook)' THEN 3\n        WHEN txt ~ '(jockstrap|jock strap|\\mthong\\M|lingerie|harness|\\msexy\\M|dessous|\\mtanga\\M|reizw\u00e4sche|orgasm|nipple covers?|nipple rings?|\\m(semen|libido)\\M|big d[''\u2019]?ck energy)' THEN 2\n        ELSE 1 END) rank FROM s\n  )\n  SELECT CASE rank WHEN 4 THEN 'explicit' WHEN 3 THEN 'adult'\n    WHEN 2 THEN 'suggestive' ELSE 'sfw' END FROM ranked;\n$function$\n",
+      "sha256": "8d2945c9d63a85c3de4249dae985f7efa2d30a77a78c65c69c4ce71dc220dc21"
+    },
+    {
+      "signature": "admin_counts_compute()",
+      "definition": "CREATE OR REPLACE FUNCTION public.admin_counts_compute()\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare\n  result jsonb; estimates jsonb; v_sla jsonb := '{}'::jsonb;\n  v_cnt bigint; v_overdue bigint; r record;\n  sla_feedback_h constant int := 48;\n  sla_event_quality_h constant int := 336;\nbegin\n  select jsonb_object_agg(relname,reltuples::bigint) into estimates\n  from pg_class where relnamespace='public'::regnamespace and relname=any(array[\n    'venues','events','news_articles','personalities','cities','countries','hotels',\n    'queer_villages','marketplace_listings','community_groups','unified_tags',\n    'cms_pages','email_ingestions','workflow_runs','scrape_sources','content_links',\n    'community_submissions','redirects']);\n  result := coalesce(estimates,'{}'::jsonb);\n  for r in select queue_key,view_name,count_key,count_prefix,sla_hours\n           from triage_sources where active order by queue_key loop\n    execute format(\n      'select count(*),count(*) filter(where created_at < now() - %L::interval) from public.%I',\n      r.sla_hours || ' hours',r.view_name) into v_cnt,v_overdue;\n    result := result || jsonb_build_object(r.count_prefix||r.count_key,v_cnt)\n      || jsonb_build_object(r.count_prefix||r.count_key||'_overdue',v_overdue);\n    v_sla := v_sla || jsonb_build_object(r.count_key,r.sla_hours);\n  end loop;\n  result := result || jsonb_build_object(\n    'review_feedback',(select count(*) from community_submissions\n      where content_type='feedback' and feedback_status in ('new','under_review')),\n    'review_feedback_overdue',(select count(*) from community_submissions\n      where content_type='feedback' and feedback_status in ('new','under_review')\n        and submitted_at < now()-(sla_feedback_h||' hours')::interval),\n    'review_group_requests',(select count(*) from group_join_requests where status='pending'),\n    'quality_existence',(select count(*) from entity_existence_audit\n      where action='flag' and reverted_at is null),\n    'quality_glossary',coalesce((select total_count from public.tag_editorial_queue(1,0,null) limit 1),0),\n    'quality_personality',(select count(*) from public.triage_src_quality_personality),\n    'quality_event',(select count(*) from public.event_quality_issues where status='open'),\n    'quality_event_overdue',(select count(*) from public.event_quality_issues\n      where status='open' and severity in ('critical','high')\n        and detected_at<now()-(sla_event_quality_h||' hours')::interval),\n    'sla_hours',v_sla||jsonb_build_object('feedback',sla_feedback_h,\n      'quality_event',sla_event_quality_h)\n  );\n  return result;\nend\n$function$\n",
+      "sha256": "f1cdfa0727a86bdd7eeacebcc94d6f1fd8bab1acd89e64a63d15587b7e2ca5e1"
+    },
+    {
+      "signature": "api_private.run_existence_signals_purge()",
+      "definition": "CREATE OR REPLACE FUNCTION api_private.run_existence_signals_purge()\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE v_deleted int := 0; v_batch int;\nBEGIN\n  PERFORM public.assert_admin_or_internal();\n  SET LOCAL statement_timeout = 0;\n  LOOP\n    WITH ranked AS (\n      SELECT id, row_number() OVER (PARTITION BY entity_type, entity_id ORDER BY observed_at DESC) rn\n      FROM public.entity_existence_signals\n    ), del AS (\n      DELETE FROM public.entity_existence_signals s\n      USING ranked r\n      WHERE s.id=r.id AND r.rn > 20 AND s.observed_at < now() - interval '180 days'\n      RETURNING 1\n    )\n    SELECT count(*) INTO v_batch FROM del;\n    v_deleted := v_deleted + v_batch;\n    EXIT WHEN v_batch = 0;\n  END LOOP;\n  RETURN jsonb_build_object('deleted', v_deleted);\nEND; $function$\n",
+      "sha256": "1024c3267a0dd04710c30fd7186f41590b16015331ba8f3c1d84bed6390a3252"
+    },
+    {
+      "signature": "api_private.run_marketplace_ownership_apply(integer,boolean)",
+      "definition": "CREATE OR REPLACE FUNCTION api_private.run_marketplace_ownership_apply(p_batch integer DEFAULT 300, p_force boolean DEFAULT false)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE\n  v_automation_id uuid; v_run_id bigint; v_enabled boolean;\n  v_started timestamptz := now(); v_applied int := 0; v_remaining int;\nBEGIN\n  PERFORM public.assert_admin_or_internal();\n  SELECT id, enabled INTO v_automation_id, v_enabled\n  FROM public.admin_automations WHERE slug = 'marketplace_ownership_apply';\n  INSERT INTO public.admin_automation_runs\n    (automation_id, automation_slug, started_at, status, items_examined, items_changed)\n  VALUES (v_automation_id, 'marketplace_ownership_apply', v_started, 'success', 0, 0)\n  RETURNING id INTO v_run_id;\n  IF (v_enabled IS DISTINCT FROM true) AND NOT p_force THEN\n    UPDATE public.admin_automation_runs SET finished_at=now(),\n      summary=jsonb_build_object('skipped',true,'reason','paused') WHERE id=v_run_id;\n    UPDATE public.admin_automations SET last_run_at=v_started, last_run_status='paused' WHERE id=v_automation_id;\n    RETURN jsonb_build_object('skipped',true,'reason','paused');\n  END IF;\n  WITH target AS (\n    SELECT l.id, b.ownership_tags AS want\n    FROM public.marketplace_listings l\n    JOIN public.marketplace_brands b\n      ON b.brand_key = public.marketplace_normalize_brand(l.brand)\n     AND b.status = 'approved'\n    WHERE l.community_owned_tags IS DISTINCT FROM b.ownership_tags\n    LIMIT GREATEST(1, LEAST(p_batch, 1000))\n  )\n  UPDATE public.marketplace_listings l SET community_owned_tags = t.want\n  FROM target t WHERE l.id = t.id;\n  GET DIAGNOSTICS v_applied = ROW_COUNT;\n  SELECT count(*) INTO v_remaining\n  FROM public.marketplace_listings l\n  JOIN public.marketplace_brands b\n    ON b.brand_key = public.marketplace_normalize_brand(l.brand) AND b.status='approved'\n  WHERE l.community_owned_tags IS DISTINCT FROM b.ownership_tags;\n  UPDATE public.admin_automation_runs SET finished_at=now(),\n    items_examined=v_applied+v_remaining, items_changed=v_applied,\n    summary=jsonb_build_object('applied',v_applied,'remaining',v_remaining) WHERE id=v_run_id;\n  UPDATE public.admin_automations SET last_run_at=v_started, last_run_status='success' WHERE id=v_automation_id;\n  RETURN jsonb_build_object('applied', v_applied, 'remaining', v_remaining);\nEND; $function$\n",
+      "sha256": "4976c286d4919a1bc0d1d602de1e8874a8dd0961da725032246e83cec5ac1007"
+    }
+  ],
+  "rescore_release": {
+    "version": 73,
+    "verify_jwt": true,
+    "sha256": "2861873aa6f4cb802644501a86315ffa3464171091f6869711e9bfd76041577a",
+    "changed": [
+      "strict response types and in-batch unique identities",
+      "exact input/result/review/publication snapshot comparison because no universal updated_at trigger exists",
+      "successful write, operational failure and stale outcome counters",
+      "invalid body rejected before paid inference"
+    ],
+    "canaries": [
+      {
+        "request_id": 104211,
+        "status": 401,
+        "result": "Missing gateway Authorization remains denied"
+      },
+      {
+        "request_id": 104225,
+        "status": 400,
+        "result": "Same server-side authorization as registered cron; invalid boolean rejected"
+      }
+    ],
+    "model_calls": 0,
+    "source_writes": 0,
+    "jev_adoption": "pending; retained legacy audience-fit policy needs its own evaluated typed question catalog"
+  },
+  "shadow_release": {
+    "version": 1937,
+    "sha256": "2ca82f1f0954daad6e74fb0ddffeccd3b8d0fa342cb835eeccca377ae57a57e4",
+    "public_product_adapters": 23,
+    "authority": "shadow only; max four evaluations among sixteen selected rows"
+  },
+  "decisions": {
+    "user_events_retention": {
+      "status": "deterministic_exclusion",
+      "functions": [
+        "prune_user_events(integer,integer)"
+      ],
+      "rationale": "Exact age cutoff with >=30-day floor and bounded deletion. No semantic judgment; keep retention in code. No retention policy changes authorized by this audit."
+    },
+    "umami_retention": {
+      "status": "deterministic_exclusion",
+      "functions": [
+        "prune_umami_events(integer,integer)"
+      ],
+      "rationale": "Exact timestamp retention and orphan-session cleanup, bounded with a 30-day minimum. No need to send visitor/session data to a model."
+    },
+    "admin_counts_refresh": {
+      "status": "deterministic_exclusion",
+      "functions": [
+        "refresh_admin_counts()",
+        "admin_counts_compute()"
+      ],
+      "rationale": "Writes aggregate dashboard cache only. Existing database count/view predicates remain code; a model must not invent counts or certify underlying records."
+    },
+    "admin_review_counts_refresh": {
+      "status": "deterministic_exclusion",
+      "functions": [
+        "refresh_admin_review_queue_counts()"
+      ],
+      "rationale": "Registry-driven count/SLA aggregation into a cache. Reads source-view decisions without changing them. Preserve exact counts and deterministic deadlines."
+    },
+    "admin_review_queue_top_refresh": {
+      "status": "deterministic_exclusion",
+      "functions": [
+        "refresh_admin_review_queue_top()",
+        "admin_review_queue_top_depth()"
+      ],
+      "rationale": "Cache of code-defined scope, ordering and bounded ranks, not a factual approval. Registry views supply evidence upstream; no model judgment belongs in cache refresh."
+    },
+    "existence_signals_purge": {
+      "status": "deterministic_exclusion",
+      "functions": [
+        "run_existence_signals_purge()",
+        "api_private.run_existence_signals_purge()"
+      ],
+      "rationale": "Retains newest 20 signals per entity and removes older-than-180-day surplus. No entity closure or factual inference. Unbounded statement timeout/loop remains an operational review item."
+    },
+    "staging_rejected_purge": {
+      "status": "deterministic_exclusion",
+      "functions": [
+        "run_staging_rejected_purge(integer)"
+      ],
+      "rationale": "Existing rejected disposition plus age>90 days selects retention deletion. No new rejection judgment. Keep evidence-retention policy in code; audit/event preservation is a separate requirement."
+    },
+    "review_queue_retention": {
+      "status": "deterministic_exclusion",
+      "functions": [
+        "run_review_queue_retention(integer)"
+      ],
+      "rationale": "Existing status, age and staging referential state drive retention. Jev should not decide expiry. The existing age>90-day predicate also deletes pending rows and merits a separate retention-policy review; this audit does not approve that behavior."
+    },
+    "marketplace_ownership_apply": {
+      "status": "deterministic_exclusion",
+      "functions": [
+        "run_marketplace_ownership_apply(integer,boolean)",
+        "api_private.run_marketplace_ownership_apply(integer,boolean)"
+      ],
+      "rationale": "Copies ownership tags only from approved canonical brand registry matches. Never replace explicit approval with model identity/ownership inference. Registry authorization and brand matching remain separate trust dependencies."
+    },
+    "staging_reconcile_committed": {
+      "status": "audited_followup_required",
+      "functions": [
+        "run_staging_reconcile_committed(integer)"
+      ],
+      "rationale": "Target-row existence reconciles lifecycle metadata without changing canonical content, but can close stale review on legacy wrongly admitted rows. Preserve classification corrections separately; do not count reconciliation as factual verification."
+    },
+    "marketplace_review_autotriage": {
+      "status": "audited_followup_required",
+      "functions": [
+        "run_marketplace_review_autotriage(integer,boolean)",
+        "marketplace_content_rating(text,text,text)"
+      ],
+      "rationale": "Automatically applies proposed subcategory when regex/rating gate permits. It does not verify that proposed taxonomy is actually correct. Needs an evaluated typed taxonomy judgment at the native apply boundary, preserving adult-content protections."
+    },
+    "marketplace_relevance_rescore_weekly": {
+      "status": "audited_followup_required",
+      "functions": [],
+      "rationale": "Legacy audience-fit scoring directly changes canonical scores. Version73 adds strict parsing, snapshot guards and accurate counters, but Jev adoption needs a separate audience-fit evaluation; explicit LGBTQ-topic scores are not interchangeable with adult scene/brand audience fit."
+    },
+    "marketplace_catalog_prune": {
+      "status": "audited_followup_required",
+      "functions": [],
+      "rationale": "Live native functions inspected separately: explicit domain allowlist, recent classified_at, score<0.6, featured/brand/wishlist exclusions. Currently completed/disabled with no active cron. Preserve disabled state; a score alone is not new validated publication authority."
+    }
+  }
+}

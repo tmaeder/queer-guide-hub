@@ -3,15 +3,15 @@ import { buildQuestions, decide, parseEvaluation, POLICY_VERSION, SOURCES, type 
 import { recoverSources } from './research.ts'
 import { sourceUrl } from './evidence.ts'
 import { ProviderError } from './provider.ts'
+import { callJev, createJevBudget, JevBudgetDeferred, JevBudgetError, type JevRequest } from '../_shared/jev-client.ts'
 
 type Job = { case_id: string; lease_token: string; queue_type: string }
-async function evaluate(body: unknown) {
-  const response = await fetch('https://api.typesafe.ai/v1/systemone', {
-    method: 'POST', redirect: 'error', headers: { Authorization: `Bearer ${Deno.env.get('JEV_API_KEY')}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body), signal: AbortSignal.timeout(20000),
+async function evaluate(body: JevRequest, db: ReturnType<typeof getServiceClient>, account: string) {
+  return await callJev(body, {
+    apiKey: Deno.env.get('JEV_API_KEY') || Deno.env.get('TYPESAFE_API_KEY') || '',
+    caller: 'review-automation',
+    budget: createJevBudget(db, account),
   })
-  if (!response.ok) { await response.body?.cancel(); throw new ProviderError('Jev', response.status) }
-  return await response.json()
 }
 Deno.serve(async req => {
   if (req.method === 'OPTIONS') return corsResponse(req)
@@ -33,10 +33,14 @@ Deno.serve(async req => {
         sources: sources.evidence.map(page => ({ host: new URL(page.url).hostname, characters: page.text.length, retrieved_at: page.retrieved_at })) }, 200, req)
     } catch { return errorResponse('source_probe_failed', 502, req) }
   }
-  if (!Deno.env.get('JEV_API_KEY')) return errorResponse('JEV_API_KEY is not configured', 503, req)
+  if (!Deno.env.get('JEV_API_KEY') && !Deno.env.get('TYPESAFE_API_KEY')) return errorResponse('Jev API key is not configured', 503, req)
+  // Manual probes/previews consume the lifetime experiment budget, never the
+  // unattended production allowance. Callers cannot supply arbitrary account names.
+  const account = body.probe === true || body.dry_run !== false
+    ? 'validation-2026-10-29' : Deno.env.get('JEV_BUDGET_ACCOUNT') || 'production'
   const started = new Date().toISOString()
   const budgetStarted = Date.now()
-  const summary = { examined: 0, applied: 0, blocked: 0, retry: 0, stale: 0, preview: 0 }
+  const summary = { examined: 0, applied: 0, blocked: 0, retry: 0, stale: 0, preview: 0, budget_deferred: 0 }
   const rpc = async <T>(name: string, args: Record<string, unknown> = {}): Promise<T> => {
     const { data, error } = await db.rpc(name, args)
     if (error) throw new Error(`${name}: ${error.message}`)
@@ -54,7 +58,7 @@ Deno.serve(async req => {
   try {
     runId = Number.isSafeInteger(body.run_id) ? body.run_id : null
     if (body.probe === true) {
-      const answer = await evaluate({ model: Deno.env.get('JEV_MODEL') || 'jev-1.14.0', state: 'Synthetic integration test only: 2 + 2 = 4.', questions: { answer: { type: 'choice', instructions: 'Is the arithmetic statement correct?', criteria: { correct: 'The arithmetic is correct.', incorrect: 'The arithmetic is incorrect.' } } } })
+      const answer = await evaluate({ model: Deno.env.get('JEV_MODEL') || Deno.env.get('TYPESAFE_MODEL') || 'jev-1.14.0', state: 'Synthetic integration test only: 2 + 2 = 4.', questions: { answer: { type: 'choice', instructions: 'Is the arithmetic statement correct?', criteria: { correct: 'The arithmetic is correct.', incorrect: 'The arithmetic is incorrect.' } } } }, db, account)
       const probe = answer as { model?: string; answers?: { answer?: { choice?: string } } }
       if (!probe.model || probe.answers?.answer?.choice !== 'correct') throw new Error('Jev synthetic probe failed')
       return jsonResponse({ success: true, configured: true, model: probe.model, probe: 'passed' }, 200, req)
@@ -65,12 +69,14 @@ Deno.serve(async req => {
       ? await rpc<Job[]>('claim_jev_review_job', { p_case_id: body.case_id })
       : await rpc<Job[]>('claim_jev_review_jobs', { p_batch: Math.min(16, Math.max(1, Math.trunc(Number(body.batch)) || 8)) })
     let globalFailure: string | null = null
+    let budgetDeferred = false
     for (const job of jobs) {
       summary.examined++
       let context: Context | undefined; let evidence: Evidence[] = []; let result: Record<string, unknown>
       try {
         if (Date.now() - budgetStarted > 150000) throw new Error('worker_budget_deferred')
         if (globalFailure) throw new Error(globalFailure)
+        if (budgetDeferred) throw new JevBudgetDeferred('Jev budget deferred')
         if (!(job.queue_type in SOURCES)) throw new Error(`Unregistered Review source: ${job.queue_type}`)
         context = await rpc<Context>('get_jev_review_context', { p_case_id: job.case_id, p_lease_token: job.lease_token })
         if (context.blocker) result = { blocker: context.blocker }
@@ -85,8 +91,8 @@ Deno.serve(async req => {
           if (!evidence.length) result = { blocker: attempted ? 'source_unavailable' : 'missing_source_url', source_errors: errors }
           else {
             const request = buildQuestions(context, evidence)
-            request.model = Deno.env.get('JEV_MODEL') || request.model
-            const evaluation = parseEvaluation(await evaluate(request), context.candidates)
+            request.model = Deno.env.get('JEV_MODEL') || Deno.env.get('TYPESAFE_MODEL') || request.model
+            const evaluation = parseEvaluation(await evaluate(request, db, account), context.candidates)
             const decision = decide(context, evaluation)
             result = { evaluation, blocker: decision.blocker, policy_version: POLICY_VERSION, source_errors: errors }
           }
@@ -94,13 +100,15 @@ Deno.serve(async req => {
       } catch (error) {
         // Auth, balance, quotas and provider failures are operational failures, retried without data changes.
         if (error instanceof ProviderError && ([401, 402, 403, 429].includes(error.status) || error.status >= 500 && error.status <= 599)) globalFailure = error.message
+        if (error instanceof JevBudgetDeferred) { budgetDeferred = true; summary.budget_deferred++ }
+        else if (error instanceof JevBudgetError) globalFailure = error.message
         result = { retry: error instanceof Error ? error.message : 'Review evaluation failed' }
       }
       const saved = await rpc<{ status: keyof typeof summary }>('finish_jev_review_job', { p_case_id: job.case_id, p_lease_token: job.lease_token,
         p_input_hash: context?.input_hash ?? '', p_result: result, p_evidence: evidence, p_dry_run: body.dry_run !== false })
       if (saved.status in summary) summary[saved.status]++
     }
-    await recordRun(Boolean(globalFailure), globalFailure ?? undefined)
+    await recordRun(Boolean(globalFailure), globalFailure ?? (budgetDeferred ? 'budget_deferred' : undefined))
     return jsonResponse({ success: !globalFailure, ...summary, policy_version: POLICY_VERSION, ...(globalFailure ? { error: globalFailure } : {}) }, globalFailure ? 503 : 200, req)
   } catch (error) {
     console.error('Review automation failed:', error instanceof Error ? error.message : error)

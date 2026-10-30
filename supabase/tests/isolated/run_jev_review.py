@@ -135,12 +135,28 @@ do $$declare ctx jsonb;begin
  end if;
 end $$;
 """
+url_projection_checks="""
+do $$declare r jsonb;ctx jsonb;begin
+ r:=api_private.jev_public_record(jsonb_build_object('urls',jsonb_build_array(
+ 'http://example.org/insecure','https://reader:DO_NOT_EXPORT@example.org','https://127.0.0.1/secret','https://host.internal/secret',
+ jsonb_build_object('url','https://example.org/object','private','DO_NOT_EXPORT'),
+ 'https://example.org/a','https://example.org/b','https://example.org/c','https://example.org/d','https://example.org/e'),
+ 'email','DO_NOT_EXPORT'));
+ if r->'urls' is distinct from '["https://example.org/a","https://example.org/b","https://example.org/c","https://example.org/d"]'::jsonb
+ or r::text like '%DO_NOT_EXPORT%' then raise exception 'Normalized URL bounds/privacy failed: %',r;end if;
+ update ingestion_staging set normalized_data=normalized_data||jsonb_build_object('urls',jsonb_build_array('https://example.org/source'))where id=md5('staging-source')::uuid;
+ ctx:=api_private.jev_context(md5('staging-case')::uuid);
+ if ctx#>'{proposal,source_content,normalized,urls}' is distinct from '["https://example.org/source"]'::jsonb then
+ raise exception 'Normalized source URL did not reach staging context: %',ctx;end if;
+end $$;
+"""
 with tempfile.TemporaryDirectory(prefix='jev-review-pg-')as tmp:
  data=Path(tmp)/'data';sock=Path(tmp)/'sock';sock.mkdir()
  subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
  subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'pg.log'),'-o',f'-k {sock} -p 55439 -h ""','-w','start'],check=True,stdout=subprocess.DEVNULL)
  try:
   sql=schema+(ROOT/'supabase/migrations/99991793212707_jev_review_automation.sql').read_text()+(ROOT/'supabase/migrations/99991793212905_jev_review_runtime_guards.sql').read_text()+(ROOT/'supabase/migrations/99991793213334_jev_proposal_integrity_decisions.sql').read_text()+(ROOT/'supabase/migrations/99991793213540_jev_review_targeted_retry.sql').read_text()+(ROOT/'supabase/migrations/99991793213979_jev_review_operational_visibility.sql').read_text()+(ROOT/'supabase/migrations/99991793222393_jev_research_projection_json_shapes.sql').read_text()+checks+projection_checks
+  sql+=(ROOT/'supabase/migrations/20261029214157_jev_normalized_source_urls.sql').read_text()+url_projection_checks
   subprocess.run([str(PG/'psql'),'-X','-v','ON_ERROR_STOP=1','-h',str(sock),'-p','55439','postgres'],input=sql,text=True,check=True,stdout=subprocess.DEVNULL)
  finally:subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
 print('PASS: migration, source-backed apply, dry run, stale source refusal, duplicate refusal, atomic rollback, pause, machine audit, service permissions, JSON shape/privacy projection, nullable staging context')

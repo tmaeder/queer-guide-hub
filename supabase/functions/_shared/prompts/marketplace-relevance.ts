@@ -51,30 +51,25 @@ export function buildMarketplaceRelevanceUserPrompt(items: RelevanceItem[]): str
   return `Score these ${items.length} products. Return the JSON array only.\n\n${lines.join('\n')}`
 }
 
-/** Parse the model's JSON array defensively. Returns Map<index, score 0-1>. */
-export function parseMarketplaceRelevance(content: string): Map<number, number> {
+/** Reject malformed batches rather than coercing scores or guessing row identity. */
+export function parseMarketplaceRelevance(content: string, expectedCount: number): Map<number, number> {
+  if (!Number.isInteger(expectedCount) || expectedCount < 1 || expectedCount > 25 || typeof content !== 'string' || content.length > 65536) throw new Error('Invalid relevance batch')
   const out = new Map<number, number>()
   let text = content.trim()
-  // Strip markdown fences if present.
-  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+  const fence = text.match(/^```(?:json)?\s*([\s\S]*?)```$/)
   if (fence) text = fence[1].trim()
-  // Grab the first JSON array in the text.
-  const start = text.indexOf('[')
-  const end = text.lastIndexOf(']')
-  if (start === -1 || end === -1 || end < start) return out
   let arr: unknown
   try {
-    arr = JSON.parse(text.slice(start, end + 1))
+    arr = JSON.parse(text)
   } catch {
-    return out
+    throw new Error('Invalid relevance JSON')
   }
-  if (!Array.isArray(arr)) return out
+  if (!Array.isArray(arr) || arr.length > expectedCount) throw new Error('Invalid relevance batch size')
   for (const row of arr) {
-    if (!row || typeof row !== 'object') continue
-    const i = Number((row as Record<string, unknown>).i)
-    let s = Number((row as Record<string, unknown>).s)
-    if (!Number.isFinite(i) || !Number.isFinite(s)) continue
-    s = Math.max(0, Math.min(1, s))
+    if (!row || typeof row !== 'object' || Array.isArray(row)) throw new Error('Invalid relevance row')
+    const { i, s } = row as Record<string, unknown>
+    if (typeof i !== 'number' || !Number.isInteger(i) || i < 0 || i >= expectedCount || out.has(i) ||
+      typeof s !== 'number' || !Number.isFinite(s) || s < 0 || s > 1) throw new Error('Invalid relevance score or index')
     out.set(i, s)
   }
   return out

@@ -1,17 +1,3 @@
--- RECOVERED FROM PROD BY scripts/recover-migration-drift.mjs.
---
--- Applied to prod as version 20261029221113 with no repo file — the signature of
--- MCP `apply_migration`, which stamps a version and commits nothing. An applied
--- version with no file fails migration-versions on every PR in the repo and
--- makes `db push` refuse to run.
---
--- Reconstructed from `schema_migrations.statements`, which holds the PARSED
--- statements: trailing semicolons are stripped (re-added here) and any original
--- comment header is NOT recorded, so the reasoning that accompanied this
--- migration is lost. Verified by md5 against a server-computed digest.
---
--- Never re-run: `db push` matches on version and skips an applied one. The file
--- exists so history is complete and a rebuild from zero works.
 -- Admin-only summary of the shared production cap. No client ledger grants.
 create or replace function public.get_jev_review_status(p_case_id uuid default null)returns jsonb
 language plpgsql stable security definer set search_path='' as $$
@@ -30,4 +16,3 @@ begin
 end $$;
 revoke all on function public.get_jev_review_status(uuid) from public,anon;
 grant execute on function public.get_jev_review_status(uuid) to authenticated;
-;

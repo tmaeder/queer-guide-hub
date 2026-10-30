@@ -1,5 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { runPipelineShadow, type JevPipelineDb } from '../_shared/jev-pipeline-shadow.ts'
 
 const SELECTION_REVISION = '2026-10-22.actionable-verdicts-v2'
 
@@ -32,12 +33,15 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
     const sweep = body.sweep === true
     const batchSize = body.batch_size || (sweep ? 200 : 50)
     const dryRun = body.dry_run || false
+    // Authenticated bounded live canary: no reconciliation or source writes.
+    // The caller cannot choose a budget account; this always uses validation.
+    const shadowOnly = body.jev_shadow_only === true
     // Social pipeline forces every row through human review. Set via the
     // node config { "force_review": true } in pipeline_definitions.
     const forceReview = body.force_review === true
 
     let staleReviewsReconciled = 0
-    if (!dryRun) {
+    if (!dryRun && !shadowOnly) {
       const { data: reconciliation, error: reconciliationError } = await supabase.rpc('reconcile_staging_gate_reviews', {
         p_staging_id: null, p_batch: 500, p_dry_run: false,
       })
@@ -60,6 +64,18 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
     if (!items || items.length === 0) {
       return jsonResponse({ success: true, selection_revision: SELECTION_REVISION, stale_reviews_reconciled: staleReviewsReconciled, items: 0, message: 'No items to review-gate' }, 200, req)
     }
+
+    if (shadowOnly) {
+      const shadow = await runPipelineShadow(supabase as unknown as JevPipelineDb, items.map(item => item.id), Deno.env.get('JEV_API_KEY') || Deno.env.get('TYPESAFE_API_KEY') || '', 'validation-2026-10-29')
+      return jsonResponse({ success: shadow.errors === 0 && shadow.budget_deferred === 0, source_writes: 0, jev_shadow: shadow }, shadow.errors ? 503 : shadow.budget_deferred ? 429 : 200, req)
+    }
+
+    // Evidence checks observe the same candidates without granting approval.
+    // Dry runs never spend production funds or write a shadow lease/audit.
+    const jevShadow = !dryRun && Deno.env.get('JEV_PIPELINE_SHADOW') !== 'false'
+      ? await runPipelineShadow(supabase as unknown as JevPipelineDb, items.map(item => item.id), Deno.env.get('JEV_API_KEY') || Deno.env.get('TYPESAFE_API_KEY') || '')
+        .catch(() => ({ mode: 'shadow', evaluated: 0, errors: 1 }))
+      : { mode: 'off', evaluated: 0 }
 
     // Auto-downrank: load source_reliability for the (source, entity) pairs
     // present in this batch. Items from sources with weight < UNRELIABLE_THRESHOLD
@@ -338,6 +354,7 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
       rejected,
       sweep,
       dry_run: dryRun,
+      jev_shadow: jevShadow,
     }, 200, req)
   } catch (error) {
     console.error('pipeline-review-gate error:', error)

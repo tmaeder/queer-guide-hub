@@ -1,18 +1,5 @@
--- RECOVERED FROM PROD BY scripts/recover-migration-drift.mjs.
---
--- Applied to prod as version 20261029215343 with no repo file — the signature of
--- MCP `apply_migration`, which stamps a version and commits nothing. An applied
--- version with no file fails migration-versions on every PR in the repo and
--- makes `db push` refuse to run.
---
--- Reconstructed from `schema_migrations.statements`, which holds the PARSED
--- statements: trailing semicolons are stripped (re-added here) and any original
--- comment header is NOT recorded, so the reasoning that accompanied this
--- migration is lost. Verified by md5 against a server-computed digest.
---
--- Never re-run: `db push` matches on version and skips an applied one. The file
--- exists so history is complete and a rebuild from zero works.
 -- Owner approved US$25/month ongoing Jev processing on 2026-10-29.
+-- Version matches verified production apply_migration history.
 -- Keep the US$5 lifetime validation account separate and unchanged.
 alter table api_private.jev_budget_accounts drop constraint jev_budget_accounts_period_check;
 alter table api_private.jev_budget_accounts add constraint jev_budget_accounts_period_check check(period in ('lifetime','day','month'));
@@ -87,5 +74,3 @@ end $$;
 
 revoke all on function public.reserve_jev_budget(text,uuid,text,text),public.settle_jev_budget(text,uuid,integer),public.get_jev_budget_status(text)from public,anon,authenticated;
 grant execute on function public.reserve_jev_budget(text,uuid,text,text),public.settle_jev_budget(text,uuid,integer),public.get_jev_budget_status(text)to service_role;
-
-;
