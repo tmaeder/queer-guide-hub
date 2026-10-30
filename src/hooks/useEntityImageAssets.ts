@@ -40,7 +40,16 @@ const MARKETPLACE_BLOCKED_BRAND_CATEGORIES = new Set([
   'guideline',
 ]);
 
-function marketplaceOverviewAssetIsEligible(row: ImageAssetLinkRow): boolean {
+interface MarketplaceImageContext {
+  id: string;
+  subcategory_group?: string | null;
+  overview_image_asset_id?: string | null;
+}
+
+function marketplaceOverviewAssetIsEligible(
+  row: ImageAssetLinkRow,
+  context?: MarketplaceImageContext,
+): boolean {
   const asset = row.image_assets;
   return Boolean(
     asset &&
@@ -51,8 +60,10 @@ function marketplaceOverviewAssetIsEligible(row: ImageAssetLinkRow): boolean {
     (asset.optimization_status === 'optimized' || asset.optimization_status === 'cdn_optimized') &&
     (asset.optimized_url || asset.thumbnail_url) &&
     asset.health_consecutive_failures < 2 &&
-    (asset.width ?? 0) >= 600 &&
-    (asset.height ?? 0) >= 600 &&
+    (((asset.width ?? 0) >= 600 && (asset.height ?? 0) >= 600) ||
+      (context?.subcategory_group === 'books' &&
+        (asset.width ?? 0) >= 400 &&
+        (asset.height ?? 0) >= 600)) &&
     !MARKETPLACE_BLOCKED_BRAND_CATEGORIES.has(asset.brand_category ?? 'photography'),
   );
 }
@@ -82,11 +93,19 @@ export function useEntityImageAssets(
     | 'queer_village'
     | 'tag',
   entityIds: string[],
+  marketplaceListings: readonly MarketplaceImageContext[] = [],
 ): { assets: Map<string, EntityImageAsset>; loading: boolean } {
   const [assets, setAssets] = useState<Map<string, EntityImageAsset>>(new Map());
   const [loading, setLoading] = useState(false);
 
   const key = entityIds.length === 0 ? '' : entityIds.join(',');
+  const contextKey = JSON.stringify(
+    marketplaceListings.map(({ id, subcategory_group, overview_image_asset_id }) => ({
+      id,
+      subcategory_group,
+      overview_image_asset_id,
+    })),
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -99,6 +118,9 @@ export function useEntityImageAssets(
 
     (async () => {
       const ids = key.split(',');
+      const contexts = new Map(
+        (JSON.parse(contextKey) as MarketplaceImageContext[]).map((x) => [x.id, x]),
+      );
       // Chunk ids — one giant in.() filter exceeds PostgREST's URL length
       // limit (400) once callers pass a few hundred entities.
       const CHUNK = 100;
@@ -142,7 +164,12 @@ export function useEntityImageAssets(
         const existing = map.get(row.entity_id);
         const next = row.image_assets;
         if (!next) continue;
-        if (entityType === 'marketplace_listing' && !marketplaceOverviewAssetIsEligible(row)) {
+        if (
+          entityType === 'marketplace_listing' &&
+          (!marketplaceOverviewAssetIsEligible(row, contexts.get(row.entity_id)) ||
+            (contexts.get(row.entity_id)?.overview_image_asset_id &&
+              contexts.get(row.entity_id)?.overview_image_asset_id !== next.id))
+        ) {
           continue;
         }
         // Only use R2 URLs that are confirmed uploaded. 'pending' / 'failed'
@@ -152,7 +179,7 @@ export function useEntityImageAssets(
         const status = next.optimization_status;
         if (status !== 'optimized' && status !== 'cdn_optimized') continue;
         // Prefer cover role; otherwise first wins.
-        if (existing && row.role !== 'cover') continue;
+        if (existing) continue;
         map.set(row.entity_id, {
           id: next.id,
           url: next.url,
@@ -168,7 +195,7 @@ export function useEntityImageAssets(
     return () => {
       cancelled = true;
     };
-  }, [entityType, key]);
+  }, [entityType, key, contextKey]);
 
   return { assets, loading };
 }

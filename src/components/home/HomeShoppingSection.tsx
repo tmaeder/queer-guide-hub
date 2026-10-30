@@ -59,7 +59,10 @@ export default function HomeShoppingSection() {
     () => [...(spotlight ? [spotlight.id] : []), ...items.map((l) => l.id)],
     [spotlight, items],
   );
-  const { assets } = useEntityImageAssets('marketplace_listing', assetIds);
+  const { assets } = useEntityImageAssets('marketplace_listing', assetIds, [
+    ...(spotlight ? [spotlight] : []),
+    ...items,
+  ]);
 
   const loading = spotlightLoading || rowLoading;
   const error = spotlightError || rowError;

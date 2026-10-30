@@ -1604,7 +1604,11 @@
     "adultBadge": "[RU] 18+",
     "adBadge": "[RU] Ad",
     "outOfStock": "[RU] Out of stock",
-    "queerOwnedBadge": "[RU] Queer-owned"
+    "queerOwnedBadge": "[RU] Queer-owned",
+    "totalMakerListings_one": "Всего {{formattedCount}} объявление",
+    "totalMakerListings_other": "Всего {{formattedCount}} объявлений",
+    "showAdultMakerListings": "Показать объявления для взрослых (18+)",
+    "noBrandListings": "С текущими настройками нет доступных объявлений."
   },
   "profile": {
     "username": {

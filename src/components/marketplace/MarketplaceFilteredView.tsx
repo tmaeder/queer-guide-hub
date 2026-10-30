@@ -91,7 +91,7 @@ export function MarketplaceFilteredView({
   }, [listings, page]);
 
   const listingIds = useMemo(() => accumulated.map((l) => l.id), [accumulated]);
-  const { assets } = useEntityImageAssets('marketplace_listing', listingIds);
+  const { assets } = useEntityImageAssets('marketplace_listing', listingIds, accumulated);
 
   const totalPages = Math.ceil(total / pageSize);
   const canLoadMore = page < totalPages - 1;

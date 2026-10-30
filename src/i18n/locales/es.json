@@ -1572,7 +1572,11 @@
     "adultBadge": "[ES] 18+",
     "adBadge": "[ES] Ad",
     "outOfStock": "[ES] Out of stock",
-    "queerOwnedBadge": "[ES] Queer-owned"
+    "queerOwnedBadge": "[ES] Queer-owned",
+    "totalMakerListings_one": "{{formattedCount}} anuncio en total",
+    "totalMakerListings_other": "{{formattedCount}} anuncios en total",
+    "showAdultMakerListings": "Mostrar anuncios para adultos (18+)",
+    "noBrandListings": "No hay anuncios visibles con tu configuración actual."
   },
   "profile": {
     "username": {

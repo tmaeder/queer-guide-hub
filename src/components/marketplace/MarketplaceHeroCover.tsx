@@ -40,7 +40,7 @@ export function MarketplaceHeroCover() {
   const hero = collections[0] ?? null;
   const { listings } = useMarketplaceCollectionListings(hero?.id ?? null, 3);
   const listingIds = useMemo(() => listings.map((l) => l.id), [listings]);
-  const { assets } = useEntityImageAssets('marketplace_listing', listingIds);
+  const { assets } = useEntityImageAssets('marketplace_listing', listingIds, listings);
   const { register } = useCuratedIds();
 
   useEffect(() => {

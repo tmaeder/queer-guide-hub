@@ -1,14 +1,22 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { renderWithProviders, screen } from '@/test/test-utils';
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import en from '@/i18n/locales/en.json';
+import { fireEvent } from '@testing-library/react';
 import { Routes, Route } from 'react-router';
 import { brandSlug } from '@/lib/marketplaceTaxonomy';
 
 vi.mock('@/components/marketplace/MarketplaceFilteredView', () => ({
-  MarketplaceFilteredView: (p: { filters: { brandKey?: string } }) => (
-    <div data-testid="filtered" data-brand-key={p.filters.brandKey} />
+  MarketplaceFilteredView: (p: { filters: { brandKey?: string; includeAdult?: boolean } }) => (
+    <div
+      data-testid="filtered"
+      data-brand-key={p.filters.brandKey}
+      data-include-adult={String(Boolean(p.filters.includeAdult))}
+    />
   ),
 }));
 vi.mock('@/components/routing/LocalizedLink', () => ({
@@ -16,6 +24,27 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
     <a href={to}>{children}</a>
   ),
 }));
+
+const ageState = { acknowledged: false };
+vi.mock('@/hooks/useAdultContent', () => ({
+  useAdultAcknowledgement: () => ({ acknowledged: ageState.acknowledged }),
+}));
+vi.mock('@/components/marketplace/AdultContentGate', () => ({
+  AdultContentGate: (p: { active: boolean; fallbackPath: string }) => (
+    <div data-testid="age-gate" data-active={String(p.active)} data-fallback={p.fallbackPath} />
+  ),
+}));
+beforeAll(async () => {
+  await i18n.use(initReactI18next).init({
+    lng: 'en',
+    fallbackLng: 'en',
+    resources: { en: { translation: en } },
+    interpolation: { escapeValue: false },
+  });
+});
+beforeEach(() => {
+  ageState.acknowledged = false;
+});
 
 const brandState: { value: unknown; loading: boolean } = { value: null, loading: false };
 const adminState = { canManageContent: false, brandId: null as string | null };
@@ -119,6 +148,42 @@ describe('MarketplaceBrand', () => {
     renderAt('/marketplace/brands/some-brand');
     expect(screen.getByRole('heading', { name: 'Some Brand' })).toBeInTheDocument();
     expect(screen.queryByText('Queer-owned')).toBeNull();
+  });
+});
+
+describe('maker content visibility', () => {
+  const maker = {
+    slug: 'example',
+    display_name: 'Example',
+    brand_key: 'example',
+    product_count: 5,
+    website: null,
+    logo_url: null,
+    story: null,
+    ownership_tags: [],
+    is_approved: true,
+  };
+  it('keeps adult products out of the initial query and labels the catalogue total', () => {
+    brandState.value = maker;
+    renderAt('/marketplace/brands/example');
+    expect(screen.getByTestId('filtered')).toHaveAttribute('data-include-adult', 'false');
+    expect(screen.getByText('5 total listings')).toBeInTheDocument();
+    expect(screen.getByTestId('age-gate')).toHaveAttribute('data-active', 'false');
+  });
+  it('honors an existing age confirmation on maker pages', () => {
+    ageState.acknowledged = true;
+    brandState.value = maker;
+    renderAt('/marketplace/brands/example');
+    expect(screen.getByTestId('filtered')).toHaveAttribute('data-include-adult', 'true');
+    expect(screen.queryByRole('button', { name: 'Show adult listings (18+)' })).toBeNull();
+  });
+  it('requests the existing age gate without enabling adult queries early', () => {
+    brandState.value = maker;
+    renderAt('/marketplace/brands/example');
+    fireEvent.click(screen.getByRole('button', { name: 'Show adult listings (18+)' }));
+    expect(screen.getByTestId('age-gate')).toHaveAttribute('data-active', 'true');
+    expect(screen.getByTestId('age-gate')).toHaveAttribute('data-fallback', '/marketplace/brands');
+    expect(screen.getByTestId('filtered')).toHaveAttribute('data-include-adult', 'false');
   });
 });
 

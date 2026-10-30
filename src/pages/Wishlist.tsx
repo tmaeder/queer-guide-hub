@@ -27,7 +27,7 @@ const Wishlist = () => {
   });
 
   const listingIds = useMemo(() => listings.map((l) => l.id), [listings]);
-  const { assets } = useEntityImageAssets('marketplace_listing', listingIds);
+  const { assets } = useEntityImageAssets('marketplace_listing', listingIds, listings);
 
   const handleShare = async () => {
     const url = window.location.href;

@@ -332,7 +332,11 @@ const Marketplace = () => {
   }, [listings, page]);
 
   const visibleListingIds = useMemo(() => accumulated.map((l) => l.id), [accumulated]);
-  const { assets: listingAssets } = useEntityImageAssets('marketplace_listing', visibleListingIds);
+  const { assets: listingAssets } = useEntityImageAssets(
+    'marketplace_listing',
+    visibleListingIds,
+    accumulated,
+  );
 
   const hasAdultListings = useMemo(() => accumulated.some(isAdultListing), [accumulated]);
 
