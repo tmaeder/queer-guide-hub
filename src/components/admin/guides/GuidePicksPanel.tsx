@@ -256,6 +256,7 @@ export function GuidePicksPanel({
                 id={`verified-${p.id}`}
                 defaultValue={p.verified_at?.slice(0, 10) ?? ''}
                 onBlur={(e) => {
+                  if (e.target.value === (p.verified_at?.slice(0, 10) ?? '')) return;
                   const date = e.target.value ? new Date(e.target.value).toISOString() : null;
                   if (date !== p.verified_at) updatePick.mutate({ id: p.id, verified_at: date });
                 }}
