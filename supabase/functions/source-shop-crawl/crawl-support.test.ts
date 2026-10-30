@@ -1,4 +1,4 @@
-import { allowedSitemap, readSelectedProduct, readStaticSchema } from './crawl-support.ts'
+import { allowedSitemap, readCanonicalPageUrl, readSelectedProduct, readStaticSchema } from './crawl-support.ts'
 function equal(actual: unknown, expected: unknown) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(`${JSON.stringify(actual)} != ${JSON.stringify(expected)}`)
 }
@@ -32,4 +32,13 @@ Deno.test('static JSON-LD flattens arrays and graphs without inventing a product
   const page = readStaticSchema(`<script type="application/ld+json">{"@graph":[{"@type":"Product","name":"A Film","offers":{"price":"14.95"}}]}</script>`)
   equal(page.jsonLd.find(x => x['@type'] === 'Product')?.name, 'A Film')
   equal(readStaticSchema('<h1>Page not found</h1>').microdata, undefined)
+})
+
+Deno.test('removed-item canonicals are exact URLs and do not invent product data', () => {
+  const html = '<title>Shop homepage</title><link rel="canonical" href="/shopping/">'
+  equal(readCanonicalPageUrl(html, 'https://shop.example/shopping/old-film.html'), 'https://shop.example/shopping/')
+  equal(readSelectedProduct(html, 'https://shop.example/shopping/old-film.html', { name: '#productTitle' }), null)
+  equal(readCanonicalPageUrl('<h1>No canonical</h1>', 'https://shop.example/product'), null)
+  equal(readCanonicalPageUrl('<link rel="canonical" href="javascript:alert(1)">', 'https://shop.example/product'), null)
+  equal(readCanonicalPageUrl('<link rel="canonical" href="/product"><h1 id="productTitle">Film</h1>', 'https://shop.example/product'), 'https://shop.example/product')
 })

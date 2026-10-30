@@ -4,7 +4,7 @@ import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { extractContent } from '../_shared/extract-client.ts'
 import { splitAuthor } from '../_shared/book-title.ts'
-import { allowedSitemap, readSelectedProduct, readStaticSchema, type Selectors } from './crawl-support.ts'
+import { allowedSitemap, readCanonicalPageUrl, readSelectedProduct, readStaticSchema, type Selectors } from './crawl-support.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
@@ -55,6 +55,7 @@ const UA = 'QueerGuideBot/1.0 (+https://queer.guide/bot)'
 
 interface CrawlConfig {
   strategy: string
+  unavailable_canonical_urls?: string[]
   selectors?: Selectors
   sitemap: string
   url_include?: string
@@ -373,6 +374,14 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
           try {
             const html = await fetchText(url, 12_000)
             read = readSelectedProduct(html, url, cfg.selectors ?? {}, cfg.currency)
+            // Some shops return their homepage with HTTP 200 for a removed
+            // product. Only treat explicitly configured canonical destinations
+            // as unavailable, and only when the product title is absent.
+            const canonical = !read ? readCanonicalPageUrl(html, url) : null
+            if (canonical && Array.isArray(cfg.unavailable_canonical_urls) && cfg.unavailable_canonical_urls.includes(canonical)) {
+              missingPages++
+              continue
+            }
           } catch (error) {
             if (error instanceof CrawlFetchError && [404, 410].includes(error.status)) missingPages++
             else recordFailure(url, error instanceof CrawlFetchError ? `fetch_http_${error.status}` : 'fetch_failed')
