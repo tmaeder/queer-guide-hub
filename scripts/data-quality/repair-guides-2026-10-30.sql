@@ -184,14 +184,10 @@ The 14 May–13 June 2026 contribution window has ended. No contributions were r
 
 UPDATE public.guides SET meta=meta||jsonb_build_object('quality_hold_note','Needs sourced product selections, individual rationales and an explicit editorial scope before publication. Previous quality hold retained.') WHERE slug IN ('shop-home-living-shortlist','shop-hygiene-care-shortlist');
 
-UPDATE public.guides g SET reading_time_min=greatest(1,ceil((
- length(regexp_replace(concat_ws(' ',g.intro_md,g.selection_method,
-   (SELECT string_agg(body_md,' ') FROM public.guide_sections WHERE guide_id=g.id),
-   (SELECT string_agg(rationale_md||' '||array_to_string(pros,' ')||' '||array_to_string(cons,' '),' ') FROM public.guide_picks WHERE guide_id=g.id)), '\S+', 'x', 'g'))
- - length(replace(regexp_replace(concat_ws(' ',g.intro_md,g.selection_method,
-   (SELECT string_agg(body_md,' ') FROM public.guide_sections WHERE guide_id=g.id),
-   (SELECT string_agg(rationale_md||' '||array_to_string(pros,' ')||' '||array_to_string(cons,' '),' ') FROM public.guide_picks WHERE guide_id=g.id)), '\S+', 'x', 'g'),'x',''))
- )/200.0)::int) WHERE g.meta->>'editorial_repair'='2026-10-30';
+UPDATE public.guides g SET reading_time_min=greatest(1,ceil(cardinality(regexp_split_to_array(concat_ws(' ',g.intro_md,g.selection_method,
+ (SELECT string_agg(body_md,' ') FROM public.guide_sections WHERE guide_id=g.id),
+ (SELECT string_agg(rationale_md||' '||array_to_string(pros,' ')||' '||array_to_string(cons,' '),' ') FROM public.guide_picks WHERE guide_id=g.id)), '\s+'))/200.0)::int)
+WHERE g.meta->>'editorial_repair'='2026-10-30';
 
 UPDATE public.guides SET status='published' WHERE slug='pride-histories-may-2026';
 
