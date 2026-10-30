@@ -105,7 +105,9 @@ const GuideDetail = () => {
   }
   if (!isQuest && picks.length > 0) {
     eyebrowParts.push(
-      t('guides.card.picks', '{{count}} picks').replace('{{count}}', String(picks.length)),
+      picks.length === 1
+        ? t('guides.detail.onePick', '1 pick')
+        : t('guides.card.picks', '{{count}} picks').replace('{{count}}', String(picks.length)),
     );
   }
   if (isQuest && phase) {
