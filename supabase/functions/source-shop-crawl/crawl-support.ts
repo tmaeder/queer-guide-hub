@@ -1,5 +1,34 @@
 import * as cheerio from 'npm:cheerio@1.0.0-rc.12'
 
+/** Read URL locations from sitemap entries, including XML CDATA text. */
+export function readSitemapLocations(xml: string): string[] {
+  const $ = cheerio.load(xml, { xmlMode: true })
+  return $('loc').map((_i, node) => $(node).text().trim()).get().filter(Boolean)
+}
+
+/** Some storefronts serve .xml.gz files without a Content-Encoding header. */
+export async function decodeSitemapBytes(bytes: Uint8Array, maxBytes = 50 * 1024 * 1024): Promise<string> {
+  if (bytes.byteLength > maxBytes) throw new Error('Sitemap exceeds size limit')
+  if (bytes[0] !== 0x1f || bytes[1] !== 0x8b) return new TextDecoder().decode(bytes)
+  const reader = new Blob([bytes.slice()]).stream().pipeThrough(new DecompressionStream('gzip')).getReader()
+  const decoder = new TextDecoder()
+  const parts: string[] = []
+  let total = 0
+  try {
+    while (true) {
+      const { value, done } = await reader.read()
+      if (done) break
+      total += value.byteLength
+      if (total > maxBytes) throw new Error('Expanded sitemap exceeds size limit')
+      parts.push(decoder.decode(value, { stream: true }))
+    }
+    parts.push(decoder.decode())
+    return parts.join('')
+  } finally {
+    await reader.cancel()
+  }
+}
+
 // These are first-party, operator-maintained snapshots already registered on the
 // three Salzgeber merchants. Product URLs are still restricted to shop_domain.
 const OWNED_SITEMAPS = new Set([
