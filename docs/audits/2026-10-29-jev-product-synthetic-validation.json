@@ -1,0 +1,4092 @@
+{
+  "summary": {
+    "rows": 24,
+    "route_agreement": 24,
+    "development_agreement": 8,
+    "held_out_agreement": 16,
+    "input_tokens": 22978
+  },
+  "results": [
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-pride-flag",
+      "matches": true,
+      "verdict": {
+        "route": "approve",
+        "score": 0.99,
+        "relevance": "relevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.99,
+          "medical_claim": 0.01,
+          "queer_culture": 0.6,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.03,
+          "gender_affirming_function": 0.03,
+          "queer_positioned_intimacy": 0.02
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "approve",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 960,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.99,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.6,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.02,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-rainbow-umbrella",
+      "matches": true,
+      "verdict": {
+        "route": "reject",
+        "score": 0.05,
+        "relevance": "irrelevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.02,
+          "pride_design": 0.05,
+          "medical_claim": 0.01,
+          "queer_culture": 0.03,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.02,
+          "gender_affirming_function": 0.01,
+          "queer_positioned_intimacy": 0.02
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "reject",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 954,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.05,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.02,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-queer-history",
+      "matches": true,
+      "verdict": {
+        "route": "approve",
+        "score": 0.99,
+        "relevance": "relevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.02,
+          "pride_design": 0.04,
+          "medical_claim": 0.01,
+          "queer_culture": 0.99,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.04,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.02
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "approve",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 950,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.04,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.99,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.04,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.02,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-blank-diary",
+      "matches": true,
+      "verdict": {
+        "route": "reject",
+        "score": 0.02,
+        "relevance": "irrelevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.02,
+          "medical_claim": 0.01,
+          "queer_culture": 0.01,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.02,
+          "gender_affirming_function": 0.01,
+          "queer_positioned_intimacy": 0.01
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "reject",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 956,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.01,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-binder",
+      "matches": true,
+      "verdict": {
+        "route": "approve",
+        "score": 0.99,
+        "relevance": "relevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.02,
+          "pride_design": 0.02,
+          "medical_claim": 0.03,
+          "queer_culture": 0.24,
+          "explicit_adult": 0.02,
+          "brand_affiliation_claim": 0.03,
+          "gender_affirming_function": 0.99,
+          "queer_positioned_intimacy": 0.23
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "approve",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 959,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.24,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.99,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.23,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-travel-packer",
+      "matches": true,
+      "verdict": {
+        "route": "reject",
+        "score": 0.02,
+        "relevance": "irrelevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.02,
+          "medical_claim": 0.01,
+          "queer_culture": 0.01,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.02,
+          "gender_affirming_function": 0.01,
+          "queer_positioned_intimacy": 0.01
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "reject",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 953,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.01,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-lesbian-toy",
+      "matches": true,
+      "verdict": {
+        "route": "review",
+        "score": 0.97,
+        "relevance": "relevant",
+        "sensitivity": [
+          "explicit_adult"
+        ],
+        "probabilities": {
+          "legal_claim": 0.02,
+          "pride_design": 0.03,
+          "medical_claim": 0.03,
+          "queer_culture": 0.26,
+          "explicit_adult": 0.99,
+          "brand_affiliation_claim": 0.04,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.97
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "review",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 956,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.26,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.99,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.04,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.97,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-generic-toy",
+      "matches": true,
+      "verdict": {
+        "route": "reject",
+        "score": 0.02,
+        "relevance": "irrelevant",
+        "sensitivity": [
+          "explicit_adult"
+        ],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.02,
+          "medical_claim": 0.02,
+          "queer_culture": 0.02,
+          "explicit_adult": 0.99,
+          "brand_affiliation_claim": 0.02,
+          "gender_affirming_function": 0.01,
+          "queer_positioned_intimacy": 0.02
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "reject",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 955,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.99,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.02,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-bi-pin",
+      "matches": true,
+      "verdict": {
+        "route": "approve",
+        "score": 0.99,
+        "relevance": "relevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.99,
+          "medical_claim": 0.01,
+          "queer_culture": 0.92,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.03,
+          "gender_affirming_function": 0.03,
+          "queer_positioned_intimacy": 0.04
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "approve",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 955,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.99,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.92,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.04,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-trans-flag",
+      "matches": true,
+      "verdict": {
+        "route": "approve",
+        "score": 0.97,
+        "relevance": "relevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.97,
+          "medical_claim": 0.01,
+          "queer_culture": 0.8,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.04,
+          "gender_affirming_function": 0.08,
+          "queer_positioned_intimacy": 0.02
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "approve",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 954,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.97,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.8,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.04,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.08,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.02,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-pronoun-cards",
+      "matches": true,
+      "verdict": {
+        "route": "approve",
+        "score": 0.99,
+        "relevance": "relevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.33,
+          "medical_claim": 0.03,
+          "queer_culture": 0.8,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.04,
+          "gender_affirming_function": 0.99,
+          "queer_positioned_intimacy": 0.08
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "approve",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 963,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.33,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.8,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.04,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.99,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.08,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-grammar-cards",
+      "matches": true,
+      "verdict": {
+        "route": "reject",
+        "score": 0.02,
+        "relevance": "irrelevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.01,
+          "medical_claim": 0.01,
+          "queer_culture": 0.02,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.02,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.01
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "reject",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 954,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.01,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-drag-wig",
+      "matches": true,
+      "verdict": {
+        "route": "approve",
+        "score": 0.95,
+        "relevance": "relevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.02,
+          "pride_design": 0.06,
+          "medical_claim": 0.01,
+          "queer_culture": 0.95,
+          "explicit_adult": 0.02,
+          "brand_affiliation_claim": 0.03,
+          "gender_affirming_function": 0.1,
+          "queer_positioned_intimacy": 0.03
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "approve",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 960,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.06,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.95,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.1,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.03,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-costume-wig",
+      "matches": true,
+      "verdict": {
+        "route": "reject",
+        "score": 0.03,
+        "relevance": "irrelevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.02,
+          "medical_claim": 0.01,
+          "queer_culture": 0.03,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.02,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.02
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "reject",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 952,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.02,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-queer-film",
+      "matches": true,
+      "verdict": {
+        "route": "approve",
+        "score": 0.99,
+        "relevance": "relevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.02,
+          "pride_design": 0.51,
+          "medical_claim": 0.01,
+          "queer_culture": 0.99,
+          "explicit_adult": 0.02,
+          "brand_affiliation_claim": 0.05,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.03
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "approve",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 953,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.51,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.99,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.05,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.03,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-fiction-romance",
+      "matches": true,
+      "verdict": {
+        "route": "approve",
+        "score": 0.98,
+        "relevance": "relevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.02,
+          "medical_claim": 0.01,
+          "queer_culture": 0.98,
+          "explicit_adult": 0.02,
+          "brand_affiliation_claim": 0.03,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.24
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "approve",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 957,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.98,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.24,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-brand-claim",
+      "matches": true,
+      "verdict": {
+        "route": "review",
+        "score": 0.04,
+        "relevance": "irrelevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.02,
+          "pride_design": 0.04,
+          "medical_claim": 0.01,
+          "queer_culture": 0.04,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.97,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.04
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": true
+      },
+      "expected": "review",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 957,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.04,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.04,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.97,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.04,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-brand-name",
+      "matches": true,
+      "verdict": {
+        "route": "reject",
+        "score": 0.02,
+        "relevance": "irrelevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.02,
+          "pride_design": 0.02,
+          "medical_claim": 0.01,
+          "queer_culture": 0.02,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.02,
+          "gender_affirming_function": 0.01,
+          "queer_positioned_intimacy": 0.02
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "reject",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 965,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.02,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-medical-claim",
+      "matches": true,
+      "verdict": {
+        "route": "review",
+        "score": 0.97,
+        "relevance": "relevant",
+        "sensitivity": [
+          "medical_claim"
+        ],
+        "probabilities": {
+          "legal_claim": 0.02,
+          "pride_design": 0.97,
+          "medical_claim": 0.99,
+          "queer_culture": 0.33,
+          "explicit_adult": 0.03,
+          "brand_affiliation_claim": 0.09,
+          "gender_affirming_function": 0.03,
+          "queer_positioned_intimacy": 0.13
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "review",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 951,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.97,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.99,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.33,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.09,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.13,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-legal-claim",
+      "matches": true,
+      "verdict": {
+        "route": "review",
+        "score": 0.84,
+        "relevance": "relevant",
+        "sensitivity": [
+          "legal_claim"
+        ],
+        "probabilities": {
+          "legal_claim": 0.99,
+          "pride_design": 0.02,
+          "medical_claim": 0.02,
+          "queer_culture": 0.84,
+          "explicit_adult": 0.02,
+          "brand_affiliation_claim": 0.04,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.02
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "review",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 958,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.99,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.84,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.04,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.02,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-german-pride",
+      "matches": true,
+      "verdict": {
+        "route": "approve",
+        "score": 0.98,
+        "relevance": "relevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.98,
+          "medical_claim": 0.01,
+          "queer_culture": 0.83,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.03,
+          "gender_affirming_function": 0.03,
+          "queer_positioned_intimacy": 0.04
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "approve",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 973,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.98,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.83,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.03,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.04,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-french-generic",
+      "matches": true,
+      "verdict": {
+        "route": "reject",
+        "score": 0.02,
+        "relevance": "irrelevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.02,
+          "medical_claim": 0.01,
+          "queer_culture": 0.01,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.02,
+          "gender_affirming_function": 0.01,
+          "queer_positioned_intimacy": 0.01
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "reject",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 959,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.01,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-spanish-queer",
+      "matches": true,
+      "verdict": {
+        "route": "approve",
+        "score": 0.99,
+        "relevance": "relevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.02,
+          "medical_claim": 0.01,
+          "queer_culture": 0.99,
+          "explicit_adult": 0.02,
+          "brand_affiliation_claim": 0.04,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.35
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "approve",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 961,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.99,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.04,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.35,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    },
+    {
+      "kind": "synthetic_product",
+      "fixture": "product-german-sports",
+      "matches": true,
+      "verdict": {
+        "route": "reject",
+        "score": 0.02,
+        "relevance": "irrelevant",
+        "sensitivity": [],
+        "probabilities": {
+          "legal_claim": 0.01,
+          "pride_design": 0.01,
+          "medical_claim": 0.02,
+          "queer_culture": 0.01,
+          "explicit_adult": 0.01,
+          "brand_affiliation_claim": 0.02,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.01
+        },
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false
+      },
+      "expected": "reject",
+      "response": {
+        "model": "jev-1.14.0",
+        "usage": {
+          "input_tokens": 963,
+          "output_tokens": 157
+        },
+        "answers": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.01,
+            "type": "noul"
+          }
+        }
+      },
+      "question_version": "jev-product-relevance-v1"
+    }
+  ],
+  "limitations": [
+    "24 fixed synthetic examples: eight development and sixteen held-out; not population accuracy.",
+    "No wording or threshold changes after these model responses.",
+    "Routing v2 limits affiliation authorization to cases where affiliation is needed for relevance; exact re-evaluation is retained alongside these original results."
+  ],
+  "requests": {
+    "product-pride-flag": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "LGBTQ Pride flag",
+            "text": "A classic six-stripe LGBTQ Pride flag, made of woven polyester and measuring 90 by 150 cm."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "approve",
+      "split": "development"
+    },
+    "product-rainbow-umbrella": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Rainbow umbrella",
+            "text": "A multicolor rainbow umbrella for rainy weather, with an automatic opening mechanism and a sturdy steel frame."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "reject",
+      "split": "development"
+    },
+    "product-queer-history": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Queer history book",
+            "text": "An illustrated book about LGBTQ community history and the lives of queer activists in Europe."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "approve",
+      "split": "development"
+    },
+    "product-blank-diary": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Hardcover notebook",
+            "text": "A plain ruled notebook with a blue cover and 120 blank pages for everyday writing and school notes."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "reject",
+      "split": "development"
+    },
+    "product-binder": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Gender-affirming chest binder",
+            "text": "A chest binder designed to affirm gender expression by creating a flatter chest silhouette. Hand wash and air dry."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "approve",
+      "split": "development"
+    },
+    "product-travel-packer": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Travel packing cubes",
+            "text": "A set of packing cubes for organizing clothes inside a suitcase. Three zippered fabric containers are included."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "reject",
+      "split": "development"
+    },
+    "product-lesbian-toy": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Intimacy toy for lesbian couples",
+            "text": "A sex toy explicitly designed for sexual stimulation for lesbian couples. This is an adult intimacy product."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "review",
+      "split": "development"
+    },
+    "product-generic-toy": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Mini vibrator",
+            "text": "An adult vibrator for sexual stimulation, with three speeds, a rechargeable battery and a travel storage pouch."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "reject",
+      "split": "development"
+    },
+    "product-bi-pin": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Bisexual Pride enamel pin",
+            "text": "An enamel pin displaying the pink, purple and blue bisexual Pride flag. Includes a metal clasp."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "approve",
+      "split": "held_out"
+    },
+    "product-trans-flag": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Transgender Pride flag",
+            "text": "A blue, pink and white transgender Pride flag for displaying support for trans people at community events."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "approve",
+      "split": "held_out"
+    },
+    "product-pronoun-cards": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Gender-affirming pronoun cards",
+            "text": "Cards displaying they/them, she/her and he/him pronouns, designed to affirm gender expression at LGBTQ community gatherings."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "approve",
+      "split": "held_out"
+    },
+    "product-grammar-cards": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "English pronoun flashcards",
+            "text": "Grammar flashcards for learning English personal pronouns and practicing sentence structure in primary school."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "reject",
+      "split": "held_out"
+    },
+    "product-drag-wig": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Ballroom drag performance wig",
+            "text": "A sculpted stage wig created specifically for queer ballroom and drag performances. Store it on a wig stand."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "approve",
+      "split": "held_out"
+    },
+    "product-costume-wig": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Purple costume wig",
+            "text": "A purple synthetic wig for general fancy-dress parties and Halloween costumes. Includes an adjustable cap."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "reject",
+      "split": "held_out"
+    },
+    "product-queer-film": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Queer cinema DVD collection",
+            "text": "Three documentary films about LGBTQ lives, queer community spaces and Pride celebrations, supplied on DVD."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "approve",
+      "split": "held_out"
+    },
+    "product-fiction-romance": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "A love story between two men",
+            "text": "A novel following the romance of two fictional men as they build a life together in a small coastal town."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "approve",
+      "split": "held_out"
+    },
+    "product-brand-claim": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Plain cotton shirt",
+            "text": "A plain white cotton shirt. The manufacturer describes its brand as LGBTQ owned. Machine washable at 30 degrees."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "review",
+      "split": "held_out"
+    },
+    "product-brand-name": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "RainbowCo cotton shirt",
+            "text": "A plain white cotton shirt from the brand RainbowCo. Available in sizes S to XXL and machine washable at 30 degrees."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "reject",
+      "split": "held_out"
+    },
+    "product-medical-claim": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Pride supplement",
+            "text": "An LGBTQ Pride-themed supplement. The seller claims these capsules treat HIV infection and prevent illness."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "review",
+      "split": "held_out"
+    },
+    "product-legal-claim": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "LGBTQ asylum handbook",
+            "text": "A handbook about LGBTQ asylum. It states that all gay applicants have an automatic legal right to asylum in Country X."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "review",
+      "split": "held_out"
+    },
+    "product-german-pride": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Lesbische Pride-Fahne",
+            "text": "Eine lesbische Pride-Fahne für Sichtbarkeit und Solidarität mit lesbischen Menschen. Aus Polyester, 90 mal 150 cm."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "approve",
+      "split": "held_out"
+    },
+    "product-french-generic": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Sac de sport",
+            "text": "Un sac de sport noir en coton avec deux poignées et une poche intérieure, pour transporter les vêtements et les chaussures."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "reject",
+      "split": "held_out"
+    },
+    "product-spanish-queer": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Historias de mujeres lesbianas",
+            "text": "Una colección de relatos ficticios sobre la vida y el amor de mujeres lesbianas en varias ciudades de España."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "approve",
+      "split": "held_out"
+    },
+    "product-german-sports": {
+      "request": {
+        "model": "jev-1.14.0",
+        "state": {
+          "question_version": "jev-product-relevance-v1",
+          "original_product": {
+            "title": "Sport-Kompressionshemd",
+            "text": "Ein Kompressionshemd für sportliches Training. Es sitzt eng am Körper und besteht aus atmungsaktivem Polyester."
+          }
+        },
+        "questions": {
+          "pride_design": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?",
+            "criteria": {
+              "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+              "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+            }
+          },
+          "queer_culture": {
+            "type": "noul",
+            "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?",
+            "criteria": {
+              "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+              "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+            }
+          },
+          "gender_affirming_function": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly describe a product for affirming gender expression?",
+            "criteria": {
+              "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+              "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+            }
+          },
+          "queer_positioned_intimacy": {
+            "type": "noul",
+            "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?",
+            "criteria": {
+              "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+              "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+            }
+          },
+          "brand_affiliation_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?",
+            "criteria": {
+              "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+              "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+            }
+          },
+          "explicit_adult": {
+            "type": "noul",
+            "instructions": "Does `original_product` explicitly describe adult sexual use?",
+            "criteria": {
+              "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+              "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+            }
+          },
+          "medical_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` make a medical claim?",
+            "criteria": {
+              "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+              "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+            }
+          },
+          "legal_claim": {
+            "type": "noul",
+            "instructions": "Does `original_product` assert a legal entitlement or restriction?",
+            "criteria": {
+              "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+              "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+            }
+          }
+        }
+      },
+      "expected": "reject",
+      "split": "held_out"
+    }
+  },
+  "routing_v2": [
+    {
+      "fixture": "product-pride-flag",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.99,
+        "route": "approve",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.99,
+          "queer_culture": 0.6,
+          "gender_affirming_function": 0.03,
+          "queer_positioned_intimacy": 0.02,
+          "brand_affiliation_claim": 0.03,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.01,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-rainbow-umbrella",
+      "verdict": {
+        "relevance": "irrelevant",
+        "score": 0.05,
+        "route": "reject",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.05,
+          "queer_culture": 0.03,
+          "gender_affirming_function": 0.01,
+          "queer_positioned_intimacy": 0.02,
+          "brand_affiliation_claim": 0.02,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.01,
+          "legal_claim": 0.02
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-queer-history",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.99,
+        "route": "approve",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.04,
+          "queer_culture": 0.99,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.02,
+          "brand_affiliation_claim": 0.04,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.01,
+          "legal_claim": 0.02
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-blank-diary",
+      "verdict": {
+        "relevance": "irrelevant",
+        "score": 0.02,
+        "route": "reject",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.02,
+          "queer_culture": 0.01,
+          "gender_affirming_function": 0.01,
+          "queer_positioned_intimacy": 0.01,
+          "brand_affiliation_claim": 0.02,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.01,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-binder",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.99,
+        "route": "approve",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.02,
+          "queer_culture": 0.24,
+          "gender_affirming_function": 0.99,
+          "queer_positioned_intimacy": 0.23,
+          "brand_affiliation_claim": 0.03,
+          "explicit_adult": 0.02,
+          "medical_claim": 0.03,
+          "legal_claim": 0.02
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-travel-packer",
+      "verdict": {
+        "relevance": "irrelevant",
+        "score": 0.02,
+        "route": "reject",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.02,
+          "queer_culture": 0.01,
+          "gender_affirming_function": 0.01,
+          "queer_positioned_intimacy": 0.01,
+          "brand_affiliation_claim": 0.02,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.01,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-lesbian-toy",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.97,
+        "route": "review",
+        "sensitivity": [
+          "explicit_adult"
+        ],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.03,
+          "queer_culture": 0.26,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.97,
+          "brand_affiliation_claim": 0.04,
+          "explicit_adult": 0.99,
+          "medical_claim": 0.03,
+          "legal_claim": 0.02
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-generic-toy",
+      "verdict": {
+        "relevance": "irrelevant",
+        "score": 0.02,
+        "route": "reject",
+        "sensitivity": [
+          "explicit_adult"
+        ],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.02,
+          "queer_culture": 0.02,
+          "gender_affirming_function": 0.01,
+          "queer_positioned_intimacy": 0.02,
+          "brand_affiliation_claim": 0.02,
+          "explicit_adult": 0.99,
+          "medical_claim": 0.02,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-bi-pin",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.99,
+        "route": "approve",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.99,
+          "queer_culture": 0.92,
+          "gender_affirming_function": 0.03,
+          "queer_positioned_intimacy": 0.04,
+          "brand_affiliation_claim": 0.03,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.01,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-trans-flag",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.97,
+        "route": "approve",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.97,
+          "queer_culture": 0.8,
+          "gender_affirming_function": 0.08,
+          "queer_positioned_intimacy": 0.02,
+          "brand_affiliation_claim": 0.04,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.01,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-pronoun-cards",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.99,
+        "route": "approve",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.33,
+          "queer_culture": 0.8,
+          "gender_affirming_function": 0.99,
+          "queer_positioned_intimacy": 0.08,
+          "brand_affiliation_claim": 0.04,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.03,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-grammar-cards",
+      "verdict": {
+        "relevance": "irrelevant",
+        "score": 0.02,
+        "route": "reject",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.01,
+          "queer_culture": 0.02,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.01,
+          "brand_affiliation_claim": 0.02,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.01,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-drag-wig",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.95,
+        "route": "approve",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.06,
+          "queer_culture": 0.95,
+          "gender_affirming_function": 0.1,
+          "queer_positioned_intimacy": 0.03,
+          "brand_affiliation_claim": 0.03,
+          "explicit_adult": 0.02,
+          "medical_claim": 0.01,
+          "legal_claim": 0.02
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-costume-wig",
+      "verdict": {
+        "relevance": "irrelevant",
+        "score": 0.03,
+        "route": "reject",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.02,
+          "queer_culture": 0.03,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.02,
+          "brand_affiliation_claim": 0.02,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.01,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-queer-film",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.99,
+        "route": "approve",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.51,
+          "queer_culture": 0.99,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.03,
+          "brand_affiliation_claim": 0.05,
+          "explicit_adult": 0.02,
+          "medical_claim": 0.01,
+          "legal_claim": 0.02
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-fiction-romance",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.98,
+        "route": "approve",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.02,
+          "queer_culture": 0.98,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.24,
+          "brand_affiliation_claim": 0.03,
+          "explicit_adult": 0.02,
+          "medical_claim": 0.01,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-brand-claim",
+      "verdict": {
+        "relevance": "irrelevant",
+        "score": 0.04,
+        "route": "review",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": true,
+        "probabilities": {
+          "pride_design": 0.04,
+          "queer_culture": 0.04,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.04,
+          "brand_affiliation_claim": 0.97,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.01,
+          "legal_claim": 0.02
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-brand-name",
+      "verdict": {
+        "relevance": "irrelevant",
+        "score": 0.02,
+        "route": "reject",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.02,
+          "queer_culture": 0.02,
+          "gender_affirming_function": 0.01,
+          "queer_positioned_intimacy": 0.02,
+          "brand_affiliation_claim": 0.02,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.01,
+          "legal_claim": 0.02
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-medical-claim",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.97,
+        "route": "review",
+        "sensitivity": [
+          "medical_claim"
+        ],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.97,
+          "queer_culture": 0.33,
+          "gender_affirming_function": 0.03,
+          "queer_positioned_intimacy": 0.13,
+          "brand_affiliation_claim": 0.09,
+          "explicit_adult": 0.03,
+          "medical_claim": 0.99,
+          "legal_claim": 0.02
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-legal-claim",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.84,
+        "route": "review",
+        "sensitivity": [
+          "legal_claim"
+        ],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.02,
+          "queer_culture": 0.84,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.02,
+          "brand_affiliation_claim": 0.04,
+          "explicit_adult": 0.02,
+          "medical_claim": 0.02,
+          "legal_claim": 0.99
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-german-pride",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.98,
+        "route": "approve",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.98,
+          "queer_culture": 0.83,
+          "gender_affirming_function": 0.03,
+          "queer_positioned_intimacy": 0.04,
+          "brand_affiliation_claim": 0.03,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.01,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-french-generic",
+      "verdict": {
+        "relevance": "irrelevant",
+        "score": 0.02,
+        "route": "reject",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.02,
+          "queer_culture": 0.01,
+          "gender_affirming_function": 0.01,
+          "queer_positioned_intimacy": 0.01,
+          "brand_affiliation_claim": 0.02,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.01,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-spanish-queer",
+      "verdict": {
+        "relevance": "relevant",
+        "score": 0.99,
+        "route": "approve",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.02,
+          "queer_culture": 0.99,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.35,
+          "brand_affiliation_claim": 0.04,
+          "explicit_adult": 0.02,
+          "medical_claim": 0.01,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    },
+    {
+      "fixture": "product-german-sports",
+      "verdict": {
+        "relevance": "irrelevant",
+        "score": 0.02,
+        "route": "reject",
+        "sensitivity": [],
+        "sensitivity_uncertain": false,
+        "affiliation_requires_authorization": false,
+        "probabilities": {
+          "pride_design": 0.01,
+          "queer_culture": 0.01,
+          "gender_affirming_function": 0.02,
+          "queer_positioned_intimacy": 0.01,
+          "brand_affiliation_claim": 0.02,
+          "explicit_adult": 0.01,
+          "medical_claim": 0.02,
+          "legal_claim": 0.01
+        },
+        "policy_version": "jev-product-routing-v2"
+      },
+      "route_unchanged": true
+    }
+  ]
+}

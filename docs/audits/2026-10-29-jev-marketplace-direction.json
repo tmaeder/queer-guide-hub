@@ -1,0 +1,72 @@
+{
+  "migration": "20261029223309",
+  "worker_version": 386,
+  "findings": {
+    "confident_negative_could_approve": true,
+    "preexisting_committed_negative_staging_rows": 341,
+    "interpretation": "Needs re-evaluation; not proof of irrelevance or grounds to unpublish."
+  },
+  "changes": [
+    "Strict Boolean/probability/flag schema validation",
+    "Separate approve/reject/review outcomes",
+    "Store positive relevance score rather than certainty of a negative answer",
+    "Atomic classification and ingestion event",
+    "Source-version compare-and-set with stale refusal",
+    "SQL commit requires explicit typed positive classification"
+  ],
+  "validation": {
+    "runtime_and_truth_table_tests": 6,
+    "isolated_postgres": "Eight concurrent writers, stale and malformed refusal, event failure rollback, client ACLs, actual native selector"
+  },
+  "guard_rollback_canary": {
+    "canary": {
+      "results": [
+        {
+          "action": "updated",
+          "listing_id": "79122ff2-a3e9-49c5-9a81-3edaa53978b4",
+          "staging_id": "32030a6f-629f-4277-8551-4475927bcff3"
+        },
+        {
+          "action": "updated",
+          "listing_id": "c84671f8-0fbd-40d3-b467-8d4ccdbc3ba5",
+          "staging_id": "e8aa3d87-e0ca-4995-9022-c6c2d9b38cad"
+        }
+      ],
+      "elapsed_ms": 275.06,
+      "hash_after": "631d34dba86bbc6e9003af978df5be55",
+      "hash_before": "631d34dba86bbc6e9003af978df5be55",
+      "rolled_back": true
+    },
+    "paused": true,
+    "migration": [
+      {
+        "name": "marketplace_drain_bounded_outcomes",
+        "version": "20261029223724"
+      }
+    ]
+  },
+  "drain_resume": {
+    "cron": [
+      {
+        "active": true,
+        "jobname": "marketplace_commit_drain",
+        "schedule": "40 * * * *"
+      }
+    ],
+    "automation": {
+      "state": "active",
+      "enabled": true,
+      "failures": 0,
+      "schedule": "40 * * * *"
+    }
+  },
+  "actual_native_drain": {
+    "noop": 0,
+    "batch": 2,
+    "failed": 0,
+    "pending": 0,
+    "examined": 2,
+    "committed": 2
+  },
+  "scope": "Legacy Cloudflare classification remains the provider here; primary typed Jev relevance adoption is still pending. The shared pipeline Jev checks remain shadow-only."
+}

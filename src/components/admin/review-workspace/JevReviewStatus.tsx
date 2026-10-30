@@ -6,9 +6,19 @@ type Job = {
   status: string;
   attempts: number;
   next_attempt_at: string;
-  outcome: { reason?: string; evidence?: Array<{ url: string }> };
+  outcome: { reason?: string; blocker?: string; retry?: string; evidence?: Array<{ url: string }> };
 };
-type Status = { enabled: boolean; counts: Record<string, number> | null; jobs: Job[] };
+type Status = {
+  enabled: boolean;
+  counts: Record<string, number> | null;
+  jobs: Job[];
+  production_budget?: {
+    cap_nano_usd: number;
+    charged_nano_usd: number;
+    reserved_nano_usd: number;
+    deferred: boolean;
+  } | null;
+};
 export function JevReviewStatus({ caseId }: { caseId?: string }) {
   const client = useQueryClient();
   const query = useQuery({
@@ -33,8 +43,11 @@ export function JevReviewStatus({ caseId }: { caseId?: string }) {
     },
   });
   if (!query.data) return null;
-  const { enabled, counts, jobs } = query.data;
+  const { enabled, counts, jobs, production_budget: budget } = query.data;
   const job = jobs[0];
+  const reason = job?.outcome.blocker || job?.outcome.reason || job?.outcome.retry;
+  const dollars = (nano: number) =>
+    (nano / 1e9).toLocaleString(undefined, { style: 'currency', currency: 'USD' });
   if (caseId && !job) return null;
   return (
     <div className="mt-2 text-sm text-muted-foreground" aria-label="Jev automation status">
@@ -43,8 +56,11 @@ export function JevReviewStatus({ caseId }: { caseId?: string }) {
           <p>
             Jev: {job.status} · {job.attempts} attempts
           </p>
-          {job.outcome.reason && <p className="mt-1">{job.outcome.reason.replace(/_/g, ' ')}</p>}
-          {['blocked', 'retry'].includes(job.status) && (
+          {reason && <p className="mt-1">{reason.replace(/_/g, ' ')}</p>}
+          {job.status === 'blocked' && (
+            <p className="mt-1">Waiting for new evidence or a repaired prerequisite.</p>
+          )}
+          {job.status === 'retry' && (
             <p className="mt-1">Next check: {new Date(job.next_attempt_at).toLocaleString()}</p>
           )}
           {job.outcome.evidence?.map(
@@ -68,6 +84,14 @@ export function JevReviewStatus({ caseId }: { caseId?: string }) {
             Jev {enabled ? 'running' : 'paused'} · {counts?.applied ?? 0} applied ·{' '}
             {counts?.blocked ?? 0} blocked
           </span>
+          {budget && (
+            <span>
+              Shared production budget:{' '}
+              {dollars(budget.charged_nano_usd + budget.reserved_nano_usd)} /{' '}
+              {dollars(budget.cap_nano_usd)} this UTC month
+              {budget.deferred && ' · processing deferred at the budget limit'}
+            </span>
+          )}
           <Button
             size="sm"
             variant="ghost"
