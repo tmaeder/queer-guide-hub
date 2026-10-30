@@ -1,0 +1,355 @@
+{
+  "date_utc": "2026-10-29",
+  "worker_version": 390,
+  "validator_version": 6,
+  "source_adapters": [
+    "ohmyfantasy",
+    "autostraddle"
+  ],
+  "maximum_jev_attempts_per_run": 4,
+  "question_version": "jev-product-relevance-v1",
+  "policy_version": "jev-product-routing-v2",
+  "synthetic": {
+    "rows": 24,
+    "route_agreement": 24,
+    "development_agreement": 8,
+    "held_out_agreement": 16,
+    "input_tokens": 22978
+  },
+  "public_records": {
+    "rows": 20,
+    "route_agreement": 16,
+    "automated_routes": 16,
+    "incorrect_automated_routes": 0,
+    "review_deferrals": 4,
+    "input_tokens": 22892
+  },
+  "dry_run": {
+    "id": 103351,
+    "response": {
+      "items": 0,
+      "stale": 0,
+      "failed": 0,
+      "review": 0,
+      "dry_run": true,
+      "success": true,
+      "trusted": 0,
+      "approved": 0,
+      "jev_used": 1,
+      "llm_used": 0,
+      "rejected": 0,
+      "daily_cap": 800,
+      "cap_skipped": 0,
+      "items_failed": 0,
+      "jev_attempts": 1,
+      "jev_previews": [
+        {
+          "request": {
+            "model": "jev-1.14.0",
+            "state": {
+              "original_product": {
+                "text": "Highlights Kompakter Mini-Vibrator, wasserdicht Elegantes Design in dezentem Pastellton 7 verschiedene Vibrationsmodi Weiche Oberfläche mit angenehmem Hautgefühl Klein und leicht – ideal für unterwegs ProduktbeschreibungDer MiniBuzz Slim ist ein kompakter Vibrator im dezenten Pastellton mit schickem, elegantem Design. Seine weiche Oberfläche sorgt für ein angenehmes Hautgefühl und macht ihn zu einem diskreten Begleiter für zu Hause oder unterwegs. Trotz seiner kleinen Größe verfügt er über 7 unterschiedliche Vibrationsmodi, die für abwechslungsreiche Stimulation sorgen.Dank seiner kompakten und leichten Bauweise lässt sich der MiniBuzz Slim unauffällig verstauen und eignet sich daher auch gut fürs Handgepäck auf Reisen. Die Oberfläche fühlt sich weich und angenehm auf der Haut an; für zusätzlichen Komfort empfiehlt sich die Verwendung eines wasserbasierten Gleitgels. Der Vibrator ist wasserdicht und wird über das beiliegende USB-Ladekabel aufgeladen. Ist der Ladevorgang abgeschlossen, leuchtet die Anzeige durchgehend.Details Gesamtlänge: 13,2 cm Durchmesser: Ø 2,5–2,9 cm Einführtiefe: 8 cm Gewicht: 63 g Material: Silikon, PU-Beschichtung, ABS Lieferumfang: inkl. USB-Ladekabel",
+                "title": "Cuties - MiniBuzz Slim - Kompaktvibrator mit Vibrationsmodi"
+              },
+              "question_version": "jev-product-relevance-v1"
+            },
+            "questions": {
+              "legal_claim": {
+                "type": "noul",
+                "criteria": {
+                  "true": "The source asserts a legal right, prohibited conduct, asylum entitlement or jurisdiction-specific legal restriction.",
+                  "false": "The source asserts no legal entitlement or restriction. A product name or ordinary delivery policy alone is not a legal assertion."
+                },
+                "instructions": "Does `original_product` assert a legal entitlement or restriction?"
+              },
+              "pride_design": {
+                "type": "noul",
+                "criteria": {
+                  "true": "The product is explicitly described as LGBTQ Pride, an identified community pride flag, or LGBTQ solidarity merchandise.",
+                  "false": "The source describes an ordinary product, a generic rainbow color, or unrelated use of the word pride without LGBTQ framing."
+                },
+                "instructions": "Does `original_product` expressly describe an LGBTQ Pride design?"
+              },
+              "medical_claim": {
+                "type": "noul",
+                "criteria": {
+                  "true": "The source claims to diagnose, prevent or treat a health condition, or offers clinical care.",
+                  "false": "The source makes no medical claim. Gender expression, clothing, ordinary comfort and an anatomical product name alone do not assert clinical care."
+                },
+                "instructions": "Does `original_product` make a medical claim?"
+              },
+              "queer_culture": {
+                "type": "noul",
+                "criteria": {
+                  "true": "A book, artwork, film or performance product expressly concerns LGBTQ lives, history, community or drag/ballroom culture.",
+                  "false": "The content has no stated LGBTQ subject. An author or brand name alone does not establish a subject or personal identity."
+                },
+                "instructions": "Does `original_product` describe cultural content about LGBTQ experiences?"
+              },
+              "explicit_adult": {
+                "type": "noul",
+                "criteria": {
+                  "true": "The source expressly describes a sex toy, sexual stimulation, pornography or explicit sexual activity.",
+                  "false": "The source has no explicit adult sexual use. LGBTQ identity, pronouns, Pride designs and nonexplicit cultural content alone are not adult sexual content."
+                },
+                "instructions": "Does `original_product` explicitly describe adult sexual use?"
+              },
+              "brand_affiliation_claim": {
+                "type": "noul",
+                "criteria": {
+                  "true": "The source explicitly calls the brand LGBTQ owned, LGBTQ operated or a dedicated LGBTQ organization.",
+                  "false": "No brand affiliation is stated. A brand name, logo, founder name or rainbow color alone does not establish affiliation."
+                },
+                "instructions": "Does `original_product` explicitly claim that its brand is LGBTQ affiliated?"
+              },
+              "gender_affirming_function": {
+                "type": "noul",
+                "criteria": {
+                  "true": "The product is expressly for gender expression, such as chest binding, tucking, gender-affirming packing or pronoun affirmation.",
+                  "false": "The product has no stated gender-affirming function. Ordinary sports compression, travel packing and grammar materials do not establish it."
+                },
+                "instructions": "Does `original_product` expressly describe a product for affirming gender expression?"
+              },
+              "queer_positioned_intimacy": {
+                "type": "noul",
+                "criteria": {
+                  "true": "The source explicitly describes an intimacy product for LGBTQ people or a named LGBTQ community.",
+                  "false": "The source describes no intimacy product or a generic intimacy product without explicit LGBTQ positioning."
+                },
+                "instructions": "Does `original_product` expressly position an intimacy product for LGBTQ people?"
+              }
+            }
+          },
+          "decision": "reject",
+          "judgment": {
+            "route": "reject",
+            "score": 0.02,
+            "relevance": "irrelevant",
+            "sensitivity": [
+              "explicit_adult"
+            ],
+            "probabilities": {
+              "legal_claim": 0.01,
+              "pride_design": 0.02,
+              "medical_claim": 0.02,
+              "queer_culture": 0.01,
+              "explicit_adult": 0.9,
+              "brand_affiliation_claim": 0.02,
+              "gender_affirming_function": 0.01,
+              "queer_positioned_intimacy": 0.02
+            },
+            "policy_version": "jev-product-routing-v2",
+            "sensitivity_uncertain": false,
+            "affiliation_requires_authorization": false
+          },
+          "response": {
+            "model": "jev-1.14.0",
+            "usage": {
+              "input_tokens": 1276,
+              "output_tokens": 157
+            },
+            "answers": {
+              "legal_claim": {
+                "noul": 0.01,
+                "type": "noul"
+              },
+              "pride_design": {
+                "noul": 0.02,
+                "type": "noul"
+              },
+              "medical_claim": {
+                "noul": 0.02,
+                "type": "noul"
+              },
+              "queer_culture": {
+                "noul": 0.01,
+                "type": "noul"
+              },
+              "explicit_adult": {
+                "noul": 0.9,
+                "type": "noul"
+              },
+              "brand_affiliation_claim": {
+                "noul": 0.02,
+                "type": "noul"
+              },
+              "gender_affirming_function": {
+                "noul": 0.01,
+                "type": "noul"
+              },
+              "queer_positioned_intimacy": {
+                "noul": 0.02,
+                "type": "noul"
+              }
+            }
+          },
+          "staging_id": "3ce1bdb5-9192-46d1-9d1f-3e9db1fe4a5c",
+          "expected_updated_at": "2026-10-22T04:35:03.882876+00:00"
+        }
+      ],
+      "items_processed": 0,
+      "items_succeeded": 0,
+      "worker_deferred": 0,
+      "evidence_deferred": 0,
+      "jev_budget_deferred": 0
+    },
+    "status_code": 200
+  },
+  "write_canary": {
+    "http": {
+      "id": 103490,
+      "response": {
+        "items": 1,
+        "stale": 0,
+        "failed": 0,
+        "review": 0,
+        "dry_run": false,
+        "success": true,
+        "trusted": 0,
+        "approved": 0,
+        "jev_used": 1,
+        "llm_used": 0,
+        "rejected": 1,
+        "daily_cap": 800,
+        "cap_skipped": 0,
+        "items_failed": 1,
+        "jev_attempts": 1,
+        "items_processed": 1,
+        "items_succeeded": 0,
+        "worker_deferred": 0,
+        "evidence_deferred": 0,
+        "jev_budget_deferred": 0
+      },
+      "status_code": 200
+    },
+    "events": [
+      {
+        "actor": "marketplace-relevance",
+        "stage": "relevance_jev",
+        "new_status": "rejected"
+      }
+    ],
+    "source": {
+      "id": "3ce1bdb5-9192-46d1-9d1f-3e9db1fe4a5c",
+      "class": {
+        "model": "jev-1.14.0",
+        "judgments": {
+          "legal_claim": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "pride_design": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "medical_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "queer_culture": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "explicit_adult": {
+            "noul": 0.9,
+            "type": "noul"
+          },
+          "brand_affiliation_claim": {
+            "noul": 0.02,
+            "type": "noul"
+          },
+          "gender_affirming_function": {
+            "noul": 0.01,
+            "type": "noul"
+          },
+          "queer_positioned_intimacy": {
+            "noul": 0.02,
+            "type": "noul"
+          }
+        },
+        "classifier": "jev-product-relevance-v1",
+        "classified_at": "2026-10-29T23:08:39.688Z",
+        "lgbti_relevant": false,
+        "policy_version": "jev-product-routing-v2",
+        "suggested_tags": [],
+        "lgbti_reasoning": "Jev public product evidence: irrelevant; reject",
+        "review_priority": "normal",
+        "routing_decision": "reject",
+        "source_relevance": "irrelevant",
+        "sensitivity_flags": [
+          {
+            "category": "nsfw",
+            "severity": "high",
+            "confidence": 0.9,
+            "indicators": [
+              "explicit_adult"
+            ]
+          }
+        ],
+        "lgbti_relevance_score": 0.02
+      },
+      "updated_at": "2026-10-29T23:08:39.706595+00:00",
+      "disposition": "rejected",
+      "target_record_id": null
+    }
+  },
+  "operations": {
+    "drain": {
+      "status": "success",
+      "enabled": true,
+      "failures": 0
+    },
+    "review": {
+      "status": "success",
+      "enabled": true,
+      "failures": 0
+    },
+    "production": {
+      "period": "month",
+      "enabled": true,
+      "configured": true,
+      "cap_nano_usd": 25000000000,
+      "period_start": "2026-10-01",
+      "charged_nano_usd": 31286934,
+      "reserved_nano_usd": 0,
+      "remaining_nano_usd": 24968713066
+    },
+    "validation": {
+      "period": "lifetime",
+      "enabled": true,
+      "configured": true,
+      "cap_nano_usd": 5000000000,
+      "period_start": "1970-01-01",
+      "charged_nano_usd": 3438834,
+      "reserved_nano_usd": 0,
+      "remaining_nano_usd": 4996561166
+    },
+    "jev_decisions": [
+      {
+        "items": 13,
+        "new_status": "rejected"
+      }
+    ],
+    "recent_hash_link": {
+      "has_hash": true,
+      "ledger_match": true
+    }
+  },
+  "migrations": [
+    "20261029225917",
+    "20261029230831",
+    "20261029231857"
+  ],
+  "limitations": [
+    "Only the two evaluated public adapters use primary Jev classification; other sources retain their existing provider or require separate projection/validation.",
+    "Sensitive/uncertain admission is explicit null and cannot pass the native positive-Boolean guard.",
+    "No previous publication is deactivated from a staging model label; legacy negative committed classifications still require re-evaluation."
+  ],
+  "artifact_security": {
+    "removed_completed_shadow_lease_identifier": true,
+    "invalidated_completed_lease_rows": 1,
+    "no_provider_api_key_exposed": true,
+    "branch_history_scrubbed": true,
+    "regression": "scripts/ci/jev-audit-artifacts.test.mjs"
+  }
+}
