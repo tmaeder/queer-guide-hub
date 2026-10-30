@@ -4,7 +4,7 @@ import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { extractContent } from '../_shared/extract-client.ts'
 import { splitAuthor } from '../_shared/book-title.ts'
-import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
+import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
@@ -29,6 +29,8 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 // config keys (per merchant):
 //   strategy          'jsonld' | 'microdata' | 'selector'   which reader parses a product page
 //   sitemap           absolute URL of the product sitemap (or a sitemapindex)
+//   sitemap_format    'xml' (default) | 'html' for a public catalog page
+//   catalog_link_selector  explicit product-link CSS selector for HTML catalogs
 //   url_include       regex a URL must match to be treated as a product page
 //   entity_id_from    'isbn' | undefined       how to derive source_entity_id
 //   subcategory       pinned subcategory (drives department; see below)
@@ -58,6 +60,8 @@ interface CrawlConfig {
   unavailable_canonical_urls?: string[]
   selectors?: Selectors
   sitemap: string
+  sitemap_format?: 'xml' | 'html'
+  catalog_link_selector?: string
   url_include?: string
   entity_id_from?: string
   subcategory?: string
@@ -115,7 +119,9 @@ async function fetchText(url: string, timeoutMs: number): Promise<string> {
 async function collectProductUrls(cfg: CrawlConfig, shopDomain: string): Promise<string[]> {
   const root = await fetchText(cfg.sitemap, SITEMAP_TIMEOUT_MS)
   let urls: string[]
-  if (/<sitemapindex/i.test(root)) {
+  if (cfg.sitemap_format === 'html') {
+    urls = readCatalogProductLinks(root, cfg.sitemap, cfg.catalog_link_selector ?? '')
+  } else if (/<sitemapindex/i.test(root)) {
     urls = []
     for (const child of locs(root).slice(0, SITEMAP_INDEX_MAX_CHILDREN)) {
       try { urls.push(...locs(await fetchText(child, SITEMAP_TIMEOUT_MS))) }
@@ -293,7 +299,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
     if (merchant.is_enabled === false) return jsonResponse(skippedResponse('merchant_disabled', [sourceSlug]), 200, req)
 
     const cfg = (merchant.config ?? {}) as unknown as CrawlConfig
-    const missing = [!cfg.sitemap && 'config.sitemap', !cfg.strategy && 'config.strategy'].filter(Boolean) as string[]
+    const missing = [!cfg.sitemap && 'config.sitemap', !cfg.strategy && 'config.strategy', cfg.sitemap_format === 'html' && !cfg.catalog_link_selector?.trim() && 'config.catalog_link_selector'].filter(Boolean) as string[]
     if (missing.length) return jsonResponse(skippedResponse('missing_config', missing), 200, req)
     const reader = READERS[cfg.strategy]
     if (!reader && cfg.strategy !== 'selector') return jsonResponse(skippedResponse('unknown_strategy', [cfg.strategy]), 200, req)

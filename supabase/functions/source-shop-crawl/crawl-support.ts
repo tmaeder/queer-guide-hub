@@ -6,6 +6,29 @@ export function readSitemapLocations(xml: string): string[] {
   return $('loc').map((_i, node) => $(node).text().trim()).get().filter(Boolean)
 }
 
+/** Explicitly selected product links from a merchant's public HTML catalog.
+ * Ignore document <base> tags and keep discovery on the same HTTPS host. */
+export function readCatalogProductLinks(html: string, pageUrl: string, selector: string): string[] {
+  if (!selector.trim()) throw new Error('HTML catalog requires a product link selector')
+  const page = new URL(pageUrl)
+  const host = page.hostname.replace(/^www\./, '')
+  const $ = cheerio.load(html)
+  const links = new Set<string>()
+  $(selector).each((_i, node) => {
+    const raw = $(node).attr('href')?.trim()
+    if (!raw || raw.startsWith('#')) return
+    try {
+      const url = new URL(raw, page)
+      if (url.hostname.replace(/^www\./, '') !== host) return
+      // Reuse the registry's HTTPS, credentials and port checks for every link.
+      if (!allowedSitemap(url.href, page.hostname)) return
+      url.hash = ''
+      links.add(url.href)
+    } catch { /* Malformed links are not products. */ }
+  })
+  return [...links].sort()
+}
+
 /** Some storefronts serve .xml.gz files without a Content-Encoding header. */
 export async function decodeSitemapBytes(bytes: Uint8Array, maxBytes = 50 * 1024 * 1024): Promise<string> {
   if (bytes.byteLength > maxBytes) throw new Error('Sitemap exceeds size limit')
