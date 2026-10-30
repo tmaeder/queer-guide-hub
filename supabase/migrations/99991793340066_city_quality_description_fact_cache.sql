@@ -30,6 +30,7 @@ declare
   consumer record;
   consumer_oid oid;
   consumer_definition text;
+  consumer_code text;
   consumer_metadata jsonb;
   old_references integer;
   new_references integer;
@@ -81,10 +82,12 @@ begin
   loop
     consumer_oid:=to_regprocedure(consumer.signature);
     if consumer_oid is null then raise exception 'Missing city quality consumer %',consumer.signature;end if;
-    select pg_get_functiondef(consumer_oid),to_jsonb(p)-'prosrc'-'prosqlbody'
-    into consumer_definition,consumer_metadata from pg_proc p where oid=consumer_oid;
-    select count(*) into old_references from regexp_matches(consumer_definition,'\mpublic\.city_quality_profile\M','g');
-    select count(*) into new_references from regexp_matches(consumer_definition,'\mpublic\._city_quality_full_profile\(\)','g');
+    select pg_get_functiondef(consumer_oid),
+      regexp_replace(pg_get_functiondef(consumer_oid),'--[^'||chr(10)||']*','','g'),
+      to_jsonb(p)-'prosrc'-'prosqlbody'
+    into consumer_definition,consumer_code,consumer_metadata from pg_proc p where oid=consumer_oid;
+    select count(*) into old_references from regexp_matches(consumer_code,'\mpublic\.city_quality_profile\M','g');
+    select count(*) into new_references from regexp_matches(consumer_code,'\mpublic\._city_quality_full_profile\(\)','g');
     if old_references=consumer.expected_references and new_references=0 then
       execute regexp_replace(consumer_definition,'\mpublic\.city_quality_profile\M','public._city_quality_full_profile()','g');
     elsif old_references<>0 or new_references<>consumer.expected_references then
