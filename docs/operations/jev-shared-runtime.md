@@ -41,10 +41,21 @@ Deno checks, changed-file lint and the isolated native PostgreSQL contracts pass
 Security advisor findings are unchanged. Exact canaries, raw typed answers and
 release hashes are in `docs/audits/2026-10-30-jev-review-public-state.json`.
 
+Migration `20261030062311` also fixes the native historical integrity rejection:
+closing an uncertainty-language-only description proposal with no replacement
+preserves the milestone's existing `last_verified_at`. It previously cleared that
+timestamp even though the structural rejection certified no historical facts.
+The exact proposal shape is checked in the apply dispatcher; a structural label
+alone cannot preserve verification on an ordinary factual rejection. The isolated
+regression failed against the old dispatcher and passes with the migration. A
+live native-apply canary preserved the complete canonical-row hash, verified the
+proposal transition and rolled that transition back. Both existing verified
+proposals remain for normal processing; no facts or verification dates were invented.
+
 Production verification on 29 October: the first two migrations are applied as
 `20261029213554` (budget ledger) and `20261029214157` (normalized source URLs),
 matching the observed Supabase migration history. The isolated validator is
-then deployed at version 6. Eight synthetic calls used 4,949 input tokens, charging
+was then deployed at version 6. Eight synthetic calls used 4,949 input tokens, charging
 207,858 nano-USD (US$0.000207858); no reservations remain unsettled. Anonymous
 execution returned HTTP 401, and the three budget RPCs are service-only.
 
@@ -322,9 +333,8 @@ now hardened as described above; the internal SQL context remains separately pro
 A read-only check of 20 recent public Review contexts found no credential/account
 key paths under the checked key list; it does not certify every context or free
 text. All current active staging Review source names were public publisher/adapters
-in that snapshot. An explicit adapter authorization guard is still needed for
-future private staging sources; the new explicit source/entity guard now enforces
-that boundary. A queue name alone cannot establish public origin.
+in that snapshot. The new explicit source/entity guard now protects the boundary
+for future private staging sources. A queue name alone cannot establish public origin.
 
 Implementation inspection now records nine deterministic exclusions and four
 follow-up audits in `docs/audits/2026-10-29-jev-automation-implementations.json`.

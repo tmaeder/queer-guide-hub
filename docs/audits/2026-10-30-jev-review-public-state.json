@@ -747,5 +747,28 @@
     "Individually validated sensitive actions and explicit protected-field authorization",
     "Audit additional automation implementations; current inventories do not imply adoption",
     "Potential deterministic handling of structurally unusable machine proposals through a dedicated audited native path, without inventing Jev confidence"
-  ]
+  ],
+  "historical_integrity_fix": {
+    "migration": "20261030062311_jev_integrity_preserve_milestone_verification.sql",
+    "problem": "Uncertainty-language-only structural rejection incorrectly cleared the existing milestone verification timestamp.",
+    "preflight": {
+      "open_proposals": 2,
+      "with_existing_verified_timestamp": 2
+    },
+    "predicate": "reject + server structural rule + description field + exactly uncertainty_language issue + no replacement",
+    "behavior": "Preserve existing canonical record; ordinary factual rejection retains its prior invalidation behavior.",
+    "regression": "Actual native dispatcher failed the preservation assertion before the repair and passed afterwards, including the ordinary rejection/forged-label control.",
+    "live_rollback_canary": {
+      "native_apply_preserved_canonical_hash": true,
+      "proposal_change_rolled_back": true,
+      "remaining_open_verified_structural_proposals": 2
+    },
+    "paid_calls": 0,
+    "new_factual_authority": false
+  },
+  "scheduled_provenance_check": {
+    "evaluated_v2_outcomes": 3,
+    "matching_settled_reservations": 3,
+    "scope": "Read-only snapshot after initial v15 scheduled processing"
+  }
 }

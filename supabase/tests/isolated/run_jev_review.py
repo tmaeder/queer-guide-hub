@@ -186,6 +186,36 @@ do $$begin
  raise exception 'Public role accessed source authorization helper';exception when insufficient_privilege then null;end $$;
 reset role;
 """
+milestone_integrity_checks="""
+create table milestones(id uuid primary key,title text,description text,last_verified_at timestamptz);
+create table milestone_review_queue(id uuid primary key,milestone_id uuid,field text,proposed_value jsonb,status text,reviewer_id uuid,reviewed_at timestamptz,reviewer_note text);
+create view triage_milestone_test as select id from milestone_review_queue where status='open';
+insert into admin_review_sources values('milestone-review','triage_milestone_test','milestone_review_queue',true);
+insert into milestones values(md5('historical-fact')::uuid,'Example gathering','The first gathering possibly took place in 1920.','2026-10-01T12:00:00Z');
+insert into milestone_review_queue values(md5('historical-proposal')::uuid,md5('historical-fact')::uuid,'description','{"issues":["uncertainty_language"]}','open',null,null,null);
+insert into admin_review_cases(id,fingerprint,active,item,members,family,stage)values(md5('historical-case')::uuid,'historical-fingerprint',true,
+ jsonb_build_object('id',md5('historical-proposal')::uuid,'queue_type','milestone-review','title','Historical detector','entity_id',md5('historical-fact')::uuid,'entity_table','milestones'),'[]','milestone-review','ready');
+do $$declare c admin_review_cases;ctx jsonb;k jsonb;begin
+ select * into c from admin_review_cases where id=md5('historical-case')::uuid;
+ ctx:=api_private.jev_context(c.id);
+ select x into k from jsonb_array_elements(ctx->'candidates')x where x#>>'{payload,integrity_rule}'='uncertainty_without_replacement';
+ if k is null then raise exception 'Actual context omitted structural historical rejection';end if;
+ perform api_private.jev_apply(c,k,ctx,'Structural detector rejection; no historical assertions verified');
+ if (select last_verified_at from milestones where id=md5('historical-fact')::uuid) is distinct from '2026-10-01T12:00:00Z'::timestamptz
+ or (select description from milestones where id=md5('historical-fact')::uuid) is distinct from 'The first gathering possibly took place in 1920.'
+ or (select status from milestone_review_queue where id=md5('historical-proposal')::uuid) is distinct from 'rejected' then
+  raise exception 'Structural rejection changed historical text/verification or failed to close only the invalid proposal';end if;
+ -- Ordinary proposal rejection keeps its existing invalidation behavior. Even
+ -- a forged structural label cannot bypass the exact proposal-shape condition.
+ update milestone_review_queue set status='open',proposed_value='{"issues":["uncertainty_language","contradictory_evidence"]}'where id=md5('historical-proposal')::uuid;
+ ctx:=api_private.jev_context(c.id);
+ select x into k from jsonb_array_elements(ctx->'candidates')x where x->>'action'='reject';
+ k:=jsonb_set(k,'{payload}','{"integrity_rule":"uncertainty_without_replacement"}');
+ perform api_private.jev_apply(c,k,ctx,'Ordinary factual rejection');
+ if (select last_verified_at from milestones where id=md5('historical-fact')::uuid) is not null then
+  raise exception 'Ordinary rejection incorrectly gained structural preservation';end if;
+end $$;
+"""
 with tempfile.TemporaryDirectory(prefix='jev-review-pg-')as tmp:
  data=Path(tmp)/'data';sock=Path(tmp)/'sock';sock.mkdir()
  subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
@@ -195,6 +225,8 @@ with tempfile.TemporaryDirectory(prefix='jev-review-pg-')as tmp:
   sql+=(ROOT/'supabase/migrations/20261029214157_jev_normalized_source_urls.sql').read_text()+url_projection_checks
   guard=(ROOT/'supabase/migrations/20261030060527_jev_review_public_source_guard.sql').read_text()
   sql+=source_guard_checks+guard+guard+source_guard_assertions
+  integrity_fix=(ROOT/'supabase/migrations/20261030062311_jev_integrity_preserve_milestone_verification.sql').read_text()
+  sql+=integrity_fix+integrity_fix+milestone_integrity_checks
   subprocess.run([str(PG/'psql'),'-X','-v','ON_ERROR_STOP=1','-h',str(sock),'-p','55439','postgres'],input=sql,text=True,check=True,stdout=subprocess.DEVNULL)
  finally:subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
 print('PASS: migration, source-backed apply, dry run, stale source refusal, duplicate refusal, atomic rollback, pause, machine audit, service permissions, JSON shape/privacy projection, nullable staging context, public adapter/entity authorization and stale-input hash refusal')
