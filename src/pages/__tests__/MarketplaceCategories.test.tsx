@@ -121,6 +121,31 @@ describe('MarketplaceCategories', () => {
     expect(hrefs()).toContain('/marketplace?grp=brand_new_sql_group');
   });
 
+  it('pools one-category departments into a single band instead of a band each', () => {
+    groupCounts.mockReturnValue(
+      rows(['tops', 8403], ['bottoms', 2375], ['swimwear', 261], ['jewelry', 1330]),
+    );
+    renderPage();
+    // Apparel has two stops, so it keeps its own band.
+    expect(screen.getByRole('heading', { name: 'Apparel' })).toBeInTheDocument();
+    // Swimwear and Jewelry have one stop each: no band of their own …
+    expect(screen.queryByRole('heading', { name: 'Swimwear' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Jewelry' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'More departments' })).toBeInTheDocument();
+    // … and the tiles still link through ?g=, so the tile count matches the page.
+    expect(hrefs()).toContain('/marketplace/category/swimwear?g=swimwear');
+    expect(hrefs()).toContain('/marketplace/category/jewelry?g=jewelry');
+    // Pooled departments are still departments in the masthead count.
+    expect(screen.getByTestId('count')).toHaveTextContent('4 categories in 3 departments');
+  });
+
+  it('does not pool a lone one-category department into a band of one', () => {
+    groupCounts.mockReturnValue(rows(['tops', 8403], ['bottoms', 2375], ['swimwear', 261]));
+    renderPage();
+    expect(screen.getByRole('heading', { name: 'Swimwear' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'More departments' })).not.toBeInTheDocument();
+  });
+
   it('counts stops across departments, not raw merchant categories', () => {
     groupCounts.mockReturnValue(rows(['tops', 8403], ['bottoms', 2375], ['books', 7674]));
     renderPage();

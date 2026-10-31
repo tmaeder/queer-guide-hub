@@ -221,20 +221,14 @@ export function MarketplaceBuyBox({ listing, compact = false, curatedName }: Buy
  * buyer acts on — how much else this maker has, and when we last checked the
  * link still went somewhere.
  */
-export function ProductStats({
-  listing,
-  siblingCount,
-}: {
-  listing: MarketplaceListing;
-  siblingCount: number | null;
-}) {
+export function ProductStats({ listing }: { listing: MarketplaceListing }) {
   return (
     <StatLine
       stats={[
-        {
-          label: 'More from this maker',
-          value: siblingCount && siblingCount > 0 ? siblingCount.toLocaleString() : null,
-        },
+        // "More from this maker" is gone. Its number came from a sibling query
+        // capped at 24 rows, so a maker with 452 listings read "24" — a count
+        // that was wrong for every large maker. The maker block links to the
+        // whole catalogue instead, and the maker page states the real count.
         {
           label: 'Last checked',
           value: listing.link_checked_at
@@ -251,13 +245,7 @@ export function ProductStats({
 }
 
 /** Module 01 — the fact strip. */
-export function ProductFacts({
-  listing,
-  curatedName,
-}: {
-  listing: MarketplaceListing;
-  curatedName?: string | null;
-}) {
+export function ProductFacts({ listing }: { listing: MarketplaceListing }) {
   const dept =
     listing.department && listing.department !== 'other'
       ? departmentLabel(listing.department)
@@ -299,15 +287,27 @@ export function ProductFacts({
     Array.isArray(attrs.material) && attrs.material.length > 0
       ? attrs.material.map((m) => humanize(m)).join(', ')
       : null;
+  // Only facts the page does not already state. Measured on /marketplace/
+  // raider-lithium-5481c0cd, five of the strip's cells repeated something on
+  // screen: Brand (the eyebrow and the maker block), Category "Underwear"
+  // beside Department "Underwear", Availability (the masthead's In stock
+  // chip) and Listed (the rail's provenance line, which also says when it was
+  // last checked). On a phone that was five stacked rows of repetition between
+  // the photo and the description.
+  //
+  // Availability stays when the chip is ABSENT: the masthead only shows a chip
+  // for a definite `in_stock`, so a feed-only `availability` string (e.g.
+  // "preorder") has nowhere else to appear.
   const facts = [
-    { label: 'Brand', value: displayBrandOf(listing, curatedName) },
     { label: 'Department', value: dept },
-    { label: 'Category', value: subcat },
+    {
+      label: 'Category',
+      value: subcat && subcat.toLowerCase() !== dept?.toLowerCase() ? subcat : null,
+    },
     { label: 'Color', value: colorFact },
     { label: 'Material', value: materialFact },
-    { label: 'Availability', value: availability },
+    { label: 'Availability', value: listing.in_stock == null ? availability : null },
     { label: 'Ships from', value: listing.location },
-    { label: 'Listed', value: new Date(listing.created_at).toLocaleDateString() },
     ...(isAdult ? [{ label: 'Content', value: <Badge variant="outline">Adult</Badge> }] : []),
   ];
 
@@ -434,8 +434,13 @@ export function MarketplaceContent({ listing, reviews, onContentUpdated }: Conte
         <MarketplacePriceHistory listingId={listing.id} />
       </Suspense>
 
-      <SingleSection title={`Reviews (${reviews.length})`}>
-        {reviews.length > 0 ? (
+      {/* Self-hiding, like every other module on this page. There is no way to
+          write a review from here, so "Reviews (0) / No reviews yet." was a
+          heading and a sentence on nearly every listing that the reader could
+          do nothing with. The aggregate rating still shows beside the price
+          when reviews exist. */}
+      {reviews.length > 0 && (
+        <SingleSection title={`Reviews (${reviews.length})`}>
           <ul className="m-0 list-none bg-muted rounded-element p-0">
             {reviews.slice(0, 5).map((review) => (
               <li
@@ -469,10 +474,8 @@ export function MarketplaceContent({ listing, reviews, onContentUpdated }: Conte
               </li>
             ))}
           </ul>
-        ) : (
-          <p className="text-muted-foreground">No reviews yet.</p>
-        )}
-      </SingleSection>
+        </SingleSection>
+      )}
     </>
   );
 }

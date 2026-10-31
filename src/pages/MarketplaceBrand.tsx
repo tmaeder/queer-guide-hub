@@ -11,8 +11,6 @@ import { ImageCredit } from '@/components/ui/ImageCredit';
 import { COMMUNITY_OWNED_OPTIONS } from '@/components/marketplace/marketplaceFilterOptions';
 import { MarketplaceLineArt } from '@/components/marketplace/MarketplaceLineArt';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { RouteBullet } from '@/components/transit/RouteBullet';
-import { FactGrid } from '@/components/transit/FactGrid';
 import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -39,6 +37,11 @@ function hostnameOf(url: string | null): string | null {
 
 /**
  * A maker's page — /marketplace/brands/:slug.
+ *
+ * 2026-10-31 pass: the empty ink banner, the second mark (a route bullet
+ * stacked on the logo) and the FactGrid band are gone — every fact in that
+ * band repeated something already on screen or was internal. The line art now
+ * sits beside the mark and closes the page in the end-of-line block.
  *
  * This was the plainest page in the family: a `PageHeader`, two outline badges,
  * a paragraph and a grid. Nothing said marketplace, nothing said which line you
@@ -103,40 +106,34 @@ export default function MarketplaceBrand() {
   if (!brand) return null;
 
   const ownership = brand.ownership_tags.filter((o) => OWNERSHIP_LABEL.has(o));
-  const count = brand.product_count ?? 0;
+
+  const host = hostnameOf(brand.website);
 
   return (
     <div className="min-h-screen">
       <header className="border-b border-border-hairline">
-        {/* The banner is the line running behind the maker's mark — the one
-            place this page shows track colour. Ink ground, so the yellow is
-            already border-gated by the band's own edges. */}
-        <div className="relative border-b border-border-hairline bg-foreground">
-          <PageContainer flush className="py-4">
-            <MarketplaceLineArt tone="ink" className="ml-auto max-w-[420px]" />
-          </PageContainer>
-        </div>
+        <PageContainer flush className="pb-8 pt-8 md:pb-12 md:pt-12">
+          <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+            {/* ONE column carries everything, actions included. The CTA used to
+                sit in a `flex-1` + `flex-wrap` sibling, and a `flex-1` item
+                has a 0% basis, so the row never wrapped: on a 390px phone the
+                button column stole half the width and the story ran ~17
+                characters to a line. */}
+            <div className="min-w-0">
+              <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                {t('marketplace.makerEyebrow', 'Marketplace · Maker')}
+              </p>
 
-        <PageContainer flush className="pb-8 pt-8 md:pb-12">
-          <div className="flex flex-wrap items-end justify-between gap-8">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-4">
-                <RouteBullet type="marketplace" size={44} />
-                <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-                  {t('marketplace.makerEyebrow', 'Marketplace · Maker')}
-                </p>
-              </div>
-
-              <div className="mt-4 flex items-start gap-4">
+              <div className="mt-4 flex items-center gap-4 md:gap-6">
                 <BrandMark
                   name={brand.display_name}
                   logoUrl={brand.logo_url}
                   onInk={brand.logo_on_ink ?? false}
-                  className="h-20 w-20 rounded-container"
+                  className="h-16 w-16 shrink-0 rounded-container md:h-24 md:w-24"
                   monogramClassName="font-display text-headline"
                   padding="p-2.5"
                 />
-                <h1 className="min-w-0 font-display text-display leading-[0.95] md:text-hero">
+                <h1 className="min-w-0 break-words font-display text-display leading-[0.95] md:text-hero">
                   {brand.display_name}
                 </h1>
               </div>
@@ -181,67 +178,45 @@ export default function MarketplaceBrand() {
                 </div>
               )}
 
-              <p className="mt-6 flex items-center gap-4 text-13 text-muted-foreground">
-                <span
-                  aria-hidden="true"
-                  className="h-1.5 w-10 shrink-0 border border-border-hairline bg-track-yellow"
-                />
-                <span className="tabular-nums">
-                  {t('marketplace.totalMakerListings', {
-                    count,
-                    formattedCount: count.toLocaleString(),
-                    defaultValue: '{{formattedCount}} total listings',
-                  })}
-                </span>
-              </p>
+              {/* ONE listing count on this page, and it is the grid's own
+                  "24 of 452 listings" below. The masthead used to also print
+                  `product_count` ("501 total listings"), which counts adult
+                  listings the grid hides until the reader opts in — two
+                  numbers that disagreed with no way to tell why. The site is
+                  stated once, here; the FactGrid band that repeated it (and a
+                  "catalogue key" that is an internal join column) is gone. */}
+              {host && <p className="mt-6 text-13 text-muted-foreground">{host}</p>}
+
+              {(brand.website || brandId) && (
+                <div className="mt-6 flex flex-wrap items-center gap-2">
+                  {brand.website && (
+                    <Button asChild>
+                      <a href={brand.website} target="_blank" rel="noopener noreferrer">
+                        {t('marketplace.visitBrandSite', 'Visit brand site')}
+                        <span aria-hidden="true"> ↗</span>
+                      </a>
+                    </Button>
+                  )}
+                  {brandId && (
+                    <AdminEditButton
+                      contentType="marketplace_brands"
+                      contentId={brandId}
+                      contentName={brand.display_name}
+                      onSaved={() => window.location.reload()}
+                      exportable
+                    />
+                  )}
+                </div>
+              )}
             </div>
 
-            {(brand.website || brandId) && (
-              <div className="flex flex-wrap items-center gap-2">
-                {brand.website && (
-                  <Button asChild variant="outline">
-                    <a href={brand.website} target="_blank" rel="noopener noreferrer">
-                      {t('marketplace.visitBrandSite', 'Visit brand site')}
-                    </a>
-                  </Button>
-                )}
-                {brandId && (
-                  <AdminEditButton
-                    contentType="marketplace_brands"
-                    contentId={brandId}
-                    contentName={brand.display_name}
-                    onSaved={() => window.location.reload()}
-                    exportable
-                  />
-                )}
-              </div>
-            )}
+            {/* The line, beside the mark rather than as an empty ink bar above
+                it — that bar cost ~100px (most of a phone's first screen)
+                before the maker's name appeared. Decorative; hidden on phones. */}
+            <MarketplaceLineArt className="hidden w-[320px] md:block lg:w-[400px]" />
           </div>
         </PageContainer>
       </header>
-
-      {/* FactGrid self-filters falsy values and returns null when every one is
-          empty, so this is deliberately unguarded at the call site. */}
-      <div className="border-b border-border-hairline">
-        <PageContainer flush className="py-8 md:py-12">
-          <FactGrid
-            // Ownership is deliberately NOT a fact here: it is already stated
-            // as badges in the masthead above, and repeating it put the same
-            // string on screen twice (caught by MarketplaceBrand.test.tsx,
-            // which could no longer find a unique "Queer-owned"). The badges
-            // win — they are what the maker carried in the directory the
-            // reader just came from.
-            facts={[
-              { label: t('marketplace.facts.listings', 'Listings'), value: count || null },
-              { label: t('marketplace.facts.site', 'Site'), value: hostnameOf(brand.website) },
-              {
-                label: t('marketplace.facts.brandKey', 'Catalogue key'),
-                value: brand.brand_key,
-              },
-            ]}
-          />
-        </PageContainer>
-      </div>
 
       <PageContainer>
         {!acknowledged && (
@@ -270,20 +245,23 @@ export default function MarketplaceBrand() {
         <PageContainer flush className="py-12 md:py-16">
           <section
             aria-labelledby="brand-end-of-line"
-            className="overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
+            className="flex flex-wrap items-end justify-between gap-6 overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
           >
-            <p className="text-2xs font-bold uppercase tracking-label text-background/70">
-              {t('marketplace.endOfLine', 'End of line')}
-            </p>
-            <h2 id="brand-end-of-line" className="mt-1 font-display text-headline leading-tight">
-              {t('marketplace.moreMakers', 'More makers on this line')}
-            </h2>
-            <LocalizedLink
-              to="/marketplace/brands"
-              className="mt-4 inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
-            >
-              {t('marketplace.allMakers', 'All makers')} →
-            </LocalizedLink>
+            <div>
+              <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+                {t('marketplace.endOfLine', 'End of line')}
+              </p>
+              <h2 id="brand-end-of-line" className="mt-1 font-display text-headline leading-tight">
+                {t('marketplace.moreMakers', 'More makers on this line')}
+              </h2>
+              <LocalizedLink
+                to="/marketplace/brands"
+                className="mt-4 inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+              >
+                {t('marketplace.allMakers', 'All makers')} →
+              </LocalizedLink>
+            </div>
+            <MarketplaceLineArt tone="ink" className="hidden max-w-[360px] md:block" />
           </section>
         </PageContainer>
       </div>
