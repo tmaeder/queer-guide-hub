@@ -78,7 +78,10 @@ $patch$;
 
 do $verify$
 declare
-  v_src text := pg_get_functiondef('api_private.run_event_quality_scan(integer,text,boolean)'::regprocedure);
+  -- Comments stripped so a fragment quoted in a comment cannot satisfy or fail a check.
+  v_src text := regexp_replace(
+    pg_get_functiondef('api_private.run_event_quality_scan(integer,text,boolean)'::regprocedure),
+    '--[^' || chr(10) || ']*', '', 'g');
 begin
   -- P1: both correlated sub-queries are gone from the candidate filter.
   if position('qi.event_id=e.id
