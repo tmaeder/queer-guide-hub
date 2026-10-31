@@ -75,6 +75,11 @@ export default function MarketplaceCategory() {
 
   const activeGroup = searchParams.get('g') || '';
   const activeFine = searchParams.get('f') || '';
+  // The page is ABOUT the group when one is chosen. Clicking "Tops" on the
+  // categories index lands here with ?g=tops; the h1 used to stay "Apparel"
+  // while the breadcrumb and the grid both said tops, so the heading named a
+  // different set of listings from the one on screen.
+  const heading = isDepartment && activeGroup ? groupLabel(activeGroup) : name;
   // Tag refinements live in ?tags= so a refined view is shareable / back-button
   // safe (they were useState-only before — invisible in the URL).
   const selectedTags = useMemo(
@@ -193,7 +198,7 @@ export default function MarketplaceCategory() {
   }, [isDepartment, subcategory, activeGroup, activeFine, includeAdult, selectedTags]);
 
   useMeta({
-    title: name ? `${name} — Marketplace` : 'Marketplace category',
+    title: heading ? `${heading} — Marketplace` : 'Marketplace category',
     description: `Browse ${name || 'this category'} on Queer Guide.`,
     canonicalPath: subcategory ? `/marketplace/category/${subcategory}` : undefined,
   });
@@ -237,9 +242,11 @@ export default function MarketplaceCategory() {
       <MarketplaceMasthead
         size="page"
         backTo={{ label: 'All categories', to: '/marketplace/categories' }}
-        eyebrow="Marketplace · Station"
-        title={name}
-        lede="Queer-friendly products and services in this category."
+        eyebrow={heading !== name ? `Marketplace · ${name}` : 'Marketplace · Station'}
+        title={heading}
+        // No lede: the one this page had ("Queer-friendly products and
+        // services in this category.") was the same sentence on every
+        // category, so it took a line and told the reader nothing.
         // The count lives in MarketplaceFilteredView's own swatch row below,
         // where it tracks the group + tag chips. Repeating it here would show
         // two different numbers the moment a chip is pressed.
@@ -247,8 +254,14 @@ export default function MarketplaceCategory() {
       />
 
       <PageContainer>
+        {/* One scrolling line on phones. Wrapped, Apparel's ten chips took
+            five rows (~230px) before the facets and the grid. The row bleeds to
+            the screen edge so a chip cut off there reads as "more this way". */}
         {isDepartment && groupTiles.length > 1 && (
-          <div className="mb-2 flex flex-wrap gap-1.5" aria-label="Filter by subcategory">
+          <div
+            className="-mx-4 mb-2 flex gap-1.5 overflow-x-auto px-4 py-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+            aria-label="Filter by subcategory"
+          >
             <FilterChip active={!activeGroup} label="All" onClick={() => setGroup('')} />
             {groupTiles.map((g) => (
               <FilterChip
@@ -267,7 +280,10 @@ export default function MarketplaceCategory() {
         )}
 
         {isDepartment && activeGroup && fineTiles.length > 1 && (
-          <div className="mb-2 flex flex-wrap gap-1.5" aria-label="Filter by fine category">
+          <div
+            className="-mx-4 mb-2 flex gap-1.5 overflow-x-auto px-4 py-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+            aria-label="Filter by fine category"
+          >
             <FilterChip active={!activeFine} label="All" onClick={() => setFine('')} />
             {fineTiles.map((f) => (
               <FilterChip
@@ -297,7 +313,7 @@ export default function MarketplaceCategory() {
 
         <MarketplaceFilteredView
           filters={filters}
-          emptyTitle={`No ${name.toLowerCase()} listings yet.`}
+          emptyTitle={`No ${heading.toLowerCase()} listings yet.`}
           emptyAction={{ label: 'Browse all departments', to: '/marketplace/categories' }}
         />
 

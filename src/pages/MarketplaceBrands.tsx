@@ -87,7 +87,7 @@ function bucketRank(name: string): number {
 /**
  * The makers directory — /marketplace/brands.
  *
- * Four bands: a rotating highlight, the controls, the catalogue, and the ink
+ * Four bands: the controls, a rotating highlight, the catalogue, and the ink
  * block. The catalogue's FORM is the part worth understanding.
  *
  * ── The highlight rotates, so it may not call itself a ranking ──────────────
@@ -290,38 +290,12 @@ export default function MarketplaceBrands() {
         }
       />
 
-      {/* ── 1. The highlight ─────────────────────────────────────────────── */}
-      {showHighlight && (
-        <section
-          aria-labelledby="makers-counter"
-          className="overflow-hidden rounded-container border-b border-border-hairline bg-surface-container-low"
-        >
-          <PageContainer flush className="py-8 md:py-12">
-            <SectionHeader
-              id="makers-counter"
-              eyebrow={t('marketplace.makersCounterEyebrow', 'The counter')}
-              // NOT "Most listings" and never "Featured" or "Picks": the band
-              // rotates over everyone who qualifies, so a ranking word would
-              // be false and a curation word would claim an editorial judgement
-              // nobody made.
-              title={t('marketplace.makersCounterTitle', 'On the counter today')}
-              subtitle={t(
-                'marketplace.makersCounterSubtitle',
-                'A different set of makers each day, drawn from everyone with photographed goods on the shelf. Not a ranking.',
-              )}
-            />
-            <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-              {featuredBrands.map((b) => (
-                <li key={b.slug}>
-                  <BrandPlate brand={b} />
-                </li>
-              ))}
-            </ul>
-          </PageContainer>
-        </section>
-      )}
-
-      {/* ── 2. Controls ──────────────────────────────────────────────────── */}
+      {/* ── 1. Controls ──────────────────────────────────────────────────── */}
+      {/* ABOVE the highlight, not below it. Below, the search box sat under
+          twelve large tiles — about two screens down at 1440px and past
+          2,000px on a phone — so the reader looking for ONE maker had to
+          scroll the whole highlight first. The highlight already unmounts the
+          moment they type, so nothing it offers is lost by coming second. */}
       <section className="border-b border-border-hairline">
         <PageContainer flush className="flex flex-col gap-4 py-4 md:py-6">
           <label className="flex h-12 items-center gap-2 bg-card px-4 shadow-soft rounded-container">
@@ -371,6 +345,37 @@ export default function MarketplaceBrands() {
           </div>
         </PageContainer>
       </section>
+
+      {/* ── 2. The highlight ─────────────────────────────────────────────── */}
+      {showHighlight && (
+        <section
+          aria-labelledby="makers-counter"
+          className="overflow-hidden rounded-container border-b border-border-hairline bg-surface-container-low"
+        >
+          <PageContainer flush className="py-8 md:py-12">
+            <SectionHeader
+              id="makers-counter"
+              eyebrow={t('marketplace.makersCounterEyebrow', 'The counter')}
+              // NOT "Most listings" and never "Featured" or "Picks": the band
+              // rotates over everyone who qualifies, so a ranking word would
+              // be false and a curation word would claim an editorial judgement
+              // nobody made.
+              title={t('marketplace.makersCounterTitle', 'On the counter today')}
+              subtitle={t(
+                'marketplace.makersCounterSubtitle',
+                'A different set of makers each day, drawn from everyone with photographed goods on the shelf. Not a ranking.',
+              )}
+            />
+            <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              {featuredBrands.map((b) => (
+                <li key={b.slug}>
+                  <BrandPlate brand={b} />
+                </li>
+              ))}
+            </ul>
+          </PageContainer>
+        </section>
+      )}
 
       {/* ── 3. The catalogue ─────────────────────────────────────────────── */}
       <PageContainer>
@@ -483,14 +488,19 @@ export default function MarketplaceBrands() {
               }
             />
 
+            {/* Two columns from lg. One ruled row across a 1600px container put
+                a maker's name ~1,250px from its own listing count, and 120
+                rows at ~57px made this list most of the page's height. CSS
+                columns keep the DOM (and so the reading order) a single list;
+                `break-inside-avoid` keeps a letter heading with its first row. */}
             {visibleRows.length > 0 && (
-              <ul className="m-0 list-none p-0">
+              <ul className="m-0 list-none p-0 lg:columns-2 lg:gap-x-12">
                 {visibleRows.map((b, i) => {
                   const bucket = initialOf(b.display_name);
                   const showHeading =
                     i === 0 || bucket !== initialOf(visibleRows[i - 1].display_name);
                   return (
-                    <li key={b.slug}>
+                    <li key={b.slug} className="break-inside-avoid">
                       {showHeading && (
                         <h3
                           className="mt-8 inline-flex rounded-element bg-surface-container-high px-4 py-2 font-display text-headline leading-none first:mt-0"
