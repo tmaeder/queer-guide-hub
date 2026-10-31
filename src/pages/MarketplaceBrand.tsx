@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
+import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
+import { useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { BrandMark } from '@/components/marketplace/BrandMark';
+import { ImageCredit } from '@/components/ui/ImageCredit';
 import { COMMUNITY_OWNED_OPTIONS } from '@/components/marketplace/marketplaceFilterOptions';
 import { MarketplaceLineArt } from '@/components/marketplace/MarketplaceLineArt';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -49,6 +53,8 @@ function hostnameOf(url: string | null): string | null {
  */
 export default function MarketplaceBrand() {
   const { t } = useTranslation();
+  const { acknowledged } = useAdultAcknowledgement();
+  const [adultRequested, setAdultRequested] = useState(false);
   const { slug } = useParams<{ slug: string }>();
   const { data: brand, isLoading } = useMarketplaceBrand(slug);
   const { canManageContent } = useAdminRoles();
@@ -135,6 +141,34 @@ export default function MarketplaceBrand() {
                 </h1>
               </div>
 
+              {brand.logo_credit && (
+                <div className="mt-4 max-w-reading">
+                  {brand.logo_credit.source_url ? (
+                    <a
+                      href={brand.logo_credit.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-2"
+                    >
+                      <ImageCredit
+                        attribution={brand.logo_credit.attribution}
+                        license={brand.logo_credit.license}
+                        source={
+                          hostnameOf(brand.logo_credit.source_url) === 'commons.wikimedia.org'
+                            ? 'wikimedia'
+                            : hostnameOf(brand.logo_credit.source_url)
+                        }
+                      />
+                    </a>
+                  ) : (
+                    <ImageCredit
+                      attribution={brand.logo_credit.attribution}
+                      license={brand.logo_credit.license}
+                    />
+                  )}
+                </div>
+              )}
+
               {brand.story && <p className="mt-6 max-w-reading text-body-lg">{brand.story}</p>}
 
               {ownership.length > 0 && (
@@ -153,7 +187,11 @@ export default function MarketplaceBrand() {
                   className="h-1.5 w-10 shrink-0 border border-border-hairline bg-track-yellow"
                 />
                 <span className="tabular-nums">
-                  {count.toLocaleString()} listing{count !== 1 ? 's' : ''}
+                  {t('marketplace.totalMakerListings', {
+                    count,
+                    formattedCount: count.toLocaleString(),
+                    defaultValue: '{{formattedCount}} total listings',
+                  })}
                 </span>
               </p>
             </div>
@@ -206,16 +244,26 @@ export default function MarketplaceBrand() {
       </div>
 
       <PageContainer>
+        {!acknowledged && (
+          <Button variant="outline" className="mb-6" onClick={() => setAdultRequested(true)}>
+            {t('marketplace.showAdultMakerListings', 'Show adult listings (18+)')}
+          </Button>
+        )}
         <MarketplaceFilteredView
-          filters={{ brandKey: brand.brand_key }}
+          filters={{ brandKey: brand.brand_key, includeAdult: acknowledged }}
           surface="brand_page"
-          emptyTitle={t('marketplace.noBrandListings', 'Nothing from this maker is live.')}
+          emptyTitle={t(
+            'marketplace.noBrandListings',
+            'No listings are visible with your current settings.',
+          )}
           emptyAction={{
             label: t('marketplace.allMakers', 'All makers'),
             to: '/marketplace/brands',
           }}
         />
       </PageContainer>
+
+      <AdultContentGate active={adultRequested} fallbackPath="/marketplace/brands" />
 
       {/* End of line: the one ink block on the page. */}
       <div className="border-t border-border-hairline">

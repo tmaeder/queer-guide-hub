@@ -15,6 +15,8 @@
 // requires a deterministic strong signal. Enforced by the scoring math below
 // (semantic-standalone is capped strictly below the autoMerge threshold).
 
+import { conflictingBookEditions, type BookIdentity } from './marketplace-book-identity.ts'
+
 export type EntityType =
   | 'venue' | 'hotel' | 'event' | 'city' | 'country'
   | 'news' | 'marketplace' | 'personality' | 'organization'
@@ -30,6 +32,7 @@ export interface RawCandidate {
   distance_m?: number | null
   time_diff_hours?: number | null
   country?: string | null            // candidate's country (for the country guard)
+  bookIdentity?: BookIdentity | null
 }
 
 export type SignalFamily = 'exact' | 'strong' | 'fuzzy' | 'semantic'
@@ -43,6 +46,7 @@ export interface Signal {
 /** Context the guards reason over (item-side facts + per-type tolerances). */
 export interface GuardContext {
   itemCountry?: string | null
+  itemBookIdentity?: BookIdentity | null
 }
 
 export interface ConflictGuard {
@@ -113,6 +117,18 @@ export function countryGuard(): ConflictGuard {
       const b = norm(best.country)
       return !!a && !!b && a !== b
     },
+  }
+}
+
+/** Fuzzy title similarity must not collapse distinct book volumes or editions.
+ * Exact source references remain updates of that source product. */
+export function bookEditionGuard(): ConflictGuard {
+  return {
+    reason: 'book_edition_conflict',
+    veto: (best, ctx) => best.match_type !== 'source_entity_id'
+      && best.match_type !== 'external_url'
+      && !!ctx.itemBookIdentity && !!best.bookIdentity
+      && conflictingBookEditions(ctx.itemBookIdentity, best.bookIdentity),
   }
 }
 
@@ -292,10 +308,10 @@ export const DEDUP_REGISTRY: Record<EntityType, TypeConfig> = {
   marketplace: {
     entityType: 'marketplace',
     candidateRpc: 'find_marketplace_duplicate_candidates',
-    idField: 'marketplace_id',
+    idField: 'listing_id',
     semantic: { enabled: true, minCosine: 0.90, confirmWeight: 0.05, standaloneReviewCosine: 0.95 },
     thresholds: { autoMerge: 0.92, review: 0.80 },
-    guards: [],
+    guards: [bookEditionGuard()],
   },
   personality: {
     entityType: 'personality',

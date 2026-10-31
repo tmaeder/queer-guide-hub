@@ -15,6 +15,7 @@ import { GuideQuestPanel } from '@/components/admin/guides/GuideQuestPanel';
 
 const ENTITY_TYPE_OPTIONS = [
   { value: 'venue', label: 'Venues' },
+  { value: 'organization', label: 'Organisations' },
   { value: 'event', label: 'Events' },
   { value: 'marketplace', label: 'Marketplace listings' },
   { value: 'city', label: 'Cities' },
@@ -49,8 +50,22 @@ export const guideFields: FieldConfig[] = [
       { value: 'quest', label: 'Quest (community challenge)' },
     ],
   },
-  { name: 'dek', label: 'Dek', type: 'textarea', group: 'basic', colSpan: 2, helpText: 'One-line editorial pull under the title.' },
-  { name: 'category', label: 'Category', type: 'text', group: 'basic', filterable: true, helpText: 'Free slug: bar, pride, underwear… For quests this was the theme.' },
+  {
+    name: 'dek',
+    label: 'Dek',
+    type: 'textarea',
+    group: 'basic',
+    colSpan: 2,
+    helpText: 'One-line editorial pull under the title.',
+  },
+  {
+    name: 'category',
+    label: 'Category',
+    type: 'text',
+    group: 'basic',
+    filterable: true,
+    helpText: 'Free slug: bar, pride, underwear… For quests this was the theme.',
+  },
   {
     name: 'primary_entity_type',
     label: 'Primary entity type',
@@ -58,14 +73,51 @@ export const guideFields: FieldConfig[] = [
     group: 'basic',
     filterable: true,
     options: ENTITY_TYPE_OPTIONS,
-    helpText: 'What the picks are about. Drives the review cadence (events: 45d) and hub filters. Leave empty for mixed guides.',
+    helpText:
+      'What the picks are about. Drives the review cadence (events: 45d) and hub filters. Leave empty for mixed guides.',
   },
   // Details
-  { name: 'intro_md', label: 'Intro', type: 'textarea', group: 'details', colSpan: 2, helpText: 'Markdown paragraphs. For quests this is the brief.' },
-  { name: 'starts_at', label: 'Window start', type: 'date', group: 'details', helpText: 'Quest window / list display window. Quest lifecycle (scheduled → live → completed) is derived from this window.' },
+  {
+    name: 'intro_md',
+    label: 'Intro',
+    type: 'textarea',
+    group: 'details',
+    colSpan: 2,
+    helpText: 'Markdown paragraphs. For quests this is the brief.',
+  },
+  {
+    name: 'starts_at',
+    label: 'Window start',
+    type: 'date',
+    group: 'details',
+    helpText:
+      'Quest window / list display window. Quest lifecycle (scheduled → live → completed) is derived from this window.',
+  },
   { name: 'ends_at', label: 'Window end', type: 'date', group: 'details' },
   { name: 'audience_tags', label: 'Audience tags', type: 'unified_tag', group: 'details' },
-  { name: 'city_id', label: 'City ID', type: 'text', group: 'details', helpText: 'Optional city UUID for city-scoped guides (drives safety gating + city rails).' },
+  {
+    name: 'city_id',
+    label: 'City ID',
+    type: 'text',
+    group: 'details',
+    helpText: 'Optional city UUID for city-scoped guides (drives safety gating + city rails).',
+  },
+  {
+    name: 'selection_method',
+    label: 'Selection method',
+    type: 'textarea',
+    group: 'details',
+    colSpan: 2,
+    helpText:
+      'Who this is for, how picks were researched, and the limits of the comparison. Do not imply hands-on testing without evidence.',
+  },
+  {
+    name: 'last_verified_at',
+    label: 'Sources last checked',
+    type: 'date',
+    group: 'details',
+    helpText: 'Set after checking the primary sources and every pick. Required for publication.',
+  },
   // Media
   { name: 'hero_image_path', label: 'Hero image', type: 'image', group: 'media' },
   // Settings
@@ -84,10 +136,31 @@ export const guideFields: FieldConfig[] = [
     ],
   },
   { name: 'is_featured', label: 'Featured', type: 'boolean', group: 'settings', filterable: true },
-  { name: 'reading_time_min', label: 'Reading time (min)', type: 'number', group: 'settings', min: 1, max: 120 },
+  {
+    name: 'reading_time_min',
+    label: 'Reading time (min)',
+    type: 'number',
+    group: 'settings',
+    min: 1,
+    max: 120,
+  },
   // External / computed
-  { name: 'pick_count', label: 'Picks', type: 'number', group: 'external', readOnly: true, listColumn: true },
-  { name: 'safety_gated', label: 'Safety gated', type: 'boolean', group: 'external', readOnly: true, helpText: 'Derived from the city’s country legal status — recomputed automatically.' },
+  {
+    name: 'pick_count',
+    label: 'Picks',
+    type: 'number',
+    group: 'external',
+    readOnly: true,
+    listColumn: true,
+  },
+  {
+    name: 'safety_gated',
+    label: 'Safety gated',
+    type: 'boolean',
+    group: 'external',
+    readOnly: true,
+    helpText: 'Derived from the city’s country legal status — recomputed automatically.',
+  },
   { name: 'review_due_at', label: 'Review due', type: 'date', group: 'external', readOnly: true },
   { name: 'published_at', label: 'Published at', type: 'date', group: 'external', readOnly: true },
 ];
@@ -120,12 +193,14 @@ export const guideContentType: ContentTypeConfig = {
     {
       id: 'picks',
       label: 'Picks',
-      render: (contentId) => createElement(GuidePicksPanel, { guideId: contentId }),
+      render: (contentId, onChanged) =>
+        createElement(GuidePicksPanel, { guideId: contentId, onChanged }),
     },
     {
       id: 'sections',
       label: 'Sections',
-      render: (contentId) => createElement(GuideSectionsPanel, { guideId: contentId }),
+      render: (contentId, onChanged) =>
+        createElement(GuideSectionsPanel, { guideId: contentId, onChanged }),
     },
     {
       id: 'quest',

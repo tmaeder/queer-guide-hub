@@ -66,3 +66,21 @@ Deno.test('a wrong-but-wordy vendor is deliberately NOT caught', () => {
   // real names. Recorded as a known gap rather than papered over.
   assertEquals(brandFromVendor('Shipping Protection', 'Garçon Model'), 'Shipping Protection')
 })
+
+Deno.test('researched vendor aliases are exact and confined to one merchant', () => {
+  const aliases = { 'Mein Shop': 'UNTITLEDrubber' }
+  assertEquals(brandFromVendor(' Mein Shop ', 'store', aliases), 'UNTITLEDrubber')
+  assertEquals(brandFromVendor('Mein Shop', 'store'), 'Mein Shop')
+  assertEquals(brandFromVendor('Other Maker', 'store', aliases), 'Other Maker')
+  assertEquals(brandFromVendor('Mein Shop', 'store', { 'Mein Shop': '' }), 'Mein Shop')
+  assertEquals(brandFromVendor('Mein Shop', 'store', { 'Mein Shop': 42 }), 'Mein Shop')
+  assertEquals(brandFromVendor('toString', 'store', aliases), 'toString')
+})
+
+Deno.test('researched product-type vendors do not become makers or fall back to the seller', () => {
+  assertEquals(brandFromVendor(' Book ', 'Wet For Her', null, ['Book']), null)
+  assertEquals(brandFromVendor('Book', 'another shop'), 'Book')
+  assertEquals(brandFromVendor('Bookshop Editions', 'Wet For Her', null, ['Book']), 'Bookshop Editions')
+  assertEquals(brandFromVendor('Real Author', 'Wet For Her', null, ['Book']), 'Real Author')
+  assertEquals(brandFromVendor(null, 'Wet For Her', null, ['Book']), 'Wet For Her')
+})

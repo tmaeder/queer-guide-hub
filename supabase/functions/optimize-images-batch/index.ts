@@ -148,6 +148,9 @@ Deno.serve(async (req) => {
         if (mode !== 'mirror' && isOnCdn(url)) {
           await supabase.from('image_assets').update({
             optimization_status: 'cdn_optimized',
+            // CDN assets are served at their original URL. Persist that URL as
+            // well as the status so the overview gate can actually use them.
+            optimized_url: url,
             optimized_at: new Date().toISOString(),
             bytes: buffer.byteLength,
             width: dimensions?.width ?? null,

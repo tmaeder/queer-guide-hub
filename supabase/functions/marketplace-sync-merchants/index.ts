@@ -124,8 +124,10 @@ Deno.serve(withErrorReporting('marketplace-sync-merchants', async (req) => {
         } finally { clearTimeout(timer) }
 
         if (payload.skipped === true) {
-          results.push({ slug: m.slug, provider: m.provider, status: 'skipped', reason: payload.reason })
-          continue
+          // A configured source that could not run is an import failure, not
+          // a healthy zero-item sync. Persist the reason and surface it in
+          // items_failed so workflow monitoring can detect configuration drift.
+          throw new Error(`${fn} skipped: ${String(payload.reason ?? 'unknown_reason')}`)
         }
         if (payload.success === false || Number(payload.items_failed ?? 0) > 0) {
           throw new Error(`${fn} failed: ${JSON.stringify(payload).slice(0, 200)}`)

@@ -154,13 +154,15 @@ export function EditorSidebar({
           itemId={itemId}
           onWorkflowChange={onWorkflowChange}
           initialState={
-            contentType === 'organizations'
-              ? qualitySource?.status === 'active'
-                ? 'published'
-                : qualitySource?.status === 'archived'
-                  ? 'archived'
-                  : 'draft'
-              : undefined
+            contentType === 'guides'
+              ? (qualitySource?.status as import('@/types/cms').WorkflowState)
+              : contentType === 'organizations'
+                ? qualitySource?.status === 'active'
+                  ? 'published'
+                  : qualitySource?.status === 'archived'
+                    ? 'archived'
+                    : 'draft'
+                : undefined
           }
         />
       </Panel>

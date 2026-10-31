@@ -6,11 +6,14 @@ import { render } from '@testing-library/react';
 
 vi.mock('@/hooks/useCMSWorkflow', () => ({
   useCMSWorkflow: () => ({
-    availableTransitions: [], transition: vi.fn(), isTransitioning: false, error: null,
+    availableTransitions: [],
+    transition: vi.fn(),
+    isTransitioning: false,
+    error: null,
   }),
 }));
 vi.mock('@/hooks/useCMSContentMetadata', () => ({
-  fetchCMSContentMetadata: vi.fn().mockResolvedValue(null),
+  loadCMSContentMetadata: vi.fn().mockResolvedValue(null),
   upsertCMSContentMetadata: vi.fn().mockResolvedValue({}),
   insertContentActions: vi.fn().mockResolvedValue({}),
 }));

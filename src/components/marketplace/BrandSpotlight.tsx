@@ -42,7 +42,7 @@ export function BrandSpotlight() {
   const { data: detail } = useMarketplaceBrand(brand?.slug);
   const { data: listings = [] } = useBrandTopListings(detail?.brand_key, 3);
   const listingIds = useMemo(() => listings.map((l) => l.id), [listings]);
-  const { assets } = useEntityImageAssets('marketplace_listing', listingIds);
+  const { assets } = useEntityImageAssets('marketplace_listing', listingIds, listings);
   const { register } = useCuratedIds();
 
   useEffect(() => {

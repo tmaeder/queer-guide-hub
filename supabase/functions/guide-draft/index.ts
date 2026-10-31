@@ -19,7 +19,7 @@ const SYSTEM_PROMPT = `You are an editorial assistant for a Wirecutter-style LGB
 
 Output ONLY minified JSON matching this exact schema:
 {
-  "intro_md": "string (2 short paragraphs, 80-280 chars total)",
+  "intro_md": "string (2 short paragraphs, 120-220 words, explain the reader decision and limits)",
   "picks": [
     {
       "entity_id": "uuid string from input",
@@ -30,39 +30,39 @@ Output ONLY minified JSON matching this exact schema:
   ]
 }
 
-Never fabricate facts about an entity. If you don't know something, write something safely general about the tier, category, or city scene instead.`
+Never fabricate facts, first-hand testing, ownership, safety, prices, or performance. Use only the supplied verified evidence. If evidence is missing, omit that pick and leave the field empty. Never replace missing evidence with generic city, category or tier prose. Explain specific suitability and limitations, and preserve source attribution.`
 
 // Per-entity-type hydration (search_documents vocab).
 const ENTITY_SOURCES: Record<string, { table: string; select: string; toCtx: (r: Record<string, unknown>) => Record<string, unknown> }> = {
   venue: {
     table: 'venues',
     select: 'id, name, category, city, address, description',
-    toCtx: (r) => ({ name: r.name, category: r.category, city: r.city, address: r.address, description: String(r.description ?? '').slice(0, 600) }),
+    toCtx: (r) => ({ name: r.name, category: r.category, city: r.city, address: r.address, description: String(r.description ?? '').slice(0, 2400) }),
   },
   event: {
     table: 'events',
     select: 'id, title, event_type, venue_name, city, start_date, end_date, description',
-    toCtx: (r) => ({ name: r.title, event_type: r.event_type, venue: r.venue_name, city: r.city, start_date: r.start_date, end_date: r.end_date, description: String(r.description ?? '').slice(0, 600) }),
+    toCtx: (r) => ({ name: r.title, event_type: r.event_type, venue: r.venue_name, city: r.city, start_date: r.start_date, end_date: r.end_date, description: String(r.description ?? '').slice(0, 2400) }),
   },
   marketplace: {
     table: 'marketplace_listings',
     select: 'id, title, business_name, category, price, currency, description',
-    toCtx: (r) => ({ name: r.title, business: r.business_name, category: r.category, price: r.price, currency: r.currency, description: String(r.description ?? '').slice(0, 600) }),
+    toCtx: (r) => ({ name: r.title, business: r.business_name, category: r.category, price: r.price, currency: r.currency, description: String(r.description ?? '').slice(0, 2400) }),
   },
   city: {
     table: 'cities',
     select: 'id, name, editorial_hook, description',
-    toCtx: (r) => ({ name: r.name, hook: r.editorial_hook, description: String(r.description ?? '').slice(0, 600) }),
+    toCtx: (r) => ({ name: r.name, hook: r.editorial_hook, description: String(r.description ?? '').slice(0, 2400) }),
   },
   country: {
     table: 'countries',
     select: 'id, name, editorial_hook, description',
-    toCtx: (r) => ({ name: r.name, hook: r.editorial_hook, description: String(r.description ?? '').slice(0, 600) }),
+    toCtx: (r) => ({ name: r.name, hook: r.editorial_hook, description: String(r.description ?? '').slice(0, 2400) }),
   },
   queer_village: {
     table: 'queer_villages',
     select: 'id, name, description',
-    toCtx: (r) => ({ name: r.name, description: String(r.description ?? '').slice(0, 600) }),
+    toCtx: (r) => ({ name: r.name, description: String(r.description ?? '').slice(0, 2400) }),
   },
 }
 
@@ -115,21 +115,24 @@ Deno.serve(async (req: Request) => {
     const [{ data: guide, error: gerr }, { data: picks, error: perr }] = await Promise.all([
       supabase
         .from('guides')
-        .select('id, format, title, dek, intro_md, category, audience_tags, city_id, criteria')
+        .select('id, format, title, dek, intro_md, status, selection_method, category, audience_tags, city_id, criteria')
         .eq('id', guideId)
         .maybeSingle(),
       supabase
         .from('guide_picks')
-        .select('id, entity_type, entity_id, tier, rationale_md, pros, cons')
+        .select('id, entity_type, entity_id, tier, rationale_md, pros, cons, source_urls, verified_at')
         .eq('guide_id', guideId)
         .eq('is_orphaned', false),
     ])
     if (gerr) return json({ error: gerr.message }, 500, req)
     if (perr) return json({ error: perr.message }, 500, req)
     if (!guide) return json({ error: 'guide not found' }, 404, req)
+    if (!['draft', 'review'].includes(guide.status)) return json({ error: 'Move the guide to review before drafting' }, 409, req)
     if (guide.format !== 'quest' && (!picks || picks.length === 0)) {
       return json({ error: 'add picks before generating a draft' }, 422, req)
     }
+
+    if (guide.format !== 'quest' && (picks ?? []).some((p: { source_urls?: string[]; verified_at?: string }) => !p.source_urls?.length || !p.verified_at)) return json({ error: 'Add checked primary sources to every pick before drafting' }, 422, req)
 
     let cityName: string | null = null
     if (guide.city_id) {
@@ -150,6 +153,8 @@ Deno.serve(async (req: Request) => {
       rationale_md: string | null
       pros: string[]
       cons: string[]
+      source_urls: string[]
+      verified_at: string | null
     }>
     const ctxById = new Map<string, Record<string, unknown>>()
     const types = [...new Set(pickRows.map((p) => p.entity_type))]
@@ -158,7 +163,7 @@ Deno.serve(async (req: Request) => {
       if (!src) continue
       const ids = pickRows.filter((p) => p.entity_type === t).map((p) => p.entity_id)
       const { data: rows } = await supabase.from(src.table).select(src.select).in('id', ids)
-      for (const r of (rows ?? []) as Array<Record<string, unknown>>) {
+      for (const r of (rows ?? []) as unknown as Array<Record<string, unknown>>) {
         ctxById.set(`${t}:${r.id}`, src.toCtx(r))
       }
     }
@@ -167,7 +172,7 @@ Deno.serve(async (req: Request) => {
       .map((p) => {
         const ctx = ctxById.get(`${p.entity_type}:${p.entity_id}`)
         if (!ctx) return null
-        return { entity_id: p.entity_id, entity_type: p.entity_type, tier: p.tier, ...ctx }
+        return { entity_id: p.entity_id, entity_type: p.entity_type, tier: p.tier, source_urls: p.source_urls, verified_at: p.verified_at, ...ctx }
       })
       .filter(Boolean)
 
@@ -177,6 +182,7 @@ Deno.serve(async (req: Request) => {
         title: guide.title,
         dek: guide.dek,
         category: guide.category,
+        selection_method: guide.selection_method,
         audience_tags: guide.audience_tags,
         city: cityName,
         criteria: guide.format === 'quest' ? guide.criteria : undefined,
@@ -203,7 +209,8 @@ Deno.serve(async (req: Request) => {
     // Apply: intro only when empty; pick fields only where missing.
     let drafted = 0
     if (parsed.intro_md && !guide.intro_md) {
-      await supabase.from('guides').update({ intro_md: parsed.intro_md }).eq('id', guideId)
+      const { error } = await supabase.from('guides').update({ intro_md: parsed.intro_md }).eq('id', guideId).in('status', ['draft','review'])
+      if (error) throw error
     }
     const byEntity = new Map(pickRows.map((p) => [`${p.entity_id}`, p]))
     for (const dp of parsed.picks ?? []) {

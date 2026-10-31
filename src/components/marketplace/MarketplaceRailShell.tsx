@@ -40,7 +40,7 @@ export function MarketplaceRailShell({
 }: MarketplaceRailShellProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const listingIds = useMemo(() => listings.map((l) => l.id), [listings]);
-  const { assets } = useEntityImageAssets('marketplace_listing', listingIds);
+  const { assets } = useEntityImageAssets('marketplace_listing', listingIds, listings);
 
   if (!loading && listings.length === 0) return null;
 
