@@ -1,7 +1,8 @@
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import type { Track } from '@/components/transit/routeBulletMap';
 import { cn } from '@/lib/utils';
 import { CITY_NETWORKS, NETWORK_VIEWBOX } from './cityNetworkGeometry';
+import { FALLBACK_LINE_PX, lineWidthForBox } from './lineWidthForBox';
 
 /** Track color as an SVG stroke. Written out in full so Tailwind's scanner
  *  sees each class — a template literal here would generate nothing. */
@@ -16,13 +17,29 @@ const TRACK_STROKE: Record<Track, string> = {
  *  are the map's own legend and a black outline reads as a border around a
  *  shape rather than as a route. Design decision, 2026-08-14. */
 const LINE_WIDTH = 5;
-/** Screen pixels, not user units: the thumb variant crops to each city's own
- *  bounding box, so the same user-unit width would render at a different
- *  thickness per city. `vector-effect: non-scaling-stroke` pins it instead. */
-const THUMB_LINE_PX = 3.5;
-/** The backdrop is drawn large behind a masthead, so its lines are heavier
- *  than the thumb's — same non-scaling reason, wider stroke. */
-const BACKDROP_LINE_PX = 7;
+/**
+ * Measures the rendered box and returns the line weight for it.
+ *
+ * The element arrives through a callback ref held in state rather than a
+ * `useRef`, so nothing reads a ref during render and the effect re-runs when
+ * the element mounts.
+ */
+function useBoxLineWidth(enabled: boolean) {
+  const [el, setEl] = useState<SVGSVGElement | null>(null);
+  const [px, setPx] = useState(FALLBACK_LINE_PX);
+  useEffect(() => {
+    if (!enabled || !el || typeof ResizeObserver === 'undefined') return;
+    const measure = () => {
+      const { width, height } = el.getBoundingClientRect();
+      setPx(lineWidthForBox(width, height));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [enabled, el]);
+  return { setEl, px };
+}
 
 /** Template lines for cities with no rail network of their own — the geometry
  *  this component replaced. Four shapes cycled by card index so neighbouring
@@ -77,6 +94,9 @@ interface Props {
    * is sized for small slots (48–112px tall); a large picture slot such as a
    * city card's 16:10 header renders the same network several times bigger
    * and needs a heavier line to read as a route rather than a hairline.
+   *
+   * Optional and normally omitted: without it the weight follows the
+   * rendered box size (see `lineWidthForBox`). Pass it only to pin a weight.
    */
   lineWidth?: number;
 }
@@ -115,6 +135,9 @@ function Station({ x, y, r = 6 }: { x: number; y: number; r?: number }) {
  */
 function CityNetworkImpl({ slug, variant = 'card', index, lineWidth, className }: Props) {
   const network = slug ? CITY_NETWORKS[slug] : undefined;
+  const sized = variant !== 'card' && !!network && lineWidth === undefined;
+  // Called before any early return: hooks must run in the same order every render.
+  const { setEl: setSvgEl, px: boxPx } = useBoxLineWidth(sized);
 
   if (!network) {
     if (index === undefined || variant === 'backdrop') return null;
@@ -137,7 +160,7 @@ function CityNetworkImpl({ slug, variant = 'card', index, lineWidth, className }
 
   const backdrop = variant === 'backdrop';
   const thumb = variant === 'thumb' || backdrop;
-  const strokePx = thumb ? (lineWidth ?? (backdrop ? BACKDROP_LINE_PX : THUMB_LINE_PX)) : undefined;
+  const strokePx = thumb ? (lineWidth ?? boxPx) : undefined;
   const { crop } = network;
   // The ring is drawn in user units, and the thumb's units differ per city, so
   // scale it off the crop instead of hard-coding a radius that would be a dot
@@ -146,6 +169,7 @@ function CityNetworkImpl({ slug, variant = 'card', index, lineWidth, className }
 
   return (
     <svg
+      ref={setSvgEl}
       viewBox={
         thumb
           ? `${crop.x} ${crop.y} ${crop.w} ${crop.h}`
