@@ -66,6 +66,7 @@ jobs:
             run_jev_budget.py \
             run_jev_marketplace_taxonomy.py \
             run_jev_marketplace_relevance.py \
+            run_city_description_cache.py \
             run_review_cleanup_composition.py \
             run_snapshot_backend_grants.py; do
             python3 "supabase/tests/isolated/$fixture"

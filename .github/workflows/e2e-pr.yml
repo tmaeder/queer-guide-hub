@@ -414,6 +414,9 @@ jobs:
           npx playwright test e2e/entry-styles.spec.ts \
             --grep "public route keeps its footer below the viewport|public footer mounts its contents" \
             --reporter=line
+          # These exercise actual offscreen query owners and their linked content.
+          # Keep separate from the entry-style grep so both viewport cases execute.
+          npx playwright test e2e/offscreen-discovery.spec.ts --reporter=line
       - name: Upload report
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

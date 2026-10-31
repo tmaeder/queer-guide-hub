@@ -43,7 +43,17 @@ export function DeferredSection({
       { rootMargin },
     );
     io.observe(node);
-    return () => io.disconnect();
+    // Keyboard readers must be able to reach links in an offscreen section.
+    // Mount before Tab's default focus movement instead of letting focus skip
+    // an otherwise empty placeholder and jump past the section.
+    const revealForKeyboard = (event: KeyboardEvent) => {
+      if (event.key === 'Tab') setVisible(true);
+    };
+    window.addEventListener('keydown', revealForKeyboard);
+    return () => {
+      io.disconnect();
+      window.removeEventListener('keydown', revealForKeyboard);
+    };
   }, [visible, rootMargin]);
 
   if (visible) return <>{children}</>;
