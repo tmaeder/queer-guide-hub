@@ -2902,6 +2902,10 @@
       "inView_other": "[AR] {{count}} places in view",
       "hide": "[AR] Hide nearby places",
       "listLabel": "[AR] Places in view",
+      "atSpot_one": "{{count}} مكان في هذه النقطة",
+      "atSpot_other": "{{count}} أماكن في هذه النقطة",
+      "showAll": "كل الأماكن المعروضة",
+      "stackListLabel": "الأماكن في هذه النقطة",
       "showOnMap": "[AR] Show {{name}} on the map"
     },
     "firstRun": {

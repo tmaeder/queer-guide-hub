@@ -28,6 +28,19 @@ export const SPIDER_MAX = 24;
 /** Degrees under which two coordinates count as the same spot (~1 m). */
 const COLOCATED_EPS = 1e-5;
 
+/** A co-located stack with MORE places than this is listed in the results
+ *  rail instead of fanned out. Eight fit a ring without crowding; past that
+ *  the ring is a hunt, and past SPIDER_MAX it silently drops places (a real
+ *  Berlin stack holds 88). */
+export const STACK_RING_MAX = 8;
+
+/** Whether a stack that cannot be separated by zooming should be listed
+ *  rather than fanned out. `canList` is false on surfaces with no results
+ *  rail, which keep the ring (capped) as before. */
+export function shouldListStack(count: number, canList: boolean): boolean {
+  return canList && count > STACK_RING_MAX;
+}
+
 /** A fit that zooms in by less than this would not visibly separate anything. */
 const MIN_USEFUL_ZOOM_GAIN = 0.5;
 

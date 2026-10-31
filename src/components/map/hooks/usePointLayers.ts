@@ -1,7 +1,11 @@
 import { useEffect, useRef, type MutableRefObject } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { type GeoJSONSource, type MapLayerMouseEvent } from 'maplibre-gl';
-import { summaryFromFeature, type MapPointSummary } from '@/components/map/mapPoint';
+import {
+  summaryFromFeature,
+  type MapPointStack,
+  type MapPointSummary,
+} from '@/components/map/mapPoint';
 import type { PointFeature, PointFeatureProps } from '@/hooks/useViewportPoints';
 import { MAP_LINES, MAP_LINE_IDS, type MapLine } from '@/components/map/mapDomain';
 import {
@@ -16,7 +20,12 @@ import {
   PIN_LAYER_IDS,
 } from '@/config/mapLayers';
 import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS, POINTS_SOURCE_MAX_ZOOM } from '@/utils/mapViewport';
-import { decideClusterAction, SPIDER_MAX, type LngLat } from '@/components/map/clusterClick';
+import {
+  decideClusterAction,
+  shouldListStack,
+  SPIDER_MAX,
+  type LngLat,
+} from '@/components/map/clusterClick';
 import { EMPTY_FAV, mapDebug } from '@/components/map/mapDebug';
 import { durationMs, imperativeDurationMs } from '@/lib/animation';
 import { donutIconExpression } from '@/components/map/clusterDonut';
@@ -58,6 +67,9 @@ interface UsePointLayersParams {
   spiderfy: (map: maplibregl.Map, center: [number, number], leaves: PointFeature[]) => void;
   clearSpider: () => void;
   onSelectPointRef: MutableRefObject<((id: string) => void) | undefined>;
+  /** Set when the surface has a results list. A co-located stack too large
+   *  for a readable ring is handed here instead of fanned out. */
+  onStackSelectRef?: MutableRefObject<((stack: MapPointStack) => void) | undefined>;
   pointLayersAddedRef: MutableRefObject<boolean>;
   pulseRafRef: MutableRefObject<number | null>;
 }
@@ -86,6 +98,7 @@ export function usePointLayers({
   spiderfy,
   clearSpider,
   onSelectPointRef,
+  onStackSelectRef,
   pointLayersAddedRef,
   pulseRafRef,
 }: UsePointLayersParams) {
@@ -390,7 +403,11 @@ export function usePointLayers({
           fitZoom = cam?.zoom ?? null;
         }
         const action = decideClusterAction(coords, map.getZoom(), fitZoom, CLUSTER_FIT_MAX_ZOOM);
-        if (action.kind === 'spiderfy') {
+        const onStack = onStackSelectRef?.current;
+        if (action.kind === 'spiderfy' && shouldListStack(leaves.length, !!onStack)) {
+          // Every place, not the first SPIDER_MAX: the ring dropped the rest.
+          onStack!({ center, points: leaves.map((l) => summaryFromFeature(l)) });
+        } else if (action.kind === 'spiderfy') {
           spiderfy(map, center, leaves.slice(0, SPIDER_MAX));
         } else {
           map.fitBounds(action.bounds, {
@@ -514,6 +531,7 @@ export function usePointLayers({
     clearSpider,
     mapRef,
     onSelectPointRef,
+    onStackSelectRef,
     pointLayersAddedRef,
     pulseRafRef,
   ]);

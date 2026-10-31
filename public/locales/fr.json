@@ -2898,6 +2898,10 @@
       "inView_other": "[FR] {{count}} places in view",
       "hide": "[FR] Hide nearby places",
       "listLabel": "[FR] Places in view",
+      "atSpot_one": "{{count}} lieu à cet endroit",
+      "atSpot_other": "{{count}} lieux à cet endroit",
+      "showAll": "Tous les lieux visibles",
+      "stackListLabel": "Lieux à cet endroit",
       "showOnMap": "[FR] Show {{name}} on the map"
     },
     "firstRun": {

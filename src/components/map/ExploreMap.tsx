@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink } from '@/components/icons';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { featuresFromStations, type MapPointSummary } from './mapPoint';
+import { featuresFromStations, type MapPointStack, type MapPointSummary } from './mapPoint';
 import { linesForLayers, type MapLine, type MapRoute, type MapStation } from './mapDomain';
 import {
   useExploreMapData,
@@ -108,6 +108,11 @@ export interface ExploreMapProps {
   /** Fired when a pin is clicked on the map, so the parent can sync selection
    *  (e.g. scroll the spotlight rail to the matching card). */
   onSelectPoint?: (id: string) => void;
+  /** Fired when a cluster that no zoom can separate holds too many places for
+   *  a readable fan-out ring, with every place at that spot; fired with null
+   *  once that spot leaves the viewport. Without it, such stacks keep the
+   *  (capped) ring. Only pass it from a surface that lists the places. */
+  onStackSelect?: (stack: MapPointStack | null) => void;
   /** Fired when the point-fetch loading state flips (drives rail skeletons). */
   onFetchingChange?: (fetching: boolean) => void;
   /** Feature ids (`venue-<id>` / `event-<id>`) the viewer has saved. */
@@ -160,6 +165,7 @@ export const ExploreMap = ({
   highlightedId,
   showResultCount = true,
   onSelectPoint,
+  onStackSelect,
   onFetchingChange,
   favoriteIds,
   savedOnly = false,
@@ -191,6 +197,21 @@ export const ExploreMap = ({
   const onPointsInViewRef = useRef(onPointsInView);
   const onSelectPointRef = useRef(onSelectPoint);
   const onMapHandleRef = useRef(onMapHandle);
+  const onStackSelectPropRef = useRef(onStackSelect);
+  // Where the listed stack sits, so it can be released once panned away.
+  const stackCenterRef = useRef<[number, number] | null>(null);
+  // Stable wrapper read by the cluster click handler; undefined (→ ring) when
+  // the host has no list to show the stack in.
+  const onStackSelectRef = useRef<((stack: MapPointStack) => void) | undefined>(undefined);
+  useEffect(() => {
+    onStackSelectPropRef.current = onStackSelect;
+    onStackSelectRef.current = onStackSelect
+      ? (stack) => {
+          stackCenterRef.current = stack.center;
+          onStackSelectPropRef.current?.(stack);
+        }
+      : undefined;
+  });
   useEffect(() => {
     onPointsInViewRef.current = onPointsInView;
     onSelectPointRef.current = onSelectPoint;
@@ -455,9 +476,27 @@ export const ExploreMap = ({
     spiderfy,
     clearSpider,
     onSelectPointRef,
+    onStackSelectRef,
     pointLayersAddedRef,
     pulseRafRef,
   });
+
+  // Release a listed stack once its spot is out of view. Not on every move:
+  // picking a place from the list flies to it, and that must keep the list.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    const onMoveEnd = () => {
+      const c = stackCenterRef.current;
+      if (!c || map.getBounds().contains(c)) return;
+      stackCenterRef.current = null;
+      onStackSelectPropRef.current?.(null);
+    };
+    map.on('moveend', onMoveEnd);
+    return () => {
+      map.off('moveend', onMoveEnd);
+    };
+  }, [mapReady]);
 
   // ── Heatmap layer: monochrome black-alpha ramp ────────────────────────
   // MUST stay declared after the pins effect (load-bearing `beforeId` z-order).
