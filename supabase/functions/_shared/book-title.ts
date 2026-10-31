@@ -16,6 +16,9 @@ const BINDING_SUFFIX = /\s*\((?:paperback|hardback|hardcover|e-?book|audiobook|a
 /** Editorial-role connectives left dangling on the title after a " by " split. */
 const ROLE_SUFFIX = /[,;]?\s*(?:edited|translated|illustrated|foreword|introduction)\s*$/i
 
+/** German book-trade editor labels are roles, not part of a person's name. */
+const EDITOR_LABEL = /\s*\((?:Hrsg\.?|Hg\.?)\)\s*$/i
+
 /**
  * `title_by`     "Work Title by Author Name (Paperback)"  (Gay's The Word / Wix)
  * `title_colon`  "Surname, Firstname: Work Title"         (queerbooks.ch / nopCommerce)
@@ -40,7 +43,16 @@ export function splitAuthor(rawTitle: string, mode: string | undefined): SplitTi
   if (mode === 'title_colon') {
     // "Surname, Firstname: Work Title" -> author "Firstname Surname"
     const m = t.match(/^([^:,]+),\s*([^:]+):\s*(.+)$/)
-    if (m) return { title: m[3].trim(), author: `${m[2].trim()} ${m[1].trim()}` }
+    if (m) {
+      const given = m[2].replace(EDITOR_LABEL, '').trim()
+      const surname = m[1].replace(EDITOR_LABEL, '').trim()
+      if (given && surname) return { title: m[3].trim(), author: `${given} ${surname}` }
+    }
+
+    // The same shop also prints initial-led bylines in natural order. Limit this
+    // fallback to initials so ordinary "Title: Subtitle" text stays untouched.
+    const initial = t.match(/^((?:\p{Lu}\.\s*)+\p{Lu}[\p{L}'’\-]+):\s*(.+)$/u)
+    if (initial) return { title: initial[2].trim(), author: initial[1].trim() }
   }
 
   return { title: t, author: null }
