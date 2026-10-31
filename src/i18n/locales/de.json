@@ -1756,8 +1756,6 @@
     "adBadge": "[DE] Ad",
     "outOfStock": "[DE] Out of stock",
     "queerOwnedBadge": "[DE] Queer-owned",
-    "totalMakerListings_one": "{{formattedCount}} Angebot insgesamt",
-    "totalMakerListings_other": "{{formattedCount}} Angebote insgesamt",
     "showAdultMakerListings": "Angebote für Erwachsene anzeigen (18+)",
     "noBrandListings": "Mit deinen aktuellen Einstellungen sind keine Angebote sichtbar."
   },

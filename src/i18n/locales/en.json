@@ -856,8 +856,6 @@
     "adBadge": "Ad",
     "outOfStock": "Out of stock",
     "queerOwnedBadge": "Queer-owned",
-    "totalMakerListings_one": "{{formattedCount}} total listing",
-    "totalMakerListings_other": "{{formattedCount}} total listings",
     "showAdultMakerListings": "Show adult listings (18+)",
     "noBrandListings": "No listings are visible with your current settings."
   },

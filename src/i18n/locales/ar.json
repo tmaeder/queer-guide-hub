@@ -1579,8 +1579,6 @@
     "adBadge": "[AR] Ad",
     "outOfStock": "[AR] Out of stock",
     "queerOwnedBadge": "[AR] Queer-owned",
-    "totalMakerListings_one": "إدراج واحد إجمالًا ({{formattedCount}})",
-    "totalMakerListings_other": "{{formattedCount}} إدراجات إجمالًا",
     "showAdultMakerListings": "عرض الإدراجات المخصصة للبالغين (18+)",
     "noBrandListings": "لا تظهر أي إدراجات وفق إعداداتك الحالية."
   },
