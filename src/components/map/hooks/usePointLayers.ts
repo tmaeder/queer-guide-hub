@@ -53,7 +53,9 @@ interface UsePointLayersParams {
    *  changing the fetch set (M, C and T all need `venues`). */
   activeLines: MapLine[];
   prefersReducedMotion: boolean;
-  pinOpacityExpr: maplibregl.ExpressionSpecification | number;
+  /** Pin fill: the line colour, or an opaque night fade of it. Never an
+   *  opacity — pins overlap, and a translucent one shows the stack beneath. */
+  pinColorExpr: maplibregl.ExpressionSpecification;
   favoriteIds?: Set<string>;
   /** The viewer's own place marks. Never another person's. */
   visitedIds?: Set<string>;
@@ -89,7 +91,7 @@ export function usePointLayers({
   pointsGeoJSON,
   activeLines,
   prefersReducedMotion,
-  pinOpacityExpr,
+  pinColorExpr,
   favoriteIds,
   visitedIds,
   savedOnly,
@@ -292,7 +294,7 @@ export function usePointLayers({
           16,
           ['case', ['==', ['get', 'featured'], true], 17, 15],
         ],
-        'circle-color': ['get', 'color'],
+        'circle-color': pinColorExpr,
         // The ink border, not a halo. Blue/green/yellow measure 2.25 / 1.64
         // / 1.34 against paper and only clear WCAG 1.4.11's 3:1 against ink,
         // so a track-coloured mark is border-GATED — this stroke is what
@@ -307,8 +309,9 @@ export function usePointLayers({
         // thickness.
         'circle-stroke-width': 1.5,
         'circle-stroke-color': ink(),
-        // Steady-state opacity = time-of-day expression (dims closed at night).
-        'circle-opacity': pinOpacityExpr,
+        // Fully opaque at rest: night dimming lives in `pinColorExpr` as an
+        // opaque fade, so overlapping pins never show through each other.
+        'circle-opacity': 1,
         // Entrance fade — opacity transitions in on first paint / data swap.
         'circle-opacity-transition': {
           duration: imperativeDurationMs(durationMs.normal),
@@ -504,13 +507,13 @@ export function usePointLayers({
     });
 
     // Entrance fade — pins ease in on first paint (skipped for reduced motion),
-    // settling on the time-of-day opacity expression.
+    // settling fully opaque.
     if (!prefersReducedMotion && map.getLayer(UNCLUSTERED_LAYER)) {
       map.setPaintProperty(UNCLUSTERED_LAYER, 'circle-opacity', 0);
       requestAnimationFrame(() => {
         const m = mapRef.current;
         if (m?.getLayer(UNCLUSTERED_LAYER))
-          m.setPaintProperty(UNCLUSTERED_LAYER, 'circle-opacity', pinOpacityExpr);
+          m.setPaintProperty(UNCLUSTERED_LAYER, 'circle-opacity', 1);
       });
     }
 
@@ -523,7 +526,7 @@ export function usePointLayers({
     showPopup,
     startPulse,
     prefersReducedMotion,
-    pinOpacityExpr,
+    pinColorExpr,
     favoriteIds,
     visitedIds,
     savedOnly,

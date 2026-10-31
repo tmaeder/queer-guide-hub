@@ -8,7 +8,16 @@ import { ExternalLink } from '@/components/icons';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { featuresFromStations, type MapPointStack, type MapPointSummary } from './mapPoint';
-import { linesForLayers, type MapLine, type MapRoute, type MapStation } from './mapDomain';
+import {
+  areaColor,
+  lineColor,
+  linesForLayers,
+  MAP_LINE_IDS,
+  type MapLine,
+  type MapRoute,
+  type MapStation,
+} from './mapDomain';
+import { fadeOnPaper } from '@/lib/mapTokens';
 import {
   useExploreMapData,
   type LayerType,
@@ -258,12 +267,29 @@ export const ExploreMap = ({
     const h = new Date().getHours();
     return h < 7 || h >= 19;
   }, []);
-  const pinOpacityExpr = useMemo(
-    () =>
-      (isNight ? ['case', ['==', ['get', 'live'], true], 1, 0.45] : 1) as
-        maplibregl.ExpressionSpecification | number,
-    [isNight],
-  );
+  // Dim by FADING THE COLOUR toward paper, not by opacity. Pins overlap, and
+  // a translucent pin shows every pin and ink ring stacked beneath it, so a
+  // dimmed cluster turned into a see-through smear. `fadeOnPaper(c, 0.55)`
+  // matches the old 0.45 opacity on bare paper and stays opaque.
+  // Pin fills are only ever a line colour or the area ink, so the night
+  // palette is a closed `match`; an unknown colour falls through undimmed.
+  const pinColorExpr = useMemo(() => {
+    const base = ['get', 'color'] as maplibregl.ExpressionSpecification;
+    if (!isNight) return base;
+    const fills = Array.from(new Set([...MAP_LINE_IDS.map((l) => lineColor(l)), areaColor()]));
+    const dimmed = [
+      'match',
+      ['get', 'color'],
+      ...fills.flatMap((c) => [c, fadeOnPaper(c, 0.55)]),
+      ['get', 'color'],
+    ] as unknown as maplibregl.ExpressionSpecification;
+    return [
+      'case',
+      ['==', ['get', 'live'], true],
+      base,
+      dimmed,
+    ] as maplibregl.ExpressionSpecification;
+  }, [isNight]);
 
   // ── Data: area layers (global fetch — small, static datasets) ──────────
   const areaEnabledLayers = enabledLayers.filter((l) => AREA_LAYERS.includes(l));
@@ -468,7 +494,7 @@ export const ExploreMap = ({
     pointsGeoJSON,
     activeLines,
     prefersReducedMotion,
-    pinOpacityExpr,
+    pinColorExpr,
     favoriteIds,
     savedOnly,
     showPopup,
