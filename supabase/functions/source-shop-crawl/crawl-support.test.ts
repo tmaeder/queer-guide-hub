@@ -1,4 +1,4 @@
-import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readSelectedProduct, readSitemapLocations, readStaticSchema } from './crawl-support.ts'
+import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readSelectedProduct, readSitemapLocations, readStaticSchema } from './crawl-support.ts'
 function equal(actual: unknown, expected: unknown) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(`${JSON.stringify(actual)} != ${JSON.stringify(expected)}`)
 }
@@ -17,6 +17,12 @@ Deno.test('sitemap decoding handles raw gzip and bounds expanded data', async ()
   let error = ''
   try { await decodeSitemapBytes(compressed, 1000) } catch (e) { error = (e as Error).message }
   equal(error, 'Expanded sitemap exceeds size limit')
+})
+Deno.test('opt-in mixed sitemap filtering keeps product URLs with image metadata only', () => {
+  const xml = `<urlset xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"><url><loc>https://shop.example/category</loc></url><url><loc><![CDATA[https://shop.example/product]]></loc><image:image><image:loc>https://shop.example/photo.jpg</image:loc></image:image></url><url><loc>https://shop.example/policy</loc><image:image><image:title>Empty image</image:title></image:image></url></urlset>`
+  equal(readSitemapLocations(xml, true), ['https://shop.example/product'])
+  equal(readSitemapLocations(xml), ['https://shop.example/category', 'https://shop.example/product', 'https://shop.example/policy'])
+  equal(readSitemapLocations('<urlset><url><loc>https://shop.example/product</loc><img:image xmlns:img="http://www.google.com/schemas/sitemap-image/1.1"><img:loc>https://shop.example/photo.jpg</img:loc></img:image></url></urlset>', true), ['https://shop.example/product'])
 })
 Deno.test('sitemap trust allows only the merchant and exact owned Salzgeber snapshots', () => {
   equal(allowedSitemap('https://www.shop.example/sitemap.xml', 'shop.example'), true)
@@ -57,4 +63,16 @@ Deno.test('removed-item canonicals are exact URLs and do not invent product data
   equal(readCanonicalPageUrl('<h1>No canonical</h1>', 'https://shop.example/product'), null)
   equal(readCanonicalPageUrl('<link rel="canonical" href="javascript:alert(1)">', 'https://shop.example/product'), null)
   equal(readCanonicalPageUrl('<link rel="canonical" href="/product"><h1 id="productTitle">Film</h1>', 'https://shop.example/product'), 'https://shop.example/product')
+})
+
+Deno.test('HTML catalog discovery uses explicit product links and resolves relative URLs', () => {
+  const html = `<a href="/about">Navigation</a><div class="product"><a href="../rubber-shirt#details">Shirt</a><a href="../rubber-shirt">Same shirt</a><a href="https://www.shop.example/rubber-shorts?a=1&amp;b=2">Shorts</a></div>`
+  equal(readCatalogProductLinks(html, 'https://www.shop.example/catalog/new', '.product a'), ['https://www.shop.example/rubber-shirt', 'https://www.shop.example/rubber-shorts?a=1&b=2'])
+})
+Deno.test('HTML catalog discovery rejects off-host and unsafe links and ignores base tags', () => {
+  const html = `<base href="https://other.example/"><a href="/safe">Safe</a><a href="https://other.example/evil">Off-host</a><a href="https://shop.example.evil.test/evil">Suffix</a><a href="https://user:password@shop.example/evil">Credentials</a><a href="https://shop.example:8443/evil">Port</a><a href="http://shop.example/evil">HTTP</a><a href="javascript:alert(1)">Script</a><a href="#section">Fragment</a><a href="https://[">Broken</a>`
+  equal(readCatalogProductLinks(html, 'https://shop.example/catalog', 'a'), ['https://shop.example/safe'])
+  let error = ''
+  try { readCatalogProductLinks(html, 'https://shop.example/catalog', '') } catch (e) { error = (e as Error).message }
+  equal(error, 'HTML catalog requires a product link selector')
 })

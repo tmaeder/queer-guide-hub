@@ -1,9 +1,38 @@
 import * as cheerio from 'npm:cheerio@1.0.0-rc.12'
 
 /** Read URL locations from sitemap entries, including XML CDATA text. */
-export function readSitemapLocations(xml: string): string[] {
+export function readSitemapLocations(xml: string, requireProductImages = false): string[] {
   const $ = cheerio.load(xml, { xmlMode: true })
+  if (requireProductImages) {
+    return $('url').filter((_i, node) => $(node).children().toArray().some(child =>
+      child.type === 'tag' && /(^|:)image$/.test(child.name) &&
+      $(child).children().toArray().some(field => field.type === 'tag' && /(^|:)loc$/.test(field.name) && Boolean($(field).text().trim()))
+    )).children('loc').map((_i, node) => $(node).text().trim()).get().filter(Boolean)
+  }
   return $('loc').map((_i, node) => $(node).text().trim()).get().filter(Boolean)
+}
+
+/** Explicitly selected product links from a merchant's public HTML catalog.
+ * Ignore document <base> tags and keep discovery on the same HTTPS host. */
+export function readCatalogProductLinks(html: string, pageUrl: string, selector: string): string[] {
+  if (!selector.trim()) throw new Error('HTML catalog requires a product link selector')
+  const page = new URL(pageUrl)
+  const host = page.hostname.replace(/^www\./, '')
+  const $ = cheerio.load(html)
+  const links = new Set<string>()
+  $(selector).each((_i, node) => {
+    const raw = $(node).attr('href')?.trim()
+    if (!raw || raw.startsWith('#')) return
+    try {
+      const url = new URL(raw, page)
+      if (url.hostname.replace(/^www\./, '') !== host) return
+      // Reuse the registry's HTTPS, credentials and port checks for every link.
+      if (!allowedSitemap(url.href, page.hostname)) return
+      url.hash = ''
+      links.add(url.href)
+    } catch { /* Malformed links are not products. */ }
+  })
+  return [...links].sort()
 }
 
 /** Some storefronts serve .xml.gz files without a Content-Encoding header. */
