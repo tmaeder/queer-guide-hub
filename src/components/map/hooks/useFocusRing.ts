@@ -54,7 +54,11 @@ export function useFocusRing({
         type: 'circle',
         source: FOCUS_SOURCE,
         paint: {
-          'circle-radius': 18,
+          // Must clear the largest thing it can sit on: a featured pin's
+          // interchange ring (usePointLayers: 18→20 + 1.5px stroke over
+          // z11→z16). A flat 18 sat INSIDE the featured pin once pins grew,
+          // so selecting a featured place showed no ring at all.
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 21, 16, 23],
           'circle-color': ink(0.06),
           'circle-stroke-width': 3.5,
           'circle-stroke-color': ink(),

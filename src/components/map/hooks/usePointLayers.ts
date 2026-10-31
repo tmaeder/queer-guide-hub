@@ -1,7 +1,11 @@
 import { useEffect, useRef, type MutableRefObject } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { type GeoJSONSource, type MapLayerMouseEvent } from 'maplibre-gl';
-import { summaryFromFeature, type MapPointSummary } from '@/components/map/mapPoint';
+import {
+  summaryFromFeature,
+  type MapPointStack,
+  type MapPointSummary,
+} from '@/components/map/mapPoint';
 import type { PointFeature, PointFeatureProps } from '@/hooks/useViewportPoints';
 import { MAP_LINES, MAP_LINE_IDS, type MapLine } from '@/components/map/mapDomain';
 import {
@@ -15,13 +19,27 @@ import {
   PULSE_LAYER,
   PIN_LAYER_IDS,
 } from '@/config/mapLayers';
-import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS } from '@/utils/mapViewport';
+import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS, POINTS_SOURCE_MAX_ZOOM } from '@/utils/mapViewport';
+import {
+  decideClusterAction,
+  shouldListStack,
+  SPIDER_MAX,
+  type LngLat,
+} from '@/components/map/clusterClick';
 import { EMPTY_FAV, mapDebug } from '@/components/map/mapDebug';
 import { durationMs, imperativeDurationMs } from '@/lib/animation';
 import { donutIconExpression } from '@/components/map/clusterDonut';
 import { ink, paper } from '@/lib/mapTokens';
 import { MAP_FONT_BOLD } from '@/config/mapStyle';
 import { clusterHoverHtml, pointHoverHtml } from '@/components/map/mapHoverHtml';
+
+/** Room left around a cluster's contents when zooming to them, so edge pins
+ *  are not under the map chrome. */
+const CLUSTER_FIT_PADDING = 80;
+/** Deepest zoom a cluster click will fly to. Street level; past this the
+ *  basemap (z15 tiles) is overzoomed and nothing more becomes legible, so a
+ *  cluster still unsplit here is fanned out instead. */
+const CLUSTER_FIT_MAX_ZOOM = 18;
 
 interface UsePointLayersParams {
   mapRef: MutableRefObject<maplibregl.Map | null>;
@@ -35,7 +53,9 @@ interface UsePointLayersParams {
    *  changing the fetch set (M, C and T all need `venues`). */
   activeLines: MapLine[];
   prefersReducedMotion: boolean;
-  pinOpacityExpr: maplibregl.ExpressionSpecification | number;
+  /** Pin fill: the line colour, or an opaque night fade of it. Never an
+   *  opacity — pins overlap, and a translucent one shows the stack beneath. */
+  pinColorExpr: maplibregl.ExpressionSpecification;
   favoriteIds?: Set<string>;
   /** The viewer's own place marks. Never another person's. */
   visitedIds?: Set<string>;
@@ -49,6 +69,9 @@ interface UsePointLayersParams {
   spiderfy: (map: maplibregl.Map, center: [number, number], leaves: PointFeature[]) => void;
   clearSpider: () => void;
   onSelectPointRef: MutableRefObject<((id: string) => void) | undefined>;
+  /** Set when the surface has a results list. A co-located stack too large
+   *  for a readable ring is handed here instead of fanned out. */
+  onStackSelectRef?: MutableRefObject<((stack: MapPointStack) => void) | undefined>;
   pointLayersAddedRef: MutableRefObject<boolean>;
   pulseRafRef: MutableRefObject<number | null>;
 }
@@ -68,7 +91,7 @@ export function usePointLayers({
   pointsGeoJSON,
   activeLines,
   prefersReducedMotion,
-  pinOpacityExpr,
+  pinColorExpr,
   favoriteIds,
   visitedIds,
   savedOnly,
@@ -77,6 +100,7 @@ export function usePointLayers({
   spiderfy,
   clearSpider,
   onSelectPointRef,
+  onStackSelectRef,
   pointLayersAddedRef,
   pulseRafRef,
 }: UsePointLayersParams) {
@@ -152,6 +176,9 @@ export function usePointLayers({
       type: 'geojson',
       data: filteredGeoJSON,
       cluster: true,
+      // The default geojson maxzoom is 18, which would cap clustering at 17
+      // and let co-located places stack again above it.
+      maxzoom: POINTS_SOURCE_MAX_ZOOM,
       clusterMaxZoom: CLUSTER_MAX_ZOOM,
       clusterRadius: CLUSTER_RADIUS,
       // Aggregated by LINE, generated from the registry. These names were
@@ -230,9 +257,17 @@ export function usePointLayers({
       source: POINTS_SOURCE,
       filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'featured'], true]],
       paint: {
-        'circle-radius': 14,
+        // Tracks the featured pin's own radius (15→17 over z11→z16, see
+        // the unclustered layer) plus 3px. It was a flat 14, so by z16 the pin
+        // plus its 1.5px stroke covered it and covered the paper gap
+        // entirely: the two rings fused into one thick band and the
+        // interchange read as a heavier stop. MapLibre draws a circle's
+        // stroke OUTSIDE its radius, so the gap here is a constant 1.5px.
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 18, 16, 20],
         'circle-color': paper(),
-        'circle-stroke-width': 2,
+        // 1.5px to match the pin outline; two concentric rings of equal
+        // weight are what reads as an interchange.
+        'circle-stroke-width': 1.5,
         'circle-stroke-color': ink(),
         'circle-stroke-opacity': 1,
       },
@@ -246,27 +281,37 @@ export function usePointLayers({
       paint: {
         // Larger dots host the category glyph; featured sit a touch larger.
         // Radius grows slightly with zoom so pins don't feel undersized right
-        // after a cluster expands into the (larger) donuts.
+        // after a cluster expands into the (larger) donuts. Was 9→11 /
+        // featured 11→13; now 13→15 / 15→17, so the category glyph inside reads at a
+        // glance; the glyph size, featured ring and saved-badge offset below
+        // are all scaled from these numbers and must move with them.
         'circle-radius': [
           'interpolate',
           ['linear'],
           ['zoom'],
           11,
-          ['case', ['==', ['get', 'featured'], true], 11, 9],
+          ['case', ['==', ['get', 'featured'], true], 15, 13],
           16,
-          ['case', ['==', ['get', 'featured'], true], 13, 11],
+          ['case', ['==', ['get', 'featured'], true], 17, 15],
         ],
-        'circle-color': ['get', 'color'],
+        'circle-color': pinColorExpr,
         // The ink border, not a halo. Blue/green/yellow measure 2.25 / 1.64
         // / 1.34 against paper and only clear WCAG 1.4.11's 3:1 against ink,
         // so a track-coloured mark is border-GATED — this stroke is what
         // makes the fill legal, not just tidy. (Was a 2.5px white halo,
         // which separated the pin from the basemap but left the fill itself
         // unmeasurable against anything.)
-        'circle-stroke-width': 2,
+        //
+        // 1.5px, not 2: at 2px the ring read heavier than the glyph it
+        // frames once the glyph grew to ~2/3 of the dot. 1.5px is still a
+        // continuous ink edge at every DPR, which is all the contrast gate
+        // needs — WCAG 1.4.11 measures colour against the boundary, not its
+        // thickness.
+        'circle-stroke-width': 1.5,
         'circle-stroke-color': ink(),
-        // Steady-state opacity = time-of-day expression (dims closed at night).
-        'circle-opacity': pinOpacityExpr,
+        // Fully opaque at rest: night dimming lives in `pinColorExpr` as an
+        // opaque fade, so overlapping pins never show through each other.
+        'circle-opacity': 1,
         // Entrance fade — opacity transitions in on first paint / data swap.
         'circle-opacity-transition': {
           duration: imperativeDurationMs(durationMs.normal),
@@ -284,7 +329,23 @@ export function usePointLayers({
       filter: ['!', ['has', 'point_count']],
       layout: {
         'icon-image': ['coalesce', ['image', ['get', 'iconKey']], ['image', 'type:venues']],
-        'icon-size': ['case', ['==', ['get', 'featured'], true], 0.5, 0.42],
+        // Images are rasterized at 20 logical px (mapGlyphs.ts). This used to
+        // be a flat 0.42/0.50, i.e. an ~8-10px glyph inside an 18-26px dot:
+        // under half the pin, too small to tell a bar from a sauna. Now ~2/3
+        // of the dot's diameter at every zoom, growing with the dot (radius
+        // 13→15, featured 15→17, interpolated over the same zooms). Sizes
+        // above 1 upscale the raster, which is why mapGlyphs.ts renders at 3×.
+        // Scaled here rather than in the rasterizer because the saved badge
+        // below reuses the same 20px images at its own 0.26.
+        'icon-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          11,
+          ['case', ['==', ['get', 'featured'], true], 1.0, 0.86],
+          16,
+          ['case', ['==', ['get', 'featured'], true], 1.1, 0.98],
+        ],
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
       },
@@ -310,31 +371,53 @@ export function usePointLayers({
       layout: {
         'icon-image': 'state:saved',
         'icon-size': 0.26,
-        // Up and to the right of the dot, in icon-size units.
-        'icon-offset': [26, -26],
+        // Up and to the right of the dot, in icon-size units. Scaled with the
+        // pin radius (was 26 at radius 11) so the badge stays on the rim.
+        'icon-offset': [36, -36],
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
       },
     });
 
-    // Cluster click → zoom to expand, OR spiderfy when zooming won't separate
-    // the points (they share ~identical coordinates).
+    // Cluster click → zoom to exactly what's inside, or fan out places that
+    // share one spot. The decision is pure and tested in clusterClick.ts.
     map.on('click', CLUSTERS_LAYER, async (e) => {
       const feat = e.features?.[0];
       if (!feat) return;
       clearSpider();
       const clusterId = feat.properties.cluster_id;
+      const count = Number(feat.properties.point_count) || 0;
       const center = (feat.geometry as GeoJSON.Point).coordinates as [number, number];
       const src = map.getSource(POINTS_SOURCE) as GeoJSONSource;
       try {
-        const zoom = await src.getClusterExpansionZoom(clusterId);
-        // If the breakpoint zoom is barely beyond where we are, zooming won't
-        // visually separate the pins — fan them out instead.
-        if (zoom - map.getZoom() <= 0.5 || zoom >= 18) {
-          const leaves = (await src.getClusterLeaves(clusterId, 24, 0)) as PointFeature[];
-          spiderfy(map, center, leaves);
+        const leaves = (await src.getClusterLeaves(clusterId, count, 0)) as PointFeature[];
+        const coords = leaves.map((l) => (l.geometry as GeoJSON.Point).coordinates as LngLat);
+        let fitZoom: number | null = null;
+        if (coords.length > 1) {
+          const lngs = coords.map((c) => c[0]);
+          const lats = coords.map((c) => c[1]);
+          const cam = map.cameraForBounds(
+            [
+              [Math.min(...lngs), Math.min(...lats)],
+              [Math.max(...lngs), Math.max(...lats)],
+            ],
+            { padding: CLUSTER_FIT_PADDING },
+          );
+          fitZoom = cam?.zoom ?? null;
+        }
+        const action = decideClusterAction(coords, map.getZoom(), fitZoom, CLUSTER_FIT_MAX_ZOOM);
+        const onStack = onStackSelectRef?.current;
+        if (action.kind === 'spiderfy' && shouldListStack(leaves.length, !!onStack)) {
+          // Every place, not the first SPIDER_MAX: the ring dropped the rest.
+          onStack!({ center, points: leaves.map((l) => summaryFromFeature(l)) });
+        } else if (action.kind === 'spiderfy') {
+          spiderfy(map, center, leaves.slice(0, SPIDER_MAX));
         } else {
-          map.flyTo({ center, zoom: zoom + 0.5, speed: 1.5 });
+          map.fitBounds(action.bounds, {
+            padding: CLUSTER_FIT_PADDING,
+            maxZoom: CLUSTER_FIT_MAX_ZOOM,
+            duration: imperativeDurationMs(durationMs.slow),
+          });
         }
       } catch {
         map.flyTo({ center, zoom: map.getZoom() + 2, speed: 1.5 });
@@ -424,13 +507,13 @@ export function usePointLayers({
     });
 
     // Entrance fade — pins ease in on first paint (skipped for reduced motion),
-    // settling on the time-of-day opacity expression.
+    // settling fully opaque.
     if (!prefersReducedMotion && map.getLayer(UNCLUSTERED_LAYER)) {
       map.setPaintProperty(UNCLUSTERED_LAYER, 'circle-opacity', 0);
       requestAnimationFrame(() => {
         const m = mapRef.current;
         if (m?.getLayer(UNCLUSTERED_LAYER))
-          m.setPaintProperty(UNCLUSTERED_LAYER, 'circle-opacity', pinOpacityExpr);
+          m.setPaintProperty(UNCLUSTERED_LAYER, 'circle-opacity', 1);
       });
     }
 
@@ -443,7 +526,7 @@ export function usePointLayers({
     showPopup,
     startPulse,
     prefersReducedMotion,
-    pinOpacityExpr,
+    pinColorExpr,
     favoriteIds,
     visitedIds,
     savedOnly,
@@ -451,6 +534,7 @@ export function usePointLayers({
     clearSpider,
     mapRef,
     onSelectPointRef,
+    onStackSelectRef,
     pointLayersAddedRef,
     pulseRafRef,
   ]);

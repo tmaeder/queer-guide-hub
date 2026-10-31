@@ -96,3 +96,23 @@ export function inkOnPaper(t: number): string {
   if (!fg || !bg) return ink(t);
   return rgbToHsl([0, 1, 2].map((i) => bg[i] + (fg[i] - bg[i]) * t) as Rgb);
 }
+
+/**
+ * OPAQUE fade of a colour toward paper: `amount` of the way from `color` to
+ * the paper, mixed in RGB. On bare paper it looks exactly like `color` at
+ * opacity `1 - amount`, but it does not see-through.
+ *
+ * Use it for anything that can sit on top of itself. A translucent pin shows
+ * every pin and ink ring stacked under it, so a dimmed cluster of overlapping
+ * pins reads as a muddy smear; an opaque fade keeps the top pin whole.
+ *
+ * Returns `color` unchanged if either value fails to parse, so a parse miss
+ * leaves a pin undimmed rather than unpainted.
+ */
+export function fadeOnPaper(color: string, amount: number): string {
+  const css = getComputedStyle(document.documentElement);
+  const c = hslChannelsToRgb(color);
+  const bg = hslChannelsToRgb(css.getPropertyValue('--background').trim());
+  if (!c || !bg) return color;
+  return rgbToHsl([0, 1, 2].map((i) => c[i] + (bg[i] - c[i]) * amount) as Rgb);
+}

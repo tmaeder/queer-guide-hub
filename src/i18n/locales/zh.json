@@ -2892,6 +2892,10 @@
       "inView_other": "[ZH] {{count}} places in view",
       "hide": "[ZH] Hide nearby places",
       "listLabel": "[ZH] Places in view",
+      "atSpot_one": "此处 {{count}} 个地点",
+      "atSpot_other": "此处 {{count}} 个地点",
+      "showAll": "视野内的所有地点",
+      "stackListLabel": "此处的地点",
       "showOnMap": "[ZH] Show {{name}} on the map"
     },
     "firstRun": {
