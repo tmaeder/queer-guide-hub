@@ -1,17 +1,46 @@
--- RECOVERED FROM PROD BY scripts/recover-migration-drift.mjs.
+-- marketplace_brands.logo_url must point at our mirrored copy on img.queer.guide.
 --
--- Applied to prod as version 20261031102733 with no repo file — the signature of
--- MCP `apply_migration`, which stamps a version and commits nothing. An applied
--- version with no file fails migration-versions on every PR in the repo and
--- makes `db push` refuse to run.
+-- MEASURED 2026-10-31: 307 rows carried a non-null logo_url on a third-party
+-- host (cdn.shopify.com 112, thumb.wikimedia.org 74, static.wixstatic.com 14,
+-- images.squarespace-cdn.com 10, ...). At least one is broken in every browser:
+-- Bad Dragon's static.bad-dragon.com apple-touch-icon fails with
+-- net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin (Cross-Origin-Resource-Policy), so
+-- its plate only ever showed the monogram. A hotlinked mark also never gets a
+-- MEASURED logo_on_ink, because polarity is computed from the mirrored bytes;
+-- all 307 held the column default or a hand-set guess.
 --
--- Reconstructed from `schema_migrations.statements`, which holds the PARSED
--- statements: trailing semicolons are stripped (re-added here) and any original
--- comment header is NOT recorded, so the reasoning that accompanied this
--- migration is lost. Verified by md5 against a server-computed digest.
+-- THE WRITER WAS NOT CODE. `enrich-logos` mirrors before it stores, and nothing
+-- else in the repo (or on any branch) writes marketplace_brands.logo_url. The
+-- revision trail names the writer: all 307 current values were written between
+-- 2026-10-30 08:45 and 2026-10-31 04:38 by `actor_kind='system'` with no
+-- declared actor — direct SQL from curation sessions — carrying logo_source tags
+-- (`retailer:verified:<shop>`, `verified_author_portrait:<source>`,
+-- `verified_first_party_native_logo`, ...) that occur nowhere in the codebase.
+-- A writer that is not code cannot be fixed in code, so the rule moves into the
+-- table: whatever writes the column, the column cannot hold a hotlink.
 --
--- Never re-run: `db push` matches on version and skips an applied one. The file
--- exists so history is complete and a rebuild from zero works.
+-- 1. A BEFORE trigger diverts any non-img.queer.guide value into
+--    `logo_origin_url` and stores NULL in `logo_url`. The write is not refused —
+--    a curator's verified choice is kept as the source to mirror — but it is
+--    never published as a hotlink. `logo_fetched_at` is left as the writer set
+--    it, so `marketplace_brand_logo_candidates()` (which needs it NULL) does not
+--    re-probe the row and overwrite a hand-verified mark with logo.dev's.
+-- 2. `marketplace_brand_logos_to_mirror()` is the work list for the mirror
+--    pass (here `enrich-logos {mode:'mirror_external'}`; moved to its own
+--    function `marketplace-brand-logo-mirror` by 20261031110558): pending
+--    diverted rows plus legacy hotlinks written before this trigger existed.
+-- 3. An hourly automation drains it, so a diverted logo is mirrored and
+--    measured within the hour instead of waiting for a human to remember.
+--
+-- A permanent mirror failure (4xx, not an image, too large) is stamped on
+-- `logo_mirror_error` and leaves the row out of the work list, so the job
+-- terminates instead of re-fetching the same dead URL hourly. A transient one
+-- (5xx, timeout, upload failure) stamps nothing and is retried.
+
+-- Applied live via MCP apply_migration on 2026-10-31 (which stamped this
+-- version), so `db push` skips it. The lock_timeout is what the live apply ran
+-- with: marketplace_brands is read by a frequent worklist refresh, and an
+-- unbounded wait would queue every reader behind the ALTER.
 set local lock_timeout = '15s';
 
 alter table public.marketplace_brands
@@ -84,6 +113,10 @@ $fn$;
 revoke all on function public.marketplace_brand_logos_to_mirror(integer) from public, anon, authenticated;
 grant execute on function public.marketplace_brand_logos_to_mirror(integer) to service_role;
 
+-- The schedule. Registry row first; the cadence goes in the `schedule` COLUMN
+-- (branch (d) of sync_automations_to_cron reads the column, not
+-- action->>'schedule' — the trap 99991791182256 records), and the command is
+-- copied from the live enrich-logos-organizations row.
 insert into public.admin_automations (slug, name, description, "trigger", schedule, action, enabled, conditions)
 select
   'enrich_logos_brands_mirror',
@@ -125,6 +158,8 @@ begin
     raise exception 'trg_marketplace_brands_logo_mirrored is not attached';
   end if;
 
+  -- Behavioural probe, rolled back: a source-text check cannot tell a live
+  -- guard from a dead one.
   select b.id into v_id from public.marketplace_brands b order by b.id limit 1;
   if v_id is not null then
     begin
@@ -146,6 +181,8 @@ begin
     raise exception 'marketplace_brand_logos_to_mirror is reachable by anon/authenticated';
   end if;
 
+  -- The reconciler must intend to create the job, or the registry row is
+  -- enabled and wired to nothing. Skipped if the job already exists.
   if not exists (select 1 from cron.job where jobname = 'enrich-logos-brands-mirror') then
     select public.sync_automations_to_cron(false) into v_plan;
     if not (v_plan -> 'recreated') ? 'enrich-logos-brands-mirror' then
@@ -153,4 +190,4 @@ begin
     end if;
   end if;
 end
-$verify$;;
+$verify$;

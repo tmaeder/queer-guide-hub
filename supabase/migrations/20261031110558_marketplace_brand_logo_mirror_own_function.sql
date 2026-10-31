@@ -1,17 +1,17 @@
--- RECOVERED FROM PROD BY scripts/recover-migration-drift.mjs.
+-- Repoint the brand-logo mirror automation at its own edge function.
 --
--- Applied to prod as version 20261031110558 with no repo file — the signature of
--- MCP `apply_migration`, which stamps a version and commits nothing. An applied
--- version with no file fails migration-versions on every PR in the repo and
--- makes `db push` refuse to run.
+-- 20261031102733 registered `enrich_logos_brands_mirror` against
+-- `enrich-logos {mode:'mirror_external'}`. The mirror moved into a dedicated
+-- function, `marketplace-brand-logo-mirror`, before the cron was ever created
+-- (the nightly automation_cron_sync creates it), so this only rewrites the
+-- registry command. Reasons for the split: the mirror fetches URLs a human or
+-- an earlier run already chose, so it needs neither logo.dev nor the
+-- platform/denied-mark vocabularies, and keeping it out of enrich-logos means
+-- it shares no failure mode with the three live enrich-logos crons.
 --
--- Reconstructed from `schema_migrations.statements`, which holds the PARSED
--- statements: trailing semicolons are stripped (re-added here) and any original
--- comment header is NOT recorded, so the reasoning that accompanied this
--- migration is lost. Verified by md5 against a server-computed digest.
---
--- Never re-run: `db push` matches on version and skips an applied one. The file
--- exists so history is complete and a rebuild from zero works.
+-- Applied live via MCP apply_migration on 2026-10-31 (which stamped this
+-- version), so `db push` skips it. Guarded on the old URL so a re-run is a no-op.
+
 update public.admin_automations
 set action = jsonb_build_object(
       'type', 'cron',
@@ -45,4 +45,4 @@ begin
     end if;
   end if;
 end
-$verify$;;
+$verify$;

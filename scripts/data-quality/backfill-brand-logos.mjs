@@ -16,6 +16,14 @@
 //   node scripts/data-quality/backfill-brand-logos.mjs --dry-run
 //   node scripts/data-quality/backfill-brand-logos.mjs
 //   node scripts/data-quality/backfill-brand-logos.mjs --batch 20 --max-batches 5
+//   node scripts/data-quality/backfill-brand-logos.mjs --mirror-external
+//
+// --mirror-external drains marketplace_brand_logos_to_mirror() through the
+// `marketplace-brand-logo-mirror` function instead: logos written as
+// third-party hotlinks (or diverted into logo_origin_url by
+// trg_marketplace_brands_logo_mirrored) are fetched, mirrored to R2 and
+// measured for logo_on_ink. The hourly `enrich-logos-brands-mirror` cron does
+// the same; this is for draining a backlog by hand.
 //
 // Pacing: the cost is entirely upstream HTTP — one page fetch plus up to four
 // image fetches per brand, each with a 12s ceiling. Batch 30 lands around two
@@ -32,6 +40,7 @@ import { execFileSync } from 'node:child_process'
 
 const PROJECT = 'xqeacpakadqfxjxjcewc'
 const FN_URL = `https://${PROJECT}.supabase.co/functions/v1/enrich-logos`
+const MIRROR_FN_URL = `https://${PROJECT}.supabase.co/functions/v1/marketplace-brand-logo-mirror`
 
 const args = process.argv.slice(2)
 const flag = (name, fallback) => {
@@ -68,11 +77,11 @@ async function sql(query) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-async function invoke(body, timeoutMs = 300000) {
+async function invoke(body, timeoutMs = 300000, url = FN_URL) {
   const payload = JSON.stringify(body).replace(/'/g, "''")
   const rid = (
     await sql(`select net.http_post(
-      url:='${FN_URL}',
+      url:='${url}',
       headers:=jsonb_build_object('Content-Type','application/json',
         'x-internal-secret',(select decrypted_secret from vault.decrypted_secrets where name='internal_invoke_secret')),
       body:='${payload}'::jsonb, timeout_milliseconds:=${timeoutMs}) as request_id;`)
@@ -94,7 +103,30 @@ async function remaining() {
   return Number(r[0].n)
 }
 
+async function mirrorExternal() {
+  const pending = async () =>
+    Number((await sql(`select count(*) n from public.marketplace_brand_logos_to_mirror(500);`))[0].n)
+  console.log(`${await pending()} external brand logos to mirror (dry_run=${DRY_RUN})`)
+  const total = { processed: 0, mirrored: 0, transient_failures: 0 }
+  const permanent = {}
+  for (let b = 1; b <= MAX_BATCHES; b++) {
+    const { status, data } = await invoke({ batch_size: BATCH, dry_run: DRY_RUN }, 300000, MIRROR_FN_URL)
+    if (status !== 200) throw new Error(`HTTP ${status}: ${JSON.stringify(data).slice(0, 300)}`)
+    for (const k of Object.keys(total)) total[k] += data[k] ?? 0
+    for (const [k, v] of Object.entries(data.permanent_failures ?? {})) permanent[k] = (permanent[k] ?? 0) + v
+    for (const f of data.failures ?? []) console.log(`    ${f.permanent ? 'PERMANENT' : 'transient'} ${f.reason}  ${f.name}  ${f.url}`)
+    console.log(`  batch ${b}: ${data.mirrored}/${data.processed} mirrored`)
+    // Transient failures stay in the work list, so stop once a batch makes no
+    // progress instead of re-fetching the same failing head forever.
+    if (DRY_RUN || data.processed === 0 || data.mirrored + Object.values(data.permanent_failures ?? {}).reduce((a, n) => a + n, 0) === 0) break
+    await sleep(SLEEP_MS)
+  }
+  console.log(`\ntotal: ${JSON.stringify({ ...total, permanent })}`)
+  console.log(`${await pending()} external brand logos still to mirror`)
+}
+
 async function main() {
+  if (args.includes('--mirror-external')) return mirrorExternal()
   console.log(`batch=${BATCH} dry_run=${DRY_RUN}`)
   console.log(`${await remaining()} brands remaining`)
 
