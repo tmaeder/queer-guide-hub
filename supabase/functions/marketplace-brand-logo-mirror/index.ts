@@ -2,6 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInt
 import { mirrorLogoToR2, logoMirrorConfigured } from '../_shared/logo-mirror.ts'
 import { fetchLogoForMirror } from '../_shared/logo-fetch.ts'
 import { needsInkPlate, pngInk } from '../_shared/png-luminance.ts'
+import { rasterizeSvg } from '../_shared/svg-raster.ts'
 
 /**
  * marketplace-brand-logo-mirror — copy third-party brand logos into R2.
@@ -16,9 +17,10 @@ import { needsInkPlate, pngInk } from '../_shared/png-luminance.ts'
  * trigger still hold the hotlink in logo_url. Both come from
  * `marketplace_brand_logos_to_mirror()`.
  *
- * Each source is fetched server-side, its type sniffed from the bytes (SVG is
- * refused), mirrored to R2 content-addressed, and stored together with
- * `logo_on_ink` measured from the same bytes.
+ * Each source is fetched server-side, its type sniffed from the bytes, mirrored
+ * to R2 content-addressed, and stored together with `logo_on_ink` measured from
+ * the same bytes. An SVG is rasterized to PNG first (svg-raster.ts): an SVG
+ * served from img.queer.guide is a script-capable document, a PNG is not.
  *
  * A permanent failure is stamped on `logo_mirror_error`, which removes the row
  * from the work list; a legacy hotlink is left in place, because the server
@@ -67,6 +69,7 @@ Deno.serve(async (req) => {
     const items = (data ?? []) as MirrorCandidate[]
 
     let mirrored = 0
+    let rasterized = 0
     let inkPlates = 0
     let transient = 0
     const permanent: Record<string, number> = {}
@@ -85,12 +88,30 @@ Deno.serve(async (req) => {
         continue
       }
 
+      let bytes = got.bytes
+      let contentType = got.contentType
+      if (contentType === 'image/svg+xml') {
+        const raster = await rasterizeSvg(bytes)
+        // A rendered PNG with no visible pixel means the mark did not survive.
+        const blank = raster.ok && (await pngInk(raster.png)) === null
+        if (!raster.ok || blank) {
+          const reason = raster.ok ? 'svg_blank' : raster.reason
+          permanent[reason] = (permanent[reason] ?? 0) + 1
+          failures.push({ id: item.id, name: item.display_name, url: item.source_url, reason, permanent: true })
+          if (!dryRun) await supabase.from('marketplace_brands').update({ logo_mirror_error: reason }).eq('id', item.id)
+          continue
+        }
+        bytes = raster.png
+        contentType = 'image/png'
+        rasterized++
+      }
+
       if (dryRun) {
         mirrored++
         continue
       }
 
-      const logoUrl = await mirrorLogoToR2(got.bytes, got.contentType)
+      const logoUrl = await mirrorLogoToR2(bytes, contentType)
       if (!logoUrl) {
         transient++
         failures.push({ id: item.id, name: item.display_name, url: item.source_url, reason: 'upload_failed', permanent: false })
@@ -99,7 +120,7 @@ Deno.serve(async (req) => {
 
       // Measured from the bytes just mirrored, and written in the same UPDATE as
       // the url it describes, so the two cannot drift.
-      const onInk = got.contentType === 'image/png' ? needsInkPlate(await pngInk(got.bytes)) : false
+      const onInk = contentType === 'image/png' ? needsInkPlate(await pngInk(bytes)) : false
       if (onInk) inkPlates++
 
       const { error: upErr } = await supabase
@@ -122,6 +143,7 @@ Deno.serve(async (req) => {
         dry_run: dryRun,
         processed: items.length,
         mirrored,
+        rasterized,
         ink_plates: inkPlates,
         transient_failures: transient,
         permanent_failures: permanent,

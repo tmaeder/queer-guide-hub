@@ -42,12 +42,9 @@ Deno.test('oversized bodies are refused', async () => {
   assertEquals(await fetchLogoForMirror('https://x/a', fakeFetch(big)), { ok: false, reason: 'too_large', permanent: true })
 })
 
-Deno.test('SVG is refused, not mirrored', async () => {
-  assertEquals(await fetchLogoForMirror('https://x/a.svg', fakeFetch(SVG, 200, { 'content-type': 'image/svg+xml' })), {
-    ok: false,
-    reason: 'svg_refused',
-    permanent: true,
-  })
+Deno.test('SVG is returned for the caller to rasterize, identified by its bytes', async () => {
+  const r = await fetchLogoForMirror('https://x/brand_image', fakeFetch(SVG, 200, { 'content-type': 'application/octet-stream' }))
+  assertEquals(r.ok && r.contentType, 'image/svg+xml')
 })
 
 Deno.test('GIF is accepted', () => {

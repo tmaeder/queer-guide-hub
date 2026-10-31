@@ -7,13 +7,12 @@
  * later" (stamp nothing):
  *
  *   permanent — a 4xx other than 408/429, a body that is not an acceptable
- *               image, an SVG, an oversized body, or a URL that is not http(s)
+ *               image, an oversized body, or a URL that is not http(s)
  *   transient — 408/429/5xx, timeout, network error
  *
- * SVG is refused (`svg_refused`) rather than mirrored: an SVG on
- * img.queer.guide is a script-capable document when opened directly, which is
- * why upload-image-r2 accepts raster types only. The caller keeps the existing
- * hotlink and reports it.
+ * An SVG is returned as-is with contentType image/svg+xml. It must NOT be
+ * uploaded like that — on img.queer.guide it is a script-capable document when
+ * opened directly — so the caller rasterizes it first (svg-raster.ts).
  *
  * The content type is SNIFFED from the bytes, not trusted from the header:
  * CDNs routinely answer `application/octet-stream` for a PNG, and a host that
@@ -103,6 +102,5 @@ export async function fetchLogoForMirror(url: string, fetchImpl: typeof fetch = 
 
   const contentType = sniffImageType(bytes)
   if (!contentType) return { ok: false, reason: 'not_image', permanent: true }
-  if (contentType === 'image/svg+xml') return { ok: false, reason: 'svg_refused', permanent: true }
   return { ok: true, bytes, contentType }
 }
