@@ -36,18 +36,20 @@ const PIXEL_RATIO = 2;
 const CACHE_CAP = 256;
 
 /**
- * Cluster size buckets (diameter in px). ~15% under the original
- * 32/40/52/64/80 so a busy city view is less dominated by clusters. The
- * floor is set by the count: at 28px the paper disc inside the ring is
- * ~16px across, which fits the single-digit counts the smallest bucket
- * (<10) ever shows at the 13px count size; 34px leaves ~21px for two digits.
+ * Cluster size buckets (diameter in px), roughly logarithmic in the count.
+ *
+ * The floor is set by the PIN, not the count: pins are 26-34px
+ * (usePointLayers), and a 28px cluster read as just another pin. 36px keeps
+ * the smallest cluster visibly a different kind of mark. Growth is log-like so
+ * a 500-place cluster is not a disc that buries the city around it: each step
+ * up is a 5x jump in count but only ~6-8px in diameter.
  */
 export const DONUT_SIZE_STEPS: [count: number, diameterPx: number][] = [
-  [0, 28],
-  [10, 34],
-  [50, 44],
-  [100, 54],
-  [500, 68],
+  [0, 36],
+  [10, 42],
+  [50, 50],
+  [100, 56],
+  [500, 64],
 ];
 
 /** The cluster aggregate names, read from the registry so the donut, the
