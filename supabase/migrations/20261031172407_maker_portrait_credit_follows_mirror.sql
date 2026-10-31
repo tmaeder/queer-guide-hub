@@ -16,7 +16,7 @@
 -- 2. Carol Ann Duffy's credit described the mmu.ac.uk photo she no longer
 --    shows; her portrait is now the Commons file "Carol Ann Duffy (cropped)".
 --    Rewritten for that file, guarded on the old image_url so a later manual
---    edit is not overwritten.
+--    edit is not overwritten, and on the Commons photo being the one shown.
 
 -- Applied live via MCP apply_migration (which stamped this version), so
 -- `db push` skips it.
@@ -64,7 +64,12 @@ set profile_resolution = jsonb_set(
         'license_url', 'https://creativecommons.org/licenses/by/2.0'
       ))
 where slug = 'carol-ann-duffy-dbe'
-  and profile_resolution->'portrait_credit'->>'image_url' like 'https://www.mmu.ac.uk/%';
+  and profile_resolution->'portrait_credit'->>'image_url' like 'https://www.mmu.ac.uk/%'
+  -- Only where she actually shows the Commons photo. The swap itself was a
+  -- live data edit in no migration, so a database rebuilt from an older
+  -- snapshot (CI's "Critical paths") still shows the mmu.ac.uk photo; there
+  -- the old credit is the right one and must stay.
+  and 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Carol_Ann_Duffy_%28cropped%29.jpg' in (logo_url, logo_origin_url);
 
 do $verify$
 declare
