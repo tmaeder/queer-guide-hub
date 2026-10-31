@@ -7,6 +7,7 @@ import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthea
 import { BrandPlate } from '@/components/marketplace/BrandPlate';
 import { BrandGalleryTile } from '@/components/marketplace/BrandGalleryTile';
 import { BrandIndexRow } from '@/components/marketplace/BrandIndexRow';
+import { BrandMarkTile } from '@/components/marketplace/BrandMarkTile';
 import { COMMUNITY_OWNED_OPTIONS } from '@/components/marketplace/marketplaceFilterOptions';
 import {
   useMarketplaceBrandsDirectory,
@@ -120,10 +121,16 @@ function bucketRank(name: string): number {
  * A–Z index: every maker as a ruled row under letter headings, which is the
  * shape a catalogue index has had for as long as catalogues have existed.
  *
- * In gallery view the 214 photograph-less makers are NOT dropped — they follow
- * in a compact index under their own heading. Dropping them would quietly
- * shrink the catalogue by a quarter, and "we have no photograph of this maker"
- * is not a reason to make it unreachable.
+ * In gallery view the coverless makers are NOT dropped — they follow in their
+ * own section. And that section is named for what they ARE, which is not what
+ * it first claimed. The cover is drawn only from `sfw`/`suggestive` listings,
+ * because this page is ungated; measured on prod (2026-10-31), every one of the
+ * 259 coverless makers has adult/explicit listings and 253 list nothing else.
+ * "Makers we have no photograph of" was false — we hold the photographs and
+ * keep them off this page on purpose — and it described our pipeline rather
+ * than the makers, which is why nobody could make sense of it. They render as
+ * compact mark tiles (`BrandMarkTile`) — the gallery's card language without
+ * an empty photo well.
  *
  * ── Contracts that are not styling ─────────────────────────────────────────
  *
@@ -149,7 +156,7 @@ export default function MarketplaceBrands() {
   const [view, setView] = useState<'gallery' | 'az'>('gallery');
   const [letter, setLetter] = useState<string | null>(null);
   const [shown, setShown] = useState(GALLERY_STEP);
-  const [shownIndex, setShownIndex] = useState(INDEX_STEP);
+  const [shownIndex, setShownIndex] = useState(GALLERY_STEP);
 
   const { data: all, isLoading } = useMarketplaceBrandsDirectory();
   const { data: featured } = useMarketplaceBrandCovers(FEATURED_COUNT);
@@ -231,14 +238,15 @@ export default function MarketplaceBrands() {
    * The cost is a second button. That is the honest trade — one button that
    * silently grows whichever list the reader is not looking at is worse.
    */
-  const visibleRows = view === 'az' ? floor.slice(0, shown) : withoutCover.slice(0, shownIndex);
+  const visibleRows = view === 'az' ? floor.slice(0, shown) : [];
+  const visibleAdult = view === 'az' ? [] : withoutCover.slice(0, shownIndex);
 
   /** Reset both slices on any control change — never in an effect. */
   const withReset =
     <T,>(fn: (value: T) => void) =>
     (value: T) => {
       setShown(step);
-      setShownIndex(INDEX_STEP);
+      setShownIndex(GALLERY_STEP);
       fn(value);
     };
 
@@ -250,7 +258,7 @@ export default function MarketplaceBrands() {
 
   const setViewMode = (next: 'gallery' | 'az') => {
     setShown(next === 'az' ? INDEX_STEP : GALLERY_STEP);
-    setShownIndex(INDEX_STEP);
+    setShownIndex(GALLERY_STEP);
     setView(next);
     // A letter filter that survives into the gallery is invisible: the bar
     // that set it is gone and the makers it removed never come back.
@@ -316,7 +324,7 @@ export default function MarketplaceBrands() {
               value={search}
               onChange={(e) => {
                 setShown(step);
-                setShownIndex(INDEX_STEP);
+                setShownIndex(GALLERY_STEP);
                 setSearch(e.target.value);
               }}
               placeholder={t('marketplace.searchMakers', 'Search makers')}
@@ -375,7 +383,7 @@ export default function MarketplaceBrands() {
             letter={letter}
             onChange={(next) => {
               setShown(INDEX_STEP);
-              setShownIndex(INDEX_STEP);
+              setShownIndex(GALLERY_STEP);
               setLetter(next);
             }}
           />
@@ -432,15 +440,43 @@ export default function MarketplaceBrands() {
               </div>
             )}
 
-            {/* Named honestly. These makers are not lesser — we simply hold no
-                photograph of their goods, and saying so is more useful than a
-                grid of empty tiles pretending otherwise. */}
-            {view === 'gallery' && visibleRows.length > 0 && (
-              <SectionHeader
-                id="makers-no-photo"
-                eyebrow={t('marketplace.makersNoPhotoEyebrow', 'Also on the shelf')}
-                title={t('marketplace.makersNoPhotoTitle', 'Makers we have no photograph of')}
-              />
+            {/* Named for what these makers ARE. Their goods are adult-rated, so
+                their photographs stay off this ungated page — not "we have no
+                photograph", which was false and read as a data gap. */}
+            {visibleAdult.length > 0 && (
+              <div className={visibleTiles.length > 0 ? 'mt-16' : undefined}>
+                <SectionHeader
+                  id="makers-adult"
+                  eyebrow={t('marketplace.makersAdultEyebrow', 'Adult · 18+')}
+                  title={t('marketplace.makersAdultTitle', 'Adult makers')}
+                  subtitle={t('marketplace.makersAdultSubtitle', {
+                    defaultValue:
+                      '{{count}} makers whose range is adult-rated. We keep their product photos off this page — open a maker to see what they make.',
+                    count: withoutCover.length,
+                  })}
+                />
+                <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+                  {visibleAdult.map((b) => (
+                    <li key={b.slug}>
+                      <BrandMarkTile brand={b} />
+                    </li>
+                  ))}
+                </ul>
+                {withoutCover.length > visibleAdult.length && (
+                  <div className="mt-10 flex items-center justify-center">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={() => setShownIndex((n) => n + GALLERY_STEP)}
+                    >
+                      {t('marketplace.showMoreAdultMakers', {
+                        defaultValue: 'Show {{count}} more adult makers',
+                        count: Math.min(GALLERY_STEP, withoutCover.length - visibleAdult.length),
+                      })}
+                    </Button>
+                  </div>
+                )}
+              </div>
             )}
 
             {visibleRows.length > 0 && (
@@ -448,8 +484,7 @@ export default function MarketplaceBrands() {
                 {visibleRows.map((b, i) => {
                   const bucket = initialOf(b.display_name);
                   const showHeading =
-                    view === 'az' &&
-                    (i === 0 || bucket !== initialOf(visibleRows[i - 1].display_name));
+                    i === 0 || bucket !== initialOf(visibleRows[i - 1].display_name);
                   return (
                     <li key={b.slug}>
                       {showHeading && (
@@ -474,25 +509,12 @@ export default function MarketplaceBrands() {
               </ul>
             )}
 
-            {(view === 'az'
-              ? floor.length > visibleRows.length
-              : withoutCover.length > visibleRows.length) && (
+            {view === 'az' && floor.length > visibleRows.length && (
               <div className="mt-10 flex items-center justify-center">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() =>
-                    view === 'az'
-                      ? setShown((n) => n + INDEX_STEP)
-                      : setShownIndex((n) => n + INDEX_STEP)
-                  }
-                >
+                <Button variant="outline" size="lg" onClick={() => setShown((n) => n + INDEX_STEP)}>
                   {t('marketplace.showMoreMakers', {
                     defaultValue: 'Show {{count}} more',
-                    count: Math.min(
-                      INDEX_STEP,
-                      (view === 'az' ? floor.length : withoutCover.length) - visibleRows.length,
-                    ),
+                    count: Math.min(INDEX_STEP, floor.length - visibleRows.length),
                   })}
                 </Button>
               </div>
