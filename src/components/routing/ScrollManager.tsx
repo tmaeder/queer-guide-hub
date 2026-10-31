@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigationType } from 'react-router';
 import {
   resolveScrollAction,
@@ -123,7 +123,11 @@ export const ScrollManager = () => {
   const previousRef = useRef<NavSnapshot | null>(null);
   const previousKeyRef = useRef<string | null>(null);
   /** The live offset, updated unthrottled so it is accurate at navigation time. */
-  const liveTopRef = useRef(0);
+  // Capture the initial offset before committing the route's DOM. Reading it
+  // in the first layout effect forces layout of the entire new page even when
+  // the initial navigation intentionally keeps the browser's position.
+  const [initialTop] = useState(readTop);
+  const liveTopRef = useRef(initialTop);
   const cancelSettleRef = useRef<(() => void) | null>(null);
 
   // Take ownership before the browser's own restoration can run.
@@ -172,6 +176,7 @@ export const ScrollManager = () => {
       setScrollPosition(previousKeyRef.current, liveTopRef.current);
     }
 
+    const firstNavigation = previousRef.current === null;
     const next: NavSnapshot = {
       pathname: location.pathname,
       search: location.search,
@@ -198,7 +203,9 @@ export const ScrollManager = () => {
     // would faithfully "restore" the reader to the bottom of a page they had
     // never scrolled. That is the original defect, re-entering through the
     // restore path.
-    liveTopRef.current = readTop();
+    if (!firstNavigation || action.kind !== 'keep') {
+      liveTopRef.current = readTop();
+    }
 
     return () => {
       cancelSettleRef.current?.();

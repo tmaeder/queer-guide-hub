@@ -93,6 +93,18 @@ describe('ScrollManager', () => {
     expect(scrolls).toEqual([]);
   });
 
+  it('preserves a browser-provided initial offset without needing a scroll event', () => {
+    scrollTop = 720;
+    const { getByRole } = renderApp('/about');
+    expect(scrolls).toEqual([]);
+    act(() => { getByRole('button').click(); });
+    const stored = Object.values(
+      JSON.parse(sessionStorage.getItem('qg:scroll-positions') ?? '{}') as Record<string, number>,
+    );
+    expect(stored[0]).toBe(720);
+    expect(scrollTop).toBe(0);
+  });
+
   it('scrolls to the top when a link goes to a different page', () => {
     const { getByRole } = renderApp('/about');
     scrollTop = 4163; // the reader had read to the bottom
