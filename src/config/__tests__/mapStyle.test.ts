@@ -107,8 +107,9 @@ describe('subwayRoads', () => {
     paint: { 'line-width': W },
   };
   const water = { id: 'water', type: 'fill', source: 'p', 'source-layer': 'water', paint: {} };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const run = (...l: unknown[]) => subwayRoads(l as any) as unknown as Array<Record<string, any>>;
+  type Out = { id: string; layout?: Record<string, unknown>; paint: Record<string, unknown> };
+  const run = (...l: unknown[]) =>
+    subwayRoads(l as Parameters<typeof subwayRoads>[0]) as unknown as Out[];
 
   it('drops the street and tunnel casings that drew every road as a double outline', () => {
     const ids = run(fill, casing, tunnelCasing, bridgeCasing).map((l) => l.id);
