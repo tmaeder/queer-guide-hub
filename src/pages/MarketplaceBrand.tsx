@@ -106,7 +106,6 @@ export default function MarketplaceBrand() {
   if (!brand) return null;
 
   const ownership = brand.ownership_tags.filter((o) => OWNERSHIP_LABEL.has(o));
-  const count = brand.product_count ?? 0;
 
   const host = hostnameOf(brand.website);
 
@@ -179,29 +178,14 @@ export default function MarketplaceBrand() {
                 </div>
               )}
 
-              {/* The facts that used to fill a separate FactGrid band, stated
-                  once: the listing total (it repeated this line verbatim), the
-                  site (it repeated the button), and a "catalogue key" that is
-                  an internal join column, not something a reader can use. */}
-              <p className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-13 text-muted-foreground">
-                <span
-                  aria-hidden="true"
-                  className="h-1.5 w-10 shrink-0 border border-border-hairline bg-track-yellow"
-                />
-                <span className="tabular-nums">
-                  {t('marketplace.totalMakerListings', {
-                    count,
-                    formattedCount: count.toLocaleString(),
-                    defaultValue: '{{formattedCount}} total listings',
-                  })}
-                </span>
-                {host && (
-                  <>
-                    <span aria-hidden="true">·</span>
-                    <span>{host}</span>
-                  </>
-                )}
-              </p>
+              {/* ONE listing count on this page, and it is the grid's own
+                  "24 of 452 listings" below. The masthead used to also print
+                  `product_count` ("501 total listings"), which counts adult
+                  listings the grid hides until the reader opts in — two
+                  numbers that disagreed with no way to tell why. The site is
+                  stated once, here; the FactGrid band that repeated it (and a
+                  "catalogue key" that is an internal join column) is gone. */}
+              {host && <p className="mt-6 text-13 text-muted-foreground">{host}</p>}
 
               {(brand.website || brandId) && (
                 <div className="mt-6 flex flex-wrap items-center gap-2">
