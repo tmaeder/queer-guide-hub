@@ -37,7 +37,7 @@ import {
   productEyebrow,
 } from './MarketplaceItemDetail.parts';
 import { MarketplaceGallery } from '@/components/marketplace/MarketplaceGallery';
-import { useBrandMoreFrom, useMarketplaceBrand } from '@/hooks/useMarketplaceBrands';
+import { useMarketplaceBrand } from '@/hooks/useMarketplaceBrands';
 import { brandSlug } from '@/lib/marketplaceTaxonomy';
 import { formatListingPrice } from '@/components/marketplace/marketplaceHelpers';
 import type { ListingTag, ListingVariantRow } from '@/hooks/usePageFetchers';
@@ -136,9 +136,6 @@ export default function MarketplaceItemDetail() {
     image: listing?.images?.[0],
   });
   const reviews = data?.reviews ?? [];
-
-  // Powers the one honest count in the rail's StatLine (module 15).
-  const { data: siblings } = useBrandMoreFrom(listing?.brand, listing?.id ?? '', 24);
 
   // The curated brand name. Costs NO extra request: BrandStoryBlock further
   // down this same page already calls `useMarketplaceBrand` with this exact
@@ -311,7 +308,7 @@ export default function MarketplaceItemDetail() {
   const body = (
     <>
       <MarketplaceGallery listingId={listing.id} images={listing.images} title={displayTitle} />
-      <ProductFacts listing={listing} curatedName={curatedName} />
+      <ProductFacts listing={listing} />
       {variants.length > 0 && <VariantAvailability variants={variants} />}
       <MarketplaceContent listing={listing} reviews={reviews} onContentUpdated={refetch} />
       <FeaturedInGuides entityType="marketplace" entityId={listing.id} />
@@ -327,8 +324,14 @@ export default function MarketplaceItemDetail() {
   const rail = (
     <>
       <MarketplaceBuyBox listing={listing} curatedName={curatedName} />
-      <MakerCard listing={listing} curatedName={curatedName} />
-      <ProductStats listing={listing} siblingCount={siblings?.length ?? null} />
+      {/* Only when there is no curated brand. With one, BrandStoryBlock and
+          BrandMoreFrom already present the maker in the body, and on a phone
+          — where this rail reflows UNDER the body — the card arrived as a third
+          copy right after them. Without one, BrandStoryBlock renders nothing
+          and this card (which can fall back to the merchant page) is the only
+          way to the seller. Same react-query entry, so no extra request. */}
+      {!curatedBrand && <MakerCard listing={listing} curatedName={curatedName} />}
+      <ProductStats listing={listing} />
       {/* Spine S6. These listings are machine-ingested from merchant feeds, so
           saying who added the row and when we last checked it is the honest
           floor for a page that asks someone to spend money. */}
@@ -370,7 +373,11 @@ export default function MarketplaceItemDetail() {
       }
       action={
         <>
-          <div className="w-full sm:w-auto">
+          {/* Hidden from lg, where the rail's buy box sits beside the photo
+              with the same price and the same button: two identical CTAs side
+              by side above the fold. Below lg the rail reflows under the body,
+              so this copy is the only one a phone reader meets early. */}
+          <div className="w-full sm:w-auto lg:hidden">
             <MarketplaceBuyBox listing={listing} compact curatedName={curatedName} />
           </div>
           <Button variant="outline" onClick={handleToggleFavorite}>
