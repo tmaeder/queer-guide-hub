@@ -140,7 +140,7 @@ function paperFlavor(): Flavor {
     military: wash(0.05),
     // Lighter than the lightest street, so a block never swallows the
     // street that bounds it.
-    buildings: wash(0.06),
+    buildings: wash(0.045),
     // Piers sit ON water, so they must stay a step darker than it.
     pier: wash(0.17),
 
