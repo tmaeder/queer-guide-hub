@@ -45,6 +45,13 @@ describe('CityNetwork', () => {
     ).toBe(true);
   });
 
+  it('lineWidth overrides the thumb weight for large picture slots', () => {
+    const { container } = render(<CityNetwork slug={subjectSlug} variant="thumb" lineWidth={6} />);
+    const paths = pathsOf(container);
+    expect(paths.length).toBeGreaterThan(0);
+    expect(paths.every((p) => p.getAttribute('stroke-width') === '6')).toBe(true);
+  });
+
   it('backdrop variant crops, anchors right and draws heavier non-scaling lines', () => {
     const { container } = render(<CityNetwork slug={subjectSlug} variant="backdrop" />);
     const { crop } = subject;
