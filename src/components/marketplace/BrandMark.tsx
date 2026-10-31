@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { brandMonogram } from './marketplaceHelpers';
 
@@ -12,9 +13,13 @@ import { brandMonogram } from './marketplaceHelpers';
  * sit side by side in every grid and must not read as two different components.
  *
  * The monogram is rendered ALWAYS and the logo layered over it, rather than
- * branching. That makes a dead logo URL — a purged R2 object, a mirror that
- * 404s later — degrade to the monogram instead of a broken-image glyph, with no
- * error handler and no state. It is also why this is not `<Image>`: that
+ * branching. It stays VISIBLE until the logo has actually loaded, and only
+ * then hides: an empty plate while a lazy logo is still on its way read as a
+ * broken mark (Blush and Vedo on /marketplace/brands, both perfectly good
+ * opaque PNGs that simply had not arrived yet). A dead logo URL — a purged R2
+ * object, a mirror that 404s later — never loads, so the plate keeps reading
+ * as a monogram instead of a broken-image glyph. It is also why this is not
+ * `<Image>`: that
  * primitive's failure mode is a decorative photo texture, which in a 56px logo
  * plate reads as a corrupted logo rather than as an absent one.
  *
@@ -44,6 +49,24 @@ export function BrandMark({
   monogramClassName?: string;
   padding?: string;
 }) {
+  // Keyed on the URL so a recycled plate (a list re-sorting under the same
+  // component instance) starts from the monogram again rather than inheriting
+  // the previous logo's state.
+  const [state, setState] = useState<{ url: string; status: 'loaded' | 'failed' } | null>(null);
+  const status = logoUrl && state?.url === logoUrl ? state.status : 'loading';
+  const showLogo = !!logoUrl && status !== 'failed';
+  const markLoaded = useCallback(() => {
+    if (logoUrl) setState({ url: logoUrl, status: 'loaded' });
+  }, [logoUrl]);
+  // A cached image can already be complete when the node mounts; reading it
+  // here means the plate never waits on a load event that has already fired.
+  const imgRef = useCallback(
+    (el: HTMLImageElement | null) => {
+      if (el?.complete && el.naturalWidth > 0) markLoaded();
+    },
+    [markLoaded],
+  );
+
   return (
     <div
       className={cn(
@@ -66,32 +89,27 @@ export function BrandMark({
     >
       <span
         aria-hidden="true"
-        // Hidden, not absent, while a logo is expected: nearly every merchant
-        // logo is a transparent PNG, so a monogram left visible underneath
-        // shows THROUGH the artwork (found on prod — cherrykitten's pink
-        // wordmark had an ink "C" sitting inside its counters). `invisible`
-        // keeps it in the layout so the onError below can bring it back with
-        // an inline style, which beats the class.
-        className={cn('leading-none', logoUrl && 'invisible', monogramClassName)}
+        // Hidden only once the logo has LOADED: nearly every merchant logo is
+        // a transparent PNG, so a monogram left visible underneath shows
+        // THROUGH the artwork (found on prod — cherrykitten's pink wordmark
+        // had an ink "C" sitting inside its counters). `invisible` keeps it in
+        // the layout so the plate does not change size when it hides.
+        className={cn('leading-none', status === 'loaded' && 'invisible', monogramClassName)}
       >
         {brandMonogram(name)}
       </span>
-      {logoUrl && (
+      {showLogo && (
         <img
+          ref={imgRef}
           src={logoUrl}
           alt=""
           loading="lazy"
           decoding="async"
+          onLoad={markLoaded}
           // Chrome paints its torn-page glyph for a failed image even with an
           // empty alt, so the monogram underneath is not on its own enough —
-          // verified against a logo the CDN refused. Hiding the element is what
-          // actually uncovers the fallback, and doing it on the node keeps this
-          // component stateless.
-          onError={(e) => {
-            e.currentTarget.style.display = 'none';
-            const monogram = e.currentTarget.previousElementSibling;
-            if (monogram instanceof HTMLElement) monogram.style.visibility = 'visible';
-          }}
+          // verified against a logo the CDN refused. A failed logo is removed.
+          onError={() => setState({ url: logoUrl, status: 'failed' })}
           className={cn('absolute inset-0 h-full w-full object-contain', padding)}
         />
       )}
