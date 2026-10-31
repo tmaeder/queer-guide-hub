@@ -480,6 +480,9 @@ verify_jwt = false
 [functions.enrich-logos]
 verify_jwt = false
 
+[functions.marketplace-brand-logo-mirror]
+verify_jwt = false
+
 [functions.feedback-story-titler]
 verify_jwt = false
 
