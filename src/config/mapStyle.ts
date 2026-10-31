@@ -141,11 +141,14 @@ function paperFlavor(): Flavor {
     // Lighter than the lightest street, so a block never swallows the
     // street that bounds it.
     buildings: wash(0.06),
-    pier: wash(0.12),
+    // Piers sit ON water, so they must stay a step darker than it.
+    pier: wash(0.17),
 
     // Water is a wash, not a colour. A transit map prints the harbour in the
-    // same ink as everything else.
-    water: wash(0.09),
+    // same ink as everything else. 0.12 (was 0.09): at 0.09 a river read as
+    // barely darker than a city block (buildings are 0.06) and vanished
+    // under the street grid.
+    water: wash(0.12),
 
     // Roads — one opaque grey stroke each; tone climbs with importance. The
     // `*_casing` keys are still required by the Flavor type, but only the
