@@ -62,8 +62,12 @@ export function normalizeCurrency(raw: unknown): string {
 export function brandFromVendor(
   vendor: string | null | undefined,
   fallback: string | null | undefined,
+  aliases?: Record<string, unknown> | null,
 ): string {
   const v = String(vendor ?? '').trim()
+  // Only an explicitly researched merchant mapping can replace a wordy vendor.
+  const alias = aliases && Object.hasOwn(aliases, v) ? aliases[v] : null
+  if (typeof alias === 'string' && alias.trim()) return alias.trim()
   if (/\p{L}/u.test(v)) return v
   // The fallback is the merchant, never `vendor` again — that is the value just
   // rejected, and a chain that falls back onto it reinstates the defect.

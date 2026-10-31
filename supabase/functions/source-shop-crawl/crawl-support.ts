@@ -1,5 +1,13 @@
 import * as cheerio from 'npm:cheerio@1.0.0-rc.12'
 
+/** Mixed merchant catalogs must not inherit the crawler's original book labels. */
+export function readCrawlCategoryLabels(category?: string, subcategory?: string) {
+  return {
+    category: category?.trim() || 'Other',
+    subcategory: subcategory?.trim() || 'Other',
+  }
+}
+
 /** Read URL locations from sitemap entries, including XML CDATA text. */
 export function readSitemapLocations(xml: string, requireProductImages = false): string[] {
   const $ = cheerio.load(xml, { xmlMode: true })
