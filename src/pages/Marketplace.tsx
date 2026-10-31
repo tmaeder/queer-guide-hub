@@ -592,7 +592,6 @@ const Marketplace = () => {
                 pages were previously buried inside cards. */}
             <VerifiedOwnedBrands />
             <BrandSpotlight />
-            <MakersEntry />
             {/* Editor-curated collection chips; occasion toggles live in the
                 control band. */}
             <OccasionChips kinds={['collection']} />
@@ -619,6 +618,10 @@ const Marketplace = () => {
               filters={{ entityType: 'marketplace', department: false, limit: 3 }}
               alwaysRender
             />
+            {/* LAST, because it says "End of line". It used to sit after the
+                spotlight, so the collection chips and the buying guides ran on
+                past a block announcing the end of the page. */}
+            <MakersEntry />
             <AffiliateDisclosure />
           </PageContainer>
         </div>

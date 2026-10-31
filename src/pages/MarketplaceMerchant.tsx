@@ -10,6 +10,7 @@ import { GuidesRail } from '@/components/guides/GuidesRail';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { useOrgSlugByDomain } from '@/hooks/useOrganization';
+import { useMerchantPublicName } from '@/hooks/useMarketplaceMerchants';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { PageContainer } from '@/components/layout/PageContainer';
 
@@ -17,7 +18,11 @@ export default function MarketplaceMerchant() {
   const { t } = useTranslation();
   const { domain } = useParams<{ domain: string }>();
   const cleanDomain = (domain ?? '').toLowerCase();
-  const displayName = cleanDomain.replace(/^www\./, '').replace(/\.[a-z]{2,}$/, '');
+  const guessedName = cleanDomain.replace(/^www\./, '').replace(/\.[a-z]{2,}$/, '');
+  // The seller's own name when its listings carry a usable one; otherwise the
+  // domain-derived guess this page always used (see cleanMerchantName).
+  const { data: feedName } = useMerchantPublicName(cleanDomain || undefined);
+  const name = feedName ?? guessedName.charAt(0).toUpperCase() + guessedName.slice(1);
 
   // Sellers now have a unified organization profile — redirect there when one exists.
   const navigate = useLocalizedNavigate();
@@ -29,8 +34,8 @@ export default function MarketplaceMerchant() {
   useDetailMeta({
     status: cleanDomain ? 'ready' : 'notFound',
     notFoundTitle: 'No such merchant.',
-    title: cleanDomain ? `${cleanDomain} — Marketplace` : 'Merchant',
-    description: `All listings from ${cleanDomain} on Queer Guide.`,
+    title: cleanDomain ? `${name} — Marketplace` : 'Merchant',
+    description: `All listings from ${name} (${cleanDomain}) on Queer Guide.`,
     canonicalPath: cleanDomain ? `/marketplace/merchants/${cleanDomain}` : undefined,
   });
 
@@ -38,7 +43,7 @@ export default function MarketplaceMerchant() {
     cleanDomain
       ? [
           { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
-          { label: displayName.charAt(0).toUpperCase() + displayName.slice(1) },
+          { label: name },
         ]
       : null,
   );
@@ -68,7 +73,7 @@ export default function MarketplaceMerchant() {
         size="page"
         backTo={{ label: 'All makers', to: '/marketplace/brands' }}
         eyebrow="Marketplace · Merchant"
-        title={displayName.charAt(0).toUpperCase() + displayName.slice(1)}
+        title={name}
         lede={cleanDomain}
         // The listing count belongs to the grid below, which owns the query.
         count={null}
@@ -82,12 +87,15 @@ export default function MarketplaceMerchant() {
       />
 
       <PageContainer>
-        <GuidesRail filters={{ entityType: 'marketplace', limit: 3 }} />
         <MarketplaceFilteredView
           filters={{ merchantDomain: cleanDomain }}
           emptyTitle="No listings from this merchant yet."
           emptyAction={{ label: 'Browse the marketplace', to: '/marketplace' }}
         />
+        {/* AFTER the listings. The rail is not scoped to this merchant (it
+            showed Automic Gold and queer reading on Marek+Richard's page), and
+            above the grid it pushed the merchant's own goods ~600px down. */}
+        <GuidesRail title="Buying guides" filters={{ entityType: 'marketplace', limit: 3 }} />
       </PageContainer>
     </div>
   );

@@ -218,11 +218,13 @@ describe('maker content visibility', () => {
     ownership_tags: [],
     is_approved: true,
   };
-  it('keeps adult products out of the initial query and labels the catalogue total', () => {
+  it('keeps adult products out of the initial query and shows only the grid count', () => {
     brandState.value = maker;
     renderAt('/marketplace/brands/example');
     expect(screen.getByTestId('filtered')).toHaveAttribute('data-include-adult', 'false');
-    expect(screen.getByText('5 total listings')).toBeInTheDocument();
+    // The catalogue total includes hidden adult listings; only the grid's
+    // visible count may appear, so the two numbers can never disagree.
+    expect(screen.queryByText(/total listing/)).toBeNull();
     expect(screen.getByTestId('age-gate')).toHaveAttribute('data-active', 'false');
   });
   it('honors an existing age confirmation on maker pages', () => {

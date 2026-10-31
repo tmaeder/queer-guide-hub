@@ -1,9 +1,19 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 
-import { productEyebrow, displayBrandOf } from '../MarketplaceItemDetail.parts';
+vi.mock('@/components/marketplace/MarketplacePriceHistory', () => ({
+  MarketplacePriceHistory: () => null,
+}));
+
+import {
+  productEyebrow,
+  displayBrandOf,
+  ProductFacts,
+  MarketplaceContent,
+} from '../MarketplaceItemDetail.parts';
 import type { MarketplaceListing } from '../MarketplaceItemDetail.parts';
 
 /**
@@ -62,5 +72,54 @@ describe('displayBrandOf', () => {
 
   it('returns null rather than an empty string when neither exists', () => {
     expect(displayBrandOf(base, null)).toBeNull();
+  });
+});
+
+const listing = {
+  id: 'l1',
+  department: 'underwear',
+  subcategory: 'underwear',
+  brand: 'RUFSKIN',
+  in_stock: true,
+  availability: 'in_stock',
+  location: null,
+  created_at: '2026-10-20T00:00:00Z',
+  attributes: {},
+  content_rating: 'sfw',
+  description: null,
+  link_checked_at: null,
+} as unknown as MarketplaceListing;
+
+describe('ProductFacts', () => {
+  it('does not restate brand, availability or listing date shown elsewhere on the page', () => {
+    render(<ProductFacts listing={listing} />);
+    expect(screen.getByText('Department')).toBeInTheDocument();
+    for (const label of ['Brand', 'Availability', 'Listed']) {
+      expect(screen.queryByText(label)).toBeNull();
+    }
+  });
+
+  it('drops Category when it only repeats the Department', () => {
+    render(<ProductFacts listing={listing} />);
+    expect(screen.queryByText('Category')).toBeNull();
+  });
+
+  it('keeps Category when it adds something', () => {
+    render(<ProductFacts listing={{ ...listing, subcategory: 'jockstraps' }} />);
+    expect(screen.getByText('Category')).toBeInTheDocument();
+  });
+
+  it('keeps a feed-only availability, which has no masthead chip to live in', () => {
+    render(<ProductFacts listing={{ ...listing, in_stock: null, availability: 'preorder' }} />);
+    expect(screen.getByText('Availability')).toBeInTheDocument();
+    expect(screen.getByText('Preorder')).toBeInTheDocument();
+  });
+});
+
+describe('MarketplaceContent reviews', () => {
+  it('renders no reviews section at all when there are none', () => {
+    render(<MarketplaceContent listing={listing} reviews={[]} onContentUpdated={() => {}} />);
+    expect(screen.queryByText(/Reviews \(0\)/)).toBeNull();
+    expect(screen.queryByText(/No reviews yet/)).toBeNull();
   });
 });
