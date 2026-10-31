@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { render } from '@testing-library/react';
-import { CityNetwork, lineWidthForBox } from '../CityNetwork';
+import { CityNetwork } from '../CityNetwork';
+import { lineWidthForBox } from '../lineWidthForBox';
 import { CITY_NETWORKS, NETWORK_VIEWBOX, hasCityNetwork } from '../cityNetworkGeometry';
 
 /**
