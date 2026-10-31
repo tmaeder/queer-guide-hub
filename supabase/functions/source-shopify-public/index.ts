@@ -6,6 +6,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { storefrontPage, publicStorefrontCredentials, type StorefrontProduct } from '../_shared/shopify-storefront.ts'
 import { stripProductHtml } from '../_shared/product-html.ts'
+import { brandFromShopifyProduct } from '../_shared/shopify-product-brand.ts'
 
 // ============================================================
 // source-shopify-public — ingest any Shopify storefront via its PUBLIC
@@ -57,6 +58,8 @@ interface MerchantOverrides {
   brandName?: string | null
   vendorAliases?: Record<string, unknown> | null
   excludedVendors?: string[] | null
+  // { [exactHandle]: { vendor: observedVendor, brand: correctedMakerOrNull } }
+  productBrandOverrides?: Record<string, unknown> | null
 }
 
 /** ISO-3166 country whose Shopify Market prices in the given currency. Only the
@@ -94,6 +97,7 @@ function makeStorefrontAdapter(
       const v = p.variants?.nodes?.[0]
       const price = v ? Number(v.price.amount) : undefined
       const externalUrl = p.onlineStoreUrl || `https://${shopDomain}/products/${p.handle}`
+      const brand = brandFromShopifyProduct(p, ov.brandName || ov.businessName || shopDomain, ov)
       return {
         entityType: 'marketplace', sourceId: raw.sourceId, sourceName: sourceSlug,
         name: p.title,
@@ -108,8 +112,7 @@ function makeStorefrontAdapter(
           // Straight off the wire — NOT the configured guess. This is the whole point.
           currency: normalizeCurrency(v?.price.currencyCode ?? expectedCurrency),
           category: p.productType,
-          brand: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain, ov.vendorAliases, ov.excludedVendors),
-          brand_name: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain, ov.vendorAliases, ov.excludedVendors),
+          brand, brand_name: brand,
           business_name: ov.businessName || brandFromVendor(p.vendor, shopDomain),
           in_stock: v?.availableForSale, sku: v?.sku ?? undefined, handle: p.handle,
           market_country: country,
@@ -178,6 +181,7 @@ function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR', o
       const price = variant ? Number(variant.price) : undefined
       const inStock = variant?.available
       const externalUrl = `https://${shopDomain}/products/${p.handle}`
+      const brand = brandFromShopifyProduct(p, ov.brandName || ov.businessName || shopDomain, ov)
       const images = (p.images || []).map(i => i.src).filter(Boolean)
       const tags = Array.isArray(p.tags)
         ? p.tags.map(t => String(t).trim()).filter(Boolean)
@@ -194,8 +198,7 @@ function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR', o
           merchant_deep_link: externalUrl, merchant_domain: extractMerchantDomain(externalUrl),
           price: Number.isFinite(price) && price != null && price > 0 ? price : null,
           currency: normalizeCurrency(currency), category: p.product_type,
-          brand: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain, ov.vendorAliases, ov.excludedVendors),
-          brand_name: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain, ov.vendorAliases, ov.excludedVendors),
+          brand, brand_name: brand,
           business_name: ov.businessName || brandFromVendor(p.vendor, shopDomain),
           in_stock: inStock, sku: variant?.sku, handle: p.handle,
           // Emitted ONLY when the merchant configures it — see MerchantOverrides.
@@ -254,6 +257,8 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
         ? mcfg.vendor_aliases as Record<string, unknown> : null,
       excludedVendors: Array.isArray(mcfg.excluded_vendors)
         ? mcfg.excluded_vendors.filter((v): v is string => typeof v === 'string' && v.trim().length > 0).map((v) => v.trim()) : null,
+      productBrandOverrides: mcfg.product_brand_overrides && typeof mcfg.product_brand_overrides === 'object' && !Array.isArray(mcfg.product_brand_overrides)
+        ? mcfg.product_brand_overrides as Record<string, unknown> : null,
     }
     const requestedPages = Number(body.max_pages ?? 2)
     const maxPages = Number.isFinite(requestedPages) ? Math.min(2, Math.max(1, Math.floor(requestedPages))) : 2
