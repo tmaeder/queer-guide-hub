@@ -45,6 +45,7 @@ interface Failure {
   url: string
   reason: string
   permanent: boolean
+  detail?: string
 }
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -80,7 +81,15 @@ Deno.serve(async (req) => {
       if (!got.ok) {
         if (got.permanent) permanent[got.reason] = (permanent[got.reason] ?? 0) + 1
         else transient++
-        failures.push({ id: item.id, name: item.display_name, url: item.source_url, reason: got.reason, permanent: got.permanent })
+        failures.push({
+          id: item.id,
+          name: item.display_name,
+          url: item.source_url,
+          reason: got.reason,
+          permanent: got.permanent,
+          ...(got.detail ? { detail: got.detail } : {}),
+        })
+        if (got.detail) console.error(`[brand-logo-mirror] ${item.display_name} ${got.reason}: ${got.detail}`)
         if (got.permanent && !dryRun) {
           await supabase.from('marketplace_brands').update({ logo_mirror_error: got.reason }).eq('id', item.id)
         }

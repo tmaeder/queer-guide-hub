@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
-import { fetchLogoForMirror, sniffImageType, MAX_LOGO_BYTES } from './logo-fetch.ts'
+import { describeFetchError, fetchLogoForMirror, sniffImageType, MAX_LOGO_BYTES } from './logo-fetch.ts'
 
 const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, ...new Array(100).fill(0)])
 const SVG = new TextEncoder().encode('<?xml version="1.0"?>\n<svg xmlns="http://www.w3.org/2000/svg">' + ' '.repeat(80) + '</svg>')
@@ -32,7 +32,7 @@ Deno.test('404 is permanent, 429 and 503 are transient', async () => {
 
 Deno.test('network errors are transient; non-http URLs permanent', async () => {
   const boom = (async () => { throw new TypeError('dns') }) as unknown as typeof fetch
-  assertEquals(await fetchLogoForMirror('https://x/a', boom), { ok: false, reason: 'network', permanent: false })
+  assertEquals(await fetchLogoForMirror('https://x/a', boom), { ok: false, reason: 'network', permanent: false, detail: 'TypeError: dns' })
   assertEquals(await fetchLogoForMirror('data:image/png;base64,AAAA', boom), { ok: false, reason: 'invalid_url', permanent: true })
 })
 
@@ -50,4 +50,25 @@ Deno.test('SVG is returned for the caller to rasterize, identified by its bytes'
 Deno.test('GIF is accepted', () => {
   const gif = new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, ...new Array(100).fill(0)])
   assertEquals(sniffImageType(gif), 'image/gif')
+})
+
+Deno.test('a network failure reports the cause chain, not just "network"', async () => {
+  const tls = (async () => {
+    throw new TypeError('error sending request for url (https://x/a)', {
+      cause: new Error('client error (Connect): invalid peer certificate: UnknownIssuer'),
+    })
+  }) as unknown as typeof fetch
+  const r = await fetchLogoForMirror('https://x/a', tls)
+  assertEquals(r.ok, false)
+  assertEquals(
+    !r.ok && r.detail,
+    'TypeError: error sending request for url (https://x/a) <- Error: client error (Connect): invalid peer certificate: UnknownIssuer',
+  )
+})
+
+Deno.test('describeFetchError stops on a cyclic cause and caps the length', () => {
+  const a = new Error('loop') as Error & { cause?: unknown }
+  a.cause = a
+  assertEquals(describeFetchError(a), 'Error: loop')
+  assertEquals(describeFetchError(new Error('x'.repeat(900))).length, 500)
 })

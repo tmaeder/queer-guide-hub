@@ -21,7 +21,28 @@
 
 export type LogoFetchResult =
   | { ok: true; bytes: Uint8Array; contentType: string }
-  | { ok: false; reason: string; permanent: boolean }
+  // `detail` carries the runtime's own words for a failure that never produced
+  // an HTTP response. `reason` alone collapses a refused TLS chain, a DNS miss
+  // and a reset connection into one 'network', which is what left two logos
+  // failing with no way to tell why.
+  | { ok: false; reason: string; permanent: boolean; detail?: string }
+
+/**
+ * The underlying error text, cause chain included. Deno's fetch throws a
+ * TypeError whose message names the URL while the actual reason (for example
+ * "invalid peer certificate: UnknownIssuer") is often on `cause`.
+ */
+export function describeFetchError(e: unknown): string {
+  const parts: string[] = []
+  let cur: unknown = e
+  for (let depth = 0; cur && depth < 4; depth++) {
+    const err = cur as { name?: string; message?: string; code?: string; cause?: unknown }
+    const text = [err.name, err.code, err.message].filter(Boolean).join(': ')
+    if (text && !parts.includes(text)) parts.push(text)
+    cur = err.cause
+  }
+  return (parts.join(' <- ') || String(e)).slice(0, 500)
+}
 
 export const MAX_LOGO_BYTES = 5 * 1024 * 1024
 const TIMEOUT_MS = 15_000
@@ -76,7 +97,12 @@ export async function fetchLogoForMirror(url: string, fetchImpl: typeof fetch = 
     })
   } catch (e) {
     const name = (e as Error).name
-    return { ok: false, reason: name === 'TimeoutError' || name === 'AbortError' ? 'timeout' : 'network', permanent: false }
+    return {
+      ok: false,
+      reason: name === 'TimeoutError' || name === 'AbortError' ? 'timeout' : 'network',
+      permanent: false,
+      detail: describeFetchError(e),
+    }
   }
 
   if (!res.ok) {
@@ -94,8 +120,8 @@ export async function fetchLogoForMirror(url: string, fetchImpl: typeof fetch = 
   let bytes: Uint8Array
   try {
     bytes = new Uint8Array(await res.arrayBuffer())
-  } catch {
-    return { ok: false, reason: 'network', permanent: false }
+  } catch (e) {
+    return { ok: false, reason: 'network', permanent: false, detail: describeFetchError(e) }
   }
   if (bytes.byteLength > MAX_LOGO_BYTES) return { ok: false, reason: 'too_large', permanent: true }
   if (bytes.byteLength < 64) return { ok: false, reason: 'empty', permanent: true }
