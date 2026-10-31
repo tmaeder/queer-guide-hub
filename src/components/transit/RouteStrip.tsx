@@ -111,48 +111,42 @@ export function RouteStrip({
             const active = station.id === activeId;
             return (
               <li key={station.id} className="relative shrink-0">
+                {/* A straight segment from this ring's centre to the next
+                    one's. The ring is 16px, so its centre sits 8px in and 8px
+                    down; the segment is 3px tall and starts at that centre
+                    (start-2) and spans this item plus the gap-6 to the next
+                    ring's centre. It used to be an SVG with a decorative bump
+                    in the middle, stretched with preserveAspectRatio="none" to
+                    whatever width each label happened to be — the bump read as
+                    a glitch, not as a line. */}
                 {index < stations.length - 1 && (
-                  <svg
-                    viewBox="0 0 100 12"
-                    preserveAspectRatio="none"
-                    className={cn(
-                      'absolute top-0.5 h-3 w-[calc(100%+1.5rem)]',
-                      track === 'blue'
-                        ? 'text-track-blue'
-                        : track === 'pink'
-                          ? 'text-track-pink'
-                          : track === 'green'
-                            ? 'text-track-green'
-                            : track === 'yellow'
-                              ? 'text-track-yellow'
-                              : 'text-foreground',
-                    )}
-                    style={{ insetInlineStart: '0.5rem' }}
+                  <span
                     aria-hidden="true"
-                  >
-                    <path
-                      d="M0 6 H30 Q38 6 38 2 Q38 0 46 0 H54 Q62 0 62 4 Q62 6 70 6 H100"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  </svg>
+                    className={cn(
+                      'absolute start-2 top-1.5 h-[3px] w-[calc(100%+1.5rem)]',
+                      lineColor,
+                    )}
+                  />
                 )}
                 <a
                   href={`#${station.id}`}
                   data-station-id={station.id}
                   aria-current={active ? 'true' : undefined}
                   onClick={(event) => handleClick(event, station.id)}
+                  // Only the label is underlined. Underlining the anchor as well
+                  // drew a second rule that also ran under the ring.
                   className={cn(
-                    'relative z-10 grid justify-items-start gap-1 text-13 no-underline',
-                    active
-                      ? 'font-bold underline underline-offset-4'
-                      : 'font-medium hover:underline',
+                    'group relative z-10 grid justify-items-start gap-1 text-13 no-underline',
+                    active ? 'font-bold' : 'font-medium',
                   )}
                 >
                   <StationRing state={active ? 'typed' : 'open'} track={track || 'blue'} />
-                  <span className={cn('py-1', active && 'underline underline-offset-4')}>
+                  <span
+                    className={cn(
+                      'py-1 underline-offset-4',
+                      active ? 'underline' : 'group-hover:underline',
+                    )}
+                  >
                     {station.title}
                   </span>
                 </a>
