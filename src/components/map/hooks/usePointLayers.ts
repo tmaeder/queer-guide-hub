@@ -263,7 +263,13 @@ export function usePointLayers({
         // makes the fill legal, not just tidy. (Was a 2.5px white halo,
         // which separated the pin from the basemap but left the fill itself
         // unmeasurable against anything.)
-        'circle-stroke-width': 2,
+        //
+        // 1.5px, not 2: at 2px the ring read heavier than the glyph it
+        // frames once the glyph grew to ~2/3 of the dot. 1.5px is still a
+        // continuous ink edge at every DPR, which is all the contrast gate
+        // needs — WCAG 1.4.11 measures colour against the boundary, not its
+        // thickness.
+        'circle-stroke-width': 1.5,
         'circle-stroke-color': ink(),
         // Steady-state opacity = time-of-day expression (dims closed at night).
         'circle-opacity': pinOpacityExpr,
