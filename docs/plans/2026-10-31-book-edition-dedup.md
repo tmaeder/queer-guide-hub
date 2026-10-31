@@ -19,6 +19,10 @@ Exact source IDs and exact product URLs retain their current update behavior.
 Record the guard in the existing dedup decision journal. If candidate hydration
 fails, leave the item pending rather than publishing an unchecked decision.
 
+The deployed marketplace candidate RPC returns `listing_id`. Correct the registry
+mapping from `marketplace_id` so its deterministic source and URL matches are
+actually considered; the edition guard protects the restored fuzzy matching.
+
 Do not reprocess historical source reviews or automatically split old listings.
 Restore the confirmed Heartstopper editions separately from the code release,
 using their retained approved source records and verified publisher identities.
