@@ -128,9 +128,12 @@ function bucketRank(name: string): number {
  * 259 coverless makers has adult/explicit listings and 253 list nothing else.
  * "Makers we have no photograph of" was false — we hold the photographs and
  * keep them off this page on purpose — and it described our pipeline rather
- * than the makers, which is why nobody could make sense of it. They render as
- * compact mark tiles (`BrandMarkTile`) — the gallery's card language without
- * an empty photo well.
+ * than the makers, which is why nobody could make sense of it. The RPC now
+ * says so directly (`adult_only`, `99991793435077`), and the page never infers
+ * it from a missing cover: the 6 coverless makers that ALSO sell sfw goods go
+ * to a neutral "More makers" section instead. Both render as compact mark
+ * tiles (`BrandMarkTile`) — the gallery's card language without an empty
+ * photo well.
  *
  * ── Contracts that are not styling ─────────────────────────────────────────
  *
@@ -156,7 +159,6 @@ export default function MarketplaceBrands() {
   const [view, setView] = useState<'gallery' | 'az'>('gallery');
   const [letter, setLetter] = useState<string | null>(null);
   const [shown, setShown] = useState(GALLERY_STEP);
-  const [shownIndex, setShownIndex] = useState(GALLERY_STEP);
 
   const { data: all, isLoading } = useMarketplaceBrandsDirectory();
   const { data: featured } = useMarketplaceBrandCovers(FEATURED_COUNT);
@@ -213,12 +215,20 @@ export default function MarketplaceBrands() {
    * gallery and the index as the reader pressed "Show more", which is the sort
    * of thing that reads as the page losing its place.
    */
-  const [withCover, withoutCover] = useMemo(() => {
-    if (view === 'az') return [[] as DirectoryBrand[], floor];
-    const yes: DirectoryBrand[] = [];
-    const no: DirectoryBrand[] = [];
-    for (const b of floor) (b.cover_url ? yes : no).push(b);
-    return [yes, no];
+  const [withCover, adultOnly, unpictured] = useMemo(() => {
+    if (view === 'az') return [[], [], []] as DirectoryBrand[][];
+    const cover: DirectoryBrand[] = [];
+    const adult: DirectoryBrand[] = [];
+    const rest: DirectoryBrand[] = [];
+    for (const b of floor) {
+      // `adult_only` comes from the RPC; it is never inferred from the
+      // missing cover. `=== true` so an older function without the column
+      // lands makers in the neutral section rather than labelling them adult.
+      if (b.cover_url) cover.push(b);
+      else if (b.adult_only === true) adult.push(b);
+      else rest.push(b);
+    }
+    return [cover, adult, rest];
   }, [floor, view]);
 
   const step = view === 'az' ? INDEX_STEP : GALLERY_STEP;
@@ -239,14 +249,12 @@ export default function MarketplaceBrands() {
    * silently grows whichever list the reader is not looking at is worse.
    */
   const visibleRows = view === 'az' ? floor.slice(0, shown) : [];
-  const visibleAdult = view === 'az' ? [] : withoutCover.slice(0, shownIndex);
 
   /** Reset both slices on any control change — never in an effect. */
   const withReset =
     <T,>(fn: (value: T) => void) =>
     (value: T) => {
       setShown(step);
-      setShownIndex(GALLERY_STEP);
       fn(value);
     };
 
@@ -258,7 +266,6 @@ export default function MarketplaceBrands() {
 
   const setViewMode = (next: 'gallery' | 'az') => {
     setShown(next === 'az' ? INDEX_STEP : GALLERY_STEP);
-    setShownIndex(GALLERY_STEP);
     setView(next);
     // A letter filter that survives into the gallery is invisible: the bar
     // that set it is gone and the makers it removed never come back.
@@ -324,7 +331,6 @@ export default function MarketplaceBrands() {
               value={search}
               onChange={(e) => {
                 setShown(step);
-                setShownIndex(GALLERY_STEP);
                 setSearch(e.target.value);
               }}
               placeholder={t('marketplace.searchMakers', 'Search makers')}
@@ -383,7 +389,6 @@ export default function MarketplaceBrands() {
             letter={letter}
             onChange={(next) => {
               setShown(INDEX_STEP);
-              setShownIndex(GALLERY_STEP);
               setLetter(next);
             }}
           />
@@ -443,41 +448,40 @@ export default function MarketplaceBrands() {
             {/* Named for what these makers ARE. Their goods are adult-rated, so
                 their photographs stay off this ungated page — not "we have no
                 photograph", which was false and read as a data gap. */}
-            {visibleAdult.length > 0 && (
-              <div className={visibleTiles.length > 0 ? 'mt-16' : undefined}>
-                <SectionHeader
-                  id="makers-adult"
-                  eyebrow={t('marketplace.makersAdultEyebrow', 'Adult · 18+')}
-                  title={t('marketplace.makersAdultTitle', 'Adult makers')}
-                  subtitle={t('marketplace.makersAdultSubtitle', {
-                    defaultValue:
-                      '{{count}} makers whose range is adult-rated. We keep their product photos off this page — open a maker to see what they make.',
-                    count: withoutCover.length,
-                  })}
-                />
-                <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-                  {visibleAdult.map((b) => (
-                    <li key={b.slug}>
-                      <BrandMarkTile brand={b} />
-                    </li>
-                  ))}
-                </ul>
-                {withoutCover.length > visibleAdult.length && (
-                  <div className="mt-10 flex items-center justify-center">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      onClick={() => setShownIndex((n) => n + GALLERY_STEP)}
-                    >
-                      {t('marketplace.showMoreAdultMakers', {
-                        defaultValue: 'Show {{count}} more adult makers',
-                        count: Math.min(GALLERY_STEP, withoutCover.length - visibleAdult.length),
-                      })}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
+            <MarkTileSection
+              // Remounting on any control change resets its page — no effect.
+              key={`adult|${search}|${ownership.join()}`}
+              id="makers-adult"
+              brands={adultOnly}
+              spaced={withCover.length > 0}
+              eyebrow={t('marketplace.makersAdultEyebrow', 'Adult · 18+')}
+              title={t('marketplace.makersAdultTitle', 'Adult makers')}
+              subtitle={t('marketplace.makersAdultSubtitle', {
+                defaultValue:
+                  '{{count}} makers whose range is adult-rated. We keep their product photos off this page — open a maker to see what they make.',
+                count: adultOnly.length,
+              })}
+              moreLabel={(count) =>
+                t('marketplace.showMoreAdultMakers', {
+                  defaultValue: 'Show {{count}} more adult makers',
+                  count,
+                })
+              }
+            />
+
+            {/* Makers with sfw goods but no usable product image. Deliberately
+                NOT under the adult heading — that would be false about them. */}
+            <MarkTileSection
+              key={`more|${search}|${ownership.join()}`}
+              id="makers-more"
+              brands={unpictured}
+              spaced={withCover.length + adultOnly.length > 0}
+              eyebrow={t('marketplace.makersMoreEyebrow', 'Also listed')}
+              title={t('marketplace.makersMoreTitle', 'More makers')}
+              moreLabel={(count) =>
+                t('marketplace.showMoreMakers', { defaultValue: 'Show {{count}} more', count })
+              }
+            />
 
             {visibleRows.length > 0 && (
               <ul className="m-0 list-none p-0">
@@ -546,5 +550,51 @@ export default function MarketplaceBrands() {
         </PageContainer>
       </div>
     </div>
+  );
+}
+
+/**
+ * A section of compact mark tiles with its own "Show more". Pages
+ * independently of the gallery above it — a shared budget once put these
+ * makers fourteen presses away (see `visibleRows`). Renders nothing when empty.
+ */
+function MarkTileSection({
+  id,
+  brands,
+  spaced,
+  eyebrow,
+  title,
+  subtitle,
+  moreLabel,
+}: {
+  id: string;
+  brands: DirectoryBrand[];
+  spaced: boolean;
+  eyebrow: string;
+  title: string;
+  subtitle?: string;
+  moreLabel: (count: number) => string;
+}) {
+  const [shown, setShown] = useState(GALLERY_STEP);
+  if (brands.length === 0) return null;
+  const visible = brands.slice(0, shown);
+  return (
+    <section aria-labelledby={id} className={spaced ? 'mt-16' : undefined}>
+      <SectionHeader id={id} eyebrow={eyebrow} title={title} subtitle={subtitle} />
+      <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        {visible.map((b) => (
+          <li key={b.slug}>
+            <BrandMarkTile brand={b} />
+          </li>
+        ))}
+      </ul>
+      {brands.length > visible.length && (
+        <div className="mt-10 flex items-center justify-center">
+          <Button variant="outline" size="lg" onClick={() => setShown((n) => n + GALLERY_STEP)}>
+            {moreLabel(Math.min(GALLERY_STEP, brands.length - visible.length))}
+          </Button>
+        </div>
+      )}
+    </section>
   );
 }
