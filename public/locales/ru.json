@@ -2928,6 +2928,10 @@
       "inView_other": "[RU] {{count}} places in view",
       "hide": "[RU] Hide nearby places",
       "listLabel": "[RU] Places in view",
+      "atSpot_one": "{{count}} место в этой точке",
+      "atSpot_other": "{{count}} мест в этой точке",
+      "showAll": "Все места в поле зрения",
+      "stackListLabel": "Места в этой точке",
       "showOnMap": "[RU] Show {{name}} on the map"
     },
     "firstRun": {

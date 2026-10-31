@@ -2892,6 +2892,10 @@
       "inView_other": "[JA] {{count}} places in view",
       "hide": "[JA] Hide nearby places",
       "listLabel": "[JA] Places in view",
+      "atSpot_one": "この地点の場所 {{count}} 件",
+      "atSpot_other": "この地点の場所 {{count}} 件",
+      "showAll": "表示中のすべての場所",
+      "stackListLabel": "この地点の場所",
       "showOnMap": "[JA] Show {{name}} on the map"
     },
     "firstRun": {

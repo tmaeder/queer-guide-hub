@@ -10,7 +10,7 @@ import { MapNavControls } from './chrome/MapNavControls';
 import { MapNotice } from './chrome/MapNotice';
 import { MapRail } from './chrome/MapRail';
 import { FilterChips } from './FilterChips';
-import type { MapPointSummary } from './mapPoint';
+import type { MapPointStack, MapPointSummary } from './mapPoint';
 import { useMapShellState } from '@/hooks/useMapShellState';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -115,6 +115,9 @@ export const MapShell = ({
 
   // Spotlight rail state — the in-view point feed + hover/selection sync.
   const [pointsInView, setPointsInView] = useState<MapPointSummary[]>([]);
+  // A co-located stack the user opened from the map; while set, the board
+  // lists that spot's places instead of everything in view.
+  const [stack, setStack] = useState<MapPointStack | null>(null);
   // Uncontrolled fallbacks. A host that passes `selectedId` owns the value and
   // these are inert; `setSelectedId` still writes the internal one so an
   // uncontrolled MapShell behaves exactly as before.
@@ -441,6 +444,7 @@ export const MapShell = ({
         highlightedId={hoveredId}
         showResultCount={!showRail}
         onSelectPoint={showRail ? setSelectedId : undefined}
+        onStackSelect={showRail ? setStack : undefined}
         onFetchingChange={setFetching}
         favoriteIds={favoriteIds}
         savedOnly={savedActive}
@@ -454,12 +458,13 @@ export const MapShell = ({
 
       {showRail && (
         <MapRail
-          points={pointsInView}
+          points={stack ? stack.points : pointsInView}
           selectedId={selectedId}
           loading={fetching}
           onHover={setHoveredId}
           onSelect={(id) => setSelectedId(id)}
           ordered={railOrdered}
+          stack={stack ? { onClear: () => setStack(null) } : null}
         />
       )}
 

@@ -2892,6 +2892,10 @@
       "inView_other": "보이는 장소 {{count}} 곳",
       "hide": "근처 장소 숨기기",
       "listLabel": "보이는 장소",
+      "atSpot_one": "이 지점의 장소 {{count}} 곳",
+      "atSpot_other": "이 지점의 장소 {{count}} 곳",
+      "showAll": "보이는 모든 장소",
+      "stackListLabel": "이 지점의 장소",
       "showOnMap": "{{name}} 지도에서 보기"
     },
     "firstRun": {

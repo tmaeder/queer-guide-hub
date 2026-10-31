@@ -35,13 +35,21 @@ const QUANT = 10;
 const PIXEL_RATIO = 2;
 const CACHE_CAP = 256;
 
-/** Cluster size buckets, aligned with the old circle radii (16/20/26/32/40). */
+/**
+ * Cluster size buckets (diameter in px), roughly logarithmic in the count.
+ *
+ * The floor is set by the PIN, not the count: pins are 26-34px
+ * (usePointLayers), and a 28px cluster read as just another pin. 36px keeps
+ * the smallest cluster visibly a different kind of mark. Growth is log-like so
+ * a 500-place cluster is not a disc that buries the city around it: each step
+ * up is a 5x jump in count but only ~6-8px in diameter.
+ */
 export const DONUT_SIZE_STEPS: [count: number, diameterPx: number][] = [
-  [0, 32],
-  [10, 40],
-  [50, 52],
-  [100, 64],
-  [500, 80],
+  [0, 36],
+  [10, 42],
+  [50, 50],
+  [100, 56],
+  [500, 64],
 ];
 
 /** The cluster aggregate names, read from the registry so the donut, the
@@ -135,7 +143,8 @@ export function renderDonut(
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
 
-  const edge = 2 * PIXEL_RATIO; // the ink border, 2px logical
+  // The ink border, 1.5px logical to match the pin outline (usePointLayers).
+  const edge = 1.5 * PIXEL_RATIO;
   const c = size / 2;
   const rOuter = c - edge / 2; // inset by half the stroke so it can't clip
   const ring = Math.max(5, spec.diameter * 0.16) * PIXEL_RATIO;

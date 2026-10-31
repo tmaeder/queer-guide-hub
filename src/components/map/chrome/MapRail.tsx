@@ -20,6 +20,12 @@ export interface MapRailProps {
    * put stop 4 above stop 1 because stop 4 happens to be featured.
    */
   ordered?: boolean;
+  /**
+   * The board is showing one spot's stack rather than everything in view.
+   * Every place is rendered (no cap — the point of listing a stack is that
+   * none is dropped), and the header names the scope with a way back.
+   */
+  stack?: { onClear: () => void } | null;
 }
 
 /** Rank: featured first, then live/open-now, then nearest, then alphabetical. */
@@ -61,7 +67,15 @@ function useRailClearance(state: 'hidden' | 'collapsed' | 'expanded') {
  * (the trip map, and `/venues`, which mounts ExploreMap directly with no
  * shell). They have never both been on screen at once.
  */
-export function MapRail({ points, selectedId, loading, onHover, onSelect, ordered }: MapRailProps) {
+export function MapRail({
+  points,
+  selectedId,
+  loading,
+  onHover,
+  onSelect,
+  ordered,
+  stack,
+}: MapRailProps) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const [collapsed, setCollapsed] = useState(false);
@@ -79,9 +93,10 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect, ordere
   const [focusId, setFocusId] = useState<string | null>(null);
   // Cap the rendered set — the in-view feed can be large; the ranking surfaces
   // the most relevant first and the count line is honest about the remainder.
+  const cap = stack ? Infinity : 30;
   const ranked = useMemo(
-    () => (ordered ? points.slice(0, 30) : rankPoints(points).slice(0, 30)),
-    [points, ordered],
+    () => (ordered ? points.slice(0, cap) : rankPoints(points).slice(0, cap)),
+    [points, ordered, cap],
   );
   const total = points.length;
 
@@ -158,10 +173,12 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect, ordere
 
   if (total === 0) return null;
 
-  const countLabel = t('map.rail.inView', {
-    defaultValue: '{{count}} places in view',
-    count: total,
-  });
+  const countLabel = stack
+    ? t('map.rail.atSpot', { defaultValue: '{{count}} places at this spot', count: total })
+    : t('map.rail.inView', {
+        defaultValue: '{{count}} places in view',
+        count: total,
+      });
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4">
@@ -178,6 +195,15 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect, ordere
           >
             {countLabel}
           </span>
+          {stack && (
+            <button
+              type="button"
+              onClick={stack.onClear}
+              className="ml-auto shrink-0 text-2xs uppercase tracking-wider text-logo-plate underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-logo-plate focus-visible:ring-inset"
+            >
+              {t('map.rail.showAll', { defaultValue: 'All places in view' })}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setCollapsed((v) => !v)}
@@ -205,7 +231,11 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect, ordere
               !reducedMotion && 'scroll-smooth',
             )}
             role="listbox"
-            aria-label={t('map.rail.listLabel', { defaultValue: 'Places in view' })}
+            aria-label={
+              stack
+                ? t('map.rail.stackListLabel', { defaultValue: 'Places at this spot' })
+                : t('map.rail.listLabel', { defaultValue: 'Places in view' })
+            }
             aria-orientation="horizontal"
             onKeyDown={handleKeyDown}
           >
