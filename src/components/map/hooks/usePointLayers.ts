@@ -230,13 +230,13 @@ export function usePointLayers({
       source: POINTS_SOURCE,
       filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'featured'], true]],
       paint: {
-        // Tracks the featured pin's own radius (12.5→14.5 over z11→z16, see
+        // Tracks the featured pin's own radius (15→17 over z11→z16, see
         // the unclustered layer) plus 3px. It was a flat 14, so by z16 the pin
         // plus its 1.5px stroke covered it and covered the paper gap
         // entirely: the two rings fused into one thick band and the
         // interchange read as a heavier stop. MapLibre draws a circle's
         // stroke OUTSIDE its radius, so the gap here is a constant 1.5px.
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 15.5, 16, 17.5],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 18, 16, 20],
         'circle-color': paper(),
         // 1.5px to match the pin outline; two concentric rings of equal
         // weight are what reads as an interchange.
@@ -254,8 +254,8 @@ export function usePointLayers({
       paint: {
         // Larger dots host the category glyph; featured sit a touch larger.
         // Radius grows slightly with zoom so pins don't feel undersized right
-        // after a cluster expands into the (larger) donuts. ~15% up from
-        // 9→11 / featured 11→13, so the category glyph inside reads at a
+        // after a cluster expands into the (larger) donuts. Was 9→11 /
+        // featured 11→13; now 13→15 / 15→17, so the category glyph inside reads at a
         // glance; the glyph size, featured ring and saved-badge offset below
         // are all scaled from these numbers and must move with them.
         'circle-radius': [
@@ -263,9 +263,9 @@ export function usePointLayers({
           ['linear'],
           ['zoom'],
           11,
-          ['case', ['==', ['get', 'featured'], true], 12.5, 10.5],
+          ['case', ['==', ['get', 'featured'], true], 15, 13],
           16,
-          ['case', ['==', ['get', 'featured'], true], 14.5, 12.5],
+          ['case', ['==', ['get', 'featured'], true], 17, 15],
         ],
         'circle-color': ['get', 'color'],
         // The ink border, not a halo. Blue/green/yellow measure 2.25 / 1.64
@@ -305,7 +305,8 @@ export function usePointLayers({
         // be a flat 0.42/0.50, i.e. an ~8-10px glyph inside an 18-26px dot:
         // under half the pin, too small to tell a bar from a sauna. Now ~2/3
         // of the dot's diameter at every zoom, growing with the dot (radius
-        // 10.5→12.5, featured 12.5→14.5, interpolated over the same zooms).
+        // 13→15, featured 15→17, interpolated over the same zooms). Sizes
+        // above 1 upscale the raster, which is why mapGlyphs.ts renders at 3×.
         // Scaled here rather than in the rasterizer because the saved badge
         // below reuses the same 20px images at its own 0.26.
         'icon-size': [
@@ -313,9 +314,9 @@ export function usePointLayers({
           ['linear'],
           ['zoom'],
           11,
-          ['case', ['==', ['get', 'featured'], true], 0.85, 0.72],
+          ['case', ['==', ['get', 'featured'], true], 1.0, 0.86],
           16,
-          ['case', ['==', ['get', 'featured'], true], 0.95, 0.82],
+          ['case', ['==', ['get', 'featured'], true], 1.1, 0.98],
         ],
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
@@ -344,7 +345,7 @@ export function usePointLayers({
         'icon-size': 0.26,
         // Up and to the right of the dot, in icon-size units. Scaled with the
         // pin radius (was 26 at radius 11) so the badge stays on the rim.
-        'icon-offset': [30, -30],
+        'icon-offset': [36, -36],
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
       },

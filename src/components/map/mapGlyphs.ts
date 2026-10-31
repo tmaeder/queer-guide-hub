@@ -21,8 +21,12 @@ import { ink } from '@/lib/mapTokens';
  * still renders). Never throws into the map lifecycle.
  */
 
-const GLYPH_PX = 20; // logical size; rendered at 2× for retina
-const SCALE = 2;
+// Logical size 20px, rasterized at 3×: the pin glyph is drawn at icon-size
+// up to 1.1 (usePointLayers), and a 2× raster upscaled past 1 on a retina
+// screen goes soft. Logical size is unchanged, so the saved badge (which
+// reuses these images at 0.26) is unaffected.
+const GLYPH_PX = 20;
+const SCALE = 3;
 
 function rasterize(name: TransitIconName): Promise<ImageData | null> {
   return new Promise((resolve) => {
