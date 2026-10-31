@@ -63,8 +63,13 @@ export function brandFromVendor(
   vendor: string | null | undefined,
   fallback: string | null | undefined,
   aliases?: Record<string, unknown> | null,
-): string {
+  excludedVendors?: readonly string[] | null,
+): string | null {
   const v = String(vendor ?? '').trim()
+  // Merchant-specific evidence can establish that a vendor is a product type
+  // (for example Wet For Her's "Book"). Preserve an unknown maker rather than
+  // inventing one from the seller. This is an exact, opt-in exclusion.
+  if (v && excludedVendors?.includes(v)) return null
   // Only an explicitly researched merchant mapping can replace a wordy vendor.
   const alias = aliases && Object.hasOwn(aliases, v) ? aliases[v] : null
   if (typeof alias === 'string' && alias.trim()) return alias.trim()
