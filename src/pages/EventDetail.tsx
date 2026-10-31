@@ -305,7 +305,7 @@ export default function EventDetail() {
     ? singleSections([
         {
           id: 'about',
-          title: t('events.detail.section.about', 'The lowdown'),
+          title: t('events.detail.section.about', 'About'),
           content: hasEventAboutContent(event) ? (
             <EventAbout event={event} onContentUpdated={refetch} />
           ) : null,
@@ -322,7 +322,7 @@ export default function EventDetail() {
         },
         {
           id: 'where',
-          title: t('events.detail.section.where', 'Find your way'),
+          title: t('events.detail.section.where', 'Getting there'),
           content: hasEventWhereContent(event) ? (
             <EventWhere
               event={event}
@@ -341,7 +341,7 @@ export default function EventDetail() {
           // rendered its own "Who's going" h2 and that guard strips only the
           // first heading before checking for a body; both halves are fixed.
           id: 'going',
-          title: t('events.detail.section.going', 'Riding with you'),
+          title: t('events.detail.section.going', "Who's going"),
           content: hasWhoIsGoingContent(event, isPast) ? (
             <EventWhoIsGoing event={event} user={user} isPast={isPast} />
           ) : null,

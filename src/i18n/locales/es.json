@@ -1368,9 +1368,9 @@
       "eyebrow": "[ES] Event",
       "sections": "[ES] Sections",
       "section": {
-        "about": "Lo que debes saber",
-        "where": "Encuentra el camino",
-        "going": "Quienes te acompañan"
+        "about": "Acerca de",
+        "where": "Cómo llegar",
+        "going": "Quién va"
       },
       "calendar": "Calendario",
       "moreOptions": "Más opciones",

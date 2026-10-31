@@ -1368,9 +1368,9 @@
       "eyebrow": "이벤트",
       "sections": "섹션",
       "section": {
-        "about": "알아둘 점",
-        "where": "가는 길 찾기",
-        "going": "함께하는 사람들"
+        "about": "소개",
+        "where": "오시는 길",
+        "going": "참석자"
       },
       "calendar": "달력",
       "moreOptions": "더 보기",

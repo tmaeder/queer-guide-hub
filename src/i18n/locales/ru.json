@@ -1400,9 +1400,9 @@
       "eyebrow": "[RU] Event",
       "sections": "[RU] Sections",
       "section": {
-        "about": "Главное",
+        "about": "О событии",
         "where": "Как добраться",
-        "going": "Кто с вами"
+        "going": "Кто идёт"
       },
       "calendar": "Календарь",
       "moreOptions": "Другие действия",

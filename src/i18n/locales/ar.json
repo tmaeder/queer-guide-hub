@@ -1374,9 +1374,9 @@
       "eyebrow": "[AR] Event",
       "sections": "[AR] Sections",
       "section": {
-        "about": "المهم",
-        "where": "اعثر على طريقك",
-        "going": "من يرافقك"
+        "about": "نبذة",
+        "where": "الوصول",
+        "going": "من سيحضر"
       },
       "calendar": "التقويم",
       "moreOptions": "خيارات إضافية",

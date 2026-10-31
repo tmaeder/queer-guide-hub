@@ -1368,9 +1368,9 @@
       "eyebrow": "[JA] Event",
       "sections": "[JA] Sections",
       "section": {
-        "about": "ここがポイント",
-        "where": "行き方を探す",
-        "going": "一緒に行く人"
+        "about": "概要",
+        "where": "アクセス",
+        "going": "参加者"
       },
       "calendar": "カレンダー",
       "moreOptions": "その他の操作",

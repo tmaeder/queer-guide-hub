@@ -1551,9 +1551,9 @@
       "eyebrow": "[DE] Event",
       "sections": "[DE] Sections",
       "section": {
-        "about": "Gut zu wissen",
-        "where": "Finde deinen Weg",
-        "going": "Mit dir unterwegs"
+        "about": "Über",
+        "where": "Anfahrt",
+        "going": "Wer kommt"
       },
       "calendar": "Kalender",
       "moreOptions": "Weitere Optionen",
