@@ -19,7 +19,7 @@ const LINE_WIDTH = 5;
 /** Screen pixels, not user units: the thumb variant crops to each city's own
  *  bounding box, so the same user-unit width would render at a different
  *  thickness per city. `vector-effect: non-scaling-stroke` pins it instead. */
-const THUMB_LINE_PX = 2.5;
+const THUMB_LINE_PX = 3.5;
 /** The backdrop is drawn large behind a masthead, so its lines are heavier
  *  than the thumb's — same non-scaling reason, wider stroke. */
 const BACKDROP_LINE_PX = 7;
@@ -72,6 +72,13 @@ interface Props {
    * the diagram is only ever an upgrade over a meaningless placeholder.
    */
   index?: number;
+  /**
+   * Line weight in SCREEN pixels for `thumb` / `backdrop`. The thumb default
+   * is sized for small slots (48–112px tall); a large picture slot such as a
+   * city card's 16:10 header renders the same network several times bigger
+   * and needs a heavier line to read as a route rather than a hairline.
+   */
+  lineWidth?: number;
 }
 
 function TrackLine({ d, track, strokePx }: { d: string; track: Track; strokePx?: number }) {
@@ -106,7 +113,7 @@ function Station({ x, y, r = 6 }: { x: number; y: number; r?: number }) {
  *
  * Decorative: the card already carries the city name as its label.
  */
-function CityNetworkImpl({ slug, variant = 'card', index, className }: Props) {
+function CityNetworkImpl({ slug, variant = 'card', index, lineWidth, className }: Props) {
   const network = slug ? CITY_NETWORKS[slug] : undefined;
 
   if (!network) {
@@ -130,7 +137,7 @@ function CityNetworkImpl({ slug, variant = 'card', index, className }: Props) {
 
   const backdrop = variant === 'backdrop';
   const thumb = variant === 'thumb' || backdrop;
-  const strokePx = backdrop ? BACKDROP_LINE_PX : thumb ? THUMB_LINE_PX : undefined;
+  const strokePx = thumb ? (lineWidth ?? (backdrop ? BACKDROP_LINE_PX : THUMB_LINE_PX)) : undefined;
   const { crop } = network;
   // The ring is drawn in user units, and the thumb's units differ per city, so
   // scale it off the crop instead of hard-coding a radius that would be a dot
