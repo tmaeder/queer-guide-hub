@@ -31,13 +31,14 @@ type Brand = {
   ownership_tags: string[] | null;
   cover_url: string | null;
   cover_thumb: string | null;
+  adult_only: boolean;
 };
 
 function brand(
   slug: string,
   name: string,
   count: number,
-  opts: { tags?: string[]; cover?: boolean } = {},
+  opts: { tags?: string[]; cover?: boolean; adult?: boolean } = {},
 ): Brand {
   return {
     slug,
@@ -51,6 +52,7 @@ function brand(
     // gave every maker one could not tell the two halves apart.
     cover_url: opts.cover === false ? null : `https://cdn.example/${slug}.jpg`,
     cover_thumb: null,
+    adult_only: opts.adult ?? false,
   };
 }
 
@@ -61,9 +63,9 @@ function brand(
 const DIRECTORY: Brand[] = [
   brand('big-maker', 'Big Maker', 7391),
   brand('mid-maker', 'Mid Maker', 900, { tags: ['queer_owned'] }),
-  brand('zebra', 'Zebra Goods', 120, { cover: false }),
+  brand('zebra', 'Zebra Goods', 120, { cover: false, adult: true }),
   brand('aberg', 'Åberg Atelier', 90),
-  brand('fourpaws', '4Paws Supply', 40, { cover: false }),
+  brand('fourpaws', '4Paws Supply', 40, { cover: false, adult: true }),
 ];
 
 const FEATURED = [
@@ -153,12 +155,45 @@ describe('MarketplaceBrands', () => {
     const gallery = screen.getByRole('link', { name: 'Mid Maker' }).closest('li');
     expect(within(gallery as HTMLElement).getByRole('presentation', { hidden: true })).toBeTruthy();
 
-    // Zebra has no cover, so it must appear under the honest heading instead.
-    expect(
-      screen.getByRole('heading', { name: /Makers we have no photograph of/i }),
-    ).toBeInTheDocument();
+    // Zebra has no SFW cover, so it must appear under the adult heading instead.
+    expect(screen.getByRole('heading', { name: /^Adult makers$/i })).toBeInTheDocument();
     const row = screen.getByRole('link', { name: 'Zebra Goods' }).closest('li');
     expect(within(row as HTMLElement).queryByRole('presentation', { hidden: true })).toBeNull();
+  });
+
+  it('names the coverless section for what it is, not as a data gap', () => {
+    // A coverless maker is one whose listings are all adult-rated: the cover is
+    // drawn from sfw/suggestive listings only. Measured on prod, 259 of 259 such
+    // makers have adult listings. "Makers we have no photograph of" was false
+    // and meaningless to a reader — it must not come back.
+    renderPage();
+    expect(screen.queryByText(/no photograph/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/makers whose range is adult-rated/i)).toBeInTheDocument();
+  });
+
+  it('never files a coverless maker as adult unless the RPC says adult_only', () => {
+    // 6 coverless makers on prod also sell sfw goods that lack a usable image.
+    // Inferring "adult" from the missing cover would be false about them, so
+    // they go to a neutral section. Also covers an older RPC without the
+    // column: `adult_only` undefined must never read as adult.
+    state.directory = [
+      ...DIRECTORY,
+      brand('mixed', 'Mixed Range Co', 30, { cover: false, adult: false }),
+      {
+        ...brand('legacy', 'Legacy Row', 20, { cover: false }),
+        adult_only: undefined,
+      } as unknown as Brand,
+    ];
+    renderPage();
+
+    const adult = screen.getByRole('region', { name: /^Adult makers$/i });
+    const more = screen.getByRole('region', { name: /^More makers$/i });
+
+    expect(within(adult).getByRole('link', { name: 'Zebra Goods' })).toBeInTheDocument();
+    expect(within(adult).queryByRole('link', { name: 'Mixed Range Co' })).toBeNull();
+    expect(within(adult).queryByRole('link', { name: 'Legacy Row' })).toBeNull();
+    expect(within(more).getByRole('link', { name: 'Mixed Range Co' })).toBeInTheDocument();
+    expect(within(more).getByRole('link', { name: 'Legacy Row' })).toBeInTheDocument();
   });
 
   it('keeps a maker with no photograph reachable', () => {
@@ -183,7 +218,7 @@ describe('MarketplaceBrands', () => {
       ...Array.from({ length: 60 }, (_, i) =>
         brand(`photo-${i}`, `Photo Maker ${String(i).padStart(2, '0')}`, 500 - i),
       ),
-      brand('no-photo-one', 'Unphotographed One', 10, { cover: false }),
+      brand('no-photo-one', 'Unphotographed One', 10, { cover: false, adult: true }),
     ];
     state.featured = [];
     renderPage();
@@ -192,9 +227,7 @@ describe('MarketplaceBrands', () => {
     expect(screen.getByRole('button', { name: /more with photos/i })).toBeInTheDocument();
 
     // ...and the index is reachable anyway, on the very first screen.
-    expect(
-      screen.getByRole('heading', { name: /Makers we have no photograph of/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /^Adult makers$/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Unphotographed One' })).toBeInTheDocument();
   });
 
@@ -247,9 +280,7 @@ describe('MarketplaceBrands', () => {
     renderPage();
     await user.click(screen.getByRole('button', { name: 'A–Z index' }));
 
-    expect(
-      screen.queryByRole('heading', { name: /Makers we have no photograph of/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /^Adult makers$/i })).not.toBeInTheDocument();
     // No gallery cover images outside the highlight band.
     const bandImages = document.querySelectorAll('section img[src*="cdn.example"]').length;
     expect(document.querySelectorAll('img[src*="cdn.example"]').length).toBe(bandImages);
