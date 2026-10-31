@@ -284,7 +284,22 @@ export function usePointLayers({
       filter: ['!', ['has', 'point_count']],
       layout: {
         'icon-image': ['coalesce', ['image', ['get', 'iconKey']], ['image', 'type:venues']],
-        'icon-size': ['case', ['==', ['get', 'featured'], true], 0.5, 0.42],
+        // Images are rasterized at 20 logical px (mapGlyphs.ts). This used to
+        // be a flat 0.42/0.50, i.e. an ~8-10px glyph inside an 18-26px dot:
+        // under half the pin, too small to tell a bar from a sauna. Now ~2/3
+        // of the dot's diameter at every zoom, growing with the dot (radius
+        // 9→11, featured 11→13, interpolated over the same zoom range).
+        // Scaled here rather than in the rasterizer because the saved badge
+        // below reuses the same 20px images at its own 0.26.
+        'icon-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          11,
+          ['case', ['==', ['get', 'featured'], true], 0.75, 0.62],
+          16,
+          ['case', ['==', ['get', 'featured'], true], 0.85, 0.72],
+        ],
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
       },
