@@ -47,6 +47,8 @@ export interface Guide {
   review_due_at: string | null;
   is_featured: boolean;
   safety_gated: boolean;
+  selection_method?: string | null;
+  last_verified_at?: string | null;
   meta: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -63,6 +65,8 @@ export interface GuidePick {
   cons: string[];
   position: number;
   is_orphaned: boolean;
+  source_urls?: string[];
+  verified_at?: string | null;
 }
 
 export type HydratedPick = GuidePick & { entity: PickEntityDisplay | null };
@@ -171,6 +175,29 @@ export function useGuides(filter: GuidesFilter = {}) {
       if (excludeGenerated) {
         rows = rows.filter((g) => !(g.meta && GENERATED_SHORTLIST_MARKER in g.meta));
         if (filter.limit) rows = rows.slice(0, filter.limit);
+      }
+      // Counts must describe the entities this reader can actually see.
+      if (rows.length) {
+        const { data: pickRows, error: pickError } = await untypedFrom('guide_picks')
+          .select('guide_id, entity_type, entity_id')
+          .in(
+            'guide_id',
+            rows.map((g) => g.id),
+          )
+          .eq('is_orphaned', false);
+        if (pickError) throw pickError;
+        const refs = (pickRows ?? []) as Array<{
+          guide_id: string;
+          entity_type: GuideEntityType;
+          entity_id: string;
+        }>;
+        const entities = await fetchPickEntities(refs);
+        rows = rows.map((g) => ({
+          ...g,
+          pick_count: refs.filter(
+            (p) => p.guide_id === g.id && entities.has(`${p.entity_type}:${p.entity_id}`),
+          ).length,
+        }));
       }
       return rows;
     },

@@ -1,3 +1,4 @@
+import { GuideProse } from './GuideProse';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
@@ -35,27 +36,33 @@ export function GuidePickBlock({ pick, index }: { pick: HydratedPick; index: num
       id={`pick-${index + 1}`}
       className="grid grid-cols-12 gap-6 md:gap-10 pt-12 first:pt-0"
     >
-      <div className="col-span-12 md:col-span-5">
-        <div className="md:sticky md:top-24 space-y-4">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-container bg-muted">
-            {heroUrl ? (
-              <img
-                src={heroUrl}
-                alt=""
-                loading="lazy"
-                className="absolute inset-0 size-full object-cover"
-              />
-            ) : null}
-            {entity.unavailable && (
-              <div className="absolute inset-x-0 bottom-0 bg-foreground/80 text-background text-13 text-center py-2">
-                {t('guides.pick.unavailable', 'No longer available')}
-              </div>
-            )}
+      {heroUrl && (
+        <div className="col-span-12 md:col-span-5">
+          <div className="md:sticky md:top-24 space-y-4">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-container bg-muted">
+              {heroUrl ? (
+                <img
+                  src={heroUrl}
+                  alt=""
+                  loading="lazy"
+                  className="absolute inset-0 size-full object-cover"
+                />
+              ) : null}
+              {entity.unavailable && (
+                <div className="absolute inset-x-0 bottom-0 bg-foreground/80 text-background text-13 text-center py-2">
+                  {t('guides.pick.unavailable', 'No longer available')}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="col-span-12 md:col-span-7 space-y-6">
+      <div
+        className={
+          heroUrl ? 'col-span-12 md:col-span-7 space-y-6' : 'col-span-12 max-w-3xl space-y-6'
+        }
+      >
         {pick.tier && (
           <p className="inline-flex items-center rounded-badge px-2 py-1 text-13 uppercase tracking-[0.15em] bg-surface-container">
             {tierLabels[pick.tier]}
@@ -75,7 +82,24 @@ export function GuidePickBlock({ pick, index }: { pick: HydratedPick; index: num
             {entity.metaLine}
           </p>
         )}
-        {pick.rationale_md && <p className="text-body-lg leading-relaxed">{pick.rationale_md}</p>}
+        {pick.rationale_md && <GuideProse text={pick.rationale_md} />}
+        {!!pick.source_urls?.length && (
+          <div className="flex flex-wrap gap-4 text-13">
+            {pick.source_urls
+              .filter((url) => /^https?:\/\//i.test(url))
+              .map((url, i) => (
+                <a
+                  key={url}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-4"
+                >
+                  {t('guides.source', 'Source')} {i + 1}
+                </a>
+              ))}
+          </div>
+        )}
 
         {(pick.pros.length > 0 || pick.cons.length > 0) && (
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 text-15">
@@ -151,7 +175,7 @@ export function GuideComparisonTable({ picks }: { picks: HydratedPick[] }) {
                 {t('guides.detail.where', 'Where')}
               </th>
               <th className="text-left p-4 text-13 uppercase tracking-[0.1em] text-muted-foreground">
-                {t('guides.detail.bestFor', 'Best for')}
+                {t('guides.detail.keyDetail', 'Key detail')}
               </th>
             </tr>
           </thead>

@@ -6,7 +6,7 @@ import { invalidateManagedOptions } from '@/hooks/useManagedOptions';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedRpc } from '@/integrations/supabase/untyped';
+import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { getContentType } from '@/config/contentTypeRegistry';
@@ -161,13 +161,16 @@ export function useCMSEditor({
 
   const refresh = useCallback(async () => {
     const id = state.itemId ?? itemId;
-    if (!config || (!config.editorRpc && !config.editorApi) || !id) return;
+    if (!config || (!config.editorRpc && !config.editorApi && contentType !== 'guides') || !id)
+      return;
     const { data, error } = config.editorApi
       ? await config.editorApi.load(id).then(
           (data) => ({ data, error: null }),
           (error) => ({ data: null, error }),
         )
-      : await untypedRpc(config.editorRpc!.load, { p_id: id });
+      : config.editorRpc
+        ? await untypedRpc(config.editorRpc.load, { p_id: id })
+        : await untypedFrom(config.tableName).select('*').eq(config.primaryKey, id).single();
     if (error || !data) {
       setState((prev) => ({
         ...prev,
@@ -181,6 +184,12 @@ export function useCMSEditor({
     const server = data as Record<string, unknown>;
     serverUpdatedAt.current = server.updated_at as string;
     if (server._cms_metadata) setMetadata(server._cms_metadata as CMSContentMetadata);
+    else if (contentType === 'guides')
+      setMetadata((prev) =>
+        prev
+          ? { ...prev, workflow_state: server.status as CMSContentMetadata['workflow_state'] }
+          : prev,
+      );
     setState((prev) => {
       const merged = { ...server };
       const nextDirty = new Set<string>();
@@ -191,7 +200,7 @@ export function useCMSEditor({
       dirtyFieldsRef.current = nextDirty;
       return { ...prev, data: merged, originalData: server, isDirty: nextDirty.size > 0 };
     });
-  }, [config, state.itemId, itemId]);
+  }, [config, state.itemId, itemId, contentType]);
 
   // ── Field updates ──────────────────────────────────────────────
 

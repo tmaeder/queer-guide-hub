@@ -36,12 +36,18 @@ const report = {
     empty_despite_public_products: makers.filter(
       (m) => m.product_count > 0 && m.public_visible === 0 && m.public_rating_products > 0,
     ).length,
+    empty_despite_products_all_ratings: makers.filter(
+      (m) => m.actual_active > 0 && m.eligible_all_ratings === 0,
+    ).length,
     only_opt_in_or_unrated: makers.filter(
       (m) => m.public_visible === 0 && m.actual_active > 0 && m.public_rating_products === 0,
     ).length,
     stale_counts: makers.filter((m) => m.product_count !== m.actual_active).length,
     missing_descriptions: makers.filter((m) => !m.has_description).length,
     missing_logos: makers.filter((m) => !m.has_logo).length,
+    complete_profiles_with_qualified_picture: makers.filter(
+      (m) => m.has_description && m.has_logo && m.eligible_all_ratings > 0,
+    ).length,
   },
   makers,
 };

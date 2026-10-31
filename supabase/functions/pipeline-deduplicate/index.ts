@@ -16,6 +16,7 @@ import {
   type GuardContext,
 } from '../_shared/dedup-engine.ts'
 import { resolveDedupEntityType } from '../_shared/content-registry.ts'
+import { bookIdentity } from '../_shared/marketplace-book-identity.ts'
 
 // ============================================================
 // Pipeline Deduplicate — unified, config-driven (2026-06-23)
@@ -363,6 +364,7 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
       const lng = (loc.lng ?? n.longitude ?? null) as number | null
       const guardCtx: GuardContext = {
         itemCountry: ((loc.country ?? n.country ?? (n.metadata as Record<string, unknown> | undefined)?.country) as string | null) ?? null,
+        itemBookIdentity: effType === 'marketplace' ? bookIdentity(n) : null,
       }
 
       try {
@@ -475,6 +477,24 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
           actor: 'pipeline-deduplicate', payload: { skipped: true, reason: 'circuit_open' },
         })
         continue
+      }
+
+      if (guardCtx.itemBookIdentity && raws.length) {
+        // Hydrate deterministic AND semantic candidates so a semantic signal
+        // cannot reintroduce a conflicting volume rejected by the title blocker.
+        // Read errors leave staging pending; never classify unchecked books.
+        const ids = [...new Set(raws.map(c => c.entity_id))]
+        const { data, error } = await supabase.from('marketplace_listings')
+          .select('id,title,attributes').in('id', ids)
+        if (error || !data || ids.some(id => !data.some(row => row.id === id))) {
+          console.error(`dedup-book-editions ${item.id}:`, error?.message ?? 'Candidate disappeared during edition check')
+          hardFailures++
+          continue
+        }
+        for (const candidate of raws) {
+          const row = data.find(row => row.id === candidate.entity_id)!
+          candidate.bookIdentity = bookIdentity(row, true)
+        }
       }
 
       const verdict = decideCandidate(cfg, raws, guardCtx)

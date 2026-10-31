@@ -66,14 +66,18 @@ export function WorkflowPanel({
     // eslint-disable-next-line react-hooks/immutability -- loadMetadata declared below; effect fires after render so binding is initialized.
     loadMetadata();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemId, config, initialState]);
+  }, [itemId, config, initialState, contentType]);
 
   const loadMetadata = useCallback(async () => {
     if (!itemId || !config) return;
     try {
       const data = await loadCMSContentMetadata(config.tableName, itemId);
       if (data) {
-        setCurrentState((data.workflow_state as WorkflowState) || 'draft');
+        setCurrentState(
+          contentType === 'guides' && initialState
+            ? initialState
+            : (data.workflow_state as WorkflowState) || 'draft',
+        );
         setVisibility((data.visibility_level as VisibilityLevel) || 'public');
         setPublishedAt(data.published_at || undefined);
         const sched = data.scheduled_publish_at;
@@ -86,7 +90,7 @@ export function WorkflowPanel({
       console.error('WorkflowPanel: failed to load metadata', err);
       setMetadataLoaded(true);
     }
-  }, [itemId, config, initialState]);
+  }, [itemId, config, initialState, contentType]);
 
   const handleTransition = useCallback(
     async (trans: WorkflowTransition, comment?: string) => {

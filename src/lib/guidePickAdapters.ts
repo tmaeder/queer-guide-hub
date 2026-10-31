@@ -119,6 +119,17 @@ function fmtPrice(price: unknown, currency: unknown): string | null {
 }
 
 const ADAPTERS: Partial<Record<GuideEntityType, Adapter>> = {
+  organization: {
+    table: 'organizations',
+    select: 'id, slug, name, cover_image_url, logo_url, status',
+    toDisplay: (r) => ({
+      name: str(r.name) ?? 'Organisation',
+      href: `/organizations/${str(r.slug) ?? r.id}`,
+      imagePath: str(r.cover_image_url) ?? str(r.logo_url),
+      metaLine: null,
+      categoryLabel: 'Support',
+    }),
+  },
   venue: {
     table: 'venues',
     select: 'id, slug, name, images, category, address, city, latitude, longitude',
@@ -247,6 +258,8 @@ export async function fetchPickEntities(picks: PickRef[]): Promise<Map<string, P
       if (!adapter) return;
       let query = untypedFrom(adapter.table).select(adapter.select).in('id', ids);
       if (type === 'marketplace') query = query.eq('overview_eligible', true);
+      if (type === 'marketplace')
+        query = query.or('availability.is.null,availability.neq.out_of_stock');
       const { data, error } = await query;
       if (error) throw error;
       for (const row of (data ?? []) as AdapterRow[]) {

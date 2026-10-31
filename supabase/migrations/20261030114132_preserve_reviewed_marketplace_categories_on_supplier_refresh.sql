@@ -1,17 +1,3 @@
--- RECOVERED FROM PROD BY scripts/recover-migration-drift.mjs.
---
--- Applied to prod as version 20261030114132 with no repo file — the signature of
--- MCP `apply_migration`, which stamps a version and commits nothing. An applied
--- version with no file fails migration-versions on every PR in the repo and
--- makes `db push` refuse to run.
---
--- Reconstructed from `schema_migrations.statements`, which holds the PARSED
--- statements: trailing semicolons are stripped (re-added here) and any original
--- comment header is NOT recorded, so the reasoning that accompanied this
--- migration is lost. Verified by md5 against a server-computed digest.
---
--- Never re-run: `db push` matches on version and skips an applied one. The file
--- exists so history is complete and a rebuild from zero works.
 do $$ begin if md5(pg_get_functiondef('public.marketplace_listings_derive_taxonomy()'::regprocedure)) <> '2ce889c7c0f3f10c874eb8c82cac5e67' then raise exception 'Taxonomy trigger changed since review; refusing to overwrite concurrent work'; end if; end $$;
 
 CREATE OR REPLACE FUNCTION public.marketplace_listings_derive_taxonomy()
@@ -96,4 +82,4 @@ begin
     new.taxonomy_v3_at := now(); new.taxonomy_version := 4; new.taxonomy_classifier_version := 'marketplace-taxonomy-v4';
   end if;
   return new;
-end $function$;;
+end $function$;

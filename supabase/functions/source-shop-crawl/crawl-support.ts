@@ -1,4 +1,118 @@
 import * as cheerio from 'npm:cheerio@1.0.0-rc.12'
+import { brandFromVendor } from '../_shared/marketplace-pipeline-utils.ts'
+
+/** The same merchant-scoped spelling corrections used by the Shopify readers.
+ * Configured maker priority is preserved; the seller is never a maker fallback. */
+export function readCrawlMakerBrand(configured: string | undefined, extracted: string | null, aliases: unknown): string | null {
+  const validAliases = aliases && typeof aliases === 'object' && !Array.isArray(aliases)
+    ? aliases as Record<string, unknown> : null
+  return brandFromVendor(configured || extracted, null, validAliases) || null
+}
+
+/** Read the merchant's explicitly offered full product-gallery images. Product
+ * thumbnails, recommendation widgets and video frames are not gallery photos. */
+export function readMagentoGalleryImages(html: string, pageUrl: string): string[] {
+  const $ = cheerio.load(html)
+  const host = new URL(pageUrl).hostname.replace(/^www\./, '')
+  const images = new Set<string>()
+  $('script[type="text/x-magento-init"]').each((_i, node) => {
+    try {
+      const config = JSON.parse($(node).text())
+      const gallery = config?.['[data-gallery-role=gallery-placeholder]']?.['mage/gallery/gallery']?.data
+      if (!Array.isArray(gallery)) return
+      for (const image of gallery) {
+        if (image?.type !== 'image' || typeof image.full !== 'string') continue
+        try {
+          const url = new URL(image.full)
+          if (url.hostname.replace(/^www\./, '') === host && allowedSitemap(url.href, url.hostname)) images.add(url.href)
+        } catch { /* Ignore malformed gallery URLs. */ }
+        if (images.size >= 12) break
+      }
+    } catch { /* Other Magento initializers can contain non-JSON script data. */ }
+  })
+  return [...images].slice(0, 12)
+}
+
+/** Wix appends display transformations to a public media-file URL. Opt in only
+ * for merchants whose JSON-LD supplies thumbnails instead of native covers.
+ * https://dev.wix.com/docs/overview/site-features-tools/media-manager */
+export function readCrawlImageUrl(raw: string, mode?: string): string {
+  if (mode !== 'wix_original') return raw
+  try {
+    const url = new URL(raw)
+    if (url.protocol !== 'https:' || url.hostname !== 'static.wixstatic.com' ||
+        url.port || url.username || url.password || url.search || url.hash) return raw
+    const match = url.pathname.match(/^(\/media\/[^/]+\.(?:jpe?g|png|webp|gif|avif))\/v1\/(?:fit|fill|crop)\//i)
+    if (match) return `${url.origin}${match[1]}`
+  } catch { /* Leave malformed or unrelated media URLs untouched. */ }
+  return raw
+}
+
+/** Mixed merchant catalogs must not inherit the crawler's original book labels. */
+export function readCrawlCategoryLabels(category?: string, subcategory?: string) {
+  return {
+    category: category?.trim() || 'Other',
+    subcategory: subcategory?.trim() || 'Other',
+  }
+}
+
+/** Read URL locations from sitemap entries, including XML CDATA text. */
+export function readSitemapLocations(xml: string, requireProductImages = false): string[] {
+  const $ = cheerio.load(xml, { xmlMode: true })
+  if (requireProductImages) {
+    return $('url').filter((_i, node) => $(node).children().toArray().some(child =>
+      child.type === 'tag' && /(^|:)image$/.test(child.name) &&
+      $(child).children().toArray().some(field => field.type === 'tag' && /(^|:)loc$/.test(field.name) && Boolean($(field).text().trim()))
+    )).children('loc').map((_i, node) => $(node).text().trim()).get().filter(Boolean)
+  }
+  return $('loc').map((_i, node) => $(node).text().trim()).get().filter(Boolean)
+}
+
+/** Explicitly selected product links from a merchant's public HTML catalog.
+ * Ignore document <base> tags and keep discovery on the same HTTPS host. */
+export function readCatalogProductLinks(html: string, pageUrl: string, selector: string): string[] {
+  if (!selector.trim()) throw new Error('HTML catalog requires a product link selector')
+  const page = new URL(pageUrl)
+  const host = page.hostname.replace(/^www\./, '')
+  const $ = cheerio.load(html)
+  const links = new Set<string>()
+  $(selector).each((_i, node) => {
+    const raw = $(node).attr('href')?.trim()
+    if (!raw || raw.startsWith('#')) return
+    try {
+      const url = new URL(raw, page)
+      if (url.hostname.replace(/^www\./, '') !== host) return
+      // Reuse the registry's HTTPS, credentials and port checks for every link.
+      if (!allowedSitemap(url.href, page.hostname)) return
+      url.hash = ''
+      links.add(url.href)
+    } catch { /* Malformed links are not products. */ }
+  })
+  return [...links].sort()
+}
+
+/** Some storefronts serve .xml.gz files without a Content-Encoding header. */
+export async function decodeSitemapBytes(bytes: Uint8Array, maxBytes = 50 * 1024 * 1024): Promise<string> {
+  if (bytes.byteLength > maxBytes) throw new Error('Sitemap exceeds size limit')
+  if (bytes[0] !== 0x1f || bytes[1] !== 0x8b) return new TextDecoder().decode(bytes)
+  const reader = new Blob([bytes.slice()]).stream().pipeThrough(new DecompressionStream('gzip')).getReader()
+  const decoder = new TextDecoder()
+  const parts: string[] = []
+  let total = 0
+  try {
+    while (true) {
+      const { value, done } = await reader.read()
+      if (done) break
+      total += value.byteLength
+      if (total > maxBytes) throw new Error('Expanded sitemap exceeds size limit')
+      parts.push(decoder.decode(value, { stream: true }))
+    }
+    parts.push(decoder.decode())
+    return parts.join('')
+  } finally {
+    await reader.cancel()
+  }
+}
 
 // These are first-party, operator-maintained snapshots already registered on the
 // three Salzgeber merchants. Product URLs are still restricted to shop_domain.
@@ -17,6 +131,17 @@ export function allowedSitemap(raw: string, shopDomain: string): boolean {
     if (url.hostname.replace(/^www\./, '') === host) return true
     return host === 'salzgeber.shop' && OWNED_SITEMAPS.has(url.href)
   } catch { return false }
+}
+
+/** Exact canonical destination used by configured storefronts for removed items. */
+export function readCanonicalPageUrl(html: string, pageUrl: string): string | null {
+  const $ = cheerio.load(html)
+  const href = $('link[rel~="canonical" i]').first().attr('href')
+  if (!href) return null
+  try {
+    const url = new URL(href, pageUrl)
+    return url.protocol === 'https:' ? url.href : null
+  } catch { return null }
 }
 
 export interface Selectors {

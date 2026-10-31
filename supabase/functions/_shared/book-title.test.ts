@@ -51,3 +51,17 @@ Deno.test('splitAuthor: a mode never applies the other mode\'s pattern', () => {
   // A colon-shaped title under title_by must not be mangled by the " by " rule.
   assertEquals(splitAuthor('Raffauf, Elisabeth: Stark gegen Mobbing', 'title_by').author, null)
 })
+
+Deno.test('splitAuthor title_colon: editor role stays out of the maker name', () => {
+  assertEquals(splitAuthor('Parker, Patricia Kay (Hrsg.): und plötzlich gab es SIE', 'title_colon'),
+    { title: 'und plötzlich gab es SIE', author: 'Patricia Kay Parker' })
+  assertEquals(splitAuthor('Müller, Anna (Hg.): Gesammelte Texte', 'title_colon').author, 'Anna Müller')
+})
+
+Deno.test('splitAuthor title_colon: recognises an initial-led byline without splitting plain subtitles', () => {
+  assertEquals(splitAuthor('A. Andrews: A Quick & Easy Guide to Sex & Disability', 'title_colon'),
+    { title: 'A Quick & Easy Guide to Sex & Disability', author: 'A. Andrews' })
+  assertEquals(splitAuthor('Queer History: A Reader', 'title_colon'),
+    { title: 'Queer History: A Reader', author: null })
+  assertEquals(splitAuthor('A. Andrews: A Guide', 'title_by').author, null)
+})

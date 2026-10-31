@@ -62,8 +62,17 @@ export function normalizeCurrency(raw: unknown): string {
 export function brandFromVendor(
   vendor: string | null | undefined,
   fallback: string | null | undefined,
-): string {
+  aliases?: Record<string, unknown> | null,
+  excludedVendors?: readonly string[] | null,
+): string | null {
   const v = String(vendor ?? '').trim()
+  // Merchant-specific evidence can establish that a vendor is a product type
+  // (for example Wet For Her's "Book"). Preserve an unknown maker rather than
+  // inventing one from the seller. This is an exact, opt-in exclusion.
+  if (v && excludedVendors?.includes(v)) return null
+  // Only an explicitly researched merchant mapping can replace a wordy vendor.
+  const alias = aliases && Object.hasOwn(aliases, v) ? aliases[v] : null
+  if (typeof alias === 'string' && alias.trim()) return alias.trim()
   if (/\p{L}/u.test(v)) return v
   // The fallback is the merchant, never `vendor` again — that is the value just
   // rejected, and a chain that falls back onto it reinstates the defect.

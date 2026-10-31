@@ -43,6 +43,12 @@ import type { EditorQueue } from '@/components/admin/shell/AdminShell';
 import { brandColors } from '@/theme/brandColors';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/ui/accordion';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 /** Map field groups to Lucide icons for tab labels */
@@ -168,16 +174,18 @@ function CMSEditorBody({
   // Cockpit workflow transitions (approve / request changes). The queue feeds
   // items that are in `review`; fall back to the record's own workflow_state.
   const workflowState =
-    queue && legacyLocationId
-      ? 'review'
-      : ((metadata?.workflow_state as WorkflowState) ??
-        (contentType === 'organizations'
-          ? state.data.status === 'active'
-            ? 'published'
-            : state.data.status === 'archived'
-              ? 'archived'
-              : 'draft'
-          : 'review'));
+    contentType === 'guides'
+      ? (state.data.status as WorkflowState)
+      : queue && legacyLocationId
+        ? 'review'
+        : ((metadata?.workflow_state as WorkflowState) ??
+          (contentType === 'organizations'
+            ? state.data.status === 'active'
+              ? 'published'
+              : state.data.status === 'archived'
+                ? 'archived'
+                : 'draft'
+            : 'review'));
   const { transition, isTransitioning } = useCMSWorkflow(workflowState);
 
   const titleValue = (config ? (state.data[config.titleField] as string) : '') ?? '';
@@ -494,6 +502,21 @@ function CMSEditorBody({
               </div>
             </div>
           </div>
+          {state.itemId && !!config.extraPanels?.length && (
+            <Accordion type="multiple" className="mt-6 rounded-container bg-card p-4">
+              {config.extraPanels
+                .filter(
+                  (p) =>
+                    contentType !== 'guides' || p.id !== 'quest' || state.data.format === 'quest',
+                )
+                .map((panel) => (
+                  <AccordionItem key={panel.id} value={panel.id}>
+                    <AccordionTrigger>{panel.label}</AccordionTrigger>
+                    <AccordionContent>{panel.render(state.itemId!, refresh)}</AccordionContent>
+                  </AccordionItem>
+                ))}
+            </Accordion>
+          )}
         </div>
 
         {/* ── Sidebar ─────────────────────────────────────── */}
@@ -503,7 +526,7 @@ function CMSEditorBody({
             itemId={state.itemId ?? itemId}
             metadata={metadata}
             onUpdateMetadata={updateMetadata}
-            onWorkflowChange={config.editorRpc ? refresh : undefined}
+            onWorkflowChange={config.editorRpc || contentType === 'guides' ? refresh : undefined}
             qualitySource={state.data}
             onApplyField={setField}
             onJumpToField={handleJumpToField}

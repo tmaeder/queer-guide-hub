@@ -4,7 +4,7 @@ import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { extractContent } from '../_shared/extract-client.ts'
 import { splitAuthor } from '../_shared/book-title.ts'
-import { allowedSitemap, readSelectedProduct, readStaticSchema, type Selectors } from './crawl-support.ts'
+import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readCrawlImageUrl, readCrawlMakerBrand, readMagentoGalleryImages, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
@@ -29,6 +29,9 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 // config keys (per merchant):
 //   strategy          'jsonld' | 'microdata' | 'selector'   which reader parses a product page
 //   sitemap           absolute URL of the product sitemap (or a sitemapindex)
+//   sitemap_format    'xml' (default) | 'html' for a public catalog page
+//   sitemap_require_images  opt in to product entries with sitemap image metadata
+//   catalog_link_selector  explicit product-link CSS selector for HTML catalogs
 //   url_include       regex a URL must match to be treated as a product page
 //   entity_id_from    'isbn' | undefined       how to derive source_entity_id
 //   subcategory       pinned subcategory (drives department; see below)
@@ -55,18 +58,24 @@ const UA = 'QueerGuideBot/1.0 (+https://queer.guide/bot)'
 
 interface CrawlConfig {
   strategy: string
+  unavailable_canonical_urls?: string[]
   selectors?: Selectors
   sitemap: string
+  sitemap_format?: 'xml' | 'html'
+  sitemap_require_images?: boolean
+  catalog_link_selector?: string
   url_include?: string
   entity_id_from?: string
   subcategory?: string
   category?: string
   product_type?: string
   brand_name?: string
+  vendor_aliases?: unknown
   business_name?: string
   currency?: string
   lang?: string
   author_from?: string
+  image_url_mode?: string
   concurrency?: number
   crawl_delay_ms?: number
   render?: boolean
@@ -89,10 +98,8 @@ interface ProductRead {
 
 // ── sitemap ────────────────────────────────────────────────────────────────────
 
-function locs(xml: string): string[] {
-  return [...xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)].map(m =>
-    m[1].replace(/&amp;/g, '&').trim()
-  )
+function locs(xml: string, requireProductImages = false): string[] {
+  return readSitemapLocations(xml, requireProductImages)
 }
 
 class CrawlFetchError extends Error {
@@ -105,7 +112,7 @@ async function fetchText(url: string, timeoutMs: number): Promise<string> {
   try {
     const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/xml,text/xml,*/*' }, signal: ctrl.signal })
     if (!res.ok) throw new CrawlFetchError(res.status, url)
-    return await res.text()
+    return await decodeSitemapBytes(new Uint8Array(await res.arrayBuffer()))
   } finally { clearTimeout(timer) }
 }
 
@@ -116,14 +123,16 @@ async function fetchText(url: string, timeoutMs: number): Promise<string> {
 async function collectProductUrls(cfg: CrawlConfig, shopDomain: string): Promise<string[]> {
   const root = await fetchText(cfg.sitemap, SITEMAP_TIMEOUT_MS)
   let urls: string[]
-  if (/<sitemapindex/i.test(root)) {
+  if (cfg.sitemap_format === 'html') {
+    urls = readCatalogProductLinks(root, cfg.sitemap, cfg.catalog_link_selector ?? '')
+  } else if (/<sitemapindex/i.test(root)) {
     urls = []
     for (const child of locs(root).slice(0, SITEMAP_INDEX_MAX_CHILDREN)) {
-      try { urls.push(...locs(await fetchText(child, SITEMAP_TIMEOUT_MS))) }
+      try { urls.push(...locs(await fetchText(child, SITEMAP_TIMEOUT_MS), cfg.sitemap_require_images === true)) }
       catch (e) { console.error(`sitemap child ${child}:`, (e as Error).message) }
     }
   } else {
-    urls = locs(root)
+    urls = locs(root, cfg.sitemap_require_images === true)
   }
 
   const include = cfg.url_include ? new RegExp(cfg.url_include) : null
@@ -294,7 +303,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
     if (merchant.is_enabled === false) return jsonResponse(skippedResponse('merchant_disabled', [sourceSlug]), 200, req)
 
     const cfg = (merchant.config ?? {}) as unknown as CrawlConfig
-    const missing = [!cfg.sitemap && 'config.sitemap', !cfg.strategy && 'config.strategy'].filter(Boolean) as string[]
+    const missing = [!cfg.sitemap && 'config.sitemap', !cfg.strategy && 'config.strategy', cfg.sitemap_format === 'html' && !cfg.catalog_link_selector?.trim() && 'config.catalog_link_selector'].filter(Boolean) as string[]
     if (missing.length) return jsonResponse(skippedResponse('missing_config', missing), 200, req)
     const reader = READERS[cfg.strategy]
     if (!reader && cfg.strategy !== 'selector') return jsonResponse(skippedResponse('unknown_strategy', [cfg.strategy]), 200, req)
@@ -346,6 +355,11 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
     const delayMs = Math.max(0, Number(cfg.crawl_delay_ms ?? DEFAULT_CRAWL_DELAY_MS))
     const items: RawItem[] = []
     let extractFailures = 0, noPrice = 0, missingPages = 0, consumed = 0, budgetHit = false
+    const failureSamples: Array<{ url: string; reason: string }> = []
+    const recordFailure = (url: string, reason: string) => {
+      extractFailures++
+      if (failureSamples.length < 5) failureSamples.push({ url, reason })
+    }
     let next = 0
     let lastStart = 0
 
@@ -368,20 +382,36 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
           try {
             const html = await fetchText(url, 12_000)
             read = readSelectedProduct(html, url, cfg.selectors ?? {}, cfg.currency)
+            if (read && cfg.image_url_mode === 'magento_gallery') {
+              const gallery = readMagentoGalleryImages(html, url)
+              if (gallery.length) read.images = gallery
+            }
+            // Some shops return their homepage with HTTP 200 for a removed
+            // product. Only treat explicitly configured canonical destinations
+            // as unavailable, and only when the product title is absent.
+            const canonical = !read ? readCanonicalPageUrl(html, url) : null
+            if (canonical && Array.isArray(cfg.unavailable_canonical_urls) && cfg.unavailable_canonical_urls.includes(canonical)) {
+              missingPages++
+              continue
+            }
           } catch (error) {
             if (error instanceof CrawlFetchError && [404, 410].includes(error.status)) missingPages++
-            else extractFailures++
+            else recordFailure(url, error instanceof CrawlFetchError ? `fetch_http_${error.status}` : 'fetch_failed')
             continue
           }
         } else {
           read = null
+          let staticFailure: string | undefined
           if (cfg.render !== true) {
-            try { read = reader(readStaticSchema(await fetchText(url, 12_000)), url) }
-            catch (error) {
+            try {
+              read = reader(readStaticSchema(await fetchText(url, 12_000)), url)
+              if (!read) staticFailure = 'static_product_schema_missing'
+            } catch (error) {
               if (error instanceof CrawlFetchError && [404, 410].includes(error.status)) {
                 missingPages++
                 continue
               }
+              staticFailure = error instanceof CrawlFetchError ? `fetch_http_${error.status}` : 'fetch_failed'
               // Preserve the extract-worker fallback for transient fetch failures.
             }
           }
@@ -391,11 +421,11 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
               render: cfg.render === true,
               timeoutMs: 12_000,
             })
-            if (!ex) { extractFailures++; continue }
+            if (!ex) { recordFailure(url, staticFailure ?? 'extract_worker_returned_no_result'); continue }
             read = reader(ex as unknown as Extracted, url)
           }
         }
-        if (!read || !read.name) { extractFailures++; continue }
+        if (!read || !read.name) { recordFailure(url, 'product_name_missing'); continue }
         // A priceless row would commit (validateMarketplaceNormalized only WARNS on a
         // missing price) and render a blank price on the card. Skip instead.
         if (read.price == null) { noPrice++; continue }
@@ -405,7 +435,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
           sourceId: `${sourceSlug}:${key}`,
           data: {
             url, isbn: read.sku, name: title, author: author ?? read.author,
-            description: read.description, images: read.images,
+            description: read.description, images: read.images.map(image => readCrawlImageUrl(image, cfg.image_url_mode)),
             price: read.price, currency: read.currency ?? cfg.currency ?? null,
             availability: read.inStock, strategy: cfg.strategy,
             // Tier 1 of the post-commit tag engine reads
@@ -420,7 +450,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
 
     // ── stage ──────────────────────────────────────────────────────────────────
     const businessName = cfg.business_name || merchant.display_name || shopDomain
-    const subcategory = cfg.subcategory || 'Books and Art'
+    const categoryLabels = readCrawlCategoryLabels(cfg.category, cfg.subcategory)
     const currencyFallback = normalizeCurrency(cfg.currency ?? 'USD')
 
     const adapter: SourceAdapter = {
@@ -432,6 +462,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
         const d = raw.data as Record<string, unknown>
         const url = String(d.url)
         const author = str(d.author)
+        const brand = readCrawlMakerBrand(cfg.brand_name, author, cfg.vendor_aliases)
         return {
           entityType: 'marketplace', sourceId: raw.sourceId, sourceName: sourceSlug,
           name: String(d.name),
@@ -444,13 +475,13 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
             merchant_deep_link: url, merchant_domain: extractMerchantDomain(url),
             price: d.price as number,
             currency: normalizeCurrency(d.currency ?? currencyFallback),
-            category: cfg.category || 'Books',
+            category: categoryLabels.category,
             // Drives the STORED generated columns subcategory_group + department.
             // marketplace_subcategory_group() is English-only, so a German label like
             // "Bücher" would fall through to 'other' — we always write the English
             // display string rather than the shop's own wording.
-            subcategory,
-            brand: cfg.brand_name || author, brand_name: cfg.brand_name || author,
+            subcategory: categoryLabels.subcategory,
+            brand, brand_name: brand,
             business_name: businessName,
             in_stock: d.availability as boolean | null,
             sku: d.isbn as string | null,
@@ -488,7 +519,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
             crawl_cursor: { index: nextCursor, total: urls.length, wraps, updated_at: new Date().toISOString() },
           },
           last_sync_at: new Date().toISOString(),
-          last_sync_status: extractFailures > 0 && items.length === 0 ? 'error' : 'ok',
+          last_sync_status: extractFailures > 0 ? (items.length === 0 ? 'error' : 'partial') : 'ok',
           last_sync_items: written,
         })
         .eq('provider', 'crawl').eq('slug', sourceSlug)
@@ -508,6 +539,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
       cursor: nextCursor, wraps,
       skipped_fresh: fresh.size,
       extract_failures: extractFailures,
+      extract_failure_samples: failureSamples,
       skipped_no_price: noPrice,
       budget_hit: budgetHit,
       elapsed_ms: Date.now() - runStarted,
