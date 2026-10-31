@@ -1573,8 +1573,6 @@
     "adBadge": "[IT] Ad",
     "outOfStock": "[IT] Out of stock",
     "queerOwnedBadge": "[IT] Queer-owned",
-    "totalMakerListings_one": "{{formattedCount}} annuncio in totale",
-    "totalMakerListings_other": "{{formattedCount}} annunci in totale",
     "showAdultMakerListings": "Mostra annunci per adulti (18+)",
     "noBrandListings": "Nessun annuncio è visibile con le impostazioni attuali."
   },

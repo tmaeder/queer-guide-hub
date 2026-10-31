@@ -1573,8 +1573,6 @@
     "adBadge": "[ZH] Ad",
     "outOfStock": "[ZH] Out of stock",
     "queerOwnedBadge": "[ZH] Queer-owned",
-    "totalMakerListings_one": "共 {{formattedCount}} 件商品",
-    "totalMakerListings_other": "共 {{formattedCount}} 件商品",
     "showAdultMakerListings": "显示成人商品（18岁以上）",
     "noBrandListings": "当前设置下没有可显示的商品。"
   },

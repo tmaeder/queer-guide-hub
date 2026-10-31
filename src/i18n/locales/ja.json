@@ -1573,8 +1573,6 @@
     "adBadge": "[JA] Ad",
     "outOfStock": "[JA] Out of stock",
     "queerOwnedBadge": "[JA] Queer-owned",
-    "totalMakerListings_one": "全{{formattedCount}}件の商品",
-    "totalMakerListings_other": "全{{formattedCount}}件の商品",
     "showAdultMakerListings": "成人向け商品を表示（18歳以上）",
     "noBrandListings": "現在の設定で表示できる商品はありません。"
   },
