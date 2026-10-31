@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
+import { pickMerchantName } from '@/lib/merchantName';
 
 export interface MerchantRow {
   id: string;
@@ -132,3 +133,25 @@ export function useOrganizationOptions() {
   });
 }
 
+/**
+ * Public: the merchant's own name, read from its active listings' feed
+ * `business_name` (anon cannot read `marketplace_merchants`). Null when no
+ * listing carries a usable name — see `pickMerchantName`.
+ */
+export function useMerchantPublicName(domain: string | undefined) {
+  return useQuery({
+    queryKey: ['marketplace-merchant-name', domain],
+    enabled: Boolean(domain),
+    staleTime: 300_000,
+    queryFn: async (): Promise<string | null> => {
+      const { data, error } = await supabase
+        .from('marketplace_listings')
+        .select('business_name')
+        .eq('merchant_domain', domain!)
+        .eq('status', 'active')
+        .limit(20);
+      if (error) return null;
+      return pickMerchantName((data ?? []).map((r) => r.business_name));
+    },
+  });
+}

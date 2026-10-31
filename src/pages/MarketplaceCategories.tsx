@@ -62,7 +62,7 @@ export default function MarketplaceCategories() {
   const { acknowledged } = useAdultAcknowledgement();
   const { data: groups, loading } = useMarketplaceSubcategoryGroupCounts(null, acknowledged);
 
-  const { sections, orphans, stopCount } = useMemo(() => {
+  const { sections, singles, orphans, stopCount } = useMemo(() => {
     // Imported vocabulary bindings change with this external-store revision.
     void taxonomyRevision;
 
@@ -89,8 +89,17 @@ export default function MarketplaceCategories() {
       .filter((g) => !routed.has(g.slug) && g.count > 0)
       .sort((a, b) => b.count - a.count);
 
+    // A department with ONE category was a whole band: a heading, one lone
+    // tile and an "All x →" link to the same listings. Five of eight
+    // departments are that shape, so the page was mostly empty bands. They
+    // share one band instead, each tile naming its department. Only when there
+    // are at least two: a shared band of one is the same lone tile again.
+    const singles = built.filter((sec) => sec.stops.length === 1);
+    const pooled = singles.length >= 2;
+
     return {
-      sections: built,
+      sections: pooled ? built.filter((sec) => sec.stops.length > 1) : built,
+      singles: pooled ? singles : [],
       orphans: stray,
       stopCount: built.reduce((n, s) => n + s.stops.length, 0) + stray.length,
     };
@@ -115,7 +124,7 @@ export default function MarketplaceCategories() {
         count={
           loading
             ? 'Counting…'
-            : `${stopCount.toLocaleString()} categor${stopCount === 1 ? 'y' : 'ies'} in ${sections.length} department${sections.length === 1 ? '' : 's'}`
+            : `${stopCount.toLocaleString()} categor${stopCount === 1 ? 'y' : 'ies'} in ${sections.length + singles.length} department${sections.length + singles.length === 1 ? '' : 's'}`
         }
       />
 
@@ -132,7 +141,7 @@ export default function MarketplaceCategories() {
               </li>
             ))}
           </ul>
-        ) : sections.length === 0 && orphans.length === 0 ? (
+        ) : sections.length === 0 && singles.length === 0 && orphans.length === 0 ? (
           <p className="text-muted-foreground">
             No categories yet.{' '}
             <LocalizedLink to="/marketplace" className="underline underline-offset-4">
@@ -184,6 +193,40 @@ export default function MarketplaceCategories() {
               </section>
             ))}
 
+            {singles.length > 0 && (
+              <section aria-labelledby="dept-pooled" className="mb-12">
+                <div className="mb-6">
+                  <h2 id="dept-pooled" className="font-display text-headline">
+                    More departments
+                  </h2>
+                </div>
+                <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-5">
+                  {singles.map((section) => {
+                    const stop = section.stops[0];
+                    return (
+                      <li key={section.slug}>
+                        {/* Still links through ?g=, so the count on the tile is
+                            the count on the page it opens (see the collision
+                            test). The department rides as the tile's context
+                            line, since it no longer has a heading of its own. */}
+                        <CategoryPlateTile
+                          to={`/marketplace/category/${section.slug}?g=${stop.slug}`}
+                          plateSlug={section.slug}
+                          glyph={groupIcon(stop.slug, section.slug)}
+                          index={0}
+                          count={1}
+                          label={groupLabel(stop.slug)}
+                          context={departmentLabel(section.slug)}
+                          listings={stop.count}
+                          blurb={toyGroupMeta(stop.slug)?.blurb}
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            )}
+
             {orphans.length > 0 && (
               <section aria-labelledby="dept-more" className="mb-12">
                 <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -232,6 +275,7 @@ function CategoryPlateTile({
   label,
   listings,
   blurb,
+  context,
 }: {
   to: string;
   plateSlug: string;
@@ -241,6 +285,8 @@ function CategoryPlateTile({
   label: string;
   listings: number;
   blurb?: string;
+  /** Replaces the ordinal: the department a pooled tile belongs to. */
+  context?: string;
 }) {
   return (
     <LocalizedLink
@@ -255,10 +301,15 @@ function CategoryPlateTile({
         className="border-b border-border-hairline"
       />
       <div className="flex flex-1 flex-col gap-1 p-4">
+        {context && context !== label && (
+          <span className="text-2xs uppercase tracking-label text-muted-foreground">{context}</span>
+        )}
         <span className="flex items-baseline gap-2">
-          <span className="text-2xs tabular-nums text-muted-foreground">
-            {String(index + 1).padStart(2, '0')}
-          </span>
+          {!context && (
+            <span className="text-2xs tabular-nums text-muted-foreground">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+          )}
           <span className="text-title font-bold leading-tight text-balance">{label}</span>
         </span>
         {blurb && (

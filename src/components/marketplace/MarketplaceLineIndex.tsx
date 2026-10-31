@@ -105,11 +105,16 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
           ))}
         </div>
       ) : (
-        <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-5">
+        // One scrolling row below md. As a two-up grid the eight tiles took
+        // four rows (~1,200px at 390px) between the masthead and the search
+        // bar, so a phone reader scrolled a screen and a half before they
+        // could search. The row bleeds to the screen edge so a tile cut off
+        // there reads as "more this way"; from md it is the grid again.
+        <ul className="-mx-4 my-0 flex list-none snap-x gap-4 overflow-x-auto px-4 pb-2 no-scrollbar sm:-mx-6 sm:px-6 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:p-0 lg:grid-cols-5">
           {tiles.map((tile, i) => {
             const active = tile.slug === activeDepartment;
             return (
-              <li key={tile.slug}>
+              <li key={tile.slug} className="w-40 shrink-0 snap-start md:w-auto">
                 <LocalizedLink
                   to={`/marketplace/category/${tile.slug}`}
                   aria-current={active ? 'true' : undefined}

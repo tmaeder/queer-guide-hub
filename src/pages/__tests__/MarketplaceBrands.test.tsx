@@ -119,6 +119,15 @@ describe('MarketplaceBrands', () => {
     expect(document.querySelectorAll('img[src*="cdn.example"]').length).toBeGreaterThanOrEqual(3);
   });
 
+  it('puts the search box above the highlight band, not under it', () => {
+    // Below the band, finding ONE maker meant scrolling past twelve large
+    // tiles first (~2,000px on a phone). The band unmounts on search anyway.
+    renderPage();
+    const search = screen.getByPlaceholderText(/Search makers/i);
+    const band = screen.getByRole('heading', { name: /On the counter today/i });
+    expect(search.compareDocumentPosition(band) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('never calls the highlight a ranking', () => {
     // The band rotates daily over everyone who qualifies, so "Most listings"
     // would be false and "Featured"/"Picks" would claim an editorial judgement
