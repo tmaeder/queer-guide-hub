@@ -35,13 +35,19 @@ const QUANT = 10;
 const PIXEL_RATIO = 2;
 const CACHE_CAP = 256;
 
-/** Cluster size buckets, aligned with the old circle radii (16/20/26/32/40). */
+/**
+ * Cluster size buckets (diameter in px). ~15% under the original
+ * 32/40/52/64/80 so a busy city view is less dominated by clusters. The
+ * floor is set by the count: at 28px the paper disc inside the ring is
+ * ~16px across, which fits the single-digit counts the smallest bucket
+ * (<10) ever shows at the 13px count size; 34px leaves ~21px for two digits.
+ */
 export const DONUT_SIZE_STEPS: [count: number, diameterPx: number][] = [
-  [0, 32],
-  [10, 40],
-  [50, 52],
-  [100, 64],
-  [500, 80],
+  [0, 28],
+  [10, 34],
+  [50, 44],
+  [100, 54],
+  [500, 68],
 ];
 
 /** The cluster aggregate names, read from the registry so the donut, the
