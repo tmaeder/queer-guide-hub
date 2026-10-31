@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 PG = Path(os.environ.get('PG_BIN', '/opt/homebrew/opt/postgresql@17/bin'))
-MIGRATION = ROOT / 'supabase/migrations/99991793340066_city_quality_description_fact_cache.sql'
+MIGRATION = ROOT / 'supabase/migrations/99991793461191_city_quality_description_fact_cache.sql'
 CONTRACT = (ROOT / 'supabase/migrations/99991790194100_city_quality_contract.sql').read_text()
 REFRESH = (ROOT / 'supabase/migrations/99991793214974_city_refresh_fair_bounded_drain.sql').read_text()
 PREDICATE = re.search(r'create or replace function public\.city_description_is_wrong_subject\(p_description text\).*?\$predicate\$;', REFRESH, re.S).group()
