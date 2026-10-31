@@ -1,4 +1,13 @@
 import * as cheerio from 'npm:cheerio@1.0.0-rc.12'
+import { brandFromVendor } from '../_shared/marketplace-pipeline-utils.ts'
+
+/** The same merchant-scoped spelling corrections used by the Shopify readers.
+ * Configured maker priority is preserved; the seller is never a maker fallback. */
+export function readCrawlMakerBrand(configured: string | undefined, extracted: string | null, aliases: unknown): string | null {
+  const validAliases = aliases && typeof aliases === 'object' && !Array.isArray(aliases)
+    ? aliases as Record<string, unknown> : null
+  return brandFromVendor(configured || extracted, null, validAliases) || null
+}
 
 /** Read the merchant's explicitly offered full product-gallery images. Product
  * thumbnails, recommendation widgets and video frames are not gallery photos. */
