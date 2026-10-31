@@ -75,6 +75,16 @@ export interface DirectoryBrand {
    * the merchant's own image rather than to a fallback texture.
    */
   cover_thumb: string | null;
+  /**
+   * The maker has adult/explicit listings and NO sfw/suggestive listing at
+   * all (`99991793435077`). Stated by the RPC rather than inferred from a null
+   * cover: a coverless maker is usually adult-only (253 of 259 on 2026-10-31),
+   * but the other 6 also sell sfw goods that simply lack a usable image, and
+   * labelling those "adult" would be false. Optional so the page degrades to
+   * the neutral section, never to the adult one, if it ever reads an older
+   * function that does not return the column.
+   */
+  adult_only?: boolean | null;
 }
 
 /**
