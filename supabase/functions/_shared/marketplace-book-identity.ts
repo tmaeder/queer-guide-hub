@@ -51,7 +51,7 @@ export function bookIdentity(value: Record<string, unknown>, force = false): Boo
     .map(canonicalIsbn).find(Boolean) ?? null
   const category = String(meta.category ?? value.category ?? '').toLowerCase()
   if (!force && !isbn && !/\b(?:books?|paperback|hardback|hardcover|softcover|ebook|e-book)\b/.test(category)) return null
-  const text = title + ' ' + category
+  const text = title + ' ' + category + ' ' + String(meta.binding ?? meta.format ?? '')
   const formats = new Set<string>()
   if (/\b(?:hardback|hardcover|hard cover)\b/i.test(text)) formats.add('hardcover')
   if (/\b(?:paperback|softback|softcover|soft cover)\b/i.test(text)) formats.add('paperback')
