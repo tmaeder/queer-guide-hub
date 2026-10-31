@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { formatCurrency, formatCents, getCurrencySymbol, isZeroDecimal, ZERO_DECIMAL_CURRENCIES } from '../currency';
 
 describe('currency', () => {
@@ -17,6 +17,17 @@ describe('currency', () => {
   });
   it('getCurrencySymbol returns a string', () => {
     expect(typeof getCurrencySymbol('USD')).toBe('string');
+  });
+  it('resolves the default USD symbol without initializing Intl', () => {
+    const formatter = vi.spyOn(Intl, 'NumberFormat');
+    try {
+      expect(getCurrencySymbol('usd')).toBe('$');
+      expect(formatter).not.toHaveBeenCalled();
+      expect(getCurrencySymbol('EUR')).toBe('€');
+      expect(formatter).toHaveBeenCalled();
+    } finally {
+      formatter.mockRestore();
+    }
   });
   it('isZeroDecimal true for JPY false for USD', () => {
     expect(isZeroDecimal('JPY')).toBe(true);
