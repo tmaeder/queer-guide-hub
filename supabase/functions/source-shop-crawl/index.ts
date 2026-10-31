@@ -4,7 +4,7 @@ import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { extractContent } from '../_shared/extract-client.ts'
 import { splitAuthor } from '../_shared/book-title.ts'
-import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
+import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
@@ -444,7 +444,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
 
     // ── stage ──────────────────────────────────────────────────────────────────
     const businessName = cfg.business_name || merchant.display_name || shopDomain
-    const subcategory = cfg.subcategory || 'Books and Art'
+    const categoryLabels = readCrawlCategoryLabels(cfg.category, cfg.subcategory)
     const currencyFallback = normalizeCurrency(cfg.currency ?? 'USD')
 
     const adapter: SourceAdapter = {
@@ -468,12 +468,12 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
             merchant_deep_link: url, merchant_domain: extractMerchantDomain(url),
             price: d.price as number,
             currency: normalizeCurrency(d.currency ?? currencyFallback),
-            category: cfg.category || 'Books',
+            category: categoryLabels.category,
             // Drives the STORED generated columns subcategory_group + department.
             // marketplace_subcategory_group() is English-only, so a German label like
             // "Bücher" would fall through to 'other' — we always write the English
             // display string rather than the shop's own wording.
-            subcategory,
+            subcategory: categoryLabels.subcategory,
             brand: cfg.brand_name || author, brand_name: cfg.brand_name || author,
             business_name: businessName,
             in_stock: d.availability as boolean | null,
