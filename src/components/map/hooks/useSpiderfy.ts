@@ -59,7 +59,7 @@ export function useSpiderfy({ spiderMarkersRef, showPopup, onSelectPointRef }: U
         el.title = summary.name;
         // Small stations: track fill inside the same ink border every other
         // pin carries (the fills are border-gated, see usePointLayers).
-        el.style.cssText = `width:22px;height:22px;border-radius:9999px;background:${summary.color};border:1.5px solid ${ink()};box-sizing:border-box;cursor:pointer;padding:0;`;
+        el.style.cssText = `width:25px;height:25px;border-radius:9999px;background:${summary.color};border:1.5px solid ${ink()};box-sizing:border-box;cursor:pointer;padding:0;`;
         el.addEventListener('click', (ev) => {
           ev.stopPropagation();
           showPopup(map, center, summary);
