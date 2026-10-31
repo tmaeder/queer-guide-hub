@@ -51,7 +51,7 @@ export function splitAuthor(rawTitle: string, mode: string | undefined): SplitTi
 
     // The same shop also prints initial-led bylines in natural order. Limit this
     // fallback to initials so ordinary "Title: Subtitle" text stays untouched.
-    const initial = t.match(/^((?:\p{Lu}\.\s*)+\p{Lu}[\p{L}'’\-]+):\s*(.+)$/u)
+    const initial = t.match(/^((?:\p{Lu}\.\s*)+\p{Lu}[\p{L}'’-]+):\s*(.+)$/u)
     if (initial) return { title: initial[2].trim(), author: initial[1].trim() }
   }
 
