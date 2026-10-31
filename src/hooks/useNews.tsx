@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { hashKey, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useLoadingTimedOut } from '@/hooks/useLoadingTimedOut';
-import { untypedFrom } from '@/integrations/supabase/untyped';
+import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 
 type NewsArticle = Record<string, unknown>;
 type NewsSource = Record<string, unknown>;
@@ -323,10 +323,59 @@ export function useNewsCategories() {
   return data ?? NO_CATEGORIES;
 }
 
+/** The visibility rule shared by every count below (mirrors fetchNewsArticles). */
+function applyNewsCountFilters<T extends ReturnType<typeof supabase.from>>(q: T): T {
+  return (q as unknown as ReturnType<typeof supabase.from>)
+    .not('published_at', 'is', null)
+    .not('content', 'is', null)
+    .neq('content', '')
+    .or(
+      'quality_status.eq.passed,and(quality_status.is.null,or(quality_score.is.null,quality_score.gte.50))',
+    )
+    .is('duplicate_of_id', null) as unknown as T;
+}
+
 /**
- * True per-category and global totals from `count: 'exact', head: true`
- * queries — independent of the 200-row slice rendered. Without these every
- * tab badge would show the same number. Waits for the category list.
+ * The pre-RPC path: one exact count for the total and one per category.
+ * Kept ONLY for the deploy window in which this code is live and the
+ * `get_news_category_counts` migration has not applied yet — it is the load
+ * that function exists to remove (17k calls at a mean of 908 ms, the largest
+ * source of statement timeouts on 2026-10-31).
+ */
+async function perTabCounts(slugs: string[]) {
+  const total = await applyNewsCountFilters(
+    supabase.from('news_articles').select('*', { count: 'exact', head: true }),
+  );
+  const pairs = await Promise.all(
+    slugs.map(async (raw) => {
+      const slug = raw.replace(/[(),]/g, '');
+      const res = await applyNewsCountFilters(
+        supabase.from('news_articles').select('*', { count: 'exact', head: true }),
+      ).or(`category_canonical.eq.${slug},category.eq.${slug}`);
+      return [raw, res.count ?? 0] as const;
+    }),
+  );
+  const counts: Record<string, number> = {};
+  for (const [slug, c] of pairs) counts[slug] = c;
+  return { total: total.count ?? null, counts };
+}
+
+/** PostgREST answers a call to a function it does not know with PGRST202 / 404. */
+function isMissingFunction(error: { code?: string; message?: string } | null): boolean {
+  return (
+    !!error &&
+    (error.code === 'PGRST202' || /could not find the function/i.test(error.message ?? ''))
+  );
+}
+
+/**
+ * True per-category and global totals, independent of the 200-row slice
+ * rendered — without these every tab badge would show the same number.
+ *
+ * ONE call to `get_news_category_counts`, which scans the visible articles once
+ * and counts each under both its canonical and legacy category, exactly as the
+ * per-tab `category_canonical.eq.X,category.eq.X` filter did. Waits for the
+ * category list.
  */
 export function useNewsCategoryCounts(categories: NewsCategory[]) {
   const slugs = categories.map((c) => c.slug);
@@ -334,32 +383,14 @@ export function useNewsCategoryCounts(categories: NewsCategory[]) {
     queryKey: ['news-category-counts', slugs],
     enabled: slugs.length > 0,
     queryFn: async () => {
-      // Mirror the visibility filters from fetchNewsArticles so badge counts
-      // agree with what a tab click would actually load.
-      const applyBaseFilters = <T extends ReturnType<typeof supabase.from>>(q: T) =>
-        (q as unknown as ReturnType<typeof supabase.from>)
-          .not('published_at', 'is', null)
-          .not('content', 'is', null)
-          .neq('content', '')
-          .or(
-            'quality_status.eq.passed,and(quality_status.is.null,or(quality_score.is.null,quality_score.gte.50))',
-          )
-          .is('duplicate_of_id', null) as unknown as T;
-      const total = await applyBaseFilters(
-        supabase.from('news_articles').select('*', { count: 'exact', head: true }),
-      );
-      const pairs = await Promise.all(
-        slugs.map(async (raw) => {
-          const slug = raw.replace(/[(),]/g, '');
-          const res = await applyBaseFilters(
-            supabase.from('news_articles').select('*', { count: 'exact', head: true }),
-          ).or(`category_canonical.eq.${slug},category.eq.${slug}`);
-          return [raw, res.count ?? 0] as const;
-        }),
-      );
+      const { data, error } = await untypedSupabase.rpc('get_news_category_counts');
+      if (isMissingFunction(error)) return perTabCounts(slugs);
+      if (error) throw error;
+      const body = (data ?? {}) as { total?: number; counts?: Record<string, number> };
+      const all = body.counts ?? {};
       const counts: Record<string, number> = {};
-      for (const [slug, c] of pairs) counts[slug] = c;
-      return { total: total.count ?? null, counts };
+      for (const slug of slugs) counts[slug] = all[slug] ?? 0;
+      return { total: typeof body.total === 'number' ? body.total : null, counts };
     },
   });
   return { categoryCounts: data?.counts ?? NO_COUNTS, totalArticles: data?.total ?? null };
