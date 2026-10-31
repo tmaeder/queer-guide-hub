@@ -12,7 +12,14 @@ vi.mock('@protomaps/basemaps', () => ({
   ],
 }));
 
-import { getMapStyle, globeFog, MAP_FONT_REGULAR, MAP_FONT_BOLD } from '../mapStyle';
+import {
+  getMapStyle,
+  globeFog,
+  MAP_FONT_REGULAR,
+  MAP_FONT_BOLD,
+  subwayRoads,
+  ROAD_WIDTH_SCALE,
+} from '../mapStyle';
 
 describe('getMapStyle', () => {
   it('uses MapLibre style spec v8', () => {
@@ -70,5 +77,77 @@ describe('globeFog', () => {
     expect(fog.color).toMatch(/^hsl\(/);
     expect(fog['high-color']).toMatch(/^hsl\(/);
     expect(fog['horizon-blend']).toBe(0.02);
+  });
+});
+
+describe('subwayRoads', () => {
+  // Shapes copied from @protomaps/basemaps 5.7 output, trimmed.
+  const W = ['interpolate', ['exponential', 1.6], ['zoom'], 11, 0, 15, 2, 18, 11];
+  const fill = {
+    id: 'roads_minor',
+    type: 'line',
+    source: 'p',
+    'source-layer': 'roads',
+    paint: { 'line-color': 'x', 'line-width': W },
+  };
+  const casing = {
+    id: 'roads_minor_casing',
+    type: 'line',
+    source: 'p',
+    'source-layer': 'roads',
+    paint: { 'line-width': 1, 'line-gap-width': W },
+  };
+  const bridgeCasing = { ...casing, id: 'roads_bridges_minor_casing' };
+  const tunnelCasing = { ...casing, id: 'roads_tunnels_minor_casing' };
+  const rail = {
+    id: 'roads_rail',
+    type: 'line',
+    source: 'p',
+    'source-layer': 'roads',
+    paint: { 'line-width': W },
+  };
+  const water = { id: 'water', type: 'fill', source: 'p', 'source-layer': 'water', paint: {} };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const run = (...l: unknown[]) => subwayRoads(l as any) as unknown as Array<Record<string, any>>;
+
+  it('drops the street and tunnel casings that drew every road as a double outline', () => {
+    const ids = run(fill, casing, tunnelCasing, bridgeCasing).map((l) => l.id);
+    expect(ids).toEqual(['roads_minor', 'roads_bridges_minor_casing']);
+  });
+
+  it('positive control: still keeps the street itself', () => {
+    expect(run(casing, fill)).toHaveLength(1);
+  });
+
+  it('widens the fill at every zoom stop, not the zoom inputs', () => {
+    const [out] = run(fill);
+    expect(out.paint['line-width']).toEqual([
+      'interpolate',
+      ['exponential', 1.6],
+      ['zoom'],
+      11,
+      0,
+      15,
+      2 * ROAD_WIDTH_SCALE,
+      18,
+      11 * ROAD_WIDTH_SCALE,
+    ]);
+  });
+
+  it('keeps the bridge knock-out hugging the wider bridge', () => {
+    const [out] = run(bridgeCasing);
+    expect(out.paint['line-width']).toBe(1);
+    expect(out.paint['line-gap-width']).toEqual(run(fill)[0].paint['line-width']);
+  });
+
+  it('rounds caps and joins on streets', () => {
+    const [out] = run(fill);
+    expect(out.layout).toMatchObject({ 'line-cap': 'round', 'line-join': 'round' });
+  });
+
+  it('leaves rail and non-road layers untouched', () => {
+    const [r, w] = run(rail, water);
+    expect(r).toBe(rail);
+    expect(w).toBe(water);
   });
 });

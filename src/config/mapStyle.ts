@@ -1,6 +1,6 @@
 import { layers, type Flavor } from '@protomaps/basemaps';
 import type { StyleSpecification } from 'maplibre-gl';
-import { ink, paper, inkMuted } from '@/lib/mapTokens';
+import { ink, paper, inkMuted, inkOnPaper } from '@/lib/mapTokens';
 
 // Side-effect import: registers the bundled MapLibre worker URL. Must run
 // before any map is constructed, which importing it here guarantees — every
@@ -83,16 +83,28 @@ const useBrandFonts = Boolean(import.meta.env.VITE_BASEMAP_ASSETS_URL);
 /**
  * The paper-and-ink basemap.
  *
- * Every value is one of three things — paper, ink, or ink at an alpha — so the
+ * Every value is paper, ink, ink at an alpha, or an opaque ink-on-paper mix, so the
  * basemap is a printed map rather than a satellite-ish one, and so the four
  * track colours are the only chromatic marks on the whole canvas. This is what
  * makes the pins readable: on stock Protomaps `light` a pink pin sat on green
  * landcover next to blue water and orange motorway shields.
  *
- * Roads follow the printed-map convention: paper fill with an ink casing, so
- * the network reads as drawn lines at every zoom instead of coloured ribbons.
- * Weight, not hue, carries the hierarchy — casings darken from `other` up to
- * `highway`.
+ * Roads are drawn the way a transit diagram draws its base streets: ONE solid
+ * stroke per street, round-capped, a quiet grey under the coloured lines. They
+ * were paper ribbons with an ink casing until 2026-10-31 — Protomaps draws a
+ * casing as a `line-gap-width` line, i.e. two thin parallel strokes with the
+ * road's own width left empty between them, so every street on the map read
+ * as a double outline. The casing layers are now dropped (see
+ * `subwayRoads()`), the fill carries the tone, and hierarchy is carried by
+ * tone AND width together: a motorway is darker and fatter than a side street.
+ *
+ * Every road tone is OPAQUE (`inkOnPaper`), never `ink(alpha)` — translucent
+ * strokes darken wherever two segments overlap, which on a street grid prints
+ * a knot at every junction.
+ *
+ * Bridges keep a casing, but in PAPER: the transit-map "crossing gap", a thin
+ * knock-out that lets a road passing over another read as over rather than
+ * merged into it.
  *
  * POI and landcover colours are included deliberately: Protomaps tints POI
  * icons blue/green/pink/red/tangerine/turquoise by category, which would put
@@ -126,52 +138,57 @@ function paperFlavor(): Flavor {
     runway: wash(0.1),
     zoo: wash(0.05),
     military: wash(0.05),
-    buildings: wash(0.09),
+    // Lighter than the lightest street, so a block never swallows the
+    // street that bounds it.
+    buildings: wash(0.06),
     pier: wash(0.12),
 
     // Water is a wash, not a colour. A transit map prints the harbour in the
     // same ink as everything else.
     water: wash(0.09),
 
-    // Roads — paper fill, ink casing, hierarchy by casing weight.
-    other: P,
-    minor_service: P,
-    minor_a: P,
-    minor_b: P,
-    link: P,
-    major: P,
-    highway: P,
-    minor_service_casing: wash(0.16),
-    minor_casing: wash(0.2),
-    link_casing: wash(0.26),
-    major_casing_early: wash(0.3),
-    major_casing_late: wash(0.3),
-    highway_casing_early: wash(0.42),
-    highway_casing_late: wash(0.42),
+    // Roads — one opaque grey stroke each; tone climbs with importance. The
+    // `*_casing` keys are still required by the Flavor type, but only the
+    // bridge casings are drawn (as paper knock-outs) — the rest are filtered
+    // out in `subwayRoads()`.
+    other: inkOnPaper(0.1),
+    minor_service: inkOnPaper(0.11),
+    minor_a: inkOnPaper(0.13),
+    minor_b: inkOnPaper(0.13),
+    link: inkOnPaper(0.17),
+    major: inkOnPaper(0.19),
+    highway: inkOnPaper(0.27),
+    minor_service_casing: P,
+    minor_casing: P,
+    link_casing: P,
+    major_casing_early: P,
+    major_casing_late: P,
+    highway_casing_early: P,
+    highway_casing_late: P,
 
-    // Tunnels: same ladder, lighter (they're under something).
-    tunnel_other: P,
-    tunnel_minor: P,
-    tunnel_link: P,
-    tunnel_major: P,
-    tunnel_highway: P,
-    tunnel_other_casing: wash(0.1),
-    tunnel_minor_casing: wash(0.12),
-    tunnel_link_casing: wash(0.16),
-    tunnel_major_casing: wash(0.18),
-    tunnel_highway_casing: wash(0.24),
+    // Tunnels: the same ladder, lighter — they are under something.
+    tunnel_other: inkOnPaper(0.07),
+    tunnel_minor: inkOnPaper(0.08),
+    tunnel_link: inkOnPaper(0.1),
+    tunnel_major: inkOnPaper(0.11),
+    tunnel_highway: inkOnPaper(0.15),
+    tunnel_other_casing: P,
+    tunnel_minor_casing: P,
+    tunnel_link_casing: P,
+    tunnel_major_casing: P,
+    tunnel_highway_casing: P,
 
-    // Bridges: same ladder, heavier (they're over something).
-    bridges_other: P,
-    bridges_minor: P,
-    bridges_link: P,
-    bridges_major: P,
-    bridges_highway: P,
-    bridges_other_casing: wash(0.2),
-    bridges_minor_casing: wash(0.24),
-    bridges_link_casing: wash(0.3),
-    bridges_major_casing: wash(0.34),
-    bridges_highway_casing: wash(0.46),
+    // Bridges: the surface ladder, plus the paper crossing gap (casing).
+    bridges_other: inkOnPaper(0.1),
+    bridges_minor: inkOnPaper(0.13),
+    bridges_link: inkOnPaper(0.17),
+    bridges_major: inkOnPaper(0.19),
+    bridges_highway: inkOnPaper(0.27),
+    bridges_other_casing: P,
+    bridges_minor_casing: P,
+    bridges_link_casing: P,
+    bridges_major_casing: P,
+    bridges_highway_casing: P,
 
     railway: wash(0.35),
     boundaries: wash(0.3),
@@ -217,6 +234,68 @@ function paperFlavor(): Flavor {
       urban_area: wash(0.06),
     },
   };
+}
+
+/** How much fatter a road fill is than Protomaps draws it. The stock fill is
+ *  the empty gap BETWEEN two casing strokes; with the casings gone the fill is
+ *  the whole road, so it takes roughly their combined width back. */
+export const ROAD_WIDTH_SCALE = 1.5;
+
+/** Line layers on the `roads` source-layer that are not streets. */
+const NON_STREET = /^roads_(rail|runway|taxiway|pier)$/;
+
+type LayerSpec = StyleSpecification['layers'][number];
+
+/** Multiply every OUTPUT stop of a zoom `interpolate`/`step` width, or a bare
+ *  number. A `["*", k, expr]` wrapper is not allowed: MapLibre only accepts a
+ *  `zoom` expression as the TOP-level interpolate/step of a paint value. */
+function scaleWidth(value: unknown, k: number): unknown {
+  if (typeof value === 'number') return value * k;
+  if (!Array.isArray(value)) return value;
+  if (value[0] === 'interpolate') {
+    // [interpolate, curve, input, z0, v0, z1, v1, ...]
+    return value.map((v, i) => (i >= 3 && (i - 3) % 2 === 1 ? scaleWidth(v, k) : v));
+  }
+  if (value[0] === 'step') {
+    // [step, input, v0, z1, v1, ...]
+    return value.map((v, i) => (i >= 2 && i % 2 === 0 ? scaleWidth(v, k) : v));
+  }
+  return value;
+}
+
+/**
+ * Turn Protomaps' cased roads into transit-diagram strokes.
+ *
+ * - Drops every road casing except bridges'. A Protomaps casing is a line with
+ *   `line-gap-width` = the road's width, which renders as TWO thin parallel
+ *   strokes — the "double outline" on every street.
+ * - Widens the remaining fills by {@link ROAD_WIDTH_SCALE} and rounds their
+ *   caps and joins (the subway rule: round terminals, no mitred spikes).
+ * - Widens bridge casings' gap by the same factor so the paper knock-out still
+ *   hugs the (now wider) bridge.
+ */
+export function subwayRoads(layers: LayerSpec[]): LayerSpec[] {
+  return layers.flatMap((layer) => {
+    if (layer.type !== 'line' || layer['source-layer'] !== 'roads') return [layer];
+    if (NON_STREET.test(layer.id)) return [layer];
+    const isCasing = layer.id.includes('_casing');
+    if (isCasing && !layer.id.includes('bridges')) return [];
+    const paint = { ...(layer.paint ?? {}) } as Record<string, unknown>;
+    if (isCasing) {
+      if (paint['line-gap-width'] != null) {
+        paint['line-gap-width'] = scaleWidth(paint['line-gap-width'], ROAD_WIDTH_SCALE);
+      }
+    } else if (paint['line-width'] != null) {
+      paint['line-width'] = scaleWidth(paint['line-width'], ROAD_WIDTH_SCALE);
+    }
+    return [
+      {
+        ...layer,
+        layout: { ...(layer.layout ?? {}), 'line-cap': 'round', 'line-join': 'round' },
+        paint,
+      } as LayerSpec,
+    ];
+  });
 }
 
 const styleCache: Partial<Record<'light' | 'dark', StyleSpecification>> = {};
@@ -283,7 +362,9 @@ export function getMapStyle(): StyleSpecification {
     // this either; it walks paint values, and a sprite icon has none.) A
     // transit map does not print generic OSM POIs anyway — the stations ARE
     // the points of interest here, and the labels were competing with them.
-    layers: layers('protomaps', paperFlavor(), { lang: 'en' }).filter((l) => l.id !== 'pois'),
+    layers: subwayRoads(
+      layers('protomaps', paperFlavor(), { lang: 'en' }).filter((l) => l.id !== 'pois'),
+    ),
   };
   styleCache[mode] = style;
   return style;
