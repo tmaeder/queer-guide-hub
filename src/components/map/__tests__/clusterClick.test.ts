@@ -3,6 +3,9 @@ import {
   boundsOf,
   decideClusterAction,
   isColocated,
+  shouldListStack,
+  STACK_RING_MAX,
+  SPIDER_MAX,
   type LngLat,
 } from '@/components/map/clusterClick';
 
@@ -65,5 +68,22 @@ describe('decideClusterAction', () => {
 
   it('fans out when no camera could be computed', () => {
     expect(decideClusterAction(spread, 12, null, 18)).toEqual({ kind: 'spiderfy' });
+  });
+});
+
+describe('shouldListStack', () => {
+  it('fans out small stacks', () => {
+    expect(shouldListStack(STACK_RING_MAX, true)).toBe(false);
+    expect(shouldListStack(2, true)).toBe(false);
+  });
+
+  it('lists stacks too large for a readable ring, including ones past the ring cap', () => {
+    expect(shouldListStack(STACK_RING_MAX + 1, true)).toBe(true);
+    expect(shouldListStack(88, true)).toBe(true);
+    expect(88).toBeGreaterThan(SPIDER_MAX);
+  });
+
+  it('keeps the ring on surfaces with no results list', () => {
+    expect(shouldListStack(88, false)).toBe(false);
   });
 });

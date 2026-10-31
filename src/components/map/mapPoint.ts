@@ -15,6 +15,13 @@ import { glyphKeyFor } from './mapIcons';
  */
 export type MapPointSummary = MapStation;
 
+/** Every place on one spot that no zoom can separate (a cluster of identical
+ *  coordinates), handed to the results list instead of a fan-out ring. */
+export interface MapPointStack {
+  center: [number, number];
+  points: MapPointSummary[];
+}
+
 function parseMeta(raw: unknown): Record<string, unknown> {
   if (typeof raw !== 'string' || !raw) return {};
   try {

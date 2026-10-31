@@ -3087,6 +3087,10 @@
       "inView_other": "{{count}} places in view",
       "hide": "Hide nearby places",
       "listLabel": "Places in view",
+      "atSpot_one": "{{count}} place at this spot",
+      "atSpot_other": "{{count}} places at this spot",
+      "showAll": "All places in view",
+      "stackListLabel": "Places at this spot",
       "showOnMap": "Show {{name}} on the map"
     },
     "firstRun": {

@@ -2894,6 +2894,10 @@
       "inView_other": "[PT] {{count}} places in view",
       "hide": "[PT] Hide nearby places",
       "listLabel": "[PT] Places in view",
+      "atSpot_one": "{{count}} lugar neste ponto",
+      "atSpot_other": "{{count}} lugares neste ponto",
+      "showAll": "Todos os lugares à vista",
+      "stackListLabel": "Lugares neste ponto",
       "showOnMap": "[PT] Show {{name}} on the map"
     },
     "firstRun": {
