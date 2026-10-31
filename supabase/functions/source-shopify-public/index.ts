@@ -56,6 +56,7 @@ interface MerchantOverrides {
   // unaffected whether or not it sets this.
   brandName?: string | null
   vendorAliases?: Record<string, unknown> | null
+  excludedVendors?: string[] | null
 }
 
 /** ISO-3166 country whose Shopify Market prices in the given currency. Only the
@@ -107,8 +108,8 @@ function makeStorefrontAdapter(
           // Straight off the wire — NOT the configured guess. This is the whole point.
           currency: normalizeCurrency(v?.price.currencyCode ?? expectedCurrency),
           category: p.productType,
-          brand: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain, ov.vendorAliases),
-          brand_name: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain, ov.vendorAliases),
+          brand: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain, ov.vendorAliases, ov.excludedVendors),
+          brand_name: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain, ov.vendorAliases, ov.excludedVendors),
           business_name: ov.businessName || brandFromVendor(p.vendor, shopDomain),
           in_stock: v?.availableForSale, sku: v?.sku ?? undefined, handle: p.handle,
           market_country: country,
@@ -193,8 +194,8 @@ function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR', o
           merchant_deep_link: externalUrl, merchant_domain: extractMerchantDomain(externalUrl),
           price: Number.isFinite(price) && price != null && price > 0 ? price : null,
           currency: normalizeCurrency(currency), category: p.product_type,
-          brand: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain, ov.vendorAliases),
-          brand_name: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain, ov.vendorAliases),
+          brand: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain, ov.vendorAliases, ov.excludedVendors),
+          brand_name: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain, ov.vendorAliases, ov.excludedVendors),
           business_name: ov.businessName || brandFromVendor(p.vendor, shopDomain),
           in_stock: inStock, sku: variant?.sku, handle: p.handle,
           // Emitted ONLY when the merchant configures it — see MerchantOverrides.
@@ -251,6 +252,8 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
       brandName: (typeof body.brand_name === 'string' && body.brand_name) || cfgStr('brand_name'),
       vendorAliases: mcfg.vendor_aliases && typeof mcfg.vendor_aliases === 'object' && !Array.isArray(mcfg.vendor_aliases)
         ? mcfg.vendor_aliases as Record<string, unknown> : null,
+      excludedVendors: Array.isArray(mcfg.excluded_vendors)
+        ? mcfg.excluded_vendors.filter((v): v is string => typeof v === 'string' && v.trim().length > 0).map((v) => v.trim()) : null,
     }
     const requestedPages = Number(body.max_pages ?? 2)
     const maxPages = Number.isFinite(requestedPages) ? Math.min(2, Math.max(1, Math.floor(requestedPages))) : 2

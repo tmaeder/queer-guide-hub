@@ -1,5 +1,20 @@
 import * as cheerio from 'npm:cheerio@1.0.0-rc.12'
 
+/** Wix appends display transformations to a public media-file URL. Opt in only
+ * for merchants whose JSON-LD supplies thumbnails instead of native covers.
+ * https://dev.wix.com/docs/overview/site-features-tools/media-manager */
+export function readCrawlImageUrl(raw: string, mode?: string): string {
+  if (mode !== 'wix_original') return raw
+  try {
+    const url = new URL(raw)
+    if (url.protocol !== 'https:' || url.hostname !== 'static.wixstatic.com' ||
+        url.port || url.username || url.password || url.search || url.hash) return raw
+    const match = url.pathname.match(/^(\/media\/[^/]+\.(?:jpe?g|png|webp|gif|avif))\/v1\/(?:fit|fill|crop)\//i)
+    if (match) return `${url.origin}${match[1]}`
+  } catch { /* Leave malformed or unrelated media URLs untouched. */ }
+  return raw
+}
+
 /** Mixed merchant catalogs must not inherit the crawler's original book labels. */
 export function readCrawlCategoryLabels(category?: string, subcategory?: string) {
   return {
