@@ -658,9 +658,9 @@
       "eyebrow": "Event",
       "sections": "Sections",
       "section": {
-        "about": "The lowdown",
-        "where": "Find your way",
-        "going": "Riding with you"
+        "about": "About",
+        "where": "Getting there",
+        "going": "Who's going"
       },
       "calendar": "Calendar",
       "moreOptions": "More options",

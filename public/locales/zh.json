@@ -1368,9 +1368,9 @@
       "eyebrow": "[ZH] Event",
       "sections": "[ZH] Sections",
       "section": {
-        "about": "活动亮点",
-        "where": "找到路线",
-        "going": "与你同行的人"
+        "about": "简介",
+        "where": "交通",
+        "going": "参加者"
       },
       "calendar": "日历",
       "moreOptions": "更多选项",
