@@ -141,7 +141,8 @@ export function renderDonut(
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
 
-  const edge = 2 * PIXEL_RATIO; // the ink border, 2px logical
+  // The ink border, 1.5px logical to match the pin outline (usePointLayers).
+  const edge = 1.5 * PIXEL_RATIO;
   const c = size / 2;
   const rOuter = c - edge / 2; // inset by half the stroke so it can't clip
   const ring = Math.max(5, spec.diameter * 0.16) * PIXEL_RATIO;
