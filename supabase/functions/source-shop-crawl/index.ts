@@ -4,7 +4,7 @@ import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { extractContent } from '../_shared/extract-client.ts'
 import { splitAuthor } from '../_shared/book-title.ts'
-import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readCrawlImageUrl, readMagentoGalleryImages, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
+import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readCrawlImageUrl, readCrawlMakerBrand, readMagentoGalleryImages, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
@@ -70,6 +70,7 @@ interface CrawlConfig {
   category?: string
   product_type?: string
   brand_name?: string
+  vendor_aliases?: unknown
   business_name?: string
   currency?: string
   lang?: string
@@ -461,6 +462,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
         const d = raw.data as Record<string, unknown>
         const url = String(d.url)
         const author = str(d.author)
+        const brand = readCrawlMakerBrand(cfg.brand_name, author, cfg.vendor_aliases)
         return {
           entityType: 'marketplace', sourceId: raw.sourceId, sourceName: sourceSlug,
           name: String(d.name),
@@ -479,7 +481,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
             // "Bücher" would fall through to 'other' — we always write the English
             // display string rather than the shop's own wording.
             subcategory: categoryLabels.subcategory,
-            brand: cfg.brand_name || author, brand_name: cfg.brand_name || author,
+            brand, brand_name: brand,
             business_name: businessName,
             in_stock: d.availability as boolean | null,
             sku: d.isbn as string | null,

@@ -1,7 +1,22 @@
-import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readCrawlImageUrl, readMagentoGalleryImages, readSelectedProduct, readSitemapLocations, readStaticSchema } from './crawl-support.ts'
+import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readCrawlImageUrl, readCrawlMakerBrand, readMagentoGalleryImages, readSelectedProduct, readSitemapLocations, readStaticSchema } from './crawl-support.ts'
 function equal(actual: unknown, expected: unknown) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(`${JSON.stringify(actual)} != ${JSON.stringify(expected)}`)
 }
+Deno.test('crawler applies exact registered maker aliases without changing configured priority', () => {
+  equal(readCrawlMakerBrand(undefined, 'Mystim', { Mystim: 'Mystim GmbH' }), 'Mystim GmbH')
+  equal(readCrawlMakerBrand('House Brand', 'Mystim', { Mystim: 'Mystim GmbH' }), 'House Brand')
+  equal(readCrawlMakerBrand('Mystim', 'Other', { Mystim: 'Mystim GmbH' }), 'Mystim GmbH')
+})
+Deno.test('crawler ignores malformed alias rules and preserves ordinary authors', () => {
+  for (const aliases of [null, 'Mystim GmbH', ['Mystim GmbH'], { Mystim: 123 }]) {
+    equal(readCrawlMakerBrand(undefined, 'Mystim', aliases), 'Mystim')
+  }
+  equal(readCrawlMakerBrand(undefined, 'Alice Oseman', { Mystim: 'Mystim GmbH' }), 'Alice Oseman')
+  equal(readCrawlMakerBrand(undefined, 'MYSTIM', { Mystim: 'Mystim GmbH' }), 'MYSTIM')
+})
+Deno.test('crawler leaves an absent maker unknown rather than using the shop as a brand', () => {
+  equal(readCrawlMakerBrand(undefined, null, { Mystim: 'Mystim GmbH' }), null)
+})
 Deno.test('Magento product gallery uses explicit full images and ignores other widgets', () => {
   const page = 'https://www.misterb.com/en/product'
   const full = 'https://www.misterb.com/media/catalog/product/cache/full/product.jpg'
