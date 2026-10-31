@@ -4,7 +4,7 @@ import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { extractContent } from '../_shared/extract-client.ts'
 import { splitAuthor } from '../_shared/book-title.ts'
-import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
+import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readCrawlImageUrl, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
@@ -74,6 +74,7 @@ interface CrawlConfig {
   currency?: string
   lang?: string
   author_from?: string
+  image_url_mode?: string
   concurrency?: number
   crawl_delay_ms?: number
   render?: boolean
@@ -429,7 +430,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
           sourceId: `${sourceSlug}:${key}`,
           data: {
             url, isbn: read.sku, name: title, author: author ?? read.author,
-            description: read.description, images: read.images,
+            description: read.description, images: read.images.map(image => readCrawlImageUrl(image, cfg.image_url_mode)),
             price: read.price, currency: read.currency ?? cfg.currency ?? null,
             availability: read.inStock, strategy: cfg.strategy,
             // Tier 1 of the post-commit tag engine reads

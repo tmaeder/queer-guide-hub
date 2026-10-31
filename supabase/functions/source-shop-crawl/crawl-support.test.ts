@@ -1,7 +1,24 @@
-import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readSelectedProduct, readSitemapLocations, readStaticSchema } from './crawl-support.ts'
+import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readCrawlImageUrl, readSelectedProduct, readSitemapLocations, readStaticSchema } from './crawl-support.ts'
 function equal(actual: unknown, expected: unknown) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(`${JSON.stringify(actual)} != ${JSON.stringify(expected)}`)
 }
+Deno.test('native Wix covers require explicit configuration and retain the source file identity', () => {
+  const native = 'https://static.wixstatic.com/media/2b6d5a_29b00728d5fb48db9c9adb085ee7dcb5~mv2.jpg'
+  const thumbnail = native + '/v1/fit/w_500,h_500,q_90/file.jpg'
+  equal(readCrawlImageUrl(thumbnail), thumbnail)
+  equal(readCrawlImageUrl(thumbnail, 'wix_original'), native)
+  equal(readCrawlImageUrl(native, 'wix_original'), native)
+})
+Deno.test('native Wix normalization does not alter unrelated hosts or signed URLs', () => {
+  for (const raw of [
+    'https://example.com/media/cover.jpg/v1/fit/w_500,h_500/file.jpg',
+    'https://static.wixstatic.com.evil.example/media/cover.jpg/v1/fit/w_500,h_500/file.jpg',
+    'https://static.wixstatic.com/media/cover.jpg/v1/fit/w_500,h_500/file.jpg?signature=example',
+    'https://static.wixstatic.com/media/cover.jpg/v1/fit/w_500,h_500/file.jpg#cover',
+    'http://static.wixstatic.com/media/cover.jpg/v1/fit/w_500,h_500/file.jpg',
+    'not a URL',
+  ]) equal(readCrawlImageUrl(raw, 'wix_original'), raw)
+})
 Deno.test('crawl categories preserve explicit labels and leave unknown catalogs uncategorized', () => {
   equal(readCrawlCategoryLabels(), { category: 'Other', subcategory: 'Other' })
   equal(readCrawlCategoryLabels(' ', ''), { category: 'Other', subcategory: 'Other' })
