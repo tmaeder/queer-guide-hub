@@ -230,9 +230,17 @@ export function usePointLayers({
       source: POINTS_SOURCE,
       filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'featured'], true]],
       paint: {
-        'circle-radius': 14,
+        // Tracks the featured pin's own radius (11→13 over z11→z16, see the
+        // unclustered layer) plus 3px. It was a flat 14, so by z16 the pin
+        // plus its 1.5px stroke reached 14.5px and covered the paper gap
+        // entirely: the two rings fused into one thick band and the
+        // interchange read as a heavier stop. MapLibre draws a circle's
+        // stroke OUTSIDE its radius, so the gap here is a constant 1.5px.
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 14, 16, 16],
         'circle-color': paper(),
-        'circle-stroke-width': 2,
+        // 1.5px to match the pin outline; two concentric rings of equal
+        // weight are what reads as an interchange.
+        'circle-stroke-width': 1.5,
         'circle-stroke-color': ink(),
         'circle-stroke-opacity': 1,
       },
