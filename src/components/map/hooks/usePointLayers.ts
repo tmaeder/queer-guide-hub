@@ -15,13 +15,22 @@ import {
   PULSE_LAYER,
   PIN_LAYER_IDS,
 } from '@/config/mapLayers';
-import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS } from '@/utils/mapViewport';
+import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS, POINTS_SOURCE_MAX_ZOOM } from '@/utils/mapViewport';
+import { decideClusterAction, SPIDER_MAX, type LngLat } from '@/components/map/clusterClick';
 import { EMPTY_FAV, mapDebug } from '@/components/map/mapDebug';
 import { durationMs, imperativeDurationMs } from '@/lib/animation';
 import { donutIconExpression } from '@/components/map/clusterDonut';
 import { ink, paper } from '@/lib/mapTokens';
 import { MAP_FONT_BOLD } from '@/config/mapStyle';
 import { clusterHoverHtml, pointHoverHtml } from '@/components/map/mapHoverHtml';
+
+/** Room left around a cluster's contents when zooming to them, so edge pins
+ *  are not under the map chrome. */
+const CLUSTER_FIT_PADDING = 80;
+/** Deepest zoom a cluster click will fly to. Street level; past this the
+ *  basemap (z15 tiles) is overzoomed and nothing more becomes legible, so a
+ *  cluster still unsplit here is fanned out instead. */
+const CLUSTER_FIT_MAX_ZOOM = 18;
 
 interface UsePointLayersParams {
   mapRef: MutableRefObject<maplibregl.Map | null>;
@@ -152,6 +161,9 @@ export function usePointLayers({
       type: 'geojson',
       data: filteredGeoJSON,
       cluster: true,
+      // The default geojson maxzoom is 18, which would cap clustering at 17
+      // and let co-located places stack again above it.
+      maxzoom: POINTS_SOURCE_MAX_ZOOM,
       clusterMaxZoom: CLUSTER_MAX_ZOOM,
       clusterRadius: CLUSTER_RADIUS,
       // Aggregated by LINE, generated from the registry. These names were
@@ -351,24 +363,41 @@ export function usePointLayers({
       },
     });
 
-    // Cluster click → zoom to expand, OR spiderfy when zooming won't separate
-    // the points (they share ~identical coordinates).
+    // Cluster click → zoom to exactly what's inside, or fan out places that
+    // share one spot. The decision is pure and tested in clusterClick.ts.
     map.on('click', CLUSTERS_LAYER, async (e) => {
       const feat = e.features?.[0];
       if (!feat) return;
       clearSpider();
       const clusterId = feat.properties.cluster_id;
+      const count = Number(feat.properties.point_count) || 0;
       const center = (feat.geometry as GeoJSON.Point).coordinates as [number, number];
       const src = map.getSource(POINTS_SOURCE) as GeoJSONSource;
       try {
-        const zoom = await src.getClusterExpansionZoom(clusterId);
-        // If the breakpoint zoom is barely beyond where we are, zooming won't
-        // visually separate the pins — fan them out instead.
-        if (zoom - map.getZoom() <= 0.5 || zoom >= 18) {
-          const leaves = (await src.getClusterLeaves(clusterId, 24, 0)) as PointFeature[];
-          spiderfy(map, center, leaves);
+        const leaves = (await src.getClusterLeaves(clusterId, count, 0)) as PointFeature[];
+        const coords = leaves.map((l) => (l.geometry as GeoJSON.Point).coordinates as LngLat);
+        let fitZoom: number | null = null;
+        if (coords.length > 1) {
+          const lngs = coords.map((c) => c[0]);
+          const lats = coords.map((c) => c[1]);
+          const cam = map.cameraForBounds(
+            [
+              [Math.min(...lngs), Math.min(...lats)],
+              [Math.max(...lngs), Math.max(...lats)],
+            ],
+            { padding: CLUSTER_FIT_PADDING },
+          );
+          fitZoom = cam?.zoom ?? null;
+        }
+        const action = decideClusterAction(coords, map.getZoom(), fitZoom, CLUSTER_FIT_MAX_ZOOM);
+        if (action.kind === 'spiderfy') {
+          spiderfy(map, center, leaves.slice(0, SPIDER_MAX));
         } else {
-          map.flyTo({ center, zoom: zoom + 0.5, speed: 1.5 });
+          map.fitBounds(action.bounds, {
+            padding: CLUSTER_FIT_PADDING,
+            maxZoom: CLUSTER_FIT_MAX_ZOOM,
+            duration: imperativeDurationMs(durationMs.slow),
+          });
         }
       } catch {
         map.flyTo({ center, zoom: map.getZoom() + 2, speed: 1.5 });

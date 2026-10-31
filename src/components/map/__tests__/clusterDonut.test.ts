@@ -65,7 +65,7 @@ describe('donutIconExpression', () => {
   });
 
   it('size steps align with the documented buckets', () => {
-    expect(DONUT_SIZE_STEPS[0]).toEqual([0, 28]);
-    expect(DONUT_SIZE_STEPS.at(-1)).toEqual([500, 68]);
+    expect(DONUT_SIZE_STEPS[0]).toEqual([0, 36]);
+    expect(DONUT_SIZE_STEPS.at(-1)).toEqual([500, 64]);
   });
 });

@@ -11,10 +11,29 @@
 export const Z_LOW = 8;
 /** City-level — show all individual elements */
 export const Z_CITY = 12;
-/** MapLibre clusterMaxZoom: clusters disappear at this zoom + 1 */
-export const CLUSTER_MAX_ZOOM = 11;
-/** Cluster merge radius in pixels */
-export const CLUSTER_RADIUS = 60;
+/**
+ * Clustering is decided by COLLISION, not by zoom level.
+ *
+ * Until 2026-10-31 this was 11, so from z12 on every place drew as its own
+ * pin however close together. Measured on production: in Berlin at z12, 1,040
+ * of 1,089 pins overlapped another pin and 372 sat exactly under an identical
+ * coordinate — unclickable, because fanning out was only reachable from a
+ * cluster and none existed above z11 (Zürich z12: 363/404 overlapping, 93
+ * hidden).
+ *
+ * Now points cluster at every zoom the source tiles (POINTS_SOURCE_MAX_ZOOM
+ * - 1), and only when they would actually overlap (CLUSTER_RADIUS). A cluster
+ * that survives to the deepest zoom is a true co-location, which the click
+ * handler fans out (see clusterClick.ts).
+ */
+export const POINTS_SOURCE_MAX_ZOOM = 22;
+/** MapLibre clusterMaxZoom: clusters disappear at this zoom + 1. Must be
+ *  below the source's maxzoom. */
+export const CLUSTER_MAX_ZOOM = POINTS_SOURCE_MAX_ZOOM - 1;
+/** Cluster merge radius in pixels. ~1.5 pin diameters (pins are 26-34px,
+ *  usePointLayers), so two pins merge when they would overlap and not before:
+ *  a fixed 60 swallowed pins that had room to stand alone. */
+export const CLUSTER_RADIUS = 45;
 
 export type ZoomBucket = 'low' | 'mid' | 'city';
 
@@ -43,8 +62,14 @@ export function clampBbox(bbox: Bbox): Bbox {
   let south = Math.max(-90, Math.min(90, bbox.south));
   let north = Math.max(-90, Math.min(90, bbox.north));
   // If clamping collapsed the bbox (world wrap at low zoom), expand to full range
-  if (west >= east) { west = -180; east = 180; }
-  if (south >= north) { south = -90; north = 90; }
+  if (west >= east) {
+    west = -180;
+    east = 180;
+  }
+  if (south >= north) {
+    south = -90;
+    north = 90;
+  }
   return { west, south, east, north };
 }
 
