@@ -26,24 +26,42 @@ describe('BrandMark', () => {
     expect(img?.getAttribute('alt')).toBe('');
   });
 
-  it('hides the monogram behind a logo — transparent PNGs show it through', () => {
+  it('shows the monogram while the logo is still loading', () => {
+    // Found on prod: lazy logos (Blush, Vedo) left an empty paper square until
+    // they arrived, which reads as a broken mark rather than a pending one.
+    const { getByText } = render(<BrandMark name="cherrykitten" logoUrl="https://x/l.png" />);
+    expect(getByText('C').className).not.toContain('invisible');
+  });
+
+  it('hides the monogram once the logo has loaded — transparent PNGs show it through', () => {
     // Found on prod: cherrykitten's pink wordmark is transparent, and the ink
     // "C" underneath sat inside its counters.
-    const { getByText } = render(<BrandMark name="cherrykitten" logoUrl="https://x/l.png" />);
+    const { container, getByText } = render(
+      <BrandMark name="cherrykitten" logoUrl="https://x/l.png" />,
+    );
+    fireEvent.load(container.querySelector('img')!);
     expect(getByText('C').className).toContain('invisible');
   });
 
-  it('hides a failed logo and brings the monogram back', () => {
+  it('starts from the monogram again when the logo URL changes', () => {
+    const { container, getByText, rerender } = render(
+      <BrandMark name="cherrykitten" logoUrl="https://x/a.png" />,
+    );
+    fireEvent.load(container.querySelector('img')!);
+    expect(getByText('C').className).toContain('invisible');
+    rerender(<BrandMark name="cherrykitten" logoUrl="https://x/b.png" />);
+    expect(getByText('C').className).not.toContain('invisible');
+  });
+
+  it('removes a failed logo and keeps the monogram', () => {
     // The monogram sitting underneath is not enough on its own: Chrome paints
     // its torn-page glyph over the plate for a broken image even with alt="".
     const { container, getByText } = render(
       <BrandMark name="cherrykitten" logoUrl="https://x/dead.png" />,
     );
-    const img = container.querySelector('img')!;
-    expect(img.style.display).toBe('');
-    fireEvent.error(img);
-    expect(img.style.display).toBe('none');
-    expect(getByText('C').style.visibility).toBe('visible');
+    fireEvent.error(container.querySelector('img')!);
+    expect(container.querySelector('img')).toBeNull();
+    expect(getByText('C').className).not.toContain('invisible');
   });
 
   it('puts a white-on-transparent logo on an INK plate', () => {
