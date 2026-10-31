@@ -58,12 +58,19 @@ export function EntityKindChips({
             {entityKindLabel(kind, t)}
           </Badge>
         );
+        // Both wrappers CENTRE their badge. As plain block wrappers they had
+        // different heights — a link carries the 44px touch-target minimum, a
+        // span only its line box — and each badge sat at the top of its own
+        // wrapper, so on an org with a venue the chips landed at three heights
+        // (measured on /organizations/demask: 363, 354 and 366px).
         return href ? (
-          <LocalizedLink key={kind} to={href} className="no-underline">
+          <LocalizedLink key={kind} to={href} className="inline-flex items-center no-underline">
             {chip}
           </LocalizedLink>
         ) : (
-          <span key={kind}>{chip}</span>
+          <span key={kind} className="inline-flex items-center">
+            {chip}
+          </span>
         );
       })}
       {visibleRoles.map((role) => (

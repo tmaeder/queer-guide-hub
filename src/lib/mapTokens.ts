@@ -41,3 +41,58 @@ export const paper = (alpha?: number) => tokenColor('--background', alpha);
 
 /** Muted ink, for secondary canvas labels. */
 export const inkMuted = (alpha?: number) => tokenColor('--muted-foreground', alpha);
+
+type Rgb = [number, number, number];
+
+const hslChannelsToRgb = (raw: string): Rgb | null => {
+  const m = raw.match(/([\d.]+)\s+([\d.]+)%\s+([\d.]+)%/);
+  if (!m) return null;
+  const h = Number(m[1]);
+  const s = Number(m[2]) / 100;
+  const l = Number(m[3]) / 100;
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return [f(0), f(8), f(4)];
+};
+
+const rgbToHsl = ([r, g, b]: Rgb): string => {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  const d = max - min;
+  let h = 0;
+  let s = 0;
+  if (d > 0) {
+    s = d / (1 - Math.abs(2 * l - 1));
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  const r1 = (n: number) => Math.round(n * 10) / 10;
+  return `hsl(${r1(h)} ${r1(s * 100)}% ${r1(l * 100)}%)`;
+};
+
+/**
+ * OPAQUE ink on paper: `t` of the way from paper to ink, mixed in RGB.
+ *
+ * Use this instead of `ink(alpha)` for any LINE layer. A translucent line
+ * colour is composited per feature, so wherever two segments of the same
+ * layer meet — every street junction, every vertex where OSM splits a way —
+ * the alpha stacks and the crossing prints darker than the street. On a
+ * street grid that reads as a dotted rash of knots. An opaque tone has no
+ * overlap to stack.
+ *
+ * Falls back to the translucent form if either token fails to resolve (jsdom
+ * without a stylesheet, or a malformed override), so a map never loses its
+ * roads to a parse miss.
+ */
+export function inkOnPaper(t: number): string {
+  const css = getComputedStyle(document.documentElement);
+  const fg = hslChannelsToRgb(css.getPropertyValue('--foreground').trim());
+  const bg = hslChannelsToRgb(css.getPropertyValue('--background').trim());
+  if (!fg || !bg) return ink(t);
+  return rgbToHsl([0, 1, 2].map((i) => bg[i] + (fg[i] - bg[i]) * t) as Rgb);
+}

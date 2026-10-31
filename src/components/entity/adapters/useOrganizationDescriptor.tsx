@@ -17,6 +17,7 @@ import {
   OrgTags,
   OrgWhatTheyDo,
   orgHasLocationOrContact,
+  orgShowsShopGrid,
 } from '@/pages/OrganizationDetail.parts';
 import type {
   EntityDescriptor,
@@ -75,7 +76,9 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
         {
           id: 'what-they-do',
           title: t('pages.entityDetail.whatTheyDo', 'What they do'),
-          when: isPublisher || isSeller,
+          // A seller whose Shop grid renders is described by that grid; the
+          // section stays for publishers and for sellers with no grid.
+          when: isPublisher || (isSeller && !orgShowsShopGrid(org)),
           render: () => <OrgWhatTheyDo org={org} />,
         },
         {
@@ -99,7 +102,7 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
         {
           id: 'shop',
           title: t('pages.entityDetail.shop', 'Shop'),
-          when: isSeller && org.product_count > 0 && Boolean(org.website_domain),
+          when: orgShowsShopGrid(org),
           render: () => (
             <MarketplaceFilteredView
               filters={{ merchantDomain: org.website_domain! }}
@@ -118,8 +121,9 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
         tags: (
           <div className="flex flex-col gap-4">
             <EntityKindChips
+              // No `organization` chip: the eyebrow directly above already
+              // says "Organization", so the chip printed it a second time.
               kinds={[
-                { kind: 'organization' },
                 ...(isVenue
                   ? [
                       {

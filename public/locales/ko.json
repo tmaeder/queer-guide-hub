@@ -1573,8 +1573,6 @@
     "adBadge": "광고",
     "outOfStock": "품절",
     "queerOwnedBadge": "퀴어 운영",
-    "totalMakerListings_one": "전체 상품 {{formattedCount}}개",
-    "totalMakerListings_other": "전체 상품 {{formattedCount}}개",
     "showAdultMakerListings": "성인용 상품 보기 (18세 이상)",
     "noBrandListings": "현재 설정에서는 표시할 상품이 없습니다."
   },

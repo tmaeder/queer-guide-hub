@@ -2,7 +2,8 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { renderHook, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import type { Organization } from '@/hooks/useOrganization';
 
 const orgRef = { current: null as Organization | null };
@@ -114,5 +115,37 @@ describe('useOrganizationDescriptor single layout', () => {
     orgRef.current = makeOrg({});
     const { result } = renderHook(() => useOrganizationDescriptor('o1'));
     expect(when(result.current.descriptor!.sections, 'milestones')).toBe(false);
+  });
+
+  it('a seller whose Shop grid renders gets no second, contradicting product count', () => {
+    // product_count also counts listings the grid hides (Marek+Richard: 2,594
+    // in "What they do" against "24 of 2,057" in the grid).
+    orgRef.current = makeOrg({
+      roles: ['seller'],
+      product_count: 2594,
+      website_domain: 'm.example',
+    });
+    const { result } = renderHook(() => useOrganizationDescriptor('o1'));
+    const s = result.current.descriptor!.sections;
+    expect(when(s, 'shop')).toBe(true);
+    expect(when(s, 'what-they-do')).toBe(false);
+  });
+
+  it('a seller with no Shop grid keeps its product count', () => {
+    orgRef.current = makeOrg({ roles: ['seller'], product_count: 12, website_domain: null });
+    const { result } = renderHook(() => useOrganizationDescriptor('o1'));
+    const s = result.current.descriptor!.sections;
+    expect(when(s, 'shop')).toBe(false);
+    expect(when(s, 'what-they-do')).toBe(true);
+  });
+
+  it('does not repeat "Organization" as a chip under the eyebrow that already says it', () => {
+    orgRef.current = makeOrg({ roles: ['seller'] });
+    const { result } = renderHook(() => useOrganizationDescriptor('o1'));
+    const single = result.current.descriptor!.single!;
+    expect(single.eyebrow).toMatch(/^Organization/);
+    render(<MemoryRouter>{single.tags}</MemoryRouter>);
+    expect(document.querySelector('[data-kind="organization"]')).toBeNull();
+    expect(screen.getByText('Shop')).toBeInTheDocument();
   });
 });

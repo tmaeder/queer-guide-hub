@@ -84,11 +84,22 @@ export function OrgAbout({ org }: { org: Organization }) {
   );
 }
 
+/**
+ * Whether the org page renders its own Shop grid. When it does, the grid's
+ * count ("24 of 2,057 listings") is the shop's count, and a second figure here
+ * would contradict it: `product_count` also counts listings the grid does not
+ * show (measured on /organizations/marek-richard: 2,594 vs 2,057).
+ */
+export function orgShowsShopGrid(org: Organization): boolean {
+  return org.roles.includes('seller') && org.product_count > 0 && Boolean(org.website_domain);
+}
+
 export function OrgWhatTheyDo({ org }: { org: Organization }) {
   const { t } = useTranslation();
   // Venues are not counted here: they have their own "Location & contact"
   // section, the same one the venue page carries.
-  const hasAny = org.roles.includes('publisher') || org.roles.includes('seller');
+  const showSeller = org.roles.includes('seller') && !orgShowsShopGrid(org);
+  const hasAny = org.roles.includes('publisher') || showSeller;
   if (!hasAny) return null;
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -109,7 +120,7 @@ export function OrgWhatTheyDo({ org }: { org: Organization }) {
           </CardContent>
         </Card>
       )}
-      {org.roles.includes('seller') && (
+      {showSeller && (
         <Card>
           <CardContent className="flex items-center gap-2 p-4">
             <ShoppingBag size={20} className="text-muted-foreground" aria-hidden="true" />
