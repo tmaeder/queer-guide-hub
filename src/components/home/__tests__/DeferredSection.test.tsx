@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, fireEvent } from '@testing-library/react';
 import { DeferredSection } from '../DeferredSection';
 
 const realIO = globalThis.IntersectionObserver;
@@ -55,4 +55,23 @@ describe('DeferredSection', () => {
     expect(screen.getByTestId('content')).toBeTruthy();
     expect(disconnectSpy).toHaveBeenCalled();
   });
+  it('makes deferred links reachable when keyboard navigation starts', () => {
+    const disconnect = vi.fn();
+    globalThis.IntersectionObserver = class {
+      observe() {}
+      disconnect = disconnect;
+    } as unknown as typeof IntersectionObserver;
+    render(
+      <DeferredSection fallback={<div data-testid="placeholder" />}>
+        <a href="/cities">Browse cities</a>
+      </DeferredSection>,
+    );
+    expect(screen.queryByRole('link')).toBeNull();
+    fireEvent.keyDown(window, { key: 'ArrowDown' });
+    expect(screen.queryByRole('link')).toBeNull();
+    fireEvent.keyDown(window, { key: 'Tab' });
+    expect(screen.getByRole('link', { name: 'Browse cities' })).toBeVisible();
+    expect(disconnect).toHaveBeenCalled();
+  });
+
 });

@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
-import { useVenueRail, type VenueRailData } from '@/hooks/useVenueRail';
+import { useVenueRail, type VenueRailData, type VenueRailParams } from '@/hooks/useVenueRail';
+import { DeferredSection } from '@/components/home/DeferredSection';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 interface VenuesRailsProps {
@@ -18,86 +19,139 @@ export function VenuesRails({ userLocation, primaryCityId, primaryCityName }: Ve
   const { t } = useTranslation();
   const { user } = useAuth();
 
-  const nearYou = useVenueRail(!!userLocation, {
+  const nearYou: VenueRailParams = {
     userId: user?.id ?? null,
     lat: userLocation?.latitude ?? null,
     lng: userLocation?.longitude ?? null,
     sort: 'nearest',
     filters: { radiusKm: 30 },
-  });
+  };
 
-  const forYou = useVenueRail(!!user, {
+  const forYou: VenueRailParams = {
     userId: user?.id ?? null,
     lat: userLocation?.latitude ?? null,
     lng: userLocation?.longitude ?? null,
     sort: 'relevance',
-  });
+  };
 
-  const newThisMonth = useVenueRail(true, {
+  const newThisMonth: VenueRailParams = {
     userId: user?.id ?? null,
     lat: userLocation?.latitude ?? null,
     lng: userLocation?.longitude ?? null,
     sort: 'created_at',
-  });
+  };
 
-  const topInCity = useVenueRail(!!primaryCityId, {
+  const topInCity: VenueRailParams = {
     userId: user?.id ?? null,
     lat: userLocation?.latitude ?? null,
     lng: userLocation?.longitude ?? null,
     filters: { cityId: primaryCityId ?? undefined, city: primaryCityName ?? undefined },
     sort: 'featured',
-  });
+  };
 
-  const editorsPicks = useVenueRail(true, {
+  const editorsPicks: VenueRailParams = {
     userId: user?.id ?? null,
     lat: userLocation?.latitude ?? null,
     lng: userLocation?.longitude ?? null,
     sort: 'featured',
-  });
+  };
 
   return (
     <div className="space-y-12">
       {!!userLocation && (
-        <RailSection
+        <DeferredRailSection
           title={t('venues.rails.nearYou.title', 'Near you')}
           subtitle={t('venues.rails.nearYou.subtitle', 'Venues within 30 km, ranked by distance.')}
-          data={nearYou}
+          params={nearYou}
         />
       )}
       {user ? (
-        <RailSection
+        <DeferredRailSection
           title={t('venues.rails.forYou.title', 'For your taste')}
           subtitle={t(
             'venues.rails.forYou.subtitle',
             'Picked from your interests and where you’ve been.',
           )}
-          data={forYou}
+          params={forYou}
         />
       ) : (
         <AnonPersonalizationPromo />
       )}
-      <RailSection
+      <DeferredRailSection
         title={t('venues.rails.new.title', 'New this month')}
         subtitle={t('venues.rails.new.subtitle', 'Fresh additions to the guide.')}
-        data={newThisMonth}
+        params={newThisMonth}
       />
       {!!primaryCityName && (
-        <RailSection
+        <DeferredRailSection
           title={t('venues.rails.topInCity.title', {
             city: primaryCityName,
             defaultValue: 'Top in {{city}}',
           })}
           subtitle={t('venues.rails.topInCity.subtitle', 'Popular with the community right now.')}
-          data={topInCity}
+          params={topInCity}
+          enabled={!!primaryCityId}
         />
       )}
-      <RailSection
+      <DeferredRailSection
         title={t('venues.rails.editors.title', 'Editor’s picks')}
         subtitle={t('venues.rails.editors.subtitle', 'Hand-curated highlights worth the trip.')}
-        data={editorsPicks}
+        params={editorsPicks}
       />
     </div>
   );
+}
+
+/** Query ownership lives inside the viewport boundary, not in the page shell. */
+function DeferredRailSection({
+  title,
+  subtitle,
+  params,
+  enabled = true,
+}: {
+  title: string;
+  subtitle: string;
+  params: VenueRailParams;
+  enabled?: boolean;
+}) {
+  return (
+    <div data-venue-rail={params.sort}>
+      <DeferredSection
+        rootMargin="0px"
+        fallback={<RailPlaceholder title={title} subtitle={subtitle} />}
+      >
+        <LoadedRailSection title={title} subtitle={subtitle} params={params} enabled={enabled} />
+      </DeferredSection>
+    </div>
+  );
+}
+
+function RailPlaceholder({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <Rail title={title} subtitle={subtitle}>
+      {Array.from({ length: 4 }, (_, i) => (
+        <RailItem key={i}>
+          <div aria-hidden="true" className="h-[392px] rounded-container bg-muted md:h-[442px]" />
+        </RailItem>
+      ))}
+    </Rail>
+  );
+}
+
+function LoadedRailSection({
+  title,
+  subtitle,
+  params,
+  enabled,
+}: {
+  title: string;
+  subtitle: string;
+  params: VenueRailParams;
+  enabled: boolean;
+}) {
+  const data = useVenueRail(enabled, params);
+  if (data.loading) return <RailPlaceholder title={title} subtitle={subtitle} />;
+  return <RailSection title={title} subtitle={subtitle} data={data} />;
 }
 
 function RailSection({

@@ -45,6 +45,9 @@ export function formatCents(cents: number, currency?: string | null): string {
 /** Get just the symbol for a currency (e.g. '$', '€', '¥') */
 export function getCurrencySymbol(currency: string): string {
   const upper = currency.toUpperCase();
+  // The provider starts in USD before preferences resolve. Its en-US symbol
+  // is fixed; avoid initializing Intl for that default on every cold visit.
+  if (upper === 'USD') return '$';
   try {
     const parts = new Intl.NumberFormat('en-US', {
       style: 'currency',
