@@ -1,7 +1,23 @@
-import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readCrawlImageUrl, readSelectedProduct, readSitemapLocations, readStaticSchema } from './crawl-support.ts'
+import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readCrawlImageUrl, readMagentoGalleryImages, readSelectedProduct, readSitemapLocations, readStaticSchema } from './crawl-support.ts'
 function equal(actual: unknown, expected: unknown) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(`${JSON.stringify(actual)} != ${JSON.stringify(expected)}`)
 }
+Deno.test('Magento product gallery uses explicit full images and ignores other widgets', () => {
+  const page = 'https://www.misterb.com/en/product'
+  const full = 'https://www.misterb.com/media/catalog/product/cache/full/product.jpg'
+  const config = {'[data-gallery-role=gallery-placeholder]': {'mage/gallery/gallery': {data: [
+    {type: 'image', full, img: 'https://www.misterb.com/thumbnail.jpg'},
+    {type: 'image', full},
+    {type: 'video', full: 'https://www.misterb.com/video-frame.jpg'},
+    {type: 'image', full: 'https://other.example/recommendation.jpg'},
+    {type: 'image', full: 'http://www.misterb.com/insecure.jpg'},
+  ]}}}
+  equal(readMagentoGalleryImages(`<script type="text/x-magento-init">${JSON.stringify(config)}</script><img src="https://www.misterb.com/unrelated.jpg">`, page), [full])
+})
+Deno.test('missing or malformed Magento gallery preserves the caller fallback', () => {
+  equal(readMagentoGalleryImages('<script type="text/x-magento-init">not JSON</script>', 'https://shop.example/product'), [])
+  equal(readMagentoGalleryImages('<script type="text/x-magento-init">{"recommendations":{"data":[]}}</script>', 'https://shop.example/product'), [])
+})
 Deno.test('native Wix covers require explicit configuration and retain the source file identity', () => {
   const native = 'https://static.wixstatic.com/media/2b6d5a_29b00728d5fb48db9c9adb085ee7dcb5~mv2.jpg'
   const thumbnail = native + '/v1/fit/w_500,h_500,q_90/file.jpg'

@@ -1,5 +1,29 @@
 import * as cheerio from 'npm:cheerio@1.0.0-rc.12'
 
+/** Read the merchant's explicitly offered full product-gallery images. Product
+ * thumbnails, recommendation widgets and video frames are not gallery photos. */
+export function readMagentoGalleryImages(html: string, pageUrl: string): string[] {
+  const $ = cheerio.load(html)
+  const host = new URL(pageUrl).hostname.replace(/^www\./, '')
+  const images = new Set<string>()
+  $('script[type="text/x-magento-init"]').each((_i, node) => {
+    try {
+      const config = JSON.parse($(node).text())
+      const gallery = config?.['[data-gallery-role=gallery-placeholder]']?.['mage/gallery/gallery']?.data
+      if (!Array.isArray(gallery)) return
+      for (const image of gallery) {
+        if (image?.type !== 'image' || typeof image.full !== 'string') continue
+        try {
+          const url = new URL(image.full)
+          if (url.hostname.replace(/^www\./, '') === host && allowedSitemap(url.href, url.hostname)) images.add(url.href)
+        } catch { /* Ignore malformed gallery URLs. */ }
+        if (images.size >= 12) break
+      }
+    } catch { /* Other Magento initializers can contain non-JSON script data. */ }
+  })
+  return [...images].slice(0, 12)
+}
+
 /** Wix appends display transformations to a public media-file URL. Opt in only
  * for merchants whose JSON-LD supplies thumbnails instead of native covers.
  * https://dev.wix.com/docs/overview/site-features-tools/media-manager */

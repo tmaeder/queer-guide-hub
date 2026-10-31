@@ -4,7 +4,7 @@ import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { extractContent } from '../_shared/extract-client.ts'
 import { splitAuthor } from '../_shared/book-title.ts'
-import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readCrawlImageUrl, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
+import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readCrawlImageUrl, readMagentoGalleryImages, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
@@ -381,6 +381,10 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
           try {
             const html = await fetchText(url, 12_000)
             read = readSelectedProduct(html, url, cfg.selectors ?? {}, cfg.currency)
+            if (read && cfg.image_url_mode === 'magento_gallery') {
+              const gallery = readMagentoGalleryImages(html, url)
+              if (gallery.length) read.images = gallery
+            }
             // Some shops return their homepage with HTTP 200 for a removed
             // product. Only treat explicitly configured canonical destinations
             // as unavailable, and only when the product title is absent.
