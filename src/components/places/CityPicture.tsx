@@ -51,7 +51,7 @@ export function CityPicture({
       {hasCityNetwork(slug) ? (
         // Decorative: the card already carries the city's name as its label.
         <div className="absolute inset-0 flex items-center justify-center px-6 pt-4 pb-8">
-          <CityNetwork slug={slug} variant="thumb" lineWidth={6} className="h-full" />
+          <CityNetwork slug={slug} variant="thumb" className="h-full" />
         </div>
       ) : (
         <div className="absolute inset-0">

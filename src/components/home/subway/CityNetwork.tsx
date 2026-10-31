@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import type { Track } from '@/components/transit/routeBulletMap';
 import { cn } from '@/lib/utils';
 import { CITY_NETWORKS, NETWORK_VIEWBOX } from './cityNetworkGeometry';
@@ -16,13 +16,52 @@ const TRACK_STROKE: Record<Track, string> = {
  *  are the map's own legend and a black outline reads as a border around a
  *  shape rather than as a route. Design decision, 2026-08-14. */
 const LINE_WIDTH = 5;
-/** Screen pixels, not user units: the thumb variant crops to each city's own
- *  bounding box, so the same user-unit width would render at a different
- *  thickness per city. `vector-effect: non-scaling-stroke` pins it instead. */
-const THUMB_LINE_PX = 3.5;
-/** The backdrop is drawn large behind a masthead, so its lines are heavier
- *  than the thumb's — same non-scaling reason, wider stroke. */
-const BACKDROP_LINE_PX = 7;
+/**
+ * Line weight for `thumb` and `backdrop`, in SCREEN pixels (both use
+ * `vector-effect: non-scaling-stroke`, because each crops to its own city's
+ * bounding box and the same user-unit width would render at a different
+ * thickness per city).
+ *
+ * The weight follows the diagram's rendered size, because the same component
+ * draws everything from a 48px search thumbnail to a ~300px city-card header
+ * to a full masthead backdrop. A single fixed width was always wrong
+ * somewhere: 2.5px read as a hairline on the city cards, and any weight that
+ * read well there would clog a 48px thumb. It is the shorter side of the
+ * rendered box times LINE_PX_PER_BOX_PX (0.04: the homepage city card, 153px
+ * tall at a 1440px viewport, lands on the 6px it shipped with), clamped to [MIN, MAX]. The 4.5px floor was chosen by eye against the 96px-tall
+ * /going-out tiles, where 3.5px read as a hairline, and still holds in 48px thumbs.
+ */
+const LINE_PX_PER_BOX_PX = 0.04;
+const MIN_LINE_PX = 4.5;
+const MAX_LINE_PX = 7;
+/** Used until the first measurement lands, and where ResizeObserver is absent. */
+const FALLBACK_LINE_PX = 4.5;
+
+export function lineWidthForBox(width: number, height: number): number {
+  const side = Math.min(width, height);
+  if (!(side > 0)) return FALLBACK_LINE_PX;
+  const px = side * LINE_PX_PER_BOX_PX;
+  return Math.round(Math.min(MAX_LINE_PX, Math.max(MIN_LINE_PX, px)) * 2) / 2;
+}
+
+/** Measures the rendered box and returns the line weight for it. */
+function useBoxLineWidth(enabled: boolean) {
+  const ref = useRef<SVGSVGElement>(null);
+  const [px, setPx] = useState(FALLBACK_LINE_PX);
+  useEffect(() => {
+    const el = ref.current;
+    if (!enabled || !el || typeof ResizeObserver === 'undefined') return;
+    const measure = () => {
+      const { width, height } = el.getBoundingClientRect();
+      setPx(lineWidthForBox(width, height));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [enabled]);
+  return { ref, px };
+}
 
 /** Template lines for cities with no rail network of their own — the geometry
  *  this component replaced. Four shapes cycled by card index so neighbouring
@@ -77,6 +116,9 @@ interface Props {
    * is sized for small slots (48–112px tall); a large picture slot such as a
    * city card's 16:10 header renders the same network several times bigger
    * and needs a heavier line to read as a route rather than a hairline.
+   *
+   * Optional and normally omitted: without it the weight follows the
+   * rendered box size (see `lineWidthForBox`). Pass it only to pin a weight.
    */
   lineWidth?: number;
 }
@@ -115,6 +157,9 @@ function Station({ x, y, r = 6 }: { x: number; y: number; r?: number }) {
  */
 function CityNetworkImpl({ slug, variant = 'card', index, lineWidth, className }: Props) {
   const network = slug ? CITY_NETWORKS[slug] : undefined;
+  const sized = variant !== 'card' && !!network && lineWidth === undefined;
+  // Called before any early return: hooks must run in the same order every render.
+  const box = useBoxLineWidth(sized);
 
   if (!network) {
     if (index === undefined || variant === 'backdrop') return null;
@@ -137,7 +182,7 @@ function CityNetworkImpl({ slug, variant = 'card', index, lineWidth, className }
 
   const backdrop = variant === 'backdrop';
   const thumb = variant === 'thumb' || backdrop;
-  const strokePx = thumb ? (lineWidth ?? (backdrop ? BACKDROP_LINE_PX : THUMB_LINE_PX)) : undefined;
+  const strokePx = thumb ? (lineWidth ?? box.px) : undefined;
   const { crop } = network;
   // The ring is drawn in user units, and the thumb's units differ per city, so
   // scale it off the crop instead of hard-coding a radius that would be a dot
@@ -146,6 +191,7 @@ function CityNetworkImpl({ slug, variant = 'card', index, lineWidth, className }
 
   return (
     <svg
+      ref={box.ref}
       viewBox={
         thumb
           ? `${crop.x} ${crop.y} ${crop.w} ${crop.h}`

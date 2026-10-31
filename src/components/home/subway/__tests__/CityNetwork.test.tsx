@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { render } from '@testing-library/react';
-import { CityNetwork } from '../CityNetwork';
+import { CityNetwork, lineWidthForBox } from '../CityNetwork';
 import { CITY_NETWORKS, NETWORK_VIEWBOX, hasCityNetwork } from '../cityNetworkGeometry';
 
 /**
@@ -43,6 +43,21 @@ describe('CityNetwork', () => {
     expect(
       pathsOf(container).every((p) => p.getAttribute('vector-effect') === 'non-scaling-stroke'),
     ).toBe(true);
+  });
+
+  it('line weight follows the rendered box, clamped to a floor and a ceiling', () => {
+    // A 48px search thumbnail must not clog: the floor holds.
+    expect(lineWidthForBox(64, 48)).toBe(4.5);
+    // The 96px-tall /going-out tiles, which read as hairlines at 3.5px.
+    expect(lineWidthForBox(321, 96)).toBe(4.5);
+    // The homepage city card at a 1440px viewport (273x153) keeps its 6px.
+    expect(lineWidthForBox(273, 153)).toBe(6);
+    // Between floor and ceiling the weight scales with the box.
+    expect(lineWidthForBox(260, 130)).toBe(5);
+    // A masthead backdrop is capped.
+    expect(lineWidthForBox(1400, 400)).toBe(7);
+    // An unmeasured (zero) box falls back instead of producing 0px lines.
+    expect(lineWidthForBox(0, 0)).toBe(4.5);
   });
 
   it('lineWidth overrides the thumb weight for large picture slots', () => {
