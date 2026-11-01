@@ -37,7 +37,12 @@ import {
   placesExpr,
 } from '@/components/map/clusterDonut';
 import { collapseColocated } from '@/components/map/pointStacks';
-import { declutterPins, pinPriority, pinRadiusAt } from '@/components/map/pinDeclutter';
+import {
+  declutterPins,
+  dotsUnderPin,
+  pinPriority,
+  pinRadiusAt,
+} from '@/components/map/pinDeclutter';
 import { ink, paper } from '@/lib/mapTokens';
 import { MAP_FONT_BOLD } from '@/config/mapStyle';
 import { clusterHoverHtml, pointHoverHtml } from '@/components/map/mapHoverHtml';
@@ -662,9 +667,53 @@ export function usePointLayers({
     map.on('click', [UNCLUSTERED_LAYER, PIN_DOT_LAYER, CLOUD_LAYER], (e: MapLayerMouseEvent) => {
       const feat = pickPointUnder(map, e);
       if (!feat || feat.geometry.type !== 'Point') return;
-      // A stacked pin: every place on this spot, fanned out or listed.
-      const members = stackMembersRef.current.get(String(feat.properties?.id));
-      if (members && members.length > 1) {
+      // A stacked pin: every place on this spot, fanned out or listed. A full
+      // pin also covers the dots of places a metre or two away, which the
+      // declutter shrank and the pin now draws over; they have nothing left
+      // to click, so they join this pin's list.
+      const featId = String(feat.properties?.id);
+      const own = stackMembersRef.current.get(featId) ?? [feat as unknown as PointFeature];
+      const members = [...own];
+      const featCompact =
+        map.getFeatureState({ source: POINTS_SOURCE, id: featId }).compact === true;
+      if (!featCompact && feat.properties?.cloud !== 1) {
+        const c = map.project((feat.geometry as GeoJSON.Point).coordinates as [number, number]);
+        const r = pinRadiusAt(map.getZoom(), feat.properties?.featured === true);
+        const dots = map
+          .queryRenderedFeatures(
+            [
+              [c.x - r, c.y - r],
+              [c.x + r, c.y + r],
+            ],
+            { layers: [PIN_DOT_LAYER] },
+          )
+          .filter(
+            (d) =>
+              d.geometry.type === 'Point' &&
+              map.getFeatureState({ source: POINTS_SOURCE, id: d.properties?.id }).compact === true,
+          );
+        const byId = new Map(dots.map((d) => [String(d.properties?.id), d]));
+        const hidden = dotsUnderPin(
+          { id: featId, x: c.x, y: c.y, r },
+          dots.map((d) => {
+            const q = map.project((d.geometry as GeoJSON.Point).coordinates as [number, number]);
+            return { id: String(d.properties?.id), x: q.x, y: q.y };
+          }),
+        );
+        const have = new Set(members.map((m) => String(m.properties?.id)));
+        for (const id of hidden) {
+          for (const m of stackMembersRef.current.get(id) ?? [
+            byId.get(id) as unknown as PointFeature,
+          ]) {
+            const mid = String(m.properties?.id);
+            if (!have.has(mid)) {
+              have.add(mid);
+              members.push(m);
+            }
+          }
+        }
+      }
+      if (members.length > 1) {
         clearSpider();
         const center = (feat.geometry as GeoJSON.Point).coordinates as [number, number];
         const onStack = onStackSelectRef?.current;
