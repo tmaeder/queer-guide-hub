@@ -7,7 +7,15 @@
  * previously duplicated in `mapShellAdapters.ts`).
  */
 import type React from 'react';
-import { MapPin, Calendar, Building2, Globe, Accessibility, Hotel, Landmark } from '@/components/icons';
+import {
+  MapPin,
+  Calendar,
+  Building2,
+  Globe,
+  Accessibility,
+  Hotel,
+  Landmark,
+} from '@/components/icons';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import type { BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
 
@@ -90,9 +98,18 @@ export const POINTS_SOURCE = 'points-source';
 export const CLUSTERS_LAYER = 'clusters';
 export const CLUSTER_COUNT_LAYER = 'cluster-count';
 export const UNCLUSTERED_LAYER = 'unclustered-point';
+/** The dot a pin shrinks to when it would overlap a higher-priority pin
+ *  (pinDeclutter.ts). Its own layer, BELOW every full pin, so a dot never
+ *  paints over the edge of a neighbouring pin. */
+export const PIN_DOT_LAYER = 'pin-dot';
+/** Cruising spots, drawn as a soft cloud rather than a pin: a cruising area
+ *  is a stretch of park or shore, not a door. */
+export const CLOUD_LAYER = 'pin-cloud';
 export const GLYPH_LAYER = 'pin-glyph';
 /** Saved / visited badge on a pin's upper-right. */
 export const STATE_BADGE_LAYER = 'pin-state-badge';
+/** "+N" count on a pin that stands for several places on one spot. */
+export const STACK_BADGE_LAYER = 'pin-stack-badge';
 export const FEATURED_RING_LAYER = 'featured-ring';
 export const PULSE_LAYER = 'live-pulse';
 export const HEATMAP_SOURCE = 'heatmap-source';
@@ -104,6 +121,8 @@ export const FOCUS_RING_LAYER = 'focus-ring';
  *  and the pure-density (heatmap) lens. */
 export const PIN_LAYER_IDS = [
   PULSE_LAYER,
+  CLOUD_LAYER,
+  PIN_DOT_LAYER,
   FEATURED_RING_LAYER,
   CLUSTERS_LAYER,
   CLUSTER_COUNT_LAYER,
@@ -113,6 +132,7 @@ export const PIN_LAYER_IDS = [
   // it up for free — a layer absent from this list stays painted under a view
   // that is supposed to hide every pin.
   STATE_BADGE_LAYER,
+  STACK_BADGE_LAYER,
 ];
 
 // ── Route (itinerary / curated trail) layer IDs ──────────────────────────────
