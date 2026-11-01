@@ -15,10 +15,11 @@ export default function SearchScreen() {
   const tooShort = input.trim().length < MIN_QUERY;
   const hits = search.data?.hits ?? [];
 
-  const open = (hit: SearchHit) =>
-    hit.kind === 'event'
-      ? router.push({ pathname: '/events/[slug]', params: { slug: hit.slug } })
-      : router.push({ pathname: '/venues/[slug]', params: { slug: hit.slug } });
+  const open = (hit: SearchHit) => {
+    if (hit.kind === 'event') router.push({ pathname: '/events/[slug]', params: { slug: hit.slug } });
+    else if (hit.kind === 'city') router.push({ pathname: '/city/[slug]', params: { slug: hit.slug } });
+    else router.push({ pathname: '/venues/[slug]', params: { slug: hit.slug } });
+  };
 
   let body: React.ReactNode = null;
   if (tooShort) body = <StateMessage kind="empty" message={t('search.hint')} />;
@@ -72,7 +73,9 @@ function Row({ hit, onPress }: { hit: SearchHit; onPress: () => void }) {
   // Venue categories and event types are separate vocabularies; an event row
   // always says it is an event, so a place and an event of one name differ.
   const category =
-    hit.kind === 'event'
+    hit.kind === 'city'
+      ? t('search.city')
+      : hit.kind === 'event'
       ? hit.category
         ? t(`eventType.${hit.category}`, { defaultValue: t('search.event') })
         : t('search.event')
