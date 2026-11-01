@@ -20,7 +20,8 @@
     "mode": {
       "places": "Orte",
       "events": "Veranstaltungen"
-    }
+    },
+    "mapLabel": "Karte. Die Liste darunter zeigt, was auf der Karte ist."
   },
   "venue": {
     "notFound": "Dieser Ort ist nicht mehr gelistet.",

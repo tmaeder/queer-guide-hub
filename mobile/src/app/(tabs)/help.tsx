@@ -95,11 +95,16 @@ function HotlineCard({ line }: { line: Hotline }) {
         {channelsOf(line).map((c, i) => {
           const href = channelHref(c);
           if (!href) return null;
+          const label =
+            c.label ?? `${t(`help.channel.${c.kind}`)} ${c.kind === 'phone' || c.kind === 'sms' ? c.value : ''}`.trim();
           return (
             <Button
               key={`${c.kind}-${i}`}
               tone={i === 0 ? 'primary' : 'secondary'}
-              label={c.label ?? `${t(`help.channel.${c.kind}`)} ${c.kind === 'phone' || c.kind === 'sms' ? c.value : ''}`.trim()}
+              label={label}
+              // A screen-reader user moving through the buttons hears which line
+              // each one calls, not a run of identical "Call" buttons.
+              accessibilityLabel={`${label}, ${line.name}`}
               onPress={() => Linking.openURL(href)}
             />
           );
