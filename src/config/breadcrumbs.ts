@@ -54,7 +54,7 @@ const SEGMENT_SECTIONS: Record<string, { path: string; key: string; fallback: st
   hub: { path: '/hub', key: 'hub.title', fallback: 'Your hub' },
   people: { path: '/hub/people', key: 'breadcrumb.people', fallback: 'Meet people' },
   community: { path: '/hub/people', key: 'breadcrumb.people', fallback: 'Meet people' },
-  rights: { path: '/rights', key: 'breadcrumb.rights', fallback: 'Rights' },
+  rights: { path: '/tags/rights-by-country', key: 'breadcrumb.rights', fallback: 'Rights' },
   support: { path: '/support', key: 'breadcrumb.support', fallback: 'Support' },
   // No `shop` row: /shop now redirects to /marketplace and nothing renders
   // under that segment, so a section entry for it could never be reached.

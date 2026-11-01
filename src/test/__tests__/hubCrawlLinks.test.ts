@@ -219,9 +219,9 @@ describe('hub crawl links — rendering', () => {
     expect(html).toContain('href="/city/berlin"');
   });
 
-  it('/rights links countries', async () => {
+  it('/tags/rights-by-country links countries', async () => {
     const { mod } = await load({ countries: [{ slug: 'germany', name: 'Germany' }] });
-    const html = await mod.buildHubLinksHtml({} as never, '/rights');
+    const html = await mod.buildHubLinksHtml({} as never, '/tags/rights-by-country');
     expect(html).toContain('href="/country/germany"');
   });
 

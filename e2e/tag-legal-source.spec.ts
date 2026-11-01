@@ -4,8 +4,8 @@ import { test, expect } from '@playwright/test';
  * The glossary's "Source of law" block.
  *
  * Track B (a tag naming a CLASS of law) is the case under test: it links to
- * `/rights#<topic>`, and that deep link broke twice while it was being built —
- * first because `/rights/<topic>` is not a route at all, then because the topic
+ * `/tags/rights-by-country#<topic>`, and that deep link broke twice while it was being built —
+ * first because `/tags/rights-by-country/<topic>` is not a route at all, then because the topic
  * cards mount only after the all-countries fetch, so the browser's own fragment
  * jump ran against an empty page and left the reader at the top of a 31,000px
  * document.
@@ -24,7 +24,7 @@ test.describe('tag → source of law', () => {
     await expect(page.getByText(/not a single law/i)).toBeVisible({ timeout: 30_000 });
 
     const link = page.getByRole('link', { name: /See status by country/i });
-    await expect(link).toHaveAttribute('href', '/rights#marriage');
+    await expect(link).toHaveAttribute('href', '/tags/rights-by-country#marriage');
     await link.click();
 
     await expect(page.locator('#marriage')).toBeAttached({ timeout: 30_000 });
@@ -45,7 +45,7 @@ test.describe('tag → source of law', () => {
   test('a direct deep link scrolls on a cold load', async ({ page }) => {
     // The harder case: no in-app navigation, so the browser's fragment jump has
     // already happened and failed before any of our code runs.
-    await page.goto('/rights#marriage', { waitUntil: 'domcontentloaded' });
+    await page.goto('/tags/rights-by-country#marriage', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('#marriage')).toBeAttached({ timeout: 30_000 });
     await expect
       .poll(async () => await page.evaluate(() => Math.round(window.scrollY)), { timeout: 20_000 })
@@ -57,13 +57,13 @@ test.describe('tag → source of law', () => {
     // Generous: the topic cards wait on the all-250-countries fetch, which is the
     // slowest query on the site and regularly needs >30s cold.
     test.setTimeout(90_000);
-    await page.goto('/rights', { waitUntil: 'domcontentloaded' });
+    await page.goto('/tags/rights-by-country', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('li#marriage')).toBeAttached({ timeout: 30_000 });
     const ids = await page.evaluate(() =>
       [...document.querySelectorAll('li[id]')].map((l) => l.id),
     );
     for (const slug of ['marriage', 'criminalisation', 'gender-recognition', 'hate-crime']) {
-      expect(ids, `/rights is missing an anchor for ${slug}`).toContain(slug);
+      expect(ids, `/tags/rights-by-country is missing an anchor for ${slug}`).toContain(slug);
     }
   });
 

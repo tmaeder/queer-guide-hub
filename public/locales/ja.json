@@ -1,5 +1,6 @@
 {
   "knowledge": {
+    "rights": "国別の権利",
     "title": "知識",
     "terms": "用語",
     "personalities": "人物",
@@ -2068,6 +2069,7 @@
       "tagsAll": "すべての用語",
       "tagsInteractions": "薬物の安全",
       "tagsStiGuide": "性感染症ガイド",
+      "rightsByCountry": "国別の権利",
       "transRights": "トランスの権利",
       "competitions": "[JA] Drag Race",
       "newsAll": "すべてのニュース"

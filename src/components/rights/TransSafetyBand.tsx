@@ -243,7 +243,7 @@ export function TransSafetyBand({ country }: { country: Record<string, unknown> 
       )}
 
       <p className="mt-6 text-13">
-        <LocalizedLink to="/rights/trans">
+        <LocalizedLink to="/tags/rights-by-country/trans">
           {t('rights.trans.bandLink', 'Trans rights, country by country')}
         </LocalizedLink>
       </p>

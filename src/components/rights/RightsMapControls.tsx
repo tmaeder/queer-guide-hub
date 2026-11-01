@@ -21,7 +21,7 @@ import {
 import { TRACK_BG, TRACK_TEXT } from '@/components/transit/routeBulletMap';
 
 /**
- * The two control surfaces for the /rights world map: which line/station
+ * The two control surfaces for the /tags/rights-by-country world map: which line/station
  * (right) is painted, which lens (whose protection) narrows a
  * protection-matrix reading, plus the route-strip legend that reads the
  * result back as counts.
@@ -166,7 +166,7 @@ export function RightsMapControls({
    * This used `scrollIntoView({ block: 'nearest', inline: 'center' })`, which
    * is wrong here in a way that only shows up on a deep link. `block: 'nearest'`
    * still scrolls ANCESTORS vertically when the element is off screen, and on
-   * `/rights#marriage` the rail sits ~3,900px above the target (measured on
+   * `/tags/rights-by-country#marriage` the rail sits ~3,900px above the target (measured on
    * prod: railTop -3877 while the ledger row sat at 178). Whether the reader
    * stayed at the row they asked for came down to whether this effect or the
    * page's hash poller wrote last — a race that failed once in a full prod run
@@ -261,7 +261,7 @@ export function RightsMapControls({
           control is out of the tab order, so in exactly that state the rail is
           a scrollable region containing nothing focusable: reachable by mouse
           or finger, unreachable by keyboard (axe `scrollable-region-focusable`,
-          serious, caught on /rights [mobile] in CI). Making the container
+          serious, caught on /tags/rights-by-country [mobile] in CI). Making the container
           itself focusable restores arrow-key scrolling precisely when the chips
           cannot. Do not remove it on the grounds that "the chips are focusable"
           — they are, only while the lens applies. */}
@@ -283,7 +283,7 @@ export function RightsMapControls({
             // on mobile — where this rail scrolls — the scrollable region held
             // no focusable content at all and a keyboard user could not reach
             // it (axe `scrollable-region-focusable`, serious, caught on
-            // /rights [mobile/light]).
+            // /tags/rights-by-country [mobile/light]).
             //
             // The second is the point of keeping these visible in the first
             // place. `disabled` also drops them out of tab order, so a screen

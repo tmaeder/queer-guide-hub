@@ -19,7 +19,7 @@ import {
  *
  * Until 2026-09-01 the fixtures in verdict.test.ts and transSafety.test.ts used
  * `requires_surgery: 'Yes'` — a value that occurs zero times in production.
- * The tests passed, the readers were wrong, and `/rights/trans` published
+ * The tests passed, the readers were wrong, and `/tags/rights-by-country/trans` published
  * "Requires surgery 0 / 244" for as long as the page had existed.
  *
  * So this file pins what the DATABASE holds, not what a fixture author

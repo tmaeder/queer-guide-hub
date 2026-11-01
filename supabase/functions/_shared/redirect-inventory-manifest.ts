@@ -62,6 +62,26 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "static:%2Frights:%2Ftags%2Frights-by-country:301:0",
+    "source": "/rights",
+    "target": "/tags/rights-by-country",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "static:%2Frights%2F*:%2Ftags%2Frights-by-country%2F%3Asplat:301:0",
+    "source": "/rights/*",
+    "target": "/tags/rights-by-country/:splat",
+    "origin": "public/_redirects",
+    "kind": "Static",
+    "statusCode": 301,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "static:%2Fcommunity:%2Fhub%2Ffeed:301:0",
     "source": "/community",
     "target": "/hub/feed",
@@ -3025,6 +3045,36 @@ export const deployedRedirectManifest = [
     "id": "client:locale:%2Ffestivals%2F%3Aid:%2Fevents:Navigate:0",
     "source": "/festivals/:id",
     "target": "/events",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Frights:%2Ftags%2Frights-by-country:LocalizedRedirect:0",
+    "source": "/rights",
+    "target": "/tags/rights-by-country",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Frights%2Fsources:%2Ftags%2Frights-by-country%2Fsources:LocalizedRedirect:0",
+    "source": "/rights/sources",
+    "target": "/tags/rights-by-country/sources",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
+    "id": "client:locale:%2Frights%2Ftrans:%2Ftags%2Frights-by-country%2Ftrans:LocalizedRedirect:0",
+    "source": "/rights/trans",
+    "target": "/tags/rights-by-country/trans",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,

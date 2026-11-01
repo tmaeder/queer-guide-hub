@@ -29,13 +29,13 @@ test.describe('glossary in navigation', () => {
     await expect(active.locator('span[aria-hidden]')).toHaveClass(/bg-track-pink/);
   });
 
-  test('the 7-tab row never wraps at the narrowest desktop width', async ({ page }) => {
+  test('the 6-tab row never wraps at the narrowest desktop width', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 900 });
     await page.goto('/');
     const nav = page.locator('header nav[aria-label="Primary"]');
     await expect(nav).toBeVisible();
     const tabs = nav.locator('a');
-    await expect(tabs).toHaveCount(7);
+    await expect(tabs).toHaveCount(6);
     // All tab tops must be equal — a wrapped row puts one on a second line.
     const tops = await tabs.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().top));
     expect(new Set(tops.map((t) => Math.round(t))).size).toBe(1);

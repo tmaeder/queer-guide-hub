@@ -139,14 +139,14 @@ export const KNOWN_RIGHT_VALUES: readonly string[] = Object.keys(VOCAB);
  * The scalar a topic's column actually carries.
  *
  * Lifted verbatim out of LGBTJurisdictionInfo so the country card and the
- * /rights index read ONE implementation. THREE columns are objects whose
+ * /tags/rights-by-country index read ONE implementation. THREE columns are objects whose
  * headline string lives on a named key; the rest are already scalars. Getting
  * this wrong does not throw — it yields `none` and silently undercounts a
  * legal protection, which on this page is the expensive kind of wrong.
  *
  * `gender-recognition` was the third and was missing until 2026-09-01, so this
  * returned the raw jsonb object, `isReadableScalar` rejected it, and
- * `classifyCountryRight` answered `none` for ALL 250 countries — the /rights
+ * `classifyCountryRight` answered `none` for ALL 250 countries — the /tags/rights-by-country
  * choropleth painted the topic as "no data" worldwide. `gender_marker` is the
  * headline key: it is the one this column's `RightTopic` is about, and the one
  * `REQUIRED.trans` already treats as the topic's coverage signal.

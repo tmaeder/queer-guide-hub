@@ -9,7 +9,7 @@ export { valueForTopic } from './rightsClassify';
 /**
  * Worldwide counts per right — the "rights in general" view.
  *
- * `/rights` shipped as a country index: pick a country, read its ledger. The 18
+ * `/tags/rights-by-country` shipped as a country index: pick a country, read its ledger. The 18
  * rights already exist as data at 100% coverage (see rightsCatalog), but the
  * page rendered exactly one of them. This turns the axis around — for each
  * right, how much of the world has it — without inventing a new data source.

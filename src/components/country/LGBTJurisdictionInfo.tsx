@@ -36,7 +36,7 @@ interface LGBTJurisdictionInfoProps {
  *
  * Composed from `src/lib/rights/rightsCatalog` (which rights exist, in what
  * order) plus the shared primitives in `src/components/rights/`. The 18 rows
- * used to be hardcoded JSX here, which is why `/rights` could render only one
+ * used to be hardcoded JSX here, which is why `/tags/rights-by-country` could render only one
  * of them and why the value classifier could not be unit-tested — it was a
  * closure inside a 483-line component, and it was wrong on 267 rows.
  *

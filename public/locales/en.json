@@ -1,5 +1,6 @@
 {
   "knowledge": {
+    "rights": "Rights by country",
     "title": "Knowledge",
     "terms": "Terms",
     "personalities": "Personalities",
@@ -2267,6 +2268,7 @@
       "tagsAll": "All terms",
       "tagsInteractions": "Substance safety",
       "tagsStiGuide": "STI guide",
+      "rightsByCountry": "Rights by country",
       "transRights": "Trans rights",
       "competitions": "Drag Race",
       "newsAll": "All news"

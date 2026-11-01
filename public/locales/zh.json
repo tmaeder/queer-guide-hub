@@ -1,5 +1,6 @@
 {
   "knowledge": {
+    "rights": "各国权利",
     "title": "知识",
     "terms": "术语",
     "personalities": "人物",
@@ -2068,6 +2069,7 @@
       "tagsAll": "全部词条",
       "tagsInteractions": "物质安全",
       "tagsStiGuide": "性传播感染指南",
+      "rightsByCountry": "各国权利",
       "transRights": "跨性别权利",
       "competitions": "[ZH] Drag Race",
       "newsAll": "全部新闻"
