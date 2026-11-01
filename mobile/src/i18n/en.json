@@ -80,5 +80,33 @@
     "gym": "Gym",
     "toilet": "Toilet",
     "other": "Place"
+  },
+  "discreet": {
+    "title": "Discreet mode",
+    "intro": "Tools for using this app on a phone someone else might see. Everything here stays on this device.",
+    "lock": "App lock",
+    "lockHint": "Ask for Face ID, fingerprint or your passcode to open the app.",
+    "lockUnavailable": "Set a passcode on this device to use the app lock.",
+    "lockAfter": "Lock after leaving the app",
+    "lockImmediately": "Immediately",
+    "lockMinutes_one": "After {{count}} minute",
+    "lockMinutes_other": "After {{count}} minutes",
+    "hideInSwitcher": "Hide in app switcher",
+    "hideInSwitcherIos": "Blurs the app's preview when you switch apps.",
+    "hideInSwitcherAndroid": "Shows a blank preview when you switch apps. This also blocks screenshots.",
+    "quickExit": "Quick exit",
+    "quickExitHint": "Adds an Exit button that clears the app and shows a blank notes page. Long-press the date to come back.",
+    "icon": "App icon",
+    "iconName": {
+      "default": "queer.guide",
+      "Atlas": "Grid (light)",
+      "Ink": "Grid (dark)"
+    },
+    "iconHintIos": "Only the icon changes: the name under it stays the same.",
+    "iconHintAndroid": "Your launcher may take a moment to show the new icon.",
+    "iconError": "Couldn't change the icon. Try again.",
+    "locked": "Locked",
+    "unlock": "Unlock",
+    "unlockPrompt": "Unlock"
   }
 }

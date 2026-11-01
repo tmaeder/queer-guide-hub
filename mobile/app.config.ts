@@ -70,6 +70,26 @@ const config: ExpoConfig = {
     'expo-font',
     '@maplibre/maplibre-react-native',
     [
+      'expo-local-authentication',
+      { faceIDPermission: 'Face ID is used only to unlock the app on this device.' },
+    ],
+    // Neutral alternate icons for discreet mode. No brand mark, no rainbow.
+    [
+      'expo-alternate-app-icons',
+      [
+        {
+          name: 'Atlas',
+          ios: './assets/icons/atlas-ios.png',
+          android: { foregroundImage: './assets/icons/atlas-android-fg.png', backgroundColor: '#FAFAF5' },
+        },
+        {
+          name: 'Ink',
+          ios: './assets/icons/ink-ios.png',
+          android: { foregroundImage: './assets/icons/ink-android-fg.png', backgroundColor: '#111111' },
+        },
+      ],
+    ],
+    [
       'expo-location',
       {
         locationWhenInUsePermission:

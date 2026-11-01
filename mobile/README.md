@@ -45,10 +45,27 @@ module. Use a development build (`npx expo run:ios|android`, or
 - Support lines: a `directory` entry is never shown as a crisis line, and
   `reports_to_police` is three-state — absent renders nothing.
 
+## Discreet mode (Me → Discreet mode)
+
+All on-device; no server flag records that anyone uses it. Settings live in
+the keychain/keystore.
+
+- **App lock** — Face ID / fingerprint / device passcode, with a grace period
+  (immediately, 1 or 5 minutes). Turning it on or off requires authenticating
+  first, so nobody locks themselves out and nobody else can quietly disable
+  it. While locked, an unbranded cover sits over the app and the content is
+  hidden from screen readers; the navigator stays mounted for deep links.
+- **Hide in app switcher** (on by default) — iOS blur overlay; Android
+  `FLAG_SECURE`, which also blocks screenshots.
+- **Quick exit** — an Exit button on Explore and Help that clears every cached
+  query and jumps to a blank, unbranded scratch page. Long-press the date to
+  return (asks to unlock if the lock is on).
+- **Alternate icons** — two neutral grid icons. On iOS only the icon changes:
+  the home-screen name stays "queer.guide".
+
 ## Not done yet
 
-Tracked in the strategy doc's work breakdown: offline city packs, discreet
-mode (alternate icon, app lock, quick exit), sign-in, push, brand fonts
+Tracked in the strategy doc's work breakdown: offline city packs, sign-in, push, brand fonts
 (the web ships woff2 only; native needs ttf/otf), EAS build profiles and
 store metadata, and serving the AASA / assetlinks.json files for the
 universal links declared in `app.config.ts`.
