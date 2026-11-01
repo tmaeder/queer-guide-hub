@@ -211,12 +211,14 @@ export const ExploreMap = ({
   const stackCenterRef = useRef<[number, number] | null>(null);
   // Stable wrapper read by the cluster click handler; undefined (→ ring) when
   // the host has no list to show the stack in.
-  const onStackSelectRef = useRef<((stack: MapPointStack) => void) | undefined>(undefined);
+  // Called with null to release the list (any click that is not a stack).
+  const onStackSelectRef = useRef<((stack: MapPointStack | null) => void) | undefined>(undefined);
   useEffect(() => {
     onStackSelectPropRef.current = onStackSelect;
     onStackSelectRef.current = onStackSelect
       ? (stack) => {
-          stackCenterRef.current = stack.center;
+          if (!stack && !stackCenterRef.current) return; // nothing listed
+          stackCenterRef.current = stack?.center ?? null;
           onStackSelectPropRef.current?.(stack);
         }
       : undefined;
