@@ -9,6 +9,7 @@ import { resetCacheOnUserChange } from '@/features/auth/cacheReset';
 import { DiscreetGate } from '@/features/discreet/DiscreetGate';
 import { packDb } from '@/features/packs/db';
 import { savedStore } from '@/features/saved/savedStore';
+import { supabaseAuthEvents, syncSavedOnAuth } from '@/features/saved/sync';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 
 function RootStack() {
@@ -47,6 +48,8 @@ export default function RootLayout() {
 
   // Gated content differs per user: drop the cache whenever the user changes.
   useEffect(() => resetCacheOnUserChange(queryClient), [queryClient]);
+  // Signed in, saved places are the account's; signed out, they leave the phone.
+  useEffect(() => syncSavedOnAuth(savedStore, supabaseAuthEvents), []);
 
   useEffect(() => {
     void savedStore.load();
