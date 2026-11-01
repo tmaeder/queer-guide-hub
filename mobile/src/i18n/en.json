@@ -135,12 +135,13 @@
   },
   "search": {
     "title": "Search",
-    "placeholder": "Search places",
+    "placeholder": "Search places and events",
     "hint": "Type at least two letters.",
     "loading": "Searching…",
-    "empty": "No places match.",
+    "empty": "Nothing matches.",
     "offline": "Search needs a connection. Download a city under Me → Offline cities to search it offline.",
-    "fromPacks": "Offline — showing results from your downloaded cities."
+    "fromPacks": "Offline — showing results from your downloaded cities.",
+    "event": "Event"
   },
   "auth": {
     "signIn": "Sign in",

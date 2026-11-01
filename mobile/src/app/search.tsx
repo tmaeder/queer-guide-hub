@@ -2,7 +2,7 @@ import { router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { MIN_QUERY, useVenueSearch, type VenueHit } from '@/api/search';
+import { MIN_QUERY, useSearch, type SearchHit } from '@/api/search';
 import { StateMessage, Text } from '@/components/ui';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space, text } from '@/theme/tokens';
@@ -11,11 +11,14 @@ export default function SearchScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const [input, setInput] = useState('');
-  const search = useVenueSearch(input);
+  const search = useSearch(input);
   const tooShort = input.trim().length < MIN_QUERY;
   const hits = search.data?.hits ?? [];
 
-  const open = (slug: string) => router.push({ pathname: '/venues/[slug]', params: { slug } });
+  const open = (hit: SearchHit) =>
+    hit.kind === 'event'
+      ? router.push({ pathname: '/events/[slug]', params: { slug: hit.slug } })
+      : router.push({ pathname: '/venues/[slug]', params: { slug: hit.slug } });
 
   let body: React.ReactNode = null;
   if (tooShort) body = <StateMessage kind="empty" message={t('search.hint')} />;
@@ -53,10 +56,10 @@ export default function SearchScreen() {
       {body ?? (
         <FlatList
           data={hits}
-          keyExtractor={(h) => h.slug}
+          keyExtractor={(h) => `${h.kind}:${h.slug}`}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          renderItem={({ item }) => <Row hit={item} onPress={() => open(item.slug)} />}
+          renderItem={({ item }) => <Row hit={item} onPress={() => open(item)} />}
           ItemSeparatorComponent={() => <View style={[styles.sep, { backgroundColor: colors.border }]} />}
         />
       )}
@@ -64,9 +67,18 @@ export default function SearchScreen() {
   );
 }
 
-function Row({ hit, onPress }: { hit: VenueHit; onPress: () => void }) {
+function Row({ hit, onPress }: { hit: SearchHit; onPress: () => void }) {
   const { t } = useTranslation();
-  const category = hit.category ? t(`category.${hit.category}`, { defaultValue: hit.category }) : null;
+  // Venue categories and event types are separate vocabularies; an event row
+  // always says it is an event, so a place and an event of one name differ.
+  const category =
+    hit.kind === 'event'
+      ? hit.category
+        ? t(`eventType.${hit.category}`, { defaultValue: t('search.event') })
+        : t('search.event')
+      : hit.category
+        ? t(`category.${hit.category}`, { defaultValue: hit.category })
+        : null;
   const meta = [category, hit.city].filter(Boolean).join(' · ');
   return (
     <Pressable

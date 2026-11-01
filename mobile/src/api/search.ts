@@ -5,22 +5,27 @@ import { searchVenues as searchVenuesOffline } from '@/features/packs/store';
 import { supabase } from '@/lib/supabase';
 
 /**
- * Venue search. Online it goes to the same search-proxy worker the web uses
- * (Postgres hybrid search); when that request fails, downloaded city packs
- * answer from their FTS5 index. One hook, so the screen does not care which.
+ * Search over places and events. Online it goes to the same search-proxy
+ * worker the web uses (Postgres hybrid search); when that request fails,
+ * downloaded city packs answer from their FTS5 index — places only, since
+ * packs carry no events. One hook, so the screen does not care which.
  */
 export const SEARCH_URL = process.env.EXPO_PUBLIC_SEARCH_URL ?? 'https://search.queer.guide';
 export const MIN_QUERY = 2;
 
-export interface VenueHit {
+export type HitKind = 'venue' | 'event';
+
+export interface SearchHit {
+  kind: HitKind;
   slug: string;
   name: string;
+  /** venue category or event type; both are free slugs the screen translates */
   category: string | null;
   city: string | null;
 }
 
 export interface SearchResult {
-  hits: VenueHit[];
+  hits: SearchHit[];
   /** true when the answer came from a downloaded pack, not the server */
   offline: boolean;
 }
@@ -32,18 +37,39 @@ interface ProxyHit {
   title?: string | null;
   category?: string | null;
   city?: string | null;
+  /** epoch seconds */
+  start_date?: number | null;
+  end_date?: number | null;
 }
 
-/** Keep only venue hits that can actually be opened (have a slug and a name). */
-export function toVenueHits(raw: ProxyHit[]): VenueHit[] {
-  return raw.flatMap((h) => {
+const DAY_S = 86_400;
+
+/**
+ * An event is worth showing until it is over. The index holds tens of
+ * thousands of past events (archive imports), so a search for "pride" would
+ * otherwise be mostly last decade. No end date: assume it ends within a day.
+ */
+export function eventStillOn(h: Pick<ProxyHit, 'start_date' | 'end_date'>, nowMs = Date.now()) {
+  const end = h.end_date ?? (h.start_date != null ? h.start_date + DAY_S : null);
+  return end != null && end * 1000 >= nowMs;
+}
+
+/** Keep hits that can actually be opened: a venue or a not-yet-over event with a slug and a name. */
+export function toHits(raw: ProxyHit[], nowMs = Date.now()): SearchHit[] {
+  return raw.flatMap((h): SearchHit[] => {
     const name = h.name ?? h.title;
-    if (h.type !== 'venue' || !h.slug || !name) return [];
-    return [{ slug: h.slug, name, category: h.category ?? null, city: h.city ?? null }];
+    if (!h.slug || !name) return [];
+    if (h.type === 'venue') {
+      return [{ kind: 'venue' as const, slug: h.slug, name, category: h.category ?? null, city: h.city ?? null }];
+    }
+    if (h.type === 'event' && eventStillOn(h, nowMs)) {
+      return [{ kind: 'event' as const, slug: h.slug, name, category: h.category ?? null, city: h.city ?? null }];
+    }
+    return [];
   });
 }
 
-export async function searchVenuesOnline(query: string, signal?: AbortSignal): Promise<VenueHit[]> {
+export async function searchOnline(query: string, signal?: AbortSignal): Promise<SearchHit[]> {
   // Safety layer, same as the web: the proxy shows safety-gated places only to
   // a verified signed-in caller, and it trusts the JWT, never a body field.
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -60,7 +86,7 @@ export async function searchVenuesOnline(query: string, signal?: AbortSignal): P
     res = await fetch(`${SEARCH_URL}/search`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ query, hitsPerPage: 30, filters: { type: 'venue' } }),
+      body: JSON.stringify({ query, hitsPerPage: 30, filters: { types: ['venue', 'event'] } }),
       signal: controller.signal,
     });
   } finally {
@@ -69,14 +95,14 @@ export async function searchVenuesOnline(query: string, signal?: AbortSignal): P
   }
   if (!res.ok) throw new Error(`search ${res.status}`);
   const body = (await res.json()) as { hits?: ProxyHit[] };
-  return toVenueHits(body.hits ?? []);
+  return toHits(body.hits ?? []);
 }
 
-export function searchVenues(query: string, signal?: AbortSignal): Promise<SearchResult> {
+export function search(query: string, signal?: AbortSignal): Promise<SearchResult> {
   return withOfflineFallback<SearchResult>(
-    async () => ({ hits: await searchVenuesOnline(query, signal), offline: false }),
+    async () => ({ hits: await searchOnline(query, signal), offline: false }),
     async (db) => {
-      const hits = await searchVenuesOffline(db, query);
+      const hits = (await searchVenuesOffline(db, query)).map((v) => ({ kind: 'venue' as const, ...v }));
       // No pack matched: keep the network error so the screen says "offline",
       // not "no results" — those mean different things.
       return hits.length ? { hits, offline: true } : null;
@@ -93,11 +119,11 @@ function useDebounced<T>(value: T, ms: number) {
   return v;
 }
 
-export function useVenueSearch(input: string) {
+export function useSearch(input: string) {
   const query = useDebounced(input.trim(), 250);
   return useQuery({
-    queryKey: ['search', 'venues', query],
-    queryFn: ({ signal }) => searchVenues(query, signal),
+    queryKey: ['search', query],
+    queryFn: ({ signal }) => search(query, signal),
     enabled: query.length >= MIN_QUERY,
     staleTime: 5 * 60_000,
     retry: 0,

@@ -143,8 +143,8 @@ Me → Notifications registers this phone's native APNs/FCM token in
 ## Not done yet
 
 Tracked in the strategy doc's work breakdown: offline map tiles (PMTiles
-extracts in packs), pack hosting + a scheduled rebuild, events and other
-result types in search, passkey and OAuth sign-in and universal links
+extracts in packs), pack hosting + a scheduled rebuild, offline event search, other result
+types in search (news, cities), passkey and OAuth sign-in and universal links
 (queer.guide already serves AASA / assetlinks from the redirect-domain
 registry, which only allows `/go/*` on the built-in host — widening that
 for the first-party app is a decision, plus the Apple Team ID and Android

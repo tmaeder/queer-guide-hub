@@ -135,12 +135,13 @@
   },
   "search": {
     "title": "Suche",
-    "placeholder": "Orte suchen",
+    "placeholder": "Orte und Events suchen",
     "hint": "Gib mindestens zwei Buchstaben ein.",
     "loading": "Suche läuft…",
-    "empty": "Keine passenden Orte.",
+    "empty": "Keine Treffer.",
     "offline": "Die Suche braucht eine Verbindung. Lade unter Ich → Offline-Städte eine Stadt herunter, um sie offline zu durchsuchen.",
-    "fromPacks": "Offline — Ergebnisse aus deinen heruntergeladenen Städten."
+    "fromPacks": "Offline — Ergebnisse aus deinen heruntergeladenen Städten.",
+    "event": "Event"
   },
   "auth": {
     "signIn": "Anmelden",
