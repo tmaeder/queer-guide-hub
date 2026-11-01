@@ -169,7 +169,7 @@ const EntityMapInner = ({
    * already resolves `entity`/`line` from the layer type — including `null`
    * for every area layer, which is invariant B and must not be re-derived here.
    */
-  const { showPopupFromMarker: showPopup } = usePopupManager({
+  const { showPopupFromMarker: showPopup, popupPortal } = usePopupManager({
     navigate,
     toast,
     popupRef,
@@ -466,6 +466,8 @@ const EntityMapInner = ({
       style={{ position: 'relative', overflow: 'hidden' }}
     >
       <div ref={containerRef} style={{ height, width: '100%' }} />
+      {/* The open place card, portalled into MapLibre's popup node. */}
+      {popupPortal}
 
       {visitedLookup && !visitedLookup.isEmpty && (
         <button
