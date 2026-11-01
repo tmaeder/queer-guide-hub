@@ -26,6 +26,7 @@ function RootStack() {
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="search" options={{ title: t('search.title') }} />
         <Stack.Screen name="auth" options={{ presentation: 'modal', title: t('auth.signIn') }} />
         <Stack.Screen name="account/delete" options={{ title: t('account.deleteTitle') }} />
         <Stack.Screen name="venues/[slug]" options={{ title: '', headerTransparent: false }} />

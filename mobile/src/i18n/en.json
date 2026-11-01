@@ -126,6 +126,15 @@
     "verifyFailed": "This download didn't pass its security check and was not saved.",
     "discreetNote": "Downloaded cities are listed on this device. Remove them before handing your phone to someone."
   },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search places",
+    "hint": "Type at least two letters.",
+    "loading": "Searching…",
+    "empty": "No places match.",
+    "offline": "Search needs a connection. Download a city under Me → Offline cities to search it offline.",
+    "fromPacks": "Offline — showing results from your downloaded cities."
+  },
   "auth": {
     "signIn": "Sign in",
     "signUp": "Create account",

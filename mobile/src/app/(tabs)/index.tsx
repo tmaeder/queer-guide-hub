@@ -120,7 +120,10 @@ export default function ExploreScreen() {
 
       <SafeAreaView edges={['top']} style={styles.topBar} pointerEvents="box-none">
         <QuickExitButton />
-        <Button tone="primary" label={t('explore.nearMe')} onPress={nearMe} />
+        <View style={styles.topActions}>
+          <Button tone="secondary" label={t('search.title')} onPress={() => router.push('/search')} />
+          <Button tone="primary" label={t('explore.nearMe')} onPress={nearMe} />
+        </View>
       </SafeAreaView>
 
       <View style={[styles.sheet, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -210,6 +213,7 @@ function VenueRow({ venue, onPress }: { venue: VenueListItem; onPress: () => voi
 const styles = StyleSheet.create({
   root: { flex: 1 },
   map: { flex: 3 },
+  topActions: { flexDirection: 'row', gap: space[2] },
   topBar: {
     position: 'absolute',
     top: 0,

@@ -126,6 +126,15 @@
     "verifyFailed": "Dieser Download hat die Sicherheitsprüfung nicht bestanden und wurde nicht gespeichert.",
     "discreetNote": "Heruntergeladene Städte sind auf diesem Gerät sichtbar. Entferne sie, bevor du dein Telefon jemandem gibst."
   },
+  "search": {
+    "title": "Suche",
+    "placeholder": "Orte suchen",
+    "hint": "Gib mindestens zwei Buchstaben ein.",
+    "loading": "Suche läuft…",
+    "empty": "Keine passenden Orte.",
+    "offline": "Die Suche braucht eine Verbindung. Lade unter Ich → Offline-Städte eine Stadt herunter, um sie offline zu durchsuchen.",
+    "fromPacks": "Offline — Ergebnisse aus deinen heruntergeladenen Städten."
+  },
   "auth": {
     "signIn": "Anmelden",
     "signUp": "Konto erstellen",
