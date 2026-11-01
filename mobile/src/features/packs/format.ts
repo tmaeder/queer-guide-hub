@@ -1,3 +1,4 @@
+import type { EventDetail } from '@/api/events';
 import type { Hotline } from '@/api/hotlines';
 import type { VenueDetail } from '@/api/venues';
 
@@ -57,7 +58,15 @@ export interface PackPayload {
   venues: PackVenue[];
   /** this country's lines plus international ones */
   hotlines: Hotline[];
+  /**
+   * Events not yet over when the pack was built (next 180 days). Optional so
+   * packs built before events existed still verify and install; the app
+   * re-filters by end time on read, since a pack ages after download.
+   */
+  events?: PackEvent[];
 }
+
+export type PackEvent = EventDetail;
 
 export type PackErrorCode =
   | 'not_configured'

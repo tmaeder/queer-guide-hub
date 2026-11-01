@@ -49,8 +49,10 @@ module. Use a development build (`npx expo run:ios|android`, or
 
 ## Offline city packs
 
-A pack is one city's public venues plus its country's and the
-international crisis lines, stored in SQLite (FTS5) on the device. Reads
+A pack is one city's public venues, its events for the next 180 days, and
+its country's and the international crisis lines, stored in SQLite (FTS5) on
+the device. A pack ages after download, so events are re-filtered on every
+read: one that has ended since is not shown, even offline. Reads
 are online-first: `src/features/packs/offline.ts` answers from a pack only
 when the network read **fails**, never when it succeeds — a venue the
 server stopped returning was closed, merged or gated and must not come

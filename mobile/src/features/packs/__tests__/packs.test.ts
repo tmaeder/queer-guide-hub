@@ -2,7 +2,15 @@ import { ed25519 } from '@noble/curves/ed25519.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import type { Hotline } from '@/api/hotlines';
 import { memoryDb } from '@/test/memoryDb';
-import { PACK_FORMAT, PackError, type PackIndex, type PackIndexEntry, type PackPayload, type PackVenue } from '../format';
+import {
+  PACK_FORMAT,
+  PackError,
+  type PackEvent,
+  type PackIndex,
+  type PackIndexEntry,
+  type PackPayload,
+  type PackVenue,
+} from '../format';
 import { withOfflineFallback, setOfflineDb } from '../offline';
 import { createPackService, LAST_INDEX_KEY } from '../service';
 import {
@@ -13,6 +21,9 @@ import {
   migrate,
   offlineHotlines,
   removePack,
+  eventBySlug,
+  eventsInBounds,
+  searchEvents,
   searchVenues,
   venueBySlug,
   venuesInBounds,
@@ -42,6 +53,36 @@ function venue(over: Partial<PackVenue> = {}): PackVenue {
     accessibility_attributes: ['step-free-entrance'],
     ...over,
   } as PackVenue;
+}
+
+function event(over: Partial<PackEvent> = {}): PackEvent {
+  return {
+    id: 'e1',
+    slug: 'pub-quiz',
+    title: 'Pub Quiz',
+    start_date: '2026-11-26T18:30:00+00:00',
+    end_date: '2026-11-26T21:30:00+00:00',
+    timezone: 'Europe/Zurich',
+    latitude: 47.37,
+    longitude: 8.54,
+    city: 'Zurich',
+    country: 'CH',
+    address: null,
+    event_type: 'social',
+    venue_name: 'Kweer',
+    description: null,
+    ticket_url: null,
+    website: null,
+    is_free: true,
+    price_min: null,
+    price_max: null,
+    currency: null,
+    age_restriction: null,
+    accessibility_attributes: null,
+    tags: null,
+    venue: { slug: 'kweer', name: 'Kweer' },
+    ...over,
+  } as PackEvent;
 }
 
 const hotline = (id: string, country = 'CH'): Hotline => ({
@@ -208,6 +249,49 @@ describe('pack store (real SQLite + FTS5)', () => {
     expect(await searchVenues(db, 'Barf')).toEqual([]);
     expect(await offlineHotlines(db)).toEqual([]);
     expect(await listInstalled(db)).toEqual([]);
+  });
+
+  const NOW = Date.parse('2026-11-01T12:00:00Z');
+  const withEvents = () =>
+    pack({
+      events: [
+        event(),
+        event({ id: 'e2', slug: 'last-week', title: 'Pub Quiz Last Week', start_date: '2026-10-20T18:00:00+00:00', end_date: '2026-10-20T21:00:00+00:00' }),
+        event({ id: 'e3', slug: 'far-quiz', title: 'Pub Quiz Berlin', latitude: 52.5, longitude: 13.4 }),
+      ],
+    });
+
+  it('stores events and returns the detail the event screen renders', async () => {
+    const db = await fresh();
+    await install(db, withEvents());
+    expect(await eventBySlug(db, 'pub-quiz')).toMatchObject({ title: 'Pub Quiz', venue: { slug: 'kweer' } });
+    expect(await eventBySlug(db, 'missing')).toBeNull();
+  });
+
+  it('a pack ages after download: events that ended since are not offered', async () => {
+    const db = await fresh();
+    await install(db, withEvents());
+    expect((await searchEvents(db, 'quiz', NOW)).map((e) => e.slug).sort()).toEqual(['far-quiz', 'pub-quiz']);
+    expect((await eventsInBounds(db, [8.5, 47.3, 8.6, 47.4], NOW)).map((e) => e.slug)).toEqual(['pub-quiz']);
+    // Once tonight's quiz is over, it is gone too.
+    expect(await searchEvents(db, 'quiz', Date.parse('2026-11-27T00:00:00Z'))).toEqual([]);
+  });
+
+  it('an event with no end date counts as on for a day from its start', async () => {
+    const db = await fresh();
+    await install(db, pack({ events: [event({ end_date: null, start_date: '2026-11-01T00:00:00+00:00' })] }));
+    expect((await searchEvents(db, 'quiz', NOW)).length).toBe(1);
+    expect(await searchEvents(db, 'quiz', Date.parse('2026-11-02T01:00:00Z'))).toEqual([]);
+  });
+
+  it('a pack built before events existed still installs, and removal clears events', async () => {
+    const db = await fresh();
+    await install(db, pack());
+    expect(await searchEvents(db, 'quiz', NOW)).toEqual([]);
+    await install(db, withEvents());
+    await removePack(db, 'zuerich');
+    expect(await eventBySlug(db, 'pub-quiz')).toBeNull();
+    expect(await searchEvents(db, 'quiz', NOW)).toEqual([]);
   });
 
   it('dedupes hotlines shared by several packs (international lines)', async () => {
