@@ -791,7 +791,7 @@ export function usePointLayers({
             priority: pinPriority(
               featured,
               f.properties.live === true,
-              Number((f.properties as Record<string, unknown>).stack_count) || 1,
+              f.properties.stack_count || 1,
             ),
           });
         }

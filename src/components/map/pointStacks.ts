@@ -16,12 +16,17 @@ const KEY_DP = 5;
 
 export interface StackableFeature {
   geometry: { coordinates: number[] };
-  properties: { id: string; featured?: boolean; live?: boolean } & Record<string, unknown>;
+  properties: { id: string; featured?: boolean; live?: boolean };
 }
+
+/** A feature as placed on the map: carries how many places it stands for. */
+export type Stacked<F extends StackableFeature> = F & {
+  properties: F['properties'] & { stack_count: number };
+};
 
 export interface CollapsedStacks<F extends StackableFeature> {
   /** One feature per spot; a stack's representative carries `stack_count`. */
-  features: F[];
+  features: Stacked<F>[];
   /** Representative id → every place at that spot, representative first. */
   members: Map<string, F[]>;
 }
@@ -48,7 +53,7 @@ export function collapseColocated<F extends StackableFeature>(input: F[]): Colla
     if (g) g.push(f);
     else groups.set(k, [f]);
   }
-  const features: F[] = [];
+  const features: Stacked<F>[] = [];
   const members = new Map<string, F[]>();
   for (const group of groups.values()) {
     const sorted = group.length > 1 ? [...group].sort(compareStackPriority) : group;
@@ -56,7 +61,7 @@ export function collapseColocated<F extends StackableFeature>(input: F[]): Colla
     features.push({
       ...rep,
       properties: { ...rep.properties, stack_count: sorted.length },
-    });
+    } as Stacked<F>);
     if (sorted.length > 1) members.set(rep.properties.id, sorted);
   }
   return { features, members };
