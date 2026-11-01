@@ -11,6 +11,9 @@ import type {
 
 const PREFS_KEY = 'map_shell_prefs';
 
+/** Views a saved pref may restore. See `prefView` below. */
+const RESTORABLE_VIEWS: MapView[] = ['stations', 'heat'];
+
 /**
  * Prefs are MIGRATED on read, never on write: a blob saved under the old
  * `{lens, enabledLayers}` vocabulary still answers "what did this reader
@@ -143,8 +146,17 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
   // bare /map visit. `readLines` guards on length for the same reason.
   const savedLines = prefs?.lines?.filter((l) => config.lines.includes(l));
   const prefLines = savedLines && savedLines.length > 0 ? savedLines : defaultLines;
+  // Only views that show PLACES come back from a saved pref. `areas` draws
+  // only city/country/village markers, which are absent at most zooms, and
+  // `routes` needs a `?route=` to draw anything, so restoring either on a bare
+  // `/map` visit opened a blank map with no pins, no board and no hint why —
+  // reported as "Safari shows no pins" because a private window, with no
+  // saved prefs, worked. Both are still honoured from the URL, where the
+  // reader asked for them.
   const prefView =
-    prefs?.view && config.views.includes(prefs.view) ? prefs.view : config.defaultView;
+    prefs?.view && RESTORABLE_VIEWS.includes(prefs.view) && config.views.includes(prefs.view)
+      ? prefs.view
+      : config.defaultView;
 
   const getParam = useCallback((key: string) => searchParams.get(key), [searchParams]);
 
