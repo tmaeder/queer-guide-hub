@@ -5,10 +5,12 @@ import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { formatEventWhen, isOngoing, MAX_MAP_EVENTS, useEventsInBounds, type EventListItem } from '@/api/events';
 import { MAX_MAP_VENUES, useVenuesInBounds, type Bounds, type VenueListItem } from '@/api/venues';
 import { Button, StateMessage, Text } from '@/components/ui';
 import { QuickExitButton } from '@/features/discreet/QuickExitButton';
 import { MAP_FONT_BOLD, mapStyle } from '@/map/style';
+import { eventsToGeoJSON } from '@/map/eventsGeoJSON';
 import { venuesToGeoJSON } from '@/map/venuesGeoJSON';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
@@ -28,9 +30,17 @@ export default function ExploreScreen() {
   const zoomRef = useRef(INITIAL_ZOOM);
 
   const style = useMemo(() => mapStyle(scheme, i18n.language), [scheme, i18n.language]);
-  const venues = useVenuesInBounds(bounds);
-  const list = venues.data ?? [];
-  const geojson = useMemo(() => venuesToGeoJSON(list), [list]);
+  const [mode, setMode] = useState<'places' | 'events'>('places');
+  const venues = useVenuesInBounds(mode === 'places' ? bounds : null);
+  const events = useEventsInBounds(bounds, mode === 'events');
+  const active = mode === 'places' ? venues : events;
+  const placeList = venues.data ?? [];
+  const eventList = events.data ?? [];
+  const count = mode === 'places' ? placeList.length : eventList.length;
+  const geojson = useMemo(
+    () => (mode === 'places' ? venuesToGeoJSON(placeList) : eventsToGeoJSON(eventList)),
+    [mode, placeList, eventList],
+  );
 
   async function nearMe() {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -46,7 +56,10 @@ export default function ExploreScreen() {
     camera.current?.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 14 });
   }
 
-  const open = (slug: string) => router.push({ pathname: '/venues/[slug]', params: { slug } });
+  const open = (slug: string) =>
+    mode === 'places'
+      ? router.push({ pathname: '/venues/[slug]', params: { slug } })
+      : router.push({ pathname: '/events/[slug]', params: { slug } });
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -129,25 +142,46 @@ export default function ExploreScreen() {
       </SafeAreaView>
 
       <View style={[styles.sheet, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={styles.modes} accessibilityRole="tablist">
+          {(['places', 'events'] as const).map((m) => (
+            <Pressable
+              key={m}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: mode === m }}
+              onPress={() => setMode(m)}
+              style={[styles.mode, { borderBottomColor: mode === m ? colors.foreground : 'transparent' }]}
+            >
+              <Text style={{ fontWeight: mode === m ? '700' : '400' }}>{t(`explore.mode.${m}`)}</Text>
+            </Pressable>
+          ))}
+        </View>
         <ListHeader
-          count={list.length}
-          loading={venues.isFetching}
+          mode={mode}
+          count={count}
+          loading={active.isFetching}
           zoomedOut={bounds == null}
           locationDenied={locationDenied}
         />
-        {venues.isError ? (
+        {active.isError ? (
           <StateMessage
             kind="error"
             message={t('explore.error')}
-            action={{ label: t('explore.retry'), onPress: () => void venues.refetch() }}
+            action={{ label: t('explore.retry'), onPress: () => void active.refetch() }}
           />
-        ) : bounds != null && !venues.isFetching && list.length === 0 ? (
-          <StateMessage kind="empty" message={t('explore.empty')} />
-        ) : (
+        ) : bounds != null && !active.isFetching && count === 0 ? (
+          <StateMessage kind="empty" message={mode === 'places' ? t('explore.empty') : t('events.empty')} />
+        ) : mode === 'places' ? (
           <FlatList
-            data={list}
+            data={placeList}
             keyExtractor={(v) => v.id}
             renderItem={({ item }) => <VenueRow venue={item} onPress={() => open(item.slug)} />}
+            contentContainerStyle={{ paddingBottom: space[12] }}
+          />
+        ) : (
+          <FlatList
+            data={eventList}
+            keyExtractor={(e) => e.id}
+            renderItem={({ item }) => <EventRow event={item} onPress={() => open(item.slug)} />}
             contentContainerStyle={{ paddingBottom: space[12] }}
           />
         )}
@@ -157,11 +191,13 @@ export default function ExploreScreen() {
 }
 
 function ListHeader({
+  mode,
   count,
   loading,
   zoomedOut,
   locationDenied,
 }: {
+  mode: 'places' | 'events';
   count: number;
   loading: boolean;
   zoomedOut: boolean;
@@ -175,9 +211,11 @@ function ListHeader({
           ? t('explore.zoomIn')
           : loading
             ? t('explore.loading')
-            : count >= MAX_MAP_VENUES
+            : count >= (mode === 'places' ? MAX_MAP_VENUES : MAX_MAP_EVENTS)
               ? t('explore.capped', { count })
-              : t('explore.count', { count })}
+              : mode === 'places'
+                ? t('explore.count', { count })
+                : t('events.count', { count })}
       </Text>
       {locationDenied ? (
         <Text variant="small" muted>
@@ -212,8 +250,35 @@ function VenueRow({ venue, onPress }: { venue: VenueListItem; onPress: () => voi
   );
 }
 
+function EventRow({ event, onPress }: { event: EventListItem; onPress: () => void }) {
+  const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
+  const when = formatEventWhen(event, i18n.language);
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="link"
+      style={({ pressed }) => [
+        styles.row,
+        { borderColor: colors.border, backgroundColor: pressed ? colors.muted : 'transparent' },
+      ]}
+    >
+      <Text variant="body" style={{ fontWeight: '700' }} numberOfLines={1}>
+        {event.title}
+      </Text>
+      <Text variant="small" muted numberOfLines={1}>
+        {[isOngoing(event) ? t('events.ongoingShort') : when, event.venue_name ?? event.city]
+          .filter(Boolean)
+          .join(' · ')}
+      </Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  modes: { flexDirection: 'row', gap: space[4], paddingHorizontal: space[4] },
+  mode: { minHeight: 44, justifyContent: 'center', borderBottomWidth: 2 },
   map: { flex: 3 },
   topActions: { flexDirection: 'row', gap: space[2] },
   topBar: {

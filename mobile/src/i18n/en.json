@@ -16,7 +16,11 @@
     "empty": "No places here yet. Zoom out or move the map.",
     "nearMe": "Near me",
     "locationDenied": "Location is off. Places still work — just move the map.",
-    "zoomIn": "Zoom in to see places"
+    "zoomIn": "Zoom in to see places",
+    "mode": {
+      "places": "Places",
+      "events": "Events"
+    }
   },
   "venue": {
     "notFound": "This place isn't listed any more.",
@@ -173,5 +177,40 @@
     "signedOut": "You're signed out.",
     "loading": "Loading…",
     "loadError": "Couldn't load your account. Check your connection."
+  },
+  "events": {
+    "loading": "Loading event…",
+    "error": "Couldn't load this event. Check your connection.",
+    "notFound": "This event isn't listed any more.",
+    "empty": "No upcoming events here. Zoom out or move the map.",
+    "count_one": "{{count}} upcoming event in view",
+    "count_other": "{{count}} upcoming events in view",
+    "free": "Free",
+    "tickets": "Tickets",
+    "age": "Age: {{value}}",
+    "ongoing": "Ongoing · {{when}}",
+    "ongoingShort": "Ongoing"
+  },
+  "eventType": {
+    "fetish": "Fetish",
+    "community": "Community",
+    "social": "Social",
+    "pride": "Pride",
+    "party": "Party",
+    "theater": "Theatre",
+    "other": "Event",
+    "sports": "Sports",
+    "drag": "Drag",
+    "festival": "Festival",
+    "meetup": "Meetup",
+    "comedy": "Comedy",
+    "conference": "Conference",
+    "film": "Film",
+    "workshop": "Workshop",
+    "concert": "Concert",
+    "fair": "Fair",
+    "fundraiser": "Fundraiser",
+    "art": "Art",
+    "cruise": "Cruise"
   }
 }
