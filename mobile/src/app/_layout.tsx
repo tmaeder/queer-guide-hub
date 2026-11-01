@@ -1,5 +1,6 @@
 import '@/i18n';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
@@ -11,6 +12,7 @@ import { unregisterOnSessionEnd } from '@/features/push/push';
 import { DiscreetGate } from '@/features/discreet/DiscreetGate';
 import { packDb } from '@/features/packs/db';
 import { savedStore } from '@/features/saved/savedStore';
+import { FONT, FONT_ASSETS } from '@/theme/fonts';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 
 function RootStack() {
@@ -23,6 +25,7 @@ function RootStack() {
         screenOptions={{
           headerTintColor: colors.foreground,
           headerStyle: { backgroundColor: colors.background },
+          headerTitleStyle: { fontFamily: FONT.bold },
           contentStyle: { backgroundColor: colors.background },
           headerBackButtonDisplayMode: 'minimal',
         }}
@@ -47,6 +50,10 @@ export default function RootLayout() {
       }),
   );
 
+  // Bundled fonts load in milliseconds; a failed load falls back to the
+  // system font rather than leaving the app blank.
+  const [fontsLoaded, fontError] = useFonts(FONT_ASSETS);
+
   // Gated content differs per user: drop the cache whenever the user changes.
   useEffect(() => resetCacheOnUserChange(queryClient), [queryClient]);
   useEffect(() => unregisterOnSessionEnd(nativePush), []);
@@ -56,6 +63,8 @@ export default function RootLayout() {
     // Opens the offline pack store so reads can fall back to it.
     void packDb();
   }, []);
+
+  if (!fontsLoaded && !fontError) return null;
 
   return (
     <SafeAreaProvider>

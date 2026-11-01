@@ -13,6 +13,8 @@
     "doctor": "expo-doctor"
   },
   "dependencies": {
+    "@expo-google-fonts/anton": "^0.4.2",
+    "@expo-google-fonts/space-grotesk": "^0.4.1",
     "@maplibre/maplibre-react-native": "^11.5.1",
     "@noble/curves": "^2.4.0",
     "@noble/hashes": "^2.4.0",
@@ -25,6 +27,7 @@
     "expo-asset": "~58.0.19",
     "expo-constants": "~58.0.14",
     "expo-device": "~58.0.5",
+    "expo-dev-client": "~58.0.18",
     "expo-font": "~58.0.11",
     "expo-haptics": "~58.0.7",
     "expo-image": "~58.0.18",
@@ -38,6 +41,7 @@
     "expo-secure-store": "~58.0.2",
     "expo-sqlite": "~58.0.15",
     "expo-status-bar": "~58.0.4",
+    "expo-system-ui": "~58.0.7",
     "i18next": "^26.6.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
