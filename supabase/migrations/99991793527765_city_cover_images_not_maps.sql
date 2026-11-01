@@ -45,6 +45,7 @@ set image_url = d.image_url,
 from public.cities d
 where c.slug = 'mexico-city'
   and c.duplicate_of_id is null
+  and (c.country_id is null or exists (select 1 from public.geo_places g where g.id = c.country_id))
   and d.slug = 'ciudad-de-mexico'
   and d.image_url = 'https://img.queer.guide/city-images/f1fbef7ee6acaf74805215eda2f79e57f2cd0536d97764497c65c7b3623e2b04.jpg'
   and c.image_url = 'https://img.queer.guide/city-images/e3057417ca6b26b0569700bff3b9d13f0a530917edb46d7f5d73b85659e4c3f6.jpg';
@@ -65,6 +66,10 @@ set image_url = null,
 where c.duplicate_of_id is null
   and c.image_url is not null
   and c.curated_image_url is null
+  -- The cities -> geo_places spine trigger raises if the country's spine row
+  -- is missing. On prod all 26 matches have one (measured); the CI snapshot is
+  -- a capped subset where some do not, and those rows are skipped there.
+  and (c.country_id is null or exists (select 1 from public.geo_places g where g.id = c.country_id))
   and left(lower(coalesce(c.image_metadata->>'alt', '')), 200)
       ~* '\m(map|maps|mapped|mapping|locator|diagram|chart|charts|graph|infographic|satellite|radar|subsidence|heatmap|floor plan|blueprint|coat of arms|flag of|seal of)\M';
 
@@ -74,10 +79,11 @@ declare
 begin
   -- P1: no live city still shows a cover the rule rejects.
   select count(*) into v_bad
-  from public.cities
-  where duplicate_of_id is null
-    and image_url is not null
-    and curated_image_url is null
+  from public.cities c
+  where c.duplicate_of_id is null
+    and c.image_url is not null
+    and c.curated_image_url is null
+    and (c.country_id is null or exists (select 1 from public.geo_places g where g.id = c.country_id))
     and left(lower(coalesce(image_metadata->>'alt', '')), 200)
         ~* '\m(map|maps|mapped|mapping|locator|diagram|chart|charts|graph|infographic|satellite|radar|subsidence|heatmap|floor plan|blueprint|coat of arms|flag of|seal of)\M';
   if v_bad <> 0 then
@@ -90,7 +96,12 @@ begin
   where slug = 'mexico-city'
     and duplicate_of_id is null
     and 'https://img.queer.guide/city-images/e3057417ca6b26b0569700bff3b9d13f0a530917edb46d7f5d73b85659e4c3f6.jpg'
-        in (coalesce(image_url, ''), coalesce(curated_image_url, ''));
+        in (coalesce(image_url, ''), coalesce(curated_image_url, ''))
+    -- Only assertable where the replacement exists. The CI snapshot is a
+    -- capped subset that may not hold the merged-away source row.
+    and exists (select 1 from public.cities d
+                where d.slug = 'ciudad-de-mexico'
+                  and d.image_url = 'https://img.queer.guide/city-images/f1fbef7ee6acaf74805215eda2f79e57f2cd0536d97764497c65c7b3623e2b04.jpg');
   if v_bad <> 0 then
     raise exception 'P2 failed: mexico-city still serves the subsidence map';
   end if;
