@@ -268,7 +268,7 @@ export default function CityDetail() {
         },
         {
           id: 'events',
-          title: t('cities.detail.section.events', 'Next departures'),
+          title: t('cities.detail.section.events', 'Upcoming events'),
           content:
             events.length > 0 ? (
               <>
