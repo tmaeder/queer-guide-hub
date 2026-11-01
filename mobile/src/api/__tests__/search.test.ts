@@ -29,6 +29,34 @@ async function dbWithZurich() {
     country: 'CH',
     generated_at: '2026-11-01T00:00:00Z',
     hotlines: [],
+    events: [
+      {
+        id: 'e1',
+        slug: 'mylord-night',
+        title: 'Mylord Night',
+        start_date: '2099-01-01T20:00:00+00:00',
+        end_date: '2099-01-01T23:00:00+00:00',
+        timezone: 'Europe/Zurich',
+        latitude: 47.37,
+        longitude: 8.54,
+        city: 'Zurich',
+        country: 'CH',
+        address: null,
+        event_type: 'party',
+        venue_name: 'Mylord',
+        description: null,
+        ticket_url: null,
+        website: null,
+        is_free: null,
+        price_min: null,
+        price_max: null,
+        currency: null,
+        age_restriction: null,
+        accessibility_attributes: null,
+        tags: [],
+        venue: null,
+      },
+    ],
     venues: [
       {
         id: 'v1',
@@ -136,7 +164,10 @@ describe('searchVenues', () => {
     fetchMock.mockRejectedValue(new TypeError('Network request failed'));
     const res = await searchVenues('myl');
     expect(res.offline).toBe(true);
-    expect(res.hits).toEqual([{ kind: 'venue', slug: 'mylord', name: 'Mylord', category: 'sauna', city: 'Zurich' }]);
+    expect(res.hits).toEqual([
+      { kind: 'venue', slug: 'mylord', name: 'Mylord', category: 'sauna', city: 'Zurich' },
+      { kind: 'event', slug: 'mylord-night', name: 'Mylord Night', category: 'party', city: 'Zurich' },
+    ]);
   });
 
   it('keeps the network error when no pack matches', async () => {

@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import type { Database } from '@db/types';
+import { withOfflineFallback } from '@/features/packs/offline';
+import { eventBySlug, eventsInBounds } from '@/features/packs/store';
 import { supabase } from '@/lib/supabase';
 import { snapBounds, type Bounds } from './venues';
 
@@ -48,7 +50,18 @@ export const endsAtOrAfter = (iso: string) =>
  * merged away, and a recurring series or festival programme collapsed to its
  * next occurrence. Safety-gated events are filtered by RLS for visitors.
  */
-export async function fetchEventsInBounds(bounds: Bounds, now = new Date()): Promise<EventListItem[]> {
+export function fetchEventsInBounds(bounds: Bounds, now = new Date()): Promise<EventListItem[]> {
+  return withOfflineFallback(
+    () => fetchEventsInBoundsOnline(bounds, now),
+    // Same rule as venues: an area no pack covers stays an error.
+    async (db) => {
+      const rows = rankUpcoming(await eventsInBounds(db, bounds, now.getTime(), MAX_MAP_EVENTS));
+      return rows.length ? rows : null;
+    },
+  );
+}
+
+async function fetchEventsInBoundsOnline(bounds: Bounds, now: Date): Promise<EventListItem[]> {
   const [west, south, east, north] = bounds;
   const { data, error } = await supabase
     .from('events')
@@ -73,7 +86,14 @@ export async function fetchEventsInBounds(bounds: Bounds, now = new Date()): Pro
  * but a cancelled (archived) one does not. `status.is.null` keeps NULL-status
  * rows, which a bare neq would drop.
  */
-export async function fetchEventBySlug(slug: string): Promise<EventDetail | null> {
+export function fetchEventBySlug(slug: string): Promise<EventDetail | null> {
+  return withOfflineFallback(
+    () => fetchEventBySlugOnline(slug),
+    (db) => eventBySlug(db, slug),
+  );
+}
+
+async function fetchEventBySlugOnline(slug: string): Promise<EventDetail | null> {
   const { data, error } = await supabase
     .from('events')
     .select(EVENT_DETAIL_COLUMNS)

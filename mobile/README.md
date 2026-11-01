@@ -49,8 +49,10 @@ module. Use a development build (`npx expo run:ios|android`, or
 
 ## Offline city packs
 
-A pack is one city's public venues plus its country's and the
-international crisis lines, stored in SQLite (FTS5) on the device. Reads
+A pack is one city's public venues, its events for the next 180 days, and
+its country's and the international crisis lines, stored in SQLite (FTS5) on
+the device. A pack ages after download, so events are re-filtered on every
+read: one that has ended since is not shown, even offline. Reads
 are online-first: `src/features/packs/offline.ts` answers from a pack only
 when the network read **fails**, never when it succeeds — a venue the
 server stopped returning was closed, merged or gated and must not come
@@ -153,8 +155,8 @@ Me → Notifications registers this phone's native APNs/FCM token in
 
 Tracked in the strategy doc's work breakdown: offline map tiles (PMTiles
 extracts in packs), pack hosting (the publish job is ready; it needs a
-bucket and keys), offline event search, other result types in search (news,
-cities), passkey and OAuth sign-in and universal links
+bucket and keys), other result types in search (news, cities), passkey and
+OAuth sign-in and universal links
 (queer.guide already serves AASA / assetlinks from the redirect-domain
 registry, which only allows `/go/*` on the built-in host — widening that
 for the first-party app is a decision, plus the Apple Team ID and Android
