@@ -16,7 +16,12 @@
     "empty": "No places here yet. Zoom out or move the map.",
     "nearMe": "Near me",
     "locationDenied": "Location is off. Places still work — just move the map.",
-    "zoomIn": "Zoom in to see places"
+    "zoomIn": "Zoom in to see places",
+    "mode": {
+      "places": "Places",
+      "events": "Events"
+    },
+    "mapLabel": "Map. The list below shows what's on the map."
   },
   "venue": {
     "notFound": "This place isn't listed any more.",
@@ -27,11 +32,13 @@
     "directions": "Directions",
     "share": "Share",
     "about": "About",
-    "accessibility": "Accessibility"
+    "accessibility": "Accessibility",
+    "saveFailed": "Couldn't save to your account. Check your connection."
   },
   "saved": {
     "title": "Saved",
-    "empty": "Places you save appear here. They're stored only on this device."
+    "empty": "Places you save appear here. They're stored only on this device.",
+    "synced": "Synced with your account."
   },
   "help": {
     "title": "Help",
@@ -58,7 +65,7 @@
   "me": {
     "title": "Me",
     "privacy": "Privacy",
-    "privacyBody": "This app has no analytics or tracking. Your location is used only on this device. Saved places never leave it.",
+    "privacyBody": "No ads, no tracking, no analytics SDKs. Your precise location stays on this device: to load places, the app asks queer.guide for the area of map on screen, as any map does. Searches are kept without anything that identifies you, to improve search. Saved places stay on this phone unless you sign in, then they're kept in your account.",
     "website": "Open queer.guide on the web",
     "version": "Version {{version}}"
   },
@@ -80,5 +87,143 @@
     "gym": "Gym",
     "toilet": "Toilet",
     "other": "Place"
+  },
+  "discreet": {
+    "title": "Discreet mode",
+    "intro": "Tools for using this app on a phone someone else might see. Everything here stays on this device.",
+    "lock": "App lock",
+    "lockHint": "Ask for Face ID, fingerprint or your passcode to open the app.",
+    "lockUnavailable": "Set a passcode on this device to use the app lock.",
+    "lockAfter": "Lock after leaving the app",
+    "lockImmediately": "Immediately",
+    "lockMinutes_one": "After {{count}} minute",
+    "lockMinutes_other": "After {{count}} minutes",
+    "hideInSwitcher": "Hide in app switcher",
+    "hideInSwitcherIos": "Blurs the app's preview when you switch apps.",
+    "hideInSwitcherAndroid": "Shows a blank preview when you switch apps. This also blocks screenshots.",
+    "quickExit": "Quick exit",
+    "quickExitHint": "Adds an Exit button that clears the app and shows a blank notes page. Long-press the date to come back.",
+    "icon": "App icon",
+    "iconName": {
+      "default": "queer.guide",
+      "Atlas": "Grid (light)",
+      "Ink": "Grid (dark)"
+    },
+    "iconHintIos": "Only the icon changes: the name under it stays the same.",
+    "iconHintAndroid": "Your launcher may take a moment to show the new icon.",
+    "iconError": "Couldn't change the icon. Try again.",
+    "locked": "Locked",
+    "unlock": "Unlock",
+    "unlockPrompt": "Unlock"
+  },
+  "packs": {
+    "title": "Offline cities",
+    "body": "Download a city to keep its places and crisis lines on this device. Map tiles and photos still need a connection.",
+    "notConfigured": "Offline cities aren't available in this build yet.",
+    "loading": "Checking available cities…",
+    "error": "Couldn't check available cities.",
+    "download": "Download",
+    "update": "Update",
+    "remove": "Remove",
+    "installed": "On this device",
+    "places_one": "{{count}} place",
+    "places_other": "{{count}} places",
+    "updated": "Updated {{date}}",
+    "failed": "Download failed: {{reason}}",
+    "verifyFailed": "This download didn't pass its security check and was not saved.",
+    "discreetNote": "Downloaded cities are listed on this device. Remove them before handing your phone to someone."
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search places and events",
+    "hint": "Type at least two letters.",
+    "loading": "Searching…",
+    "empty": "Nothing matches.",
+    "offline": "Search needs a connection. Download a city under Me → Offline cities to search it offline.",
+    "fromPacks": "Offline — showing results from your downloaded cities.",
+    "event": "Event"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "emailInvalid": "Enter a valid email address.",
+    "passwordTooShort": "Use at least {{n}} characters.",
+    "consentLabel": "I agree to the Terms and Privacy Policy, confirm I am 18 or older, and understand queer.guide is an 18+ platform that includes dating and intimate features.",
+    "terms": "Terms",
+    "privacy": "Privacy Policy",
+    "consentRequired": "Accept the terms and confirm you are 18 or older to create an account.",
+    "forgot": "Forgot password? Reset it on the web",
+    "errors": {
+      "invalidCredentials": "Email or password is wrong.",
+      "alreadyRegistered": "An account with this email already exists. Sign in instead.",
+      "weakPassword": "Choose a stronger password.",
+      "rateLimited": "Too many attempts. Wait a minute and try again.",
+      "captcha": "Sign-in needs a verification step the app can't show yet. Use queer.guide on the web for now.",
+      "network": "No connection. Check your network and try again.",
+      "unknown": "Something went wrong. Try again."
+    }
+  },
+  "account": {
+    "title": "Account",
+    "signedOutBody": "You don't need an account to browse. Signing in shows places you're allowed to see in countries where they are hidden from visitors, and keeps your account the same as on the web.",
+    "signInOrUp": "Sign in or create account",
+    "signedInAs": "Signed in as {{email}}",
+    "signOut": "Sign out",
+    "delete": "Delete account",
+    "deleteTitle": "Delete account",
+    "deleteBody": "This permanently deletes your queer.guide account and everything stored with it, on every device. It can't be undone.",
+    "deleteLocal": "Places saved only on this phone and downloaded cities stay until you remove them.",
+    "typeToConfirm": "Type {{value}} to confirm",
+    "deleteConfirm": "Delete my account permanently",
+    "deleteFailed": "Your account couldn't be deleted. Try again, or contact support if it keeps failing.",
+    "signedOut": "You're signed out.",
+    "loading": "Loading…",
+    "loadError": "Couldn't load your account. Check your connection.",
+    "signOutNote": "Signing out removes your saved places from this phone. They stay in your account."
+  },
+  "events": {
+    "loading": "Loading event…",
+    "error": "Couldn't load this event. Check your connection.",
+    "notFound": "This event isn't listed any more.",
+    "empty": "No upcoming events here. Zoom out or move the map.",
+    "count_one": "{{count}} upcoming event in view",
+    "count_other": "{{count}} upcoming events in view",
+    "free": "Free",
+    "tickets": "Tickets",
+    "age": "Age: {{value}}",
+    "ongoing": "Ongoing · {{when}}",
+    "ongoingShort": "Ongoing"
+  },
+  "eventType": {
+    "fetish": "Fetish",
+    "community": "Community",
+    "social": "Social",
+    "pride": "Pride",
+    "party": "Party",
+    "theater": "Theatre",
+    "other": "Event",
+    "sports": "Sports",
+    "drag": "Drag",
+    "festival": "Festival",
+    "meetup": "Meetup",
+    "comedy": "Comedy",
+    "conference": "Conference",
+    "film": "Film",
+    "workshop": "Workshop",
+    "concert": "Concert",
+    "fair": "Fair",
+    "fundraiser": "Fundraiser",
+    "art": "Art",
+    "cruise": "Cruise"
+  },
+  "push": {
+    "title": "Notifications",
+    "toggle": "Allow notifications on this phone",
+    "body": "Off unless you turn it on. Signing out removes this phone, so the next person to sign in here never gets your notifications. Nothing is sent yet.",
+    "denied": "Notifications are blocked in system settings. Tap to open Settings.",
+    "unavailable": "Notifications aren't available on this device or build.",
+    "failed": "Couldn't change this. Check your connection and try again."
   }
 }

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StateMessage, Text } from '@/components/ui';
+import { useSession } from '@/features/auth/useSession';
 import { useSaved } from '@/features/saved/savedStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
@@ -11,12 +12,18 @@ export default function SavedScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const saved = useSaved();
+  const session = useSession();
 
   return (
     <SafeAreaView edges={['top']} style={[styles.root, { backgroundColor: colors.background }]}>
       <Text variant="display" accessibilityRole="header" style={styles.title}>
         {t('saved.title')}
       </Text>
+      {session ? (
+        <Text variant="small" muted style={{ paddingHorizontal: space[4] }}>
+          {t('saved.synced')}
+        </Text>
+      ) : null}
       <FlatList
         data={saved}
         keyExtractor={(p) => p.slug}
