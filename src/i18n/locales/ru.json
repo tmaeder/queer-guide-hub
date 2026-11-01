@@ -2101,7 +2101,8 @@
       "tagsInteractions": "Безопасность веществ",
       "tagsStiGuide": "Гид по ИППП",
       "transRights": "Права трансгендерных людей",
-      "competitions": "[RU] Drag Race"
+      "competitions": "[RU] Drag Race",
+      "newsAll": "Все новости"
     },
     "intents": {
       "knowledge": {
@@ -2137,6 +2138,10 @@
       "glossary": {
         "label": "Глоссарий",
         "subtitle": "Что значит каждый термин, флаг и код"
+      },
+      "news": {
+        "label": "Новости",
+        "subtitle": "ЛГБТК+ новости со всего мира"
       }
     },
     "userMenu": {

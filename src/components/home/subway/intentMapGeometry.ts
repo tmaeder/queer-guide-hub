@@ -84,13 +84,16 @@ const STATION_POINTS: Record<string, { x: number; y: number; lane: Lane }> = {
   travelling: { x: 320, y: 280, lane: 'below' },
   meet: { x: 480, y: 85, lane: 'above' },
   rights: { x: 980, y: 280, lane: 'below' },
-  support: { x: 1180, y: 80, lane: 'above' },
+  // News took Support's slot in the row (2026-11-01). It rides blue because it
+  // maps 1:1 to the news content type (N-blue), so it sits on blue's free node
+  // (1010, 225) — the final pair of `C 835 176 922 208 1010 225`. Above lane:
+  // rights (980, 280) is 30px away in x but hangs its plate below.
+  news: { x: 1010, y: 225, lane: 'above' },
   // Moved off the blue line's (1290, 280) when shop flipped to yellow — shop
   // is the one intent that maps 1:1 to a content type, so INTENT_TRACK has to
   // agree with ROUTE_BULLET_MAP, where marketplace is M-yellow. (1240, 212) is
   // yellow's remaining free endpoint (the final pair of `C 1157 225 1240 212`);
-  // rights already holds (980, 280). It sits 60px from support in x but in the
-  // opposite lane, so the two name plates cannot collide.
+  // rights already holds (980, 280).
   shop: { x: 1240, y: 212, lane: 'below' },
   // Sits on the endpoint minted by the pink path's subdivision (see
   // TRACK_PATHS). Below lane: neighbours are travelling (320) and rights

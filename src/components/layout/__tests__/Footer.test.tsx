@@ -32,7 +32,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 import { Footer } from '../Footer';
-import { INTENT_NAV } from '@/config/navigation';
+import { FOOTER_ONLY_DESTINATIONS, INTENT_NAV } from '@/config/navigation';
 import { REQUIRED_ATTRIBUTION } from '@/lib/attribution';
 import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 
@@ -122,13 +122,23 @@ describe('Footer', () => {
   it('keeps every top-level intent reachable in the compact navigation row', () => {
     renderFooter();
     const nav = screen.getByRole('navigation', { name: 'Footer navigation' });
-    expect(within(nav).getAllByRole('link')).toHaveLength(INTENT_NAV.length);
-    for (const intent of INTENT_NAV) {
+    const destinations = [...INTENT_NAV, ...FOOTER_ONLY_DESTINATIONS];
+    expect(within(nav).getAllByRole('link')).toHaveLength(destinations.length);
+    for (const intent of destinations) {
       expect(within(nav).getByRole('link', { name: intent.fallback })).toHaveAttribute(
         'href',
         intent.to,
       );
     }
+  });
+
+  it('lists Support in the footer row only, after the header intents', () => {
+    renderFooter();
+    const nav = screen.getByRole('navigation', { name: 'Footer navigation' });
+    const links = within(nav).getAllByRole('link');
+    expect(links.at(-1)).toHaveTextContent('Support');
+    expect(links.at(-1)).toHaveAttribute('href', '/help');
+    expect(INTENT_NAV.some((intent) => intent.to === '/help')).toBe(false);
   });
 
   it('opens cookie preferences after consent has already been saved', () => {
