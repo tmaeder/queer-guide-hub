@@ -4,9 +4,11 @@
 //   PACK_SIGNING_KEY=<hex> node scripts/packs/build.mjs --cities berlin,zuerich [--out dist/packs]
 //
 // Writes <out>/<slug>.json per city and a signed <out>/index.json. Upload the
-// directory as-is to the host behind EXPO_PUBLIC_PACK_BASE_URL. Packs are
-// immutable per digest, so index.json is the only file that needs a short
-// cache lifetime.
+// directory as-is to the host behind EXPO_PUBLIC_PACK_BASE_URL — packs FIRST,
+// index.json LAST, so the index never names a file that is not there yet.
+// Pack files are named by city, not by digest, so a rebuild overwrites them:
+// every file needs a short cache lifetime, or a cached old pack would fail the
+// sha256 in a fresh index. scripts/packs/verify-remote.mjs checks the result.
 //
 // Reads with the PUBLISHABLE key, exactly as an anonymous visitor would.
 // That is the safety property: RLS keeps safety-gated venues (criminalising
@@ -15,7 +17,7 @@
 import { ed25519 } from '@noble/curves/ed25519.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, hexToBytes, utf8ToBytes } from '@noble/hashes/utils.js';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 
@@ -102,10 +104,18 @@ export function signIndex(index, secretHex) {
 
 async function main() {
   const { values } = parseArgs({
-    options: { cities: { type: 'string' }, out: { type: 'string', default: 'dist/packs' } },
+    options: {
+      cities: { type: 'string' },
+      'cities-file': { type: 'string' },
+      out: { type: 'string', default: 'dist/packs' },
+    },
   });
-  const slugs = (values.cities ?? '').split(',').map((s) => s.trim()).filter(Boolean);
-  if (!slugs.length) throw new Error('Pass --cities slug1,slug2');
+  const fromFile = values['cities-file']
+    ? (await readFile(values['cities-file'], 'utf8')).split('\n').map((l) => l.replace(/#.*/, ''))
+    : [];
+  const slugs = [...(values.cities ?? '').split(','), ...fromFile].map((s) => s.trim()).filter(Boolean);
+  if (!slugs.length) throw new Error('Pass --cities slug1,slug2 or --cities-file path');
+  if (new Set(slugs).size !== slugs.length) throw new Error('A city is listed twice');
   if (keyRole(KEY) !== 'anon') throw new Error('Packs must be built with the publishable (anon) key');
   const secret = process.env.PACK_SIGNING_KEY;
   if (!secret || !/^[0-9a-f]{64}$/i.test(secret)) throw new Error('PACK_SIGNING_KEY (64 hex chars) is required');
@@ -115,8 +125,12 @@ async function main() {
   await mkdir(values.out, { recursive: true });
   const entries = [];
 
+  const built = new Set();
   for (const slug of slugs) {
     const city = await resolveCity(slug);
+    // Two listed slugs can resolve to one survivor after a merge.
+    if (built.has(city.slug)) throw new Error(`${slug} resolves to ${city.slug}, which is already listed`);
+    built.add(city.slug);
     const venues = await venuesFor(city.id);
     const pack = {
       format: FORMAT,
