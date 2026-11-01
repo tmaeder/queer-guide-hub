@@ -81,6 +81,11 @@ export interface PointFeatureProps {
   live: boolean;
   /** Map-image id for the category glyph drawn on the pin (see mapGlyphs). */
   iconKey: string;
+  /** Places this feature stands for: >1 on a pin that represents several
+   *  places on one exact spot (pointStacks.ts). Set by the map, not fetched. */
+  stack_count?: number;
+  /** 1 on a cruising spot, which the map draws as a cloud. Set by the map. */
+  cloud?: number;
   /** Tagged client-side in ExploreMap when the point is in the viewer's saved set. */
   favorited?: boolean;
 }
