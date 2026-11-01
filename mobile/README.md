@@ -94,7 +94,8 @@ the keychain/keystore.
 ## Not done yet
 
 Tracked in the strategy doc's work breakdown: offline map tiles (PMTiles
-extracts in packs), pack hosting + a scheduled rebuild, offline search UI,
+extracts in packs), pack hosting + a scheduled rebuild, events and other
+result types in search,
 sign-in, push, brand fonts
 (the web ships woff2 only; native needs ttf/otf), EAS build profiles and
 store metadata, and serving the AASA / assetlinks.json files for the
