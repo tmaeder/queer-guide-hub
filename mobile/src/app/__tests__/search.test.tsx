@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { setOfflineDb } from '@/features/packs/offline';
 import { installPack, migrate } from '@/features/packs/store';
 import { memoryDb } from '@/test/memoryDb';
@@ -69,7 +70,7 @@ async function renderScreen() {
 
 // Real timers: the 250 ms debounce elapses inside findBy*'s default wait.
 async function type(text: string) {
-  await fireEvent.changeText(screen.getByLabelText('Search places'), text);
+  await fireEvent.changeText(screen.getByLabelText('Search places and events'), text);
   await act(() => new Promise((r) => setTimeout(r, 300)));
 }
 
@@ -109,5 +110,24 @@ it('says search needs a connection when it fails, rather than "no results"', asy
   await renderScreen();
   await type('berghain');
   expect(await screen.findByText(/Search needs a connection/)).toBeTruthy();
-  expect(screen.queryByText('No places match.')).toBeNull();
+  expect(screen.queryByText('Nothing matches.')).toBeNull();
+});
+
+it('shows an upcoming event as an event and opens the event screen', async () => {
+  const future = Math.floor(Date.now() / 1000) + 30 * 86_400;
+  fetchMock.mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      hits: [
+        { type: 'event', slug: 'zurich-pride', name: 'Zurich Pride', category: 'pride', city: 'Zurich', start_date: future },
+        { type: 'event', slug: 'zurich-pride-2019', name: 'Zurich Pride 2019', category: 'pride', city: 'Zurich', start_date: 1560556800 },
+      ],
+    }),
+  });
+  await renderScreen();
+  await type('zurich pride');
+  const row = await screen.findByRole('button', { name: 'Zurich Pride, Pride · Zurich' });
+  expect(screen.queryByText('Zurich Pride 2019')).toBeNull();
+  await fireEvent.press(row);
+  expect(router.push).toHaveBeenCalledWith({ pathname: '/events/[slug]', params: { slug: 'zurich-pride' } });
 });

@@ -2,7 +2,7 @@ import { memoryDb } from '@/test/memoryDb';
 import { setOfflineDb } from '@/features/packs/offline';
 import { installPack, migrate } from '@/features/packs/store';
 import type { PackPayload } from '@/features/packs/format';
-import { searchVenues, toVenueHits } from '../search';
+import { eventStillOn, search as searchVenues, toHits } from '../search';
 
 const mockGetSession = jest.fn();
 jest.mock('@/lib/supabase', () => ({
@@ -61,27 +61,60 @@ async function dbWithZurich() {
   return db;
 }
 
-describe('toVenueHits', () => {
-  it('keeps only openable venue hits and falls back to title for the name', () => {
+const NOW = Date.UTC(2026, 10, 1, 12); // 2026-11-01 12:00Z
+const sec = (iso: string) => Date.parse(iso) / 1000;
+
+describe('toHits', () => {
+  it('keeps openable venues and events, falling back to title for the name', () => {
     expect(
-      toVenueHits([
-        { type: 'venue', slug: 'mylord', title: 'Mylord', city: 'Zurich' },
-        { type: 'event', slug: 'pride', name: 'Pride' },
-        { type: 'venue', slug: null, name: 'No slug' },
-        { type: 'venue', slug: 'nameless' },
-      ]),
-    ).toEqual([{ slug: 'mylord', name: 'Mylord', category: null, city: 'Zurich' }]);
+      toHits(
+        [
+          { type: 'venue', slug: 'mylord', title: 'Mylord', city: 'Zurich' },
+          { type: 'event', slug: 'zurich-pride', name: 'Zurich Pride', category: 'pride', start_date: sec('2027-06-19T00:00Z') },
+          { type: 'venue', slug: null, name: 'No slug' },
+          { type: 'venue', slug: 'nameless' },
+          { type: 'news', slug: 'story', title: 'A story' },
+        ],
+        NOW,
+      ),
+    ).toEqual([
+      { kind: 'venue', slug: 'mylord', name: 'Mylord', category: null, city: 'Zurich' },
+      { kind: 'event', slug: 'zurich-pride', name: 'Zurich Pride', category: 'pride', city: null },
+    ]);
+  });
+
+  it('drops events that are already over — the index is mostly archive', () => {
+    const hits = toHits(
+      [
+        { type: 'event', slug: 'pride-2019', name: 'Pride 2019', start_date: sec('2019-06-15T00:00Z') },
+        { type: 'event', slug: 'undated', name: 'Undated' },
+      ],
+      NOW,
+    );
+    expect(hits).toEqual([]);
+  });
+});
+
+describe('eventStillOn', () => {
+  it('uses the end date when there is one, so a running festival stays', () => {
+    expect(eventStillOn({ start_date: sec('2026-10-01T00:00Z'), end_date: sec('2026-11-30T00:00Z') }, NOW)).toBe(true);
+    expect(eventStillOn({ start_date: sec('2026-10-01T00:00Z'), end_date: sec('2026-10-31T00:00Z') }, NOW)).toBe(false);
+  });
+
+  it('without an end date, an event is on for a day from its start', () => {
+    expect(eventStillOn({ start_date: sec('2026-10-31T22:00Z') }, NOW)).toBe(true);
+    expect(eventStillOn({ start_date: sec('2026-10-31T11:00Z') }, NOW)).toBe(false);
   });
 });
 
 describe('searchVenues', () => {
-  it('asks the proxy for venues only and sends no token when signed out', async () => {
+  it('asks the proxy for places and events and sends no token when signed out', async () => {
     fetchMock.mockResolvedValue(ok({ hits: [{ type: 'venue', slug: 'mylord', name: 'Mylord' }] }));
     const res = await searchVenues('sauna');
-    expect(res).toEqual({ hits: [{ slug: 'mylord', name: 'Mylord', category: null, city: null }], offline: false });
+    expect(res).toEqual({ hits: [{ kind: 'venue', slug: 'mylord', name: 'Mylord', category: null, city: null }], offline: false });
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://search.queer.guide/search');
-    expect(JSON.parse(init.body)).toEqual({ query: 'sauna', hitsPerPage: 30, filters: { type: 'venue' } });
+    expect(JSON.parse(init.body)).toEqual({ query: 'sauna', hitsPerPage: 30, filters: { types: ['venue', 'event'] } });
     expect(init.headers.Authorization).toBeUndefined();
   });
 
@@ -103,7 +136,7 @@ describe('searchVenues', () => {
     fetchMock.mockRejectedValue(new TypeError('Network request failed'));
     const res = await searchVenues('myl');
     expect(res.offline).toBe(true);
-    expect(res.hits.map((h) => h.slug)).toEqual(['mylord']);
+    expect(res.hits).toEqual([{ kind: 'venue', slug: 'mylord', name: 'Mylord', category: 'sauna', city: 'Zurich' }]);
   });
 
   it('keeps the network error when no pack matches', async () => {
