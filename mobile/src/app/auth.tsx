@@ -2,7 +2,7 @@ import { router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
-import { Button, Field, Text } from '@/components/ui';
+import { Alert, Button, Field, Text } from '@/components/ui';
 import {
   authErrorKey,
   MIN_PASSWORD_LEN,
@@ -116,9 +116,7 @@ export default function AuthScreen() {
       ) : null}
 
       {error ? (
-        <Text accessibilityRole="alert" accessibilityLiveRegion="assertive" style={{ color: colors.destructive }}>
-          {error}
-        </Text>
+        <Alert message={error} />
       ) : null}
 
       <Button

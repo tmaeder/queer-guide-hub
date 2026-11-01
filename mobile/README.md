@@ -162,3 +162,17 @@ flow taps or asserts a string that is no longer in `en.json`. Venue `mylord`
 flow and the test's `DATA` set together.
 
 Store listing, privacy labels, age rating and review notes: `store/`.
+
+## Accessibility
+
+- Errors are announced: `StateMessage` (error kind) and `Alert` call
+  `AccessibilityInfo.announceForAccessibility` and carry
+  `accessibilityRole="alert"` / an assertive live region, so a failed
+  sign-in or download is spoken on iOS as well as Android.
+- The map is a single labelled element that points to the list below it;
+  the list is the accessible way to browse what the map shows.
+- Hotline buttons are named after the line they call ("Call +41 …, <line>"),
+  so a screen-reader user scanning by buttons hears which service each is.
+- No right-to-left locale ships yet (en, de). No style is left- or
+  right-specific except symmetric insets, so layouts should mirror, but RTL
+  has not been tested on a device and must be before an RTL catalog ships.

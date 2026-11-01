@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
-import { Button, Card, Text } from '@/components/ui';
+import { Alert, Button, Card, Text } from '@/components/ui';
 import { space } from '@/theme/tokens';
 import { PackError } from './format';
 import { useInstallPack, useInstalledPacks, usePackIndex, useRemovePack } from './hooks';
@@ -79,9 +79,7 @@ export function OfflineCitiesSection() {
       })}
 
       {errorText ? (
-        <Text accessibilityRole="alert" accessibilityLiveRegion="polite">
-          {errorText}
-        </Text>
+        <Alert message={errorText} />
       ) : null}
       {rows.some((r) => r.installed) ? (
         <Text variant="small" muted>

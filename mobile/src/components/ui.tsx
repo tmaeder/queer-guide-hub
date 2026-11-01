@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import {
+  AccessibilityInfo,
   ActivityIndicator,
   Pressable,
   StyleSheet,
@@ -136,6 +137,32 @@ export function Field({
   );
 }
 
+/**
+ * Speak a message that appeared without focus moving to it. Android reads
+ * accessibilityLiveRegion; iOS has no live regions, so VoiceOver users would
+ * never hear an error that appears under the button they just pressed.
+ */
+export function useAnnounce(message: string | null | undefined) {
+  useEffect(() => {
+    if (message) AccessibilityInfo.announceForAccessibility(message);
+  }, [message]);
+}
+
+/** An error or status line that is announced when it appears. */
+export function Alert({ message, tone = 'error' }: { message: string; tone?: 'error' | 'info' }) {
+  const { colors } = useTheme();
+  useAnnounce(message);
+  return (
+    <Text
+      accessibilityRole="alert"
+      accessibilityLiveRegion="assertive"
+      style={tone === 'error' ? { color: colors.destructive } : undefined}
+    >
+      {message}
+    </Text>
+  );
+}
+
 /** Loading / error / empty — every list state is designed, never a blank screen. */
 export function StateMessage({
   kind,
@@ -146,6 +173,8 @@ export function StateMessage({
   message: string;
   action?: { label: string; onPress: () => void };
 }) {
+  // Errors are announced; loading and empty states are not, to avoid chatter.
+  useAnnounce(kind === 'error' ? message : null);
   return (
     <View style={styles.state} accessibilityLiveRegion="polite">
       {kind === 'loading' ? <ActivityIndicator /> : null}
