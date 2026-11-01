@@ -18,7 +18,8 @@ interface ActiveTripContextValue {
   candidateTrips: TripListItem[];
 }
 
-const ActiveTripContext = createContext<ActiveTripContextValue | undefined>(undefined);
+// eslint-disable-next-line react-refresh/only-export-components
+export const ActiveTripContext = createContext<ActiveTripContextValue | undefined>(undefined);
 
 /**
  * Pick the "best" trip to auto-surface in the global context bar.

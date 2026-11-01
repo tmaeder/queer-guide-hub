@@ -396,7 +396,7 @@ export const ExploreMap = ({
   });
 
   // ── Popup management (native share + rich React-rendered popup card) ─────
-  const { showPopup, showPopupFromMarker } = usePopupManager({
+  const { showPopup, showPopupFromMarker, popupPortal } = usePopupManager({
     navigate,
     toast,
     popupRef,
@@ -569,6 +569,8 @@ export const ExploreMap = ({
       style={{ height }}
     >
       <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+      {/* The open place card, portalled into MapLibre's popup node. */}
+      {popupPortal}
 
       {/* Lightweight hover tooltip for boundary polygons */}
       <div

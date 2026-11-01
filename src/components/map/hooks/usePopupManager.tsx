@@ -1,6 +1,6 @@
-import { useCallback, useContext, type MutableRefObject } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { QueryClientProvider, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useState, type MutableRefObject, type ReactPortal } from 'react';
+import { createPortal } from 'react-dom';
+import type { Root } from 'react-dom/client';
 import i18next from 'i18next';
 import * as maplibregl from 'maplibre-gl';
 import { MapEntityCard } from '@/components/map/MapEntityCard';
@@ -8,12 +8,14 @@ import { ENTITY_BULLET, lineFor } from '@/components/map/mapDomain';
 import type { MapPointSummary } from '@/components/map/mapPoint';
 import type { MapMarker } from '@/hooks/useExploreMapData';
 import { hapticTrigger } from '@/hooks/useHaptics';
-import { AuthContext } from '@/hooks/useAuth';
 
 interface UsePopupManagerParams {
   navigate: (href: string) => void;
   toast: (opts: { title: string; description?: string; variant?: 'destructive' }) => void;
   popupRef: MutableRefObject<maplibregl.Popup | null>;
+  /** Holds a handle whose `unmount()` closes the card; kept as a `Root` so the
+   *  map teardowns that already call `popupRootRef.current?.unmount()` keep
+   *  working unchanged. */
   popupRootRef: MutableRefObject<Root | null>;
 }
 
@@ -28,14 +30,16 @@ export function usePopupManager({
   popupRef,
   popupRootRef,
 }: UsePopupManagerParams) {
-  // The popup renders into its own React root (MapLibre owns the DOM node),
-  // which is OUTSIDE the app's provider tree — so bridge the contexts the
-  // card actually needs (auth + react-query for QuietAddToTripButton /
-  // AddToTripDialog). Without this, opening a popup crashed with
-  // "useAuth must be used within an AuthProvider" (feedback story f615cdd2).
-  // useContext (not useAuth) so provider-less test renders don't throw at mount.
-  const auth = useContext(AuthContext);
-  const queryClient = useQueryClient();
+  // The card is rendered through a PORTAL into MapLibre's popup node, so it
+  // stays inside the app's React tree and gets every provider (router, auth,
+  // active trip, react-query, i18n, toasts). It used to be a separate
+  // createRoot, outside the tree, with contexts bridged in one at a time:
+  // auth after "useAuth must be used within an AuthProvider" (feedback story
+  // f615cdd2), then production threw "useActiveTrip must be used within
+  // ActiveTripProvider" and, once that was bridged, "useNavigate() may be used
+  // only in the context of a <Router>" — the popup rendered empty. A portal
+  // ends that class of bug instead of chasing the next missing context.
+  const [card, setCard] = useState<{ container: HTMLElement; point: MapPointSummary } | null>(null);
 
   // ── Helper: native share with clipboard fallback ─────────────────────────
   const sharePoint = useCallback(
@@ -77,8 +81,8 @@ export function usePopupManager({
   );
 
   // ── Helper: show a rich React-rendered popup card ─────────────────────────
-  // Mounts <MapEntityCard> into the popup's DOM node via a React root (replaces
-  // the old inline-HTML string). The root is torn down on popup close / replace.
+  // Portals <MapEntityCard> into the popup's DOM node (see `card` above). The
+  // card is cleared on popup close / replace.
   const showPopup = useCallback(
     (map: maplibregl.Map, lngLat: maplibregl.LngLat | [number, number], point: MapPointSummary) => {
       hapticTrigger('nudge');
@@ -97,20 +101,12 @@ export function usePopupManager({
         .setDOMContent(container)
         .addTo(map);
 
-      const root = createRoot(container);
-      root.render(
-        <QueryClientProvider client={queryClient}>
-          <AuthContext.Provider value={auth}>
-            <MapEntityCard
-              point={point}
-              variant="popup"
-              onNavigate={(href) => navigate(href)}
-              onShare={sharePoint}
-            />
-          </AuthContext.Provider>
-        </QueryClientProvider>,
-      );
-      popupRootRef.current = root;
+      setCard({ container, point });
+      // Closing clears only THIS card, never one opened after it.
+      popupRootRef.current = {
+        unmount: () => setCard((c) => (c?.container === container ? null : c)),
+        render: () => {},
+      } as unknown as Root;
 
       popup.on('close', () => {
         // Defer unmount out of MapLibre's event tick to avoid React's
@@ -122,7 +118,7 @@ export function usePopupManager({
 
       popupRef.current = popup;
     },
-    [navigate, sharePoint, popupRef, popupRootRef, auth, queryClient],
+    [popupRef, popupRootRef],
   );
 
   // Adapter for callers that still produce the legacy MapMarker shape
@@ -154,5 +150,17 @@ export function usePopupManager({
     [showPopup],
   );
 
-  return { showPopup, showPopupFromMarker };
+  const popupPortal: ReactPortal | null = card
+    ? createPortal(
+        <MapEntityCard
+          point={card.point}
+          variant="popup"
+          onNavigate={(href) => navigate(href)}
+          onShare={sharePoint}
+        />,
+        card.container,
+      )
+    : null;
+
+  return { showPopup, showPopupFromMarker, popupPortal };
 }
