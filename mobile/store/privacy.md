@@ -12,7 +12,7 @@ Everything is encrypted in transit (HTTPS only).
 | User ID (Identifiers) | Supabase session JWT on API calls when signed in | Yes | App Functionality | Yes |
 | Coarse location (Location) | `src/api/venues.ts` and `src/api/events.ts` send the map viewport; after "Near me" at zoom 14 that is a few-km box around the user | **DECISION**, see below | App Functionality | Yes — location permission is optional |
 | Search history (Search History) | `src/api/search.ts` → search-proxy → `log_search` (query, filters, result count; **no user id, no session id** from the app) | No | App Functionality, Analytics (search quality) | Yes — search is optional |
-| Saved places (User Content → Other) | `src/features/saved/sync.ts` — **only once PR #5023 merges**, and only when signed in | Yes | App Functionality (sync) | Yes |
+| Saved places (User Content → Other) | `src/features/saved/sync.ts` — only when signed in | Yes | App Functionality (sync) | Yes |
 | Device push token (Identifiers → Device ID) | `src/features/push/push.ts` — opt-in, native APNs/FCM token | Yes | App Functionality (notifications) | Yes |
 | Account deletion request | `delete-account` edge function | Yes | App Functionality | — |
 
@@ -36,8 +36,8 @@ fonts/sprites from `protomaps.github.io`.
 - Encrypted in transit: **yes**. Users can request deletion: **yes** —
   in-app (Me → Account → Delete account) and at https://queer.guide/privacy.
 - Collected types: Email address, User IDs, Approximate location, App
-  interactions → "In-app search history"; Device or other IDs (push, opt-in); plus Other
-  user-generated content once PR #5023 ships. All optional except
+  interactions → "In-app search history"; Device or other IDs (push, opt-in), and Other
+  user-generated content (saved places, signed in only). All optional except
   where the user creates an account.
 
 ## DECISION — is coarse location "linked"?
