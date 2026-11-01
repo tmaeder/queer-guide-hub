@@ -31,11 +31,13 @@
     "directions": "Route",
     "share": "Teilen",
     "about": "Über",
-    "accessibility": "Barrierefreiheit"
+    "accessibility": "Barrierefreiheit",
+    "saveFailed": "Konnte nicht in deinem Konto gespeichert werden. Prüfe deine Verbindung."
   },
   "saved": {
     "title": "Gemerkt",
-    "empty": "Gemerkte Orte erscheinen hier. Sie werden nur auf diesem Gerät gespeichert."
+    "empty": "Gemerkte Orte erscheinen hier. Sie werden nur auf diesem Gerät gespeichert.",
+    "synced": "Mit deinem Konto synchronisiert."
   },
   "help": {
     "title": "Hilfe",
@@ -62,7 +64,7 @@
   "me": {
     "title": "Ich",
     "privacy": "Datenschutz",
-    "privacyBody": "Diese App hat kein Tracking und keine Analyse. Dein Standort wird nur auf diesem Gerät verwendet. Gemerkte Orte verlassen es nie.",
+    "privacyBody": "Diese App hat keine Analyse und kein Tracking. Dein Standort wird nur auf diesem Gerät verwendet. Gespeicherte Orte bleiben auf diesem Telefon, ausser du meldest dich an – dann werden sie in deinem Konto gespeichert.",
     "website": "queer.guide im Web öffnen",
     "version": "Version {{version}}"
   },
@@ -176,7 +178,8 @@
     "deleteFailed": "Dein Konto konnte nicht gelöscht werden. Versuche es erneut oder kontaktiere den Support, falls es weiter fehlschlägt.",
     "signedOut": "Du bist abgemeldet.",
     "loading": "Wird geladen…",
-    "loadError": "Dein Konto konnte nicht geladen werden. Prüfe deine Verbindung."
+    "loadError": "Dein Konto konnte nicht geladen werden. Prüfe deine Verbindung.",
+    "signOutNote": "Beim Abmelden werden deine gespeicherten Orte von diesem Telefon entfernt. Sie bleiben in deinem Konto."
   },
   "events": {
     "loading": "Veranstaltung wird geladen…",

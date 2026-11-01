@@ -31,11 +31,13 @@
     "directions": "Directions",
     "share": "Share",
     "about": "About",
-    "accessibility": "Accessibility"
+    "accessibility": "Accessibility",
+    "saveFailed": "Couldn't save to your account. Check your connection."
   },
   "saved": {
     "title": "Saved",
-    "empty": "Places you save appear here. They're stored only on this device."
+    "empty": "Places you save appear here. They're stored only on this device.",
+    "synced": "Synced with your account."
   },
   "help": {
     "title": "Help",
@@ -62,7 +64,7 @@
   "me": {
     "title": "Me",
     "privacy": "Privacy",
-    "privacyBody": "This app has no analytics or tracking. Your location is used only on this device. Saved places never leave it.",
+    "privacyBody": "This app has no analytics or tracking. Your location is used only on this device. Saved places stay on this phone unless you sign in, then they're kept in your account.",
     "website": "Open queer.guide on the web",
     "version": "Version {{version}}"
   },
@@ -176,7 +178,8 @@
     "deleteFailed": "Your account couldn't be deleted. Try again, or contact support if it keeps failing.",
     "signedOut": "You're signed out.",
     "loading": "Loading…",
-    "loadError": "Couldn't load your account. Check your connection."
+    "loadError": "Couldn't load your account. Check your connection.",
+    "signOutNote": "Signing out removes your saved places from this phone. They stay in your account."
   },
   "events": {
     "loading": "Loading event…",
