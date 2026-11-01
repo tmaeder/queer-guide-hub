@@ -7,7 +7,7 @@ import type { MapClass } from '@/lib/rights/rightsMapModel';
 import type { RightsCountry } from '@/hooks/useIntentData';
 
 /**
- * The composed "map" section content for `/rights` — Task D of
+ * The composed "map" section content for `/tags/rights-by-country` — Task D of
  * docs/plans/2026-08-22-rights-world-map-design.md. Line/lens controls above
  * the choropleth, its route-strip legend, and a one-line coverage note.
  *

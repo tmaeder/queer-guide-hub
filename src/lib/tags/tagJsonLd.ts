@@ -78,6 +78,6 @@ export function buildTagJsonLd(
 
   // Nothing is emitted for a class-of-law tag (marriage-equality, decriminalization).
   // A class of law is not a `Legislation` node, and pointing `citation` at our own
-  // /rights page would dress an internal link up as a primary legal source.
+  // /tags/rights-by-country page would dress an internal link up as a primary legal source.
   return jsonLd;
 }

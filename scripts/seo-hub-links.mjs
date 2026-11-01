@@ -31,7 +31,7 @@ const HUBS = [
   { path: '/venues', prefix: '/venues/', min: 20 },
   { path: '/cities', prefix: '/city/', min: 20 },
   // The public country index is /rights; /countries is a genuine 404.
-  { path: '/rights', prefix: '/country/', min: 20 },
+  { path: '/tags/rights-by-country', prefix: '/country/', min: 20 },
   { path: '/tags', prefix: '/tags/', min: 20 },
   { path: '/personalities', prefix: '/personalities/', min: 20 },
   { path: '/hotels', prefix: '/hotels/', min: 20 },

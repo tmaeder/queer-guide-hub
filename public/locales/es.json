@@ -1,5 +1,6 @@
 {
   "knowledge": {
+    "rights": "Derechos por país",
     "title": "Saber",
     "terms": "Términos",
     "personalities": "Personalidades",
@@ -2068,6 +2069,7 @@
       "tagsAll": "Todos los términos",
       "tagsInteractions": "Seguridad con sustancias",
       "tagsStiGuide": "Guía de ITS",
+      "rightsByCountry": "Derechos por país",
       "transRights": "Derechos trans",
       "competitions": "[ES] Drag Race"
     },

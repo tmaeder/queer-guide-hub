@@ -1,5 +1,6 @@
 {
   "knowledge": {
+    "rights": "Rechte nach Land",
     "title": "Wissen",
     "terms": "Begriffe",
     "personalities": "Persönlichkeiten",
@@ -2068,6 +2069,7 @@
       "tagsAll": "Alle Begriffe",
       "tagsInteractions": "Substanzsicherheit",
       "tagsStiGuide": "STI-Leitfaden",
+      "rightsByCountry": "Rechte nach Land",
       "transRights": "Trans-Rechte",
       "competitions": "[DE] Drag Race"
     },

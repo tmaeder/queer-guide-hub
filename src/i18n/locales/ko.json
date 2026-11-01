@@ -1,5 +1,6 @@
 {
   "knowledge": {
+    "rights": "국가별 권리",
     "title": "지식",
     "terms": "용어",
     "personalities": "인물",
@@ -2068,6 +2069,7 @@
       "tagsAll": "모든 용어",
       "tagsInteractions": "약물 안전",
       "tagsStiGuide": "성매개감염 안내",
+      "rightsByCountry": "국가별 권리",
       "transRights": "트랜스젠더 권리",
       "competitions": "드래그 레이스"
     },

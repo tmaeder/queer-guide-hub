@@ -1,5 +1,6 @@
 {
   "knowledge": {
+    "rights": "الحقوق حسب البلد",
     "title": "المعرفة",
     "terms": "المصطلحات",
     "personalities": "الشخصيات",
@@ -2078,6 +2079,7 @@
       "tagsAll": "كل المصطلحات",
       "tagsInteractions": "سلامة المواد",
       "tagsStiGuide": "دليل الأمراض المنقولة جنسيًا",
+      "rightsByCountry": "الحقوق حسب البلد",
       "transRights": "حقوق العابرين جنسيًا",
       "competitions": "[AR] Drag Race"
     },

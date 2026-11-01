@@ -40,7 +40,7 @@ test.describe('Chrome fits at every locale', () => {
     for (const width of [1280, 1440]) {
       test(`the intent row does not amputate tabs — ${locale} @ ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
-        await page.goto(`/${locale}/rights`);
+        await page.goto(`/${locale}/tags/rights-by-country`);
         await waitForAppReady(page);
 
         const nav = page.getByRole('banner').locator('nav[aria-label]');
@@ -139,7 +139,7 @@ test.describe('Public skip link', () => {
 
   test('exists, reaches main, and sits on the correct side under RTL', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto('/ar/rights');
+    await page.goto('/ar/tags/rights-by-country');
     await waitForAppReady(page);
 
     // It is `sr-only` until focused, so it has to be addressed by its href.

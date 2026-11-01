@@ -49,15 +49,17 @@ describe('navigation config', () => {
 });
 
 describe('INTENT_NAV', () => {
-  it('has seven intents with unique ids and routes', () => {
+  it('has six intents with unique ids and routes', () => {
     // Seven is the ceiling under the CURRENT layout contract: the desktop row
     // is its own full-width line (not shared with the search field), tabs
     // tighten to px-3 below lg, and the row scrolls horizontally instead of
     // wrapping (Header.tsx). Every label is still held to <=11 chars below.
     // An eighth needs another layout change, not an eighth entry.
-    expect(INTENT_NAV).toHaveLength(7);
-    expect(new Set(INTENT_NAV.map((i) => i.id)).size).toBe(7);
-    expect(new Set(INTENT_NAV.map((i) => i.to)).size).toBe(7);
+    // Rights folded into Knowledge (/tags/rights-by-country) on 2026-11-01,
+    // so six is the current count, not the ceiling.
+    expect(INTENT_NAV).toHaveLength(6);
+    expect(new Set(INTENT_NAV.map((i) => i.id)).size).toBe(6);
+    expect(new Set(INTENT_NAV.map((i) => i.to)).size).toBe(6);
   });
 
   it('never uses a 2-letter first path segment', () => {
@@ -243,7 +245,7 @@ describe('INTENT_NAV', () => {
     expect(isIntentActive(travelling, '/travel')).toBe(true);
     expect(isIntentActive(travelling, '/travel/book')).toBe(true);
     expect(isIntentActive(travelling, '/city/berlin')).toBe(true);
-    expect(isIntentActive(travelling, '/rights')).toBe(false);
+    expect(isIntentActive(travelling, '/tags/rights-by-country')).toBe(false);
 
     const goingOut = INTENT_NAV.find((i) => i.id === 'going-out')!;
     expect(isIntentActive(goingOut, '/going-out')).toBe(true);

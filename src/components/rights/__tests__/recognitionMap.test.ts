@@ -123,9 +123,9 @@ describe('map and band cannot disagree', () => {
   });
 });
 
-describe('the ink ramp means severity, as it does on /rights', () => {
+describe('the ink ramp means severity, as it does on /tags/rights-by-country', () => {
   /**
-   * `MAP_CLASS_INK` on /rights runs protected 0.12 → death 0.9: heavier ink is
+   * `MAP_CLASS_INK` on /tags/rights-by-country runs protected 0.12 → death 0.9: heavier ink is
    * worse. A reader who learns that there and meets a map here where the
    * heaviest ink was self-determination would read this one exactly backwards,
    * so the ramp must ascend along the ladder.

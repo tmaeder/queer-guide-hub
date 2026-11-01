@@ -9,10 +9,10 @@ import { WorldChoropleth } from './WorldChoropleth';
 import { buildMapAriaLabel, classifyBoundaries, EMPTY_CLASS_COUNTS } from './rightsWorldMapModel';
 
 /**
- * The `/rights` choropleth — one of the 18 legal topics, through one identity
+ * The `/tags/rights-by-country` choropleth — one of the 18 legal topics, through one identity
  * lens.
  *
- * All MapLibre plumbing now lives in `WorldChoropleth`, which /rights/trans
+ * All MapLibre plumbing now lives in `WorldChoropleth`, which /tags/rights-by-country/trans
  * shares for its recognition map. This file is only the rights-specific half:
  * which classifier runs, which ink ramp paints it, and how the canvas is
  * announced. The public props are unchanged — `Rights.tsx` and

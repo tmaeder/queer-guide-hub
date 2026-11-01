@@ -21,6 +21,8 @@ export interface IntentPageLayoutProps {
   disableProgress?: boolean;
   breadcrumbLabel: string;
   breadcrumbHref: string;
+  /** Ancestor crumbs rendered before this page's own (e.g. Knowledge). */
+  breadcrumbParents?: { label: string; href: string }[];
   sectionNavVariant?: 'default' | 'subway';
   className?: string;
   heroSize?: 'sm' | 'md' | 'lg';
@@ -57,6 +59,7 @@ export function IntentPageLayout({
   disableProgress = false,
   breadcrumbLabel,
   breadcrumbHref,
+  breadcrumbParents = [],
   sectionNavVariant = 'default',
   className,
   heroSize = 'md',
@@ -71,7 +74,7 @@ export function IntentPageLayout({
         entityType="intent"
         disableProgress={disableProgress}
         sectionNavClassName={sectionNavClassName}
-        breadcrumbs={[{ label: breadcrumbLabel, href: breadcrumbHref }]}
+        breadcrumbs={[...breadcrumbParents, { label: breadcrumbLabel, href: breadcrumbHref }]}
         sectionNavVariant={sectionNavVariant}
         header={
           <>

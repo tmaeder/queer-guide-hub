@@ -174,7 +174,9 @@ describe('resolveScrollAction', () => {
     it('honours a deep link fragment', () => {
       // The browser's own jump fires before the SPA has rendered the target,
       // so it has to be redone once the element exists.
-      expect(resolveScrollAction(null, at('/rights', '', '#marriage'), 'POP', undefined)).toEqual({
+      expect(
+        resolveScrollAction(null, at('/tags/rights-by-country', '', '#marriage'), 'POP', undefined),
+      ).toEqual({
         kind: 'hash',
         id: 'marriage',
       });

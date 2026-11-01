@@ -2,7 +2,14 @@ import { stripLocale } from '@/lib/locale';
 
 export type JourneyTrack = 'pink' | 'blue' | 'green' | 'yellow';
 
-const MOTION_FREE_PREFIXES = ['/admin', '/help', '/support', '/rights/trans', '/report', '/safety'];
+const MOTION_FREE_PREFIXES = [
+  '/admin',
+  '/help',
+  '/support',
+  '/tags/rights-by-country/trans',
+  '/report',
+  '/safety',
+];
 
 export function isRouteMotionAllowed(pathname: string): boolean {
   const path = stripLocale(pathname);

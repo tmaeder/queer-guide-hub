@@ -121,7 +121,10 @@ export function TagLegalSource({
               'This covers a whole field of law, not one statute. We track 18 separate rights, country by country.',
             )}
           </p>
-          <LocalizedLink to="/rights" className="mt-1 inline-block text-13 font-bold">
+          <LocalizedLink
+            to="/tags/rights-by-country"
+            className="mt-1 inline-block text-13 font-bold"
+          >
             {t('tags.detail.seeAllRights', 'See all 18 rights by country')}
           </LocalizedLink>
           <SourceLine className="mt-2" />

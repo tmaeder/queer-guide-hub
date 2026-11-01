@@ -297,7 +297,7 @@ export default function People() {
             )}
           </p>
           <Button variant="soft" asChild>
-            <LocalizedLink to="/rights" className="no-underline">
+            <LocalizedLink to="/tags/rights-by-country" className="no-underline">
               {t('people.safetyCta', 'LGBTQ+ rights by country')}
             </LocalizedLink>
           </Button>
