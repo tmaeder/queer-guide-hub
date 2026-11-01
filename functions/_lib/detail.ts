@@ -2275,7 +2275,7 @@ const RESERVED_DETAIL_SLUGS: Record<string, ReadonlySet<string>> = {
   city: new Set(['compare']),
   // /tags/interactions (drug interaction chart) and /tags/sti-guide. The SPA
   // routes also reserve the names so no tag can ever claim them.
-  tags: new Set(['interactions', 'sti-guide']),
+  tags: new Set(['interactions', 'sti-guide', 'rights-by-country']),
 };
 
 // `tag/:slug` and `personality/:slug` are SlugAliasRedirect routes onto the

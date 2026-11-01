@@ -1,5 +1,6 @@
 {
   "knowledge": {
+    "rights": "Права по странам",
     "title": "Знания",
     "terms": "Термины",
     "personalities": "Личности",
@@ -2100,6 +2101,7 @@
       "tagsAll": "Все термины",
       "tagsInteractions": "Безопасность веществ",
       "tagsStiGuide": "Гид по ИППП",
+      "rightsByCountry": "Права по странам",
       "transRights": "Права трансгендерных людей",
       "competitions": "[RU] Drag Race",
       "newsAll": "Все новости"

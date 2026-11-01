@@ -207,7 +207,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       { href: '/map', label: 'The world map' },
       { href: '/venues', label: 'Venues by city' },
       { href: '/events', label: 'Events by city' },
-      { href: '/rights', label: 'LGBTQ+ rights by country' },
+      { href: '/tags/rights-by-country', label: 'LGBTQ+ rights by country' },
     ],
   },
 
@@ -320,7 +320,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
-  '/rights': {
+  '/tags/rights-by-country': {
     h1: 'LGBTQ+ rights and safety, country by country',
     paragraphs: [
       'The legal position for LGBTQ+ people in all 250 countries and territories: whether same-sex acts are criminalised, whether the penalty can be death, whether partnerships are recognised, and a composite equality score.',
@@ -339,11 +339,11 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
-  // Paired with the '/rights/sources' entry in STATIC_ROUTE_META. Both are
+  // Paired with the '/tags/rights-by-country/sources' entry in STATIC_ROUTE_META. Both are
   // required: _middleware.ts gates the crawler body on `indexable` AND on a
   // body entry existing, so META alone yields an indexable page with no
   // content for a bot to read.
-  '/rights/sources': {
+  '/tags/rights-by-country/sources': {
     h1: 'Where this data comes from',
     paragraphs: [
       'Every legal status on Queer Guide — criminalisation, partnership recognition, anti-discrimination protection, gender recognition, conversion therapy and intersex bodily integrity — comes from the ILGA World Database, re-imported nightly.',
@@ -351,14 +351,14 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       'It is national, so where rights vary by state or province a single figure averages that away. It records statutes, not enforcement. And several facts that matter most to trans travellers — facility access, how identity documents are treated at borders, access to gender-affirming healthcare — are not in this dataset at all. It is not a safety rating.',
     ],
     links: [
-      { href: '/rights', label: 'Rights by country' },
+      { href: '/tags/rights-by-country', label: 'Rights by country' },
       { href: '/travel', label: 'Plan safer queer travel' },
       { href: '/help', label: 'Crisis hotlines' },
     ],
   },
 
-  // Paired with '/rights/trans' in STATIC_ROUTE_META, per the note above.
-  '/rights/trans': {
+  // Paired with '/tags/rights-by-country/trans' in STATIC_ROUTE_META, per the note above.
+  '/tags/rights-by-country/trans': {
     h1: 'Trans rights and safety',
     paragraphs: [
       'Whether a country will change your gender marker, and what it makes you give up first. A country can permit a document change and still require surgery, a psychiatric diagnosis or a divorce, so those are counted separately here rather than collapsed into a single "recognition" yes or no.',
@@ -366,8 +366,8 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       'Our legal source does not record facility access, how identity documents are treated at borders, or access to gender-affirming healthcare. Those are often what decides how a journey actually goes, and we say so rather than letting a clean-looking verdict imply otherwise.',
     ],
     links: [
-      { href: '/rights', label: 'All LGBTQ+ rights by country' },
-      { href: '/rights/sources', label: 'Where this data comes from' },
+      { href: '/tags/rights-by-country', label: 'All LGBTQ+ rights by country' },
+      { href: '/tags/rights-by-country/sources', label: 'Where this data comes from' },
       { href: '/travel', label: 'Plan safer queer travel' },
       { href: '/help', label: 'Crisis hotlines' },
     ],

@@ -366,11 +366,11 @@ export const RIGHTS_SELECT_COLUMNS =
   `id, name, slug, code, equality_score, ${CRIMINALIZATION_LIST_COLUMNS}, lgbti_expression_restrictions, lgbti_association_restrictions, lgbti_constitutional_protection, lgbti_employment_protection, lgbti_housing_protection, lgbti_education_protection, lgbti_health_protection, lgbti_goods_services_protection, lgbti_bullying_protection, lgbti_hate_crime_law, lgbti_incitement_prohibition, lgbti_same_sex_unions, lgbti_adoption_rights, lgbti_gender_recognition, lgbti_conversion_therapy_regulation, lgbti_intersex_protection` as const;
 
 /**
- * The NARROW fetch: what /travel and /rights/sources actually read.
+ * The NARROW fetch: what /travel and /tags/rights-by-country/sources actually read.
  *
  * /travel uses this only to locate the visitor's country, count criminalising
  * ones and show a total — three fields. It must not pay for the 22-column
- * payload the /rights summary needs; widening the shared hook made a
+ * payload the /tags/rights-by-country summary needs; widening the shared hook made a
  * high-traffic entry page download 250 rows of jsonb protection matrices to
  * render a number.
  */
@@ -392,7 +392,7 @@ export function useAllCountriesRights() {
 }
 
 /**
- * The WIDE fetch: every column RIGHT_TOPICS names, for the /rights per-right
+ * The WIDE fetch: every column RIGHT_TOPICS names, for the /tags/rights-by-country per-right
  * summary. Separate query key, so the two are cached independently and no
  * other page inherits the cost.
  */
@@ -418,7 +418,7 @@ export function useAllCountriesRightsFull() {
  * The TRANS fetch: the wide rights payload plus the one TGEU column we store.
  *
  * A third select literal rather than widening RIGHTS_SELECT_COLUMNS, following
- * the same reasoning as the narrow/wide split above: /rights and /travel would
+ * the same reasoning as the narrow/wide split above: /tags/rights-by-country and /travel would
  * otherwise download another jsonb column on 250 rows to render pages that
  * never read it. Its own query key keeps the caches independent.
  *

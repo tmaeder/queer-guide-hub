@@ -26,7 +26,6 @@ const INTENTS = [
   { label: 'Going out', href: '/going-out' },
   { label: 'Travelling', href: '/travel' },
   { label: 'Meet people', href: '/hub/people' },
-  { label: 'Rights', href: '/rights' },
   // /help, not /support: the Support intent was repointed in #2692 because the
   // two pages had the same source and /help is the superset (CMS hotline
   // corpus, per-country routes, QuickExit, EmergencyService JSON-LD). This row
@@ -49,7 +48,7 @@ const INTENTS = [
 test.describe('desktop intent nav', () => {
   test.skip(({ isMobile }) => !!isMobile, 'desktop row is hidden below lg');
 
-  test('renders exactly the seven intents in the primary landmark', async ({ page }) => {
+  test('renders exactly the six intents in the primary landmark', async ({ page }) => {
     await page.goto('/');
     const nav = page.locator('header nav[aria-label="Primary"]');
     await expect(nav).toBeVisible();
@@ -63,10 +62,11 @@ test.describe('desktop intent nav', () => {
   });
 
   test('marks the active intent with aria-current', async ({ page }) => {
-    await page.goto('/rights');
+    // Rights by country now lives under the Knowledge intent.
+    await page.goto('/tags/rights-by-country');
     const nav = page.locator('header nav[aria-label="Primary"]');
     await expect(nav.locator('a[aria-current="page"]')).toHaveCount(1);
-    await expect(nav.locator('a[aria-current="page"]')).toHaveText('Rights');
+    await expect(nav.locator('a[aria-current="page"]')).toHaveText('Knowledge');
   });
 
   test('lights the owning intent on a browse route it claims', async ({ page }) => {
@@ -88,13 +88,12 @@ test.describe('homepage intent map', () => {
     '/travel',
     '/hub/people',
     '/search', // the interchange, where all four lines meet
-    '/tags', // glossary — the 7th intent
-    '/rights',
+    '/tags', // Knowledge (glossary, and rights by country since 2026-11-01)
     '/news',
     '/marketplace',
   ];
 
-  test('renders the seven intents plus the interchange as stations', async ({ page }) => {
+  test('renders the six intents plus the interchange as stations', async ({ page }) => {
     // The desktop visual snapshot masks `main section:first-of-type`, which
     // this section matches — so the screenshot does NOT guard the map. This
     // does. It also catches the CSS-only breakpoint split degrading into two
@@ -130,8 +129,20 @@ test.describe('intent routes', () => {
   }
 
   test('resolves under a locale prefix', async ({ page }) => {
-    await page.goto('/de/rights');
+    await page.goto('/de/tags/rights-by-country');
     await expect(page.locator('main h1')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('main')).not.toContainText('Page not found');
+  });
+
+  test('/rights is folded into the Knowledge hub, fragment kept', async ({ page }) => {
+    await page.goto('/rights#marriage');
+    await expect(page).toHaveURL(/\/tags\/rights-by-country#marriage$/);
+    await expect(page.locator('main h1')).toBeVisible({ timeout: 15_000 });
+  });
+
+  test('/rights-by-country itself renders', async ({ page }) => {
+    await page.goto('/tags/rights-by-country');
+    await expect(page.locator('main h1')).toBeVisible();
     await expect(page.locator('main')).not.toContainText('Page not found');
   });
 
@@ -167,8 +178,10 @@ test.describe('intent routes', () => {
 });
 
 test.describe('honest coverage', () => {
-  test('/rights states its coverage rather than implying completeness', async ({ page }) => {
-    await page.goto('/rights');
+  test('/tags/rights-by-country states its coverage rather than implying completeness', async ({
+    page,
+  }) => {
+    await page.goto('/tags/rights-by-country');
     // This asserted /250 of 250/ until 2026-08-07, which the page produced by
     // rendering `{countries.length} of {countries.length}` — the same number
     // twice. A tautology cannot fail, so the test was green whatever the data
@@ -191,8 +204,10 @@ test.describe('honest coverage', () => {
     await expect(page.locator('main')).toContainText(/245 of 250/);
   });
 
-  test('/rights reaches every country, not just the first twelve per tier', async ({ page }) => {
-    await page.goto('/rights');
+  test('/tags/rights-by-country reaches every country, not just the first twelve per tier', async ({
+    page,
+  }) => {
+    await page.goto('/tags/rights-by-country');
     // The world list was `.slice(0, 12)` per tier with no expander, so only
     // 103 of 250 countries had any path from this page and — the lists being
     // alphabetical — everything past B was unreachable. The #2930 restructure
@@ -225,7 +240,7 @@ test.describe('honest coverage', () => {
   // city page will publish a fraction. The design is
   // `docs/plans/2026-08-30-transit-mobility-phase-4-design.md` §7.
   //
-  // It exists now because the /rights test above asserted `/250 of 250/` for
+  // It exists now because the /tags/rights-by-country test above asserted `/250 of 250/` for
   // months, produced by rendering `{countries.length} of {countries.length}` —
   // the same number twice. A tautology cannot fail, so it certified the exact
   // defect it was written to prevent. The two capture groups here are the
@@ -246,7 +261,7 @@ test.describe('honest coverage', () => {
 });
 
 test.describe('crisis-adjacent surfaces stay calm', () => {
-  for (const path of ['/rights', '/support']) {
+  for (const path of ['/tags/rights-by-country', '/support']) {
     test(`${path} renders no scroll-progress animation`, async ({ page }) => {
       await page.goto(path);
       await expect(page.locator('main h1')).toBeVisible();

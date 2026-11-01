@@ -99,7 +99,7 @@ describe('TGEU Trans Rights Index is linked, never copied', () => {
   });
 });
 
-describe('summariseRecognition — the ledger /rights cannot draw', () => {
+describe('summariseRecognition — the ledger /tags/rights-by-country cannot draw', () => {
   const row = (lgr: Record<string, unknown> | null) => ({
     lgbti_gender_recognition: lgr ?? {},
   });
@@ -142,7 +142,7 @@ describe('summariseRecognition — the ledger /rights cannot draw', () => {
     expect(l.requiresSurgery).toBe(1);
     expect(l.requiresDiagnosis).toBe(1);
     // Both countries allow a marker change; only one demands sterilisation.
-    // Collapsing this into one "recognition" bar is exactly what /rights
+    // Collapsing this into one "recognition" bar is exactly what /tags/rights-by-country
     // refuses to do, and why UNCOUNTED_SLUGS exists.
     expect(l.markerChangePossible).toBe(2);
   });

@@ -94,10 +94,10 @@ function StationPanel({
 }
 
 /**
- * `/rights/sources` — where the legal data comes from, and what it cannot tell
+ * `/tags/rights-by-country/sources` — where the legal data comes from, and what it cannot tell
  * you.
  *
- * `/rights` rendered an equality score a hundred times over with no source, no
+ * `/tags/rights-by-country` rendered an equality score a hundred times over with no source, no
  * date and no definition, while `/country/:slug` cited ILGA on every card. This
  * is the page the citation now points at.
  *
@@ -124,7 +124,7 @@ export default function RightsSources() {
       'rights.sources.metaDescription',
       'The sources, refresh cadence, coverage and known limits behind the legal status we publish for every country and territory.',
     ),
-    canonicalPath: '/rights/sources',
+    canonicalPath: '/tags/rights-by-country/sources',
   });
 
   const sections: SectionDef[] = [
@@ -352,7 +352,7 @@ export default function RightsSources() {
               )}
             </p>
             <LocalizedLink
-              to="/rights"
+              to="/tags/rights-by-country"
               className="rounded-element bg-background px-4 py-4 text-13 font-bold no-underline transition-transform hover:-translate-y-0.5 hover:shadow-[5px_5px_0_hsl(var(--track-blue))]"
               style={{ color: 'hsl(var(--foreground))' }}
             >
@@ -378,9 +378,14 @@ export default function RightsSources() {
       disableProgress
       sectionNavVariant="subway"
       breadcrumbs={[
+        { label: t('header.intents.knowledge.label', 'Knowledge'), href: '/tags' },
+        {
+          label: t('header.nav.rightsByCountry', 'Rights by country'),
+          href: '/tags/rights-by-country',
+        },
         {
           label: t('rights.sources.breadcrumb', 'Sources'),
-          href: '/rights/sources',
+          href: '/tags/rights-by-country/sources',
         },
       ]}
       header={

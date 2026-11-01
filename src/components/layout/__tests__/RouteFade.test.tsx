@@ -33,7 +33,7 @@ describe('RouteFade', () => {
   it('keeps admin and safety routes motion-free', () => {
     expect(isRouteMotionAllowed('/admin')).toBe(false);
     expect(isRouteMotionAllowed('/help')).toBe(false);
-    expect(isRouteMotionAllowed('/rights/trans')).toBe(false);
+    expect(isRouteMotionAllowed('/tags/rights-by-country/trans')).toBe(false);
     expect(isRouteMotionAllowed('/events')).toBe(true);
   });
 

@@ -13,7 +13,7 @@
  *     ONLY layer that carries the LOCALIZED case: the public/_redirects 301 is
  *     unprefixed by design and is inert off Cloudflare entirely, so `/de/shop`
  *     has nothing but the router.
- *  2. Locale prefixes. `/de/rights` must render the Rights page, not NotFound —
+ *  2. Locale prefixes. `/de/tags/rights-by-country` must render the Rights page, not NotFound —
  *     which is what happens if a route is accidentally declared outside the
  *     locale parent.
  *
@@ -73,7 +73,7 @@ async function expectSentinel(path: string, sentinel: string) {
 
 const INTENTS: [string, string][] = [
   ['/going-out', 'GOING_OUT_SENTINEL'],
-  ['/rights', 'RIGHTS_SENTINEL'],
+  ['/tags/rights-by-country', 'RIGHTS_SENTINEL'],
   // /support is now a redirect: the page was the org-directory slice of /help
   // (same hook, same role filter) and /help is the superset. The URL must keep
   // resolving — it is the Support track's identity and has inbound links — so
@@ -96,18 +96,18 @@ const INTENTS: [string, string][] = [
  * 404 on a locale-prefixed URL nobody tests by hand.
  */
 describe('intent route children stay static', () => {
-  it('resolves /rights/sources unprefixed and under a locale', async () => {
-    await expectSentinel('/rights/sources', 'RIGHTS_SOURCES_SENTINEL');
-    await expectSentinel('/en/rights/sources', 'RIGHTS_SOURCES_SENTINEL');
-    await expectSentinel('/de/rights/sources', 'RIGHTS_SOURCES_SENTINEL');
-    await expectSentinel('/ar/rights/sources', 'RIGHTS_SOURCES_SENTINEL');
+  it('resolves /tags/rights-by-country/sources unprefixed and under a locale', async () => {
+    await expectSentinel('/tags/rights-by-country/sources', 'RIGHTS_SOURCES_SENTINEL');
+    await expectSentinel('/en/tags/rights-by-country/sources', 'RIGHTS_SOURCES_SENTINEL');
+    await expectSentinel('/de/tags/rights-by-country/sources', 'RIGHTS_SOURCES_SENTINEL');
+    await expectSentinel('/ar/tags/rights-by-country/sources', 'RIGHTS_SOURCES_SENTINEL');
   });
 
   it('404s an unknown rights child rather than swallowing it', async () => {
     // Proves no `rights/*` splat and no `rights/:param` exists. A splat scores
     // 12 and would lose to /:locale/<static>, making resolution inconsistent;
     // a param would tie. Either turns a typo into a soft-404 for crawlers.
-    const { unmount } = renderAt('/rights/not-a-real-child');
+    const { unmount } = renderAt('/tags/rights-by-country/not-a-real-child');
     expect(await screen.findByText('NOT_FOUND_SENTINEL')).toBeTruthy();
     unmount();
   });

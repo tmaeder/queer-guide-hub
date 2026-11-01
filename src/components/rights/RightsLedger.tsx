@@ -11,7 +11,7 @@ import type { RightWorldSummary } from '@/lib/rights/rightsWorldSummary';
 /**
  * The 18 rights as a dense ledger: one row per right, grouped by section.
  * Compresses the former 2-col card grid to roughly half its height while
- * keeping every anchor (`/rights#<slug>`) and every honesty rule — an
+ * keeping every anchor (`/tags/rights-by-country#<slug>`) and every honesty rule — an
  * uncounted right renders without a number rather than being dropped.
  *
  * The marriage / civil-union label disambiguation lived here as a private
@@ -50,7 +50,7 @@ export function RightsLedger({
                 return (
                   <li
                     key={topic.slug}
-                    // Anchor target for `/rights#<slug>` — glossary tags that
+                    // Anchor target for `/tags/rights-by-country#<slug>` — glossary tags that
                     // name a class of law link here (see tagRightTopics.ts).
                     id={topic.slug}
                     className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border py-2 scroll-mt-24"

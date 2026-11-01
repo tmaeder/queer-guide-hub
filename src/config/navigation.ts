@@ -198,8 +198,7 @@ export const DESTINATIONS: NavDestination[] = [
  *    already had to be collapsed for exactly that reason.
  * Both are asserted in src/config/__tests__/navigation.test.ts.
  */
-export type IntentId =
-  'going-out' | 'travelling' | 'meet' | 'rights' | 'glossary' | 'news' | 'shop';
+export type IntentId = 'going-out' | 'travelling' | 'meet' | 'glossary' | 'news' | 'shop';
 
 export interface IntentDestination {
   id: IntentId;
@@ -309,28 +308,6 @@ export const INTENT_NAV: IntentDestination[] = [
     ],
   },
   {
-    id: 'rights',
-    to: '/rights',
-    icon: transitIcon('library'),
-    labelKey: 'header.intents.rights.label',
-    fallback: 'Rights',
-    subtitleKey: 'header.intents.rights.subtitle',
-    subtitleFallback: 'LGBTQ+ law and safety, country by country',
-    activePrefixes: ['/rights'],
-    // /rights owns no browse routes of its own — it is one composite page over
-    // countries. Its column points at the two surfaces that carry the same
-    // subject over time rather than padding to three with something unrelated.
-    // No /tags cross-link here: the Glossary column renders directly after
-    // this one, and a second same-name link to the same page is footer noise
-    // (and an ambiguous accessible name).
-    children: [
-      // Inside activePrefixes, so it needs no DESTINATIONS entry — see the
-      // assertion in src/config/__tests__/navigation.test.ts.
-      { to: '/rights/trans', labelKey: 'header.nav.transRights', fallback: 'Trans rights' },
-      { to: '/history', labelKey: 'header.nav.history', fallback: 'History' },
-    ],
-  },
-  {
     // Knowledge combines glossary terms and notable people. Retain the
     // stable glossary intent id for saved preferences and track geometry.
     id: 'glossary',
@@ -340,9 +317,16 @@ export const INTENT_NAV: IntentDestination[] = [
     fallback: 'Knowledge',
     subtitleKey: 'header.intents.knowledge.subtitle',
     subtitleFallback: 'Queer language and the people who shaped us',
+    // Rights by country folded in here from its own intent (2026-11-01); it
+    // lives under /tags so the /tags prefix already lights this entry.
     activePrefixes: ['/tags', '/personalities', '/personality'],
     children: [
       { to: '/tags', labelKey: 'header.nav.tagsAll', fallback: 'All terms' },
+      {
+        to: '/tags/rights-by-country',
+        labelKey: 'header.nav.rightsByCountry',
+        fallback: 'Rights by country',
+      },
       { to: '/personalities', labelKey: 'header.nav.personalities', fallback: 'Personalities' },
       {
         to: '/tags/interactions',
@@ -438,7 +422,7 @@ export function findActiveIntent(path: string): IntentDestination | undefined {
  * taxonomies that never spoke to each other: INTENT_NAV (nav), USER_MODES
  * (which biased the search popover's trending tiles), and the onboarding
  * VIBES. The visible consequence was that opening search while standing on
- * /going-out surfaced exactly the same tiles as standing on /rights — the
+ * /going-out surfaced exactly the same tiles as standing on /tags/rights-by-country — the
  * strongest available signal about what someone wants, the page they are
  * currently on, was the one signal the popover ignored.
  *
@@ -452,7 +436,6 @@ export const INTENT_SCOPE_BIAS: Record<IntentId, string[]> = {
   // Groups and events are how meeting actually happens here. There is no user
   // index in search, so this deliberately does not pretend to surface people.
   meet: ['group', 'event'],
-  rights: ['country', 'news'],
   glossary: ['tag', 'personality'],
   news: ['news', 'organization'],
   shop: ['marketplace', 'guide'],
@@ -498,7 +481,6 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       // Intent routes — Explore is the mobile "you're in the catalogue" tab,
       // and every intent page is a browse surface.
       '/going-out',
-      '/rights',
       '/tags',
       '/support',
       // The Support intent now lands on /help (the two pages were merged), so
@@ -675,14 +657,13 @@ export const MODE_SCOPE_BIAS: Record<UserMode, string[]> = {
  * LINE in ROUTE_BULLET_MAP — otherwise wayfinding says one colour in the header
  * and another on the page it opens. `shop` and `news` are the only such intents (going-out
  * spans venue+event, travelling spans city+country+hotel, meet spans group+
- * event, rights → country), and it read 'blue' against
+ * event), and it read 'blue' against
  * a yellow marketplace bullet until 2026-08-12. Asserted in navigation.test.ts.
  */
 export const INTENT_TRACK: Record<string, 'pink' | 'blue' | 'green' | 'yellow'> = {
   'going-out': 'pink',
   travelling: 'blue',
   meet: 'green',
-  rights: 'yellow',
   // Knowledge retains the glossary's established pink line.
   glossary: 'pink',
   // News maps 1:1 to the news content type, so it carries that type's line

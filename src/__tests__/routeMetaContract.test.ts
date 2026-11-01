@@ -295,7 +295,10 @@ describe('intent child routes', () => {
   // replaced with 'marketplace': that would pull in /marketplace/share,
   // /marketplace/missions and /marketplace/guides, three pre-existing meta gaps
   // unrelated to this merge. They are worth fixing — in their own change.
-  const INTENTS = ['going-out', 'travel', 'rights', 'support', 'hub'];
+  // `rights` was dropped when /rights folded into /tags/rights-by-country; its
+  // three pages are asserted explicitly below because the regex here only
+  // matches two-segment paths.
+  const INTENTS = ['going-out', 'travel', 'support', 'hub'];
 
   // path="<intent>/<static-segment>" — params and splats are dynamicMeta's job.
   const children = [
@@ -310,6 +313,14 @@ describe('intent child routes', () => {
     expect(children).toEqual(
       expect.arrayContaining(['/hub/dating', '/hub/friends', '/travel/book']),
     );
+  });
+
+  it.each([
+    '/tags/rights-by-country',
+    '/tags/rights-by-country/sources',
+    '/tags/rights-by-country/trans',
+  ])('%s has its own meta', (path) => {
+    expect(resolveMeta(path).title).not.toBe(DEFAULT_META.title);
   });
 
   it.each(children)('%s has its own meta or is noindex', (path) => {

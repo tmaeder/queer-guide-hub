@@ -163,7 +163,7 @@ export default function GoingOut() {
               position before the night starts, not after.
             </p>
           </div>
-          <LocalizedLink to="/rights" className="going-out-safety__link">
+          <LocalizedLink to="/tags/rights-by-country" className="going-out-safety__link">
             LGBTQ+ rights by country
           </LocalizedLink>
         </div>

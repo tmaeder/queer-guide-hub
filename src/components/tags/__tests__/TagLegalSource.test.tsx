@@ -71,7 +71,7 @@ describe('TagLegalSource', () => {
     expect(screen.getByText(/not a single law/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /See status by country/i })).toHaveAttribute(
       'href',
-      '/rights#marriage',
+      '/tags/rights-by-country#marriage',
     );
     // The claim has to carry its source, same as every other rights surface.
     expect(screen.getByRole('link', { name: /ILGA World Database/i })).toBeInTheDocument();
@@ -98,7 +98,7 @@ describe('TagLegalSource — whole-field tags', () => {
     expect(screen.getByText(/whole field of law/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /See all 18 rights by country/i })).toHaveAttribute(
       'href',
-      '/rights',
+      '/tags/rights-by-country',
     );
     // Must NOT also claim to be a single right — that is the contradiction the
     // umbrella branch exists to avoid.
@@ -106,7 +106,7 @@ describe('TagLegalSource — whole-field tags', () => {
     expect(screen.getByRole('link', { name: /ILGA World Database/i })).toBeInTheDocument();
   });
 
-  it('links the /rights index, never a topic anchor', () => {
+  it('links the /tags/rights-by-country index, never a topic anchor', () => {
     renderWithProviders(<TagLegalSource sources={[]} tagSlug="transgender-rights" />);
     const link = screen.getByRole('link', { name: /See all 18 rights by country/i });
     expect(link.getAttribute('href')).not.toContain('#');

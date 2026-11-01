@@ -50,7 +50,7 @@ test.describe('Footer a11y', () => {
 
       // By ROLE, not by tag. `page.locator('footer')` is ambiguous on any page
       // whose sections use their own <footer>, and the sibling header spec hit
-      // exactly that (eight <header> elements on /rights). Only a top-level
+      // exactly that (eight <header> elements on /tags/rights-by-country). Only a top-level
       // <footer> takes the `contentinfo` role.
       const footer = page.getByRole('contentinfo');
 
