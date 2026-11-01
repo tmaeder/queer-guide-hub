@@ -4,6 +4,8 @@ import {
   Pressable,
   StyleSheet,
   Text as RNText,
+  TextInput,
+  type TextInputProps,
   View,
   type PressableProps,
   type TextProps,
@@ -56,31 +58,78 @@ export function Card({ children }: { children: ReactNode }) {
 export function Button({
   label,
   tone = 'primary',
+  busy,
+  disabled,
   ...rest
-}: PressableProps & { label: string; tone?: 'primary' | 'secondary' }) {
+}: PressableProps & { label: string; tone?: 'primary' | 'secondary' | 'destructive'; busy?: boolean }) {
   const { colors } = useTheme();
-  const primary = tone === 'primary';
+  const filled = tone !== 'secondary';
+  const fill = tone === 'destructive' ? colors.destructive : colors.primary;
+  const inactive = !!disabled || !!busy;
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityState={{ disabled: inactive, busy: !!busy }}
+      disabled={inactive}
       style={({ pressed }) => [
         styles.button,
         {
-          backgroundColor: primary ? colors.primary : 'transparent',
-          borderColor: colors.foreground,
-          opacity: pressed ? 0.7 : 1,
+          backgroundColor: filled ? fill : 'transparent',
+          borderColor: filled ? fill : colors.foreground,
+          opacity: inactive ? 0.5 : pressed ? 0.7 : 1,
         },
       ]}
       {...rest}
     >
-      <Text
-        variant="small"
-        style={{ color: primary ? colors['primary-foreground'] : colors.foreground, fontWeight: '700' }}
-      >
+      {busy ? (
+        <ActivityIndicator color={filled ? colors['primary-foreground'] : colors.foreground} />
+      ) : (
+        <Text
+          variant="small"
+          style={{ color: filled ? colors['primary-foreground'] : colors.foreground, fontWeight: '700' }}
+        >
+          {label}
+        </Text>
+      )}
+    </Pressable>
+  );
+}
+
+/** Labelled text input. The edge uses muted-foreground for 3:1 control contrast (WCAG 1.4.11). */
+export function Field({
+  label,
+  error,
+  style,
+  ...rest
+}: TextInputProps & { label: string; error?: string | null }) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ gap: space[1] }}>
+      <Text variant="small" style={{ fontWeight: '700' }}>
         {label}
       </Text>
-    </Pressable>
+      <TextInput
+        accessibilityLabel={label}
+        allowFontScaling
+        placeholderTextColor={colors['muted-foreground']}
+        style={[
+          styles.field,
+          {
+            color: colors.foreground,
+            backgroundColor: colors.card,
+            borderColor: error ? colors.destructive : colors['muted-foreground'],
+          },
+          style,
+        ]}
+        {...rest}
+      />
+      {error ? (
+        <Text variant="small" style={{ color: colors.destructive }} accessibilityLiveRegion="polite">
+          {error}
+        </Text>
+      ) : null}
+    </View>
   );
 }
 
@@ -121,5 +170,6 @@ const styles = StyleSheet.create({
     minHeight: 44,
     justifyContent: 'center',
   },
+  field: { minHeight: 44, borderWidth: 1, borderRadius: radius.md, paddingHorizontal: space[4], fontSize: text.body },
   state: { padding: space[8], alignItems: 'center', gap: space[4] },
 });
