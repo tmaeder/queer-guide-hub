@@ -1,0 +1,84 @@
+{
+  "tabs": {
+    "explore": "Explore",
+    "saved": "Saved",
+    "help": "Help",
+    "me": "Me"
+  },
+  "explore": {
+    "title": "Explore",
+    "count_one": "{{count}} place in view",
+    "count_other": "{{count}} places in view",
+    "capped": "Showing the first {{count}} — zoom in to see more",
+    "loading": "Loading places…",
+    "error": "Couldn't load places. Check your connection.",
+    "retry": "Try again",
+    "empty": "No places here yet. Zoom out or move the map.",
+    "nearMe": "Near me",
+    "locationDenied": "Location is off. Places still work — just move the map.",
+    "zoomIn": "Zoom in to see places"
+  },
+  "venue": {
+    "notFound": "This place isn't listed any more.",
+    "save": "Save",
+    "saved": "Saved",
+    "website": "Website",
+    "call": "Call",
+    "directions": "Directions",
+    "share": "Share",
+    "about": "About",
+    "accessibility": "Accessibility"
+  },
+  "saved": {
+    "title": "Saved",
+    "empty": "Places you save appear here. They're stored only on this device."
+  },
+  "help": {
+    "title": "Help",
+    "intro": "LGBTQIA+ crisis and support lines for where you are. Tap to call or message.",
+    "region": "Showing lines for {{region}} and international.",
+    "regionUnknown": "Showing international lines.",
+    "alwaysOpen": "24/7",
+    "free": "Free",
+    "anonymous": "Anonymous",
+    "mayContactPolice": "This service says it may contact police or emergency services without your consent.",
+    "noContactPolice": "This service says it does not contact police without your consent.",
+    "emergency": "In immediate danger, call your local emergency number.",
+    "loading": "Loading support lines…",
+    "error": "Couldn't load support lines. If you need help now, call your local emergency number.",
+    "empty": "No listed lines for your region yet.",
+    "channel": {
+      "phone": "Call",
+      "sms": "Text",
+      "whatsapp": "WhatsApp",
+      "chat": "Chat",
+      "email": "Email"
+    }
+  },
+  "me": {
+    "title": "Me",
+    "privacy": "Privacy",
+    "privacyBody": "This app has no analytics or tracking. Your location is used only on this device. Saved places never leave it.",
+    "website": "Open queer.guide on the web",
+    "version": "Version {{version}}"
+  },
+  "category": {
+    "bar": "Bar",
+    "club": "Club",
+    "cafe": "Café",
+    "restaurant": "Restaurant",
+    "hotel": "Hotel",
+    "sauna": "Sauna",
+    "cruising": "Cruising",
+    "outdoor": "Outdoor",
+    "shop": "Shop",
+    "community_center": "Community centre",
+    "event-venue": "Event venue",
+    "theater": "Theatre",
+    "gallery": "Gallery",
+    "salon": "Salon",
+    "gym": "Gym",
+    "toilet": "Toilet",
+    "other": "Place"
+  }
+}

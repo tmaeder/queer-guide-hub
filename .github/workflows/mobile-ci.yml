@@ -1,0 +1,59 @@
+name: Mobile CI
+
+# The Expo app in mobile/ is its own npm project (like scraper/ and
+# extension/), so the root CI never sees it. The drift tests in mobile/ also
+# read web files (src/index.css, src/config/mapStyle.ts,
+# src/lib/venueCategories.ts, the Supabase types), so changes to those
+# re-run this workflow too.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - "src/index.css"
+      - "src/config/mapStyle.ts"
+      - "src/lib/venueCategories.ts"
+      - "src/integrations/supabase/types.ts"
+      - ".github/workflows/mobile-ci.yml"
+  pull_request:
+    paths:
+      - "mobile/**"
+      - "src/index.css"
+      - "src/config/mapStyle.ts"
+      - "src/lib/venueCategories.ts"
+      - "src/integrations/supabase/types.ts"
+      - ".github/workflows/mobile-ci.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - name: Typecheck (includes the web's generated Database types)
+        run: npm run typecheck
+      - name: Unit + drift tests
+        run: npm test -- --ci
+      - name: Expo doctor
+        run: npx --yes expo-doctor@1
+      # Bundling catches what tsc cannot: a module Metro can't resolve, or a
+      # value import from the web tree sneaking into the native bundle.
+      - name: Bundle iOS + Android (Metro, no native build)
+        run: npx expo export --platform ios --platform android --output-dir dist
