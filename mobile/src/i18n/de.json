@@ -1,0 +1,84 @@
+{
+  "tabs": {
+    "explore": "Entdecken",
+    "saved": "Gemerkt",
+    "help": "Hilfe",
+    "me": "Ich"
+  },
+  "explore": {
+    "title": "Entdecken",
+    "count_one": "{{count}} Ort im Ausschnitt",
+    "count_other": "{{count}} Orte im Ausschnitt",
+    "capped": "Die ersten {{count}} – zoom hinein, um mehr zu sehen",
+    "loading": "Orte werden geladen …",
+    "error": "Orte konnten nicht geladen werden. Prüfe deine Verbindung.",
+    "retry": "Erneut versuchen",
+    "empty": "Hier gibt es noch keine Orte. Zoom heraus oder verschiebe die Karte.",
+    "nearMe": "In der Nähe",
+    "locationDenied": "Standort ist aus. Die Orte funktionieren trotzdem – verschiebe einfach die Karte.",
+    "zoomIn": "Zoom hinein, um Orte zu sehen"
+  },
+  "venue": {
+    "notFound": "Dieser Ort ist nicht mehr gelistet.",
+    "save": "Merken",
+    "saved": "Gemerkt",
+    "website": "Website",
+    "call": "Anrufen",
+    "directions": "Route",
+    "share": "Teilen",
+    "about": "Über",
+    "accessibility": "Barrierefreiheit"
+  },
+  "saved": {
+    "title": "Gemerkt",
+    "empty": "Gemerkte Orte erscheinen hier. Sie werden nur auf diesem Gerät gespeichert."
+  },
+  "help": {
+    "title": "Hilfe",
+    "intro": "LGBTQIA+ Krisen- und Beratungsstellen für deinen Standort. Tippe zum Anrufen oder Schreiben.",
+    "region": "Stellen für {{region}} und international.",
+    "regionUnknown": "Internationale Stellen.",
+    "alwaysOpen": "24/7",
+    "free": "Kostenlos",
+    "anonymous": "Anonym",
+    "mayContactPolice": "Diese Stelle gibt an, ohne deine Zustimmung Polizei oder Notdienste verständigen zu können.",
+    "noContactPolice": "Diese Stelle gibt an, die Polizei nicht ohne deine Zustimmung zu verständigen.",
+    "emergency": "Bei akuter Gefahr wähle die örtliche Notrufnummer.",
+    "loading": "Beratungsstellen werden geladen …",
+    "error": "Beratungsstellen konnten nicht geladen werden. Wenn du jetzt Hilfe brauchst, wähle die örtliche Notrufnummer.",
+    "empty": "Für deine Region sind noch keine Stellen gelistet.",
+    "channel": {
+      "phone": "Anrufen",
+      "sms": "SMS",
+      "whatsapp": "WhatsApp",
+      "chat": "Chat",
+      "email": "E-Mail"
+    }
+  },
+  "me": {
+    "title": "Ich",
+    "privacy": "Datenschutz",
+    "privacyBody": "Diese App hat kein Tracking und keine Analyse. Dein Standort wird nur auf diesem Gerät verwendet. Gemerkte Orte verlassen es nie.",
+    "website": "queer.guide im Web öffnen",
+    "version": "Version {{version}}"
+  },
+  "category": {
+    "bar": "Bar",
+    "club": "Club",
+    "cafe": "Café",
+    "restaurant": "Restaurant",
+    "hotel": "Hotel",
+    "sauna": "Sauna",
+    "cruising": "Cruising",
+    "outdoor": "Draussen",
+    "shop": "Laden",
+    "community_center": "Community-Zentrum",
+    "event-venue": "Eventlocation",
+    "theater": "Theater",
+    "gallery": "Galerie",
+    "salon": "Salon",
+    "gym": "Fitness",
+    "toilet": "Toilette",
+    "other": "Ort"
+  }
+}
