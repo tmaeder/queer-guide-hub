@@ -29,6 +29,7 @@ function RootStack() {
         <Stack.Screen name="search" options={{ title: t('search.title') }} />
         <Stack.Screen name="auth" options={{ presentation: 'modal', title: t('auth.signIn') }} />
         <Stack.Screen name="account/delete" options={{ title: t('account.deleteTitle') }} />
+        <Stack.Screen name="events/[slug]" options={{ title: '' }} />
         <Stack.Screen name="venues/[slug]" options={{ title: '', headerTransparent: false }} />
         <Stack.Screen name="cover" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="+not-found" options={{ title: t('venue.notFound') }} />
