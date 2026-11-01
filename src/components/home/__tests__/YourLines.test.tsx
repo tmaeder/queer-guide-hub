@@ -84,8 +84,10 @@ describe('YourLines', () => {
     state.discovery = [discoveryCard('a')];
     renderWithProviders(<YourLines />);
     // A personalized card with no visible reason is just clutter that happens
-    // to be personal.
-    expect(screen.getByText(/you looked at this/i)).toBeTruthy();
+    // to be personal. History's reason is shared, so it is stated once on the
+    // band; each history card names what the thing is.
+    expect(screen.getByText(/you looked at recently/i)).toBeTruthy();
+    expect(screen.getByText('Venue')).toBeTruthy();
     expect(screen.getByText('In Zürich')).toBeTruthy();
   });
 
