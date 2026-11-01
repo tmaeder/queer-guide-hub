@@ -16,7 +16,11 @@
     "empty": "Hier gibt es noch keine Orte. Zoom heraus oder verschiebe die Karte.",
     "nearMe": "In der Nähe",
     "locationDenied": "Standort ist aus. Die Orte funktionieren trotzdem – verschiebe einfach die Karte.",
-    "zoomIn": "Zoom hinein, um Orte zu sehen"
+    "zoomIn": "Zoom hinein, um Orte zu sehen",
+    "mode": {
+      "places": "Orte",
+      "events": "Veranstaltungen"
+    }
   },
   "venue": {
     "notFound": "Dieser Ort ist nicht mehr gelistet.",
@@ -173,6 +177,41 @@
     "signedOut": "Du bist abgemeldet.",
     "loading": "Wird geladen…",
     "loadError": "Dein Konto konnte nicht geladen werden. Prüfe deine Verbindung."
+  },
+  "events": {
+    "loading": "Veranstaltung wird geladen…",
+    "error": "Diese Veranstaltung konnte nicht geladen werden. Prüfe deine Verbindung.",
+    "notFound": "Diese Veranstaltung ist nicht mehr gelistet.",
+    "empty": "Hier gibt es keine kommenden Veranstaltungen. Zoome heraus oder verschiebe die Karte.",
+    "count_one": "{{count}} kommende Veranstaltung im Ausschnitt",
+    "count_other": "{{count}} kommende Veranstaltungen im Ausschnitt",
+    "free": "Gratis",
+    "tickets": "Tickets",
+    "age": "Alter: {{value}}",
+    "ongoing": "Laufend · {{when}}",
+    "ongoingShort": "Laufend"
+  },
+  "eventType": {
+    "fetish": "Fetisch",
+    "community": "Community",
+    "social": "Treffen",
+    "pride": "Pride",
+    "party": "Party",
+    "theater": "Theater",
+    "other": "Veranstaltung",
+    "sports": "Sport",
+    "drag": "Drag",
+    "festival": "Festival",
+    "meetup": "Treffen",
+    "comedy": "Comedy",
+    "conference": "Konferenz",
+    "film": "Film",
+    "workshop": "Workshop",
+    "concert": "Konzert",
+    "fair": "Messe",
+    "fundraiser": "Benefiz",
+    "art": "Kunst",
+    "cruise": "Kreuzfahrt"
   },
   "push": {
     "title": "Benachrichtigungen",
