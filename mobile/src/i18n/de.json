@@ -80,5 +80,33 @@
     "gym": "Fitness",
     "toilet": "Toilette",
     "other": "Ort"
+  },
+  "discreet": {
+    "title": "Diskreter Modus",
+    "intro": "Werkzeuge, um die App auf einem Telefon zu nutzen, das andere sehen könnten. Alles hier bleibt auf diesem Gerät.",
+    "lock": "App-Sperre",
+    "lockHint": "Face ID, Fingerabdruck oder Code zum Öffnen der App verlangen.",
+    "lockUnavailable": "Richte einen Gerätecode ein, um die App-Sperre zu nutzen.",
+    "lockAfter": "Sperren nach Verlassen der App",
+    "lockImmediately": "Sofort",
+    "lockMinutes_one": "Nach {{count}} Minute",
+    "lockMinutes_other": "Nach {{count}} Minuten",
+    "hideInSwitcher": "Im App-Umschalter verbergen",
+    "hideInSwitcherIos": "Verwischt die Vorschau der App beim Wechseln.",
+    "hideInSwitcherAndroid": "Zeigt beim Wechseln eine leere Vorschau. Das blockiert auch Bildschirmfotos.",
+    "quickExit": "Schnell beenden",
+    "quickExitHint": "Fügt einen Beenden-Knopf hinzu, der die App leert und eine leere Notizseite zeigt. Lange auf das Datum drücken, um zurückzukehren.",
+    "icon": "App-Symbol",
+    "iconName": {
+      "default": "queer.guide",
+      "Atlas": "Raster (hell)",
+      "Ink": "Raster (dunkel)"
+    },
+    "iconHintIos": "Nur das Symbol ändert sich – der Name darunter bleibt gleich.",
+    "iconHintAndroid": "Dein Launcher braucht eventuell einen Moment, um das neue Symbol zu zeigen.",
+    "iconError": "Das Symbol konnte nicht geändert werden. Versuche es erneut.",
+    "locked": "Gesperrt",
+    "unlock": "Entsperren",
+    "unlockPrompt": "Entsperren"
   }
 }

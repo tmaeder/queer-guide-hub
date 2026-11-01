@@ -7,6 +7,7 @@ import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MAX_MAP_VENUES, useVenuesInBounds, type Bounds, type VenueListItem } from '@/api/venues';
 import { Button, StateMessage, Text } from '@/components/ui';
+import { QuickExitButton } from '@/features/discreet/QuickExitButton';
 import { MAP_FONT_BOLD, mapStyle } from '@/map/style';
 import { venuesToGeoJSON } from '@/map/venuesGeoJSON';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -118,6 +119,7 @@ export default function ExploreScreen() {
       </Map>
 
       <SafeAreaView edges={['top']} style={styles.topBar} pointerEvents="box-none">
+        <QuickExitButton />
         <Button tone="primary" label={t('explore.nearMe')} onPress={nearMe} />
       </SafeAreaView>
 
@@ -208,7 +210,14 @@ function VenueRow({ venue, onPress }: { venue: VenueListItem; onPress: () => voi
 const styles = StyleSheet.create({
   root: { flex: 1 },
   map: { flex: 3 },
-  topBar: { position: 'absolute', top: 0, right: space[4], alignItems: 'flex-end' },
+  topBar: {
+    position: 'absolute',
+    top: 0,
+    left: space[4],
+    right: space[4],
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   sheet: {
     flex: 2,
     borderTopWidth: StyleSheet.hairlineWidth,

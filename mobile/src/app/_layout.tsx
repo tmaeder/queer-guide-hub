@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { DiscreetGate } from '@/features/discreet/DiscreetGate';
 import { savedStore } from '@/features/saved/savedStore';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 
@@ -24,6 +25,7 @@ function RootStack() {
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="venues/[slug]" options={{ title: '', headerTransparent: false }} />
+        <Stack.Screen name="cover" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="+not-found" options={{ title: t('venue.notFound') }} />
       </Stack>
     </>
@@ -46,7 +48,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <RootStack />
+          <DiscreetGate>
+            <RootStack />
+          </DiscreetGate>
         </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
