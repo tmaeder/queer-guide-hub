@@ -9,7 +9,26 @@ import type { RecentlyViewedItem } from '@/lib/recentlyViewed';
 // In-memory stand-in for the entity tables.
 const TABLES: Record<string, Array<Record<string, unknown>>> = {
   venues: [{ slug: 'the-eagle', images: ['https://cdn.example/eagle.webp'], logo_url: null }],
-  cities: [{ slug: 'berlin', curated_image_url: 'https://cdn.example/berlin.jpg', image_url: null, image_flagged: false }],
+  cities: [
+    {
+      slug: 'berlin',
+      curated_image_url: 'https://cdn.example/berlin.jpg',
+      image_url: null,
+      image_flagged: false,
+    },
+    {
+      slug: 'mexico-city',
+      curated_image_url: 'https://cdn.example/pride.jpg',
+      image_url: 'https://cdn.example/map.jpg',
+      image_flagged: false,
+    },
+    {
+      slug: 'flagged-town',
+      curated_image_url: null,
+      image_url: 'https://cdn.example/map.jpg',
+      image_flagged: true,
+    },
+  ],
 };
 
 const inSpy = vi.fn();
@@ -51,15 +70,45 @@ describe('useRecentlyViewedImages', () => {
     expect(result.current['city:berlin']).toBe('https://cdn.example/berlin.jpg');
   });
 
-  it('does not look up items that already carry a valid image', async () => {
-    inSpy.mockClear();
+  it('replaces a stale stored image with the current one', async () => {
+    // localStorage keeps the URL from the moment of viewing; Mexico City's was
+    // a radar map that has since been replaced.
     const items: RecentlyViewedItem[] = [
-      { type: 'venue', slug: 'has-img', title: 'Has', image: 'https://cdn.example/already.webp', ts: 1 },
+      {
+        type: 'city',
+        slug: 'mexico-city',
+        title: 'Mexico City',
+        image: 'https://cdn.example/map.jpg',
+        ts: 1,
+      },
     ];
     const { result } = renderHook(() => useRecentlyViewedImages(items), { wrapper: wrapper() });
+    await waitFor(() =>
+      expect(result.current['city:mexico-city']).toBe('https://cdn.example/pride.jpg'),
+    );
+  });
 
-    // No gap → query disabled → empty map, and the table was never queried.
-    await waitFor(() => expect(result.current).toEqual({}));
-    expect(inSpy).not.toHaveBeenCalled();
+  it('reports a found row with no usable image as null, not absent', async () => {
+    const items: RecentlyViewedItem[] = [
+      {
+        type: 'city',
+        slug: 'flagged-town',
+        title: 'Flagged',
+        image: 'https://cdn.example/map.jpg',
+        ts: 1,
+      },
+      {
+        type: 'city',
+        slug: 'not-in-db',
+        title: 'Gone',
+        image: 'https://cdn.example/kept.jpg',
+        ts: 2,
+      },
+    ];
+    const { result } = renderHook(() => useRecentlyViewedImages(items), { wrapper: wrapper() });
+    await waitFor(() => expect('city:flagged-town' in result.current).toBe(true));
+    expect(result.current['city:flagged-town']).toBeNull();
+    // Unresolved → absent, so the caller keeps the stored URL.
+    expect('city:not-in-db' in result.current).toBe(false);
   });
 });
