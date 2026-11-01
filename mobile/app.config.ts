@@ -28,7 +28,7 @@ const config: ExpoConfig = {
     associatedDomains: ['applinks:queer.guide', 'webcredentials:queer.guide'],
     infoPlist: {
       NSLocationWhenInUseUsageDescription:
-        'Your location is used on this device to show nearby places. It is never sent to queer.guide.',
+        'Your location moves the map to where you are. Your coordinates stay on this device; queer.guide only receives the area of map on screen, to load places in it.',
       ITSAppUsesNonExemptEncryption: false,
     },
     privacyManifests: {
@@ -55,6 +55,7 @@ const config: ExpoConfig = {
         autoVerify: true,
         data: [
           { scheme: 'https', host: 'queer.guide', pathPrefix: '/venues/' },
+          { scheme: 'https', host: 'queer.guide', pathPrefix: '/events/' },
           { scheme: 'https', host: 'queer.guide', pathPrefix: '/help' },
         ],
         category: ['BROWSABLE', 'DEFAULT'],
@@ -69,6 +70,10 @@ const config: ExpoConfig = {
     'expo-image',
     'expo-font',
     '@maplibre/maplibre-react-native',
+    // FTS5 powers offline search over downloaded city packs.
+    ['expo-sqlite', { enableFTS: true }],
+    // Off by default; the permission prompt only appears from Me → Notifications.
+    'expo-notifications',
     [
       'expo-local-authentication',
       { faceIDPermission: 'Face ID is used only to unlock the app on this device.' },
@@ -93,7 +98,7 @@ const config: ExpoConfig = {
       'expo-location',
       {
         locationWhenInUsePermission:
-          'Your location is used on this device to show nearby places. It is never sent to queer.guide.',
+          'Your location moves the map to where you are. Your coordinates stay on this device; queer.guide only receives the area of map on screen, to load places in it.',
         isIosBackgroundLocationEnabled: false,
         isAndroidBackgroundLocationEnabled: false,
       },

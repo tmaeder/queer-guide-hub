@@ -16,7 +16,12 @@
     "empty": "Hier gibt es noch keine Orte. Zoom heraus oder verschiebe die Karte.",
     "nearMe": "In der Nähe",
     "locationDenied": "Standort ist aus. Die Orte funktionieren trotzdem – verschiebe einfach die Karte.",
-    "zoomIn": "Zoom hinein, um Orte zu sehen"
+    "zoomIn": "Zoom hinein, um Orte zu sehen",
+    "mode": {
+      "places": "Orte",
+      "events": "Veranstaltungen"
+    },
+    "mapLabel": "Karte. Die Liste darunter zeigt, was auf der Karte ist."
   },
   "venue": {
     "notFound": "Dieser Ort ist nicht mehr gelistet.",
@@ -27,11 +32,13 @@
     "directions": "Route",
     "share": "Teilen",
     "about": "Über",
-    "accessibility": "Barrierefreiheit"
+    "accessibility": "Barrierefreiheit",
+    "saveFailed": "Konnte nicht in deinem Konto gespeichert werden. Prüfe deine Verbindung."
   },
   "saved": {
     "title": "Gemerkt",
-    "empty": "Gemerkte Orte erscheinen hier. Sie werden nur auf diesem Gerät gespeichert."
+    "empty": "Gemerkte Orte erscheinen hier. Sie werden nur auf diesem Gerät gespeichert.",
+    "synced": "Mit deinem Konto synchronisiert."
   },
   "help": {
     "title": "Hilfe",
@@ -58,7 +65,7 @@
   "me": {
     "title": "Ich",
     "privacy": "Datenschutz",
-    "privacyBody": "Diese App hat kein Tracking und keine Analyse. Dein Standort wird nur auf diesem Gerät verwendet. Gemerkte Orte verlassen es nie.",
+    "privacyBody": "Keine Werbung, kein Tracking, keine Analyse-SDKs. Dein genauer Standort bleibt auf diesem Gerät: Um Orte zu laden, fragt die App queer.guide nach dem Kartenausschnitt auf dem Bildschirm, wie jede Karte. Suchanfragen werden ohne Angaben, die dich identifizieren, gespeichert, um die Suche zu verbessern. Gespeicherte Orte bleiben auf diesem Telefon, ausser du meldest dich an – dann werden sie in deinem Konto gespeichert.",
     "website": "queer.guide im Web öffnen",
     "version": "Version {{version}}"
   },
@@ -108,5 +115,115 @@
     "locked": "Gesperrt",
     "unlock": "Entsperren",
     "unlockPrompt": "Entsperren"
+  },
+  "packs": {
+    "title": "Offline-Städte",
+    "body": "Lade eine Stadt herunter, um ihre Orte und Krisennummern auf diesem Gerät zu behalten. Karten und Fotos brauchen weiterhin eine Verbindung.",
+    "notConfigured": "Offline-Städte sind in dieser Version noch nicht verfügbar.",
+    "loading": "Verfügbare Städte werden geprüft…",
+    "error": "Verfügbare Städte konnten nicht geprüft werden.",
+    "download": "Herunterladen",
+    "update": "Aktualisieren",
+    "remove": "Entfernen",
+    "installed": "Auf diesem Gerät",
+    "places_one": "{{count}} Ort",
+    "places_other": "{{count}} Orte",
+    "updated": "Aktualisiert {{date}}",
+    "failed": "Download fehlgeschlagen: {{reason}}",
+    "verifyFailed": "Dieser Download hat die Sicherheitsprüfung nicht bestanden und wurde nicht gespeichert.",
+    "discreetNote": "Heruntergeladene Städte sind auf diesem Gerät sichtbar. Entferne sie, bevor du dein Telefon jemandem gibst."
+  },
+  "search": {
+    "title": "Suche",
+    "placeholder": "Orte und Events suchen",
+    "hint": "Gib mindestens zwei Buchstaben ein.",
+    "loading": "Suche läuft…",
+    "empty": "Keine Treffer.",
+    "offline": "Die Suche braucht eine Verbindung. Lade unter Ich → Offline-Städte eine Stadt herunter, um sie offline zu durchsuchen.",
+    "fromPacks": "Offline — Ergebnisse aus deinen heruntergeladenen Städten.",
+    "event": "Event"
+  },
+  "auth": {
+    "signIn": "Anmelden",
+    "signUp": "Konto erstellen",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "emailInvalid": "Gib eine gültige E-Mail-Adresse ein.",
+    "passwordTooShort": "Verwende mindestens {{n}} Zeichen.",
+    "consentLabel": "Ich stimme den AGB und der Datenschutzerklärung zu, bestätige, dass ich 18 oder älter bin, und verstehe, dass queer.guide eine 18+-Plattform mit Dating- und intimen Funktionen ist.",
+    "terms": "AGB",
+    "privacy": "Datenschutzerklärung",
+    "consentRequired": "Akzeptiere die AGB und bestätige, dass du 18 oder älter bist, um ein Konto zu erstellen.",
+    "forgot": "Passwort vergessen? Im Web zurücksetzen",
+    "errors": {
+      "invalidCredentials": "E-Mail oder Passwort ist falsch.",
+      "alreadyRegistered": "Mit dieser E-Mail gibt es bereits ein Konto. Melde dich stattdessen an.",
+      "weakPassword": "Wähle ein stärkeres Passwort.",
+      "rateLimited": "Zu viele Versuche. Warte eine Minute und versuche es erneut.",
+      "captcha": "Die Anmeldung braucht einen Prüfschritt, den die App noch nicht zeigen kann. Nutze vorerst queer.guide im Web.",
+      "network": "Keine Verbindung. Prüfe dein Netzwerk und versuche es erneut.",
+      "unknown": "Etwas ist schiefgelaufen. Versuche es erneut."
+    }
+  },
+  "account": {
+    "title": "Konto",
+    "signedOutBody": "Zum Stöbern brauchst du kein Konto. Angemeldet siehst du Orte, die in manchen Ländern vor Besucher*innen verborgen sind, und dein Konto ist dasselbe wie im Web.",
+    "signInOrUp": "Anmelden oder Konto erstellen",
+    "signedInAs": "Angemeldet als {{email}}",
+    "signOut": "Abmelden",
+    "delete": "Konto löschen",
+    "deleteTitle": "Konto löschen",
+    "deleteBody": "Damit wird dein queer.guide-Konto mit allem, was dazu gespeichert ist, auf allen Geräten dauerhaft gelöscht. Das lässt sich nicht rückgängig machen.",
+    "deleteLocal": "Nur auf diesem Telefon gespeicherte Orte und heruntergeladene Städte bleiben, bis du sie entfernst.",
+    "typeToConfirm": "Gib {{value}} zur Bestätigung ein",
+    "deleteConfirm": "Mein Konto dauerhaft löschen",
+    "deleteFailed": "Dein Konto konnte nicht gelöscht werden. Versuche es erneut oder kontaktiere den Support, falls es weiter fehlschlägt.",
+    "signedOut": "Du bist abgemeldet.",
+    "loading": "Wird geladen…",
+    "loadError": "Dein Konto konnte nicht geladen werden. Prüfe deine Verbindung.",
+    "signOutNote": "Beim Abmelden werden deine gespeicherten Orte von diesem Telefon entfernt. Sie bleiben in deinem Konto."
+  },
+  "events": {
+    "loading": "Veranstaltung wird geladen…",
+    "error": "Diese Veranstaltung konnte nicht geladen werden. Prüfe deine Verbindung.",
+    "notFound": "Diese Veranstaltung ist nicht mehr gelistet.",
+    "empty": "Hier gibt es keine kommenden Veranstaltungen. Zoome heraus oder verschiebe die Karte.",
+    "count_one": "{{count}} kommende Veranstaltung im Ausschnitt",
+    "count_other": "{{count}} kommende Veranstaltungen im Ausschnitt",
+    "free": "Gratis",
+    "tickets": "Tickets",
+    "age": "Alter: {{value}}",
+    "ongoing": "Laufend · {{when}}",
+    "ongoingShort": "Laufend"
+  },
+  "eventType": {
+    "fetish": "Fetisch",
+    "community": "Community",
+    "social": "Treffen",
+    "pride": "Pride",
+    "party": "Party",
+    "theater": "Theater",
+    "other": "Veranstaltung",
+    "sports": "Sport",
+    "drag": "Drag",
+    "festival": "Festival",
+    "meetup": "Treffen",
+    "comedy": "Comedy",
+    "conference": "Konferenz",
+    "film": "Film",
+    "workshop": "Workshop",
+    "concert": "Konzert",
+    "fair": "Messe",
+    "fundraiser": "Benefiz",
+    "art": "Kunst",
+    "cruise": "Kreuzfahrt"
+  },
+  "push": {
+    "title": "Benachrichtigungen",
+    "toggle": "Benachrichtigungen auf diesem Telefon erlauben",
+    "body": "Aus, bis du sie einschaltest. Beim Abmelden wird dieses Telefon entfernt, damit die nächste Person, die sich hier anmeldet, nie deine Benachrichtigungen bekommt. Noch wird nichts gesendet.",
+    "denied": "Benachrichtigungen sind in den Systemeinstellungen blockiert. Tippe, um die Einstellungen zu öffnen.",
+    "unavailable": "Benachrichtigungen sind auf diesem Gerät oder in dieser Version nicht verfügbar.",
+    "failed": "Das konnte nicht geändert werden. Prüfe deine Verbindung und versuche es erneut."
   }
 }
