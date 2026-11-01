@@ -2102,7 +2102,7 @@
       "tagsStiGuide": "Гид по ИППП",
       "transRights": "Права трансгендерных людей",
       "competitions": "[RU] Drag Race",
-      "newsAll": "[RU] All news"
+      "newsAll": "Все новости"
     },
     "intents": {
       "knowledge": {
@@ -2140,8 +2140,8 @@
         "subtitle": "Что значит каждый термин, флаг и код"
       },
       "news": {
-        "label": "[RU] News",
-        "subtitle": "[RU] LGBTQ+ news from around the world"
+        "label": "Новости",
+        "subtitle": "ЛГБТК+ новости со всего мира"
       }
     },
     "userMenu": {

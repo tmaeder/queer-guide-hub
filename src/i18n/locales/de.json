@@ -2070,7 +2070,7 @@
       "tagsStiGuide": "STI-Leitfaden",
       "transRights": "Trans-Rechte",
       "competitions": "[DE] Drag Race",
-      "newsAll": "[DE] All news"
+      "newsAll": "Alle News"
     },
     "intents": {
       "knowledge": {
@@ -2108,8 +2108,8 @@
         "subtitle": "Was jeder Begriff, jede Flagge und jeder Code bedeutet"
       },
       "news": {
-        "label": "[DE] News",
-        "subtitle": "[DE] LGBTQ+ news from around the world"
+        "label": "News",
+        "subtitle": "LGBTQ+-Nachrichten aus aller Welt"
       }
     },
     "userMenu": {

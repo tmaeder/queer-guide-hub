@@ -2070,7 +2070,7 @@
       "tagsStiGuide": "성매개감염 안내",
       "transRights": "트랜스젠더 권리",
       "competitions": "드래그 레이스",
-      "newsAll": "[KO] All news"
+      "newsAll": "모든 뉴스"
     },
     "intents": {
       "knowledge": {
@@ -2108,8 +2108,8 @@
         "subtitle": "모든 용어와 깃발, 코드의 의미"
       },
       "news": {
-        "label": "[KO] News",
-        "subtitle": "[KO] LGBTQ+ news from around the world"
+        "label": "뉴스",
+        "subtitle": "전 세계 LGBTQ+ 뉴스"
       }
     },
     "userMenu": {
