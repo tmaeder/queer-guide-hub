@@ -10,7 +10,7 @@ Everything is encrypted in transit (HTTPS only).
 |---|---|---|---|---|
 | Email address (Contact Info) | `src/features/auth/api.ts` sign-up / sign-in | Yes | App Functionality (account) | Yes — no account needed to browse |
 | User ID (Identifiers) | Supabase session JWT on API calls when signed in | Yes | App Functionality | Yes |
-| Coarse location (Location) | `src/api/venues.ts` sends the map viewport; after "Near me" at zoom 14 that is a few-km box around the user | **DECISION**, see below | App Functionality | Yes — location permission is optional |
+| Coarse location (Location) | `src/api/venues.ts` and `src/api/events.ts` send the map viewport; after "Near me" at zoom 14 that is a few-km box around the user | **DECISION**, see below | App Functionality | Yes — location permission is optional |
 | Search history (Search History) | `src/api/search.ts` → search-proxy → `log_search` (query, filters, result count; **no user id, no session id** from the app) | No | App Functionality, Analytics (search quality) | Yes — search is optional |
 | Saved places (User Content → Other) | `src/features/saved/sync.ts` — **only once PR #5023 merges**, and only when signed in | Yes | App Functionality (sync) | Yes |
 | Device push token (Identifiers → Device ID) | `src/features/push/push.ts` — **only once PR #5020 merges**, opt-in | Yes | App Functionality (notifications) | Yes |
