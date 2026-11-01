@@ -1,3 +1,5 @@
+import { nativePush } from '@/features/push/native';
+import { forgetLocalRecord, unregisterBeforeSignOut } from '@/features/push/push';
 import { supabase } from '@/lib/supabase';
 
 /**
@@ -67,6 +69,9 @@ export async function signUp(email: string, password: string, consentedAt = new 
 }
 
 export async function signOut() {
+  // While the session still exists: kill this phone's push token so the next
+  // person to sign in here never receives this account's notifications.
+  await unregisterBeforeSignOut(nativePush);
   // Local scope: signing out on this phone must not end sessions elsewhere.
   await supabase.auth.signOut({ scope: 'local' });
 }
@@ -98,5 +103,8 @@ export async function deleteAccount(confirmation: string) {
   });
   if (error) throw error;
   if (!(data as { success?: boolean } | null)?.success) throw new Error('Deletion failed');
+  // The server already removed the token rows; kill the device token too.
+  await nativePush.unregisterDevice().catch(() => {});
+  await forgetLocalRecord().catch(() => {});
   await supabase.auth.signOut({ scope: 'local' });
 }
