@@ -3040,7 +3040,7 @@
         "venues": "[ZH] Where to go",
         "districts": "[ZH] Queer districts",
         "districtsNote": "[ZH] Walkable clusters of bars, cafés and community spaces.",
-        "events": "[ZH] Next departures",
+        "events": "即将举行的活动",
         "overview": "[ZH] About {{city}}",
         "travel": "[ZH] Getting there",
         "news": "[ZH] In the news",
@@ -4873,11 +4873,11 @@
     },
     "section": {
       "about": "[ZH] About {{name}}",
-      "walk": "[ZH] The walk",
+      "walk": "场所",
       "walkNote": "[ZH] Stops in order, with the straight-line gap between them.",
-      "events": "[ZH] Next departures",
+      "events": "即将举行的活动",
       "photos": "[ZH] Photos",
-      "city": "[ZH] On the same line"
+      "city": "所在城市"
     },
     "action": {
       "website": "[ZH] Website",

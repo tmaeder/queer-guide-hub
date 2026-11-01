@@ -159,7 +159,7 @@ export function CityTravelHub({
       )}
 
       {/* Activities — same rule. Its empty state pointed at /events, which on
-          this page is the "Next departures" section a few hundred pixels up:
+          this page is the "Upcoming events" section a few hundred pixels up:
           a 170px signpost to something already on screen. */}
       {(activitiesLoading || (activityResults && activityResults.length > 0)) && (
         <div>

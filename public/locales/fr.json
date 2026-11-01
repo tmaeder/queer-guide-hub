@@ -3046,7 +3046,7 @@
         "venues": "[FR] Where to go",
         "districts": "[FR] Queer districts",
         "districtsNote": "[FR] Walkable clusters of bars, cafés and community spaces.",
-        "events": "[FR] Next departures",
+        "events": "Événements à venir",
         "overview": "[FR] About {{city}}",
         "travel": "[FR] Getting there",
         "news": "[FR] In the news",
@@ -4879,11 +4879,11 @@
     },
     "section": {
       "about": "[FR] About {{name}}",
-      "walk": "[FR] The walk",
+      "walk": "Lieux",
       "walkNote": "[FR] Stops in order, with the straight-line gap between them.",
-      "events": "[FR] Next departures",
+      "events": "Événements à venir",
       "photos": "[FR] Photos",
-      "city": "[FR] On the same line"
+      "city": "La ville"
     },
     "action": {
       "website": "[FR] Website",

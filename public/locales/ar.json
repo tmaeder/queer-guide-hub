@@ -3050,7 +3050,7 @@
         "venues": "[AR] Where to go",
         "districts": "[AR] Queer districts",
         "districtsNote": "[AR] Walkable clusters of bars, cafés and community spaces.",
-        "events": "[AR] Next departures",
+        "events": "الفعاليات القادمة",
         "overview": "[AR] About {{city}}",
         "travel": "[AR] Getting there",
         "news": "[AR] In the news",
@@ -4883,11 +4883,11 @@
     },
     "section": {
       "about": "[AR] About {{name}}",
-      "walk": "[AR] The walk",
+      "walk": "الأماكن",
       "walkNote": "[AR] Stops in order, with the straight-line gap between them.",
-      "events": "[AR] Next departures",
+      "events": "الفعاليات القادمة",
       "photos": "[AR] Photos",
-      "city": "[AR] On the same line"
+      "city": "المدينة"
     },
     "action": {
       "website": "[AR] Website",
