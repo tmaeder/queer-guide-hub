@@ -109,15 +109,30 @@ timestamps the web sends; the database trigger mints username and avatar.
 - If GoTrue CAPTCHA is switched on, native sign-in fails with a clear
   message until the app gets a Turnstile step. It is off on prod today.
 
+## Fonts and builds
+
+- **Fonts:** Anton (display, headline) and Space Grotesk (everything else),
+  the web's pairing, bundled as OFL ttf from `@expo-google-fonts`. Weight is
+  chosen by family (`src/theme/fonts.ts`) because Android fakes bold on a
+  custom family rather than picking a weight.
+- **EAS profiles** (`eas.json`): `development` (dev client, internal,
+  `APP_VARIANT=development` → `guide.queer.app.dev`), `simulator`, `preview`
+  (internal), `production` (remote version, auto-increment). Run `eas init`
+  once to attach the project; put `EXPO_PUBLIC_PACK_*` in EAS environment
+  variables, never in the repo.
+- `expo-system-ui` is required for `userInterfaceStyle: automatic` to follow
+  dark mode on Android.
+
 ## Not done yet
 
 Tracked in the strategy doc's work breakdown: offline map tiles (PMTiles
 extracts in packs), pack hosting + a scheduled rebuild, events and other
-result types in search, passkey and OAuth sign-in (need the universal-link
-domain association), in-app password reset, push, brand fonts
-(the web ships woff2 only; native needs ttf/otf), EAS build profiles and
-store metadata, and serving the AASA / assetlinks.json files for the
-universal links declared in `app.config.ts`.
+result types in search, passkey and OAuth sign-in and universal links
+(queer.guide already serves AASA / assetlinks from the redirect-domain
+registry, which only allows `/go/*` on the built-in host — widening that
+for the first-party app is a decision, plus the Apple Team ID and Android
+signing fingerprint), in-app password reset, a push sender, and store
+metadata.
 
 ## Accessibility
 
@@ -129,6 +144,6 @@ universal links declared in `app.config.ts`.
   the list is the accessible way to browse what the map shows.
 - Hotline buttons are named after the line they call ("Call +41 …, <line>"),
   so a screen-reader user scanning by buttons hears which service each is.
-- No right-to-left locale ships yet (en, de). Layout uses `start`/`end`
-  logical properties where it matters, but RTL has not been tested on a
-  device and must be before an RTL catalog is added.
+- No right-to-left locale ships yet (en, de). No style is left- or
+  right-specific except symmetric insets, so layouts should mirror, but RTL
+  has not been tested on a device and must be before an RTL catalog ships.

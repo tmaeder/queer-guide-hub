@@ -11,6 +11,7 @@ import {
   type PressableProps,
   type TextProps,
 } from 'react-native';
+import { fontStyle, FONT } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, space, text } from '@/theme/tokens';
 
@@ -23,6 +24,8 @@ export function Text({
   ...rest
 }: TextProps & { variant?: Variant; muted?: boolean }) {
   const { colors } = useTheme();
+  // Callers ask for weight with fontWeight; map it to a family (see fonts.ts).
+  const requested = StyleSheet.flatten(style)?.fontWeight;
   return (
     <RNText
       // Respect the user's font size: never disable font scaling.
@@ -31,11 +34,11 @@ export function Text({
         {
           color: muted ? colors['muted-foreground'] : colors.foreground,
           fontSize: text[variant],
-          fontWeight: variant === 'body' || variant === 'small' ? '400' : '700',
           letterSpacing: variant === 'eyebrow' ? 0.8 : undefined,
           textTransform: variant === 'eyebrow' ? 'uppercase' : undefined,
         },
         style,
+        fontStyle(variant, requested),
       ]}
       {...rest}
     />
@@ -199,6 +202,13 @@ const styles = StyleSheet.create({
     minHeight: 44,
     justifyContent: 'center',
   },
-  field: { minHeight: 44, borderWidth: 1, borderRadius: radius.md, paddingHorizontal: space[4], fontSize: text.body },
+  field: {
+    minHeight: 44,
+    borderWidth: 1,
+    borderRadius: radius.md,
+    paddingHorizontal: space[4],
+    fontSize: text.body,
+    fontFamily: FONT.regular,
+  },
   state: { padding: space[8], alignItems: 'center', gap: space[4] },
 });
