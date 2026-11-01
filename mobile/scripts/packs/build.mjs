@@ -86,6 +86,42 @@ async function venuesFor(cityId) {
   }
 }
 
+// Same columns as the app's EVENT_DETAIL_COLUMNS (src/api/events.ts).
+const EVENT_COLUMNS =
+  'id,slug,title,start_date,end_date,timezone,latitude,longitude,city,country,address,event_type,venue_name,' +
+  'description,ticket_url,website,is_free,price_min,price_max,currency,age_restriction,accessibility_attributes,' +
+  'tags,venue:venues!venue_id(slug,name)';
+const EVENT_HORIZON_DAYS = 180;
+
+/** Events not over yet that start within the horizon — the app's feed predicate. */
+export async function eventsFor(cityId, now = new Date()) {
+  const iso = now.toISOString();
+  const horizon = new Date(now.getTime() + EVENT_HORIZON_DAYS * 86_400_000).toISOString();
+  const out = [];
+  for (let from = 0; ; from += 1000) {
+    const url = new URL(`${SUPABASE_URL}/rest/v1/events`);
+    for (const [k, v] of Object.entries({
+      select: EVENT_COLUMNS,
+      city_id: `eq.${cityId}`,
+      status: 'eq.active',
+      duplicate_of_id: 'is.null',
+      series_next: 'eq.true',
+      parent_event_id: 'is.null',
+      or: `(end_date.gte.${iso},and(end_date.is.null,start_date.gte.${iso}))`,
+      start_date: `lte.${horizon}`,
+      order: 'id',
+    }))
+      url.searchParams.set(k, v);
+    const res = await fetch(url, {
+      headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, Range: `${from}-${from + 999}` },
+    });
+    if (!res.ok) throw new Error(`events: HTTP ${res.status} ${await res.text()}`);
+    const page = await res.json();
+    out.push(...page);
+    if (page.length < 1000) return out;
+  }
+}
+
 async function hotlines() {
   const [page] = await rest('cms_pages', { slug: 'eq.help', workflow_state: 'eq.published', select: 'body_json' });
   const list = page?.body_json?.hotlines;
@@ -132,6 +168,7 @@ async function main() {
     if (built.has(city.slug)) throw new Error(`${slug} resolves to ${city.slug}, which is already listed`);
     built.add(city.slug);
     const venues = await venuesFor(city.id);
+    const events = await eventsFor(city.id);
     const pack = {
       format: FORMAT,
       id: city.slug,
@@ -139,6 +176,7 @@ async function main() {
       country: city.country,
       generated_at,
       venues,
+      events,
       hotlines: allHotlines.filter((h) => h.country?.toUpperCase() === city.country || h.country === 'INT'),
     };
     const text = JSON.stringify(pack);
@@ -153,7 +191,7 @@ async function main() {
       sha256: bytesToHex(sha256(bytes)),
       venues: venues.length,
     });
-    console.log(`  ${city.slug}: ${venues.length} venues, ${pack.hotlines.length} hotlines, ${bytes.length} bytes`);
+    console.log(`  ${city.slug}: ${venues.length} venues, ${events.length} events, ${pack.hotlines.length} hotlines, ${bytes.length} bytes`);
   }
 
   entries.sort((a, b) => a.name.localeCompare(b.name));

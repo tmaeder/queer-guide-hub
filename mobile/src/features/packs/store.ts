@@ -1,3 +1,4 @@
+import type { EventDetail, EventListItem } from '@/api/events';
 import type { Hotline } from '@/api/hotlines';
 import type { Bounds, VenueDetail, VenueListItem } from '@/api/venues';
 import type { PackIndexEntry, PackPayload } from './format';
@@ -58,6 +59,21 @@ CREATE TABLE IF NOT EXISTS hotlines (
   PRIMARY KEY (pack_id, id)
 );
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS events (
+  id TEXT PRIMARY KEY,
+  pack_id TEXT NOT NULL,
+  slug TEXT NOT NULL,
+  start_date TEXT NOT NULL,
+  end_date TEXT,
+  latitude REAL,
+  longitude REAL,
+  body TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS events_slug ON events (slug);
+CREATE INDEX IF NOT EXISTS events_pack ON events (pack_id);
+CREATE VIRTUAL TABLE IF NOT EXISTS events_fts USING fts5 (
+  event_id UNINDEXED, pack_id UNINDEXED, title, city, venue_name, event_type
+);
 `;
 
 export async function migrate(db: PackDb) {
@@ -79,6 +95,8 @@ async function deletePackRows(db: PackDb, id: string) {
   await db.run('DELETE FROM venues WHERE pack_id = ?', [id]);
   await db.run('DELETE FROM venues_fts WHERE pack_id = ?', [id]);
   await db.run('DELETE FROM hotlines WHERE pack_id = ?', [id]);
+  await db.run('DELETE FROM events WHERE pack_id = ?', [id]);
+  await db.run('DELETE FROM events_fts WHERE pack_id = ?', [id]);
 }
 
 /**
@@ -117,6 +135,19 @@ export async function installPack(db: PackDb, pack: PackPayload, entry: PackInde
       await tx.run(
         'INSERT INTO venues_fts (venue_id, pack_id, name, category, city, address, tags) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [v.id, pack.id, v.name, v.category ?? '', v.city ?? '', v.address ?? '', (v.tags ?? []).join(' ')],
+      );
+    }
+    for (const e of pack.events ?? []) {
+      if (!e?.id || !e.slug || !e.title || !e.start_date) continue; // never store what cannot be shown
+      await tx.run('DELETE FROM events_fts WHERE event_id = ?', [e.id]);
+      await tx.run(
+        `INSERT OR REPLACE INTO events (id, pack_id, slug, start_date, end_date, latitude, longitude, body)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [e.id, pack.id, e.slug, e.start_date, e.end_date ?? null, e.latitude ?? null, e.longitude ?? null, JSON.stringify(e)],
+      );
+      await tx.run(
+        'INSERT INTO events_fts (event_id, pack_id, title, city, venue_name, event_type) VALUES (?, ?, ?, ?, ?, ?)',
+        [e.id, pack.id, e.title, e.city ?? '', e.venue_name ?? '', e.event_type ?? ''],
       );
     }
     for (const h of pack.hotlines) {
@@ -239,4 +270,56 @@ export async function getMeta(db: PackDb, key: string) {
 
 export function setMeta(db: PackDb, key: string, value: string) {
   return db.run('INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)', [key, value]);
+}
+
+/**
+ * "Not over yet", the online feed's endsAtOrAfter on stored ISO strings.
+ * ISO-8601 UTC strings from Postgres compare correctly as text only when they
+ * share a format, so the comparison runs on parsed times instead.
+ */
+const stillOn = (start: string, end: string | null, nowMs: number) =>
+  Date.parse(end ?? start) + (end ? 0 : 24 * 60 * 60_000) >= nowMs;
+
+function parseEvent(body: string): EventDetail | null {
+  try {
+    return JSON.parse(body) as EventDetail;
+  } catch {
+    return null; // a corrupt row is skipped, never rendered half-parsed
+  }
+}
+
+export async function eventBySlug(db: PackDb, slug: string): Promise<EventDetail | null> {
+  const rows = await db.all<{ body: string }>('SELECT body FROM events WHERE slug = ? LIMIT 1', [slug]);
+  return rows[0] ? parseEvent(rows[0].body) : null;
+}
+
+export async function eventsInBounds(db: PackDb, [w, s, e, n]: Bounds, nowMs = Date.now(), limit = 200) {
+  const rows = await db.all<{ body: string; start_date: string; end_date: string | null }>(
+    `SELECT body, start_date, end_date FROM events
+      WHERE latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?
+      ORDER BY start_date`,
+    [s, n, w, e],
+  );
+  return rows
+    .filter((r) => stillOn(r.start_date, r.end_date, nowMs))
+    .map((r) => parseEvent(r.body))
+    .filter((x): x is EventDetail => x != null)
+    .slice(0, limit) as EventListItem[];
+}
+
+export async function searchEvents(db: PackDb, input: string, nowMs = Date.now(), limit = 50) {
+  const q = ftsQuery(input);
+  if (!q) return [];
+  const rows = await db.all<{ slug: string; body: string; start_date: string; end_date: string | null }>(
+    `SELECT e.slug, e.body, e.start_date, e.end_date
+       FROM events_fts f JOIN events e ON e.id = f.event_id
+      WHERE events_fts MATCH ?
+      ORDER BY bm25(events_fts) LIMIT ?`,
+    [q, limit],
+  );
+  return rows
+    .filter((r) => stillOn(r.start_date, r.end_date, nowMs))
+    .map((r) => parseEvent(r.body))
+    .filter((x): x is EventDetail => x != null)
+    .map((ev) => ({ slug: ev.slug, name: ev.title, category: ev.event_type ?? null, city: ev.city ?? null }));
 }

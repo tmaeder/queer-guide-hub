@@ -1,14 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { withOfflineFallback } from '@/features/packs/offline';
-import { searchVenues as searchVenuesOffline } from '@/features/packs/store';
+import { searchEvents as searchEventsOffline, searchVenues as searchVenuesOffline } from '@/features/packs/store';
 import { supabase } from '@/lib/supabase';
 
 /**
  * Search over places and events. Online it goes to the same search-proxy
  * worker the web uses (Postgres hybrid search); when that request fails,
- * downloaded city packs answer from their FTS5 index — places only, since
- * packs carry no events. One hook, so the screen does not care which.
+ * downloaded city packs answer from their FTS5 indexes — places, and events
+ * not over yet. One hook, so the screen does not care which.
  */
 export const SEARCH_URL = process.env.EXPO_PUBLIC_SEARCH_URL ?? 'https://search.queer.guide';
 export const MIN_QUERY = 2;
@@ -102,7 +102,10 @@ export function search(query: string, signal?: AbortSignal): Promise<SearchResul
   return withOfflineFallback<SearchResult>(
     async () => ({ hits: await searchOnline(query, signal), offline: false }),
     async (db) => {
-      const hits = (await searchVenuesOffline(db, query)).map((v) => ({ kind: 'venue' as const, ...v }));
+      const hits: SearchHit[] = [
+        ...(await searchVenuesOffline(db, query)).map((v) => ({ kind: 'venue' as const, ...v })),
+        ...(await searchEventsOffline(db, query)).map((e) => ({ kind: 'event' as const, ...e })),
+      ];
       // No pack matched: keep the network error so the screen says "offline",
       // not "no results" — those mean different things.
       return hits.length ? { hits, offline: true } : null;
