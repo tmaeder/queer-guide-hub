@@ -34,7 +34,7 @@ test.describe('Chrome fits at every locale', () => {
   test.setTimeout(180_000);
 
   for (const locale of LOCALES) {
-    // 1280 is the `xl` threshold where all seven labels appear, i.e. the
+    // 1280 is the `xl` threshold where all six labels appear, i.e. the
     // tightest case. 1440 is the ordinary desktop width. Below `xl` the tabs
     // are icon-only and cannot overflow on label length.
     for (const width of [1280, 1440]) {
@@ -45,11 +45,11 @@ test.describe('Chrome fits at every locale', () => {
 
         const nav = page.getByRole('banner').locator('nav[aria-label]');
         await expect(nav).toHaveCount(1);
-        // Control: all seven must be in the DOM. Overflow hides them visually
+        // Control: all six must be in the DOM. Overflow hides them visually
         // without removing them, so a count assertion alone cannot see the
-        // defect — but a count under seven means something else broke and
+        // defect — but a count under six means something else broke and
         // every measurement below would be about the wrong row.
-        await expect(nav.locator('a')).toHaveCount(7);
+        await expect(nav.locator('a')).toHaveCount(6);
 
         const fit = await page.evaluate(() => {
           const el = document.querySelector('header[class*="site-header"] nav[aria-label]')!;

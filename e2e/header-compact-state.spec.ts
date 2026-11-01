@@ -133,8 +133,8 @@ test.describe('Header, compact ink state', () => {
 
       const nav = header.locator('nav[aria-label]');
       await expect(nav, 'the compact bar dropped its nav landmark').toHaveCount(1);
-      // Seven intents. Asserting ">0" would pass against a bar that kept one.
-      await expect(nav.locator('a')).toHaveCount(7);
+      // Six intents. Asserting ">0" would pass against a bar that kept one.
+      await expect(nav.locator('a')).toHaveCount(6);
 
       // And the reader's position survives the collapse: the active route is
       // still marked. This is the signal the dropped active-intent chip used
@@ -214,7 +214,7 @@ test.describe('Header, compact ink state', () => {
       header,
       'the bar stayed collapsed back at the top of the page (the latch defect)',
     ).not.toHaveClass(/island-ink/);
-    await expect(header.locator('nav[aria-label] a')).toHaveCount(7);
+    await expect(header.locator('nav[aria-label] a')).toHaveCount(6);
   });
 
   // Every width at which the compact state exists, not just the narrowest.
@@ -273,7 +273,7 @@ test.describe('Header intent tabs, text navigation at 1100px', () => {
     await waitForAppReady(page);
 
     const tabs = page.getByRole('banner').locator('nav[aria-label] a');
-    await expect(tabs).toHaveCount(7);
+    await expect(tabs).toHaveCount(6);
 
     const report = await page.evaluate(() => {
       const links = Array.from(
