@@ -108,5 +108,22 @@
     "locked": "Locked",
     "unlock": "Unlock",
     "unlockPrompt": "Unlock"
+  },
+  "packs": {
+    "title": "Offline cities",
+    "body": "Download a city to keep its places and crisis lines on this device. Map tiles and photos still need a connection.",
+    "notConfigured": "Offline cities aren't available in this build yet.",
+    "loading": "Checking available cities…",
+    "error": "Couldn't check available cities.",
+    "download": "Download",
+    "update": "Update",
+    "remove": "Remove",
+    "installed": "On this device",
+    "places_one": "{{count}} place",
+    "places_other": "{{count}} places",
+    "updated": "Updated {{date}}",
+    "failed": "Download failed: {{reason}}",
+    "verifyFailed": "This download didn't pass its security check and was not saved.",
+    "discreetNote": "Downloaded cities are listed on this device. Remove them before handing your phone to someone."
   }
 }

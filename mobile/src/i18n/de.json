@@ -108,5 +108,22 @@
     "locked": "Gesperrt",
     "unlock": "Entsperren",
     "unlockPrompt": "Entsperren"
+  },
+  "packs": {
+    "title": "Offline-Städte",
+    "body": "Lade eine Stadt herunter, um ihre Orte und Krisennummern auf diesem Gerät zu behalten. Karten und Fotos brauchen weiterhin eine Verbindung.",
+    "notConfigured": "Offline-Städte sind in dieser Version noch nicht verfügbar.",
+    "loading": "Verfügbare Städte werden geprüft…",
+    "error": "Verfügbare Städte konnten nicht geprüft werden.",
+    "download": "Herunterladen",
+    "update": "Aktualisieren",
+    "remove": "Entfernen",
+    "installed": "Auf diesem Gerät",
+    "places_one": "{{count}} Ort",
+    "places_other": "{{count}} Orte",
+    "updated": "Aktualisiert {{date}}",
+    "failed": "Download fehlgeschlagen: {{reason}}",
+    "verifyFailed": "Dieser Download hat die Sicherheitsprüfung nicht bestanden und wurde nicht gespeichert.",
+    "discreetNote": "Heruntergeladene Städte sind auf diesem Gerät sichtbar. Entferne sie, bevor du dein Telefon jemandem gibst."
   }
 }
