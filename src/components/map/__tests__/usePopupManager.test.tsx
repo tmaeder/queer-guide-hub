@@ -35,6 +35,11 @@ vi.mock('maplibre-gl', () => ({
 
 vi.mock('@/hooks/useHaptics', () => ({ hapticTrigger: () => {} }));
 
+// The real ActiveTripProvider wraps the app; its trip list comes from useTrips.
+vi.mock('@/hooks/useTrips', () => ({
+  useTrips: () => ({ data: [{ id: 'trip-1', title: 'Zürich weekend' }] }),
+}));
+
 // Stand-in for the card: reads the same contexts the real card's trip/auth
 // controls do, so a missing bridge throws exactly as in production.
 vi.mock('@/components/map/MapEntityCard', async () => {
@@ -56,7 +61,7 @@ vi.mock('@/components/map/MapEntityCard', async () => {
 });
 
 import { usePopupManager } from '@/components/map/hooks/usePopupManager';
-import { ActiveTripContext } from '@/hooks/useActiveTrip';
+import { ActiveTripProvider } from '@/hooks/useActiveTrip';
 import type { ReactNode } from 'react';
 import { AuthContext } from '@/hooks/useAuth';
 
@@ -77,10 +82,8 @@ function Providers({ children }: { children: ReactNode }) {
   return (
     <MemoryRouter>
       <QueryClientProvider client={new QueryClient()}>
-        <AuthContext.Provider value={{ user: { id: 'u1' } } as never}>
-          <ActiveTripContext.Provider value={{ activeTrip: { title: 'Zürich weekend' } } as never}>
-            {children}
-          </ActiveTripContext.Provider>
+        <AuthContext.Provider value={{ user: { id: 'u1' }, loading: false } as never}>
+          <ActiveTripProvider>{children}</ActiveTripProvider>
         </AuthContext.Provider>
       </QueryClientProvider>
     </MemoryRouter>
@@ -106,6 +109,7 @@ function Host() {
 
 describe('usePopupManager', () => {
   it('renders the card inside the app tree: router, auth and the active trip all reach it', async () => {
+    localStorage.setItem('qg.activeTripId', 'trip-1'); // pin the trip the provider exposes
     act(() => {
       render(
         <Providers>
