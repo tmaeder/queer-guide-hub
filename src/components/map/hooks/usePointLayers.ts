@@ -80,7 +80,8 @@ interface UsePointLayersParams {
   onSelectPointRef: MutableRefObject<((id: string) => void) | undefined>;
   /** Set when the surface has a results list. A co-located stack too large
    *  for a readable ring is handed here instead of fanned out. */
-  onStackSelectRef?: MutableRefObject<((stack: MapPointStack) => void) | undefined>;
+  /** Called with null to release a listed stack. */
+  onStackSelectRef?: MutableRefObject<((stack: MapPointStack | null) => void) | undefined>;
   pointLayersAddedRef: MutableRefObject<boolean>;
   pulseRafRef: MutableRefObject<number | null>;
 }
@@ -605,6 +606,12 @@ export function usePointLayers({
         'text-opacity': ['case', ['boolean', ['feature-state', 'compact'], false], 0, 1],
       },
     });
+
+    // Any map click releases a listed stack. Registered BEFORE the layer
+    // handlers below, which MapLibre calls in registration order, so a click
+    // on a stacked pin clears and then re-lists in the same tick (one render),
+    // while a click on any other pin, dot, cluster or empty map just clears.
+    map.on('click', () => onStackSelectRef?.current?.(null));
 
     // Cluster click → zoom to exactly what's inside, or fan out places that
     // share one spot. The decision is pure and tested in clusterClick.ts.
