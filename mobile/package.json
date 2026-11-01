@@ -21,15 +21,18 @@
     "@supabase/supabase-js": "^2.118.0",
     "@tanstack/react-query": "^5.105.1",
     "expo": "~58.0.22",
+    "expo-alternate-app-icons": "^11.0.0",
     "expo-asset": "~58.0.19",
     "expo-constants": "~58.0.14",
     "expo-font": "~58.0.11",
     "expo-haptics": "~58.0.7",
     "expo-image": "~58.0.18",
     "expo-linking": "~58.0.15",
+    "expo-local-authentication": "~58.0.2",
     "expo-localization": "~58.0.5",
     "expo-location": "~58.0.20",
     "expo-router": "~58.0.29",
+    "expo-screen-capture": "~58.0.6",
     "expo-secure-store": "~58.0.2",
     "expo-sqlite": "~58.0.15",
     "expo-status-bar": "~58.0.4",
@@ -53,7 +56,7 @@
   "jest": {
     "preset": "jest-expo",
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@maplibre/.*|@protomaps/.*|@supabase/.*|@noble/.*|native-base|react-native-svg)"
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@maplibre/.*|@protomaps/.*|@supabase/.*|@noble/.*|standard-navigation|native-base|react-native-svg)"
     ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
