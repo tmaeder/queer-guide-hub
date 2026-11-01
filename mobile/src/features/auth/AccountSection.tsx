@@ -32,6 +32,9 @@ export function AccountSection() {
         {t('account.title')}
       </Text>
       <Text>{t('account.signedInAs', { email: session.user.email ?? '' })}</Text>
+      <Text variant="small" muted>
+        {t('account.signOutNote')}
+      </Text>
       <View style={{ flexDirection: 'row', gap: space[2], flexWrap: 'wrap' }}>
         <Button
           tone="secondary"

@@ -37,8 +37,10 @@ module. Use a development build (`npx expo run:ios|android`, or
   manifest declares no tracking and no collected data; keep it true.
 - Location is foreground-only and never sent to the server. Background
   location permissions are explicitly blocked on Android.
-- Saved places live only on the device (AsyncStorage). Sync is a future,
-  opt-in change.
+- Saved places live only on the device (AsyncStorage) while signed out.
+  Signed in they are the account's `venue_favorites` (merged on sign-in);
+  signing out removes them from the phone, so the next person to use it
+  never sees this account's list.
 - The auth session is stored in the Keychain/Keystore
   (`WHEN_UNLOCKED_THIS_DEVICE_ONLY`, so it is not in iCloud backups).
 - Every outbound URL goes through `src/lib/links.ts` (https only).

@@ -12,6 +12,7 @@ import { unregisterOnSessionEnd } from '@/features/push/push';
 import { DiscreetGate } from '@/features/discreet/DiscreetGate';
 import { packDb } from '@/features/packs/db';
 import { savedStore } from '@/features/saved/savedStore';
+import { supabaseAuthEvents, syncSavedOnAuth } from '@/features/saved/sync';
 import { FONT, FONT_ASSETS } from '@/theme/fonts';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 
@@ -57,6 +58,8 @@ export default function RootLayout() {
 
   // Gated content differs per user: drop the cache whenever the user changes.
   useEffect(() => resetCacheOnUserChange(queryClient), [queryClient]);
+  // Signed in, saved places are the account's; signed out, they leave the phone.
+  useEffect(() => syncSavedOnAuth(savedStore, supabaseAuthEvents), []);
   useEffect(() => unregisterOnSessionEnd(nativePush), []);
 
   useEffect(() => {
