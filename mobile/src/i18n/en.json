@@ -135,13 +135,14 @@
   },
   "search": {
     "title": "Search",
-    "placeholder": "Search places and events",
+    "placeholder": "Search cities, places and events",
     "hint": "Type at least two letters.",
     "loading": "Searching…",
     "empty": "Nothing matches.",
     "offline": "Search needs a connection. Download a city under Me → Offline cities to search it offline.",
     "fromPacks": "Offline — showing results from your downloaded cities.",
-    "event": "Event"
+    "event": "Event",
+    "city": "City"
   },
   "auth": {
     "signIn": "Sign in",
@@ -225,5 +226,21 @@
     "denied": "Notifications are blocked in system settings. Tap to open Settings.",
     "unavailable": "Notifications aren't available on this device or build.",
     "failed": "Couldn't change this. Check your connection and try again."
+  },
+  "city": {
+    "loading": "Loading city…",
+    "error": "Couldn't load this city. Check your connection.",
+    "notFound": "This city isn't listed.",
+    "events": "Upcoming events",
+    "places": "Places",
+    "noEvents": "No upcoming events listed here.",
+    "noPlaces": "No places listed here yet.",
+    "sectionError": "Couldn't load this list.",
+    "moreEvents_one": "and {{count}} more event",
+    "moreEvents_other": "and {{count}} more events",
+    "gated_one": "{{count}} more listing here is shown only to signed-in members.",
+    "gated_other": "{{count}} more listings here are shown only to signed-in members.",
+    "highRisk": "Same-sex relationships are criminalised in this country, so places and events here are never shown publicly.",
+    "capped": "Showing the first {{count}} places. Use the map or search to find the rest."
   }
 }

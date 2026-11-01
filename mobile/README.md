@@ -155,7 +155,7 @@ Me → Notifications registers this phone's native APNs/FCM token in
 
 Tracked in the strategy doc's work breakdown: offline map tiles (PMTiles
 extracts in packs), pack hosting (the publish job is ready; it needs a
-bucket and keys), other result types in search (news, cities), passkey and
+bucket and keys), news in search, passkey and
 OAuth sign-in and universal links
 (queer.guide already serves AASA / assetlinks from the redirect-domain
 registry, which only allows `/go/*` on the built-in host — widening that
