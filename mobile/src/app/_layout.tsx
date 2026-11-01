@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { resetCacheOnUserChange } from '@/features/auth/cacheReset';
+import { nativePush } from '@/features/push/native';
+import { unregisterOnSessionEnd } from '@/features/push/push';
 import { DiscreetGate } from '@/features/discreet/DiscreetGate';
 import { packDb } from '@/features/packs/db';
 import { savedStore } from '@/features/saved/savedStore';
@@ -58,6 +60,7 @@ export default function RootLayout() {
   useEffect(() => resetCacheOnUserChange(queryClient), [queryClient]);
   // Signed in, saved places are the account's; signed out, they leave the phone.
   useEffect(() => syncSavedOnAuth(savedStore, supabaseAuthEvents), []);
+  useEffect(() => unregisterOnSessionEnd(nativePush), []);
 
   useEffect(() => {
     void savedStore.load();
