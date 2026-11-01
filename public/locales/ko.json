@@ -2069,7 +2069,8 @@
       "tagsInteractions": "약물 안전",
       "tagsStiGuide": "성매개감염 안내",
       "transRights": "트랜스젠더 권리",
-      "competitions": "드래그 레이스"
+      "competitions": "드래그 레이스",
+      "newsAll": "[KO] All news"
     },
     "intents": {
       "knowledge": {
@@ -2105,6 +2106,10 @@
       "glossary": {
         "label": "용어집",
         "subtitle": "모든 용어와 깃발, 코드의 의미"
+      },
+      "news": {
+        "label": "[KO] News",
+        "subtitle": "[KO] LGBTQ+ news from around the world"
       }
     },
     "userMenu": {

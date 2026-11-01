@@ -2069,7 +2069,8 @@
       "tagsInteractions": "Substanzsicherheit",
       "tagsStiGuide": "STI-Leitfaden",
       "transRights": "Trans-Rechte",
-      "competitions": "[DE] Drag Race"
+      "competitions": "[DE] Drag Race",
+      "newsAll": "[DE] All news"
     },
     "intents": {
       "knowledge": {
@@ -2105,6 +2106,10 @@
       "glossary": {
         "label": "Glossar",
         "subtitle": "Was jeder Begriff, jede Flagge und jeder Code bedeutet"
+      },
+      "news": {
+        "label": "[DE] News",
+        "subtitle": "[DE] LGBTQ+ news from around the world"
       }
     },
     "userMenu": {

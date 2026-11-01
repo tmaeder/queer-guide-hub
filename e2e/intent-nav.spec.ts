@@ -36,8 +36,10 @@ const INTENTS = [
   // The tags wiki, promoted to a top-level intent (2026-08-22). /tags is the
   // real glossary hub, no wrapper path.
   { label: 'Knowledge', href: '/tags' },
-  { label: 'Support', href: '/help' },
-  // /marketplace, not /shop, and for the same reason as Support above: /shop
+  // News replaced Support in the row on 2026-11-01. /help is now reached from
+  // the News footer column and the mobile sheet, not a header tab.
+  { label: 'News', href: '/news' },
+  // /marketplace, not /shop, and for the same reason Support used /help: /shop
   // was /marketplace's twin — two of its three sections were duplicates of
   // blocks the marketplace landing already rendered — and /marketplace is the
   // superset. The label stays "Shop"; `to` and `labelKey` are independent.

@@ -2079,7 +2079,8 @@
       "tagsInteractions": "سلامة المواد",
       "tagsStiGuide": "دليل الأمراض المنقولة جنسيًا",
       "transRights": "حقوق العابرين جنسيًا",
-      "competitions": "[AR] Drag Race"
+      "competitions": "[AR] Drag Race",
+      "newsAll": "[AR] All news"
     },
     "intents": {
       "knowledge": {
@@ -2115,6 +2116,10 @@
       "glossary": {
         "label": "المسرد",
         "subtitle": "معنى كل مصطلح وعلم ورمز"
+      },
+      "news": {
+        "label": "[AR] News",
+        "subtitle": "[AR] LGBTQ+ news from around the world"
       }
     },
     "userMenu": {

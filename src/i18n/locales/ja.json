@@ -2069,7 +2069,8 @@
       "tagsInteractions": "薬物の安全",
       "tagsStiGuide": "性感染症ガイド",
       "transRights": "トランスの権利",
-      "competitions": "[JA] Drag Race"
+      "competitions": "[JA] Drag Race",
+      "newsAll": "[JA] All news"
     },
     "intents": {
       "knowledge": {
@@ -2105,6 +2106,10 @@
       "glossary": {
         "label": "用語集",
         "subtitle": "すべての用語・旗・コードの意味"
+      },
+      "news": {
+        "label": "[JA] News",
+        "subtitle": "[JA] LGBTQ+ news from around the world"
       }
     },
     "userMenu": {

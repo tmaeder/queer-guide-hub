@@ -2069,7 +2069,8 @@
       "tagsInteractions": "物质安全",
       "tagsStiGuide": "性传播感染指南",
       "transRights": "跨性别权利",
-      "competitions": "[ZH] Drag Race"
+      "competitions": "[ZH] Drag Race",
+      "newsAll": "[ZH] All news"
     },
     "intents": {
       "knowledge": {
@@ -2105,6 +2106,10 @@
       "glossary": {
         "label": "术语库",
         "subtitle": "每个术语、旗帜和暗号的含义"
+      },
+      "news": {
+        "label": "[ZH] News",
+        "subtitle": "[ZH] LGBTQ+ news from around the world"
       }
     },
     "userMenu": {

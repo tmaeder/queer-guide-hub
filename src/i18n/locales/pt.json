@@ -2069,7 +2069,8 @@
       "tagsInteractions": "Segurança com substâncias",
       "tagsStiGuide": "Guia de ISTs",
       "transRights": "Direitos trans",
-      "competitions": "[PT] Drag Race"
+      "competitions": "[PT] Drag Race",
+      "newsAll": "[PT] All news"
     },
     "intents": {
       "knowledge": {
@@ -2105,6 +2106,10 @@
       "glossary": {
         "label": "Glossário",
         "subtitle": "O que significa cada termo, bandeira e código"
+      },
+      "news": {
+        "label": "[PT] News",
+        "subtitle": "[PT] LGBTQ+ news from around the world"
       }
     },
     "userMenu": {
