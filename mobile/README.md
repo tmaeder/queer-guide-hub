@@ -149,7 +149,19 @@ types in search (news, cities), passkey and OAuth sign-in and universal links
 registry, which only allows `/go/*` on the built-in host — widening that
 for the first-party app is a decision, plus the Apple Team ID and Android
 signing fingerprint), in-app password reset, a push sender (APNs key / FCM
-project), and store metadata.
+project).
+Store metadata is drafted in `store/` but not yet submitted.
+
+## Device E2E (Maestro)
+
+Flows live in `.maestro/` and run against a dev or preview build on a
+simulator/emulator: `maestro test .maestro`. They select by English copy, and
+CI does not run Maestro, so `src/__tests__/maestroFlows.test.ts` fails if a
+flow taps or asserts a string that is no longer in `en.json`. Venue `mylord`
+(Zurich) is the fixed test place; if it is ever merged or closed, change the
+flow and the test's `DATA` set together.
+
+Store listing, privacy labels, age rating and review notes: `store/`.
 
 ## Accessibility
 

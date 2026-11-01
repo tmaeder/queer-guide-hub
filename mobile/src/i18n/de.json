@@ -65,7 +65,7 @@
   "me": {
     "title": "Ich",
     "privacy": "Datenschutz",
-    "privacyBody": "Diese App hat keine Analyse und kein Tracking. Dein Standort wird nur auf diesem Gerät verwendet. Gespeicherte Orte bleiben auf diesem Telefon, ausser du meldest dich an – dann werden sie in deinem Konto gespeichert.",
+    "privacyBody": "Keine Werbung, kein Tracking, keine Analyse-SDKs. Dein genauer Standort bleibt auf diesem Gerät: Um Orte zu laden, fragt die App queer.guide nach dem Kartenausschnitt auf dem Bildschirm, wie jede Karte. Suchanfragen werden ohne Angaben, die dich identifizieren, gespeichert, um die Suche zu verbessern. Gespeicherte Orte bleiben auf diesem Telefon, ausser du meldest dich an – dann werden sie in deinem Konto gespeichert.",
     "website": "queer.guide im Web öffnen",
     "version": "Version {{version}}"
   },
