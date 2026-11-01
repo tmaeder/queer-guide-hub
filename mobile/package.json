@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "lint": "expo lint",
-    "doctor": "expo-doctor"
+    "doctor": "expo-doctor",
+    "test:scripts": "node --test scripts/packs/*.test.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/anton": "^0.4.2",
@@ -70,7 +71,8 @@
       "^@/(.*)$": "<rootDir>/src/$1"
     },
     "testPathIgnorePatterns": [
-      "/node_modules/"
+      "/node_modules/",
+      "/scripts/"
     ],
     "setupFiles": [
       "<rootDir>/jest.setup.ts"
