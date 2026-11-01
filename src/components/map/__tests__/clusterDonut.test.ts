@@ -3,6 +3,7 @@ import {
   DONUT_PREFIX,
   DONUT_SIZE_STEPS,
   donutIconExpression,
+  dominantLine,
   donutSegments,
   parseDonutKey,
   quantizeShare,
@@ -67,5 +68,15 @@ describe('donutIconExpression', () => {
   it('size steps align with the documented buckets', () => {
     expect(DONUT_SIZE_STEPS[0]).toEqual([0, 36]);
     expect(DONUT_SIZE_STEPS.at(-1)).toEqual([500, 64]);
+  });
+});
+
+describe('dominantLine', () => {
+  it('colours the disc with a line that makes up >= 80% of the cluster', () => {
+    expect(dominantLine({ M: 8, E: 2, C: 0, T: 0 })).toBe('M');
+  });
+  it('is null (ink disc) for a mixed cluster or unknown composition', () => {
+    expect(dominantLine({ M: 6, E: 4, C: 0, T: 0 })).toBeNull();
+    expect(dominantLine({ M: 0, E: 0, C: 0, T: 0 })).toBeNull();
   });
 });

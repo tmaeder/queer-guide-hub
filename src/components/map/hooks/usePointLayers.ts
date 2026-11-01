@@ -13,8 +13,11 @@ import {
   CLUSTERS_LAYER,
   CLUSTER_COUNT_LAYER,
   UNCLUSTERED_LAYER,
+  PIN_DOT_LAYER,
+  CLOUD_LAYER,
   GLYPH_LAYER,
   STATE_BADGE_LAYER,
+  STACK_BADGE_LAYER,
   FEATURED_RING_LAYER,
   PULSE_LAYER,
   PIN_LAYER_IDS,
@@ -28,7 +31,13 @@ import {
 } from '@/components/map/clusterClick';
 import { EMPTY_FAV, mapDebug } from '@/components/map/mapDebug';
 import { durationMs, imperativeDurationMs } from '@/lib/animation';
-import { donutIconExpression } from '@/components/map/clusterDonut';
+import {
+  donutIconExpression,
+  dominantLineExpression,
+  placesExpr,
+} from '@/components/map/clusterDonut';
+import { collapseColocated } from '@/components/map/pointStacks';
+import { declutterPins, pinPriority, pinRadiusAt } from '@/components/map/pinDeclutter';
 import { ink, paper } from '@/lib/mapTokens';
 import { MAP_FONT_BOLD } from '@/config/mapStyle';
 import { clusterHoverHtml, pointHoverHtml } from '@/components/map/mapHoverHtml';
@@ -76,6 +85,81 @@ interface UsePointLayersParams {
   pulseRafRef: MutableRefObject<number | null>;
 }
 
+/** Cloud radius by zoom, exponential so it grows like an area on the map
+ *  (~25 m across at z13, ~200 m at z16) rather than like a marker. */
+const CLOUD_RADIUS_EXPR: maplibregl.ExpressionSpecification = [
+  'interpolate',
+  ['exponential', 2],
+  ['zoom'],
+  11,
+  10,
+  13,
+  20,
+  16,
+  80,
+];
+
+/** Cloud radius at a zoom, mirroring CLOUD_RADIUS_EXPR, for hit-testing. */
+function cloudRadiusAt(zoom: number): number {
+  const stops: [number, number][] = [
+    [11, 10],
+    [13, 20],
+    [16, 80],
+  ];
+  if (zoom <= stops[0][0]) return stops[0][1];
+  for (let i = 1; i < stops.length; i++) {
+    const [z0, r0] = stops[i - 1];
+    const [z1, r1] = stops[i];
+    if (zoom <= z1) {
+      const t = (Math.pow(2, zoom - z0) - 1) / (Math.pow(2, z1 - z0) - 1);
+      return r0 + (r1 - r0) * t;
+    }
+  }
+  return stops[stops.length - 1][1];
+}
+
+/** A venue in the `cruising` category, drawn as a cloud (CLOUD_LAYER). */
+export function isCloudFeature(f: PointFeature): boolean {
+  return f.properties.pointType === 'venues' && f.properties.subtitle === 'cruising';
+}
+
+/** Drawn radius of a dot (PIN_DOT_LAYER) plus its outline, in px. */
+const DOT_HIT_RADIUS = 6.5;
+
+/**
+ * The point whose DRAWN mark is under the pointer.
+ *
+ * MapLibre's hit-test evaluates `circle-radius` without feature-state, so it
+ * treats every compact dot as a full-size pin: a click on a full pin also
+ * "hits" the dots tucked underneath it, in arbitrary order, and
+ * `e.features[0]` was often one of them (a stacked pin then opened some other
+ * place's popup). Re-test each candidate against what is actually drawn:
+ * full pins before dots, nearest centre first.
+ */
+function pickPointUnder(
+  map: maplibregl.Map,
+  e: MapLayerMouseEvent,
+): maplibregl.MapGeoJSONFeature | undefined {
+  let best: { f: maplibregl.MapGeoJSONFeature; full: boolean; d: number } | undefined;
+  for (const f of e.features ?? []) {
+    if (f.geometry.type !== 'Point') continue;
+    const compact =
+      map.getFeatureState({ source: POINTS_SOURCE, id: f.properties?.id }).compact === true;
+    const q = map.project((f.geometry as GeoJSON.Point).coordinates as [number, number]);
+    const d = Math.hypot(q.x - e.point.x, q.y - e.point.y);
+    const r =
+      f.properties?.cloud === 1
+        ? cloudRadiusAt(map.getZoom()) * 0.7
+        : compact
+          ? DOT_HIT_RADIUS
+          : pinRadiusAt(map.getZoom(), f.properties?.featured === true);
+    if (d > r) continue;
+    const full = !compact && f.properties?.cloud !== 1;
+    if (!best || (full && !best.full) || (full === best.full && d < best.d)) best = { f, full, d };
+  }
+  return best?.f ?? e.features?.[0];
+}
+
 /**
  * Native MapLibre clustered-point rendering: source + cluster/count/pulse/
  * featured/unclustered/glyph layers, cluster click→zoom-or-spiderfy, and the
@@ -105,6 +189,13 @@ export function usePointLayers({
   pulseRafRef,
 }: UsePointLayersParams) {
   const hoverPopupRef = useRef<maplibregl.Popup | null>(null);
+  // Every place behind a stacked pin, keyed by the representative's id.
+  const stackMembersRef = useRef<Map<string, PointFeature[]>>(new Map());
+  // The features currently on the source, for the declutter pass.
+  const placedFeaturesRef = useRef<PointFeature[]>([]);
+  // Ids last set compact, so the next pass can clear the ones that freed up.
+  const compactIdsRef = useRef<Set<string>>(new Set());
+  const declutterRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -124,6 +215,9 @@ export function usePointLayers({
         if (map.getLayer(id)) map.removeLayer(id);
       }
       if (map.getSource(POINTS_SOURCE)) map.removeSource(POINTS_SOURCE);
+      if (declutterRef.current) map.off('moveend', declutterRef.current);
+      declutterRef.current = null;
+      compactIdsRef.current = new Set();
       pointLayersAddedRef.current = false;
       return;
     }
@@ -154,10 +248,28 @@ export function usePointLayers({
       })),
     };
 
+    // One feature per spot: places sharing an exact coordinate become one pin
+    // carrying `stack_count`, with the rest kept aside for the click.
+    //
+    // Cruising spots are drawn as clouds (CLOUD_LAYER), not pins, so they stay
+    // out of stacking and out of the pin layout.
+    const all = filteredGeoJSON.features as unknown as PointFeature[];
+    const clouds = all
+      .filter(isCloudFeature)
+      .map((f) => ({ ...f, properties: { ...f.properties, cloud: 1 } }));
+    const collapsed = collapseColocated(all.filter((f) => !isCloudFeature(f)));
+    stackMembersRef.current = collapsed.members;
+    placedFeaturesRef.current = collapsed.features;
+    filteredGeoJSON.features = [...collapsed.features, ...clouds] as unknown as GeoJSON.Feature[];
+
+    // Lay pins out after the source has re-tiled the new data.
+    const declutterSoon = () => map.once('idle', () => declutterRef.current?.());
+
     const existingSource = map.getSource(POINTS_SOURCE) as GeoJSONSource | undefined;
     if (existingSource) {
       mapDebug('setData', { features: filteredGeoJSON.features.length });
       existingSource.setData(filteredGeoJSON);
+      declutterSoon();
       return;
     }
 
@@ -175,6 +287,8 @@ export function usePointLayers({
     map.addSource(POINTS_SOURCE, {
       type: 'geojson',
       data: filteredGeoJSON,
+      // Feature ids from `id` so the declutter pass can set feature-state.
+      promoteId: 'id',
       cluster: true,
       // The default geojson maxzoom is 18, which would cap clustering at 17
       // and let co-located places stack again above it.
@@ -190,12 +304,20 @@ export function usePointLayers({
       // per-feature property, so that is fine — but it does mean a
       // reclassification needs a source rebuild, not a `setData`. `lineFor`
       // must therefore never depend on runtime state.
-      clusterProperties: Object.fromEntries(
-        MAP_LINE_IDS.map((line) => [
-          MAP_LINES[line].countProp,
-          ['+', ['case', ['==', ['get', 'line'], line], 1, 0]],
-        ]),
-      ),
+      //
+      // Counted in PLACES: a stacked pin stands for `stack_count` places.
+      clusterProperties: {
+        places: ['+', ['coalesce', ['get', 'stack_count'], 1]],
+        ...Object.fromEntries(
+          MAP_LINE_IDS.map((line) => [
+            MAP_LINES[line].countProp,
+            [
+              '+',
+              ['case', ['==', ['get', 'line'], line], ['coalesce', ['get', 'stack_count'], 1], 0],
+            ],
+          ]),
+        ),
+      },
     });
 
     // Segmented donut clusters — ring segments proportional to the cluster's
@@ -221,14 +343,20 @@ export function usePointLayers({
       source: POINTS_SOURCE,
       filter: ['has', 'point_count'],
       layout: {
-        'text-field': ['get', 'point_count_abbreviated'],
+        'text-field': [
+          'case',
+          ['>=', placesExpr(), 1000],
+          ['concat', ['to-string', ['round', ['/', placesExpr(), 1000]]], 'k'],
+          ['to-string', placesExpr()],
+        ],
         'text-font': [MAP_FONT_BOLD],
         'text-size': 13,
         'text-allow-overlap': true,
         'text-ignore-placement': true,
       },
-      // Ink on the interchange symbol's paper centre disc.
-      paint: { 'text-color': ink() },
+      // Ink on a track-coloured disc, paper on the ink disc of a mixed one
+      // (clusterDonut renders the disc from the same dominance rule).
+      paint: { 'text-color': ['case', dominantLineExpression(), ink(), paper()] },
     });
 
     // Live pulse — an expanding ring beneath live/open-now pins. Static at
@@ -237,12 +365,51 @@ export function usePointLayers({
       id: PULSE_LAYER,
       type: 'circle',
       source: POINTS_SOURCE,
-      filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'live'], true]],
+      filter: [
+        'all',
+        ['!', ['has', 'point_count']],
+        ['!=', ['get', 'cloud'], 1],
+        ['==', ['get', 'live'], true],
+      ],
       paint: {
         'circle-radius': 10,
         'circle-color': ['get', 'color'],
         'circle-opacity': 0.25,
         'circle-stroke-width': 0,
+      },
+    });
+
+    // Cruising spots as a CLOUD, not a pin: a soft patch in the track colour
+    // that grows with the map like an area, because a cruising spot is a
+    // stretch of park, shore or woods rather than a door. Below every pin, no
+    // glyph and no ink edge (it is an area wash, not a mark to read a colour
+    // off), still clickable and hoverable for its name and card.
+    map.addLayer({
+      id: CLOUD_LAYER,
+      type: 'circle',
+      source: POINTS_SOURCE,
+      filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'cloud'], 1]],
+      paint: {
+        'circle-radius': CLOUD_RADIUS_EXPR,
+        'circle-color': pinColorExpr,
+        'circle-opacity': 0.4,
+        'circle-blur': 0.85,
+        'circle-stroke-width': 0,
+      },
+    });
+
+    // Dots for compact pins, under every full pin. Same colour and ink edge
+    // as the pin; radius 0 for a full pin, which draws above.
+    map.addLayer({
+      id: PIN_DOT_LAYER,
+      type: 'circle',
+      source: POINTS_SOURCE,
+      filter: ['all', ['!', ['has', 'point_count']], ['!=', ['get', 'cloud'], 1]],
+      paint: {
+        'circle-radius': ['case', ['boolean', ['feature-state', 'compact'], false], 5, 0],
+        'circle-color': pinColorExpr,
+        'circle-stroke-width': ['case', ['boolean', ['feature-state', 'compact'], false], 1.5, 0],
+        'circle-stroke-color': ink(),
       },
     });
 
@@ -255,7 +422,12 @@ export function usePointLayers({
       id: FEATURED_RING_LAYER,
       type: 'circle',
       source: POINTS_SOURCE,
-      filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'featured'], true]],
+      filter: [
+        'all',
+        ['!', ['has', 'point_count']],
+        ['!=', ['get', 'cloud'], 1],
+        ['==', ['get', 'featured'], true],
+      ],
       paint: {
         // Tracks the featured pin's own radius (15→17 over z11→z16, see
         // the unclustered layer) plus 3px. It was a flat 14, so by z16 the pin
@@ -264,12 +436,14 @@ export function usePointLayers({
         // interchange read as a heavier stop. MapLibre draws a circle's
         // stroke OUTSIDE its radius, so the gap here is a constant 1.5px.
         'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 18, 16, 20],
+        // A compact (dot) pin drops the ring with the rest of the full pin.
+        'circle-opacity': ['case', ['boolean', ['feature-state', 'compact'], false], 0, 1],
         'circle-color': paper(),
         // 1.5px to match the pin outline; two concentric rings of equal
         // weight are what reads as an interchange.
         'circle-stroke-width': 1.5,
         'circle-stroke-color': ink(),
-        'circle-stroke-opacity': 1,
+        'circle-stroke-opacity': ['case', ['boolean', ['feature-state', 'compact'], false], 0, 1],
       },
     });
 
@@ -277,7 +451,7 @@ export function usePointLayers({
       id: UNCLUSTERED_LAYER,
       type: 'circle',
       source: POINTS_SOURCE,
-      filter: ['!', ['has', 'point_count']],
+      filter: ['all', ['!', ['has', 'point_count']], ['!=', ['get', 'cloud'], 1]],
       paint: {
         // Larger dots host the category glyph; featured sit a touch larger.
         // Radius grows slightly with zoom so pins don't feel undersized right
@@ -285,14 +459,32 @@ export function usePointLayers({
         // featured 11→13; now 13→15 / 15→17, so the category glyph inside reads at a
         // glance; the glyph size, featured ring and saved-badge offset below
         // are all scaled from these numbers and must move with them.
+        //
+        // A COMPACT pin (one that would overlap a higher-priority pin, see
+        // pinDeclutter.ts) draws nothing here: PIN_DOT_LAYER, under every full
+        // pin, draws it as a 5px dot that still marks and opens the place.
         'circle-radius': [
           'interpolate',
           ['linear'],
           ['zoom'],
           11,
-          ['case', ['==', ['get', 'featured'], true], 15, 13],
+          [
+            'case',
+            ['boolean', ['feature-state', 'compact'], false],
+            0,
+            ['==', ['get', 'featured'], true],
+            15,
+            13,
+          ],
           16,
-          ['case', ['==', ['get', 'featured'], true], 17, 15],
+          [
+            'case',
+            ['boolean', ['feature-state', 'compact'], false],
+            0,
+            ['==', ['get', 'featured'], true],
+            17,
+            15,
+          ],
         ],
         'circle-color': pinColorExpr,
         // The ink border, not a halo. Blue/green/yellow measure 2.25 / 1.64
@@ -307,7 +499,7 @@ export function usePointLayers({
         // continuous ink edge at every DPR, which is all the contrast gate
         // needs — WCAG 1.4.11 measures colour against the boundary, not its
         // thickness.
-        'circle-stroke-width': 1.5,
+        'circle-stroke-width': ['case', ['boolean', ['feature-state', 'compact'], false], 0, 1.5],
         'circle-stroke-color': ink(),
         // Fully opaque at rest: night dimming lives in `pinColorExpr` as an
         // opaque fade, so overlapping pins never show through each other.
@@ -326,7 +518,7 @@ export function usePointLayers({
       id: GLYPH_LAYER,
       type: 'symbol',
       source: POINTS_SOURCE,
-      filter: ['!', ['has', 'point_count']],
+      filter: ['all', ['!', ['has', 'point_count']], ['!=', ['get', 'cloud'], 1]],
       layout: {
         'icon-image': ['coalesce', ['image', ['get', 'iconKey']], ['image', 'type:venues']],
         // Images are rasterized at 20 logical px (mapGlyphs.ts). This used to
@@ -349,6 +541,7 @@ export function usePointLayers({
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
       },
+      paint: { 'icon-opacity': ['case', ['boolean', ['feature-state', 'compact'], false], 0, 1] },
     });
 
     // Saved badge, offset to the pin's upper-right.
@@ -367,7 +560,12 @@ export function usePointLayers({
       id: STATE_BADGE_LAYER,
       type: 'symbol',
       source: POINTS_SOURCE,
-      filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'favorited'], true]],
+      filter: [
+        'all',
+        ['!', ['has', 'point_count']],
+        ['!=', ['get', 'cloud'], 1],
+        ['==', ['get', 'favorited'], true],
+      ],
       layout: {
         'icon-image': 'state:saved',
         'icon-size': 0.26,
@@ -376,6 +574,35 @@ export function usePointLayers({
         'icon-offset': [36, -36],
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
+      },
+      paint: { 'icon-opacity': ['case', ['boolean', ['feature-state', 'compact'], false], 0, 1] },
+    });
+
+    // "+N" on a pin that stands for several places on one exact spot, at the
+    // pin's upper-left (the saved badge has the upper-right). Clicking the pin
+    // fans the places out, or lists them past STACK_RING_MAX.
+    map.addLayer({
+      id: STACK_BADGE_LAYER,
+      type: 'symbol',
+      source: POINTS_SOURCE,
+      filter: [
+        'all',
+        ['!', ['has', 'point_count']],
+        ['>', ['coalesce', ['get', 'stack_count'], 1], 1],
+      ],
+      layout: {
+        'text-field': ['concat', '+', ['to-string', ['-', ['get', 'stack_count'], 1]]],
+        'text-font': [MAP_FONT_BOLD],
+        'text-size': 11,
+        'text-offset': [-1.4, -1.4],
+        'text-allow-overlap': true,
+        'text-ignore-placement': true,
+      },
+      paint: {
+        'text-color': ink(),
+        'text-halo-color': paper(),
+        'text-halo-width': 2,
+        'text-opacity': ['case', ['boolean', ['feature-state', 'compact'], false], 0, 1],
       },
     });
 
@@ -425,9 +652,22 @@ export function usePointLayers({
     });
 
     // Unclustered point click → rich popup card
-    map.on('click', UNCLUSTERED_LAYER, (e: MapLayerMouseEvent) => {
-      const feat = e.features?.[0];
+    map.on('click', [UNCLUSTERED_LAYER, PIN_DOT_LAYER, CLOUD_LAYER], (e: MapLayerMouseEvent) => {
+      const feat = pickPointUnder(map, e);
       if (!feat || feat.geometry.type !== 'Point') return;
+      // A stacked pin: every place on this spot, fanned out or listed.
+      const members = stackMembersRef.current.get(String(feat.properties?.id));
+      if (members && members.length > 1) {
+        clearSpider();
+        const center = (feat.geometry as GeoJSON.Point).coordinates as [number, number];
+        const onStack = onStackSelectRef?.current;
+        if (shouldListStack(members.length, !!onStack)) {
+          onStack!({ center, points: members.map((m) => summaryFromFeature(m)) });
+        } else {
+          spiderfy(map, center, members.slice(0, SPIDER_MAX));
+        }
+        return;
+      }
       const summary = summaryFromFeature(feat as unknown as PointFeature);
       showPopup(map, e.lngLat, summary);
       onSelectPointRef.current?.(summary.id);
@@ -465,10 +705,10 @@ export function usePointLayers({
       }
       hoverPopupRef.current.setLngLat(e.lngLat).setHTML(html).addTo(map);
     });
-    map.on('mouseenter', UNCLUSTERED_LAYER, () => {
+    map.on('mouseenter', [UNCLUSTERED_LAYER, PIN_DOT_LAYER, CLOUD_LAYER], () => {
       map.getCanvas().style.cursor = 'pointer';
     });
-    map.on('mouseleave', UNCLUSTERED_LAYER, () => {
+    map.on('mouseleave', [UNCLUSTERED_LAYER, PIN_DOT_LAYER, CLOUD_LAYER], () => {
       map.getCanvas().style.cursor = '';
       hoverPopupRef.current?.remove();
       hoverPopupRef.current = null;
@@ -476,35 +716,39 @@ export function usePointLayers({
 
     // Lightweight hover preview: name + subtitle, no close button, no action
     // buttons. Click still opens the full popup with share/navigate.
-    map.on('mousemove', UNCLUSTERED_LAYER, (e: MapLayerMouseEvent) => {
-      const feat = e.features?.[0];
-      if (!feat || feat.geometry.type !== 'Point') return;
-      const props = feat.properties as Record<string, unknown>;
-      const name = String(props.name ?? '');
-      const subtitle = props.subtitle ? String(props.subtitle) : '';
-      let imageUrl = '';
-      try {
-        const meta = JSON.parse(String(props.meta ?? '{}'));
-        // Prefer the reachable R2-mirrored copy over the raw external hotlink.
-        const best = [meta.thumbImage, meta.optimizedImage, meta.image].find(
-          (u) => typeof u === 'string' && /^https?:\/\//.test(u),
-        );
-        if (best) imageUrl = best as string;
-      } catch {
-        /* ignore */
-      }
-      const html = pointHoverHtml({ name, subtitle, imageUrl: imageUrl || undefined });
-      if (!hoverPopupRef.current) {
-        hoverPopupRef.current = new maplibregl.Popup({
-          closeButton: false,
-          closeOnClick: false,
-          offset: 12,
-          maxWidth: '220px',
-          className: 'venue-hover-popup',
-        });
-      }
-      hoverPopupRef.current.setLngLat(e.lngLat).setHTML(html).addTo(map);
-    });
+    map.on(
+      'mousemove',
+      [UNCLUSTERED_LAYER, PIN_DOT_LAYER, CLOUD_LAYER],
+      (e: MapLayerMouseEvent) => {
+        const feat = pickPointUnder(map, e);
+        if (!feat || feat.geometry.type !== 'Point') return;
+        const props = feat.properties as Record<string, unknown>;
+        const name = String(props.name ?? '');
+        const subtitle = props.subtitle ? String(props.subtitle) : '';
+        let imageUrl = '';
+        try {
+          const meta = JSON.parse(String(props.meta ?? '{}'));
+          // Prefer the reachable R2-mirrored copy over the raw external hotlink.
+          const best = [meta.thumbImage, meta.optimizedImage, meta.image].find(
+            (u) => typeof u === 'string' && /^https?:\/\//.test(u),
+          );
+          if (best) imageUrl = best as string;
+        } catch {
+          /* ignore */
+        }
+        const html = pointHoverHtml({ name, subtitle, imageUrl: imageUrl || undefined });
+        if (!hoverPopupRef.current) {
+          hoverPopupRef.current = new maplibregl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            offset: 12,
+            maxWidth: '220px',
+            className: 'venue-hover-popup',
+          });
+        }
+        hoverPopupRef.current.setLngLat(e.lngLat).setHTML(html).addTo(map);
+      },
+    );
 
     // Entrance fade — pins ease in on first paint (skipped for reduced motion),
     // settling fully opaque.
@@ -516,6 +760,55 @@ export function usePointLayers({
           m.setPaintProperty(UNCLUSTERED_LAYER, 'circle-opacity', 1);
       });
     }
+
+    // Lay pins out on every settled camera. Below the cluster range clusters
+    // keep pins apart, so every pin is full-size there.
+    const runDeclutter = () => {
+      const m = mapRef.current;
+      if (!m || !m.getSource(POINTS_SOURCE)) return;
+      const zoom = m.getZoom();
+      let next = new Set<string>();
+      if (zoom > CLUSTER_MAX_ZOOM) {
+        const b = m.getBounds();
+        const pad = 0.25;
+        const w = b.getWest(),
+          e = b.getEast(),
+          so = b.getSouth(),
+          n = b.getNorth();
+        const dx = (e - w) * pad,
+          dy = (n - so) * pad;
+        const pts = [];
+        for (const f of placedFeaturesRef.current) {
+          const [lng, lat] = f.geometry.coordinates as [number, number];
+          if (lng < w - dx || lng > e + dx || lat < so - dy || lat > n + dy) continue;
+          const q = m.project([lng, lat]);
+          const featured = f.properties.featured === true;
+          pts.push({
+            id: String(f.properties.id),
+            x: q.x,
+            y: q.y,
+            r: pinRadiusAt(zoom, featured),
+            priority: pinPriority(
+              featured,
+              f.properties.live === true,
+              f.properties.stack_count || 1,
+            ),
+          });
+        }
+        next = declutterPins(pts);
+      }
+      const prev = compactIdsRef.current;
+      for (const id of prev) {
+        if (!next.has(id)) m.setFeatureState({ source: POINTS_SOURCE, id }, { compact: false });
+      }
+      for (const id of next) {
+        if (!prev.has(id)) m.setFeatureState({ source: POINTS_SOURCE, id }, { compact: true });
+      }
+      compactIdsRef.current = next;
+    };
+    declutterRef.current = runDeclutter;
+    map.on('moveend', runDeclutter);
+    declutterSoon();
 
     startPulse();
     pointLayersAddedRef.current = true;
