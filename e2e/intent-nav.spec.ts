@@ -90,7 +90,7 @@ test.describe('homepage intent map', () => {
     '/search', // the interchange, where all four lines meet
     '/tags', // glossary — the 7th intent
     '/rights',
-    '/help',
+    '/news',
     '/marketplace',
   ];
 
