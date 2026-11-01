@@ -125,5 +125,44 @@
     "failed": "Download fehlgeschlagen: {{reason}}",
     "verifyFailed": "Dieser Download hat die Sicherheitsprüfung nicht bestanden und wurde nicht gespeichert.",
     "discreetNote": "Heruntergeladene Städte sind auf diesem Gerät sichtbar. Entferne sie, bevor du dein Telefon jemandem gibst."
+  },
+  "auth": {
+    "signIn": "Anmelden",
+    "signUp": "Konto erstellen",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "emailInvalid": "Gib eine gültige E-Mail-Adresse ein.",
+    "passwordTooShort": "Verwende mindestens {{n}} Zeichen.",
+    "consentLabel": "Ich stimme den AGB und der Datenschutzerklärung zu, bestätige, dass ich 18 oder älter bin, und verstehe, dass queer.guide eine 18+-Plattform mit Dating- und intimen Funktionen ist.",
+    "terms": "AGB",
+    "privacy": "Datenschutzerklärung",
+    "consentRequired": "Akzeptiere die AGB und bestätige, dass du 18 oder älter bist, um ein Konto zu erstellen.",
+    "forgot": "Passwort vergessen? Im Web zurücksetzen",
+    "errors": {
+      "invalidCredentials": "E-Mail oder Passwort ist falsch.",
+      "alreadyRegistered": "Mit dieser E-Mail gibt es bereits ein Konto. Melde dich stattdessen an.",
+      "weakPassword": "Wähle ein stärkeres Passwort.",
+      "rateLimited": "Zu viele Versuche. Warte eine Minute und versuche es erneut.",
+      "captcha": "Die Anmeldung braucht einen Prüfschritt, den die App noch nicht zeigen kann. Nutze vorerst queer.guide im Web.",
+      "network": "Keine Verbindung. Prüfe dein Netzwerk und versuche es erneut.",
+      "unknown": "Etwas ist schiefgelaufen. Versuche es erneut."
+    }
+  },
+  "account": {
+    "title": "Konto",
+    "signedOutBody": "Zum Stöbern brauchst du kein Konto. Angemeldet siehst du Orte, die in manchen Ländern vor Besucher*innen verborgen sind, und dein Konto ist dasselbe wie im Web.",
+    "signInOrUp": "Anmelden oder Konto erstellen",
+    "signedInAs": "Angemeldet als {{email}}",
+    "signOut": "Abmelden",
+    "delete": "Konto löschen",
+    "deleteTitle": "Konto löschen",
+    "deleteBody": "Damit wird dein queer.guide-Konto mit allem, was dazu gespeichert ist, auf allen Geräten dauerhaft gelöscht. Das lässt sich nicht rückgängig machen.",
+    "deleteLocal": "Nur auf diesem Telefon gespeicherte Orte und heruntergeladene Städte bleiben, bis du sie entfernst.",
+    "typeToConfirm": "Gib {{value}} zur Bestätigung ein",
+    "deleteConfirm": "Mein Konto dauerhaft löschen",
+    "deleteFailed": "Dein Konto konnte nicht gelöscht werden. Versuche es erneut oder kontaktiere den Support, falls es weiter fehlschlägt.",
+    "signedOut": "Du bist abgemeldet.",
+    "loading": "Wird geladen…",
+    "loadError": "Dein Konto konnte nicht geladen werden. Prüfe deine Verbindung."
   }
 }

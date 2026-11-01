@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Linking, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Text } from '@/components/ui';
+import { AccountSection } from '@/features/auth/AccountSection';
 import { DiscreetSettingsSection } from '@/features/discreet/DiscreetSettingsSection';
 import { OfflineCitiesSection } from '@/features/packs/OfflineCitiesSection';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -17,6 +18,7 @@ export default function MeScreen() {
         <Text variant="display" accessibilityRole="header">
           {t('me.title')}
         </Text>
+        <AccountSection />
         <OfflineCitiesSection />
         <Card>
           <Text variant="title">{t('me.privacy')}</Text>

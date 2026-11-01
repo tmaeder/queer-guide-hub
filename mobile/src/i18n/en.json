@@ -125,5 +125,44 @@
     "failed": "Download failed: {{reason}}",
     "verifyFailed": "This download didn't pass its security check and was not saved.",
     "discreetNote": "Downloaded cities are listed on this device. Remove them before handing your phone to someone."
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "emailInvalid": "Enter a valid email address.",
+    "passwordTooShort": "Use at least {{n}} characters.",
+    "consentLabel": "I agree to the Terms and Privacy Policy, confirm I am 18 or older, and understand queer.guide is an 18+ platform that includes dating and intimate features.",
+    "terms": "Terms",
+    "privacy": "Privacy Policy",
+    "consentRequired": "Accept the terms and confirm you are 18 or older to create an account.",
+    "forgot": "Forgot password? Reset it on the web",
+    "errors": {
+      "invalidCredentials": "Email or password is wrong.",
+      "alreadyRegistered": "An account with this email already exists. Sign in instead.",
+      "weakPassword": "Choose a stronger password.",
+      "rateLimited": "Too many attempts. Wait a minute and try again.",
+      "captcha": "Sign-in needs a verification step the app can't show yet. Use queer.guide on the web for now.",
+      "network": "No connection. Check your network and try again.",
+      "unknown": "Something went wrong. Try again."
+    }
+  },
+  "account": {
+    "title": "Account",
+    "signedOutBody": "You don't need an account to browse. Signing in shows places you're allowed to see in countries where they are hidden from visitors, and keeps your account the same as on the web.",
+    "signInOrUp": "Sign in or create account",
+    "signedInAs": "Signed in as {{email}}",
+    "signOut": "Sign out",
+    "delete": "Delete account",
+    "deleteTitle": "Delete account",
+    "deleteBody": "This permanently deletes your queer.guide account and everything stored with it, on every device. It can't be undone.",
+    "deleteLocal": "Places saved only on this phone and downloaded cities stay until you remove them.",
+    "typeToConfirm": "Type {{value}} to confirm",
+    "deleteConfirm": "Delete my account permanently",
+    "deleteFailed": "Your account couldn't be deleted. Try again, or contact support if it keeps failing.",
+    "signedOut": "You're signed out.",
+    "loading": "Loading…",
+    "loadError": "Couldn't load your account. Check your connection."
   }
 }

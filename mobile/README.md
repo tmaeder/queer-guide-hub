@@ -91,11 +91,30 @@ the keychain/keystore.
 - **Alternate icons** — two neutral grid icons. On iOS only the icon changes:
   the home-screen name stays "queer.guide".
 
+## Account (Me → Account)
+
+Email + password sign-in and sign-up against the same Supabase project as
+the web, so it is the same account. Sign-up sends only the three consent
+timestamps the web sends; the database trigger mints username and avatar.
+
+- **Cache reset on user change.** Signed-in users see safety-gated places
+  that visitors do not, so every cached query is dropped on sign-out and
+  when a different user signs in.
+- **Sign-out is local** — it ends the session on this phone only.
+- **Delete account** calls the same `delete-account` edge function as the
+  web's Danger zone. The confirmation is the username when the profile has
+  one, otherwise the email — what the function checks. Local saved places
+  and downloaded cities are not account data and stay until removed.
+- Password reset opens queer.guide (its redirect is on the web allowlist).
+- If GoTrue CAPTCHA is switched on, native sign-in fails with a clear
+  message until the app gets a Turnstile step. It is off on prod today.
+
 ## Not done yet
 
 Tracked in the strategy doc's work breakdown: offline map tiles (PMTiles
 extracts in packs), pack hosting + a scheduled rebuild, offline search UI,
-sign-in, push, brand fonts
+passkey and OAuth sign-in (need the universal-link domain association),
+in-app password reset, push, brand fonts
 (the web ships woff2 only; native needs ttf/otf), EAS build profiles and
 store metadata, and serving the AASA / assetlinks.json files for the
 universal links declared in `app.config.ts`.
