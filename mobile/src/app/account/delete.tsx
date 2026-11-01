@@ -3,7 +3,7 @@ import { router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet } from 'react-native';
-import { Button, Card, Field, StateMessage, Text } from '@/components/ui';
+import { Alert, Button, Card, Field, StateMessage, Text } from '@/components/ui';
 import {
   authErrorKey,
   confirmationMatches,
@@ -77,9 +77,7 @@ export default function DeleteAccountScreen() {
         autoCorrect={false}
       />
       {error ? (
-        <Text accessibilityRole="alert" style={{ color: colors.destructive }}>
-          {error}
-        </Text>
+        <Alert message={error} />
       ) : null}
       <Button
         tone="destructive"

@@ -16,7 +16,8 @@
     "empty": "No places here yet. Zoom out or move the map.",
     "nearMe": "Near me",
     "locationDenied": "Location is off. Places still work — just move the map.",
-    "zoomIn": "Zoom in to see places"
+    "zoomIn": "Zoom in to see places",
+    "mapLabel": "Map. The list below shows what's on the map."
   },
   "venue": {
     "notFound": "This place isn't listed any more.",

@@ -54,6 +54,10 @@ export default function ExploreScreen() {
         logo={false}
         attribution
         compass
+        // Pins are GL features VoiceOver/TalkBack cannot reach; the list
+        // below carries the same places, so say so instead of a silent map.
+        accessible
+        accessibilityLabel={t('explore.mapLabel')}
         onRegionDidChange={(e) => {
           const { bounds: b, zoom } = e.nativeEvent;
           zoomRef.current = zoom;

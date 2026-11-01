@@ -16,7 +16,8 @@
     "empty": "Hier gibt es noch keine Orte. Zoom heraus oder verschiebe die Karte.",
     "nearMe": "In der Nähe",
     "locationDenied": "Standort ist aus. Die Orte funktionieren trotzdem – verschiebe einfach die Karte.",
-    "zoomIn": "Zoom hinein, um Orte zu sehen"
+    "zoomIn": "Zoom hinein, um Orte zu sehen",
+    "mapLabel": "Karte. Die Liste darunter zeigt, was auf der Karte ist."
   },
   "venue": {
     "notFound": "Dieser Ort ist nicht mehr gelistet.",
