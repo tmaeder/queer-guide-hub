@@ -109,6 +109,21 @@ timestamps the web sends; the database trigger mints username and avatar.
 - If GoTrue CAPTCHA is switched on, native sign-in fails with a clear
   message until the app gets a Turnstile step. It is off on prod today.
 
+## Notifications (plumbing only)
+
+Me → Notifications registers this phone's native APNs/FCM token in
+`user_push_tokens` (RLS: owner only). Nothing sends to it yet.
+
+- Off by default; the OS prompt appears only from that toggle.
+- Native device token, not an Expo push token: no third-party relay learns
+  who is registered.
+- Sign-out (and a session ending on its own) kills the token on the device
+  and deletes its row while the session still exists. The device step holds
+  offline too, so the next person to sign in on this phone can never get
+  the previous account's notifications. Sign-out never waits on the network.
+- Android needs a Firebase `google-services.json` before FCM tokens work;
+  without it the toggle reports "not available on this build".
+
 ## Fonts and builds
 
 - **Fonts:** Anton (display, headline) and Space Grotesk (everything else),
@@ -131,5 +146,5 @@ result types in search, passkey and OAuth sign-in and universal links
 (queer.guide already serves AASA / assetlinks from the redirect-domain
 registry, which only allows `/go/*` on the built-in host — widening that
 for the first-party app is a decision, plus the Apple Team ID and Android
-signing fingerprint), in-app password reset, a push sender, and store
-metadata.
+signing fingerprint), in-app password reset, a push sender (APNs key / FCM
+project), and store metadata.

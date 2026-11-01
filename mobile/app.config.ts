@@ -72,6 +72,8 @@ const config: ExpoConfig = {
     '@maplibre/maplibre-react-native',
     // FTS5 powers offline search over downloaded city packs.
     ['expo-sqlite', { enableFTS: true }],
+    // Off by default; the permission prompt only appears from Me → Notifications.
+    'expo-notifications',
     [
       'expo-local-authentication',
       { faceIDPermission: 'Face ID is used only to unlock the app on this device.' },
