@@ -213,5 +213,13 @@
     "fundraiser": "Benefiz",
     "art": "Kunst",
     "cruise": "Kreuzfahrt"
+  },
+  "push": {
+    "title": "Benachrichtigungen",
+    "toggle": "Benachrichtigungen auf diesem Telefon erlauben",
+    "body": "Aus, bis du sie einschaltest. Beim Abmelden wird dieses Telefon entfernt, damit die nächste Person, die sich hier anmeldet, nie deine Benachrichtigungen bekommt. Noch wird nichts gesendet.",
+    "denied": "Benachrichtigungen sind in den Systemeinstellungen blockiert. Tippe, um die Einstellungen zu öffnen.",
+    "unavailable": "Benachrichtigungen sind auf diesem Gerät oder in dieser Version nicht verfügbar.",
+    "failed": "Das konnte nicht geändert werden. Prüfe deine Verbindung und versuche es erneut."
   }
 }
