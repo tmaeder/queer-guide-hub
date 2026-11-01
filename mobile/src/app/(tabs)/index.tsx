@@ -39,7 +39,9 @@ export default function ExploreScreen() {
       return;
     }
     setLocationDenied(false);
-    // Used for the camera only; the position is never sent anywhere.
+    // Used for the camera only; the coordinates are never sent. The viewport
+    // that results IS sent (fetchVenuesInBounds) — at zoom 14 that is a
+    // coarse location, which the privacy copy and store labels both declare.
     const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
     camera.current?.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 14 });
   }

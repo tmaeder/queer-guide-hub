@@ -118,3 +118,14 @@ domain association), in-app password reset, push, brand fonts
 (the web ships woff2 only; native needs ttf/otf), EAS build profiles and
 store metadata, and serving the AASA / assetlinks.json files for the
 universal links declared in `app.config.ts`.
+
+## Device E2E (Maestro)
+
+Flows live in `.maestro/` and run against a dev or preview build on a
+simulator/emulator: `maestro test .maestro`. They select by English copy, and
+CI does not run Maestro, so `src/__tests__/maestroFlows.test.ts` fails if a
+flow taps or asserts a string that is no longer in `en.json`. Venue `mylord`
+(Zurich) is the fixed test place; if it is ever merged or closed, change the
+flow and the test's `DATA` set together.
+
+Store listing, privacy labels, age rating and review notes: `store/`.

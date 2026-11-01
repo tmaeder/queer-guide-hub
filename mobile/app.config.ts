@@ -28,7 +28,7 @@ const config: ExpoConfig = {
     associatedDomains: ['applinks:queer.guide', 'webcredentials:queer.guide'],
     infoPlist: {
       NSLocationWhenInUseUsageDescription:
-        'Your location is used on this device to show nearby places. It is never sent to queer.guide.',
+        'Your location moves the map to where you are. Your coordinates stay on this device; queer.guide only receives the area of map on screen, to load places in it.',
       ITSAppUsesNonExemptEncryption: false,
     },
     privacyManifests: {
@@ -95,7 +95,7 @@ const config: ExpoConfig = {
       'expo-location',
       {
         locationWhenInUsePermission:
-          'Your location is used on this device to show nearby places. It is never sent to queer.guide.',
+          'Your location moves the map to where you are. Your coordinates stay on this device; queer.guide only receives the area of map on screen, to load places in it.',
         isIosBackgroundLocationEnabled: false,
         isAndroidBackgroundLocationEnabled: false,
       },

@@ -58,7 +58,7 @@
   "me": {
     "title": "Me",
     "privacy": "Privacy",
-    "privacyBody": "This app has no analytics or tracking. Your location is used only on this device. Saved places never leave it.",
+    "privacyBody": "No ads, no tracking, no analytics SDKs. Your precise location stays on this device: to load places, the app asks queer.guide for the area of map on screen, as any map does. Searches are kept without anything that identifies you, to improve search. Saved places never leave this device.",
     "website": "Open queer.guide on the web",
     "version": "Version {{version}}"
   },
