@@ -1,0 +1,97 @@
+name: Mobile offline packs
+
+# Builds the signed offline city packs, uploads them to R2, then verifies the
+# PUBLIC url exactly as the app will (signature + every pack's sha256).
+#
+# Needs, before it can do anything:
+#   secret  PACK_SIGNING_KEY       64-hex ed25519 secret (scripts/packs/keygen.mjs)
+#   secret  CLOUDFLARE_API_TOKEN   R2 write on the pack bucket
+#   var     PACK_R2_BUCKET         bucket name
+#   var     PACK_BASE_URL          public https URL serving that bucket
+#   var     PACK_PUBLIC_KEY        the matching public key (also EXPO_PUBLIC_PACK_PUBLIC_KEY)
+# Until they exist the scheduled run warns and exits; a manual run fails.
+
+on:
+  schedule:
+    - cron: '17 4 * * 1' # Mondays 04:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-packs
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      PACK_SIGNING_KEY: ${{ secrets.PACK_SIGNING_KEY }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: 7aa3765cc5f50f2b681b782eb4a8d296
+      PACK_R2_BUCKET: ${{ vars.PACK_R2_BUCKET }}
+      PACK_BASE_URL: ${{ vars.PACK_BASE_URL }}
+      PACK_PUBLIC_KEY: ${{ vars.PACK_PUBLIC_KEY }}
+    steps:
+      - name: Check configuration
+        id: config
+        working-directory: .
+        run: |
+          missing=()
+          for v in PACK_SIGNING_KEY CLOUDFLARE_API_TOKEN PACK_R2_BUCKET PACK_BASE_URL PACK_PUBLIC_KEY; do
+            [ -n "${!v}" ] || missing+=("$v")
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            msg="Offline packs are not configured: missing ${missing[*]}"
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "::error::$msg"; exit 1; fi
+            echo "::warning::$msg — skipping."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.config.outputs.ready == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - if: steps.config.outputs.ready == 'true'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - if: steps.config.outputs.ready == 'true'
+        run: npm ci
+
+      - name: Build packs (publishable key only — RLS keeps gated venues out)
+        if: steps.config.outputs.ready == 'true'
+        run: node scripts/packs/build.mjs --cities-file scripts/packs/cities.txt --out dist/packs
+
+      # Packs first, index last: the index must never name a file that is not
+      # uploaded yet. Files are named by city and overwritten each run, so all
+      # of them get a short cache lifetime.
+      - name: Upload to R2
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          put() {
+            npx --yes wrangler@4 r2 object put "$PACK_R2_BUCKET/$1" --file "dist/packs/$1" \
+              --content-type application/json --cache-control "public, max-age=300" --remote
+          }
+          for f in dist/packs/*.json; do
+            name=$(basename "$f"); [ "$name" = index.json ] || put "$name"
+          done
+          put index.json
+
+      - name: Verify the public URL as the app does
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          expected=$(ls dist/packs/*.json | grep -vc '/index.json$')
+          # The CDN may still hold the previous index for up to max-age.
+          for attempt in 1 2 3 4 5 6 7; do
+            if node scripts/packs/verify-remote.mjs --expect "$expected"; then exit 0; fi
+            echo "attempt $attempt failed; retrying in 60s"; sleep 60
+          done
+          echo "::error::Published packs do not verify at $PACK_BASE_URL"
+          exit 1
