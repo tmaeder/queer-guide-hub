@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { resetCacheOnUserChange } from '@/features/auth/cacheReset';
+import { nativePush } from '@/features/push/native';
+import { unregisterOnSessionEnd } from '@/features/push/push';
 import { DiscreetGate } from '@/features/discreet/DiscreetGate';
 import { packDb } from '@/features/packs/db';
 import { savedStore } from '@/features/saved/savedStore';
@@ -47,6 +49,7 @@ export default function RootLayout() {
 
   // Gated content differs per user: drop the cache whenever the user changes.
   useEffect(() => resetCacheOnUserChange(queryClient), [queryClient]);
+  useEffect(() => unregisterOnSessionEnd(nativePush), []);
 
   useEffect(() => {
     void savedStore.load();

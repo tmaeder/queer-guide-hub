@@ -109,12 +109,27 @@ timestamps the web sends; the database trigger mints username and avatar.
 - If GoTrue CAPTCHA is switched on, native sign-in fails with a clear
   message until the app gets a Turnstile step. It is off on prod today.
 
+## Notifications (plumbing only)
+
+Me → Notifications registers this phone's native APNs/FCM token in
+`user_push_tokens` (RLS: owner only). Nothing sends to it yet.
+
+- Off by default; the OS prompt appears only from that toggle.
+- Native device token, not an Expo push token: no third-party relay learns
+  who is registered.
+- Sign-out (and a session ending on its own) kills the token on the device
+  and deletes its row while the session still exists. The device step holds
+  offline too, so the next person to sign in on this phone can never get
+  the previous account's notifications. Sign-out never waits on the network.
+- Android needs a Firebase `google-services.json` before FCM tokens work;
+  without it the toggle reports "not available on this build".
+
 ## Not done yet
 
 Tracked in the strategy doc's work breakdown: offline map tiles (PMTiles
 extracts in packs), pack hosting + a scheduled rebuild, events and other
 result types in search, passkey and OAuth sign-in (need the universal-link
-domain association), in-app password reset, push, brand fonts
+domain association), in-app password reset, a push sender (APNs key / FCM project), brand fonts
 (the web ships woff2 only; native needs ttf/otf), EAS build profiles and
 store metadata, and serving the AASA / assetlinks.json files for the
 universal links declared in `app.config.ts`.

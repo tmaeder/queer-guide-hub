@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Text } from '@/components/ui';
 import { AccountSection } from '@/features/auth/AccountSection';
 import { DiscreetSettingsSection } from '@/features/discreet/DiscreetSettingsSection';
+import { NotificationsSection } from '@/features/push/NotificationsSection';
 import { OfflineCitiesSection } from '@/features/packs/OfflineCitiesSection';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
@@ -19,6 +20,7 @@ export default function MeScreen() {
           {t('me.title')}
         </Text>
         <AccountSection />
+        <NotificationsSection />
         <OfflineCitiesSection />
         <Card>
           <Text variant="title">{t('me.privacy')}</Text>

@@ -9,6 +9,14 @@ jest.mock('@/lib/supabase', () => ({
   supabase: { get auth() { return mockAuth; }, functions: { invoke: (...a: unknown[]) => mockInvoke(...a) }, rpc: (...a: unknown[]) => mockRpc(...a) },
 }));
 
+const mockUnregisterBeforeSignOut = jest.fn(async () => {});
+const mockUnregisterDevice = jest.fn(async () => {});
+jest.mock('@/features/push/native', () => ({ nativePush: { unregisterDevice: () => mockUnregisterDevice() } }));
+jest.mock('@/features/push/push', () => ({
+  unregisterBeforeSignOut: () => mockUnregisterBeforeSignOut(),
+  forgetLocalRecord: async () => {},
+}));
+
 import {
   authErrorKey,
   confirmationMatches,
@@ -42,9 +50,17 @@ describe('signUp', () => {
   });
 });
 
-it('signs out of this phone only', async () => {
+it('signs out of this phone only, after removing its push token', async () => {
+  const order: string[] = [];
+  mockUnregisterBeforeSignOut.mockImplementationOnce(async () => void order.push('push'));
+  mockAuth.signOut.mockImplementationOnce(async () => {
+    order.push('signOut');
+    return { error: null };
+  });
   await signOut();
   expect(mockAuth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+  // The row delete needs the session, so it must come first.
+  expect(order).toEqual(['push', 'signOut']);
 });
 
 describe('deleteAccount', () => {
@@ -53,6 +69,7 @@ describe('deleteAccount', () => {
     await deleteAccount('mx_tobi');
     expect(mockInvoke).toHaveBeenCalledWith('delete-account', { body: { confirmation: 'mx_tobi' } });
     expect(mockAuth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+    expect(mockUnregisterDevice).toHaveBeenCalled();
   });
 
   it('keeps the session when the server did not confirm deletion', async () => {

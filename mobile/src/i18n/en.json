@@ -173,5 +173,13 @@
     "signedOut": "You're signed out.",
     "loading": "Loading…",
     "loadError": "Couldn't load your account. Check your connection."
+  },
+  "push": {
+    "title": "Notifications",
+    "toggle": "Allow notifications on this phone",
+    "body": "Off unless you turn it on. Signing out removes this phone, so the next person to sign in here never gets your notifications. Nothing is sent yet.",
+    "denied": "Notifications are blocked in system settings. Tap to open Settings.",
+    "unavailable": "Notifications aren't available on this device or build.",
+    "failed": "Couldn't change this. Check your connection and try again."
   }
 }
