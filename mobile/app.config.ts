@@ -56,6 +56,7 @@ const config: ExpoConfig = {
         data: [
           { scheme: 'https', host: 'queer.guide', pathPrefix: '/venues/' },
           { scheme: 'https', host: 'queer.guide', pathPrefix: '/events/' },
+          { scheme: 'https', host: 'queer.guide', pathPrefix: '/city/' },
           { scheme: 'https', host: 'queer.guide', pathPrefix: '/help' },
         ],
         category: ['BROWSABLE', 'DEFAULT'],
