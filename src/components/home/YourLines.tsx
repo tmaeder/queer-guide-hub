@@ -107,7 +107,9 @@ export function YourLines() {
         // Every history card has the same reason, so it lives once in the band
         // description; the card's label says WHAT the thing is instead.
         reason: t(`home.yourLines.type.${it.type}`, TYPE_LABEL[it.type] ?? ''),
-        image: it.image ?? resolvedImages[key],
+        // The live row wins over the URL saved at view time; a row found with
+        // no usable image (flagged, removed) must not fall back to the snapshot.
+        image: key in resolvedImages ? resolvedImages[key] : it.image,
         type: it.type,
         slug: it.slug,
       });

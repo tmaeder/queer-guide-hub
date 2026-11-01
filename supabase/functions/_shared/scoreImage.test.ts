@@ -27,6 +27,37 @@ Deno.test('stock watermark / agency tokens are hard-rejected', () => {
   }
 })
 
+Deno.test('maps, charts and satellite imagery are rejected even when they name the city', () => {
+  // The live Mexico City cover: a NASA radar subsidence map that scored 90.
+  const alt =
+    'A scientist produced this map of land subsidence (sinking) in Mexico City using data from the NISAR mission'
+  const s = scoreImage({
+    alt, width: 1280, height: 1101, source: 'wikimedia',
+    subject: { name: 'Mexico City', country: 'Mexico' }, subjectType: 'city',
+  })
+  assertEquals(s, Number.NEGATIVE_INFINITY)
+  for (const a of ['Locator map of Berlin', 'Satellite view of Paris', 'Chart of Tokyo population']) {
+    assertEquals(scoreImage({ alt: a, width: 1600, height: 1000, source: 'wikimedia', subject: { name: 'Berlin' }, subjectType: 'city' }), Number.NEGATIVE_INFINITY)
+  }
+})
+
+Deno.test('the map words are whole-word matches', () => {
+  // "Mapplethorpe" and "charter" must not trip the map/chart reject.
+  const s = scoreImage({
+    alt: 'Mapplethorpe exhibition at a charter school hall in Berlin',
+    width: 1600, height: 1000, source: 'wikimedia',
+    subject: { name: 'Berlin' }, subjectType: 'city',
+  })
+  assert(Number.isFinite(s))
+})
+
+Deno.test('a map word deep inside an essay-length caption does not reject a photo', () => {
+  const alt = 'Thousands march through Berlin in solidarity. ' + 'Long caption text. '.repeat(30) +
+    'The government continues to supply radar systems.'
+  const s = scoreImage({ alt, width: 1600, height: 1000, source: 'wikimedia', subject: { name: 'Berlin' }, subjectType: 'city' })
+  assert(Number.isFinite(s))
+})
+
 // ── Generic venue/event scoring ─────────────────────────────────────────────
 
 Deno.test('clean full-size landscape clears the cover bar for a venue', () => {

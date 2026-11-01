@@ -60,6 +60,24 @@ const HARD_REJECT_TOKENS = [
   'close-up', 'closeup', 'portrait of',
 ]
 
+/**
+ * Cartography and data visualisation are never a cover photo. Matched as WHOLE
+ * WORDS, because `map` is inside "Mapplethorpe" and `chart` inside "charter".
+ * Mexico City's cover was a NASA radar map of land subsidence that scored 90:
+ * it names the city, comes from Wikimedia and is 1280px wide, and nothing here
+ * said a map is not a photograph.
+ *
+ * Only the OPENING of the alt text is read. Flickr captions run to essays, and
+ * a protest photo filed for Gaza mentions "radar systems" 4,000 characters in.
+ * Every real map in the corpus says so in its first sentence.
+ */
+const HARD_REJECT_WORDS_WINDOW = 200
+const HARD_REJECT_WORDS = [
+  'map', 'maps', 'mapped', 'mapping', 'locator', 'diagram', 'chart', 'charts',
+  'graph', 'infographic', 'satellite', 'radar', 'subsidence', 'heatmap',
+  'floor plan', 'blueprint', 'coat of arms', 'flag of', 'seal of',
+]
+
 const SOFT_PENALTY_TOKENS = ['sunset', 'clouds', 'sky', 'landscape']
 
 const WATER_TOKENS = ['ferry', 'cruise ship', 'cruise']
@@ -72,6 +90,8 @@ export function scoreImage(input: ScoreInput): number {
   for (const token of HARD_REJECT_TOKENS) {
     if (alt.includes(token)) return Number.NEGATIVE_INFINITY
   }
+  const altHead = alt.slice(0, HARD_REJECT_WORDS_WINDOW)
+  if (HARD_REJECT_WORDS.some((w) => hasWord(altHead, w))) return Number.NEGATIVE_INFINITY
 
   // Conditional reject: water-bound imagery is wrong for non-coastal subjects.
   if (!input.isPortOrCoastal && input.subjectType !== 'country') {
