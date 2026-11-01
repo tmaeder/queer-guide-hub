@@ -5,7 +5,8 @@ tags: [smoke]
 - launchApp:
     clearState: true
 - tapOn: "Search"
-- tapOn: "Search places"
+# Matches the field by its placeholder ("Search places…") without pinning the exact wording.
+- tapOn: "Search .*"
 - inputText: "Mylord"
 - extendedWaitUntil:
     visible: "Mylord"
