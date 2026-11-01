@@ -75,6 +75,15 @@ Upload `dist/packs/` to a static https host, then build the app with
 `EXPO_PUBLIC_PACK_BASE_URL` and `EXPO_PUBLIC_PACK_PUBLIC_KEY`. Without both,
 the Me tab says offline cities are not available and nothing is fetched.
 
+**Weekly publish:** `.github/workflows/mobile-packs.yml` builds every city in
+`scripts/packs/cities.txt`, uploads to R2 (packs first, `index.json` last, all
+with a 5-minute cache because files are named by city and overwritten), then
+runs `scripts/packs/verify-remote.mjs` against the public URL — signature and
+every pack's sha256 — and fails the run if the CDN serves anything else. It
+needs the secrets/vars listed in its header; until they exist the schedule
+warns and skips. The list's second block is high-risk destinations whose
+packs carry only support lines.
+
 ## Discreet mode (Me → Discreet mode)
 
 All on-device; no server flag records that anyone uses it. Settings live in
@@ -143,7 +152,7 @@ Me → Notifications registers this phone's native APNs/FCM token in
 ## Not done yet
 
 Tracked in the strategy doc's work breakdown: offline map tiles (PMTiles
-extracts in packs), pack hosting + a scheduled rebuild, events and other
+extracts in packs), pack hosting (the publish job is ready; it needs a bucket and keys), events and other
 result types in search, passkey and OAuth sign-in and universal links
 (queer.guide already serves AASA / assetlinks from the redirect-domain
 registry, which only allows `/go/*` on the built-in host — widening that
