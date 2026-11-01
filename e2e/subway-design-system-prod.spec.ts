@@ -265,8 +265,8 @@ test.describe('production subway design-system contract', () => {
     // animates everything, including the crisis pages this list exists to keep
     // still.
     // Located by HREF and clicked through the element, which is this file's own
-    // pattern further down. The primary nav has no "Help" item — /help lives
-    // under "Support" — so `getByRole('link', { name: /^help$/i })` times out on
+    // pattern further down. The primary nav has no "Help" item — /help is
+    // only a footer/sheet link since Support left the header — so `getByRole('link', { name: /^help$/i })` times out on
     // the homepage, and the footer link can sit under the sticky bar.
     await gotoReady(page, '/');
     const helpLink = page.locator('a[href$="/help"]').first();

@@ -7,6 +7,7 @@ import {
   INTENT_NAV,
   INTENT_SCOPE_BIAS,
   INTENT_TRACK,
+  FOOTER_ONLY_DESTINATIONS,
   findActiveIntent,
   BOTTOM_NAV_TABS,
   NAV_CLUSTERS,
@@ -335,7 +336,10 @@ describe('INTENT_TRACK', () => {
   const TRACKS = ['pink', 'blue', 'green', 'yellow'] as const;
 
   it('assigns a line to every intent and to nothing else', () => {
-    expect(Object.keys(INTENT_TRACK).sort()).toEqual(INTENT_NAV.map((i) => i.id).sort());
+    // Footer-only destinations carry a line too: the footer row colours its
+    // swatches from INTENT_TRACK.
+    const ids = [...INTENT_NAV, ...FOOTER_ONLY_DESTINATIONS].map((i) => i.id);
+    expect(Object.keys(INTENT_TRACK).sort()).toEqual(ids.sort());
   });
 
   it('only names real tracks', () => {

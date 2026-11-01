@@ -2270,7 +2270,8 @@
       "tagsStiGuide": "STI guide",
       "rightsByCountry": "Rights by country",
       "transRights": "Trans rights",
-      "competitions": "Drag Race"
+      "competitions": "Drag Race",
+      "newsAll": "All news"
     },
     "intents": {
       "knowledge": {
@@ -2292,6 +2293,10 @@
       "rights": {
         "label": "Rights",
         "subtitle": "LGBTQ+ law and safety, country by country"
+      },
+      "news": {
+        "label": "News",
+        "subtitle": "LGBTQ+ news from around the world"
       },
       "support": {
         "label": "Support",

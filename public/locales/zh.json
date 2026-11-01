@@ -2071,7 +2071,8 @@
       "tagsStiGuide": "性传播感染指南",
       "rightsByCountry": "各国权利",
       "transRights": "跨性别权利",
-      "competitions": "[ZH] Drag Race"
+      "competitions": "[ZH] Drag Race",
+      "newsAll": "全部新闻"
     },
     "intents": {
       "knowledge": {
@@ -2107,6 +2108,10 @@
       "glossary": {
         "label": "术语库",
         "subtitle": "每个术语、旗帜和暗号的含义"
+      },
+      "news": {
+        "label": "新闻",
+        "subtitle": "来自世界各地的 LGBTQ+ 新闻"
       }
     },
     "userMenu": {

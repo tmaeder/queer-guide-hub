@@ -158,7 +158,7 @@ export default function News() {
         />
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-12 xl:gap-16">
-          <main className="min-w-0">
+          <div className="min-w-0">
             <NewStoriesPill count={newCount} onRefresh={handleRefreshNew} />
             <LeadStory
               article={leadArticle}
@@ -228,7 +228,7 @@ export default function News() {
                 </LocalizedLink>
               </Button>
             </div>
-          </main>
+          </div>
 
           <aside className={`hidden xl:block sticky ${STICKY_RAIL_UNDER_HEADER} self-start`}>
             <ReaderRail />

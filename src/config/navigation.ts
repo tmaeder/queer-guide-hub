@@ -161,6 +161,15 @@ export const DESTINATIONS: NavDestination[] = [
   { to: '/competitions', icon: Crown, labelKey: 'header.nav.competitions', cluster: 'community' },
   { to: '/hotels', icon: Building, labelKey: 'header.nav.hotels', cluster: 'places' },
   { to: '/help', icon: LifeBuoy, labelKey: 'header.nav.help', cluster: 'support' },
+  // Listed since the Support intent left the header (2026-11-01): until then
+  // /organizations was reachable only through that intent's activePrefixes.
+  {
+    to: '/organizations',
+    icon: HeartHandshake,
+    labelKey: 'header.nav.organizations',
+    cluster: 'support',
+    searchType: 'organization',
+  },
 ];
 
 /**
@@ -189,7 +198,7 @@ export const DESTINATIONS: NavDestination[] = [
  *    already had to be collapsed for exactly that reason.
  * Both are asserted in src/config/__tests__/navigation.test.ts.
  */
-export type IntentId = 'going-out' | 'travelling' | 'meet' | 'glossary' | 'support' | 'shop';
+export type IntentId = 'going-out' | 'travelling' | 'meet' | 'glossary' | 'news' | 'shop';
 
 export interface IntentDestination {
   id: IntentId;
@@ -328,22 +337,17 @@ export const INTENT_NAV: IntentDestination[] = [
     ],
   },
   {
-    id: 'support',
-    // Points at /help, not /support: the two pages were redundant (same
-    // useOrganizationsList({role:'support'}) source) and /help is the superset —
-    // it owns the CMS hotline corpus, per-country routes, QuickExit and the
-    // EmergencyService JSON-LD. /support still resolves, as a redirect.
-    to: '/help',
-    icon: transitIcon('helpline'),
-    labelKey: 'header.intents.support.label',
-    fallback: 'Support',
-    subtitleKey: 'header.intents.support.subtitle',
-    subtitleFallback: 'Helplines and organizations near you',
-    activePrefixes: ['/support', '/help', '/organizations'],
-    children: [
-      { to: '/help', labelKey: 'header.nav.help', fallback: 'Helplines' },
-      { to: '/organizations', labelKey: 'header.nav.organizations', fallback: 'Organizations' },
-    ],
+    // News replaced Support in the primary row (2026-11-01, user decision).
+    // Support now lives in the footer only — see FOOTER_ONLY_DESTINATIONS.
+    id: 'news',
+    to: '/news',
+    icon: transitIcon('news'),
+    labelKey: 'header.intents.news.label',
+    fallback: 'News',
+    subtitleKey: 'header.intents.news.subtitle',
+    subtitleFallback: 'LGBTQ+ news from around the world',
+    activePrefixes: ['/news'],
+    children: [{ to: '/news', labelKey: 'header.nav.newsAll', fallback: 'All news' }],
   },
   {
     id: 'shop',
@@ -372,8 +376,36 @@ export const INTENT_NAV: IntentDestination[] = [
   },
 ];
 
+/**
+ * Destinations that sit in the footer's destination row but NOT in the header,
+ * the homepage subway map or the mobile sheet's intent list (2026-11-01, user
+ * decision). Kept out of INTENT_NAV on purpose: every INTENT_NAV consumer
+ * (header row, map stations, search scope bias) would otherwise pick it up.
+ * /help and /organizations also stay in DESTINATIONS, so the mobile sheet's
+ * browse list and search still reach them.
+ */
+export const FOOTER_ONLY_DESTINATIONS: (Omit<IntentDestination, 'id'> & { id: 'support' })[] = [
+  {
+    id: 'support',
+    to: '/help',
+    icon: transitIcon('helpline'),
+    labelKey: 'header.intents.support.label',
+    fallback: 'Support',
+    subtitleKey: 'header.intents.support.subtitle',
+    subtitleFallback: 'Helplines and organizations near you',
+    activePrefixes: ['/support', '/help', '/organizations'],
+    children: [
+      { to: '/help', labelKey: 'header.nav.help', fallback: 'Helplines' },
+      { to: '/organizations', labelKey: 'header.nav.organizations', fallback: 'Organizations' },
+    ],
+  },
+];
+
 /** Path-prefix match against a locale-stripped pathname. */
-export function isIntentActive(intent: IntentDestination, path: string): boolean {
+export function isIntentActive(
+  intent: Pick<IntentDestination, 'activePrefixes'>,
+  path: string,
+): boolean {
   return intent.activePrefixes.some((p) => path === p || path.startsWith(`${p}/`));
 }
 
@@ -405,7 +437,7 @@ export const INTENT_SCOPE_BIAS: Record<IntentId, string[]> = {
   // index in search, so this deliberately does not pretend to surface people.
   meet: ['group', 'event'],
   glossary: ['tag', 'personality'],
-  support: ['organization', 'news'],
+  news: ['news', 'organization'],
   shop: ['marketplace', 'guide'],
 };
 
@@ -623,9 +655,9 @@ export const MODE_SCOPE_BIAS: Record<UserMode, string[]> = {
  *
  * WHERE AN INTENT MAPS 1:1 TO A CONTENT TYPE, ITS LINE MUST MATCH THAT TYPE'S
  * LINE in ROUTE_BULLET_MAP — otherwise wayfinding says one colour in the header
- * and another on the page it opens. `shop` is the only such intent (going-out
+ * and another on the page it opens. `shop` and `news` are the only such intents (going-out
  * spans venue+event, travelling spans city+country+hotel, meet spans group+
- * event, support → organization), and it read 'blue' against
+ * event), and it read 'blue' against
  * a yellow marketplace bullet until 2026-08-12. Asserted in navigation.test.ts.
  */
 export const INTENT_TRACK: Record<string, 'pink' | 'blue' | 'green' | 'yellow'> = {
@@ -634,6 +666,10 @@ export const INTENT_TRACK: Record<string, 'pink' | 'blue' | 'green' | 'yellow'> 
   meet: 'green',
   // Knowledge retains the glossary's established pink line.
   glossary: 'pink',
-  support: 'pink',
+  // News maps 1:1 to the news content type, so it carries that type's line
+  // (N-blue in ROUTE_BULLET_MAP).
+  news: 'blue',
   shop: 'yellow',
+  // Footer-only (FOOTER_ONLY_DESTINATIONS); never drawn on the subway map.
+  support: 'pink',
 };

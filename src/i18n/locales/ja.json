@@ -2071,7 +2071,8 @@
       "tagsStiGuide": "性感染症ガイド",
       "rightsByCountry": "国別の権利",
       "transRights": "トランスの権利",
-      "competitions": "[JA] Drag Race"
+      "competitions": "[JA] Drag Race",
+      "newsAll": "すべてのニュース"
     },
     "intents": {
       "knowledge": {
@@ -2107,6 +2108,10 @@
       "glossary": {
         "label": "用語集",
         "subtitle": "すべての用語・旗・コードの意味"
+      },
+      "news": {
+        "label": "ニュース",
+        "subtitle": "世界のLGBTQ+ニュース"
       }
     },
     "userMenu": {

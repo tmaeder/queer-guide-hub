@@ -2071,7 +2071,8 @@
       "tagsStiGuide": "Guida alle IST",
       "rightsByCountry": "Diritti per paese",
       "transRights": "Diritti trans",
-      "competitions": "[IT] Drag Race"
+      "competitions": "[IT] Drag Race",
+      "newsAll": "Tutte le notizie"
     },
     "intents": {
       "knowledge": {
@@ -2107,6 +2108,10 @@
       "glossary": {
         "label": "Glossario",
         "subtitle": "Cosa significano termini, bandiere e codici"
+      },
+      "news": {
+        "label": "Notizie",
+        "subtitle": "Notizie LGBTQ+ da tutto il mondo"
       }
     },
     "userMenu": {

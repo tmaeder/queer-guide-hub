@@ -2081,7 +2081,8 @@
       "tagsStiGuide": "دليل الأمراض المنقولة جنسيًا",
       "rightsByCountry": "الحقوق حسب البلد",
       "transRights": "حقوق العابرين جنسيًا",
-      "competitions": "[AR] Drag Race"
+      "competitions": "[AR] Drag Race",
+      "newsAll": "كل الأخبار"
     },
     "intents": {
       "knowledge": {
@@ -2117,6 +2118,10 @@
       "glossary": {
         "label": "المسرد",
         "subtitle": "معنى كل مصطلح وعلم ورمز"
+      },
+      "news": {
+        "label": "الأخبار",
+        "subtitle": "أخبار مجتمع الميم من حول العالم"
       }
     },
     "userMenu": {
