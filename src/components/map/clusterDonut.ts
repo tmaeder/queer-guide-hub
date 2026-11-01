@@ -1,6 +1,6 @@
 import type { ExpressionSpecification } from 'maplibre-gl';
 import { MAP_LINES, MAP_LINE_IDS, lineColor, type MapLine } from '@/components/map/mapDomain';
-import { ink, paper } from '@/lib/mapTokens';
+import { ink } from '@/lib/mapTokens';
 
 /**
  * Segmented donut cluster icons. Each cluster renders as a WebGL symbol whose
@@ -63,9 +63,44 @@ export function quantizeShare(count: number, total: number): number {
   return Math.max(1, Math.round((QUANT * count) / total));
 }
 
+/**
+ * How many PLACES a cluster holds. Since co-located places are collapsed into
+ * one feature (pointStacks.ts), `point_count` counts spots, not places; the
+ * `places` aggregate sums each spot's `stack_count`. Falls back to
+ * `point_count` for a source built without it.
+ */
+export function placesExpr(): ExpressionSpecification {
+  return ['coalesce', ['get', 'places'], ['get', 'point_count']] as ExpressionSpecification;
+}
+
+/** Share (0..1) at or above which one line colours the whole cluster disc. */
+export const DOMINANT_SHARE = 0.8;
+
+/** True when one line makes up at least DOMINANT_SHARE of the cluster. Used
+ *  for the count's text colour, which must match the disc it sits on. */
+export function dominantLineExpression(): ExpressionSpecification {
+  const total: ExpressionSpecification = ['max', 1, placesExpr()];
+  return [
+    'any',
+    ...DONUT_LINES.map((line) => [
+      '>=',
+      ['/', ['coalesce', ['get', countProp(line)], 0], total],
+      DOMINANT_SHARE,
+    ]),
+  ] as ExpressionSpecification;
+}
+
+/** The line that fills the disc, or null for a mixed cluster (ink disc). */
+export function dominantLine(tenths: Record<DonutLine, number>): DonutLine | null {
+  const sum = DONUT_LINES.reduce((a, l) => a + (tenths[l] || 0), 0);
+  if (sum <= 0) return null;
+  for (const l of DONUT_LINES) if ((tenths[l] || 0) / sum >= DOMINANT_SHARE) return l;
+  return null;
+}
+
 /** Data-driven `icon-image` expression producing a donut key per cluster. */
 export function donutIconExpression(): ExpressionSpecification {
-  const total: ExpressionSpecification = ['max', 1, ['get', 'point_count']];
+  const total: ExpressionSpecification = ['max', 1, placesExpr()];
   const q = (prop: string): ExpressionSpecification =>
     [
       'case',
@@ -75,7 +110,7 @@ export function donutIconExpression(): ExpressionSpecification {
     ] as ExpressionSpecification;
   const diameter: ExpressionSpecification = [
     'step',
-    ['get', 'point_count'],
+    placesExpr(),
     ...DONUT_SIZE_STEPS.flatMap(([count, d], i) => (i === 0 ? [d] : [count, d])),
   ] as ExpressionSpecification;
   return [
@@ -122,16 +157,13 @@ export function donutSegments(
 
 /**
  * Synchronous canvas render — pure `arc()` calls, no image loading, safe to
- * run inside the missing-image resolver. Segments run clockwise from 12
- * o'clock in a fixed order so adjacent clusters read consistently.
+ * run inside the missing-image resolver.
  *
- * This is the map's INTERCHANGE symbol: a paper disc inside a track-coloured
- * ring inside a solid ink edge. The ink edge is not decoration — three of the
+ * A solid disc inside an ink edge: track-coloured when one line dominates,
+ * ink when the cluster is mixed. The ink edge is not decoration — three of the
  * four tracks sit under 3:1 against paper (blue 2.25, green 1.64, yellow 1.34)
  * and only clear the WCAG 1.4.11 bar against ink, so a track-coloured mark on
- * this map is *required* to carry one. It replaces a `rgba(0,0,0,0.10)`
- * hairline that was doing a visual job (separating a white disc from pale
- * tiles) rather than an accessibility one.
+ * this map is *required* to carry one.
  */
 export function renderDonut(
   spec: DonutSpec,
@@ -147,43 +179,22 @@ export function renderDonut(
   const edge = 1.5 * PIXEL_RATIO;
   const c = size / 2;
   const rOuter = c - edge / 2; // inset by half the stroke so it can't clip
-  const ring = Math.max(5, spec.diameter * 0.16) * PIXEL_RATIO;
   const inkColor = ink();
 
-  // Base disc — halo + count background.
+  // A PLAIN disc, not segmented: a cluster is a count, and ring segments
+  // read as a chart nobody can decode at 40px. One line making up at least
+  // DOMINANT_SHARE of the cluster fills it in that line's track colour (ink
+  // count on top); a mixed cluster is an ink disc (paper count).
+  const line = dominantLine(spec.tenths);
   ctx.beginPath();
   ctx.arc(c, c, rOuter, 0, 2 * Math.PI);
-  ctx.fillStyle = paper();
+  ctx.fillStyle = line ? (colorOf(line) ?? inkColor) : inkColor;
   ctx.fill();
 
-  const segments = donutSegments(spec.tenths);
-  const rMid = rOuter - ring / 2;
-  if (segments.length === 0) {
-    // Unknown composition — full neutral ring so the donut never reads blank.
-    ctx.beginPath();
-    ctx.arc(c, c, rMid, 0, 2 * Math.PI);
-    ctx.strokeStyle = inkColor;
-    ctx.lineWidth = ring;
-    ctx.stroke();
-  } else {
-    let a0 = -Math.PI / 2;
-    for (const { line, share } of segments) {
-      const a1 = a0 + share * 2 * Math.PI;
-      ctx.beginPath();
-      // Tiny overdraw on single-segment donuts avoids a hairline seam.
-      ctx.arc(c, c, rMid, a0, segments.length === 1 ? a0 + 2 * Math.PI : a1);
-      ctx.strokeStyle = colorOf(line) ?? inkColor;
-      ctx.lineWidth = ring;
-      ctx.stroke();
-      a0 = a1;
-    }
-  }
-
-  // Ink edge — the border-gate for the track fills inside it.
-  ctx.beginPath();
-  ctx.arc(c, c, rOuter, 0, 2 * Math.PI);
-  ctx.strokeStyle = inkColor;
+  // Ink edge — the border-gate for a track fill (blue/green/yellow sit under
+  // 3:1 against paper and only clear WCAG 1.4.11 against ink).
   ctx.lineWidth = edge;
+  ctx.strokeStyle = inkColor;
   ctx.stroke();
 
   return ctx.getImageData(0, 0, size, size);

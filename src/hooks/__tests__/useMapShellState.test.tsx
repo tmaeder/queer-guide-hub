@@ -191,7 +191,24 @@ describe('useMapShellState — legacy URLs', () => {
       JSON.stringify({ lens: 'boundary', enabledLayers: ['venues'] }),
     );
     const { result } = renderHook(useProbe, { wrapper: wrapper('/map') });
-    expect(result.current.shell.state.view).toBe('areas');
+    // `boundary` migrates to `areas`, which a saved pref may not restore
+    // (it opens blank); the migrated lines still apply.
+    expect(result.current.shell.state.view).toBe('stations');
     expect(result.current.shell.state.lines).toEqual(['M']);
+  });
+
+  it.each(['areas', 'routes'] as const)(
+    'does not restore a saved %s view on a bare /map visit (it opens blank)',
+    (view) => {
+      localStorage.setItem('map_shell_prefs', JSON.stringify({ view }));
+      const { result } = renderHook(useProbe, { wrapper: wrapper('/map') });
+      expect(result.current.shell.state.view).toBe('stations');
+    },
+  );
+
+  it('still honours areas from the URL', () => {
+    localStorage.setItem('map_shell_prefs', JSON.stringify({ view: 'stations' }));
+    const { result } = renderHook(useProbe, { wrapper: wrapper('/map?view=areas') });
+    expect(result.current.shell.state.view).toBe('areas');
   });
 });
