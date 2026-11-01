@@ -354,9 +354,7 @@ export const INTENT_NAV: IntentDestination[] = [
   },
   {
     // News replaced Support in the primary row (2026-11-01, user decision).
-    // /help, /support and /organizations stay reachable through DESTINATIONS
-    // (the mobile sheet's browse list and the search popover) and still light
-    // the Explore tab; they no longer have a header tab of their own.
+    // Support now lives in the footer only — see FOOTER_ONLY_DESTINATIONS.
     id: 'news',
     to: '/news',
     icon: transitIcon('news'),
@@ -365,11 +363,7 @@ export const INTENT_NAV: IntentDestination[] = [
     subtitleKey: 'header.intents.news.subtitle',
     subtitleFallback: 'LGBTQ+ news from around the world',
     activePrefixes: ['/news'],
-    children: [
-      { to: '/news', labelKey: 'header.nav.newsAll', fallback: 'All news' },
-      { to: '/help', labelKey: 'header.nav.help', fallback: 'Helplines' },
-      { to: '/organizations', labelKey: 'header.nav.organizations', fallback: 'Organizations' },
-    ],
+    children: [{ to: '/news', labelKey: 'header.nav.newsAll', fallback: 'All news' }],
   },
   {
     id: 'shop',
@@ -398,8 +392,36 @@ export const INTENT_NAV: IntentDestination[] = [
   },
 ];
 
+/**
+ * Destinations that sit in the footer's destination row but NOT in the header,
+ * the homepage subway map or the mobile sheet's intent list (2026-11-01, user
+ * decision). Kept out of INTENT_NAV on purpose: every INTENT_NAV consumer
+ * (header row, map stations, search scope bias) would otherwise pick it up.
+ * /help and /organizations also stay in DESTINATIONS, so the mobile sheet's
+ * browse list and search still reach them.
+ */
+export const FOOTER_ONLY_DESTINATIONS: (Omit<IntentDestination, 'id'> & { id: 'support' })[] = [
+  {
+    id: 'support',
+    to: '/help',
+    icon: transitIcon('helpline'),
+    labelKey: 'header.intents.support.label',
+    fallback: 'Support',
+    subtitleKey: 'header.intents.support.subtitle',
+    subtitleFallback: 'Helplines and organizations near you',
+    activePrefixes: ['/support', '/help', '/organizations'],
+    children: [
+      { to: '/help', labelKey: 'header.nav.help', fallback: 'Helplines' },
+      { to: '/organizations', labelKey: 'header.nav.organizations', fallback: 'Organizations' },
+    ],
+  },
+];
+
 /** Path-prefix match against a locale-stripped pathname. */
-export function isIntentActive(intent: IntentDestination, path: string): boolean {
+export function isIntentActive(
+  intent: Pick<IntentDestination, 'activePrefixes'>,
+  path: string,
+): boolean {
   return intent.activePrefixes.some((p) => path === p || path.startsWith(`${p}/`));
 }
 
@@ -667,4 +689,6 @@ export const INTENT_TRACK: Record<string, 'pink' | 'blue' | 'green' | 'yellow'> 
   // (N-blue in ROUTE_BULLET_MAP).
   news: 'blue',
   shop: 'yellow',
+  // Footer-only (FOOTER_ONLY_DESTINATIONS); never drawn on the subway map.
+  support: 'pink',
 };

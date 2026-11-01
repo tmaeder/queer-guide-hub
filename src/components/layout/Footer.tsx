@@ -5,7 +5,12 @@ import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CurrencySelector } from '@/components/i18n/CurrencySelector';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { cn } from '@/lib/utils';
-import { INTENT_NAV, INTENT_TRACK, isIntentActive } from '@/config/navigation';
+import {
+  FOOTER_ONLY_DESTINATIONS,
+  INTENT_NAV,
+  INTENT_TRACK,
+  isIntentActive,
+} from '@/config/navigation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 import { Wordmark } from '@/components/brand/Wordmark';
@@ -93,7 +98,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             aria-label="Footer navigation"
             className="grid grid-cols-2 gap-x-4 gap-y-0 md:flex md:flex-wrap md:gap-x-6"
           >
-            {INTENT_NAV.map((intent) => (
+            {[...INTENT_NAV, ...FOOTER_ONLY_DESTINATIONS].map((intent) => (
               <LocalizedLink
                 key={intent.to}
                 to={intent.to}
