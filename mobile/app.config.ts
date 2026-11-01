@@ -69,6 +69,8 @@ const config: ExpoConfig = {
     'expo-image',
     'expo-font',
     '@maplibre/maplibre-react-native',
+    // FTS5 powers offline search over downloaded city packs.
+    ['expo-sqlite', { enableFTS: true }],
     [
       'expo-location',
       {

@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { packDb } from '@/features/packs/db';
 import { savedStore } from '@/features/saved/savedStore';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 
@@ -40,6 +41,8 @@ export default function RootLayout() {
 
   useEffect(() => {
     void savedStore.load();
+    // Opens the offline pack store so reads can fall back to it.
+    void packDb();
   }, []);
 
   return (

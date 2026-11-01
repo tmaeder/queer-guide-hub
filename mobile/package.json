@@ -14,11 +14,14 @@
   },
   "dependencies": {
     "@maplibre/maplibre-react-native": "^11.5.1",
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0",
     "@protomaps/basemaps": "^5.7.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@supabase/supabase-js": "^2.118.0",
     "@tanstack/react-query": "^5.105.1",
     "expo": "~58.0.22",
+    "expo-asset": "~58.0.19",
     "expo-constants": "~58.0.14",
     "expo-font": "~58.0.11",
     "expo-haptics": "~58.0.7",
@@ -28,6 +31,7 @@
     "expo-location": "~58.0.20",
     "expo-router": "~58.0.29",
     "expo-secure-store": "~58.0.2",
+    "expo-sqlite": "~58.0.15",
     "expo-status-bar": "~58.0.4",
     "i18next": "^26.6.0",
     "react": "19.3.0",
@@ -49,7 +53,7 @@
   "jest": {
     "preset": "jest-expo",
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@maplibre/.*|@protomaps/.*|@supabase/.*|native-base|react-native-svg)"
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@maplibre/.*|@protomaps/.*|@supabase/.*|@noble/.*|native-base|react-native-svg)"
     ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"

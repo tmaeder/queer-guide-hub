@@ -45,9 +45,38 @@ module. Use a development build (`npx expo run:ios|android`, or
 - Support lines: a `directory` entry is never shown as a crisis line, and
   `reports_to_police` is three-state — absent renders nothing.
 
+## Offline city packs
+
+A pack is one city's public venues plus its country's and the
+international crisis lines, stored in SQLite (FTS5) on the device. Reads
+are online-first: `src/features/packs/offline.ts` answers from a pack only
+when the network read **fails**, never when it succeeds — a venue the
+server stopped returning was closed, merged or gated and must not come
+back from an old file.
+
+- **Integrity.** `index.json` is signed with ed25519 and pins every pack's
+  sha256, so one signature covers the hotline numbers too. The app refuses
+  an unsigned or altered file, a pack that does not match its digest, and an
+  index older than one it already accepted (rollback).
+- **Safety gating.** `scripts/packs/build.mjs` reads with the publishable
+  key and refuses a service-role key, so RLS keeps safety-gated venues out
+  of every pack (Dubai builds with 0 venues). It also refuses to build when
+  the help page has no hotlines.
+- **Not offline yet:** map tiles and photos.
+
+```sh
+node scripts/packs/keygen.mjs            # once; private half -> secret store
+PACK_SIGNING_KEY=… node scripts/packs/build.mjs --cities berlin,zuerich --out dist/packs
+```
+
+Upload `dist/packs/` to a static https host, then build the app with
+`EXPO_PUBLIC_PACK_BASE_URL` and `EXPO_PUBLIC_PACK_PUBLIC_KEY`. Without both,
+the Me tab says offline cities are not available and nothing is fetched.
+
 ## Not done yet
 
-Tracked in the strategy doc's work breakdown: offline city packs, discreet
+Tracked in the strategy doc's work breakdown: offline map tiles (PMTiles
+extracts in packs), pack hosting + a scheduled rebuild, offline search UI, discreet
 mode (alternate icon, app lock, quick exit), sign-in, push, brand fonts
 (the web ships woff2 only; native needs ttf/otf), EAS build profiles and
 store metadata, and serving the AASA / assetlinks.json files for the
