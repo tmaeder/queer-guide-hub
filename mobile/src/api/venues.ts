@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import type { Database } from '@db/types';
+import { withOfflineFallback } from '@/features/packs/offline';
+import { venueBySlug, venuesInBounds } from '@/features/packs/store';
 import { supabase } from '@/lib/supabase';
 
 type VenueRow = Database['public']['Tables']['venues']['Row'];
@@ -63,7 +65,19 @@ export function snapBounds([w, s, e, n]: Bounds, step = 0.01): Bounds {
 
 export const MAX_MAP_VENUES = 500;
 
-export async function fetchVenuesInBounds(bounds: Bounds): Promise<VenueListItem[]> {
+/** Online first; offline packs answer only when the network read fails. */
+export function fetchVenuesInBounds(bounds: Bounds): Promise<VenueListItem[]> {
+  return withOfflineFallback(
+    () => fetchVenuesInBoundsOnline(bounds),
+    // An area no pack covers stays an error, not a misleading empty map.
+    async (db) => {
+      const rows = await venuesInBounds(db, bounds, MAX_MAP_VENUES);
+      return rows.length ? rows : null;
+    },
+  );
+}
+
+async function fetchVenuesInBoundsOnline(bounds: Bounds): Promise<VenueListItem[]> {
   const [west, south, east, north] = bounds;
   const { data, error } = await publicVenues(VENUE_LIST_COLUMNS)
     .gte('latitude', south)
@@ -76,7 +90,14 @@ export async function fetchVenuesInBounds(bounds: Bounds): Promise<VenueListItem
   return (data ?? []) as VenueListItem[];
 }
 
-export async function fetchVenueBySlug(slug: string): Promise<VenueDetail | null> {
+export function fetchVenueBySlug(slug: string): Promise<VenueDetail | null> {
+  return withOfflineFallback(
+    () => fetchVenueBySlugOnline(slug),
+    (db) => venueBySlug(db, slug),
+  );
+}
+
+async function fetchVenueBySlugOnline(slug: string): Promise<VenueDetail | null> {
   const { data, error } = await publicVenues(VENUE_DETAIL_COLUMNS)
     .eq('slug', slug)
     .maybeSingle();

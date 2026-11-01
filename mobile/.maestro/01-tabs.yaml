@@ -1,0 +1,13 @@
+appId: guide.queer.app
+name: Tabs reach every top-level screen
+tags: [smoke]
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Explore"
+- tapOn: "Saved"
+- assertVisible: "Places you save appear here. They're stored only on this device."
+- tapOn: "Help"
+- assertVisible: "In immediate danger, call your local emergency number."
+- tapOn: "Me"
+- assertVisible: "Privacy"
