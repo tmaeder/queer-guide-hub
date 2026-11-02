@@ -11,6 +11,11 @@
 /resources  /tags  301
 /resources/*  /tags/:splat  301
 
+# /rights folded into the Knowledge hub (2026-11-01). Not /tags/rights: that
+# slug is a glossary term. Fragments (#marriage) survive a 301 client-side.
+/rights  /tags/rights-by-country  301
+/rights/*  /tags/rights-by-country/:splat  301
+
 # Community, connection, and personal work now share the unified Hub. Dynamic
 # detail routes are preserved by the locale-aware client router.
 /community          /hub/feed        301

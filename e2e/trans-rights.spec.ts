@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * `/rights/trans` — the trans safety dimension.
+ * `/tags/rights-by-country/trans` — the trans safety dimension.
  *
  * These assertions guard the SAFETY INVARIANTS, not the layout. The failure this
  * page exists to prevent is a reader treating TGEU's documented-violence counts
@@ -71,12 +71,12 @@ async function clickClear(locator: ReturnType<Page['locator']>) {
   await locator.click();
 }
 
-test.describe('/rights/trans', () => {
+test.describe('/tags/rights-by-country/trans', () => {
   // 250 countries, a 231 KB boundary set and a MapLibre canvas per load.
   test.describe.configure({ timeout: 120_000 });
 
   test('axis 1 — publishes legal recognition with real numbers', async ({ page }) => {
-    await page.goto('/rights/trans');
+    await page.goto('/tags/rights-by-country/trans');
     await expect(page.getByRole('heading', { name: /trans rights and safety/i })).toBeVisible({
       timeout: SETTLE,
     });
@@ -127,7 +127,7 @@ test.describe('/rights/trans', () => {
     const map = page.locator('[role="img"][aria-label*="legal gender recognition"]');
     await expect(map).toBeVisible({ timeout: SETTLE });
     // POLL the label, don't read it once — the same fix `rights-safety.spec.ts`
-    // already carries for the /rights choropleth, never applied here.
+    // already carries for the /tags/rights-by-country choropleth, never applied here.
     //
     // The container renders and is VISIBLE on the first paint, while the tally
     // comes from a 231 KB boundary fetch to an external worker. Until that
@@ -156,7 +156,7 @@ test.describe('/rights/trans', () => {
   });
 
   test('axis 3 — the violence table is not a danger ranking', async ({ page }) => {
-    await page.goto('/rights/trans');
+    await page.goto('/tags/rights-by-country/trans');
     const documented = await section(page, 'documented');
 
     // The caveat must be present wherever counts are.
@@ -171,7 +171,7 @@ test.describe('/rights/trans', () => {
     // `--destructive` is reserved for criminalisation and the death penalty. On
     // this section it would assert that the countries with the most documented
     // cases are the most dangerous, which inverts the truth. (The selector's
-    // positive control is the separate /rights test below — "nothing matches"
+    // positive control is the separate /tags/rights-by-country test below — "nothing matches"
     // is only evidence if the selector can match anything.)
     expect(await documented.locator('.text-destructive, [class*="destructive"]').count()).toBe(0);
 
@@ -211,14 +211,14 @@ test.describe('/rights/trans', () => {
    * "Nothing matches this selector" is only evidence if the selector can match
    * anything at all. A Tailwind rename, a typo or a scoping mistake would make
    * that check pass forever while the section turned bright red. So the same
-   * selector is pointed at a surface where the hue is REQUIRED: /rights marks
+   * selector is pointed at a surface where the hue is REQUIRED: /tags/rights-by-country marks
    * confirmed death-penalty jurisdictions with it.
    */
   test('the danger-hue selector can actually match something', async ({ page }) => {
-    await page.goto('/rights');
+    await page.goto('/tags/rights-by-country');
 
     /*
-     * `/rights` gets its own budget, and it is the ONE place in this file that
+     * `/tags/rights-by-country` gets its own budget, and it is the ONE place in this file that
      * departs from SETTLE.
      *
      * It is the heaviest page in the app — 250 countries at 22 jsonb columns,
@@ -260,7 +260,10 @@ test.describe('country page — the sterilisation requirement', () => {
    * finds no word boundary and fails on correct markup. Read the VALUE span.
    */
   async function surgeryRow(page: Page) {
-    const row = page.locator('li').filter({ hasText: /surgery required first/i }).first();
+    const row = page
+      .locator('li')
+      .filter({ hasText: /surgery required first/i })
+      .first();
     await expect(row).toBeVisible({ timeout: SETTLE });
     return { row, value: row.locator('span').last() };
   }

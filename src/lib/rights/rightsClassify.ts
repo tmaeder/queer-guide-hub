@@ -26,7 +26,7 @@ import { parseSsuDetails, getProtectionStatus } from '@/utils/equalityScore';
  *
  * PROTECTION-MATRIX rights (9 of 18) are split across so/gi/ge/sc and are NOT
  * scalars. Feeding the jsonb straight to `readRightValue` bucketed every
- * country as "no" — caught on the rendered `/rights` page, not by unit tests
+ * country as "no" — caught on the rendered `/tags/rights-by-country` page, not by unit tests
  * that only fed scalars. They are read through `getProtectionStatus`, the
  * same helper `ProtectionCells` uses, and classified as:
  *

@@ -314,7 +314,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Where queer people actually gather: community spaces, groups, events and bars near you, plus the members and travel buddies you can meet.',
   },
-  '/rights': {
+  '/tags/rights-by-country': {
     title: 'LGBTQ+ Rights and Safety by Country',
     description:
       'Legal status for LGBTQ+ people in all 250 countries and territories: criminalisation, partnership recognition and equality scores.',
@@ -322,7 +322,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   // Must be registered here, not just in src/routes.tsx: this map is both the
   // crawler's <head> source and what sitemap-static.xml enumerates, so a route
   // missing from it is served the homepage title and never listed.
-  '/rights/sources': {
+  '/tags/rights-by-country/sources': {
     title: 'Where Our LGBTQ+ Rights Data Comes From',
     description:
       'The source, refresh cadence, coverage and known limits behind the legal status we publish for every country and territory.',
@@ -334,7 +334,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'How queer.guide writes: the voice rules, the terminology we use and avoid, and the reasons for both. The same standard our automated content pipelines are given.',
   },
-  '/rights/trans': {
+  '/tags/rights-by-country/trans': {
     title: 'Trans Rights and Safety by Country',
     description:
       'Legal gender recognition worldwide, what changing a document costs, and TGEU’s record of documented anti-trans violence — kept separate, never combined into a score.',

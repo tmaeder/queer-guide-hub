@@ -26,7 +26,7 @@ export type RightsProvenance = {
  * Where a rights claim came from and when it was last refreshed.
  *
  * Shared so every rights surface cites identically. `/country/:slug` did this
- * and `/rights` did not — the index page showed an equality score a hundred
+ * and `/tags/rights-by-country` did not — the index page showed an equality score a hundred
  * times over with no source, no date and no definition, which is the one place
  * a reader most needs to know who is making the claim.
  *

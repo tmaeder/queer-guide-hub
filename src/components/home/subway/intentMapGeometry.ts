@@ -83,11 +83,11 @@ const STATION_POINTS: Record<string, { x: number; y: number; lane: Lane }> = {
   'going-out': { x: 160, y: 80, lane: 'above' },
   travelling: { x: 320, y: 280, lane: 'below' },
   meet: { x: 480, y: 85, lane: 'above' },
-  rights: { x: 980, y: 280, lane: 'below' },
+  // (980, 280) on yellow was the Rights station until /rights folded into the
+  // Knowledge hub (2026-11-01); the track still runs through it.
   // News took Support's slot in the row (2026-11-01). It rides blue because it
   // maps 1:1 to the news content type (N-blue), so it sits on blue's free node
-  // (1010, 225) — the final pair of `C 835 176 922 208 1010 225`. Above lane:
-  // rights (980, 280) is 30px away in x but hangs its plate below.
+  // (1010, 225) — the final pair of `C 835 176 922 208 1010 225`.
   news: { x: 1010, y: 225, lane: 'above' },
   // Moved off the blue line's (1290, 280) when shop flipped to yellow — shop
   // is the one intent that maps 1:1 to a content type, so INTENT_TRACK has to
@@ -126,7 +126,7 @@ export const INTERCHANGE: Station = {
 };
 
 /**
- * The eight stations (seven intents + interchange) in left-to-right order,
+ * The stations (one per intent, plus the interchange) in left-to-right order,
  * which is also DOM order — so focus order matches reading order
  * (WCAG 1.3.2 / 2.4.3).
  *

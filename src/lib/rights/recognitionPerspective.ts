@@ -48,7 +48,7 @@ export interface RegimeDef {
    *
    * SEVERITY-ASCENDING, matching `MAP_CLASS_INK` on /rights, where the ramp
    * runs protected 0.12 → death 0.9. The two rights maps have to mean the same
-   * thing by "darker": a reader who learns "heavier ink is worse" on /rights
+   * thing by "darker": a reader who learns "heavier ink is worse" on /tags/rights-by-country
    * and then meets a map here where the heaviest ink was self-determination
    * would read this one exactly backwards. It also puts the visual weight
    * where the page's subject is — the places that deny recognition or charge

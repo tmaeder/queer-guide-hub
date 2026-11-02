@@ -530,7 +530,7 @@ export default function CountryDetail() {
             aria-label={t('country.endOfLine.title', 'Compare the law elsewhere')}
             className="flex flex-wrap gap-2"
           >
-            <LocalizedLink to="/rights" className={FOOTER_LINK}>
+            <LocalizedLink to="/tags/rights-by-country" className={FOOTER_LINK}>
               {t('country.endOfLine.rights', 'Rights across the world')}
             </LocalizedLink>
             <LocalizedLink to="/cities" className={FOOTER_LINK}>

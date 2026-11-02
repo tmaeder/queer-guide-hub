@@ -48,7 +48,7 @@ import { getScrollPosition, setScrollPosition } from '@/lib/scrollPositions';
 
 /**
  * Settle rhythm. Four attempts 100ms apart is the same cadence
- * `scrollSettle.ts` and the `/rights` fragment effect already use for the
+ * `scrollSettle.ts` and the `/tags/rights-by-country` fragment effect already use for the
  * in-page case, and it is what the header collapse needs: the bar drops to its
  * compact height on the first scroll and moves the target ~64px, so a single
  * jump lands short. The budget is how long to keep waiting for a lazy route's

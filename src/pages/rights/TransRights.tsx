@@ -39,7 +39,7 @@ import { computeRightsProfile } from '../../../supabase/functions/_shared/rights
 import type { SectionDef } from '@/components/entity/editorial';
 
 /**
- * `/rights/trans` — the trans safety dimension.
+ * `/tags/rights-by-country/trans` — the trans safety dimension.
  *
  * Every safety signal elsewhere on this site is derived from ONE fact:
  * `location_is_high_risk()` reads criminalisation of same-sex acts. For trans
@@ -225,7 +225,7 @@ export default function TransRights() {
       'rights.trans.metaDescription',
       'Legal gender recognition in every country, what it costs to change a document, and TGEU’s record of documented anti-trans violence — with what none of it can tell you.',
     ),
-    canonicalPath: '/rights/trans',
+    canonicalPath: '/tags/rights-by-country/trans',
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'Dataset',
@@ -239,7 +239,7 @@ export default function TransRights() {
 
   const sections: SectionDef[] = [
     // ---------------------------------------------------------------------
-    // Axis 1 — the ledger /rights deliberately cannot draw.
+    // Axis 1 — the ledger /tags/rights-by-country deliberately cannot draw.
     // ---------------------------------------------------------------------
     {
       id: 'recognition',
@@ -333,7 +333,7 @@ export default function TransRights() {
       ),
       action: (
         <LocalizedLink
-          to="/rights#gender-recognition"
+          to="/tags/rights-by-country#gender-recognition"
           className="text-13 no-underline hover:underline"
         >
           {t('rights.trans.toRights', 'All 18 rights')}
@@ -610,7 +610,7 @@ export default function TransRights() {
               </a>
             </li>
             <li>
-              <LocalizedLink to="/rights/sources">
+              <LocalizedLink to="/tags/rights-by-country/sources">
                 {t('rights.trans.toSources', 'How we handle the legal data')}
               </LocalizedLink>
             </li>
@@ -618,7 +618,10 @@ export default function TransRights() {
         </div>
       ),
       action: (
-        <LocalizedLink to="/rights" className="text-13 no-underline hover:underline">
+        <LocalizedLink
+          to="/tags/rights-by-country"
+          className="text-13 no-underline hover:underline"
+        >
           {t('rights.trans.backToRights', 'Back to rights')}
         </LocalizedLink>
       ),
@@ -627,8 +630,15 @@ export default function TransRights() {
 
   return (
     <IntentPageLayout
+      breadcrumbParents={[
+        { label: t('header.intents.knowledge.label', 'Knowledge'), href: '/tags' },
+        {
+          label: t('header.nav.rightsByCountry', 'Rights by country'),
+          href: '/tags/rights-by-country',
+        },
+      ]}
       breadcrumbLabel={t('rights.trans.breadcrumb', 'Trans')}
-      breadcrumbHref="/rights/trans"
+      breadcrumbHref="/tags/rights-by-country/trans"
       eyebrow={t('rights.trans.eyebrow', 'Rights')}
       title={t('rights.trans.title', 'Trans rights and safety')}
       lede={t(

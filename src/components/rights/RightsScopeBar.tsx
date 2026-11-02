@@ -17,7 +17,7 @@ import { scrollToIdSettled } from '@/lib/scrollSettle';
 import type { RightsCountry } from '@/hooks/useIntentData';
 
 /**
- * The split band under the /rights hero: check ONE place fast (combobox +
+ * The split band under the /tags/rights-by-country hero: check ONE place fast (combobox +
  * geolocated one-liner) beside the state of the world (three headline stats).
  * Absorbs the former "Where you are" section.
  *

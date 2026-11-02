@@ -28,7 +28,7 @@ export type ClassifiedFeatureCollection = RightsFeatureCollection;
  * Join boundary polygons to a country lookup by `ISO_A2` ⇄ `code` and stamp
  * each feature with a class under `classProperty`.
  *
- * The generic core of `classifyBoundaries`, extracted when /rights/trans added
+ * The generic core of `classifyBoundaries`, extracted when /tags/rights-by-country/trans added
  * a second choropleth over the same polygons with a different vocabulary. A
  * boundary feature with no matching country row takes `emptyClass` — never
  * silently dropped, never guessed into a measured class.

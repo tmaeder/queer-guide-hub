@@ -277,7 +277,10 @@ function LocalizedRedirect({ to }: { to: string }) {
   const prefix =
     locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
   const search = to.includes('?') ? '' : location.search;
-  return <Navigate to={`${prefix}${to}${search}`} replace />;
+  // Carry the fragment too: /rights#marriage is how the glossary and inbound
+  // links address a single right, and dropping it lands the reader at the top.
+  const hash = to.includes('#') ? '' : location.hash;
+  return <Navigate to={`${prefix}${to}${search}${hash}`} replace />;
 }
 
 /** Locale-preserving redirect for a dynamic legacy route segment. */
@@ -828,12 +831,22 @@ export const AppRoutes = () => {
                          renders NotFound for an unknown "locale". */}
                   <Route path="going-out" element={<GoingOut />} />
                   <Route path="styleguide" element={<Styleguide />} />
-                  <Route path="rights" element={<RightsIntent />} />
-                  {/* Static second segment — scores 24 and beats /:locale/<static>
-                      at 17 unconditionally. A param here would tie at 17 and
-                      resolve to NotFound for an unknown "locale"; see rule 2. */}
-                  <Route path="rights/sources" element={<RightsSources />} />
-                  <Route path="rights/trans" element={<TransRights />} />
+                  {/* /rights folded into the Knowledge hub as
+                      /tags/rights-by-country (2026-11-01). NOT /tags/rights —
+                      that slug is a live glossary term. The old URLs stay as
+                      redirects so inbound links (and #topic fragments) work. */}
+                  <Route
+                    path="rights"
+                    element={<LocalizedRedirect to="/tags/rights-by-country" />}
+                  />
+                  <Route
+                    path="rights/sources"
+                    element={<LocalizedRedirect to="/tags/rights-by-country/sources" />}
+                  />
+                  <Route
+                    path="rights/trans"
+                    element={<LocalizedRedirect to="/tags/rights-by-country/trans" />}
+                  />
                   {/* /support was the org-directory slice of /help wrapped in
                     intent chrome: same hook, same `role: 'support'` filter, and its
                     own crisis band was just a link to /help. Its two unique pieces
@@ -979,6 +992,10 @@ export const AppRoutes = () => {
                       order, but relying on that silently would break the
                       day someone creates a tag slugged "interactions" —
                       none exists today and this route is what reserves it. */}
+                  {/* Static, so it beats tags/:tagName below. */}
+                  <Route path="tags/rights-by-country" element={<RightsIntent />} />
+                  <Route path="tags/rights-by-country/sources" element={<RightsSources />} />
+                  <Route path="tags/rights-by-country/trans" element={<TransRights />} />
                   <Route path="tags/interactions" element={<SubstanceInteractionsPage />} />
                   <Route path="tags/sti-guide" element={<StiGuidePage />} />
                   <Route path="tags/:tagName" element={<TagDetail />} />

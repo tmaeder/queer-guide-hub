@@ -233,7 +233,7 @@ function CountryAccordion({
    * is the locked traffic-light surface, and those counts rank countries close
    * to inversely to legal risk — sat beside a risk tier they would read as a
    * ranking of danger, which is the opposite of what they measure. They live on
-   * /rights/trans and the country page.
+   * /tags/rights-by-country/trans and the country page.
    */
   const genderRecognition = (() => {
     const lgr = country.lgbti_gender_recognition as Record<string, unknown> | null;

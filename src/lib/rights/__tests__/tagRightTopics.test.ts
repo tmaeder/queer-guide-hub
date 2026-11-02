@@ -38,11 +38,11 @@ describe('rightTopicHref', () => {
   const topic = RIGHT_TOPICS[0];
 
   it('points at an anchor on /rights, not a per-topic path', () => {
-    expect(rightTopicHref(topic)).toBe(`/rights#${topic.slug}`);
+    expect(rightTopicHref(topic)).toBe(`/tags/rights-by-country#${topic.slug}`);
   });
 
   it('targets a route that actually exists', () => {
-    // `/rights/<slug>` is NOT a route — routes.tsx declares only `rights` and
+    // `/tags/rights-by-country/<slug>` is NOT a route — routes.tsx declares only `rights` and
     // `rights/sources`, and a `:right` param would tie with `/:locale` and resolve
     // to NotFound. Reading the route table keeps this honest if either changes.
     const routes = readFileSync(resolve(__dirname, '../../../routes.tsx'), 'utf8');
@@ -52,7 +52,7 @@ describe('rightTopicHref', () => {
     }
   });
 
-  it('every mapped topic has an anchor target rendered on /rights', () => {
+  it('every mapped topic has an anchor target rendered on /tags/rights-by-country', () => {
     // The anchor only resolves because RightsLedger stamps id={topic.slug} on
     // each row, and Rights.tsx renders <RightsLedger> in its 'rights' section
     // (2026-08-21 restructure — the id used to be stamped inline on Rights.tsx

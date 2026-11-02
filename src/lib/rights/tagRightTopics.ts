@@ -83,12 +83,12 @@ export function rightTopicForTag(tagSlug: string | null | undefined): RightTopic
 /**
  * Where a class-of-law tag sends the reader.
  *
- * `/rights/<slug>` does NOT exist — routes.tsx declares only `rights` and
+ * `/tags/rights-by-country/<slug>` does NOT exist — routes.tsx declares only `rights` and
  * `rights/sources`, so a topic path would render NotFound. The per-topic pages are
  * a separate feature; until they land this is a real deep link, because
- * `/rights` gives each topic card an `id` of its slug. When those pages ship, only
+ * `/tags/rights-by-country` gives each topic card an `id` of its slug. When those pages ship, only
  * this one template changes.
  */
 export function rightTopicHref(topic: RightTopic): string {
-  return `/rights#${topic.slug}`;
+  return `/tags/rights-by-country#${topic.slug}`;
 }

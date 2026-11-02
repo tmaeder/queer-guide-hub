@@ -59,7 +59,7 @@ const PAST_THRESHOLD = 600;
  * The site header, addressed by ROLE rather than by tag.
  *
  * `page.locator('header')` is ambiguous and the first run of this spec proved
- * it: `/rights` carries EIGHT `<header>` elements, because every page section
+ * it: `/tags/rights-by-country` carries EIGHT `<header>` elements, because every page section
  * uses one for its own heading row. Playwright's strict mode rejected the
  * match, and the failure surfaced as "the header never entered its compact
  * state" — a message about the wrong thing entirely, which is exactly how a
@@ -126,15 +126,15 @@ test.describe('Header, compact ink state', () => {
   for (const width of [1100, 1440]) {
     test(`keeps the primary nav at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
-      await page.goto('/rights');
+      await page.goto('/tags/rights-by-country');
       await waitForAppReady(page);
 
       const header = await enterCompact(page);
 
       const nav = header.locator('nav[aria-label]');
       await expect(nav, 'the compact bar dropped its nav landmark').toHaveCount(1);
-      // Seven intents. Asserting ">0" would pass against a bar that kept one.
-      await expect(nav.locator('a')).toHaveCount(7);
+      // Six intents. Asserting ">0" would pass against a bar that kept one.
+      await expect(nav.locator('a')).toHaveCount(6);
 
       // And the reader's position survives the collapse: the active route is
       // still marked. This is the signal the dropped active-intent chip used
@@ -144,7 +144,7 @@ test.describe('Header, compact ink state', () => {
 
     test(`has no invisible control at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
-      await page.goto('/rights');
+      await page.goto('/tags/rights-by-country');
       await waitForAppReady(page);
       await enterCompact(page);
 
@@ -174,7 +174,7 @@ test.describe('Header, compact ink state', () => {
 
   test('no serious/critical axe violations in the compact bar', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/rights');
+    await page.goto('/tags/rights-by-country');
     await waitForAppReady(page);
     await enterCompact(page);
 
@@ -202,7 +202,7 @@ test.describe('Header, compact ink state', () => {
     // real gesture and never a synthetic `scroll` event, which is the only
     // form that can tell the two apart.
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/rights');
+    await page.goto('/tags/rights-by-country');
     await waitForAppReady(page);
 
     const header = await enterCompact(page);
@@ -214,7 +214,7 @@ test.describe('Header, compact ink state', () => {
       header,
       'the bar stayed collapsed back at the top of the page (the latch defect)',
     ).not.toHaveClass(/island-ink/);
-    await expect(header.locator('nav[aria-label] a')).toHaveCount(7);
+    await expect(header.locator('nav[aria-label] a')).toHaveCount(6);
   });
 
   // Every width at which the compact state exists, not just the narrowest.
@@ -231,7 +231,7 @@ test.describe('Header, compact ink state', () => {
       // row's `py-2` put it at 48 + 16 = **64px against a 60px token** —
       // measured here, on prod, the moment that change deployed.
       await page.setViewportSize({ width, height: 900 });
-      await page.goto('/rights');
+      await page.goto('/tags/rights-by-country');
       await waitForAppReady(page);
       await enterCompact(page);
 
@@ -269,11 +269,11 @@ test.describe('Header intent tabs, text navigation at 1100px', () => {
     // label and reports the tab as named. The first attempt at measuring this
     // did exactly that and had to be thrown away.
     await page.setViewportSize({ width: 1100, height: 900 });
-    await page.goto('/rights');
+    await page.goto('/tags/rights-by-country');
     await waitForAppReady(page);
 
     const tabs = page.getByRole('banner').locator('nav[aria-label] a');
-    await expect(tabs).toHaveCount(7);
+    await expect(tabs).toHaveCount(6);
 
     const report = await page.evaluate(() => {
       const links = Array.from(

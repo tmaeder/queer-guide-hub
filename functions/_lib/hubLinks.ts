@@ -126,10 +126,10 @@ const HUBS: Record<string, HubSpec[]> = {
       heading: 'LGBTQ+ city guides',
     },
   ],
-  // /rights is the actual country index: its country table links to
+  // /tags/rights-by-country is the actual country index: its country table links to
   // /country/:slug. /countries has no public SPA route, metadata or body and
   // returns 404; putting this block there orphaned the country crawl links.
-  '/rights': [
+  '/tags/rights-by-country': [
     {
       table: 'countries',
       labelColumn: 'name',

@@ -5,11 +5,11 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cn } from '@/lib/utils';
 
 interface KnowledgeHeaderProps {
-  section: 'terms' | 'personalities' | 'history';
+  section: 'terms' | 'personalities' | 'history' | 'rights';
   children?: ReactNode;
 }
 
-/** The glossary, people directory and history timeline share one URL-backed workspace. */
+/** The glossary, people directory, history timeline and rights index share one URL-backed workspace. */
 export function KnowledgeHeader({ section, children }: KnowledgeHeaderProps) {
   const { t } = useTranslation();
   const sections = [
@@ -20,6 +20,13 @@ export function KnowledgeHeader({ section, children }: KnowledgeHeaderProps) {
       label: t('knowledge.personalities', 'Personalities'),
     },
     { id: 'history', to: '/history', label: t('knowledge.history', 'History') },
+    // /rights folded into Knowledge (2026-11-01). The page keeps its own
+    // composite layout; this tab is how the glossary reaches it.
+    {
+      id: 'rights',
+      to: '/tags/rights-by-country',
+      label: t('knowledge.rights', 'Rights by country'),
+    },
   ] as const;
 
   return (

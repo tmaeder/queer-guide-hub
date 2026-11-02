@@ -16,8 +16,8 @@ describe('crawler hub route contracts', () => {
         .filter((r) => !r.isRedirectStub)
         .map((r) => r.path),
     );
-    expect(pages.has('/rights')).toBe(true);
-    expect(HUB_PATHS).toContain('/rights');
+    expect(pages.has('/tags/rights-by-country')).toBe(true);
+    expect(HUB_PATHS).toContain('/tags/rights-by-country');
     expect(HUB_PATHS.length).toBeGreaterThan(5);
     for (const path of HUB_PATHS) {
       expect(pages.has(path), `${path} has no public page`).toBe(true);
@@ -29,7 +29,7 @@ describe('crawler hub route contracts', () => {
 
   it('serves country detail links on the country index and leaves the missing route empty', async () => {
     fetchRows.mockResolvedValue([{ slug: 'germany', name: 'Germany' }]);
-    const html = await buildHubLinksHtml({ ASSETS: { fetch } }, '/rights');
+    const html = await buildHubLinksHtml({ ASSETS: { fetch } }, '/tags/rights-by-country');
     expect(html).toContain('data-prerendered="hub-links"');
     expect(html).toContain('href="/country/germany"');
     expect(fetchRows).toHaveBeenCalledWith(

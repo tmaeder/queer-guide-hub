@@ -21,7 +21,7 @@ import { scrollToIdSettled } from '@/lib/scrollSettle';
 import { RightsNewsSection } from '@/components/rights/RightsNewsSection';
 
 /**
- * `/rights` — LGBTQ+ law and safety, country by country.
+ * `/tags/rights-by-country` — LGBTQ+ law and safety, country by country.
  *
  * The nav label is "Rights", not "Know your rights". We hold no residency,
  * citizenship, gender marker or partnership status for the reader, so we cannot
@@ -87,7 +87,7 @@ export default function RightsIntent() {
     navigate(`/country/${country.slug}`);
   };
 
-  // Deep links into a single right (`/rights#marriage`), which is where the
+  // Deep links into a single right (`/tags/rights-by-country#marriage`), which is where the
   // glossary sends every class-of-law tag — see src/lib/rights/tagRightTopics.ts.
   //
   // The browser performs its fragment jump while this page is still a shell: the
@@ -134,7 +134,7 @@ export default function RightsIntent() {
     title: 'LGBTQ+ rights and safety, country by country',
     description:
       'Legal status for LGBTQ+ people in all 250 countries and territories: criminalisation, partnership recognition and equality scores, with sources.',
-    canonicalPath: '/rights',
+    canonicalPath: '/tags/rights-by-country',
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'Dataset',
@@ -279,7 +279,10 @@ export default function RightsIntent() {
       hidden: !countries || countries.length === 0,
       content: <RightsLedger summary={rightsSummary} onNewsTopicSelect={showNewsForTopic} />,
       action: (
-        <LocalizedLink to="/rights/sources" className="text-13 no-underline hover:underline">
+        <LocalizedLink
+          to="/tags/rights-by-country/sources"
+          className="text-13 no-underline hover:underline"
+        >
           How we know
         </LocalizedLink>
       ),
@@ -331,7 +334,10 @@ export default function RightsIntent() {
         </div>
       ),
       action: (
-        <LocalizedLink to="/rights/sources" className="text-13 no-underline hover:underline">
+        <LocalizedLink
+          to="/tags/rights-by-country/sources"
+          className="text-13 no-underline hover:underline"
+        >
           Sources and limits
         </LocalizedLink>
       ),
@@ -360,8 +366,11 @@ export default function RightsIntent() {
 
   return (
     <IntentPageLayout
-      breadcrumbLabel={t('header.intents.rights.label', 'Rights')}
-      breadcrumbHref="/rights"
+      breadcrumbParents={[
+        { label: t('header.intents.knowledge.label', 'Knowledge'), href: '/tags' },
+      ]}
+      breadcrumbLabel={t('header.nav.rightsByCountry', 'Rights by country')}
+      breadcrumbHref="/tags/rights-by-country"
       eyebrow="Know before you go"
       title="LGBTQ+ rights and safety, country by country"
       lede="Legal status for every country and territory we cover — criminalisation, partnership recognition, and how they compare. We can tell you what the law says; we cannot tell you what it means for your particular situation."

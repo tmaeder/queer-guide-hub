@@ -304,6 +304,9 @@
     "/tags/:tagName",
     "/tags/c/:categorySlug",
     "/tags/interactions",
+    "/tags/rights-by-country",
+    "/tags/rights-by-country/sources",
+    "/tags/rights-by-country/trans",
     "/tags/sti-guide",
     "/tags/topic/:slug",
     "/terms",
@@ -425,6 +428,21 @@
       "to": "/events",
       "localized": false,
       "preserveQuery": false
+    },
+    "/rights": {
+      "to": "/tags/rights-by-country",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/rights/sources": {
+      "to": "/tags/rights-by-country/sources",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/rights/trans": {
+      "to": "/tags/rights-by-country/trans",
+      "localized": true,
+      "preserveQuery": true
     },
     "/support": {
       "to": "/help",

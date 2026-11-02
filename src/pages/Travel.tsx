@@ -200,7 +200,7 @@ export default function Travel() {
           ) : null}
           <div className="flex flex-wrap gap-4">
             <LocalizedLink
-              to="/rights"
+              to="/tags/rights-by-country"
               className="bg-muted px-6 py-2 font-medium no-underline rounded-element"
             >
               Check any country

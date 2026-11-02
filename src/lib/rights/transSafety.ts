@@ -170,7 +170,7 @@ export function readTransViolence(raw: unknown): TransViolenceRecord {
 // ---------------------------------------------------------------------------
 
 /**
- * `/rights` puts `gender-recognition` in UNCOUNTED_SLUGS because the topic cannot
+ * `/tags/rights-by-country` puts `gender-recognition` in UNCOUNTED_SLUGS because the topic cannot
  * collapse into one yes/no bar the way the other 17 can — "recognition exists"
  * says nothing about whether it costs you a surgery. So it is counted HERE
  * instead, split across the facts that actually differ between countries.

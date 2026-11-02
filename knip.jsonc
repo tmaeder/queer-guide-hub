@@ -107,6 +107,13 @@
       ]
     },
 
+    // Expo Router: every file under src/app is a route, discovered by the
+    // router at runtime and never imported.
+    "mobile": {
+      "entry": ["app.config.ts", "jest.setup.ts", "src/app/**/*.tsx", "src/**/__tests__/**/*.{ts,tsx}"],
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+
     "extension": {
       // extract.ts and selection.ts are absent from manifest.json — the
       // background worker injects them by string path at runtime.

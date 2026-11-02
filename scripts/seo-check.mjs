@@ -32,7 +32,7 @@ const ROUTES = [
   // gates the crawler body on `indexable`, so the botH1 / botBodySize
   // assertions below would fail on it by construction.
   '/going-out',
-  '/rights',
+  '/tags/rights-by-country',
   // '/help', not '/support': the support intent moved to /help (INTENT_NAV
   // names /help and has not named /support for a while), and /support is a
   // LocalizedRedirect onto it. Sampling /support broke BOTH rules stated

@@ -288,7 +288,7 @@ describe('RightsWorldMap', () => {
     expect(zz?.properties?.rightsClass).toBe('nodata');
   });
 
-  // Regression guard for "the map shows too much world" (/rights/trans).
+  // Regression guard for "the map shows too much world" (/tags/rights-by-country/trans).
   // The framing must come from the CONTAINER via bounds, not from a hardcoded zoom:
   // `zoom: 0.9` renders the world 955px wide, so a ~1036px container showed over 360°
   // of longitude with a duplicated sliver at each edge, while the same constant

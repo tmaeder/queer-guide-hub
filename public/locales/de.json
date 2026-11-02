@@ -1,5 +1,6 @@
 {
   "knowledge": {
+    "rights": "Rechte nach Land",
     "title": "Wissen",
     "terms": "Begriffe",
     "personalities": "Persönlichkeiten",
@@ -2068,6 +2069,7 @@
       "tagsAll": "Alle Begriffe",
       "tagsInteractions": "Substanzsicherheit",
       "tagsStiGuide": "STI-Leitfaden",
+      "rightsByCountry": "Rechte nach Land",
       "transRights": "Trans-Rechte",
       "competitions": "[DE] Drag Race",
       "newsAll": "Alle News"
@@ -3040,7 +3042,7 @@
         "venues": "[DE] Where to go",
         "districts": "[DE] Queer districts",
         "districtsNote": "[DE] Walkable clusters of bars, cafés and community spaces.",
-        "events": "[DE] Next departures",
+        "events": "Kommende Events",
         "overview": "[DE] About {{city}}",
         "travel": "[DE] Getting there",
         "news": "[DE] In the news",
@@ -4873,11 +4875,11 @@
     },
     "section": {
       "about": "[DE] About {{name}}",
-      "walk": "[DE] The walk",
+      "walk": "Lokale",
       "walkNote": "[DE] Stops in order, with the straight-line gap between them.",
-      "events": "[DE] Next departures",
+      "events": "Kommende Events",
       "photos": "[DE] Photos",
-      "city": "[DE] On the same line"
+      "city": "Die Stadt"
     },
     "action": {
       "website": "[DE] Website",

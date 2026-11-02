@@ -50,6 +50,9 @@ export default tseslint.config(
       // project-service then can't disambiguate (root + scraper/ both look
       // like valid tsconfig roots). Lint scraper from `cd scraper && npm run lint`.
       'scraper/**',
+      // Native app (Expo) — own package.json + tsconfig; checked by
+      // `cd mobile && npm run typecheck && npm test` in mobile-ci.yml.
+      'mobile/**',
       // Legacy worker duplicates (superseded by workers/*/)
       'worker/**',
       'worker-ingest/**',

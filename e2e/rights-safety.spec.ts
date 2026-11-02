@@ -49,12 +49,12 @@ function coverageFractions(text: string): number[] {
 
 // The 30s wait below is the whole default test budget, so reading the text
 // afterwards has nothing left and times out on `locator('main')` rather than on
-// anything to do with coverage. /rights mounts its cards only after the
+// anything to do with coverage. /tags/rights-by-country mounts its cards only after the
 // all-countries fetch, so the wait genuinely needs that long — the budget is
 // what has to move.
-test('/rights states real coverage, not a tautology', async ({ page }) => {
+test('/tags/rights-by-country states real coverage, not a tautology', async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto('/rights');
+  await page.goto('/tags/rights-by-country');
   await dismiss(page);
   const main = page.locator('main');
   await expect(main).toContainText(/\d{1,3} of 250/, { timeout: 30_000 });
@@ -67,8 +67,8 @@ test('/rights states real coverage, not a tautology', async ({ page }) => {
   }
 });
 
-test('/rights reaches every country, not the first thirty', async ({ page }) => {
-  await page.goto('/rights');
+test('/tags/rights-by-country reaches every country, not the first thirty', async ({ page }) => {
+  await page.goto('/tags/rights-by-country');
   await dismiss(page);
   const world = page.locator('#world');
   await expect(world.getByRole('searchbox')).toBeVisible({ timeout: 30_000 });
@@ -93,7 +93,7 @@ test('/rights reaches every country, not the first thirty', async ({ page }) => 
  */
 test('country rows are tappable on a phone, not 18px of text', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/rights');
+  await page.goto('/tags/rights-by-country');
   await dismiss(page);
   const world = page.locator('#world');
   await expect(world.getByRole('searchbox')).toBeVisible({ timeout: 30_000 });
@@ -109,8 +109,10 @@ test('country rows are tappable on a phone, not 18px of text', async ({ page }) 
   expect(sortBox!.height, `score sort is ${sortBox!.height}px tall`).toBeGreaterThanOrEqual(24);
 });
 
-test('/rights separates confirmed from uncertain death penalty', async ({ page }) => {
-  await page.goto('/rights');
+test('/tags/rights-by-country separates confirmed from uncertain death penalty', async ({
+  page,
+}) => {
+  await page.goto('/tags/rights-by-country');
   await dismiss(page);
   const main = page.locator('main');
   await expect(main).toContainText(/In 7 the penalty is death/, { timeout: 30_000 });
@@ -118,7 +120,7 @@ test('/rights separates confirmed from uncertain death penalty', async ({ page }
 });
 
 test('an unscored country is never filed as Protected or Mixed', async ({ page }) => {
-  await page.goto('/rights');
+  await page.goto('/tags/rights-by-country');
   await dismiss(page);
   const world = page.locator('#world');
   await expect(world.getByRole('searchbox')).toBeVisible({ timeout: 30_000 });
@@ -168,7 +170,7 @@ test('INVARIANT: a criminalising country never renders as Welcoming', async ({ p
 });
 
 test('crisis-adjacent surfaces stay animation-free', async ({ page }) => {
-  await page.goto('/rights');
+  await page.goto('/tags/rights-by-country');
   await expect(page.locator('main h1')).toBeVisible({ timeout: 30_000 });
   await expect(page.locator('div.fixed.top-0.left-0.right-0')).toHaveCount(0);
 });
@@ -265,13 +267,13 @@ test('criminal status is never behind a disclosure', async ({ page }) => {
   await expect(main).toContainText(/death penalty/i);
 });
 
-test('/rights/sources exists, states its coverage and refuses to oversell the score', async ({
+test('/tags/rights-by-country/sources exists, states its coverage and refuses to oversell the score', async ({
   page,
 }) => {
   // Same budget reasoning as the coverage test above: a 30s wait plus the
   // reads that follow does not fit the default 30s test timeout.
   test.setTimeout(60_000);
-  await page.goto('/rights/sources');
+  await page.goto('/tags/rights-by-country/sources');
   await dismiss(page);
   const main = page.locator('main');
   await expect(main).toContainText(/Where this data comes from/, { timeout: 30_000 });
@@ -287,17 +289,21 @@ test('/rights/sources exists, states its coverage and refuses to oversell the sc
     expect(n, `coverage collapsed to ${n}/250`).toBeGreaterThanOrEqual(COVERAGE_FLOOR);
   }
   // The three honesty claims. If any is edited away, the page stops earning
-  // the citation that /rights points at.
+  // the citation that /tags/rights-by-country points at.
   await expect(main).toContainText(/lands mid-scale rather than reading as unknown/);
   await expect(main).toContainText(/not a safety rating/);
   await expect(main).toContainText(/rights vary by state or province/);
 });
 
-test('/rights cites its source rather than asserting a bare number', async ({ page }) => {
-  await page.goto('/rights');
+test('/tags/rights-by-country cites its source rather than asserting a bare number', async ({
+  page,
+}) => {
+  await page.goto('/tags/rights-by-country');
   await dismiss(page);
   await expect(page.locator('main')).toContainText(/Where this comes from/, { timeout: 30_000 });
-  await expect(page.locator('main a[href$="/rights/sources"]').first()).toBeVisible();
+  await expect(
+    page.locator('main a[href$="/tags/rights-by-country/sources"]').first(),
+  ).toBeVisible();
 });
 
 /**
@@ -343,7 +349,7 @@ test('the verdict names what our source does not record', async ({ page }) => {
  * the label rather than canvas pixels.
  */
 test('the map renders and is labelled', async ({ page }) => {
-  await page.goto('/rights');
+  await page.goto('/tags/rights-by-country');
   await dismiss(page);
   const mapSection = page.locator('#map');
   const map = mapSection.getByRole('img', { name: /World map/i });
@@ -362,7 +368,7 @@ test('the map renders and is labelled', async ({ page }) => {
 });
 
 test('the trans lens changes the reading', async ({ page }) => {
-  await page.goto('/rights');
+  await page.goto('/tags/rights-by-country');
   await dismiss(page);
   const mapSection = page.locator('#map');
   await expect(mapSection.getByRole('img', { name: /World map/i })).toBeVisible({
@@ -394,7 +400,7 @@ test('the trans lens changes the reading', async ({ page }) => {
 });
 
 test('no-data is never presented as protected', async ({ page }) => {
-  await page.goto('/rights');
+  await page.goto('/tags/rights-by-country');
   await dismiss(page);
   const mapSection = page.locator('#map');
   await expect(mapSection.getByRole('img', { name: /World map/i })).toBeVisible({
@@ -415,10 +421,10 @@ test('no-data is never presented as protected', async ({ page }) => {
   expect(count, `no-data station text was ${JSON.stringify(noDataText)}`).toBeGreaterThan(0);
 });
 
-test('/rights#marriage still lands on the ledger row with the map section above it', async ({
+test('/tags/rights-by-country#marriage still lands on the ledger row with the map section above it', async ({
   page,
 }) => {
-  await page.goto('/rights#marriage');
+  await page.goto('/tags/rights-by-country#marriage');
   await dismiss(page);
   const target = page.locator('#marriage');
   await expect(target).toBeVisible({ timeout: 30_000 });

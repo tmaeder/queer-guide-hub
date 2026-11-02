@@ -242,7 +242,7 @@ export function hasAnyCriminalizationSignal(input: unknown): boolean {
  * Somalia and the UAE rule out reading `death_penalty` alone. Those five are
  * why this exists: `hasDeathPenalty` tested only `death_penalty`, so
  * 'No legal certainty' — ILGA explicitly recording that it does not know —
- * came back `false`, exactly as if ILGA had said "No". `/rights` therefore
+ * came back `false`, exactly as if ILGA had said "No". `/tags/rights-by-country` therefore
  * reported 7 countries where the source says death is possible in 12, and
  * `useTripSafety` rated Afghanistan `high` rather than `critical`.
  *

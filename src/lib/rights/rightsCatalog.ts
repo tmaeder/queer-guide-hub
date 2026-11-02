@@ -19,9 +19,9 @@ import {
  * The 18 rights we hold, as data.
  *
  * These lived as hardcoded JSX rows inside LGBTJurisdictionInfo, which made
- * them unreachable from anywhere else — so `/rights` shipped a country ledger
+ * them unreachable from anywhere else — so `/tags/rights-by-country` shipped a country ledger
  * that rendered ONE of them while the other 17 sat in the database at 100%
- * coverage. Declaring them here lets the country card, the `/rights` index and
+ * coverage. Declaring them here lets the country card, the `/tags/rights-by-country` index and
  * the per-right topic pages read one list.
  *
  * `slug` is a URL segment. Any route built from it MUST be declared as a
@@ -275,7 +275,7 @@ export const RIGHT_TOPICS: readonly RightTopic[] = [
   },
 ];
 
-/** Render order for the country card and the `/rights` topic grid. */
+/** Render order for the country card and the `/tags/rights-by-country` topic grid. */
 export const RIGHT_SECTION_ORDER: readonly RightSection[] = [
   'criminalisation',
   'antiDiscrimination',
@@ -318,7 +318,7 @@ export const RIGHT_SECTION_SHORT_LABEL: Record<RightSection, string> = {
  * `marriage` and `civil-union` share `labelKey: 'unions'` because the country
  * card renders them together inside one bespoke union block, where "Same-sex
  * unions" is the correct heading for the pair. ANY flat list of topics — the
- * `/rights` ledger, the map's line selector — instead renders two adjacent
+ * `/tags/rights-by-country` ledger, the map's line selector — instead renders two adjacent
  * controls both reading "Same-sex unions", which looks like a duplicate and,
  * in the selector's case, gives two different buttons the same accessible
  * name. It shipped that way on the map before this helper existed.

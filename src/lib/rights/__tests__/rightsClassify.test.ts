@@ -104,7 +104,7 @@ describe('classifyCountryRight — gender-recognition (uncounted by the summary)
    * The shape production actually stores, and the one this topic was blind to
    * until 2026-09-01: `topicScalarValue` had no `gender-recognition` branch,
    * so it returned the jsonb OBJECT, `isReadableScalar` rejected it, and all
-   * 250 countries classified as `none` — the /rights choropleth painted this
+   * 250 countries classified as `none` — the /tags/rights-by-country choropleth painted this
    * topic "no data" worldwide. The test above kept passing because it feeds a
    * bare string, which no country row has ever held.
    */

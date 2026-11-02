@@ -13,7 +13,7 @@ import { tallyFeatureClasses, type ClassifiedFeatureCollection } from './rightsW
 /**
  * The country choropleth, with no opinion about what it is colouring.
  *
- * Extracted verbatim out of `RightsWorldMap` when `/rights/trans` needed a
+ * Extracted verbatim out of `RightsWorldMap` when `/tags/rights-by-country/trans` needed a
  * second one for legal gender recognition. Everything here is MapLibre
  * knowledge that took a while to get right and must not be re-learned in a
  * copy — the 50m boundary set, publishing `mapRef` inside `load`, the
@@ -110,7 +110,7 @@ export function WorldChoropleth({
    * The cost is real and deliberate: 231 KB gzipped against 20 KB. It is
    * fetched once per hour (React Query staleTime) and the cache key is shared
    * with every other surface that asks for 50m — including the second map on
-   * /rights/trans, which therefore costs nothing extra. A data map that omits
+   * /tags/rights-by-country/trans, which therefore costs nothing extra. A data map that omits
    * the data is the worse trade.
    */
   const { data: boundaries } = useCountryBoundaries(true, 5);
@@ -214,7 +214,7 @@ export function WorldChoropleth({
    * guarded by MapLibre's `Style._checkLoaded()`, which throws
    * `"Style is not done loading."` the moment that stops being true. The throw
    * happens inside a `useEffect` body, so React 18 hands it to the error
-   * boundary and the whole of /rights goes to the crash screen — measured in
+   * boundary and the whole of /tags/rights-by-country goes to the crash screen — measured in
    * production on 2026-09-08 with this component's chunk as the top frame.
    *
    * When the style is not ready the work is DEFERRED to the next `styledata`

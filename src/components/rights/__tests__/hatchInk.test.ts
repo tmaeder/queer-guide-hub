@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * `.hatch-ink` marks the two "we hold no answer" segments of the /rights/trans
+ * `.hatch-ink` marks the two "we hold no answer" segments of the /tags/rights-by-country/trans
  * recognition band. It is a chart FILL, so it carries its segment's own
  * percentage label on top of it.
  *

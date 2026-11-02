@@ -52,14 +52,14 @@ export const PUBLIC_ROUTES = [
   { path: '/tags', name: 'tags' },
   { path: '/tags/community-resource', name: 'tag-detail' },
   // The six intent pages are the product's front doors, and three of them were
-  // never swept: /going-out, /rights and /shop were absent from this list
+  // never swept: /going-out, /tags/rights-by-country and /shop were absent from this list
   // entirely, while /travel and /help were covered. They are public, high
   // traffic, and each was rebuilt in #2692. /people is listed below under
   // auth:'user', so CI (SCAN_SCOPE: public) never reaches it either — its
   // SIGNED-OUT state is a real public surface with 27 interactive chips on it,
   // so it gets a public entry too.
   { path: '/going-out', name: 'intent-going-out' },
-  { path: '/rights', name: 'intent-rights' },
+  { path: '/tags/rights-by-country', name: 'intent-rights' },
   // No /shop entry: it folded into /marketplace, which is already swept above.
   // Do not re-add it — sweeping a redirect scans the target twice under a name
   // that claims to be a distinct surface.

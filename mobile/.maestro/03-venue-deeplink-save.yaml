@@ -1,0 +1,15 @@
+appId: guide.queer.app
+name: A venue link opens the place, and saving it shows under Saved
+tags: [smoke]
+---
+- launchApp:
+    clearState: true
+- openLink: "queerguide://venues/mylord"
+- extendedWaitUntil:
+    visible: "Mylord"
+    timeout: 15000
+- tapOn: "Save"
+- assertVisible: "Saved"
+- back
+- tapOn: "Saved"
+- assertVisible: "Mylord"

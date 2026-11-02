@@ -34,22 +34,22 @@ test.describe('Chrome fits at every locale', () => {
   test.setTimeout(180_000);
 
   for (const locale of LOCALES) {
-    // 1280 is the `xl` threshold where all seven labels appear, i.e. the
+    // 1280 is the `xl` threshold where all six labels appear, i.e. the
     // tightest case. 1440 is the ordinary desktop width. Below `xl` the tabs
     // are icon-only and cannot overflow on label length.
     for (const width of [1280, 1440]) {
       test(`the intent row does not amputate tabs — ${locale} @ ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
-        await page.goto(`/${locale}/rights`);
+        await page.goto(`/${locale}/tags/rights-by-country`);
         await waitForAppReady(page);
 
         const nav = page.getByRole('banner').locator('nav[aria-label]');
         await expect(nav).toHaveCount(1);
-        // Control: all seven must be in the DOM. Overflow hides them visually
+        // Control: all six must be in the DOM. Overflow hides them visually
         // without removing them, so a count assertion alone cannot see the
-        // defect — but a count under seven means something else broke and
+        // defect — but a count under six means something else broke and
         // every measurement below would be about the wrong row.
-        await expect(nav.locator('a')).toHaveCount(7);
+        await expect(nav.locator('a')).toHaveCount(6);
 
         const fit = await page.evaluate(() => {
           const el = document.querySelector('header[class*="site-header"] nav[aria-label]')!;
@@ -139,7 +139,7 @@ test.describe('Public skip link', () => {
 
   test('exists, reaches main, and sits on the correct side under RTL', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto('/ar/rights');
+    await page.goto('/ar/tags/rights-by-country');
     await waitForAppReady(page);
 
     // It is `sr-only` until focused, so it has to be addressed by its href.

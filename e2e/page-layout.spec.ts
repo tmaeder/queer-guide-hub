@@ -37,7 +37,7 @@ const ROUTES = [
   // capped grid, each owning its own PageContainer — the drift-prone shape, and
   // unswept until now because a new route joins no static route list by itself.
   '/marketplace/brands',
-  '/rights',
+  '/tags/rights-by-country',
   '/going-out',
   // A stack of full-bleed bands, each owning its own PageContainer — the shape
   // most likely to drift out of alignment with the header.
@@ -635,7 +635,7 @@ test.describe('page layout — bled bars align with the content column', () => {
 const NO_OVERHANG_ROUTES = [
   '/',
   '/tags',
-  '/rights',
+  '/tags/rights-by-country',
   '/help',
   '/city/berlin',
   '/history',
@@ -665,7 +665,7 @@ test.describe('page layout — nothing wider than the header', () => {
             timeout: 15_000,
           });
         }
-        if (route === '/rights') {
+        if (route === '/tags/rights-by-country') {
           // The loading frame is capped too; audit the loaded country surface,
           // whose labels and controls are the boxes this assertion must cover.
           await page

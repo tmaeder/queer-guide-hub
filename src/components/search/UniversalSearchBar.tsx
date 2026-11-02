@@ -206,7 +206,7 @@ export const UniversalSearchBar = ({
   const { mode: userMode } = useUserMode();
   // The page someone is standing on is the strongest signal about what they
   // want, and it used to be the one signal this panel ignored: trending tiles
-  // were biased by user_mode alone, so /going-out and /rights showed the same
+  // were biased by user_mode alone, so /going-out and /tags/rights-by-country showed the same
   // six. Intent wins where there is one; user_mode stays the fallback for
   // every route that is not an intent page.
   const trendingTypes = useMemo(() => {

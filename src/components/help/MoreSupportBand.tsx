@@ -98,7 +98,7 @@ export function MoreSupportBand({ orgs }: { orgs: SupportOrg[] }) {
               'Whether it is safe to be out, to seek healthcare, or to report a crime depends on where you are. Check the legal position before you act on it.',
             )}
           </p>
-          <LocalizedLink to="/rights" className={ACTION}>
+          <LocalizedLink to="/tags/rights-by-country" className={ACTION}>
             {t('help.rights_by_country', 'LGBTQ+ rights by country')}
             <ChevronRight size={14} aria-hidden />
           </LocalizedLink>
