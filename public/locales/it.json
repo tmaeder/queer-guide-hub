@@ -3042,7 +3042,7 @@
         "venues": "[IT] Where to go",
         "districts": "[IT] Queer districts",
         "districtsNote": "[IT] Walkable clusters of bars, cafés and community spaces.",
-        "events": "[IT] Next departures",
+        "events": "Prossimi eventi",
         "overview": "[IT] About {{city}}",
         "travel": "[IT] Getting there",
         "news": "[IT] In the news",
@@ -4875,11 +4875,11 @@
     },
     "section": {
       "about": "[IT] About {{name}}",
-      "walk": "[IT] The walk",
+      "walk": "Locali",
       "walkNote": "[IT] Stops in order, with the straight-line gap between them.",
-      "events": "[IT] Next departures",
+      "events": "Prossimi eventi",
       "photos": "[IT] Photos",
-      "city": "[IT] On the same line"
+      "city": "La città"
     },
     "action": {
       "website": "[IT] Website",

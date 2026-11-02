@@ -226,26 +226,36 @@ export function RouteStrip({
 
   return (
     <nav aria-label={label} className={cn('relative', className)}>
-      {/* The line itself, behind the stations. Inset top and bottom so it
-          terminates at the first and last ring rather than running off the
-          ends of the list — a line that overshoots reads as "more stops
-          below", which is exactly what a table of contents must not imply. */}
-      <span aria-hidden className="absolute bottom-3 left-0 top-3 flex w-4 justify-center">
-        <span className={cn('h-full w-[3px]', lineColor)} />
-      </span>
-
       <ol ref={listRef} className="relative flex flex-col gap-1">
         {stations.map((s, i) => {
           const isActive = s.id === activeId;
           const isPast = activeIndex > -1 && i < activeIndex;
           return (
-            <li key={s.id}>
+            <li key={s.id} className="relative">
+              {/* The line, one segment per gap: from this ring's centre (the
+                  ring sits under pt-1.5 and is 16px tall, so its centre is
+                  14px down) to the next ring's centre (this row plus the
+                  gap-1 below it). It used to be one span from top-3 to
+                  bottom-3 of the whole list, which ran ~18px past the last
+                  ring because the last row is taller than its ring - and a
+                  line that overshoots reads as "more stops below", which a
+                  table of contents must not imply. */}
+              {i < stations.length - 1 && (
+                <span
+                  aria-hidden
+                  className="absolute left-0 top-3.5 flex h-[calc(100%+0.25rem)] w-4 justify-center"
+                >
+                  <span className={cn('h-full w-[3px]', lineColor)} />
+                </span>
+              )}
               <a
                 href={`#${s.id}`}
                 data-station-id={s.id}
                 aria-current={isActive ? 'true' : undefined}
                 onClick={(e) => handleClick(e, s.id)}
-                className="group flex items-start gap-2 no-underline"
+                // `relative` puts the ring above the absolutely positioned
+                // segment, which would otherwise paint over it.
+                className="group relative flex items-start gap-2 no-underline"
               >
                 <span className="flex w-4 shrink-0 justify-center pt-1.5">
                   {(s.depth ?? 1) === 1 ? (

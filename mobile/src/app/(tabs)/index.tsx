@@ -5,8 +5,9 @@ import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { formatEventWhen, isOngoing, MAX_MAP_EVENTS, useEventsInBounds, type EventListItem } from '@/api/events';
-import { MAX_MAP_VENUES, useVenuesInBounds, type Bounds, type VenueListItem } from '@/api/venues';
+import { MAX_MAP_EVENTS, useEventsInBounds } from '@/api/events';
+import { MAX_MAP_VENUES, useVenuesInBounds, type Bounds } from '@/api/venues';
+import { EventRow, VenueRow } from '@/components/rows';
 import { Button, StateMessage, Text } from '@/components/ui';
 import { QuickExitButton } from '@/features/discreet/QuickExitButton';
 import { MAP_FONT_BOLD, mapStyle } from '@/map/style';
@@ -230,55 +231,6 @@ function ListHeader({
   );
 }
 
-function VenueRow({ venue, onPress }: { venue: VenueListItem; onPress: () => void }) {
-  const { t } = useTranslation();
-  const { colors } = useTheme();
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="link"
-      style={({ pressed }) => [
-        styles.row,
-        { borderColor: colors.border, backgroundColor: pressed ? colors.muted : 'transparent' },
-      ]}
-    >
-      <Text variant="body" style={{ fontWeight: '700' }} numberOfLines={1}>
-        {venue.name}
-      </Text>
-      <Text variant="small" muted numberOfLines={1}>
-        {[t(`category.${venue.category}`, { defaultValue: venue.category }), venue.city]
-          .filter(Boolean)
-          .join(' · ')}
-      </Text>
-    </Pressable>
-  );
-}
-
-function EventRow({ event, onPress }: { event: EventListItem; onPress: () => void }) {
-  const { t, i18n } = useTranslation();
-  const { colors } = useTheme();
-  const when = formatEventWhen(event, i18n.language);
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="link"
-      style={({ pressed }) => [
-        styles.row,
-        { borderColor: colors.border, backgroundColor: pressed ? colors.muted : 'transparent' },
-      ]}
-    >
-      <Text variant="body" style={{ fontWeight: '700' }} numberOfLines={1}>
-        {event.title}
-      </Text>
-      <Text variant="small" muted numberOfLines={1}>
-        {[isOngoing(event) ? t('events.ongoingShort') : when, event.venue_name ?? event.city]
-          .filter(Boolean)
-          .join(' · ')}
-      </Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   root: { flex: 1 },
   modes: { flexDirection: 'row', gap: space[4], paddingHorizontal: space[4] },
@@ -301,11 +253,4 @@ const styles = StyleSheet.create({
     marginTop: -16,
   },
   listHeader: { paddingHorizontal: space[4], paddingTop: space[4], paddingBottom: space[2], gap: space[1] },
-  row: {
-    paddingHorizontal: space[4],
-    paddingVertical: space[2] + space[1],
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    minHeight: 56,
-    justifyContent: 'center',
-  },
 });
