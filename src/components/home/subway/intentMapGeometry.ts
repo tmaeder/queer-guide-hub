@@ -83,8 +83,9 @@ const STATION_POINTS: Record<string, { x: number; y: number; lane: Lane }> = {
   'going-out': { x: 160, y: 80, lane: 'above' },
   travelling: { x: 320, y: 280, lane: 'below' },
   meet: { x: 480, y: 85, lane: 'above' },
-  // (980, 280) on yellow was the Rights station until /rights folded into the
-  // Knowledge hub (2026-11-01); the track still runs through it.
+  // Rights left the map on 2026-11-01 and came back on 2026-11-02, to the same
+  // yellow node it held before.
+  rights: { x: 980, y: 280, lane: 'below' },
   // News took Support's slot in the row (2026-11-01). It rides blue because it
   // maps 1:1 to the news content type (N-blue), so it sits on blue's free node
   // (1010, 225) — the final pair of `C 835 176 922 208 1010 225`.
