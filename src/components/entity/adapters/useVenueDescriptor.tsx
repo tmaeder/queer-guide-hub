@@ -280,7 +280,6 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
             {/* Self-hides when the venue is in no guide, so it stays out of
                 `sections` — a station pointing at nothing is a dead stop. */}
             <VenueGuides venue={venue} />
-            <FromTheGlossary tags={venue.tags} />
             <OnBluesky
               entityType="venue"
               entityId={venue.id}
@@ -288,6 +287,10 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
             />
           </>
         ),
+        // AFTER the sections, not in bodyLead. Up there it put a definition of
+        // a generic tag ("Queer-Friendly — Welcoming to queer people") between
+        // the photo and the venue's own description on every tagged venue.
+        bodyTail: <FromTheGlossary tags={venue.tags} />,
         tags: (
           <div className="flex flex-col gap-4">
             {/* What this page is — a venue, and also an organisation when one
