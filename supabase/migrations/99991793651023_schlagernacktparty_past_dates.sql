@@ -35,8 +35,8 @@ declare
 begin
   -- The CI snapshot DB is a partial copy without these reference rows; there the
   -- series has nothing to attach to, so this file is a no-op rather than an FK error.
-  if not exists (select 1 from public.cities where id = v_city)
-     or not exists (select 1 from public.countries where id = v_country) then
+  if not exists (select 1 from public.geo_city_profiles where place_id = v_city)
+     or not exists (select 1 from public.geo_country_profiles where place_id = v_country) then
     raise notice 'schlagernacktparty: Berlin/DE reference rows absent, skipping';
     return;
   end if;
@@ -246,7 +246,7 @@ end $$;
 do $verify$
 declare v_n int; v_bad int;
 begin
-  if not exists (select 1 from public.cities where id = '5761c6c4-3ed6-4429-832b-025e508db544') then
+  if not exists (select 1 from public.geo_city_profiles where place_id = '5761c6c4-3ed6-4429-832b-025e508db544') then
     return;  -- skipped above (partial snapshot DB)
   end if;
 
