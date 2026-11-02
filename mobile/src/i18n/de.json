@@ -135,13 +135,14 @@
   },
   "search": {
     "title": "Suche",
-    "placeholder": "Orte und Events suchen",
+    "placeholder": "Städte, Orte und Events suchen",
     "hint": "Gib mindestens zwei Buchstaben ein.",
     "loading": "Suche läuft…",
     "empty": "Keine Treffer.",
     "offline": "Die Suche braucht eine Verbindung. Lade unter Ich → Offline-Städte eine Stadt herunter, um sie offline zu durchsuchen.",
     "fromPacks": "Offline — Ergebnisse aus deinen heruntergeladenen Städten.",
-    "event": "Event"
+    "event": "Event",
+    "city": "Stadt"
   },
   "auth": {
     "signIn": "Anmelden",
@@ -225,5 +226,21 @@
     "denied": "Benachrichtigungen sind in den Systemeinstellungen blockiert. Tippe, um die Einstellungen zu öffnen.",
     "unavailable": "Benachrichtigungen sind auf diesem Gerät oder in dieser Version nicht verfügbar.",
     "failed": "Das konnte nicht geändert werden. Prüfe deine Verbindung und versuche es erneut."
+  },
+  "city": {
+    "loading": "Stadt wird geladen…",
+    "error": "Diese Stadt konnte nicht geladen werden. Prüfe deine Verbindung.",
+    "notFound": "Diese Stadt ist nicht verzeichnet.",
+    "events": "Kommende Events",
+    "places": "Orte",
+    "noEvents": "Hier sind keine kommenden Events verzeichnet.",
+    "noPlaces": "Hier sind noch keine Orte verzeichnet.",
+    "sectionError": "Diese Liste konnte nicht geladen werden.",
+    "moreEvents_one": "und {{count}} weiteres Event",
+    "moreEvents_other": "und {{count}} weitere Events",
+    "gated_one": "{{count}} weiterer Eintrag hier ist nur für angemeldete Mitglieder sichtbar.",
+    "gated_other": "{{count}} weitere Einträge hier sind nur für angemeldete Mitglieder sichtbar.",
+    "highRisk": "Gleichgeschlechtliche Beziehungen sind in diesem Land strafbar, deshalb werden Orte und Events hier nie öffentlich angezeigt.",
+    "capped": "Die ersten {{count}} Orte. Weitere findest du über die Karte oder die Suche."
   }
 }

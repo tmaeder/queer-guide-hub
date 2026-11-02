@@ -3040,7 +3040,7 @@
         "venues": "어디로 갈까요?",
         "districts": "퀴어 빌리지",
         "districtsNote": "걸어서 돌아볼 수 있는 바, 카페, 커뮤니티 공간 모임이에요.",
-        "events": "다음 출발",
+        "events": "예정된 이벤트",
         "overview": "{{city}} 소개",
         "travel": "가는 방법",
         "news": "뉴스에서",
@@ -4873,11 +4873,11 @@
     },
     "section": {
       "about": "{{name}} 소개",
-      "walk": "산책",
+      "walk": "장소",
       "walkNote": "순서대로 늘어선 정거장과, 그 사이의 직선 거리예요.",
-      "events": "다음 출발",
+      "events": "예정된 이벤트",
       "photos": "사진",
-      "city": "같은 노선에서"
+      "city": "도시"
     },
     "action": {
       "website": "웹사이트",

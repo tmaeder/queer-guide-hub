@@ -154,7 +154,7 @@ export default function QueerVillageDetail() {
     ? geoSections([
         {
           id: 'walk',
-          title: t('village.section.walk', 'The walk'),
+          title: t('village.section.walk', 'Venues'),
           note: t(
             'village.section.walkNote',
             'Stops in order, with the straight-line gap between them.',
@@ -181,7 +181,7 @@ export default function QueerVillageDetail() {
         },
         {
           id: 'events',
-          title: t('village.section.events', 'Next departures'),
+          title: t('village.section.events', 'Upcoming events'),
           content:
             events.length > 0 ? (
               <VillageOccurrences
@@ -213,7 +213,7 @@ export default function QueerVillageDetail() {
         },
         {
           id: 'city',
-          title: t('village.section.city', 'On the same line'),
+          title: t('village.section.city', 'The city'),
           content: village.cities ? <VillageParentCity village={village} t={t} /> : null,
         },
         {

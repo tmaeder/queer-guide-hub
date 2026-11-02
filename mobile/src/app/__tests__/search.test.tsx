@@ -70,7 +70,7 @@ async function renderScreen() {
 
 // Real timers: the 250 ms debounce elapses inside findBy*'s default wait.
 async function type(text: string) {
-  await fireEvent.changeText(screen.getByLabelText('Search places and events'), text);
+  await fireEvent.changeText(screen.getByLabelText('Search cities, places and events'), text);
   await act(() => new Promise((r) => setTimeout(r, 300)));
 }
 
@@ -130,4 +130,21 @@ it('shows an upcoming event as an event and opens the event screen', async () =>
   expect(screen.queryByText('Zurich Pride 2019')).toBeNull();
   await fireEvent.press(row);
   expect(router.push).toHaveBeenCalledWith({ pathname: '/events/[slug]', params: { slug: 'zurich-pride' } });
+});
+
+it('shows a city with its country, so same-name cities differ, and opens the city screen', async () => {
+  fetchMock.mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      hits: [
+        { type: 'city', slug: 'zurich-1', name: 'Zurich', country: 'Netherlands' },
+        { type: 'city', slug: 'zuerich', name: 'Zurich', country: 'Switzerland' },
+      ],
+    }),
+  });
+  await renderScreen();
+  await type('zurich');
+  await screen.findByRole('button', { name: 'Zurich, City · Netherlands' });
+  await fireEvent.press(screen.getByRole('button', { name: 'Zurich, City · Switzerland' }));
+  expect(router.push).toHaveBeenCalledWith({ pathname: '/city/[slug]', params: { slug: 'zuerich' } });
 });

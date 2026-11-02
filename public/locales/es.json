@@ -3042,7 +3042,7 @@
         "venues": "[ES] Where to go",
         "districts": "[ES] Queer districts",
         "districtsNote": "[ES] Walkable clusters of bars, cafés and community spaces.",
-        "events": "[ES] Next departures",
+        "events": "Próximos eventos",
         "overview": "[ES] About {{city}}",
         "travel": "[ES] Getting there",
         "news": "[ES] In the news",
@@ -4875,11 +4875,11 @@
     },
     "section": {
       "about": "[ES] About {{name}}",
-      "walk": "[ES] The walk",
+      "walk": "Locales",
       "walkNote": "[ES] Stops in order, with the straight-line gap between them.",
-      "events": "[ES] Next departures",
+      "events": "Próximos eventos",
       "photos": "[ES] Photos",
-      "city": "[ES] On the same line"
+      "city": "La ciudad"
     },
     "action": {
       "website": "[ES] Website",
