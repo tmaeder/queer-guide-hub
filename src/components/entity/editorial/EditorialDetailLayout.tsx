@@ -1,5 +1,5 @@
 import { useEffect, useMemo, type ReactNode } from 'react';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { motion, useScroll, useSpring } from 'motion/react';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -64,7 +64,23 @@ export function EditorialDetailLayout({
   // Publish the trail to the global breadcrumb bar (rendered in LayoutShell).
   useBreadcrumbs(breadcrumbs ?? null);
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  /**
+   * Replace the query string while KEEPING the #fragment. `setSearchParams`
+   * navigates to a bare `?…` and drops the hash, so a deep link such as
+   * `/tags/rights-by-country#marriage` lost its anchor ~300ms after landing,
+   * the first time the scroll-spy below wrote `?section=`. The fragment names
+   * something more specific than a section (one right, one row), and it is the
+   * part of the URL a reader copies to share it.
+   */
+  const replaceSearch = (mutate: (p: URLSearchParams) => void) => {
+    const p = new URLSearchParams(window.location.search);
+    mutate(p);
+    const search = p.toString();
+    navigate({ search: search ? `?${search}` : '', hash: window.location.hash }, { replace: true });
+  };
 
   // A section with nothing in it must not leave a heading behind.
   //
@@ -98,15 +114,10 @@ export function EditorialDetailLayout({
     const tab = searchParams.get('tab');
     const section = searchParams.get('section');
     if (tab && !section && sectionIds.includes(tab)) {
-      setSearchParams(
-        (prev) => {
-          const p = new URLSearchParams(prev);
-          p.delete('tab');
-          p.set('section', tab);
-          return p;
-        },
-        { replace: true },
-      );
+      replaceSearch((p) => {
+        p.delete('tab');
+        p.set('section', tab);
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sectionIds.join('|')]);
@@ -154,24 +165,18 @@ export function EditorialDetailLayout({
       // reading it live keeps `searchParams` out of the dep array (where it
       // would re-arm the timer on every write it had just made).
       //
-      // The check has to happen HERE, not inside the updater — returning the
-      // params unchanged from the updater does not stop React Router calling
-      // navigate(), so it would still mint a fresh location and still be
-      // counted as a page view.
+      // The check has to happen HERE, before navigate(): any navigate call,
+      // even to a byte-identical URL, mints a fresh location and is counted
+      // as a page view.
       if (new URLSearchParams(window.location.search).get('section') === next) return;
-      setSearchParams(
-        (prev) => {
-          const p = new URLSearchParams(prev);
-          if (next === null) p.delete('section');
-          else p.set('section', next);
-          return p;
-        },
-        { replace: true },
-      );
+      replaceSearch((p) => {
+        if (next === null) p.delete('section');
+        else p.set('section', next);
+      });
     }, 300);
     return () => clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeId, sectionIds.join('|'), setSearchParams]);
+  }, [activeId, sectionIds.join('|')]);
 
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 200, damping: 30 });

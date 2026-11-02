@@ -13,7 +13,7 @@ import { supabase } from '@/lib/supabase';
 export const SEARCH_URL = process.env.EXPO_PUBLIC_SEARCH_URL ?? 'https://search.queer.guide';
 export const MIN_QUERY = 2;
 
-export type HitKind = 'venue' | 'event';
+export type HitKind = 'venue' | 'event' | 'city';
 
 export interface SearchHit {
   kind: HitKind;
@@ -21,6 +21,7 @@ export interface SearchHit {
   name: string;
   /** venue category or event type; both are free slugs the screen translates */
   category: string | null;
+  /** the city a place or event is in; for a city hit, its country */
   city: string | null;
 }
 
@@ -37,6 +38,7 @@ interface ProxyHit {
   title?: string | null;
   category?: string | null;
   city?: string | null;
+  country?: string | null;
   /** epoch seconds */
   start_date?: number | null;
   end_date?: number | null;
@@ -62,6 +64,10 @@ export function toHits(raw: ProxyHit[], nowMs = Date.now()): SearchHit[] {
     if (h.type === 'venue') {
       return [{ kind: 'venue' as const, slug: h.slug, name, category: h.category ?? null, city: h.city ?? null }];
     }
+    if (h.type === 'city') {
+      // Same-name cities exist (Zurich, Switzerland and Zurich, Netherlands); the country tells them apart.
+      return [{ kind: 'city', slug: h.slug, name, category: null, city: h.country ?? null }];
+    }
     if (h.type === 'event' && eventStillOn(h, nowMs)) {
       return [{ kind: 'event' as const, slug: h.slug, name, category: h.category ?? null, city: h.city ?? null }];
     }
@@ -86,7 +92,7 @@ export async function searchOnline(query: string, signal?: AbortSignal): Promise
     res = await fetch(`${SEARCH_URL}/search`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ query, hitsPerPage: 30, filters: { types: ['venue', 'event'] } }),
+      body: JSON.stringify({ query, hitsPerPage: 30, filters: { types: ['city', 'venue', 'event'] } }),
       signal: controller.signal,
     });
   } finally {

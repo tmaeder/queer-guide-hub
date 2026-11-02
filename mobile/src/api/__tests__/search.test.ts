@@ -111,6 +111,12 @@ describe('toHits', () => {
     ]);
   });
 
+  it('keeps a city with its country as the second line', () => {
+    expect(toHits([{ type: 'city', slug: 'zuerich', name: 'Zurich', country: 'Switzerland' }], NOW)).toEqual([
+      { kind: 'city', slug: 'zuerich', name: 'Zurich', category: null, city: 'Switzerland' },
+    ]);
+  });
+
   it('drops events that are already over — the index is mostly archive', () => {
     const hits = toHits(
       [
@@ -142,7 +148,7 @@ describe('searchVenues', () => {
     expect(res).toEqual({ hits: [{ kind: 'venue', slug: 'mylord', name: 'Mylord', category: null, city: null }], offline: false });
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://search.queer.guide/search');
-    expect(JSON.parse(init.body)).toEqual({ query: 'sauna', hitsPerPage: 30, filters: { types: ['venue', 'event'] } });
+    expect(JSON.parse(init.body)).toEqual({ query: 'sauna', hitsPerPage: 30, filters: { types: ['city', 'venue', 'event'] } });
     expect(init.headers.Authorization).toBeUndefined();
   });
 
