@@ -11,14 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  useCompetedInOptions,
-  useCompetitionCategoryPeople,
-  type CompetedInOption,
-} from '@/hooks/useCompetitions';
+import { useCompetedInOptions, useCompetitionCategoryPeople } from '@/hooks/useCompetitions';
 import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
-import { COMPETITION_CATEGORIES } from '@/lib/competitionCategories';
-import { COMPETED_ANY } from '@/lib/competedInFilter';
+import { COMPETED_ANY, groupCompetedInOptions } from '@/lib/competedInFilter';
 
 /** Radix Select forbids an empty-string item value, so "no filter" needs a sentinel. */
 const NONE = '__none__';
@@ -37,7 +32,8 @@ interface Props {
  * no option leads to an empty grid. A category with no linked people is not
  * offered either.
  *
- * Each competition and each "All: <type>" row shows its count of linked
+ * Competitions are listed alphabetically within each type (see
+ * `groupCompetedInOptions`). Each competition and each "All: <type>" row shows its count of linked
  * people. The type count is DISTINCT people (from its own RPC), not a sum of
  * the rows beneath it — a queen on Drag Race and All Stars is one person.
  * "Any competition" shows the RPC's separate overall row for the same reason
@@ -52,25 +48,21 @@ interface Props {
  */
 export function CompetedInSelect({ value, onChange }: Props) {
   useReferenceTaxonomy('competition_category');
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data: options = [], isSuccess } = useCompetedInOptions();
   const { data: categoryPeople } = useCompetitionCategoryPeople();
   const fmt = (n: number | undefined) => (n == null ? undefined : n.toLocaleString());
 
-  const groups = useMemo(() => {
-    const byCategory = new Map<string, CompetedInOption[]>();
-    for (const o of options) {
-      const list = byCategory.get(o.category) ?? [];
-      list.push(o);
-      byCategory.set(o.category, list);
-    }
-    return (
-      COMPETITION_CATEGORIES.map((c) => ({ category: c, items: byCategory.get(c.id) ?? [] }))
-        // Without counts we cannot tell an empty category from a populated one,
-        // so every category is offered; with them, empty ones are hidden.
-        .filter((g) => !isSuccess || options.length === 0 || g.items.length > 0)
-    );
-  }, [options, isSuccess]);
+  const groups = useMemo(
+    () =>
+      groupCompetedInOptions(options, {
+        locale: i18n.language,
+        // Without counts we cannot tell an empty category from a populated
+        // one, so every category is offered; with them, empty ones are hidden.
+        hideEmpty: isSuccess && options.length > 0,
+      }),
+    [options, isSuccess, i18n.language],
+  );
 
   const known = useMemo(() => {
     const s = new Set<string>([COMPETED_ANY]);

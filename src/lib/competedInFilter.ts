@@ -1,4 +1,4 @@
-import { COMPETITION_CATEGORIES } from '@/lib/competitionCategories';
+import { COMPETITION_CATEGORIES, type CategoryDef } from '@/lib/competitionCategories';
 
 /**
  * The "Competed in" filter on /personalities, as ONE string value so it fits
@@ -49,4 +49,45 @@ export function competedInColumn(c: CompetedIn): { column: string; value: string
   if (c.kind === 'category') return { column: 'competed.ed.c.category', value: c.id };
   if (c.kind === 'competition') return { column: 'competed.ed.c.slug', value: c.slug };
   return null;
+}
+
+/** One option row for the "Competed in" select. Mirrors `CompetedInOption`
+ *  in useCompetitions.ts, restated structurally so this module stays free of
+ *  the hooks layer. */
+export interface CompetedInOptionLike {
+  slug: string;
+  name: string;
+  category: string;
+}
+
+/**
+ * Groups options under the competition types, in the types' canonical order,
+ * with each type's competitions sorted ALPHABETICALLY by name.
+ *
+ * The RPC returns them by people count, which is the wrong order for a list a
+ * reader scans for a name they already know. Sorting happens here, not in SQL,
+ * so it uses the reader's locale (`Intl.Collator`, accent- and case-blind:
+ * "Drag Race España" sits with the other "Drag Race" rows) and a later change
+ * to the RPC's ORDER BY cannot silently reorder the dropdown.
+ *
+ * `hideEmpty` drops types with no options. Callers pass false when the counts
+ * are unknown, because then an empty group means "not loaded", not "nobody".
+ */
+export function groupCompetedInOptions<T extends CompetedInOptionLike>(
+  options: readonly T[],
+  { locale, hideEmpty }: { locale?: string; hideEmpty: boolean },
+): { category: CategoryDef; items: T[] }[] {
+  const collator = new Intl.Collator(locale, { sensitivity: 'base', numeric: true });
+  const byCategory = new Map<string, T[]>();
+  for (const o of options) {
+    const list = byCategory.get(o.category) ?? [];
+    list.push(o);
+    byCategory.set(o.category, list);
+  }
+  return COMPETITION_CATEGORIES.map((category) => ({
+    category,
+    items: [...(byCategory.get(category.id) ?? [])].sort((a, b) =>
+      collator.compare(a.name, b.name),
+    ),
+  })).filter((g) => !hideEmpty || g.items.length > 0);
 }
