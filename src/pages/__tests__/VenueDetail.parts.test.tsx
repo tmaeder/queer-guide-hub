@@ -10,6 +10,8 @@ import {
   formatHours,
   hasUsableHours,
   buildVenueBreadcrumbs,
+  groupHoursRows,
+  VenueBodyLead,
 } from '../VenueDetail.parts';
 import type { VenueWithRelations } from '../VenueDetail.parts';
 
@@ -130,7 +132,7 @@ describe('VenueDetail.parts', () => {
       const html = render(formatHours({ monday: '9am-5pm' }));
       expect(html).toContain('9am-5pm');
     });
-    it('prefers `regular` over `display`, one day per row', () => {
+    it('prefers `regular` over `display`', () => {
       const html = render(
         formatHours({
           display: 'Mon-Fri 10:00-18:00; Sat 12:00-22:00',
@@ -139,7 +141,15 @@ describe('VenueDetail.parts', () => {
       );
       expect(html).not.toContain('Mon-Fri 10:00-18:00');
       expect(html).toContain('10:00–18:00');
-      expect(html.match(/font-bold">(Mon|Tue|Wed|Thu|Fri|Sat|Sun)</g)).toHaveLength(7);
+      // Consecutive days with the same hours share a row: Mon open, Tue–Sun closed.
+      const rows = [...html.matchAll(/font-bold">([^<]+)<\/span><span[^>]*>([^<]+)</g)].map((m) => [
+        m[1],
+        m[2],
+      ]);
+      expect(rows).toEqual([
+        ['Mon', '10:00–18:00'],
+        ['Tue–Sun', 'Closed'],
+      ]);
     });
     it('rejoins Google midnight splits onto the day the shift starts (Eagle NYC)', () => {
       // Real `venues.hours` for /venue/the-eagle. Its `display` is wrong
@@ -164,17 +174,14 @@ describe('VenueDetail.parts', () => {
           ],
         }),
       );
-      const rows = [...html.matchAll(/font-bold">(\w+)<\/span><span[^>]*>([^<]+)</g)].map((m) => [
+      const rows = [...html.matchAll(/font-bold">([^<]+)<\/span><span[^>]*>([^<]+)</g)].map((m) => [
         m[1],
         m[2],
       ]);
+      // Tue–Sat share their hours and collapse to one row; Sun differs.
       expect(rows).toEqual([
         ['Mon', 'Closed'],
-        ['Tue', '22:00–04:00'],
-        ['Wed', '22:00–04:00'],
-        ['Thu', '22:00–04:00'],
-        ['Fri', '22:00–04:00'],
-        ['Sat', '22:00–04:00'],
+        ['Tue–Sat', '22:00–04:00'],
         ['Sun', '17:00–04:00'],
       ]);
       expect(html).not.toContain('12:00 AM');
@@ -238,5 +245,67 @@ describe('VenueDetail.parts', () => {
       );
       expect(html).not.toContain('[object Object]');
     });
+  });
+});
+
+describe('groupHoursRows', () => {
+  const week = (opens: string[]) =>
+    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => ({ day, open: opens[i] }));
+
+  it('collapses five identical weekdays into one row (Atlanta Eagle)', () => {
+    const h = '15:00–03:00 (next day)';
+    expect(groupHoursRows(week([h, h, h, h, h, '13:00–03:00', '13:00–00:00']))).toEqual([
+      { day: 'Mon–Fri', open: h },
+      { day: 'Sat', open: '13:00–03:00' },
+      { day: 'Sun', open: '13:00–00:00' },
+    ]);
+  });
+
+  it('only merges CONSECUTIVE days, so the week stays in order', () => {
+    expect(groupHoursRows(week(['A', 'B', 'A', 'A', 'B', 'B', 'A']))).toEqual([
+      { day: 'Mon', open: 'A' },
+      { day: 'Tue', open: 'B' },
+      { day: 'Wed–Thu', open: 'A' },
+      { day: 'Fri–Sat', open: 'B' },
+      { day: 'Sun', open: 'A' },
+    ]);
+  });
+
+  it('leaves a week with no repeats alone', () => {
+    const rows = week(['1', '2', '3', '4', '5', '6', '7']);
+    expect(groupHoursRows(rows)).toEqual(rows);
+  });
+});
+
+describe('VenueBodyLead', () => {
+  const base = {
+    id: 'v1',
+    name: 'Atlanta Eagle',
+    images: [],
+    logo_url: null,
+    cities: { name: 'Atlanta' },
+    countries: { name: 'United States', lgbti_criminalization: null },
+  } as unknown as VenueWithRelations;
+
+  it('never stretches a logo into the hero photo frame', () => {
+    const html = renderToStaticMarkup(
+      <VenueBodyLead venue={{ ...base, logo_url: 'https://img.example/logo.png' }} />,
+    );
+    expect(html).not.toContain('<figure');
+    expect(html).toContain('logo.png');
+  });
+
+  it('uses the hero frame for a real photograph', () => {
+    const html = renderToStaticMarkup(
+      <VenueBodyLead
+        venue={{
+          ...base,
+          images: ['https://img.example/room.jpg'],
+          logo_url: 'https://img.example/logo.png',
+        }}
+      />,
+    );
+    expect(html).toContain('<figure');
+    expect(html).toContain('room.jpg');
   });
 });

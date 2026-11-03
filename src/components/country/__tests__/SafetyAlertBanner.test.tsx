@@ -4,7 +4,9 @@ import SafetyAlertBanner from '../SafetyAlertBanner';
 
 describe('SafetyAlertBanner', () => {
   it('should return null when not criminalized', () => {
-    const { container } = render(<SafetyAlertBanner criminalization={{ legal: true }} countryName="Netherlands" />);
+    const { container } = render(
+      <SafetyAlertBanner criminalization={{ legal: true }} countryName="Netherlands" />,
+    );
     expect(container.innerHTML).toBe('');
   });
 
@@ -14,18 +16,48 @@ describe('SafetyAlertBanner', () => {
   });
 
   it('should show warning when criminalized', () => {
-    render(<SafetyAlertBanner criminalization={{ legal: false, penalty: 'imprisonment' }} countryName="TestCountry" />);
+    render(
+      <SafetyAlertBanner
+        criminalization={{ legal: false, penalty: 'imprisonment' }}
+        countryName="TestCountry"
+      />,
+    );
     expect(screen.getByText(/criminalized in TestCountry/)).toBeInTheDocument();
   });
 
   it('should show death penalty warning', () => {
-    render(<SafetyAlertBanner criminalization={{ legal: false, death_penalty: 'Death' }} countryName="DangerCountry" />);
+    render(
+      <SafetyAlertBanner
+        criminalization={{ legal: false, death_penalty: 'Death' }}
+        countryName="DangerCountry"
+      />,
+    );
     expect(screen.getByText(/carries the death penalty in DangerCountry/)).toBeInTheDocument();
   });
 
   it('should include penalty details', () => {
-    render(<SafetyAlertBanner criminalization={{ legal: false, penalty: 'Imprisonment', max_prison: '14 years' }} countryName="Test" />);
+    render(
+      <SafetyAlertBanner
+        criminalization={{ legal: false, penalty: 'Imprisonment', max_prison: '14 years' }}
+        countryName="Test"
+      />,
+    );
     expect(screen.getByText(/imprisonment/i)).toBeInTheDocument();
     expect(screen.getByText(/14 years/i)).toBeInTheDocument();
+  });
+
+  it('does not append a bare category label to the penalty (Ghana on prod)', () => {
+    render(
+      <SafetyAlertBanner
+        criminalization={{
+          legal: false,
+          penalty: 'Up to 8 years imprisonment',
+          max_prison: 'Years',
+        }}
+        countryName="Ghana"
+      />,
+    );
+    expect(screen.getByText(/up to 8 years imprisonment\./)).toBeInTheDocument();
+    expect(screen.queryByText(/\(Years\)/)).toBeNull();
   });
 });

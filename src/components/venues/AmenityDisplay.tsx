@@ -7,9 +7,14 @@ import { amenityIcon } from '@/lib/amenityIcons';
 import { useProfile } from '@/hooks/useProfile';
 import { matchNeeds, needLabel } from '@/lib/accessibilityNeeds';
 import { AccessGrid, type AccessItem } from '@/components/transit/AccessGrid';
+import { canonicalAmenities } from '@/lib/canonicalAmenities';
 
 function humanize(slug: string) {
-  return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return slug
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/\bLgbtq\b/g, 'LGBTQ+')
+    .replace(/\bWi Fi\b/g, 'Wi-Fi');
 }
 
 interface Props {
@@ -28,20 +33,19 @@ export function AmenityDisplay({ amenities, accessibility, accessibilityNotes }:
   const { vocab } = useAmenityVocabulary();
   const { profile } = useProfile();
 
-  const amenityList = (amenities ?? []).filter(Boolean);
+  const amenityList = canonicalAmenities(amenities ?? []);
   const accessList = (accessibility ?? []).filter(Boolean);
 
   // The payoff for saving accessibility needs: per-venue match against the
   // user's own needs. Visible only to the user — needs are never public.
-  const travelPrefs = (profile as { travel_preferences?: { accessibility_needs?: string[] } } | null)
-    ?.travel_preferences;
+  const travelPrefs = (
+    profile as { travel_preferences?: { accessibility_needs?: string[] } } | null
+  )?.travel_preferences;
   const userNeeds = Array.isArray(travelPrefs?.accessibility_needs)
     ? travelPrefs.accessibility_needs
     : [];
   const { matched, unlisted } =
-    userNeeds.length > 0
-      ? matchNeeds(userNeeds, accessList)
-      : { matched: [], unlisted: [] };
+    userNeeds.length > 0 ? matchNeeds(userNeeds, accessList) : { matched: [], unlisted: [] };
   const matchedSlugSet = new Set(matched.flatMap((m) => m.matchedSlugs));
 
   if (!amenityList.length && !accessList.length && !accessibilityNotes && userNeeds.length === 0)
@@ -70,7 +74,9 @@ export function AmenityDisplay({ amenities, accessibility, accessibilityNotes }:
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-              {amenityList.map((slug) => <Row key={slug} slug={slug} />)}
+              {amenityList.map((slug) => (
+                <Row key={slug} slug={slug} />
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -123,7 +129,9 @@ export function AmenityDisplay({ amenities, accessibility, accessibilityNotes }:
                 {unlisted.map(needLabel).join(', ')}
               </p>
             )}
-            {accessibilityNotes && <p className="text-sm text-muted-foreground">{accessibilityNotes}</p>}
+            {accessibilityNotes && (
+              <p className="text-sm text-muted-foreground">{accessibilityNotes}</p>
+            )}
           </CardContent>
         </Card>
       )}
