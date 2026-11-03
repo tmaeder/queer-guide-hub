@@ -100,9 +100,10 @@ export function EraLine({ activeEra, onEraSelect, className }: EraLineProps) {
               }}
               className={cn(
                 'pointer-events-none absolute block h-6 w-6 -translate-x-1/2 -translate-y-1/2',
-                'rounded-full border border-border-hairline transition-colors',
-                // The ink ring border-gates the fill — pink alone clears 3:1
-                // on paper, but the set has to read as one system.
+                // An ink ring, never the hairline: a paper-filled ring with a
+                // near-invisible edge read as a GAP in the line, so the line
+                // looked broken into five dashes with no stations on it.
+                'rounded-full border-[3px] border-foreground transition-colors',
                 activeEra === key ? 'bg-track-pink' : 'bg-background',
               )}
             />

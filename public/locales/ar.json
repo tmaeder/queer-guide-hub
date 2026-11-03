@@ -4418,7 +4418,13 @@
     "eyebrow": "من نحن",
     "title": "صُنع بأيدي كويريين، ومن أجل الجميع.",
     "diagram": {
-      "label": "أربعة خطوط تلتقي عند محطة واحدة: الأماكن والفعاليات والمجتمع والوجهات."
+      "label": "أربعة خطوط تلتقي عند محطة واحدة: الأماكن والفعاليات والمجتمع والوجهات.",
+      "lines": {
+        "venues": "الأماكن",
+        "events": "الفعاليات",
+        "community": "المجتمع",
+        "places": "الوجهات"
+      }
     },
     "scale": {
       "kicker": "الشبكة اليوم",
@@ -4770,88 +4776,108 @@
         "leadsTo": "[AR] Leads to"
       },
       "fourLines": {
-        "title": "[AR] Four lines",
-        "caption": "[AR] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
-        "summary": "[AR] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
-        "readout": "[AR] Where you are on each line",
-        "tableCaption": "[AR] Every line on the map and the stops it carries",
-        "corridor": {
-          "identity": "[AR] Gender identity: two independent services"
+        "title": "أربعة خطوط",
+        "caption": "الهوية الجندرية والتعبير الجندري والجنس المحدد عند الولادة والانجذاب تسير على أربعة خطوط منفصلة. المحطة على خط لا تخبرك شيئًا عن محطة على خط آخر. اختر المحطات التي تناسبك. لا يُحفظ أو يُرسل أي شيء.",
+        "summary": "أربعة خطوط متوازية لا تلتقي أبدًا: الهوية الجندرية والتعبير الجندري والجنس المحدد عند الولادة والانجذاب. لكل خط محطات مسماة، وما يُختار على خط لا يقول شيئًا عن الخطوط الأخرى.",
+        "readout": "خطوطك الأربعة",
+        "independent": "أربع إجابات منفصلة. لا تنتج أي منها عن الأخرى.",
+        "reset": "مسح",
+        "tableCaption": "كل الخطوط ومحطاتها",
+        "tableRule": "طريقة الاختيار",
+        "pickOne": "اختر واحدة",
+        "pickAny": "اختر كل ما يناسب",
+        "notPicked": "لم تُختر أي محطة",
+        "line": {
+          "identity": "الهوية الجندرية",
+          "expression": "التعبير الجندري",
+          "assigned": "الجنس المحدد عند الولادة",
+          "attraction": "الانجذاب"
         },
-        "axis": {
-          "identityWoman": "[AR] How much woman",
-          "identityMan": "[AR] How much man",
-          "expression": "[AR] Gender expression",
-          "assigned": "[AR] Sex assigned at birth",
-          "attraction": "[AR] Attraction"
+        "question": {
+          "identity": "من تعرف أنك هو. قد تناسبك أكثر من محطة: كونك امرأة لا يأخذ مكان أي شيء آخر.",
+          "expression": "كيف تقدّم نفسك: الملابس والصوت والشعر وطريقة حضورك. محطات مسماة، لا مقياس له منتصف.",
+          "assigned": "ما كُتب عند ولادتك، غالبًا بعد نظرة سريعة. لا يحدد الخطوط الثلاثة الأخرى.",
+          "attraction": "من ينجذب إليه قلبك. من أنت ومن تنجذب إليه سؤالان منفصلان."
         },
-        "help": {
-          "identityWoman": "[AR] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
-          "identityMan": "[AR] The second rail on the same corridor. Answering this one does not subtract from the one above.",
-          "expression": "[AR] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
-          "assigned": "[AR] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
-          "attraction": "[AR] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
-        },
-        "amount": {
-          "notAtAll": "[AR] Not at all",
-          "aLittle": "[AR] A little",
-          "aLot": "[AR] A lot",
-          "entirely": "[AR] Entirely",
-          "ratherNot": "[AR] Rather not say"
-        },
-        "expression": {
-          "feminine": "[AR] Feminine",
-          "androgynous": "[AR] Androgynous",
-          "masculine": "[AR] Masculine",
-          "changes": "[AR] It changes"
-        },
-        "assigned": {
-          "female": "[AR] Female",
-          "male": "[AR] Male",
-          "intersex": "[AR] Intersex variation"
-        },
-        "attraction": {
-          "women": "[AR] Women",
-          "men": "[AR] Men",
-          "moreThanOne": "[AR] More than one gender",
-          "regardless": "[AR] Regardless of gender",
-          "noOne": "[AR] No one, or rarely"
+        "stop": {
+          "woman": "امرأة",
+          "man": "رجل",
+          "nonBinary": "لا ثنائي",
+          "agender": "لا جندري",
+          "fluid": "جندر سائل",
+          "questioning": "ما زلت أكتشف",
+          "feminine": "أنثوي",
+          "androgynous": "مخنث المظهر",
+          "masculine": "ذكوري",
+          "changes": "يتغير",
+          "female": "أنثى",
+          "male": "ذكر",
+          "intersex": "تنوع ثنائي الجنس",
+          "women": "النساء",
+          "men": "الرجال",
+          "nonBinaryPeople": "الأشخاص اللاثنائيون",
+          "regardless": "بغض النظر عن الجندر",
+          "noOne": "نادرًا أو لا أحد",
+          "ratherNot": "أفضّل عدم القول"
         }
       },
       "consentFlow": {
-        "title": "[AR] The line that stops",
-        "caption": "[AR] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
-        "summary": "[AR] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
-        "tableCaption": "[AR] Every stop on the line, and where it leads",
-        "groupLabel": "[AR] Stops on the line",
-        "hint": "[AR] Select any stop to light up the route that reaches it.",
-        "node": {
-          "start": "[AR] You want to do something with someone",
-          "asked": "[AR] Have you asked?",
-          "notAsked": "[AR] Guessing is not consent",
-          "clearYes": "[AR] Was the answer a clear yes?",
-          "notAYes": "[AR] No, maybe, or nothing",
-          "capacity": "[AR] Speed restriction: can everyone actually decide?",
-          "checkin": "[AR] Still yes, right now?",
-          "stopNow": "[AR] Stop",
-          "go": "[AR] Clear to proceed, for now"
+        "title": "الخط الذي يتوقف",
+        "caption": "الموافقة كخط دائري تدورون فيه ما دمتم معًا. كل محطة تؤدي مباشرة إلى \"توقف\". ليس معيارًا قانونيًا؛ القانون يختلف من بلد إلى آخر.",
+        "summary": "خط دائري بأربع محطات: اسأل، اسمع \"نعم\" واضحة، الجميع قادر على القرار، واستمر الآن، ومنها يعود الخط مباشرة إلى السؤال من جديد. لكل محطة صلة خاصة بـ\"توقف\" في الوسط، يمكن لأي شخص أن يسلكها في أي لحظة.",
+        "tableCaption": "كل محطات الخط الدائري وإلى أين تؤدي كل إجابة",
+        "legend": "محطات الخط الدائري",
+        "entry": "تريد أن تفعل شيئًا مع شخص ما",
+        "station": {
+          "ask": "اسأل",
+          "clearYes": "اسمع \"نعم\" واضحة",
+          "capacity": "الجميع قادر على القرار",
+          "go": "استمر، الآن فقط"
         },
         "note": {
-          "asked": "[AR] Out loud, or in a way you have both already agreed reads as asking.",
-          "notAsked": "[AR] Not objecting is not agreeing. The line does not start here.",
-          "clearYes": "[AR] Theirs, not one you talked them into.",
-          "notAYes": "[AR] Anything that is not a yes is a no. This is the end of the line.",
-          "capacity": "[AR] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
-          "checkin": "[AR] The signal you come back to. Agreeing earlier is not agreeing now.",
-          "stopNow": "[AR] Anyone can stop anything at any point, for no reason. Then look after each other.",
-          "go": "[AR] And back to the check-in, which is why this line is a loop."
+          "ask": "بصوت مسموع، أو بطريقة اتفقتما على أنها سؤال. تعود إلى هنا في كل دورة: الموافقة قبل قليل ليست موافقة الآن.",
+          "clearYes": "موافقتهم هم، لا موافقة انتزعتها بالإلحاح. لا، أو ربما، أو الصمت تعني لا.",
+          "capacity": "تخفيف السرعة. الشرب، المخدرات، الإرهاق، نصف النوم. ليس مفتاحًا: إن لم تستطع أن تعرف، فليس لديك جواب بعد.",
+          "go": "ليس خط نهاية. يعود الخط مباشرة إلى السؤال من جديد."
         },
-        "edge": {
-          "no": "[AR] No",
-          "yes": "[AR] Yes",
-          "notAYes": "[AR] Not a yes",
-          "noOrUnsure": "[AR] No, or unsure",
-          "again": "[AR] And again, any time"
+        "stop": {
+          "label": "توقف",
+          "note": "على بُعد خطوة من كل محطة، في أي لحظة، دون سبب. ثم اعتنوا ببعضكم."
+        },
+        "ride": {
+          "title": "اركب الخط",
+          "intro": "دُر حول الخط محطة بعد محطة. أي إجابة ليست \"نعم\" تأخذك إلى \"توقف\".",
+          "where": "الدورة {{round}} · المحطة {{n}}: {{name}}",
+          "start": "ابدأ",
+          "again": "ابدأ من جديد",
+          "ask": {
+            "q": "هل سألت؟",
+            "yes": "نعم، سألت",
+            "no": "لا، افترضت ذلك",
+            "why": "التخمين ليس موافقة. عدم الاعتراض ليس موافقة."
+          },
+          "clearYes": {
+            "q": "هل كانت الإجابة \"نعم\" واضحة؟",
+            "yes": "\"نعم\" واضحة",
+            "no": "لا، أو ربما، أو لا شيء",
+            "why": "كل ما ليس \"نعم\" هو \"لا\"."
+          },
+          "capacity": {
+            "q": "هل يستطيع الجميع حقًا أن يقرروا الآن؟",
+            "yes": "نعم، الجميع يستطيع",
+            "no": "لا، أو لا أستطيع أن أعرف",
+            "why": "إن لم تستطع أن تعرف، فليس لديك جواب بعد."
+          },
+          "go": {
+            "q": "أنتم مستمرون الآن. هل ما زال الأمر جيدًا للجميع؟",
+            "yes": "استمر، واسأل من جديد",
+            "no": "شخص ما يريد التوقف",
+            "why": "يمكن لأي شخص أن يوقف أي شيء في أي لحظة دون سبب."
+          }
+        },
+        "table": {
+          "ifYes": "إن كانت نعم",
+          "ifNot": "أي إجابة أخرى"
         }
       }
     }

@@ -1,24 +1,23 @@
 import { useTranslation } from 'react-i18next';
-import { AxisSet } from '../../primitives/AxisSet';
+import { LineStrip } from '../../primitives/LineStrip';
 import { InfographicTermChip } from '../../InfographicTermChip';
 import type { InfographicViewProps } from '../../types';
-import { AXES, JUNCTION, VIEW } from './data';
+import { LINES } from './data';
 
 /**
- * The renderer is a thin binding: all the editorial decisions are in data.ts,
- * all the geometry and a11y in AxisSet. Lazy-loaded, so none of this reaches
- * the eager chunk.
+ * Thin binding: the editorial decisions live in data.ts, the layout and a11y
+ * in LineStrip. Lazy-loaded, so none of this reaches the eager chunk.
  */
 export default function FourLines(props: InfographicViewProps) {
   const { t } = useTranslation();
   return (
-    <AxisSet
+    <LineStrip
       {...props}
-      axes={AXES}
-      viewBox={VIEW}
-      junction={JUNCTION}
+      lines={LINES}
       readoutTitleKey="tags.figures.fourLines.readout"
-      readoutTitleFallback="Where you are on each line"
+      readoutTitleFallback="Your four lines"
+      readoutNoteKey="tags.figures.fourLines.independent"
+      readoutNoteFallback="Four separate answers. None of them follows from another."
       renderTermChip={(slug) => (
         <InfographicTermChip
           slug={slug}
