@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { User, Calendar, Briefcase, MapPin } from '@/components/icons';
 
 interface Candidate {
@@ -34,7 +34,7 @@ export function PersonalitySelectionDialog({
   candidates,
   searchTerm,
   onSelect,
-  loading = false
+  loading = false,
 }: PersonalitySelectionDialogProps) {
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
 
@@ -50,7 +50,8 @@ export function PersonalitySelectionDialog({
         <DialogHeader>
           <DialogTitle>Multiple Results Found</DialogTitle>
           <p className="text-muted-foreground">
-            Found {candidates.length} potential matches for "{searchTerm}". Please select the correct person:
+            Found {candidates.length} potential matches for "{searchTerm}". Please select the
+            correct person:
           </p>
         </DialogHeader>
 
@@ -64,9 +65,7 @@ export function PersonalitySelectionDialog({
                   </div>
                   <div className="flex-1">
                     <CardTitle>{candidate.title}</CardTitle>
-                    <CardDescription>
-                      {candidate.description}
-                    </CardDescription>
+                    <CardDescription>{candidate.description}</CardDescription>
 
                     {candidate.details && (
                       <div className="flex flex-wrap gap-2">
@@ -83,11 +82,10 @@ export function PersonalitySelectionDialog({
                             {candidate.details.birthYear && candidate.details.deathYear
                               ? `${candidate.details.birthYear}–${candidate.details.deathYear}`
                               : candidate.details.birthYear
-                              ? `Born ${candidate.details.birthYear}`
-                              : candidate.details.deathYear
-                              ? `Died ${candidate.details.deathYear}`
-                              : ''
-                            }
+                                ? `Born ${candidate.details.birthYear}`
+                                : candidate.details.deathYear
+                                  ? `Died ${candidate.details.deathYear}`
+                                  : ''}
                             {candidate.details.isLiving && candidate.details.birthYear && (
                               <span style={{ color: 'hsl(var(--success))' }}>• Living</span>
                             )}
@@ -110,8 +108,14 @@ export function PersonalitySelectionDialog({
                         width: 16,
                         height: 16,
                         border: '2px solid',
-                        borderColor: selectedCandidate?.id === candidate.id ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-                        backgroundColor: selectedCandidate?.id === candidate.id ? 'hsl(var(--primary))' : 'transparent',
+                        borderColor:
+                          selectedCandidate?.id === candidate.id
+                            ? 'hsl(var(--primary))'
+                            : 'hsl(var(--muted-foreground))',
+                        backgroundColor:
+                          selectedCandidate?.id === candidate.id
+                            ? 'hsl(var(--primary))'
+                            : 'transparent',
                       }}
                     />
                   </div>

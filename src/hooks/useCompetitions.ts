@@ -1,9 +1,12 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
 import { supabase } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';
-import type { CompetitionCategory } from '@/lib/competitionCategories';
+import { COMPETITION_CATEGORIES, type CompetitionCategory } from '@/lib/competitionCategories';
+import { COMPETED_ANY } from '@/lib/competedInFilter';
+import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 import type {
   CompetitionGrid,
   CompetitionHistoryEntry,
@@ -66,6 +69,40 @@ export function useCompetitionCategoryCounts() {
     return byCategory;
   }, [overview.data?.competitions]);
   return { counts, isLoading: overview.isLoading, isError: overview.isError };
+}
+
+export interface CompetedInOption {
+  slug: string;
+  name: string;
+  category: CompetitionCategory;
+  /** Distinct public personalities linked to at least one entry. */
+  people: number;
+}
+
+/**
+ * Options for the "Competed in" filter on /personalities: only competitions
+ * that link at least one public personality, so the dropdown never offers a
+ * dead end. A separate RPC because the only other source of that answer,
+ * `competition_roster()`, is ~130 KB gzipped.
+ *
+ * Fails SOFT to an empty list: the filter bar still offers "Any competition"
+ * and the six categories, which need no counts to be correct.
+ */
+export function useCompetedInOptions() {
+  return useQuery({
+    queryKey: ['competition-personality-counts'],
+    staleTime: HOUR,
+    queryFn: async (): Promise<CompetedInOption[]> => {
+      const { data, error } = await untypedRpc<CompetedInOption[]>(
+        'competition_personality_counts',
+      );
+      if (error) {
+        console.warn('competition_personality_counts failed:', error.message);
+        return [];
+      }
+      return data ?? [];
+    },
+  });
 }
 
 export function useCompetitionRoster() {
@@ -138,4 +175,16 @@ export function useCompetitionIds(slugs: string[], enabled: boolean) {
       return Object.fromEntries((data ?? []).map((r) => [r.slug, r.id]));
     },
   });
+}
+
+/** The human label for a `competed` value, for the active-filter chip. */
+export function useCompetedInLabel(value: string | undefined): string | undefined {
+  useReferenceTaxonomy('competition_category');
+  const { t } = useTranslation();
+  const { data: options = [] } = useCompetedInOptions();
+  if (!value) return undefined;
+  if (value === COMPETED_ANY) return t('pages.personalities.competedIn.any', 'Any competition');
+  const category = COMPETITION_CATEGORIES.find((c) => c.id === value);
+  if (category) return t(category.labelKey, category.label);
+  return options.find((o) => o.slug === value)?.name ?? value;
 }

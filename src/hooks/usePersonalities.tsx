@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import type { Database } from '@/integrations/supabase/types';
+import { COMPETED_IN_EMBED, competedInColumn, parseCompetedIn } from '@/lib/competedInFilter';
 
 type PersonalityRow = Database['public']['Tables']['personalities']['Row'];
 type _PersonalityInsert = Database['public']['Tables']['personalities']['Insert'];
@@ -55,6 +56,9 @@ export interface PersonalityFilters {
   fields?: string[];
   /** Filter to personalities whose `tags` array contains this tag slug. */
   tag?: string;
+  /** "Competed in": `any`, a competition category id, or a competition slug.
+   *  See src/lib/competedInFilter.ts. */
+  competed_in?: string;
   profession?: string;
   verification_status?: string;
   is_living?: boolean;
@@ -68,9 +72,12 @@ export interface PersonalityFilters {
   sortBy?: PersonalitySort;
 }
 
-function transformRow(row: PersonalityRow): Personality {
+function transformRow(input: PersonalityRow): Personality {
+  // The "Competed in" filter embeds the matching entries under `competed`; it
+  // exists only to constrain the query and must not leak into the entity.
+  const { competed: _competed, ...row } = input as PersonalityRow & { competed?: unknown };
   return {
-    ...row,
+    ...(row as PersonalityRow),
     name: row.name || '',
     pronouns: row.pronouns || undefined,
     description: row.description || undefined,
@@ -125,6 +132,12 @@ function applyFilters(query: ReturnType<typeof supabase.from>, filters?: Persona
 
   if (filters.tag) {
     query = query.contains('tags', [filters.tag]);
+  }
+
+  const competed = parseCompetedIn(filters.competed_in);
+  if (competed) {
+    const col = competedInColumn(competed);
+    if (col) query = query.eq(col.column, col.value);
   }
 
   if (filters.verification_status) {
@@ -214,7 +227,9 @@ export function usePersonalities(autoFetch: boolean = true) {
 
       let query = supabase
         .from('personalities')
-        .select('*', { count: 'exact' })
+        .select(parseCompetedIn(filters?.competed_in) ? `*,${COMPETED_IN_EMBED}` : '*', {
+          count: 'exact',
+        })
         .eq('visibility', 'public')
         .is('duplicate_of_id', null);
 

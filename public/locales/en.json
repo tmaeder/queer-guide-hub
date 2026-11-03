@@ -2825,6 +2825,13 @@
         "heading": "Competitions & titleholders",
         "all": "All competitions →",
         "lede": "Drag series, pageants and title contests, each with every edition and everyone who competed. Entrants link back to their entries here."
+      },
+      "competedIn": {
+        "label": "Competed in",
+        "none": "Everyone",
+        "any": "Any competition",
+        "allOfType": "All: {{type}}",
+        "chip": "Competed in: {{name}}"
       }
     },
     "groups": {

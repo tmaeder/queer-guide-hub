@@ -2636,6 +2636,13 @@
         "heading": "Compétitions et titulaires",
         "all": "Toutes les compétitions →",
         "lede": "Séries drag, concours de beauté et concours de titres, avec chaque édition et toutes les personnes participantes. Les participant·es renvoient à leur fiche ici."
+      },
+      "competedIn": {
+        "label": "A participé à",
+        "none": "Tout le monde",
+        "any": "N’importe quelle compétition",
+        "allOfType": "Tout : {{type}}",
+        "chip": "A participé à : {{name}}"
       }
     },
     "groups": {
