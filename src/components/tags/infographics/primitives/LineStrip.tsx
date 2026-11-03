@@ -14,9 +14,10 @@
  *
  * - **The stops ARE the controls.** Each station is a native radio or checkbox
  *   whose label is the ring plus its name, positioned on the track. There is
- *   no second list to reconcile with the drawing, and no `<svg>` at all — the
- *   track is a CSS segment between consecutive stops, so it can never drift
- *   off a station and needs no `preserveAspectRatio` trickery.
+ *   no second list to reconcile with the drawing, and the track is drawn
+ *   per gap, from one ring's centre to the next, so it can never drift off a
+ *   station. Those small SVGs are aria-hidden decoration with nothing
+ *   focusable in them.
  * - **The lines never meet.** Each strip is its own fieldset. Independence is
  *   drawn, not captioned.
  * - **Nothing is selected by default, and "rather not say" is a stop.** A
@@ -27,8 +28,9 @@
  * at once). An `exclusive` stop on an `any` line clears the others and is
  * cleared by them.
  *
- * Layout is logical (`start-*`), so RTL mirrors with the document direction
- * and nothing is flipped by transform. Narrow screens run each strip
+ * Layout is logical (`start-*`), so RTL mirrors with the document direction;
+ * only each track SVG flips its own drawing (`rtl:-scale-x-100`), which is
+ * safe because nothing is positioned inside it. Narrow screens run each strip
  * vertically, because seven labelled stops do not fit across a phone.
  *
  * Nothing here is stored, sent, or remembered.
@@ -38,7 +40,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { TRACK_BG } from '@/components/transit/routeBulletMap';
+import { TRACK_BG, TRACK_STROKE } from '@/components/transit/routeBulletMap';
 import type { InfographicViewProps, Track } from '../types';
 import { nextPicks, type Picks, type StripLine } from './lineStripModel';
 
@@ -54,13 +56,97 @@ export interface LineStripProps extends InfographicViewProps {
   renderTermChip: (slug: string) => React.ReactNode;
 }
 
-/** Literal class names so Tailwind emits them; `border-track-${t}` would not. */
-const TRACK_BORDER: Record<Track, string> = {
-  pink: 'border-track-pink',
-  blue: 'border-track-blue',
-  green: 'border-track-green',
-  yellow: 'border-track-yellow',
-};
+/** Wave amplitude in px either side of the centreline. "Lightly": enough to
+ *  read as a drawn route, not enough to make the strip look unsteady. */
+const AMP = 5;
+/** Across, the gaps are several times longer than they are down a phone, so
+ *  the same depth flattens out; it needs a little more to read as a wave. */
+const AMP_ACROSS = 9;
+const STROKE = 6;
+
+/** Shared props for every track SVG: decoration only, never focusable, and
+ *  a constant stroke width however the box is stretched. */
+const svgProps = {
+  'aria-hidden': true,
+  focusable: 'false',
+} as const;
+
+/** One gap between two stops. The box spans ring-centre to ring-centre and is
+ *  stretched to the gap with `preserveAspectRatio="none"`; the stroke uses
+ *  `non-scaling-stroke`, so only the curve stretches, not the line weight. */
+function Wave({ track, flip }: { track: Track; flip: boolean }) {
+  const a = flip ? -AMP : AMP;
+  const across = flip ? -AMP_ACROSS : AMP_ACROSS;
+  return (
+    <>
+      {/* Phones: vertical, from this ring's centre down to the next. */}
+      <svg
+        {...svgProps}
+        viewBox="0 0 24 100"
+        preserveAspectRatio="none"
+        className="absolute start-0 top-1/2 block h-full w-6 overflow-visible md:hidden rtl:-scale-x-100"
+      >
+        <path
+          d={`M 12 0 C ${12 + a} 33, ${12 - a} 67, 12 100`}
+          fill="none"
+          stroke={TRACK_STROKE[track]}
+          strokeWidth={STROKE}
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      {/* md+: horizontal, from this ring's centre across to the next. */}
+      <svg
+        {...svgProps}
+        viewBox="0 0 100 24"
+        preserveAspectRatio="none"
+        className="absolute start-1/2 top-0 hidden h-6 w-full overflow-visible md:block rtl:-scale-x-100"
+      >
+        <path
+          d={`M 0 12 C 33 ${12 + across}, 67 ${12 - across}, 100 12`}
+          fill="none"
+          stroke={TRACK_STROKE[track]}
+          strokeWidth={STROKE}
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+    </>
+  );
+}
+
+/** The line arriving at its first stop round a bend. Fixed-size boxes (no
+ *  stretching), each curve ending on the first ring's centre. */
+function LeadIn({ track }: { track: Track }) {
+  const common = {
+    fill: 'none',
+    stroke: TRACK_STROKE[track],
+    strokeWidth: STROKE,
+    strokeLinecap: 'round' as const,
+  };
+  return (
+    <>
+      {/* Phones: comes in from the end side along the top, turns down. The
+          box's bottom edge is the ring's centre (y = 40). */}
+      <svg
+        {...svgProps}
+        viewBox="0 0 48 40"
+        className="absolute start-0 top-[calc(50%-40px)] block h-10 w-12 overflow-visible md:hidden rtl:-scale-x-100"
+      >
+        <path d="M 48 3 C 24 1, 12 14, 12 40" {...common} />
+      </svg>
+      {/* md+: drops in from above, turns along the strip. The box's end edge
+          is the ring's centre (x = 64, y = 37 → 12px into the stop row). */}
+      <svg
+        {...svgProps}
+        viewBox="0 0 64 40"
+        className="absolute end-1/2 top-[-25px] hidden h-10 w-16 overflow-visible md:block rtl:-scale-x-100"
+      >
+        <path d="M 3 0 C 3 26, 26 39, 64 37" {...common} />
+      </svg>
+    </>
+  );
+}
 
 export function LineStrip({
   lines,
@@ -116,34 +202,16 @@ export function LineStrip({
                       {/* Track segment to the next stop. Vertical on narrow
                           screens, horizontal from md up; centred on the ring
                           either way, so a stop can never sit off its line. */}
-                      {/* The lead-in: each line arrives at its first stop
-                          round a bend, so no line is a ruler. Phones: it runs
-                          in along the top from the end side and turns down
-                          into the strip. From md: it drops in from above and
-                          turns along the strip. Either way the stroke ends at
-                          the ring's centre, under the ring. */}
-                      {i === 0 && (
-                        <span
-                          aria-hidden
-                          className={cn(
-                            'absolute block',
-                            'start-[9px] top-[calc(50%-37px)] h-10 w-12 rounded-ss-[20px] border-s-[6px] border-t-[6px]',
-                            'md:start-auto md:end-1/2 md:top-[-25px] md:w-16 md:rounded-ss-none md:rounded-es-[20px] md:border-t-0 md:border-b-[6px]',
-                            TRACK_BORDER[line.track],
-                          )}
-                        />
-                      )}
-                      {!last && (
-                        <span
-                          aria-hidden
-                          className={cn(
-                            'absolute block',
-                            'start-[9px] top-1/2 h-full w-1.5',
-                            'md:start-1/2 md:top-[9px] md:h-1.5 md:w-full',
-                            TRACK_BG[line.track],
-                          )}
-                        />
-                      )}
+                      {/* The track, drawn lightly wavy: one gentle S per
+                          gap between stops, alternating direction so the
+                          line snakes rather than drifts. Every curve starts
+                          and ends exactly on a ring's centre, so a stop can
+                          never sit off its line. Phones run the strip
+                          downwards; from md it runs across. Each SVG is
+                          aria-hidden decoration; the inputs carry the
+                          meaning. */}
+                      {i === 0 && <LeadIn track={line.track} />}
+                      {!last && <Wave track={line.track} flip={i % 2 === 1} />}
                       <input
                         type={line.select === 'one' ? 'radio' : 'checkbox'}
                         id={id}

@@ -76,13 +76,19 @@ describe('no interactive SVG', () => {
     }
   });
 
-  it('LineStrip draws no SVG at all, so nothing focusable can hide in one', () => {
+  it('LineStrip puts no focusable element inside its track drawings', () => {
     const { container } = renderLines();
-    expect(container.querySelectorAll('svg')).toHaveLength(0);
+    const svgs = container.querySelectorAll('svg');
+    // A wave per gap plus a lead-in per line, in two layouts. Asserting some
+    // exist keeps the next check from passing over an empty set.
+    expect(svgs.length).toBeGreaterThan(0);
+    for (const svg of svgs) {
+      expect(svg.querySelectorAll(FOCUSABLE)).toHaveLength(0);
+    }
   });
 
   it('marks every drawing aria-hidden, so the wrapper owns the semantics', () => {
-    for (const { container } of [renderFlow()]) {
+    for (const { container } of [renderFlow(), renderLines()]) {
       for (const svg of container.querySelectorAll('svg')) {
         expect(svg.getAttribute('aria-hidden')).toBe('true');
       }
