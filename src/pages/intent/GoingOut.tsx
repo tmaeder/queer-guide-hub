@@ -178,7 +178,7 @@ export default function GoingOut() {
           {(cities ?? []).map((c) => (
             <li key={c.id} className="going-out-city">
               {c.slug ? (
-                <LocalizedLink to={`/city/${c.slug}`}>
+                <LocalizedLink to={`/city/${c.slug}`} className="no-underline">
                   <div>
                     <h3>{c.name}</h3>
                     {c.countries?.name ? <p>{c.countries.name}</p> : null}
