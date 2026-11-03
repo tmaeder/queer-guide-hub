@@ -33,6 +33,8 @@ import { PersonalitiesFiltersBar } from '@/components/personalities/Personalitie
 import { StickyLetterBar } from '@/components/ui/StickyLetterBar';
 import { FeaturedPersonalityRail } from '@/components/personalities/FeaturedPersonalityRail';
 import { EditorialEntries } from '@/components/personalities/EditorialEntries';
+import { CompetitionsLineKey } from '@/components/personalities/CompetitionsLineKey';
+import { useCompetedInLabel } from '@/hooks/useCompetitions';
 import { EraLine } from '@/components/personalities/EraLine';
 import { PersonalitiesTimeline } from '@/components/personalities/PersonalitiesTimeline';
 // Lazy: keeps the maplibre chunk off the default grid/timeline views
@@ -105,6 +107,7 @@ function activeFilterCount(f: PersonalityFilters): number {
   if (f.exclude_adult === false) c++;
   if (typeof f.birth_year_min === 'number' || typeof f.birth_year_max === 'number') c++;
   if (f.tag) c++;
+  if (f.competed_in) c++;
   return c;
 }
 
@@ -182,6 +185,7 @@ export default function Personalities() {
     filters.birth_year_min,
     filters.birth_year_max,
     filters.tag,
+    filters.competed_in,
     view,
   ]);
 
@@ -256,6 +260,8 @@ export default function Personalities() {
     syncPageToUrl(nextPage);
   }, [page, filters, fetchPersonalities, syncPageToUrl]);
 
+  const competedLabel = useCompetedInLabel(filters.competed_in);
+
   const hasAnyFilter = useMemo(() => activeFilterCount(filters) > 0, [filters]);
 
   const activeChips = useMemo(() => {
@@ -325,8 +331,18 @@ export default function Personalities() {
         onRemove: () => handleFiltersChange({ tag: undefined }),
       });
     }
+    if (filters.competed_in) {
+      chips.push({
+        key: 'competed',
+        label: t('pages.personalities.competedIn.chip', {
+          defaultValue: 'Competed in: {{name}}',
+          name: competedLabel ?? filters.competed_in,
+        }),
+        onRemove: () => handleFiltersChange({ competed_in: undefined }),
+      });
+    }
     return chips;
-  }, [filters, handleFiltersChange]);
+  }, [filters, handleFiltersChange, competedLabel, t]);
 
   const activeEra = useMemo<EraKey | undefined>(
     () => eraFromYears(filters.birth_year_min, filters.birth_year_max),
@@ -418,6 +434,7 @@ export default function Personalities() {
               activeProfession={filters.profession}
               onProfessionSelect={handleProfessionSelect}
             />
+            <CompetitionsLineKey />
             <FeaturedPersonalityRail />
           </>
         )}

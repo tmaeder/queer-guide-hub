@@ -93,3 +93,22 @@ describe('parseFilters', () => {
     expect(r.changed).toBe(true);
   });
 });
+
+describe('competed param', () => {
+  it('round-trips a category, a slug and "any"', async () => {
+    const { parseFilters, serializeFilters } = await import('@/lib/personalitiesFilters');
+    for (const v of ['any', 'drag_series', 'rupauls-drag-race-uk']) {
+      const { filters, changed } = parseFilters(new URLSearchParams(`competed=${v}`));
+      expect(filters.competed_in).toBe(v);
+      expect(changed).toBe(false);
+      expect(serializeFilters(filters).get('competed')).toBe(v);
+    }
+  });
+
+  it('drops a malformed value and flags the URL for rewrite', async () => {
+    const { parseFilters } = await import('@/lib/personalitiesFilters');
+    const { filters, changed } = parseFilters(new URLSearchParams('competed=Not%20A%20Slug'));
+    expect(filters.competed_in).toBeUndefined();
+    expect(changed).toBe(true);
+  });
+});

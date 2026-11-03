@@ -2627,6 +2627,22 @@
       "detail": {
         "inTheNews": "In the news",
         "relatedEvents": "Related events"
+      },
+      "competitions": {
+        "heading": "Competições e titulares",
+        "all": "Todas as competições →",
+        "lede": "Séries de drag, concursos de beleza e concursos de títulos, cada um com todas as edições e todas as pessoas que competiram. Participantes têm link para o seu perfil aqui.",
+        "people": "Pessoas",
+        "peopleIn": "Pessoas que competiram em: {{type}}",
+        "more": "+{{count}} mais",
+        "peopleNone": "Ainda não há pessoas vinculadas em: {{type}}"
+      },
+      "competedIn": {
+        "label": "Competiu em",
+        "none": "Todas as pessoas",
+        "any": "Qualquer competição",
+        "allOfType": "Tudo: {{type}}",
+        "chip": "Competiu em: {{name}}"
       }
     },
     "groups": {
@@ -5101,7 +5117,8 @@
       "editions": "[PT] Editions",
       "entrants": "[PT] Entries",
       "linked": "[PT] Linked to a profile"
-    }
+    },
+    "backToPersonalities": "← Personalidades"
   },
   "styleguide": {
     "metaTitle": "[PT] Editorial styleguide and tone of voice",

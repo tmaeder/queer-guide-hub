@@ -2631,6 +2631,22 @@
       "detail": {
         "inTheNews": "In the news",
         "relatedEvents": "Related events"
+      },
+      "competitions": {
+        "heading": "Compétitions et titulaires",
+        "all": "Toutes les compétitions →",
+        "lede": "Séries drag, concours de beauté et concours de titres, avec chaque édition et toutes les personnes participantes. Les participant·es renvoient à leur fiche ici.",
+        "people": "Personnes",
+        "peopleIn": "Personnes ayant participé : {{type}}",
+        "more": "+{{count}} autres",
+        "peopleNone": "Aucune personne liée pour l’instant : {{type}}"
+      },
+      "competedIn": {
+        "label": "A participé à",
+        "none": "Tout le monde",
+        "any": "N’importe quelle compétition",
+        "allOfType": "Tout : {{type}}",
+        "chip": "A participé à : {{name}}"
       }
     },
     "groups": {
@@ -5105,7 +5121,8 @@
       "editions": "[FR] Editions",
       "entrants": "[FR] Entries",
       "linked": "[FR] Linked to a profile"
-    }
+    },
+    "backToPersonalities": "← Personnalités"
   },
   "styleguide": {
     "metaTitle": "[FR] Editorial styleguide and tone of voice",

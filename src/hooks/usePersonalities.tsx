@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import type { Database } from '@/integrations/supabase/types';
+import { COMPETED_IN_EMBED, competedInColumn, parseCompetedIn } from '@/lib/competedInFilter';
 
 type PersonalityRow = Database['public']['Tables']['personalities']['Row'];
 type _PersonalityInsert = Database['public']['Tables']['personalities']['Insert'];
@@ -55,6 +56,9 @@ export interface PersonalityFilters {
   fields?: string[];
   /** Filter to personalities whose `tags` array contains this tag slug. */
   tag?: string;
+  /** "Competed in": `any`, a competition category id, or a competition slug.
+   *  See src/lib/competedInFilter.ts. */
+  competed_in?: string;
   profession?: string;
   verification_status?: string;
   is_living?: boolean;
@@ -68,9 +72,12 @@ export interface PersonalityFilters {
   sortBy?: PersonalitySort;
 }
 
-function transformRow(row: PersonalityRow): Personality {
+function transformRow(input: PersonalityRow): Personality {
+  // The "Competed in" filter embeds the matching entries under `competed`; it
+  // exists only to constrain the query and must not leak into the entity.
+  const { competed: _competed, ...row } = input as PersonalityRow & { competed?: unknown };
   return {
-    ...row,
+    ...(row as PersonalityRow),
     name: row.name || '',
     pronouns: row.pronouns || undefined,
     description: row.description || undefined,
@@ -212,11 +219,20 @@ export function usePersonalities(autoFetch: boolean = true) {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
+      // "Competed in" is applied here rather than in applyFilters: it changes
+      // the SELECT (an `!inner` embed is what makes it a semi-join), and the
+      // embedded-column eq has to be chained on the typed filter builder.
+      // The column list is widened to `string` so the select parser does not
+      // try to type the embed; transformRow strips it from each row.
+      const competed = parseCompetedIn(filters?.competed_in);
+      const columns: string = competed ? `*,${COMPETED_IN_EMBED}` : '*';
       let query = supabase
         .from('personalities')
-        .select('*', { count: 'exact' })
+        .select(columns, { count: 'exact' })
         .eq('visibility', 'public')
         .is('duplicate_of_id', null);
+      const competedCol = competed ? competedInColumn(competed) : null;
+      if (competedCol) query = query.eq(competedCol.column, competedCol.value);
 
       query = applyFilters(query, filters);
       query = applySort(query, filters?.sortBy);
@@ -229,7 +245,7 @@ export function usePersonalities(autoFetch: boolean = true) {
         return { fetched: 0, total: 0 };
       }
 
-      const transformed = (data || []).map(transformRow);
+      const transformed = ((data || []) as unknown as PersonalityRow[]).map(transformRow);
 
       if (options?.append) {
         setPersonalities((prev) => {

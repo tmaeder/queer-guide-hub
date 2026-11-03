@@ -2661,6 +2661,22 @@
       "detail": {
         "inTheNews": "In the news",
         "relatedEvents": "Related events"
+      },
+      "competitions": {
+        "heading": "Конкурсы и обладатели титулов",
+        "all": "Все конкурсы →",
+        "lede": "Драг-шоу, конкурсы красоты и титульные конкурсы — с каждым сезоном и всеми участниками. Участники ссылаются на свои профили здесь.",
+        "people": "Люди",
+        "peopleIn": "Участники: {{type}}",
+        "more": "ещё {{count}}",
+        "peopleNone": "Пока нет связанных людей: {{type}}"
+      },
+      "competedIn": {
+        "label": "Участвовал(а) в",
+        "none": "Все",
+        "any": "Любой конкурс",
+        "allOfType": "Все: {{type}}",
+        "chip": "Участвовал(а) в: {{name}}"
       }
     },
     "groups": {
@@ -5135,7 +5151,8 @@
       "editions": "[RU] Editions",
       "entrants": "[RU] Entries",
       "linked": "[RU] Linked to a profile"
-    }
+    },
+    "backToPersonalities": "← Личности"
   },
   "styleguide": {
     "metaTitle": "[RU] Editorial styleguide and tone of voice",
