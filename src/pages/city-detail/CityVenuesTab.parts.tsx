@@ -353,11 +353,26 @@ export function CityEventsTab({
     const key = event.event_type || 'other';
     grouped.set(key, [...(grouped.get(key) || []), event]);
   }
-  const displayedGroups = [...grouped].slice(0, type === 'all' ? Math.ceil(visible / 3) : 1);
-  const shownCount = displayedGroups.reduce(
-    (sum, [, group]) => sum + Math.min(group.length, type === 'all' ? 3 : visible),
-    0,
-  );
+  // Grouping by type only helps when a type has more than one event. When
+  // every group would hold one (Columbus: "Other 1", "Pride 1", "Festival 1")
+  // a heading per event is just noise, so the list renders flat, in date order.
+  const flat = type === 'all' && [...grouped.values()].every((g) => g.length === 1);
+  const displayedGroups = flat
+    ? []
+    : [...grouped].slice(0, type === 'all' ? Math.ceil(visible / 3) : 1);
+  const shownCount = flat
+    ? Math.min(filtered.length, visible)
+    : displayedGroups.reduce(
+        (sum, [, group]) => sum + Math.min(group.length, type === 'all' ? 3 : visible),
+        0,
+      );
+  const toOccurrences = (list: EventRelation[]) =>
+    cityOccurrences(list, locale, openLabel, zone, t('cities.discovery.until', 'Until')).map(
+      (o) => ({
+        ...o,
+        status: o.status ? t('events.free', 'Free') : undefined,
+      }),
+    );
   const reset = () => {
     setType('all');
     setDate('upcoming');
@@ -416,6 +431,13 @@ export function CityEventsTab({
           }}
         />
       </div>
+      {flat && filtered.length > 0 && (
+        <OccurrenceList
+          floodFirst={false}
+          className="overflow-hidden rounded-container bg-muted"
+          occurrences={toOccurrences(filtered.slice(0, visible))}
+        />
+      )}
       <div className="space-y-6" data-testid="city-departure-groups">
         {displayedGroups.map(([key, group]) => (
           <section
@@ -433,16 +455,7 @@ export function CityEventsTab({
             <OccurrenceList
               floodFirst={false}
               className="overflow-hidden rounded-container bg-muted"
-              occurrences={cityOccurrences(
-                group.slice(0, type === 'all' ? 3 : visible),
-                locale,
-                openLabel,
-                zone,
-                t('cities.discovery.until', 'Until'),
-              ).map((o) => ({
-                ...o,
-                status: o.status ? t('events.free', 'Free') : undefined,
-              }))}
+              occurrences={toOccurrences(group.slice(0, type === 'all' ? 3 : visible))}
             />
             {type === 'all' && group.length > 3 && (
               <button
@@ -469,7 +482,11 @@ export function CityEventsTab({
         shown={shownCount}
         reset={type !== 'all' || date !== 'upcoming' || free ? reset : undefined}
       >
-        {(type === 'all' ? grouped.size > displayedGroups.length : filtered.length > visible) && (
+        {(flat
+          ? filtered.length > visible
+          : type === 'all'
+            ? grouped.size > displayedGroups.length
+            : filtered.length > visible) && (
           <FilterChip
             active={false}
             label={
