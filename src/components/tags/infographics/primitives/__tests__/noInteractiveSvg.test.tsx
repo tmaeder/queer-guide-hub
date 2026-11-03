@@ -14,9 +14,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render } from '@testing-library/react';
 import i18n from '@/i18n';
-import { BranchLine } from '../BranchLine';
+import { fireEvent } from '@testing-library/react';
+import ConsentFlow from '../../figures/consentFlow/ConsentFlow';
 import { LineStrip } from '../LineStrip';
-import { LOOP, STATIONS, STOPS } from '../../figures/consentFlow/data';
+import { STATIONS } from '../../figures/consentFlow/data';
 import { LINES } from '../../figures/fourLines/data';
 
 const baseProps = {
@@ -30,18 +31,7 @@ const baseProps = {
 const FOCUSABLE = 'a, button, input, select, textarea, [tabindex], [contenteditable]';
 
 function renderFlow() {
-  return render(
-    <BranchLine
-      {...baseProps}
-      stations={STATIONS}
-      loop={LOOP}
-      track="pink"
-      groupLabel="Stops on the line"
-      hintLabel="Select any stop"
-      routeLabel="Route"
-      restrictionLabel="Speed restriction"
-    />,
-  );
+  return render(<ConsentFlow {...baseProps} />);
 }
 
 function renderLines() {
@@ -66,7 +56,7 @@ describe('no interactive SVG', () => {
     await i18n.changeLanguage('en');
   });
 
-  it('BranchLine puts no focusable element inside the drawing', () => {
+  it('the consent loop puts no focusable element inside the drawing', () => {
     const { container } = renderFlow();
     const svgs = container.querySelectorAll('svg');
     expect(svgs.length).toBeGreaterThan(0);
@@ -94,11 +84,18 @@ describe('no interactive SVG', () => {
     }
   });
 
-  it('still exposes a control per stop, outside the SVG', () => {
-    const { container } = renderFlow();
-    const buttons = container.querySelectorAll('ol button');
-    expect(buttons).toHaveLength(STOPS.length);
-    for (const b of buttons) expect(b.closest('svg')).toBeNull();
+  it('rides the consent loop with controls outside the SVG', () => {
+    const { container, getByRole } = renderFlow();
+    fireEvent.click(getByRole('button', { name: 'Start' }));
+    for (const b of container.querySelectorAll('button')) expect(b.closest('svg')).toBeNull();
+    // Yes all the way round comes back to the first station: no last stop.
+    for (const s of STATIONS) fireEvent.click(getByRole('button', { name: s.yesFallback }));
+    expect(container.textContent).toContain(STATIONS[0].askFallback);
+    expect(container.textContent).toContain('Round 2');
+    // Anything else, from any station, goes to Stop.
+    fireEvent.click(getByRole('button', { name: STATIONS[0].noFallback }));
+    expect(container.textContent).toContain(STATIONS[0].whyFallback);
+    expect(getByRole('button', { name: 'Start again' })).toBeTruthy();
   });
 
   it('gives LineStrip a native input per stop, grouped per line', () => {
@@ -123,13 +120,5 @@ describe('no interactive SVG', () => {
       const labels = [...ol!.querySelectorAll('label')].map((l) => l.textContent);
       expect(labels).toEqual(line.stops.map((s) => s.labelFallback));
     }
-  });
-});
-
-describe('focus order follows the line', () => {
-  it('lists BranchLine stops in reading order: each station, then its off-ramp', () => {
-    const { container } = renderFlow();
-    const ids = [...container.querySelectorAll('ol button')].map((b) => b.id.split('-stop-')[1]);
-    expect(ids).toEqual(STOPS.map((s) => s.id));
   });
 });

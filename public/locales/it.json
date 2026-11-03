@@ -4809,40 +4809,61 @@
       },
       "consentFlow": {
         "title": "La linea che si ferma",
-        "caption": "Il consenso come un percorso con segnali, un rallentamento e nessun capolinea. Torna al controllo e resta lì. Non è un criterio legale; la legge cambia da paese a paese.",
-        "summary": "Una linea con fermate. Non chiedere, e tutto ciò che non è un sì chiaro, escono dalla linea su diramazioni che finiscono contro un respingente. La capacità è un tratto a velocità ridotta, non un segnale sì/no. La linea non termina con un via libera definitivo. Torna al controllo, a cui si può rispondere di nuovo in qualsiasi momento.",
-        "tableCaption": "Tutte le fermate della linea e dove portano",
-        "groupLabel": "Fermate della linea",
-        "hint": "Seleziona una fermata per illuminare il percorso che la raggiunge.",
-        "route": "Percorso",
-        "restriction": "Rallentamento",
-        "node": {
-          "start": "Vuoi fare qualcosa con qualcuno",
-          "asked": "Hai chiesto?",
-          "notAsked": "Indovinare non è consenso",
-          "clearYes": "La risposta è stata un sì chiaro?",
-          "notAYes": "No, forse o niente",
-          "capacity": "Tutti possono davvero decidere?",
-          "checkin": "Ancora sì, proprio ora?",
-          "stopNow": "Stop",
-          "go": "Via libera, per ora"
+        "caption": "Il consenso come una linea circolare che percorrete finché state insieme. Ogni fermata porta direttamente a Stop. Non è un criterio legale; la legge cambia da paese a paese.",
+        "summary": "Una linea circolare con quattro fermate: chiedere, sentire un sì chiaro, tutti possono decidere, e avanti, per ora, che torna subito a chiedere di nuovo. Ogni fermata ha un collegamento diretto con Stop al centro, che chiunque può prendere in qualsiasi momento.",
+        "tableCaption": "Tutte le fermate della linea circolare e dove porta ogni risposta",
+        "legend": "Fermate della linea circolare",
+        "entry": "Vuoi fare qualcosa con qualcuno",
+        "station": {
+          "ask": "Chiedere",
+          "clearYes": "Sentire un sì chiaro",
+          "capacity": "Tutti possono decidere",
+          "go": "Avanti, per ora"
         },
         "note": {
-          "asked": "Ad alta voce, o in un modo che avete già concordato valga come chiedere.",
-          "notAsked": "Non opporsi non è acconsentire. La linea non parte da qui.",
-          "clearYes": "Il loro, non uno che hai strappato insistendo.",
-          "notAYes": "Tutto ciò che non è un sì è un no. Qui finisce la linea.",
-          "capacity": "Alcol, droghe, stanchezza, essere mezzi addormentati. Non è un interruttore. Se non riesci a capirlo, non hai ancora una risposta.",
-          "checkin": "Il segnale a cui torni. Aver detto sì prima non è dire sì adesso.",
-          "stopNow": "Chiunque può fermare qualsiasi cosa in qualsiasi momento, senza motivo. Poi prendetevi cura l’uno dell’altro.",
-          "go": "E di nuovo al controllo, per questo la linea è un anello."
+          "ask": "Ad alta voce, o in un modo che avete concordato valga come chiedere. Torni qui a ogni giro: aver detto sì prima non è dire sì adesso.",
+          "clearYes": "Il loro, non uno strappato insistendo. No, forse o il silenzio sono un no.",
+          "capacity": "Rallentamento. Alcol, droghe, stanchezza, essere mezzi addormentati. Non è un interruttore: se non riesci a capirlo, non hai ancora una risposta.",
+          "go": "Non è un traguardo. La linea torna subito a chiedere di nuovo."
         },
-        "edge": {
-          "no": "No",
-          "yes": "Sì",
-          "notAYes": "Non è un sì",
-          "noOrUnsure": "No, o non sicuro",
-          "again": "E di nuovo, in qualsiasi momento"
+        "stop": {
+          "label": "Stop",
+          "note": "A un passo da ogni fermata, in qualsiasi momento, senza motivo. Poi prendetevi cura l’uno dell’altro."
+        },
+        "ride": {
+          "title": "Percorri la linea",
+          "intro": "Fai il giro una fermata alla volta. Ogni risposta che non è un sì porta a Stop.",
+          "where": "Giro {{round}} · Fermata {{n}}: {{name}}",
+          "start": "Inizia",
+          "again": "Ricomincia",
+          "ask": {
+            "q": "Hai chiesto?",
+            "yes": "Sì, ho chiesto",
+            "no": "No, l’ho dato per scontato",
+            "why": "Indovinare non è consenso. Non opporsi non è acconsentire."
+          },
+          "clearYes": {
+            "q": "La risposta è stata un sì chiaro?",
+            "yes": "Un sì chiaro",
+            "no": "No, forse o niente",
+            "why": "Tutto ciò che non è un sì è un no."
+          },
+          "capacity": {
+            "q": "Tutti possono davvero decidere adesso?",
+            "yes": "Sì, tutti possono",
+            "no": "No, o non riesco a capirlo",
+            "why": "Se non riesci a capirlo, non hai ancora una risposta."
+          },
+          "go": {
+            "q": "State andando avanti, per ora. Va ancora bene per tutti?",
+            "yes": "Avanti, e chiedi di nuovo",
+            "no": "Qualcuno vuole fermarsi",
+            "why": "Chiunque può fermare qualsiasi cosa in qualsiasi momento, senza motivo."
+          }
+        },
+        "table": {
+          "ifYes": "Se sì",
+          "ifNot": "Qualsiasi altra risposta"
         }
       }
     }

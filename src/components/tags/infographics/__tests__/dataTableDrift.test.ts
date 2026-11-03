@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { fourLinesMeta } from '../figures/fourLines/meta';
 import { consentFlowMeta } from '../figures/consentFlow/meta';
 import { LINES } from '../figures/fourLines/data';
-import { STATIONS, STOPS } from '../figures/consentFlow/data';
+import { ENTRY, STATIONS, STOP } from '../figures/consentFlow/data';
 
 /**
  * The drift guard.
@@ -46,42 +46,37 @@ describe('data table drift', () => {
     });
   });
 
-  it('The Line That Stops: one row per stop, in reading order', () => {
+  it('The Line That Stops: entry, one row per station in ring order, then Stop', () => {
     const table = consentFlowMeta.dataTable();
-    expect(table.rows).toHaveLength(STOPS.length);
-    table.rows.forEach((row, i) => {
-      expect(row[0]).toBe(STOPS[i].labelFallback);
+    expect(table.rows).toHaveLength(STATIONS.length + 2);
+    expect(table.rows[0][0]).toBe(ENTRY.labelFallback);
+    STATIONS.forEach((s, i) => expect(table.rows[i + 1][0]).toBe(s.labelFallback));
+    expect(table.rows.at(-1)![0]).toBe(STOP.labelFallback);
+  });
+
+  it('The Line That Stops: every station leads to Stop for anything but a yes', () => {
+    // Stop is one step from every station — the figure's spokes, in words.
+    const table = consentFlowMeta.dataTable();
+    STATIONS.forEach((s, i) => {
+      expect(table.rows[i + 1][3]).toContain(STOP.labelFallback);
+      expect(table.rows[i + 1][3]).toContain(s.whyFallback);
     });
   });
 
-  it('The Line That Stops: every off-ramp end says it is the end of the line', () => {
-    const table = consentFlowMeta.dataTable();
-    for (const station of STATIONS) {
-      if (!station.branch) continue;
-      const i = STOPS.findIndex((s) => s.id === station.branch!.to.id);
-      expect(table.rows[i][3]).toBe('End of the line');
-    }
-  });
-
-  it('The Line That Stops: "clear to proceed" is NOT an end of the line', () => {
+  it('The Line That Stops: "go, for now" is NOT an end of the line', () => {
     // The figure's whole thesis. Every circulating version of this chart
     // terminates in approval, which teaches that consent is a gate you pass
-    // once. Ours loops back to the check-in — and the accessible table has to
-    // carry that too, or a reader using it gets the version we rejected.
+    // once. Ours runs on round to asking again — and the accessible table has
+    // to carry that too, or a reader using it gets the version we rejected.
     const table = consentFlowMeta.dataTable();
-    const i = STOPS.findIndex((n) => n.id === 'go');
-    expect(table.rows[i][3]).not.toBe('End of the line');
-    expect(table.rows[i][3]).toContain('Still yes, right now?');
+    const i = STATIONS.findIndex((n) => n.id === 'go');
+    expect(table.rows[i + 1][2]).toBe(STATIONS[0].labelFallback);
+    expect(table.rows[i + 1][2]).not.toBe('End of the line');
   });
 
-  it('every note authored on a stop survives into the table', () => {
-    // The notes carry the reasons. A table listing labels alone would drop
-    // exactly the content that makes the diagram worth reading.
+  it('every note authored on a station survives into the table', () => {
     const table = consentFlowMeta.dataTable();
-    STOPS.forEach((n, i) => {
-      if (!n.noteFallback) return;
-      expect(table.rows[i][2]).toBe(n.noteFallback);
-    });
+    STATIONS.forEach((s, i) => expect(table.rows[i + 1][1]).toBe(s.noteFallback));
   });
 
   it('no table cell is empty where the drawing shows something', () => {

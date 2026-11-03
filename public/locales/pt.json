@@ -4809,40 +4809,61 @@
       },
       "consentFlow": {
         "title": "A linha que para",
-        "caption": "O consentimento como um trajeto com sinais, um trecho de velocidade reduzida e sem destino final. Ele volta para a checagem e fica lá. Não é um critério legal; a lei varia de país para país.",
-        "summary": "Uma linha com paradas. Não perguntar, e tudo o que não for um sim claro, saem da linha por desvios que terminam em para-choques. A capacidade é um trecho de velocidade reduzida, não um sinal de sim ou não. A linha não termina numa aprovação. Ela volta para a checagem, que pode ser respondida de novo a qualquer momento.",
-        "tableCaption": "Todas as paradas da linha e para onde levam",
-        "groupLabel": "Paradas da linha",
-        "hint": "Selecione uma parada para destacar o trajeto até ela.",
-        "route": "Trajeto",
-        "restriction": "Velocidade reduzida",
-        "node": {
-          "start": "Você quer fazer algo com alguém",
-          "asked": "Você perguntou?",
-          "notAsked": "Adivinhar não é consentimento",
-          "clearYes": "A resposta foi um sim claro?",
-          "notAYes": "Não, talvez ou nada",
-          "capacity": "Todo mundo consegue mesmo decidir?",
-          "checkin": "Ainda é sim, agora?",
-          "stopNow": "Pare",
-          "go": "Pode seguir, por enquanto"
+        "caption": "O consentimento como uma linha circular que vocês percorrem enquanto estiverem juntos. Cada estação leva direto a Pare. Não é um critério legal; a lei varia de país para país.",
+        "summary": "Uma linha circular com quatro estações: perguntar, ouvir um sim claro, todos podem decidir, e seguir, por enquanto, que volta direto a perguntar de novo. Cada estação tem sua própria ligação com Pare no centro, que qualquer pessoa pode usar a qualquer momento.",
+        "tableCaption": "Todas as estações da linha circular e para onde cada resposta leva",
+        "legend": "Estações da linha circular",
+        "entry": "Você quer fazer algo com alguém",
+        "station": {
+          "ask": "Perguntar",
+          "clearYes": "Ouvir um sim claro",
+          "capacity": "Todos podem decidir",
+          "go": "Seguir, por enquanto"
         },
         "note": {
-          "asked": "Em voz alta, ou de um jeito que vocês já combinaram que vale como pergunta.",
-          "notAsked": "Não se opor não é concordar. A linha não começa aqui.",
-          "clearYes": "Da outra pessoa, não um que você arrancou insistindo.",
-          "notAYes": "Tudo o que não é sim é não. Aqui termina a linha.",
-          "capacity": "Álcool, drogas, exaustão, estar meio dormindo. Não é um interruptor. Se você não consegue saber, ainda não tem uma resposta.",
-          "checkin": "O sinal ao qual você volta. Ter concordado antes não é concordar agora.",
-          "stopNow": "Qualquer pessoa pode parar qualquer coisa a qualquer momento, sem motivo. Depois, cuidem um do outro.",
-          "go": "E de volta à checagem, por isso esta linha é um ciclo."
+          "ask": "Em voz alta, ou de um jeito que vocês combinaram que vale como pergunta. Você volta aqui a cada volta: ter concordado antes não é concordar agora.",
+          "clearYes": "Da outra pessoa, não um que você arrancou insistindo. Não, talvez ou silêncio é não.",
+          "capacity": "Velocidade reduzida. Álcool, drogas, exaustão, estar meio dormindo. Não é um interruptor: se você não consegue saber, ainda não tem uma resposta.",
+          "go": "Não é uma linha de chegada. A linha volta direto a perguntar de novo."
         },
-        "edge": {
-          "no": "Não",
-          "yes": "Sim",
-          "notAYes": "Não é um sim",
-          "noOrUnsure": "Não, ou em dúvida",
-          "again": "E de novo, a qualquer momento"
+        "stop": {
+          "label": "Pare",
+          "note": "A um passo de cada estação, a qualquer momento, sem motivo. Depois, cuidem um do outro."
+        },
+        "ride": {
+          "title": "Percorra a linha",
+          "intro": "Dê a volta uma estação de cada vez. Qualquer resposta que não seja sim leva a Pare.",
+          "where": "Volta {{round}} · Estação {{n}}: {{name}}",
+          "start": "Começar",
+          "again": "Começar de novo",
+          "ask": {
+            "q": "Você perguntou?",
+            "yes": "Sim, perguntei",
+            "no": "Não, eu supus",
+            "why": "Adivinhar não é consentimento. Não se opor não é concordar."
+          },
+          "clearYes": {
+            "q": "A resposta foi um sim claro?",
+            "yes": "Um sim claro",
+            "no": "Não, talvez ou nada",
+            "why": "Tudo o que não é sim é não."
+          },
+          "capacity": {
+            "q": "Todo mundo consegue mesmo decidir agora?",
+            "yes": "Sim, todo mundo consegue",
+            "no": "Não, ou não consigo saber",
+            "why": "Se você não consegue saber, ainda não tem uma resposta."
+          },
+          "go": {
+            "q": "Vocês estão seguindo, por enquanto. Ainda está bom para todo mundo?",
+            "yes": "Continuar, e perguntar de novo",
+            "no": "Alguém quer parar",
+            "why": "Qualquer pessoa pode parar qualquer coisa a qualquer momento, sem motivo."
+          }
+        },
+        "table": {
+          "ifYes": "Se sim",
+          "ifNot": "Qualquer outra coisa"
         }
       }
     }

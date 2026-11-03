@@ -4809,40 +4809,61 @@
       },
       "consentFlow": {
         "title": "La línea que se detiene",
-        "caption": "El consentimiento como una ruta con señales, una zona de velocidad reducida y sin destino final. Vuelve a la comprobación y se queda allí. No es una prueba legal; la ley varía según el país.",
-        "summary": "Una línea con paradas. No preguntar, y todo lo que no sea un sí claro, salen de la línea por desvíos que terminan en topes. La capacidad es un tramo de velocidad reducida, no una señal de sí o no. La línea no termina en una aprobación. Vuelve a la comprobación, que se puede responder de nuevo en cualquier momento.",
-        "tableCaption": "Todas las paradas de la línea y adónde llevan",
-        "groupLabel": "Paradas de la línea",
-        "hint": "Elige una parada para iluminar la ruta que llega a ella.",
-        "route": "Ruta",
-        "restriction": "Velocidad reducida",
-        "node": {
-          "start": "Quieres hacer algo con alguien",
-          "asked": "¿Has preguntado?",
-          "notAsked": "Adivinar no es consentimiento",
-          "clearYes": "¿La respuesta fue un sí claro?",
-          "notAYes": "No, quizá o nada",
-          "capacity": "¿Pueden decidir todas las personas de verdad?",
-          "checkin": "¿Sigue siendo sí, ahora mismo?",
-          "stopNow": "Para",
-          "go": "Vía libre, por ahora"
+        "caption": "El consentimiento como una línea circular que recorréis mientras estéis juntos. Cada parada conecta directamente con Para. No es una prueba legal; la ley varía según el país.",
+        "summary": "Una línea circular con cuatro paradas: preguntar, oír un sí claro, todos pueden decidir y seguir, por ahora, que vuelve directamente a preguntar otra vez. Cada parada tiene su propia conexión con Para en el centro, que cualquiera puede tomar en cualquier momento.",
+        "tableCaption": "Todas las paradas de la línea circular y adónde lleva cada respuesta",
+        "legend": "Paradas de la línea circular",
+        "entry": "Quieres hacer algo con alguien",
+        "station": {
+          "ask": "Preguntar",
+          "clearYes": "Oír un sí claro",
+          "capacity": "Todos pueden decidir",
+          "go": "Seguir, por ahora"
         },
         "note": {
-          "asked": "En voz alta, o de una forma que ya acordasteis que cuenta como preguntar.",
-          "notAsked": "No oponerse no es estar de acuerdo. La línea no empieza aquí.",
-          "clearYes": "Suyo, no uno que le hayas sacado a fuerza de insistir.",
-          "notAYes": "Todo lo que no es un sí es un no. Aquí termina la línea.",
-          "capacity": "Alcohol, drogas, agotamiento, estar medio dormido. No es un interruptor. Si no lo sabes distinguir, todavía no tienes una respuesta.",
-          "checkin": "La señal a la que vuelves. Haber dicho que sí antes no es decir que sí ahora.",
-          "stopNow": "Cualquiera puede parar cualquier cosa en cualquier momento, sin motivo. Después, cuidaos.",
-          "go": "Y de vuelta a la comprobación, por eso esta línea es un bucle."
+          "ask": "En voz alta, o de una forma que ambos acordasteis que cuenta como preguntar. Vuelves aquí en cada vuelta: haber dicho que sí antes no es decir que sí ahora.",
+          "clearYes": "Suyo, no uno que le sacaste insistiendo. No, quizá o el silencio son un no.",
+          "capacity": "Velocidad reducida. Alcohol, drogas, agotamiento, estar medio dormido. No es un interruptor: si no lo sabes distinguir, todavía no tienes una respuesta.",
+          "go": "No es una meta. La línea vuelve directamente a preguntar otra vez."
         },
-        "edge": {
-          "no": "No",
-          "yes": "Sí",
-          "notAYes": "No es un sí",
-          "noOrUnsure": "No, o no estoy seguro",
-          "again": "Y otra vez, en cualquier momento"
+        "stop": {
+          "label": "Para",
+          "note": "A un paso de cada parada, en cualquier momento, sin motivo. Después, cuidaos."
+        },
+        "ride": {
+          "title": "Recorre la línea",
+          "intro": "Recorre la línea parada a parada. Cualquier respuesta que no sea un sí te lleva a Para.",
+          "where": "Vuelta {{round}} · Parada {{n}}: {{name}}",
+          "start": "Empezar",
+          "again": "Empezar de nuevo",
+          "ask": {
+            "q": "¿Has preguntado?",
+            "yes": "Sí, he preguntado",
+            "no": "No, lo he dado por hecho",
+            "why": "Adivinar no es consentimiento. No oponerse no es estar de acuerdo."
+          },
+          "clearYes": {
+            "q": "¿La respuesta fue un sí claro?",
+            "yes": "Un sí claro",
+            "no": "No, quizá o nada",
+            "why": "Todo lo que no es un sí es un no."
+          },
+          "capacity": {
+            "q": "¿Pueden todos decidir de verdad ahora mismo?",
+            "yes": "Sí, todos pueden",
+            "no": "No, o no lo sé distinguir",
+            "why": "Si no lo sabes distinguir, todavía no tienes una respuesta."
+          },
+          "go": {
+            "q": "Seguís adelante, por ahora. ¿Sigue bien para todos?",
+            "yes": "Seguir y volver a preguntar",
+            "no": "Alguien quiere parar",
+            "why": "Cualquiera puede parar cualquier cosa en cualquier momento, sin motivo."
+          }
+        },
+        "table": {
+          "ifYes": "Si es sí",
+          "ifNot": "Cualquier otra cosa"
         }
       }
     }

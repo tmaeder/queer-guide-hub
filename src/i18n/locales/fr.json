@@ -4813,40 +4813,61 @@
       },
       "consentFlow": {
         "title": "La ligne qui s'arrête",
-        "caption": "Le consentement comme un trajet avec des signaux, un ralentissement et aucun terminus. La ligne revient à la vérification et y reste. Ce n'est pas un critère juridique ; la loi varie selon les pays.",
-        "summary": "Une ligne avec des stations. Ne pas demander, et tout ce qui n'est pas un oui clair, quittent la ligne par des embranchements qui finissent sur des butoirs. La capacité est une section de ralentissement, pas un signal oui/non. La ligne ne se termine pas par un accord. Elle revient à la vérification, à laquelle on peut répondre à nouveau à tout moment.",
-        "tableCaption": "Tous les arrêts de la ligne et où ils mènent",
-        "groupLabel": "Arrêts de la ligne",
-        "hint": "Choisissez un arrêt pour éclairer l'itinéraire qui y mène.",
-        "route": "Itinéraire",
-        "restriction": "Ralentissement",
-        "node": {
-          "start": "Vous voulez faire quelque chose avec quelqu’un",
-          "asked": "Avez-vous demandé ?",
-          "notAsked": "Deviner n’est pas consentir",
-          "clearYes": "La réponse était-elle un oui clair ?",
-          "notAYes": "Non, peut-être, ou rien",
-          "capacity": "Tout le monde peut-il vraiment décider ?",
-          "checkin": "Toujours oui, maintenant ?",
-          "stopNow": "Stop",
-          "go": "Voie libre, pour l’instant"
+        "caption": "Le consentement comme une ligne circulaire que vous parcourez tant que vous êtes ensemble. Chaque station mène directement à Stop. Ce n'est pas un critère juridique ; la loi varie selon les pays.",
+        "summary": "Une ligne circulaire à quatre stations : demander, entendre un oui clair, tout le monde peut décider, et continuer, pour l'instant, qui repart directement vers une nouvelle demande. Chaque station a son propre lien vers Stop au centre, que chacun peut prendre à tout moment.",
+        "tableCaption": "Toutes les stations de la ligne circulaire, et où mène chaque réponse",
+        "legend": "Stations de la ligne circulaire",
+        "entry": "Vous voulez faire quelque chose avec quelqu'un",
+        "station": {
+          "ask": "Demander",
+          "clearYes": "Entendre un oui clair",
+          "capacity": "Tout le monde peut décider",
+          "go": "Continuer, pour l'instant"
         },
         "note": {
-          "asked": "À voix haute, ou d'une façon dont vous avez déjà convenu qu'elle vaut demande.",
-          "notAsked": "Ne pas s'opposer n'est pas accepter. La ligne ne commence pas ici.",
-          "clearYes": "Le leur, pas un oui que vous leur avez arraché.",
-          "notAYes": "Tout ce qui n'est pas un oui est un non. C'est la fin de la ligne.",
-          "capacity": "Alcool, drogues, épuisement, demi-sommeil. Pas un interrupteur. Si vous ne pouvez pas le savoir, vous n'avez pas encore de réponse.",
-          "checkin": "Le signal auquel on revient. Avoir dit oui avant n'est pas dire oui maintenant.",
-          "stopNow": "Chacun peut tout arrêter à tout moment, sans raison. Ensuite, prenez soin l'un de l'autre.",
-          "go": "Et retour à la vérification, c'est pourquoi cette ligne est une boucle."
+          "ask": "À voix haute, ou d'une façon dont vous avez convenu qu'elle vaut demande. Vous revenez ici à chaque tour : avoir dit oui avant n'est pas dire oui maintenant.",
+          "clearYes": "Le leur, pas un oui que vous avez arraché. Non, peut-être ou le silence, c'est non.",
+          "capacity": "Ralentissement. Alcool, drogues, épuisement, demi-sommeil. Pas un interrupteur : si vous ne pouvez pas le savoir, vous n'avez pas encore de réponse.",
+          "go": "Pas une ligne d'arrivée. La ligne repart directement vers une nouvelle demande."
         },
-        "edge": {
-          "no": "Non",
-          "yes": "Oui",
-          "notAYes": "Pas un oui",
-          "noOrUnsure": "Non, ou pas sûr",
-          "again": "Et encore, à tout moment"
+        "stop": {
+          "label": "Stop",
+          "note": "À un pas de chaque station, à tout moment, sans raison. Ensuite, prenez soin les uns des autres."
+        },
+        "ride": {
+          "title": "Parcourir la ligne",
+          "intro": "Faites le tour, une station à la fois. Toute réponse qui n'est pas un oui mène à Stop.",
+          "where": "Tour {{round}} · Station {{n}} : {{name}}",
+          "start": "Commencer",
+          "again": "Recommencer",
+          "ask": {
+            "q": "Avez-vous demandé ?",
+            "yes": "Oui, j’ai demandé",
+            "no": "Non, j’ai supposé",
+            "why": "Deviner n'est pas consentir. Ne pas s'opposer n'est pas accepter."
+          },
+          "clearYes": {
+            "q": "La réponse était-elle un oui clair ?",
+            "yes": "Un oui clair",
+            "no": "Non, peut-être, ou rien",
+            "why": "Tout ce qui n'est pas un oui est un non."
+          },
+          "capacity": {
+            "q": "Tout le monde peut-il vraiment décider en ce moment ?",
+            "yes": "Oui, tout le monde peut",
+            "no": "Non, ou je ne peux pas le savoir",
+            "why": "Si vous ne pouvez pas le savoir, vous n'avez pas encore de réponse."
+          },
+          "go": {
+            "q": "Vous continuez, pour l'instant. Est-ce toujours bon pour tout le monde ?",
+            "yes": "Continuer, et redemander",
+            "no": "Quelqu'un veut arrêter",
+            "why": "Chacun peut tout arrêter à tout moment, sans raison."
+          }
+        },
+        "table": {
+          "ifYes": "Si oui",
+          "ifNot": "Toute autre réponse"
         }
       }
     }
