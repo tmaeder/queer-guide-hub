@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const MIGRATION = '99991793669865_commons_deleted_asset_check';
+const MIGRATION = '99991793683381_commons_deleted_asset_check';
 const sql = readFileSync(
   resolve(__dirname, `../../../supabase/migrations/${MIGRATION}.sql`),
   'utf8',
