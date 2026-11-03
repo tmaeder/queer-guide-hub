@@ -22,7 +22,8 @@ import {
   panBy,
   zoomBy,
   centerOn,
-  fitToData,
+  fitToEvents,
+  SERIES_SPAN_MS,
   defaultViewport,
   pxForMs as pxForMsFn,
   msForPx,
@@ -217,6 +218,14 @@ function buildItems(events: Event[], pxForMs: (ms: number) => number): TrackItem
   return items;
 }
 
+/** Start/end pairs, kept together so a bad end date cannot shift the rest. */
+function eventSpans(events: readonly { start_date: string; end_date?: string | null }[]) {
+  return events.map((e) => ({
+    startMs: new Date(e.start_date).getTime(),
+    endMs: new Date(e.end_date ?? e.start_date).getTime(),
+  }));
+}
+
 export function EventsTimelineView({
   events,
   onEventSelect,
@@ -235,11 +244,7 @@ export function EventsTimelineView({
 
   const [internalViewport, setInternalViewport] = useState<Viewport>(() => {
     if (controlledViewport) return controlledViewport;
-    const starts = events.map((e) => new Date(e.start_date).getTime()).filter((n) => !isNaN(n));
-    const ends = events
-      .map((e) => new Date(e.end_date ?? e.start_date).getTime())
-      .filter((n) => !isNaN(n));
-    return fitToData(starts, ends) ?? defaultViewport();
+    return fitToEvents(eventSpans(events)) ?? defaultViewport();
   });
   const viewport = controlledViewport ?? internalViewport;
 
@@ -254,11 +259,7 @@ export function EventsTimelineView({
   const userInteractedRef = useRef(false);
   useEffect(() => {
     if (controlledViewport || userInteractedRef.current) return;
-    const starts = events.map((e) => new Date(e.start_date).getTime()).filter((n) => !isNaN(n));
-    const ends = events
-      .map((e) => new Date(e.end_date ?? e.start_date).getTime())
-      .filter((n) => !isNaN(n));
-    const fit = fitToData(starts, ends);
+    const fit = fitToEvents(eventSpans(events));
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     if (fit) setInternalViewport(fit);
   }, [events, controlledViewport]);
@@ -385,13 +386,7 @@ export function EventsTimelineView({
           setViewport(zoomBy(viewport, f, center));
         }}
         onFit={() => {
-          const starts = events
-            .map((e) => new Date(e.start_date).getTime())
-            .filter((n) => !isNaN(n));
-          const ends = events
-            .map((e) => new Date(e.end_date ?? e.start_date).getTime())
-            .filter((n) => !isNaN(n));
-          const fit = fitToData(starts, ends);
+          const fit = fitToEvents(eventSpans(events));
           if (fit) {
             userInteractedRef.current = false;
             setViewport(fit);
@@ -489,7 +484,14 @@ export function EventsTimelineView({
               style={{ left: `${pxForMs(today.getTime())}px` }}
               aria-hidden="true"
             >
-              <div className="absolute -top-1 -translate-x-1/2 text-3xs uppercase tracking-wider bg-foreground text-background px-1 rounded-badge">
+              <div
+                className={cn(
+                  'absolute -top-1 text-3xs uppercase tracking-wider bg-foreground text-background px-1 rounded-badge',
+                  // Centred on the line, except at the very edge where half
+                  // the tag would be clipped by the scroll container.
+                  pxForMs(today.getTime()) < 24 ? 'translate-x-0' : '-translate-x-1/2',
+                )}
+              >
                 Today
               </div>
             </div>
@@ -580,8 +582,17 @@ export function EventsTimelineView({
             }
 
             const event = item.event;
-            const widthPx = xEnd - xStart;
-            const isBar = widthPx >= CLUSTER_PX;
+            // A standing series can start long before the window. Drawn from
+            // its true start, its label sits at a negative offset and the bar
+            // reads as an unlabelled stripe, so it is clipped to the visible
+            // track and the label moves with it.
+            const shownStart = Math.max(xStart, 0);
+            const widthPx = Math.min(xEnd, trackWidth) - shownStart;
+            // A standing series (longer than a month) is drawn as a pin at the
+            // window edge, not a bar: a bar running the whole width is just an
+            // empty stripe behind every other row.
+            const isSeries = p.endMs - p.startMs > SERIES_SPAN_MS;
+            const isBar = widthPx >= CLUSTER_PX && !isSeries;
             const dateLabel = format(new Date(event.start_date), 'MMM d');
 
             return (
@@ -612,7 +623,7 @@ export function EventsTimelineView({
                     isPast && 'opacity-50',
                   )}
                   style={{
-                    left: `${xStart}px`,
+                    left: `${shownStart}px`,
                     // Grown symmetrically about the old content line, not downward:
                     // the hit box was BAR_HEIGHT at `y`, so its centre was y+9.
                     // Adding the 6px purely below would shift every bar and label
