@@ -65,6 +65,11 @@ describe('run_commons_deleted_asset_check', () => {
     expect(flagBranch).toMatch(/where id = rec\.id and status = 'active'/);
   });
 
+  it('identifies itself without a personal email address', () => {
+    expect(body.match(/'User-Agent', '([^']+)'/g)?.length).toBe(2);
+    expect(body).not.toMatch(/'User-Agent', '[^']*@/);
+  });
+
   it('maps normalized titles back so coverage is exact', () => {
     expect(body.match(/coalesce\(\(select n\.t from _cdac_norm n/g)?.length).toBe(2);
   });

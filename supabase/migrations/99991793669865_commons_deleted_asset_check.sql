@@ -96,7 +96,7 @@ begin
         'https://' || case when rec.wiki = 'en' then 'en.wikipedia.org' else 'commons.wikimedia.org' end
           || '/w/api.php?action=query&format=json&formatversion=2&titles='
           || extensions.urlencode(array_to_string(rec.chunk, '|')),
-        array[extensions.http_header('User-Agent', 'queer.guide commons asset check (tmaeder@me.com)')],
+        array[extensions.http_header('User-Agent', 'queer.guide-commons-asset-check/1.0 (https://queer.guide)')],
         null, null)::extensions.http_request);
     exception when others then
       v_chunk_failures := v_chunk_failures + 1;
@@ -144,7 +144,7 @@ begin
           'https://' || case when rec.wiki = 'en' then 'en.wikipedia.org' else 'commons.wikimedia.org' end
             || '/w/api.php?action=query&format=json&formatversion=2&list=logevents&letype=delete&lelimit=1&letitle='
             || extensions.urlencode(rec.title),
-          array[extensions.http_header('User-Agent', 'queer.guide commons asset check (tmaeder@me.com)')],
+          array[extensions.http_header('User-Agent', 'queer.guide-commons-asset-check/1.0 (https://queer.guide)')],
           null, null)::extensions.http_request);
         if r.status = 200 then
           select left((e ->> 'timestamp') || ': ' || (e ->> 'comment'), 300) into v_reason
