@@ -2627,6 +2627,22 @@
       "detail": {
         "inTheNews": "In the news",
         "relatedEvents": "Related events"
+      },
+      "competitions": {
+        "heading": "Wettbewerbe & Titelträger:innen",
+        "all": "Alle Wettbewerbe →",
+        "lede": "Drag-Serien, Pageants und Titelwettbewerbe, jeweils mit jeder Ausgabe und allen Teilnehmenden. Teilnehmende verlinken auf ihre Einträge hier.",
+        "people": "Personen",
+        "peopleIn": "Personen, die teilgenommen haben: {{type}}",
+        "more": "+{{count}} weitere",
+        "peopleNone": "Noch keine verknüpften Personen in: {{type}}"
+      },
+      "competedIn": {
+        "label": "Teilgenommen an",
+        "none": "Alle",
+        "any": "Irgendein Wettbewerb",
+        "allOfType": "Alle: {{type}}",
+        "chip": "Teilgenommen an: {{name}}"
       }
     },
     "groups": {
@@ -5099,7 +5115,8 @@
       "editions": "[DE] Editions",
       "entrants": "[DE] Entries",
       "linked": "[DE] Linked to a profile"
-    }
+    },
+    "backToPersonalities": "← Persönlichkeiten"
   },
   "styleguide": {
     "metaTitle": "[DE] Editorial styleguide and tone of voice",

@@ -1,14 +1,20 @@
-import { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
+import { useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Upload, Download, CheckCircle, XCircle, AlertCircle } from '@/components/icons';
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ImportResult {
   success: boolean;
@@ -33,9 +39,9 @@ export function AdultModelsCsvImport({ onImportComplete }: { onImportComplete?: 
 
     if (!file.name.endsWith('.csv')) {
       toast({
-        title: "Invalid file type",
-        description: "Please select a CSV file",
-        variant: "destructive"
+        title: 'Invalid file type',
+        description: 'Please select a CSV file',
+        variant: 'destructive',
       });
       return;
     }
@@ -48,7 +54,7 @@ export function AdultModelsCsvImport({ onImportComplete }: { onImportComplete?: 
       formData.append('file', file);
 
       const { data, error } = await supabase.functions.invoke('import-adult-models-csv', {
-        body: formData
+        body: formData,
       });
 
       if (error) throw error;
@@ -57,29 +63,29 @@ export function AdultModelsCsvImport({ onImportComplete }: { onImportComplete?: 
 
       if (data.success) {
         toast({
-          title: "Import successful",
-          description: `Successfully imported ${data.imported} adult models`
+          title: 'Import successful',
+          description: `Successfully imported ${data.imported} adult models`,
         });
         onImportComplete?.();
       } else {
         toast({
-          title: "Import completed with issues",
+          title: 'Import completed with issues',
           description: `Imported ${data.imported} out of ${data.total_parsed} adult models`,
-          variant: data.imported > 0 ? "default" : "destructive"
+          variant: data.imported > 0 ? 'default' : 'destructive',
         });
       }
     } catch (error) {
       console.error('Import error:', error);
       toast({
-        title: "Import failed",
-        description: "Failed to import adult models from CSV. Please check the file format.",
-        variant: "destructive"
+        title: 'Import failed',
+        description: 'Failed to import adult models from CSV. Please check the file format.',
+        variant: 'destructive',
       });
       setImportResult({
         success: false,
         imported: 0,
         total_parsed: 0,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
       });
     } finally {
       setIsUploading(false);
@@ -128,7 +134,8 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
             <Alert>
               <AlertCircle className="w-4 h-4" />
               <AlertDescription>
-                Upload a CSV file with adult model data. Each model will be created as a personality with the profession "adult model".
+                Upload a CSV file with adult model data. Each model will be created as a personality
+                with the profession "adult model".
               </AlertDescription>
             </Alert>
 
@@ -148,12 +155,19 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
               <div className="text-sm text-muted-foreground flex flex-col gap-2">
                 <p className="font-semibold">Required columns:</p>
                 <ul className="list-inside flex flex-col gap-1">
-                  <li><code>pornhub-profile</code> - Profile URL</li>
-                  <li><code>picture</code> - Image URL</li>
-                  <li><code>name</code> - Model name</li>
+                  <li>
+                    <code>pornhub-profile</code> - Profile URL
+                  </li>
+                  <li>
+                    <code>picture</code> - Image URL
+                  </li>
+                  <li>
+                    <code>name</code> - Model name
+                  </li>
                 </ul>
                 <p className="mt-2">
-                  All personalities will be created with profession "adult model" and will not be marked as verified or featured by default.
+                  All personalities will be created with profession "adult model" and will not be
+                  marked as verified or featured by default.
                 </p>
               </div>
 
@@ -190,16 +204,10 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
               </CardHeader>
               <CardContent>
                 <div className="flex gap-4">
-                  <Badge variant="outline">
-                    {importResult.imported} imported
-                  </Badge>
-                  <Badge variant="outline">
-                    {importResult.total_parsed} total processed
-                  </Badge>
+                  <Badge variant="outline">{importResult.imported} imported</Badge>
+                  <Badge variant="outline">{importResult.total_parsed} total processed</Badge>
                   {importResult.errors && importResult.errors.length > 0 && (
-                    <Badge variant="destructive">
-                      {importResult.errors.length} errors
-                    </Badge>
+                    <Badge variant="destructive">{importResult.errors.length} errors</Badge>
                   )}
                 </div>
 
@@ -215,7 +223,10 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
                     <p className="text-sm font-medium">Errors:</p>
                     <div className="max-h-32 overflow-y-auto flex flex-col gap-1">
                       {importResult.errors.map((error, index) => (
-                        <div key={index} className="text-sm text-destructive bg-destructive/10 p-2 rounded-badge">
+                        <div
+                          key={index}
+                          className="text-sm text-destructive bg-destructive/10 p-2 rounded-badge"
+                        >
                           {error}
                         </div>
                       ))}
@@ -229,9 +240,7 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
               <Button variant="outline" onClick={resetImport}>
                 Import Another File
               </Button>
-              <Button onClick={() => setIsOpen(false)}>
-                Close
-              </Button>
+              <Button onClick={() => setIsOpen(false)}>Close</Button>
             </div>
           </div>
         )}
