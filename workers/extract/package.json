@@ -14,11 +14,11 @@
     "node-html-markdown": "^2.0.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260726.1",
+    "@cloudflare/workers-types": "^5.20261029.1",
     "domhandler": "^6.0.1",
     "typescript": "~6.0.0",
     "vitest": "^4.1.12",
-    "wrangler": "^4.152.0"
+    "wrangler": "^4.155.0"
   },
   "overrides": {
     "esbuild": "0.28.1",
