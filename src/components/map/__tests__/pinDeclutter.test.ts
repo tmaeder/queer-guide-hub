@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { declutterPins, pinPriority, pinRadiusAt } from '@/components/map/pinDeclutter';
+import {
+  declutterPins,
+  dotsUnderPin,
+  pinPriority,
+  pinRadiusAt,
+} from '@/components/map/pinDeclutter';
 
 const p = (id: string, x: number, y: number, priority = 0, r = 15) => ({ id, x, y, r, priority });
 
@@ -36,5 +41,31 @@ describe('pinRadiusAt', () => {
     expect(pinRadiusAt(11, false)).toBeCloseTo(14.5);
     expect(pinRadiusAt(16, false)).toBeCloseTo(16.5);
     expect(pinRadiusAt(16, true)).toBeCloseTo(21.5);
+  });
+});
+
+describe('dotsUnderPin', () => {
+  const pin = { id: 'a', x: 100, y: 100, r: 12 };
+
+  it('returns dots whose centre is inside the pin disc', () => {
+    const dots = [
+      { id: 'b', x: 100.3, y: 101 }, // Offstream Party under the Zurich Pride stack
+      { id: 'c', x: 111, y: 100 },
+      { id: 'd', x: 113, y: 100 }, // visible beside the pin
+    ];
+    expect(dotsUnderPin(pin, dots)).toEqual(['b', 'c']);
+  });
+
+  it('skips the pin itself and duplicates', () => {
+    const dots = [
+      { id: 'a', x: 100, y: 100 },
+      { id: 'b', x: 101, y: 100 },
+      { id: 'b', x: 101, y: 100 },
+    ];
+    expect(dotsUnderPin(pin, dots)).toEqual(['b']);
+  });
+
+  it('is empty when nothing hides under the pin', () => {
+    expect(dotsUnderPin(pin, [{ id: 'z', x: 200, y: 200 }])).toEqual([]);
   });
 });

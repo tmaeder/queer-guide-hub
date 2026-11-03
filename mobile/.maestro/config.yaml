@@ -1,0 +1,5 @@
+# Maestro workspace config. Run all flows: `maestro test .maestro`
+flows:
+  - "*.yaml"
+excludeTags:
+  - network-write

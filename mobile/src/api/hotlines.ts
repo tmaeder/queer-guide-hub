@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import { withOfflineFallback } from '@/features/packs/offline';
+import { offlineHotlines } from '@/features/packs/store';
 import { supabase } from '@/lib/supabase';
 
 /**
@@ -41,7 +43,15 @@ export interface Hotline {
   url?: string;
 }
 
-export async function fetchHotlines(): Promise<Hotline[]> {
+/** Online first; a downloaded pack's signed copy answers when offline. */
+export function fetchHotlines(): Promise<Hotline[]> {
+  return withOfflineFallback(fetchHotlinesOnline, async (db) => {
+    const local = await offlineHotlines(db);
+    return local.length ? local : null;
+  });
+}
+
+async function fetchHotlinesOnline(): Promise<Hotline[]> {
   const { data, error } = await supabase
     .from('cms_pages')
     .select('body_json')

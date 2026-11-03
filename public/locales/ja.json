@@ -3040,7 +3040,7 @@
         "venues": "[JA] Where to go",
         "districts": "[JA] Queer districts",
         "districtsNote": "[JA] Walkable clusters of bars, cafés and community spaces.",
-        "events": "[JA] Next departures",
+        "events": "今後のイベント",
         "overview": "[JA] About {{city}}",
         "travel": "[JA] Getting there",
         "news": "[JA] In the news",
@@ -4873,11 +4873,11 @@
     },
     "section": {
       "about": "[JA] About {{name}}",
-      "walk": "[JA] The walk",
+      "walk": "スポット",
       "walkNote": "[JA] Stops in order, with the straight-line gap between them.",
-      "events": "[JA] Next departures",
+      "events": "今後のイベント",
       "photos": "[JA] Photos",
-      "city": "[JA] On the same line"
+      "city": "都市"
     },
     "action": {
       "website": "[JA] Website",

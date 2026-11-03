@@ -2,8 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSyncExternalStore } from 'react';
 
 /**
- * Saved places, kept ONLY on this device. Nothing here is sent anywhere; a
- * signed-in sync to the web's favourites is a later, opt-in change.
+ * Saved places. Signed out they live only on this device; signed in they are
+ * the account's venue_favorites, mirrored here (see sync.ts).
  *
  * A small snapshot is stored with each slug so the Saved tab renders offline.
  */
@@ -13,6 +13,8 @@ export interface SavedPlace {
   category: string;
   city: string | null;
   savedAt: string;
+  /** venues.id, needed to sync; absent on places saved before sync existed */
+  venueId?: string;
 }
 
 export const STORAGE_KEY = 'qg.saved.v1';
@@ -55,6 +57,16 @@ export function createSavedStore(backend: SavedBackend) {
       items = items.some((p) => p.slug === place.slug)
         ? items.filter((p) => p.slug !== place.slug)
         : [{ ...place, savedAt: now.toISOString() }, ...items];
+      emit();
+      await persist();
+    },
+    async replaceAll(next: SavedPlace[]) {
+      items = next;
+      emit();
+      await persist();
+    },
+    async clear() {
+      items = [];
       emit();
       await persist();
     },

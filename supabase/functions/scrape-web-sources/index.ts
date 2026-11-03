@@ -23,6 +23,7 @@
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
 import { getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
+import { scrapedEventRejectReason } from '../_shared/scraped-event-guard.ts'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -1071,10 +1072,12 @@ function normalizeItem(
         title: item.title || item.name,
         description: item.description || null,
         event_type: item.event_type || 'other',
-        start_date: item.start_date || new Date().toISOString(),
+        // Undated items are filtered out before staging (scraped-event-guard.ts); never date an
+        // event by the scraper's clock, and never invent a city called 'Unknown'.
+        start_date: item.start_date,
         end_date: item.end_date || null,
         venue_name: item.venue_name || null,
-        city: item.city || 'Unknown',
+        city: item.city || null,
         country: item.country || null,
         website: item.url || null,
         images: item.images || (item.image_url ? [item.image_url] : []),
@@ -1351,7 +1354,19 @@ async function processSource(
       .single()
 
     // ── Stage items into ingestion_staging ────────────────────
-    const stagingRows = allItems.map(item => ({
+    const rejected: Record<string, number> = {}
+    const stageable = source.target_table === 'events'
+      ? allItems.filter(item => {
+          const reason = scrapedEventRejectReason(item)
+          if (reason) rejected[reason] = (rejected[reason] ?? 0) + 1
+          return !reason
+        })
+      : allItems
+    if (Object.keys(rejected).length) {
+      console.log(`[${source.slug}] Skipped non-events:`, JSON.stringify(rejected))
+    }
+
+    const stagingRows = stageable.map(item => ({
       job_id: job.id,
       source_type: source.slug,
       target_table: source.target_table,

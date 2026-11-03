@@ -87,8 +87,9 @@ it('states the police policy only where the operator publishes one', async () =>
   expect(screen.getAllByText(/does not contact police/)).toHaveLength(1);
 });
 
-it('offers a call button with the number for each line', async () => {
+it('offers a call button with the number, named after the line it calls', async () => {
   await renderHelp();
-  expect(await screen.findByRole('button', { name: 'Call +41 800 111 111' })).toBeTruthy();
+  expect(await screen.findByRole('button', { name: 'Call +41 800 111 111, Line That Reports' })).toBeTruthy();
+  expect(screen.getByText('Call +41 800 111 111')).toBeTruthy();
   expect(screen.getByText(/local emergency number/)).toBeTruthy();
 });

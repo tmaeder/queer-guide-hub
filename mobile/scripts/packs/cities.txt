@@ -1,0 +1,36 @@
+# Offline packs published weekly by .github/workflows/mobile-packs.yml.
+# One city slug per line. The top of the list is the 25 cities with the most
+# public venues (measured 2026-11-01). The second block is high-risk
+# destinations: their venues are safety-gated and never enter a pack, so
+# those packs carry only the support lines — which is the point of them.
+berlin
+paris
+london
+san-francisco
+new-york
+chicago
+barcelona
+basel
+madrid
+zuerich
+rio-de-janeiro
+tokyo
+amsterdam
+bangkok
+buenos-aires
+brussels
+los-angeles
+sydney
+osaka
+istanbul
+rome
+cologne
+santiago
+auckland
+s-o-paulo
+
+# High-risk destinations: support lines only.
+dubai
+doha
+kuala-lumpur
+nairobi

@@ -1,12 +1,14 @@
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Platform, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { useVenue, type VenueDetail } from '@/api/venues';
 import { Button, Card, StateMessage, Text } from '@/components/ui';
 import { savedStore } from '@/features/saved/savedStore';
+import { toggleSavedPlace } from '@/features/saved/sync';
+import { useSession } from '@/features/auth/useSession';
 import { safeHttpsUrl, directionsUrl, telUrl } from '@/lib/links';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
@@ -46,14 +48,20 @@ function VenueBody({ venue }: { venue: VenueDetail }) {
       : null;
   const category = t(`category.${venue.category}`, { defaultValue: venue.category });
 
+  const session = useSession();
+  const [saveError, setSaveError] = useState(false);
   async function toggleSave() {
-    await savedStore.toggle({
-      slug: venue.slug,
-      name: venue.name,
-      category: venue.category,
-      city: venue.city,
-    });
-    void Haptics.selectionAsync();
+    setSaveError(false);
+    try {
+      await toggleSavedPlace(
+        savedStore,
+        { slug: venue.slug, name: venue.name, category: venue.category, city: venue.city, venueId: venue.id },
+        session?.user.id ?? null,
+      );
+      void Haptics.selectionAsync();
+    } catch {
+      setSaveError(true);
+    }
   }
 
   return (
@@ -104,6 +112,10 @@ function VenueBody({ venue }: { venue: VenueDetail }) {
             onPress={() => Share.share({ message: `https://queer.guide/venues/${venue.slug}` })}
           />
         </View>
+
+        {saveError ? (
+          <Text accessibilityRole="alert">{t('venue.saveFailed')}</Text>
+        ) : null}
 
         {venue.description ? (
           <Card>

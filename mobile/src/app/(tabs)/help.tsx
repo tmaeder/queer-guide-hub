@@ -4,6 +4,7 @@ import { FlatList, Linking, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { channelHref, channelsOf, hotlinesFor, useHotlines, type Hotline } from '@/api/hotlines';
 import { Button, Card, StateMessage, Text } from '@/components/ui';
+import { QuickExitButton } from '@/features/discreet/QuickExitButton';
 import { deviceRegion } from '@/i18n';
 import { useTheme } from '@/theme/ThemeProvider';
 import { space } from '@/theme/tokens';
@@ -21,9 +22,12 @@ export default function HelpScreen() {
 
   const header = (
     <View style={styles.header}>
-      <Text variant="display" accessibilityRole="header">
-        {t('help.title')}
-      </Text>
+      <View style={styles.titleRow}>
+        <Text variant="display" accessibilityRole="header">
+          {t('help.title')}
+        </Text>
+        <QuickExitButton />
+      </View>
       <Text>{t('help.intro')}</Text>
       <Text variant="small" muted>
         {region ? t('help.region', { region }) : t('help.regionUnknown')}
@@ -91,11 +95,16 @@ function HotlineCard({ line }: { line: Hotline }) {
         {channelsOf(line).map((c, i) => {
           const href = channelHref(c);
           if (!href) return null;
+          const label =
+            c.label ?? `${t(`help.channel.${c.kind}`)} ${c.kind === 'phone' || c.kind === 'sms' ? c.value : ''}`.trim();
           return (
             <Button
               key={`${c.kind}-${i}`}
               tone={i === 0 ? 'primary' : 'secondary'}
-              label={c.label ?? `${t(`help.channel.${c.kind}`)} ${c.kind === 'phone' || c.kind === 'sms' ? c.value : ''}`.trim()}
+              label={label}
+              // A screen-reader user moving through the buttons hears which line
+              // each one calls, not a run of identical "Call" buttons.
+              accessibilityLabel={`${label}, ${line.name}`}
               onPress={() => Linking.openURL(href)}
             />
           );
@@ -108,6 +117,7 @@ function HotlineCard({ line }: { line: Hotline }) {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   header: { gap: space[2], paddingBottom: space[4] },
+  titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   list: { padding: space[4], gap: space[4], paddingBottom: space[12] },
   channels: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2], marginTop: space[2] },
 });

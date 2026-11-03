@@ -51,6 +51,8 @@ jobs:
         run: npm run typecheck
       - name: Unit + drift tests
         run: npm test -- --ci
+      - name: Pack script tests
+        run: npm run test:scripts
       - name: Expo doctor
         run: npx --yes expo-doctor@1
       # Bundling catches what tsc cannot: a module Metro can't resolve, or a
