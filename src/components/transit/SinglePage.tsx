@@ -1,6 +1,10 @@
 import { DetailMasthead } from './DetailMasthead';
 import type { TransitIconName } from './transitIconPaths';
-import { PageContainer, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
+import {
+  PageContainer,
+  SECTION_SCROLL_MARGIN,
+  STICKY_UNDER_HEADER,
+} from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
 
 /**
@@ -178,7 +182,9 @@ export function SingleSection({
   className?: string;
 }) {
   return (
-    <section id={id} className={className}>
+    // Clears the sticky section bar as well as the header (which the root's
+    // scroll-padding-top already covers); see `--section-bar-h` in RouteStrip.
+    <section id={id} className={cn(SECTION_SCROLL_MARGIN, className)}>
       <h2 className="font-display text-headline leading-tight">{title}</h2>
       {note && <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{note}</p>}
       <div className={variant === 'compact' ? 'mt-2' : 'mt-4'}>{children}</div>
