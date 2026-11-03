@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { enrichBoundaryFeatures, generateCirclePolygon } from '../boundaryUtils';
+import { enrichBoundaryFeatures } from '../boundaryUtils';
 import type { MapMarker } from '@/hooks/useExploreMapData';
 
 function makeMarker(overrides: Partial<MapMarker> = {}): MapMarker {
@@ -104,29 +104,5 @@ describe('enrichBoundaryFeatures', () => {
     const result = enrichBoundaryFeatures(boundaries, [marker]);
     expect(result.features[0].properties?.meta_code).toBe('CH');
     expect(result.features[0].properties?.meta_score).toBe(90);
-  });
-});
-
-describe('generateCirclePolygon', () => {
-  it('should return a Polygon type', () => {
-    const poly = generateCirclePolygon(47.37, 8.54);
-    expect(poly.type).toBe('Polygon');
-  });
-
-  it('should have correct number of points (closed ring)', () => {
-    const poly = generateCirclePolygon(47.37, 8.54, 0.5, 32);
-    expect(poly.coordinates[0]).toHaveLength(33); // 32 + 1 closing point
-  });
-
-  it('should close the ring (first == last)', () => {
-    const poly = generateCirclePolygon(47.37, 8.54);
-    const ring = poly.coordinates[0];
-    expect(ring[0][0]).toBeCloseTo(ring[ring.length - 1][0], 10);
-    expect(ring[0][1]).toBeCloseTo(ring[ring.length - 1][1], 10);
-  });
-
-  it('should accept custom radius and point count', () => {
-    const poly = generateCirclePolygon(0, 0, 10, 8);
-    expect(poly.coordinates[0]).toHaveLength(9); // 8 + 1
   });
 });

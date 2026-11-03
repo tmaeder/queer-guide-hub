@@ -136,8 +136,12 @@ test.describe('intent routes', () => {
 
   test('/rights is folded into the Knowledge hub, fragment kept', async ({ page }) => {
     await page.goto('/rights#marriage');
-    await expect(page).toHaveURL(/\/tags\/rights-by-country#marriage$/);
     await expect(page.locator('main h1')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('#marriage')).toBeInViewport({ timeout: 15_000 });
+    // Wait for the scroll-spy's ?section= write (300ms debounce) and assert the
+    // anchor SURVIVED it. Asserting the URL before that write is how this test
+    // passed while prod rewrote #marriage to ?section=rights a moment later.
+    await expect(page).toHaveURL(/\/tags\/rights-by-country\?section=rights#marriage$/);
   });
 
   test('/rights-by-country itself renders', async ({ page }) => {

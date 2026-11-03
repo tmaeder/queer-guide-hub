@@ -3210,7 +3210,7 @@
         "venues": "Where to go",
         "districts": "Queer districts",
         "districtsNote": "Walkable clusters of bars, cafés and community spaces.",
-        "events": "Next departures",
+        "events": "Upcoming events",
         "overview": "About {{city}}",
         "travel": "Getting there",
         "news": "In the news",
@@ -4926,11 +4926,11 @@
     },
     "section": {
       "about": "About {{name}}",
-      "walk": "The walk",
+      "walk": "Venues",
       "walkNote": "Stops in order, with the straight-line gap between them.",
-      "events": "Next departures",
+      "events": "Upcoming events",
       "photos": "Photos",
-      "city": "On the same line"
+      "city": "The city"
     },
     "action": {
       "website": "Website",

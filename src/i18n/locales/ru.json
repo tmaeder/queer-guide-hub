@@ -3076,7 +3076,7 @@
         "venues": "[RU] Where to go",
         "districts": "[RU] Queer districts",
         "districtsNote": "[RU] Walkable clusters of bars, cafés and community spaces.",
-        "events": "[RU] Next departures",
+        "events": "Ближайшие события",
         "overview": "[RU] About {{city}}",
         "travel": "[RU] Getting there",
         "news": "[RU] In the news",
@@ -4909,11 +4909,11 @@
     },
     "section": {
       "about": "[RU] About {{name}}",
-      "walk": "[RU] The walk",
+      "walk": "Заведения",
       "walkNote": "[RU] Stops in order, with the straight-line gap between them.",
-      "events": "[RU] Next departures",
+      "events": "Ближайшие события",
       "photos": "[RU] Photos",
-      "city": "[RU] On the same line"
+      "city": "Город"
     },
     "action": {
       "website": "[RU] Website",

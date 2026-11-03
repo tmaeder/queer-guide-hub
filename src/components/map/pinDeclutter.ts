@@ -76,3 +76,28 @@ export function pinRadiusAt(zoom: number, featured: boolean): number {
 export function pinPriority(featured: boolean, live: boolean, stackCount: number): number {
   return (featured ? 1000 : 0) + (live ? 100 : 0) + Math.min(99, stackCount);
 }
+
+/**
+ * Dots hidden underneath a full pin.
+ *
+ * Declutter shrinks the lower-priority of two overlapping places to a dot,
+ * but when the places are only a metre or two apart the dot lands inside the
+ * full pin's disc and is drawn over: nothing visible is left to click. A click
+ * on that full pin must therefore also reach those places. Returns the ids of
+ * the compact points whose centre lies within `r` px of the pin's centre.
+ */
+export function dotsUnderPin(
+  pin: { id: string; x: number; y: number; r: number },
+  dots: Array<{ id: string; x: number; y: number }>,
+): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>([pin.id]);
+  for (const d of dots) {
+    if (seen.has(d.id)) continue;
+    if (Math.hypot(d.x - pin.x, d.y - pin.y) <= pin.r) {
+      seen.add(d.id);
+      out.push(d.id);
+    }
+  }
+  return out;
+}

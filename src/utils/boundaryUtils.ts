@@ -1,6 +1,13 @@
 import type { MapMarker } from '@/hooks/useExploreMapData';
 
 /**
+ * Match mode for enrichment:
+ * - 'code': match GeoJSON feature property (matchKey) against marker.meta.code (countries)
+ * - 'entityId': match GeoJSON feature property (matchKey) against marker.id (cities, villages)
+ */
+export type MatchMode = 'code' | 'entityId';
+
+/**
  * Merges boundary GeoJSON features with entity marker data from useExploreMapData.
  * Adds name, linkTo, color, etc. as properties and assigns numeric IDs
  * required by MapLibre's feature-state API.
@@ -10,13 +17,6 @@ import type { MapMarker } from '@/hooks/useExploreMapData';
  * @param matchKey    Property name in GeoJSON features to match against marker meta
  *                    (e.g. 'ISO_A2' for countries matched via meta.code)
  */
-/**
- * Match mode for enrichment:
- * - 'code': match GeoJSON feature property (matchKey) against marker.meta.code (countries)
- * - 'entityId': match GeoJSON feature property (matchKey) against marker.id (cities, villages)
- */
-export type MatchMode = 'code' | 'entityId';
-
 export function enrichBoundaryFeatures(
   boundaries: GeoJSON.FeatureCollection,
   markers: MapMarker[],
@@ -68,24 +68,4 @@ export function enrichBoundaryFeatures(
   }
 
   return { type: 'FeatureCollection', features };
-}
-
-/**
- * Generates an approximate circular polygon around a point.
- * Used as fallback when no official boundary data is available.
- */
-export function generateCirclePolygon(
-  lat: number,
-  lng: number,
-  radiusKm: number = 0.5,
-  points: number = 32,
-): GeoJSON.Polygon {
-  const coords: [number, number][] = [];
-  for (let i = 0; i <= points; i++) {
-    const angle = (i / points) * 2 * Math.PI;
-    const dx = radiusKm / (111.32 * Math.cos((lat * Math.PI) / 180));
-    const dy = radiusKm / 110.574;
-    coords.push([lng + dx * Math.cos(angle), lat + dy * Math.sin(angle)]);
-  }
-  return { type: 'Polygon', coordinates: [coords] };
 }
