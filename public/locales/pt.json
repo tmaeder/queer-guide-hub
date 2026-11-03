@@ -2631,7 +2631,9 @@
       "competitions": {
         "heading": "Competições e titulares",
         "all": "Todas as competições →",
-        "lede": "Séries de drag, concursos de beleza e concursos de títulos, cada um com todas as edições e todas as pessoas que competiram. Participantes têm link para o seu perfil aqui."
+        "lede": "Séries de drag, concursos de beleza e concursos de títulos, cada um com todas as edições e todas as pessoas que competiram. Participantes têm link para o seu perfil aqui.",
+        "people": "Pessoas",
+        "peopleIn": "Pessoas que competiram em: {{type}}"
       },
       "competedIn": {
         "label": "Competiu em",

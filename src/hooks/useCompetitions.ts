@@ -105,6 +105,32 @@ export function useCompetedInOptions() {
   });
 }
 
+/**
+ * Distinct linked public personalities per competition category, for the
+ * "People" links on the /personalities line key. Not derivable by summing
+ * `useCompetedInOptions`, because one person can enter several competitions in
+ * the same category.
+ *
+ * Fails SOFT to `null` (unknown), never to an empty map: an empty map would
+ * read as "nobody is linked" and hide every People link.
+ */
+export function useCompetitionCategoryPeople() {
+  return useQuery({
+    queryKey: ['competition-category-personality-counts'],
+    staleTime: HOUR,
+    queryFn: async (): Promise<Map<string, number> | null> => {
+      const { data, error } = await untypedRpc<{ category: string; people: number }[]>(
+        'competition_category_personality_counts',
+      );
+      if (error) {
+        console.warn('competition_category_personality_counts failed:', error.message);
+        return null;
+      }
+      return new Map((data ?? []).map((r) => [r.category, r.people]));
+    },
+  });
+}
+
 export function useCompetitionRoster() {
   return useQuery({
     queryKey: ['competition-roster'],

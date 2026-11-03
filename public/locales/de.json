@@ -2631,7 +2631,9 @@
       "competitions": {
         "heading": "Wettbewerbe & Titelträger:innen",
         "all": "Alle Wettbewerbe →",
-        "lede": "Drag-Serien, Pageants und Titelwettbewerbe, jeweils mit jeder Ausgabe und allen Teilnehmenden. Teilnehmende verlinken auf ihre Einträge hier."
+        "lede": "Drag-Serien, Pageants und Titelwettbewerbe, jeweils mit jeder Ausgabe und allen Teilnehmenden. Teilnehmende verlinken auf ihre Einträge hier.",
+        "people": "Personen",
+        "peopleIn": "Personen, die teilgenommen haben: {{type}}"
       },
       "competedIn": {
         "label": "Teilgenommen an",

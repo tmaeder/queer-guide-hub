@@ -45,22 +45,56 @@ grant execute on function public.competition_personality_counts() to anon, authe
 comment on function public.competition_personality_counts() is
   'Competitions with at least one linked public, non-duplicate personality, with the distinct count. Backs the "Competed in" filter on /personalities. SECURITY INVOKER so the count matches what the caller can see.';
 
+-- The same count per CATEGORY, for the "People" links on the /personalities
+-- line key. It cannot be summed from the per-competition rows above: a queen
+-- on both RuPaul's Drag Race and All Stars is one person in drag_series, and a
+-- sum would count her twice. Same predicate, same invoker semantics.
+create or replace function public.competition_category_personality_counts()
+returns table (category text, people integer)
+language sql
+stable
+security invoker
+set search_path = public, pg_temp
+as $$
+  select c.category::text, count(distinct p.id)::integer as people
+    from public.competitions c
+    join public.competition_editions ed on ed.competition_id = c.id
+    join public.competition_entrants e on e.edition_id = ed.id
+    join public.personalities p on p.id = e.personality_id
+   where p.visibility = 'public'
+     and p.duplicate_of_id is null
+   group by c.category
+  having count(distinct p.id) > 0
+   order by c.category;
+$$;
+
+revoke all on function public.competition_category_personality_counts() from public;
+grant execute on function public.competition_category_personality_counts() to anon, authenticated, service_role;
+
+comment on function public.competition_category_personality_counts() is
+  'Distinct linked public, non-duplicate personalities per competition category. Backs the People links on the /personalities competition line key. SECURITY INVOKER.';
+
 do $verify$
 declare
   v_def boolean;
+  v_fn text;
   v_rows integer;
 begin
-  select p.prosecdef into v_def
-    from pg_proc p
-   where p.oid = 'public.competition_personality_counts()'::regprocedure;
-  if v_def then
-    raise exception 'competition_personality_counts must be SECURITY INVOKER';
-  end if;
-  if not has_function_privilege('anon', 'public.competition_personality_counts()', 'execute') then
-    raise exception 'competition_personality_counts must be executable by anon';
-  end if;
-  -- Executes, so a planning error surfaces at apply time rather than as a 400
-  -- on the page. No row-count floor: an empty corpus is a valid state.
+  foreach v_fn in array array[
+    'public.competition_personality_counts()',
+    'public.competition_category_personality_counts()'
+  ] loop
+    select p.prosecdef into v_def from pg_proc p where p.oid = v_fn::regprocedure;
+    if v_def then
+      raise exception '% must be SECURITY INVOKER', v_fn;
+    end if;
+    if not has_function_privilege('anon', v_fn, 'execute') then
+      raise exception '% must be executable by anon', v_fn;
+    end if;
+  end loop;
+  -- Both execute, so a planning error surfaces at apply time rather than as a
+  -- 400 on the page. No row-count floor: an empty corpus is a valid state.
   select count(*) into v_rows from public.competition_personality_counts();
+  select count(*) into v_rows from public.competition_category_personality_counts();
 end
 $verify$;

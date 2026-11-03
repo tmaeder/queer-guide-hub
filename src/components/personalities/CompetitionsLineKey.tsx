@@ -2,9 +2,13 @@ import { useTranslation } from 'react-i18next';
 
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
-import { useCompetitionCategoryCounts } from '@/hooks/useCompetitions';
+import {
+  useCompetitionCategoryCounts,
+  useCompetitionCategoryPeople,
+} from '@/hooks/useCompetitions';
 import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 import { COMPETITION_CATEGORIES, categoryPath } from '@/lib/competitionCategories';
+import { serializeFilters } from '@/lib/personalitiesFilters';
 
 /**
  * The six competition types, as a compact line key on /personalities.
@@ -31,6 +35,10 @@ import { COMPETITION_CATEGORIES, categoryPath } from '@/lib/competitionCategorie
  * route bullet is a transit MARK, not a glyph, so it is the only transit
  * element drawn here.
  *
+ * EACH ROW IS TWO LINKS: the type's page, and `/personalities?competed=<type>`
+ * — the directory filtered to the people who competed in it. The second is
+ * hidden for a type with no linked public personality (drag kings today).
+ *
  * Counts come from `useCompetitionCategoryCounts`, the same hook the hub uses,
  * so this block and the page it opens cannot disagree. "Counting" means
  * loading and nothing else; a loaded category with no rows says zero.
@@ -39,6 +47,7 @@ export function CompetitionsLineKey() {
   useReferenceTaxonomy('competition_category');
   const { t } = useTranslation();
   const { counts, isLoading, isError } = useCompetitionCategoryCounts();
+  const { data: people } = useCompetitionCategoryPeople();
 
   // A failed fetch hides the counts, never the routes: the six pages work on
   // their own, and a navigation block that vanishes on a slow API reads as
@@ -69,10 +78,16 @@ export function CompetitionsLineKey() {
         {COMPETITION_CATEGORIES.map((c) => {
           const count = counts.get(c.id);
           return (
-            <li key={c.id}>
+            <li
+              key={c.id}
+              className="flex h-full items-stretch overflow-hidden rounded-element bg-card shadow-soft"
+            >
+              {/* Two sibling links, never one nested in the other (axe
+                  nested-interactive): the type's own page, and the directory
+                  filtered to the people who competed in it. */}
               <LocalizedLink
                 to={categoryPath(c)}
-                className="flex h-full items-center gap-4 rounded-element bg-card px-4 py-2 no-underline shadow-soft transition-colors hover:bg-surface-container"
+                className="flex min-w-0 flex-1 items-center gap-4 px-4 py-2 no-underline transition-colors hover:bg-surface-container"
               >
                 <RouteBullet
                   type={c.id}
@@ -97,6 +112,31 @@ export function CompetitionsLineKey() {
                   )}
                 </span>
               </LocalizedLink>
+              {/*
+               * Hidden only when the counts loaded AND say nobody is linked: a
+               * link to an empty grid is a dead end. While the counts are
+               * loading or unavailable the link stays, because the filter works
+               * without them.
+               */}
+              {(people == null || (people.get(c.id) ?? 0) > 0) && (
+                <LocalizedLink
+                  to={`/personalities?${serializeFilters({ competed_in: c.id }).toString()}`}
+                  aria-label={t('pages.personalities.competitions.peopleIn', {
+                    defaultValue: 'People who competed in: {{type}}',
+                    type: t(c.labelKey, c.label),
+                  })}
+                  className="flex shrink-0 flex-col items-end justify-center border-l border-border-hairline px-4 py-2 text-right no-underline transition-colors hover:bg-surface-container"
+                >
+                  <span className="text-13 font-bold">
+                    {t('pages.personalities.competitions.people', 'People')}
+                  </span>
+                  {people != null && (
+                    <span className="text-2xs tabular-nums text-muted-foreground">
+                      {(people.get(c.id) ?? 0).toLocaleString()}
+                    </span>
+                  )}
+                </LocalizedLink>
+              )}
             </li>
           );
         })}

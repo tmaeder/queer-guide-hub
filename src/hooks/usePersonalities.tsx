@@ -134,12 +134,6 @@ function applyFilters(query: ReturnType<typeof supabase.from>, filters?: Persona
     query = query.contains('tags', [filters.tag]);
   }
 
-  const competed = parseCompetedIn(filters.competed_in);
-  if (competed) {
-    const col = competedInColumn(competed);
-    if (col) query = query.eq(col.column, col.value);
-  }
-
   if (filters.verification_status) {
     query = query.eq('verification_status', filters.verification_status);
   }
@@ -225,13 +219,20 @@ export function usePersonalities(autoFetch: boolean = true) {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
+      // "Competed in" is applied here rather than in applyFilters: it changes
+      // the SELECT (an `!inner` embed is what makes it a semi-join), and the
+      // embedded-column eq has to be chained on the typed filter builder.
+      // The column list is widened to `string` so the select parser does not
+      // try to type the embed; transformRow strips it from each row.
+      const competed = parseCompetedIn(filters?.competed_in);
+      const columns: string = competed ? `*,${COMPETED_IN_EMBED}` : '*';
       let query = supabase
         .from('personalities')
-        .select(parseCompetedIn(filters?.competed_in) ? `*,${COMPETED_IN_EMBED}` : '*', {
-          count: 'exact',
-        })
+        .select(columns, { count: 'exact' })
         .eq('visibility', 'public')
         .is('duplicate_of_id', null);
+      const competedCol = competed ? competedInColumn(competed) : null;
+      if (competedCol) query = query.eq(competedCol.column, competedCol.value);
 
       query = applyFilters(query, filters);
       query = applySort(query, filters?.sortBy);
@@ -244,7 +245,7 @@ export function usePersonalities(autoFetch: boolean = true) {
         return { fetched: 0, total: 0 };
       }
 
-      const transformed = (data || []).map(transformRow);
+      const transformed = ((data || []) as unknown as PersonalityRow[]).map(transformRow);
 
       if (options?.append) {
         setPersonalities((prev) => {
