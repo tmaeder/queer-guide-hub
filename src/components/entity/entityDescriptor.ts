@@ -88,6 +88,10 @@ export interface EntitySingleShape {
   /** Rendered at the TOP of the body, above the route rail and the sections —
    *  the cover photo and any banner that must precede everything. */
   bodyLead?: ReactNode;
+  /** Rendered at the END of the body, after every section. For tertiary
+   *  material that should not stand between the reader and the page's own
+   *  content (the venue page's glossary teaser). */
+  bodyTail?: ReactNode;
   /** Rail-slot modules, top to bottom. The rail reflows UNDER the body on mobile. */
   rail?: ReactNode;
   /** Which line the route rail draws in. */

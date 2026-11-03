@@ -16,6 +16,8 @@ import type { ReactNode } from 'react';
 import type { TFunction } from 'i18next';
 import type { Database } from '@/integrations/supabase/types';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
+import { useTranslation } from 'react-i18next';
+import { venueCategoryFallbackLabel } from '@/lib/venueCategories';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type Event = Database['public']['Tables']['events']['Row'];
@@ -200,7 +202,11 @@ export function VillageAbout({
  * A venue missing coordinates simply gets no gap label rather than being
  * dropped — it is still a stop on the walk, we just cannot say how far.
  */
-export function villageStops(venues: VillageVenue[], previousVenue?: VillageVenue): Stop[] {
+export function villageStops(
+  venues: VillageVenue[],
+  previousVenue?: VillageVenue,
+  categoryLabel: (value: string | null | undefined) => string | null = venueCategoryFallbackLabel,
+): Stop[] {
   return venues.map((v, i) => {
     const prev = i > 0 ? venues[i - 1] : (previousVenue ?? null);
     const hasPair =
@@ -233,7 +239,9 @@ export function villageStops(venues: VillageVenue[], previousVenue?: VillageVenu
       type: 'venue',
       href: v.slug ? `/venues/${v.slug}` : undefined,
       walkFromPrevious: gap,
-      accessNote: v.category ?? null,
+      // The vocabulary label, not the raw value: the list printed
+      // "community_center" and "event-venue" under venue names.
+      accessNote: categoryLabel(v.category),
     };
   });
 }
@@ -257,8 +265,13 @@ export function VillageStops({
   venues: VillageVenue[];
   previousVenue?: VillageVenue;
 }) {
+  const { t } = useTranslation();
   if (venues.length === 0) return null;
-  return <StopList stops={villageStops(venues, previousVenue)} variant="route" />;
+  const label = (value: string | null | undefined) =>
+    value
+      ? t(`venueCategories.${value}`, { defaultValue: venueCategoryFallbackLabel(value) ?? value })
+      : null;
+  return <StopList stops={villageStops(venues, previousVenue, label)} variant="route" />;
 }
 
 /**
@@ -392,7 +405,7 @@ export function VillageMapInset({
               lat: Number(v.latitude),
               lng: Number(v.longitude),
               name: v.name ?? 'Venue',
-              subtitle: v.category ?? undefined,
+              subtitle: venueCategoryFallbackLabel(v.category) ?? undefined,
               type: 'venues' as const,
               linkTo: `/venues/${v.slug || v.id}`,
               entityType: 'venue' as const,

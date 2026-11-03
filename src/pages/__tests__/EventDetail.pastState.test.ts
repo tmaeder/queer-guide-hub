@@ -60,17 +60,23 @@ describe('hasWhoIsGoingContent — the guard that stops a bare heading', () => {
     );
   });
 
-  it('is true for an upcoming event — the "be the first" prompt renders', () => {
-    expect(hasWhoIsGoingContent(ev({}), false)).toBe(true);
+  it('is true for an upcoming event for a member — the "be the first" prompt renders', () => {
+    expect(hasWhoIsGoingContent(ev({}), false, true)).toBe(true);
   });
 
-  it('does not depend on who is looking', () => {
+  it('is false for a signed-out reader on an upcoming event with no RSVPs', () => {
+    // The only thing left to say was "sign in", which is not a section.
+    expect(hasWhoIsGoingContent(ev({}), false, false)).toBe(false);
+    expect(hasWhoIsGoingContent(ev({}), false)).toBe(false);
+  });
+
+  it('a past event with no RSVPs stays empty for a member too', () => {
     // The first version returned Boolean(user), reasoning that a signed-in
     // reader could still get the people rail. "Could" is not "does" — the rail
     // returns null whenever discovery finds no matches, so the section went
     // empty again for signed-in readers. CI caught it (its chromium project
     // carries an admin storageState); the rail now lives in the footer and
     // this guard reads only the row.
-    expect(hasWhoIsGoingContent(ev({ start_date: PAST }), true)).toBe(false);
+    expect(hasWhoIsGoingContent(ev({ start_date: PAST }), true, true)).toBe(false);
   });
 });
