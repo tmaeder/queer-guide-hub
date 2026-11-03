@@ -465,6 +465,23 @@ export function eventStatusLabel(event: EventWithRelations): string | undefined 
  * scrim; the photo is now `PhotoInset` in the body, on the same 3px frame as
  * the map — the treatment every other single uses.
  */
+/**
+ * The event's free-text venue name, or null when it only repeats the city.
+ * Imports often fill `venue_name` with the city itself ("Columbus" for
+ * Columbus Pride), which printed the place twice: "Columbus, Columbus,
+ * United States". A city name is not a venue, so it is dropped here and
+ * the city line carries it once.
+ */
+export function eventVenueText(event: EventWithRelations, cityName: string | null): string | null {
+  const name = event.venue_name?.trim();
+  if (!name) return null;
+  const norm = (v: string) => v.trim().toLocaleLowerCase();
+  const cities = [cityName, event.cities?.name, event.city].filter((c): c is string =>
+    Boolean(c && c.trim()),
+  );
+  return cities.some((c) => norm(c) === norm(name)) ? null : name;
+}
+
 export function EventMasthead({
   event,
   cityName,
@@ -486,11 +503,11 @@ export function EventMasthead({
                 {event.venues.name}
               </LocalizedLink>
             ) : (
-              event.venue_name || ''
+              (eventVenueText(event, cityName) ?? '')
             )}
             {cityName && (
               <>
-                {event.venues?.name || event.venue_name ? ', ' : ''}
+                {event.venues?.name || eventVenueText(event, cityName) ? ', ' : ''}
                 {cityLink ? (
                   <LocalizedLink to={cityLink} className="hover:underline">
                     {cityName}
@@ -629,11 +646,9 @@ export function EventFactStrip({
     },
     {
       label: t('events.detail.price', 'Entry'),
-      value: event.is_free
-        ? t('events.free', 'Free')
-        : price === 'Price TBA'
-          ? t('events.detail.notListed', 'Not listed')
-          : price,
+      // Unknown entry is left out like an unknown age or capacity: "Entry:
+      // Not listed" took a slot in the glance row to say nothing.
+      value: event.is_free ? t('events.free', 'Free') : price === 'Price TBA' ? null : price,
     },
     { label: t('events.detail.ages', 'Age'), value: ageRestriction },
     {
@@ -1022,11 +1037,18 @@ export function EventPeopleRail({ event }: { event: EventWithRelations }) {
  * A guard that depends on what another component *might* render is the same
  * mistake as no guard at all.
  */
-export function hasWhoIsGoingContent(event: EventWithRelations, isPast: boolean): boolean {
+export function hasWhoIsGoingContent(
+  event: EventWithRelations,
+  isPast: boolean,
+  signedIn = false,
+): boolean {
   const going = event.attendee_counts?.going ?? 0;
   const interested = event.attendee_counts?.interested ?? 0;
   if (going > 0 || interested > 0) return true;
-  return !isPast; // the "be the first" prompt
+  // The "be the first" prompt is only worth a section for a member, who can
+  // RSVP from the action row. For a signed-out reader it was a whole section
+  // (and a rail station) that said only "sign in".
+  return !isPast && signedIn;
 }
 
 /* ------------------------------------------------------------------ */
@@ -1148,10 +1170,12 @@ export function EventWhere({ event, venueRef, onOrganizerClick }: WhereProps) {
             actionLabel="Open venue"
           />
         ) : (
-          event.venue_name && (
+          eventVenueText(event, event.cities?.name ?? event.city ?? null) && (
             <div className="flex items-start gap-2">
               <MapPin size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
-              <p className="text-sm font-medium">{event.venue_name}</p>
+              <p className="text-sm font-medium">
+                {eventVenueText(event, event.cities?.name ?? event.city ?? null)}
+              </p>
             </div>
           )
         )}
