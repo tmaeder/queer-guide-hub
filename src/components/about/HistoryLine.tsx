@@ -93,14 +93,17 @@ export function HistoryLine({ stops, className }: { stops: HistoryStop[]; classN
                 left: `${(mx(STATIONS[i].x) / VIEW_W) * 100}%`,
                 top: `${(STATIONS[i].y / VIEW_H) * 100}%`,
               }}
-              className="pointer-events-none absolute block h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-track-blue"
+              className="pointer-events-none absolute block h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-foreground bg-track-blue"
             />
           ))}
         </div>
 
         <ol className="m-0 grid list-none grid-cols-4 gap-6 p-0 pt-6">
           {shown.map((stop) => (
-            <li key={stop.year}>
+            // Centred under its station: each dot sits at its column's centre,
+            // so left-aligned text put every year ~a third of a column away
+            // from the stop it belongs to.
+            <li key={stop.year} className="text-center">
               <p className="font-display text-headline leading-none tabular-nums">{stop.year}</p>
               <p className="mt-2 text-13 leading-relaxed text-muted-foreground">{stop.body}</p>
             </li>

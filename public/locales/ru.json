@@ -4444,7 +4444,13 @@
     "eyebrow": "О нас",
     "title": "Сделано квир-людьми — для всех.",
     "diagram": {
-      "label": "Четыре линии сходятся на одной станции: места, события, сообщество и направления."
+      "label": "Четыре линии сходятся на одной станции: места, события, сообщество и направления.",
+      "lines": {
+        "venues": "Места",
+        "events": "События",
+        "community": "Сообщество",
+        "places": "Направления"
+      }
     },
     "scale": {
       "kicker": "Сеть сегодня",
@@ -4796,88 +4802,108 @@
         "leadsTo": "[RU] Leads to"
       },
       "fourLines": {
-        "title": "[RU] Four lines",
-        "caption": "[RU] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
-        "summary": "[RU] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
-        "readout": "[RU] Where you are on each line",
-        "tableCaption": "[RU] Every line on the map and the stops it carries",
-        "corridor": {
-          "identity": "[RU] Gender identity: two independent services"
+        "title": "Четыре линии",
+        "caption": "Гендерная идентичность, гендерное самовыражение, пол, приписанный при рождении, и влечение идут по четырём отдельным линиям. Остановка на одной ничего не говорит об остановке на другой. Отметьте подходящие остановки. Ничего не сохраняется и не отправляется.",
+        "summary": "Четыре параллельные линии, которые никогда не пересекаются: гендерная идентичность, гендерное самовыражение, пол, приписанный при рождении, и влечение. У каждой есть названные остановки, и выбор на одной линии ничего не говорит о других.",
+        "readout": "Ваши четыре линии",
+        "independent": "Четыре отдельных ответа. Ни один не следует из другого.",
+        "reset": "Сбросить",
+        "tableCaption": "Все линии и их остановки",
+        "tableRule": "Как выбирать",
+        "pickOne": "Выберите одну",
+        "pickAny": "Выберите все подходящие",
+        "notPicked": "Остановка не выбрана",
+        "line": {
+          "identity": "Гендерная идентичность",
+          "expression": "Гендерное самовыражение",
+          "assigned": "Пол, приписанный при рождении",
+          "attraction": "Влечение"
         },
-        "axis": {
-          "identityWoman": "[RU] How much woman",
-          "identityMan": "[RU] How much man",
-          "expression": "[RU] Gender expression",
-          "assigned": "[RU] Sex assigned at birth",
-          "attraction": "[RU] Attraction"
+        "question": {
+          "identity": "Кем вы себя знаете. Может подойти несколько остановок: быть женщиной не значит занять место чего-то другого.",
+          "expression": "Как вы себя преподносите: одежда, голос, волосы, манера держаться. Названные остановки, а не шкала с серединой.",
+          "assigned": "То, что записали при вашем рождении, часто после беглого взгляда. Это не определяет остальные три линии.",
+          "attraction": "Кто вас привлекает. Кто вы и кто вас привлекает — разные вопросы."
         },
-        "help": {
-          "identityWoman": "[RU] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
-          "identityMan": "[RU] The second rail on the same corridor. Answering this one does not subtract from the one above.",
-          "expression": "[RU] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
-          "assigned": "[RU] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
-          "attraction": "[RU] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
-        },
-        "amount": {
-          "notAtAll": "[RU] Not at all",
-          "aLittle": "[RU] A little",
-          "aLot": "[RU] A lot",
-          "entirely": "[RU] Entirely",
-          "ratherNot": "[RU] Rather not say"
-        },
-        "expression": {
-          "feminine": "[RU] Feminine",
-          "androgynous": "[RU] Androgynous",
-          "masculine": "[RU] Masculine",
-          "changes": "[RU] It changes"
-        },
-        "assigned": {
-          "female": "[RU] Female",
-          "male": "[RU] Male",
-          "intersex": "[RU] Intersex variation"
-        },
-        "attraction": {
-          "women": "[RU] Women",
-          "men": "[RU] Men",
-          "moreThanOne": "[RU] More than one gender",
-          "regardless": "[RU] Regardless of gender",
-          "noOne": "[RU] No one, or rarely"
+        "stop": {
+          "woman": "Женщина",
+          "man": "Мужчина",
+          "nonBinary": "Небинарность",
+          "agender": "Агендер",
+          "fluid": "Гендерфлюид",
+          "questioning": "Пока разбираюсь",
+          "feminine": "Феминное",
+          "androgynous": "Андрогинное",
+          "masculine": "Маскулинное",
+          "changes": "Меняется",
+          "female": "Женский",
+          "male": "Мужской",
+          "intersex": "Интерсекс-вариация",
+          "women": "Женщины",
+          "men": "Мужчины",
+          "nonBinaryPeople": "Небинарные люди",
+          "regardless": "Независимо от гендера",
+          "noOne": "Редко или никто",
+          "ratherNot": "Предпочитаю не говорить"
         }
       },
       "consentFlow": {
-        "title": "[RU] The line that stops",
-        "caption": "[RU] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
-        "summary": "[RU] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
-        "tableCaption": "[RU] Every stop on the line, and where it leads",
-        "groupLabel": "[RU] Stops on the line",
-        "hint": "[RU] Select any stop to light up the route that reaches it.",
-        "node": {
-          "start": "[RU] You want to do something with someone",
-          "asked": "[RU] Have you asked?",
-          "notAsked": "[RU] Guessing is not consent",
-          "clearYes": "[RU] Was the answer a clear yes?",
-          "notAYes": "[RU] No, maybe, or nothing",
-          "capacity": "[RU] Speed restriction: can everyone actually decide?",
-          "checkin": "[RU] Still yes, right now?",
-          "stopNow": "[RU] Stop",
-          "go": "[RU] Clear to proceed, for now"
+        "title": "Линия, которая останавливается",
+        "caption": "Согласие как кольцевая линия, по которой вы едете всё время, пока вы вместе. Каждая станция ведёт прямо к «Стоп». Это не юридический критерий; законы в разных странах разные.",
+        "summary": "Кольцевая линия с четырьмя станциями: спросить, услышать ясное «да», все могут решать, и дальше, пока что, — откуда линия сразу идёт к тому, чтобы спросить снова. У каждой станции своя связь со «Стоп» в центре, которой любой может воспользоваться в любой момент.",
+        "tableCaption": "Все станции кольцевой линии и куда ведёт каждый ответ",
+        "legend": "Станции кольцевой линии",
+        "entry": "Вы хотите что-то сделать с кем-то",
+        "station": {
+          "ask": "Спросить",
+          "clearYes": "Услышать ясное «да»",
+          "capacity": "Все могут решать",
+          "go": "Дальше, пока что"
         },
         "note": {
-          "asked": "[RU] Out loud, or in a way you have both already agreed reads as asking.",
-          "notAsked": "[RU] Not objecting is not agreeing. The line does not start here.",
-          "clearYes": "[RU] Theirs, not one you talked them into.",
-          "notAYes": "[RU] Anything that is not a yes is a no. This is the end of the line.",
-          "capacity": "[RU] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
-          "checkin": "[RU] The signal you come back to. Agreeing earlier is not agreeing now.",
-          "stopNow": "[RU] Anyone can stop anything at any point, for no reason. Then look after each other.",
-          "go": "[RU] And back to the check-in, which is why this line is a loop."
+          "ask": "Вслух или так, как вы оба договорились считать вопросом. Вы возвращаетесь сюда на каждом круге: согласие раньше — не согласие сейчас.",
+          "clearYes": "Их собственное, а не выпрошенное вами. «Нет», «может быть» или молчание — это «нет».",
+          "capacity": "Ограничение скорости. Алкоголь, наркотики, усталость, полусон. Это не переключатель: если вы не можете понять, ответа у вас пока нет.",
+          "go": "Это не финиш. Линия сразу идёт дальше, к тому, чтобы спросить снова."
         },
-        "edge": {
-          "no": "[RU] No",
-          "yes": "[RU] Yes",
-          "notAYes": "[RU] Not a yes",
-          "noOrUnsure": "[RU] No, or unsure",
-          "again": "[RU] And again, any time"
+        "stop": {
+          "label": "Стоп",
+          "note": "В одном шаге от каждой станции, в любой момент, без причины. Потом позаботьтесь друг о друге."
+        },
+        "ride": {
+          "title": "Проехать по линии",
+          "intro": "Проезжайте круг по одной станции. Любой ответ, кроме «да», ведёт к «Стоп».",
+          "where": "Круг {{round}} · Станция {{n}}: {{name}}",
+          "start": "Начать",
+          "again": "Начать заново",
+          "ask": {
+            "q": "Вы спросили?",
+            "yes": "Да, я спросил(а)",
+            "no": "Нет, я предположил(а)",
+            "why": "Догадка — не согласие. Отсутствие возражений — не согласие."
+          },
+          "clearYes": {
+            "q": "Ответ был ясным «да»?",
+            "yes": "Ясное «да»",
+            "no": "Нет, может быть или ничего",
+            "why": "Всё, что не «да», — это «нет»."
+          },
+          "capacity": {
+            "q": "Все ли сейчас действительно могут решать?",
+            "yes": "Да, все могут",
+            "no": "Нет, или я не могу понять",
+            "why": "Если вы не можете понять, ответа у вас пока нет."
+          },
+          "go": {
+            "q": "Вы продолжаете, пока что. Всем по-прежнему хорошо?",
+            "yes": "Продолжить и спросить снова",
+            "no": "Кто-то хочет остановиться",
+            "why": "Любой может остановить что угодно в любой момент без объяснения причин."
+          }
+        },
+        "table": {
+          "ifYes": "Если «да»",
+          "ifNot": "Любой другой ответ"
         }
       }
     }

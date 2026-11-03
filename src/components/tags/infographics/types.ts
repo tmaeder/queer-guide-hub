@@ -35,8 +35,8 @@ export type RiskTier = OverallRisk;
 export type { Track };
 
 export type Archetype =
-  | 'axis-set'
-  | 'flow-graph'
+  | 'line-strip'
+  | 'loop-line'
   | 'zone-map'
   | 'card-catalog'
   | 'compare-matrix'
@@ -131,6 +131,13 @@ interface InfographicBase {
    * the check is rather than trusting that one happened.
    */
   checkedOn: string;
+  /**
+   * Print `checkedOn` on the figure even though it encodes no risk. A
+   * risk-encoding figure always prints it; this is for a figure that makes
+   * claims a reader may act on (consent, health) without taking the risk
+   * palette, because staleness is the harm there too.
+   */
+  claimBearing?: boolean;
   /**
    * The renderer, wrapped once at module scope with `lazyRetry`.
    *
