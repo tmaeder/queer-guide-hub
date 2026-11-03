@@ -148,12 +148,11 @@ describe('IntentMap', () => {
   });
 
   it('marks the active intent, and nothing on the homepage', () => {
-    // /tags/rights-by-country is the Rights station's own page, even though it
-    // sits under Knowledge's /tags prefix — only one station may light.
+    // /tags/rights-by-country belongs to the Knowledge intent (/tags).
     const onRights = renderWithProviders(<IntentMap />, { route: '/tags/rights-by-country' });
     const current = onRights.container.querySelectorAll('[aria-current="page"]');
     expect(current).toHaveLength(1);
-    expect(current[0].getAttribute('href')).toMatch(/\/tags\/rights-by-country$/);
+    expect(current[0].getAttribute('href')).toMatch(/\/tags$/);
     onRights.unmount();
 
     // findActiveIntent('/') is undefined by design.

@@ -34,9 +34,6 @@ const INTENTS = [
   // crisis-adjacent block at the bottom of this file.
   // The tags wiki, promoted to a top-level intent (2026-08-22). /tags is the
   // real glossary hub, no wrapper path.
-  // Rights left the header on 2026-11-01 (#4994) and came back on 2026-11-02.
-  // Its page stays at /tags/rights-by-country; /rights 301s there.
-  { label: 'Rights', href: '/tags/rights-by-country' },
   { label: 'Knowledge', href: '/tags' },
   // News replaced Support in the row on 2026-11-01. Support (/help) is now a
   // footer-only destination (FOOTER_ONLY_DESTINATIONS), not a header tab.
@@ -51,7 +48,7 @@ const INTENTS = [
 test.describe('desktop intent nav', () => {
   test.skip(({ isMobile }) => !!isMobile, 'desktop row is hidden below lg');
 
-  test('renders exactly the seven intents in the primary landmark', async ({ page }) => {
+  test('renders exactly the six intents in the primary landmark', async ({ page }) => {
     await page.goto('/');
     const nav = page.locator('header nav[aria-label="Primary"]');
     await expect(nav).toBeVisible();
@@ -65,12 +62,11 @@ test.describe('desktop intent nav', () => {
   });
 
   test('marks the active intent with aria-current', async ({ page }) => {
-    // The rights page lives under Knowledge's /tags prefix, so this also
-    // proves Knowledge does not light alongside it.
+    // Rights by country now lives under the Knowledge intent.
     await page.goto('/tags/rights-by-country');
     const nav = page.locator('header nav[aria-label="Primary"]');
     await expect(nav.locator('a[aria-current="page"]')).toHaveCount(1);
-    await expect(nav.locator('a[aria-current="page"]')).toHaveText('Rights');
+    await expect(nav.locator('a[aria-current="page"]')).toHaveText('Knowledge');
   });
 
   test('lights the owning intent on a browse route it claims', async ({ page }) => {
@@ -92,13 +88,12 @@ test.describe('homepage intent map', () => {
     '/travel',
     '/hub/people',
     '/search', // the interchange, where all four lines meet
-    '/tags/rights-by-country', // Rights
-    '/tags', // Knowledge
+    '/tags', // Knowledge (glossary, and rights by country since 2026-11-01)
     '/news',
     '/marketplace',
   ];
 
-  test('renders the seven intents plus the interchange as stations', async ({ page }) => {
+  test('renders the six intents plus the interchange as stations', async ({ page }) => {
     // The desktop visual snapshot masks `main section:first-of-type`, which
     // this section matches — so the screenshot does NOT guard the map. This
     // does. It also catches the CSS-only breakpoint split degrading into two

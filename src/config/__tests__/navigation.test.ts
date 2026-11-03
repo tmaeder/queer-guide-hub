@@ -50,29 +50,17 @@ describe('navigation config', () => {
 });
 
 describe('INTENT_NAV', () => {
-  it('has seven intents with unique ids and routes', () => {
+  it('has six intents with unique ids and routes', () => {
     // Seven is the ceiling under the CURRENT layout contract: the desktop row
     // is its own full-width line (not shared with the search field), tabs
     // tighten to px-3 below lg, and the row scrolls horizontally instead of
     // wrapping (Header.tsx). Every label is still held to <=11 chars below.
     // An eighth needs another layout change, not an eighth entry.
-    // Rights folded into Knowledge on 2026-11-01 and got its header tab back
-    // on 2026-11-02, so seven is the count again.
-    expect(INTENT_NAV).toHaveLength(7);
-    expect(new Set(INTENT_NAV.map((i) => i.id)).size).toBe(7);
-    expect(new Set(INTENT_NAV.map((i) => i.to)).size).toBe(7);
-  });
-
-  it('lights exactly one intent on the rights page, which lives under /tags', () => {
-    for (const path of ['/tags/rights-by-country', '/tags/rights-by-country/trans']) {
-      const lit = INTENT_NAV.filter((intent) => isIntentActive(intent, path)).map((i) => i.id);
-      expect(lit, path).toEqual(['rights']);
-    }
-    // Knowledge still owns the rest of /tags, including a term named "rights".
-    for (const path of ['/tags', '/tags/rights', '/tags/rights-by-country-x']) {
-      const lit = INTENT_NAV.filter((intent) => isIntentActive(intent, path)).map((i) => i.id);
-      expect(lit, path).toEqual(['glossary']);
-    }
+    // Rights folded into Knowledge (/tags/rights-by-country) on 2026-11-01,
+    // so six is the current count, not the ceiling.
+    expect(INTENT_NAV).toHaveLength(6);
+    expect(new Set(INTENT_NAV.map((i) => i.id)).size).toBe(6);
+    expect(new Set(INTENT_NAV.map((i) => i.to)).size).toBe(6);
   });
 
   it('never uses a 2-letter first path segment', () => {
