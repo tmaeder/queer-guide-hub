@@ -2820,6 +2820,22 @@
       "detail": {
         "inTheNews": "In the news",
         "relatedEvents": "Related events"
+      },
+      "competitions": {
+        "heading": "Competitions & titleholders",
+        "all": "All competitions →",
+        "lede": "Drag series, pageants and title contests, each with every edition and everyone who competed. Entrants link back to their entries here.",
+        "people": "People",
+        "peopleIn": "People who competed in: {{type}}",
+        "more": "+{{count}} more",
+        "peopleNone": "No linked people yet in: {{type}}"
+      },
+      "competedIn": {
+        "label": "Competed in",
+        "none": "Everyone",
+        "any": "Any competition",
+        "allOfType": "All: {{type}}",
+        "chip": "Competed in: {{name}}"
       }
     },
     "groups": {
@@ -5148,7 +5164,8 @@
       "editions": "Editions",
       "entrants": "Entries",
       "linked": "Linked to a profile"
-    }
+    },
+    "backToPersonalities": "← Personalities"
   },
   "styleguide": {
     "metaTitle": "Editorial styleguide and tone of voice",

@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/sheet';
 import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
+import { CompetedInSelect } from '@/components/personalities/CompetedInSelect';
 import {
   useProfessionFacets,
   type PersonalityFilters,
@@ -134,6 +135,16 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
               <X size={14} />
             </button>
           )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="hidden text-2xs font-bold uppercase tracking-label text-muted-foreground sm:block">
+            Competed in
+          </span>
+          <CompetedInSelect
+            value={filters.competed_in}
+            onChange={(competed_in) => onFiltersChange({ ...filters, competed_in })}
+          />
         </div>
 
         <div className="flex items-center gap-2">

@@ -2625,6 +2625,22 @@
       "detail": {
         "inTheNews": "뉴스에서",
         "relatedEvents": "관련 이벤트"
+      },
+      "competitions": {
+        "heading": "대회와 타이틀 보유자",
+        "all": "모든 대회 →",
+        "lede": "드래그 시리즈, 페전트, 타이틀 대회를 회차별로, 모든 참가자와 함께 소개합니다. 참가자는 여기 있는 인물 페이지로 연결됩니다.",
+        "people": "인물",
+        "peopleIn": "참가한 인물: {{type}}",
+        "more": "외 {{count}}개",
+        "peopleNone": "아직 연결된 인물이 없습니다: {{type}}"
+      },
+      "competedIn": {
+        "label": "참가한 대회",
+        "none": "모든 인물",
+        "any": "모든 대회",
+        "allOfType": "전체: {{type}}",
+        "chip": "참가: {{name}}"
       }
     },
     "groups": {
@@ -5097,7 +5113,8 @@
       "editions": "에디션",
       "entrants": "참가",
       "linked": "프로필 연결됨"
-    }
+    },
+    "backToPersonalities": "← 인물"
   },
   "styleguide": {
     "metaTitle": "편집 스타일 가이드와 문체",

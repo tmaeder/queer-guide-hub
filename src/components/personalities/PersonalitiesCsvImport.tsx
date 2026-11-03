@@ -1,24 +1,24 @@
-import { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
-} from "@/components/ui/dialog";
-import { Card, CardContent } from "@/components/ui/card";
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
 import { Upload, FileText, Download, AlertCircle, CheckCircle } from '@/components/icons';
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import {
   classifyEntity,
   expectedKindForTargetTable,
   type EntityKind,
   type ClassifyResult,
-} from "@/lib/entityClassifier";
+} from '@/lib/entityClassifier';
 
 interface ImportResult {
   success: boolean;
@@ -52,19 +52,42 @@ function parseCsv(text: string): string[][] {
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
     if (inQuotes) {
-      if (ch === '"' && text[i + 1] === '"') { field += '"'; i++; continue; }
-      if (ch === '"') { inQuotes = false; continue; }
+      if (ch === '"' && text[i + 1] === '"') {
+        field += '"';
+        i++;
+        continue;
+      }
+      if (ch === '"') {
+        inQuotes = false;
+        continue;
+      }
       field += ch;
     } else {
-      if (ch === '"') { inQuotes = true; continue; }
-      if (ch === ',') { row.push(field); field = ''; continue; }
+      if (ch === '"') {
+        inQuotes = true;
+        continue;
+      }
+      if (ch === ',') {
+        row.push(field);
+        field = '';
+        continue;
+      }
       if (ch === '\r') continue;
-      if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; continue; }
+      if (ch === '\n') {
+        row.push(field);
+        rows.push(row);
+        row = [];
+        field = '';
+        continue;
+      }
       field += ch;
     }
   }
-  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
-  return rows.filter(r => r.length > 0 && r.some(c => c.trim()));
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows.filter((r) => r.length > 0 && r.some((c) => c.trim()));
 }
 
 const TARGET_TABLE = 'personalities';
@@ -85,9 +108,9 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
 
     if (!file.name.endsWith('.csv')) {
       toast({
-        title: "Invalid file type",
-        description: "Please select a CSV file",
-        variant: "destructive"
+        title: 'Invalid file type',
+        description: 'Please select a CSV file',
+        variant: 'destructive',
       });
       return;
     }
@@ -97,22 +120,28 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
       const rows = parseCsv(text);
       if (rows.length < 2) {
         toast({
-          title: "Empty CSV",
-          description: "The file has no data rows",
-          variant: "destructive"
+          title: 'Empty CSV',
+          description: 'The file has no data rows',
+          variant: 'destructive',
         });
         return;
       }
-      const headers = rows[0].map(h => h.trim().toLowerCase());
+      const headers = rows[0].map((h) => h.trim().toLowerCase());
       const histogram: Record<EntityKind, number> = {
-        person: 0, venue: 0, event: 0, glossary_term: 0, unknown: 0,
+        person: 0,
+        venue: 0,
+        event: 0,
+        glossary_term: 0,
+        unknown: 0,
       };
       const previewRows: PreviewRow[] = [];
       let mismatchCount = 0;
 
       for (let i = 1; i < rows.length; i++) {
         const obj: Record<string, string> = {};
-        headers.forEach((h, idx) => { obj[h] = (rows[i][idx] ?? '').trim(); });
+        headers.forEach((h, idx) => {
+          obj[h] = (rows[i][idx] ?? '').trim();
+        });
         const classification = classifyEntity(obj);
         histogram[classification.classified_as]++;
         if (
@@ -136,9 +165,9 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
       setImportResult(null);
     } catch (error) {
       toast({
-        title: "Could not read CSV",
-        description: error instanceof Error ? error.message : "Parse failed",
-        variant: "destructive",
+        title: 'Could not read CSV',
+        description: error instanceof Error ? error.message : 'Parse failed',
+        variant: 'destructive',
       });
     }
   };
@@ -153,7 +182,7 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
       formData.append('file', preview.file);
 
       const { data, error } = await supabase.functions.invoke('import-personalities-csv', {
-        body: formData
+        body: formData,
       });
 
       if (error) {
@@ -164,33 +193,32 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
 
       if (data.success) {
         toast({
-          title: "Import successful",
+          title: 'Import successful',
           description: `Successfully imported ${data.imported} personalities`,
         });
         onImportComplete?.();
       } else {
         toast({
-          title: "Import failed",
-          description: data.error || "Unknown error occurred",
-          variant: "destructive"
+          title: 'Import failed',
+          description: data.error || 'Unknown error occurred',
+          variant: 'destructive',
         });
       }
-
     } catch (error: unknown) {
       console.error('Import error:', error);
 
       const errorMessage = error instanceof Error ? error.message : 'Failed to import CSV file';
       toast({
-        title: "Import error",
+        title: 'Import error',
         description: errorMessage,
-        variant: "destructive"
+        variant: 'destructive',
       });
 
       setImportResult({
         success: false,
         imported: 0,
         total_parsed: 0,
-        error: errorMessage
+        error: errorMessage,
       });
     } finally {
       setIsUploading(false);
@@ -247,11 +275,26 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                 CSV Format Requirements
               </h6>
               <ul className="text-sm text-muted-foreground flex flex-col gap-1">
-                <li><strong>Required columns:</strong> name</li>
-                <li><strong>Optional columns:</strong> description, birth_date (YYYY-MM-DD), death_date (YYYY-MM-DD), is_living (true/false), profession, nationality, birth_place, image_url, website_url, pronouns, verification_status (verified/pending/disputed), visibility (public/private/draft), is_featured (true/false), fields (comma-separated)</li>
-                <li><strong>Fields:</strong> music, arts, entertainment, sports, politics, activism, science, business, literature, media</li>
-                <li><strong>Date format:</strong> YYYY-MM-DD (e.g., 1947-03-25)</li>
-                <li><strong>Boolean format:</strong> true/false</li>
+                <li>
+                  <strong>Required columns:</strong> name
+                </li>
+                <li>
+                  <strong>Optional columns:</strong> description, birth_date (YYYY-MM-DD),
+                  death_date (YYYY-MM-DD), is_living (true/false), profession, nationality,
+                  birth_place, image_url, website_url, pronouns, verification_status
+                  (verified/pending/disputed), visibility (public/private/draft), is_featured
+                  (true/false), fields (comma-separated)
+                </li>
+                <li>
+                  <strong>Fields:</strong> music, arts, entertainment, sports, politics, activism,
+                  science, business, literature, media
+                </li>
+                <li>
+                  <strong>Date format:</strong> YYYY-MM-DD (e.g., 1947-03-25)
+                </li>
+                <li>
+                  <strong>Boolean format:</strong> true/false
+                </li>
               </ul>
 
               <Button variant="ghost" size="sm" onClick={downloadTemplate}>
@@ -282,9 +325,9 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
               <CardContent>
                 <h6 className="text-base font-semibold mb-2">Preview: detected entity types</h6>
                 <p className="text-sm text-muted-foreground mb-4">
-                  {preview.totalRows} rows in <strong>{preview.file.name}</strong>. The
-                  AI validator will reject any row whose detected type doesn't
-                  match <strong>{EXPECTED_KIND}</strong>.
+                  {preview.totalRows} rows in <strong>{preview.file.name}</strong>. The AI validator
+                  will reject any row whose detected type doesn't match{' '}
+                  <strong>{EXPECTED_KIND}</strong>.
                 </p>
 
                 <div className="flex flex-wrap gap-4 mb-4">
@@ -294,9 +337,12 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                       <div
                         className="text-xl font-bold"
                         style={{
-                          color: k === EXPECTED_KIND
-                            ? 'hsl(var(--success))'
-                            : (preview.histogram[k] > 0 ? 'hsl(var(--warning))' : 'hsl(var(--muted-foreground))'),
+                          color:
+                            k === EXPECTED_KIND
+                              ? 'hsl(var(--success))'
+                              : preview.histogram[k] > 0
+                                ? 'hsl(var(--warning))'
+                                : 'hsl(var(--muted-foreground))',
                         }}
                       >
                         {preview.histogram[k]}
@@ -306,11 +352,14 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                 </div>
 
                 {preview.mismatchCount > 0 && (
-                  <div className="p-4 mb-4" style={{ backgroundColor: 'hsl(var(--warning) / 0.15)' }}>
+                  <div
+                    className="p-4 mb-4"
+                    style={{ backgroundColor: 'hsl(var(--warning) / 0.15)' }}
+                  >
                     <p className="text-sm font-semibold mb-2">
-                      ⚠ {preview.mismatchCount} of {preview.totalRows} rows look like
-                      a different entity type than {EXPECTED_KIND}. The validator
-                      will reject these — they will not be inserted.
+                      ⚠ {preview.mismatchCount} of {preview.totalRows} rows look like a different
+                      entity type than {EXPECTED_KIND}. The validator will reject these — they will
+                      not be inserted.
                     </p>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -330,7 +379,8 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                 </span>
                 <ul className="m-0 p-0 list-none max-h-[240px] overflow-y-auto text-sm">
                   {preview.rows.map((r) => {
-                    const mismatch = r.classification.classified_as !== EXPECTED_KIND &&
+                    const mismatch =
+                      r.classification.classified_as !== EXPECTED_KIND &&
                       r.classification.classified_as !== 'unknown' &&
                       r.classification.confidence >= 0.45;
                     return (
@@ -343,9 +393,12 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                         }}
                       >
                         <span className="text-xs">#{r.rowNumber}</span>
-                        <p className="text-sm overflow-hidden text-ellipsis whitespace-nowrap">{r.name}</p>
+                        <p className="text-sm overflow-hidden text-ellipsis whitespace-nowrap">
+                          {r.name}
+                        </p>
                         <span className="text-xs text-right">
-                          {r.classification.classified_as} ({Math.round(r.classification.confidence * 100)}%)
+                          {r.classification.classified_as} (
+                          {Math.round(r.classification.confidence * 100)}%)
                         </span>
                       </li>
                     );
@@ -380,8 +433,13 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
 
                 {importResult.success ? (
                   <div className="flex flex-col gap-2 text-sm">
-                    <p>✅ Successfully imported <strong>{importResult.imported}</strong> personalities</p>
-                    <p>📊 Total personalities processed: <strong>{importResult.total_parsed}</strong></p>
+                    <p>
+                      ✅ Successfully imported <strong>{importResult.imported}</strong>{' '}
+                      personalities
+                    </p>
+                    <p>
+                      📊 Total personalities processed: <strong>{importResult.total_parsed}</strong>
+                    </p>
                     {importResult.errors && importResult.errors.length > 0 && (
                       <div>
                         <p style={{ color: 'hsl(var(--warning))' }}>⚠️ Some rows had errors:</p>

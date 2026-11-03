@@ -106,8 +106,15 @@ SelectLabel.displayName = SelectPrimitive.Label.displayName;
 
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> & {
+    /**
+     * Secondary content shown at the end of the row in the open list only —
+     * e.g. a count. It sits OUTSIDE `ItemText`, which Radix mirrors into the
+     * closed trigger, so the trigger shows the label and nothing else.
+     */
+    aside?: React.ReactNode;
+  }
+>(({ className, children, aside, ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
@@ -125,6 +132,9 @@ const SelectItem = React.forwardRef<
       </SelectPrimitive.ItemIndicator>
     </span>
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    {aside != null && (
+      <span className="ml-auto shrink-0 pl-4 text-xs tabular-nums opacity-70">{aside}</span>
+    )}
   </SelectPrimitive.Item>
 ));
 SelectItem.displayName = SelectPrimitive.Item.displayName;

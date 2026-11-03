@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isValidCompetedIn } from '@/lib/competedInFilter';
 import type { PersonalityFilters, PersonalitySort } from '@/hooks/usePersonalities';
 
 export const SORTS = ['featured', 'az', 'za', 'popular', 'newest'] as const;
@@ -16,9 +17,9 @@ export type View = (typeof VIEWS)[number];
 export const ERAS = {
   'pre-stonewall': { label: 'Pre-Stonewall', min: 1800, max: 1944 },
   'mid-century': { label: 'Mid-century (1945–68)', min: 1945, max: 1968 },
-  'stonewall': { label: 'Stonewall era (1969–80)', min: 1969, max: 1980 },
+  stonewall: { label: 'Stonewall era (1969–80)', min: 1969, max: 1980 },
   'aids-crisis': { label: 'AIDS crisis (1981–96)', min: 1981, max: 1996 },
-  'modern': { label: 'Modern (1997–)', min: 1997, max: 2099 },
+  modern: { label: 'Modern (1997–)', min: 1997, max: 2099 },
 } as const;
 export type EraKey = keyof typeof ERAS;
 
@@ -35,9 +36,29 @@ const letterSchema = z
   .catch(undefined as unknown as string);
 const statusSchema = z.enum(STATUSES).catch(undefined as unknown as Status);
 const boolFlagSchema = z.literal('1').catch(undefined as unknown as '1');
-const querySchema = z.string().trim().min(1).max(100).catch(undefined as unknown as string);
-const professionSchema = z.string().trim().min(1).max(60).catch(undefined as unknown as string);
-const tagSchema = z.string().trim().min(1).max(60).catch(undefined as unknown as string);
+const querySchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(100)
+  .catch(undefined as unknown as string);
+const professionSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(60)
+  .catch(undefined as unknown as string);
+const competedSchema = z
+  .string()
+  .trim()
+  .refine((v) => isValidCompetedIn(v))
+  .catch(undefined as unknown as string);
+const tagSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(60)
+  .catch(undefined as unknown as string);
 
 export interface ParseResult {
   filters: PersonalityFilters;
@@ -70,11 +91,15 @@ export function parseFilters(
   const rawView = searchParams.get('view') ?? undefined;
   const rawEra = searchParams.get('era') ?? undefined;
   const rawTag = searchParams.get('tag') ?? undefined;
+  const rawCompeted = searchParams.get('competed') ?? undefined;
 
   const sort: Sort = rawSort ? (sortSchema.parse(rawSort) ?? 'featured') : 'featured';
   const view: View = rawView ? (viewSchema.parse(rawView) ?? 'grid') : 'grid';
-  const era: EraKey | undefined = rawEra ? (eraSchema.parse(rawEra) as EraKey | undefined) : undefined;
+  const era: EraKey | undefined = rawEra
+    ? (eraSchema.parse(rawEra) as EraKey | undefined)
+    : undefined;
   const tag = rawTag ? tagSchema.parse(rawTag) : undefined;
+  const competed = rawCompeted ? competedSchema.parse(rawCompeted) : undefined;
   const letter = rawLetter ? letterSchema.parse(rawLetter) : undefined;
   const status = rawStatus ? statusSchema.parse(rawStatus) : undefined;
   const featured = rawFeatured ? boolFlagSchema.parse(rawFeatured) : undefined;
@@ -85,9 +110,7 @@ export function parseFilters(
     : undefined;
 
   if (profession && validProfessions) {
-    const match = validProfessions.find(
-      (p) => p.toLowerCase() === profession!.toLowerCase(),
-    );
+    const match = validProfessions.find((p) => p.toLowerCase() === profession!.toLowerCase());
     profession = match ?? undefined;
   }
 
@@ -102,6 +125,7 @@ export function parseFilters(
     birth_year_min: era ? ERAS[era].min : undefined,
     birth_year_max: era ? ERAS[era].max : undefined,
     tag,
+    competed_in: competed,
   };
 
   const known = new Set([
@@ -115,6 +139,7 @@ export function parseFilters(
     'view',
     'era',
     'tag',
+    'competed',
     'page',
   ]);
   const out = serializeFilters(filters);
@@ -144,9 +169,7 @@ export function parseFilters(
 /** Reverse-lookup an EraKey from a min/max year pair, for keeping URL canonical. */
 export function eraFromYears(min?: number, max?: number): EraKey | undefined {
   if (typeof min !== 'number' || typeof max !== 'number') return undefined;
-  return (Object.keys(ERAS) as EraKey[]).find(
-    (k) => ERAS[k].min === min && ERAS[k].max === max,
-  );
+  return (Object.keys(ERAS) as EraKey[]).find((k) => ERAS[k].min === min && ERAS[k].max === max);
 }
 
 export function serializeFilters(
@@ -165,6 +188,7 @@ export function serializeFilters(
   const era = eraFromYears(filters.birth_year_min, filters.birth_year_max);
   if (era) p.set('era', era);
   if (filters.tag) p.set('tag', filters.tag);
+  if (filters.competed_in) p.set('competed', filters.competed_in);
   if (options.view && options.view !== 'grid') p.set('view', options.view);
   return p;
 }
