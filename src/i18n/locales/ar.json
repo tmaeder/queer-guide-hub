@@ -1542,6 +1542,8 @@
     "detail": {
       "eyebrow": "[AR] Venue",
       "closed": "[AR] Permanently closed",
+      "temporarilyClosed": "مغلق مؤقتًا",
+      "presumedClosed": "يُرجّح أنه مغلق",
       "section": {
         "about": "[AR] About",
         "hours": "[AR] Opening hours",

@@ -1536,6 +1536,8 @@
     "detail": {
       "eyebrow": "[ZH] Venue",
       "closed": "[ZH] Permanently closed",
+      "temporarilyClosed": "暂停营业",
+      "presumedClosed": "可能已停业",
       "section": {
         "about": "[ZH] About",
         "hours": "[ZH] Opening hours",
