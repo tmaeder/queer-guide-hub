@@ -90,6 +90,7 @@ export function EntitySingle({
               className="lg:hidden"
             />
             <SingleSectionList sections={sections} />
+            {single.bodyTail}
           </>
         }
         rail={

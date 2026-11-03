@@ -1,4 +1,5 @@
 import React from 'react';
+import { maxPrisonSuffix } from '@/lib/penaltyText';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -130,8 +131,10 @@ export default function LGBTJurisdictionInfo({
                 {crimLegal === false && (crim?.penalty as string) && (
                   <p className="pl-8 text-xs font-medium text-destructive">
                     {t('country.rights.penalty', 'Penalty')}: {crim?.penalty as string}
-                    {crim?.max_prison ? ` (${crim.max_prison as string})` : ''}
-                    {dpRisk === 'confirmed'
+                    {maxPrisonSuffix(crim?.penalty as string, crim?.max_prison)}
+                    {/* The penalty text often already IS "Death Penalty", which
+                        read "Penalty: Death Penalty — death penalty" (Iran). */}
+                    {dpRisk === 'confirmed' && !/death penalty/i.test(crim?.penalty as string)
                       ? ` — ${t('country.rights.deathPenalty', 'death penalty')}`
                       : dpRisk === 'possible'
                         ? ` — ${t('country.rights.deathPenaltyPossible', 'death penalty possible, no legal certainty')}`

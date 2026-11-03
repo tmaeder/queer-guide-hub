@@ -3,6 +3,7 @@
  * Drop into any detail page bottom.
  */
 
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Waypoints } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -36,6 +37,9 @@ interface Props {
    * scraped articles or other entity kinds would be misleading.
    */
   contentTypes?: string[];
+  /** Called with the `type:id` keys this rail shows, so a sibling rail can
+   *  avoid repeating them. */
+  onItemsChange?: (keys: string[]) => void;
 }
 
 function fallbackTheme(type: string): FallbackTheme {
@@ -82,6 +86,7 @@ export function SimilarItems({
   entityTitle,
   className,
   contentTypes,
+  onItemsChange,
 }: Props) {
   const { t } = useTranslation();
   const trackClick = useTrackClick();
@@ -102,6 +107,10 @@ export function SimilarItems({
     return next.slice(0, limit);
   });
   const items = data ?? null;
+  const shownKeys = (items ?? []).map((r) => `${r.content_type}:${r.content_id}`).join(',');
+  useEffect(() => {
+    onItemsChange?.(shownKeys ? shownKeys.split(',') : []);
+  }, [onItemsChange, shownKeys]);
 
   if (error) return null;
   if (items?.length === 0) return null;

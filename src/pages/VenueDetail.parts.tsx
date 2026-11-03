@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { FactGrid } from '@/components/transit/FactGrid';
 import { HoursTable, type HoursRow } from '@/components/transit/HoursTable';
+import { BrandMark } from '@/components/marketplace/BrandMark';
+import { useVenueCategoryLabel } from '@/lib/venueCategories';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { MapInset } from '@/components/transit/MapInset';
 import { PhotoInset } from '@/components/transit/PhotoInset';
@@ -238,6 +240,27 @@ function regularToDayMap(regular: HoursPeriod[]): Record<string, string> {
   return out;
 }
 
+/**
+ * Consecutive days with the same hours share one row: "Mon–Fri 15:00–03:00"
+ * instead of five identical rows. Only CONSECUTIVE days merge, so the order
+ * of the week stays readable ("Mon–Thu", "Fri–Sat", "Sun").
+ *
+ * If a today-row highlight is ever added (`HoursTable`'s `todayIndex`), it
+ * must index the GROUPED rows, not the seven days.
+ */
+export function groupHoursRows(rows: HoursRow[]): HoursRow[] {
+  const out: Array<HoursRow & { last: string }> = [];
+  for (const r of rows) {
+    const prev = out[out.length - 1];
+    if (prev && prev.open === r.open) {
+      prev.last = r.day;
+      continue;
+    }
+    out.push({ ...r, last: r.day });
+  }
+  return out.map(({ last, ...r }) => ({ ...r, day: last === r.day ? r.day : `${r.day}–${last}` }));
+}
+
 export function hasUsableHours(hours: unknown): boolean {
   const shape = asHoursShape(hours);
   if (!shape) return false;
@@ -269,10 +292,12 @@ export function formatHours(hours: unknown) {
       }, {});
 
   if (Object.keys(dayMap).length > 0) {
-    const rows: HoursRow[] = HOURS_DAYS.map((day, index) => ({
-      day: HOURS_DAY_NAMES[index],
-      open: dayMap[day] ?? 'Closed',
-    }));
+    const rows = groupHoursRows(
+      HOURS_DAYS.map((day, index) => ({
+        day: HOURS_DAY_NAMES[index],
+        open: dayMap[day] ?? 'Closed',
+      })),
+    );
     // `todayIndex` is deliberately NOT passed. HOURS_DAYS is Monday-first, and
     // the reader's weekday is not the venue's — a bar in Auckland is already on
     // tomorrow. Highlighting the wrong row is worse than highlighting none, so
@@ -415,14 +440,28 @@ export function VenueBodyLead({ venue }: { venue: VenueWithRelations }) {
           countryName={venue.countries.name ?? ''}
         />
       )}
-      <PhotoInset
-        src={venue.images?.[0] ?? venue.logo_url ?? null}
-        alt={venue.name}
-        fallbackEntityType="venue"
-        fallbackKey={venue.id}
-        priority
-        caption={[venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ') || null}
-      />
+      {/* A PHOTOGRAPH only. The logo used to fall in here when a venue had no
+          photo, and a logo is a small mark: stretched to the hero frame it
+          rendered as a blurred banner (Atlanta Eagle's ~200px logo at
+          ~900px wide). Logo-only venues get the mark at mark size instead. */}
+      {venue.images?.[0] ? (
+        <PhotoInset
+          src={venue.images[0]}
+          alt={venue.name}
+          fallbackEntityType="venue"
+          fallbackKey={venue.id}
+          priority
+          caption={[venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ') || null}
+        />
+      ) : venue.logo_url ? (
+        <BrandMark
+          name={venue.name}
+          logoUrl={venue.logo_url}
+          className="h-24 w-24 rounded-container"
+          monogramClassName="font-display text-headline"
+          padding="p-2.5"
+        />
+      ) : null}
     </>
   );
 }
@@ -469,6 +508,9 @@ export function VenueFacts({ venue, t }: { venue: VenueWithRelations; t: TFuncti
     country: venue.countries?.name,
   });
   const sharedMobility = useSharedMobilityValue(venue.latitude, venue.longitude);
+  // The vocabulary label ("Bar", "Community center"), not the raw slug
+  // ("bar", "community_center") the fact cell used to print.
+  const categoryLabel = useVenueCategoryLabel(venue.category);
   return (
     <FactGrid
       facts={[
@@ -484,7 +526,10 @@ export function VenueFacts({ venue, t }: { venue: VenueWithRelations; t: TFuncti
             : t('venues.detail.country', 'Country'),
           value: cityLabel,
         },
-        { label: t('venues.detail.category', 'Category'), value: venue.category },
+        {
+          label: t('venues.detail.category', 'Category'),
+          value: venue.category ? categoryLabel : null,
+        },
         {
           label: t('venues.detail.price', 'Price'),
           value: getPriceRange(venue.price_range ?? null),

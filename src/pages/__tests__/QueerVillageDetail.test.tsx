@@ -111,11 +111,11 @@ describe('QueerVillageDetail', () => {
     renderPage();
     expect(screen.getByRole('heading', { level: 1, name: 'Chueca' })).toBeInTheDocument();
     expect(screen.getByText('District · Green line')).toBeInTheDocument();
-    // The census renders unconditionally, zeros included — a masthead row that
-    // appears and disappears shifts the page under the reader. Matched
-    // loosely because i18next is not initialised under vitest, so `t` echoes
-    // the default string with `{{n}}` un-interpolated.
-    expect(document.body.textContent).toMatch(/stops · .*departures · Madrid/);
+    // The census row always renders (city and country keep it non-empty), but
+    // zero counts are dropped: with no venues and no events it reads "Madrid ·
+    // Spain", not "0 stops · 0 departures · Madrid".
+    expect(document.body.textContent).toMatch(/Madrid · Spain/);
+    expect(document.body.textContent).not.toMatch(/stops ·|departures ·/);
   });
 
   it('carries the safety layer the village page never had', () => {

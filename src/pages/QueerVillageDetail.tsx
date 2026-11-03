@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { censusCount } from '@/lib/censusParts';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
@@ -54,6 +55,10 @@ const JOIN_SPEC =
 const OUTLINE_ON_INK =
   'inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 
+/** Rows fetched for the stop list and the departures; masthead counts are capped at these. */
+const VILLAGE_VENUE_LIMIT = 24;
+const VILLAGE_EVENT_LIMIT = 12;
+
 export default function QueerVillageDetail() {
   const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
@@ -105,7 +110,7 @@ export default function QueerVillageDetail() {
   // never shown. The stop list made it visible by printing the distance between
   // consecutive stops; the old card grid concealed it.
   const { venues, loading: venuesLoading } = useVenuesQuery(
-    villageId ? { queerVillageId: villageId, limit: 24, railQuality: true } : null,
+    villageId ? { queerVillageId: villageId, limit: VILLAGE_VENUE_LIMIT, railQuality: true } : null,
   );
 
   const venueIdKey = venues.map((v) => v.id).join(',');
@@ -114,7 +119,7 @@ export default function QueerVillageDetail() {
   // venues in this district"; the old query asked the parent city and
   // advertised everything in Madrid as if it were on the Chueca strip.
   const { events } = useEventsQuery(
-    venueIdKey ? { venueIds: venueIdKey.split(','), limit: 12 } : null,
+    venueIdKey ? { venueIds: venueIdKey.split(','), limit: VILLAGE_EVENT_LIMIT } : null,
   );
 
   useEffect(() => {
@@ -291,12 +296,28 @@ export default function QueerVillageDetail() {
         }
       : null;
 
-  // Rendered unconditionally, zeros included. A row that
-  // appears and disappears shifts the masthead under the reader.
-  const census = [
-    t('village.census.stops', '{{n}} stops', { n: venues.length }),
-    t('village.census.departures', '{{n}} departures', { n: events.length }),
+  // The row always renders (a row that appears and disappears shifts the
+  // masthead), but zero counts inside it are dropped, and a list that came back
+  // full is a floor, not a total: Chueca read "24 stops · 0 departures" with 634
+  // more places gated for signed-out readers.
+  //
+  // Unlike the country row this one can drop every count, because the city and
+  // country names follow, so the row is never empty.
+  const countParts: Array<[number, string]> = [
+    [
+      venues.length,
+      t('village.census.stops', '{{n}} stops', {
+        n: censusCount(venues.length, VILLAGE_VENUE_LIMIT),
+      }),
+    ],
+    [
+      events.length,
+      t('village.census.departures', '{{n}} departures', {
+        n: censusCount(events.length, VILLAGE_EVENT_LIMIT),
+      }),
+    ],
   ];
+  const census = countParts.filter(([n]) => n > 0).map(([, label]) => label);
   if (cityName) census.push(cityName);
   if (countryName) census.push(countryName);
 

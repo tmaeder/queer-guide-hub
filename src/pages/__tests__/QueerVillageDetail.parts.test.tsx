@@ -99,6 +99,18 @@ describe('VillageStops — module 05 (stop list)', () => {
     expect(stops[0].walkFromPrevious).toMatch(/^~\d+ m$/);
   });
 
+  it('labels each stop with the category name, not the raw value (Chueca)', () => {
+    const venues = [
+      { id: 'x', name: 'Spain Rubbermen', slug: 'x', category: 'community_center' },
+      { id: 'y', name: 'MadBear', slug: 'y', category: 'event-venue' },
+    ] as never[];
+    const notes = villageStops(venues).map((s) => s.accessNote);
+    expect(notes).toEqual(['Community', 'Event Venue']);
+    renderWithProviders(<VillageStops venues={venues} />);
+    expect(screen.queryByText('community_center')).toBeNull();
+    expect(screen.queryByText('event-venue')).toBeNull();
+  });
+
   it('renders every venue as a stop, in the order given', () => {
     renderWithProviders(<VillageStops venues={stopVenues} />);
     for (const name of ['Plaza de Chueca', 'Calle Hortaleza', 'Unmapped Bar']) {

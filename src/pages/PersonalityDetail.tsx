@@ -29,6 +29,7 @@ export default function PersonalityDetail() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
   const [countryId, setCountryId] = useState<string | null>(null);
+  const [similarKeys, setSimilarKeys] = useState<string[]>([]);
   const { incrementViews } = usePersonalities(false);
 
   const {
@@ -188,12 +189,16 @@ export default function PersonalityDetail() {
             entity={{ type: 'personality', id: personality.id }}
             contentTypes={['personality']}
             className="mt-8"
+            onItemsChange={setSimilarKeys}
           />
+          {/* Skips the people the rail above already shows: on Tchaikovsky
+              both rails listed Cole Porter, Leonard Bernstein and Aaron Copland. */}
           <MoreLikeThisByTag
             entityType="personality"
             entityId={personality.id}
             title="Related by tag"
             className="mt-8"
+            excludeKeys={similarKeys}
           />
         </PageContainer>
       )}

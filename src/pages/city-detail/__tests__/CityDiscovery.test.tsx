@@ -128,6 +128,28 @@ describe('city galleries and filters', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
     expect(screen.getAllByRole('link')).toHaveLength(3);
   });
+  it('lists one event per type flat, in date order, without a heading per event', () => {
+    // Columbus on prod: three upcoming events of three types rendered as
+    // "Other 1", "Pride 1", "Festival 1".
+    wrap(
+      <CityEventsTab
+        locale="en"
+        openLabel="Open"
+        events={[
+          { id: 'p', title: 'Pride', slug: 'p', event_type: 'pride', start_date: '2099-06-19' },
+          { id: 'o', title: 'Monday', slug: 'o', event_type: 'other', start_date: '2099-01-05' },
+          { id: 'f', title: 'Fest', slug: 'f', event_type: 'festival', start_date: '2099-06-20' },
+        ]}
+      />,
+    );
+    expect(screen.queryAllByRole('region')).toHaveLength(0);
+    expect(screen.getAllByRole('link').map((link) => link.getAttribute('aria-label'))).toEqual([
+      'Open — Monday',
+      'Open — Pride',
+      'Open — Fest',
+    ]);
+  });
+
   it('labels ongoing events by their end date rather than presenting a historical start as a departure', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-10-10T12:00:00Z'));
