@@ -198,7 +198,8 @@ export const DESTINATIONS: NavDestination[] = [
  *    already had to be collapsed for exactly that reason.
  * Both are asserted in src/config/__tests__/navigation.test.ts.
  */
-export type IntentId = 'going-out' | 'travelling' | 'meet' | 'glossary' | 'news' | 'shop';
+export type IntentId =
+  'going-out' | 'travelling' | 'meet' | 'rights' | 'glossary' | 'news' | 'shop';
 
 export interface IntentDestination {
   id: IntentId;
@@ -222,6 +223,12 @@ export interface IntentDestination {
   subtitleFallback: string;
   /** Locale-stripped prefixes that light this entry. */
   activePrefixes: string[];
+  /**
+   * Prefixes carved back OUT of activePrefixes, for an intent whose page lives
+   * under another intent's prefix. Rights is at /tags/rights-by-country, so
+   * Knowledge (/tags) excludes it — otherwise both header tabs light at once.
+   */
+  excludePrefixes?: string[];
   /**
    * The three or four browse routes this job actually lands on — the footer's
    * track columns.
@@ -308,6 +315,33 @@ export const INTENT_NAV: IntentDestination[] = [
     ],
   },
   {
+    // Back in the header (2026-11-02, user decision) after #4994 folded it into
+    // Knowledge. The page stays at /tags/rights-by-country — /rights 301s
+    // there — so `to` is the real page, not the redirect.
+    id: 'rights',
+    to: '/tags/rights-by-country',
+    icon: transitIcon('library'),
+    labelKey: 'header.intents.rights.label',
+    fallback: 'Rights',
+    subtitleKey: 'header.intents.rights.subtitle',
+    subtitleFallback: 'LGBTQ+ law and safety, country by country',
+    // /rights stays listed: public/_redirects is inert off Cloudflare, so in
+    // dev and e2e the path reaches the router before its redirect.
+    activePrefixes: ['/tags/rights-by-country', '/rights'],
+    children: [
+      {
+        to: '/tags/rights-by-country',
+        labelKey: 'header.nav.rightsByCountry',
+        fallback: 'Rights by country',
+      },
+      {
+        to: '/tags/rights-by-country/trans',
+        labelKey: 'header.nav.transRights',
+        fallback: 'Trans rights',
+      },
+    ],
+  },
+  {
     // Knowledge combines glossary terms and notable people. Retain the
     // stable glossary intent id for saved preferences and track geometry.
     id: 'glossary',
@@ -317,16 +351,12 @@ export const INTENT_NAV: IntentDestination[] = [
     fallback: 'Knowledge',
     subtitleKey: 'header.intents.knowledge.subtitle',
     subtitleFallback: 'Queer language and the people who shaped us',
-    // Rights by country folded in here from its own intent (2026-11-01); it
-    // lives under /tags so the /tags prefix already lights this entry.
     activePrefixes: ['/tags', '/personalities', '/personality'],
+    // Rights has its own header tab again (2026-11-02) but its page still
+    // lives under /tags, so carve it out here.
+    excludePrefixes: ['/tags/rights-by-country'],
     children: [
       { to: '/tags', labelKey: 'header.nav.tagsAll', fallback: 'All terms' },
-      {
-        to: '/tags/rights-by-country',
-        labelKey: 'header.nav.rightsByCountry',
-        fallback: 'Rights by country',
-      },
       { to: '/personalities', labelKey: 'header.nav.personalities', fallback: 'Personalities' },
       {
         to: '/tags/interactions',
@@ -403,10 +433,12 @@ export const FOOTER_ONLY_DESTINATIONS: (Omit<IntentDestination, 'id'> & { id: 's
 
 /** Path-prefix match against a locale-stripped pathname. */
 export function isIntentActive(
-  intent: Pick<IntentDestination, 'activePrefixes'>,
+  intent: Pick<IntentDestination, 'activePrefixes' | 'excludePrefixes'>,
   path: string,
 ): boolean {
-  return intent.activePrefixes.some((p) => path === p || path.startsWith(`${p}/`));
+  const under = (p: string) => path === p || path.startsWith(`${p}/`);
+  if (intent.excludePrefixes?.some(under)) return false;
+  return intent.activePrefixes.some(under);
 }
 
 /** The intent a locale-stripped pathname belongs to, if any. */
@@ -436,6 +468,7 @@ export const INTENT_SCOPE_BIAS: Record<IntentId, string[]> = {
   // Groups and events are how meeting actually happens here. There is no user
   // index in search, so this deliberately does not pretend to surface people.
   meet: ['group', 'event'],
+  rights: ['country', 'news'],
   glossary: ['tag', 'personality'],
   news: ['news', 'organization'],
   shop: ['marketplace', 'guide'],
@@ -664,6 +697,7 @@ export const INTENT_TRACK: Record<string, 'pink' | 'blue' | 'green' | 'yellow'> 
   'going-out': 'pink',
   travelling: 'blue',
   meet: 'green',
+  rights: 'yellow',
   // Knowledge retains the glossary's established pink line.
   glossary: 'pink',
   // News maps 1:1 to the news content type, so it carries that type's line
