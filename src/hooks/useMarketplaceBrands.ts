@@ -78,7 +78,7 @@ export interface DirectoryBrand {
   /**
    * The maker's ACTIVE listings include adult/explicit ones and no
    * sfw/suggestive one (`99991793435077`, active-only since
-   * `99991793668065` so the flag is the same for every role — staff can read
+   * `99991793675514` so the flag is the same for every role — staff can read
    * inactive listings, the public cannot). Stated by the RPC rather than inferred from a null
    * cover: a coverless maker is usually adult-only (253 of 259 on 2026-10-31),
    * but the other 6 also sell sfw goods that simply lack a usable image, and
