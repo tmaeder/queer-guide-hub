@@ -2827,7 +2827,8 @@
         "lede": "Drag series, pageants and title contests, each with every edition and everyone who competed. Entrants link back to their entries here.",
         "people": "People",
         "peopleIn": "People who competed in: {{type}}",
-        "more": "+{{count}} more"
+        "more": "+{{count}} more",
+        "peopleNone": "No linked people yet in: {{type}}"
       },
       "competedIn": {
         "label": "Competed in",

@@ -29,8 +29,9 @@ interface Props {
  * Grouped by competition type, and each group opens with an "All <type>" item
  * that filters to the whole category. Competitions are offered only when at
  * least one public personality is linked to them (`useCompetedInOptions`), so
- * no option leads to an empty grid. A category with no linked people is not
- * offered either.
+ * no option leads to an empty grid. Every TYPE is listed, though, including
+ * one with nobody linked yet: its "All" item shows 0 and is disabled, so the
+ * list still says the type exists without leading to an empty grid.
  *
  * Competitions are listed alphabetically within each type (see
  * `groupCompetedInOptions`). Each competition and each "All: <type>" row shows its count of linked
@@ -49,7 +50,7 @@ interface Props {
 export function CompetedInSelect({ value, onChange }: Props) {
   useReferenceTaxonomy('competition_category');
   const { t, i18n } = useTranslation();
-  const { data: options = [], isSuccess } = useCompetedInOptions();
+  const { data: options = [] } = useCompetedInOptions();
   const { data: categoryPeople } = useCompetitionCategoryPeople();
   const fmt = (n: number | undefined) => (n == null ? undefined : n.toLocaleString());
 
@@ -57,11 +58,12 @@ export function CompetedInSelect({ value, onChange }: Props) {
     () =>
       groupCompetedInOptions(options, {
         locale: i18n.language,
-        // Without counts we cannot tell an empty category from a populated
-        // one, so every category is offered; with them, empty ones are hidden.
-        hideEmpty: isSuccess && options.length > 0,
+        // Every type is listed, including one with nobody linked yet (drag
+        // kings today): the list is also a key to what the archive covers.
+        // An empty type's "All" item is disabled below rather than hidden.
+        hideEmpty: false,
       }),
-    [options, isSuccess, i18n.language],
+    [options, i18n.language],
   );
 
   const known = useMemo(() => {
@@ -93,7 +95,15 @@ export function CompetedInSelect({ value, onChange }: Props) {
           <SelectGroup key={g.category.id}>
             <SelectSeparator />
             <SelectLabel>{t(g.category.labelKey, g.category.label)}</SelectLabel>
-            <SelectItem value={g.category.id} aside={fmt(categoryPeople?.get(g.category.id))}>
+            <SelectItem
+              value={g.category.id}
+              // Disabled only on a MEASURED zero (counts loaded, no row for
+              // this type), so an outage never greys out the whole list.
+              disabled={categoryPeople != null && !categoryPeople.get(g.category.id)}
+              aside={
+                categoryPeople != null ? fmt(categoryPeople.get(g.category.id) ?? 0) : undefined
+              }
+            >
               {t('pages.personalities.competedIn.allOfType', {
                 defaultValue: 'All: {{type}}',
                 type: t(g.category.labelKey, g.category.label),

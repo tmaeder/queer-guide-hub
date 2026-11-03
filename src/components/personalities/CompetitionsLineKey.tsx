@@ -42,8 +42,10 @@ import { serializeFilters } from '@/lib/personalitiesFilters';
  * type's page.
  *
  * EACH ROW'S HEADER IS TWO LINKS: the type's page, and `/personalities?competed=<type>`
- * — the directory filtered to the people who competed in it. The second is
- * hidden for a type with no linked public personality (drag kings today).
+ * — the directory filtered to the people who competed in it. For a type with
+ * no linked public personality (drag kings today) the row still shows, and the
+ * second cell reads "People 0" as plain text instead of linking to an empty
+ * grid.
  *
  * Counts come from `useCompetitionCategoryCounts`, the same hook the hub uses,
  * so this block and the page it opens cannot disagree. "Counting" means
@@ -141,7 +143,27 @@ export function CompetitionsLineKey() {
                  * loading or unavailable the link stays, because the filter works
                  * without them.
                  */}
-                {(people == null || (people.get(c.id) ?? 0) > 0) && (
+                {people != null && (people.get(c.id) ?? 0) === 0 ? (
+                  // A type with no linked people keeps the same cell, as plain
+                  // text: the row stays the same shape as its neighbours and
+                  // says "nobody yet" outright, without linking to an empty
+                  // grid. Only shown once the counts have loaded, so "0"
+                  // always means a measured zero, never "not loaded".
+                  <span
+                    className="flex shrink-0 flex-col items-end justify-center border-l border-border-hairline px-4 py-2 text-right text-muted-foreground"
+                    aria-label={t('pages.personalities.competitions.peopleNone', {
+                      defaultValue: 'No linked people yet in: {{type}}',
+                      type: t(c.labelKey, c.label),
+                    })}
+                  >
+                    <span aria-hidden className="text-13 font-bold">
+                      {t('pages.personalities.competitions.people', 'People')}
+                    </span>
+                    <span aria-hidden className="text-2xs tabular-nums">
+                      {(0).toLocaleString()}
+                    </span>
+                  </span>
+                ) : (
                   <LocalizedLink
                     to={filterPath(c.id)}
                     aria-label={t('pages.personalities.competitions.peopleIn', {

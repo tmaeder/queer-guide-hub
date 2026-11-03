@@ -64,7 +64,7 @@ describe('CompetitionsLineKey', () => {
     expect(hrefs).toContain('/competitions');
   });
 
-  it('hides the People link only for a type the counts say has nobody linked', () => {
+  it('keeps a type with nobody linked, as an unlinked People 0, never a dead link', () => {
     const [withPeople, empty] = COMPETITION_CATEGORIES;
     people.value = new Map([[withPeople.id, 423]]);
     renderKey();
@@ -77,6 +77,22 @@ describe('CompetitionsLineKey', () => {
       .getAllByRole('link')
       .find((a) => a.getAttribute('href') === `/personalities?competed=${withPeople.id}`)!;
     expect(link.textContent).toContain('423');
+    // The empty type's row is still there, with its zero stated as text.
+    // Every other type has a measured zero here: each row is still rendered,
+    // with its zero stated as text rather than linked.
+    const zeros = screen.getAllByLabelText('pages.personalities.competitions.peopleNone');
+    expect(zeros).toHaveLength(COMPETITION_CATEGORIES.length - 1);
+    for (const z of zeros) {
+      expect(z.tagName).not.toBe('A');
+      expect(z.textContent).toContain('0');
+    }
+  });
+
+  it('never shows a zero while the counts are unknown', () => {
+    renderKey();
+    expect(screen.queryAllByLabelText('pages.personalities.competitions.peopleNone')).toHaveLength(
+      0,
+    );
   });
 
   it('says zero for a loaded category with no rows, and Counting only while loading', () => {

@@ -2634,7 +2634,8 @@
         "lede": "Drag-Serien, Pageants und Titelwettbewerbe, jeweils mit jeder Ausgabe und allen Teilnehmenden. Teilnehmende verlinken auf ihre Einträge hier.",
         "people": "Personen",
         "peopleIn": "Personen, die teilgenommen haben: {{type}}",
-        "more": "+{{count}} weitere"
+        "more": "+{{count}} weitere",
+        "peopleNone": "Noch keine verknüpften Personen in: {{type}}"
       },
       "competedIn": {
         "label": "Teilgenommen an",

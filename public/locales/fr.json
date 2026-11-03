@@ -2638,7 +2638,8 @@
         "lede": "Séries drag, concours de beauté et concours de titres, avec chaque édition et toutes les personnes participantes. Les participant·es renvoient à leur fiche ici.",
         "people": "Personnes",
         "peopleIn": "Personnes ayant participé : {{type}}",
-        "more": "+{{count}} autres"
+        "more": "+{{count}} autres",
+        "peopleNone": "Aucune personne liée pour l’instant : {{type}}"
       },
       "competedIn": {
         "label": "A participé à",

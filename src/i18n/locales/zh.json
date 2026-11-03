@@ -2632,7 +2632,8 @@
         "lede": "变装比赛节目、选美和头衔比赛，收录每一届及所有参赛者。参赛者链接到此处的人物页面。",
         "people": "人物",
         "peopleIn": "参赛人物：{{type}}",
-        "more": "另外{{count}}个"
+        "more": "另外{{count}}个",
+        "peopleNone": "暂无关联人物：{{type}}"
       },
       "competedIn": {
         "label": "参加过的比赛",

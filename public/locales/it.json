@@ -2634,7 +2634,8 @@
         "lede": "Serie drag, concorsi di bellezza e concorsi per titoli, ognuno con ogni edizione e tutte le persone in gara. I concorrenti rimandano alla loro scheda qui.",
         "people": "Persone",
         "peopleIn": "Persone che hanno partecipato a: {{type}}",
-        "more": "+{{count}} altre"
+        "more": "+{{count}} altre",
+        "peopleNone": "Ancora nessuna persona collegata in: {{type}}"
       },
       "competedIn": {
         "label": "Ha partecipato a",
