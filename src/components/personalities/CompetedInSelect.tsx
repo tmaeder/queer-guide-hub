@@ -11,7 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useCompetedInOptions, type CompetedInOption } from '@/hooks/useCompetitions';
+import {
+  useCompetedInOptions,
+  useCompetitionCategoryPeople,
+  type CompetedInOption,
+} from '@/hooks/useCompetitions';
 import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 import { COMPETITION_CATEGORIES } from '@/lib/competitionCategories';
 import { COMPETED_ANY } from '@/lib/competedInFilter';
@@ -33,6 +37,12 @@ interface Props {
  * no option leads to an empty grid. A category with no linked people is not
  * offered either.
  *
+ * Each competition and each "All: <type>" row shows its count of linked
+ * people. The type count is DISTINCT people (from its own RPC), not a sum of
+ * the rows beneath it — a queen on Drag Race and All Stars is one person.
+ * "Any competition" carries no count for the same reason. Counts sit in the
+ * item's `aside`, so the closed trigger shows only the label.
+ *
  * If the options RPC fails, the select still offers "Any competition" and the
  * categories that are part of the static list — those need no counts to work.
  * A value from the URL that is not in the list (a deep link to a competition
@@ -43,6 +53,8 @@ export function CompetedInSelect({ value, onChange }: Props) {
   useReferenceTaxonomy('competition_category');
   const { t } = useTranslation();
   const { data: options = [], isSuccess } = useCompetedInOptions();
+  const { data: categoryPeople } = useCompetitionCategoryPeople();
+  const fmt = (n: number | undefined) => (n == null ? undefined : n.toLocaleString());
 
   const groups = useMemo(() => {
     const byCategory = new Map<string, CompetedInOption[]>();
@@ -86,14 +98,14 @@ export function CompetedInSelect({ value, onChange }: Props) {
           <SelectGroup key={g.category.id}>
             <SelectSeparator />
             <SelectLabel>{t(g.category.labelKey, g.category.label)}</SelectLabel>
-            <SelectItem value={g.category.id}>
+            <SelectItem value={g.category.id} aside={fmt(categoryPeople?.get(g.category.id))}>
               {t('pages.personalities.competedIn.allOfType', {
                 defaultValue: 'All: {{type}}',
                 type: t(g.category.labelKey, g.category.label),
               })}
             </SelectItem>
             {g.items.map((i) => (
-              <SelectItem key={i.slug} value={i.slug}>
+              <SelectItem key={i.slug} value={i.slug} aside={fmt(i.people)}>
                 {i.name}
               </SelectItem>
             ))}
