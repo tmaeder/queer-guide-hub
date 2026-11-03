@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { censusCount, censusParts } from '@/lib/censusParts';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -63,6 +64,9 @@ import { CountryDiscoveryGallery } from '@/components/country/CountryDiscoveryGa
 const FOOTER_LINK =
   'inline-flex min-h-12 items-center gap-2 rounded-element bg-surface-container px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
+/** Rows fetched for each teaser list; also what the masthead counts are capped at. */
+const TEASER_LIMIT = 12;
+
 export default function CountryDetail() {
   const { slug: countrySlug } = useParams<{ slug: string }>();
   const { t, i18n } = useTranslation();
@@ -97,11 +101,13 @@ export default function CountryDetail() {
     country: country?.name,
   });
 
-  const { cities } = useOptimizedCities({ countryId: country?.id ?? '', limit: 12 });
+  const { cities } = useOptimizedCities({ countryId: country?.id ?? '', limit: TEASER_LIMIT });
   const { venues } = useVenuesQuery(
-    country?.id ? { countryId: country.id, limit: 12, railQuality: true } : null,
+    country?.id ? { countryId: country.id, limit: TEASER_LIMIT, railQuality: true } : null,
   );
-  const { events } = useEventsQuery(country?.id ? { countryId: country.id, limit: 12 } : null);
+  const { events } = useEventsQuery(
+    country?.id ? { countryId: country.id, limit: TEASER_LIMIT } : null,
+  );
   const { articles } = useNewsArticles(country?.id ? { countryIds: [country.id] } : null);
 
   // Hoisted rather than left inside `CountryLegalRecord`: a component that
@@ -414,13 +420,32 @@ export default function CountryDetail() {
     );
   }
 
-  // Rendered unconditionally, zeros included — a masthead row that appears and
-  // disappears shifts the page under the reader (the /marketplace lesson).
-  const census = [
-    t('country.census.cities', '{{n}} cities', { n: cities.length }),
-    t('country.census.stops', '{{n}} stops', { n: venues.length }),
-    t('country.census.departures', '{{n}} departures', { n: events.length }),
-  ];
+  // The row itself always renders (a masthead row that appears and disappears
+  // shifts the page under the reader — the /marketplace lesson), but a zero
+  // count inside it is dropped. In a criminalising country the venues and
+  // events are hidden from signed-out readers, so Ghana read "4 cities · 0
+  // stops · 0 departures" directly above "27 places here are only shown to
+  // signed-in members": the zero described the gate, not the country.
+  //
+  // The counts are the lengths of lists fetched with `limit: 12`, so a full
+  // list is a floor, not a total: Germany read "12 cities · 12 stops · 12
+  // departures". A full list now reads "12+".
+  const census = censusParts([
+    [
+      cities.length,
+      t('country.census.cities', '{{n}} cities', { n: censusCount(cities.length, TEASER_LIMIT) }),
+    ],
+    [
+      venues.length,
+      t('country.census.stops', '{{n}} stops', { n: censusCount(venues.length, TEASER_LIMIT) }),
+    ],
+    [
+      events.length,
+      t('country.census.departures', '{{n}} departures', {
+        n: censusCount(events.length, TEASER_LIMIT),
+      }),
+    ],
+  ]);
   const countryName = editorial?.name ?? country.name;
   const tripSeedCity =
     cities.find(

@@ -1,4 +1,5 @@
 import { AlertTriangle, Skull } from '@/components/icons';
+import { maxPrisonSuffix } from '@/lib/penaltyText';
 import { isCriminalized, deathPenaltyRisk } from '@/utils/equalityScore';
 
 interface SafetyAlertBannerProps {
@@ -56,7 +57,7 @@ export default function SafetyAlertBanner({
               : risk === 'possible'
                 ? 'Our source names the death penalty as a possible punishment for consensual same-sex sexual activity but records no legal certainty either way. Treat the risk as real. LGBTQ+ travellers face extreme risk.'
                 : penalty
-                  ? `Penalties may include ${penalty.toLowerCase()}${maxPrison ? ` (${maxPrison})` : ''}. LGBTQ+ travellers should exercise extreme caution.`
+                  ? `Penalties may include ${penalty.toLowerCase()}${maxPrisonSuffix(penalty, maxPrison)}. LGBTQ+ travellers should exercise extreme caution.`
                   : 'LGBTQ+ travellers should exercise extreme caution and research local laws before visiting.'}
           </p>
         </div>
