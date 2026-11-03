@@ -3612,7 +3612,8 @@
     "organizations": "[IT] Organizations",
     "guides": "Guide",
     "people": "Conoscere",
-    "showCollapsed": "Mostra i livelli superiori"
+    "showCollapsed": "Mostra i livelli superiori",
+    "competitions": "Competizioni"
   },
   "chat": {
     "react": "Reagisci",
@@ -4193,7 +4194,8 @@
     "photoCredit": "[IT] Photo",
     "eraNavHeading": "[IT] The line, end to end",
     "eraNavStation": "[IT] {{era}} — {{count}} milestones",
-    "emptyTitle": "[IT] No service on this stretch of the line"
+    "emptyTitle": "[IT] No service on this stretch of the line",
+    "eraNavInk": "In nero: le epoche di persecuzione."
   },
   "guides": {
     "hub": {

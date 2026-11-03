@@ -3612,7 +3612,8 @@
     "organizations": "[DE] Organizations",
     "guides": "Guides",
     "people": "Leute treffen",
-    "showCollapsed": "Übergeordnete Ebenen anzeigen"
+    "showCollapsed": "Übergeordnete Ebenen anzeigen",
+    "competitions": "Wettbewerbe"
   },
   "chat": {
     "react": "Reagieren",
@@ -4193,7 +4194,8 @@
     "photoCredit": "[DE] Photo",
     "eraNavHeading": "[DE] The line, end to end",
     "eraNavStation": "[DE] {{era}} — {{count}} milestones",
-    "emptyTitle": "[DE] No service on this stretch of the line"
+    "emptyTitle": "[DE] No service on this stretch of the line",
+    "eraNavInk": "In Schwarz gezeichnet: Epochen der Verfolgung."
   },
   "guides": {
     "hub": {

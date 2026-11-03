@@ -2,6 +2,17 @@ import { PAGE_GUTTER } from './PageContainer';
 import { routeJourneyTrack, routeStationName } from './routeJourney';
 import { cn } from '@/lib/utils';
 
+/**
+ * The ambient family line for pages with no breadcrumb trail: the section's
+ * name at the start, then that section's line.
+ *
+ * It used to carry three stations inside the stretched SVG. They named
+ * nothing (a station is a stop you can read), and a circle in a
+ * `preserveAspectRatio="none"` viewBox renders as an oval. The line also ran a
+ * normalized dash draw-in, which finishes short once the SVG is stretched
+ * non-uniformly, so the track stopped early and left the last station
+ * floating. The line now runs the full width, with no fake stops on it.
+ */
 export function RouteNetworkRail({ pathname }: { pathname: string }) {
   const activeTrack = routeJourneyTrack(pathname);
   const stationName = routeStationName(pathname);
@@ -19,9 +30,6 @@ export function RouteNetworkRail({ pathname }: { pathname: string }) {
             d="M -20 28 C 170 10 320 42 470 27 C 620 12 740 40 920 22"
             pathLength="1"
           />
-          <circle className="route-network-rail__station" cx="178" cy="20" r="7" />
-          <circle className="route-network-rail__interchange" cx="470" cy="27" r="11" />
-          <circle className="route-network-rail__station" cx="744" cy="31" r="7" />
         </svg>
       </div>
     </div>

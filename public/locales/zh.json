@@ -3610,7 +3610,8 @@
     "organizations": "[ZH] Organizations",
     "guides": "指南",
     "people": "认识朋友",
-    "showCollapsed": "显示上级层级"
+    "showCollapsed": "显示上级层级",
+    "competitions": "比赛"
   },
   "chat": {
     "react": "回应",
@@ -4191,7 +4192,8 @@
     "photoCredit": "[ZH] Photo",
     "eraNavHeading": "[ZH] The line, end to end",
     "eraNavStation": "[ZH] {{era}} — {{count}} milestones",
-    "emptyTitle": "[ZH] No service on this stretch of the line"
+    "emptyTitle": "[ZH] No service on this stretch of the line",
+    "eraNavInk": "黑色线段表示受迫害的时代。"
   },
   "guides": {
     "hub": {

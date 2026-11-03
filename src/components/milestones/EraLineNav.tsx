@@ -1,12 +1,10 @@
-import type { CSSProperties } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { StationRing } from '@/components/transit/StationRing';
 import { HISTORY_ERAS, eraRangeLabel, type HistoryEra } from '@/config/historyEras';
-import { isRtlLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
-import { eraStroke, horizontalLine, pct, verticalLine } from './eraLineGeometry';
+import { eraStroke, verticalLine } from './eraLineGeometry';
 
 /**
  * The ten curated eras drawn as ten stations on the pink line — /history's
@@ -32,16 +30,13 @@ import { eraStroke, horizontalLine, pct, verticalLine } from './eraLineGeometry'
  * an empty band.
  */
 export function EraLineNav({ counts }: { counts: Map<string, number> | undefined }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { hash } = useLocation();
-  // `i18n.language`, not `i18n.dir()` — the latter reads `resolvedLanguage` and
-  // disagrees with the `<html dir>` the page actually renders under when a
-  // bundle fails to load.
-  const rtl = isRtlLocale(i18n.language);
+  // RTL needs no code here: the grid follows the document direction and each
+  // gap's SVG flips its own drawing.
   const eras = HISTORY_ERAS.filter((e) => (counts?.get(e.slug) ?? 1) > 0);
   if (eras.length < 2) return null;
 
-  const h = horizontalLine(eras.length);
   const v = verticalLine(eras.length);
 
   return (
@@ -54,49 +49,16 @@ export function EraLineNav({ counts }: { counts: Map<string, number> | undefined
           {t('milestones.eraNavHeading', 'The line, end to end')}
         </h2>
 
-        {/* Stage height has to clear BOTH lanes: a plate is ~120px tall (p-4 +
-            range line + a two-line rank-4 title + the count) and sits 24px off
-            the line, so the below-lane needs 50% + 24 + 120 to stay inside the
-            band. 240px clipped it into the next section. */}
-        <div className="relative mt-6 lg:mt-10 lg:h-[340px]">
-          {/* Desktop. The band stretches to the container width, so the aspect
-              ratio is unlocked and the stroke is pinned — otherwise a 1400px
-              line would be proportionally tall and the horizontal stretch
-              would fatten the stroke with it. */}
-          <svg
-            viewBox={h.viewBox}
-            preserveAspectRatio="none"
-            className="absolute inset-0 hidden h-full w-full lg:block"
-            aria-hidden
-          >
-            {/* Arabic mirrors the GEOMETRY, not the element. An
-                `rtl:-scale-x-100` on the stage flips each station's own
-                centring translate a second time and lands every ring off its
-                line (measured at 32px on IntentMap), so the SVG mirrors itself
-                internally and the plates take mirrored percentages — ordinary
-                physical `left` the whole way down, and no type is ever
-                reversed because nothing is scaled. */}
-            <g
-              fill="none"
-              strokeWidth={7}
-              strokeLinecap="butt"
-              transform={rtl ? `translate(${h.w},0) scale(-1,1)` : undefined}
-            >
-              {h.segments.map((d, i) => (
-                <path
-                  key={eras[i].slug}
-                  d={d}
-                  stroke={eraStroke(eras[i])}
-                  vectorEffect="non-scaling-stroke"
-                />
-              ))}
-            </g>
-          </svg>
-
+        {/* Desktop is a strip map: one evenly spaced station per era, each
+            label directly under its own station, the line between them drawn
+            per gap. It replaced a 340px band where the line swung top to
+            bottom between stations and 192px plates alternated above and
+            below it: wider than the ~130px between stations, so they covered
+            the line and each other, and a plate's station was hard to find.
+            Phones keep the vertical line and row plates below. */}
+        <div className="relative mt-6 lg:mt-10">
           {/* Mobile/tablet. Fixed 40px gutter, user units == CSS px, so nothing
-              stretches and nothing deforms — which is why this line can bend
-              where IntentMap's vertical rail had to fall back to a straight
-              bar. */}
+              stretches and nothing deforms. */}
           <svg
             width={v.w}
             height={v.h}
@@ -111,81 +73,90 @@ export function EraLineNav({ counts }: { counts: Map<string, number> | undefined
             </g>
           </svg>
 
-          <ol className="m-0 flex list-none flex-col p-0 lg:absolute lg:inset-0 lg:block">
+          <ol
+            className="m-0 flex list-none flex-col p-0 lg:grid"
+            style={{ gridTemplateColumns: `repeat(${eras.length}, minmax(0, 1fr))` }}
+          >
             {eras.map((era, i) => (
               <EraStation
                 key={era.slug}
                 era={era}
+                next={eras[i + 1]}
+                flip={i % 2 === 1}
                 count={counts?.get(era.slug)}
-                sx={pct(rtl ? h.w - h.stations[i].x : h.stations[i].x, h.w)}
-                sy={pct(h.stations[i].y, h.h)}
-                lane={i % 2 === 0 ? 'above' : 'below'}
-                edge={
-                  i === (rtl ? eras.length - 1 : 0)
-                    ? 'left'
-                    : i === (rtl ? 0 : eras.length - 1)
-                      ? 'right'
-                      : undefined
-                }
                 current={hash === `#era-${era.slug}`}
               />
             ))}
           </ol>
         </div>
+
+        {/* The ink stretches are deliberate; say so, or they read as a second
+            line. */}
+        <p className="mt-6 flex items-center gap-2 text-13 text-muted-foreground">
+          <span aria-hidden className="inline-block h-1.5 w-6 rounded-full bg-foreground" />
+          {t('milestones.eraNavInk', 'Drawn in ink: eras of persecution.')}
+        </p>
       </PageContainer>
     </nav>
   );
 }
 
+/** Wave depth across one gap, in px either side of the line. */
+const AMP = 9;
+
 function EraStation({
   era,
+  next,
+  flip,
   count,
-  sx,
-  sy,
-  lane,
-  edge,
   current,
 }: {
   era: HistoryEra;
+  /** The era after this one; the gap to it is drawn in THIS era's stroke. */
+  next: HistoryEra | undefined;
+  flip: boolean;
   count: number | undefined;
-  sx: string;
-  sy: string;
-  lane: 'above' | 'below';
-  /** The outermost plates align to their station instead of centring on it,
-   *  so a 192px plate never hangs past the page column. */
-  edge?: 'left' | 'right';
   current: boolean;
 }) {
   const { t } = useTranslation();
   const label = t(era.titleKey);
+  const a = flip ? -AMP : AMP;
 
   return (
-    <li
-      style={{ '--sx': sx, '--sy': sy } as CSSProperties}
-      className={cn(
-        'group relative flex items-center gap-2',
-        'lg:absolute lg:left-[var(--sx)] lg:top-[var(--sy)] lg:block lg:h-0 lg:w-0 lg:gap-0',
+    <li className="group relative flex items-center gap-2 lg:flex-col lg:items-center lg:gap-2">
+      {/* Desktop track: one gentle S from this ring's centre to the next. The
+          box spans ring centre to ring centre, so a station cannot sit off
+          its line. Hidden below lg, where the vertical SVG above draws it. */}
+      {next && (
+        <svg
+          aria-hidden
+          focusable="false"
+          viewBox="0 0 100 24"
+          preserveAspectRatio="none"
+          className="pointer-events-none absolute start-1/2 top-0 hidden h-6 w-full overflow-visible lg:block rtl:-scale-x-100"
+        >
+          <path
+            d={`M 0 12 C 33 ${12 + a}, 67 ${12 - a}, 100 12`}
+            fill="none"
+            stroke={eraStroke(era)}
+            strokeWidth={7}
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
       )}
-    >
-      {/* The ring is a SIBLING of the link, never inside it: `card-lift`
-          translates the plate on hover, and a ring within would slide off
-          the track with it.
 
-          `h-14 w-10` is not arbitrary — 56px is V_ROW and 40px is V_GUTTER from
-          eraLineGeometry, so centring the ring in this box lands it exactly on
-          the station point the vertical SVG drew. Change one and you must
-          change the other. */}
+      {/* The ring is a SIBLING of the link, never inside it, so a hover lift
+          on the link can never slide the ring off the track. `h-14 w-10` is
+          V_ROW x V_GUTTER from eraLineGeometry: centred in it, the ring lands
+          on the station point the vertical SVG drew. */}
       <span
         aria-hidden
-        className={cn(
-          'pointer-events-none flex h-14 w-10 shrink-0 items-center justify-center',
-          'lg:absolute lg:left-0 lg:top-0 lg:h-auto lg:w-auto lg:-translate-x-1/2 lg:-translate-y-1/2',
-        )}
+        className="pointer-events-none relative z-10 flex h-14 w-10 shrink-0 items-center justify-center lg:h-6 lg:w-6"
       >
         <StationRing
           state={era.restrained ? 'done' : 'typed'}
           track="pink"
-          className="lg:h-6 lg:w-6 lg:"
+          className="lg:h-6 lg:w-6"
         />
       </span>
 
@@ -198,18 +169,15 @@ function EraStation({
         })}
         className={cn(
           // `no-underline` is load-bearing: the unlayered `li a` rule in
-          // index.css sets display:inline, which collapses the plate and voids
-          // every lg: rule below it.
-          'card-lift flex min-w-0 flex-1 items-baseline gap-2 bg-card px-2 py-1.5 no-underline rounded-container shadow-soft',
-          'lg:absolute lg:left-1/2 lg:w-48 lg:-translate-x-1/2 lg:flex-none lg:flex-col lg:items-start lg:gap-1 lg:p-4',
-          lane === 'above' ? 'lg:bottom-6' : 'lg:top-6',
-          edge === 'left' && 'lg:left-0 lg:translate-x-0',
-          edge === 'right' && 'lg:left-auto lg:right-0 lg:translate-x-0',
-          current && 'bg-foreground text-background',
+          // index.css sets display:inline, which collapses the plate.
+          'card-lift flex min-w-0 flex-1 items-baseline gap-2 rounded-container bg-card px-2 py-1.5 no-underline shadow-soft',
+          // Desktop: a label under its station, not a plate over the line.
+          'lg:w-full lg:flex-none lg:flex-col lg:items-center lg:gap-0.5 lg:rounded-element lg:bg-transparent lg:px-1 lg:py-1 lg:text-center lg:shadow-none',
+          current && 'bg-foreground text-background lg:bg-foreground',
         )}
       >
         <span className="text-2xs uppercase tracking-label opacity-70">{eraRangeLabel(era)}</span>
-        <span className="min-w-0 flex-1 truncate text-title font-bold lg:line-clamp-2 lg:whitespace-normal">
+        <span className="min-w-0 flex-1 truncate text-title font-bold lg:line-clamp-2 lg:whitespace-normal lg:text-15 lg:leading-tight">
           {label}
         </span>
         {count != null && <span className="shrink-0 text-13 font-bold tabular-nums">{count}</span>}

@@ -3646,7 +3646,8 @@
     "organizations": "[RU] Organizations",
     "guides": "Гиды",
     "people": "Знакомства",
-    "showCollapsed": "Показать уровни выше"
+    "showCollapsed": "Показать уровни выше",
+    "competitions": "Конкурсы"
   },
   "chat": {
     "react": "Реакция",
@@ -4227,7 +4228,8 @@
     "photoCredit": "[RU] Photo",
     "eraNavHeading": "[RU] The line, end to end",
     "eraNavStation": "[RU] {{era}} — {{count}} milestones",
-    "emptyTitle": "[RU] No service on this stretch of the line"
+    "emptyTitle": "[RU] No service on this stretch of the line",
+    "eraNavInk": "Чёрным отмечены эпохи преследований."
   },
   "guides": {
     "hub": {

@@ -3612,7 +3612,8 @@
     "organizations": "[PT] Organizations",
     "guides": "Guias",
     "people": "Conhecer",
-    "showCollapsed": "Mostrar os níveis acima"
+    "showCollapsed": "Mostrar os níveis acima",
+    "competitions": "Competições"
   },
   "chat": {
     "react": "Reagir",
@@ -4193,7 +4194,8 @@
     "photoCredit": "[PT] Photo",
     "eraNavHeading": "[PT] The line, end to end",
     "eraNavStation": "[PT] {{era}} — {{count}} milestones",
-    "emptyTitle": "[PT] No service on this stretch of the line"
+    "emptyTitle": "[PT] No service on this stretch of the line",
+    "eraNavInk": "Em preto: épocas de perseguição."
   },
   "guides": {
     "hub": {

@@ -109,60 +109,52 @@ export function RouteLineStage({
       )}
     >
       <>
-          <svg
-            viewBox={h.viewBox}
-            preserveAspectRatio="none"
-            className={cn(
-              'pointer-events-none absolute inset-0 hidden h-full w-full lg:block',
-              animate && 'route-draw',
-            )}
-            aria-hidden
+        <svg
+          viewBox={h.viewBox}
+          preserveAspectRatio="none"
+          className={cn(
+            'pointer-events-none absolute inset-0 hidden h-full w-full lg:block',
+            animate && 'route-draw',
+          )}
+          aria-hidden
+        >
+          <g
+            fill="none"
+            strokeWidth={9}
+            strokeLinecap="butt"
+            transform={rtl ? `translate(${h.w},0) scale(-1,1)` : undefined}
           >
-            <g
-              fill="none"
-              strokeWidth={9}
-              strokeLinecap="butt"
-              transform={rtl ? `translate(${h.w},0) scale(-1,1)` : undefined}
-            >
-              {h.segments.map((d, i) => (
-                <path
-                  key={stations[i].id}
-                  d={d}
-                  // trip = T / blue in routeBulletMap. One accent per context:
-                  // the picker lines are pink, the route is blue, and the hue
-                  // never varies with the user's picks — that would make colour
-                  // encode content state.
-                  stroke="hsl(var(--track-blue))"
-                  pathLength={100}
-                  style={{ '--leg': i } as CSSProperties}
-                  vectorEffect="non-scaling-stroke"
-                />
-              ))}
-            </g>
-          </svg>
+            {h.segments.map((d, i) => (
+              <path
+                key={stations[i].id}
+                d={d}
+                // trip = T / blue in routeBulletMap. One accent per context:
+                // the picker lines are pink, the route is blue, and the hue
+                // never varies with the user's picks — that would make colour
+                // encode content state.
+                stroke="hsl(var(--track-blue))"
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+          </g>
+        </svg>
 
-          <svg
-            width={v.w}
-            height={v.h}
-            viewBox={v.viewBox}
-            className={cn(
-              'pointer-events-none absolute inset-y-0 start-0 lg:hidden',
-              animate && 'route-draw',
-            )}
-            aria-hidden
-          >
-            <g fill="none" strokeWidth={4} strokeLinecap="butt">
-              {v.segments.map((d, i) => (
-                <path
-                  key={stations[i].id}
-                  d={d}
-                  stroke="hsl(var(--track-blue))"
-                  pathLength={100}
-                  style={{ '--leg': i } as CSSProperties}
-                />
-              ))}
-            </g>
-          </svg>
+        <svg
+          width={v.w}
+          height={v.h}
+          viewBox={v.viewBox}
+          className={cn(
+            'pointer-events-none absolute inset-y-0 start-0 lg:hidden',
+            animate && 'route-draw route-draw-y',
+          )}
+          aria-hidden
+        >
+          <g fill="none" strokeWidth={4} strokeLinecap="butt">
+            {v.segments.map((d, i) => (
+              <path key={stations[i].id} d={d} stroke="hsl(var(--track-blue))" />
+            ))}
+          </g>
+        </svg>
       </>
 
       {/* <ol>, not <ul> — a route is ordered, and DOM order is route order is
@@ -170,10 +162,7 @@ export function RouteLineStage({
       <ol
         id="route-stations"
         aria-label={t('trips.discover.route.stopsAria', 'Stops on this line, in order')}
-        className={cn(
-          'm-0 flex list-none flex-col p-0',
-          'lg:absolute lg:inset-0 lg:block',
-        )}
+        className={cn('m-0 flex list-none flex-col p-0', 'lg:absolute lg:inset-0 lg:block')}
       >
         {stations.map((station, i) => (
           <StationPlate

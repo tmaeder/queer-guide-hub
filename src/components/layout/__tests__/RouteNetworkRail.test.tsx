@@ -9,8 +9,9 @@ describe('RouteNetworkRail', () => {
     const rail = container.querySelector('.route-network-rail');
     expect(rail).toHaveClass('route-network-rail--pink');
     expect(container.querySelectorAll('.route-network-rail__track')).toHaveLength(1);
-    expect(container.querySelectorAll('.route-network-rail__station')).toHaveLength(2);
-    expect(container.querySelector('.route-network-rail__interchange')).toBeInTheDocument();
+    // No unlabelled stations: a stop on this rail would name nothing, and a
+    // circle in the stretched SVG renders as an oval.
+    expect(container.querySelectorAll('svg circle')).toHaveLength(0);
     expect(container).toHaveTextContent('venues');
   });
 });

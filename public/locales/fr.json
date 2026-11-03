@@ -3616,7 +3616,8 @@
     "organizations": "[FR] Organizations",
     "guides": "Guides",
     "people": "Rencontrer",
-    "showCollapsed": "Afficher les niveaux supérieurs"
+    "showCollapsed": "Afficher les niveaux supérieurs",
+    "competitions": "Compétitions"
   },
   "chat": {
     "react": "Réagir",
@@ -4197,7 +4198,8 @@
     "photoCredit": "[FR] Photo",
     "eraNavHeading": "[FR] The line, end to end",
     "eraNavStation": "[FR] {{era}} — {{count}} milestones",
-    "emptyTitle": "[FR] No service on this stretch of the line"
+    "emptyTitle": "[FR] No service on this stretch of the line",
+    "eraNavInk": "En noir : les périodes de persécution."
   },
   "guides": {
     "hub": {

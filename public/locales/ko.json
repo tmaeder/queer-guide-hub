@@ -3610,7 +3610,8 @@
     "organizations": "단체",
     "guides": "가이드",
     "people": "사람 만나기",
-    "showCollapsed": "상위 단계 보기"
+    "showCollapsed": "상위 단계 보기",
+    "competitions": "대회"
   },
   "chat": {
     "react": "반응",
@@ -4191,7 +4192,8 @@
     "photoCredit": "사진",
     "eraNavHeading": "노선 처음부터 끝까지",
     "eraNavStation": "{{era}}, 이정표 {{count}} 개",
-    "emptyTitle": "이 구간은 운행이 없어요"
+    "emptyTitle": "이 구간은 운행이 없어요",
+    "eraNavInk": "검은 구간은 박해의 시대입니다."
   },
   "guides": {
     "hub": {
