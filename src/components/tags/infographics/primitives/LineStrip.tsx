@@ -39,7 +39,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { TRACK_BG } from '@/components/transit/routeBulletMap';
-import type { InfographicViewProps } from '../types';
+import type { InfographicViewProps, Track } from '../types';
 import { nextPicks, type Picks, type StripLine } from './lineStripModel';
 
 export type { StripLine, StripStop } from './lineStripModel';
@@ -53,6 +53,14 @@ export interface LineStripProps extends InfographicViewProps {
   readoutNoteFallback: string;
   renderTermChip: (slug: string) => React.ReactNode;
 }
+
+/** Literal class names so Tailwind emits them; `border-track-${t}` would not. */
+const TRACK_BORDER: Record<Track, string> = {
+  pink: 'border-track-pink',
+  blue: 'border-track-blue',
+  green: 'border-track-green',
+  yellow: 'border-track-yellow',
+};
 
 export function LineStrip({
   lines,
@@ -96,7 +104,7 @@ export function LineStrip({
               </p>
 
               <ol
-                className="mt-4 flex list-none flex-col p-0 md:grid md:grid-flow-col md:auto-cols-fr"
+                className="mt-8 flex list-none flex-col p-0 md:grid md:grid-flow-col md:auto-cols-fr"
                 data-line={line.id}
               >
                 {line.stops.map((stop, i) => {
@@ -108,6 +116,23 @@ export function LineStrip({
                       {/* Track segment to the next stop. Vertical on narrow
                           screens, horizontal from md up; centred on the ring
                           either way, so a stop can never sit off its line. */}
+                      {/* The lead-in: each line arrives at its first stop
+                          round a bend, so no line is a ruler. Phones: it runs
+                          in along the top from the end side and turns down
+                          into the strip. From md: it drops in from above and
+                          turns along the strip. Either way the stroke ends at
+                          the ring's centre, under the ring. */}
+                      {i === 0 && (
+                        <span
+                          aria-hidden
+                          className={cn(
+                            'absolute block',
+                            'start-[9px] top-[calc(50%-37px)] h-10 w-12 rounded-ss-[20px] border-s-[6px] border-t-[6px]',
+                            'md:start-auto md:end-1/2 md:top-[-25px] md:w-16 md:rounded-ss-none md:rounded-es-[20px] md:border-t-0 md:border-b-[6px]',
+                            TRACK_BORDER[line.track],
+                          )}
+                        />
+                      )}
                       {!last && (
                         <span
                           aria-hidden
