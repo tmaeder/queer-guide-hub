@@ -4861,17 +4861,19 @@
       "consentFlow": {
         "title": "The line that stops",
         "caption": "Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
-        "summary": "A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
+        "summary": "One line with stations. Not asking, and anything that is not a clear yes, leave the line on off-ramps that end at buffer stops. Capacity is a speed-restriction section rather than a yes/no signal. The line does not end in approval. It loops back to the check-in, which can be answered again at any time.",
         "tableCaption": "Every stop on the line, and where it leads",
         "groupLabel": "Stops on the line",
         "hint": "Select any stop to light up the route that reaches it.",
+        "route": "Route",
+        "restriction": "Speed restriction",
         "node": {
           "start": "You want to do something with someone",
           "asked": "Have you asked?",
           "notAsked": "Guessing is not consent",
           "clearYes": "Was the answer a clear yes?",
           "notAYes": "No, maybe, or nothing",
-          "capacity": "Speed restriction: can everyone actually decide?",
+          "capacity": "Can everyone actually decide?",
           "checkin": "Still yes, right now?",
           "stopNow": "Stop",
           "go": "Clear to proceed, for now"

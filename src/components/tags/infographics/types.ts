@@ -36,7 +36,7 @@ export type { Track };
 
 export type Archetype =
   | 'line-strip'
-  | 'flow-graph'
+  | 'branch-line'
   | 'zone-map'
   | 'card-catalog'
   | 'compare-matrix'

@@ -4808,39 +4808,41 @@
         }
       },
       "consentFlow": {
-        "title": "[DE] The line that stops",
-        "caption": "[DE] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
-        "summary": "[DE] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
-        "tableCaption": "[DE] Every stop on the line, and where it leads",
-        "groupLabel": "[DE] Stops on the line",
-        "hint": "[DE] Select any stop to light up the route that reaches it.",
+        "title": "Die Linie, die anhält",
+        "caption": "Einvernehmlichkeit als Strecke mit Signalen, einer Langsamfahrstelle und ohne Endstation. Sie führt zurück zur Rückfrage und bleibt dort. Kein rechtlicher Maßstab; das Recht ist je nach Land verschieden.",
+        "summary": "Eine Linie mit Haltestellen. Nicht fragen und alles, was kein klares Ja ist, verlassen die Linie über Abzweige, die an Prellböcken enden. Entscheidungsfähigkeit ist eine Langsamfahrstelle, kein Ja/Nein-Signal. Die Linie endet nicht mit einer Zustimmung. Sie führt zurück zur Rückfrage, die jederzeit neu beantwortet werden kann.",
+        "tableCaption": "Alle Haltestellen der Linie und wohin sie führen",
+        "groupLabel": "Haltestellen der Linie",
+        "hint": "Wähle eine Haltestelle, um den Weg dorthin hervorzuheben.",
+        "route": "Weg",
+        "restriction": "Langsamfahrstelle",
         "node": {
-          "start": "[DE] You want to do something with someone",
-          "asked": "[DE] Have you asked?",
-          "notAsked": "[DE] Guessing is not consent",
-          "clearYes": "[DE] Was the answer a clear yes?",
-          "notAYes": "[DE] No, maybe, or nothing",
-          "capacity": "[DE] Speed restriction: can everyone actually decide?",
-          "checkin": "[DE] Still yes, right now?",
-          "stopNow": "[DE] Stop",
-          "go": "[DE] Clear to proceed, for now"
+          "start": "Du willst mit jemandem etwas machen",
+          "asked": "Hast du gefragt?",
+          "notAsked": "Raten ist keine Zustimmung",
+          "clearYes": "War die Antwort ein klares Ja?",
+          "notAYes": "Nein, vielleicht oder nichts",
+          "capacity": "Können alle wirklich entscheiden?",
+          "checkin": "Immer noch ja, genau jetzt?",
+          "stopNow": "Stopp",
+          "go": "Freie Fahrt, für den Moment"
         },
         "note": {
-          "asked": "[DE] Out loud, or in a way you have both already agreed reads as asking.",
-          "notAsked": "[DE] Not objecting is not agreeing. The line does not start here.",
-          "clearYes": "[DE] Theirs, not one you talked them into.",
-          "notAYes": "[DE] Anything that is not a yes is a no. This is the end of the line.",
-          "capacity": "[DE] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
-          "checkin": "[DE] The signal you come back to. Agreeing earlier is not agreeing now.",
-          "stopNow": "[DE] Anyone can stop anything at any point, for no reason. Then look after each other.",
-          "go": "[DE] And back to the check-in, which is why this line is a loop."
+          "asked": "Laut, oder auf eine Weise, von der ihr beide schon vereinbart habt, dass sie als Frage gilt.",
+          "notAsked": "Nicht widersprechen ist nicht zustimmen. Hier beginnt die Linie nicht.",
+          "clearYes": "Ihres, nicht eines, zu dem du sie überredet hast.",
+          "notAYes": "Alles, was kein Ja ist, ist ein Nein. Hier endet die Linie.",
+          "capacity": "Alkohol, Drogen, Erschöpfung, Halbschlaf. Kein Schalter. Wenn du es nicht erkennen kannst, hast du noch keine Antwort.",
+          "checkin": "Das Signal, zu dem du zurückkommst. Vorhin zugestimmt ist nicht jetzt zugestimmt.",
+          "stopNow": "Alle können jederzeit alles beenden, ohne Grund. Danach kümmert euch umeinander.",
+          "go": "Und zurück zur Rückfrage, deshalb ist diese Linie eine Schleife."
         },
         "edge": {
-          "no": "[DE] No",
-          "yes": "[DE] Yes",
-          "notAYes": "[DE] Not a yes",
-          "noOrUnsure": "[DE] No, or unsure",
-          "again": "[DE] And again, any time"
+          "no": "Nein",
+          "yes": "Ja",
+          "notAYes": "Kein Ja",
+          "noOrUnsure": "Nein oder unsicher",
+          "again": "Und wieder, jederzeit"
         }
       }
     }

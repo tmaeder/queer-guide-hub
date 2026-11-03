@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { fourLinesMeta } from '../figures/fourLines/meta';
 import { consentFlowMeta } from '../figures/consentFlow/meta';
 import { LINES } from '../figures/fourLines/data';
-import { NODES, EDGES } from '../figures/consentFlow/data';
+import { STATIONS, STOPS } from '../figures/consentFlow/data';
 
 /**
  * The drift guard.
@@ -46,22 +46,21 @@ describe('data table drift', () => {
     });
   });
 
-  it('The Line That Stops: one row per stop', () => {
+  it('The Line That Stops: one row per stop, in reading order', () => {
     const table = consentFlowMeta.dataTable();
-    expect(table.rows).toHaveLength(NODES.length);
+    expect(table.rows).toHaveLength(STOPS.length);
     table.rows.forEach((row, i) => {
-      expect(row[0]).toBe(NODES[i].labelFallback);
+      expect(row[0]).toBe(STOPS[i].labelFallback);
     });
   });
 
-  it('The Line That Stops: a stop with nowhere to go says so, rather than leaving a blank', () => {
+  it('The Line That Stops: every off-ramp end says it is the end of the line', () => {
     const table = consentFlowMeta.dataTable();
-    NODES.forEach((n, i) => {
-      if (n.kind !== 'outcome') return;
-      const hasOnward = EDGES.some((e) => e.from === n.id);
-      if (hasOnward) return;
+    for (const station of STATIONS) {
+      if (!station.branch) continue;
+      const i = STOPS.findIndex((s) => s.id === station.branch!.to.id);
       expect(table.rows[i][3]).toBe('End of the line');
-    });
+    }
   });
 
   it('The Line That Stops: "clear to proceed" is NOT an end of the line', () => {
@@ -70,16 +69,16 @@ describe('data table drift', () => {
     // once. Ours loops back to the check-in — and the accessible table has to
     // carry that too, or a reader using it gets the version we rejected.
     const table = consentFlowMeta.dataTable();
-    const i = NODES.findIndex((n) => n.id === 'go');
+    const i = STOPS.findIndex((n) => n.id === 'go');
     expect(table.rows[i][3]).not.toBe('End of the line');
     expect(table.rows[i][3]).toContain('Still yes, right now?');
   });
 
-  it('every note authored on a node survives into the table', () => {
+  it('every note authored on a stop survives into the table', () => {
     // The notes carry the reasons. A table listing labels alone would drop
     // exactly the content that makes the diagram worth reading.
     const table = consentFlowMeta.dataTable();
-    NODES.forEach((n, i) => {
+    STOPS.forEach((n, i) => {
       if (!n.noteFallback) return;
       expect(table.rows[i][2]).toBe(n.noteFallback);
     });

@@ -14,9 +14,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render } from '@testing-library/react';
 import i18n from '@/i18n';
-import { FlowGraph } from '../FlowGraph';
+import { BranchLine } from '../BranchLine';
 import { LineStrip } from '../LineStrip';
-import { NODES, EDGES, VIEW, PAD } from '../../figures/consentFlow/data';
+import { LOOP, STATIONS, STOPS } from '../../figures/consentFlow/data';
 import { LINES } from '../../figures/fourLines/data';
 
 const baseProps = {
@@ -29,20 +29,17 @@ const baseProps = {
 
 const FOCUSABLE = 'a, button, input, select, textarea, [tabindex], [contenteditable]';
 
-function renderFlow(rtl = false) {
+function renderFlow() {
   return render(
-    <FlowGraph
+    <BranchLine
       {...baseProps}
-      rtl={rtl}
-      nodes={NODES}
-      edges={EDGES}
-      viewBox={VIEW}
-      padX={PAD.x}
-      padY={PAD.y}
-      alignColumns
+      stations={STATIONS}
+      loop={LOOP}
       track="pink"
       groupLabel="Stops on the line"
       hintLabel="Select any stop"
+      routeLabel="Route"
+      restrictionLabel="Speed restriction"
     />,
   );
 }
@@ -69,9 +66,11 @@ describe('no interactive SVG', () => {
     await i18n.changeLanguage('en');
   });
 
-  it('FlowGraph puts no focusable element inside the drawing', () => {
+  it('BranchLine puts no focusable element inside the drawing', () => {
     const { container } = renderFlow();
-    for (const svg of container.querySelectorAll('svg')) {
+    const svgs = container.querySelectorAll('svg');
+    expect(svgs.length).toBeGreaterThan(0);
+    for (const svg of svgs) {
       expect(svg.querySelectorAll(FOCUSABLE)).toHaveLength(0);
     }
   });
@@ -79,7 +78,7 @@ describe('no interactive SVG', () => {
   it('LineStrip puts no focusable element inside its track drawings', () => {
     const { container } = renderLines();
     const svgs = container.querySelectorAll('svg');
-    // A wave per gap plus a lead-in per line, in two layouts. Asserting some
+    // A wave per gap, in two layouts. Asserting some
     // exist keeps the next check from passing over an empty set.
     expect(svgs.length).toBeGreaterThan(0);
     for (const svg of svgs) {
@@ -98,7 +97,7 @@ describe('no interactive SVG', () => {
   it('still exposes a control per stop, outside the SVG', () => {
     const { container } = renderFlow();
     const buttons = container.querySelectorAll('ol button');
-    expect(buttons).toHaveLength(NODES.length);
+    expect(buttons).toHaveLength(STOPS.length);
     for (const b of buttons) expect(b.closest('svg')).toBeNull();
   });
 
@@ -127,15 +126,10 @@ describe('no interactive SVG', () => {
   });
 });
 
-describe('focus order follows the flow', () => {
-  it('lists FlowGraph stops in lane-then-slot order', () => {
+describe('focus order follows the line', () => {
+  it('lists BranchLine stops in reading order: each station, then its off-ramp', () => {
     const { container } = renderFlow();
-    const ids = [...container.querySelectorAll('ol button')].map((b) => b.id.split('-node-')[1]);
-    const byId = new Map(NODES.map((n) => [n.id, n]));
-    for (let i = 1; i < ids.length; i += 1) {
-      const prev = byId.get(ids[i - 1])!;
-      const cur = byId.get(ids[i])!;
-      expect(prev.lane < cur.lane || (prev.lane === cur.lane && prev.slot < cur.slot)).toBe(true);
-    }
+    const ids = [...container.querySelectorAll('ol button')].map((b) => b.id.split('-stop-')[1]);
+    expect(ids).toEqual(STOPS.map((s) => s.id));
   });
 });

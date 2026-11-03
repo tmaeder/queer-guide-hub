@@ -4842,39 +4842,41 @@
         }
       },
       "consentFlow": {
-        "title": "[RU] The line that stops",
-        "caption": "[RU] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
-        "summary": "[RU] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
-        "tableCaption": "[RU] Every stop on the line, and where it leads",
-        "groupLabel": "[RU] Stops on the line",
-        "hint": "[RU] Select any stop to light up the route that reaches it.",
+        "title": "Линия, которая останавливается",
+        "caption": "Согласие как маршрут с сигналами, одним участком ограничения скорости и без конечной станции. Он возвращается к проверке и остаётся там. Это не юридический критерий; законы в разных странах разные.",
+        "summary": "Одна линия со станциями. Если вы не спросили или ответ не был ясным «да», линия уходит на ответвление, которое заканчивается упором. Способность решать — участок ограничения скорости, а не сигнал «да/нет». Линия не заканчивается одобрением. Она возвращается к проверке, на которую можно ответить снова в любой момент.",
+        "tableCaption": "Все остановки линии и куда они ведут",
+        "groupLabel": "Остановки линии",
+        "hint": "Выберите остановку, чтобы подсветить маршрут к ней.",
+        "route": "Маршрут",
+        "restriction": "Ограничение скорости",
         "node": {
-          "start": "[RU] You want to do something with someone",
-          "asked": "[RU] Have you asked?",
-          "notAsked": "[RU] Guessing is not consent",
-          "clearYes": "[RU] Was the answer a clear yes?",
-          "notAYes": "[RU] No, maybe, or nothing",
-          "capacity": "[RU] Speed restriction: can everyone actually decide?",
-          "checkin": "[RU] Still yes, right now?",
-          "stopNow": "[RU] Stop",
-          "go": "[RU] Clear to proceed, for now"
+          "start": "Вы хотите что-то сделать с кем-то",
+          "asked": "Вы спросили?",
+          "notAsked": "Догадка — не согласие",
+          "clearYes": "Ответ был ясным «да»?",
+          "notAYes": "Нет, может быть или ничего",
+          "capacity": "Все ли действительно могут решать?",
+          "checkin": "Всё ещё «да», прямо сейчас?",
+          "stopNow": "Стоп",
+          "go": "Путь свободен, пока что"
         },
         "note": {
-          "asked": "[RU] Out loud, or in a way you have both already agreed reads as asking.",
-          "notAsked": "[RU] Not objecting is not agreeing. The line does not start here.",
-          "clearYes": "[RU] Theirs, not one you talked them into.",
-          "notAYes": "[RU] Anything that is not a yes is a no. This is the end of the line.",
-          "capacity": "[RU] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
-          "checkin": "[RU] The signal you come back to. Agreeing earlier is not agreeing now.",
-          "stopNow": "[RU] Anyone can stop anything at any point, for no reason. Then look after each other.",
-          "go": "[RU] And back to the check-in, which is why this line is a loop."
+          "asked": "Вслух или так, как вы оба заранее договорились считать вопросом.",
+          "notAsked": "Отсутствие возражений — не согласие. Линия начинается не здесь.",
+          "clearYes": "Их собственное, а не то, которое вы выпросили.",
+          "notAYes": "Всё, что не «да», — это «нет». Здесь линия заканчивается.",
+          "capacity": "Алкоголь, наркотики, усталость, полусон. Это не переключатель. Если вы не можете понять, ответа у вас пока нет.",
+          "checkin": "Сигнал, к которому вы возвращаетесь. Согласие раньше — не согласие сейчас.",
+          "stopNow": "Любой может остановить что угодно в любой момент без объяснения причин. Потом позаботьтесь друг о друге.",
+          "go": "И обратно к проверке — поэтому эта линия замкнута."
         },
         "edge": {
-          "no": "[RU] No",
-          "yes": "[RU] Yes",
-          "notAYes": "[RU] Not a yes",
-          "noOrUnsure": "[RU] No, or unsure",
-          "again": "[RU] And again, any time"
+          "no": "Нет",
+          "yes": "Да",
+          "notAYes": "Не «да»",
+          "noOrUnsure": "Нет или не уверены",
+          "again": "И снова, в любой момент"
         }
       }
     }

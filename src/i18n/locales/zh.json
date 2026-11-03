@@ -4806,39 +4806,41 @@
         }
       },
       "consentFlow": {
-        "title": "[ZH] The line that stops",
-        "caption": "[ZH] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
-        "summary": "[ZH] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
-        "tableCaption": "[ZH] Every stop on the line, and where it leads",
-        "groupLabel": "[ZH] Stops on the line",
-        "hint": "[ZH] Select any stop to light up the route that reaches it.",
+        "title": "会停下的线路",
+        "caption": "把同意画成一条有信号、有一段限速区间、没有终点站的线路。它回到确认处并停留在那里。这不是法律标准，各国法律不同。",
+        "summary": "一条有站点的线路。没有询问，或回答不是明确的“愿意”，都会从支线离开，止于车挡。能否做决定是一段限速区间，而不是是/否信号。线路不以同意告终，而是回到随时可以重新回答的确认处。",
+        "tableCaption": "线路上的所有站点及其去向",
+        "groupLabel": "线路站点",
+        "hint": "选择任一站点，即可点亮通往它的路线。",
+        "route": "路线",
+        "restriction": "限速区间",
         "node": {
-          "start": "[ZH] You want to do something with someone",
-          "asked": "[ZH] Have you asked?",
-          "notAsked": "[ZH] Guessing is not consent",
-          "clearYes": "[ZH] Was the answer a clear yes?",
-          "notAYes": "[ZH] No, maybe, or nothing",
-          "capacity": "[ZH] Speed restriction: can everyone actually decide?",
-          "checkin": "[ZH] Still yes, right now?",
-          "stopNow": "[ZH] Stop",
-          "go": "[ZH] Clear to proceed, for now"
+          "start": "你想和某人做点什么",
+          "asked": "你问过了吗？",
+          "notAsked": "猜测不是同意",
+          "clearYes": "回答是明确的“愿意”吗？",
+          "notAYes": "不、也许，或没有回应",
+          "capacity": "每个人真的都能做决定吗？",
+          "checkin": "此刻仍然愿意吗？",
+          "stopNow": "停下",
+          "go": "可以继续，暂时"
         },
         "note": {
-          "asked": "[ZH] Out loud, or in a way you have both already agreed reads as asking.",
-          "notAsked": "[ZH] Not objecting is not agreeing. The line does not start here.",
-          "clearYes": "[ZH] Theirs, not one you talked them into.",
-          "notAYes": "[ZH] Anything that is not a yes is a no. This is the end of the line.",
-          "capacity": "[ZH] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
-          "checkin": "[ZH] The signal you come back to. Agreeing earlier is not agreeing now.",
-          "stopNow": "[ZH] Anyone can stop anything at any point, for no reason. Then look after each other.",
-          "go": "[ZH] And back to the check-in, which is why this line is a loop."
+          "asked": "说出来，或者用你们事先约定算作询问的方式。",
+          "notAsked": "不反对不等于同意。线路不从这里开始。",
+          "clearYes": "是对方自己的意愿，不是你说服来的。",
+          "notAYes": "任何不是“愿意”的回答都是“不愿意”。线路到此为止。",
+          "capacity": "喝酒、用药、疲惫、半睡半醒。这不是开关。如果你无法判断，你就还没有得到回答。",
+          "checkin": "你会一再回到的信号。之前同意不等于现在同意。",
+          "stopNow": "任何人都可以在任何时候无理由地停止任何事。之后照顾好彼此。",
+          "go": "然后回到确认处，所以这条线路是一个环。"
         },
         "edge": {
-          "no": "[ZH] No",
-          "yes": "[ZH] Yes",
-          "notAYes": "[ZH] Not a yes",
-          "noOrUnsure": "[ZH] No, or unsure",
-          "again": "[ZH] And again, any time"
+          "no": "否",
+          "yes": "是",
+          "notAYes": "不是“愿意”",
+          "noOrUnsure": "否，或不确定",
+          "again": "再一次，随时"
         }
       }
     }

@@ -1,10 +1,11 @@
 import { lazyRetry } from '@/utils/lazyRetry';
 import type { InfographicMeta } from '../../types';
-import { EDGES, NODES } from './data';
+import { exitsOf } from '../../primitives/branchLineModel';
+import { LOOP, STATIONS, STOPS } from './data';
 
 export const consentFlowMeta: InfographicMeta = {
   id: 'consent-flow',
-  archetype: 'flow-graph',
+  archetype: 'branch-line',
   // The outcome plates ARE risk statements, so the figure takes the locked
   // trip-safety palette and — by construction of the type — cannot also name
   // a track. The LINE still has a colour; `track` is set on the renderer,
@@ -17,8 +18,8 @@ export const consentFlowMeta: InfographicMeta = {
     'Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.',
   summaryKey: 'tags.figures.consentFlow.summary',
   summaryFallback:
-    'A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.',
-  checkedOn: '2026-09-02',
+    'One line with stations. Not asking, and anything that is not a clear yes, leave the line on off-ramps that end at buffer stops. Capacity is a speed-restriction section rather than a yes/no signal. The line does not end in approval. It loops back to the check-in, which can be answered again at any time.',
+  checkedOn: '2026-11-03',
   // Not adult, and not flagged sensitive: a content note on the definition of
   // consent would be the wrong instinct. The test `TagSafetyCallout` applies
   // is "would a reader be harmed by not noticing this?", and this page fails
@@ -73,15 +74,12 @@ export const consentFlowMeta: InfographicMeta = {
       { key: 'tags.figures.table.detail', fallback: 'Detail' },
       { key: 'tags.figures.table.leadsTo', fallback: 'Leads to' },
     ],
-    rows: NODES.map((n) => [
+    rows: STOPS.map((n) => [
       n.labelFallback,
       n.kind,
       n.noteFallback ?? '',
-      EDGES.filter((e) => e.from === n.id)
-        .map((e) => {
-          const target = NODES.find((x) => x.id === e.to)?.labelFallback ?? e.to;
-          return e.labelFallback ? `${e.labelFallback} → ${target}` : target;
-        })
+      exitsOf(STATIONS, LOOP, n.id)
+        .map((e) => (e.labelFallback ? `${e.labelFallback} → ${e.to}` : e.to))
         .join('; ') || 'End of the line',
     ]),
   }),

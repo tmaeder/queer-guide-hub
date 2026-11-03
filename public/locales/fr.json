@@ -4812,39 +4812,41 @@
         }
       },
       "consentFlow": {
-        "title": "[FR] The line that stops",
-        "caption": "[FR] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
-        "summary": "[FR] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
-        "tableCaption": "[FR] Every stop on the line, and where it leads",
-        "groupLabel": "[FR] Stops on the line",
-        "hint": "[FR] Select any stop to light up the route that reaches it.",
+        "title": "La ligne qui s'arrête",
+        "caption": "Le consentement comme un trajet avec des signaux, un ralentissement et aucun terminus. La ligne revient à la vérification et y reste. Ce n'est pas un critère juridique ; la loi varie selon les pays.",
+        "summary": "Une ligne avec des stations. Ne pas demander, et tout ce qui n'est pas un oui clair, quittent la ligne par des embranchements qui finissent sur des butoirs. La capacité est une section de ralentissement, pas un signal oui/non. La ligne ne se termine pas par un accord. Elle revient à la vérification, à laquelle on peut répondre à nouveau à tout moment.",
+        "tableCaption": "Tous les arrêts de la ligne et où ils mènent",
+        "groupLabel": "Arrêts de la ligne",
+        "hint": "Choisissez un arrêt pour éclairer l'itinéraire qui y mène.",
+        "route": "Itinéraire",
+        "restriction": "Ralentissement",
         "node": {
-          "start": "[FR] You want to do something with someone",
-          "asked": "[FR] Have you asked?",
-          "notAsked": "[FR] Guessing is not consent",
-          "clearYes": "[FR] Was the answer a clear yes?",
-          "notAYes": "[FR] No, maybe, or nothing",
-          "capacity": "[FR] Speed restriction: can everyone actually decide?",
-          "checkin": "[FR] Still yes, right now?",
-          "stopNow": "[FR] Stop",
-          "go": "[FR] Clear to proceed, for now"
+          "start": "Vous voulez faire quelque chose avec quelqu’un",
+          "asked": "Avez-vous demandé ?",
+          "notAsked": "Deviner n’est pas consentir",
+          "clearYes": "La réponse était-elle un oui clair ?",
+          "notAYes": "Non, peut-être, ou rien",
+          "capacity": "Tout le monde peut-il vraiment décider ?",
+          "checkin": "Toujours oui, maintenant ?",
+          "stopNow": "Stop",
+          "go": "Voie libre, pour l’instant"
         },
         "note": {
-          "asked": "[FR] Out loud, or in a way you have both already agreed reads as asking.",
-          "notAsked": "[FR] Not objecting is not agreeing. The line does not start here.",
-          "clearYes": "[FR] Theirs, not one you talked them into.",
-          "notAYes": "[FR] Anything that is not a yes is a no. This is the end of the line.",
-          "capacity": "[FR] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
-          "checkin": "[FR] The signal you come back to. Agreeing earlier is not agreeing now.",
-          "stopNow": "[FR] Anyone can stop anything at any point, for no reason. Then look after each other.",
-          "go": "[FR] And back to the check-in, which is why this line is a loop."
+          "asked": "À voix haute, ou d'une façon dont vous avez déjà convenu qu'elle vaut demande.",
+          "notAsked": "Ne pas s'opposer n'est pas accepter. La ligne ne commence pas ici.",
+          "clearYes": "Le leur, pas un oui que vous leur avez arraché.",
+          "notAYes": "Tout ce qui n'est pas un oui est un non. C'est la fin de la ligne.",
+          "capacity": "Alcool, drogues, épuisement, demi-sommeil. Pas un interrupteur. Si vous ne pouvez pas le savoir, vous n'avez pas encore de réponse.",
+          "checkin": "Le signal auquel on revient. Avoir dit oui avant n'est pas dire oui maintenant.",
+          "stopNow": "Chacun peut tout arrêter à tout moment, sans raison. Ensuite, prenez soin l'un de l'autre.",
+          "go": "Et retour à la vérification, c'est pourquoi cette ligne est une boucle."
         },
         "edge": {
-          "no": "[FR] No",
-          "yes": "[FR] Yes",
-          "notAYes": "[FR] Not a yes",
-          "noOrUnsure": "[FR] No, or unsure",
-          "again": "[FR] And again, any time"
+          "no": "Non",
+          "yes": "Oui",
+          "notAYes": "Pas un oui",
+          "noOrUnsure": "Non, ou pas sûr",
+          "again": "Et encore, à tout moment"
         }
       }
     }

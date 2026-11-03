@@ -4816,39 +4816,41 @@
         }
       },
       "consentFlow": {
-        "title": "[AR] The line that stops",
-        "caption": "[AR] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
-        "summary": "[AR] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
-        "tableCaption": "[AR] Every stop on the line, and where it leads",
-        "groupLabel": "[AR] Stops on the line",
-        "hint": "[AR] Select any stop to light up the route that reaches it.",
+        "title": "الخط الذي يتوقف",
+        "caption": "الموافقة كمسار فيه إشارات ومنطقة تخفيف سرعة واحدة وبلا محطة نهائية. يعود إلى التحقق ويبقى هناك. ليس معيارًا قانونيًا؛ القانون يختلف من بلد إلى آخر.",
+        "summary": "خط واحد بمحطات. عدم السؤال، وكل ما ليس \"نعم\" واضحة، يخرجان من الخط عبر تفرعات تنتهي بمصدّات. القدرة على القرار منطقة تخفيف سرعة وليست إشارة نعم/لا. لا ينتهي الخط بالموافقة، بل يعود إلى التحقق الذي يمكن الإجابة عنه مجددًا في أي وقت.",
+        "tableCaption": "كل محطات الخط وإلى أين تؤدي",
+        "groupLabel": "محطات الخط",
+        "hint": "اختر أي محطة لإبراز المسار الذي يصل إليها.",
+        "route": "المسار",
+        "restriction": "تخفيف السرعة",
         "node": {
-          "start": "[AR] You want to do something with someone",
-          "asked": "[AR] Have you asked?",
-          "notAsked": "[AR] Guessing is not consent",
-          "clearYes": "[AR] Was the answer a clear yes?",
-          "notAYes": "[AR] No, maybe, or nothing",
-          "capacity": "[AR] Speed restriction: can everyone actually decide?",
-          "checkin": "[AR] Still yes, right now?",
-          "stopNow": "[AR] Stop",
-          "go": "[AR] Clear to proceed, for now"
+          "start": "تريد أن تفعل شيئًا مع شخص ما",
+          "asked": "هل سألت؟",
+          "notAsked": "التخمين ليس موافقة",
+          "clearYes": "هل كانت الإجابة \"نعم\" واضحة؟",
+          "notAYes": "لا، أو ربما، أو لا شيء",
+          "capacity": "هل يستطيع الجميع حقًا أن يقرروا؟",
+          "checkin": "هل ما زالت \"نعم\" الآن؟",
+          "stopNow": "توقف",
+          "go": "يمكنك المتابعة، الآن فقط"
         },
         "note": {
-          "asked": "[AR] Out loud, or in a way you have both already agreed reads as asking.",
-          "notAsked": "[AR] Not objecting is not agreeing. The line does not start here.",
-          "clearYes": "[AR] Theirs, not one you talked them into.",
-          "notAYes": "[AR] Anything that is not a yes is a no. This is the end of the line.",
-          "capacity": "[AR] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
-          "checkin": "[AR] The signal you come back to. Agreeing earlier is not agreeing now.",
-          "stopNow": "[AR] Anyone can stop anything at any point, for no reason. Then look after each other.",
-          "go": "[AR] And back to the check-in, which is why this line is a loop."
+          "asked": "بصوت مسموع، أو بطريقة اتفقتما مسبقًا على أنها سؤال.",
+          "notAsked": "عدم الاعتراض ليس موافقة. الخط لا يبدأ من هنا.",
+          "clearYes": "موافقتهم هم، لا موافقة انتزعتها بالإلحاح.",
+          "notAYes": "كل ما ليس \"نعم\" هو \"لا\". هنا ينتهي الخط.",
+          "capacity": "الشرب، المخدرات، الإرهاق، نصف النوم. ليس مفتاحًا. إن لم تستطع أن تعرف، فليس لديك جواب بعد.",
+          "checkin": "الإشارة التي تعود إليها. الموافقة قبل قليل ليست موافقة الآن.",
+          "stopNow": "يمكن لأي شخص أن يوقف أي شيء في أي لحظة دون سبب. ثم اعتنوا ببعضكم.",
+          "go": "ثم العودة إلى التحقق، ولهذا هذا الخط حلقة."
         },
         "edge": {
-          "no": "[AR] No",
-          "yes": "[AR] Yes",
-          "notAYes": "[AR] Not a yes",
-          "noOrUnsure": "[AR] No, or unsure",
-          "again": "[AR] And again, any time"
+          "no": "لا",
+          "yes": "نعم",
+          "notAYes": "ليست نعم",
+          "noOrUnsure": "لا، أو غير متأكد",
+          "again": "ومرة أخرى، في أي وقت"
         }
       }
     }

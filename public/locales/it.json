@@ -4808,39 +4808,41 @@
         }
       },
       "consentFlow": {
-        "title": "[IT] The line that stops",
-        "caption": "[IT] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
-        "summary": "[IT] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
-        "tableCaption": "[IT] Every stop on the line, and where it leads",
-        "groupLabel": "[IT] Stops on the line",
-        "hint": "[IT] Select any stop to light up the route that reaches it.",
+        "title": "La linea che si ferma",
+        "caption": "Il consenso come un percorso con segnali, un rallentamento e nessun capolinea. Torna al controllo e resta lì. Non è un criterio legale; la legge cambia da paese a paese.",
+        "summary": "Una linea con fermate. Non chiedere, e tutto ciò che non è un sì chiaro, escono dalla linea su diramazioni che finiscono contro un respingente. La capacità è un tratto a velocità ridotta, non un segnale sì/no. La linea non termina con un via libera definitivo. Torna al controllo, a cui si può rispondere di nuovo in qualsiasi momento.",
+        "tableCaption": "Tutte le fermate della linea e dove portano",
+        "groupLabel": "Fermate della linea",
+        "hint": "Seleziona una fermata per illuminare il percorso che la raggiunge.",
+        "route": "Percorso",
+        "restriction": "Rallentamento",
         "node": {
-          "start": "[IT] You want to do something with someone",
-          "asked": "[IT] Have you asked?",
-          "notAsked": "[IT] Guessing is not consent",
-          "clearYes": "[IT] Was the answer a clear yes?",
-          "notAYes": "[IT] No, maybe, or nothing",
-          "capacity": "[IT] Speed restriction: can everyone actually decide?",
-          "checkin": "[IT] Still yes, right now?",
-          "stopNow": "[IT] Stop",
-          "go": "[IT] Clear to proceed, for now"
+          "start": "Vuoi fare qualcosa con qualcuno",
+          "asked": "Hai chiesto?",
+          "notAsked": "Indovinare non è consenso",
+          "clearYes": "La risposta è stata un sì chiaro?",
+          "notAYes": "No, forse o niente",
+          "capacity": "Tutti possono davvero decidere?",
+          "checkin": "Ancora sì, proprio ora?",
+          "stopNow": "Stop",
+          "go": "Via libera, per ora"
         },
         "note": {
-          "asked": "[IT] Out loud, or in a way you have both already agreed reads as asking.",
-          "notAsked": "[IT] Not objecting is not agreeing. The line does not start here.",
-          "clearYes": "[IT] Theirs, not one you talked them into.",
-          "notAYes": "[IT] Anything that is not a yes is a no. This is the end of the line.",
-          "capacity": "[IT] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
-          "checkin": "[IT] The signal you come back to. Agreeing earlier is not agreeing now.",
-          "stopNow": "[IT] Anyone can stop anything at any point, for no reason. Then look after each other.",
-          "go": "[IT] And back to the check-in, which is why this line is a loop."
+          "asked": "Ad alta voce, o in un modo che avete già concordato valga come chiedere.",
+          "notAsked": "Non opporsi non è acconsentire. La linea non parte da qui.",
+          "clearYes": "Il loro, non uno che hai strappato insistendo.",
+          "notAYes": "Tutto ciò che non è un sì è un no. Qui finisce la linea.",
+          "capacity": "Alcol, droghe, stanchezza, essere mezzi addormentati. Non è un interruttore. Se non riesci a capirlo, non hai ancora una risposta.",
+          "checkin": "Il segnale a cui torni. Aver detto sì prima non è dire sì adesso.",
+          "stopNow": "Chiunque può fermare qualsiasi cosa in qualsiasi momento, senza motivo. Poi prendetevi cura l’uno dell’altro.",
+          "go": "E di nuovo al controllo, per questo la linea è un anello."
         },
         "edge": {
-          "no": "[IT] No",
-          "yes": "[IT] Yes",
-          "notAYes": "[IT] Not a yes",
-          "noOrUnsure": "[IT] No, or unsure",
-          "again": "[IT] And again, any time"
+          "no": "No",
+          "yes": "Sì",
+          "notAYes": "Non è un sì",
+          "noOrUnsure": "No, o non sicuro",
+          "again": "E di nuovo, in qualsiasi momento"
         }
       }
     }
