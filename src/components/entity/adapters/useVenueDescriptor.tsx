@@ -38,6 +38,7 @@ import {
   hasSocialLinks,
 } from '@/pages/VenueDetail.parts';
 import { buildVenueJsonLd, buildVenueMeta } from '@/pages/VenueDetail.meta';
+import { venueClosureLabel } from '@/lib/venueClosureLabel';
 import type {
   EntityDescriptor,
   EntityDescriptorResult,
@@ -110,7 +111,8 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
 
     const cityName = venue.cities?.name ?? null;
     const countryName = venue.countries?.name ?? null;
-    const isClosed = Boolean(venue.closed_at && new Date(venue.closed_at) <= new Date());
+    const closure = venueClosureLabel(venue);
+    const isClosed = closure !== null;
     const venueEvents = events.filter((e) => e.venue_id === venue.id);
     const lat = typeof venue.latitude === 'number' ? venue.latitude : null;
     const lng = typeof venue.longitude === 'number' ? venue.longitude : null;
@@ -272,7 +274,14 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
       ],
       single: {
         eyebrow: [t('venues.detail.eyebrow', 'Venue'), cityName].filter(Boolean).join(' · '),
-        status: isClosed ? t('venues.detail.closed', 'Permanently closed') : undefined,
+        status:
+          closure === 'temporarily_closed'
+            ? t('venues.detail.temporarilyClosed', 'Temporarily closed')
+            : closure === 'presumed_closed'
+              ? t('venues.detail.presumedClosed', 'Presumed closed')
+              : closure
+                ? t('venues.detail.closed', 'Permanently closed')
+                : undefined,
         track: 'pink',
         bodyLead: (
           <>

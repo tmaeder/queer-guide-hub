@@ -1568,6 +1568,8 @@
     "detail": {
       "eyebrow": "[RU] Venue",
       "closed": "[RU] Permanently closed",
+      "temporarilyClosed": "Временно закрыто",
+      "presumedClosed": "Вероятно, закрыто",
       "section": {
         "about": "[RU] About",
         "hours": "[RU] Opening hours",
