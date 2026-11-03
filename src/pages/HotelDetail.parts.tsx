@@ -1,6 +1,15 @@
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { ParallaxHero } from '@/components/effects/ParallaxHero';
-import { Star, MapPin, Phone, Globe, Mail, DollarSign, ExternalLink, Shield } from '@/components/icons';
+import {
+  Star,
+  MapPin,
+  Phone,
+  Globe,
+  Mail,
+  DollarSign,
+  ExternalLink,
+  Shield,
+} from '@/components/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,7 +38,7 @@ export function useHotelVisibleTags(tags: string[] | null | undefined) {
   const { data } = useTagPreviews(tags ?? []);
   return (data ?? []).map((p) => ({ tag: p.slug, name: p.name }));
 }
-import { getHotelPhotosToShow } from './hotelPhotosUtil';
+import { getHotelGallery, getHotelPhotosToShow } from './hotelPhotosUtil';
 import { AFFILIATE_REL, tagKnownAffiliateUrl } from '@/lib/affiliate/links';
 import { formatPhoneDisplay, formatPhoneHref } from '@/lib/formatPhone';
 import type { Database } from '@/integrations/supabase/types';
@@ -94,6 +103,11 @@ interface HeroProps {
   onContentUpdated?: () => void;
 }
 
+/** Hotel types for which `star_rating` is a hotel classification. */
+export function hasStarClass(hotelType: string | null | undefined): boolean {
+  return hotelType === 'hotel' || hotelType === 'resort';
+}
+
 export function HotelHero({
   hotel,
   cityName,
@@ -102,7 +116,7 @@ export function HotelHero({
   isInTrip,
   onContentUpdated,
 }: HeroProps) {
-  const heroImage = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
+  const heroImage = getHotelGallery(hotel.images)[0] ?? null;
   const heroFallback = getFallbackImage('hotel', hotel.id);
   // Website is only useful when it points somewhere different than the
   // booking URL — otherwise it's a duplicate of "Book Now".
@@ -126,7 +140,9 @@ export function HotelHero({
       <div className="flex justify-between items-start flex-wrap gap-4 mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-2xl font-bold">
+            {/* The page's only h1. It was an h4, so the hotel page had no
+                top-level heading at all. */}
+            <h1 className="font-display text-display leading-none">
               <Editable
                 contentType="hotels"
                 recordId={hotel.id}
@@ -136,7 +152,7 @@ export function HotelHero({
               >
                 {hotel.name}
               </Editable>
-            </h4>
+            </h1>
             {hotel.verified && <Shield className="w-5 h-5" />}
           </div>
           <p className="text-muted-foreground">
@@ -203,7 +219,11 @@ export function HotelHero({
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
-        {hotel.star_rating && (
+        {/* Star CLASS only on a hotel or resort. On a private host listing
+            (bnb, apartment) the imported value is a guest score — "1.0" to
+            "5.0" — and printing it as "5 Stars" sold a spare room as a
+            five-star hotel. */}
+        {hotel.star_rating && hasStarClass(hotel.hotel_type) && (
           <Badge variant="outline" className="gap-1">
             <Star className="w-3.5 h-3.5" style={{ fill: 'currentColor' }} />
             {`${hotel.star_rating} Stars`}
@@ -220,12 +240,8 @@ export function HotelHero({
             same thing in the Tags card below — which is how a reader ended up asking why
             LGBTQ-FRIENDLY appears twice on one page. HotelCard.tsx already routes around
             this flag for the same reason. */}
-        {cityName && (
-          <Badge variant="outline" className="gap-1">
-            <MapPin className="w-3.5 h-3.5" />
-            {`${cityName}${countryName ? `, ${countryName}` : ''}`}
-          </Badge>
-        )}
+        {/* No location chip: the line under the title already says
+            "London, United Kingdom", and so does the breadcrumb. */}
       </div>
     </>
   );

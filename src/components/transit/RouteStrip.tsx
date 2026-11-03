@@ -59,6 +59,7 @@ export function RouteStrip({
   onNavigate,
 }: RouteStripProps) {
   const listRef = useRef<HTMLOListElement | null>(null);
+  const navRef = useRef<HTMLElement | null>(null);
   const lineColor = track ? TRACK_BG[track] : 'bg-foreground';
 
   // Station numbers count only depth-1 stops, matching the `counter-increment`
@@ -67,6 +68,34 @@ export function RouteStrip({
   const numbers = stations.map((s) => ((s.depth ?? 1) === 1 ? ++counter : null));
 
   const activeIndex = stations.findIndex((s) => s.id === activeId);
+
+  // Publish the sticky bar's live height as `--section-bar-h`, which the
+  // section targets (SingleSection, DisclosureSection) use as their
+  // scroll-margin. The root's scroll-padding-top only clears the site header,
+  // so a station jump used to park the section's heading directly under this
+  // bar: measured on prod, the heading's top sat at the header's bottom edge
+  // (66px mobile, 82px desktop) while the bar covered 66-115px. Measured, not
+  // hardcoded, because the bar's height differs by appearance and wrapping,
+  // and a bar hidden at this breakpoint (`lg:hidden`) measures 0, which is
+  // exactly the offset it needs there.
+  useEffect(() => {
+    if (orientation !== 'horizontal') return;
+    const nav = navRef.current;
+    if (!nav || typeof ResizeObserver === 'undefined') return;
+    const root = document.documentElement;
+    const publish = () =>
+      root.style.setProperty(
+        '--section-bar-h',
+        `${Math.ceil(nav.getBoundingClientRect().height)}px`,
+      );
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(nav);
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty('--section-bar-h');
+    };
+  }, [orientation, appearance]);
 
   // Keep the active chip in view on the horizontal bar as the reader scrolls.
   useEffect(() => {
@@ -100,6 +129,7 @@ export function RouteStrip({
   if (orientation === 'horizontal' && appearance === 'stations') {
     return (
       <nav
+        ref={navRef}
         aria-label={label}
         className={cn(`sticky ${STICKY_UNDER_HEADER} z-30 bg-background`, className)}
       >
@@ -161,6 +191,7 @@ export function RouteStrip({
   if (orientation === 'horizontal') {
     return (
       <nav
+        ref={navRef}
         aria-label={label}
         /* Same grammar as SectionNav: solid paper, an ink rule that IS the
            band's edge, and a bleed that follows PAGE_GUTTER at every

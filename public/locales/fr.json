@@ -1540,6 +1540,8 @@
     "detail": {
       "eyebrow": "[FR] Venue",
       "closed": "[FR] Permanently closed",
+      "temporarilyClosed": "Fermé temporairement",
+      "presumedClosed": "Probablement fermé",
       "section": {
         "about": "[FR] About",
         "hours": "[FR] Opening hours",

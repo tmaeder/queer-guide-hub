@@ -1536,6 +1536,8 @@
     "detail": {
       "eyebrow": "[IT] Venue",
       "closed": "[IT] Permanently closed",
+      "temporarilyClosed": "Temporaneamente chiuso",
+      "presumedClosed": "Probabilmente chiuso",
       "section": {
         "about": "[IT] About",
         "hours": "[IT] Opening hours",

@@ -342,7 +342,7 @@ export default function EventDetail() {
           // first heading before checking for a body; both halves are fixed.
           id: 'going',
           title: t('events.detail.section.going', "Who's going"),
-          content: hasWhoIsGoingContent(event, isPast) ? (
+          content: hasWhoIsGoingContent(event, isPast, Boolean(user)) ? (
             <EventWhoIsGoing event={event} user={user} isPast={isPast} />
           ) : null,
         },

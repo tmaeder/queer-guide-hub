@@ -38,6 +38,7 @@ import {
   hasSocialLinks,
 } from '@/pages/VenueDetail.parts';
 import { buildVenueJsonLd, buildVenueMeta } from '@/pages/VenueDetail.meta';
+import { venueClosureLabel } from '@/lib/venueClosureLabel';
 import type {
   EntityDescriptor,
   EntityDescriptorResult,
@@ -110,7 +111,8 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
 
     const cityName = venue.cities?.name ?? null;
     const countryName = venue.countries?.name ?? null;
-    const isClosed = Boolean(venue.closed_at && new Date(venue.closed_at) <= new Date());
+    const closure = venueClosureLabel(venue);
+    const isClosed = closure !== null;
     const venueEvents = events.filter((e) => e.venue_id === venue.id);
     const lat = typeof venue.latitude === 'number' ? venue.latitude : null;
     const lng = typeof venue.longitude === 'number' ? venue.longitude : null;
@@ -272,7 +274,14 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
       ],
       single: {
         eyebrow: [t('venues.detail.eyebrow', 'Venue'), cityName].filter(Boolean).join(' · '),
-        status: isClosed ? t('venues.detail.closed', 'Permanently closed') : undefined,
+        status:
+          closure === 'temporarily_closed'
+            ? t('venues.detail.temporarilyClosed', 'Temporarily closed')
+            : closure === 'presumed_closed'
+              ? t('venues.detail.presumedClosed', 'Presumed closed')
+              : closure
+                ? t('venues.detail.closed', 'Permanently closed')
+                : undefined,
         track: 'pink',
         bodyLead: (
           <>
@@ -280,7 +289,6 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
             {/* Self-hides when the venue is in no guide, so it stays out of
                 `sections` — a station pointing at nothing is a dead stop. */}
             <VenueGuides venue={venue} />
-            <FromTheGlossary tags={venue.tags} />
             <OnBluesky
               entityType="venue"
               entityId={venue.id}
@@ -288,6 +296,10 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
             />
           </>
         ),
+        // AFTER the sections, not in bodyLead. Up there it put a definition of
+        // a generic tag ("Queer-Friendly — Welcoming to queer people") between
+        // the photo and the venue's own description on every tagged venue.
+        bodyTail: <FromTheGlossary tags={venue.tags} />,
         tags: (
           <div className="flex flex-col gap-4">
             {/* What this page is — a venue, and also an organisation when one

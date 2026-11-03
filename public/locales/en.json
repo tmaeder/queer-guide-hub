@@ -819,6 +819,8 @@
     "detail": {
       "eyebrow": "Venue",
       "closed": "Permanently closed",
+      "temporarilyClosed": "Temporarily closed",
+      "presumedClosed": "Presumed closed",
       "section": {
         "about": "About",
         "hours": "Opening hours",
