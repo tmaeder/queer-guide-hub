@@ -4430,7 +4430,13 @@
     "eyebrow": "À propos",
     "title": "Fait par des personnes queer, pour tout le monde.",
     "diagram": {
-      "label": "Quatre lignes convergent vers une seule station : lieux, événements, communauté et destinations."
+      "label": "Quatre lignes convergent vers une seule station : lieux, événements, communauté et destinations.",
+      "lines": {
+        "venues": "Lieux",
+        "events": "Événements",
+        "community": "Communauté",
+        "places": "Destinations"
+      }
     },
     "scale": {
       "kicker": "Le réseau aujourd'hui",
@@ -4782,88 +4788,108 @@
         "leadsTo": "[FR] Leads to"
       },
       "fourLines": {
-        "title": "[FR] Four lines",
-        "caption": "[FR] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
-        "summary": "[FR] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
-        "readout": "[FR] Where you are on each line",
-        "tableCaption": "[FR] Every line on the map and the stops it carries",
-        "corridor": {
-          "identity": "[FR] Gender identity: two independent services"
+        "title": "Quatre lignes",
+        "caption": "L'identité de genre, l'expression de genre, le sexe assigné à la naissance et l'attirance circulent sur quatre lignes distinctes. Un arrêt sur l'une ne dit rien d'un arrêt sur une autre. Touchez les arrêts qui vous correspondent. Rien n'est enregistré ni envoyé.",
+        "summary": "Quatre lignes parallèles qui ne se croisent jamais : identité de genre, expression de genre, sexe assigné à la naissance et attirance. Chacune a des arrêts nommés, et ce qui est choisi sur une ligne ne dit rien des autres.",
+        "readout": "Vos quatre lignes",
+        "independent": "Quatre réponses distinctes. Aucune ne découle d'une autre.",
+        "reset": "Effacer",
+        "tableCaption": "Toutes les lignes et leurs arrêts",
+        "tableRule": "Comment choisir",
+        "pickOne": "Choisir un arrêt",
+        "pickAny": "Choisir tous ceux qui conviennent",
+        "notPicked": "Aucun arrêt choisi",
+        "line": {
+          "identity": "Identité de genre",
+          "expression": "Expression de genre",
+          "assigned": "Sexe assigné à la naissance",
+          "attraction": "Attirance"
         },
-        "axis": {
-          "identityWoman": "[FR] How much woman",
-          "identityMan": "[FR] How much man",
-          "expression": "[FR] Gender expression",
-          "assigned": "[FR] Sex assigned at birth",
-          "attraction": "[FR] Attraction"
+        "question": {
+          "identity": "Qui vous savez être. Plusieurs arrêts peuvent convenir : être une femme ne prend la place de rien d'autre.",
+          "expression": "Votre façon de vous présenter : vêtements, voix, cheveux, allure. Des arrêts nommés, pas une échelle avec un milieu.",
+          "assigned": "Ce qui a été inscrit à votre naissance, souvent après un coup d'œil. Cela ne décide pas des trois autres lignes.",
+          "attraction": "Qui vous attire. Qui vous êtes et qui vous attire sont deux questions distinctes."
         },
-        "help": {
-          "identityWoman": "[FR] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
-          "identityMan": "[FR] The second rail on the same corridor. Answering this one does not subtract from the one above.",
-          "expression": "[FR] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
-          "assigned": "[FR] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
-          "attraction": "[FR] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
-        },
-        "amount": {
-          "notAtAll": "[FR] Not at all",
-          "aLittle": "[FR] A little",
-          "aLot": "[FR] A lot",
-          "entirely": "[FR] Entirely",
-          "ratherNot": "[FR] Rather not say"
-        },
-        "expression": {
-          "feminine": "[FR] Feminine",
-          "androgynous": "[FR] Androgynous",
-          "masculine": "[FR] Masculine",
-          "changes": "[FR] It changes"
-        },
-        "assigned": {
-          "female": "[FR] Female",
-          "male": "[FR] Male",
-          "intersex": "[FR] Intersex variation"
-        },
-        "attraction": {
-          "women": "[FR] Women",
-          "men": "[FR] Men",
-          "moreThanOne": "[FR] More than one gender",
-          "regardless": "[FR] Regardless of gender",
-          "noOne": "[FR] No one, or rarely"
+        "stop": {
+          "woman": "Femme",
+          "man": "Homme",
+          "nonBinary": "Non-binaire",
+          "agender": "Agenre",
+          "fluid": "Genderfluid",
+          "questioning": "Je cherche encore",
+          "feminine": "Féminine",
+          "androgynous": "Androgyne",
+          "masculine": "Masculine",
+          "changes": "Ça change",
+          "female": "Féminin",
+          "male": "Masculin",
+          "intersex": "Variation intersexe",
+          "women": "Femmes",
+          "men": "Hommes",
+          "nonBinaryPeople": "Personnes non-binaires",
+          "regardless": "Quel que soit le genre",
+          "noOne": "Rarement ou personne",
+          "ratherNot": "Je préfère ne pas le dire"
         }
       },
       "consentFlow": {
-        "title": "[FR] The line that stops",
-        "caption": "[FR] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
-        "summary": "[FR] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
-        "tableCaption": "[FR] Every stop on the line, and where it leads",
-        "groupLabel": "[FR] Stops on the line",
-        "hint": "[FR] Select any stop to light up the route that reaches it.",
-        "node": {
-          "start": "[FR] You want to do something with someone",
-          "asked": "[FR] Have you asked?",
-          "notAsked": "[FR] Guessing is not consent",
-          "clearYes": "[FR] Was the answer a clear yes?",
-          "notAYes": "[FR] No, maybe, or nothing",
-          "capacity": "[FR] Speed restriction: can everyone actually decide?",
-          "checkin": "[FR] Still yes, right now?",
-          "stopNow": "[FR] Stop",
-          "go": "[FR] Clear to proceed, for now"
+        "title": "La ligne qui s'arrête",
+        "caption": "Le consentement comme une ligne circulaire que vous parcourez tant que vous êtes ensemble. Chaque station mène directement à Stop. Ce n'est pas un critère juridique ; la loi varie selon les pays.",
+        "summary": "Une ligne circulaire à quatre stations : demander, entendre un oui clair, tout le monde peut décider, et continuer, pour l'instant, qui repart directement vers une nouvelle demande. Chaque station a son propre lien vers Stop au centre, que chacun peut prendre à tout moment.",
+        "tableCaption": "Toutes les stations de la ligne circulaire, et où mène chaque réponse",
+        "legend": "Stations de la ligne circulaire",
+        "entry": "Vous voulez faire quelque chose avec quelqu'un",
+        "station": {
+          "ask": "Demander",
+          "clearYes": "Entendre un oui clair",
+          "capacity": "Tout le monde peut décider",
+          "go": "Continuer, pour l'instant"
         },
         "note": {
-          "asked": "[FR] Out loud, or in a way you have both already agreed reads as asking.",
-          "notAsked": "[FR] Not objecting is not agreeing. The line does not start here.",
-          "clearYes": "[FR] Theirs, not one you talked them into.",
-          "notAYes": "[FR] Anything that is not a yes is a no. This is the end of the line.",
-          "capacity": "[FR] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
-          "checkin": "[FR] The signal you come back to. Agreeing earlier is not agreeing now.",
-          "stopNow": "[FR] Anyone can stop anything at any point, for no reason. Then look after each other.",
-          "go": "[FR] And back to the check-in, which is why this line is a loop."
+          "ask": "À voix haute, ou d'une façon dont vous avez convenu qu'elle vaut demande. Vous revenez ici à chaque tour : avoir dit oui avant n'est pas dire oui maintenant.",
+          "clearYes": "Le leur, pas un oui que vous avez arraché. Non, peut-être ou le silence, c'est non.",
+          "capacity": "Ralentissement. Alcool, drogues, épuisement, demi-sommeil. Pas un interrupteur : si vous ne pouvez pas le savoir, vous n'avez pas encore de réponse.",
+          "go": "Pas une ligne d'arrivée. La ligne repart directement vers une nouvelle demande."
         },
-        "edge": {
-          "no": "[FR] No",
-          "yes": "[FR] Yes",
-          "notAYes": "[FR] Not a yes",
-          "noOrUnsure": "[FR] No, or unsure",
-          "again": "[FR] And again, any time"
+        "stop": {
+          "label": "Stop",
+          "note": "À un pas de chaque station, à tout moment, sans raison. Ensuite, prenez soin les uns des autres."
+        },
+        "ride": {
+          "title": "Parcourir la ligne",
+          "intro": "Faites le tour, une station à la fois. Toute réponse qui n'est pas un oui mène à Stop.",
+          "where": "Tour {{round}} · Station {{n}} : {{name}}",
+          "start": "Commencer",
+          "again": "Recommencer",
+          "ask": {
+            "q": "Avez-vous demandé ?",
+            "yes": "Oui, j’ai demandé",
+            "no": "Non, j’ai supposé",
+            "why": "Deviner n'est pas consentir. Ne pas s'opposer n'est pas accepter."
+          },
+          "clearYes": {
+            "q": "La réponse était-elle un oui clair ?",
+            "yes": "Un oui clair",
+            "no": "Non, peut-être, ou rien",
+            "why": "Tout ce qui n'est pas un oui est un non."
+          },
+          "capacity": {
+            "q": "Tout le monde peut-il vraiment décider en ce moment ?",
+            "yes": "Oui, tout le monde peut",
+            "no": "Non, ou je ne peux pas le savoir",
+            "why": "Si vous ne pouvez pas le savoir, vous n'avez pas encore de réponse."
+          },
+          "go": {
+            "q": "Vous continuez, pour l'instant. Est-ce toujours bon pour tout le monde ?",
+            "yes": "Continuer, et redemander",
+            "no": "Quelqu'un veut arrêter",
+            "why": "Chacun peut tout arrêter à tout moment, sans raison."
+          }
+        },
+        "table": {
+          "ifYes": "Si oui",
+          "ifNot": "Toute autre réponse"
         }
       }
     }

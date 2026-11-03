@@ -4424,7 +4424,13 @@
     "eyebrow": "关于我们",
     "title": "由酷儿打造，属于每个人。",
     "diagram": {
-      "label": "四条线路汇聚于同一座站点：场所、活动、社群与目的地。"
+      "label": "四条线路汇聚于同一座站点：场所、活动、社群与目的地。",
+      "lines": {
+        "venues": "场所",
+        "events": "活动",
+        "community": "社群",
+        "places": "目的地"
+      }
     },
     "scale": {
       "kicker": "此刻的网络",
@@ -4776,88 +4782,108 @@
         "leadsTo": "[ZH] Leads to"
       },
       "fourLines": {
-        "title": "[ZH] Four lines",
-        "caption": "[ZH] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
-        "summary": "[ZH] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
-        "readout": "[ZH] Where you are on each line",
-        "tableCaption": "[ZH] Every line on the map and the stops it carries",
-        "corridor": {
-          "identity": "[ZH] Gender identity: two independent services"
+        "title": "四条线路",
+        "caption": "性别认同、性别表达、出生时被指派的性别和吸引对象，分别在四条独立的线路上运行。一条线上的站点不能说明另一条线上的站点。点选符合你的站点。不会保存或发送任何内容。",
+        "summary": "四条永不交汇的平行线路：性别认同、性别表达、出生时被指派的性别和吸引对象。每条线都有命名的站点，在一条线上的选择不能说明其他线路。",
+        "readout": "你的四条线路",
+        "independent": "四个独立的答案。没有一个是从另一个推出的。",
+        "reset": "清除",
+        "tableCaption": "所有线路及其站点",
+        "tableRule": "如何选择",
+        "pickOne": "选一个",
+        "pickAny": "选所有符合的",
+        "notPicked": "未选择站点",
+        "line": {
+          "identity": "性别认同",
+          "expression": "性别表达",
+          "assigned": "出生时被指派的性别",
+          "attraction": "吸引对象"
         },
-        "axis": {
-          "identityWoman": "[ZH] How much woman",
-          "identityMan": "[ZH] How much man",
-          "expression": "[ZH] Gender expression",
-          "assigned": "[ZH] Sex assigned at birth",
-          "attraction": "[ZH] Attraction"
+        "question": {
+          "identity": "你所认知的自己。可能不止一个站点符合：身为女性并不会挤占其他身份的空间。",
+          "expression": "你如何呈现自己：衣着、声音、发型、举止。是命名的站点，而不是有中点的刻度。",
+          "assigned": "你出生时被记录下来的信息，往往只凭一眼。它不决定其他三条线路。",
+          "attraction": "你被谁吸引。你是谁和你被谁吸引是两个不同的问题。"
         },
-        "help": {
-          "identityWoman": "[ZH] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
-          "identityMan": "[ZH] The second rail on the same corridor. Answering this one does not subtract from the one above.",
-          "expression": "[ZH] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
-          "assigned": "[ZH] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
-          "attraction": "[ZH] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
-        },
-        "amount": {
-          "notAtAll": "[ZH] Not at all",
-          "aLittle": "[ZH] A little",
-          "aLot": "[ZH] A lot",
-          "entirely": "[ZH] Entirely",
-          "ratherNot": "[ZH] Rather not say"
-        },
-        "expression": {
-          "feminine": "[ZH] Feminine",
-          "androgynous": "[ZH] Androgynous",
-          "masculine": "[ZH] Masculine",
-          "changes": "[ZH] It changes"
-        },
-        "assigned": {
-          "female": "[ZH] Female",
-          "male": "[ZH] Male",
-          "intersex": "[ZH] Intersex variation"
-        },
-        "attraction": {
-          "women": "[ZH] Women",
-          "men": "[ZH] Men",
-          "moreThanOne": "[ZH] More than one gender",
-          "regardless": "[ZH] Regardless of gender",
-          "noOne": "[ZH] No one, or rarely"
+        "stop": {
+          "woman": "女性",
+          "man": "男性",
+          "nonBinary": "非二元",
+          "agender": "无性别",
+          "fluid": "性别流动",
+          "questioning": "还在探索",
+          "feminine": "女性化",
+          "androgynous": "中性",
+          "masculine": "男性化",
+          "changes": "会变化",
+          "female": "女",
+          "male": "男",
+          "intersex": "间性变异",
+          "women": "女性",
+          "men": "男性",
+          "nonBinaryPeople": "非二元的人",
+          "regardless": "不论性别",
+          "noOne": "很少或无人",
+          "ratherNot": "不想说"
         }
       },
       "consentFlow": {
-        "title": "[ZH] The line that stops",
-        "caption": "[ZH] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
-        "summary": "[ZH] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
-        "tableCaption": "[ZH] Every stop on the line, and where it leads",
-        "groupLabel": "[ZH] Stops on the line",
-        "hint": "[ZH] Select any stop to light up the route that reaches it.",
-        "node": {
-          "start": "[ZH] You want to do something with someone",
-          "asked": "[ZH] Have you asked?",
-          "notAsked": "[ZH] Guessing is not consent",
-          "clearYes": "[ZH] Was the answer a clear yes?",
-          "notAYes": "[ZH] No, maybe, or nothing",
-          "capacity": "[ZH] Speed restriction: can everyone actually decide?",
-          "checkin": "[ZH] Still yes, right now?",
-          "stopNow": "[ZH] Stop",
-          "go": "[ZH] Clear to proceed, for now"
+        "title": "会停下的线路",
+        "caption": "把同意画成一条环线，只要你们在一起就一直绕行。每一站都直接连到“停下”。这不是法律标准，各国法律不同。",
+        "summary": "一条有四个站点的环线：询问、听到明确的“愿意”、每个人都能做决定、暂时继续——然后直接回到再次询问。每一站都有通往中心“停下”的专线，任何人随时都可以走。",
+        "tableCaption": "环线上的所有站点，以及每个回答通往哪里",
+        "legend": "环线站点",
+        "entry": "你想和某人做点什么",
+        "station": {
+          "ask": "询问",
+          "clearYes": "听到明确的“愿意”",
+          "capacity": "每个人都能做决定",
+          "go": "暂时继续"
         },
         "note": {
-          "asked": "[ZH] Out loud, or in a way you have both already agreed reads as asking.",
-          "notAsked": "[ZH] Not objecting is not agreeing. The line does not start here.",
-          "clearYes": "[ZH] Theirs, not one you talked them into.",
-          "notAYes": "[ZH] Anything that is not a yes is a no. This is the end of the line.",
-          "capacity": "[ZH] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
-          "checkin": "[ZH] The signal you come back to. Agreeing earlier is not agreeing now.",
-          "stopNow": "[ZH] Anyone can stop anything at any point, for no reason. Then look after each other.",
-          "go": "[ZH] And back to the check-in, which is why this line is a loop."
+          "ask": "说出来，或者用你们约定算作询问的方式。每一圈都会回到这里：之前同意不等于现在同意。",
+          "clearYes": "是对方自己的意愿，不是你说服来的。不、也许或沉默都是“不愿意”。",
+          "capacity": "限速区间。喝酒、用药、疲惫、半睡半醒。这不是开关：如果你无法判断，你就还没有得到回答。",
+          "go": "不是终点。线路直接回到再次询问。"
         },
-        "edge": {
-          "no": "[ZH] No",
-          "yes": "[ZH] Yes",
-          "notAYes": "[ZH] Not a yes",
-          "noOrUnsure": "[ZH] No, or unsure",
-          "again": "[ZH] And again, any time"
+        "stop": {
+          "label": "停下",
+          "note": "从每一站出发都只需一步，任何时候，无需理由。之后照顾好彼此。"
+        },
+        "ride": {
+          "title": "坐一趟",
+          "intro": "一次一站地绕行这条环线。任何不是“愿意”的回答都会通往“停下”。",
+          "where": "第 {{round}} 圈 · 第 {{n}} 站：{{name}}",
+          "start": "开始",
+          "again": "重新开始",
+          "ask": {
+            "q": "你问过了吗？",
+            "yes": "问过了",
+            "no": "没有，我以为可以",
+            "why": "猜测不是同意。不反对不等于同意。"
+          },
+          "clearYes": {
+            "q": "回答是明确的“愿意”吗？",
+            "yes": "明确的“愿意”",
+            "no": "不、也许，或没有回应",
+            "why": "任何不是“愿意”的回答都是“不愿意”。"
+          },
+          "capacity": {
+            "q": "此刻每个人真的都能做决定吗？",
+            "yes": "是的，每个人都能",
+            "no": "不能，或者我无法判断",
+            "why": "如果你无法判断，你就还没有得到回答。"
+          },
+          "go": {
+            "q": "你们暂时继续着。对每个人来说仍然可以吗？",
+            "yes": "继续，并再问一次",
+            "no": "有人想停下",
+            "why": "任何人都可以在任何时候无理由地停止任何事。"
+          }
+        },
+        "table": {
+          "ifYes": "如果是“愿意”",
+          "ifNot": "其他任何回答"
         }
       }
     }

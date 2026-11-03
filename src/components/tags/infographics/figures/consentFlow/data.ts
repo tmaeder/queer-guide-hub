@@ -1,159 +1,146 @@
 /**
  * The Line That Stops — the data.
  *
- * A rebuild of the consent flowchart, with four deliberate departures from
- * every version of it in circulation:
+ * Consent drawn as a LOOP LINE: four stations on a ring, run round for as
+ * long as you are together, with every station wired straight to Stop in the
+ * middle. Two earlier drafts drew it as a line read top to bottom (first as
+ * boxes on a flowchart, then as a strip map with off-ramps), and both said the
+ * opposite of the thesis: a line that runs downward is a checklist you finish.
  *
- * 1. **A stop is drawn as an ending, not coloured as a warning.** The line
- *    terminates at a buffer stop. Nothing turns red because an answer changed;
- *    only the outcome plates carry the locked risk palette, and they carry it
- *    because they are risk statements, not because they are "the no branch".
- * 2. **It ends in a loop, not a verdict.** The circulating charts finish at
- *    "DO THE SEX!", which quietly teaches that consent is a gate you pass once.
- *    Ours returns to the check-in signal and stays there. Consent being
- *    ongoing and revocable is the shape of the diagram, not a footnote.
+ * What the shape says, so a caption does not have to:
+ *
+ * 1. **There is no last station.** "Go, for now" runs straight on round to
+ *    "Ask" again. The circulating charts finish at "DO THE SEX!", which
+ *    teaches that consent is a gate passed once. A ring cannot finish.
+ * 2. **Stop is one step from everywhere.** Every station has its own spoke to
+ *    Stop, including "Go, for now". Anyone can take it at any moment, for no
+ *    reason, which is drawn rather than footnoted.
  * 3. **Capacity is a speed restriction, not a signal.** "Is anyone drunk or
- *    high — yes/no" is a binary the world does not have, and a hard NO branch
- *    on it is both wrong and easy to argue past. A hatched section you pass
- *    through slowly, with the reason stated, is what capacity actually is.
- * 4. **The register is plain.** The sources are jokey — "don't be a rapist",
- *    "do the sex". That voice does not belong on a definition page and it is
- *    the opposite of the house style.
+ *    high — yes/no" is a binary the world does not have. A section of track
+ *    you pass through slowly, with the reason stated, is what it actually is.
+ * 4. **Stopping is an instruction, not a risk tier.** The earlier drafts
+ *    painted each "no" outcome in the trip-safety traffic light. A no is not a
+ *    hazard rating; it is where you get off. So the figure carries one track
+ *    colour and no risk palette.
+ * 5. **The register is plain.** The sources are jokey — "don't be a rapist",
+ *    "do the sex". That voice does not belong on a definition page.
  *
  * What this is NOT: a legal test. Age of consent, capacity thresholds and
  * whether "affirmative consent" is the statutory standard all vary by country,
  * which is said on the figure rather than left for the reader to assume.
  */
 
-import type { FlowEdge, FlowNode } from '../../primitives/flowLayout';
-
-export const VIEW = { w: 300, h: 300 } as const;
-export const PAD = { x: 42, y: 24 } as const;
-
 const K = 'tags.figures.consentFlow';
 
-export const NODES: readonly FlowNode[] = [
+export interface LoopStation {
+  id: string;
+  /** Short name drawn on the map's legend. */
+  labelKey: string;
+  labelFallback: string;
+  noteKey: string;
+  noteFallback: string;
+  /** Speed restriction: drawn as cross-ties on the ring approaching it. */
+  restriction?: boolean;
+  /** "Ride the line": the question asked at this station. */
+  askKey: string;
+  askFallback: string;
+  /** The answer that carries on round the ring. */
+  yesKey: string;
+  yesFallback: string;
+  /** Every other answer, which goes to Stop. */
+  noKey: string;
+  noFallback: string;
+  /** Why that answer is Stop, shown on arrival there. */
+  whyKey: string;
+  whyFallback: string;
+  /** Glossary term this station IS, if any. */
+  slug?: string;
+}
+
+/** Ring order, clockwise from the top. The last runs on to the first. */
+export const STATIONS: readonly LoopStation[] = [
   {
-    id: 'start',
-    kind: 'start',
-    lane: 0,
-    slot: 1,
-    labelKey: `${K}.node.start`,
-    labelFallback: 'You want to do something with someone',
-  },
-  {
-    id: 'asked',
-    kind: 'question',
-    lane: 1,
-    slot: 1,
-    labelKey: `${K}.node.asked`,
-    labelFallback: 'Have you asked?',
-    noteKey: `${K}.note.asked`,
-    noteFallback: 'Out loud, or in a way you have both already agreed reads as asking.',
+    id: 'ask',
+    labelKey: `${K}.station.ask`,
+    labelFallback: 'Ask',
+    noteKey: `${K}.note.ask`,
+    noteFallback:
+      'Out loud, or in a way you have both agreed counts as asking. You come back here every time round: agreeing earlier is not agreeing now.',
+    askKey: `${K}.ride.ask.q`,
+    askFallback: 'Have you asked?',
+    yesKey: `${K}.ride.ask.yes`,
+    yesFallback: 'Yes, I asked',
+    noKey: `${K}.ride.ask.no`,
+    noFallback: 'No, I assumed',
+    whyKey: `${K}.ride.ask.why`,
+    whyFallback: 'Guessing is not consent. Not objecting is not agreeing.',
     slug: 'consent',
   },
   {
-    id: 'not-asked',
-    kind: 'outcome',
-    tier: 'high',
-    lane: 2,
-    slot: 0,
-    labelKey: `${K}.node.notAsked`,
-    labelFallback: 'Guessing is not consent',
-    noteKey: `${K}.note.notAsked`,
-    noteFallback: 'Not objecting is not agreeing. The line does not start here.',
-  },
-  {
     id: 'clear-yes',
-    kind: 'question',
-    lane: 2,
-    slot: 1,
-    labelKey: `${K}.node.clearYes`,
-    labelFallback: 'Was the answer a clear yes?',
+    labelKey: `${K}.station.clearYes`,
+    labelFallback: 'Hear a clear yes',
     noteKey: `${K}.note.clearYes`,
-    noteFallback: 'Theirs, not one you talked them into.',
-  },
-  {
-    id: 'not-a-yes',
-    kind: 'outcome',
-    tier: 'critical',
-    lane: 3,
-    slot: 0,
-    labelKey: `${K}.node.notAYes`,
-    labelFallback: 'No, maybe, or nothing',
-    noteKey: `${K}.note.notAYes`,
-    noteFallback: 'Anything that is not a yes is a no. This is the end of the line.',
+    noteFallback: 'Theirs, not one you talked them into. No, maybe, or silence is a no.',
+    askKey: `${K}.ride.clearYes.q`,
+    askFallback: 'Was the answer a clear yes?',
+    yesKey: `${K}.ride.clearYes.yes`,
+    yesFallback: 'A clear yes',
+    noKey: `${K}.ride.clearYes.no`,
+    noFallback: 'No, maybe, or nothing',
+    whyKey: `${K}.ride.clearYes.why`,
+    whyFallback: 'Anything that is not a yes is a no.',
     slug: 'hard-limit',
   },
   {
     id: 'capacity',
-    kind: 'restriction',
-    lane: 3,
-    slot: 1,
-    labelKey: `${K}.node.capacity`,
-    labelFallback: 'Speed restriction: can everyone actually decide?',
+    restriction: true,
+    labelKey: `${K}.station.capacity`,
+    labelFallback: 'Everyone can decide',
     noteKey: `${K}.note.capacity`,
     noteFallback:
-      'Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.',
+      'Speed restriction. Drink, drugs, exhaustion, being half asleep. Not a switch: if you cannot tell, you do not have an answer yet.',
+    askKey: `${K}.ride.capacity.q`,
+    askFallback: 'Can everyone actually decide right now?',
+    yesKey: `${K}.ride.capacity.yes`,
+    yesFallback: 'Yes, everyone can',
+    noKey: `${K}.ride.capacity.no`,
+    noFallback: 'No, or I cannot tell',
+    whyKey: `${K}.ride.capacity.why`,
+    whyFallback: 'If you cannot tell, you do not have an answer yet.',
     slug: 'chemsex',
   },
   {
-    id: 'checkin',
-    kind: 'question',
-    lane: 4,
-    slot: 1,
-    labelKey: `${K}.node.checkin`,
-    labelFallback: 'Still yes, right now?',
-    noteKey: `${K}.note.checkin`,
-    noteFallback: 'The signal you come back to. Agreeing earlier is not agreeing now.',
-    slug: 'safeword',
-  },
-  {
-    id: 'stop-now',
-    kind: 'outcome',
-    tier: 'critical',
-    lane: 5,
-    slot: 0,
-    labelKey: `${K}.node.stopNow`,
-    labelFallback: 'Stop',
-    noteKey: `${K}.note.stopNow`,
-    noteFallback: 'Anyone can stop anything at any point, for no reason. Then look after each other.',
-    slug: 'aftercare',
-  },
-  {
     id: 'go',
-    kind: 'outcome',
-    tier: 'low',
-    lane: 5,
-    slot: 2,
-    labelKey: `${K}.node.go`,
-    labelFallback: 'Clear to proceed, for now',
+    labelKey: `${K}.station.go`,
+    labelFallback: 'Go, for now',
     noteKey: `${K}.note.go`,
-    noteFallback: 'And back to the check-in, which is why this line is a loop.',
+    noteFallback: 'Not a finish line. The line runs straight on round to asking again.',
+    askKey: `${K}.ride.go.q`,
+    askFallback: 'You are going ahead, for now. Still good for everyone?',
+    yesKey: `${K}.ride.go.yes`,
+    yesFallback: 'Carry on, and ask again',
+    noKey: `${K}.ride.go.no`,
+    noFallback: 'Someone wants to stop',
+    whyKey: `${K}.ride.go.why`,
+    whyFallback: 'Anyone can stop anything at any point, for no reason.',
+    slug: 'safeword',
   },
 ];
 
-export const EDGES: readonly FlowEdge[] = [
-  { from: 'start', to: 'asked' },
-  { from: 'asked', to: 'not-asked', labelKey: `${K}.edge.no`, labelFallback: 'No' },
-  { from: 'asked', to: 'clear-yes', labelKey: `${K}.edge.yes`, labelFallback: 'Yes' },
-  {
-    from: 'clear-yes',
-    to: 'not-a-yes',
-    labelKey: `${K}.edge.notAYes`,
-    labelFallback: 'Not a yes',
-  },
-  { from: 'clear-yes', to: 'capacity', labelKey: `${K}.edge.yes`, labelFallback: 'Yes' },
-  { from: 'capacity', to: 'checkin' },
-  { from: 'checkin', to: 'stop-now', labelKey: `${K}.edge.noOrUnsure`, labelFallback: 'No, or unsure' },
-  { from: 'checkin', to: 'go', labelKey: `${K}.edge.yes`, labelFallback: 'Yes' },
-  // The correction, drawn: the line returns to the check-in and stays in
-  // service. It is not collapsible and not dismissable.
-  {
-    from: 'go',
-    to: 'checkin',
-    kind: 'loop',
-    labelKey: `${K}.edge.again`,
-    labelFallback: 'And again, any time',
-  },
-];
+/** Where the line is joined from: drawn as a spur into the first station. */
+export const ENTRY = {
+  labelKey: `${K}.entry`,
+  labelFallback: 'You want to do something with someone',
+} as const;
+
+/** The hub every station is wired to. */
+export const STOP = {
+  id: 'stop',
+  labelKey: `${K}.stop.label`,
+  labelFallback: 'Stop',
+  noteKey: `${K}.stop.note`,
+  noteFallback:
+    'One step from every station, at any moment, for no reason. Then look after each other.',
+  slug: 'aftercare',
+} as const;

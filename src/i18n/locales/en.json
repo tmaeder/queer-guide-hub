@@ -4477,7 +4477,13 @@
     "eyebrow": "About",
     "title": "Built by queers, for everyone.",
     "diagram": {
-      "label": "Four lines converging on one station: venues, events, community and places."
+      "label": "Four lines converging on one station: venues, events, community and places.",
+      "lines": {
+        "venues": "Venues",
+        "events": "Events",
+        "community": "Community",
+        "places": "Places"
+      }
     },
     "scale": {
       "kicker": "The network today",
@@ -4830,87 +4836,107 @@
       },
       "fourLines": {
         "title": "Four lines",
-        "caption": "Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
-        "summary": "A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
-        "readout": "Where you are on each line",
-        "tableCaption": "Every line on the map and the stops it carries",
-        "corridor": {
-          "identity": "Gender identity: two independent services"
-        },
-        "axis": {
-          "identityWoman": "How much woman",
-          "identityMan": "How much man",
+        "caption": "Gender identity, gender expression, sex assigned at birth and attraction run on four separate lines. A stop on one tells you nothing about a stop on another. Tap the stops that fit. Nothing is stored or sent.",
+        "summary": "Four parallel transit lines that never meet: gender identity, gender expression, sex assigned at birth and attraction. Each carries named stops, and the stops picked on one line say nothing about the others.",
+        "readout": "Your four lines",
+        "independent": "Four separate answers. None of them follows from another.",
+        "reset": "Clear",
+        "tableCaption": "Every line and the stops it carries",
+        "tableRule": "How to pick",
+        "pickOne": "Pick one",
+        "pickAny": "Pick any that fit",
+        "notPicked": "No stop picked",
+        "line": {
+          "identity": "Gender identity",
           "expression": "Gender expression",
           "assigned": "Sex assigned at birth",
           "attraction": "Attraction"
         },
-        "help": {
-          "identityWoman": "Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
-          "identityMan": "The second rail on the same corridor. Answering this one does not subtract from the one above.",
-          "expression": "How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
-          "assigned": "What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
-          "attraction": "Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
+        "question": {
+          "identity": "Who you know yourself to be. More than one stop can fit: being a woman does not use up room for anything else.",
+          "expression": "How you present: clothes, voice, hair, the way you carry yourself. Named stops, not a scale with a middle.",
+          "assigned": "What was written down when you were born, often after a glance. It does not decide the other three lines.",
+          "attraction": "Who you are drawn to. Who you are and who you are drawn to are separate questions."
         },
-        "amount": {
-          "notAtAll": "Not at all",
-          "aLittle": "A little",
-          "aLot": "A lot",
-          "entirely": "Entirely",
-          "ratherNot": "Rather not say"
-        },
-        "expression": {
+        "stop": {
+          "woman": "Woman",
+          "man": "Man",
+          "nonBinary": "Non-binary",
+          "agender": "Agender",
+          "fluid": "Genderfluid",
+          "questioning": "Still working it out",
           "feminine": "Feminine",
           "androgynous": "Androgynous",
           "masculine": "Masculine",
-          "changes": "It changes"
-        },
-        "assigned": {
+          "changes": "It changes",
           "female": "Female",
           "male": "Male",
-          "intersex": "Intersex variation"
-        },
-        "attraction": {
+          "intersex": "Intersex variation",
           "women": "Women",
           "men": "Men",
-          "moreThanOne": "More than one gender",
+          "nonBinaryPeople": "Non-binary people",
           "regardless": "Regardless of gender",
-          "noOne": "No one, or rarely"
+          "noOne": "Rarely or no one",
+          "ratherNot": "Rather not say"
         }
       },
       "consentFlow": {
         "title": "The line that stops",
-        "caption": "Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
-        "summary": "A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
-        "tableCaption": "Every stop on the line, and where it leads",
-        "groupLabel": "Stops on the line",
-        "hint": "Select any stop to light up the route that reaches it.",
-        "node": {
-          "start": "You want to do something with someone",
-          "asked": "Have you asked?",
-          "notAsked": "Guessing is not consent",
-          "clearYes": "Was the answer a clear yes?",
-          "notAYes": "No, maybe, or nothing",
-          "capacity": "Speed restriction: can everyone actually decide?",
-          "checkin": "Still yes, right now?",
-          "stopNow": "Stop",
-          "go": "Clear to proceed, for now"
+        "caption": "Consent as a loop line you go round for as long as you are together. Every station connects straight to Stop. Not a legal test; the law differs by country.",
+        "summary": "A circular line with four stations: ask, hear a clear yes, everyone can decide, and go for now, which runs straight on round to asking again. Every station has its own link to Stop in the centre, which anyone can take at any moment.",
+        "tableCaption": "Every station on the loop, and where each answer goes",
+        "legend": "Stations on the loop",
+        "entry": "You want to do something with someone",
+        "station": {
+          "ask": "Ask",
+          "clearYes": "Hear a clear yes",
+          "capacity": "Everyone can decide",
+          "go": "Go, for now"
         },
         "note": {
-          "asked": "Out loud, or in a way you have both already agreed reads as asking.",
-          "notAsked": "Not objecting is not agreeing. The line does not start here.",
-          "clearYes": "Theirs, not one you talked them into.",
-          "notAYes": "Anything that is not a yes is a no. This is the end of the line.",
-          "capacity": "Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
-          "checkin": "The signal you come back to. Agreeing earlier is not agreeing now.",
-          "stopNow": "Anyone can stop anything at any point, for no reason. Then look after each other.",
-          "go": "And back to the check-in, which is why this line is a loop."
+          "ask": "Out loud, or in a way you have both agreed counts as asking. You come back here every time round: agreeing earlier is not agreeing now.",
+          "clearYes": "Theirs, not one you talked them into. No, maybe, or silence is a no.",
+          "capacity": "Speed restriction. Drink, drugs, exhaustion, being half asleep. Not a switch: if you cannot tell, you do not have an answer yet.",
+          "go": "Not a finish line. The line runs straight on round to asking again."
         },
-        "edge": {
-          "no": "No",
-          "yes": "Yes",
-          "notAYes": "Not a yes",
-          "noOrUnsure": "No, or unsure",
-          "again": "And again, any time"
+        "stop": {
+          "label": "Stop",
+          "note": "One step from every station, at any moment, for no reason. Then look after each other."
+        },
+        "ride": {
+          "title": "Ride the line",
+          "intro": "Go round the loop one station at a time. Any answer that is not a yes takes you to Stop.",
+          "where": "Round {{round}} · Station {{n}}: {{name}}",
+          "start": "Start",
+          "again": "Start again",
+          "ask": {
+            "q": "Have you asked?",
+            "yes": "Yes, I asked",
+            "no": "No, I assumed",
+            "why": "Guessing is not consent. Not objecting is not agreeing."
+          },
+          "clearYes": {
+            "q": "Was the answer a clear yes?",
+            "yes": "A clear yes",
+            "no": "No, maybe, or nothing",
+            "why": "Anything that is not a yes is a no."
+          },
+          "capacity": {
+            "q": "Can everyone actually decide right now?",
+            "yes": "Yes, everyone can",
+            "no": "No, or I cannot tell",
+            "why": "If you cannot tell, you do not have an answer yet."
+          },
+          "go": {
+            "q": "You are going ahead, for now. Still good for everyone?",
+            "yes": "Carry on, and ask again",
+            "no": "Someone wants to stop",
+            "why": "Anyone can stop anything at any point, for no reason."
+          }
+        },
+        "table": {
+          "ifYes": "If yes",
+          "ifNot": "Anything else"
         }
       }
     }

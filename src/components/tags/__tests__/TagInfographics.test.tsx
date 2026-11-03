@@ -71,7 +71,7 @@ describe('TagInfographics', () => {
     const img = container.querySelector('[role="img"]');
     expect(img?.getAttribute('aria-label')?.length ?? 0).toBeGreaterThan(20);
     expect(screen.getByText(/drawn from/i)).toBeTruthy();
-    // A risk-encoding figure shows how old its check is.
+    // A claim-bearing figure shows how old its check is.
     expect(screen.getByText(/last checked/i)).toBeTruthy();
   });
 });

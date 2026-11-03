@@ -4424,7 +4424,13 @@
     "eyebrow": "私たちについて",
     "title": "クィアがつくり、すべての人へ。",
     "diagram": {
-      "label": "ひとつの駅に集まる4本の路線。スポット、イベント、コミュニティ、旅先。"
+      "label": "ひとつの駅に集まる4本の路線。スポット、イベント、コミュニティ、旅先。",
+      "lines": {
+        "venues": "スポット",
+        "events": "イベント",
+        "community": "コミュニティ",
+        "places": "旅先"
+      }
     },
     "scale": {
       "kicker": "いまのネットワーク",
@@ -4776,88 +4782,108 @@
         "leadsTo": "[JA] Leads to"
       },
       "fourLines": {
-        "title": "[JA] Four lines",
-        "caption": "[JA] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
-        "summary": "[JA] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
-        "readout": "[JA] Where you are on each line",
-        "tableCaption": "[JA] Every line on the map and the stops it carries",
-        "corridor": {
-          "identity": "[JA] Gender identity: two independent services"
+        "title": "4つの路線",
+        "caption": "性自認、性表現、出生時に割り当てられた性、惹かれる対象は、4つの別々の路線を走っています。ある路線の駅は、別の路線の駅について何も示しません。当てはまる駅をタップしてください。何も保存・送信されません。",
+        "summary": "決して交わらない4本の平行な路線：性自認、性表現、出生時に割り当てられた性、惹かれる対象。それぞれに名前の付いた駅があり、ある路線での選択は他の路線について何も示しません。",
+        "readout": "あなたの4つの路線",
+        "independent": "4つの別々の答え。どれも他から導かれるものではありません。",
+        "reset": "クリア",
+        "tableCaption": "すべての路線とその駅",
+        "tableRule": "選び方",
+        "pickOne": "1つ選ぶ",
+        "pickAny": "当てはまるものをすべて選ぶ",
+        "notPicked": "駅が選ばれていません",
+        "line": {
+          "identity": "性自認",
+          "expression": "性表現",
+          "assigned": "出生時に割り当てられた性",
+          "attraction": "惹かれる対象"
         },
-        "axis": {
-          "identityWoman": "[JA] How much woman",
-          "identityMan": "[JA] How much man",
-          "expression": "[JA] Gender expression",
-          "assigned": "[JA] Sex assigned at birth",
-          "attraction": "[JA] Attraction"
+        "question": {
+          "identity": "自分が誰であるか。複数の駅が当てはまることもあります。女性であることが他の何かの余地を奪うわけではありません。",
+          "expression": "あなたの見せ方：服装、声、髪型、振る舞い。中間点のある目盛りではなく、名前の付いた駅です。",
+          "assigned": "生まれたときに記録されたもの。多くは一目見て決められます。他の3つの路線を決めるものではありません。",
+          "attraction": "誰に惹かれるか。自分が誰かと、誰に惹かれるかは別々の問いです。"
         },
-        "help": {
-          "identityWoman": "[JA] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
-          "identityMan": "[JA] The second rail on the same corridor. Answering this one does not subtract from the one above.",
-          "expression": "[JA] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
-          "assigned": "[JA] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
-          "attraction": "[JA] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
-        },
-        "amount": {
-          "notAtAll": "[JA] Not at all",
-          "aLittle": "[JA] A little",
-          "aLot": "[JA] A lot",
-          "entirely": "[JA] Entirely",
-          "ratherNot": "[JA] Rather not say"
-        },
-        "expression": {
-          "feminine": "[JA] Feminine",
-          "androgynous": "[JA] Androgynous",
-          "masculine": "[JA] Masculine",
-          "changes": "[JA] It changes"
-        },
-        "assigned": {
-          "female": "[JA] Female",
-          "male": "[JA] Male",
-          "intersex": "[JA] Intersex variation"
-        },
-        "attraction": {
-          "women": "[JA] Women",
-          "men": "[JA] Men",
-          "moreThanOne": "[JA] More than one gender",
-          "regardless": "[JA] Regardless of gender",
-          "noOne": "[JA] No one, or rarely"
+        "stop": {
+          "woman": "女性",
+          "man": "男性",
+          "nonBinary": "ノンバイナリー",
+          "agender": "アジェンダー",
+          "fluid": "ジェンダーフルイド",
+          "questioning": "まだ模索中",
+          "feminine": "フェミニン",
+          "androgynous": "アンドロジナス",
+          "masculine": "マスキュリン",
+          "changes": "変わる",
+          "female": "女性",
+          "male": "男性",
+          "intersex": "インターセックスのバリエーション",
+          "women": "女性",
+          "men": "男性",
+          "nonBinaryPeople": "ノンバイナリーの人",
+          "regardless": "性別に関係なく",
+          "noOne": "まれに、または誰にも",
+          "ratherNot": "答えたくない"
         }
       },
       "consentFlow": {
-        "title": "[JA] The line that stops",
-        "caption": "[JA] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
-        "summary": "[JA] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
-        "tableCaption": "[JA] Every stop on the line, and where it leads",
-        "groupLabel": "[JA] Stops on the line",
-        "hint": "[JA] Select any stop to light up the route that reaches it.",
-        "node": {
-          "start": "[JA] You want to do something with someone",
-          "asked": "[JA] Have you asked?",
-          "notAsked": "[JA] Guessing is not consent",
-          "clearYes": "[JA] Was the answer a clear yes?",
-          "notAYes": "[JA] No, maybe, or nothing",
-          "capacity": "[JA] Speed restriction: can everyone actually decide?",
-          "checkin": "[JA] Still yes, right now?",
-          "stopNow": "[JA] Stop",
-          "go": "[JA] Clear to proceed, for now"
+        "title": "止まる路線",
+        "caption": "同意を、一緒にいる間ずっと回り続ける環状線として描きます。どの駅からも「やめる」へ直接行けます。法的な基準ではありません。法律は国によって異なります。",
+        "summary": "4つの駅がある環状線：尋ねる、はっきりした「はい」を聞く、全員が判断できる、今のところ進む。そこからそのまま、もう一度尋ねるところへ戻ります。どの駅にも中央の「やめる」への専用の線があり、誰でもいつでも使えます。",
+        "tableCaption": "環状線のすべての駅と、それぞれの答えの行き先",
+        "legend": "環状線の駅",
+        "entry": "誰かと何かをしたい",
+        "station": {
+          "ask": "尋ねる",
+          "clearYes": "はっきりした「はい」を聞く",
+          "capacity": "全員が判断できる",
+          "go": "今のところ進む"
         },
         "note": {
-          "asked": "[JA] Out loud, or in a way you have both already agreed reads as asking.",
-          "notAsked": "[JA] Not objecting is not agreeing. The line does not start here.",
-          "clearYes": "[JA] Theirs, not one you talked them into.",
-          "notAYes": "[JA] Anything that is not a yes is a no. This is the end of the line.",
-          "capacity": "[JA] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
-          "checkin": "[JA] The signal you come back to. Agreeing earlier is not agreeing now.",
-          "stopNow": "[JA] Anyone can stop anything at any point, for no reason. Then look after each other.",
-          "go": "[JA] And back to the check-in, which is why this line is a loop."
+          "ask": "声に出して、または尋ねたことになると2人で決めた方法で。毎回ここに戻ってきます。前に同意したことは、今の同意ではありません。",
+          "clearYes": "相手自身の「はい」。あなたが説得して言わせたものではありません。いいえ、たぶん、沈黙は「いいえ」です。",
+          "capacity": "徐行区間。お酒、薬物、疲労、半分眠っている状態。スイッチではありません。判断できないなら、まだ答えは出ていません。",
+          "go": "ゴールではありません。路線はそのまま、もう一度尋ねるところへ戻ります。"
         },
-        "edge": {
-          "no": "[JA] No",
-          "yes": "[JA] Yes",
-          "notAYes": "[JA] Not a yes",
-          "noOrUnsure": "[JA] No, or unsure",
-          "again": "[JA] And again, any time"
+        "stop": {
+          "label": "やめる",
+          "note": "どの駅からも一歩、いつでも、理由なく。そのあとはお互いを気遣いましょう。"
+        },
+        "ride": {
+          "title": "路線に乗ってみる",
+          "intro": "1駅ずつ環状線を回ります。「はい」以外の答えはすべて「やめる」へ。",
+          "where": "{{round}}周目 · {{n}}番目の駅：{{name}}",
+          "start": "始める",
+          "again": "最初から",
+          "ask": {
+            "q": "尋ねましたか？",
+            "yes": "はい、尋ねました",
+            "no": "いいえ、そう思い込んでいました",
+            "why": "推測は同意ではありません。反対しないことは同意ではありません。"
+          },
+          "clearYes": {
+            "q": "答えははっきりした「はい」でしたか？",
+            "yes": "はっきりした「はい」",
+            "no": "いいえ、たぶん、または無反応",
+            "why": "「はい」でないものはすべて「いいえ」です。"
+          },
+          "capacity": {
+            "q": "今、全員が本当に判断できる状態ですか？",
+            "yes": "はい、全員できます",
+            "no": "いいえ、または判断できない",
+            "why": "判断できないなら、まだ答えは出ていません。"
+          },
+          "go": {
+            "q": "今のところ進んでいます。全員にとってまだ大丈夫ですか？",
+            "yes": "続けて、また尋ねる",
+            "no": "誰かがやめたい",
+            "why": "誰でも、いつでも、理由なく何でもやめられます。"
+          }
+        },
+        "table": {
+          "ifYes": "「はい」の場合",
+          "ifNot": "それ以外"
         }
       }
     }

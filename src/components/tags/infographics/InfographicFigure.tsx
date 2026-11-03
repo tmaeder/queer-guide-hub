@@ -204,7 +204,7 @@ export function InfographicFigure({
         <InfographicSources
           sources={figure.sources}
           checkedOn={figure.checkedOn}
-          showChecked={figure.encodesRisk}
+          showChecked={figure.encodesRisk || figure.claimBearing === true}
         />
       </figcaption>
     </figure>

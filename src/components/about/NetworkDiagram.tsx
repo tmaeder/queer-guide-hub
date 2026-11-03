@@ -43,6 +43,8 @@ const JUNCTION = { x: 240, y: 48 } as const;
 const LINES = [
   {
     track: 'pink',
+    nameKey: 'about.diagram.lines.venues',
+    nameFallback: 'Venues',
     stroke: 'hsl(var(--track-pink))',
     fill: 'bg-track-pink',
     station: { x: 80, y: 14 },
@@ -50,6 +52,8 @@ const LINES = [
   },
   {
     track: 'blue',
+    nameKey: 'about.diagram.lines.events',
+    nameFallback: 'Events',
     stroke: 'hsl(var(--track-blue))',
     fill: 'bg-track-blue',
     station: { x: 78, y: 38 },
@@ -57,6 +61,8 @@ const LINES = [
   },
   {
     track: 'green',
+    nameKey: 'about.diagram.lines.community',
+    nameFallback: 'Community',
     stroke: 'hsl(var(--track-green))',
     fill: 'bg-track-green',
     station: { x: 78, y: 58 },
@@ -64,6 +70,8 @@ const LINES = [
   },
   {
     track: 'yellow',
+    nameKey: 'about.diagram.lines.places',
+    nameFallback: 'Places',
     stroke: 'hsl(var(--track-yellow))',
     fill: 'bg-track-yellow',
     station: { x: 80, y: 82 },
@@ -74,14 +82,14 @@ const LINES = [
 const pct = (v: number, span: number) => `${(v / span) * 100}%`;
 
 export function NetworkDiagram({ label, className }: { label: string; className?: string }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   // Keyed off the language the way `<html dir>` is, so the diagram mirrors WITH
   // the page and can never mirror against it. Not `i18n.dir()`.
   const rtl = isRtlLocale(i18n.language);
   const mx = (x: number) => (rtl ? VIEW_W - x : x);
 
   return (
-    <div role="img" aria-label={label} className={cn('relative h-24 w-full md:h-32', className)}>
+    <div role="img" aria-label={label} className={cn('relative h-32 w-full md:h-36', className)}>
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
         preserveAspectRatio="none"
@@ -112,16 +120,34 @@ export function NetworkDiagram({ label, className }: { label: string; className?
             'pointer-events-none absolute block h-4 w-4 -translate-x-1/2 -translate-y-1/2',
             // Ink ring border-gates the fill: blue, green and yellow all measure
             // under 3:1 against paper on their own.
-            'rounded-full border border-border-hairline',
+            'rounded-full border-[3px] border-foreground',
             line.fill,
           )}
         />
       ))}
 
+      {/* Each line's name, just past its station. The lines were unlabelled,
+          so on screen the diagram said nothing the aria-label did not; now
+          the picture carries the same words. Paper behind the text so it
+          reads where it crosses its own line. */}
+      {LINES.map((line) => (
+        <span
+          key={`name-${line.track}`}
+          aria-hidden="true"
+          style={{ left: pct(mx(line.station.x), VIEW_W), top: pct(line.station.y, VIEW_H) }}
+          className={cn(
+            'pointer-events-none absolute -translate-y-1/2 whitespace-nowrap rounded-badge bg-background px-1.5 text-13 font-bold leading-5',
+            rtl ? '-ml-4 -translate-x-full' : 'ml-4',
+          )}
+        >
+          {t(line.nameKey, line.nameFallback)}
+        </span>
+      ))}
+
       <span
         aria-hidden="true"
         style={{ left: pct(mx(JUNCTION.x), VIEW_W), top: pct(JUNCTION.y, VIEW_H) }}
-        className="intersection-gradient pointer-events-none absolute block h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border-hairline md:h-12 md:w-12"
+        className="intersection-gradient pointer-events-none absolute block h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-foreground md:h-12 md:w-12"
       />
     </div>
   );
