@@ -472,7 +472,10 @@ export function eventStatusLabel(event: EventWithRelations): string | undefined 
  * United States". A city name is not a venue, so it is dropped here and
  * the city line carries it once.
  */
-export function eventVenueText(event: EventWithRelations, cityName: string | null): string | null {
+export function eventVenueText(
+  event: EventWithRelations,
+  cityName: string | null | undefined,
+): string | null {
   const name = event.venue_name?.trim();
   if (!name) return null;
   const norm = (v: string) => v.trim().toLocaleLowerCase();
