@@ -61,7 +61,7 @@ export interface LineStripProps extends InfographicViewProps {
 const AMP = 5;
 /** Across, the gaps are several times longer than they are down a phone, so
  *  the same depth flattens out; it needs a little more to read as a wave. */
-const AMP_ACROSS = 9;
+const AMP_ACROSS = 14;
 const STROKE = 6;
 
 /** Shared props for every track SVG: decoration only, never focusable, and
@@ -115,39 +115,6 @@ function Wave({ track, flip }: { track: Track; flip: boolean }) {
   );
 }
 
-/** The line arriving at its first stop round a bend. Fixed-size boxes (no
- *  stretching), each curve ending on the first ring's centre. */
-function LeadIn({ track }: { track: Track }) {
-  const common = {
-    fill: 'none',
-    stroke: TRACK_STROKE[track],
-    strokeWidth: STROKE,
-    strokeLinecap: 'round' as const,
-  };
-  return (
-    <>
-      {/* Phones: comes in from the end side along the top, turns down. The
-          box's bottom edge is the ring's centre (y = 40). */}
-      <svg
-        {...svgProps}
-        viewBox="0 0 48 40"
-        className="absolute start-0 top-[calc(50%-40px)] block h-10 w-12 overflow-visible md:hidden rtl:-scale-x-100"
-      >
-        <path d="M 48 3 C 24 1, 12 14, 12 40" {...common} />
-      </svg>
-      {/* md+: drops in from above, turns along the strip. The box's end edge
-          is the ring's centre (x = 64, y = 37 → 12px into the stop row). */}
-      <svg
-        {...svgProps}
-        viewBox="0 0 64 40"
-        className="absolute end-1/2 top-[-25px] hidden h-10 w-16 overflow-visible md:block rtl:-scale-x-100"
-      >
-        <path d="M 3 0 C 3 26, 26 39, 64 37" {...common} />
-      </svg>
-    </>
-  );
-}
-
 export function LineStrip({
   lines,
   readoutTitleKey,
@@ -190,7 +157,7 @@ export function LineStrip({
               </p>
 
               <ol
-                className="mt-8 flex list-none flex-col p-0 md:grid md:grid-flow-col md:auto-cols-fr"
+                className="mt-6 flex list-none flex-col p-0 md:grid md:grid-flow-col md:auto-cols-fr"
                 data-line={line.id}
               >
                 {line.stops.map((stop, i) => {
@@ -210,7 +177,6 @@ export function LineStrip({
                           downwards; from md it runs across. Each SVG is
                           aria-hidden decoration; the inputs carry the
                           meaning. */}
-                      {i === 0 && <LeadIn track={line.track} />}
                       {!last && <Wave track={line.track} flip={i % 2 === 1} />}
                       <input
                         type={line.select === 'one' ? 'radio' : 'checkbox'}
