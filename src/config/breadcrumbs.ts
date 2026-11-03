@@ -39,6 +39,7 @@ const SEGMENT_SECTIONS: Record<string, { path: string; key: string; fallback: st
   cities: { path: '/cities', key: 'breadcrumb.cities', fallback: 'Cities' },
   city: { path: '/cities', key: 'breadcrumb.cities', fallback: 'Cities' },
   country: { path: '/cities', key: 'breadcrumb.cities', fallback: 'Cities' },
+  countries: { path: '/cities', key: 'breadcrumb.cities', fallback: 'Cities' },
   'going-out': { path: '/going-out', key: 'breadcrumb.goingOut', fallback: 'Going out' },
   // Every /hub route except /hub/people derived NOTHING here, so BreadcrumbBar
   // fell through to RouteNetworkRail — which is `aria-hidden` decoration whose
@@ -70,6 +71,14 @@ const SEGMENT_SECTIONS: Record<string, { path: string; key: string; fallback: st
   trips: { path: '/trips', key: 'breadcrumb.trips', fallback: 'Trips' },
   help: { path: '/help', key: 'breadcrumb.help', fallback: 'Help' },
   pride: { path: '/pride', key: 'breadcrumb.pride', fallback: 'Pride' },
+  // Without a row here every /competitions page fell through to
+  // RouteNetworkRail: decoration with unlabelled stations, drawn over the
+  // title area where a real "Home › Competitions" trail belongs.
+  competitions: {
+    path: '/competitions',
+    key: 'breadcrumb.competitions',
+    fallback: 'Competitions',
+  },
   wishlists: { path: '/wishlists', key: 'breadcrumb.wishlists', fallback: 'Wishlists' },
 };
 

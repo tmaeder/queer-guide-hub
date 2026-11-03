@@ -24,6 +24,17 @@ describe('getRouteBreadcrumbs', () => {
     expect(getRouteBreadcrumbs('/totally-unknown', t)).toBeNull();
   });
 
+  it('gives /competitions pages a real trail instead of the decorative rail', () => {
+    // With no section row they fell through to RouteNetworkRail, whose
+    // stations named nothing.
+    for (const path of ['/competitions', '/competitions/drag-series']) {
+      expect(getRouteBreadcrumbs(path, t)).toEqual([
+        { label: 'Home', href: '/' },
+        { label: 'Competitions', href: '/competitions' },
+      ]);
+    }
+  });
+
   it('builds Home / Venues for the venues list', () => {
     const trail = getRouteBreadcrumbs('/venues', t);
     expect(trail).toEqual([

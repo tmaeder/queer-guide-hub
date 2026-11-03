@@ -31,7 +31,8 @@
     "wishlists": "Wishlists",
     "guides": "Guides",
     "people": "Meet people",
-    "showCollapsed": "Show the levels above"
+    "showCollapsed": "Show the levels above",
+    "competitions": "Competitions"
   },
   "cruising": {
     "meta": {
@@ -4228,7 +4229,8 @@
     "photoCredit": "Photo",
     "eraNavHeading": "The line, end to end",
     "eraNavStation": "{{era}}, {{count}} milestones",
-    "emptyTitle": "No service on this stretch of the line"
+    "emptyTitle": "No service on this stretch of the line",
+    "eraNavInk": "Drawn in ink: eras of persecution."
   },
   "guides": {
     "hub": {

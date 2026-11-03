@@ -3594,7 +3594,8 @@
     "organizations": "[JA] Organizations",
     "guides": "ガイド",
     "people": "出会う",
-    "showCollapsed": "上の階層を表示"
+    "showCollapsed": "上の階層を表示",
+    "competitions": "コンテスト"
   },
   "chat": {
     "react": "リアクション",
@@ -4175,7 +4176,8 @@
     "photoCredit": "[JA] Photo",
     "eraNavHeading": "[JA] The line, end to end",
     "eraNavStation": "[JA] {{era}} — {{count}} milestones",
-    "emptyTitle": "[JA] No service on this stretch of the line"
+    "emptyTitle": "[JA] No service on this stretch of the line",
+    "eraNavInk": "黒い区間は迫害の時代です。"
   },
   "guides": {
     "hub": {

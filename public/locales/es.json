@@ -3596,7 +3596,8 @@
     "organizations": "[ES] Organizations",
     "guides": "Guías",
     "people": "Conocer gente",
-    "showCollapsed": "Mostrar los niveles superiores"
+    "showCollapsed": "Mostrar los niveles superiores",
+    "competitions": "Competiciones"
   },
   "chat": {
     "react": "Reaccionar",
@@ -4177,7 +4178,8 @@
     "photoCredit": "[ES] Photo",
     "eraNavHeading": "[ES] The line, end to end",
     "eraNavStation": "[ES] {{era}} — {{count}} milestones",
-    "emptyTitle": "[ES] No service on this stretch of the line"
+    "emptyTitle": "[ES] No service on this stretch of the line",
+    "eraNavInk": "En negro: épocas de persecución."
   },
   "guides": {
     "hub": {

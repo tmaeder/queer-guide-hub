@@ -1908,8 +1908,8 @@ h2:not(.font-sans),
 }
 .route-network-rail__breadcrumb-map .route-network-rail__track {
   /* The breadcrumb endpoints must stay physically connected to the route.
-     The normalized dash animation can finish short when this SVG is stretched
-     non-uniformly, so reserve that effect for the decorative family rail. */
+     A normalized dash draw-in finishes short when this SVG is stretched
+     non-uniformly, so neither rail uses one. */
   stroke-dasharray: none;
   animation: none;
 }
@@ -1936,12 +1936,12 @@ h2:not(.font-sans),
   height: 100%;
 }
 .route-network-rail__track {
+  /* No normalized dash draw-in here: in a non-uniformly stretched SVG it
+     finishes short and the line stops before the edge. */
   fill: none;
   stroke-width: 9;
   stroke-linecap: round;
-  stroke-dasharray: 1;
   opacity: 1;
-  animation: network-draw var(--motion-network-draw) cubic-bezier(0.22, 1, 0.36, 1) both;
   vector-effect: non-scaling-stroke;
 }
 .route-network-rail__track--pink {
@@ -1979,16 +1979,6 @@ h2:not(.font-sans),
   text-overflow: ellipsis;
   text-transform: capitalize;
   white-space: nowrap;
-}
-.route-network-rail__station,
-.route-network-rail__interchange {
-  fill: hsl(var(--background));
-  stroke: hsl(var(--track-ring));
-  stroke-width: 4;
-  vector-effect: non-scaling-stroke;
-}
-.route-network-rail__interchange {
-  stroke-width: 5;
 }
 
 .intent-map-section {

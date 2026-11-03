@@ -3604,7 +3604,8 @@
     "organizations": "[AR] Organizations",
     "guides": "الأدلة",
     "people": "تعرّف على أشخاص",
-    "showCollapsed": "إظهار المستويات الأعلى"
+    "showCollapsed": "إظهار المستويات الأعلى",
+    "competitions": "المسابقات"
   },
   "chat": {
     "react": "تفاعل",
@@ -4185,7 +4186,8 @@
     "photoCredit": "[AR] Photo",
     "eraNavHeading": "[AR] The line, end to end",
     "eraNavStation": "[AR] {{era}} — {{count}} milestones",
-    "emptyTitle": "[AR] No service on this stretch of the line"
+    "emptyTitle": "[AR] No service on this stretch of the line",
+    "eraNavInk": "باللون الأسود: عصور الاضطهاد."
   },
   "guides": {
     "hub": {
