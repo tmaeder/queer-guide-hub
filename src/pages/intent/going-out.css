@@ -317,9 +317,7 @@
   }
 
   .going-out-city h3 {
-    font-family: var(--font-sans);
     font-size: var(--text-title);
-    font-weight: 700;
   }
 }
 
