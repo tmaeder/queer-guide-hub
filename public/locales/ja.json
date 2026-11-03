@@ -2625,6 +2625,11 @@
       "detail": {
         "inTheNews": "In the news",
         "relatedEvents": "Related events"
+      },
+      "competitions": {
+        "heading": "コンテストとタイトル保持者",
+        "all": "すべてのコンテスト →",
+        "lede": "ドラァグ番組、ページェント、タイトルコンテスト。各回の開催とすべての出場者を掲載。出場者はここにあるプロフィールにリンクしています。"
       }
     },
     "groups": {
@@ -5071,7 +5076,8 @@
       "editions": "[JA] Editions",
       "entrants": "[JA] Entries",
       "linked": "[JA] Linked to a profile"
-    }
+    },
+    "backToPersonalities": "← 人物"
   },
   "styleguide": {
     "metaTitle": "[JA] Editorial styleguide and tone of voice",

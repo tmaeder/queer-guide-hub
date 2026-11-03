@@ -1,5 +1,4 @@
 import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -9,13 +8,12 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { TRACK_STROKE } from '@/components/transit/routeBulletMap';
 import { Eyebrow } from '@/components/ui/Eyebrow';
-import { useCompetitionOverview } from '@/hooks/useCompetitions';
+import { useCompetitionCategoryCounts } from '@/hooks/useCompetitions';
 import { useMeta } from '@/hooks/useMeta';
 import {
   COMPETITION_CATEGORIES,
   categoryPath,
   type CategoryDef,
-  type CompetitionCategory,
 } from '@/lib/competitionCategories';
 
 /**
@@ -37,11 +35,6 @@ import {
  * figures are derived from the same overview fetch the category pages use, so
  * the card and the page it opens can never disagree.
  */
-
-interface CategoryCount {
-  competitions: number;
-  editions: number;
-}
 
 /**
  * The hub is a LINE KEY, and it is the one competition surface that carries
@@ -84,7 +77,7 @@ export default function Competitions() {
   useReferenceTaxonomy('competition_category');
 
   const { t } = useTranslation();
-  const overview = useCompetitionOverview();
+  const { counts, isLoading: loading, isError: failed } = useCompetitionCategoryCounts();
 
   useMeta({
     title: t(
@@ -98,22 +91,17 @@ export default function Competitions() {
     canonicalPath: '/competitions',
   });
 
-  const counts = useMemo(() => {
-    const byCategory = new Map<CompetitionCategory, CategoryCount>();
-    for (const c of overview.data?.competitions ?? []) {
-      const current = byCategory.get(c.category) ?? { competitions: 0, editions: 0 };
-      current.competitions += 1;
-      current.editions += c.editions.length;
-      byCategory.set(c.category, current);
-    }
-    return byCategory;
-  }, [overview.data?.competitions]);
-
-  const loading = overview.isLoading;
-  const failed = overview.isError;
-
   return (
     <PageContainer>
+      {/* Competitions are records about PEOPLE — every entrant who has a public
+          personality row links to it — so the hub is reached from, and leads
+          back to, the people directory. */}
+      <LocalizedLink
+        to="/personalities"
+        className="mb-4 inline-flex text-13 font-bold text-muted-foreground no-underline hover:text-foreground"
+      >
+        {t('competitions.backToPersonalities', '← Personalities')}
+      </LocalizedLink>
       <Eyebrow>{t('competitions.eyebrow', 'Competitions')}</Eyebrow>
       <h1 className="text-display font-display">
         {t('competitions.title', 'Six kinds of competition, six sets of records')}

@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { supabase } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';
+import type { CompetitionCategory } from '@/lib/competitionCategories';
 import type {
   CompetitionGrid,
   CompetitionHistoryEntry,
@@ -34,6 +36,36 @@ export function useCompetitionOverview() {
       return data ?? { competitions: [] };
     },
   });
+}
+
+export interface CompetitionCategoryCount {
+  competitions: number;
+  editions: number;
+}
+
+/**
+ * Competitions and editions per category, derived from the SAME overview fetch
+ * the category pages use. Shared by the /competitions hub and the competition
+ * line key on /personalities so the two surfaces can never disagree, and so
+ * neither carries a hardcoded "22 competitions" that is wrong the first time an
+ * edition is imported.
+ *
+ * A category with no rows is ABSENT from the map, not zero — callers render
+ * `?? 0` once loading is over, so "still counting" and "none" stay distinct.
+ */
+export function useCompetitionCategoryCounts() {
+  const overview = useCompetitionOverview();
+  const counts = useMemo(() => {
+    const byCategory = new Map<CompetitionCategory, CompetitionCategoryCount>();
+    for (const c of overview.data?.competitions ?? []) {
+      const current = byCategory.get(c.category) ?? { competitions: 0, editions: 0 };
+      current.competitions += 1;
+      current.editions += c.editions.length;
+      byCategory.set(c.category, current);
+    }
+    return byCategory;
+  }, [overview.data?.competitions]);
+  return { counts, isLoading: overview.isLoading, isError: overview.isError };
 }
 
 export function useCompetitionRoster() {

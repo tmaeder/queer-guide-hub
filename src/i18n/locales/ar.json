@@ -2635,6 +2635,11 @@
       "detail": {
         "inTheNews": "In the news",
         "relatedEvents": "Related events"
+      },
+      "competitions": {
+        "heading": "المسابقات وحاملو الألقاب",
+        "all": "كل المسابقات ←",
+        "lede": "سلاسل الدراغ ومسابقات الجمال ومسابقات الألقاب، مع كل دورة وكل من شارك فيها. يرتبط المشاركون بصفحاتهم هنا."
       }
     },
     "groups": {
@@ -5081,7 +5086,8 @@
       "editions": "[AR] Editions",
       "entrants": "[AR] Entries",
       "linked": "[AR] Linked to a profile"
-    }
+    },
+    "backToPersonalities": "→ الشخصيات"
   },
   "styleguide": {
     "metaTitle": "[AR] Editorial styleguide and tone of voice",

@@ -33,6 +33,7 @@ import { PersonalitiesFiltersBar } from '@/components/personalities/Personalitie
 import { StickyLetterBar } from '@/components/ui/StickyLetterBar';
 import { FeaturedPersonalityRail } from '@/components/personalities/FeaturedPersonalityRail';
 import { EditorialEntries } from '@/components/personalities/EditorialEntries';
+import { CompetitionsLineKey } from '@/components/personalities/CompetitionsLineKey';
 import { EraLine } from '@/components/personalities/EraLine';
 import { PersonalitiesTimeline } from '@/components/personalities/PersonalitiesTimeline';
 // Lazy: keeps the maplibre chunk off the default grid/timeline views
@@ -418,6 +419,7 @@ export default function Personalities() {
               activeProfession={filters.profession}
               onProfessionSelect={handleProfessionSelect}
             />
+            <CompetitionsLineKey />
             <FeaturedPersonalityRail />
           </>
         )}

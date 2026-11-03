@@ -2625,6 +2625,11 @@
       "detail": {
         "inTheNews": "In the news",
         "relatedEvents": "Related events"
+      },
+      "competitions": {
+        "heading": "比赛与头衔得主",
+        "all": "全部比赛 →",
+        "lede": "变装比赛节目、选美和头衔比赛，收录每一届及所有参赛者。参赛者链接到此处的人物页面。"
       }
     },
     "groups": {
@@ -5071,7 +5076,8 @@
       "editions": "[ZH] Editions",
       "entrants": "[ZH] Entries",
       "linked": "[ZH] Linked to a profile"
-    }
+    },
+    "backToPersonalities": "← 人物"
   },
   "styleguide": {
     "metaTitle": "[ZH] Editorial styleguide and tone of voice",

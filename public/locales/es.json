@@ -2627,6 +2627,11 @@
       "detail": {
         "inTheNews": "In the news",
         "relatedEvents": "Related events"
+      },
+      "competitions": {
+        "heading": "Competiciones y titulares",
+        "all": "Todas las competiciones →",
+        "lede": "Series de drag, certámenes y concursos de títulos, cada uno con todas sus ediciones y todas las personas que compitieron. Las concursantes enlazan a su ficha aquí."
       }
     },
     "groups": {
@@ -5073,7 +5078,8 @@
       "editions": "[ES] Editions",
       "entrants": "[ES] Entries",
       "linked": "[ES] Linked to a profile"
-    }
+    },
+    "backToPersonalities": "← Personalidades"
   },
   "styleguide": {
     "metaTitle": "[ES] Editorial styleguide and tone of voice",
