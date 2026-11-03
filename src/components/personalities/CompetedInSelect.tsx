@@ -40,7 +40,8 @@ interface Props {
  * Each competition and each "All: <type>" row shows its count of linked
  * people. The type count is DISTINCT people (from its own RPC), not a sum of
  * the rows beneath it — a queen on Drag Race and All Stars is one person.
- * "Any competition" carries no count for the same reason. Counts sit in the
+ * "Any competition" shows the RPC's separate overall row for the same reason
+ * (a sum of the types would count anyone in two types twice). Counts sit in the
  * item's `aside`, so the closed trigger shows only the label.
  *
  * If the options RPC fails, the select still offers "Any competition" and the
@@ -90,7 +91,9 @@ export function CompetedInSelect({ value, onChange }: Props) {
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={NONE}>{t('pages.personalities.competedIn.none', 'Everyone')}</SelectItem>
-        <SelectItem value={COMPETED_ANY}>
+        {/* The RPC's overall row is keyed `any`, the same token as COMPETED_ANY:
+            a DISTINCT count across every type, not a sum of the type rows. */}
+        <SelectItem value={COMPETED_ANY} aside={fmt(categoryPeople?.get(COMPETED_ANY))}>
           {t('pages.personalities.competedIn.any', 'Any competition')}
         </SelectItem>
         {value && !known.has(value) && <SelectItem value={value}>{value}</SelectItem>}

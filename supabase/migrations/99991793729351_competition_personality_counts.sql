@@ -46,9 +46,13 @@ comment on function public.competition_personality_counts() is
   'Competitions with at least one linked public, non-duplicate personality, with the distinct count. Backs the "Competed in" filter on /personalities. SECURITY INVOKER so the count matches what the caller can see.';
 
 -- The same count per CATEGORY, for the "People" links on the /personalities
--- line key. It cannot be summed from the per-competition rows above: a queen
--- on both RuPaul's Drag Race and All Stars is one person in drag_series, and a
--- sum would count her twice. Same predicate, same invoker semantics.
+-- line key, plus ONE overall row (`category = 'any'`) for "Any competition".
+-- Neither can be summed from the rows above it: a queen on both RuPaul's Drag
+-- Race and All Stars is one person in drag_series, and a person who competed
+-- in a drag series and a pageant is one person overall. GROUPING SETS gives
+-- every level its own DISTINCT count in a single scan. `any` cannot collide
+-- with a category id: none of the competition categories is named 'any'.
+-- Same predicate, same invoker semantics.
 create or replace function public.competition_category_personality_counts()
 returns table (category text, people integer)
 language sql
@@ -56,23 +60,24 @@ stable
 security invoker
 set search_path = public, pg_temp
 as $$
-  select c.category::text, count(distinct p.id)::integer as people
+  select case when grouping(c.category) = 1 then 'any' else c.category::text end as category,
+         count(distinct p.id)::integer as people
     from public.competitions c
     join public.competition_editions ed on ed.competition_id = c.id
     join public.competition_entrants e on e.edition_id = ed.id
     join public.personalities p on p.id = e.personality_id
    where p.visibility = 'public'
      and p.duplicate_of_id is null
-   group by c.category
+   group by grouping sets ((c.category), ())
   having count(distinct p.id) > 0
-   order by c.category;
+   order by grouping(c.category), c.category;
 $$;
 
 revoke all on function public.competition_category_personality_counts() from public;
 grant execute on function public.competition_category_personality_counts() to anon, authenticated, service_role;
 
 comment on function public.competition_category_personality_counts() is
-  'Distinct linked public, non-duplicate personalities per competition category. Backs the People links on the /personalities competition line key. SECURITY INVOKER.';
+  'Distinct linked public, non-duplicate personalities per competition category, plus an overall row with category = ''any''. Backs the People links on the /personalities line key and the Competed in counts. SECURITY INVOKER.';
 
 do $verify$
 declare

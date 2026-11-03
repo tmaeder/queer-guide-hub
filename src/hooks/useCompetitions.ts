@@ -107,7 +107,8 @@ export function useCompetedInOptions() {
 
 /**
  * Distinct linked public personalities per competition category, for the
- * "People" links on the /personalities line key. Not derivable by summing
+ * "People" links on the /personalities line key, plus the overall distinct
+ * count under the key `any` (COMPETED_ANY) for "Any competition". Not derivable by summing
  * `useCompetedInOptions`, because one person can enter several competitions in
  * the same category.
  *
