@@ -4796,52 +4796,49 @@
         "leadsTo": "[RU] Leads to"
       },
       "fourLines": {
-        "title": "[RU] Four lines",
-        "caption": "[RU] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
-        "summary": "[RU] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
-        "readout": "[RU] Where you are on each line",
-        "tableCaption": "[RU] Every line on the map and the stops it carries",
-        "corridor": {
-          "identity": "[RU] Gender identity: two independent services"
+        "title": "Четыре линии",
+        "caption": "Гендерная идентичность, гендерное самовыражение, пол, приписанный при рождении, и влечение идут по четырём отдельным линиям. Остановка на одной ничего не говорит об остановке на другой. Отметьте подходящие остановки. Ничего не сохраняется и не отправляется.",
+        "summary": "Четыре параллельные линии, которые никогда не пересекаются: гендерная идентичность, гендерное самовыражение, пол, приписанный при рождении, и влечение. У каждой есть названные остановки, и выбор на одной линии ничего не говорит о других.",
+        "readout": "Ваши четыре линии",
+        "independent": "Четыре отдельных ответа. Ни один не следует из другого.",
+        "reset": "Сбросить",
+        "tableCaption": "Все линии и их остановки",
+        "tableRule": "Как выбирать",
+        "pickOne": "Выберите одну",
+        "pickAny": "Выберите все подходящие",
+        "notPicked": "Остановка не выбрана",
+        "line": {
+          "identity": "Гендерная идентичность",
+          "expression": "Гендерное самовыражение",
+          "assigned": "Пол, приписанный при рождении",
+          "attraction": "Влечение"
         },
-        "axis": {
-          "identityWoman": "[RU] How much woman",
-          "identityMan": "[RU] How much man",
-          "expression": "[RU] Gender expression",
-          "assigned": "[RU] Sex assigned at birth",
-          "attraction": "[RU] Attraction"
+        "question": {
+          "identity": "Кем вы себя знаете. Может подойти несколько остановок: быть женщиной не значит занять место чего-то другого.",
+          "expression": "Как вы себя преподносите: одежда, голос, волосы, манера держаться. Названные остановки, а не шкала с серединой.",
+          "assigned": "То, что записали при вашем рождении, часто после беглого взгляда. Это не определяет остальные три линии.",
+          "attraction": "Кто вас привлекает. Кто вы и кто вас привлекает — разные вопросы."
         },
-        "help": {
-          "identityWoman": "[RU] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
-          "identityMan": "[RU] The second rail on the same corridor. Answering this one does not subtract from the one above.",
-          "expression": "[RU] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
-          "assigned": "[RU] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
-          "attraction": "[RU] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
-        },
-        "amount": {
-          "notAtAll": "[RU] Not at all",
-          "aLittle": "[RU] A little",
-          "aLot": "[RU] A lot",
-          "entirely": "[RU] Entirely",
-          "ratherNot": "[RU] Rather not say"
-        },
-        "expression": {
-          "feminine": "[RU] Feminine",
-          "androgynous": "[RU] Androgynous",
-          "masculine": "[RU] Masculine",
-          "changes": "[RU] It changes"
-        },
-        "assigned": {
-          "female": "[RU] Female",
-          "male": "[RU] Male",
-          "intersex": "[RU] Intersex variation"
-        },
-        "attraction": {
-          "women": "[RU] Women",
-          "men": "[RU] Men",
-          "moreThanOne": "[RU] More than one gender",
-          "regardless": "[RU] Regardless of gender",
-          "noOne": "[RU] No one, or rarely"
+        "stop": {
+          "woman": "Женщина",
+          "man": "Мужчина",
+          "nonBinary": "Небинарность",
+          "agender": "Агендер",
+          "fluid": "Гендерфлюид",
+          "questioning": "Пока разбираюсь",
+          "feminine": "Феминное",
+          "androgynous": "Андрогинное",
+          "masculine": "Маскулинное",
+          "changes": "Меняется",
+          "female": "Женский",
+          "male": "Мужской",
+          "intersex": "Интерсекс-вариация",
+          "women": "Женщины",
+          "men": "Мужчины",
+          "nonBinaryPeople": "Небинарные люди",
+          "regardless": "Независимо от гендера",
+          "noOne": "Редко или никто",
+          "ratherNot": "Предпочитаю не говорить"
         }
       },
       "consentFlow": {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { fourLinesMeta } from '../figures/fourLines/meta';
 import { consentFlowMeta } from '../figures/consentFlow/meta';
-import { AXES } from '../figures/fourLines/data';
+import { LINES } from '../figures/fourLines/data';
 import { NODES, EDGES } from '../figures/consentFlow/data';
 
 /**
@@ -21,27 +21,29 @@ import { NODES, EDGES } from '../figures/consentFlow/data';
 describe('data table drift', () => {
   it('Four Lines: one row per line on the map', () => {
     const table = fourLinesMeta.dataTable();
-    expect(table.rows).toHaveLength(AXES.length);
+    expect(table.rows).toHaveLength(LINES.length);
     // Row order is map order, so reading the table is reading the diagram.
     table.rows.forEach((row, i) => {
-      expect(row[0]).toBe(AXES[i].labelFallback);
+      expect(row[0]).toBe(LINES[i].labelFallback);
     });
   });
 
   it('Four Lines: every stop appears in its line row', () => {
     const table = fourLinesMeta.dataTable();
-    AXES.forEach((axis, i) => {
-      for (const station of axis.stations) {
-        expect(table.rows[i][1]).toContain(station.labelFallback);
+    LINES.forEach((line, i) => {
+      for (const stop of line.stops) {
+        expect(table.rows[i][2]).toContain(stop.labelFallback);
       }
     });
   });
 
-  it('Four Lines: the terminus reads as an ending, not a destination', () => {
+  it('Four Lines: the table says how each line is picked', () => {
+    // Pick-one vs pick-any IS the correction on identity and attraction; a
+    // table that dropped it would describe the slider we rebuilt away from.
     const table = fourLinesMeta.dataTable();
-    const i = AXES.findIndex((a) => a.terminus);
-    expect(i).toBeGreaterThanOrEqual(0);
-    expect(table.rows[i][2]).not.toContain('interchange');
+    LINES.forEach((line, i) => {
+      expect(table.rows[i][1]).toBe(line.select === 'one' ? 'Pick one' : 'Pick any that fit');
+    });
   });
 
   it('The Line That Stops: one row per stop', () => {

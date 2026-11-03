@@ -35,7 +35,7 @@ export type RiskTier = OverallRisk;
 export type { Track };
 
 export type Archetype =
-  | 'axis-set'
+  | 'line-strip'
   | 'flow-graph'
   | 'zone-map'
   | 'card-catalog'

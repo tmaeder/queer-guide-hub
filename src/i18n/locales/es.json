@@ -4762,52 +4762,49 @@
         "leadsTo": "[ES] Leads to"
       },
       "fourLines": {
-        "title": "[ES] Four lines",
-        "caption": "[ES] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
-        "summary": "[ES] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
-        "readout": "[ES] Where you are on each line",
-        "tableCaption": "[ES] Every line on the map and the stops it carries",
-        "corridor": {
-          "identity": "[ES] Gender identity: two independent services"
+        "title": "Cuatro líneas",
+        "caption": "La identidad de género, la expresión de género, el sexo asignado al nacer y la atracción van por cuatro líneas separadas. Una parada en una no dice nada sobre una parada en otra. Toca las paradas que encajen. No se guarda ni se envía nada.",
+        "summary": "Cuatro líneas paralelas que nunca se cruzan: identidad de género, expresión de género, sexo asignado al nacer y atracción. Cada una tiene paradas con nombre, y lo elegido en una línea no dice nada sobre las demás.",
+        "readout": "Tus cuatro líneas",
+        "independent": "Cuatro respuestas separadas. Ninguna se deduce de otra.",
+        "reset": "Borrar",
+        "tableCaption": "Todas las líneas y sus paradas",
+        "tableRule": "Cómo elegir",
+        "pickOne": "Elige una",
+        "pickAny": "Elige todas las que encajen",
+        "notPicked": "Ninguna parada elegida",
+        "line": {
+          "identity": "Identidad de género",
+          "expression": "Expresión de género",
+          "assigned": "Sexo asignado al nacer",
+          "attraction": "Atracción"
         },
-        "axis": {
-          "identityWoman": "[ES] How much woman",
-          "identityMan": "[ES] How much man",
-          "expression": "[ES] Gender expression",
-          "assigned": "[ES] Sex assigned at birth",
-          "attraction": "[ES] Attraction"
+        "question": {
+          "identity": "Quién sabes que eres. Puede encajar más de una parada: ser mujer no quita espacio a nada más.",
+          "expression": "Cómo te presentas: ropa, voz, pelo, tu manera de moverte. Paradas con nombre, no una escala con un punto medio.",
+          "assigned": "Lo que se anotó cuando naciste, a menudo tras un vistazo. No decide las otras tres líneas.",
+          "attraction": "Quién te atrae. Quién eres y quién te atrae son preguntas distintas."
         },
-        "help": {
-          "identityWoman": "[ES] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
-          "identityMan": "[ES] The second rail on the same corridor. Answering this one does not subtract from the one above.",
-          "expression": "[ES] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
-          "assigned": "[ES] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
-          "attraction": "[ES] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
-        },
-        "amount": {
-          "notAtAll": "[ES] Not at all",
-          "aLittle": "[ES] A little",
-          "aLot": "[ES] A lot",
-          "entirely": "[ES] Entirely",
-          "ratherNot": "[ES] Rather not say"
-        },
-        "expression": {
-          "feminine": "[ES] Feminine",
-          "androgynous": "[ES] Androgynous",
-          "masculine": "[ES] Masculine",
-          "changes": "[ES] It changes"
-        },
-        "assigned": {
-          "female": "[ES] Female",
-          "male": "[ES] Male",
-          "intersex": "[ES] Intersex variation"
-        },
-        "attraction": {
-          "women": "[ES] Women",
-          "men": "[ES] Men",
-          "moreThanOne": "[ES] More than one gender",
-          "regardless": "[ES] Regardless of gender",
-          "noOne": "[ES] No one, or rarely"
+        "stop": {
+          "woman": "Mujer",
+          "man": "Hombre",
+          "nonBinary": "No binarie",
+          "agender": "Agénero",
+          "fluid": "Género fluido",
+          "questioning": "Todavía lo estoy descubriendo",
+          "feminine": "Femenina",
+          "androgynous": "Andrógina",
+          "masculine": "Masculina",
+          "changes": "Cambia",
+          "female": "Femenino",
+          "male": "Masculino",
+          "intersex": "Variación intersexual",
+          "women": "Mujeres",
+          "men": "Hombres",
+          "nonBinaryPeople": "Personas no binarias",
+          "regardless": "Sin importar el género",
+          "noOne": "Rara vez o nadie",
+          "ratherNot": "Prefiero no decirlo"
         }
       },
       "consentFlow": {

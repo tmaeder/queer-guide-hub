@@ -4770,52 +4770,49 @@
         "leadsTo": "[AR] Leads to"
       },
       "fourLines": {
-        "title": "[AR] Four lines",
-        "caption": "[AR] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
-        "summary": "[AR] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
-        "readout": "[AR] Where you are on each line",
-        "tableCaption": "[AR] Every line on the map and the stops it carries",
-        "corridor": {
-          "identity": "[AR] Gender identity: two independent services"
+        "title": "أربعة خطوط",
+        "caption": "الهوية الجندرية والتعبير الجندري والجنس المحدد عند الولادة والانجذاب تسير على أربعة خطوط منفصلة. المحطة على خط لا تخبرك شيئًا عن محطة على خط آخر. اختر المحطات التي تناسبك. لا يُحفظ أو يُرسل أي شيء.",
+        "summary": "أربعة خطوط متوازية لا تلتقي أبدًا: الهوية الجندرية والتعبير الجندري والجنس المحدد عند الولادة والانجذاب. لكل خط محطات مسماة، وما يُختار على خط لا يقول شيئًا عن الخطوط الأخرى.",
+        "readout": "خطوطك الأربعة",
+        "independent": "أربع إجابات منفصلة. لا تنتج أي منها عن الأخرى.",
+        "reset": "مسح",
+        "tableCaption": "كل الخطوط ومحطاتها",
+        "tableRule": "طريقة الاختيار",
+        "pickOne": "اختر واحدة",
+        "pickAny": "اختر كل ما يناسب",
+        "notPicked": "لم تُختر أي محطة",
+        "line": {
+          "identity": "الهوية الجندرية",
+          "expression": "التعبير الجندري",
+          "assigned": "الجنس المحدد عند الولادة",
+          "attraction": "الانجذاب"
         },
-        "axis": {
-          "identityWoman": "[AR] How much woman",
-          "identityMan": "[AR] How much man",
-          "expression": "[AR] Gender expression",
-          "assigned": "[AR] Sex assigned at birth",
-          "attraction": "[AR] Attraction"
+        "question": {
+          "identity": "من تعرف أنك هو. قد تناسبك أكثر من محطة: كونك امرأة لا يأخذ مكان أي شيء آخر.",
+          "expression": "كيف تقدّم نفسك: الملابس والصوت والشعر وطريقة حضورك. محطات مسماة، لا مقياس له منتصف.",
+          "assigned": "ما كُتب عند ولادتك، غالبًا بعد نظرة سريعة. لا يحدد الخطوط الثلاثة الأخرى.",
+          "attraction": "من ينجذب إليه قلبك. من أنت ومن تنجذب إليه سؤالان منفصلان."
         },
-        "help": {
-          "identityWoman": "[AR] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
-          "identityMan": "[AR] The second rail on the same corridor. Answering this one does not subtract from the one above.",
-          "expression": "[AR] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
-          "assigned": "[AR] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
-          "attraction": "[AR] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
-        },
-        "amount": {
-          "notAtAll": "[AR] Not at all",
-          "aLittle": "[AR] A little",
-          "aLot": "[AR] A lot",
-          "entirely": "[AR] Entirely",
-          "ratherNot": "[AR] Rather not say"
-        },
-        "expression": {
-          "feminine": "[AR] Feminine",
-          "androgynous": "[AR] Androgynous",
-          "masculine": "[AR] Masculine",
-          "changes": "[AR] It changes"
-        },
-        "assigned": {
-          "female": "[AR] Female",
-          "male": "[AR] Male",
-          "intersex": "[AR] Intersex variation"
-        },
-        "attraction": {
-          "women": "[AR] Women",
-          "men": "[AR] Men",
-          "moreThanOne": "[AR] More than one gender",
-          "regardless": "[AR] Regardless of gender",
-          "noOne": "[AR] No one, or rarely"
+        "stop": {
+          "woman": "امرأة",
+          "man": "رجل",
+          "nonBinary": "لا ثنائي",
+          "agender": "لا جندري",
+          "fluid": "جندر سائل",
+          "questioning": "ما زلت أكتشف",
+          "feminine": "أنثوي",
+          "androgynous": "مخنث المظهر",
+          "masculine": "ذكوري",
+          "changes": "يتغير",
+          "female": "أنثى",
+          "male": "ذكر",
+          "intersex": "تنوع ثنائي الجنس",
+          "women": "النساء",
+          "men": "الرجال",
+          "nonBinaryPeople": "الأشخاص اللاثنائيون",
+          "regardless": "بغض النظر عن الجندر",
+          "noOne": "نادرًا أو لا أحد",
+          "ratherNot": "أفضّل عدم القول"
         }
       },
       "consentFlow": {

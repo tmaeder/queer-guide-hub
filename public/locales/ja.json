@@ -4760,52 +4760,49 @@
         "leadsTo": "[JA] Leads to"
       },
       "fourLines": {
-        "title": "[JA] Four lines",
-        "caption": "[JA] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
-        "summary": "[JA] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
-        "readout": "[JA] Where you are on each line",
-        "tableCaption": "[JA] Every line on the map and the stops it carries",
-        "corridor": {
-          "identity": "[JA] Gender identity: two independent services"
+        "title": "4つの路線",
+        "caption": "性自認、性表現、出生時に割り当てられた性、惹かれる対象は、4つの別々の路線を走っています。ある路線の駅は、別の路線の駅について何も示しません。当てはまる駅をタップしてください。何も保存・送信されません。",
+        "summary": "決して交わらない4本の平行な路線：性自認、性表現、出生時に割り当てられた性、惹かれる対象。それぞれに名前の付いた駅があり、ある路線での選択は他の路線について何も示しません。",
+        "readout": "あなたの4つの路線",
+        "independent": "4つの別々の答え。どれも他から導かれるものではありません。",
+        "reset": "クリア",
+        "tableCaption": "すべての路線とその駅",
+        "tableRule": "選び方",
+        "pickOne": "1つ選ぶ",
+        "pickAny": "当てはまるものをすべて選ぶ",
+        "notPicked": "駅が選ばれていません",
+        "line": {
+          "identity": "性自認",
+          "expression": "性表現",
+          "assigned": "出生時に割り当てられた性",
+          "attraction": "惹かれる対象"
         },
-        "axis": {
-          "identityWoman": "[JA] How much woman",
-          "identityMan": "[JA] How much man",
-          "expression": "[JA] Gender expression",
-          "assigned": "[JA] Sex assigned at birth",
-          "attraction": "[JA] Attraction"
+        "question": {
+          "identity": "自分が誰であるか。複数の駅が当てはまることもあります。女性であることが他の何かの余地を奪うわけではありません。",
+          "expression": "あなたの見せ方：服装、声、髪型、振る舞い。中間点のある目盛りではなく、名前の付いた駅です。",
+          "assigned": "生まれたときに記録されたもの。多くは一目見て決められます。他の3つの路線を決めるものではありません。",
+          "attraction": "誰に惹かれるか。自分が誰かと、誰に惹かれるかは別々の問いです。"
         },
-        "help": {
-          "identityWoman": "[JA] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
-          "identityMan": "[JA] The second rail on the same corridor. Answering this one does not subtract from the one above.",
-          "expression": "[JA] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
-          "assigned": "[JA] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
-          "attraction": "[JA] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
-        },
-        "amount": {
-          "notAtAll": "[JA] Not at all",
-          "aLittle": "[JA] A little",
-          "aLot": "[JA] A lot",
-          "entirely": "[JA] Entirely",
-          "ratherNot": "[JA] Rather not say"
-        },
-        "expression": {
-          "feminine": "[JA] Feminine",
-          "androgynous": "[JA] Androgynous",
-          "masculine": "[JA] Masculine",
-          "changes": "[JA] It changes"
-        },
-        "assigned": {
-          "female": "[JA] Female",
-          "male": "[JA] Male",
-          "intersex": "[JA] Intersex variation"
-        },
-        "attraction": {
-          "women": "[JA] Women",
-          "men": "[JA] Men",
-          "moreThanOne": "[JA] More than one gender",
-          "regardless": "[JA] Regardless of gender",
-          "noOne": "[JA] No one, or rarely"
+        "stop": {
+          "woman": "女性",
+          "man": "男性",
+          "nonBinary": "ノンバイナリー",
+          "agender": "アジェンダー",
+          "fluid": "ジェンダーフルイド",
+          "questioning": "まだ模索中",
+          "feminine": "フェミニン",
+          "androgynous": "アンドロジナス",
+          "masculine": "マスキュリン",
+          "changes": "変わる",
+          "female": "女性",
+          "male": "男性",
+          "intersex": "インターセックスのバリエーション",
+          "women": "女性",
+          "men": "男性",
+          "nonBinaryPeople": "ノンバイナリーの人",
+          "regardless": "性別に関係なく",
+          "noOne": "まれに、または誰にも",
+          "ratherNot": "答えたくない"
         }
       },
       "consentFlow": {

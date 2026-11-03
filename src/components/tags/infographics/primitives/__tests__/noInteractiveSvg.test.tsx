@@ -15,9 +15,9 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render } from '@testing-library/react';
 import i18n from '@/i18n';
 import { FlowGraph } from '../FlowGraph';
-import { AxisSet } from '../AxisSet';
+import { LineStrip } from '../LineStrip';
 import { NODES, EDGES, VIEW, PAD } from '../../figures/consentFlow/data';
-import { AXES, JUNCTION, VIEW as FOUR_VIEW } from '../../figures/fourLines/data';
+import { LINES } from '../../figures/fourLines/data';
 
 const baseProps = {
   terms: {},
@@ -47,16 +47,15 @@ function renderFlow(rtl = false) {
   );
 }
 
-function renderAxes(rtl = false) {
+function renderLines() {
   return render(
-    <AxisSet
+    <LineStrip
       {...baseProps}
-      rtl={rtl}
-      axes={AXES}
-      viewBox={FOUR_VIEW}
-      junction={JUNCTION}
+      lines={LINES}
       readoutTitleKey="tags.figures.fourLines.readout"
-      readoutTitleFallback="Where you are"
+      readoutTitleFallback="Your four lines"
+      readoutNoteKey="tags.figures.fourLines.independent"
+      readoutNoteFallback="Four separate answers."
       renderTermChip={(slug) => <span data-testid="chip">{slug}</span>}
     />,
   );
@@ -77,15 +76,13 @@ describe('no interactive SVG', () => {
     }
   });
 
-  it('AxisSet puts no focusable element inside the drawing', () => {
-    const { container } = renderAxes();
-    for (const svg of container.querySelectorAll('svg')) {
-      expect(svg.querySelectorAll(FOCUSABLE)).toHaveLength(0);
-    }
+  it('LineStrip draws no SVG at all, so nothing focusable can hide in one', () => {
+    const { container } = renderLines();
+    expect(container.querySelectorAll('svg')).toHaveLength(0);
   });
 
   it('marks every drawing aria-hidden, so the wrapper owns the semantics', () => {
-    for (const { container } of [renderFlow(), renderAxes()]) {
+    for (const { container } of [renderFlow()]) {
       for (const svg of container.querySelectorAll('svg')) {
         expect(svg.getAttribute('aria-hidden')).toBe('true');
       }
@@ -99,14 +96,28 @@ describe('no interactive SVG', () => {
     for (const b of buttons) expect(b.closest('svg')).toBeNull();
   });
 
-  it('gives AxisSet a native radio per station, so arrow keys work for free', () => {
-    const { container } = renderAxes();
-    const radios = container.querySelectorAll<HTMLInputElement>('input[type="radio"]');
-    const stationCount = AXES.reduce((n, a) => n + a.stations.length, 0);
-    expect(radios).toHaveLength(stationCount);
+  it('gives LineStrip a native input per stop, grouped per line', () => {
+    const { container } = renderLines();
+    const inputs = container.querySelectorAll<HTMLInputElement>('input');
+    const stopCount = LINES.reduce((n, l) => n + l.stops.length, 0);
+    expect(inputs).toHaveLength(stopCount);
     // One group per line, so arrow keys move within a line and never across.
-    expect(new Set([...radios].map((r) => r.name)).size).toBe(AXES.length);
-    for (const r of radios) expect(r.closest('svg')).toBeNull();
+    expect(new Set([...inputs].map((r) => r.name)).size).toBe(LINES.length);
+    // Pick-one lines are radios; pick-any lines are checkboxes.
+    for (const line of LINES) {
+      const group = [...inputs].filter((i) => i.name.endsWith(`-${line.id}`));
+      for (const i of group) expect(i.type).toBe(line.select === 'one' ? 'radio' : 'checkbox');
+    }
+  });
+
+  it('labels every stop on the line itself, in the same order as the data', () => {
+    const { container } = renderLines();
+    for (const line of LINES) {
+      const ol = container.querySelector(`ol[data-line="${line.id}"]`);
+      expect(ol).not.toBeNull();
+      const labels = [...ol!.querySelectorAll('label')].map((l) => l.textContent);
+      expect(labels).toEqual(line.stops.map((s) => s.labelFallback));
+    }
   });
 });
 
@@ -120,36 +131,5 @@ describe('focus order follows the flow', () => {
       const cur = byId.get(ids[i])!;
       expect(prev.lane < cur.lane || (prev.lane === cur.lane && prev.slot < cur.slot)).toBe(true);
     }
-  });
-});
-
-describe('RTL mirrors the geometry, not the element', () => {
-  afterEach(async () => {
-    await i18n.changeLanguage('en');
-  });
-
-  it('AxisSet mirrors every station and never scales the wrapper', () => {
-    const lefts = (c: HTMLElement) =>
-      [...c.querySelectorAll<HTMLElement>('span[aria-hidden="true"][style*="left"]')].map((s) =>
-        Number.parseFloat(s.style.left),
-      );
-
-    const ltr = renderAxes(false);
-    const ltrLefts = lefts(ltr.container);
-    expect(ltr.container.querySelector('svg g')?.getAttribute('transform')).toBeNull();
-    ltr.unmount();
-
-    const rtl = renderAxes(true);
-    const rtlLefts = lefts(rtl.container);
-    expect(rtl.container.querySelector('svg g')?.getAttribute('transform')).toBe(
-      `translate(${FOUR_VIEW.w},0) scale(-1,1)`,
-    );
-    // An `rtl:-scale-x-100` on the wrapper would flip each ring's own centring
-    // translate a SECOND time and drop every station off its line.
-    expect(rtl.container.innerHTML).not.toContain('scale-x');
-
-    expect(rtlLefts).toHaveLength(ltrLefts.length);
-    rtlLefts.forEach((v, i) => expect(v).toBeCloseTo(100 - ltrLefts[i], 5));
-    rtl.unmount();
   });
 });

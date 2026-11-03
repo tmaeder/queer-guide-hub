@@ -1,290 +1,164 @@
 /**
  * Four Lines — the data.
  *
- * A rebuild of the Genderbread/Gender-Unicorn idea, corrected in two places
- * where the widely-circulated versions are wrong, and drawn as a transit map
- * because the corrections ARE geometry:
+ * A rebuild of the Genderbread / Gender-Unicorn idea as four strip maps. The
+ * widely-circulated versions are wrong in ways this file corrects by
+ * STRUCTURE rather than by caption:
  *
- * 1. **Identity is two rails in one corridor, not one bipolar slider.**
- *    A single Woman↔Man bar forces a tradeoff — more of one is less of the
- *    other — which is false, and it is why the v2 Genderbread was superseded.
- *    Two services running the same trunk can be any length independently, so
- *    the diagram states the correction instead of captioning it.
- * 2. **"Sex assigned at birth", never "biological sex", and it is a terminus
- *    stub.** The line records where you started and runs on to nothing. The
- *    older diagrams point an arrow at a body part and put "male/female with
- *    intersex as a combination of the two" on it, which is both wrong and
- *    something intersex communities have objected to for years.
+ * 1. **The lines never meet.** Identity, expression, sex assigned at birth and
+ *    attraction are independent: a stop on one predicts nothing on another.
+ *    An earlier draft of this figure ran all four into one interchange, which
+ *    drew the opposite claim. Each line is now its own strip.
+ * 2. **Identity and attraction are pick-any, not sliders.** A single
+ *    Woman↔Man bar forces a tradeoff — more of one is less of the other —
+ *    which is false. Letting a reader pick several stops states that directly,
+ *    without the two unlabelled "how much woman / how much man" rails the
+ *    earlier draft needed to make the same point.
+ * 3. **"Sex assigned at birth", never "biological sex"**, and an intersex
+ *    variation is a stop of its own, not "a combination of the two".
  *
- * Expression and attraction are deliberately NOT poles-with-a-middle either;
- * their stops are named categories, so no station means "halfway".
- *
- * Every line carries an explicit "prefer not to say" stop. Leaving the empty
- * state to do that job silently makes not answering look like not finishing.
- *
- * Geometry: stations are points; `axisPath` chains one cubic per segment so
- * every station is an endpoint by construction (see axisGeometry.ts).
+ * Stops are named categories, not points on a scale, so no stop means
+ * "halfway". Every line carries an explicit "rather not say" stop.
+ * Expression has no glossary slugs on purpose: presenting feminine is not
+ * being transfeminine, and linking the two would teach exactly that error.
  */
 
-import type { AxisSpec } from '../../primitives/AxisSet';
+import type { StripLine, StripStop } from '../../primitives/lineStripModel';
 
-export const VIEW = { w: 300, h: 210 } as const;
-export const JUNCTION = { x: 268, y: 105 } as const;
+const RATHER_NOT: StripStop = {
+  id: 'rather-not',
+  labelKey: 'tags.figures.fourLines.stop.ratherNot',
+  labelFallback: 'Rather not say',
+  exclusive: true,
+};
 
-/** Shared x ladder, so stations line up across lines like a real map. */
-const X = [64, 108, 152, 196, 234] as const;
-
-export const AXES: readonly AxisSpec[] = [
+export const LINES: readonly StripLine[] = [
   {
-    id: 'identity-woman',
+    id: 'identity',
     track: 'pink',
-    corridorKey: 'tags.figures.fourLines.corridor.identity',
-    corridorFallback: 'Gender identity: two independent services',
-    labelKey: 'tags.figures.fourLines.axis.identityWoman',
-    labelFallback: 'How much woman',
-    helpKey: 'tags.figures.fourLines.help.identityWoman',
-    helpFallback:
-      'Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.',
-    runIn: { x: 0, y: 20 },
-    runOut: JUNCTION,
-    stations: [
+    select: 'any',
+    labelKey: 'tags.figures.fourLines.line.identity',
+    labelFallback: 'Gender identity',
+    questionKey: 'tags.figures.fourLines.question.identity',
+    questionFallback:
+      'Who you know yourself to be. More than one stop can fit: being a woman does not use up room for anything else.',
+    stops: [
+      { id: 'woman', labelKey: 'tags.figures.fourLines.stop.woman', labelFallback: 'Woman' },
+      { id: 'man', labelKey: 'tags.figures.fourLines.stop.man', labelFallback: 'Man' },
       {
-        id: 'not-at-all',
-        labelKey: 'tags.figures.fourLines.amount.notAtAll',
-        labelFallback: 'Not at all',
-        at: { x: X[0], y: 18 },
-      },
-      {
-        id: 'a-little',
-        labelKey: 'tags.figures.fourLines.amount.aLittle',
-        labelFallback: 'A little',
-        at: { x: X[1], y: 24 },
-      },
-      {
-        id: 'a-lot',
-        labelKey: 'tags.figures.fourLines.amount.aLot',
-        labelFallback: 'A lot',
-        at: { x: X[2], y: 20 },
-      },
-      {
-        id: 'entirely',
-        labelKey: 'tags.figures.fourLines.amount.entirely',
-        labelFallback: 'Entirely',
-        at: { x: X[3], y: 26 },
-      },
-      {
-        id: 'rather-not',
-        labelKey: 'tags.figures.fourLines.amount.ratherNot',
-        labelFallback: 'Rather not say',
-        at: { x: X[4], y: 46 },
-      },
-    ],
-  },
-  {
-    id: 'identity-man',
-    track: 'pink',
-    corridorKey: 'tags.figures.fourLines.corridor.identity',
-    corridorFallback: 'Gender identity: two independent services',
-    labelKey: 'tags.figures.fourLines.axis.identityMan',
-    labelFallback: 'How much man',
-    helpKey: 'tags.figures.fourLines.help.identityMan',
-    helpFallback:
-      'The second rail on the same corridor. Answering this one does not subtract from the one above.',
-    runIn: { x: 0, y: 42 },
-    runOut: JUNCTION,
-    stations: [
-      {
-        id: 'not-at-all',
-        labelKey: 'tags.figures.fourLines.amount.notAtAll',
-        labelFallback: 'Not at all',
-        at: { x: X[0], y: 40 },
-        slug: 'agender',
-      },
-      {
-        id: 'a-little',
-        labelKey: 'tags.figures.fourLines.amount.aLittle',
-        labelFallback: 'A little',
-        at: { x: X[1], y: 46 },
+        id: 'non-binary',
+        labelKey: 'tags.figures.fourLines.stop.nonBinary',
+        labelFallback: 'Non-binary',
         slug: 'non-binary',
       },
       {
-        id: 'a-lot',
-        labelKey: 'tags.figures.fourLines.amount.aLot',
-        labelFallback: 'A lot',
-        at: { x: X[2], y: 42 },
+        id: 'agender',
+        labelKey: 'tags.figures.fourLines.stop.agender',
+        labelFallback: 'Agender',
+        slug: 'agender',
       },
       {
-        id: 'entirely',
-        labelKey: 'tags.figures.fourLines.amount.entirely',
-        labelFallback: 'Entirely',
-        at: { x: X[3], y: 48 },
+        id: 'fluid',
+        labelKey: 'tags.figures.fourLines.stop.fluid',
+        labelFallback: 'Genderfluid',
+        slug: 'gender-fluid',
       },
       {
-        id: 'rather-not',
-        labelKey: 'tags.figures.fourLines.amount.ratherNot',
-        labelFallback: 'Rather not say',
-        at: { x: X[4], y: 62 },
+        id: 'questioning',
+        labelKey: 'tags.figures.fourLines.stop.questioning',
+        labelFallback: 'Still working it out',
       },
+      RATHER_NOT,
     ],
   },
   {
     id: 'expression',
     track: 'blue',
-    labelKey: 'tags.figures.fourLines.axis.expression',
+    select: 'any',
+    labelKey: 'tags.figures.fourLines.line.expression',
     labelFallback: 'Gender expression',
-    helpKey: 'tags.figures.fourLines.help.expression',
-    helpFallback:
-      'How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.',
-    runIn: { x: 0, y: 90 },
-    runOut: JUNCTION,
-    stations: [
+    questionKey: 'tags.figures.fourLines.question.expression',
+    questionFallback:
+      'How you present: clothes, voice, hair, the way you carry yourself. Named stops, not a scale with a middle.',
+    stops: [
       {
         id: 'feminine',
-        labelKey: 'tags.figures.fourLines.expression.feminine',
+        labelKey: 'tags.figures.fourLines.stop.feminine',
         labelFallback: 'Feminine',
-        at: { x: X[0], y: 88 },
-        slug: 'transfeminine',
       },
       {
         id: 'androgynous',
-        labelKey: 'tags.figures.fourLines.expression.androgynous',
+        labelKey: 'tags.figures.fourLines.stop.androgynous',
         labelFallback: 'Androgynous',
-        at: { x: X[1], y: 94 },
       },
       {
         id: 'masculine',
-        labelKey: 'tags.figures.fourLines.expression.masculine',
+        labelKey: 'tags.figures.fourLines.stop.masculine',
         labelFallback: 'Masculine',
-        at: { x: X[2], y: 88 },
-        slug: 'transmasculine',
       },
       {
         id: 'changes',
-        labelKey: 'tags.figures.fourLines.expression.changes',
+        labelKey: 'tags.figures.fourLines.stop.changes',
         labelFallback: 'It changes',
-        at: { x: X[3], y: 94 },
-        slug: 'gender-fluid',
       },
-      {
-        id: 'rather-not',
-        labelKey: 'tags.figures.fourLines.amount.ratherNot',
-        labelFallback: 'Rather not say',
-        at: { x: X[4], y: 100 },
-      },
+      RATHER_NOT,
     ],
   },
   {
     id: 'assigned',
     track: 'green',
-    terminus: true,
-    labelKey: 'tags.figures.fourLines.axis.assigned',
+    select: 'one',
+    labelKey: 'tags.figures.fourLines.line.assigned',
     labelFallback: 'Sex assigned at birth',
-    helpKey: 'tags.figures.fourLines.help.assigned',
-    helpFallback:
-      'What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.',
-    runIn: { x: 0, y: 140 },
-    runOut: { x: 0, y: 140 },
-    stations: [
-      {
-        id: 'female',
-        labelKey: 'tags.figures.fourLines.assigned.female',
-        labelFallback: 'Female',
-        at: { x: X[0], y: 138 },
-      },
-      {
-        id: 'male',
-        labelKey: 'tags.figures.fourLines.assigned.male',
-        labelFallback: 'Male',
-        at: { x: X[1], y: 144 },
-      },
+    questionKey: 'tags.figures.fourLines.question.assigned',
+    questionFallback:
+      'What was written down when you were born, often after a glance. It does not decide the other three lines.',
+    stops: [
+      { id: 'female', labelKey: 'tags.figures.fourLines.stop.female', labelFallback: 'Female' },
+      { id: 'male', labelKey: 'tags.figures.fourLines.stop.male', labelFallback: 'Male' },
       {
         id: 'intersex',
-        labelKey: 'tags.figures.fourLines.assigned.intersex',
+        labelKey: 'tags.figures.fourLines.stop.intersex',
         labelFallback: 'Intersex variation',
-        at: { x: X[2], y: 138 },
         slug: 'intersex',
       },
-      {
-        id: 'rather-not',
-        labelKey: 'tags.figures.fourLines.amount.ratherNot',
-        labelFallback: 'Rather not say',
-        at: { x: X[3], y: 144 },
-      },
+      RATHER_NOT,
     ],
   },
   {
     id: 'attraction',
     track: 'yellow',
-    labelKey: 'tags.figures.fourLines.axis.attraction',
+    select: 'any',
+    labelKey: 'tags.figures.fourLines.line.attraction',
     labelFallback: 'Attraction',
-    helpKey: 'tags.figures.fourLines.help.attraction',
-    helpFallback:
-      'Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map.',
-    runIn: { x: 0, y: 186 },
-    runOut: JUNCTION,
-    // Six stops, so this line keeps its own spacing rather than the shared
-    // ladder. "No one, or rarely" is an ANSWER — it is where a-spec readers
-    // get off — and collapsing it into the decline-to-answer stop would erase
-    // exactly the people most used to being erased on a diagram like this.
-    stations: [
+    questionKey: 'tags.figures.fourLines.question.attraction',
+    questionFallback:
+      'Who you are drawn to. Who you are and who you are drawn to are separate questions.',
+    // "Rarely or no one" is an ANSWER — it is where a-spec readers get off —
+    // and folding it into "rather not say" would erase exactly the people most
+    // used to being left off a diagram like this.
+    stops: [
+      { id: 'women', labelKey: 'tags.figures.fourLines.stop.women', labelFallback: 'Women' },
+      { id: 'men', labelKey: 'tags.figures.fourLines.stop.men', labelFallback: 'Men' },
       {
-        id: 'women',
-        labelKey: 'tags.figures.fourLines.attraction.women',
-        labelFallback: 'Women',
-        at: { x: 56, y: 184 },
-      },
-      {
-        id: 'men',
-        labelKey: 'tags.figures.fourLines.attraction.men',
-        labelFallback: 'Men',
-        at: { x: 92, y: 190 },
-      },
-      {
-        id: 'more-than-one',
-        labelKey: 'tags.figures.fourLines.attraction.moreThanOne',
-        labelFallback: 'More than one gender',
-        at: { x: 128, y: 184 },
-        slug: 'bisexual',
+        id: 'non-binary-people',
+        labelKey: 'tags.figures.fourLines.stop.nonBinaryPeople',
+        labelFallback: 'Non-binary people',
       },
       {
         id: 'regardless',
-        labelKey: 'tags.figures.fourLines.attraction.regardless',
+        labelKey: 'tags.figures.fourLines.stop.regardless',
         labelFallback: 'Regardless of gender',
-        at: { x: 164, y: 190 },
         slug: 'pansexual',
       },
       {
         id: 'no-one',
-        labelKey: 'tags.figures.fourLines.attraction.noOne',
-        labelFallback: 'No one, or rarely',
-        at: { x: 200, y: 176 },
-        slug: 'aromantic',
+        labelKey: 'tags.figures.fourLines.stop.noOne',
+        labelFallback: 'Rarely or no one',
+        slug: 'asexual',
+        exclusive: true,
       },
-      {
-        id: 'rather-not',
-        labelKey: 'tags.figures.fourLines.amount.ratherNot',
-        labelFallback: 'Rather not say',
-        at: { x: 236, y: 182 },
-      },
+      RATHER_NOT,
     ],
   },
 ];
-
-/** Every term the figure links out to, in the order it teaches them. */
-export const FOUR_LINES_TERMS = [
-  'gender-identity',
-  'gender-expression',
-  'sexual-orientation',
-  'non-binary',
-  'agender',
-  'gender-fluid',
-  'transfeminine',
-  'transmasculine',
-  'cisgender',
-  'transgender',
-  'two-spirit',
-  'intersex',
-  'bisexual',
-  'pansexual',
-  'aromantic',
-] as const;

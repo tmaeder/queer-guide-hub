@@ -4760,52 +4760,49 @@
         "leadsTo": "[ZH] Leads to"
       },
       "fourLines": {
-        "title": "[ZH] Four lines",
-        "caption": "[ZH] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
-        "summary": "[ZH] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
-        "readout": "[ZH] Where you are on each line",
-        "tableCaption": "[ZH] Every line on the map and the stops it carries",
-        "corridor": {
-          "identity": "[ZH] Gender identity: two independent services"
+        "title": "四条线路",
+        "caption": "性别认同、性别表达、出生时被指派的性别和吸引对象，分别在四条独立的线路上运行。一条线上的站点不能说明另一条线上的站点。点选符合你的站点。不会保存或发送任何内容。",
+        "summary": "四条永不交汇的平行线路：性别认同、性别表达、出生时被指派的性别和吸引对象。每条线都有命名的站点，在一条线上的选择不能说明其他线路。",
+        "readout": "你的四条线路",
+        "independent": "四个独立的答案。没有一个是从另一个推出的。",
+        "reset": "清除",
+        "tableCaption": "所有线路及其站点",
+        "tableRule": "如何选择",
+        "pickOne": "选一个",
+        "pickAny": "选所有符合的",
+        "notPicked": "未选择站点",
+        "line": {
+          "identity": "性别认同",
+          "expression": "性别表达",
+          "assigned": "出生时被指派的性别",
+          "attraction": "吸引对象"
         },
-        "axis": {
-          "identityWoman": "[ZH] How much woman",
-          "identityMan": "[ZH] How much man",
-          "expression": "[ZH] Gender expression",
-          "assigned": "[ZH] Sex assigned at birth",
-          "attraction": "[ZH] Attraction"
+        "question": {
+          "identity": "你所认知的自己。可能不止一个站点符合：身为女性并不会挤占其他身份的空间。",
+          "expression": "你如何呈现自己：衣着、声音、发型、举止。是命名的站点，而不是有中点的刻度。",
+          "assigned": "你出生时被记录下来的信息，往往只凭一眼。它不决定其他三条线路。",
+          "attraction": "你被谁吸引。你是谁和你被谁吸引是两个不同的问题。"
         },
-        "help": {
-          "identityWoman": "[ZH] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
-          "identityMan": "[ZH] The second rail on the same corridor. Answering this one does not subtract from the one above.",
-          "expression": "[ZH] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
-          "assigned": "[ZH] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
-          "attraction": "[ZH] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
-        },
-        "amount": {
-          "notAtAll": "[ZH] Not at all",
-          "aLittle": "[ZH] A little",
-          "aLot": "[ZH] A lot",
-          "entirely": "[ZH] Entirely",
-          "ratherNot": "[ZH] Rather not say"
-        },
-        "expression": {
-          "feminine": "[ZH] Feminine",
-          "androgynous": "[ZH] Androgynous",
-          "masculine": "[ZH] Masculine",
-          "changes": "[ZH] It changes"
-        },
-        "assigned": {
-          "female": "[ZH] Female",
-          "male": "[ZH] Male",
-          "intersex": "[ZH] Intersex variation"
-        },
-        "attraction": {
-          "women": "[ZH] Women",
-          "men": "[ZH] Men",
-          "moreThanOne": "[ZH] More than one gender",
-          "regardless": "[ZH] Regardless of gender",
-          "noOne": "[ZH] No one, or rarely"
+        "stop": {
+          "woman": "女性",
+          "man": "男性",
+          "nonBinary": "非二元",
+          "agender": "无性别",
+          "fluid": "性别流动",
+          "questioning": "还在探索",
+          "feminine": "女性化",
+          "androgynous": "中性",
+          "masculine": "男性化",
+          "changes": "会变化",
+          "female": "女",
+          "male": "男",
+          "intersex": "间性变异",
+          "women": "女性",
+          "men": "男性",
+          "nonBinaryPeople": "非二元的人",
+          "regardless": "不论性别",
+          "noOne": "很少或无人",
+          "ratherNot": "不想说"
         }
       },
       "consentFlow": {
