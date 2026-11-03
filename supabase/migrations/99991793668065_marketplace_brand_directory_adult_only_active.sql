@@ -1,7 +1,9 @@
 -- get_marketplace_brand_directory(): compute `adult_only` over ACTIVE listings.
 --
--- `99991793435077` added `adult_only` over every listing on the brand_key. The
--- function is SECURITY INVOKER, so the listings RLS policy
+-- `99991793435077` added `adult_only` over every listing on the brand_key, and
+-- #4973 (`e58eb21c5`) rewrote it as EXISTS probes for speed. This keeps those
+-- probes and only adds the status filter — restating an older body would bring
+-- back the bool_or aggregate that timed out. The function is SECURITY INVOKER, so the listings RLS policy
 --   coalesce(status, 'active') = 'active' OR has_any_role_jwt(admin, moderator, editor)
 -- decides which rows each caller sees — and the section counts therefore
 -- depended on who was looking. Measured 2026-11-03 (rolled-back txn, each role
@@ -12,7 +14,7 @@
 -- Latex, RodeoH & Nexus) carry sfw listings that are all INACTIVE: staff saw
 -- them, the public did not.
 --
--- Filtering to active listings — with the exact predicate the policy uses —
+-- Filtering both probes to active listings — with the exact predicate the policy uses —
 -- makes the flag a property of the public range, identical for every role.
 -- The cover lateral needs no change: no inactive listing is overview_eligible
 -- (0 of 10,956 measured), so covers were already active-only.
@@ -39,7 +41,20 @@ as $function$
   SELECT b.slug,b.display_name,b.logo_url,b.logo_on_ink,b.story,b.product_count,
     CASE WHEN b.ownership_review_status='verified' THEN b.ownership_tags ELSE '{}'::text[] END,
     c.url,c.thumb,
-    coalesce(r.any_adult AND NOT r.any_sfw, false)
+    -- EXISTS probes, never bool_or over every listing (#4973: the aggregate
+    -- read ~54k rows per call and timed out under anon's 3s limit). Both
+    -- probes filter with the listings RLS policy's own test, so the flag
+    -- describes the public range and does not change with the caller's role.
+    (EXISTS (
+       SELECT 1 FROM public.marketplace_listings l
+       WHERE l.brand_key=b.brand_key AND l.content_rating IN('adult','explicit')
+         AND coalesce(l.status,'active')='active'
+     )
+     AND NOT EXISTS (
+       SELECT 1 FROM public.marketplace_listings l
+       WHERE l.brand_key=b.brand_key AND l.content_rating IN('sfw','suggestive')
+         AND coalesce(l.status,'active')='active'
+     ))
   FROM public.marketplace_brands b
   LEFT JOIN LATERAL (
     SELECT ia.url,coalesce(ia.thumbnail_url,ia.optimized_url) AS thumb
@@ -50,15 +65,6 @@ as $function$
     ORDER BY l.boutique_score DESC NULLS LAST,l.id
     LIMIT 1
   ) c ON true
-  LEFT JOIN LATERAL (
-    SELECT bool_or(l.content_rating IN('adult','explicit')) AS any_adult,
-           bool_or(l.content_rating IN('sfw','suggestive')) AS any_sfw
-    FROM public.marketplace_listings l
-    WHERE l.brand_key=b.brand_key
-      -- Same test as the listings RLS policy, so the flag describes the public
-      -- range and does not change with the caller's role.
-      AND coalesce(l.status,'active')='active'
-  ) r ON true
   WHERE b.publication_status='published' AND b.slug IS NOT NULL AND b.product_count>0
   ORDER BY b.product_count DESC NULLS LAST,b.slug;
 $function$;
