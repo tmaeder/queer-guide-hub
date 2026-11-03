@@ -149,7 +149,11 @@ export function CompetitionsLineKey() {
                   // says "nobody yet" outright, without linking to an empty
                   // grid. Only shown once the counts have loaded, so "0"
                   // always means a measured zero, never "not loaded".
+                  // role="img": aria-label is not permitted on a role-less span
+                  // (axe aria-prohibited-attr). The cell is one labelled item
+                  // whose visible parts are aria-hidden, which is what img says.
                   <span
+                    role="img"
                     className="flex shrink-0 flex-col items-end justify-center border-l border-border-hairline px-4 py-2 text-right text-muted-foreground"
                     aria-label={t('pages.personalities.competitions.peopleNone', {
                       defaultValue: 'No linked people yet in: {{type}}',
@@ -164,12 +168,12 @@ export function CompetitionsLineKey() {
                     </span>
                   </span>
                 ) : (
+                  // No aria-label: an override that omits the visible "People
+                  // 423" fails WCAG 2.5.3 (axe label-content-name-mismatch), so
+                  // speech users could not say what they see. The type is
+                  // appended for screen readers instead, after the visible text.
                   <LocalizedLink
                     to={filterPath(c.id)}
-                    aria-label={t('pages.personalities.competitions.peopleIn', {
-                      defaultValue: 'People who competed in: {{type}}',
-                      type: t(c.labelKey, c.label),
-                    })}
                     className="flex shrink-0 flex-col items-end justify-center border-l border-border-hairline px-4 py-2 text-right no-underline transition-colors hover:bg-surface-container"
                   >
                     <span className="text-13 font-bold">
@@ -180,6 +184,7 @@ export function CompetitionsLineKey() {
                         {(people.get(c.id) ?? 0).toLocaleString()}
                       </span>
                     )}
+                    <span className="sr-only">, {t(c.labelKey, c.label)}</span>
                   </LocalizedLink>
                 )}
               </div>
@@ -201,10 +206,6 @@ export function CompetitionsLineKey() {
                     <li key={o.slug} className="min-w-0">
                       <LocalizedLink
                         to={filterPath(o.slug)}
-                        aria-label={t('pages.personalities.competitions.peopleIn', {
-                          defaultValue: 'People who competed in: {{type}}',
-                          type: o.name,
-                        })}
                         className="inline-flex max-w-full items-center gap-1 rounded-badge text-13 no-underline hover:underline"
                       >
                         <span className="truncate">{o.name}</span>
