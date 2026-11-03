@@ -83,6 +83,12 @@ export const PAGE_BLEED_GUTTER =
  *  drift that way again; do not re-inline a pixel literal here. */
 export const STICKY_UNDER_HEADER = 'top-[var(--header-pinned-bottom)]';
 
+/** Scroll margin for a section that a sticky in-page section bar (RouteStrip,
+ *  horizontal) links to. The root's `scroll-padding-top` clears the site
+ *  header; this adds the bar beneath it, whose live height RouteStrip
+ *  publishes as `--section-bar-h` (0 when no bar is shown). */
+export const SECTION_SCROLL_MARGIN = 'scroll-mt-[var(--section-bar-h,0px)]';
+
 /** Where a sticky SIDEBAR RAIL pins — the header's underside plus a gap, so a
  *  tall column of links does not butt against the bar the way a full-width
  *  control band deliberately does.

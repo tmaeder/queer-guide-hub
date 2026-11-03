@@ -39,6 +39,8 @@ import {
   eventStatusLabel,
   EventMasthead,
   EventActions,
+  EventFactStrip,
+  eventVenueText,
   type EventWithRelations,
   resolveEventCountry,
 } from '../EventDetail.parts';
@@ -134,6 +136,58 @@ describe('EventMasthead', () => {
       />,
     );
     expect(container.querySelector('img')).toBeNull();
+  });
+});
+
+describe('Venue text that only repeats the city', () => {
+  // Columbus Pride 2027 on prod: venue_name "Columbus", city Columbus.
+  const columbus = {
+    ...event,
+    venue_name: 'Columbus',
+    city: 'Columbus',
+    cities: { id: 'c2', slug: 'columbus', name: 'Columbus' },
+    countries: { id: 'co2', slug: 'united-states', name: 'United States' },
+  } as unknown as EventWithRelations;
+
+  it('eventVenueText drops a venue name equal to the city, keeps a real one', () => {
+    expect(eventVenueText(columbus, 'Columbus')).toBeNull();
+    expect(eventVenueText({ ...columbus, venue_name: ' columbus ' } as never, null)).toBeNull();
+    expect(eventVenueText({ ...columbus, venue_name: 'Goodale Park' } as never, 'Columbus')).toBe(
+      'Goodale Park',
+    );
+  });
+
+  it('the masthead names the city once, not "Columbus, Columbus"', () => {
+    const { container } = renderWithProviders(
+      <EventMasthead
+        event={columbus}
+        cityName="Columbus"
+        countryName="United States"
+        cityLink="/city/columbus"
+        countryLink="/country/united-states"
+      />,
+    );
+    expect(container.textContent).toContain('Columbus, United States');
+    expect(container.textContent).not.toContain('Columbus, Columbus');
+  });
+});
+
+describe('Fact strip', () => {
+  const strip = (o: Record<string, unknown>) =>
+    renderWithProviders(
+      <EventFactStrip event={{ ...event, ...o } as never} showEventTz setShowEventTz={() => {}} />,
+    );
+
+  it('leaves out Entry when the price is unknown', () => {
+    strip({ is_free: false, price_min: null, price_max: null });
+    expect(screen.queryByText('Entry')).toBeNull();
+    expect(screen.queryByText('Not listed')).toBeNull();
+  });
+
+  it('still shows Entry when the event is free', () => {
+    strip({ is_free: true });
+    expect(screen.getByText('Entry')).toBeInTheDocument();
+    expect(screen.getByText('Free')).toBeInTheDocument();
   });
 });
 

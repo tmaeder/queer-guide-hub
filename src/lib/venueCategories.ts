@@ -73,6 +73,19 @@ export function useVenueCategoryOptions(selected?: unknown): VenueCategoryOption
   return useClassificationOptions('venue_category', fallback, selected);
 }
 
+/**
+ * The plain-English label for a category value, for code that runs outside a
+ * hook (lists built per row). An unknown value is spelled out ("some_value" →
+ * "Some value") rather than printed raw.
+ */
+export function venueCategoryFallbackLabel(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const known = FALLBACK_LABELS[value];
+  if (known) return known;
+  const words = value.replace(/[_-]+/g, ' ').trim();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : null;
+}
+
 export function useVenueCategoryLabel(value: string | null | undefined): string {
   const { t } = useTranslation();
   const seed = FALLBACK_LABELS[value ?? ''];

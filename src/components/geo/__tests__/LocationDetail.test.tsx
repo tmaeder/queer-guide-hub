@@ -4,6 +4,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { EXPLORE_SETTLE_MS, isExploreBodyEmpty } from '../exploreEmpty';
 import { LocationActionMenu, LocationExploreMore, LocationOverview } from '../LocationDetail';
 
 const realIntersectionObserver = globalThis.IntersectionObserver;
@@ -142,6 +143,67 @@ describe('LocationExploreMore', () => {
     fireEvent.click(screen.getByText('Community'));
 
     await waitFor(() => expect(screen.getByText('Community results')).toBeInTheDocument());
+  });
+
+  it('hides a group whose rails all come back empty, and keeps one with content', () => {
+    vi.useFakeTimers();
+    try {
+      const observer = installIntersectionObserver();
+      const Empty = () => null;
+      render(
+        <LocationExploreMore
+          groups={[
+            {
+              id: 'community',
+              title: 'Community',
+              content: (
+                <div>
+                  <Empty />
+                </div>
+              ),
+            },
+            { id: 'nearby', title: 'Nearby', content: <p>Philadelphia 25 km</p> },
+          ]}
+        />,
+      );
+      // The mock keeps one observer callback (the last group's); the reader
+      // opens the other one.
+      act(() => observer.enterViewport());
+      act(() => {
+        fireEvent.click(screen.getByText('Community'));
+        (document.getElementById('community') as HTMLDetailsElement).open = true;
+        document.getElementById('community')!.dispatchEvent(new Event('toggle'));
+      });
+      act(() => vi.advanceTimersByTime(EXPLORE_SETTLE_MS + 100));
+      expect(screen.getByText('Philadelphia 25 km')).toBeInTheDocument();
+      expect((document.getElementById('community') as HTMLElement).hidden).toBe(true);
+      expect((document.getElementById('nearby') as HTMLElement).hidden).toBe(false);
+      expect((document.querySelector('section') as HTMLElement).hidden).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('hides the whole section when every group is empty', () => {
+    vi.useFakeTimers();
+    try {
+      const observer = installIntersectionObserver();
+      const { container } = render(
+        <LocationExploreMore groups={[{ id: 'a', title: 'A', content: <div /> }]} />,
+      );
+      act(() => observer.enterViewport());
+      act(() => vi.advanceTimersByTime(EXPLORE_SETTLE_MS + 100));
+      expect((container.querySelector('section') as HTMLElement).hidden).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('isExploreBodyEmpty counts images and links as content', () => {
+    const div = document.createElement('div');
+    expect(isExploreBodyEmpty(div)).toBe(true);
+    div.innerHTML = '<div><img alt=""></div>';
+    expect(isExploreBodyEmpty(div)).toBe(false);
   });
 
   it('renders nothing when there are no exploration groups', () => {

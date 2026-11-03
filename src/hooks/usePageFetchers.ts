@@ -296,8 +296,15 @@ export async function fetchPublicPersonalityBySlugOrId<T = unknown>(
     .select('resolved_image_url,canonical_tags,image_status,unresolved_tag_count')
     .eq('id', data.id)
     .maybeSingle();
-  if (canonicalError) throw canonicalError;
-  const readModel = canonical as {
+  // The read model only enriches the row (resolved image, canonical tags). A
+  // failure here must not take the whole page down: it used to throw, and the
+  // page answers any error by redirecting to /personalities, so when anon lost
+  // SELECT on a view this one reads, every signed-out visitor to every
+  // personality page was bounced to the list. Fall back to the row instead.
+  if (canonicalError) {
+    console.error('personality_public_profiles read failed:', canonicalError);
+  }
+  const readModel = (canonicalError ? null : canonical) as {
     resolved_image_url?: string | null;
     canonical_tags?: string[] | null;
     image_status?: string | null;

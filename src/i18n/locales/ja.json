@@ -1536,6 +1536,8 @@
     "detail": {
       "eyebrow": "[JA] Venue",
       "closed": "[JA] Permanently closed",
+      "temporarilyClosed": "一時休業中",
+      "presumedClosed": "閉店の可能性あり",
       "section": {
         "about": "[JA] About",
         "hours": "[JA] Opening hours",

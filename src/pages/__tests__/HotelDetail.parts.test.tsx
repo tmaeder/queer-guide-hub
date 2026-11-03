@@ -117,3 +117,52 @@ describe('buildHotelBreadcrumbs', () => {
     ]);
   });
 });
+
+describe('HotelHero heading and facts', () => {
+  const hero = (o: Record<string, unknown>) =>
+    render(
+      <MemoryRouter>
+        <HotelHero
+          hotel={{ ...(hotel as object), ...o } as never}
+          cityName="London"
+          countryName="United Kingdom"
+        />
+      </MemoryRouter>,
+    );
+
+  it('the hotel name is the page h1', () => {
+    const { container } = hero({});
+    expect(container.querySelector('h1')?.textContent).toContain('Pride Hotel');
+    expect(container.querySelector('h4')).toBeNull();
+  });
+
+  it('a guest score on a private room is not printed as hotel stars', () => {
+    const { container } = hero({ hotel_type: 'bnb', star_rating: '5.0' });
+    expect(container.textContent).not.toMatch(/Stars/);
+  });
+
+  it('a hotel keeps its star class', () => {
+    const { container } = hero({ hotel_type: 'hotel', star_rating: 4 });
+    expect(container.textContent).toContain('4 Stars');
+  });
+
+  it('names the location once', () => {
+    const { container } = hero({});
+    expect(container.textContent?.match(/London, United Kingdom/g)).toHaveLength(1);
+  });
+});
+
+describe('Hotel amenities', () => {
+  it('shows an amenity stored in two spellings once', async () => {
+    const { canonicalAmenities } = await import('@/lib/canonicalAmenities');
+    expect(
+      canonicalAmenities([
+        'clothing-optional-accepted',
+        'clothing optional accepted',
+        'dedicated-workspace',
+        'Dedicated Workspace',
+        'wi-fi',
+      ]),
+    ).toEqual(['clothing-optional-accepted', 'dedicated-workspace', 'wi-fi']);
+  });
+});
