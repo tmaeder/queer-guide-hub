@@ -47,6 +47,20 @@ export interface MoreLikeThisByTagProps {
   className?: string;
   /** Heading text; defaults to "More like this". */
   title?: string;
+  /** `type:id` keys already shown on the page (e.g. by the semantic rail
+   *  above), so the two rails do not list the same people twice. */
+  excludeKeys?: readonly string[];
+}
+
+/** Initials for a person with no photo. */
+function personInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 }
 
 /**
@@ -61,18 +75,33 @@ export function MoreLikeThisByTag({
   limit = 8,
   className,
   title = 'More like this',
+  excludeKeys,
 }: MoreLikeThisByTagProps) {
-  const { data, isLoading } = useRelatedByTags(entityType, entityId, limit);
+  // Over-fetch by the number of excluded keys so the rail still fills to
+  // `limit` after the people shown elsewhere are dropped.
+  const { data, isLoading } = useRelatedByTags(
+    entityType,
+    entityId,
+    limit + (excludeKeys?.length ?? 0),
+  );
+  const excluded = new Set(excludeKeys ?? []);
+  const items = (data ?? [])
+    .filter((item) => !excluded.has(`${item.type}:${item.id}`))
+    .slice(0, limit);
 
-  if (isLoading || !data || data.length < minItems) return null;
+  if (isLoading || items.length < minItems) return null;
 
   return (
     <section className={className}>
       <h2 className="mb-4 text-title font-bold">{title}</h2>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {data.map((item) => {
+        {items.map((item) => {
           const href = hrefForEntity({ type: item.type, slug: item.slug, title: item.title });
-          const fallback = getFallbackImage(fallbackTheme(item.type), item.id);
+          // A person with no photo gets their initials, never stock art: an
+          // abstract painting under a name reads as that person's portrait
+          // (Wendy Carlos, Michail Kusmin on /personalities/pyotr-ilyich-tchaikovsky).
+          const isPerson = item.type === 'personality';
+          const fallback = isPerson ? null : getFallbackImage(fallbackTheme(item.type), item.id);
           const img =
             (isValidImageUrl(item.image_url)
               ? resolveImageUrl({ imageUrl: item.image_url })
@@ -85,17 +114,33 @@ export function MoreLikeThisByTag({
               className="group flex flex-col overflow-hidden rounded-element bg-surface-container no-underline text-inherit transition-colors"
             >
               <div className="relative aspect-[4/3] w-full bg-muted">
-                <img
-                  src={img}
-                  alt=""
-                  role="presentation"
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                  className="absolute inset-0 h-full w-full object-cover"
-                  onError={(e) => {
-                    if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
-                  }}
-                />
+                {isPerson && (
+                  <span
+                    aria-hidden="true"
+                    data-testid="person-monogram"
+                    className="absolute inset-0 flex items-center justify-center font-display text-display text-muted-foreground"
+                  >
+                    {personInitials(item.title ?? '')}
+                  </span>
+                )}
+                {img && (
+                  <img
+                    src={img}
+                    alt=""
+                    role="presentation"
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    className="absolute inset-0 h-full w-full object-cover"
+                    onError={(e) => {
+                      if (fallback && e.currentTarget.src !== fallback) {
+                        e.currentTarget.src = fallback;
+                      } else if (!fallback) {
+                        // A broken photo of a person: show the initials beneath.
+                        e.currentTarget.style.display = 'none';
+                      }
+                    }}
+                  />
+                )}
                 <Badge variant="soft" className="absolute left-2 top-2 text-2xs">
                   {TYPE_LABEL[item.type] ?? item.type}
                 </Badge>
