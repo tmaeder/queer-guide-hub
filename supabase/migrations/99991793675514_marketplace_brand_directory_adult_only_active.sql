@@ -79,6 +79,11 @@ declare
   v_true int;
   v_false int;
   v_overlap int;
+  -- The role this block started as. `db push` logs in as a temporary CLI
+  -- role and then switches to postgres, so `reset role` would drop back to
+  -- that login role, which has no USAGE on schema public (42501 — this file
+  -- failed exactly that way on its first deploy). Restore this role instead.
+  v_role text := current_user;
 begin
   if not has_function_privilege('anon', 'public.get_marketplace_brand_directory()', 'EXECUTE') then
     raise exception 'anon lost EXECUTE on get_marketplace_brand_directory';
@@ -87,14 +92,14 @@ begin
   set local role anon;
   select md5(coalesce(string_agg(slug, ',' order by slug) filter (where adult_only), ''))
     into v_anon from public.get_marketplace_brand_directory();
-  reset role;
+  execute format('set local role %I', v_role);
 
   perform set_config('request.jwt.claims',
     '{"sub":"00000000-0000-0000-0000-000000000000","role":"authenticated","user_role":"admin"}', true);
   set local role authenticated;
   select md5(coalesce(string_agg(slug, ',' order by slug) filter (where adult_only), ''))
     into v_admin from public.get_marketplace_brand_directory();
-  reset role;
+  execute format('set local role %I', v_role);
   perform set_config('request.jwt.claims', '', true);
 
   if v_anon is distinct from v_admin then
