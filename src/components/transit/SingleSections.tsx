@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { SingleSection } from './SinglePage';
+import { SECTION_SCROLL_MARGIN } from '@/components/layout/PageContainer';
 import { RouteStrip } from './RouteStrip';
 import type { Track } from './routeBulletMap';
 import { singleStations, type SingleSectionDef } from './singleSectionModel';
@@ -44,13 +45,18 @@ function DisclosureSection({ section }: { section: SingleSectionDef }) {
 
   const panelId = `${section.id}-detail`;
   return (
-    <section id={section.id} className="scroll-mt-32">
+    <section id={section.id} className={SECTION_SCROLL_MARGIN}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h2
             ref={headingRef}
             tabIndex={-1}
-            className="font-display text-headline leading-tight outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            // The reveal scrolls the HEADING into view, not the section, so the
+            // heading needs the margin too or it lands under the section bar.
+            className={cn(
+              SECTION_SCROLL_MARGIN,
+              'font-display text-headline leading-tight outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            )}
           >
             {section.title}
           </h2>
