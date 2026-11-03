@@ -71,3 +71,20 @@ describe('parseCompetedIn', () => {
     expect(parseCompetedIn(undefined)).toBeUndefined();
   });
 });
+
+describe('topCompetitionsForCategory', () => {
+  it('ranks by people, breaks ties by name, and counts the rest', async () => {
+    const { topCompetitionsForCategory } = await import('@/lib/competedInFilter');
+    const opts = [
+      { slug: 'a', name: 'Zed', category: 'x', people: 5 },
+      { slug: 'b', name: 'Bee', category: 'x', people: 9 },
+      { slug: 'c', name: 'Ant', category: 'x', people: 5 },
+      { slug: 'd', name: 'Dee', category: 'x', people: 1 },
+      { slug: 'e', name: 'Other', category: 'y', people: 50 },
+    ];
+    const { shown, more } = topCompetitionsForCategory(opts, 'x', 3, 'en');
+    expect(shown.map((o) => o.slug)).toEqual(['b', 'c', 'a']);
+    expect(more).toBe(1);
+    expect(topCompetitionsForCategory(opts, 'z', 3)).toEqual({ shown: [], more: 0 });
+  });
+});

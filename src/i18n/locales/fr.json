@@ -2637,7 +2637,8 @@
         "all": "Toutes les compétitions →",
         "lede": "Séries drag, concours de beauté et concours de titres, avec chaque édition et toutes les personnes participantes. Les participant·es renvoient à leur fiche ici.",
         "people": "Personnes",
-        "peopleIn": "Personnes ayant participé : {{type}}"
+        "peopleIn": "Personnes ayant participé : {{type}}",
+        "more": "+{{count}} autres"
       },
       "competedIn": {
         "label": "A participé à",

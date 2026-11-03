@@ -11,15 +11,20 @@ const state: {
 } = { counts: new Map(), isLoading: false, isError: false };
 
 const people: { value: Map<string, number> | null } = { value: null };
+const options: { value: { slug: string; name: string; category: string; people: number }[] } = {
+  value: [],
+};
 
 vi.mock('@/hooks/useCompetitions', () => ({
   useCompetitionCategoryCounts: () => state,
   useCompetitionCategoryPeople: () => ({ data: people.value }),
+  useCompetedInOptions: () => ({ data: options.value }),
 }));
 // A t() that returns the default copy and makes the pluralised count visible,
 // so the assertions read numbers rather than bare keys.
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
+    i18n: { language: 'en' },
     t: (key: string, opt?: string | { count?: number }) =>
       typeof opt === 'string' ? opt : opt?.count !== undefined ? `${key}:${opt.count}` : key,
   }),
@@ -42,6 +47,7 @@ describe('CompetitionsLineKey', () => {
     state.isLoading = false;
     state.isError = false;
     people.value = null;
+    options.value = [];
   });
 
   it('routes to every category page and to the hub', () => {
@@ -100,5 +106,42 @@ describe('CompetitionsLineKey', () => {
     renderKey();
     expect(screen.getAllByRole('link')).toHaveLength(2 * COMPETITION_CATEGORIES.length + 1);
     expect(screen.queryByText('Counting')).toBeNull();
+  });
+
+  it('names the three biggest competitions per type, each linked to its filter, then +N more', () => {
+    const [series] = COMPETITION_CATEGORIES;
+    options.value = [
+      { slug: 'small', name: 'Small Show', category: series.id, people: 2 },
+      { slug: 'big', name: 'Big Show', category: series.id, people: 194 },
+      { slug: 'mid-b', name: 'Beta Show', category: series.id, people: 48 },
+      { slug: 'mid-a', name: 'Alpha Show', category: series.id, people: 48 },
+      { slug: 'other-type', name: 'Elsewhere', category: 'not-this-row', people: 99 },
+    ];
+    renderKey();
+    const named = screen
+      .getAllByRole('link')
+      .filter((a) => /competed=(big|mid-a|mid-b|small)$/.test(a.getAttribute('href') ?? ''));
+    // Biggest first, ties by name; the fourth is left to "+1 more".
+    expect(named.map((a) => a.getAttribute('href'))).toEqual([
+      '/personalities?competed=big',
+      '/personalities?competed=mid-a',
+      '/personalities?competed=mid-b',
+    ]);
+    expect(named[0].textContent).toContain('194');
+    const more = screen.getByText('pages.personalities.competitions.more:1');
+    expect(more.closest('a')?.getAttribute('href')).toBe(categoryPath(series));
+  });
+
+  it('names no competitions while their counts are unavailable', () => {
+    renderKey();
+    expect(
+      screen
+        .getAllByRole('link')
+        .filter(
+          (a) =>
+            /competed=[a-z0-9-]+$/.test(a.getAttribute('href') ?? '') &&
+            !a.getAttribute('href')!.includes('_'),
+        ),
+    ).toHaveLength(0);
   });
 });

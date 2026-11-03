@@ -91,3 +91,25 @@ export function groupCompetedInOptions<T extends CompetedInOptionLike>(
     ),
   })).filter((g) => !hideEmpty || g.items.length > 0);
 }
+
+/**
+ * The competitions to name on one line key row: the `limit` with the most
+ * linked people, ties broken by name, plus how many were left out.
+ *
+ * The opposite order to the dropdown on purpose. The dropdown is a list a
+ * reader scans for a name they already know, so it is alphabetical. A line key
+ * row has room for three names and answers "what is in here", so it leads with
+ * the competitions most of the people are in.
+ */
+export function topCompetitionsForCategory<T extends CompetedInOptionLike & { people: number }>(
+  options: readonly T[],
+  categoryId: string,
+  limit: number,
+  locale?: string,
+): { shown: T[]; more: number } {
+  const collator = new Intl.Collator(locale, { sensitivity: 'base', numeric: true });
+  const inCategory = options
+    .filter((o) => o.category === categoryId)
+    .sort((a, b) => b.people - a.people || collator.compare(a.name, b.name));
+  return { shown: inCategory.slice(0, limit), more: Math.max(0, inCategory.length - limit) };
+}

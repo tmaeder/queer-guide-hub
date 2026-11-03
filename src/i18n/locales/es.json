@@ -2633,7 +2633,8 @@
         "all": "Todas las competiciones →",
         "lede": "Series de drag, certámenes y concursos de títulos, cada uno con todas sus ediciones y todas las personas que compitieron. Las concursantes enlazan a su ficha aquí.",
         "people": "Personas",
-        "peopleIn": "Personas que compitieron en: {{type}}"
+        "peopleIn": "Personas que compitieron en: {{type}}",
+        "more": "+{{count}} más"
       },
       "competedIn": {
         "label": "Compitió en",
