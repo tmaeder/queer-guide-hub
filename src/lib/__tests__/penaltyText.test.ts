@@ -61,3 +61,12 @@ describe('censusCount', () => {
     expect(censusCount(4, 12)).toBe(4);
   });
 });
+
+describe('venueCategoryFallbackLabel', () => {
+  it('names known values and spells out unknown ones', async () => {
+    const { venueCategoryFallbackLabel } = await import('../venueCategories');
+    expect(venueCategoryFallbackLabel('community_center')).toBe('Community');
+    expect(venueCategoryFallbackLabel('some_new-kind')).toBe('Some new kind');
+    expect(venueCategoryFallbackLabel(null)).toBeNull();
+  });
+});
