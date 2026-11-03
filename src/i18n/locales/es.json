@@ -4410,7 +4410,13 @@
     "eyebrow": "Quiénes somos",
     "title": "Hecho por personas queer, para todo el mundo.",
     "diagram": {
-      "label": "Cuatro líneas que confluyen en una estación: locales, eventos, comunidad y lugares."
+      "label": "Cuatro líneas que confluyen en una estación: locales, eventos, comunidad y lugares.",
+      "lines": {
+        "venues": "Locales",
+        "events": "Eventos",
+        "community": "Comunidad",
+        "places": "Lugares"
+      }
     },
     "scale": {
       "kicker": "La red hoy",

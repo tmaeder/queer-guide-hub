@@ -4461,7 +4461,13 @@
     "eyebrow": "About",
     "title": "Built by queers, for everyone.",
     "diagram": {
-      "label": "Four lines converging on one station: venues, events, community and places."
+      "label": "Four lines converging on one station: venues, events, community and places.",
+      "lines": {
+        "venues": "Venues",
+        "events": "Events",
+        "community": "Community",
+        "places": "Places"
+      }
     },
     "scale": {
       "kicker": "The network today",

@@ -4410,7 +4410,13 @@
     "eyebrow": "Über uns",
     "title": "Von Queers gebaut, für alle.",
     "diagram": {
-      "label": "Vier Linien laufen in einer Station zusammen: Locations, Events, Community und Orte."
+      "label": "Vier Linien laufen in einer Station zusammen: Locations, Events, Community und Orte.",
+      "lines": {
+        "venues": "Locations",
+        "events": "Events",
+        "community": "Community",
+        "places": "Orte"
+      }
     },
     "scale": {
       "kicker": "Das Netz heute",

@@ -4410,7 +4410,13 @@
     "eyebrow": "Chi siamo",
     "title": "Fatto da persone queer, per chiunque.",
     "diagram": {
-      "label": "Quattro linee che convergono in un'unica stazione: locali, eventi, comunità e destinazioni."
+      "label": "Quattro linee che convergono in un'unica stazione: locali, eventi, comunità e destinazioni.",
+      "lines": {
+        "venues": "Locali",
+        "events": "Eventi",
+        "community": "Comunità",
+        "places": "Destinazioni"
+      }
     },
     "scale": {
       "kicker": "La rete oggi",

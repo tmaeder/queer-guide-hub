@@ -4410,7 +4410,13 @@
     "eyebrow": "Sobre",
     "title": "Feito por pessoas queer, para todo mundo.",
     "diagram": {
-      "label": "Quatro linhas que se encontram numa mesma estação: locais, eventos, comunidade e destinos."
+      "label": "Quatro linhas que se encontram numa mesma estação: locais, eventos, comunidade e destinos.",
+      "lines": {
+        "venues": "Locais",
+        "events": "Eventos",
+        "community": "Comunidade",
+        "places": "Destinos"
+      }
     },
     "scale": {
       "kicker": "A rede hoje",

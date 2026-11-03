@@ -4414,7 +4414,13 @@
     "eyebrow": "À propos",
     "title": "Fait par des personnes queer, pour tout le monde.",
     "diagram": {
-      "label": "Quatre lignes convergent vers une seule station : lieux, événements, communauté et destinations."
+      "label": "Quatre lignes convergent vers une seule station : lieux, événements, communauté et destinations.",
+      "lines": {
+        "venues": "Lieux",
+        "events": "Événements",
+        "community": "Communauté",
+        "places": "Destinations"
+      }
     },
     "scale": {
       "kicker": "Le réseau aujourd'hui",

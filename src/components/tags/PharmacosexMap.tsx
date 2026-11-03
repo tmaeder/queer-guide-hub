@@ -1,137 +1,147 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
+import { cn } from '@/lib/utils';
+import { TRACK_STROKE } from '@/components/transit/routeBulletMap';
 
 /**
- * The pharmacosex model — why people combine substances and sex: six core
- * effects arranged as a hexagon, the substances that sit between them, and
- * the motivations around the outside.
+ * The pharmacosex model — why people combine substances and sex.
  *
- * Rebuilt from the research model shown by the Kink Responsibly programme
- * (Darklands) in the house idiom: `aria-hidden` SVG geometry (hexagon + the
- * two inner triangles), HTML labels absolutely positioned over it, monochrome
- * ink — the two visual tiers of the original (dark vs. highlight circles) are
- * ink-filled vs. paper-filled here, never a colour code.
+ * Six core effects sit on a ring as stations. Every substance in the model
+ * either sits right at one effect or between two NEIGHBOURING effects, so it
+ * is drawn as a stop on the arc between them. That is the whole model, and
+ * the ring states it with no crossing lines.
  *
- * THE MAP IS NEVER THE ONLY CARRIER: the lists below repeat every effect,
- * substance and motivation in reading order.
+ * An earlier version drew a hexagon plus two inner triangles with labels
+ * absolutely positioned over it: connectors ran into nothing, labels sat on
+ * top of the lines, three effects were circles and three were bare text, and
+ * the motivations floated with no tie to anything. The guide under the map
+ * now carries the motivations, filed under the effect they are named for.
+ *
+ * The map is one unstretched, `aria-hidden` SVG; HTML labels sit over it.
+ * The guide is the readable form and the controls: picking an effect lights
+ * its station, its arcs and the substances on them. Rebuilt from the research
+ * model shown by the Kink Responsibly programme (Darklands).
  */
 
 interface Effect {
   key: string;
   label: string;
   meaning: string;
-  /** degrees, 0 = up, clockwise */
-  angle: number;
-  /** ink-filled (the original's dark tier) vs paper-filled */
-  filled: boolean;
+  /** What people say they are after, filed under this effect. */
+  motivations: string[];
 }
 
+/** Ring order, clockwise from the top. Neighbours matter: see SUBSTANCES. */
 const EFFECTS: Effect[] = [
   {
     key: 'stimulation',
     label: 'Stimulation',
     meaning: 'Energy and drive — keeping going, staying awake.',
-    angle: 0,
-    filled: true,
+    motivations: ['Keep on going'],
   },
   {
     key: 'empathy',
     label: 'Empathy',
     meaning: 'Openness and connection with the people you are with.',
-    angle: 60,
-    filled: false,
+    motivations: ['Connectedness', 'Healing intent'],
   },
   {
     key: 'sensory',
     label: 'Sensory perception',
     meaning: 'Heightened senses — touch, sound and sensation feel bigger.',
-    angle: 120,
-    filled: true,
+    motivations: ['In the moment', 'More pleasure'],
   },
   {
     key: 'chill',
     label: 'Chill',
     meaning: 'Relaxation — letting tension and negative feelings drop away.',
-    angle: 180,
-    filled: false,
+    motivations: ['Suppress negative feelings', 'Painless'],
   },
   {
     key: 'disinhibition',
     label: 'Disinhibition',
     meaning: 'Fewer brakes — more confidence, fewer reservations.',
-    angle: 240,
-    filled: true,
+    motivations: ['Higher confidence'],
   },
   {
     key: 'euphoria',
     label: 'Euphoria',
     meaning: 'Intense well-being and pleasure.',
-    angle: 300,
-    filled: false,
+    motivations: ['Rougher / more extreme'],
   },
 ];
 
-interface MapSubstance {
+interface Substance {
   name: string;
   slug: string;
-  /** which effects it sits between, for the readable list */
-  between: string;
-  left: number;
-  top: number;
+  /** One effect (sits right at it) or two NEIGHBOURING effects (between). */
+  at: [string] | [string, string];
 }
 
-const SUBSTANCES: MapSubstance[] = [
-  { name: 'Cocaine', slug: 'cocaine', between: 'stimulation', left: 50, top: 25 },
-  {
-    name: '(Meth)amphetamine',
-    slug: 'methamphetamine',
-    between: 'euphoria & stimulation',
-    left: 36,
-    top: 33,
-  },
-  { name: '3,4-MMC', slug: '3-mmc', between: 'stimulation & empathy', left: 63, top: 33 },
-  { name: 'MDMA / XTC', slug: 'mdma', between: 'empathy', left: 67, top: 42 },
-  { name: 'GHB / GBL', slug: 'ghb', between: 'euphoria & disinhibition', left: 32, top: 44 },
-  { name: '2C-B', slug: '2c-b', between: 'empathy & sensory perception', left: 66, top: 52 },
-  { name: 'Alcohol', slug: 'alcohol', between: 'disinhibition', left: 32, top: 56 },
-  { name: 'Poppers', slug: 'poppers', between: 'sensory perception', left: 64, top: 61 },
-  { name: 'Ketamine', slug: 'ketamine', between: 'disinhibition & chill', left: 37, top: 65 },
-  { name: 'Cannabis', slug: 'cannabis', between: 'chill & sensory perception', left: 52, top: 67 },
+const SUBSTANCES: Substance[] = [
+  { name: 'Cocaine', slug: 'cocaine', at: ['stimulation'] },
+  { name: '(Meth)amphetamine', slug: 'methamphetamine', at: ['euphoria', 'stimulation'] },
+  { name: '3,4-MMC', slug: '3-mmc', at: ['stimulation', 'empathy'] },
+  { name: 'MDMA / XTC', slug: 'mdma', at: ['empathy'] },
+  { name: '2C-B', slug: '2c-b', at: ['empathy', 'sensory'] },
+  { name: 'Poppers', slug: 'poppers', at: ['sensory'] },
+  { name: 'Cannabis', slug: 'cannabis', at: ['sensory', 'chill'] },
+  { name: 'Ketamine', slug: 'ketamine', at: ['chill', 'disinhibition'] },
+  { name: 'Alcohol', slug: 'alcohol', at: ['disinhibition'] },
+  { name: 'GHB / GBL', slug: 'ghb', at: ['disinhibition', 'euphoria'] },
 ];
 
-interface Motivation {
-  label: string;
-  near: string;
-  left: number;
-  top: number;
+const N = EFFECTS.length;
+const idx = (key: string) => EFFECTS.findIndex((e) => e.key === key);
+
+/** viewBox geometry. Square and never stretched. */
+const SIZE = 400;
+const C = SIZE / 2;
+const R = 130;
+/** Light wobble; lobes a multiple of 2N so every station AND every arc
+ *  midpoint lands on a zero of it, i.e. exactly on the ring. */
+const WOBBLE = 3;
+const LOBES = 2 * N;
+const DEG = Math.PI / 180;
+const angleOfIndex = (i: number) => (-90 + (360 / N) * i) * DEG;
+const ringR = (a: number) => R + WOBBLE * Math.sin(LOBES * (a + Math.PI / 2));
+const at = (a: number, r: number) => ({ x: C + r * Math.cos(a), y: C + r * Math.sin(a) });
+const f = (n: number) => Math.round(n * 100) / 100;
+const pct = (v: number) => `${(v / SIZE) * 100}%`;
+
+/** Angle of a substance: an effect's own angle, or the midpoint of the arc
+ *  between two neighbours (going the short way round). */
+function angleOfSubstance(s: Substance): number {
+  if (s.at.length === 1) return angleOfIndex(idx(s.at[0]));
+  const [a, b] = s.at.map(idx);
+  const lo = (b - a + N) % N === 1 ? a : b;
+  return angleOfIndex(lo) + Math.PI / N;
 }
 
-const MOTIVATIONS: Motivation[] = [
-  { label: 'Keep on going', near: 'stimulation', left: 33, top: 10 },
-  { label: 'Connectedness', near: 'empathy', left: 68, top: 11 },
-  { label: 'Rougher / more extreme', near: 'stimulation & euphoria', left: 15, top: 22 },
-  { label: 'Healing intent', near: 'empathy', left: 85, top: 25 },
-  { label: 'Higher confidence', near: 'disinhibition', left: 10, top: 45 },
-  { label: 'In the moment', near: 'sensory perception', left: 89, top: 47 },
-  { label: 'Suppress negative feelings', near: 'chill', left: 22, top: 80 },
-  { label: 'Painless', near: 'chill', left: 50, top: 89 },
-  { label: 'More pleasure', near: 'sensory perception', left: 76, top: 80 },
-];
-
-/** Hexagon vertex in SVG user units (viewBox 400), r from centre 200. */
-function vertex(angleDeg: number, r: number) {
-  const rad = ((angleDeg - 90) * Math.PI) / 180;
-  return { x: 200 + Math.cos(rad) * r, y: 200 + Math.sin(rad) * r };
+/** Arc from station i to station i+1, as a polyline on the wobbly ring. */
+function arcPath(i: number): string {
+  const a0 = angleOfIndex(i);
+  const steps = 30;
+  return Array.from({ length: steps + 1 }, (_, k) => {
+    const a = a0 + ((2 * Math.PI) / N) * (k / steps);
+    const p = at(a, ringR(a));
+    return `${k === 0 ? 'M' : 'L'} ${f(p.x)} ${f(p.y)}`;
+  }).join(' ');
 }
+
+const ARCS = EFFECTS.map((_, i) => arcPath(i));
+
+const side0 = (a: number) => (Math.cos(a) > 0.3 ? 'right' : Math.cos(a) < -0.3 ? 'left' : 'centre');
 
 export function PharmacosexMap() {
   const { t } = useTranslation();
-  const R = 138;
-  const verts = EFFECTS.map((e) => vertex(e.angle, R));
-  const hexPoints = verts.map((v) => `${v.x},${v.y}`).join(' ');
-  const triA = [verts[0], verts[2], verts[4]].map((v) => `${v.x},${v.y}`).join(' ');
-  const triB = [verts[1], verts[3], verts[5]].map((v) => `${v.x},${v.y}`).join(' ');
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const sel = selected ? idx(selected) : -1;
+  const arcLit = (i: number) => sel < 0 || i === sel || (i + 1) % N === sel;
+  const substanceLit = (s: Substance) => !selected || s.at.includes(selected);
 
   return (
     <section className="border-y border-border-hairline py-8">
@@ -142,120 +152,217 @@ export function PharmacosexMap() {
       <p className="mt-4 max-w-reading text-13 leading-relaxed text-muted-foreground">
         {t(
           'tags.pharmacosex.intro',
-          'Combining substances and sex usually chases one of six core effects. The model maps which substances sit closest to which effect, and the motivations people name around the outside. Naming the motivation honestly is the first harm-reduction step: it tells you what need the substance is standing in for.',
+          'Combining substances and sex usually chases one of six core effects. The model maps which substances sit closest to which effect, and the motivations people name for each. Naming the motivation honestly is the first harm-reduction step: it tells you what need the substance is standing in for.',
         )}
       </p>
 
       {/* ── The map ─────────────────────────────────────────────────────── */}
-      <div className="mt-8 overflow-x-auto">
-        <div className="relative mx-auto aspect-square w-full min-w-[560px] max-w-[720px]">
-          <svg viewBox="0 0 400 400" className="absolute inset-0 h-full w-full" aria-hidden="true">
-            <polygon points={hexPoints} className="fill-none stroke-foreground" strokeWidth="1.5" />
-            <polygon points={triA} className="fill-none stroke-foreground/30" strokeWidth="1" />
-            <polygon points={triB} className="fill-none stroke-foreground/30" strokeWidth="1" />
-          </svg>
-
-          <span
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-2xs font-bold uppercase tracking-label"
-            aria-hidden="true"
-          >
-            {t('tags.pharmacosex.centre', 'Pharmacosex')}
-          </span>
-
-          {EFFECTS.map((e) => {
-            const rad = ((e.angle - 90) * Math.PI) / 180;
-            const left = 50 + Math.cos(rad) * 34.5;
-            const top = 50 + Math.sin(rad) * 34.5;
+      <div className="relative mx-auto mt-8 aspect-square w-full max-w-[34rem]">
+        <svg
+          viewBox={`0 0 ${SIZE} ${SIZE}`}
+          aria-hidden="true"
+          focusable="false"
+          className="absolute inset-0 block h-full w-full overflow-visible"
+        >
+          {ARCS.map((d, i) => (
+            <path
+              key={d}
+              d={d}
+              fill="none"
+              stroke={TRACK_STROKE.blue}
+              strokeWidth={6}
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+              className={cn('transition-opacity', !arcLit(i) && 'opacity-25')}
+            />
+          ))}
+          {/* Substances sitting right at an effect hang off its station on a
+              short spur toward the centre. */}
+          {SUBSTANCES.filter((s) => s.at.length === 1).map((s) => {
+            const a = angleOfSubstance(s);
+            const from = at(a, R);
+            const to = at(a, R - 44);
             return (
+              <path
+                key={s.slug}
+                d={`M ${f(from.x)} ${f(from.y)} L ${f(to.x)} ${f(to.y)}`}
+                stroke={TRACK_STROKE.blue}
+                strokeWidth={4}
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+                className={cn('transition-opacity', !substanceLit(s) && 'opacity-25')}
+              />
+            );
+          })}
+          {SUBSTANCES.map((s) => {
+            const a = angleOfSubstance(s);
+            const p = s.at.length === 1 ? at(a, R - 44) : at(a, R);
+            return (
+              <circle
+                key={s.slug}
+                cx={f(p.x)}
+                cy={f(p.y)}
+                r={6}
+                strokeWidth={3}
+                vectorEffect="non-scaling-stroke"
+                className={cn(
+                  'fill-background stroke-foreground transition-opacity',
+                  !substanceLit(s) && 'opacity-25',
+                )}
+              />
+            );
+          })}
+        </svg>
+
+        {/* Substance stops: a small ring on the track, its name inside the
+            circle (on phones the guide below carries the names). */}
+        {SUBSTANCES.map((s) => {
+          const a = angleOfSubstance(s);
+          const single = s.at.length === 1;
+          const label = at(a, single ? R - 70 : R - 30);
+          const lit = substanceLit(s);
+          return (
+            <span key={s.slug} aria-hidden="true">
               <span
-                key={e.key}
-                aria-hidden="true"
-                className={`absolute flex aspect-square w-[19%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-border-hairline p-2 text-center text-2xs font-bold uppercase leading-tight tracking-label ${
-                  e.filled ? 'bg-foreground text-background' : 'bg-background text-foreground'
-                }`}
-                style={{ left: `${left}%`, top: `${top}%` }}
+                style={{ left: pct(label.x), top: pct(label.y) }}
+                className={cn(
+                  'absolute hidden -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-2xs font-bold transition-opacity sm:block',
+                  !lit && 'opacity-25',
+                )}
+              >
+                {s.name}
+              </span>
+            </span>
+          );
+        })}
+
+        {/* Effect stations, labelled outside the ring. */}
+        {EFFECTS.map((e, i) => {
+          const a = angleOfIndex(i);
+          const p = at(a, R);
+          const lp = at(a, side0(a) === 'centre' ? R + 34 : R + 26);
+          // Stations on the sides take their label beside them, aligned away
+          // from the ring; top and bottom take it centred above/below.
+          const side = side0(a);
+          const lit = sel < 0 || sel === i;
+          return (
+            <span key={e.key} aria-hidden="true">
+              <span
+                style={{ left: pct(p.x), top: pct(p.y) }}
+                className={cn(
+                  'absolute flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-[3px] border-foreground text-13 font-bold transition-opacity',
+                  sel === i ? 'bg-track-blue text-track-ring' : 'bg-background',
+                  !lit && 'opacity-40',
+                )}
+              >
+                {i + 1}
+              </span>
+              <span
+                style={{ left: pct(lp.x), top: pct(lp.y) }}
+                className={cn(
+                  // Phones show the station numbers only; the numbered guide below
+                  // names them, so no label is cut off at the screen edge.
+                  'absolute hidden w-32 -translate-y-1/2 text-13 font-bold leading-tight transition-opacity sm:block',
+                  side === 'centre' && '-translate-x-1/2 text-center',
+                  side === 'right' && 'text-start',
+                  side === 'left' && '-translate-x-full text-end',
+                  !lit && 'opacity-40',
+                )}
               >
                 {e.label}
               </span>
-            );
-          })}
-
-          {SUBSTANCES.map((s) => (
-            <LocalizedLink
-              key={s.slug}
-              to={`/tags/${s.slug}`}
-              tabIndex={-1}
-              aria-hidden="true"
-              className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap border border-border-hairline bg-background px-1.5 py-0.5 text-3xs font-bold text-foreground no-underline hover:bg-foreground hover:text-background"
-              style={{ left: `${s.left}%`, top: `${s.top}%` }}
-            >
-              {s.name}
-            </LocalizedLink>
-          ))}
-
-          {MOTIVATIONS.map((m) => (
-            <span
-              key={m.label}
-              aria-hidden="true"
-              className="border absolute max-w-[18%] -translate-x-1/2 -translate-y-1/2 border-dashed border-foreground/50 px-1.5 py-1 text-center text-3xs font-bold uppercase leading-tight tracking-label text-muted-foreground"
-              style={{ left: `${m.left}%`, top: `${m.top}%` }}
-            >
-              {m.label}
             </span>
-          ))}
-        </div>
+          );
+        })}
+
+        <span
+          aria-hidden="true"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-2xs font-bold uppercase tracking-label text-muted-foreground"
+        >
+          {t('tags.pharmacosex.centre', 'Pharmacosex')}
+        </span>
       </div>
 
-      {/* ── The same content, readable ──────────────────────────────────── */}
-      <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
-        <div>
-          <h3 className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-            {t('tags.pharmacosex.effects', 'Core effects')}
-          </h3>
-          <ul className="mt-2 list-none p-0">
-            {EFFECTS.map((e) => (
-              <li key={e.key} className="border-b border-border-hairline py-2 last:border-b-0">
-                <span className="text-13 font-bold">{e.label}</span>
-                <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{e.meaning}</p>
-              </li>
-            ))}
-          </ul>
-          <h3 className="mt-6 text-2xs font-bold uppercase tracking-label text-muted-foreground">
-            {t('tags.pharmacosex.motivations', 'Motivations people name')}
-          </h3>
-          <ul className="mt-2 flex list-none flex-wrap gap-2 p-0">
-            {MOTIVATIONS.map((m) => (
-              <li
-                key={m.label}
-                className="border border-dashed border-foreground/50 px-2 py-1 text-13 text-muted-foreground"
+      {/* ── The guide: the map in words, and its controls ───────────────── */}
+      <p className="mt-8 text-13 text-muted-foreground">
+        {t('tags.pharmacosex.hint', 'Pick an effect to light up its stations on the ring.')}
+      </p>
+      <ol className="mt-4 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+        {EFFECTS.map((e, i) => {
+          const here = SUBSTANCES.filter((s) => s.at.length === 1 && s.at[0] === e.key);
+          const next = EFFECTS[(i + 1) % N];
+          const between = SUBSTANCES.filter(
+            (s) => s.at.length === 2 && s.at.includes(e.key) && s.at.includes(next.key),
+          );
+          const isSel = selected === e.key;
+          return (
+            <li
+              key={e.key}
+              className={cn(
+                'rounded-container bg-surface-container p-4 transition-opacity',
+                selected && !isSel && 'opacity-50',
+              )}
+            >
+              <button
+                type="button"
+                aria-pressed={isSel}
+                onClick={() => setSelected(isSel ? null : e.key)}
+                className="flex w-full items-center gap-2 rounded-element text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
               >
-                {m.label}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <h3 className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-            {t('tags.pharmacosex.substances', 'Where the substances sit')}
-          </h3>
-          <ul className="mt-2 list-none p-0">
-            {SUBSTANCES.map((s) => (
-              <li
-                key={s.slug}
-                className="flex items-baseline justify-between gap-4 border-b border-border-hairline py-2 last:border-b-0"
-              >
-                <LocalizedLink
-                  to={`/tags/${s.slug}`}
-                  className="text-13 font-bold text-foreground no-underline hover:underline"
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-[3px] border-foreground text-13 font-bold',
+                    isSel ? 'bg-track-blue text-track-ring' : 'bg-background',
+                  )}
                 >
-                  {s.name}
-                </LocalizedLink>
-                <span className="text-13 text-muted-foreground">{s.between}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+                  {i + 1}
+                </span>
+                <span className="text-15 font-bold">{e.label}</span>
+              </button>
+              <p className="mt-2 text-13 leading-relaxed text-muted-foreground">{e.meaning}</p>
+              {here.length > 0 && (
+                <p className="mt-2 text-13">
+                  <span className="text-muted-foreground">
+                    {t('tags.pharmacosex.atEffect', 'Right here:')}{' '}
+                  </span>
+                  {here.map((s, k) => (
+                    <span key={s.slug}>
+                      {k > 0 && ', '}
+                      <LocalizedLink to={`/tags/${s.slug}`} className="font-bold">
+                        {s.name}
+                      </LocalizedLink>
+                    </span>
+                  ))}
+                </p>
+              )}
+              {between.length > 0 && (
+                <p className="mt-1 text-13">
+                  <span className="text-muted-foreground">
+                    {t('tags.pharmacosex.towards', 'On the way to {{next}}:', {
+                      next: next.label,
+                    })}{' '}
+                  </span>
+                  {between.map((s, k) => (
+                    <span key={s.slug}>
+                      {k > 0 && ', '}
+                      <LocalizedLink to={`/tags/${s.slug}`} className="font-bold">
+                        {s.name}
+                      </LocalizedLink>
+                    </span>
+                  ))}
+                </p>
+              )}
+              <p className="mt-2 text-13">
+                <span className="text-muted-foreground">
+                  {t('tags.pharmacosex.motivationsShort', 'People say:')}{' '}
+                </span>
+                {e.motivations.map((m) => `“${m}”`).join(' · ')}
+              </p>
+            </li>
+          );
+        })}
+      </ol>
 
       <p className="mt-6 text-2xs uppercase tracking-label text-muted-foreground">
         {t(
