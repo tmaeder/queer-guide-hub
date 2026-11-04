@@ -98,6 +98,12 @@ export function PrideTimeline({
   const placed = useMemo(() => placeEvents(events, year), [events, year]);
   const maxRow = useMemo(() => placed.reduce((m, p) => (p.row > m ? p.row : m), 0), [placed]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  // Read, not a dependency: the opening scroll re-anchors when the year or the
+  // set of prides changes, never when the reader selects one.
+  const selectedRef = useRef(selectedId);
+  useEffect(() => {
+    selectedRef.current = selectedId;
+  }, [selectedId]);
   const today = new Date();
   const showToday = today.getUTCFullYear() === year;
   const todayMonthIndex = today.getUTCMonth();
@@ -117,7 +123,7 @@ export function PrideTimeline({
   // Instant, not smooth: this is the initial position, not a navigation.
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el || selectedId || placed.length === 0) return;
+    if (!el || selectedRef.current || placed.length === 0) return;
     const yearStartMs = Date.UTC(year, 0, 1);
     const yearMs = Date.UTC(year + 1, 0, 1) - yearStartMs;
     const starts = placed
@@ -132,8 +138,7 @@ export function PrideTimeline({
     // the track and widen scrollWidth, which overshot the anchor on phones.
     const width = (el.firstElementChild as HTMLElement | null)?.offsetWidth ?? el.scrollWidth;
     el.scrollLeft = Math.max(0, ((anchorMs - yearStartMs) / yearMs) * width - 24);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-anchor only when the year or the set of prides changes, never on selection.
-  }, [year, placed]);
+  }, [year, placed, showToday]);
 
   const trackHeight = (maxRow + 1) * ROW_HEIGHT + 48;
 
