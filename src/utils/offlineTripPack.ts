@@ -42,7 +42,7 @@ export interface TripSnapshot {
 export async function prepareTripOfflineAssets(): Promise<void> {
   if (import.meta.env.DEV) return;
   if (!navigator.serviceWorker?.controller) throw new Error('Offline app shell unavailable');
-  const shell = await fetch('/index.html', { cache: 'no-cache' });
+  const shell = await fetch('/', { cache: 'no-cache', credentials: 'omit' });
   if (!shell.ok || !shell.headers.get('content-type')?.includes('text/html')) {
     throw new Error('Offline app shell unavailable');
   }
@@ -77,7 +77,7 @@ export async function prepareTripOfflineAssets(): Promise<void> {
       await cache.put(asset, response);
     }),
   );
-  await cache.put('/index.html', shell);
+  await cache.put('/', shell);
 }
 
 export async function cacheTripSnapshot(
