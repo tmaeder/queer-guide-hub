@@ -213,6 +213,22 @@ const auditThinBorders = (page: Page) =>
           return false;
         }
 
+        // The two borders the borderless rule in src/index.css exempts by
+        // colour, mirrored here: the ink ring on a track-coloured mark and the
+        // boundary of a form control. Both are WCAG 1.4.11 obligations (3:1
+        // non-text contrast), not chrome. Keep this list in step with that
+        // rule's :not(...) — semanticBordersSurviveBorderlessRule.test.ts
+        // guards the CSS side.
+        const classes = (element.getAttribute('class') || '').split(/\s+/);
+        if (
+          classes.includes('border-track-ring') ||
+          classes.includes('border-input') ||
+          (element.getAttribute('data-state') === 'checked' &&
+            classes.includes('data-[state=checked]:border-track-ring'))
+        ) {
+          return false;
+        }
+
         const style = getComputedStyle(element);
         const widths = [
           style.borderTopWidth,
