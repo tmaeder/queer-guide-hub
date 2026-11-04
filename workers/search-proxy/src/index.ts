@@ -121,6 +121,33 @@ export function withBudget<T>(p: Promise<T | null>, ms: number): Promise<T | nul
 	});
 }
 
+/** Steps whose wall time /search records into debug.timings via track(). */
+export type TimedStep = "rewriteMs" | "signalMs" | "recentMs" | "tagsMs" | "synonymsMs" | "embedMs" | "embedRewrittenMs";
+
+/**
+ * debug.timings. Background steps (rewriteMs, embedMs, …) are their own wall
+ * time and overlap; *WaitMs, pgMs, fallbackMs, rerankMs are time the request
+ * was blocked. A step that did not run is absent, never 0.
+ */
+export type SearchTimings = Partial<
+	Record<
+		| TimedStep
+		| "preMs"
+		| "rewriteWaitMs"
+		| "embedWaitMs"
+		| "pgMs"
+		| "pgHybridMs"
+		| "pgFacetsMs"
+		| "fallbackMs"
+		| "rerankMs"
+		| "totalMs",
+		number
+	>
+>;
+
+/** Why the hot path did or did not use the LLM rewrite. */
+export type RewriteOutcome = "skipped" | "used" | "empty" | "over_budget";
+
 /** The text handed to the embedding model: base query plus synonym terms. */
 export function embedTextFor(base: string, synonyms: string[]): string {
 	return synonyms.length ? `${base} ${synonyms.join(" ")}` : base;
@@ -388,22 +415,44 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// translation is what drives cross-language recall on the vector arm.
 	// Meanwhile the embedding of the literal query starts immediately and is
 	// reused whenever the rewrite adds nothing (or misses its budget).
+	// Per-step wall times, returned under debug.timings. Steps overlap (most run
+	// in parallel), so they do not sum to totalMs; the *WaitMs entries are the
+	// time the request actually spent blocked on that step.
+	const timings: SearchTimings = { preMs: Date.now() - started };
+	const track = <T,>(name: TimedStep, p: Promise<T>): Promise<T> => {
+		const t = Date.now();
+		return p.finally(() => {
+			timings[name] = Date.now() - t;
+		});
+	};
+	let rewriteSettled = false;
 	const rewritePromise: Promise<RewrittenQuery | null> = shouldRewrite
-		? rewriteQuery(env, q, lang).catch(() => null)
+		? track("rewriteMs", rewriteQuery(env, q, lang).catch(() => null)).finally(() => {
+				rewriteSettled = true;
+			})
 		: Promise.resolve(null);
 	if (shouldRewrite) ctx.waitUntil(rewritePromise);
 	const embedModel = env.EMBED_MODEL || DEFAULT_EMBED_MODEL;
 	const sessionKey = user_id ? `u:${user_id}` : session_id ? `s:${session_id}` : null;
 	// Independent of the rewrite: start now, await later.
-	const signalP = loadSignal(env, { user_id, session_id });
-	const recentP = sessionKey ? loadRecentSeen(env, sessionKey) : Promise.resolve(new Set<string>());
-	const tagsP = expandTagsWithNarrower(env, filters.tags);
-	const pgSyns = await loadActiveSynonyms(env);
+	const signalP = track("signalMs", loadSignal(env, { user_id, session_id }));
+	const recentP = track("recentMs", sessionKey ? loadRecentSeen(env, sessionKey) : Promise.resolve(new Set<string>()));
+	const tagsP = track("tagsMs", expandTagsWithNarrower(env, filters.tags));
+	const pgSyns = await track("synonymsMs", loadActiveSynonyms(env));
 	const literalEmbedText = embedTextFor(q, Array.from(new Set<string>(expandWithPgSynonyms(q, pgSyns, { locale: lang }))));
-	const literalVecP = embed(env, literalEmbedText, { cacheKey: `q:${embedModel}:${lang}:${literalEmbedText}` });
+	const literalVecP = track("embedMs", embed(env, literalEmbedText, { cacheKey: `q:${embedModel}:${lang}:${literalEmbedText}` }));
+	const rewriteWaitStart = Date.now();
 	const rewrite = shouldRewrite
 		? await withBudget(rewritePromise, lang === "en" ? REWRITE_BUDGET_MS_EN : REWRITE_BUDGET_MS_OTHER)
 		: null;
+	timings.rewriteWaitMs = Date.now() - rewriteWaitStart;
+	const rewriteOutcome: RewriteOutcome = !shouldRewrite
+		? "skipped"
+		: rewrite
+			? "used"
+			: rewriteSettled
+				? "empty"
+				: "over_budget";
 
 	// THE REWRITE AUGMENTS. IT MUST NEVER REPLACE.
 	//
@@ -496,13 +545,16 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const embedText = embedTextFor(embedQ, allSynonyms);
 	// Reuse the speculative literal embedding when the rewrite changed nothing
 	// (the common case on a first-time query, where it missed its budget).
+	const embedReused = embedText === literalEmbedText;
+	const parallelWaitStart = Date.now();
 	const [qVec, signal, recent] = await Promise.all([
-		embedText === literalEmbedText
+		embedReused
 			? literalVecP
-			: embed(env, embedText, { cacheKey: `q:${embedModel}:${lang}:${embedText}` }),
+			: track("embedRewrittenMs", embed(env, embedText, { cacheKey: `q:${embedModel}:${lang}:${embedText}` })),
 		signalP,
 		recentP,
 	]);
+	timings.embedWaitMs = Date.now() - parallelWaitStart;
 
 	// Compose biased vector in JS (weighted mean over signal.biasItems, normalized).
 	// qVec is null when the embedding model is unavailable; keep it null all the way
@@ -560,6 +612,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// timed out and fell back to the popularity list, i.e. correct results were
 	// computed and then thrown away. Give that path headroom; the healthy hybrid
 	// path keeps the tight default so it still fails fast.
+	const pgStart = Date.now();
 	const pg = await pgHybridSearch(
 		env,
 		pgArgs,
@@ -568,6 +621,11 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		console.warn("pgHybridSearch", (e as Error).message);
 		return null;
 	});
+	timings.pgMs = Date.now() - pgStart;
+	if (pg) {
+		timings.pgHybridMs = pg.hybridMs;
+		timings.pgFacetsMs = pg.facetsMs;
+	}
 	const fused = (pg?.hits ?? []) as FuseItem[];
 	const facetDistribution = pg?.facetDistribution ?? {};
 	const totalHits = pg?.estimatedTotalHits ?? fused.length;
@@ -589,17 +647,21 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// that matched nothing rendered "20 results" of Barcelona/Sydney/Paris.
 	// v_popular_entities rows are under-hydrated ({content_type, content_id,
 	// score}); hydrate them so they don't render as empty cards.
+	const fallbackStart = Date.now();
 	if (!explicitSort && pg === null && ranked.length < 5) {
 		const popular = await popularEntities(env, pgTypes, 30);
 		ranked = dedupeById([...ranked, ...(await hydratePopular(env, popular))]);
+		timings.fallbackMs = Date.now() - fallbackStart;
 	}
 
 	// Optional reranker on top-20.
 	let final = ranked.slice(0, hitsPerPage);
 	if (!explicitSort && env.ENABLE_RERANKER === "1" && q.split(/\s+/).length >= 2) {
 		const pool = ranked.slice(0, 20);
+		const rerankStart = Date.now();
 		const hydrated = await hydrateTitles(env, pool);
 		const rrkd = await rerank(env, q, hydrated.map((h) => h._snippet || h.title || "")).catch(() => null);
+		timings.rerankMs = Date.now() - rerankStart;
 		if (rrkd) {
 			final = rrkd
 				.map((r) => ({ ...pool[r.index], _rerank: r.score }))
@@ -612,6 +674,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const reorderedFacets = reorderFacets(facetDistribution, signal.recent_tags || [], signal.interests || []);
 
 	const processingTimeMS = Date.now() - started;
+	timings.totalMs = processingTimeMS;
 
 	// Fire-and-forget analytics log.
 	ctx.waitUntil(
@@ -656,6 +719,10 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 						// search. Makes an AI outage visible instead of silently degrading.
 						embedFailed: qVec === null,
 						reranker: env.ENABLE_RERANKER === "1",
+						timings,
+						rewriteOutcome,
+						embedReused,
+						pgFailed: pg === null,
 						rewrite,
 						// Both arms, separately — a single `effectiveQ` is what hid
 						// the rewrite-replaces-the-query defect for as long as it did.

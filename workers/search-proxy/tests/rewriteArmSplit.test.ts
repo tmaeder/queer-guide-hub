@@ -214,4 +214,36 @@ describe("rewrite augments, never replaces", () => {
 		// …and the rewrite still finished under waitUntil and landed in KV.
 		expect(h.cachedRewrite).toMatchObject({ q_en: "hero bar" });
 	});
+
+	it("debug.timings reports each step, and whether the rewrite was used", async () => {
+		const h = await runSearch("Heldenbar", { q_en: "hero bar" });
+		const dbg = h.body.debug as Record<string, unknown>;
+		const t = dbg.timings as Record<string, number>;
+		expect(dbg.rewriteOutcome).toBe("used");
+		expect(dbg.embedReused).toBe(false); // the translation needed its own embedding
+		expect(dbg.pgFailed).toBe(false);
+		for (const k of ["preMs", "synonymsMs", "rewriteMs", "rewriteWaitMs", "embedMs", "embedRewrittenMs", "embedWaitMs", "pgMs", "pgHybridMs", "pgFacetsMs", "totalMs"]) {
+			expect(typeof t[k], k).toBe("number");
+		}
+		// Steps that did not run are absent, not 0 — a 0 would read as "instant".
+		expect(t.fallbackMs).toBeUndefined();
+		expect(t.rerankMs).toBeUndefined();
+		expect(t.totalMs).toBeGreaterThanOrEqual(t.pgMs);
+	});
+
+	it("debug.rewriteOutcome names a rewrite that missed its budget", async () => {
+		const h = await runSearch("Heldenbar", { q_en: "hero bar" }, { rewriteDelayMs: 900 });
+		const dbg = h.body.debug as Record<string, unknown>;
+		const t = dbg.timings as Record<string, number>;
+		expect(dbg.rewriteOutcome).toBe("over_budget");
+		expect(dbg.embedReused).toBe(true);
+		// Blocked for roughly the budget, not for the 900 ms the LLM took.
+		expect(t.rewriteWaitMs).toBeGreaterThanOrEqual(250);
+		expect(t.rewriteWaitMs).toBeLessThan(800);
+	});
+
+	it("debug.rewriteOutcome separates an empty rewrite from a slow one", async () => {
+		const h = await runSearch("Heldenbar", null);
+		expect((h.body.debug as Record<string, unknown>).rewriteOutcome).toBe("empty");
+	});
 });
