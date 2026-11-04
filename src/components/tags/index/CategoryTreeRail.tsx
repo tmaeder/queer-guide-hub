@@ -239,11 +239,14 @@ export function CategoryTreeRail({
                         >
                           <span className="flex w-4 shrink-0 justify-center pt-2">
                             {/* Sub-stations take a smaller marker so the eye
-                                reads the hierarchy before it reads the indent. */}
+                                reads the hierarchy before it reads the indent.
+                                `transit-marker` keeps its ink edge: without it
+                                index.css erases 1-2px borders and a paper dot
+                                reads as a gap in the line. */}
                             <span
                               aria-hidden
                               className={cn(
-                                'inline-block h-2.5 w-2.5 rounded-full border border-border-hairline',
+                                'transit-marker inline-block h-2.5 w-2.5 rounded-full border-2 border-foreground',
                                 childActive ? 'bg-foreground' : 'bg-background',
                               )}
                             />

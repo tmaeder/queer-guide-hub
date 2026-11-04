@@ -79,9 +79,12 @@ function RailSegment({ track, edge }: { track: Track; edge: 'start' | 'end' | 'b
       aria-hidden
       className={cn(
         'pointer-events-none absolute left-0 flex w-4 justify-center',
-        edge === 'start' && 'bottom-0 top-1/2',
-        edge === 'end' && 'bottom-1/2 top-0',
-        edge === 'none' && 'inset-y-0',
+        // Each segment overlaps its neighbour by 1px. Butted exactly, rows of
+        // fractional height left a faint antialiased seam at every boundary,
+        // so the line read as dashed.
+        edge === 'start' && '-bottom-px top-1/2',
+        edge === 'end' && '-top-px bottom-1/2',
+        edge === 'none' && '-inset-y-px',
       )}
     >
       <span className={cn('h-full w-[3px]', TRACK_BG[track])} />
@@ -116,9 +119,12 @@ function Stop({
       </span>
       <LocalizedLink
         to={`/tags/${encodeURIComponent(tag.slug)}`}
-        className="min-w-0 flex-1 truncate px-2 py-0.5 text-13 leading-snug text-muted-foreground no-underline transition-colors hover:bg-surface-container hover:text-foreground"
+        className="flex min-w-0 flex-1 items-center px-2 py-0.5 text-13 leading-snug text-muted-foreground no-underline transition-colors hover:bg-surface-container hover:text-foreground"
       >
-        {tag.name}
+        {/* The link is 44px tall (the touch-target floor in index.css), so
+            its text has to be centred in it explicitly. As a plain block the
+            name sat at the top of the box, 12px above the ring it labels. */}
+        <span className="truncate">{tag.name}</span>
       </LocalizedLink>
     </li>
   );
@@ -154,9 +160,9 @@ function LineHead({ line, track, edge }: { line: OntologyLine; track: Track; edg
       </span>
       <LocalizedLink
         to={`/tags/${encodeURIComponent(line.slug)}`}
-        className="min-w-0 flex-1 truncate px-2 py-0.5 text-13 font-bold leading-snug no-underline transition-colors hover:bg-surface-container"
+        className="flex min-w-0 flex-1 items-center px-2 py-0.5 text-13 font-bold leading-snug no-underline transition-colors hover:bg-surface-container"
       >
-        {line.name}
+        <span className="truncate">{line.name}</span>
       </LocalizedLink>
     </li>
   );
