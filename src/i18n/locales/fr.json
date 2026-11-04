@@ -434,7 +434,10 @@
       "daysPlanned_one": "{{count}} jour planifié",
       "daysPlanned_other": "{{count}} jours planifiés",
       "travelBuddies": "[FR] Let travellers heading to {{city}} find you",
-      "travelBuddiesNoCity": "[FR] Let other travellers on this trip find you"
+      "travelBuddiesNoCity": "[FR] Let other travellers on this trip find you",
+      "saveOfflineAria": "Enregistrer le voyage hors ligne",
+      "savedOffline": "Enregistré pour une utilisation hors ligne",
+      "savedOfflineDescription": "Ouvrez Aujourd’hui pour consulter votre itinéraire et vos réservations hors ligne."
     },
     "share": {
       "title": "Partager ce voyage",
@@ -457,7 +460,8 @@
       "deleteTitle": "Supprimer le lien",
       "deleteConfirm": "Toute personne ayant ce lien perdra l'accès. Cette action est irréversible.",
       "expired": "Expiré",
-      "expiresOn": "Expire le {{date}}"
+      "expiresOn": "Expire le {{date}}",
+      "managePeople": "Inviter ou partager"
     },
     "itinerary": {
       "add": "Ajouter",
@@ -493,7 +497,15 @@
       "timeUnknown": "[FR] time of day not known",
       "tooFew": "[FR] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
       "vibeAny": "[FR] A bit of everything",
-      "vibeLabel": "[FR] What you are after"
+      "vibeLabel": "[FR] What you are after",
+      "addStop": "Ajouter une étape",
+      "moveStop": "Déplacer l’étape",
+      "moveUp": "Déplacer vers le haut",
+      "moveDown": "Déplacer vers le bas",
+      "moveToDay": "Déplacer au jour {{number}}",
+      "removeStop": "Retirer l’étape",
+      "moveFailed": "Impossible de déplacer cette étape",
+      "moveRetry": "Vérifiez votre connexion et réessayez."
     },
     "map": {
       "emptyNoPlaces": "Ajoutez des lieux pour les voir sur la carte",
@@ -684,7 +696,8 @@
       "ctaSubtitle": "Itinéraires gratuits, infos sécurité LGBTQ+ et planification partagée avec vos proches.",
       "ctaPrimary": "Commencer à planifier",
       "ctaSecondary": "Se connecter",
-      "footer": "Partagé via queer.guide"
+      "footer": "Partagé via queer.guide",
+      "loadFailed": "Impossible de charger ce voyage"
     },
     "tabs": {
       "itinerary": "Itinéraire",
@@ -700,7 +713,11 @@
     "today": {
       "offlineBanner": "Hors ligne — itinéraire enregistré affiché.",
       "pushPrompt": "Recevoir un rappel 30 min avant chaque réservation.",
-      "pushEnable": "Activer"
+      "pushEnable": "Activer",
+      "noOfflineCopy": "Aucune copie hors ligne disponible",
+      "noOfflineCopyHelp": "Reconnectez-vous pour ouvrir le voyage et enregistrer une copie hors ligne.",
+      "title": "Aujourd’hui",
+      "startingNow": "Commence maintenant"
     },
     "bookingAssistant": {
       "tabs": {
@@ -752,7 +769,10 @@
       "prepareTools": "Préparer le départ",
       "togetherTools": "Planifier ensemble",
       "keepPlanning": "Continuer à planifier",
-      "memories": "Ajouter des souvenirs"
+      "memories": "Ajouter des souvenirs",
+      "itinerary": "Itinéraire",
+      "people": "Participants et partage",
+      "actions": "Actions du voyage"
     },
     "phase": {
       "label": {
@@ -935,7 +955,8 @@
         "body": "Devient un voyage qui t’appartient, avec tous les arrêts déjà dedans. Tu peux tout modifier ensuite.",
         "primary": "En faire un voyage",
         "secondary": "En tracer une autre"
-      }
+      },
+      "buildRoute": "Créer un itinéraire"
     },
     "polls": {
       "createdToast": "Sondage créé",
@@ -1154,7 +1175,9 @@
     },
     "offline": {
       "pending_one": "{{count}} modification en attente de synchronisation",
-      "pending_other": "{{count}} modifications en attente de synchronisation"
+      "pending_other": "{{count}} modifications en attente de synchronisation",
+      "saveFailed": "Impossible d’enregistrer ce voyage hors ligne",
+      "syncRejected": "Certaines modifications hors ligne n’ont pas pu être enregistrées"
     },
     "inbox": {
       "openThread": "Vérifier dans le chat",
@@ -1169,6 +1192,16 @@
       "created": "Voyage créé",
       "createdDescription": "Ajoute tes arrêts à partir d’ici.",
       "error": "Impossible de créer le voyage"
+    },
+    "booklet": {
+      "print": "Imprimer ou enregistrer en PDF",
+      "reservationsUnavailable": "Les réservations n’ont pas pu être chargées et ne figureront pas dans cette copie."
+    },
+    "view": {
+      "today": "Aujourd’hui"
+    },
+    "invitations": {
+      "title": "Invitations au voyage"
     }
   },
   "auth": {

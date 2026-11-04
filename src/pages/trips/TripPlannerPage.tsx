@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useParams, useSearchParams } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import {
   MapPin,
@@ -17,17 +24,18 @@ import {
   FileText,
   Download,
   Check,
+  MoreHorizontal,
   Lightbulb,
   NotebookPen,
   CalendarRange,
 } from '@/components/icons';
-import { format, differenceInDays } from 'date-fns';
+import { format, differenceInCalendarDays, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useTrip, canEditTrip, type TripWithDetails } from '@/hooks/useTrips';
 import { useAuth } from '@/hooks/useAuth';
 import { useOfflineTripSync } from '@/hooks/useOfflineTripSync';
-import { useTripReservations } from '@/hooks/useTripReservations';
-import { cacheTripSnapshot } from '@/utils/offlineTripPack';
+import { useReservations } from '@/hooks/useReservations';
+import { cacheTripSnapshot, prepareTripOfflineAssets } from '@/utils/offlineTripPack';
 import { useToast } from '@/hooks/use-toast';
 import { DraggableItinerary } from '@/components/trips/DraggableItinerary';
 import { TripMap } from '@/components/trips/TripMapLazy';
@@ -126,22 +134,36 @@ export default function TripPlannerPage() {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { tripId } = useParams<{ tripId: string }>();
-  const { data: trip, isLoading, error } = useTrip(tripId);
+  const { data: trip, isLoading, error, refetch } = useTrip(tripId);
   const [searchParams] = useSearchParams();
   const [addPlaceDay, setAddPlaceDay] = useState<string | undefined>();
   const [addPlaceOpen, setAddPlaceOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [offlineSaved, setOfflineSaved] = useState(false);
-  const { data: reservations } = useTripReservations(tripId);
+  const [savingOffline, setSavingOffline] = useState(false);
+  const { data: reservations } = useReservations({ tripId });
   const { toast } = useToast();
   const { user } = useAuth();
   const canEdit = trip ? canEditTrip(trip, user?.id) : false;
   const { pending: pendingOffline } = useOfflineTripSync();
 
   const handleSaveOffline = async () => {
-    if (!tripId || !trip) return;
-    await cacheTripSnapshot(tripId, trip, reservations ?? []);
+    if (!user || !trip || !reservations || savingOffline) return;
+    setSavingOffline(true);
+    try {
+      await import('./TodayModePage');
+      await prepareTripOfflineAssets();
+      await cacheTripSnapshot(user.id, trip, reservations);
+    } catch {
+      toast({
+        title: t('trips.offline.saveFailed', 'Could not save this trip offline'),
+        variant: 'destructive',
+      });
+      return;
+    } finally {
+      setSavingOffline(false);
+    }
     setOfflineSaved(true);
     toast({
       title: t('trips.planner.savedOffline', 'Saved for offline use'),
@@ -186,8 +208,8 @@ export default function TripPlannerPage() {
           title={t(`trips.error.${kind}.title`)}
           description={t(`trips.error.${kind}.description`)}
           primaryAction={{
-            label: t('trips.backToTrips'),
-            onClick: () => navigate('/trips'),
+            label: kind === 'load-error' ? t('common.retry', 'Try again') : t('trips.backToTrips'),
+            onClick: () => (kind === 'load-error' ? void refetch() : navigate('/trips')),
             variant: 'default',
           }}
         />
@@ -197,15 +219,15 @@ export default function TripPlannerPage() {
 
   const dateRange =
     trip.start_date && trip.end_date
-      ? `${format(new Date(trip.start_date), 'MMM d')} – ${format(
-          new Date(trip.end_date),
+      ? `${format(parseISO(trip.start_date), 'MMM d')} – ${format(
+          parseISO(trip.end_date),
           'MMM d, yyyy',
         )} · ${t('trips.planner.days', {
-          count: differenceInDays(new Date(trip.end_date), new Date(trip.start_date)) + 1,
+          count: differenceInCalendarDays(parseISO(trip.end_date), parseISO(trip.start_date)) + 1,
         })}`
       : trip.start_date
         ? t('trips.card.fromDate', {
-            date: format(new Date(trip.start_date), 'MMM d, yyyy'),
+            date: format(parseISO(trip.start_date), 'MMM d, yyyy'),
           })
         : null;
 
@@ -235,45 +257,28 @@ export default function TripPlannerPage() {
         dateRange={dateRange}
         statusLabel={statusLabel}
         actions={
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSaveOffline}
-              disabled={!trip}
-              style={overlayBtnStyle}
-              aria-label={t('trips.planner.saveOfflineAria', 'Save trip for offline use')}
-            >
-              {offlineSaved ? (
-                <Check size={16} className="mr-1.5" />
-              ) : (
-                <Download size={16} className="mr-1.5" />
-              )}
-              {offlineSaved
-                ? t('trips.planner.offlineSaved', 'Saved')
-                : t('trips.planner.saveOffline', 'Offline')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open(`/trips/${tripId}/booklet`, '_blank')}
-              disabled={!trip}
-              style={overlayBtnStyle}
-              aria-label={t('trips.planner.bookletAria', 'Download trip booklet (PDF)')}
-            >
-              <FileText size={16} className="mr-1.5" />
-              {t('trips.planner.booklet', 'Booklet')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShareOpen(true)}
-              style={overlayBtnStyle}
-            >
-              <Share2 size={16} className="mr-1.5" />
-              {t('trips.share.title')}
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" style={overlayBtnStyle} className="min-h-11">
+                <MoreHorizontal size={16} className="mr-1.5" />
+                {t('trips.workspace.actions', 'Trip actions')}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                disabled={!reservations || savingOffline}
+                onSelect={() => void handleSaveOffline()}
+              >
+                {offlineSaved ? <Check size={16} /> : <Download size={16} />}
+                {t('trips.planner.saveOfflineAria', 'Save trip for offline use')}
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <LocalizedLink to={`/trips/${tripId}?view=booklet`}>
+                  <FileText size={16} /> {t('trips.booklet.print', 'Print / Save as PDF')}
+                </LocalizedLink>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         }
       >
         <TooltipProvider>
@@ -305,8 +310,21 @@ export default function TripPlannerPage() {
 
       {/* Cross-section alerts stay visible; detailed readiness belongs to Prepare. */}
       <TripDocExpiryBanner trip={trip} />
-      {section === 'prepare' || section === 'all' ? <TripPreTripBlock trip={trip} /> : null}
+
       <TripNudgesBanner tripId={trip.id} />
+
+      {(section === 'together' || section === 'all') && (
+        <section className="mb-6 flex flex-wrap items-center gap-4">
+          <Button onClick={() => setShareOpen(true)}>
+            <Share2 size={16} /> {t('trips.share.managePeople', 'Invite or share')}
+          </Button>
+          <Button variant="outline" asChild>
+            <LocalizedLink to="/trips/invitations">
+              {t('trips.invitations.title', 'Trip invitations')}
+            </LocalizedLink>
+          </Button>
+        </section>
+      )}
 
       {section === 'together' || section === 'all' ? (
         <TripTravelBuddiesCTA
@@ -351,7 +369,7 @@ export default function TripPlannerPage() {
                   className="rounded-full"
                 >
                   <Plus size={16} className="mr-1.5" />
-                  {t('trips.itinerary.addPlace')}
+                  {t('trips.itinerary.addStop', 'Add stop')}
                 </Button>
               </div>
             )}
@@ -371,6 +389,13 @@ export default function TripPlannerPage() {
             </div>
           </div>
 
+          <LocalizedLink
+            to={`/trips/${trip.id}?view=plan&section=prepare&tool=safety`}
+            className="mt-4 inline-flex min-h-11 items-center gap-2 underline underline-offset-4"
+          >
+            <Shield size={16} aria-hidden /> {t('trips.tabs.safety')}
+          </LocalizedLink>
+
           {phase !== 'memory' && (
             <div className="mt-6">
               <TripLocalContext trip={trip} />
@@ -381,6 +406,7 @@ export default function TripPlannerPage() {
 
       {section === 'prepare' || section === 'all' ? (
         <div className="mb-8">
+          <TripPreTripBlock trip={trip} />
           <TripBookingAssistant
             tripId={trip.id}
             places={trip.trip_places}
@@ -443,6 +469,15 @@ function TripWorkspaceTools({
   safetyAlert: boolean;
 }) {
   const { t } = useTranslation();
+  const [search] = useSearchParams();
+  const tool = search.get('tool');
+  useEffect(() => {
+    if (!tool) return;
+    const frame = requestAnimationFrame(() => {
+      document.getElementById(`trip-tool-${tool}`)?.scrollIntoView?.({ block: 'start' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [tool, section]);
   const heading =
     section === 'all'
       ? t('trips.timeline.more', 'More tools')
@@ -457,10 +492,15 @@ function TripWorkspaceTools({
       <h2 id={`trip-${section}-tools`} className="mb-4 text-title font-bold">
         {heading}
       </h2>
-      <Accordion type="multiple" className="w-full">
+      <Accordion
+        key={`${section}:${tool}`}
+        type="multiple"
+        defaultValue={tool ? [tool] : []}
+        className="w-full"
+      >
         {section === 'plan' || section === 'all' ? (
           <>
-            <AccordionItem value="build-days">
+            <AccordionItem value="build-days" id="trip-tool-build-days" className="scroll-mt-40">
               <AccordionTrigger>
                 <span className="inline-flex items-center gap-2">
                   <CalendarRange size={16} /> {t('trips.tabs.buildDays', 'Build the days')}
@@ -472,7 +512,7 @@ function TripWorkspaceTools({
                 </Suspense>
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="suggestions">
+            <AccordionItem value="suggestions" id="trip-tool-suggestions" className="scroll-mt-40">
               <AccordionTrigger>
                 <span className="inline-flex items-center gap-2">
                   <Lightbulb size={16} /> {t('trips.tabs.suggestions', 'Suggestions')}
@@ -488,7 +528,7 @@ function TripWorkspaceTools({
                 />
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="map">
+            <AccordionItem value="map" id="trip-tool-map" className="scroll-mt-40">
               <AccordionTrigger>
                 <span className="inline-flex items-center gap-2">
                   <MapPin size={16} /> {t('trips.tabs.map')}
@@ -505,7 +545,7 @@ function TripWorkspaceTools({
                 </div>
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="ai">
+            <AccordionItem value="ai" id="trip-tool-ai" className="scroll-mt-40">
               <AccordionTrigger>
                 <span className="inline-flex items-center gap-2">
                   <Sparkles size={16} /> {t('trips.tabs.ai', 'AI plan')}
@@ -522,7 +562,7 @@ function TripWorkspaceTools({
 
         {section === 'prepare' || section === 'all' ? (
           <>
-            <AccordionItem value="safety">
+            <AccordionItem value="safety" id="trip-tool-safety" className="scroll-mt-40">
               <AccordionTrigger>
                 <span className="inline-flex items-center gap-2">
                   <span className="relative inline-flex" aria-hidden={!safetyAlert}>
@@ -536,13 +576,18 @@ function TripWorkspaceTools({
               </AccordionTrigger>
               <AccordionContent>
                 <TripSafetyBriefing
+                  primaryCountryId={trip.primary_country_id}
                   tripPlaces={trip.trip_places}
                   tripDays={trip.trip_days}
                   tripId={trip.id}
                 />
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="reservations">
+            <AccordionItem
+              value="reservations"
+              id="trip-tool-reservations"
+              className="scroll-mt-40"
+            >
               <AccordionTrigger>
                 <span className="inline-flex items-center gap-2">
                   <Ticket size={16} /> {t('trips.tabs.reservations')}
@@ -554,7 +599,7 @@ function TripWorkspaceTools({
                 </Suspense>
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="budget">
+            <AccordionItem value="budget" id="trip-tool-budget" className="scroll-mt-40">
               <AccordionTrigger>
                 <span className="inline-flex items-center gap-2">
                   <Wallet size={16} /> {t('trips.tabs.budget')}
@@ -570,7 +615,7 @@ function TripWorkspaceTools({
                 </Suspense>
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="documents">
+            <AccordionItem value="documents" id="trip-tool-documents" className="scroll-mt-40">
               <AccordionTrigger>
                 <span className="inline-flex items-center gap-2">
                   <FileText size={16} /> {t('trips.tabs.documents', 'Documents')}
@@ -582,7 +627,7 @@ function TripWorkspaceTools({
                 </Suspense>
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="packing">
+            <AccordionItem value="packing" id="trip-tool-packing" className="scroll-mt-40">
               <AccordionTrigger>
                 <span className="inline-flex items-center gap-2">
                   <CheckSquare size={16} /> {t('trips.tabs.packing')}
@@ -604,7 +649,7 @@ function TripWorkspaceTools({
 
         {section === 'together' || section === 'all' ? (
           <>
-            <AccordionItem value="collaborate">
+            <AccordionItem value="collaborate" id="trip-tool-collaborate" className="scroll-mt-40">
               <AccordionTrigger>
                 <span className="inline-flex items-center gap-2">
                   <MessageCircle size={16} /> {t('trips.tabs.collaborate')}
@@ -616,7 +661,7 @@ function TripWorkspaceTools({
                 </Suspense>
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="chat">
+            <AccordionItem value="chat" id="trip-tool-chat" className="scroll-mt-40">
               <AccordionTrigger>
                 <span className="inline-flex items-center gap-2">
                   <MessagesSquare size={16} /> {t('trips.tabs.chat', 'Chat')}
@@ -628,7 +673,7 @@ function TripWorkspaceTools({
                 </Suspense>
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="journal">
+            <AccordionItem value="journal" id="trip-tool-journal" className="scroll-mt-40">
               <AccordionTrigger>
                 <span className="inline-flex items-center gap-2">
                   <NotebookPen size={16} /> {t('trips.tabs.journal', 'Journal')}

@@ -431,7 +431,10 @@
       "placesCount_one": "{{count}} مكان",
       "daysPlanned_one": "{{count}} يوم مخطط",
       "travelBuddies": "[AR] Let travellers heading to {{city}} find you",
-      "travelBuddiesNoCity": "[AR] Let other travellers on this trip find you"
+      "travelBuddiesNoCity": "[AR] Let other travellers on this trip find you",
+      "saveOfflineAria": "حفظ الرحلة للاستخدام دون اتصال",
+      "savedOffline": "تم الحفظ للاستخدام دون اتصال",
+      "savedOfflineDescription": "افتح «اليوم» للاطّلاع على برنامج الرحلة والحجوزات دون اتصال."
     },
     "share": {
       "title": "مشاركة هذه الرحلة",
@@ -454,7 +457,8 @@
       "deleteConfirm": "سيفقد كل من يملك هذا الرابط حق الوصول. لا يمكن التراجع عن هذا.",
       "expired": "منتهي",
       "expiresOn": "ينتهي في {{date}}",
-      "activeLinks_one": "{{count}} رابط نشط"
+      "activeLinks_one": "{{count}} رابط نشط",
+      "managePeople": "دعوة أو مشاركة"
     },
     "itinerary": {
       "add": "إضافة",
@@ -490,7 +494,15 @@
       "timeUnknown": "[AR] time of day not known",
       "tooFew": "[AR] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
       "vibeAny": "[AR] A bit of everything",
-      "vibeLabel": "[AR] What you are after"
+      "vibeLabel": "[AR] What you are after",
+      "addStop": "إضافة محطة",
+      "moveStop": "نقل المحطة",
+      "moveUp": "نقل لأعلى",
+      "moveDown": "نقل لأسفل",
+      "moveToDay": "النقل إلى اليوم {{number}}",
+      "removeStop": "إزالة المحطة",
+      "moveFailed": "تعذّر نقل هذه المحطة",
+      "moveRetry": "تحقّق من الاتصال وحاول مجددًا."
     },
     "map": {
       "emptyNoPlaces": "أضف أماكن لعرضها على الخريطة",
@@ -680,7 +692,8 @@
       "ctaSubtitle": "خطط مجانية ونصائح أمان لمجتمع الميم وتخطيط مشترك مع أصدقائك.",
       "ctaPrimary": "ابدأ التخطيط",
       "ctaSecondary": "تسجيل الدخول",
-      "footer": "تمت المشاركة عبر queer.guide"
+      "footer": "تمت المشاركة عبر queer.guide",
+      "loadFailed": "تعذّر تحميل هذه الرحلة"
     },
     "tabs": {
       "itinerary": "خط الرحلة",
@@ -696,7 +709,11 @@
     "today": {
       "offlineBanner": "أنت غير متصل — نعرض آخر خط سير محفوظ.",
       "pushPrompt": "تذكير قبل 30 دقيقة من كل حجز.",
-      "pushEnable": "تفعيل"
+      "pushEnable": "تفعيل",
+      "noOfflineCopy": "لا تتوفر نسخة دون اتصال",
+      "noOfflineCopyHelp": "أعِد الاتصال لفتح الرحلة وحفظ نسخة للاستخدام دون اتصال.",
+      "title": "اليوم",
+      "startingNow": "يبدأ الآن"
     },
     "bookingAssistant": {
       "tabs": {
@@ -748,7 +765,10 @@
       "prepareTools": "استعد للانطلاق",
       "togetherTools": "خططوا معًا",
       "keepPlanning": "تابع التخطيط",
-      "memories": "أضف ذكريات"
+      "memories": "أضف ذكريات",
+      "itinerary": "برنامج الرحلة",
+      "people": "المشاركون والمشاركة",
+      "actions": "إجراءات الرحلة"
     },
     "phase": {
       "label": {
@@ -931,7 +951,8 @@
         "body": "يتحول إلى رحلة تملكها، وكل المحطات فيها بالفعل. يمكنك تغيير ما تشاء بعد ذلك.",
         "primary": "حوّلها إلى رحلة",
         "secondary": "ارسم خطاً آخر"
-      }
+      },
+      "buildRoute": "إنشاء مسار"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -1156,7 +1177,9 @@
       "pending_other": "{{count}} تغييرات بانتظار المزامنة",
       "pending_two": "تغييران بانتظار المزامنة",
       "pending_few": "{{count}} تغييرات بانتظار المزامنة",
-      "pending_many": "{{count}} تغييرًا بانتظار المزامنة"
+      "pending_many": "{{count}} تغييرًا بانتظار المزامنة",
+      "saveFailed": "تعذّر حفظ الرحلة للاستخدام دون اتصال",
+      "syncRejected": "تعذّر حفظ بعض التغييرات التي أُجريت دون اتصال"
     },
     "inbox": {
       "openThread": "راجع في الدردشة",
@@ -1171,6 +1194,16 @@
       "created": "تم إنشاء الرحلة",
       "createdDescription": "أضف محطاتك من هنا.",
       "error": "تعذّر إنشاء الرحلة"
+    },
+    "booklet": {
+      "print": "طباعة أو حفظ بصيغة PDF",
+      "reservationsUnavailable": "تعذّر تحميل الحجوزات، لذلك لن تظهر في هذه النسخة."
+    },
+    "view": {
+      "today": "اليوم"
+    },
+    "invitations": {
+      "title": "دعوات الرحلات"
     }
   },
   "auth": {

@@ -431,7 +431,10 @@
       "daysPlanned_one": "{{count}} Tag geplant",
       "daysPlanned_other": "{{count}} Tage geplant",
       "travelBuddies": "[DE] Let travellers heading to {{city}} find you",
-      "travelBuddiesNoCity": "[DE] Let other travellers on this trip find you"
+      "travelBuddiesNoCity": "[DE] Let other travellers on this trip find you",
+      "saveOfflineAria": "Reise offline speichern",
+      "savedOffline": "Für die Offline-Nutzung gespeichert",
+      "savedOfflineDescription": "Öffne Heute, um deinen Reiseplan und deine Buchungen offline anzusehen."
     },
     "share": {
       "title": "Reise teilen",
@@ -454,7 +457,8 @@
       "deleteTitle": "Link löschen",
       "deleteConfirm": "Alle mit diesem Link verlieren den Zugriff. Das lässt sich nicht rückgängig machen.",
       "expired": "Abgelaufen",
-      "expiresOn": "Läuft ab am {{date}}"
+      "expiresOn": "Läuft ab am {{date}}",
+      "managePeople": "Einladen oder teilen"
     },
     "itinerary": {
       "add": "Hinzufügen",
@@ -490,7 +494,15 @@
       "timeUnknown": "[DE] time of day not known",
       "tooFew": "[DE] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
       "vibeAny": "[DE] A bit of everything",
-      "vibeLabel": "[DE] What you are after"
+      "vibeLabel": "[DE] What you are after",
+      "addStop": "Stopp hinzufügen",
+      "moveStop": "Stopp verschieben",
+      "moveUp": "Nach oben verschieben",
+      "moveDown": "Nach unten verschieben",
+      "moveToDay": "Auf Tag {{number}} verschieben",
+      "removeStop": "Stopp entfernen",
+      "moveFailed": "Dieser Stopp konnte nicht verschoben werden",
+      "moveRetry": "Prüfe deine Verbindung und versuche es erneut."
     },
     "map": {
       "emptyNoPlaces": "Füge Orte hinzu, um sie auf der Karte zu sehen",
@@ -680,7 +692,8 @@
       "ctaSubtitle": "Kostenlose Reisepläne, LGBTQ+ Sicherheitsinfos und gemeinsame Planung.",
       "ctaPrimary": "Jetzt planen",
       "ctaSecondary": "Anmelden",
-      "footer": "Geteilt über queer.guide"
+      "footer": "Geteilt über queer.guide",
+      "loadFailed": "Diese Reise konnte nicht geladen werden"
     },
     "tabs": {
       "itinerary": "Reiseroute",
@@ -696,7 +709,11 @@
     "today": {
       "offlineBanner": "Offline — zeigt deinen zuletzt gespeicherten Reiseplan.",
       "pushPrompt": "Erinnere mich 30 Minuten vor jeder Reservierung.",
-      "pushEnable": "Aktivieren"
+      "pushEnable": "Aktivieren",
+      "noOfflineCopy": "Keine Offline-Kopie verfügbar",
+      "noOfflineCopyHelp": "Stelle eine Verbindung her, um die Reise zu öffnen und eine Offline-Kopie zu speichern.",
+      "title": "Heute",
+      "startingNow": "Beginnt jetzt"
     },
     "bookingAssistant": {
       "tabs": {
@@ -748,7 +765,10 @@
       "prepareTools": "Abreise vorbereiten",
       "togetherTools": "Gemeinsam planen",
       "keepPlanning": "Weiterplanen",
-      "memories": "Erinnerungen hinzufügen"
+      "memories": "Erinnerungen hinzufügen",
+      "itinerary": "Reiseplan",
+      "people": "Mitreisende & Freigabe",
+      "actions": "Reiseaktionen"
     },
     "phase": {
       "label": {
@@ -931,7 +951,8 @@
         "body": "Wird zu einer Reise, die dir gehört, mit allen Stopps darauf. Danach kannst du alles ändern.",
         "primary": "Reise daraus machen",
         "secondary": "Neu zeichnen"
-      }
+      },
+      "buildRoute": "Route erstellen"
     },
     "polls": {
       "createdToast": "Umfrage erstellt",
@@ -1150,7 +1171,9 @@
     },
     "offline": {
       "pending_one": "{{count}} Änderung wartet auf Synchronisierung",
-      "pending_other": "{{count}} Änderungen warten auf Synchronisierung"
+      "pending_other": "{{count}} Änderungen warten auf Synchronisierung",
+      "saveFailed": "Die Reise konnte nicht offline gespeichert werden",
+      "syncRejected": "Einige Offline-Änderungen konnten nicht gespeichert werden"
     },
     "inbox": {
       "openThread": "Im Chat prüfen",
@@ -1165,6 +1188,16 @@
       "created": "Reise erstellt",
       "createdDescription": "Füge von hier aus deine Stopps hinzu.",
       "error": "Reise konnte nicht erstellt werden"
+    },
+    "booklet": {
+      "print": "Drucken oder als PDF speichern",
+      "reservationsUnavailable": "Die Buchungen konnten nicht geladen werden und fehlen in dieser Kopie."
+    },
+    "view": {
+      "today": "Heute"
+    },
+    "invitations": {
+      "title": "Reiseeinladungen"
     }
   },
   "help": {

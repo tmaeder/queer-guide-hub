@@ -16,6 +16,8 @@
  *      segment with [start, end] dates.
  */
 
+import { tripDateKey } from '@/components/trips/tripPhase';
+
 export interface SegmentInputPlace {
   trip_id?: string;
   day_id: string | null;
@@ -124,7 +126,8 @@ export function computeTripSegments(
 export function findActiveSegment(
   segments: TripSegment[],
   now: Date = new Date(),
+  timezone?: string | null,
 ): TripSegment | null {
-  const today = now.toISOString().slice(0, 10);
+  const today = tripDateKey(now, timezone);
   return segments.find((s) => today >= s.start_date && today <= s.end_date) ?? null;
 }
