@@ -564,8 +564,8 @@ export const UniversalSearchBar = ({
           panel
             ? // Inside the plate the box has no border of its own: the panel's
               // own 4px edge is the box, and the 3px rule is what separates the
-              // query from its results. `search-plate-field` pulls the global
-              // focus ring inside the field (index.css) — flush against the
+              // query from its results. `search-plate-field` moves the global
+              // focus ring onto this row's bottom rule (index.css) — flush against the
               // plate's top edge, an outset ring is clipped by its
               // `overflow-hidden` into two severed arcs.
               'search-plate-field border-b border-border-hairline px-6'
@@ -670,8 +670,8 @@ export const UniversalSearchBar = ({
             // no ring, but that rule is the site's WCAG 2.4.7 guarantee
             // and no utility can beat `!important` anyway — a
             // `focus-visible:outline-none` here is a silent no-op that
-            // reads as if it did something. The ring stays; on the plate it
-            // is only pulled inside the field (`.search-plate-field`), which
+            // reads as if it did something. On the plate the indicator moves to
+            // the whole row's bottom rule (`.search-plate-field`), which
             // is an unlayered `!important` rule for that same reason.
             panel ? 'font-bold' : 'text-sm md:text-sm',
           )}
