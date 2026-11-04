@@ -38,9 +38,13 @@ export function ExternalNavigationNotice() {
         return;
       const url = externalDestination(anchor.href, window.location.origin);
       if (!url) return;
+      // preventDefault only — never stopPropagation. This listener runs in the
+      // capture phase, ahead of React, so stopping propagation here silently
+      // killed every onClick on an external link (affiliate click logging in
+      // PlaceBookableLinks, "Open & mark booked" in BundledCheckoutDialog).
       event.preventDefault();
-      event.stopPropagation();
-      setDestination({ url, target: event.metaKey || event.ctrlKey ? '_blank' : anchor.target });
+      const newTab = event.metaKey || event.ctrlKey || event.shiftKey;
+      setDestination({ url, target: newTab ? '_blank' : anchor.target });
       setOpen(true);
     };
     document.addEventListener('click', intercept, true);

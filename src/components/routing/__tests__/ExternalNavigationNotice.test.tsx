@@ -37,6 +37,40 @@ describe('external navigation notice', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Stay here' }));
     expect(screen.queryByRole('alertdialog')).toBeNull();
   });
+  it("still runs the link's own click handler (tracking, mark-booked)", () => {
+    const onClick = vi.fn();
+    render(
+      <MemoryRouter>
+        <ExternalNavigationNotice />
+        <a href="https://partner.example/book" target="_blank" onClick={onClick}>
+          Book
+        </a>
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByText('Book'));
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('alertdialog')).toHaveTextContent('partner.example');
+  });
+  it('opens a new tab for modifier clicks on same-tab links', () => {
+    render(
+      <MemoryRouter>
+        <ExternalNavigationNotice />
+        <a href="https://other.example/same">Same tab</a>
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByText('Same tab'), { shiftKey: true });
+    expect(screen.getByRole('link', { name: 'Open website' })).toHaveAttribute('target', '_blank');
+  });
+  it('leaves non-primary clicks to the browser', () => {
+    render(
+      <MemoryRouter>
+        <ExternalNavigationNotice />
+        <a href="https://other.example/middle">Middle</a>
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByText('Middle'), { button: 1 });
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+  });
   it('keeps emergency quick-exit navigation immediate', () => {
     render(
       <MemoryRouter>
