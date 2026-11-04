@@ -2676,22 +2676,7 @@ label a:hover {
 /* Default-width and 2px utility borders are never allowed to become product
    chrome. This catches old, authenticated and data-dependent screens that do
    not pass through the shared primitives. Real information geometry opts out
-   explicitly; 3px+ station rings and focus rings remain unchanged.
-
-   `border-track-ring` is exempt by COLOUR, not by opting each component in:
-   it is the ink ring every track-coloured mark carries so WCAG 1.4.11 is met
-   fill-vs-ring (blue, green and yellow are all under 3:1 against paper), and
-   it is never chrome. Matching on width alone erased it everywhere it sat on
-   a 1-2px border — the contribute button, map legend, line swatches,
-   programme dots, the checked checkbox — while the comment above promised
-   semantic outlines "remain untouched". The checkbox applies it only when
-   checked, so that state is matched explicitly.
-
-   `border-input` is exempt for the same reason: it is the boundary of a form
-   control (inputs, textareas, selects, an unticked checkbox, the outline
-   button), which WCAG 1.4.11 requires at 3:1 and tokenContrast.test.ts gates
-   against both page and card. Erased, a field was a grey patch with no
-   edge. */
+   explicitly; 3px+ station rings and focus rings remain unchanged. */
 :where(
   [class~='border'],
   [class~='border-2'],
@@ -2708,14 +2693,7 @@ label a:hover {
   [class~='border-b-2'],
   [class~='border-l-2']
 ):not(
-  :where(
-    .transit-marker,
-    [class~='border-track-ring'],
-    [class~='border-input'],
-    [data-state='checked'][class~='data-[state=checked]:border-track-ring'],
-    [data-information-geometry='true'],
-    [data-information-geometry='true'] *
-  )
+  :where(.transit-marker, [data-information-geometry='true'], [data-information-geometry='true'] *)
 ) {
   border-color: transparent !important;
 }
