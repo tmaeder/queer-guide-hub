@@ -35,7 +35,7 @@ begin
       ('api_private.search_facets(text,text[],jsonb,double precision,double precision,double precision,timestamp with time zone,vector)'::regprocedure, 'p_filters')
     ) as implementations(fn, filters)
   loop
-    v_src := pg_get_functiondef(v_fn);
+    v_src := regexp_replace(pg_get_functiondef(v_fn), '--[^' || chr(10) || ']*', '', 'g');
     if position(format(v_cluster, v_filters) in v_src) > 0 then
       continue;
     end if;
