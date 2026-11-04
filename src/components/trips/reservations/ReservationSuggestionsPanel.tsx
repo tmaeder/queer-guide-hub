@@ -44,14 +44,18 @@ export function ReservationSuggestionsPanel({ tripId }: Props) {
     return null;
   }
 
-  const openExternal = async (
+  const openExternal = (
     url: string,
     provider: string,
     type: 'accommodation' | 'flight' | 'rail' | 'bus',
     listingId: string | null,
     rank: number,
   ) => {
-    await recordSuggestionClick({
+    // Open first, inside the click: awaiting the telemetry write before
+    // window.open() spends the click's user activation, which Safari treats
+    // as a blocked popup. The click is recorded in the background.
+    window.open(url, '_blank', 'noopener,noreferrer');
+    void recordSuggestionClick({
       tripId,
       provider,
       type,
@@ -59,7 +63,6 @@ export function ReservationSuggestionsPanel({ tripId }: Props) {
       listingId,
       rankPosition: rank,
     });
-    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (

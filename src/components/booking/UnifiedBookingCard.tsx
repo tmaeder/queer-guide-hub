@@ -44,8 +44,10 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
     });
 
     if (result.bookingUrl) {
-      const win = window.open(result.bookingUrl, '_blank', 'noopener,noreferrer');
-      if (!win) window.location.href = result.bookingUrl;
+      // No "blocked popup" fallback: with noopener, window.open() returns null
+      // by spec even when the tab opened, so a `if (!win) location.href = …`
+      // fallback also navigated this tab away on every click.
+      window.open(result.bookingUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
