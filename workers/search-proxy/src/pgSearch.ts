@@ -65,6 +65,9 @@ export interface PgSearchResult {
 	facetDistribution: Record<string, Record<string, number>>;
 	estimatedTotalHits: number;
 	tookMs: number;
+	/** Wall time of each RPC (they run in parallel, so tookMs ≈ the max). */
+	hybridMs: number;
+	facetsMs: number;
 }
 
 function vecLiteral(v?: number[] | null): string | null {
@@ -184,9 +187,15 @@ export async function pgHybridSearch(env: Env, args: PgSearchArgs, timeoutMs = R
 		p_radius_km: args.radiusKm ?? null,
 	};
 
+	let hybridMs = 0;
+	let facetsMs = 0;
 	const [hybrid, facets] = await Promise.all([
-		callRpc<{ total?: number; hits?: Array<Record<string, unknown>> }>(env, "search_hybrid", hybridArgs, timeoutMs),
-		callRpc<Record<string, Record<string, number>>>(env, "search_facets", facetArgs, timeoutMs).catch(() => ({})),
+		callRpc<{ total?: number; hits?: Array<Record<string, unknown>> }>(env, "search_hybrid", hybridArgs, timeoutMs).finally(
+			() => (hybridMs = Date.now() - started),
+		),
+		callRpc<Record<string, Record<string, number>>>(env, "search_facets", facetArgs, timeoutMs)
+			.catch(() => ({}))
+			.finally(() => (facetsMs = Date.now() - started)),
 	]);
 
 	const hits = (hybrid?.hits ?? []).map(mapHit);
@@ -195,6 +204,8 @@ export async function pgHybridSearch(env: Env, args: PgSearchArgs, timeoutMs = R
 		facetDistribution: facets ?? {},
 		estimatedTotalHits: hybrid?.total ?? hits.length,
 		tookMs: Date.now() - started,
+		hybridMs,
+		facetsMs,
 	};
 }
 
