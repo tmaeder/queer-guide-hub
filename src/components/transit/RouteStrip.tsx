@@ -300,11 +300,17 @@ export function RouteStrip({
                     />
                   ) : (
                     // Sub-stations take a smaller marker so the eye reads the
-                    // hierarchy before it reads the indent.
+                    // hierarchy before it reads the indent. It needs an ink
+                    // edge: a paper dot with no outline, sitting on the line,
+                    // reads as a GAP in the line rather than a stop on it —
+                    // which is what it did, every sub-section breaking the
+                    // track into dashes. `transit-marker` opts it out of the
+                    // borderless-surface rule in index.css, which otherwise
+                    // makes every 2px border transparent.
                     <span
                       aria-hidden
                       className={cn(
-                        'mt-1 inline-block h-2.5 w-2.5 rounded-full bg-muted',
+                        'transit-marker mt-1 inline-block h-2.5 w-2.5 rounded-full border-2 border-foreground',
                         isActive || isPast ? 'bg-foreground' : 'bg-background',
                       )}
                     />

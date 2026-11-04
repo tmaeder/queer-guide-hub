@@ -651,7 +651,11 @@ export function EventsTimelineView({
                     <>
                       <span
                         className={cn(
-                          'shrink-0 rounded-full border border-border-hairline transition-all',
+                          // `transit-marker` and an ink edge: index.css makes
+                          // every 1-2px border transparent unless opted out, so
+                          // a paper dot with a hairline border was invisible
+                          // and non-featured events read as floating labels.
+                          'transit-marker shrink-0 rounded-full border-2 border-foreground transition-all',
                           event.is_featured
                             ? 'bg-foreground w-2.5 h-2.5 group-hover:scale-125'
                             : 'bg-background w-2 h-2 group-hover:scale-125 group-hover:bg-foreground',
