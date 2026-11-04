@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, Sparkles } from '@/components/icons';
+import { Search, Filter, MapPin, Sparkles } from '@/components/icons';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -277,6 +277,16 @@ export default function SearchResults() {
   }, [queryKey, resultPages]);
 
   const hasMore = !errorKind && accumulated.length < totalHits;
+  // A visible refinement keeps a place name in a venue title from becoming
+  // a hidden filter. Require the city at a word boundary and a separate topic.
+  const normalizedQuery = query.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  const suggestedCity = activeScope === 'venue' && !filters.location && !geoActive && !loading
+    ? Object.entries(facets?.city ?? {})
+      .filter(([city, count]) => count > 0 && normalizedQuery.endsWith(
+        ` ${city.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim()}`,
+      ))
+      .sort(([a], [b]) => b.length - a.length)[0]?.[0]
+    : undefined;
   const activeFilterCount = countActiveFilters(filters);
   const showInitialSkeleton = loading && accumulated.length === 0;
   const hasQuery = query.trim().length > 0;
@@ -392,6 +402,17 @@ export default function SearchResults() {
                     onToggle={togglePrefChip}
                     onForget={forgetPrefChip}
                   />
+                )}
+                {suggestedCity && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-fit gap-2"
+                    onClick={() => handleFiltersChange({ ...filters, location: suggestedCity })}
+                  >
+                    <MapPin className="h-4 w-4" aria-hidden="true" />
+                    {t('search.searchInCity', { defaultValue: 'Search in {{city}}', city: suggestedCity })}
+                  </Button>
                 )}
                 <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
               </div>

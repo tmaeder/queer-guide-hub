@@ -9,13 +9,17 @@ declare
   v_anchor text;
   v_new text;
   v_count int;
-  v_predicates constant text := $sql$
-    and (not (%1$s ? 'categories') or lower(sd.facets->>'category') in (
+  v_category constant text := $sql$
+    (not (%1$s ? 'categories') or lower(sd.facets->>'category') in (
       select lower(value)
       from jsonb_array_elements_text(%1$s->'categories')
     ))
-    and (not (%1$s ? 'cluster_ids') or (public.tag_facet_of(sd.entity_type), sd.entity_id) in (
-      select public.tag_facet_of(uta.entity_type), uta.entity_id
+$sql$;
+  v_cluster constant text := $sql$
+    and (not (%1$s ? 'cluster_ids') or (
+      coalesce(public.tag_facet_of(sd.entity_type), sd.entity_type), sd.entity_id
+    ) in (
+      select coalesce(public.tag_facet_of(uta.entity_type), uta.entity_type), uta.entity_id
       from public.topic_clusters tc
       join public.topic_cluster_tags tct on tct.cluster_id = tc.id
       join public.unified_tag_assignments uta on uta.tag_id = tct.tag_id
@@ -32,14 +36,36 @@ begin
     ) as implementations(fn, filters)
   loop
     v_src := pg_get_functiondef(v_fn);
-    v_anchor := format('lower(sd.facets->>''category'') = lower(%s->>''category''))', v_filters);
-    -- The hybrid implementation uses the same predicate without spaces.
-    if position(v_anchor in v_src) = 0 then
-      v_anchor := replace(v_anchor, ' = ', '=');
-    end if;
-    v_new := v_anchor || format(v_predicates, v_filters);
-    if position(v_new in v_src) > 0 then
+    if position(format(v_cluster, v_filters) in v_src) > 0 then
       continue;
+    end if;
+    if v_filters = '$4' then
+      v_anchor := 'lower(sd.facets->>''category'')=lower($4->>''category''))';
+      v_new := v_anchor || ' and ' || format(v_category, v_filters) || format(v_cluster, v_filters);
+    else
+      -- Category choices describe the same search with just the category
+      -- restriction removed. The original facet and type totals stay filtered.
+      v_anchor := $sql$and (not (p_filters ? 'category')    or lower(sd.facets->>'category') = lower(p_filters->>'category'))$sql$;
+      v_new := format(v_cluster, v_filters);
+      if position('cand as (' in v_src) = 0
+         or position('sd.price_min, sd.price_max, sd.is_free, sd.start_date' in v_src) = 0
+         or position('select jsonb_strip_nulls(jsonb_build_object(' in v_src) = 0 then
+        raise exception 'Unexpected search_facets query structure';
+      end if;
+      v_src := replace(v_src, 'cand as (', 'category_candidates as (');
+      v_src := replace(v_src, 'sd.price_min, sd.price_max, sd.is_free, sd.start_date',
+        'sd.price_min, sd.price_max, sd.is_free, sd.start_date, (' ||
+        replace(v_anchor, 'and ', '') || ' and ' || format(v_category, v_filters) || ') as category_match');
+      v_src := replace(v_src, 'select jsonb_strip_nulls(jsonb_build_object(', $sql$
+, cand as (select * from category_candidates where category_match)
+select jsonb_strip_nulls(jsonb_build_object(
+  'category_options', (select jsonb_object_agg(value, n) from (
+    select facets->>'category' as value, count(*) as n
+    from category_candidates
+    where nullif(facets->>'category', '') is not null
+    group by 1 order by n desc, value limit 50
+  ) options),
+$sql$);
     end if;
     v_count := (length(v_src) - length(replace(v_src, v_anchor, ''))) / length(v_anchor);
     if v_count <> 1 then

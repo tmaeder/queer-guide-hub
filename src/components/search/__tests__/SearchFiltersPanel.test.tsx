@@ -13,7 +13,7 @@ describe('SearchFiltersPanel', () => {
     const onFiltersChange = vi.fn();
     render(<SearchFiltersPanel
       filters={{ categories: ['bar'] }}
-      facets={{ category: { bar: 2, cafe: 1 } }}
+      facets={{ category: { bar: 2 }, category_options: { cafe: 1 } }}
       filterKeys={['category']}
       onFiltersChange={onFiltersChange}
     />);

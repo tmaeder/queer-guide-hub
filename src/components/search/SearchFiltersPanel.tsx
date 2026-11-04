@@ -42,11 +42,6 @@ const ALL_KEYS: SearchFilterKey[] = [
   'featured',
 ];
 
-/** Facets rendered as refinement lists, in display order (all map to categories). */
-const FACET_GROUPS: Array<{ facet: string; label: string }> = [
-  { facet: 'category', label: 'Category' },
-  { facet: 'subcategory', label: 'Subcategory' },
-];
 const MAX_FACET_VALUES = 8;
 const MAX_TARGET_GROUPS = 12;
 const MAX_TAGS = 12;
@@ -74,14 +69,14 @@ export const SearchFiltersPanel = ({
     signedIn && !prefsLoading && budgetChips.length === 0 && !!filters.priceRange,
   );
 
-  const toggleCategory = (value: string, facet: string) => {
+  const toggleCategory = (value: string) => {
     const current = filters.categories ?? [];
     const isActive = current.some((v) => v.toLowerCase() === value.toLowerCase());
     const next = isActive
       ? current.filter((v) => v.toLowerCase() !== value.toLowerCase())
       : [...current, value];
     onFiltersChange({ ...filters, categories: next.length ? next : undefined });
-    if (!isActive) void trackSearchUx('facet_apply', { facet, value });
+    if (!isActive) void trackSearchUx('facet_apply', { facet: 'category', value });
   };
 
   const toggleTargetGroup = (value: string) => {
@@ -107,6 +102,23 @@ export const SearchFiltersPanel = ({
       : [...current, clusterId];
     onFiltersChange({ ...filters, cluster_ids: next.length ? next : undefined });
   };
+
+  const selectedCategories = new Set((filters.categories ?? []).map((value) => value.toLowerCase()));
+  const availableCategories = new Map(
+    Object.entries(facets?.category_options ?? facets?.category ?? {})
+      .map(([value, count]) => [value.toLowerCase(), { value, count }]),
+  );
+  const categoryChoices = [
+    ...(filters.categories ?? []).map((value) => ({
+      value,
+      count: availableCategories.get(value.toLowerCase())?.count,
+    })),
+    ...Array.from(availableCategories.entries())
+      .filter(([key, entry]) => !selectedCategories.has(key) && entry.count > 0)
+      .map(([, entry]) => entry)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, MAX_FACET_VALUES),
+  ];
 
   const targetGroupValues = Object.entries(facets?.target_groups ?? {})
     .filter(([, c]) => c > 0)
@@ -140,7 +152,7 @@ export const SearchFiltersPanel = ({
           </Label>
           <div className="relative">
             <Input
-              placeholder={t('search.filter.locationPh', 'City, region, or country…')}
+              placeholder={t('search.filter.cityPlaceholder', 'City name…')}
               value={filters.location || ''}
               onChange={(e) => onFiltersChange({ ...filters, location: e.target.value || undefined })}
             />
@@ -292,41 +304,31 @@ export const SearchFiltersPanel = ({
       {/* Category facet drill-down + topics */}
       {show('category') && (
         <>
-          {facets &&
-            FACET_GROUPS.map((group) => {
-              const dist = facets[group.facet];
-              if (!dist) return null;
-              const entries = Object.entries(dist)
-                .filter(([, c]) => c > 0)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, MAX_FACET_VALUES);
-              if (entries.length === 0) return null;
-              const active = new Set((filters.categories ?? []).map((v) => v.toLowerCase()));
-              return (
-                <div key={group.facet} className="flex flex-col gap-2">
-                  <Label className="text-sm font-medium">
-                    {t(`search.filter.${group.facet}`, group.label)}
-                  </Label>
-                  <div className="flex flex-wrap gap-1">
-                    {entries.map(([value, count]) => (
-                      <button
-                        key={value}
-                        type="button"
-                        aria-pressed={active.has(value.toLowerCase())}
-                        className={badgeVariants({
-                          variant: active.has(value.toLowerCase()) ? 'default' : 'secondary',
-                          className: 'cursor-pointer text-xs',
-                        })}
-                        onClick={() => toggleCategory(value, group.facet)}
-                      >
-                        {value}
-                        <span className="ml-1 opacity-60">{count}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+          {categoryChoices.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <Label className="text-sm font-medium">{t('search.filter.category', 'Category')}</Label>
+              <div className="flex flex-wrap gap-1">
+                {categoryChoices.map(({ value, count }) => {
+                  const active = selectedCategories.has(value.toLowerCase());
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={active}
+                      className={badgeVariants({
+                        variant: active ? 'default' : 'secondary',
+                        className: 'cursor-pointer text-xs',
+                      })}
+                      onClick={() => toggleCategory(value)}
+                    >
+                      {value}
+                      {count != null && <span className="ml-1 opacity-60">{count}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {!clustersLoading && clusters.length > 0 && (
             <div className="flex flex-col gap-2">
