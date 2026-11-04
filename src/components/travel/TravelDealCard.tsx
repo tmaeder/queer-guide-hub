@@ -81,10 +81,10 @@ export function TravelDealCard({
       url_valid: bookingUrl.includes('/') && !bookingUrl.endsWith('/?marker='),
     });
 
-    const win = window.open(bookingUrl, '_blank', 'noopener,noreferrer');
-    if (!win) {
-      window.location.href = bookingUrl;
-    }
+    // No "blocked popup" fallback: with noopener, window.open() returns null
+    // by spec even when the tab opened, so a `if (!win) location.href = …`
+    // fallback also navigated this tab away on every click.
+    window.open(bookingUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
