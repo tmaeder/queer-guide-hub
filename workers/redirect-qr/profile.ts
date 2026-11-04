@@ -1,6 +1,7 @@
 import { boundedBytes } from './request';
 import { QrImageError } from './render';
 import { qrStyleError, type QrStyle } from '../../src/lib/redirects/qrRender';
+import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
 function invalidProfile(): never {
   throw new QrImageError('QR image profile unavailable', 503);
 }
@@ -22,7 +23,7 @@ export async function readQrImageProfile(
   let response: Response;
   try {
     response = await fetcher(
-      origin.replace(/\/$/, '') + '/functions/v1/redirect-api/public-qr-image',
+      trimTrailingSlashes(origin) + '/functions/v1/redirect-api/public-qr-image',
       {
         method: 'GET',
         headers: { Authorization: 'Bearer ' + token, apikey: anonKey },
@@ -95,7 +96,7 @@ export async function readQrImageProfile(
       !['image/png', 'image/jpeg'].includes(String(asset.mime)) ||
       asset.key !== asset.id + (asset.mime === 'image/png' ? '.png' : '.jpg') ||
       asset.url !==
-        origin.replace(/\/$/, '') +
+        trimTrailingSlashes(origin) +
           '/storage/v1/object/public/redirect-brand-assets/' +
           asset.key ||
       !Number.isInteger(asset.bytes) ||

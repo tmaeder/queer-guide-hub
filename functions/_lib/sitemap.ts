@@ -8,6 +8,7 @@
  * `safety_gated=eq.false` filter.
  */
 import { SITE_ORIGIN } from './routeMeta';
+import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
 
 export type Env = {
   SUPABASE_URL?: string;
@@ -119,7 +120,7 @@ export async function fetchRows(
   if (!env.SUPABASE_URL) return [];
   const key = env.SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_ANON_KEY;
   if (!key) return [];
-  const base = `${env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${table}`;
+  const base = `${trimTrailingSlashes(env.SUPABASE_URL)}/rest/v1/${table}`;
   const rows: Row[] = [];
 
   for (let offset = 0; offset < maxRows; offset += PAGE_SIZE) {

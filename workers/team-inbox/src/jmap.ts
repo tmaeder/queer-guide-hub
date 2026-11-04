@@ -15,13 +15,26 @@ interface JmapSession {
   accountId: string;
 }
 
+/**
+ * Strips every trailing `/` in linear time. A `/\/+$/` regex here is
+ * polynomial on input with a long run of `/` not at the end
+ * (js/polynomial-redos); `/\/$/` removes only one slash
+ * (js/incomplete-sanitization). Mirrors src/lib/trimTrailingSlashes.ts,
+ * which this package does not import from.
+ */
+function trimTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47 /* '/' */) end--;
+  return end === s.length ? s : s.slice(0, end);
+}
+
 function basicAuth(user: string, pass: string): string {
   return `Basic ${btoa(`${user}:${pass}`)}`;
 }
 
 /** Fetch the JMAP session: API/upload endpoints + the primary mail account id. */
 export async function getSession(baseUrl: string, user: string, pass: string): Promise<JmapSession> {
-  const res = await fetch(`${baseUrl.replace(/\/$/, '')}/.well-known/jmap`, {
+  const res = await fetch(`${trimTrailingSlashes(baseUrl)}/.well-known/jmap`, {
     headers: { Authorization: basicAuth(user, pass) },
   });
   if (!res.ok) throw new Error(`jmap session ${res.status}`);
