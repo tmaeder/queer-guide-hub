@@ -10,7 +10,7 @@
  *   GET  /health
  */
 
-import { personalizedRank } from "./rank";
+import { personalizedRank, prioritizeQueryMatches } from "./rank";
 import { embed, rerank, DEFAULT_EMBED_MODEL } from "./ai";
 import { rewriteQuery, type RewrittenQuery } from "./rewrite";
 import { Toucan } from "toucan-js";
@@ -26,14 +26,14 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 		tracesSampleRate: 0.1,
 	});
 }
-import { getBiasVector, getUserSignal, trackEvent, popularEntities, getRecommendations, relatedEntities, fetchDisplayMap } from "./supabase";
+import { getBiasVector, getUserSignal, trackEvent, popularEntities, getRecommendations, relatedEntities } from "./supabase";
 import { handleGo, handleGoRegistry } from "./affiliate";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { expandTagsWithNarrower } from "./pgTagHierarchy";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
 import { pgHybridSearch, pgAutocomplete, type PgSearchArgs } from "./pgSearch";
 import { isAuthenticatedRequest } from "./jwt";
-import { tokenize, isBareLgbtqQuery } from "./queryPrep";
+import { tokenize } from "./queryPrep";
 import { resolveSession } from "./sessionCookie";
 import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse } from "./util";
 import {
@@ -126,7 +126,7 @@ export type TimedStep = "rewriteMs" | "signalMs" | "recentMs" | "tagsMs" | "syno
 
 /**
  * debug.timings. Background steps (rewriteMs, embedMs, …) are their own wall
- * time and overlap; *WaitMs, pgMs, fallbackMs, rerankMs are time the request
+ * time and overlap; *WaitMs, pgMs, rerankMs are time the request
  * was blocked. A step that did not run is absent, never 0.
  */
 export type SearchTimings = Partial<
@@ -138,7 +138,6 @@ export type SearchTimings = Partial<
 		| "pgMs"
 		| "pgHybridMs"
 		| "pgFacetsMs"
-		| "fallbackMs"
 		| "rerankMs"
 		| "totalMs",
 		number
@@ -278,7 +277,8 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			filters: {
 				city: bFilters.city || bFilters.location || undefined,
 				country: bFilters.country || undefined,
-				category: bFilters.categories?.[0],
+				categories: bFilters.categories,
+				cluster_ids: bFilters.cluster_ids,
 				is_featured: bFilters.featured || undefined,
 				is_free: bFilters.is_free,
 				target_groups: bFilters.target_groups,
@@ -299,7 +299,8 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			console.warn("pgBrowse", (e as Error).message);
 			return null;
 		});
-		const bHits = (browse?.hits ?? []) as Array<Record<string, unknown>>;
+		if (!browse) return searchUnavailable(cors);
+		const bHits = browse.hits;
 		return json(
 			{
 				hits: bHits,
@@ -307,8 +308,8 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				nbHits: bHits.length,
 				page: bPageR.value,
 				hitsPerPage: bHppR.value,
-				totalHits: browse?.estimatedTotalHits ?? bHits.length,
-				facetDistribution: reorderFacets(browse?.facetDistribution ?? {}, [], []),
+				totalHits: browse.estimatedTotalHits,
+				facetDistribution: reorderFacets(browse.facetDistribution, [], []),
 				processingTimeMS: Date.now() - started,
 				reason: "filter_browse",
 			},
@@ -353,51 +354,6 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
 	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
 	const debug = body.debug === true;
-
-	// Bug #9: a bare LGBTQ+ token query ('gay', 'queer', 'trans') is a
-	// stop-word in the venue/event indexes — running it through the full
-	// pipeline takes ~6s for an essentially random ranking. Route it to
-	// the popular-entities path (sub-200ms) instead.
-	if (isBareLgbtqQuery(tokens)) {
-		// First try the precomputed popular entities (fast path). Hydrate display
-		// fields so they don't render as empty cards.
-		const popular = await popularEntities(env, ["venue", "event"], hitsPerPage * (page + 1));
-		let hits: Array<Record<string, unknown>> = await hydratePopular(env, popular);
-
-		// Fallback: if the popular view returns nothing, browse featured docs
-		// from Postgres (search_hybrid with an empty query + is_featured filter
-		// returns the featured set ranked). Without this, "trans"/"queer"/"gay"
-		// returned []. Bug #9 follow-up (was an empty-query browse).
-		if (hits.length === 0) {
-			const browse = await pgHybridSearch(env, {
-				query: "",
-				queryVec: null,
-				contentTypes: ["venue", "event"],
-				filters: { is_featured: true },
-				includeGated: authed,
-				hitsPerPage: hitsPerPage * (page + 1),
-				page: 0,
-			}).catch(() => null);
-			hits = (browse?.hits ?? []) as Array<Record<string, unknown>>;
-		}
-
-		const slice = hits.slice(page * hitsPerPage, (page + 1) * hitsPerPage);
-		return json(
-			{
-				hits: slice,
-				suggestions: slice.slice(0, 5),
-				nbHits: slice.length,
-				page,
-				hitsPerPage,
-				totalHits: hits.length,
-				facetDistribution: {},
-				processingTimeMS: Date.now() - started,
-				reason: "bare_stopword_query",
-			},
-			200,
-			cors,
-		);
-	}
 
 	// Query rewrite: translates non-EN, extracts intent hints (city, type), adds synonyms.
 	// Enabled when lang != en OR query is short (< 3 words). Skipped for power queries.
@@ -582,7 +538,8 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		filters: {
 			city: mergedFilters.city || mergedFilters.location || undefined,
 			country: mergedFilters.country || undefined,
-			category: mergedFilters.categories?.[0],
+			categories: mergedFilters.categories,
+			cluster_ids: mergedFilters.cluster_ids,
 			is_featured: mergedFilters.featured || undefined,
 			is_free: mergedFilters.is_free,
 			target_groups: mergedFilters.target_groups,
@@ -622,53 +579,40 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		return null;
 	});
 	timings.pgMs = Date.now() - pgStart;
-	if (pg) {
-		timings.pgHybridMs = pg.hybridMs;
-		timings.pgFacetsMs = pg.facetsMs;
-	}
-	const fused = (pg?.hits ?? []) as FuseItem[];
-	const facetDistribution = pg?.facetDistribution ?? {};
-	const totalHits = pg?.estimatedTotalHits ?? fused.length;
+	if (!pg) return searchUnavailable(cors);
+	timings.pgHybridMs = pg.hybridMs;
+	timings.pgFacetsMs = pg.facetsMs;
+	const fused = pg.hits;
+	const facetDistribution = pg.facetDistribution;
+	const totalHits = pg.estimatedTotalHits;
 	const dbg = { pgSize: fused.length, fusedSize: fused.length };
 
-	// An explicit sort (date/price/distance/trust) means the SQL already ordered
-	// AND paginated the result set. Personalization re-ranking, the cold-start
-	// top-up, and the semantic reranker all reorder hits — which would clobber the
-	// requested sort — so skip them and serve the SQL order verbatim.
+	// Explicit sorts are already applied across the full result set in SQL.
 	const explicitSort = !!mergedFilters.sort && mergedFilters.sort !== "relevance";
-
-	// Personalization nudges (boost/decay) + worker-side exact-title boost
-	// for bug #4.
 	let ranked = explicitSort ? fused : personalizedRank(fused, signal, recent, q);
 
-	// Degraded-service fallback: only when search_hybrid itself failed (timeout /
-	// error → pg null). A SUCCESSFUL answer with few or zero matches is the answer;
-	// padding it with unrelated popular rows is how `q=london` with a geo filter
-	// that matched nothing rendered "20 results" of Barcelona/Sydney/Paris.
-	// v_popular_entities rows are under-hydrated ({content_type, content_id,
-	// score}); hydrate them so they don't render as empty cards.
-	const fallbackStart = Date.now();
-	if (!explicitSort && pg === null && ranked.length < 5) {
-		const popular = await popularEntities(env, pgTypes, 30);
-		ranked = dedupeById([...ranked, ...(await hydratePopular(env, popular))]);
-		timings.fallbackMs = Date.now() - fallbackStart;
-	}
-
-	// Optional reranker on top-20.
-	let final = ranked.slice(0, hitsPerPage);
-	if (!explicitSort && env.ENABLE_RERANKER === "1" && q.split(/\s+/).length >= 2) {
+	if (!explicitSort && env.ENABLE_RERANKER === "1" && tokens.length >= 2) {
 		const pool = ranked.slice(0, 20);
+		const contexts = pool.map((hit) => `${hit.title ?? ""}. ${hit.description ?? ""}`.slice(0, 400));
 		const rerankStart = Date.now();
-		const hydrated = await hydrateTitles(env, pool);
-		const rrkd = await rerank(env, q, hydrated.map((h) => h._snippet || h.title || "")).catch(() => null);
+		const modelOrder = await rerank(env, q, contexts).catch(() => null);
 		timings.rerankMs = Date.now() - rerankStart;
-		if (rrkd) {
-			final = rrkd
-				.map((r) => ({ ...pool[r.index], _rerank: r.score }))
-				.sort((a, b) => (b._rerank || 0) - (a._rerank || 0))
-				.slice(0, hitsPerPage);
+		if (modelOrder) {
+			// Treat model output as scores for existing hits. Partial, duplicate,
+			// and invalid indexes must never change the membership of a page.
+			const scores = new Map<number, number>();
+			for (const row of modelOrder) {
+				if (Number.isInteger(row.index) && row.index >= 0 && row.index < pool.length &&
+					Number.isFinite(row.score) && !scores.has(row.index)) {
+					scores.set(row.index, row.score);
+				}
+			}
+			const rescored = pool.map((hit, index) => ({ ...hit, _rerank: scores.get(index) }));
+			rescored.sort((a, b) => (b._rerank ?? -Infinity) - (a._rerank ?? -Infinity));
+			ranked = [...rescored, ...ranked.slice(pool.length)];
 		}
 	}
+	const final = (explicitSort ? ranked : prioritizeQueryMatches(ranked, q)).slice(0, hitsPerPage);
 
 	// Personalized facet reorder: user interest tags first, then by count.
 	const reorderedFacets = reorderFacets(facetDistribution, signal.recent_tags || [], signal.interests || []);
@@ -1078,83 +1022,24 @@ function l2Normalize(v: number[]): number[] {
 	return v.map((x) => x / s);
 }
 
-type FuseItem = {
-	id?: string;
-	content_id?: string;
-	type?: string;
-	content_type?: string;
-	_fused?: number;
-	[key: string]: unknown;
-};
-
-function itemId(h: FuseItem): string | null {
-	const id = h.id ?? h.content_id ?? h.objectID;
-	if (!id) return null;
-	return `${h.type ?? h.content_type ?? "x"}:${id}`;
-}
-
-type PopularRow = { content_type: string; content_id: string; score?: number };
-
-// v_popular_entities only carries {content_type, content_id, score} — no
-// type/objectID/title — so dropping these rows straight into the result set
-// renders empty cards (type/title/objectID null). Batch-fetch display fields and
-// project into the same hit shape pgSearch.mapHit emits. Rows that can't be
-// hydrated (no title) are dropped — better a shorter list than a blank card.
-async function hydratePopular(env: Env, popular: PopularRow[]): Promise<FuseItem[]> {
-	if (!popular.length) return [];
-	const display = await fetchDisplayMap(
-		env,
-		popular.map((p) => ({ content_type: p.content_type, content_id: p.content_id })),
-	).catch(() => null);
-	if (!display) return [];
-	const out: FuseItem[] = [];
-	for (const p of popular) {
-		const d = display.get(`${p.content_type}:${p.content_id}`);
-		if (!d?.title) continue;
-		out.push({
-			id: p.content_id,
-			objectID: p.content_id,
-			type: p.content_type,
-			content_type: p.content_type,
-			content_id: p.content_id,
-			title: d.title,
-			name: d.title,
-			slug: d.slug,
-			image_url: d.image_url ?? null,
-			city: d.city,
-			country: d.country,
-			start_date: d.date,
-			_source: "popular",
-			_rankingScore: 0.1,
-			_fused: 0.1,
-		});
-	}
-	return out;
-}
-
-function dedupeById(list: FuseItem[]): FuseItem[] {
-	const seen = new Set<string>();
-	const out: FuseItem[] = [];
-	for (const it of list) {
-		const id = itemId(it);
-		if (!id || seen.has(id)) continue;
-		seen.add(id);
-		out.push(it);
-	}
-	return out;
+function searchUnavailable(cors: HeadersInit): Response {
+	return json({ error: "Search is temporarily unavailable", code: "search_unavailable" }, 503, cors);
 }
 
 /** True when the filters alone can drive a browse (no keyword needed). */
 function hasBrowseFilters(f: ValidatedFilters): boolean {
 	return !!(
+		f.type ||
+		f.types?.length ||
 		(f.tags && f.tags.length) ||
-		(f.categories && f.categories.length) ||
+		f.categories?.length ||
+		f.cluster_ids?.length ||
 		(f.target_groups && f.target_groups.length) ||
 		f.city ||
 		f.country ||
 		f.location ||
 		f.featured ||
-		f.is_free ||
+		typeof f.is_free === "boolean" ||
 		(typeof f.lat === "number" && typeof f.lng === "number") ||
 		f.date_from ||
 		f.date_to ||
@@ -1181,22 +1066,6 @@ function reorderFacets(
 		out[facet] = entries;
 	}
 	return out;
-}
-
-type HydratableHit = {
-	title?: string;
-	description?: string;
-	content_text?: string;
-	_snippet?: string;
-	[key: string]: unknown;
-};
-
-async function hydrateTitles(_env: Env, list: HydratableHit[]): Promise<HydratableHit[]> {
-	// Keyword hits already have title. pgvector hits may not — batch fetch missing.
-	return list.map((h) => ({
-		...h,
-		_snippet: `${h.title ?? ""}. ${h.description ?? h.content_text ?? ""}`.slice(0, 400),
-	}));
 }
 
 // ─────────────────────────────────────────────

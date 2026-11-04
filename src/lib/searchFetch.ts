@@ -7,7 +7,7 @@
  *                       The browser blocked the request before it left
  *                       (CSP violation, DNS failure, mixed content). Not
  *                       transient — do NOT retry.
- *   timeout             AbortError after the per-call deadline. Worth a
+ *   timeout             Abort after the per-call deadline. Worth a
  *                       single retry for a slow upstream blip.
  *   upstream_error      5xx response from the worker.
  *   client_error        4xx response. The body's {error,code,field} comes
@@ -34,9 +34,9 @@ export type SearchFetchError =
 
 export class SearchFetchException extends Error {
   constructor(public readonly detail: SearchFetchError) {
-    super(
-      detail.kind === 'client_error' ? detail.error : (detail.message ?? `search ${detail.kind}`),
-    );
+    super(detail.kind === 'client_error' ? detail.error
+      : detail.kind === 'upstream_error' ? `search upstream error (${detail.status})`
+      : detail.message);
     this.name = 'SearchFetchException';
   }
 }
@@ -72,11 +72,10 @@ export async function searchFetch<T>(
 
   const attempt = async (): Promise<T> => {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort('timeout'), timeoutMs);
-    if (externalSignal) {
-      if (externalSignal.aborted) controller.abort();
-      else externalSignal.addEventListener('abort', () => controller.abort(), { once: true });
-    }
+    externalSignal?.throwIfAborted();
+    const abortFromCaller = () => controller.abort(externalSignal?.reason);
+    externalSignal?.addEventListener('abort', abortFromCaller, { once: true });
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     let res: Response;
     try {
@@ -88,12 +87,8 @@ export async function searchFetch<T>(
         keepalive: true,
       });
     } catch (err) {
-      clearTimeout(timeout);
-      // AbortError → timeout. Everything else thrown synchronously by fetch is
-      // treated as a network/CSP block. The browser swallows the real reason
-      // for the latter so we cannot distinguish CSP from offline from DNS
-      // here — we tag accordingly and surface the same user message.
-      if ((err as { name?: string })?.name === 'AbortError') {
+      externalSignal?.throwIfAborted();
+      if (controller.signal.aborted) {
         throw new SearchFetchException({ kind: 'timeout', message: 'search timed out' });
       }
       throw new SearchFetchException({
@@ -101,8 +96,10 @@ export async function searchFetch<T>(
         message: 'browser blocked the search request',
         cause: err,
       });
+    } finally {
+      clearTimeout(timeout);
+      externalSignal?.removeEventListener('abort', abortFromCaller);
     }
-    clearTimeout(timeout);
 
     if (res.ok) return (await res.json()) as T;
 
@@ -130,13 +127,13 @@ export async function searchFetch<T>(
   try {
     return await attempt();
   } catch (err) {
-    const detail = (err as SearchFetchException).detail;
+    const detail = err instanceof SearchFetchException ? err.detail : undefined;
     if (detail?.kind === 'timeout' && retryOnTimeout) {
       // One retry. CSP / 4xx / 5xx never retry — they aren't transient.
       try {
         return await attempt();
       } catch (err2) {
-        reportToSentry(path, (err2 as SearchFetchException).detail);
+        reportToSentry(path, err2 instanceof SearchFetchException ? err2.detail : undefined);
         throw err2;
       }
     }

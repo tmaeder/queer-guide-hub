@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { badgeVariants } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -246,15 +246,16 @@ export const SearchFiltersPanel = ({
             {targetGroupValues.map(([value, count]) => {
               const active = filters.target_groups?.includes(value);
               return (
-                <Badge
+                <button
                   key={value}
-                  variant={active ? 'default' : 'secondary'}
-                  className="cursor-pointer text-xs capitalize"
+                  type="button"
+                  aria-pressed={Boolean(active)}
+                  className={badgeVariants({ variant: active ? 'default' : 'secondary', className: 'cursor-pointer text-xs capitalize' })}
                   onClick={() => toggleTargetGroup(value)}
                 >
                   {value.replace(/_/g, ' ')}
                   <span className="ml-1 opacity-60">{count}</span>
-                </Badge>
+                </button>
               );
             })}
           </div>
@@ -272,15 +273,16 @@ export const SearchFiltersPanel = ({
             {tagValues.map(([value, count]) => {
               const active = filters.tags?.includes(value);
               return (
-                <Badge
+                <button
                   key={value}
-                  variant={active ? 'default' : 'secondary'}
-                  className="cursor-pointer text-xs"
+                  type="button"
+                  aria-pressed={Boolean(active)}
+                  className={badgeVariants({ variant: active ? 'default' : 'secondary', className: 'cursor-pointer text-xs' })}
                   onClick={() => toggleTag(value)}
                 >
                   {formatNewsTag(value)}
                   <span className="ml-1 opacity-60">{count}</span>
-                </Badge>
+                </button>
               );
             })}
           </div>
@@ -307,15 +309,19 @@ export const SearchFiltersPanel = ({
                   </Label>
                   <div className="flex flex-wrap gap-1">
                     {entries.map(([value, count]) => (
-                      <Badge
+                      <button
                         key={value}
-                        variant={active.has(value.toLowerCase()) ? 'default' : 'secondary'}
-                        className="cursor-pointer text-xs"
+                        type="button"
+                        aria-pressed={active.has(value.toLowerCase())}
+                        className={badgeVariants({
+                          variant: active.has(value.toLowerCase()) ? 'default' : 'secondary',
+                          className: 'cursor-pointer text-xs',
+                        })}
                         onClick={() => toggleCategory(value, group.facet)}
                       >
                         {value}
                         <span className="ml-1 opacity-60">{count}</span>
-                      </Badge>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -330,15 +336,19 @@ export const SearchFiltersPanel = ({
               </Label>
               <div className="flex flex-wrap gap-1">
                 {clusters.map((cluster) => (
-                  <Badge
+                  <button
                     key={cluster.id}
-                    variant={filters.cluster_ids?.includes(cluster.id) ? 'default' : 'secondary'}
-                    className="cursor-pointer text-xs"
+                    type="button"
+                    aria-pressed={filters.cluster_ids?.includes(cluster.id) ?? false}
+                    className={badgeVariants({
+                      variant: filters.cluster_ids?.includes(cluster.id) ? 'default' : 'secondary',
+                      className: 'cursor-pointer text-xs',
+                    })}
                     onClick={() => toggleCluster(cluster.id)}
                     title={cluster.description ?? undefined}
                   >
                     {cluster.name}
-                  </Badge>
+                  </button>
                 ))}
               </div>
             </div>

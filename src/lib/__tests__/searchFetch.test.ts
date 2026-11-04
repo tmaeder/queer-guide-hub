@@ -1,7 +1,36 @@
-import { describe, it, expect } from 'vitest';
-import { SearchFetchException, isSearchUnavailable, SEARCH_UNAVAILABLE_MESSAGE } from '../searchFetch';
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import { SearchFetchException, isSearchUnavailable, SEARCH_UNAVAILABLE_MESSAGE, searchFetch } from '../searchFetch';
+
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: { auth: { getSession: async () => ({ data: { session: null } }) } },
+}));
 
 describe('searchFetch', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('retries a deadline even when fetch rejects without an AbortError', async () => {
+    const fetchMock = vi.fn()
+      .mockImplementationOnce((_url, { signal }: RequestInit) => new Promise((_resolve, reject) => {
+        signal?.addEventListener('abort', () => reject(new TypeError('aborted')), { once: true });
+      }))
+      .mockResolvedValueOnce(Response.json({ hits: [] }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(searchFetch('/', {}, { timeoutMs: 1 })).resolves.toEqual({ hits: [] });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not send or retry a request cancelled by the caller', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const controller = new AbortController();
+    const reason = new Error('superseded');
+    controller.abort(reason);
+
+    await expect(searchFetch('/', {}, { signal: controller.signal })).rejects.toBe(reason);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('exports message', () => {
     expect(SEARCH_UNAVAILABLE_MESSAGE).toBeTruthy();
   });

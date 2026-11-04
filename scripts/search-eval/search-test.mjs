@@ -126,13 +126,7 @@ async function run() {
     // pass if filter-only browse were broken and returned the empty set for
     // everything — which is exactly the failure S3a's `reason` check cannot see.
     //
-    // `city` is what makes this a browse; `types` alone is NOT in hasBrowseFilters()
-    // (index.ts), so dropping the city here silently routes to the no-filters branch
-    // — and then `cities.every(...)` passes VACUOUSLY on the empty array. Verified by
-    // hand: {types:['venue']} alone returns 0 hits + reason "empty_query_no_filters".
-    // The length and reason assertions below are what stop that being a false green,
-    // so keep them ahead of the every(). Filter discrimination confirmed against a
-    // second city: city=Berlin -> berlin only, city=Paris -> paris only.
+    // Verify that the browse narrows to the requested city as well as type.
     const r = await search({ query: '', filters: { types: ['venue'], city: 'Berlin' }, hitsPerPage: 10 });
     HARD(r.status === 200, `status ${r.status}`);
     HARD(isArr(r.json?.hits), 'hits is not an array');

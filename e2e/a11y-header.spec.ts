@@ -45,12 +45,11 @@ test.describe('Search a11y wiring', () => {
     // Addressed by its own mount, never `.first()`: opening a search MOVES its
     // field into the modal, so document order changes mid-test and `.first()`
     // silently switches to the other mount.
-    const input = page.locator('input[aria-controls="qg-search-listbox-hero"]');
-    await input.click();
+    await page.getByRole('search', { name: 'Search the network' }).getByRole('combobox').click();
+    const input = page.getByRole('dialog', { name: 'Search Queer Guide' }).getByRole('combobox');
     await input.fill('berlin');
-    await page.waitForTimeout(2500);
-
-    await expect(page.locator('#qg-search-listbox-hero')).toHaveCount(1);
+    await expect(input).toHaveAttribute('aria-controls', 'qg-search-listbox-hero');
+    await expect(page.getByRole('listbox')).toHaveAttribute('id', 'qg-search-listbox-hero');
 
     // And no id is claimed twice, whichever mounts are on the page.
     const ids = await page.evaluate(() =>

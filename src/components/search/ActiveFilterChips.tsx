@@ -132,10 +132,12 @@ export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChip
   }
 
   if (filters.lat !== undefined && filters.lng !== undefined) {
-    const km = filters.radius ? Math.round(filters.radius / 1000) : 25;
+    const km = filters.radius;
     chips.push({
       key: 'near',
-      label: t('search.nearMeWithRadius', 'Near me ({{km}}km)', { km }),
+      label: km != null
+        ? t('search.nearMeWithRadius', 'Near me ({{km}}km)', { km })
+        : t('search.nearMe', 'Near me'),
       onRemove: () =>
         onFiltersChange({ ...filters, lat: undefined, lng: undefined, radius: undefined }),
     });

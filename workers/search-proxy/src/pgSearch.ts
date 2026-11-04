@@ -33,7 +33,8 @@ export interface PgSearchArgs {
 	filters?: {
 		city?: string;
 		country?: string;
-		category?: string;
+		categories?: string[];
+		cluster_ids?: string[];
 		is_featured?: boolean;
 		is_free?: boolean;
 		target_groups?: string[];
@@ -141,7 +142,8 @@ export async function pgHybridSearch(env: Env, args: PgSearchArgs, timeoutMs = R
 	const pFilters: Record<string, unknown> = {};
 	if (args.filters?.city) pFilters.city = args.filters.city;
 	if (args.filters?.country) pFilters.country = args.filters.country;
-	if (args.filters?.category) pFilters.category = args.filters.category;
+	if (args.filters?.categories?.length) pFilters.categories = args.filters.categories;
+	if (args.filters?.cluster_ids?.length) pFilters.cluster_ids = args.filters.cluster_ids;
 	if (typeof args.filters?.is_featured === "boolean") pFilters.is_featured = args.filters.is_featured;
 	if (typeof args.filters?.is_free === "boolean") pFilters.is_free = args.filters.is_free;
 	if (args.filters?.target_groups && args.filters.target_groups.length) pFilters.target_groups = args.filters.target_groups;

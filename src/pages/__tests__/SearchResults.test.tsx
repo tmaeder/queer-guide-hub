@@ -6,7 +6,10 @@ import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
-vi.mock('@/hooks/useSearch', () => ({ useSearch: () => ({ results: [], loading: false, totalHits: 0, search: vi.fn() }) }));
+vi.mock('@/hooks/useSearch', () => {
+  const response = { results: [], loading: false, totalHits: 0, resultsKey: 'test', refetch: vi.fn() };
+  return { useSearch: () => response };
+});
 vi.mock('@/hooks/useSearchActions', () => ({ useTrackClick: () => vi.fn(), useFeedbackVote: () => vi.fn() }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 

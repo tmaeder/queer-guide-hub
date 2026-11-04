@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useEffectEvent, useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, Sparkles } from '@/components/icons';
@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { readSearchFilters, writeSearchFilters } from '@/lib/searchParams';
 import { useSearch, type SearchResult, type SearchFilters } from '@/hooks/useSearch';
 import { useAssistant } from '@/hooks/useAssistant';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
@@ -40,6 +41,7 @@ import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { hrefForEntity } from '@/lib/searchRoutes';
 import {
   getTypeConfig,
+  filtersForSearchScope,
   VIEW_META,
   SORT_META,
   workerSort,
@@ -98,27 +100,19 @@ export default function SearchResults() {
   // would skip the first page of results — fatal for scopes with < hitsPerPage.
   const [page, setPage] = useState(0);
   const [askOpen, setAskOpen] = useState(false);
-  // New URL query → sync the input and reset paging during render, so the
-  // first fetch for the new query already uses page 0.
+  const urlKey = searchParams.toString();
+  const [prevUrlKey, setPrevUrlKey] = useState(urlKey);
+  if (urlKey !== prevUrlKey) {
+    setPrevUrlKey(urlKey);
+    setPage(0);
+  }
   const [prevQuery, setPrevQuery] = useState(query);
   if (query !== prevQuery) {
     setPrevQuery(query);
     setSearchQuery(query);
-    setPage(0);
   }
 
-  const initialLat = Number(searchParams.get('lat')) || undefined;
-  const initialLng = Number(searchParams.get('lng')) || undefined;
-  const [filters, setFilters] = useState<SearchFilters>({
-    types: searchParams.get('types')?.split(',').filter(Boolean) || [],
-    location: searchParams.get('location') || undefined,
-    categories: searchParams.get('categories')?.split(',').filter(Boolean) || undefined,
-    cluster_ids: searchParams.get('clusters')?.split(',').filter(Boolean) || undefined,
-    tags: searchParams.get('tags')?.split(',').filter(Boolean) || undefined,
-    lat: initialLat,
-    lng: initialLng,
-    radius: Number(searchParams.get('radius')) || undefined,
-  });
+  const filters = useMemo(() => readSearchFilters(searchParams), [searchParams]);
   const geoActive = filters.lat != null && filters.lng != null;
   const activeScope = filters.types && filters.types.length === 1 ? filters.types[0] : null;
   const config = getTypeConfig(activeScope);
@@ -126,11 +120,9 @@ export default function SearchResults() {
   const availableSorts = config.sorts.filter((s) => s !== 'distance' || geoActive);
 
   const [viewMode, setViewMode] = useState<SearchViewMode>(config.defaultView);
-  const [sortId, setSortId] = useState<SearchSortId>(() => {
-    const fromUrl = searchParams.get('sort') as SearchSortId | null;
-    if (fromUrl && config.sorts.includes(fromUrl)) return fromUrl;
-    return geoActive && config.sorts.includes('distance') ? 'distance' : 'relevance';
-  });
+  const requestedSort = searchParams.get('sort') as SearchSortId | null;
+  const defaultSort = geoActive && config.sorts.includes('distance') ? 'distance' : 'relevance';
+  const sortId = requestedSort ?? defaultSort;
 
   // Clamp to what the scope allows (defends against a stale URL/state).
   const effectiveView = availableViews.includes(viewMode) ? viewMode : config.defaultView;
@@ -145,7 +137,8 @@ export default function SearchResults() {
     toggle: togglePrefChip,
     forget: forgetPrefChip,
   } = usePreferenceChips(['budget']);
-  const chipPriceRange = priceRangeFromChips(prefChips);
+  const supportsPrice = config.filters.includes('price');
+  const chipPriceRange = supportsPrice ? priceRangeFromChips(prefChips) : undefined;
   const effectiveFilters = useMemo<SearchFilters>(
     () =>
       chipPriceRange && !filters.priceRange ? { ...filters, priceRange: chipPriceRange } : filters,
@@ -156,7 +149,7 @@ export default function SearchResults() {
   // Pass identity so the worker personalizes ranking from the profile
   // (interests/home_city → _boostReason). Anonymous users fall back to session.
   const { user } = useAuth();
-  const { results, loading, error, errorKind, totalHits, tooShort, facets, resultsKey } = useSearch(
+  const { results, loading, error, errorKind, totalHits, tooShort, facets, resultsKey, refetch } = useSearch(
     query,
     effectiveFilters,
     page,
@@ -167,70 +160,50 @@ export default function SearchResults() {
   // ── URL sync ───────────────────────────────────────────────────────────
   const writeParams = useCallback(
     (next: SearchFilters, nextSort: SearchSortId) => {
-      const params = new URLSearchParams();
-      if (query) params.set('q', query);
-      if (next.types?.length) params.set('types', next.types.join(','));
-      if (next.location) params.set('location', next.location);
-      if (next.categories?.length) params.set('categories', next.categories.join(','));
-      if (next.cluster_ids?.length) params.set('clusters', next.cluster_ids.join(','));
-      if (next.tags?.length) params.set('tags', next.tags.join(','));
-      if (next.lat != null && next.lng != null) {
-        params.set('lat', String(next.lat));
-        params.set('lng', String(next.lng));
-        if (next.radius) params.set('radius', String(next.radius));
-      }
-      if (nextSort && nextSort !== 'relevance') params.set('sort', nextSort);
-      setSearchParams(params);
+      setSearchParams(writeSearchFilters(query, next, nextSort));
     },
     [query, setSearchParams],
   );
 
-  const handleFiltersChange = useCallback(
-    (next: SearchFilters) => {
-      setFilters(next);
-      setPage(0);
-      writeParams(next, sortId);
-    },
-    [writeParams, sortId],
-  );
+  const handleFiltersChange = (next: SearchFilters) => {
+    const nextScope = next.types?.length === 1 ? next.types[0] : null;
+    setPage(0);
+    writeParams(
+      nextScope === activeScope ? next : filtersForSearchScope(next, nextScope),
+      sortId,
+    );
+  };
 
   // Tag chip on a result card → refine the current search by that tag.
-  const handleTagRefine = useCallback(
-    (tag: string) => {
-      const current = filters.tags ?? [];
-      if (current.includes(tag)) return;
-      handleFiltersChange({ ...filters, tags: [...current, tag] });
-    },
-    [filters, handleFiltersChange],
-  );
+  const handleTagRefine = (tag: string) => {
+    const current = filters.tags ?? [];
+    if (current.includes(tag)) return;
+    handleFiltersChange({ ...filters, tags: [...current, tag] });
+  };
 
   const handleScopeChange = useCallback(
     (scope: string | null) => {
-      const next = { ...filters, types: scope ? [scope] : [] };
+      const next = filtersForSearchScope(filters, scope);
       const cfg = getTypeConfig(scope);
       const nextSort: SearchSortId =
-        geoActive && cfg.sorts.includes('distance') ? 'distance' : (cfg.sorts[0] ?? 'relevance');
-      setFilters(next);
+        next.lat != null && next.lng != null && cfg.sorts.includes('distance')
+          ? 'distance'
+          : (cfg.sorts[0] ?? 'relevance');
       setPage(0);
       setViewMode(cfg.defaultView);
-      setSortId(nextSort);
       writeParams(next, nextSort);
     },
-    [filters, geoActive, writeParams],
+    [filters, writeParams],
   );
 
   const handleClearAll = useCallback(() => {
-    setSearchQuery('');
-    setFilters({});
     setPage(0);
-    setSortId('relevance');
-    setSearchParams(new URLSearchParams());
-  }, [setSearchParams]);
+    writeParams({}, 'relevance');
+  }, [writeParams]);
 
   const handleSortChange = useCallback(
     (next: string) => {
       const s = next as SearchSortId;
-      setSortId(s);
       setPage(0);
       writeParams(filters, s);
       void trackSearchUx('facet_apply', { facet: 'sort', value: s, query });
@@ -239,9 +212,9 @@ export default function SearchResults() {
   );
 
   const submitSearch = useCallback(() => {
-    if (!searchQuery.trim()) return;
     const params = new URLSearchParams(searchParams);
-    params.set('q', searchQuery);
+    if (searchQuery.trim()) params.set('q', searchQuery.trim());
+    else params.delete('q');
     setSearchParams(params);
   }, [searchQuery, searchParams, setSearchParams]);
 
@@ -280,30 +253,30 @@ export default function SearchResults() {
     [navigate],
   );
 
-  // ── Accumulate pages (infinite scroll), keep previous during refetch ─────
-  // Keyed on the request the results came from, not the raw URL query: the
-  // hook debounces, so for 300ms after a new query `results` still belong to
-  // the old one, and keying on `query` filed them under the new search —
-  // the new results were then appended to the old ones as if a next page.
   const queryKey = resultsKey;
-  const [accumulated, setAccumulated] = useState<SearchResult[]>([]);
-  const lastKeyRef = useRef('');
-  useEffect(() => {
-    if (loading) return; // keep previous results visible while refetching
-    setAccumulated((prev) => {
-      if (queryKey !== lastKeyRef.current) {
-        lastKeyRef.current = queryKey;
-        return results;
-      }
-      const seen = new Set(prev.map((r) => r.objectID));
-      const fresh = results.filter((r) => r.objectID && !seen.has(r.objectID));
-      if (fresh.length > 0) return [...prev, ...fresh];
-      return prev.length === results.length ? prev : results;
+  const [resultPages, setResultPages] = useState<{
+    key: string;
+    pages: Record<number, SearchResult[]>;
+  }>({ key: '', pages: {} });
+  if (!loading && !errorKind &&
+      (resultPages.key !== queryKey || resultPages.pages[page] !== results)) {
+    setResultPages({
+      key: queryKey,
+      pages: { ...(resultPages.key === queryKey ? resultPages.pages : {}), [page]: results },
     });
-  }, [results, loading, queryKey]);
+  }
 
-  const totalResults = accumulated.length;
-  const hasMore = totalResults < totalHits;
+  const accumulated = useMemo(() => {
+    if (resultPages.key !== queryKey) return [];
+    const hits = new Map<string, SearchResult>();
+    for (const result of Object.values(resultPages.pages).flat()) {
+      const key = `${result.type}-${result.objectID}`;
+      if (!hits.has(key)) hits.set(key, result);
+    }
+    return Array.from(hits.values());
+  }, [queryKey, resultPages]);
+
+  const hasMore = !errorKind && accumulated.length < totalHits;
   const activeFilterCount = countActiveFilters(filters);
   const showInitialSkeleton = loading && accumulated.length === 0;
   const hasQuery = query.trim().length > 0;
@@ -354,19 +327,28 @@ export default function SearchResults() {
                   : undefined
           }
         >
-          <div className="flex gap-2">
-            <div className="relative flex-1">
+          <form
+            role="search"
+            aria-label={t('search.resultsTitle', 'Search')}
+            className="flex gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submitSearch();
+            }}
+          >
+            <div className="relative min-w-0 flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
+                type="search"
+                aria-label={t('search.refine', 'Refine your search…')}
                 placeholder={t('search.refine', 'Refine your search…')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && submitSearch()}
                 className="pl-10"
               />
             </div>
-            <Button onClick={submitSearch}>{t('search.button', 'Search')}</Button>
-          </div>
+            <Button type="submit">{t('search.button', 'Search')}</Button>
+          </form>
         </PageHeader>
 
         {/* Filters panel — sticky card on desktop, bottom Sheet on mobile */}
@@ -404,11 +386,13 @@ export default function SearchResults() {
 
             <div className="flex flex-wrap items-center justify-between gap-4 py-2">
               <div className="flex min-w-0 flex-1 flex-col gap-2">
-                <PreferenceChips
-                  chips={prefChips}
-                  onToggle={togglePrefChip}
-                  onForget={forgetPrefChip}
-                />
+                {supportsPrice && (
+                  <PreferenceChips
+                    chips={prefChips}
+                    onToggle={togglePrefChip}
+                    onForget={forgetPrefChip}
+                  />
+                )}
                 <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
               </div>
               <SavedSearchesMenu
@@ -419,11 +403,10 @@ export default function SearchResults() {
             </div>
 
             {/* Controls bar */}
-            <div className="mb-6 flex flex-col gap-4 rounded-element bg-muted p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-2 border-y border-border-hairline py-2">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{t('search.sortBy', 'Sort')}</span>
                 <Select value={effectiveSort} onValueChange={handleSortChange}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-[170px]" aria-label={t('search.sortBy', 'Sort')}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="z-50">
@@ -443,8 +426,12 @@ export default function SearchResults() {
                 </Select>
               </div>
 
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 rounded-element bg-surface-container p-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <div
+                  role="group"
+                  aria-label={t('search.view', 'Result view')}
+                  className="flex items-center gap-1"
+                >
                   {availableViews.map((v) => {
                     const meta = VIEW_META[v];
                     const Icon = meta.Icon;
@@ -471,6 +458,7 @@ export default function SearchResults() {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowFilters((s) => !s)}
+                  aria-expanded={showFilters}
                   className="gap-2"
                 >
                   <Filter className="h-4 w-4" />
@@ -500,6 +488,8 @@ export default function SearchResults() {
             query={query}
             errorKind={errorKind}
             error={error}
+            hasFilters={activeFilterCount > 0}
+            onRetry={() => void refetch()}
             dymTitle={(dymHit?.title || dymHit?.name) as string | undefined}
             onSuggest={(s) => {
               const params = new URLSearchParams(searchParams);
@@ -512,16 +502,10 @@ export default function SearchResults() {
             onBrowse={(p) => navigate(p)}
           />
         ) : effectiveView === 'map' ? (
-          <ResultsMapView results={accumulated} />
+          <ResultsMapView key={queryKey} results={accumulated} />
         ) : effectiveView === 'calendar' ? (
           <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
             <SearchCalendarView results={accumulated} query={query} onActivate={trackResultClick} />
-            <LoadMore
-              hasMore={hasMore}
-              loading={loading}
-              onLoadMore={() => setPage((p) => p + 1)}
-              resetKey={query}
-            />
           </div>
         ) : (
           <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
@@ -542,13 +526,25 @@ export default function SearchResults() {
                 />
               )}
             />
+          </div>
+        )}
+        {accumulated.length > 0 && (
+          <>
+            {errorKind && (
+              <div role="alert" className="flex flex-wrap items-center gap-4 py-4">
+                <p>{error ?? t('search.error', 'Something went wrong')}</p>
+                <Button variant="outline" onClick={() => void refetch()}>
+                  {t('search.retry', 'Retry')}
+                </Button>
+              </div>
+            )}
             <LoadMore
               hasMore={hasMore}
               loading={loading}
               onLoadMore={() => setPage((p) => p + 1)}
-              resetKey={query}
+              resetKey={queryKey}
             />
-          </div>
+          </>
         )}
       </PageContainer>
 
@@ -583,6 +579,8 @@ function ZeroState({
   onSuggest,
   onAsk,
   onAdjustFilters,
+  onRetry,
+  hasFilters,
   onBrowse,
 }: {
   query: string;
@@ -592,12 +590,14 @@ function ZeroState({
   onSuggest: (s: string) => void;
   onAsk: () => void;
   onAdjustFilters: () => void;
+  onRetry: () => void;
+  hasFilters: boolean;
   onBrowse: (path: string) => void;
 }) {
   const { t } = useTranslation();
   const hasQuery = query.trim() !== '';
 
-  if (!hasQuery) {
+  if (!hasQuery && !hasFilters && !errorKind) {
     return (
       <Card className="p-6">
         <h3 className="mb-4 text-lg font-semibold">
@@ -631,7 +631,7 @@ function ZeroState({
     );
   }
 
-  if (errorKind === 'unavailable') {
+  if (errorKind) {
     return (
       <div
         role="alert"
@@ -639,11 +639,14 @@ function ZeroState({
       >
         <Search className="mb-4 h-12 w-12 text-muted-foreground" />
         <h3 className="mb-2 text-lg font-semibold">
-          {t('search.unavailableTitle', 'Search is temporarily unavailable')}
+          {errorKind === 'unavailable'
+            ? t('search.unavailableTitle', 'Search is temporarily unavailable')
+            : t('search.error', 'Something went wrong')}
         </h3>
         <p className="text-muted-foreground">
           {error ?? t('search.unavailableBody', "We've been notified.")}
         </p>
+        <Button className="mt-4" onClick={onRetry}>{t('search.retry', 'Retry')}</Button>
       </div>
     );
   }
@@ -652,7 +655,9 @@ function ZeroState({
     <div className="flex flex-col items-center justify-center pb-12 pt-12 text-center">
       <Search className="mb-4 h-12 w-12 text-muted-foreground" />
       <h3 className="mb-2 text-lg font-semibold">
-        {t('search.noResultsFor', 'No results found for "{{q}}"', { q: query })}
+        {hasQuery
+          ? t('search.noResultsFor', 'No results found for "{{q}}"', { q: query })
+          : t('search.noFilterResults', 'No results match these filters.')}
       </h3>
       {dymTitle && (
         <Button variant="link" onClick={() => onSuggest(dymTitle)} className="mb-2">

@@ -10,6 +10,7 @@
  * with a geo filter — gate at render).
  */
 import type { ComponentType } from 'react';
+import type { SearchFilters } from '@/hooks/useSearch';
 import {
   List,
   Grid,
@@ -140,4 +141,28 @@ export const SEARCH_TYPE_CONFIG: Record<string, SearchTypeConfig> = {
 
 export function getTypeConfig(scope: string | null | undefined): SearchTypeConfig {
   return (scope && SEARCH_TYPE_CONFIG[scope]) || ALL;
+}
+
+/** Apply scope-specific controls when the reader changes scope. Existing URLs
+ * are read as written so saved searches keep their original meaning. */
+export function filtersForSearchScope(filters: SearchFilters, scope: string | null): SearchFilters {
+  const allowed = getTypeConfig(scope).filters;
+  const next: SearchFilters = {
+    types: scope ? [scope] : [],
+    tags: filters.tags,
+    cluster_ids: filters.cluster_ids,
+  };
+  if (allowed.includes('category')) next.categories = filters.categories;
+  if (allowed.includes('targetGroups')) next.target_groups = filters.target_groups;
+  if (allowed.includes('geo')) {
+    next.location = filters.location;
+    next.lat = filters.lat;
+    next.lng = filters.lng;
+    next.radius = filters.radius;
+  }
+  if (allowed.includes('date')) next.dateRange = filters.dateRange;
+  if (allowed.includes('price')) next.priceRange = filters.priceRange;
+  if (allowed.includes('free')) next.free = filters.free;
+  if (allowed.includes('featured')) next.featured = filters.featured;
+  return next;
 }

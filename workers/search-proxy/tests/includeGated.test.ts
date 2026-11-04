@@ -86,7 +86,7 @@ describe("search worker safety gating", () => {
 	it("finds every pgHybridSearch call site", () => {
 		// Guards the guard: if the parser stops matching, this test would pass
 		// vacuously with zero sites.
-		expect(sites.length).toBeGreaterThanOrEqual(3);
+		expect(sites.length).toBeGreaterThanOrEqual(2);
 	});
 
 	it("passes includeGated at every pgHybridSearch call site", () => {

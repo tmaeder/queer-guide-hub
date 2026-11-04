@@ -29,8 +29,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAssistant } from '@/hooks/useAssistant';
 import { MODE_SCOPE_BIAS, INTENT_SCOPE_BIAS, findActiveIntent } from '@/config/navigation';
 import { stripLocale } from '@/lib/locale';
-import type { SearchFilters } from '@/hooks/useSearch';
 import type { AssistantCard } from '@/lib/assistantClient';
+import { writeSearchFilters } from '@/lib/searchParams';
 import { detailHref } from '@/lib/searchRoutes';
 import { getSubmitCta } from '@/lib/submitCta';
 // The three popover bodies only ever render inside <PopoverContent>, which
@@ -156,12 +156,14 @@ export const UniversalSearchBar = ({
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<'search' | 'ask'>('search');
-  const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<SearchFilters>({ types: [] });
+  const [activeScope, setActiveScope] = useState<string | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('recent-searches');
-      return saved ? JSON.parse(saved) : [];
+      const parsed: unknown = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed)
+        ? parsed.filter((term): term is string => typeof term === 'string').slice(0, 10)
+        : [];
     } catch {
       return [];
     }
@@ -179,7 +181,6 @@ export const UniversalSearchBar = ({
   const { t } = useTranslation();
   const assistant = useAssistant();
 
-  const activeScope = filters.types && filters.types.length === 1 ? filters.types[0] : null;
   const scopeArray = useMemo(() => (activeScope ? [activeScope] : undefined), [activeScope]);
 
   // Close the popover on route change; clear query when leaving /search.
@@ -189,7 +190,6 @@ export const UniversalSearchBar = ({
     prevPathRef.current = location.pathname;
     if (prevPath !== location.pathname) {
       setIsOpen(false);
-      setShowFilters(false);
       setMode('search');
       if (prevPath.startsWith('/search') && !location.pathname.startsWith('/search')) {
         setQuery('');
@@ -199,10 +199,9 @@ export const UniversalSearchBar = ({
 
   const {
     suggestions,
-    countsByType,
     loading: suggestionsLoading,
     error: suggestionsError,
-  } = useSearchSuggestions(query, scopeArray);
+  } = useSearchSuggestions(isOpen && mode === 'search' ? query : '', scopeArray);
   const { mode: userMode } = useUserMode();
   // The page someone is standing on is the strongest signal about what they
   // want, and it used to be the one signal this panel ignored: trending tiles
@@ -243,7 +242,7 @@ export const UniversalSearchBar = ({
     setPrevTranscript(voice.transcript);
     if (voice.transcript) setQuery(voice.transcript);
   }
-  const focusResetKey = `${suggestions.length}|${activeScope}`;
+  const focusResetKey = `${isOpen}|${mode}|${query}|${suggestions.length}|${activeScope}`;
   const [prevFocusResetKey, setPrevFocusResetKey] = useState(focusResetKey);
   if (focusResetKey !== prevFocusResetKey) {
     setPrevFocusResetKey(focusResetKey);
@@ -254,7 +253,11 @@ export const UniversalSearchBar = ({
     if (!searchTerm.trim()) return;
     setRecentSearches((prev) => {
       const updated = [searchTerm, ...prev.filter((s) => s !== searchTerm)].slice(0, 10);
-      localStorage.setItem('recent-searches', JSON.stringify(updated));
+      try {
+        localStorage.setItem('recent-searches', JSON.stringify(updated));
+      } catch {
+        // Keep recents in memory when storage is unavailable.
+      }
       return updated;
     });
   }, []);
@@ -269,29 +272,17 @@ export const UniversalSearchBar = ({
       const searchTerm = searchQuery ?? query;
       if (!searchTerm.trim()) return;
       saveRecentSearch(searchTerm);
-      const params = new URLSearchParams({
-        q: searchTerm,
-        ...(filters.types && filters.types.length > 0 && { types: filters.types.join(',') }),
-        ...(filters.location && { location: filters.location }),
-        ...(filters.categories &&
-          filters.categories.length > 0 && { categories: filters.categories.join(',') }),
-        ...(filters.cluster_ids &&
-          filters.cluster_ids.length > 0 && { clusters: filters.cluster_ids.join(',') }),
-      });
+      const params = writeSearchFilters(searchTerm, { types: scopeArray }, 'relevance');
       void trackSearchUx('search_submit', {
         query: searchTerm,
         scope: activeScope || 'all',
-        filters_count:
-          (filters.types?.length || 0) +
-          (filters.location ? 1 : 0) +
-          (filters.categories?.length || 0) +
-          (filters.cluster_ids?.length || 0),
+        filters_count: scopeArray?.length ?? 0,
         source: surface === 'hero' ? 'home_hero' : 'universal_searchbar',
       });
       navigate(`/search?${params}`);
       setIsOpen(false);
     },
-    [query, filters, activeScope, navigate, saveRecentSearch, surface],
+    [query, scopeArray, activeScope, navigate, saveRecentSearch, surface],
   );
 
   const handleSelectSuggestion = useCallback(
@@ -323,7 +314,7 @@ export const UniversalSearchBar = ({
 
   const setScope = useCallback(
     (scope: string | null) => {
-      setFilters((f) => ({ ...f, types: scope ? [scope] : [] }));
+      setActiveScope(scope);
       focusInput();
     },
     [focusInput],
@@ -498,16 +489,13 @@ export const UniversalSearchBar = ({
 
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.platform);
 
-  const activeFiltersCount =
-    (filters.types?.length || 0) +
-    (filters.location ? 1 : 0) +
-    (filters.categories?.length || 0) +
-    (filters.priceRange ? 1 : 0) +
-    (filters.rating ? 1 : 0);
-
   const clearRecents = useCallback(() => {
     setRecentSearches([]);
-    localStorage.removeItem('recent-searches');
+    try {
+      localStorage.removeItem('recent-searches');
+    } catch {
+      // The in-memory list is already cleared.
+    }
   }, []);
 
   // "Add it to the map" from the no-results state. Reuses the header's own
@@ -624,9 +612,11 @@ export const UniversalSearchBar = ({
           role="combobox"
           aria-autocomplete="list"
           aria-expanded={isOpen}
-          aria-controls={listboxId}
+          aria-controls={isOpen && mode === 'search' && query ? listboxId : undefined}
           aria-haspopup="listbox"
-          aria-activedescendant={resultsFocused !== null ? `result-${resultsFocused}` : undefined}
+          aria-activedescendant={isOpen && mode === 'search' && resultsFocused !== null && suggestions[resultsFocused]
+            ? `${listboxId}-option-${resultsFocused}`
+            : undefined}
           placeholder={placeholder}
           value={query}
           onChange={(e) => {
@@ -801,22 +791,19 @@ export const UniversalSearchBar = ({
         </>
       ) : isMobile ? (
         <SearchPopoverMobile
+          listboxId={listboxId}
+          resultsFocused={resultsFocused}
+          setResultsFocused={setResultsFocused}
           query={query}
           activeScope={activeScope}
           suggestions={suggestions}
-          countsByType={countsByType}
           loading={suggestionsLoading}
           error={suggestionsError}
           trending={discoveryHits}
           discoverySource={discoverySource}
-          showFilters={showFilters}
-          filters={filters}
-          setFilters={setFilters}
           setScope={setScope}
           onSelect={handleSelectSuggestion}
           onSearchAll={() => handleSearch()}
-          onToggleFilters={() => setShowFilters(!showFilters)}
-          activeFiltersCount={activeFiltersCount}
           onClose={() => setIsOpen(false)}
           onClear={() => {
             setQuery('');
@@ -842,16 +829,11 @@ export const UniversalSearchBar = ({
           query={query}
           activeScope={activeScope}
           suggestions={suggestions}
-          countsByType={countsByType}
           loading={suggestionsLoading}
           error={suggestionsError}
           trending={discoveryHits}
           discoverySource={discoverySource}
           recentSearches={recentSearches}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          filters={filters}
-          setFilters={setFilters}
           setScope={setScope}
           onSelectIndex={(s, i) => {
             setResultsFocused(i);
@@ -859,7 +841,6 @@ export const UniversalSearchBar = ({
           }}
           resultsFocused={resultsFocused}
           setResultsFocused={setResultsFocused}
-          activeFiltersCount={activeFiltersCount}
           onSearchAll={() => handleSearch()}
           clearRecents={clearRecents}
           onSelectRecent={(term) => {
