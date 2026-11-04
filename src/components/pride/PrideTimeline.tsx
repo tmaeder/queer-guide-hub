@@ -98,6 +98,12 @@ export function PrideTimeline({
   const placed = useMemo(() => placeEvents(events, year), [events, year]);
   const maxRow = useMemo(() => placed.reduce((m, p) => (p.row > m ? p.row : m), 0), [placed]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  // Read, not a dependency: the opening scroll re-anchors when the year or the
+  // set of prides changes, never when the reader selects one.
+  const selectedRef = useRef(selectedId);
+  useEffect(() => {
+    selectedRef.current = selectedId;
+  }, [selectedId]);
   const today = new Date();
   const showToday = today.getUTCFullYear() === year;
   const todayMonthIndex = today.getUTCMonth();
@@ -108,6 +114,31 @@ export function PrideTimeline({
     const el = scrollRef.current.querySelector<HTMLElement>(`[data-event-id="${selectedId}"]`);
     if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }, [selectedId]);
+
+  // Open on the prides a reader can still go to. The track is a whole year
+  // wide and starts in January, so in November it opened on nine months of
+  // empty columns with every remaining pride off-screen to the right. So on
+  // each year/data change it scrolls to today (this year), clamped between the
+  // first and last pride so a finished season still shows its last events.
+  // Instant, not smooth: this is the initial position, not a navigation.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || selectedRef.current || placed.length === 0) return;
+    const yearStartMs = Date.UTC(year, 0, 1);
+    const yearMs = Date.UTC(year + 1, 0, 1) - yearStartMs;
+    const starts = placed
+      .map((p) => new Date(p.event.start_date).getTime())
+      .filter((n) => Number.isFinite(n));
+    if (starts.length === 0) return;
+    const firstMs = Math.min(...starts);
+    const lastMs = Math.max(...starts);
+    const nowMs = Date.now();
+    const anchorMs = showToday ? Math.min(Math.max(firstMs, nowMs - 86_400_000), lastMs) : firstMs;
+    // The track's own width, not scrollWidth: labels past December overflow
+    // the track and widen scrollWidth, which overshot the anchor on phones.
+    const width = (el.firstElementChild as HTMLElement | null)?.offsetWidth ?? el.scrollWidth;
+    el.scrollLeft = Math.max(0, ((anchorMs - yearStartMs) / yearMs) * width - 24);
+  }, [year, placed, showToday]);
 
   const trackHeight = (maxRow + 1) * ROW_HEIGHT + 48;
 
@@ -235,7 +266,11 @@ export function PrideTimeline({
                     >
                       <span
                         className={cn(
-                          'shrink-0 rounded-full border border-border-hairline transition-all',
+                          // `transit-marker` + ink edge: index.css makes 1-2px
+                          // borders transparent unless opted out, which left a
+                          // paper pin with no visible edge (same as the events
+                          // timeline).
+                          'transit-marker shrink-0 rounded-full border-2 border-foreground transition-all',
                           isSelected
                             ? 'bg-foreground w-3 h-3'
                             : p.event.is_featured

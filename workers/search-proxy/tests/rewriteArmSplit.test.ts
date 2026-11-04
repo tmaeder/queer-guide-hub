@@ -52,6 +52,10 @@ interface Harness {
 	embedTexts: string[];
 	/** How many times the rewriter model was invoked. */
 	llamaCalls: number;
+	/** The embedded text whose vector search_hybrid actually received. */
+	usedEmbedText: string | null;
+	/** The rewrite cached in KV once every waitUntil settled. */
+	cachedRewrite: unknown;
 }
 
 /**
@@ -62,7 +66,7 @@ interface Harness {
 async function runSearch(
 	query: string,
 	rewrite: { q_en: string; synonyms?: string[]; city?: string | null; type_hint?: string | null } | null,
-	opts: { lang?: string } = {},
+	opts: { lang?: string; rewriteDelayMs?: number } = {},
 ): Promise<Harness> {
 	const embedTexts: string[] = [];
 	let llamaCalls = 0;
@@ -77,12 +81,15 @@ async function runSearch(
 			run: async (model: string, input: Record<string, unknown>) => {
 				if (model === LLAMA) {
 					llamaCalls++;
+					if (opts.rewriteDelayMs) await new Promise((r) => setTimeout(r, opts.rewriteDelayMs));
 					return { response: rewrite ? JSON.stringify(rewrite) : "not json at all" };
 				}
 				if (model === EMBED) {
 					const t = input.text as string[] | string;
 					embedTexts.push(Array.isArray(t) ? t[0] : t);
-					return { data: [[0.1, 0.2, 0.3]] };
+					// A distinct vector per call, so a test can tell WHICH embedding
+					// reached search_hybrid (the Worker may embed speculatively).
+					return { data: [[embedTexts.length, 0, 0]] };
 				}
 				return {};
 			},
@@ -120,7 +127,11 @@ async function runSearch(
 	);
 	const body = (await res.json()) as Record<string, unknown>;
 	await Promise.allSettled(waits);
-	return { res, body, hybridArgs, embedTexts, llamaCalls };
+	const vec = (hybridArgs as Record<string, unknown> | null)?.p_query_vec;
+	const idx = typeof vec === "string" ? Number(vec.slice(1).split(",")[0]) : NaN;
+	const usedEmbedText = Number.isInteger(idx) && idx >= 1 ? embedTexts[idx - 1] : null;
+	const cachedRewrite = await env.EMBED_CACHE.get(`rw:${opts.lang ?? "en"}:${query.trim().toLowerCase()}`, { type: "json" });
+	return { res, body, hybridArgs, embedTexts, llamaCalls, usedEmbedText, cachedRewrite };
 }
 
 afterEach(() => vi.restoreAllMocks());
@@ -137,9 +148,9 @@ describe("rewrite augments, never replaces", () => {
 		expect(h.hybridArgs!.p_query).not.toBe("hero bar");
 
 		// …and the translation is not thrown away — it still drives the embedding.
-		expect(h.embedTexts.length).toBeGreaterThan(0);
-		expect(h.embedTexts[0]).toContain("hero bar");
-		expect(h.embedTexts[0]).not.toContain("Heldenbar");
+		expect(h.usedEmbedText).not.toBeNull();
+		expect(h.usedEmbedText).toContain("hero bar");
+		expect(h.usedEmbedText).not.toContain("Heldenbar");
 	});
 
 	it("schwul: the German original still reaches the keyword arm, 'gay' still reaches the vector arm", async () => {
@@ -150,7 +161,7 @@ describe("rewrite augments, never replaces", () => {
 
 		expect(h.llamaCalls).toBeGreaterThan(0);
 		expect(h.hybridArgs!.p_query).toBe("schwul");
-		expect(h.embedTexts[0]).toContain("gay");
+		expect(h.usedEmbedText).toContain("gay");
 	});
 
 	it("with no synonyms, the vector arm still gets the translation and only the translation", async () => {
@@ -160,7 +171,7 @@ describe("rewrite augments, never replaces", () => {
 		const h = await runSearch("Heldenbar", { q_en: "hero bar", synonyms: [] });
 		expect(h.llamaCalls).toBeGreaterThan(0);
 		expect(h.hybridArgs!.p_query).toBe("Heldenbar");
-		expect(h.embedTexts[0]).toBe("hero bar");
+		expect(h.usedEmbedText).toBe("hero bar");
 	});
 
 	it("Berghain: a rewrite that only echoes the query changes nothing on either arm", async () => {
@@ -170,14 +181,17 @@ describe("rewrite augments, never replaces", () => {
 		expect(h.hybridArgs!.p_query).toBe("Berghain");
 		// q_en differs only by case, so it is not treated as a translation: the
 		// vector arm must not silently lose the original's casing/spelling either.
-		expect(h.embedTexts[0].startsWith("Berghain")).toBe(true);
+		expect(h.usedEmbedText!.startsWith("Berghain")).toBe(true);
+		// Nothing changed, so the literal text is embedded by the model once (the
+		// handler reuses the speculative vector; embed() would also KV-cache it).
+		expect(h.embedTexts).toHaveLength(1);
 	});
 
 	it("a failed rewrite leaves both arms on the original query", async () => {
 		const h = await runSearch("Heldenbar", null);
 		expect(h.llamaCalls).toBeGreaterThan(0); // it ran, and returned unparseable output
 		expect(h.hybridArgs!.p_query).toBe("Heldenbar");
-		expect(h.embedTexts[0]).toContain("Heldenbar");
+		expect(h.usedEmbedText).toContain("Heldenbar");
 	});
 
 	it("debug exposes the two arms separately", async () => {
@@ -187,5 +201,17 @@ describe("rewrite augments, never replaces", () => {
 		// independently or the next occurrence is just as invisible.
 		expect(dbg.keywordQ).toBe("Heldenbar");
 		expect(dbg.embedQ).toBe("hero bar");
+	});
+
+	it("a slow rewrite does not hold up the search, and is cached for next time", async () => {
+		// First-time queries used to wait for the LLM in full before embedding.
+		const h = await runSearch("Heldenbar", { q_en: "hero bar" }, { rewriteDelayMs: 900 });
+		expect(h.llamaCalls).toBeGreaterThan(0); // positive control: it was called
+		expect(h.hybridArgs!.p_query).toBe("Heldenbar");
+		// The search went ahead on the literal query's embedding…
+		expect(h.usedEmbedText).toContain("Heldenbar");
+		expect(h.usedEmbedText).not.toContain("hero bar");
+		// …and the rewrite still finished under waitUntil and landed in KV.
+		expect(h.cachedRewrite).toMatchObject({ q_en: "hero bar" });
 	});
 });
