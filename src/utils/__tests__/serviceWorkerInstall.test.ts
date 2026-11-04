@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { describe, expect, it, vi } from 'vitest';
 
+type LifecycleHandler = (event: { waitUntil: (promise: Promise<void>) => void }) => void;
+
 const worker = readFileSync('public/sw.js', 'utf8');
 
 function installWorker(missing: string[]) {
@@ -9,10 +11,7 @@ function installWorker(missing: string[]) {
     if (missing.includes(path)) throw new Error(`404 ${path}`);
   });
   const skipWaiting = vi.fn();
-  const handlers = new Map<
-    string,
-    (event: { waitUntil: (promise: Promise<void>) => void }) => void
-  >();
+  const handlers = new Map<string, LifecycleHandler>();
   runInNewContext(worker, {
     self: {
       location: { hostname: 'queer.guide' },
