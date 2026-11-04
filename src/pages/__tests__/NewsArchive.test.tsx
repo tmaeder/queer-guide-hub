@@ -22,6 +22,13 @@ const { useNewsMock } = vi.hoisted(() => {
   return { useNewsMock };
 });
 
+const { newsSearchFetch } = vi.hoisted(() => ({ newsSearchFetch: vi.fn() }));
+vi.mock('@/lib/searchFetch', () => ({
+  searchFetch: newsSearchFetch,
+  isSearchUnavailable: () => false,
+  SEARCH_UNAVAILABLE_MESSAGE: 'Search unavailable',
+}));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (_k: string, d?: string) => d ?? _k }),
 }));
@@ -79,12 +86,27 @@ import NewsArchive from '../NewsArchive';
 
 beforeEach(() => {
   useNewsMock.mockReturnValue(makeNewsReturn());
+  newsSearchFetch.mockReset().mockResolvedValue({ hits: [], totalHits: 0 });
 });
 
 describe('NewsArchive page', () => {
   it('renders without crashing and shows search input', () => {
     renderWithProviders(<NewsArchive />);
     expect(screen.getByPlaceholderText('Semantic search articles…')).toBeInTheDocument();
+  });
+
+  it('runs semantic search for a URL with a query and category', async () => {
+    renderWithProviders(<NewsArchive />, { route: '/news/all?q=Berlin&category=politics' });
+
+    await waitFor(() => expect(newsSearchFetch).toHaveBeenCalledWith(
+      '/search',
+      expect.objectContaining({
+        query: 'Berlin',
+        filters: expect.objectContaining({ types: ['news'], categories: ['politics'] }),
+        page: 0,
+      }),
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    ));
   });
 
   it('shows "The newsroom is quiet" empty state when no articles and no active filters', () => {

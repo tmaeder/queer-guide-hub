@@ -111,6 +111,7 @@ export default function NewsArchive() {
     loading: searchLoading,
     error: searchError,
     searchArticles: runSemanticSearch,
+    cancelSearch: cancelSemanticSearch,
     reset: resetSemanticSearch,
   } = useNewsSearch();
 
@@ -322,8 +323,6 @@ export default function NewsArchive() {
     fetchNames();
   }, [articles]);
 
-  const semanticDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const buildSearchFilters = useCallback(
     (filters: Record<string, unknown>): NewsSearchFilters => ({
       tags: filters.tags as string[] | undefined,
@@ -344,10 +343,26 @@ export default function NewsArchive() {
     [],
   );
 
-  const applyFiltersAndFetch = (filters: Record<string, unknown>) => {
+  useEffect(() => {
+    const query = quickSearch.trim();
+    if (query.length < 2) {
+      resetSemanticSearch();
+      return;
+    }
+    const timer = setTimeout(() => {
+      void runSemanticSearch(query, buildSearchFilters(currentFilters), 0, sortBy);
+    }, 300);
+    return () => {
+      clearTimeout(timer);
+      cancelSemanticSearch();
+    };
+  }, [quickSearch, currentFilters, sortBy, buildSearchFilters,
+    runSemanticSearch, cancelSemanticSearch, resetSemanticSearch]);
+
+  const applyFiltersAndFetch = (filters: Record<string, unknown>, query = quickSearch) => {
     setCurrentFilters(filters);
     setCurrentPage(1);
-    fetchArticles(filters);
+    if (query.trim().length < 2) fetchArticles(filters);
   };
 
   const handleFiltersChange = (filters: Record<string, unknown>) => {
@@ -359,32 +374,20 @@ export default function NewsArchive() {
       sortOrder: option?.order || 'desc',
       ...(activeCategory ? { category: activeCategory } : {}),
     };
-    setCurrentFilters(filtersWithSort);
-    setCurrentPage(1);
-    if (quickSearch.trim().length >= 2) {
-      void runSemanticSearch(quickSearch.trim(), buildSearchFilters(filtersWithSort), 0, sortBy);
-    } else {
-      fetchArticles(filtersWithSort);
-    }
+    applyFiltersAndFetch(filtersWithSort);
   };
 
   const handleQuickSearch = (value: string) => {
     setQuickSearch(value);
-    const q = value.trim();
-    if (semanticDebounce.current) clearTimeout(semanticDebounce.current);
-    if (q.length >= 2) {
-      semanticDebounce.current = setTimeout(() => {
-        void runSemanticSearch(q, buildSearchFilters(currentFilters), 0, sortBy);
-      }, 300);
-    } else {
-      resetSemanticSearch();
+    setCurrentPage(1);
+    if (value.trim().length < 2) {
       const option = sortOptions.find((opt) => opt.value === sortBy);
       applyFiltersAndFetch({
         ...currentFilters,
         search: value || undefined,
         sortField: option?.field || 'published_at',
         sortOrder: option?.order || 'desc',
-      });
+      }, value);
     }
   };
 
@@ -425,11 +428,12 @@ export default function NewsArchive() {
       search: tag,
       sortField: option?.field || 'published_at',
       sortOrder: option?.order || 'desc',
-    });
+    }, tag);
   };
 
-  const handleFilterBySource = (sourceId: string, sourceName: string) => {
-    setQuickSearch(sourceName);
+  const handleFilterBySource = (sourceId: string) => {
+    setQuickSearch('');
+    setActiveCategory(null);
     const option = sortOptions.find((opt) => opt.value === sortBy);
     applyFiltersAndFetch({
       ...currentFilters,
@@ -438,7 +442,7 @@ export default function NewsArchive() {
       category: undefined,
       sortField: option?.field || 'published_at',
       sortOrder: option?.order || 'desc',
-    });
+    }, '');
   };
 
   const handleFilterByCategory = (category: string) => {
@@ -463,7 +467,7 @@ export default function NewsArchive() {
       search: author,
       sortField: option?.field || 'published_at',
       sortOrder: option?.order || 'desc',
-    });
+    }, author);
   };
 
   const getSortedArticles = () => {
@@ -505,9 +509,7 @@ export default function NewsArchive() {
   const clearRightFilter = () => {
     setActiveRight(null);
     const next = { ...currentFilters, tags: undefined };
-    setCurrentFilters(next);
-    setCurrentPage(1);
-    fetchArticles(next);
+    applyFiltersAndFetch(next);
   };
 
   const handleResetAndFocus = () => {
@@ -715,12 +717,8 @@ export default function NewsArchive() {
                 onLoadSearch={(q, f) => {
                   setActiveRight(null);
                   setQuickSearch(q);
-                  setCurrentFilters(f);
-                  if (q.trim().length >= 2) {
-                    void runSemanticSearch(q.trim(), buildSearchFilters(f), 0, sortBy);
-                  } else {
-                    fetchArticles(f);
-                  }
+                  setActiveCategory(typeof f.category === 'string' ? f.category : null);
+                  applyFiltersAndFetch(f, q);
                 }}
                 onOpenHistory={() => setHistoryOpen(true)}
               />

@@ -508,6 +508,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// Reuse the speculative literal embedding when the rewrite changed nothing
 	// (the common case on a first-time query, where it missed its budget).
 	const embedReused = embedText === literalEmbedText;
+	if (!embedReused) ctx.waitUntil(literalVecP);
 	const parallelWaitStart = Date.now();
 	const [qVec, signal, recent] = await Promise.all([
 		embedReused
