@@ -493,7 +493,7 @@ export function Header() {
                     cluster; it measured 14.7px wide and the axe sweep returned
                     43 serious `target-size` failures on it. */}
                 <div className="mx-2 flex min-w-0 flex-1 justify-end sm:justify-stretch">
-                  <UniversalSearchBar collapse />
+                  <UniversalSearchBar collapse iconOnly={path === '/'} />
                 </div>
               </div>
             ) : (

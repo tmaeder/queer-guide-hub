@@ -9,10 +9,12 @@ for (const width of [412, 1280]) {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('No straight lines here.');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Find queer places and events',
+    );
     const hero = page.locator('.subway-hero');
     await expect(hero.locator('a[href="/map"]')).toBeVisible();
-    await expect(hero.locator('a[href="/search"]')).toBeVisible();
+    await expect(hero.getByRole('combobox')).toBeVisible();
     expect(await page.locator('html').evaluate((el) => el.scrollWidth)).toBeLessThanOrEqual(width);
     await testInfo.attach(`homepage-${width}`, {
       body: await page.screenshot(),
@@ -26,8 +28,8 @@ for (const width of [412, 1280]) {
     await expect(
       page.getByRole('heading', { name: 'No ads. No data sales. Just riders.' }),
     ).toBeVisible({ timeout: 20_000 });
-    await hero.locator('a[href="/search"]').click();
-    await expect(page).toHaveURL(/\/search(?:\?|$)/);
+    await hero.locator('a[href="/venues"]').click();
+    await expect(page).toHaveURL(/\/venues(?:\?|$)/);
     await expect(page.locator('main')).toBeVisible();
     expect(errors).toEqual([]);
   });
@@ -47,7 +49,9 @@ test('hero and navigation remain usable while the content chunk is pending', asy
   });
   try {
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('No straight lines here.');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Find queer places and events',
+    );
     await page
       .locator('.subway-hero')
       .evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().bottom + window.scrollY));
@@ -66,8 +70,8 @@ test('localized homepage keeps its locale through navigation', async ({ page }) 
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   const map = page.locator('.subway-hero a[href="/de/map"]');
   await expect(map).toBeVisible();
-  await page.locator('.subway-hero a[href="/de/search"]').click();
-  await expect(page).toHaveURL(/\/de\/search(?:\?|$)/);
+  await page.locator('.subway-hero a[href="/de/events"]').click();
+  await expect(page).toHaveURL(/\/de\/events(?:\?|$)/);
 });
 
 test('mobile consent and contribution controls load only when opened', async ({ page }) => {
@@ -80,7 +84,9 @@ test('mobile consent and contribution controls load only when opened', async ({ 
   await expect(page.getByRole('region', { name: 'Cookie settings' })).toBeVisible();
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   expect(
-    scripts.filter((url) => /\/(?:framer-motion|react-server|ContributeDialog|CookiePreferencesDialog)-/.test(url)),
+    scripts.filter((url) =>
+      /\/(?:framer-motion|react-server|ContributeDialog|CookiePreferencesDialog)-/.test(url),
+    ),
   ).toEqual([]);
   await page.getByRole('button', { name: 'Customize', exact: true }).click();
   const preferences = page.getByRole('dialog', { name: 'Cookie Preferences' });

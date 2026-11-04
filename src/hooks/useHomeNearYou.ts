@@ -192,7 +192,8 @@ export function useHomeNearYou(region: HomeRegion, limit = 6) {
       // Rung 3 — nothing (or not enough) in the region. Fill with content that
       // is explicitly framed as somewhere else, never silently mixed in.
       if (rows.length < limit) {
-        const { data, error } = await supabase
+        const localEventIds = rows.filter((row) => row.kind === 'event').map((row) => row.id);
+        let query = supabase
           .from('events')
           .select(EVENT_SELECT)
           .gte('start_date', nowIso)
@@ -200,15 +201,17 @@ export function useHomeNearYou(region: HomeRegion, limit = 6) {
           .not('liveness_status', 'in', `(${DEAD_LIVENESS.join(',')})`)
           .order('start_date', { ascending: true })
           .limit(limit - rows.length);
-        if (error) throw error;
-        for (const e of (data ?? []) as unknown as EventRow[]) {
-          if (rows.some((r) => r.id === e.id)) continue;
-          rows.push(toEventRow(e, 'trip'));
+        if (localEventIds.length > 0) {
+          query = query.not('id', 'in', `(${localEventIds.join(',')})`);
         }
+        const { data, error } = await query;
+        if (error) throw error;
+        for (const e of (data ?? []) as unknown as EventRow[]) rows.push(toEventRow(e, 'trip'));
       }
 
       const tripCount = rows.length - localCount;
-      const scope: NearYouScope = cityRows > 0 ? 'city' : localCount > 0 ? 'country' : 'network';
+      const scope: NearYouScope =
+        localCount > cityRows ? 'country' : cityRows > 0 ? 'city' : 'network';
 
       return { rows: rows.slice(0, limit), scope, localCount, tripCount };
     },

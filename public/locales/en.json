@@ -2073,6 +2073,33 @@
     "error": "Failed to send alert. Please try again."
   },
   "home": {
+    "discovery": {
+      "openMap": "Open the map",
+      "search": "Search places and events…",
+      "allEvents": "See all events",
+      "allCities": "All cities",
+      "noListings": "No listings found for this area.",
+      "otherEvents": "Events elsewhere",
+      "citySearch": "Find a city…",
+      "cityPick": "Choose a city",
+      "cityChange": "Change city",
+      "cityNoMatch": "No matching cities.",
+      "useMyArea": "Use my area",
+      "locating": "Finding your area…",
+      "loadFailed": "Couldn’t load these results.",
+      "title": "Find queer places and events",
+      "subtitle": "Bars, cafés, community spaces and upcoming events near home or at your destination.",
+      "navigation": "Find places and events",
+      "places": "Browse places",
+      "events": "Find events",
+      "listings": "Places and events",
+      "listingsArea": "Places and events in {{city}}",
+      "listingsGlobal": "Places and events worldwide",
+      "cityGuides": "City guides",
+      "recent": "Recently viewed",
+      "more": "More from Queer Guide",
+      "refreshFailed": "Couldn’t refresh these results."
+    },
     "map": {
       "interchangeEyebrow": "Interchange",
       "interchange": {

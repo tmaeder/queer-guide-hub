@@ -8,7 +8,7 @@ import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { useHomeRegionContext } from '@/components/home/homeRegionContext';
 import { useHomeNearYou, type NearYouRow } from '@/hooks/useHomeNearYou';
 
-const ROWS = 6;
+const ROWS = 4;
 
 const formatBoardTime = (iso: string | null, locale: string) => {
   if (!iso) return '—';
@@ -52,61 +52,46 @@ function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
   );
 }
 
-/**
- * "Near you" — what is on where the visitor actually is.
- *
- * Two rules make this honest rather than merely local:
- *
- *  1. The heading names the scope it reached ("Departures — Berlin" /
- *     "— Germany" / "— across the network"), so the page never claims
- *     proximity it did not achieve. The word "Departures" stays in every
- *     variant — the homepage e2e asserts on it.
- *  2. When the region runs dry, the fill is separated by a rule and an
- *     eyebrow rather than blended in. Ink only: a track colour here would
- *     encode "farther away", and track colours may never encode a state.
- *
- * It never self-hides. A band that returns null is indistinguishable from a
- * broken query — which is exactly why the e2e spec asserts this heading is
- * always present — so an empty region renders the chrome and says so plainly.
- */
-export function DeparturesBoard() {
+/** Regional listings name their actual scope and group worldwide additions separately. */
+export function DeparturesBoard({ showRegionPicker = true }: { showRegionPicker?: boolean }) {
   const { t, i18n } = useTranslation();
   const region = useHomeRegionContext();
   const { data, isLoading, isError, isFetching, refetch } = useHomeNearYou(region, ROWS);
 
+  const loading = region.loading || isLoading;
   const rows = data?.rows ?? [];
   const local = rows.filter((r) => r.rung === 'local');
   const trip = rows.filter((r) => r.rung === 'trip');
 
+  const area = data?.scope === 'city' ? region.cityName : region.countryName || region.countryCode;
   const title =
-    data?.scope === 'city' && region.cityName
-      ? t('home.departures.titleCity', 'Departures — {{city}}', { city: region.cityName })
-      : data?.scope === 'country' && region.countryName
-        ? t('home.departures.titleCountry', 'Departures — {{country}}', {
-            country: region.countryName,
-          })
-        : t('home.departures.titleNetwork', 'Departures — across the network');
+    data?.scope === 'network'
+      ? t('home.discovery.listingsGlobal', 'Places and events worldwide')
+      : area && data
+        ? t('home.discovery.listingsArea', 'Places and events in {{city}}', { city: area })
+        : t('home.discovery.listings', 'Places and events');
 
   return (
     <Band
       surface="tint"
-      title={isLoading ? t('home.departures.title', 'Departures — this week') : title}
+      title={title}
       seeAllHref="/events"
-      seeAllLabel={t('home.departures.seeAll', 'Full board')}
-      action={<RegionChip region={region} />}
+      seeAllLabel={t('home.discovery.allEvents', 'See all events')}
+      action={showRegionPicker ? <RegionChip region={region} /> : undefined}
     >
-      <div className="bg-card rounded-container shadow-soft">
-        {isLoading ? (
+      <div className="bg-card rounded-container shadow-soft" aria-busy={loading}>
+        {loading ? (
           // Skeletons at the loaded row's real height (a two-line title/via
           // stack at py-4), not a flat h-16 that is shorter than the content
           // it stands in for — that difference is a homepage CLS source.
           Array.from({ length: ROWS }).map((_, i) => (
             <div
               key={i}
+              aria-hidden="true"
               className="h-[74px] motion-safe:animate-pulse border-b border-border-hairline last:border-b-0"
             />
           ))
-        ) : isError ? (
+        ) : isError && rows.length === 0 ? (
           <HomeSectionError
             className="shadow-none"
             retrying={isFetching}
@@ -114,7 +99,7 @@ export function DeparturesBoard() {
           />
         ) : rows.length === 0 ? (
           <p className="px-4 py-8 text-15 text-muted-foreground md:px-6">
-            {t('home.departures.empty', 'Nothing on the board we can see right now.')}
+            {t('home.discovery.noListings', 'No listings found for this area.')}
           </p>
         ) : (
           <>
@@ -126,7 +111,7 @@ export function DeparturesBoard() {
                 {local.length > 0 && (
                   <div className="border-t border-border-hairline px-4 py-2 md:px-6">
                     <Eyebrow as="div">
-                      {t('home.departures.worthTheTrip', 'Worth the trip')}
+                      {t('home.discovery.otherEvents', 'Events elsewhere')}
                     </Eyebrow>
                   </div>
                 )}
@@ -138,6 +123,9 @@ export function DeparturesBoard() {
           </>
         )}
       </div>
+      {isError && rows.length > 0 && (
+        <HomeSectionError stale retrying={isFetching} onRetry={() => void refetch()} />
+      )}
     </Band>
   );
 }
