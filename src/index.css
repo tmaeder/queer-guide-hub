@@ -953,8 +953,18 @@ body {
    instead — same 2px pink track, same contrast, nothing left to clip. Unlayered
    + `!important` because that is what the global rule above is, and a Tailwind
    utility cannot beat it. */
+/* An outline on the INPUT boxes only the text column, between the magnifier
+   and the mic/esc controls: a rounded pink rectangle floating mid-row that
+   reads as a broken nested field. The row is the field, so the row carries
+   the indicator — its hairline divider thickens to a 2px pink track rule.
+   Same colour and contrast as the global ring (3.74:1 / 6.61:1), so WCAG
+   2.4.7 still holds; it just marks the whole control instead of a slice. */
 .search-plate-field input:focus-visible {
-  outline-offset: -2px !important;
+  outline: none !important;
+}
+.search-plate-field:has(input:focus-visible) {
+  border-bottom-color: transparent;
+  box-shadow: inset 0 -2px 0 hsl(var(--track-pink));
 }
 
 /* ── Touch target minimum (WCAG 2.5.5) ─────────────────────────────── */
