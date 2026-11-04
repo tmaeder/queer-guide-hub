@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { differenceInCalendarDays, format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { AlertTriangle, Info, Calendar, Ticket, Plus } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import type { TripWithDetails } from '@/hooks/useTrips';
@@ -7,6 +7,7 @@ import { useTripReservations } from '@/hooks/useTripReservations';
 import { Button } from '@/components/ui/button';
 import { AddReservationDialog } from './AddReservationDialog';
 import { TripBookingInbox } from './TripBookingInbox';
+import { daysFromToday } from './tripPhase';
 import { detectTripGaps } from './tripGaps';
 import { detectTripConflicts } from './tripConflicts';
 
@@ -20,8 +21,8 @@ export function TripPreTripBlock({ trip }: Props) {
   const { t } = useTranslation();
   const [addOpen, setAddOpen] = useState(false);
   const now = new Date();
-  const start = trip.start_date ? new Date(trip.start_date) : null;
-  const daysUntil = start ? differenceInCalendarDays(start, now) : null;
+  const start = trip.start_date ? parseISO(trip.start_date) : null;
+  const daysUntil = daysFromToday(trip.start_date, now, trip.timezone);
 
   const { data: reservations } = useTripReservations(trip.id);
 

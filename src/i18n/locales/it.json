@@ -431,7 +431,10 @@
       "daysPlanned_one": "{{count}} giorno pianificato",
       "daysPlanned_other": "{{count}} giorni pianificati",
       "travelBuddies": "[IT] Let travellers heading to {{city}} find you",
-      "travelBuddiesNoCity": "[IT] Let other travellers on this trip find you"
+      "travelBuddiesNoCity": "[IT] Let other travellers on this trip find you",
+      "saveOfflineAria": "Salva il viaggio per l’uso offline",
+      "savedOffline": "Salvato per l’uso offline",
+      "savedOfflineDescription": "Apri Oggi per consultare l’itinerario e le prenotazioni offline."
     },
     "share": {
       "title": "Condividi questo viaggio",
@@ -454,7 +457,8 @@
       "deleteTitle": "Elimina link",
       "deleteConfirm": "Chiunque abbia questo link perderà l'accesso. L'azione non è reversibile.",
       "expired": "Scaduto",
-      "expiresOn": "Scade il {{date}}"
+      "expiresOn": "Scade il {{date}}",
+      "managePeople": "Invita o condividi"
     },
     "itinerary": {
       "add": "Aggiungi",
@@ -490,7 +494,15 @@
       "timeUnknown": "[IT] time of day not known",
       "tooFew": "[IT] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
       "vibeAny": "[IT] A bit of everything",
-      "vibeLabel": "[IT] What you are after"
+      "vibeLabel": "[IT] What you are after",
+      "addStop": "Aggiungi tappa",
+      "moveStop": "Sposta tappa",
+      "moveUp": "Sposta in alto",
+      "moveDown": "Sposta in basso",
+      "moveToDay": "Sposta al giorno {{number}}",
+      "removeStop": "Rimuovi tappa",
+      "moveFailed": "Impossibile spostare questa tappa",
+      "moveRetry": "Controlla la connessione e riprova."
     },
     "map": {
       "emptyNoPlaces": "Aggiungi luoghi per vederli sulla mappa",
@@ -680,7 +692,8 @@
       "ctaSubtitle": "Itinerari gratuiti, info di sicurezza LGBTQ+ e pianificazione condivisa.",
       "ctaPrimary": "Inizia a pianificare",
       "ctaSecondary": "Accedi",
-      "footer": "Condiviso via queer.guide"
+      "footer": "Condiviso via queer.guide",
+      "loadFailed": "Impossibile caricare questo viaggio"
     },
     "tabs": {
       "itinerary": "Itinerario",
@@ -696,7 +709,11 @@
     "today": {
       "offlineBanner": "Offline — mostro l’ultimo itinerario salvato.",
       "pushPrompt": "Ricevi un promemoria 30 min prima di ogni prenotazione.",
-      "pushEnable": "Attiva"
+      "pushEnable": "Attiva",
+      "noOfflineCopy": "Nessuna copia offline disponibile",
+      "noOfflineCopyHelp": "Riconnettiti per aprire il viaggio e salvare una copia offline.",
+      "title": "Oggi",
+      "startingNow": "Inizia ora"
     },
     "bookingAssistant": {
       "tabs": {
@@ -748,7 +765,10 @@
       "prepareTools": "Preparati a partire",
       "togetherTools": "Pianifica insieme",
       "keepPlanning": "Continua a pianificare",
-      "memories": "Aggiungi ricordi"
+      "memories": "Aggiungi ricordi",
+      "itinerary": "Itinerario",
+      "people": "Persone e condivisione",
+      "actions": "Azioni del viaggio"
     },
     "phase": {
       "label": {
@@ -931,7 +951,8 @@
         "body": "Diventa un viaggio tuo, con tutte le fermate già dentro. Dopo puoi cambiare quello che vuoi.",
         "primary": "Trasformalo in viaggio",
         "secondary": "Disegnane un’altra"
-      }
+      },
+      "buildRoute": "Crea un percorso"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -1150,7 +1171,9 @@
     },
     "offline": {
       "pending_one": "{{count}} modifica in attesa di sincronizzazione",
-      "pending_other": "{{count}} modifiche in attesa di sincronizzazione"
+      "pending_other": "{{count}} modifiche in attesa di sincronizzazione",
+      "saveFailed": "Impossibile salvare il viaggio offline",
+      "syncRejected": "Non è stato possibile salvare alcune modifiche offline"
     },
     "inbox": {
       "openThread": "Rivedi in chat",
@@ -1165,6 +1188,16 @@
       "created": "Viaggio creato",
       "createdDescription": "Aggiungi le tue tappe da qui.",
       "error": "Impossibile creare il viaggio"
+    },
+    "booklet": {
+      "print": "Stampa o salva come PDF",
+      "reservationsUnavailable": "Non è stato possibile caricare le prenotazioni, che mancheranno in questa copia."
+    },
+    "view": {
+      "today": "Oggi"
+    },
+    "invitations": {
+      "title": "Inviti al viaggio"
     }
   },
   "auth": {

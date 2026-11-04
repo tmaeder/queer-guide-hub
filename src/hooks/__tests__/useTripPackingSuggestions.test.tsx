@@ -6,6 +6,8 @@ import { renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'alice' } }) }));
+
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: { functions: { invoke: vi.fn().mockResolvedValue({ data: null, error: null }) } },
 }));

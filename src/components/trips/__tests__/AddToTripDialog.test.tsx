@@ -21,7 +21,7 @@ vi.mock('@/hooks/useTrips', () => ({
       isPending: false,
       mutateAsync: (...args: unknown[]) => addPlaceMutate(...args),
     },
-    createTrip: {
+    createTripWithStops: {
       mutate: vi.fn(),
       isPending: false,
       mutateAsync: (...args: unknown[]) => createTripMutate(...args),
@@ -98,18 +98,15 @@ describe('AddToTripDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: /create & add/i }));
 
     await waitFor(() => expect(createTripMutate).toHaveBeenCalledTimes(1));
-    expect(createTripMutate).toHaveBeenCalledWith(
-      expect.objectContaining({
+    expect(createTripMutate).toHaveBeenCalledWith({
+      trip: expect.objectContaining({
         title: 'Barcelona weekend',
         primary_city_id: 'city-1',
         primary_country_id: 'country-1',
       }),
-    );
-    await waitFor(() =>
-      expect(addPlaceMutate).toHaveBeenCalledWith(
-        expect.objectContaining({ trip_id: 'trip-1', venue_id: 'v1' }),
-      ),
-    );
+      stops: [expect.objectContaining({ venue_id: 'v1' })],
+    });
+    expect(addPlaceMutate).not.toHaveBeenCalled();
   });
 
   it('shows a destructive toast and does not fire mutation when entity has no geo', async () => {
@@ -122,9 +119,7 @@ describe('AddToTripDialog', () => {
 
     // Geo resolve is async now, so the destructive toast fires after a tick.
     await waitFor(() =>
-      expect(toastSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ variant: 'destructive' }),
-      ),
+      expect(toastSpy).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' })),
     );
     expect(createTripMutate).not.toHaveBeenCalled();
     expect(addPlaceMutate).not.toHaveBeenCalled();
@@ -161,7 +156,9 @@ describe('AddToTripDialog', () => {
 
     await waitFor(() =>
       expect(createTripMutate).toHaveBeenCalledWith(
-        expect.objectContaining({ primary_city_id: 'c9', primary_country_id: 'co9' }),
+        expect.objectContaining({
+          trip: expect.objectContaining({ primary_city_id: 'c9', primary_country_id: 'co9' }),
+        }),
       ),
     );
   });

@@ -4,23 +4,36 @@ import {
   closestCenter,
   DragOverlay,
   PointerSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+  arrayMove,
+} from '@dnd-kit/sortable';
 import { Plus, Inbox, Map as MapIcon } from '@/components/icons';
-import { differenceInCalendarDays, isSameDay } from 'date-fns';
+import { differenceInCalendarDays, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import type { TripWithDetails, TripPlace, TripDay } from '@/hooks/useTrips';
 import { useTripMutations } from '@/hooks/useTrips';
 import { SortablePlaceCard, PlaceCardOverlay } from './SortablePlaceCard';
 import { DayCard, type DaySlot } from './DayCard';
+import { tripDateKey } from './tripPhase';
 import { detectTripConflicts } from './tripConflicts';
 
 interface Props {
@@ -39,7 +52,7 @@ export function DraggableItinerary({
   readOnly = false,
 }: Props) {
   const { t } = useTranslation();
-  const { updatePlace, removePlace, updateDay } = useTripMutations();
+  const { reorderStops, removePlace, updateDay } = useTripMutations();
   const { toast } = useToast();
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [editingDayId, setEditingDayId] = useState<string | null>(null);
@@ -50,7 +63,10 @@ export function DraggableItinerary({
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: { distance: 5 },
   });
-  const sensors = useSensors(...(readOnly ? [] : [pointerSensor]));
+  const keyboardSensor = useSensor(KeyboardSensor, {
+    coordinateGetter: sortableKeyboardCoordinates,
+  });
+  const sensors = useSensors(...(readOnly ? [] : [pointerSensor, keyboardSensor]));
 
   const placesByContainer = useMemo(() => {
     const map: Record<string, TripPlace[]> = { unassigned: [] };
@@ -92,22 +108,22 @@ export function DraggableItinerary({
 
   const sortedDays = useMemo(() => {
     const sorted = [...trip.trip_days].sort((a, b) => a.date.localeCompare(b.date));
-    const firstDate = sorted[0]?.date ? new Date(sorted[0].date) : null;
-    const now = new Date();
+    const firstDate = sorted[0]?.date ? parseISO(sorted[0].date) : null;
+    const today = tripDateKey(new Date(), trip.timezone);
     return sorted.map((day, index) => {
-      const date = new Date(day.date);
+      const date = parseISO(day.date);
       return {
         day,
         index,
         dayNumber: firstDate != null ? differenceInCalendarDays(date, firstDate) + 1 : index + 1,
         isFirst: index === 0,
         isLast: index === sorted.length - 1,
-        isToday: isSameDay(date, now),
-        isPast: date < now && !isSameDay(date, now),
-        isFuture: date > now && !isSameDay(date, now),
+        isToday: day.date === today,
+        isPast: day.date < today,
+        isFuture: day.date > today,
       };
     });
-  }, [trip.trip_days]);
+  }, [trip.trip_days, trip.timezone]);
 
   // Auto-scroll to today on mount
   useEffect(() => {
@@ -140,59 +156,105 @@ export function DraggableItinerary({
 
   const handleDragOver = (_event: DragOverEvent) => {};
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const moveStop = (placeId: string, target: string, index: number) => {
+    const source = findContainer(placeId);
+    if (!source || readOnly || reorderStops.isPending) return;
+    const sourceItems = placesByContainer[source] ?? [];
+    const from = sourceItems.findIndex((p) => p.id === placeId);
+    if (from < 0 || (source === target && from === index)) return;
+    const place = sourceItems[from];
+    const destinationItems = placesByContainer[target] ?? [];
+    const next =
+      source === target
+        ? { [source]: arrayMove(sourceItems, from, index) }
+        : {
+            [source]: sourceItems.filter((p) => p.id !== placeId),
+            [target]: [
+              ...destinationItems.slice(0, index),
+              place,
+              ...destinationItems.slice(index),
+            ],
+          };
+    const changes = Object.entries(next).flatMap(([container, items]) => {
+      const dayId = container === 'unassigned' ? null : container;
+      return items.map((p, sortOrder) => ({
+        id: p.id,
+        old_day_id: p.day_id,
+        old_sort_order: p.sort_order,
+        day_id: dayId,
+        sort_order: sortOrder,
+      }));
+    });
+    reorderStops.mutate(
+      { tripId: trip.id, changes },
+      {
+        onSuccess: () => toast({ title: t('trips.itinerary.moved') }),
+        onError: () =>
+          toast({
+            title: t('trips.itinerary.moveFailed', 'Could not move this stop'),
+            description: t('trips.itinerary.moveRetry', 'Check your connection and try again.'),
+            variant: 'destructive',
+          }),
+      },
+    );
+  };
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
     setActiveDragId(null);
-    const { active, over } = event;
     if (!over) return;
+    const target = findContainer(String(over.id));
+    if (!target) return;
+    const items = placesByContainer[target] ?? [];
+    const index = items.findIndex((p) => p.id === over.id);
+    if (index < 0 && findContainer(String(active.id)) === target) return;
+    moveStop(String(active.id), target, index < 0 ? items.length : index);
+  };
 
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    const activeContainer = findContainer(activeId);
-    let overContainer = findContainer(overId);
-
-    if (overId === 'unassigned' || trip.trip_days.some((d) => d.id === overId)) {
-      overContainer = overId;
-    }
-
-    if (!activeContainer || !overContainer) return;
-
-    const newDayId = overContainer === 'unassigned' ? null : overContainer;
-
-    if (activeContainer === overContainer) {
-      const items = placesByContainer[activeContainer] || [];
-      const oldIndex = items.findIndex((p) => p.id === activeId);
-      const overItem = items.findIndex((p) => p.id === overId);
-      if (oldIndex === -1 || overItem === -1 || oldIndex === overItem) return;
-
-      const reordered = arrayMove(items, oldIndex, overItem);
-      reordered.forEach((place, idx) => {
-        if (place.sort_order !== idx) {
-          updatePlace.mutate({ id: place.id, trip_id: trip.id, sort_order: idx });
-        }
-      });
-      toast({ title: t('trips.itinerary.reordered') });
-    } else {
-      const destItems = placesByContainer[overContainer] || [];
-      let insertIndex = destItems.length;
-      const overIdx = destItems.findIndex((p) => p.id === overId);
-      if (overIdx !== -1) insertIndex = overIdx;
-
-      updatePlace.mutate({
-        id: activeId,
-        trip_id: trip.id,
-        day_id: newDayId,
-        sort_order: insertIndex,
-      });
-
-      destItems.forEach((place, idx) => {
-        const newOrder = idx >= insertIndex ? idx + 1 : idx;
-        if (place.sort_order !== newOrder) {
-          updatePlace.mutate({ id: place.id, trip_id: trip.id, sort_order: newOrder });
-        }
-      });
-      toast({ title: t('trips.itinerary.moved') });
-    }
+  const renderMoveActions = (place: TripPlace) => {
+    if (readOnly) return null;
+    const source = place.day_id ?? 'unassigned';
+    const items = placesByContainer[source] ?? [];
+    const index = items.findIndex((p) => p.id === place.id);
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="min-h-11" disabled={reorderStops.isPending}>
+            {t('trips.itinerary.moveStop', 'Move stop')}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            disabled={index <= 0}
+            onSelect={() => moveStop(place.id, source, index - 1)}
+          >
+            {t('trips.itinerary.moveUp', 'Move up')}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={index >= items.length - 1}
+            onSelect={() => moveStop(place.id, source, index + 1)}
+          >
+            {t('trips.itinerary.moveDown', 'Move down')}
+          </DropdownMenuItem>
+          {source !== 'unassigned' && (
+            <DropdownMenuItem
+              onSelect={() => moveStop(place.id, 'unassigned', placesByContainer.unassigned.length)}
+            >
+              {t('trips.itinerary.unassigned')}
+            </DropdownMenuItem>
+          )}
+          {sortedDays
+            .filter(({ day }) => day.id !== source)
+            .map(({ day, dayNumber }) => (
+              <DropdownMenuItem
+                key={day.id}
+                onSelect={() => moveStop(place.id, day.id, placesByContainer[day.id]?.length ?? 0)}
+              >
+                {t('trips.itinerary.moveToDay', 'Move to day {{number}}', { number: dayNumber })}
+              </DropdownMenuItem>
+            ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
   };
 
   const handleDelete = (placeId: string) => {
@@ -282,6 +344,7 @@ export function DraggableItinerary({
                   key={place.id}
                   place={place}
                   onDelete={handleDelete}
+                  moveActions={renderMoveActions(place)}
                   tripStartDate={trip.start_date}
                   tripEndDate={trip.end_date}
                   readOnly={readOnly}
@@ -345,6 +408,7 @@ export function DraggableItinerary({
               onCancelEditTitle={() => setEditingDayId(null)}
               onAddPlace={(slot) => onAddPlace(meta.day.id, slot)}
               onDeletePlace={handleDelete}
+              renderMoveActions={renderMoveActions}
               conflicts={conflictsByDay[meta.day.id]}
               fallbackCoord={tripCoord}
               readOnly={readOnly}

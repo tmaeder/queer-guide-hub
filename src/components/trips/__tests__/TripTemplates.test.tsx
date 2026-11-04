@@ -5,8 +5,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 const {
-  navigateFn, useAuthMock, useTripMutationsMock, useToastMock, useTemplatesMock,
-  createTripMutate, addPlacesBulkMock, toastFn,
+  navigateFn,
+  useAuthMock,
+  useTripMutationsMock,
+  useToastMock,
+  useTemplatesMock,
+  createTripMutate,
+  addPlacesBulkMock,
+  toastFn,
 } = vi.hoisted(() => ({
   navigateFn: vi.fn(),
   useAuthMock: vi.fn(),
@@ -40,7 +46,7 @@ beforeEach(() => {
   toastFn.mockReset();
   useAuthMock.mockReturnValue({ user: { id: 'u1' } });
   useTripMutationsMock.mockReturnValue({
-    createTrip: { mutate: createTripMutate, isPending: false },
+    createTripWithStops: { mutate: createTripMutate, isPending: false },
     addPlacesBulk: { mutateAsync: addPlacesBulkMock },
   });
   useToastMock.mockReturnValue({ toast: toastFn });
@@ -51,14 +57,38 @@ describe('TripTemplates', () => {
   it('renders skeletons while loading', () => {
     useTemplatesMock.mockReturnValue({ data: undefined, isLoading: true });
     const { container } = render(<TripTemplates />);
-    expect(container.querySelectorAll('[class*="animate-pulse"], [class*="MuiSkeleton"]').length).toBeGreaterThan(0);
+    expect(
+      container.querySelectorAll('[class*="animate-pulse"], [class*="MuiSkeleton"]').length,
+    ).toBeGreaterThan(0);
   });
 
   it('renders one card per template', () => {
     useTemplatesMock.mockReturnValue({
       data: [
-        { id: '1', title: 'Berlin Pride', cities: 'Berlin', days: 7, currency: 'EUR', cityIds: ['c1'], primaryCityId: 'c1', primaryCountryId: 'k1', coverImageUrl: null, gradient: '#000' },
-        { id: '2', title: 'NYC Drag Tour', cities: 'NYC', days: 5, currency: 'USD', cityIds: ['c2'], primaryCityId: 'c2', primaryCountryId: 'k2', coverImageUrl: null, gradient: '#000' },
+        {
+          id: '1',
+          title: 'Berlin Pride',
+          cities: 'Berlin',
+          days: 7,
+          currency: 'EUR',
+          cityIds: ['c1'],
+          primaryCityId: 'c1',
+          primaryCountryId: 'k1',
+          coverImageUrl: null,
+          gradient: '#000',
+        },
+        {
+          id: '2',
+          title: 'NYC Drag Tour',
+          cities: 'NYC',
+          days: 5,
+          currency: 'USD',
+          cityIds: ['c2'],
+          primaryCityId: 'c2',
+          primaryCountryId: 'k2',
+          coverImageUrl: null,
+          gradient: '#000',
+        },
       ],
       isLoading: false,
     });
@@ -75,35 +105,51 @@ describe('TripTemplates', () => {
 
   it('clicking Use Template fires createTrip mutation with template data', () => {
     useTemplatesMock.mockReturnValue({
-      data: [{ id: '1', title: 'X', cities: 'X', days: 3, currency: 'EUR', cityIds: ['c1'], primaryCityId: 'c1', primaryCountryId: 'k1', coverImageUrl: null, gradient: '#000' }],
+      data: [
+        {
+          id: '1',
+          title: 'X',
+          cities: 'X',
+          days: 3,
+          currency: 'EUR',
+          cityIds: ['c1'],
+          primaryCityId: 'c1',
+          primaryCountryId: 'k1',
+          coverImageUrl: null,
+          gradient: '#000',
+        },
+      ],
       isLoading: false,
     });
     render(<TripTemplates />);
     fireEvent.click(screen.getAllByRole('button', { name: /Use Template/i })[0]);
     expect(createTripMutate).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'X',
-        currency: 'EUR',
-        // THE POINT OF THIS ASSERTION. `trips.primary_city_id` and
-        // `primary_country_id` are NOT NULL, and this call site sent neither
-        // until 2026-08 — so every click raised 23502 and the button had never
-        // once worked. The old version of this test asserted only title and
-        // currency against a mocked mutation, which is exactly why nothing
-        // caught it. Do not relax these two.
-        primary_city_id: 'c1',
-        primary_country_id: 'k1',
+        trip: expect.objectContaining({
+          title: 'X',
+          currency: 'EUR',
+          primary_city_id: 'c1',
+          primary_country_id: 'k1',
+        }),
       }),
       expect.any(Object),
     );
   });
 
-  it('seeds trip_places through addPlacesBulk, in template order', async () => {
+  it('seeds trip_places through the atomic creation request, in template order', () => {
     useTemplatesMock.mockReturnValue({
       data: [
         {
-          id: '1', title: 'X', cities: 'A, B', days: 3, currency: 'EUR',
-          cityIds: ['c1', 'c2'], primaryCityId: 'c1', primaryCountryId: 'k1',
-          coverImageUrl: null, gradient: '#000',
+          id: '1',
+          title: 'X',
+          cities: 'A, B',
+          days: 3,
+          currency: 'EUR',
+          cityIds: ['c1', 'c2'],
+          primaryCityId: 'c1',
+          primaryCountryId: 'k1',
+          coverImageUrl: null,
+          gradient: '#000',
         },
       ],
       isLoading: false,
@@ -111,18 +157,14 @@ describe('TripTemplates', () => {
     render(<TripTemplates />);
     fireEvent.click(screen.getAllByRole('button', { name: /use template/i })[0]);
 
-    // Drive the mutation's own success path, the way the real hook would.
-    const onSuccess = createTripMutate.mock.calls[0][1].onSuccess;
-    await onSuccess({ id: 'trip-1' });
-
-    expect(addPlacesBulkMock).toHaveBeenCalledWith(
+    expect(createTripMutate).toHaveBeenCalledWith(
       expect.objectContaining({
-        tripId: 'trip-1',
-        rows: [
-          expect.objectContaining({ city_id: 'c1', country_id: 'k1', sort_order: 0 }),
-          expect.objectContaining({ city_id: 'c2', country_id: 'k1', sort_order: 1 }),
+        stops: [
+          expect.objectContaining({ city_id: 'c1', sort_order: 0 }),
+          expect.objectContaining({ city_id: 'c2', sort_order: 1 }),
         ],
       }),
+      expect.anything(),
     );
   });
 });

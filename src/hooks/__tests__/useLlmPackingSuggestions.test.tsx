@@ -12,6 +12,8 @@ vi.mock('@/integrations/supabase/client', () => ({
   supabase: { functions: { invoke: invokeMock } },
 }));
 
+vi.mock('@/hooks/useTrips', () => ({ useTrip: () => ({ data: undefined }) }));
+
 import { useLlmPackingSuggestions } from '../useLlmPackingSuggestions';
 
 function wrapper({ children }: { children: ReactNode }) {

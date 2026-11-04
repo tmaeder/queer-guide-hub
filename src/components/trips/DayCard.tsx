@@ -1,7 +1,8 @@
+import { tripDateKey } from './tripPhase';
 /* eslint-disable react-refresh/only-export-components -- intentionally co-locates helpers/constants with the primary component */
 
 import { useMemo, useState } from 'react';
-import { format, isSameDay } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import {
   Plus,
@@ -67,6 +68,7 @@ export interface DayCardProps {
   onCancelEditTitle: () => void;
   onAddPlace: (slot?: DaySlot) => void;
   onDeletePlace: (placeId: string) => void;
+  renderMoveActions?: (place: TripPlace) => React.ReactNode;
   /** Conflicts detected for this day (time overlaps, double lodging). */
   conflicts?: TripConflict[];
   /** Coordinate to use for weather when no place on this day has one. */
@@ -149,6 +151,7 @@ export function DayCard({
   onCancelEditTitle,
   onAddPlace,
   onDeletePlace,
+  renderMoveActions,
   conflicts = [],
   fallbackCoord,
   readOnly = false,
@@ -234,7 +237,7 @@ export function DayCard({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="font-bold leading-tight tracking-tight">
-                  {format(new Date(day.date), 'EEEE, MMM d')}
+                  {format(parseISO(day.date), 'EEEE, MMM d')}
                 </p>
                 {isToday && (
                   <Badge variant="default" className="rounded-full text-2xs">
@@ -436,6 +439,7 @@ export function DayCard({
                     ) : (
                       <div key={place.id}>
                         <SortablePlaceCard
+                          moveActions={renderMoveActions?.(place)}
                           place={place}
                           onDelete={onDeletePlace}
                           tripStartDate={tripStartDate}
@@ -536,5 +540,5 @@ function defaultSlotLabel(slot: DaySlot): string {
 
 /** Helper exported for testing + use in parent components. */
 export function isDayToday(date: string, now: Date = new Date()): boolean {
-  return isSameDay(new Date(date), now);
+  return date === tripDateKey(now);
 }

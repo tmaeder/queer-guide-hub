@@ -12,7 +12,9 @@ vi.mock('@/hooks/useTrips', () => ({
   canEditTrip: () => false,
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
-vi.mock('@/hooks/useTripReservations', () => ({ useTripReservations: () => ({ data: [], isLoading: false }) }));
+vi.mock('@/hooks/useReservations', () => ({
+  useReservations: () => ({ data: [], isLoading: false }),
+}));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 
 import TripPlannerPage from '../TripPlannerPage';
@@ -22,7 +24,9 @@ describe('TripPlannerPage', () => {
     const { container } = render(
       <QueryClientProvider client={new QueryClient()}>
         <MemoryRouter initialEntries={['/trips/t1/plan']}>
-          <Routes><Route path="/trips/:tripId/plan" element={<TripPlannerPage />} /></Routes>
+          <Routes>
+            <Route path="/trips/:tripId/plan" element={<TripPlannerPage />} />
+          </Routes>
         </MemoryRouter>
       </QueryClientProvider>,
     );

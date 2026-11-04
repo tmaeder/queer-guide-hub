@@ -127,19 +127,22 @@ const project = (r: ReservationRow): Reservation => ({
 /**
  * Returns every reservation the current user can see: rows they own plus
  * rows on trips they co-own (RLS enforces this server-side). Sorted by
- * start date ascending, undated last.
+ * start date ascending, undated last. Pass a trip scope for trip-only views.
  */
-export function useReservations() {
+export function useReservations(scope?: { tripId: string | undefined }) {
   const { user } = useAuth();
+  const tripId = scope?.tripId;
+  const accountKey = RESERVATION_QUERY_KEY(user?.id);
 
   return useQuery({
-    queryKey: RESERVATION_QUERY_KEY(user?.id),
-    enabled: !!user,
+    queryKey: scope ? [...accountKey, tripId] : accountKey,
+    enabled: !!user && (!scope || !!tripId),
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<Reservation[]> => {
-      if (!user) return [];
+      if (!user || (scope && !tripId)) return [];
 
-      const { data, error } = await supabase.from('reservations').select('*, trips(title)');
+      const query = supabase.from('reservations').select('*, trips(title)');
+      const { data, error } = await (tripId ? query.eq('trip_id', tripId) : query);
 
       if (error) throw error;
 
