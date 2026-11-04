@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import worker, { type Env } from "../src/index";
 
-async function search(body: object, options: { fail?: boolean; rerank?: object[] } = {}) {
+const account = "11111111-1111-4111-8111-111111111111";
+const otherAccount = "22222222-2222-4222-8222-222222222222";
+
+async function search(body: object, options: { fail?: boolean; rerank?: object[]; path?: string; auth?: boolean } = {}) {
 	const requests: Array<{ url: string; body: Record<string, unknown> }> = [];
 	const wait: Promise<unknown>[] = [];
 	const kv = { get: async () => null, put: async () => undefined };
@@ -11,6 +14,7 @@ async function search(body: object, options: { fail?: boolean; rerank?: object[]
 		ALLOWED_ORIGINS: "https://queer.guide",
 		EMBED_CACHE: kv,
 		SESSION_CACHE: kv,
+		SESSION_SIGNING_KEY: "fixture-cookie-key",
 		ENABLE_RERANKER: options.rerank ? "1" : "0",
 		AI: {
 			run: async (model: string) => model.includes("reranker")
@@ -22,6 +26,7 @@ async function search(body: object, options: { fail?: boolean; rerank?: object[]
 	vi.stubGlobal("fetch", vi.fn(async (input: unknown, init?: RequestInit) => {
 		const url = String(input);
 		requests.push({ url, body: init?.body ? JSON.parse(String(init.body)) : {} });
+		if (url.endsWith("/auth/v1/user")) return Response.json({ id: account });
 		if (url.endsWith("/rpc/search_hybrid")) {
 			if (options.fail) return new Response("unavailable", { status: 502 });
 			const hits = Array.from({ length: options.rerank ? 25 : 1 }, (_, index) => ({
@@ -34,9 +39,9 @@ async function search(body: object, options: { fail?: boolean; rerank?: object[]
 		return Response.json(url.endsWith("/rpc/search_facets") ? {} : []);
 	}));
 	const response = await worker.fetch(
-		new Request("https://search.queer.guide/", {
+		new Request(`https://search.queer.guide${options.path ?? "/"}`, {
 			method: "POST",
-			headers: { "Content-Type": "application/json", Origin: "https://queer.guide" },
+			headers: { "Content-Type": "application/json", Origin: "https://queer.guide", ...(options.auth ? { Authorization: "Bearer fixture-token" } : {}) },
 			body: JSON.stringify(body),
 		}),
 		env,
@@ -49,6 +54,43 @@ async function search(body: object, options: { fail?: boolean; rerank?: object[]
 afterEach(() => vi.unstubAllGlobals());
 
 describe("search request integrity", () => {
+	it("ignores account and session IDs supplied by anonymous callers", async () => {
+		const { response, requests } = await search({ query: "Berlin", user_id: otherAccount, session_id: "borrowed" });
+		expect(response.status).toBe(200);
+		expect(requests.some(({ url }) => /get_(bias|user)_signal/.test(url))).toBe(false);
+	});
+
+	it("uses the verified subject for personalization and ignores a different body ID", async () => {
+		const { response, requests } = await search({ query: "Berlin", user_id: otherAccount }, { auth: true });
+		expect(response.status).toBe(200);
+		const signals = requests.filter(({ url }) => /get_(bias|user)_signal/.test(url));
+		expect(signals).toHaveLength(2);
+		expect(signals.map(({ body }) => body.p_user_id)).toEqual([account, account]);
+	});
+
+	it("records feedback for the verified account and a server-generated session", async () => {
+		const { response, requests } = await search({
+			user_id: otherAccount, session_id: "borrowed-session",
+			entity_type: "venue", entity_id: account, vote: "up",
+		}, { path: "/feedback", auth: true });
+		expect(response.status).toBe(200);
+		expect(response.headers.get("Set-Cookie")).toContain("qg_sid_v2=");
+		const event = requests.find(({ url }) => url.endsWith("/rpc/track_user_event"));
+		expect(event?.body.p_user_id).toBe(account);
+		expect(event?.body.p_session_id).toMatch(/^[0-9a-f-]{36}$/);
+		expect(event?.body.p_session_id).not.toBe("borrowed-session");
+	});
+
+	it.each([[false, otherAccount, 401], [true, otherAccount, 403], [true, account, 200]] as const)(
+		"restricts profile updates to the verified account (auth %s, body ID %s)",
+		async (auth, user_id, status) => {
+			const { response, requests } = await search({ user_id, vibes: ["art"] }, { path: "/onboarding", auth });
+			expect(response.status).toBe(status);
+			expect(requests.filter(({ url }) => url.includes("/profiles?")).map(({ url }) => url))
+				.toEqual(status === 200 ? [`https://fixture.supabase.co/rest/v1/profiles?user_id=eq.${account}`] : []);
+		},
+	);
+
 	it.each(["sauna Berlin", ""])("returns a retryable response when the backend fails for %j", async (query) => {
 		const { response, data, requests } = await search({ query, filters: { types: ["event"] } }, { fail: true });
 		expect(response.status).toBe(503);

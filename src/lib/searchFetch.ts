@@ -49,26 +49,32 @@ interface FetchOpts {
   signal?: AbortSignal;
 }
 
+export function searchReadCredentials(): RequestCredentials {
+  const origin = typeof window === 'undefined' ? '' : window.location.origin;
+  return origin === 'https://queer.guide' || origin === 'https://www.queer.guide' ||
+    origin === 'http://localhost:3000' ? 'include' : 'same-origin';
+}
+
+export async function searchAuthHeaders(): Promise<Record<string, string>> {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (token) return { Authorization: `Bearer ${token}` };
+  } catch {
+    // Public search remains available.
+  }
+  return {};
+}
+
 export async function searchFetch<T>(
   path: string,
   body: unknown,
   opts: FetchOpts = {},
 ): Promise<T> {
   const { timeoutMs = 10_000, retryOnTimeout = true, signal: externalSignal } = opts;
-  const url = path.startsWith('http') ? path : `${SEARCH_PROXY_URL}${path}`;
-
-  // Safety layer: attach the current access token so the proxy can verify the
-  // user is logged in and surface high-risk-country (gated) content. Anonymous
-  // sessions have no token → the proxy treats them as anon and hides gated rows.
-  // getSession() reads the in-memory/localStorage session (no network hop).
-  let authHeader: Record<string, string> = {};
-  try {
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
-    if (token) authHeader = { Authorization: `Bearer ${token}` };
-  } catch {
-    /* unauthenticated or session unavailable — proceed without the header */
-  }
+  const url = new URL(path, SEARCH_PROXY_URL);
+  if (url.origin !== new URL(SEARCH_PROXY_URL).origin) throw new Error('Invalid search proxy origin');
+  const authHeader = await searchAuthHeaders();
 
   const attempt = async (): Promise<T> => {
     const controller = new AbortController();
@@ -79,11 +85,12 @@ export async function searchFetch<T>(
 
     let res: Response;
     try {
-      res = await fetch(url, {
+      res = await fetch(url.toString(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify(body),
         signal: controller.signal,
+        credentials: searchReadCredentials(),
         keepalive: true,
       });
     } catch (err) {

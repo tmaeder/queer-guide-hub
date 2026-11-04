@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile, type Profile } from '@/hooks/useProfile';
-import { submitOnboarding, fetchAutocomplete } from '@/lib/searchClient';
+import { fetchAutocomplete } from '@/lib/searchClient';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -95,14 +95,6 @@ export default function SearchPersonalization() {
         languages: langs,
         ...(cityChoice?.title ? { location: cityChoice.title } : {}),
       } as Partial<Profile>);
-      // Still feed the search worker's bias vector (best-effort).
-      await submitOnboarding(user.id, {
-        vibes,
-        home_city: cityChoice?.title,
-        languages: langs,
-      }).catch(() => {
-        /* worker bias is non-critical */
-      });
       navigate('/');
     } finally {
       setSubmitting(false);

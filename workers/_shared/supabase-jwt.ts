@@ -53,13 +53,13 @@ export function extractBearer(request: Request): string | null {
 }
 
 /** Offline HS256 signature + claim check. */
-export async function verifyHs256(token: string, secret: string): Promise<boolean> {
+async function verifiedHs256Subject(token: string, secret: string): Promise<string | null> {
 	const parts = token.split(".");
-	if (parts.length !== 3) return false;
+	if (parts.length !== 3) return null;
 	const [h, p, sig] = parts;
 
 	const head = decodeJson(h);
-	if (head.alg !== "HS256") return false;
+	if (head.alg !== "HS256") return null;
 
 	const key = await crypto.subtle.importKey(
 		"raw",
@@ -74,18 +74,18 @@ export async function verifyHs256(token: string, secret: string): Promise<boolea
 		base64UrlToBytes(sig),
 		new TextEncoder().encode(`${h}.${p}`),
 	);
-	if (!valid) return false;
+	if (!valid) return null;
 
 	const payload = decodeJson(p);
-	if (typeof payload.exp === "number" && payload.exp * 1000 <= Date.now()) return false;
-	if (!payload.sub) return false;
-	if (typeof payload.role === "string" && payload.role !== "authenticated") return false;
-	return true;
+	if (typeof payload.exp !== "number" || payload.exp * 1000 <= Date.now()) return null;
+	if (typeof payload.sub !== "string" || !payload.sub) return null;
+	if (payload.role !== "authenticated" || payload.is_anonymous === true) return null;
+	return payload.sub;
 }
 
 async function tokenCacheKey(token: string): Promise<string> {
 	const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
-	return "authok:" + [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+	return "auth-sub:" + [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /**
@@ -98,13 +98,14 @@ async function verifyViaAuthApi(
 	token: string,
 	env: SupabaseJwtEnv,
 	cache?: TokenCache,
-): Promise<boolean> {
-	if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) return false;
+): Promise<string | null> {
+	if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) return null;
 
 	const cacheKey = cache ? await tokenCacheKey(token) : null;
 	if (cache && cacheKey) {
 		try {
-			if ((await cache.get(cacheKey)) === "1") return true;
+			const subject = await cache.get(cacheKey);
+			if (subject) return subject;
 		} catch {
 			/* KV miss/error — fall through to the network check */
 		}
@@ -114,37 +115,41 @@ async function verifyViaAuthApi(
 		const res = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
 			headers: { apikey: env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${token}` },
 		});
-		if (!res.ok) return false;
-		const user = (await res.json().catch(() => null)) as { id?: string } | null;
-		if (!user?.id) return false;
+		if (!res.ok) return null;
+		const user = (await res.json().catch(() => null)) as { id?: string; is_anonymous?: boolean } | null;
+		if (typeof user?.id !== "string" || !user.id || user.is_anonymous) return null;
 		if (cache && cacheKey) {
 			try {
-				await cache.put(cacheKey, "1", { expirationTtl: 60 });
+				await cache.put(cacheKey, user.id, { expirationTtl: 60 });
 			} catch {
 				/* cache write is best-effort */
 			}
 		}
-		return true;
+		return user.id;
 	} catch {
-		return false;
+		return null;
 	}
 }
 
-/**
- * Returns true only for a request bearing a valid, unexpired Supabase user
- * token. Fail-closed.
- */
+export async function authenticatedUserId(
+	request: Request,
+	env: SupabaseJwtEnv,
+	cache?: TokenCache,
+): Promise<string | null> {
+	try {
+		const token = extractBearer(request);
+		if (!token) return null;
+		if (env.SUPABASE_JWT_SECRET) return await verifiedHs256Subject(token, env.SUPABASE_JWT_SECRET);
+		return await verifyViaAuthApi(token, env, cache);
+	} catch {
+		return null;
+	}
+}
+
 export async function isAuthenticatedRequest(
 	request: Request,
 	env: SupabaseJwtEnv,
 	cache?: TokenCache,
 ): Promise<boolean> {
-	try {
-		const token = extractBearer(request);
-		if (!token) return false;
-		if (env.SUPABASE_JWT_SECRET) return await verifyHs256(token, env.SUPABASE_JWT_SECRET);
-		return await verifyViaAuthApi(token, env, cache);
-	} catch {
-		return false;
-	}
+	return (await authenticatedUserId(request, env, cache)) !== null;
 }

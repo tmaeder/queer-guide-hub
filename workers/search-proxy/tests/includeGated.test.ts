@@ -103,12 +103,12 @@ describe("search worker safety gating", () => {
 	});
 
 	it("derives authed from the signed JWT, never from the spoofable body", () => {
-		expect(source).toMatch(/const authed = await isAuthenticatedRequest\(request, env\)/);
+		expect(source).toMatch(/const user_id = \(await authenticatedUserId\(request, env\)\)/);
 		expect(source).not.toMatch(/includeGated:\s*(?:!!)?\s*(?:body\.)?user_id/);
 	});
 
 	it("resolves authed before the filter-only-browse branch returns", () => {
-		const authedAt = source.indexOf("const authed = await isAuthenticatedRequest(request, env)");
+		const authedAt = source.indexOf("const authed = !!user_id");
 		const browseBranchAt = source.indexOf('body.query === "string" && body.query.trim().length === 0');
 		expect(authedAt).toBeGreaterThan(-1);
 		expect(browseBranchAt).toBeGreaterThan(-1);

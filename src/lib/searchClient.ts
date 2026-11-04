@@ -8,6 +8,7 @@
 
 import { analyticsAllowed } from '@/lib/analyticsConsent';
 import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
+import { searchAuthHeaders, searchReadCredentials } from '@/lib/searchFetch';
 
 const SEARCH_URL = import.meta.env?.VITE_SEARCH_PROXY_URL || 'https://search.queer.guide';
 
@@ -47,22 +48,20 @@ export interface SearchHit {
   [key: string]: unknown;
 }
 
-// Write endpoints (/track, /feedback, /onboarding) need credentials: 'include'
-// so the signed qg_sid cookie travels — the worker uses it to verify the
-// session id (bug #14). Read endpoints don't need credentials and stay
-// `same-origin` to keep CORS simple.
 const WRITE_PATHS = new Set(['/track', '/feedback', '/onboarding']);
+const PERSONAL_READ_PATHS = new Set(['/recommendations', '/trending']);
 
 async function post<T>(path: string, body: object, signal?: AbortSignal): Promise<T> {
+  const writes = WRITE_PATHS.has(path);
+  const personal = writes || PERSONAL_READ_PATHS.has(path);
+  const auth = personal ? await searchAuthHeaders() : {};
   const res = await fetch(`${SEARCH_URL}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...auth },
     body: JSON.stringify(body),
-    credentials: WRITE_PATHS.has(path) ? 'include' : 'same-origin',
+    credentials: writes ? 'include' : personal ? searchReadCredentials() : 'same-origin',
     keepalive: !signal,
-    ...(signal ? { signal } : {}),
-    // Same deadline as searchFetch's /search; a hung worker must not hang the UI.
-    signal: AbortSignal.timeout(10_000),
+    signal: signal ?? AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`${path} ${res.status}: ${await res.text()}`);
   const data = (await res.json()) as T & { session_verified?: boolean };
