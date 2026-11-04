@@ -178,12 +178,13 @@ jobs:
       - name: Serve dist on :4173
         if: needs.changes.outputs.relevant == 'true' && needs.build.result == 'success'
         run: |
-          # Local binary, not `npx -y serve@14`: that fetched the package from
-          # the registry at job runtime, inside a 30s readiness budget with no
-          # retry, so a slow npm turned into "serve did not become ready" and
-          # failed the job before a single test ran. `serve` is a pinned
-          # devDependency and `npm install` above has already placed it here.
-          ./node_modules/.bin/serve -s dist -l 4173 > serve.log 2>&1 &
+          # `vite preview` from the local install (`npm install` above), not a
+          # registry fetch at job runtime: a fetch inside the 30s readiness
+          # budget once failed the job before a single test ran. It replaced
+          # the `serve` devDependency, whose serve-handler pins a vulnerable
+          # minimatch 3 with no patched release; e2e-pr.yml already serves the
+          # build the same way. Unknown paths fall back to index.html (SPA).
+          ./node_modules/.bin/vite preview --port 4173 --strictPort > serve.log 2>&1 &
           for i in $(seq 1 30); do
             if curl -sf http://localhost:4173/ > /dev/null; then
               echo "serve up after ${i}s"; exit 0
@@ -268,12 +269,13 @@ jobs:
       - name: Serve dist on :4173
         if: needs.build.result == 'success'
         run: |
-          # Local binary, not `npx -y serve@14`: that fetched the package from
-          # the registry at job runtime, inside a 30s readiness budget with no
-          # retry, so a slow npm turned into "serve did not become ready" and
-          # failed the job before a single test ran. `serve` is a pinned
-          # devDependency and `npm install` above has already placed it here.
-          ./node_modules/.bin/serve -s dist -l 4173 > serve.log 2>&1 &
+          # `vite preview` from the local install (`npm install` above), not a
+          # registry fetch at job runtime: a fetch inside the 30s readiness
+          # budget once failed the job before a single test ran. It replaced
+          # the `serve` devDependency, whose serve-handler pins a vulnerable
+          # minimatch 3 with no patched release; e2e-pr.yml already serves the
+          # build the same way. Unknown paths fall back to index.html (SPA).
+          ./node_modules/.bin/vite preview --port 4173 --strictPort > serve.log 2>&1 &
           for i in $(seq 1 30); do
             if curl -sf http://localhost:4173/ > /dev/null; then
               echo "serve up after ${i}s"; exit 0
@@ -367,12 +369,14 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with: { node-version: 22 }
       # This job deliberately does NOT run `npm install`, so it cannot use the
-      # pinned devDependency the other two jobs use — it would cost a full
-      # install across all 13 matrix routes to save one package, and it has to
-      # fetch lighthouse from the registry regardless. Pinned to the exact same
-      # version as package.json so all three jobs serve the build identically;
-      # keep the two in step.
-      - run: npm i -g lighthouse@12 serve@14.2.6
+      # local vite the other two jobs use — it would cost a full install across
+      # all 13 matrix routes to save one package, and it has to fetch
+      # lighthouse from the registry regardless. vite is pinned to the exact
+      # version in package-lock.json so all three jobs serve the build
+      # identically; keep the two in step. It runs with an empty config file
+      # because the repo's vite.config.ts imports plugins this job never
+      # installs, and `vite preview` needs none of them.
+      - run: npm i -g lighthouse@12 vite@8.3.5
       - name: Download dist
         if: needs.build.result == 'success'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
@@ -382,7 +386,8 @@ jobs:
       - name: Serve dist on :4173
         if: needs.build.result == 'success'
         run: |
-          serve -s dist -l 4173 > serve.log 2>&1 &
+          echo 'export default {}' > "$RUNNER_TEMP/preview.config.mjs"
+          vite preview -c "$RUNNER_TEMP/preview.config.mjs" --outDir "$PWD/dist" --port 4173 --strictPort > serve.log 2>&1 &
           for i in $(seq 1 30); do
             if curl -sf http://localhost:4173/ > /dev/null; then
               echo "serve up after ${i}s"; exit 0
