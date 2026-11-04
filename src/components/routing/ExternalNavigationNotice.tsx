@@ -17,6 +17,12 @@ import {
 export function ExternalNavigationNotice() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
+  // `open` is separate from `destination` on purpose: the "Open website" anchor
+  // closes the dialog on click, and React re-renders synchronously inside that
+  // click dispatch. Clearing the destination there removed the anchor's href
+  // before the browser ran the link's default action, so the link went nowhere.
+  // The destination is kept until the next interception replaces it.
+  const [open, setOpen] = useState(false);
   const [destination, setDestination] = useState<{ url: URL; target: string } | null>(null);
   useEffect(() => {
     if (isAdminRoute(pathname)) return;
@@ -35,17 +41,13 @@ export function ExternalNavigationNotice() {
       event.preventDefault();
       event.stopPropagation();
       setDestination({ url, target: event.metaKey || event.ctrlKey ? '_blank' : anchor.target });
+      setOpen(true);
     };
     document.addEventListener('click', intercept, true);
     return () => document.removeEventListener('click', intercept, true);
   }, [pathname]);
   return (
-    <AlertDialog
-      open={!!destination}
-      onOpenChange={(open) => {
-        if (!open) setDestination(null);
-      }}
-    >
+    <AlertDialog open={open && !!destination} onOpenChange={setOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
