@@ -20,6 +20,7 @@ import { SITE_ORIGIN, DEFAULT_OG_IMAGE, type RouteMeta } from './routeMeta';
 import { safeOgImage } from './safeOgImage';
 import { categoryLabel, categoryLabelTitle } from './categoryLabels';
 import { buildProfileUrl, normalizeHandle, socialSameAs } from '../../src/lib/social/registry';
+import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
 
 export type DetailResult = {
   meta: RouteMeta;
@@ -93,7 +94,7 @@ async function isGatedEntity(
   if (!key) return false;
   try {
     const res = await fetch(
-      `${env.SUPABASE_URL.replace(/\/+$/g, '')}/rest/v1/rpc/gated_entity_exists`,
+      `${trimTrailingSlashes(env.SUPABASE_URL)}/rest/v1/rpc/gated_entity_exists`,
       {
         method: 'POST',
         headers: {

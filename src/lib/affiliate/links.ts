@@ -18,6 +18,7 @@ import {
   type AffiliateSurface,
   type AffiliateVertical,
 } from './config';
+import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
 
 const SEARCH_PROXY_URL =
   (import.meta as { env?: Record<string, string> }).env?.VITE_SEARCH_PROXY_URL || '';
@@ -75,7 +76,7 @@ function goQuery(params: GoLinkParams): URLSearchParams {
  */
 export function goHref(params: GoLinkParams): string {
   if (!SEARCH_PROXY_URL) return applySubId(params.url, params.partner, params.surface);
-  return `${SEARCH_PROXY_URL.replace(/\/+$/g, '')}/go?${goQuery(params).toString()}`;
+  return `${trimTrailingSlashes(SEARCH_PROXY_URL)}/go?${goQuery(params).toString()}`;
 }
 
 /**
@@ -87,7 +88,7 @@ export function beaconImpression(params: GoLinkParams): void {
   try {
     const qs = goQuery(params);
     qs.set('beacon', '1');
-    const href = `${SEARCH_PROXY_URL.replace(/\/+$/g, '')}/go?${qs.toString()}`;
+    const href = `${trimTrailingSlashes(SEARCH_PROXY_URL)}/go?${qs.toString()}`;
     if (navigator.sendBeacon) navigator.sendBeacon(href);
     else void fetch(href, { method: 'GET', keepalive: true, mode: 'no-cors' });
   } catch {

@@ -1,5 +1,6 @@
 import { PUBLIC_PAGES, pageRecord } from '../../_lib/agentContent';
 import { apiError } from '../../_lib/agentHttp';
+import { trimTrailingSlashes } from '../../../src/lib/trimTrailingSlashes';
 
 export function publicPages(request: Request): Response {
   if (request.method === 'OPTIONS')
@@ -26,7 +27,7 @@ export function publicPages(request: Request): Response {
     [...url.searchParams.keys()].some((key) => key !== 'prefix') ||
     url.searchParams.getAll('prefix').length > 1 ||
     Array.from(prefix).length > 128 ||
-    (url.pathname.replace(/\/+$/g, '') !== '/api/v1/pages' && url.search)
+    (trimTrailingSlashes(url.pathname) !== '/api/v1/pages' && url.search)
   )
     return apiError(
       400,
@@ -37,7 +38,7 @@ export function publicPages(request: Request): Response {
   let slug: string;
   try {
     slug = decodeURIComponent(
-      url.pathname.replace(/^\/api\/v1\/pages\/?/, '').replace(/\/+$/g, ''),
+      trimTrailingSlashes(url.pathname.replace(/^\/api\/v1\/pages\/?/, '')),
     );
   } catch {
     return apiError(

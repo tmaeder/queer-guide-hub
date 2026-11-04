@@ -11,6 +11,7 @@
 import type { Env } from './sitemap';
 import type { DetailResult } from './detail';
 import { SITE_ORIGIN } from './routeMeta';
+import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
 
 export const HANDLE_PATH_RE = /^\/@([A-Za-z0-9._]{3,20})\/?$/;
 
@@ -33,7 +34,7 @@ export async function rpc<T>(
   const key = env.SUPABASE_ANON_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY;
   if (!env.SUPABASE_URL || !key) return null;
   try {
-    const res = await fetch(`${env.SUPABASE_URL.replace(/\/+$/g, '')}/rest/v1/rpc/${fn}`, {
+    const res = await fetch(`${trimTrailingSlashes(env.SUPABASE_URL)}/rest/v1/rpc/${fn}`, {
       method: 'POST',
       headers: {
         apikey: key,

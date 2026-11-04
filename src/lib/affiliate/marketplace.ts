@@ -7,6 +7,8 @@
  * configured (unit tests / SSR).
  */
 
+import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
+
 const SEARCH_PROXY_URL =
   (import.meta as { env?: Record<string, string> }).env?.VITE_SEARCH_PROXY_URL || '';
 
@@ -30,7 +32,7 @@ export type MarketplaceSurface = (typeof MARKETPLACE_SURFACES)[number];
 export function marketplaceGoHref(listingId: string, surface: MarketplaceSurface): string | null {
   if (!SEARCH_PROXY_URL) return null;
   const qs = new URLSearchParams({ l: listingId, s: surface });
-  return `${SEARCH_PROXY_URL.replace(/\/+$/g, '')}/go?${qs.toString()}`;
+  return `${trimTrailingSlashes(SEARCH_PROXY_URL)}/go?${qs.toString()}`;
 }
 
 /** Viewport-impression beacon for a listing CTA (kind=impression). */
@@ -38,7 +40,7 @@ export function marketplaceBeacon(listingId: string, surface: MarketplaceSurface
   if (!SEARCH_PROXY_URL || typeof navigator === 'undefined') return;
   try {
     const qs = new URLSearchParams({ l: listingId, s: surface, beacon: '1' });
-    const href = `${SEARCH_PROXY_URL.replace(/\/+$/g, '')}/go?${qs.toString()}`;
+    const href = `${trimTrailingSlashes(SEARCH_PROXY_URL)}/go?${qs.toString()}`;
     if (navigator.sendBeacon) navigator.sendBeacon(href);
     else void fetch(href, { method: 'GET', keepalive: true, mode: 'no-cors' });
   } catch {

@@ -31,6 +31,8 @@
  */
 
 /** The eight content archetypes, verbatim from the design document. */
+import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
+
 export const ARCHETYPES = {
   A: { name: 'Index', brief: 'Filterable table of records with bulk actions and saved views.' },
   B: { name: 'Record editor', brief: 'Field form, left tab rail, quality panel docked right.' },
@@ -312,7 +314,7 @@ export function getArchetypeEntry(path: string): AdminArchetypeEntry | undefined
 
 /** Registry entry for a live pathname, following dynamic segments. */
 function entryForRoute(pathname: string): AdminArchetypeEntry | undefined {
-  const rest = pathname.replace(/^\/admin\/?/, '').replace(/\/+$/g, '');
+  const rest = trimTrailingSlashes(pathname.replace(/^\/admin\/?/, ''));
   return BY_PATH.get(rest === '' ? '(index)' : rest) ?? matchDynamic(rest);
 }
 

@@ -29,6 +29,7 @@ import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchTripShares, createTripShare, deleteTripShare } from '@/hooks/useTripShares';
 import { qk } from '@/lib/queryKeys';
+import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
 
 interface Props {
   open: boolean;
@@ -129,7 +130,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
   type IcalCategory = 'all' | 'places' | 'events' | 'reservations';
 
   const icalSubscriptionUrl = (token: string, category: IcalCategory = 'all') => {
-    const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/+$/g, '');
+    const supabaseUrl = trimTrailingSlashes(import.meta.env.VITE_SUPABASE_URL ?? '');
     if (!supabaseUrl) return '';
     const params = new URLSearchParams({ token });
     if (category !== 'all') params.set('category', category);
