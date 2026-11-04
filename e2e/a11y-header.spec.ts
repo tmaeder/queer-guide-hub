@@ -74,8 +74,8 @@ test.describe('Header mobile a11y', () => {
     // Below `sm` the search FIELD is replaced by a search ICON — design panel
     // 06 ("Mobile, 390px": brand, search, avatar). This is not the legacy
     // "Open search" toggle, which expanded a second inline field in the bar:
-    // the icon opens the same full-screen hub the field opened, and exactly
-    // one `role="combobox"` exists at a time either way.
+    // The header icon opens its own full-screen dialog. The homepage also
+    // has an inline search field, so check focus inside the active dialog.
     await expect(page.locator('button[aria-label="Open search"]')).toHaveCount(0);
     const trigger = page.getByRole('button', { name: 'Search', exact: true });
     await expect(trigger).toBeVisible();
@@ -87,7 +87,7 @@ test.describe('Header mobile a11y', () => {
     await page.waitForTimeout(500);
 
     await trigger.click();
-    const search = page.locator('input[role="combobox"]').first();
+    const search = page.getByRole('dialog').getByRole('combobox');
     await expect(search).toBeVisible();
     await expect(search).toBeFocused();
     await expect(search).toHaveAttribute('aria-expanded', 'true');
