@@ -95,10 +95,8 @@ const TRIP_SHELL_CACHE = 'trip-offline-shell-v1';
 // Detect if running on a .onion domain (Tor hidden service)
 const IS_ONION = self.location.hostname.endsWith('.onion');
 
-// Precached during install — HTML shell, offline fallback, manifest, + critical pages
-const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
+// Optional precache entries can redirect or disappear without blocking installation.
+const OPTIONAL_PRECACHE_ASSETS = [
   '/offline.html',
   '/manifest.json',
   '/venues',
@@ -151,7 +149,12 @@ async function trimCache(cacheName, maxItems) {
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then(cache => cache.addAll(PRECACHE_ASSETS))
+      .then(async cache => {
+        // Pages serves the public app shell at /. /index.html is not a
+        // dependable public URL on the deployed site.
+        await cache.add('/');
+        await Promise.allSettled(OPTIONAL_PRECACHE_ASSETS.map(asset => cache.add(asset)));
+      })
       .then(() => self.skipWaiting())
   );
 });
@@ -234,7 +237,7 @@ self.addEventListener('fetch', event => {
           if (todayPath.test(url.pathname) &&
               (url.searchParams.get('view') === 'today' || url.pathname.endsWith('/today'))) {
             const offlineShell = await caches.open(TRIP_SHELL_CACHE);
-            const shell = await offlineShell.match('/index.html');
+            const shell = await offlineShell.match('/');
             if (shell) return shell;
           }
           const offlinePage = await caches.match('/offline.html');
