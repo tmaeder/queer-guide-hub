@@ -1,3 +1,4 @@
+import { parseISO } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
@@ -59,7 +60,7 @@ export function AddToTripDialog({
   const navigate = useLocalizedNavigate();
   const { toast } = useToast();
   const { data: trips, isLoading: tripsLoading } = useTrips();
-  const { addPlace, createTrip } = useTripMutations();
+  const { addPlace, createTripWithStops } = useTripMutations();
   const { activeTrip, setActiveTripId } = useActiveTrip();
   const editableTrips = useMemo(
     () =>
@@ -216,35 +217,37 @@ export function AddToTripDialog({
     }
 
     try {
-      const trip = await createTrip.mutateAsync({
-        title: newTripTitle.trim(),
-        start_date: newTripStart || undefined,
-        end_date: newTripEnd || undefined,
-        primary_city_id: geo.city_id,
-        primary_country_id: geo.country_id,
+      const trip = await createTripWithStops.mutateAsync({
+        trip: {
+          title: newTripTitle.trim(),
+          start_date: newTripStart || undefined,
+          end_date: newTripEnd || undefined,
+          primary_city_id: geo.city_id,
+          primary_country_id: geo.country_id,
+        },
+        stops: [
+          {
+            day_id: null,
+            venue_id: entity.type === 'venue' ? entity.id : null,
+            event_id: entity.type === 'event' ? entity.id : null,
+            hotel_id: entity.type === 'hotel' ? entity.id : null,
+            custom_name: null,
+            custom_address: geo.address,
+            latitude: geo.latitude,
+            longitude: geo.longitude,
+            city_id: geo.city_id,
+            country_id: geo.country_id,
+            start_time: null,
+            end_time: null,
+            duration_minutes: null,
+            notes: null,
+            category: entity.category || entity.type,
+            sort_order: 0,
+            arrive_mode: null,
+          },
+        ],
       });
       setActiveTripId(trip.id);
-
-      await addPlace.mutateAsync({
-        trip_id: trip.id,
-        day_id: null,
-        venue_id: entity.type === 'venue' ? entity.id : null,
-        event_id: entity.type === 'event' ? entity.id : null,
-        hotel_id: entity.type === 'hotel' ? entity.id : null,
-        custom_name: null,
-        custom_address: geo.address,
-        latitude: geo.latitude,
-        longitude: geo.longitude,
-        city_id: geo.city_id,
-        country_id: geo.country_id,
-        start_time: null,
-        end_time: null,
-        duration_minutes: null,
-        notes: null,
-        category: entity.category || entity.type,
-        sort_order: 0,
-        created_by: null,
-      });
 
       toast({
         title: t('trips.addTo.addedTitle', 'Added to {{trip}}', {
@@ -361,12 +364,12 @@ export function AddToTripDialog({
                               style={{ display: 'inline', verticalAlign: -1 }}
                               className="mr-1"
                             />
-                            {new Date(trip.start_date).toLocaleDateString(undefined, {
+                            {parseISO(trip.start_date).toLocaleDateString(undefined, {
                               month: 'short',
                               day: 'numeric',
                             })}
                             {trip.end_date &&
-                              ` - ${new Date(trip.end_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
+                              ` - ${parseISO(trip.end_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
                           </span>
                         )}
                         <span className="text-xs text-muted-foreground">
@@ -479,9 +482,9 @@ export function AddToTripDialog({
           {showCreateForm || !hasTrips ? (
             <Button
               onClick={handleCreateAndAdd}
-              disabled={!newTripTitle.trim() || createTrip.isPending || addPlace.isPending}
+              disabled={!newTripTitle.trim() || createTripWithStops.isPending || addPlace.isPending}
             >
-              {(createTrip.isPending || addPlace.isPending) && (
+              {(createTripWithStops.isPending || addPlace.isPending) && (
                 <TrackLoader size={16} label="Loading" className="mr-1" />
               )}
               {t('trips.addTo.createAndAdd', 'Create & Add')}

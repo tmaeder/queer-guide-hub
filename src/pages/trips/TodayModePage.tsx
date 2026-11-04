@@ -17,13 +17,20 @@ import {
 } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { useTrip, type TripPlace, type TripDay, type TripWithDetails } from '@/hooks/useTrips';
-import { useReservations, type Reservation } from '@/hooks/useReservations';
+import { useTrip } from '@/hooks/useTrips';
+import { useReservations } from '@/hooks/useReservations';
 import { useTripSafety } from '@/hooks/useTripSafety';
+import { useAuth } from '@/hooks/useAuth';
+import { getTripPhase, tripDateKey, tripStopTime } from '@/components/trips/tripPhase';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
 import { computeTripSegments, findActiveSegment } from '@/utils/tripSegments';
-import { cacheTripSnapshot, readTripSnapshot, pruneStaleSnapshots } from '@/utils/offlineTripPack';
+import {
+  readTripSnapshot,
+  removeTripSnapshot,
+  type TripSnapshot,
+  type TodayReservation,
+} from '@/utils/offlineTripPack';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -47,7 +54,7 @@ interface TimelineItem {
   category?: string | null;
 }
 
-const iconForReservation = (r: Reservation): typeof Clock => {
+const iconForReservation = (r: TodayReservation): typeof Clock => {
   switch (r.type) {
     case 'flight':
     case 'transit':
@@ -63,45 +70,22 @@ const iconForReservation = (r: Reservation): typeof Clock => {
   }
 };
 
-const iconForPlace = (p: TripPlace): typeof Clock => {
-  if (p.venues) return MapPin;
-  if (p.hotels) return HotelIcon;
-  if (p.events) return Ticket;
-  return MapPin;
-};
-
-function startOfLocalDay(d: Date): Date {
-  const out = new Date(d);
-  out.setHours(0, 0, 0, 0);
-  return out;
-}
-
-function endOfLocalDay(d: Date): Date {
-  const out = new Date(d);
-  out.setHours(23, 59, 59, 999);
-  return out;
-}
-
-function isTripActiveToday(startDate: string | null, endDate: string | null, now: Date): boolean {
-  if (!startDate || !endDate) return false;
-  const start = new Date(startDate);
-  const end = endOfLocalDay(new Date(endDate));
-  return now >= startOfLocalDay(start) && now <= end;
-}
-
 export default function TodayModePage() {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { tripId } = useParams<{ tripId: string }>();
-  const { data: trip, isLoading, error } = useTrip(tripId);
-  const { data: reservations } = useReservations();
+  const { data: trip, isLoading, error, refetch } = useTrip(tripId);
+  const { data: reservations } = useReservations({ tripId });
   const online = useOnlineStatus();
+  const { user } = useAuth();
+  const userId = user?.id;
   const push = usePushSubscription();
 
-  const [snapshotTrip, setSnapshotTrip] = useState<TripWithDetails | null>(null);
-  const [snapshotReservations, setSnapshotReservations] = useState<Reservation[] | null>(null);
-  const [snapshotSavedAt, setSnapshotSavedAt] = useState<string | null>(null);
-
+  const [cached, setCached] = useState<{
+    userId: string;
+    tripId: string;
+    snapshot: TripSnapshot | null;
+  }>();
   const [now, setNow] = useState<Date>(() => new Date());
   useEffect(() => {
     const i = setInterval(() => setNow(new Date()), 60 * 1000);
@@ -109,51 +93,74 @@ export default function TodayModePage() {
   }, []);
 
   useEffect(() => {
-    if (!tripId) return;
-    void pruneStaleSnapshots();
-    void readTripSnapshot(tripId).then((snap) => {
-      if (!snap) return;
-      setSnapshotTrip(snap.trip);
-      setSnapshotReservations(snap.reservations);
-      setSnapshotSavedAt(snap.savedAt);
+    if (online || !userId || !tripId) return;
+    let cancelled = false;
+    void readTripSnapshot(userId, tripId).then((snapshot) => {
+      if (!cancelled) setCached({ userId, tripId, snapshot });
     });
-  }, [tripId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [online, tripId, userId]);
 
-  const tripReservationsForSnapshot = useMemo(
-    () => (reservations ?? []).filter((r) => r.trip_id === trip?.id),
-    [reservations, trip?.id],
-  );
+  const errorKind = classifyTripError(tripId, error, trip);
+  const accessDenied = !!error && (errorKind === 'not-found' || errorKind === 'permission-denied');
   useEffect(() => {
-    if (!tripId || !trip) return;
-    void cacheTripSnapshot(tripId, trip, tripReservationsForSnapshot);
-  }, [tripId, trip, tripReservationsForSnapshot]);
+    if (!online || !accessDenied || !userId || !tripId) return;
+    let cancelled = false;
+    void removeTripSnapshot(userId, tripId).then(() => {
+      if (!cancelled) {
+        setCached((current) =>
+          current?.userId === userId && current.tripId === tripId ? undefined : current,
+        );
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [online, accessDenied, userId, tripId]);
 
-  const effectiveTrip = trip ?? snapshotTrip;
-  const effectiveReservations = reservations ?? snapshotReservations ?? undefined;
-  const servingFromSnapshot = !trip && !!snapshotTrip;
+  const snapshot =
+    !accessDenied && !online && userId && cached?.userId === userId && cached.tripId === tripId
+      ? cached.snapshot
+      : null;
+  const effectiveTrip = accessDenied || (online && error) ? undefined : (trip ?? snapshot?.trip);
+  const effectiveReservations = reservations ?? snapshot?.reservations;
+  const servingFromSnapshot = !trip && !!snapshot;
+  const snapshotSavedAt = snapshot?.savedAt;
+
+  const timeLabel = (instant: Date) => {
+    const options = { hour: 'numeric', minute: '2-digit' } as const;
+    try {
+      return instant.toLocaleTimeString(undefined, {
+        ...options,
+        timeZone: effectiveTrip?.timezone ?? 'UTC',
+      });
+    } catch {
+      return instant.toLocaleTimeString(undefined, { ...options, timeZone: 'UTC' });
+    }
+  };
 
   const timeline = useMemo<TimelineItem[]>(() => {
     if (!effectiveTrip) return [];
-    const todayStart = startOfLocalDay(now);
-    const todayEnd = endOfLocalDay(now);
-    const todayISO = todayStart.toISOString().slice(0, 10);
+    const timezone = effectiveTrip.timezone;
+    const todayISO = tripDateKey(now, timezone);
 
     const todaysDayIds = new Set<string>(
-      effectiveTrip.trip_days.filter((d: TripDay) => d.date === todayISO).map((d) => d.id),
+      effectiveTrip.trip_days.filter((d) => d.date === todayISO).map((d) => d.id),
     );
 
     const placeItems: TimelineItem[] = effectiveTrip.trip_places
-      .filter((p: TripPlace) => !!p.day_id && todaysDayIds.has(p.day_id))
-      .map((p: TripPlace) => {
+      .filter((p) => !!p.day_id && todaysDayIds.has(p.day_id))
+      .map((p) => {
         const name =
-          p.venues?.name ??
-          p.events?.title ??
-          p.hotels?.name ??
-          p.custom_name ??
+          ('name' in p
+            ? p.name
+            : (p.venues?.name ?? p.events?.title ?? p.hotels?.name ?? p.custom_name)) ??
           t('trips.today.unnamedPlace', 'Untitled stop');
-        const start = p.start_time ? new Date(p.start_time) : null;
+        const start = tripStopTime(todayISO, p.start_time, timezone);
         const end = p.end_time
-          ? new Date(p.end_time)
+          ? tripStopTime(todayISO, p.end_time, timezone)
           : start && p.duration_minutes
             ? new Date(start.getTime() + p.duration_minutes * 60_000)
             : null;
@@ -162,9 +169,13 @@ export default function TodayModePage() {
           start,
           end,
           title: name,
-          subtitle: p.notes,
+          subtitle: 'notes' in p ? p.notes : null,
           kind: 'place',
-          icon: iconForPlace(p),
+          icon: ('kind' in p ? p.kind === 'hotel' : p.hotels)
+            ? HotelIcon
+            : ('kind' in p ? p.kind === 'event' : p.events)
+              ? Ticket
+              : MapPin,
           category: p.category,
         };
       });
@@ -177,7 +188,7 @@ export default function TodayModePage() {
         if (!start && !end) return false;
         const s = start ?? end!;
         const e = end ?? start!;
-        return e >= todayStart && s <= todayEnd;
+        return tripDateKey(e, timezone) >= todayISO && tripDateKey(s, timezone) <= todayISO;
       })
       .map((r) => ({
         id: `res:${r.key}`,
@@ -214,7 +225,11 @@ export default function TodayModePage() {
         : [],
     [effectiveTrip, tripReservations],
   );
-  const activeSegment = useMemo(() => findActiveSegment(segments, now), [segments, now]);
+  const timezone = effectiveTrip?.timezone;
+  const activeSegment = useMemo(
+    () => findActiveSegment(segments, now, timezone),
+    [segments, now, timezone],
+  );
   const activeCountryIds = useMemo(
     () => (activeSegment ? [activeSegment.country_id] : []),
     [activeSegment],
@@ -232,7 +247,13 @@ export default function TodayModePage() {
     );
   }, [timeline, now]);
 
-  if (isLoading && !effectiveTrip) {
+  const checkingSnapshot =
+    !online &&
+    !!userId &&
+    !!tripId &&
+    !accessDenied &&
+    (cached?.userId !== userId || cached.tripId !== tripId);
+  if ((isLoading || checkingSnapshot) && !effectiveTrip) {
     return (
       <PageContainer className="text-center">
         <TrackLoader size={24} label="Loading" className="mx-auto" />
@@ -245,11 +266,25 @@ export default function TodayModePage() {
     return (
       <PageContainer>
         <ErrorState
-          title={t(`trips.error.${kind}.title`)}
-          description={t(`trips.error.${kind}.description`)}
+          title={
+            online
+              ? t(`trips.error.${kind}.title`)
+              : t('trips.today.noOfflineCopy', 'No offline copy available')
+          }
+          description={
+            online
+              ? t(`trips.error.${kind}.description`)
+              : t(
+                  'trips.today.noOfflineCopyHelp',
+                  'Reconnect to open the trip and save a copy for offline use.',
+                )
+          }
           primaryAction={{
-            label: t('trips.backToTrips'),
-            onClick: () => navigate('/trips'),
+            label:
+              online && kind === 'load-error'
+                ? t('common.retry', 'Try again')
+                : t('trips.backToTrips'),
+            onClick: () => (online && kind === 'load-error' ? void refetch() : navigate('/trips')),
             variant: 'default',
           }}
         />
@@ -257,7 +292,7 @@ export default function TodayModePage() {
     );
   }
 
-  if (!isTripActiveToday(effectiveTrip.start_date, effectiveTrip.end_date, now)) {
+  if (getTripPhase(effectiveTrip, now) !== 'live') {
     return (
       <PageContainer>
         <div className="text-center max-w-[480px] mx-auto">
@@ -273,7 +308,10 @@ export default function TodayModePage() {
           {/* asChild, not a Link wrapping a Button — that nests a <button>
               inside an <a>, which is invalid HTML. */}
           <Button asChild variant="outline">
-            <LocalizedLink to={`/trips/${effectiveTrip.id}`} className="no-underline">
+            <LocalizedLink
+              to={`/trips/${effectiveTrip.id}?view=plan&section=plan`}
+              className="no-underline"
+            >
               <ArrowLeft className="w-4 h-4 mr-1.5" />
               {t('trips.today.backToPlanner', 'Back to planner')}
             </LocalizedLink>
@@ -319,17 +357,24 @@ export default function TodayModePage() {
 
       {/* Header */}
       <div className="mb-6">
-        <LocalizedLink to={`/trips/${effectiveTrip.id}`} className="text-muted-foreground text-sm">
+        <LocalizedLink
+          to={`/trips/${effectiveTrip.id}?view=plan&section=plan`}
+          className="text-muted-foreground text-sm"
+        >
           ← {effectiveTrip.title}
         </LocalizedLink>
         <div className="flex items-center gap-2 mt-2">
           <h3 className="text-3xl md:text-4xl font-bold">{t('trips.today.title', 'Today')}</h3>
           <span className="text-muted-foreground text-lg font-medium">
-            {now.toLocaleDateString(undefined, {
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
-            })}
+            {new Date(`${tripDateKey(now, effectiveTrip.timezone)}T00:00:00Z`).toLocaleDateString(
+              undefined,
+              {
+                timeZone: 'UTC',
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+              },
+            )}
           </span>
         </div>
       </div>
@@ -378,7 +423,7 @@ export default function TodayModePage() {
                 )}
               </p>
               <LocalizedLink
-                to={`/trips/${effectiveTrip.id}`}
+                to={`/trips/${effectiveTrip.id}?view=plan&section=plan`}
                 style={{ color: 'inherit' }}
                 className="underline text-13"
               >
@@ -447,21 +492,9 @@ export default function TodayModePage() {
                         <Clock size={12} className="text-muted-foreground" />
                         <span className="text-xs text-muted-foreground">
                           {item.start
-                            ? item.start.toLocaleTimeString(undefined, {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })
+                            ? timeLabel(item.start)
                             : t('trips.today.anytime', 'Any time')}
-                          {item.end && item.start && (
-                            <>
-                              {' '}
-                              –{' '}
-                              {item.end.toLocaleTimeString(undefined, {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </>
-                          )}
+                          {item.end && item.start && <> – {timeLabel(item.end)}</>}
                         </span>
                       </div>
                     </div>
@@ -485,7 +518,7 @@ function formatCountdown(
   t: (key: string, opts?: Record<string, unknown>) => string,
 ): string {
   const diffMs = when.getTime() - now.getTime();
-  if (diffMs <= 0) return t('trips.today.startingNow', 'Starting now');
+  if (diffMs <= 0) return t('trips.today.startingNow', { defaultValue: 'Starting now' });
   const minutes = Math.round(diffMs / 60_000);
   if (minutes < 60) {
     return t('trips.today.inMinutes', {

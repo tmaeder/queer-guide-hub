@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -274,8 +276,9 @@ export function useTrips() {
 
 // ── Single trip with full details ──────────────────────────────
 export function useTrip(tripId: string | undefined) {
-  return useQuery({
-    queryKey: qk.trip.detail(tripId),
+  const { user, loading } = useAuth();
+  const query = useQuery({
+    queryKey: [...qk.trip.detail(tripId), user?.id],
     queryFn: async (): Promise<TripWithDetails> => {
       // maybeSingle (not single): a nonexistent/unauthorized trip id must not
       // produce an HTTP 406 — the browser logs it as a console error, which
@@ -287,7 +290,7 @@ export function useTrip(tripId: string | undefined) {
         .eq('id', tripId!)
         .maybeSingle();
       if (error) throw error;
-      if (!trip) throw new Error('Trip not found');
+      if (!trip) throw Object.assign(new Error('Trip not found'), { code: 'PGRST116' });
 
       // Parallel fetch related data
       const [membersRes, daysRes, placesRes] = await Promise.all([
@@ -316,6 +319,10 @@ export function useTrip(tripId: string | undefined) {
           .order('sort_order', { ascending: true }),
       ]);
 
+      if (membersRes.error) throw membersRes.error;
+      if (daysRes.error) throw daysRes.error;
+      if (placesRes.error) throw placesRes.error;
+
       return {
         ...trip,
         trip_members: (membersRes.data || []) as TripMember[],
@@ -323,9 +330,10 @@ export function useTrip(tripId: string | undefined) {
         trip_places: (placesRes.data || []) as TripPlace[],
       };
     },
-    enabled: !!tripId,
+    enabled: !!tripId && !!user,
     staleTime: 2 * 60 * 1000,
   });
+  return { ...query, isLoading: !!tripId && (loading || query.isLoading) };
 }
 
 // ── Mutations ──────────────────────────────────────────────────
@@ -346,6 +354,57 @@ export function useTripMutations() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: qk.trip.lists() });
     },
+  });
+
+  const creationRequest = useRef<{ payload: string; id: string } | undefined>(undefined);
+  const createTripWithStops = useMutation({
+    mutationFn: async ({ trip, stops }: { trip: CreateTripInput; stops: TripPlaceInsert[] }) => {
+      if (!user) throw new Error('Not signed in');
+      const payload = JSON.stringify([user.id, trip, stops]);
+      if (creationRequest.current?.payload !== payload) {
+        creationRequest.current = { payload, id: crypto.randomUUID() };
+      }
+      const request = creationRequest.current;
+      const { data, error } = await untypedRpc<string>('create_trip_with_stops', {
+        p_id: request.id,
+        p_trip: trip,
+        p_stops: stops,
+      });
+      if (error) throw error;
+      if (!data) throw new Error('Trip creation returned no ID');
+      if (creationRequest.current === request) creationRequest.current = undefined;
+      return { id: data, title: trip.title, primary_city_name: trip.primary_city_name ?? null };
+    },
+    onSuccess: (_data, { stops }) => {
+      for (const stop of stops) trackPlaceAdded(stop, user?.id ?? null, 'trip_add_bulk');
+      return queryClient.invalidateQueries({ queryKey: qk.trip.lists() });
+    },
+  });
+
+  const reorderStops = useMutation({
+    networkMode: 'always',
+    mutationFn: async ({
+      tripId,
+      changes,
+    }: {
+      tripId: string;
+      changes: {
+        id: string;
+        old_day_id: string | null;
+        old_sort_order: number;
+        day_id: string | null;
+        sort_order: number;
+      }[];
+    }) => {
+      if (!navigator.onLine) throw new Error('Connect to the internet to move stops');
+      const { error } = await untypedRpc('reorder_trip_stops', {
+        p_trip: tripId,
+        p_changes: changes,
+      });
+      if (error) throw error;
+    },
+    onSettled: (_data, _error, { tripId }) =>
+      queryClient.invalidateQueries({ queryKey: qk.trip.detail(tripId) }),
   });
 
   const updateTrip = useMutation({
@@ -377,10 +436,7 @@ export function useTripMutations() {
 
   const addPlace = useMutation({
     mutationFn: async (
-      input: Omit<
-        TripPlace,
-        'id' | 'created_at' | 'venues' | 'events' | 'hotels' | 'cities' | 'countries'
-      >,
+      input: TripPlaceInsert & { trip_id: string; created_by?: string | null },
     ) => {
       const { data, error } = await supabase
         .from('trip_places')
@@ -419,6 +475,7 @@ export function useTripMutations() {
   });
 
   const updatePlace = useMutation({
+    networkMode: 'always',
     // `trip_id` (optional) routes the offline queue + optimistic cache patch;
     // it is stripped before the UPDATE (never rewrites the column).
     mutationFn: async ({
@@ -431,7 +488,8 @@ export function useTripMutations() {
       [key: string]: unknown;
     }) => {
       if (typeof navigator !== 'undefined' && !navigator.onLine) {
-        await enqueueMutation('trip_places', id, trip_id ?? null, input);
+        if (!user) throw new Error('Not signed in');
+        await enqueueMutation(user.id, 'trip_places', id, trip_id ?? null, input);
         return { trip_id: trip_id ?? null };
       }
       const { data, error } = await supabase
@@ -446,8 +504,9 @@ export function useTripMutations() {
     onMutate: async ({ id, trip_id, ...input }) => {
       if (!trip_id) return {};
       await queryClient.cancelQueries({ queryKey: qk.trip.detail(trip_id) });
-      const prev = queryClient.getQueryData<TripWithDetails>(qk.trip.detail(trip_id));
-      queryClient.setQueryData<TripWithDetails>(qk.trip.detail(trip_id), (old) =>
+      const key = [...qk.trip.detail(trip_id), user?.id];
+      const prev = queryClient.getQueryData<TripWithDetails>(key);
+      queryClient.setQueryData<TripWithDetails>(key, (old) =>
         old
           ? {
               ...old,
@@ -455,10 +514,10 @@ export function useTripMutations() {
             }
           : old,
       );
-      return { prev, trip_id };
+      return { prev, key };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev && ctx.trip_id) queryClient.setQueryData(qk.trip.detail(ctx.trip_id), ctx.prev);
+      if (ctx?.prev && ctx.key) queryClient.setQueryData(ctx.key, ctx.prev);
     },
     onSuccess: (data) => {
       if (data.trip_id && (typeof navigator === 'undefined' || navigator.onLine)) {
@@ -498,6 +557,8 @@ export function useTripMutations() {
 
   return {
     createTrip,
+    createTripWithStops,
+    reorderStops,
     updateTrip,
     deleteTrip,
     addPlace,

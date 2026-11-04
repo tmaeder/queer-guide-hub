@@ -431,7 +431,10 @@
       "placesCount_one": "{{count}} 个地点",
       "daysPlanned_one": "{{count}} 天已规划",
       "travelBuddies": "[ZH] Let travellers heading to {{city}} find you",
-      "travelBuddiesNoCity": "[ZH] Let other travellers on this trip find you"
+      "travelBuddiesNoCity": "[ZH] Let other travellers on this trip find you",
+      "saveOfflineAria": "保存行程以供离线使用",
+      "savedOffline": "已保存，可离线使用",
+      "savedOfflineDescription": "打开「今天」即可离线查看行程和预订。"
     },
     "share": {
       "title": "分享此行程",
@@ -454,7 +457,8 @@
       "deleteConfirm": "持有该链接的人将失去访问权限。此操作不可撤销。",
       "expired": "已过期",
       "expiresOn": "于 {{date}} 过期",
-      "activeLinks_one": "{{count}} 个活跃链接"
+      "activeLinks_one": "{{count}} 个活跃链接",
+      "managePeople": "邀请或分享"
     },
     "itinerary": {
       "add": "添加",
@@ -490,7 +494,15 @@
       "timeUnknown": "[ZH] time of day not known",
       "tooFew": "[ZH] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
       "vibeAny": "[ZH] A bit of everything",
-      "vibeLabel": "[ZH] What you are after"
+      "vibeLabel": "[ZH] What you are after",
+      "addStop": "添加站点",
+      "moveStop": "移动站点",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "moveToDay": "移至第 {{number}} 天",
+      "removeStop": "移除站点",
+      "moveFailed": "无法移动此站点",
+      "moveRetry": "请检查网络连接后重试。"
     },
     "map": {
       "emptyNoPlaces": "添加地点以在地图上查看",
@@ -680,7 +692,8 @@
       "ctaSubtitle": "免费行程、LGBTQ+ 安全信息,以及与旅伴共享规划。",
       "ctaPrimary": "开始规划",
       "ctaSecondary": "登录",
-      "footer": "通过 queer.guide 分享"
+      "footer": "通过 queer.guide 分享",
+      "loadFailed": "无法加载此行程"
     },
     "tabs": {
       "itinerary": "行程",
@@ -696,7 +709,11 @@
     "today": {
       "offlineBanner": "您处于离线状态 — 显示上次保存的行程。",
       "pushPrompt": "每次预订前 30 分钟收到提醒。",
-      "pushEnable": "启用"
+      "pushEnable": "启用",
+      "noOfflineCopy": "没有可用的离线副本",
+      "noOfflineCopyHelp": "请重新联网，打开行程并保存离线副本。",
+      "title": "今天",
+      "startingNow": "现在开始"
     },
     "bookingAssistant": {
       "tabs": {
@@ -748,7 +765,10 @@
       "prepareTools": "做好出发准备",
       "togetherTools": "一起规划",
       "keepPlanning": "继续规划",
-      "memories": "添加回忆"
+      "memories": "添加回忆",
+      "itinerary": "行程",
+      "people": "成员与分享",
+      "actions": "行程操作"
     },
     "phase": {
       "label": {
@@ -931,7 +951,8 @@
         "body": "会变成属于你的行程，所有站点都已加入。之后你可以随意修改。",
         "primary": "生成行程",
         "secondary": "再画一条"
-      }
+      },
+      "buildRoute": "创建路线"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -1150,7 +1171,9 @@
     },
     "offline": {
       "pending_one": "{{count}} 项更改待同步",
-      "pending_other": "{{count}} 项更改待同步"
+      "pending_other": "{{count}} 项更改待同步",
+      "saveFailed": "无法将此行程保存供离线使用",
+      "syncRejected": "部分离线修改未能保存"
     },
     "inbox": {
       "openThread": "在聊天中核对",
@@ -1165,6 +1188,16 @@
       "created": "行程已创建",
       "createdDescription": "从这里添加你的站点。",
       "error": "无法创建行程"
+    },
+    "booklet": {
+      "print": "打印或另存为 PDF",
+      "reservationsUnavailable": "预订信息未能加载，因此不会出现在此副本中。"
+    },
+    "view": {
+      "today": "今天"
+    },
+    "invitations": {
+      "title": "行程邀请"
     }
   },
   "auth": {

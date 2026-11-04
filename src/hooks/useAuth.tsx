@@ -1,7 +1,11 @@
+import { QueryClientContext } from '@tanstack/react-query';
+import { qk } from '@/lib/queryKeys';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+import { clearTripSnapshots } from '@/utils/offlineTripPack';
+import { clearOfflineMutations } from '@/lib/offline/mutationQueue';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -103,6 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // to the flag merely being seeded from ?reset=1. See the INITIAL_SESSION
   // branch below.
   const sawRecoveryEvent = useRef(false);
+  const offlineAccount = useRef<string | undefined>(undefined);
+  const queryClient = useContext(QueryClientContext);
 
   // Persist a recovery detected from the URL so the flag survives the
   // client-side navigation to /auth/reset-password (which drops ?reset=1).
@@ -119,6 +125,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      const nextAccount = session?.user?.id;
+      const previousAccount = offlineAccount.current;
+      offlineAccount.current = nextAccount;
+      if (event === 'INITIAL_SESSION') void clearTripSnapshots();
+      if (previousAccount && previousAccount !== nextAccount) {
+        queryClient?.removeQueries({ queryKey: qk.trip.all() });
+        void clearTripSnapshots(previousAccount);
+        void clearOfflineMutations(previousAccount).catch(() => {});
+      }
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -165,7 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [queryClient]);
 
   // Secure passkey enrollment check using database
   const checkPasskeyEnrollment = async (userId: string) => {

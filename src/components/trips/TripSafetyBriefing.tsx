@@ -31,14 +31,21 @@ interface Props {
   tripPlaces: TripPlace[];
   tripDays?: TripDay[];
   tripId?: string;
+  primaryCountryId?: string | null;
 }
 
-export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
+export function TripSafetyBriefing({ tripPlaces, tripDays, tripId, primaryCountryId }: Props) {
   const { t } = useTranslation();
 
   const countryIds = useMemo(
-    () => tripPlaces.map((p) => p.country_id).filter(Boolean) as string[],
-    [tripPlaces],
+    () => [
+      ...new Set(
+        [primaryCountryId, ...tripPlaces.map((p) => p.country_id)].filter(
+          (id): id is string => !!id,
+        ),
+      ),
+    ],
+    [primaryCountryId, tripPlaces],
   );
 
   const placesPerCountry = useMemo(() => {
