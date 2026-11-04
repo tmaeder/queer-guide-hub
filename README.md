@@ -178,8 +178,8 @@ Data-quality, pipeline-health, migration-drift and SEO gates run on their own sc
 
 **Subway map system.** A paper card over a page-wide ground layer of the four track colors, ink
 type, and four semantic "line" colors used for wayfinding — `--track-pink`, `--track-blue`,
-`--track-green`, `--track-yellow`. Track colors are fill-only, never body text and never encode risk;
-a blue, green or yellow mark sits beside a text label that carries its meaning. One accent per context;
+`--track-green`, `--track-yellow`. Track colors are fill-only, never body text, never encode risk,
+and always carry a 1px ink ring so contrast is satisfied fill-vs-ring. One accent per context;
 the four only meet on network diagrams and the intersection gradient. Light + dark mode.
 
 **Type:** Anton for display (96/76/52/32/20 px ladder), Space Grotesk for everything else.
@@ -190,8 +190,8 @@ Both self-hosted. Always use a size token — arbitrary `text-[NNrem]` is blocke
 `rounded-badge` (9px, chips). Nothing square. `rounded-full` for avatars and dots only.
 
 **Surfaces:** containers carry no frame. A card reads by covering the ground layer plus one soft
-elevation (`--shadow-soft`). Controls carry no 1-2px border either: only information geometry
-(diagram markers, route tracks, maps) may draw one, enforced by `e2e/rounded-surface-contract.spec.ts`.
+elevation (`--shadow-soft`); borders survive only where WCAG 1.4.11 requires them — form controls,
+the ring on a track-colored mark, and components whose edge _is_ the component.
 
 **Spacing:** strict 8 pt grid — even-step Tailwind utilities only.
 
