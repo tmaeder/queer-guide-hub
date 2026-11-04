@@ -83,10 +83,10 @@ export function TripsStrip({ hideTitle = false }: { hideTitle?: boolean } = {}) 
             variant="outline"
             size="sm"
             onClick={() => navigate('/trips/discover')}
-            aria-label={t('trips.discover.aria', 'Browse public trips')}
+            aria-label={t('trips.discover.buildRoute', 'Build a route')}
           >
             <Compass size={16} className="mr-1.5" />
-            {t('trips.discover.button', 'Browse trips')}
+            {t('trips.discover.buildRoute', 'Build a route')}
           </Button>
           <Button variant="default" size="sm" onClick={() => setCreateOpen(true)}>
             <Plus size={16} className="mr-1.5" />

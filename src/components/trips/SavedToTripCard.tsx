@@ -44,7 +44,7 @@ function SavedCityRow({ group }: { group: SavedCityGroup }) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const navigate = useLocalizedNavigate();
-  const { createTrip, addPlacesBulk } = useTripMutations();
+  const { createTripWithStops, addPlacesBulk } = useTripMutations();
   const { activeTrip, setActiveTripId } = useActiveTrip();
   const { data: activeTripDetails } = useTrip(activeTrip?.id);
   const [busy, setBusy] = useState<'new' | 'active' | null>(null);
@@ -66,14 +66,16 @@ function SavedCityRow({ group }: { group: SavedCityGroup }) {
     if (!group.countryId) return;
     setBusy('new');
     try {
-      const trip = await createTrip.mutateAsync({
-        title: t('trips.savedBridge.defaultTitle', 'Trip to {{city}}', { city: group.cityName }),
-        primary_city_id: group.cityId,
-        primary_country_id: group.countryId,
-        primary_city_name: group.cityName,
+      const trip = await createTripWithStops.mutateAsync({
+        trip: {
+          title: t('trips.savedBridge.defaultTitle', 'Trip to {{city}}', { city: group.cityName }),
+          primary_city_id: group.cityId,
+          primary_country_id: group.countryId,
+          primary_city_name: group.cityName,
+        },
+        stops: rowsFor(false),
       });
       setActiveTripId(trip.id);
-      await addPlacesBulk.mutateAsync({ tripId: trip.id, rows: rowsFor(false) });
       navigate(`/trips/${trip.id}`);
     } catch (err) {
       toast({

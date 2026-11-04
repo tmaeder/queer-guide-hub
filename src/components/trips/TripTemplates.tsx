@@ -17,7 +17,7 @@ export function TripTemplates() {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { user } = useAuth();
-  const { createTrip, addPlacesBulk } = useTripMutations();
+  const { createTripWithStops } = useTripMutations();
   const { toast } = useToast();
   const { data: templates, isLoading } = useTripTemplates();
   const activeTripContext = useOptionalActiveTrip();
@@ -31,60 +31,41 @@ export function TripTemplates() {
     const startDate = startOfDay(addMonths(new Date(), 1));
     const endDate = addDays(startDate, template.days - 1);
 
-    // `trips.primary_city_id` and `primary_country_id` are NOT NULL. This call
-    // site sent neither until 2026-08, so every click raised 23502 and this
-    // button had never once worked. The unit test below mocks `createTrip`,
-    // which is why nothing caught it — the fix therefore also has to be visible
-    // in the types, not just here: `TripTemplate` now carries both, and a
-    // template that cannot resolve them is dropped in useTripTemplates rather
-    // than rendered as an affordance that cannot function.
-    createTrip.mutate(
+    createTripWithStops.mutate(
       {
-        title: template.title,
-        start_date: format(startDate, 'yyyy-MM-dd'),
-        end_date: format(endDate, 'yyyy-MM-dd'),
-        currency: template.currency,
-        cover_image_url: template.coverImageUrl ?? undefined,
-        primary_city_id: template.primaryCityId,
-        primary_country_id: template.primaryCountryId,
+        trip: {
+          title: template.title,
+          start_date: format(startDate, 'yyyy-MM-dd'),
+          end_date: format(endDate, 'yyyy-MM-dd'),
+          currency: template.currency,
+          cover_image_url: template.coverImageUrl ?? undefined,
+          primary_city_id: template.primaryCityId,
+          primary_country_id: template.primaryCountryId,
+        },
+        stops: template.cityIds.map((cityId, idx) => ({
+          day_id: null,
+          venue_id: null,
+          event_id: null,
+          hotel_id: null,
+          custom_name: null,
+          custom_address: null,
+          latitude: null,
+          longitude: null,
+          city_id: cityId,
+          country_id: template.primaryCountryId,
+          start_time: null,
+          end_time: null,
+          duration_minutes: null,
+          notes: null,
+          category: 'city',
+          sort_order: idx,
+          icon: null,
+          arrive_mode: null,
+        })),
       },
       {
-        onSuccess: async (trip) => {
+        onSuccess: (trip) => {
           activeTripContext?.setActiveTripId(trip.id);
-          if (template.cityIds.length) {
-            try {
-              // addPlacesBulk, not the raw insertRows this used to call: the
-              // mutation adds trip_id/created_by, invalidates the trip detail
-              // and list caches, and emits the per-place telemetry. The raw
-              // insert did none of that, so a seeded trip opened empty until
-              // something else happened to refetch it.
-              await addPlacesBulk.mutateAsync({
-                tripId: trip.id,
-                rows: template.cityIds.map((cityId, idx) => ({
-                  day_id: null,
-                  venue_id: null,
-                  event_id: null,
-                  hotel_id: null,
-                  custom_name: null,
-                  custom_address: null,
-                  latitude: null,
-                  longitude: null,
-                  city_id: cityId,
-                  country_id: template.primaryCountryId,
-                  start_time: null,
-                  end_time: null,
-                  duration_minutes: null,
-                  notes: null,
-                  category: 'city',
-                  sort_order: idx,
-                  icon: null,
-                  arrive_mode: null,
-                })),
-              });
-            } catch (err) {
-              console.warn('[TripTemplates] trip_places seed failed', err);
-            }
-          }
           toast({
             title: t('trips.templates.created', 'Trip created'),
             description: t('trips.templates.createdDescription', 'Add your stops from here.'),
@@ -213,7 +194,7 @@ export function TripTemplates() {
                         e.stopPropagation();
                         handleUseTemplate(template);
                       }}
-                      disabled={createTrip.isPending}
+                      disabled={createTripWithStops.isPending}
                     >
                       {t('trips.templates.use', 'Use template')}
                       <ArrowRight size={16} />

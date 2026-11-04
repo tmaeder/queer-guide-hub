@@ -9,7 +9,7 @@ import {
   GitFork,
   Bookmark,
 } from '@/components/icons';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -74,8 +74,8 @@ export function PublicTripCard({ trip }: Props) {
 
   const dateRange = (() => {
     if (!trip.start_date || !trip.end_date) return null;
-    const start = new Date(trip.start_date);
-    const end = new Date(trip.end_date);
+    const start = parseISO(trip.start_date);
+    const end = parseISO(trip.end_date);
     if (start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth()) {
       return `${format(start, 'MMM d')}–${format(end, 'd, yyyy')}`;
     }

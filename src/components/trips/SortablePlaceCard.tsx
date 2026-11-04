@@ -1,8 +1,17 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { badgeVariants } from '@/components/ui/badge';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, MapPin, Hotel, CalendarDays, Star, Clock, X, Check } from '@/components/icons';
+import {
+  GripVertical,
+  MapPin,
+  Hotel,
+  CalendarDays,
+  Star,
+  Clock,
+  X,
+  Check,
+} from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useTripReservations, type Reservation } from '@/hooks/useTripReservations';
@@ -70,6 +79,7 @@ function BookingBadge({ status, confirmationCode }: BookingBadgeProps) {
 interface SortablePlaceCardProps {
   place: TripPlace;
   onDelete: (placeId: string) => void;
+  moveActions?: ReactNode;
   tripStartDate?: string | null;
   tripEndDate?: string | null;
   /** Viewer role: hide edit affordances. RLS enforces server-side. */
@@ -79,6 +89,7 @@ interface SortablePlaceCardProps {
 export function SortablePlaceCard({
   place,
   onDelete,
+  moveActions,
   tripStartDate,
   tripEndDate,
   readOnly = false,
@@ -115,7 +126,7 @@ export function SortablePlaceCard({
   return (
     <div ref={setNodeRef} style={style}>
       <div
-        className={`group flex items-center gap-2 bg-background border ${borderClass} rounded-container px-4 py-2 mb-1.5 min-h-11 transition-all hover:bg-muted/60 ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
+        className={`group flex flex-wrap items-center gap-2 bg-background border ${borderClass} rounded-container px-4 py-2 mb-1.5 min-h-11 transition-all hover:bg-muted/60 ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
       >
         {!readOnly && (
           <div
@@ -135,7 +146,7 @@ export function SortablePlaceCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-13 font-medium truncate">{getPlaceName(place)}</p>
+            <p className="max-w-full text-13 font-medium break-words">{getPlaceName(place)}</p>
             {eqScore !== null && (
               <span
                 className="w-2 h-2 rounded-full shrink-0"
@@ -156,40 +167,44 @@ export function SortablePlaceCard({
           )}
         </div>
 
-        {isIntent && !readOnly && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setBookOpen(true)}
-            className="h-6 px-2 text-xs2"
-            data-testid="mark-booked-btn"
-          >
-            Mark booked
-          </Button>
-        )}
+        <div className="flex basis-full flex-wrap items-center gap-2 sm:basis-auto">
+          {isIntent && !readOnly && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBookOpen(true)}
+              className="min-h-11 px-2 text-xs2 sm:min-h-8"
+              data-testid="mark-booked-btn"
+            >
+              Mark booked
+            </Button>
+          )}
 
-        <PlaceBookableLinks
-          tripId={place.trip_id}
-          tripPlaceId={place.id}
-          category={cat as 'venue' | 'event' | 'hotel' | 'custom'}
-          name={getPlaceName(place)}
-          cityName={place.cities?.name ?? null}
-          startDate={tripStartDate ?? null}
-          endDate={tripEndDate ?? null}
-          bookingStatus={status}
-          onBookingPrompt={() => setBookOpen(true)}
-        />
+          <PlaceBookableLinks
+            tripId={place.trip_id}
+            tripPlaceId={place.id}
+            category={cat as 'venue' | 'event' | 'hotel' | 'custom'}
+            name={getPlaceName(place)}
+            cityName={place.cities?.name ?? null}
+            startDate={tripStartDate ?? null}
+            endDate={tripEndDate ?? null}
+            bookingStatus={status}
+            onBookingPrompt={() => setBookOpen(true)}
+          />
 
-        {!readOnly && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(place.id)}
-            className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity p-0.5 min-h-11 min-w-11 flex items-center justify-center"
-          >
-            <X className="w-3.5 h-3.5" />
-          </Button>
-        )}
+          {moveActions}
+          {!readOnly && (
+            <Button
+              aria-label={t('trips.itinerary.removeStop', 'Remove stop')}
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(place.id)}
+              className="sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity p-0.5 min-h-11 min-w-11 flex items-center justify-center"
+            >
+              <X className="w-3.5 h-3.5" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {bookOpen && (
@@ -227,7 +242,7 @@ export function PlaceCardOverlay({ place }: { place: TripPlace }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-13 font-medium truncate">{getPlaceName(place)}</p>
+          <p className="max-w-full text-13 font-medium break-words">{getPlaceName(place)}</p>
           {eqScore !== null && (
             <span
               className="w-2 h-2 rounded-full shrink-0"

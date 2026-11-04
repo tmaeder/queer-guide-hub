@@ -66,6 +66,17 @@ describe('useReservations', () => {
     expect(state.calls).toHaveLength(0);
   });
 
+  it('filters a scoped reservation read by trip on the server', async () => {
+    const { result } = renderHook(() => useReservations({ tripId: 'trip-1' }), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(state.calls[0]?.chain).toContainEqual({ method: 'eq', args: ['trip_id', 'trip-1'] });
+  });
+
+  it('waits for a trip ID instead of fetching the whole account for a scoped view', () => {
+    renderHook(() => useReservations({ tripId: undefined }), { wrapper });
+    expect(state.calls).toHaveLength(0);
+  });
+
   it('projects rows + sorts by start_at asc, undated last', async () => {
     withResults({
       data: [

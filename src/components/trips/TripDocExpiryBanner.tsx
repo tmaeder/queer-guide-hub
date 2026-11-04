@@ -1,3 +1,4 @@
+import { parseISO } from 'date-fns';
 import { useMemo } from 'react';
 import { AlertTriangle, Clock } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
@@ -19,7 +20,7 @@ interface DocFlag {
 
 function flagDocs(docs: TripDocument[], trip: TripWithDetails, now: Date): DocFlag[] {
   if (!trip.start_date || !trip.end_date) return [];
-  const tripEnd = new Date(trip.end_date);
+  const tripEnd = parseISO(trip.end_date);
   const passportThrough = new Date(tripEnd.getTime() + PASSPORT_BUFFER_DAYS * 86400_000)
     .toISOString()
     .slice(0, 10);

@@ -1,112 +1,178 @@
-/**
- * Offline trip snapshot pack.
- *
- * Today-mode writes a frozen copy of the trip's itinerary + reservations
- * into Cache Storage via the service worker. If the user loses connectivity
- * (airplane mode on the plane, dead signal at the hotel), the page can
- * rehydrate from the cache instead of showing a blank screen.
- *
- * Not for trip planning — snapshots are stale the moment the user or a
- * co-traveler edits anything. The planner page continues to hit Supabase
- * directly and shows fresh data.
- */
-
 import type { TripWithDetails } from '@/hooks/useTrips';
 import type { Reservation } from '@/hooks/useReservations';
 
 const CACHE_PREFIX = 'trip-snapshot-';
-const SNAPSHOT_URL = (tripId: string) => `/_trip-snapshot/${tripId}.json`;
+const SHELL_CACHE = 'trip-offline-shell-v1';
+const MAX_AGE = 36 * 60 * 60 * 1000;
+const cacheName = (userId: string) => `${CACHE_PREFIX}account-${userId}`;
+const snapshotUrl = (tripId: string) => `/_trip-snapshot/${tripId}.json`;
+
+type SnapshotPlace = Pick<
+  TripWithDetails['trip_places'][number],
+  | 'id'
+  | 'day_id'
+  | 'country_id'
+  | 'start_time'
+  | 'end_time'
+  | 'duration_minutes'
+  | 'sort_order'
+  | 'category'
+> & { name: string | null; kind: 'hotel' | 'event' | 'place' };
+
+type SnapshotTrip = Pick<
+  TripWithDetails,
+  'id' | 'title' | 'status' | 'timezone' | 'start_date' | 'end_date'
+> & {
+  trip_days: Pick<TripWithDetails['trip_days'][number], 'id' | 'date'>[];
+  trip_places: SnapshotPlace[];
+};
+
+export type TodayReservation = Pick<
+  Reservation,
+  'key' | 'trip_id' | 'country_id' | 'type' | 'start_at' | 'end_at' | 'title' | 'provider'
+> & { confirmation_code?: string | null };
 
 export interface TripSnapshot {
-  tripId: string;
   savedAt: string;
-  trip: TripWithDetails;
-  reservations: Reservation[];
+  trip: SnapshotTrip;
+  reservations: TodayReservation[];
 }
 
-const cacheName = (tripId: string) => `${CACHE_PREFIX}${tripId}`;
+/** Warm shell assets that might have loaded before the worker took control. */
+export async function prepareTripOfflineAssets(): Promise<void> {
+  if (import.meta.env.DEV) return;
+  if (!navigator.serviceWorker?.controller) throw new Error('Offline app shell unavailable');
+  const shell = await fetch('/', { cache: 'no-cache', credentials: 'omit' });
+  if (!shell.ok || !shell.headers.get('content-type')?.includes('text/html')) {
+    throw new Error('Offline app shell unavailable');
+  }
+  const shellDocument = new DOMParser().parseFromString(await shell.clone().text(), 'text/html');
+  const shellAssets = (page: Document) =>
+    Array.from(
+      page.querySelectorAll(
+        'script[src], link[rel="modulepreload"], link[rel="stylesheet"], link[as="font"]',
+      ),
+      (element) => element.getAttribute('src') ?? element.getAttribute('href') ?? '',
+    ).map((resource) => new URL(resource, location.href).href);
+  const resources = new Set([
+    ...performance.getEntriesByType('resource').map(({ name }) => name),
+    ...shellAssets(document),
+    ...shellAssets(shellDocument),
+  ]);
+  const assets = [...resources].filter((resource) => {
+    const url = new URL(resource);
+    return (
+      url.origin === location.origin &&
+      (/^\/assets\/.*\.(js|css)$/.test(url.pathname) ||
+        /^\/fonts\/.*\.woff2?$/.test(url.pathname) ||
+        /^\/locales\/[a-z-]+\.json$/i.test(url.pathname))
+    );
+  });
 
-/** Send the SW a fresh snapshot. Silently no-ops if SW is unavailable. */
+  const cache = await caches.open(SHELL_CACHE);
+  await Promise.all(
+    assets.map(async (asset) => {
+      const response = (await caches.match(asset)) ?? (await fetch(asset));
+      if (!response.ok) throw new Error('Offline asset unavailable');
+      await cache.put(asset, response);
+    }),
+  );
+  await cache.put('/', shell);
+}
+
 export async function cacheTripSnapshot(
-  tripId: string,
+  userId: string,
   trip: TripWithDetails,
   reservations: Reservation[],
 ): Promise<void> {
-  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
-  const payload: TripSnapshot = {
-    tripId,
+  const { id, title, status, timezone, start_date, end_date } = trip;
+  const snapshot: TripSnapshot = {
     savedAt: new Date().toISOString(),
-    trip,
-    reservations,
+    trip: {
+      id,
+      title,
+      status,
+      timezone,
+      start_date,
+      end_date,
+      trip_days: trip.trip_days.map(({ id, date }) => ({ id, date })),
+      trip_places: trip.trip_places.map((place) => ({
+        id: place.id,
+        day_id: place.day_id,
+        country_id: place.country_id,
+        start_time: place.start_time,
+        end_time: place.end_time,
+        duration_minutes: place.duration_minutes,
+        sort_order: place.sort_order,
+        category: place.category,
+        name: place.venues?.name ?? place.events?.title ?? place.hotels?.name ?? place.custom_name,
+        kind: place.hotels ? 'hotel' : place.events ? 'event' : 'place',
+      })),
+    },
+    reservations: reservations
+      .filter((row) => row.trip_id === id)
+      .map(({ key, trip_id, country_id, type, start_at, end_at, title, provider }) => ({
+        key,
+        trip_id,
+        country_id,
+        type,
+        start_at,
+        end_at,
+        title,
+        provider,
+      })),
   };
-  try {
-    // Open cache from the page directly — equivalent to asking the SW to
-    // do it but skips the postMessage round-trip. Page and SW share the
-    // same Cache Storage origin.
-    const cache = await caches.open(cacheName(tripId));
-    const body = JSON.stringify(payload);
-    await cache.put(
-      SNAPSHOT_URL(tripId),
-      new Response(body, {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }),
-    );
-  } catch {
-    // Cache API unavailable (incognito, strict mode) — silently skip.
-  }
+  const cache = await caches.open(cacheName(userId));
+  await cache.put(
+    snapshotUrl(id),
+    new Response(JSON.stringify(snapshot), {
+      headers: { 'Content-Type': 'application/json' },
+    }),
+  );
 }
 
-/** Read the last-known snapshot for a trip, or null if none cached. */
 export async function readTripSnapshot(
+  userId: string,
   tripId: string,
 ): Promise<TripSnapshot | null> {
-  if (typeof caches === 'undefined') return null;
   try {
-    const cache = await caches.open(cacheName(tripId));
-    const hit = await cache.match(SNAPSHOT_URL(tripId));
+    const cache = await caches.open(cacheName(userId));
+    const hit = await cache.match(snapshotUrl(tripId));
     if (!hit) return null;
-    return (await hit.json()) as TripSnapshot;
+    const snapshot = (await hit.json()) as TripSnapshot;
+    const age = Date.now() - Date.parse(snapshot.savedAt);
+    if (snapshot.trip.id !== tripId || !Number.isFinite(age) || age > MAX_AGE || age < 0) {
+      await cache.delete(snapshotUrl(tripId));
+      return null;
+    }
+    return snapshot;
   } catch {
     return null;
   }
 }
 
-/**
- * Delete all trip snapshots older than the TTL. Called opportunistically
- * by the page on mount so stale blobs don't accumulate — storage is
- * shared with other PWA caches and eviction pressure hurts everything.
- */
-export async function pruneStaleSnapshots(ttlMs = 36 * 60 * 60 * 1000): Promise<void> {
-  if (typeof caches === 'undefined') return;
+export async function clearTripSnapshots(userId?: string): Promise<void> {
   try {
     const names = await caches.keys();
-    const now = Date.now();
     await Promise.all(
       names
-        .filter((n) => n.startsWith(CACHE_PREFIX))
-        .map(async (n) => {
-          const cache = await caches.open(n);
-          const keys = await cache.keys();
-          for (const req of keys) {
-            const res = await cache.match(req);
-            if (!res) continue;
-            const text = await res.clone().text();
-            try {
-              const parsed = JSON.parse(text) as TripSnapshot;
-              const saved = Date.parse(parsed.savedAt);
-              if (!Number.isFinite(saved) || now - saved > ttlMs) {
-                await caches.delete(n);
-                return;
-              }
-            } catch {
-              await caches.delete(n);
-              return;
-            }
-          }
-        }),
+        .filter(
+          (name) =>
+            name === (userId && cacheName(userId)) ||
+            (name.startsWith(CACHE_PREFIX) && !name.startsWith(`${CACHE_PREFIX}account-`)),
+        )
+        .map((name) => caches.delete(name)),
     );
   } catch {
-    // Ignore — cache maintenance is best-effort.
+    // Storage may be disabled on this device.
+  }
+}
+
+export async function removeTripSnapshot(userId: string, tripId: string): Promise<void> {
+  try {
+    const cache = await caches.open(cacheName(userId));
+    await cache.delete(snapshotUrl(tripId));
+  } catch {
+    // An access denial still blocks the online view.
   }
 }

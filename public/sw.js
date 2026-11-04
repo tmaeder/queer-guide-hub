@@ -86,18 +86,17 @@ function isResponseValidForUrl(response, pathname) {
   return expected.some((t) => ct.includes(t));
 }
 
-// Cache name prefix used by Today-mode for per-trip offline snapshots.
+// Cache name prefix used by Today-mode for account-scoped offline snapshots.
 // Populated from the page via the Cache API directly (see offlineTripPack.ts).
 // Kept distinct from STATIC/DYNAMIC so activate-cleanup doesn't wipe it.
 const TRIP_SNAPSHOT_PREFIX = 'trip-snapshot-';
+const TRIP_SHELL_CACHE = 'trip-offline-shell-v1';
 
 // Detect if running on a .onion domain (Tor hidden service)
 const IS_ONION = self.location.hostname.endsWith('.onion');
 
-// Precached during install — HTML shell, offline fallback, manifest, + critical pages
-const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
+// Optional precache entries can redirect or disappear without blocking installation.
+const OPTIONAL_PRECACHE_ASSETS = [
   '/offline.html',
   '/manifest.json',
   '/venues',
@@ -150,7 +149,12 @@ async function trimCache(cacheName, maxItems) {
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then(cache => cache.addAll(PRECACHE_ASSETS))
+      .then(async cache => {
+        // Pages serves the public app shell at /. /index.html is not a
+        // dependable public URL on the deployed site.
+        await cache.add('/');
+        await Promise.allSettled(OPTIONAL_PRECACHE_ASSETS.map(asset => cache.add(asset)));
+      })
       .then(() => self.skipWaiting())
   );
 });
@@ -167,6 +171,7 @@ self.addEventListener('activate', event => {
             .filter(name =>
               name !== STATIC_CACHE &&
               name !== DYNAMIC_CACHE &&
+              name !== TRIP_SHELL_CACHE &&
               !name.startsWith(TRIP_SNAPSHOT_PREFIX)
             )
             .map(name => caches.delete(name))
@@ -226,6 +231,15 @@ self.addEventListener('fetch', event => {
           // Network failed — try cache, then offline fallback
           const cached = await caches.match(request);
           if (cached) return cached;
+          // The generic shell contains no trip data. Today checks the signed-in
+          // account and loads its local snapshot after the shell starts.
+          const todayPath = /^\/(?:[a-z]{2}(?:-[A-Za-z]+)?\/)?trips\/[0-9a-f-]{36}(?:\/today)?$/i;
+          if (todayPath.test(url.pathname) &&
+              (url.searchParams.get('view') === 'today' || url.pathname.endsWith('/today'))) {
+            const offlineShell = await caches.open(TRIP_SHELL_CACHE);
+            const shell = await offlineShell.match('/');
+            if (shell) return shell;
+          }
           const offlinePage = await caches.match('/offline.html');
           return offlinePage || new Response('Offline', { status: 503 });
         }
@@ -240,10 +254,16 @@ self.addEventListener('fetch', event => {
   // index.html requests a hashed chunk that no longer exists; CF Pages
   // SPA-fallback serves index.html (200 text/html), and a naive cache
   // would store that and serve it forever, blanking the entire app.
-  if (CACHE_STRATEGIES.static.test(url.pathname)) {
+  if (CACHE_STRATEGIES.static.test(url.pathname) || /^\/locales\/[a-z-]+\.json$/i.test(url.pathname)) {
     event.respondWith(
       (async () => {
-        const cached = await caches.match(request);
+        let cached = await caches.match(request);
+        if (!cached && (/^\/(?:assets|fonts|locales)\//).test(url.pathname)) {
+          // The pack contains public same-origin files. A warm-up fetch and a
+          // crossorigin module or font request can have different Origin headers.
+          const offlineShell = await caches.open(TRIP_SHELL_CACHE);
+          cached = await offlineShell.match(request, { ignoreVary: true });
+        }
         if (cached && isResponseValidForUrl(cached, url.pathname)) {
           return cached;
         }
@@ -293,7 +313,7 @@ self.addEventListener('fetch', event => {
           if (networkResponse.status === 200) {
             if (isResponseValidForUrl(networkResponse, url.pathname)) {
               const cache = await caches.open(STATIC_CACHE);
-              cache.put(request, networkResponse.clone());
+              await cache.put(request, networkResponse.clone()).catch(() => {});
               return networkResponse;
             }
             // v12: CF Pages returned HTML for a JS/CSS/font URL — almost

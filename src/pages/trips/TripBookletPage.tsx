@@ -1,7 +1,7 @@
 import { getCspNonce } from '@/lib/cspNonce';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useParams } from 'react-router';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useTrip, type TripPlace } from '@/hooks/useTrips';
 import { useTripReservations } from '@/hooks/useTripReservations';
@@ -15,8 +15,7 @@ import { PageLoadingState } from '@/components/layout/PageLoadingState';
 /**
  * Print-optimized trip booklet.
  *
- * Renders the trip as an offline-friendly document and auto-triggers
- * the browser print dialog so users get a PDF via "Save as PDF".
+ * Renders a trip preview for printing or saving as PDF.
  * Intentionally avoids a server-side PDF dependency — the browser
  * already produces clean output and the page works offline once
  * loaded.
@@ -30,19 +29,12 @@ export default function TripBookletPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
-  const { data: trip, isLoading, error } = useTrip(tripId);
-  const { data: reservations } = useTripReservations(tripId);
-
-  // Once the trip + reservations have rendered, prompt print. A timeout
-  // gives layout a beat to settle (fonts, images) before the dialog
-  // captures the rendered tree.
-  useEffect(() => {
-    if (!trip) return;
-    const timer = setTimeout(() => {
-      window.print();
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [trip]);
+  const { data: trip, isLoading, error, refetch } = useTrip(tripId);
+  const {
+    data: reservations,
+    isPending: reservationsPending,
+    isError: reservationsError,
+  } = useTripReservations(tripId);
 
   const placesByDay = useMemo(() => {
     const map = new Map<string, TripPlace[]>();
@@ -95,8 +87,8 @@ export default function TripBookletPage() {
           title={t(`trips.error.${kind}.title`)}
           description={t(`trips.error.${kind}.description`)}
           primaryAction={{
-            label: t('trips.backToTrips'),
-            onClick: () => navigate('/trips'),
+            label: kind === 'load-error' ? t('common.retry', 'Try again') : t('trips.backToTrips'),
+            onClick: () => (kind === 'load-error' ? void refetch() : navigate('/trips')),
             variant: 'default',
           }}
         />
@@ -104,7 +96,7 @@ export default function TripBookletPage() {
     );
   }
 
-  const fmtDate = (iso?: string | null) => (iso ? format(new Date(iso), 'EEE, MMM d, yyyy') : '—');
+  const fmtDate = (iso?: string | null) => (iso ? format(parseISO(iso), 'EEE, MMM d, yyyy') : '—');
 
   const placeName = (p: TripPlace): string =>
     p.venues?.name ?? p.events?.title ?? p.hotels?.name ?? p.custom_name ?? 'Stop';
@@ -138,12 +130,22 @@ export default function TripBookletPage() {
 
       <div className="booklet">
         <div className="toolbar no-print">
-          <button onClick={() => window.print()}>
+          <button disabled={reservationsPending} onClick={() => window.print()}>
             {t('trips.booklet.print', 'Print / Save as PDF')}
           </button>
-          <button onClick={() => window.close()}>{t('trips.booklet.close', 'Close')}</button>
+          <button onClick={() => navigate(`/trips/${tripId}?view=plan&section=plan`)}>
+            {t('trips.backToPlanner', 'Back to itinerary')}
+          </button>
         </div>
 
+        {reservationsError && (
+          <p role="status">
+            {t(
+              'trips.booklet.reservationsUnavailable',
+              'Reservations could not load and will be missing from this copy.',
+            )}
+          </p>
+        )}
         {/* Cover */}
         <section className="cover">
           <h1>{resolveTripTitle(trip, t)}</h1>

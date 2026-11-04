@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import {
   QUEUE_EVENT,
@@ -18,55 +20,65 @@ import { qk } from '@/lib/queryKeys';
 export function useOfflineTripSync() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const [pending, setPending] = useState(0);
+  const { user } = useAuth();
+  const userId = user?.id;
+  const { t } = useTranslation();
+  const activeUser = useRef(userId);
+  const replaying = useRef(false);
+  const [pending, setPending] = useState({ userId, count: 0 });
+
+  useLayoutEffect(() => {
+    activeUser.current = userId;
+    return () => {
+      activeUser.current = undefined;
+    };
+  }, [userId]);
 
   const refreshCount = useCallback(() => {
-    countMutations()
-      .then(setPending)
-      .catch(() => setPending(0));
-  }, []);
+    if (!userId) return;
+    countMutations(userId)
+      .then((count) => {
+        if (activeUser.current === userId) setPending({ userId, count });
+      })
+      .catch(() => {});
+  }, [userId]);
 
   const replay = useCallback(async () => {
-    if (!navigator.onLine) return;
-    let rows;
+    if (!userId || !navigator.onLine || replaying.current) return;
+    replaying.current = true;
     try {
-      rows = await listMutations();
-    } catch {
-      return;
-    }
-    if (rows.length === 0) return;
-
-    const touchedTrips = new Set<string>();
-    let dropped = 0;
-    for (const m of rows) {
-      const { error } = await supabase
-        .from(m.table)
-        .update({ ...m.patch, updated_at: new Date().toISOString() })
-        .eq('id', m.rowId);
-      if (!error) {
-        await removeMutation(m.key).catch(() => {});
-        if (m.tripId) touchedTrips.add(m.tripId);
-      } else if (error.code && !error.message.includes('fetch')) {
-        // Permanent server rejection (RLS, deleted row) — drop, don't retry forever.
-        await removeMutation(m.key).catch(() => {});
-        dropped++;
+      const rows = await listMutations(userId);
+      let rejected = 0;
+      for (const row of rows) {
+        if (activeUser.current !== userId || !navigator.onLine) break;
+        const { data, error, status } = await supabase
+          .from(row.table)
+          .update({ ...row.patch, updated_at: new Date().toISOString() })
+          .eq('id', row.rowId)
+          .select('id')
+          .maybeSingle();
+        if (error && (status < 400 || status >= 500 || [401, 408, 409, 425, 429].includes(status)))
+          break;
+        await removeMutation(row);
+        if (error || !data) rejected++;
+        if (row.tripId) {
+          void qc.invalidateQueries({ queryKey: qk.trip.detail(row.tripId) });
+          void qc.invalidateQueries({ queryKey: qk.trip.facet(row.tripId, 'packing') });
+        }
       }
-      // Network-level failure: keep queued for the next 'online' event.
+      if (rejected && activeUser.current === userId) {
+        toast({
+          title: t('trips.offline.syncRejected', 'Some offline changes could not be saved'),
+          variant: 'destructive',
+        });
+      }
+    } catch {
+      // Retain queued edits if storage or transport is temporarily unavailable.
+    } finally {
+      replaying.current = false;
+      refreshCount();
     }
-
-    for (const tripId of touchedTrips) {
-      void qc.invalidateQueries({ queryKey: qk.trip.detail(tripId) });
-      void qc.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'packing') });
-    }
-    if (dropped > 0) {
-      toast({
-        title: `${dropped} offline change${dropped === 1 ? '' : 's'} could not be synced`,
-        description: 'The server rejected them (edited or removed elsewhere).',
-        variant: 'destructive',
-      });
-    }
-    refreshCount();
-  }, [qc, toast, refreshCount]);
+  }, [userId, qc, toast, refreshCount, t]);
 
   useEffect(() => {
     refreshCount();
@@ -80,5 +92,5 @@ export function useOfflineTripSync() {
     };
   }, [replay, refreshCount]);
 
-  return { pending };
+  return { pending: pending.userId === userId ? pending.count : 0 };
 }

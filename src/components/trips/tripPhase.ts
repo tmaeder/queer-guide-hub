@@ -35,10 +35,45 @@ function todayUtc(now: Date, timeZone?: string | null): Date {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 }
 
-/**
- * Days from `now` (UTC date floor) to `target` (UTC date floor).
- * Positive = future, 0 = today, negative = past.
- */
+/** Calendar day at the destination, independent of the device timezone. */
+export function tripDateKey(now: Date, timeZone?: string | null): string {
+  return todayUtc(now, timeZone).toISOString().slice(0, 10);
+}
+
+/** Resolve an itinerary's database TIME on the trip day. At a DST overlap
+ * use the earlier occurrence. Advance past a skipped wall time in a DST gap. */
+export function tripStopTime(
+  date: string,
+  time: string | null,
+  timeZone?: string | null,
+): Date | null {
+  if (!time) return null;
+  const wallTime = new Date(`${date}T${time}Z`);
+  if (!Number.isFinite(wallTime.getTime())) return null;
+  if (!timeZone) return wallTime;
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US', { timeZone, timeZoneName: 'shortOffset' });
+    const offset = (instant: number) => {
+      const label = formatter
+        .formatToParts(instant)
+        .find((part) => part.type === 'timeZoneName')?.value;
+      const match = /^GMT([+-])(\d{1,2})(?::(\d{2}))?$/.exec(label ?? '');
+      if (!match) return 0;
+      const minutes = Number(match[2]) * 60 + Number(match[3] ?? 0);
+      return (match[1] === '-' ? -minutes : minutes) * 60_000;
+    };
+    const wall = wallTime.getTime();
+    const before = offset(wall - MS_PER_DAY);
+    const earlier = wall - before;
+    return new Date(
+      offset(earlier) === before ? earlier : Math.max(earlier, wall - offset(wall + MS_PER_DAY)),
+    );
+  } catch {
+    return wallTime;
+  }
+}
+
+/** Positive for a future calendar date, zero today, and negative in the past. */
 export function daysFromToday(
   target: string | null | undefined,
   now: Date = new Date(),

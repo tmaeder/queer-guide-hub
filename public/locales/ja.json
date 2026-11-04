@@ -431,7 +431,10 @@
       "placesCount_one": "{{count}} 件の場所",
       "daysPlanned_one": "{{count}} 日プラン済み",
       "travelBuddies": "[JA] Let travellers heading to {{city}} find you",
-      "travelBuddiesNoCity": "[JA] Let other travellers on this trip find you"
+      "travelBuddiesNoCity": "[JA] Let other travellers on this trip find you",
+      "saveOfflineAria": "旅行をオフライン用に保存",
+      "savedOffline": "オフライン用に保存しました",
+      "savedOfflineDescription": "「今日」を開くと、旅程と予約をオフラインで確認できます。"
     },
     "share": {
       "title": "この旅を共有",
@@ -454,7 +457,8 @@
       "deleteConfirm": "このリンクを持つ人はアクセスできなくなります。この操作は取り消せません。",
       "expired": "期限切れ",
       "expiresOn": "{{date}} に期限切れ",
-      "activeLinks_one": "{{count}} 件のアクティブリンク"
+      "activeLinks_one": "{{count}} 件のアクティブリンク",
+      "managePeople": "招待または共有"
     },
     "itinerary": {
       "add": "追加",
@@ -490,7 +494,15 @@
       "timeUnknown": "[JA] time of day not known",
       "tooFew": "[JA] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
       "vibeAny": "[JA] A bit of everything",
-      "vibeLabel": "[JA] What you are after"
+      "vibeLabel": "[JA] What you are after",
+      "addStop": "立ち寄り先を追加",
+      "moveStop": "立ち寄り先を移動",
+      "moveUp": "上に移動",
+      "moveDown": "下に移動",
+      "moveToDay": "{{number}}日目に移動",
+      "removeStop": "立ち寄り先を削除",
+      "moveFailed": "立ち寄り先を移動できませんでした",
+      "moveRetry": "接続を確認して、もう一度お試しください。"
     },
     "map": {
       "emptyNoPlaces": "地図に表示するにはスポットを追加してください",
@@ -680,7 +692,8 @@
       "ctaSubtitle": "無料プラン、LGBTQ+ 安全情報、そして仲間との共同プランニング。",
       "ctaPrimary": "プランニングを始める",
       "ctaSecondary": "サインイン",
-      "footer": "queer.guide で共有"
+      "footer": "queer.guide で共有",
+      "loadFailed": "旅行を読み込めませんでした"
     },
     "tabs": {
       "itinerary": "旅程",
@@ -696,7 +709,11 @@
     "today": {
       "offlineBanner": "オフラインです — 最後に保存した旅程を表示しています。",
       "pushPrompt": "各予約の30分前に通知を受け取ります。",
-      "pushEnable": "有効にする"
+      "pushEnable": "有効にする",
+      "noOfflineCopy": "オフライン用のコピーがありません",
+      "noOfflineCopyHelp": "再接続して旅行を開き、オフライン用のコピーを保存してください。",
+      "title": "今日",
+      "startingNow": "まもなく開始"
     },
     "bookingAssistant": {
       "tabs": {
@@ -748,7 +765,10 @@
       "prepareTools": "出発の準備をする",
       "togetherTools": "一緒に計画する",
       "keepPlanning": "計画を続ける",
-      "memories": "思い出を追加"
+      "memories": "思い出を追加",
+      "itinerary": "旅程",
+      "people": "メンバーと共有",
+      "actions": "旅行の操作"
     },
     "phase": {
       "label": {
@@ -931,7 +951,8 @@
         "body": "すべての停車地が入った、あなたの旅程になります。あとから自由に変更できます。",
         "primary": "旅程にする",
         "secondary": "もう一度引く"
-      }
+      },
+      "buildRoute": "ルートを作成"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -1150,7 +1171,9 @@
     },
     "offline": {
       "pending_one": "{{count}}件の変更が同期待ち",
-      "pending_other": "{{count}}件の変更が同期待ち"
+      "pending_other": "{{count}}件の変更が同期待ち",
+      "saveFailed": "旅行をオフライン用に保存できませんでした",
+      "syncRejected": "オフラインでの変更の一部を保存できませんでした"
     },
     "inbox": {
       "openThread": "チャットで確認",
@@ -1165,6 +1188,16 @@
       "created": "旅程を作成しました",
       "createdDescription": "ここから停車地を追加できます。",
       "error": "旅程を作成できませんでした"
+    },
+    "booklet": {
+      "print": "印刷またはPDFで保存",
+      "reservationsUnavailable": "予約情報を読み込めなかったため、このコピーには含まれません。"
+    },
+    "view": {
+      "today": "今日"
+    },
+    "invitations": {
+      "title": "旅行への招待"
     }
   },
   "auth": {

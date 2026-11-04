@@ -1,62 +1,65 @@
-/* eslint-disable react-refresh/only-export-components -- intentionally co-locates helpers/constants with the primary component */
+/* eslint-disable react-refresh/only-export-components -- route parsing and navigation share the view contract */
 
-import { useSearchParams } from 'react-router';
-import { Map, Clock, BookOpen } from '@/components/icons';
+import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { AMBIENT_TRIP_WORKSPACE_ENABLED } from '@/lib/trips/ambientTripFlags';
+import type { TripWorkspaceSection } from './tripWorkspaceSection';
 
 export type TripView = 'plan' | 'today' | 'booklet';
 
-const VIEWS: { key: TripView; icon: typeof Map; labelKey: string; fallback: string }[] = [
-  { key: 'plan', icon: Map, labelKey: 'trips.view.plan', fallback: 'Plan' },
-  { key: 'today', icon: Clock, labelKey: 'trips.view.today', fallback: 'Today' },
-  { key: 'booklet', icon: BookOpen, labelKey: 'trips.view.booklet', fallback: 'Booklet' },
-];
-
 interface Props {
-  current: TripView;
-  className?: string;
+  current: TripView | TripWorkspaceSection;
+  showToday: boolean;
 }
 
-export function TripViewSwitcher({ current, className }: Props) {
+export function TripViewSwitcher({ current, showToday }: Props) {
   const { t } = useTranslation();
-  const [, setSearchParams] = useSearchParams();
+  const destinations = [
+    {
+      id: 'plan',
+      label: t('trips.workspace.itinerary', 'Itinerary'),
+      query: 'view=plan&section=plan',
+    },
+    ...(AMBIENT_TRIP_WORKSPACE_ENABLED
+      ? [
+          {
+            id: 'prepare',
+            label: t('trips.workspace.prepare', 'Prepare'),
+            query: 'view=plan&section=prepare',
+          },
+          {
+            id: 'together',
+            label: t('trips.workspace.people', 'People & sharing'),
+            query: 'view=plan&section=together',
+          },
+        ]
+      : []),
+    ...(showToday
+      ? [{ id: 'today', label: t('trips.view.today', 'Today'), query: 'view=today' }]
+      : []),
+  ];
 
   return (
     <nav
-      aria-label={t('trips.view.switcher', 'Trip view')}
-      className={cn(
-        'inline-flex items-center gap-1 rounded-container bg-surface-container p-1 shadow-soft',
-        className,
-      )}
+      aria-label={t('trips.workspace.sections', 'Trip workspace')}
+      className="flex flex-wrap gap-x-1"
     >
-      {VIEWS.map(({ key, icon: Icon, labelKey, fallback }) => {
-        const active = current === key;
-        return (
-          <button
-            key={key}
-            aria-current={active ? 'page' : undefined}
-            onClick={() => {
-              setSearchParams(
-                (prev) => {
-                  prev.set('view', key);
-                  return prev;
-                },
-                { replace: true },
-              );
-            }}
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded-element px-4 py-1.5 text-sm transition-colors',
-              active
-                ? 'bg-foreground text-background'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            <Icon className="h-4 w-4" aria-hidden />
-            <span>{t(labelKey, fallback)}</span>
-          </button>
-        );
-      })}
+      {destinations.map(({ id, label, query }) => (
+        <Link
+          key={id}
+          to={{ search: `?${query}` }}
+          aria-current={current === id ? 'page' : undefined}
+          className={cn(
+            'inline-flex min-h-11 items-center border-b-2 px-2 text-sm sm:px-4',
+            current === id
+              ? 'border-foreground font-semibold text-foreground'
+              : 'border-transparent text-muted-foreground hover:text-foreground',
+          )}
+        >
+          {label}
+        </Link>
+      ))}
     </nav>
   );
 }
@@ -65,7 +68,7 @@ export function getTripViewFromSearch(
   search: URLSearchParams,
   fallback: TripView = 'plan',
 ): TripView {
-  const v = search.get('view');
-  if (v === 'plan' || v === 'today' || v === 'booklet') return v;
+  const view = search.get('view');
+  if (view === 'plan' || view === 'today' || view === 'booklet') return view;
   return fallback;
 }
