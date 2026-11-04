@@ -4,7 +4,7 @@ import worker, { type Env } from "../src/index";
 const account = "11111111-1111-4111-8111-111111111111";
 const otherAccount = "22222222-2222-4222-8222-222222222222";
 
-async function search(body: object, options: { fail?: boolean; rerank?: object[]; path?: string; auth?: boolean; oldDatabase?: boolean } = {}) {
+async function search(body: object, options: { fail?: boolean; rerank?: object[]; path?: string; auth?: boolean; oldDatabase?: boolean; analytics?: boolean } = {}) {
 	const requests: Array<{ url: string; body: Record<string, unknown> }> = [];
 	const wait: Promise<unknown>[] = [];
 	const kv = { get: async () => null, put: async () => undefined };
@@ -41,7 +41,7 @@ async function search(body: object, options: { fail?: boolean; rerank?: object[]
 	const response = await worker.fetch(
 		new Request(`https://search.queer.guide${options.path ?? "/"}`, {
 			method: "POST",
-			headers: { "Content-Type": "application/json", Origin: "https://queer.guide", ...(options.auth ? { Authorization: "Bearer fixture-token" } : {}) },
+			headers: { "Content-Type": "application/json", Origin: "https://queer.guide", ...(options.auth ? { Authorization: "Bearer fixture-token" } : {}), ...(options.analytics ? { "X-Search-Analytics": "1" } : {}) },
 			body: JSON.stringify(body),
 		}),
 		env,
@@ -131,6 +131,14 @@ describe("search request integrity", () => {
 		expect(response.headers.get("Access-Control-Allow-Credentials")).toBe("true");
 		expect(response.headers.get("Access-Control-Expose-Headers")).toContain("X-Search-Session");
 		expect(response.headers.get("X-Search-Session")).toBe("v2");
+	});
+
+	it("only records the first search page after analytics opt-in", async () => {
+		for (const [page, analytics, expected] of [[0, false, 0], [0, true, 1], [1, true, 0]] as const) {
+			const { requests, response } = await search({ query: "Berlin", page }, { analytics });
+			expect(response.status).toBe(200);
+			expect(requests.filter(({ url }) => url.endsWith("/rpc/log_search"))).toHaveLength(expected);
+		}
 	});
 
 	it("executes a cluster-only browse", async () => {

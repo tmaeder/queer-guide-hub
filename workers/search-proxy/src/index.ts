@@ -162,6 +162,7 @@ export default {
 		const cors = useCredentialedCors ? credentialedCors : getCorsHeaders(request, env);
 		if (useCredentialedCors && SESSION_READ_PATHS.has(url.pathname)) {
 			cors["X-Search-Session"] = "v2";
+			cors["Access-Control-Allow-Headers"] += ", x-search-analytics";
 		}
 		if (request.method === "OPTIONS") return new Response(null, { headers: cors });
 
@@ -627,26 +628,29 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const processingTimeMS = Date.now() - started;
 	timings.totalMs = processingTimeMS;
 
-	// Fire-and-forget analytics log.
-	ctx.waitUntil(
-		fetch(`${env.SUPABASE_URL}/rest/v1/rpc/log_search`, {
-			method: "POST",
-			headers: {
-				apikey: env.SUPABASE_SERVICE_KEY,
-				authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				p_session_id: session_id ?? null,
-				p_query: q,
-				p_lang: lang,
-				p_filters: mergedFilters,
-				p_n_results: final.length,
-				p_took_ms: processingTimeMS,
-				p_had_rewrite: !!rewrite,
-			}),
-		}).catch(() => void 0),
-	);
+	// Count the initial search once, and only when the site reports opt-in.
+	if (page === 0 && request.headers.get("X-Search-Analytics") === "1" &&
+		new Headers(cors).get("X-Search-Session") === "v2") {
+		ctx.waitUntil(
+			fetch(`${env.SUPABASE_URL}/rest/v1/rpc/log_search`, {
+				method: "POST",
+				headers: {
+					apikey: env.SUPABASE_SERVICE_KEY,
+					authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					p_session_id: session_id ?? null,
+					p_query: q,
+					p_lang: lang,
+					p_filters: mergedFilters,
+					p_n_results: final.length,
+					p_took_ms: processingTimeMS,
+					p_had_rewrite: !!rewrite,
+				}),
+			}).catch(() => void 0),
+		);
+	}
 
 	return json(
 		{

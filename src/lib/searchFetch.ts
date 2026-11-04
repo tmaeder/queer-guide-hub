@@ -19,6 +19,7 @@
  * which masked the prod-down CSP misconfiguration for hours.
  */
 
+import { analyticsAllowed } from '@/lib/analyticsConsent';
 import { withSentry } from '@/lib/sentryClient';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -53,7 +54,14 @@ let workerSupportsSearchSession = false;
 
 export async function searchReadFetch(url: string, init: RequestInit): Promise<Response> {
   const credentials = workerSupportsSearchSession ? 'include' : 'same-origin';
-  const response = await fetch(url, { ...init, credentials }).catch((error: unknown) => {
+  const path = new URL(url).pathname;
+  let headers = init.headers;
+  if (workerSupportsSearchSession && (path === '/' || path === '/search') && analyticsAllowed()) {
+    const optedIn = new Headers(headers);
+    optedIn.set('X-Search-Analytics', '1');
+    headers = optedIn;
+  }
+  const response = await fetch(url, { ...init, credentials, headers }).catch((error: unknown) => {
     if (credentials !== 'include' || init.signal?.aborted || !(error instanceof TypeError)) {
       throw error;
     }

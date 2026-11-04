@@ -1,3 +1,4 @@
+import { CONSENT_STORAGE_KEY, CONSENT_VERSION } from '../analyticsConsent';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { SearchFetchException, isSearchUnavailable, SEARCH_UNAVAILABLE_MESSAGE, searchFetch, searchReadFetch } from '../searchFetch';
 
@@ -21,6 +22,30 @@ describe('searchFetch', () => {
     expect(fetchMock.mock.calls.map(([, init]) => init.credentials)).toEqual([
       'same-origin', 'include', 'same-origin',
     ]);
+  });
+
+  it('sends analytics opt-in only after negotiation and while consent is current', async () => {
+    const supportsSession = () => Response.json({}, { headers: { 'X-Search-Session': 'v2' } });
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(supportsSession())
+      .mockResolvedValueOnce(supportsSession())
+      .mockResolvedValueOnce(Response.json({}));
+    vi.stubGlobal('fetch', fetchMock);
+    const url = 'https://search.queer.guide/search';
+    localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify({
+      version: CONSENT_VERSION, preferences: { analytics: true },
+    }));
+    try {
+      await searchReadFetch(url, { method: 'POST' });
+      await searchReadFetch(url, { method: 'POST' });
+      localStorage.removeItem(CONSENT_STORAGE_KEY);
+      await searchReadFetch(url, { method: 'POST' });
+      expect(fetchMock.mock.calls.map(([, init]) =>
+        new Headers(init.headers).get('X-Search-Analytics'),
+      )).toEqual([null, '1', null]);
+    } finally {
+      localStorage.removeItem(CONSENT_STORAGE_KEY);
+    }
   });
 
   it('retries a deadline even when fetch rejects without an AbortError', async () => {
