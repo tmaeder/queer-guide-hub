@@ -12,7 +12,7 @@
 
 import { personalizedRank } from "./rank";
 import { embed, rerank, DEFAULT_EMBED_MODEL } from "./ai";
-import { rewriteQuery } from "./rewrite";
+import { rewriteQuery, type RewrittenQuery } from "./rewrite";
 import { Toucan } from "toucan-js";
 
 function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | null {
@@ -103,6 +103,28 @@ const WRITE_PATHS = new Set(["/track", "/feedback", "/onboarding"]);
 // path's normal runtime, which silently downgraded good results to the
 // popularity fallback.
 const KEYWORD_ONLY_RPC_TIMEOUT_MS = 9000;
+
+// How long /search waits for the LLM query rewrite before going ahead without
+// it (the call keeps running under ctx.waitUntil and caches its answer in KV).
+// A KV hit resolves in a few ms, so these only bite on a first-time query.
+export const REWRITE_BUDGET_MS_EN = 300;
+export const REWRITE_BUDGET_MS_OTHER = 1200;
+
+/** Resolves to the promise's value, or null if it has not settled within `ms`. */
+export function withBudget<T>(p: Promise<T | null>, ms: number): Promise<T | null> {
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const timeout = new Promise<null>((resolve) => {
+		timer = setTimeout(() => resolve(null), ms);
+	});
+	return Promise.race([p, timeout]).finally(() => {
+		if (timer !== undefined) clearTimeout(timer);
+	});
+}
+
+/** The text handed to the embedding model: base query plus synonym terms. */
+export function embedTextFor(base: string, synonyms: string[]): string {
+	return synonyms.length ? `${base} ${synonyms.join(" ")}` : base;
+}
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -353,7 +375,35 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// Query rewrite: translates non-EN, extracts intent hints (city, type), adds synonyms.
 	// Enabled when lang != en OR query is short (< 3 words). Skipped for power queries.
 	const shouldRewrite = lang !== "en" || q.split(/\s+/).length < 3;
-	const rewrite = shouldRewrite ? await rewriteQuery(env, q, lang) : null;
+	//
+	// THE REWRITE MAY NOT HOLD UP THE SEARCH. It is an LLM call (5s hard cap)
+	// that used to run serially BEFORE the embedding, so every first-time
+	// query paid for it in full: measured on prod 2026-11-04, an uncached
+	// one-word query took 3.7s against 1.8s for the same shape with no
+	// rewrite. It now gets a short budget on the hot path — a KV hit resolves
+	// in milliseconds and is used as before — and on a miss the search goes
+	// ahead without it while ctx.waitUntil lets the call finish and populate
+	// KV, so the SECOND search for the same query gets the translation and
+	// synonyms. Non-English queries get a longer budget because the
+	// translation is what drives cross-language recall on the vector arm.
+	// Meanwhile the embedding of the literal query starts immediately and is
+	// reused whenever the rewrite adds nothing (or misses its budget).
+	const rewritePromise: Promise<RewrittenQuery | null> = shouldRewrite
+		? rewriteQuery(env, q, lang).catch(() => null)
+		: Promise.resolve(null);
+	if (shouldRewrite) ctx.waitUntil(rewritePromise);
+	const embedModel = env.EMBED_MODEL || DEFAULT_EMBED_MODEL;
+	const sessionKey = user_id ? `u:${user_id}` : session_id ? `s:${session_id}` : null;
+	// Independent of the rewrite: start now, await later.
+	const signalP = loadSignal(env, { user_id, session_id });
+	const recentP = sessionKey ? loadRecentSeen(env, sessionKey) : Promise.resolve(new Set<string>());
+	const tagsP = expandTagsWithNarrower(env, filters.tags);
+	const pgSyns = await loadActiveSynonyms(env);
+	const literalEmbedText = embedTextFor(q, Array.from(new Set<string>(expandWithPgSynonyms(q, pgSyns, { locale: lang }))));
+	const literalVecP = embed(env, literalEmbedText, { cacheKey: `q:${embedModel}:${lang}:${literalEmbedText}` });
+	const rewrite = shouldRewrite
+		? await withBudget(rewritePromise, lang === "en" ? REWRITE_BUDGET_MS_EN : REWRITE_BUDGET_MS_OTHER)
+		: null;
 
 	// THE REWRITE AUGMENTS. IT MUST NEVER REPLACE.
 	//
@@ -427,17 +477,12 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		? [...new Set<string>(allTypes.map((t) => INDEX_MAP[t] || t).filter((t) => ALL_INDEXES.includes(t)))]
 		: ALL_INDEXES;
 
-	// Parallel: embed q + load personalization signal + seen-recently set.
-	const embedModel = env.EMBED_MODEL || DEFAULT_EMBED_MODEL;
-	const sessionKey = user_id ? `u:${user_id}` : session_id ? `s:${session_id}` : null;
-
 	// Postgres-backed synonyms (search_synonyms WHERE status='active'),
 	// cached in Worker KV (5 min). Augments the LLM rewrite synonyms.
 	// Fail-open on KV / Supabase errors — empty list is fine.
 	// Expanded over the original AND the translation, not the translation alone:
 	// a de-locale synonym row keyed on the word the user actually typed could
 	// never fire once `q_en` had replaced it.
-	const pgSyns = await loadActiveSynonyms(env);
 	const pgExpansionTerms = expandWithPgSynonyms(
 		translatedQ ? `${q} ${translatedQ}` : q,
 		pgSyns,
@@ -448,11 +493,15 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	);
 
 	// Vector arm only. The keyword arm gets `keywordQ` (see pgArgs below).
-	const embedText = allSynonyms.length ? `${embedQ} ${allSynonyms.join(" ")}` : embedQ;
+	const embedText = embedTextFor(embedQ, allSynonyms);
+	// Reuse the speculative literal embedding when the rewrite changed nothing
+	// (the common case on a first-time query, where it missed its budget).
 	const [qVec, signal, recent] = await Promise.all([
-		embed(env, embedText, { cacheKey: `q:${embedModel}:${lang}:${embedText}` }),
-		loadSignal(env, { user_id, session_id }),
-		sessionKey ? loadRecentSeen(env, sessionKey) : Promise.resolve(new Set<string>()),
+		embedText === literalEmbedText
+			? literalVecP
+			: embed(env, embedText, { cacheKey: `q:${embedModel}:${lang}:${embedText}` }),
+		signalP,
+		recentP,
 	]);
 
 	// Compose biased vector in JS (weighted mean over signal.biasItems, normalized).
@@ -468,7 +517,9 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 
 	// Widen a tag filter to include its narrower descendants (governed ontology).
 	// Fail-open: returns the original tags on any error.
-	const expandedTags = await expandTagsWithNarrower(env, mergedFilters.tags);
+	// mergedFilters.tags is never touched by the rewrite, so the expansion
+	// started before it is the same one.
+	const expandedTags = await tagsP;
 
 	const pgArgs: PgSearchArgs = {
 		// The user's literal words — never the translation. See the keywordQ /
