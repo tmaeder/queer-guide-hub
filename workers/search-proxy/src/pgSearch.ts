@@ -16,7 +16,14 @@
 
 import type { Env } from "./index";
 
-const RPC_TIMEOUT_MS = 4000;
+// 6s, not 4s. When this timeout fires, /search serves the v_popular_entities
+// fallback — unrelated rows at _rankingScore 0.1 — instead of the answer. On
+// 2026-11-04 search_hybrid measured mean 760 ms but max 7.4 s (cold cache), and
+// `sauna` / `new york` rendered "Pllek, Amsterdam" and "Maxway Coffee, Berlin".
+// Migration 99991793759708 removed most of that cost (cold `sauna` 3.1 s -> 1.0 s);
+// this headroom covers the residual cold-cache tail. Two more seconds of wait is
+// better than a confident list of wrong results.
+const RPC_TIMEOUT_MS = 6000;
 
 export interface PgSearchArgs {
 	query: string;
