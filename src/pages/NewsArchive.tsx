@@ -108,6 +108,7 @@ export default function NewsArchive() {
   const {
     articles: searchHits,
     totalHits: searchTotalHits,
+    nextPage: nextSearchPage,
     loading: searchLoading,
     error: searchError,
     searchArticles: runSemanticSearch,
@@ -345,10 +346,8 @@ export default function NewsArchive() {
 
   useEffect(() => {
     const query = quickSearch.trim();
-    if (query.length < 2) {
-      resetSemanticSearch();
-      return;
-    }
+    resetSemanticSearch(query.length >= 2);
+    if (query.length < 2) return;
     const timer = setTimeout(() => {
       void runSemanticSearch(query, buildSearchFilters(currentFilters), 0, sortBy);
     }, 300);
@@ -527,8 +526,8 @@ export default function NewsArchive() {
   const sortedArticles = isSemanticSearch
     ? (searchHits as unknown as typeof articles)
     : getSortedArticles();
-  const displayLoading = isSemanticSearch ? searchLoading : loading;
-  const displayError = isSemanticSearch ? searchError : error;
+  const displayLoading = isSemanticSearch ? searchLoading && nextSearchPage === null : loading;
+  const displayError = isSemanticSearch ? (nextSearchPage === null ? searchError : null) : error;
   /** Retry / Refresh re-run what is on screen. A bare fetchArticles() here
    *  replaced the request with an unfiltered one, so retrying a filtered
    *  archive silently showed the whole corpus. */
@@ -545,8 +544,8 @@ export default function NewsArchive() {
   // Load-More pattern: currentPage is the number of pages currently *visible* (cumulative).
   // Clicking "Load more" increments by 1 and grows the window — old articles stay rendered.
   const visibleCount = currentPage * ARTICLES_PER_PAGE;
-  const paginatedArticles = sortedArticles.slice(0, visibleCount);
-  const hasMore = sortedArticles.length > visibleCount;
+  const paginatedArticles = isSemanticSearch ? sortedArticles : sortedArticles.slice(0, visibleCount);
+  const hasMore = isSemanticSearch ? nextSearchPage !== null : sortedArticles.length > visibleCount;
 
   const visibleArticleIds = useMemo(() => {
     const ids = new Set<string>();
@@ -558,7 +557,11 @@ export default function NewsArchive() {
   const { assets: articleAssets } = useEntityImageAssets('news_article', visibleArticleIds);
 
   const handleLoadMore = () => {
-    setCurrentPage((p) => p + 1);
+    if (!isSemanticSearch) {
+      setCurrentPage((p) => p + 1);
+    } else if (nextSearchPage !== null && !searchLoading) {
+      void runSemanticSearch(quickSearch.trim(), buildSearchFilters(currentFilters), nextSearchPage, sortBy);
+    }
   };
 
   // Per-tab badge counts come from `useNews` (separate count-only queries,
@@ -905,6 +908,7 @@ export default function NewsArchive() {
             {!displayLoading &&
               !displayError &&
               sortedArticles.length === 0 &&
+              !hasMore &&
               (hasActiveFilters ? (
                 <EmptyState
                   icon={Newspaper}
@@ -1098,16 +1102,20 @@ export default function NewsArchive() {
                     )}
                   </AnimatePresence>
 
-                  {/* Load More — replaces numbered pagination. Cumulative window grows on click. */}
-                  {hasMore && viewMode !== 'stories' && (
-                    <div className="flex justify-center pt-4">
-                      <Button variant="outline" onClick={handleLoadMore}>
-                        Load more articles
-                      </Button>
-                    </div>
-                  )}
                 </div>
               )}
+            {hasMore && viewMode !== 'stories' && (
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
+                {isSemanticSearch && searchError && <p role="alert">{searchError}</p>}
+                <Button variant="outline" onClick={handleLoadMore} disabled={isSemanticSearch && searchLoading}>
+                  {isSemanticSearch && searchLoading
+                    ? t('common.loading', 'Loading…')
+                    : isSemanticSearch && searchError
+                      ? t('common.tryAgain', 'Try again')
+                      : t('pages.news.loadMore', 'Load more articles')}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </PageContainer>

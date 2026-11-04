@@ -42,6 +42,9 @@ interface WorkerSearchResponse {
   estimatedTotalHits?: number;
 }
 
+const PAGE_SIZE = 24;
+const MAX_SEARCH_PAGE = 200; // search-proxy accepts zero-based pages 0–200.
+
 const SORT_MAP: Record<string, string> = {
   'date-desc': 'date_desc',
   'date-asc': 'date_asc',
@@ -52,6 +55,7 @@ export function useNewsSearch() {
   const [articles, setArticles] = useState<Record<string, unknown>[]>([]);
   const [totalHits, setTotalHits] = useState<number | null>(null);
   const [facets, setFacets] = useState<Record<string, Record<string, number>>>({});
+  const [nextPage, setNextPage] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const activeRequest = useRef<AbortController | null>(null);
@@ -71,6 +75,12 @@ export function useNewsSearch() {
     const controller = new AbortController();
     activeRequest.current = controller;
     const { signal } = controller;
+    if (page === 0) {
+      setArticles([]);
+      setNextPage(null);
+      setTotalHits(null);
+      setFacets({});
+    }
     setLoading(true);
     setError(null);
 
@@ -87,25 +97,37 @@ export function useNewsSearch() {
       const result = await searchFetch<WorkerSearchResponse>('/search', {
         query: q,
         filters: workerFilters,
-        hitsPerPage: 24,
+        hitsPerPage: PAGE_SIZE,
         page,
       }, { signal });
       if (signal.aborted) return;
 
-      const rankedIds = result.hits
+      const rankedIds = [...new Set(result.hits
         .filter((h) => h.type === 'news' && h.objectID)
-        .map((h) => h.objectID as string);
+        .map((h) => h.objectID as string))];
 
       const hasLocalFilters = !!(
         filters.language || filters.mediaType || filters.sentiment || filters.trustScoreMin ||
         filters.authorNames?.length || filters.sourceIds?.length ||
         filters.countryIds?.length || filters.cityIds?.length
       );
-      setTotalHits(hasLocalFilters ? null : (result.totalHits ?? result.estimatedTotalHits ?? null));
-      setFacets(result.facetDistribution ?? {});
+      const total = result.totalHits ?? result.estimatedTotalHits;
+      const more = page < MAX_SEARCH_PAGE && result.hits.length > 0 && (
+        total == null ? result.hits.length === PAGE_SIZE : (page + 1) * PAGE_SIZE < total
+      );
+      const completePage = (items: Record<string, unknown>[]) => {
+        setArticles((previous) => {
+          if (page === 0) return items;
+          const seen = new Set(previous.map((article) => article.id));
+          return [...previous, ...items.filter((item) => !seen.has(item.id))];
+        });
+        setTotalHits(hasLocalFilters ? null : (total ?? null));
+        setFacets(result.facetDistribution ?? {});
+        setNextPage(more ? page + 1 : null);
+      };
 
       if (rankedIds.length === 0) {
-        setArticles([]);
+        completePage([]);
         return;
       }
 
@@ -151,7 +173,7 @@ export function useNewsSearch() {
         return true;
       });
 
-      setArticles(postFiltered);
+      completePage(postFiltered);
     } catch (err) {
       if (signal.aborted) return;
       if (isSearchUnavailable(err)) {
@@ -167,15 +189,16 @@ export function useNewsSearch() {
     }
   }, []);
 
-  const reset = useCallback(() => {
+  const reset = useCallback((pending = false) => {
     activeRequest.current?.abort();
     activeRequest.current = null;
     setArticles([]);
+    setNextPage(null);
     setTotalHits(null);
     setFacets({});
     setError(null);
-    setLoading(false);
+    setLoading(pending);
   }, []);
 
-  return { articles, totalHits, facets, loading, error, searchArticles, cancelSearch, reset };
+  return { articles, totalHits, facets, nextPage, loading, error, searchArticles, cancelSearch, reset };
 }
