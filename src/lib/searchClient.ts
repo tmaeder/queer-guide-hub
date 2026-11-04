@@ -8,7 +8,7 @@
 
 import { analyticsAllowed } from '@/lib/analyticsConsent';
 import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
-import { searchAuthHeaders, searchReadCredentials } from '@/lib/searchFetch';
+import { searchAuthHeaders, searchReadFetch } from '@/lib/searchFetch';
 
 const SEARCH_URL = import.meta.env?.VITE_SEARCH_PROXY_URL || 'https://search.queer.guide';
 
@@ -55,11 +55,12 @@ async function post<T>(path: string, body: object, signal?: AbortSignal): Promis
   const writes = WRITE_PATHS.has(path);
   const personal = writes || PERSONAL_READ_PATHS.has(path);
   const auth = personal ? await searchAuthHeaders() : {};
-  const res = await fetch(`${SEARCH_URL}${path}`, {
+  const request = PERSONAL_READ_PATHS.has(path) ? searchReadFetch : fetch;
+  const res = await request(`${SEARCH_URL}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...auth },
     body: JSON.stringify(body),
-    credentials: writes ? 'include' : personal ? searchReadCredentials() : 'same-origin',
+    credentials: writes ? 'include' : 'same-origin',
     keepalive: !signal,
     signal: signal ?? AbortSignal.timeout(10_000),
   });

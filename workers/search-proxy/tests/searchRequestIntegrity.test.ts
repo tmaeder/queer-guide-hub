@@ -4,7 +4,7 @@ import worker, { type Env } from "../src/index";
 const account = "11111111-1111-4111-8111-111111111111";
 const otherAccount = "22222222-2222-4222-8222-222222222222";
 
-async function search(body: object, options: { fail?: boolean; rerank?: object[]; path?: string; auth?: boolean } = {}) {
+async function search(body: object, options: { fail?: boolean; rerank?: object[]; path?: string; auth?: boolean; oldDatabase?: boolean } = {}) {
 	const requests: Array<{ url: string; body: Record<string, unknown> }> = [];
 	const wait: Promise<unknown>[] = [];
 	const kv = { get: async () => null, put: async () => undefined };
@@ -34,7 +34,7 @@ async function search(body: object, options: { fail?: boolean; rerank?: object[]
 				title: `Fixture ${index}`,
 				type: "event",
 			}));
-			return Response.json({ total: hits.length, hits });
+			return Response.json({ total: hits.length, hits, ...(options.oldDatabase ? {} : { filterContract: 2 }) });
 		}
 		return Response.json(url.endsWith("/rpc/search_facets") ? {} : []);
 	}));
@@ -114,6 +114,23 @@ describe("search request integrity", () => {
 			const rpc = requests.find(({ url }) => url.endsWith(`/rpc/${name}`));
 			expect(rpc?.body.p_filters).toEqual(filters);
 		}
+	});
+
+	it("rejects a filtered response when the database does not implement the filters", async () => {
+		const { response, data } = await search(
+			{ query: "Berlin", filters: { categories: ["bar", "cafe"] } },
+			{ oldDatabase: true },
+		);
+		expect(response.status).toBe(503);
+		expect(data.code).toBe("search_unavailable");
+	});
+
+	it("advertises signed read credentials to the configured site", async () => {
+		const { response } = await search({ query: "Berlin" });
+		expect(response.headers.get("Access-Control-Allow-Origin")).toBe("https://queer.guide");
+		expect(response.headers.get("Access-Control-Allow-Credentials")).toBe("true");
+		expect(response.headers.get("Access-Control-Expose-Headers")).toContain("X-Search-Session");
+		expect(response.headers.get("X-Search-Session")).toBe("v2");
 	});
 
 	it("executes a cluster-only browse", async () => {

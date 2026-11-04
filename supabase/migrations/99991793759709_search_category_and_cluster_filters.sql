@@ -42,6 +42,12 @@ begin
     if v_filters = '$4' then
       v_anchor := 'lower(sd.facets->>''category'')=lower($4->>''category''))';
       v_new := v_anchor || ' and ' || format(v_category, v_filters) || format(v_cluster, v_filters);
+      if position('jsonb_build_object(''total'',(select count(*) from cand),''hits''' in v_src) = 0 then
+        raise exception 'Unexpected search_hybrid response structure';
+      end if;
+      v_src := replace(v_src,
+        'jsonb_build_object(''total'',(select count(*) from cand),''hits''',
+        'jsonb_build_object(''filterContract'',2,''total'',(select count(*) from cand),''hits''');
     else
       -- Category choices describe the same search with just the category
       -- restriction removed. The original facet and type totals stay filtered.

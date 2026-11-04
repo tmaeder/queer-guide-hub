@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { SearchFetchException, isSearchUnavailable, SEARCH_UNAVAILABLE_MESSAGE, searchFetch } from '../searchFetch';
+import { SearchFetchException, isSearchUnavailable, SEARCH_UNAVAILABLE_MESSAGE, searchFetch, searchReadFetch } from '../searchFetch';
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: { auth: { getSession: async () => ({ data: { session: null } }) } },
@@ -7,6 +7,21 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 describe('searchFetch', () => {
   afterEach(() => vi.unstubAllGlobals());
+
+  it('negotiates credentialed reads and falls back after a worker rollback', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(Response.json({}, { headers: { 'X-Search-Session': 'v2' } }))
+      .mockRejectedValueOnce(new TypeError('CORS'))
+      .mockResolvedValueOnce(Response.json({}));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const url = 'https://search.queer.guide/search';
+    await searchReadFetch(url, { method: 'POST' });
+    await searchReadFetch(url, { method: 'POST' });
+    expect(fetchMock.mock.calls.map(([, init]) => init.credentials)).toEqual([
+      'same-origin', 'include', 'same-origin',
+    ]);
+  });
 
   it('retries a deadline even when fetch rejects without an AbortError', async () => {
     const fetchMock = vi.fn()

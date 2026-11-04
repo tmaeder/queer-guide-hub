@@ -192,13 +192,17 @@ export async function pgHybridSearch(env: Env, args: PgSearchArgs, timeoutMs = R
 	let hybridMs = 0;
 	let facetsMs = 0;
 	const [hybrid, facets] = await Promise.all([
-		callRpc<{ total?: number; hits?: Array<Record<string, unknown>> }>(env, "search_hybrid", hybridArgs, timeoutMs).finally(
+		callRpc<{ total?: number; hits?: Array<Record<string, unknown>>; filterContract?: number }>(env, "search_hybrid", hybridArgs, timeoutMs).finally(
 			() => (hybridMs = Date.now() - started),
 		),
 		callRpc<Record<string, Record<string, number>>>(env, "search_facets", facetArgs, timeoutMs)
 			.catch(() => ({}))
 			.finally(() => (facetsMs = Date.now() - started)),
 	]);
+
+	if ((pFilters.categories || pFilters.cluster_ids) && hybrid?.filterContract !== 2) {
+		throw new Error("Search filter contract is unavailable");
+	}
 
 	const hits = (hybrid?.hits ?? []).map(mapHit);
 	return {

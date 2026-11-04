@@ -49,10 +49,20 @@ interface FetchOpts {
   signal?: AbortSignal;
 }
 
-export function searchReadCredentials(): RequestCredentials {
-  const origin = typeof window === 'undefined' ? '' : window.location.origin;
-  return origin === 'https://queer.guide' || origin === 'https://www.queer.guide' ||
-    origin === 'http://localhost:3000' ? 'include' : 'same-origin';
+let workerSupportsSearchSession = false;
+
+export async function searchReadFetch(url: string, init: RequestInit): Promise<Response> {
+  const credentials = workerSupportsSearchSession ? 'include' : 'same-origin';
+  const response = await fetch(url, { ...init, credentials }).catch((error: unknown) => {
+    if (credentials !== 'include' || init.signal?.aborted || !(error instanceof TypeError)) {
+      throw error;
+    }
+    // An older worker can only return wildcard CORS for these reads.
+    workerSupportsSearchSession = false;
+    return fetch(url, { ...init, credentials: 'same-origin' });
+  });
+  workerSupportsSearchSession = response.headers?.get('X-Search-Session') === 'v2';
+  return response;
 }
 
 export async function searchAuthHeaders(): Promise<Record<string, string>> {
@@ -85,12 +95,11 @@ export async function searchFetch<T>(
 
     let res: Response;
     try {
-      res = await fetch(url.toString(), {
+      res = await searchReadFetch(url.toString(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify(body),
         signal: controller.signal,
-        credentials: searchReadCredentials(),
         keepalive: true,
       });
     } catch (err) {

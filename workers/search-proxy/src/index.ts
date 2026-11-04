@@ -160,12 +160,16 @@ export default {
 		const useCredentialedCors = WRITE_PATHS.has(url.pathname) ||
 			(SESSION_READ_PATHS.has(url.pathname) && !!credentialedCors["Access-Control-Allow-Origin"]);
 		const cors = useCredentialedCors ? credentialedCors : getCorsHeaders(request, env);
+		if (useCredentialedCors && SESSION_READ_PATHS.has(url.pathname)) {
+			cors["X-Search-Session"] = "v2";
+		}
 		if (request.method === "OPTIONS") return new Response(null, { headers: cors });
 
 		// Existing per-IP, per-endpoint fixed-minute quota. /health bypasses.
 		if (url.pathname !== "/health") {
 			const rl = await rateLimit(env, request);
 			Object.assign(cors, quotaHeaders(rl.limit, rl.remaining, rl.reset));
+			if (cors["X-Search-Session"]) cors["Access-Control-Expose-Headers"] += ", X-Search-Session";
 			if (!rl.ok) {
 				return json(
 					{ error: "rate_limited", code: "rate_limited", retry_after: rl.retryAfter, limit: rl.limit, window_seconds: 60 },
