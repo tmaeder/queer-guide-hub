@@ -327,7 +327,7 @@ export async function getBranding(env: Env): Promise<BrandingDoc | null> {
   try {
     const key = env.SUPABASE_ANON_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY;
     if (!env.SUPABASE_URL || !key) return remember(lastKnown, FAILURE_TTL_MS);
-    const url = `${env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/site_branding?id=eq.1&select=published,overrides_enabled`;
+    const url = `${env.SUPABASE_URL.replace(/\/+$/g, '')}/rest/v1/site_branding?id=eq.1&select=published,overrides_enabled`;
     const res = await fetch(url, {
       headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' },
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),

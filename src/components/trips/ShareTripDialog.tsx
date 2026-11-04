@@ -129,7 +129,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
   type IcalCategory = 'all' | 'places' | 'events' | 'reservations';
 
   const icalSubscriptionUrl = (token: string, category: IcalCategory = 'all') => {
-    const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/$/, '');
+    const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/+$/g, '');
     if (!supabaseUrl) return '';
     const params = new URLSearchParams({ token });
     if (category !== 'all') params.set('category', category);

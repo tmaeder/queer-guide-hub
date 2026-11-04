@@ -90,7 +90,7 @@ export function AdminSidebar() {
   // The queue workspace supplies these exact totals through its own request.
   const review = useAdminReviewSummary(
     !['/admin', '/admin/governance', '/admin/inbox', '/admin/review'].includes(
-      location.pathname.replace(/\/$/, ''),
+      location.pathname.replace(/\/+$/g, ''),
     ),
   );
   const { pins, togglePin, isPinned } = useAdminNavPins();

@@ -46,7 +46,7 @@ export async function getGlossaryVocabulary(env: Env): Promise<GlossaryLinkTerm[
     const key = env.SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_ANON_KEY;
     if (!env.SUPABASE_URL || !key) return remember(lastKnown, FAILURE_TTL_MS);
     const url =
-      `${env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/glossary_link_terms_public` +
+      `${env.SUPABASE_URL.replace(/\/+$/g, '')}/rest/v1/glossary_link_terms_public` +
       `?select=surface_form,match_mode,slug&limit=${VOCABULARY_HARD_CAP}`;
     const res = await fetch(url, {
       headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' },

@@ -119,7 +119,7 @@ export async function fetchRows(
   if (!env.SUPABASE_URL) return [];
   const key = env.SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_ANON_KEY;
   if (!key) return [];
-  const base = `${env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${table}`;
+  const base = `${env.SUPABASE_URL.replace(/\/+$/g, '')}/rest/v1/${table}`;
   const rows: Row[] = [];
 
   for (let offset = 0; offset < maxRows; offset += PAGE_SIZE) {

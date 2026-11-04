@@ -312,7 +312,7 @@ export function getArchetypeEntry(path: string): AdminArchetypeEntry | undefined
 
 /** Registry entry for a live pathname, following dynamic segments. */
 function entryForRoute(pathname: string): AdminArchetypeEntry | undefined {
-  const rest = pathname.replace(/^\/admin\/?/, '').replace(/\/$/, '');
+  const rest = pathname.replace(/^\/admin\/?/, '').replace(/\/+$/g, '');
   return BY_PATH.get(rest === '' ? '(index)' : rest) ?? matchDynamic(rest);
 }
 

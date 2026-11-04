@@ -93,7 +93,7 @@ async function isGatedEntity(
   if (!key) return false;
   try {
     const res = await fetch(
-      `${env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/gated_entity_exists`,
+      `${env.SUPABASE_URL.replace(/\/+$/g, '')}/rest/v1/rpc/gated_entity_exists`,
       {
         method: 'POST',
         headers: {

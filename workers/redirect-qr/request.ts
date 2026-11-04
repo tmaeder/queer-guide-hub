@@ -160,7 +160,7 @@ export async function parseQrImageRequest(
       if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(storageOrigin))
         throw new QrImageError('Saved logo storage is unavailable.', 503);
       const response = await fetcher(
-        storageOrigin.replace(/\/$/, '') +
+        storageOrigin.replace(/\/+$/g, '') +
           '/storage/v1/object/public/redirect-brand-assets/' +
           values.logo,
         {

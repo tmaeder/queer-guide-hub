@@ -13,5 +13,5 @@ export function hasSocialLinks(links: unknown): boolean {
 
 /** A website URL as a reader wants to see it: no scheme, no trailing slash. */
 export function displayWebsite(url: string): string {
-  return url.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+  return url.replace(/^https?:\/\//i, '').replace(/\/+$/g, '');
 }

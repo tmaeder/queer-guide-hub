@@ -22,7 +22,7 @@ export async function readQrImageProfile(
   let response: Response;
   try {
     response = await fetcher(
-      origin.replace(/\/$/, '') + '/functions/v1/redirect-api/public-qr-image',
+      origin.replace(/\/+$/g, '') + '/functions/v1/redirect-api/public-qr-image',
       {
         method: 'GET',
         headers: { Authorization: 'Bearer ' + token, apikey: anonKey },
@@ -95,7 +95,7 @@ export async function readQrImageProfile(
       !['image/png', 'image/jpeg'].includes(String(asset.mime)) ||
       asset.key !== asset.id + (asset.mime === 'image/png' ? '.png' : '.jpg') ||
       asset.url !==
-        origin.replace(/\/$/, '') +
+        origin.replace(/\/+$/g, '') +
           '/storage/v1/object/public/redirect-brand-assets/' +
           asset.key ||
       !Number.isInteger(asset.bytes) ||

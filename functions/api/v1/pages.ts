@@ -26,7 +26,7 @@ export function publicPages(request: Request): Response {
     [...url.searchParams.keys()].some((key) => key !== 'prefix') ||
     url.searchParams.getAll('prefix').length > 1 ||
     Array.from(prefix).length > 128 ||
-    (url.pathname.replace(/\/$/, '') !== '/api/v1/pages' && url.search)
+    (url.pathname.replace(/\/+$/g, '') !== '/api/v1/pages' && url.search)
   )
     return apiError(
       400,
@@ -36,7 +36,7 @@ export function publicPages(request: Request): Response {
     );
   let slug: string;
   try {
-    slug = decodeURIComponent(url.pathname.replace(/^\/api\/v1\/pages\/?/, '').replace(/\/$/, ''));
+    slug = decodeURIComponent(url.pathname.replace(/^\/api\/v1\/pages\/?/, '').replace(/\/+$/g, ''));
   } catch {
     return apiError(
       400,

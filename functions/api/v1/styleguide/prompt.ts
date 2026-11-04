@@ -78,7 +78,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     return fail(400, 'v must be a semver version such as 1.0.0');
   }
 
-  const base = env.SUPABASE_URL?.replace(/\/$/, '');
+  const base = env.SUPABASE_URL?.replace(/\/+$/g, '');
   // The anon key is enough and is the right key: RLS on styleguide_versions
   // already publishes exactly what this endpoint is allowed to serve, so
   // reaching for the service role would only widen what a bug here could leak.

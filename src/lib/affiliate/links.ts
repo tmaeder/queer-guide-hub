@@ -75,7 +75,7 @@ function goQuery(params: GoLinkParams): URLSearchParams {
  */
 export function goHref(params: GoLinkParams): string {
   if (!SEARCH_PROXY_URL) return applySubId(params.url, params.partner, params.surface);
-  return `${SEARCH_PROXY_URL.replace(/\/$/, '')}/go?${goQuery(params).toString()}`;
+  return `${SEARCH_PROXY_URL.replace(/\/+$/g, '')}/go?${goQuery(params).toString()}`;
 }
 
 /**
@@ -87,7 +87,7 @@ export function beaconImpression(params: GoLinkParams): void {
   try {
     const qs = goQuery(params);
     qs.set('beacon', '1');
-    const href = `${SEARCH_PROXY_URL.replace(/\/$/, '')}/go?${qs.toString()}`;
+    const href = `${SEARCH_PROXY_URL.replace(/\/+$/g, '')}/go?${qs.toString()}`;
     if (navigator.sendBeacon) navigator.sendBeacon(href);
     else void fetch(href, { method: 'GET', keepalive: true, mode: 'no-cors' });
   } catch {

@@ -21,7 +21,7 @@ function basicAuth(user: string, pass: string): string {
 
 /** Fetch the JMAP session: API/upload endpoints + the primary mail account id. */
 export async function getSession(baseUrl: string, user: string, pass: string): Promise<JmapSession> {
-  const res = await fetch(`${baseUrl.replace(/\/$/, '')}/.well-known/jmap`, {
+  const res = await fetch(`${baseUrl.replace(/\/+$/g, '')}/.well-known/jmap`, {
     headers: { Authorization: basicAuth(user, pass) },
   });
   if (!res.ok) throw new Error(`jmap session ${res.status}`);

@@ -33,7 +33,7 @@ export async function rpc<T>(
   const key = env.SUPABASE_ANON_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY;
   if (!env.SUPABASE_URL || !key) return null;
   try {
-    const res = await fetch(`${env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/${fn}`, {
+    const res = await fetch(`${env.SUPABASE_URL.replace(/\/+$/g, '')}/rest/v1/rpc/${fn}`, {
       method: 'POST',
       headers: {
         apikey: key,
