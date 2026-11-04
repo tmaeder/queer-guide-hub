@@ -314,7 +314,7 @@ export default function TripPlannerPage() {
       <TripNudgesBanner tripId={trip.id} />
 
       {(section === 'together' || section === 'all') && (
-        <section className="mb-6 flex flex-wrap items-center gap-3">
+        <section className="mb-6 flex flex-wrap items-center gap-4">
           <Button onClick={() => setShareOpen(true)}>
             <Share2 size={16} /> {t('trips.share.managePeople', 'Invite or share')}
           </Button>

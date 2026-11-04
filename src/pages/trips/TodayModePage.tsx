@@ -107,8 +107,17 @@ export default function TodayModePage() {
   const accessDenied = !!error && (errorKind === 'not-found' || errorKind === 'permission-denied');
   useEffect(() => {
     if (!online || !accessDenied || !userId || !tripId) return;
-    setCached(undefined);
-    void removeTripSnapshot(userId, tripId);
+    let cancelled = false;
+    void removeTripSnapshot(userId, tripId).then(() => {
+      if (!cancelled) {
+        setCached((current) =>
+          current?.userId === userId && current.tripId === tripId ? undefined : current,
+        );
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [online, accessDenied, userId, tripId]);
 
   const snapshot =

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,9 +24,15 @@ export function useOfflineTripSync() {
   const userId = user?.id;
   const { t } = useTranslation();
   const activeUser = useRef(userId);
-  activeUser.current = userId;
   const replaying = useRef(false);
   const [pending, setPending] = useState({ userId, count: 0 });
+
+  useLayoutEffect(() => {
+    activeUser.current = userId;
+    return () => {
+      activeUser.current = undefined;
+    };
+  }, [userId]);
 
   const refreshCount = useCallback(() => {
     if (!userId) return;

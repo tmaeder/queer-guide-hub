@@ -166,7 +166,7 @@ function SharedTripPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-4 text-center">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
         <h1 className="text-2xl font-bold">
           {t('trips.shared.loadFailed', 'This trip could not load')}
         </h1>
