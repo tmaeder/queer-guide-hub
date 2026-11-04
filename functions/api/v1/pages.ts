@@ -36,7 +36,9 @@ export function publicPages(request: Request): Response {
     );
   let slug: string;
   try {
-    slug = decodeURIComponent(url.pathname.replace(/^\/api\/v1\/pages\/?/, '').replace(/\/+$/g, ''));
+    slug = decodeURIComponent(
+      url.pathname.replace(/^\/api\/v1\/pages\/?/, '').replace(/\/+$/g, ''),
+    );
   } catch {
     return apiError(
       400,
