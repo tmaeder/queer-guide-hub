@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { enqueueMutation } from '@/lib/offline/mutationQueue';
 import { qk } from '@/lib/queryKeys';
 
@@ -141,6 +142,7 @@ export function useTripPacking(tripId: string | undefined) {
 }
 
 export function usePackingMutations(tripId: string) {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'packing') });
@@ -181,11 +183,13 @@ export function usePackingMutations(tripId: string) {
   });
 
   const toggleChecked = useMutation({
+    networkMode: 'always',
     mutationFn: async ({ id, is_checked }: { id: string; is_checked: boolean }) => {
       // Offline: queue the patch — the optimistic cache write below keeps
       // the checkbox responsive; useOfflineTripSync replays on reconnect.
       if (typeof navigator !== 'undefined' && !navigator.onLine) {
-        await enqueueMutation('trip_packing_items', id, tripId, { is_checked });
+        if (!user) throw new Error('Not signed in');
+        await enqueueMutation(user.id, 'trip_packing_items', id, tripId, { is_checked });
         return;
       }
       const { error } = await supabase

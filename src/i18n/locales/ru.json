@@ -445,7 +445,10 @@
       "daysPlanned_many": "{{count}} дней запланировано",
       "daysPlanned_other": "{{count}} дней запланировано",
       "travelBuddies": "[RU] Let travellers heading to {{city}} find you",
-      "travelBuddiesNoCity": "[RU] Let other travellers on this trip find you"
+      "travelBuddiesNoCity": "[RU] Let other travellers on this trip find you",
+      "saveOfflineAria": "Сохранить поездку для просмотра без интернета",
+      "savedOffline": "Сохранено для просмотра без интернета",
+      "savedOfflineDescription": "Откройте раздел «Сегодня», чтобы посмотреть маршрут и бронирования без интернета."
     },
     "share": {
       "title": "Поделиться поездкой",
@@ -470,7 +473,8 @@
       "deleteTitle": "Удалить ссылку",
       "deleteConfirm": "Все, у кого есть эта ссылка, потеряют доступ. Отменить нельзя.",
       "expired": "Истекла",
-      "expiresOn": "Истекает {{date}}"
+      "expiresOn": "Истекает {{date}}",
+      "managePeople": "Пригласить или поделиться"
     },
     "itinerary": {
       "add": "Добавить",
@@ -506,7 +510,15 @@
       "timeUnknown": "[RU] time of day not known",
       "tooFew": "[RU] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
       "vibeAny": "[RU] A bit of everything",
-      "vibeLabel": "[RU] What you are after"
+      "vibeLabel": "[RU] What you are after",
+      "addStop": "Добавить остановку",
+      "moveStop": "Переместить остановку",
+      "moveUp": "Переместить выше",
+      "moveDown": "Переместить ниже",
+      "moveToDay": "Перенести на день {{number}}",
+      "removeStop": "Удалить остановку",
+      "moveFailed": "Не удалось переместить остановку",
+      "moveRetry": "Проверьте подключение и попробуйте снова."
     },
     "map": {
       "emptyNoPlaces": "Добавьте места, чтобы увидеть их на карте",
@@ -708,7 +720,8 @@
       "ctaSubtitle": "Бесплатные маршруты, ЛГБТК+ инфо о безопасности и совместное планирование.",
       "ctaPrimary": "Начать планирование",
       "ctaSecondary": "Войти",
-      "footer": "Поделились через queer.guide"
+      "footer": "Поделились через queer.guide",
+      "loadFailed": "Не удалось загрузить поездку"
     },
     "tabs": {
       "itinerary": "Маршрут",
@@ -724,7 +737,11 @@
     "today": {
       "offlineBanner": "Вы не в сети — показан последний сохранённый маршрут.",
       "pushPrompt": "Напоминание за 30 минут до каждого бронирования.",
-      "pushEnable": "Включить"
+      "pushEnable": "Включить",
+      "noOfflineCopy": "Нет копии для просмотра без интернета",
+      "noOfflineCopyHelp": "Подключитесь к интернету, чтобы открыть поездку и сохранить копию для просмотра без интернета.",
+      "title": "Сегодня",
+      "startingNow": "Начинается сейчас"
     },
     "bookingAssistant": {
       "tabs": {
@@ -776,7 +793,10 @@
       "prepareTools": "Подготовиться к поездке",
       "togetherTools": "Планировать вместе",
       "keepPlanning": "Продолжить планирование",
-      "memories": "Добавить воспоминания"
+      "memories": "Добавить воспоминания",
+      "itinerary": "Маршрут",
+      "people": "Участники и доступ",
+      "actions": "Действия с поездкой"
     },
     "phase": {
       "label": {
@@ -959,7 +979,8 @@
         "body": "Превратится в вашу поездку со всеми остановками. Потом можно изменить что угодно.",
         "primary": "Сделать поездкой",
         "secondary": "Построить другую"
-      }
+      },
+      "buildRoute": "Создать маршрут"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -1182,7 +1203,9 @@
       "pending_one": "{{count}} изменение ожидает синхронизации",
       "pending_few": "{{count}} изменения ожидают синхронизации",
       "pending_many": "{{count}} изменений ожидают синхронизации",
-      "pending_other": "{{count}} изменения ожидают синхронизации"
+      "pending_other": "{{count}} изменения ожидают синхронизации",
+      "saveFailed": "Не удалось сохранить поездку для просмотра без интернета",
+      "syncRejected": "Не удалось сохранить некоторые изменения, сделанные без интернета"
     },
     "inbox": {
       "openThread": "Проверить в чате",
@@ -1197,6 +1220,16 @@
       "created": "Поездка создана",
       "createdDescription": "Добавляйте остановки отсюда.",
       "error": "Не удалось создать поездку"
+    },
+    "booklet": {
+      "print": "Распечатать или сохранить в PDF",
+      "reservationsUnavailable": "Не удалось загрузить бронирования. Их не будет в этой копии."
+    },
+    "view": {
+      "today": "Сегодня"
+    },
+    "invitations": {
+      "title": "Приглашения в поездки"
     }
   },
   "auth": {

@@ -62,7 +62,7 @@ export default function TripsDiscoverPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useLocalizedNavigate();
-  const { createTrip, addPlacesBulk } = useTripMutations();
+  const { createTripWithStops } = useTripMutations();
   const activeTripContext = useOptionalActiveTrip();
 
   useMeta({
@@ -179,26 +179,25 @@ export default function TripsDiscoverPage() {
     const dates = lineDates(result, activeWindow?.start ?? null, now);
     setCreating(true);
     try {
-      const trip = await createTrip.mutateAsync({
-        title: t('trips.discover.route.tripTitle', '{{cities}} line', {
-          cities: result.stations.map((s) => s.name).join(' – '),
-        }),
-        start_date: dates?.start,
-        end_date: dates?.end,
-        currency: head.currency ?? 'USD',
-        cover_image_url: head.imageUrl ?? undefined,
-        // NOT NULL in the DB. The old TripTemplates path omitted both and
-        // raised 23502 on every click.
-        primary_city_id: head.id,
-        primary_country_id: head.countryId,
-        primary_city_name: head.name,
-        primary_country_code: head.countryCode ?? undefined,
-        timezone: head.timezone ?? undefined,
-        vibe_tags: [vibe ? `vibe:${vibe}` : 'vibe:any', `pace:${pace}`, `seed:${seed}`],
-      });
-      await addPlacesBulk.mutateAsync({
-        tripId: trip.id,
-        rows: result.stations.map((s, i) => ({
+      const trip = await createTripWithStops.mutateAsync({
+        trip: {
+          title: t('trips.discover.route.tripTitle', '{{cities}} line', {
+            cities: result.stations.map((s) => s.name).join(' – '),
+          }),
+          start_date: dates?.start,
+          end_date: dates?.end,
+          currency: head.currency ?? 'USD',
+          cover_image_url: head.imageUrl ?? undefined,
+          // NOT NULL in the DB. The old TripTemplates path omitted both and
+          // raised 23502 on every click.
+          primary_city_id: head.id,
+          primary_country_id: head.countryId,
+          primary_city_name: head.name,
+          primary_country_code: head.countryCode ?? undefined,
+          timezone: head.timezone ?? undefined,
+          vibe_tags: [vibe ? `vibe:${vibe}` : 'vibe:any', `pace:${pace}`, `seed:${seed}`],
+        },
+        stops: result.stations.map((s, i) => ({
           day_id: null,
           venue_id: null,
           event_id: null,
@@ -241,8 +240,7 @@ export default function TripsDiscoverPage() {
     navigate,
     activeWindow,
     now,
-    createTrip,
-    addPlacesBulk,
+    createTripWithStops,
     activeTripContext,
     t,
     toast,

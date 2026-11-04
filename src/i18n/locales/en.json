@@ -1173,7 +1173,10 @@
       "daysPlanned_one": "{{count}} day planned",
       "daysPlanned_other": "{{count}} days planned",
       "travelBuddies": "Let travellers heading to {{city}} find you",
-      "travelBuddiesNoCity": "Let other travellers on this trip find you"
+      "travelBuddiesNoCity": "Let other travellers on this trip find you",
+      "saveOfflineAria": "Save trip for offline use",
+      "savedOffline": "Saved for offline use",
+      "savedOfflineDescription": "Open Today to view your itinerary and reservations offline."
     },
     "share": {
       "title": "Share this trip",
@@ -1196,7 +1199,8 @@
       "deleteTitle": "Delete share link",
       "deleteConfirm": "Anyone with this link will lose access. This can't be undone.",
       "expired": "Expired",
-      "expiresOn": "Expires {{date}}"
+      "expiresOn": "Expires {{date}}",
+      "managePeople": "Invite or share"
     },
     "itinerary": {
       "add": "Add",
@@ -1232,7 +1236,15 @@
       "timeUnknown": "time of day not known",
       "tooFew": "Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
       "vibeAny": "A bit of everything",
-      "vibeLabel": "What you are after"
+      "vibeLabel": "What you are after",
+      "addStop": "Add stop",
+      "moveStop": "Move stop",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "moveToDay": "Move to day {{number}}",
+      "removeStop": "Remove stop",
+      "moveFailed": "Could not move this stop",
+      "moveRetry": "Check your connection and try again."
     },
     "map": {
       "emptyNoPlaces": "Add places to see them on the map",
@@ -1422,7 +1434,8 @@
       "ctaSubtitle": "Free itineraries, LGBTQ+ safety briefings, and shared planning with your people.",
       "ctaPrimary": "Start planning",
       "ctaSecondary": "Sign in",
-      "footer": "Shared via queer.guide"
+      "footer": "Shared via queer.guide",
+      "loadFailed": "This trip could not load"
     },
     "tabs": {
       "itinerary": "Itinerary",
@@ -1438,7 +1451,11 @@
     "today": {
       "offlineBanner": "You're offline. Showing your last-saved itinerary.",
       "pushPrompt": "Get a reminder 30 min before each reservation.",
-      "pushEnable": "Enable"
+      "pushEnable": "Enable",
+      "noOfflineCopy": "No offline copy available",
+      "noOfflineCopyHelp": "Reconnect to open the trip and save a copy for offline use.",
+      "title": "Today",
+      "startingNow": "Starting now"
     },
     "bookingAssistant": {
       "tabs": {
@@ -1490,7 +1507,10 @@
       "prepareTools": "Get ready to go",
       "togetherTools": "Plan it together",
       "keepPlanning": "Keep planning",
-      "memories": "Add memories"
+      "memories": "Add memories",
+      "itinerary": "Itinerary",
+      "people": "People & sharing",
+      "actions": "Trip actions"
     },
     "phase": {
       "label": {
@@ -1673,7 +1693,8 @@
         "body": "Turns into a trip you own, with every stop already on it. Change anything you like afterwards.",
         "primary": "Make it a trip",
         "secondary": "Draw another"
-      }
+      },
+      "buildRoute": "Build a route"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -1872,7 +1893,9 @@
     },
     "offline": {
       "pending_one": "{{count}} change waiting to sync",
-      "pending_other": "{{count}} changes waiting to sync"
+      "pending_other": "{{count}} changes waiting to sync",
+      "saveFailed": "Could not save this trip offline",
+      "syncRejected": "Some offline changes could not be saved"
     },
     "inbox": {
       "openThread": "Review in chat",
@@ -1887,6 +1910,16 @@
       "created": "Trip created",
       "createdDescription": "Add your stops from here.",
       "error": "Could not create the trip"
+    },
+    "booklet": {
+      "print": "Print or save as PDF",
+      "reservationsUnavailable": "Reservations could not load and will be missing from this copy."
+    },
+    "view": {
+      "today": "Today"
+    },
+    "invitations": {
+      "title": "Trip invitations"
     }
   },
   "help": {

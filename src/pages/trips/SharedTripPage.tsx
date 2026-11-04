@@ -3,7 +3,7 @@ import { useParams, Link as RouterLink } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { MapPin, AlertTriangle, Heart, Sparkles } from '@/components/icons';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { SUPABASE_URL } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { Card, CardContent } from '@/components/ui/card';
@@ -99,9 +99,10 @@ function SharedTripPage() {
   const { token } = useParams<{ token: string }>();
   const { t, i18n } = useTranslation();
   const [authOpen, setAuthOpen] = useState(false);
+  const { user: viewer } = useAuth();
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['shared-trip', token],
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['shared-trip', token, viewer?.id],
     queryFn: async (): Promise<SharedTripData> => {
       // get_shared_trip_view returns one jsonb object (null for an unknown or
       // expired token). Sections the share does not grant are absent server-side.
@@ -112,12 +113,12 @@ function SharedTripPage() {
       return data as SharedTripData;
     },
     enabled: !!token,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   const { data: reactionsByPlace } = useTripReactions(data?.trip?.id);
   const { data: commentsByPlace } = useTripComments(data?.trip?.id);
-  const { user: viewer } = useAuth();
 
   useEffect(() => {
     if (!token || !data?.trip) return;
@@ -163,7 +164,18 @@ function SharedTripPage() {
 
   if (isLoading) return <PageLoadingState count={4} />;
 
-  if (error || !data || !data.trip) {
+  if (error) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-4 text-center">
+        <h1 className="text-2xl font-bold">
+          {t('trips.shared.loadFailed', 'This trip could not load')}
+        </h1>
+        <Button onClick={() => void refetch()}>{t('common.retry', 'Try again')}</Button>
+      </div>
+    );
+  }
+
+  if (!data || !data.trip) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         <h5 className="text-2xl font-bold mb-2">{t('trips.shared.notFoundTitle')}</h5>
@@ -292,8 +304,8 @@ function SharedTripPage() {
           </h1>
           {trip.start_date && trip.end_date && (
             <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.92)' }}>
-              {format(new Date(trip.start_date), 'MMM d, yyyy')} –{' '}
-              {format(new Date(trip.end_date), 'MMM d, yyyy')}
+              {format(parseISO(trip.start_date), 'MMM d, yyyy')} –{' '}
+              {format(parseISO(trip.end_date), 'MMM d, yyyy')}
             </p>
           )}
           {trip.description && (
@@ -364,7 +376,7 @@ function SharedTripPage() {
                         {t('trips.shared.dayLabel', { number: dayIdx + 1 })}
                       </Badge>
                       <p className="text-sm font-semibold">
-                        {format(new Date(day.date), 'EEEE, MMM d')}
+                        {format(parseISO(day.date), 'EEEE, MMM d')}
                       </p>
                       {day.title && <p className="text-sm text-muted-foreground">— {day.title}</p>}
                     </div>

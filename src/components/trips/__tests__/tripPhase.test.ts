@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { getTripPhase, phaseLabel, phaseStatusText, daysFromToday } from '../tripPhase';
+import {
+  getTripPhase,
+  phaseLabel,
+  phaseStatusText,
+  daysFromToday,
+  tripDateKey,
+  tripStopTime,
+} from '../tripPhase';
 import type { Trip } from '@/hooks/useTrips';
 
 const NOW = new Date('2026-04-18T12:00:00Z');
@@ -14,6 +21,36 @@ function trip(
     ...partial,
   };
 }
+
+describe('tripDateKey', () => {
+  it('keeps the destination day when the device is on the previous calendar date', () => {
+    const now = new Date('2026-11-03T23:15:00Z');
+    expect(tripDateKey(now, 'Europe/Zurich')).toBe('2026-11-04');
+    expect(tripDateKey(now, 'America/Los_Angeles')).toBe('2026-11-03');
+  });
+  it('keeps both occurrences of the DST fallback hour on the same date', () => {
+    expect(tripDateKey(new Date('2026-10-25T00:30:00Z'), 'Europe/Zurich')).toBe('2026-10-25');
+    expect(tripDateKey(new Date('2026-10-25T01:30:00Z'), 'Europe/Zurich')).toBe('2026-10-25');
+  });
+});
+
+describe('tripStopTime', () => {
+  it('resolves a stored TIME in the destination zone', () => {
+    expect(tripStopTime('2026-11-04', '12:30:00', 'Europe/Zurich')?.toISOString()).toBe(
+      '2026-11-04T11:30:00.000Z',
+    );
+    expect(tripStopTime('2026-11-04', null, 'Europe/Zurich')).toBeNull();
+  });
+
+  it('uses the earlier offset for a DST overlap and advances skipped times', () => {
+    expect(tripStopTime('2026-10-25', '02:30:00', 'Europe/Zurich')?.toISOString()).toBe(
+      '2026-10-25T00:30:00.000Z',
+    );
+    expect(tripStopTime('2026-03-29', '02:30:00', 'Europe/Zurich')?.toISOString()).toBe(
+      '2026-03-29T01:30:00.000Z',
+    );
+  });
+});
 
 describe('daysFromToday', () => {
   it('returns 0 for today', () => {

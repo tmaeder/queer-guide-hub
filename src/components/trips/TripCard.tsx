@@ -11,7 +11,7 @@ import {
   Pin,
   PinOff,
 } from '@/components/icons';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { Card, CardImage, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -89,13 +89,13 @@ export function TripCard({ trip }: Props) {
 
   const dateRange =
     trip.start_date && trip.end_date
-      ? `${format(new Date(trip.start_date), 'MMM d')} – ${format(
-          new Date(trip.end_date),
+      ? `${format(parseISO(trip.start_date), 'MMM d')} – ${format(
+          parseISO(trip.end_date),
           'MMM d, yyyy',
         )}`
       : trip.start_date
         ? t('trips.card.fromDate', {
-            date: format(new Date(trip.start_date), 'MMM d, yyyy'),
+            date: format(parseISO(trip.start_date), 'MMM d, yyyy'),
           })
         : t('trips.card.noDates');
 
@@ -106,9 +106,9 @@ export function TripCard({ trip }: Props) {
   const isActiveToday = (() => {
     if (!trip.start_date || !trip.end_date) return false;
     const now = new Date();
-    const start = new Date(trip.start_date);
+    const start = parseISO(trip.start_date);
     start.setHours(0, 0, 0, 0);
-    const end = new Date(trip.end_date);
+    const end = parseISO(trip.end_date);
     end.setHours(23, 59, 59, 999);
     return now >= start && now <= end;
   })();
