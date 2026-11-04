@@ -12,7 +12,7 @@ import { StationBadge } from '@/components/ui/StationBadge';
 import { cityGlyph } from '@/lib/cardGlyphs';
 import { tierForScore, EQUALITY_TIER_LABEL } from '@/utils/equalityScore';
 
-const CARDS = 8;
+const CARDS = 4;
 
 /**
  * The country's equality score, said out loud.
@@ -106,16 +106,18 @@ export function CityCards() {
     staleTime: 30 * 60_000,
   });
 
+  const loading = region.loading || isLoading;
+
   return (
     <Band
       surface="tint"
-      title={t('home.cities.title', 'Where are you riding?')}
+      title={t('home.discovery.cityGuides', 'City guides')}
       seeAllHref="/cities"
-      seeAllLabel={t('home.cities.seeAll', 'All cities')}
+      seeAllLabel={t('home.discovery.allCities', 'All cities')}
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {isLoading ? (
-          Array.from({ length: 8 }).map((_, i) => (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-busy={loading}>
+        {loading ? (
+          Array.from({ length: CARDS }).map((_, i) => (
             // Same shell + an empty diagram box, so the skeleton is exactly
             // as tall as the loaded card at every breakpoint instead of a
             // fixed height that only matches at one.
@@ -130,7 +132,7 @@ export function CityCards() {
               </div>
             </div>
           ))
-        ) : isError ? (
+        ) : isError && cities.length === 0 ? (
           <HomeSectionError
             className="sm:col-span-2 lg:col-span-4"
             retrying={isFetching}
@@ -174,6 +176,9 @@ export function CityCards() {
           })
         )}
       </div>
+      {isError && cities.length > 0 && (
+        <HomeSectionError stale retrying={isFetching} onRetry={() => void refetch()} />
+      )}
     </Band>
   );
 }

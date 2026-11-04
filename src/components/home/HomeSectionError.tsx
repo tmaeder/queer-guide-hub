@@ -8,6 +8,7 @@ interface HomeSectionErrorProps {
   title?: string;
   description?: string;
   retrying?: boolean;
+  stale?: boolean;
   className?: string;
 }
 
@@ -21,6 +22,7 @@ export function HomeSectionError({
   title,
   description,
   retrying = false,
+  stale = false,
   className,
 }: HomeSectionErrorProps) {
   const { t } = useTranslation();
@@ -31,6 +33,7 @@ export function HomeSectionError({
       aria-live="polite"
       className={cn(
         'flex min-h-48 flex-col items-start justify-center gap-4 rounded-container bg-card p-6 shadow-soft',
+        stale && 'min-h-0 shadow-none',
         className,
       )}
     >
@@ -38,15 +41,20 @@ export function HomeSectionError({
         <AlertTriangle className="mt-1 h-6 w-6 shrink-0 text-destructive" aria-hidden />
         <div>
           <p className="text-title font-bold text-foreground">
-            {title ?? t('home.sectionError.title', 'This section could not load')}
+            {title ??
+              (stale
+                ? t('home.discovery.refreshFailed', 'Couldn’t refresh these results.')
+                : t('home.sectionError.title', 'This section could not load'))}
           </p>
-          <p className="mt-2 max-w-xl text-15 text-muted-foreground">
-            {description ??
-              t(
-                'home.sectionError.description',
-                'Your place on the page is saved. Try this section again when you are ready.',
-              )}
-          </p>
+          {!stale && (
+            <p className="mt-2 max-w-xl text-15 text-muted-foreground">
+              {description ??
+                t(
+                  'home.sectionError.description',
+                  'Your place on the page is saved. Try this section again when you are ready.',
+                )}
+            </p>
+          )}
         </div>
       </div>
       <Button type="button" variant="outline" size="sm" loading={retrying} onClick={onRetry}>

@@ -1,16 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { REDUCED_MOTION } from './support/reducedMotion';
 
-/**
- * Glossary integration — the tags wiki surfaced across the product
- * (2026-08-22): the 7th nav intent, the compact footer link, chip hover cards
- * and the homepage band.
- *
- * Data-dependent assertions (hover definition, band cards) navigate through
- * the live glossary hub instead of pinning a fixture slug, so the spec keeps
- * working as the corpus moves.
- */
-
 test.use(REDUCED_MOTION);
 
 test.describe('glossary in navigation', () => {
@@ -95,72 +85,12 @@ test.describe('glossary hover cards', () => {
   });
 });
 
-test.describe('homepage glossary band', () => {
-  for (const state of ['entries', 'empty', 'error'] as const) {
-    test(`renders the ${state} response state`, async ({ page }) => {
-      // Only fixture the homepage preview query. Other glossary/API requests
-      // keep their normal contract; this UI check does not depend on live DB latency.
-      await page.route('**/rest/v1/unified_tags?*', async (route) => {
-        const params = new URL(route.request().url()).searchParams;
-        if (
-          params.get('limit') !== '24' ||
-          params.get('seo_indexable') !== 'eq.true' ||
-          params.get('is_adult') !== 'eq.false'
-        ) {
-          await route.fallback();
-          return;
-        }
-        await route.fulfill({
-          status: state === 'error' ? 400 : 200,
-          contentType: 'application/json',
-          body: JSON.stringify(
-            state === 'error'
-              ? { code: 'PGRST100', message: 'Preview fixture rejected' }
-              : state === 'empty'
-                ? []
-                : [
-                    {
-                      id: '00000000-0000-4000-8000-000000000001',
-                      slug: 'glossary-preview-fixture',
-                      name: 'Glossary preview fixture',
-                      short_description: 'A defined term for the homepage preview test.',
-                      description: null,
-                      category: 'Identity',
-                      is_adult: false,
-                      is_sensitive: false,
-                      image_url: null,
-                      usage_count: 10,
-                    },
-                  ],
-          ),
-        });
-      });
-      await page.goto('/');
-      const band = page.getByRole('heading', { name: 'Know the words' });
-      for (let i = 0; i < 20 && (await band.count()) === 0; i++) {
-        await page.mouse.wheel(0, 1600);
-        await page.waitForTimeout(250);
-      }
-      await band.scrollIntoViewIfNeeded();
-      await expect(band).toBeVisible();
-      const section = page.locator('section', { has: band });
-      const entryLinks = section.getByRole('link', { name: 'Read the entry' });
-      if (state === 'entries') {
-        await expect(entryLinks).toHaveCount(1);
-        await expect(entryLinks.first()).toHaveAttribute(
-          'href',
-          /\/tags\/glossary-preview-fixture$/,
-        );
-      } else if (state === 'empty') {
-        await expect(section.getByText(/no glossary terms are available right now/i)).toBeVisible();
-        await expect(entryLinks).toHaveCount(0);
-      } else {
-        await expect(section.getByText(/this section could not load/i)).toBeVisible({
-          timeout: 15_000,
-        });
-        await expect(section.getByRole('button', { name: /try again/i })).toBeVisible();
-        await expect(entryLinks).toHaveCount(0);
-      }
-    });
-  }
+test('homepage Terms link opens the glossary', async ({ page }) => {
+  await page.goto('/');
+  const browse = page.getByRole('region', { name: 'More from Queer Guide' });
+  const terms = browse.getByRole('link', { name: 'Terms', exact: true });
+  await expect(terms).toHaveAttribute('href', '/tags');
+  await terms.click();
+  await expect(page).toHaveURL(/\/tags$/);
+  await expect(page.locator('main h1')).toBeVisible();
 });

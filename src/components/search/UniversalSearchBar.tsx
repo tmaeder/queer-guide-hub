@@ -81,11 +81,8 @@ function getPlaceholder(
   isMobile: boolean,
   surface: 'header' | 'hero' = 'header',
 ) {
-  // The hero asks by example, while the header opens search from a compact
-  // trigger. Keeping the copy surface-aware also protects routes that embed a
-  // full bar-sized field of their own.
   if (surface === 'hero') {
-    return t('home.hero.searchPlaceholder', 'Try "sober rave berlin" or "trans healthcare"');
+    return t('home.discovery.search', 'Search places and events…');
   }
   if (pathname.startsWith('/admin')) return t('search.placeholders.generic', 'Search...');
   if (pathname.startsWith('/hotels')) return t('search.placeholders.hotels', 'Search hotels...');

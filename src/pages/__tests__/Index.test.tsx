@@ -35,10 +35,11 @@ describe('Index startup', () => {
       </MemoryRouter>,
     );
     const title = screen.getByRole('heading', { level: 1 });
-    expect(title).toHaveTextContent('No straight lines here.');
+    expect(title).toHaveTextContent('Find queer places and events');
     expect(title.className).not.toContain('sr-only');
     expect(screen.getByRole('link', { name: /open the map/i })).toHaveAttribute('href', '/map');
-    expect(screen.getByText('Search everything').closest('a')).toHaveAttribute('href', '/search');
+    expect(screen.getByRole('link', { name: 'Browse places' })).toHaveAttribute('href', '/venues');
+    expect(screen.getByRole('link', { name: 'Find events' })).toHaveAttribute('href', '/events');
     expect(screen.queryByTestId('home-content')).not.toBeInTheDocument();
 
     await act(async () => {
