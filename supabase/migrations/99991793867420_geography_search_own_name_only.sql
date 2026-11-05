@@ -53,7 +53,7 @@ begin
 end $function$;
 
 do $verify$
-declare v_src text := pg_get_functiondef('api_private.geo_cms_browse(uuid,text,text,integer,uuid,uuid,text)'::regprocedure);
+declare v_src text := regexp_replace(pg_get_functiondef('api_private.geo_cms_browse(uuid,text,text,integer,uuid,uuid,text)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g');
 begin
   if position('or co.name ilike' in v_src) > 0 then
     raise exception 'geo_cms_browse still matches a place by its country name';
