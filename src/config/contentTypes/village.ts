@@ -25,7 +25,13 @@ export const queerVillageFields: FieldConfig[] = [
   { name: 'history', label: 'History', type: 'richtext', group: 'details', colSpan: 2 },
   { name: 'website', label: 'Website', type: 'url', group: 'details' },
   { name: 'notable_landmarks', label: 'Notable Landmarks', type: 'tags', group: 'details' },
-  { name: 'boundaries', label: 'Boundaries', type: 'json', group: 'details', helpText: 'District boundary shape' },
+  {
+    name: 'boundaries',
+    label: 'Boundaries',
+    type: 'json',
+    group: 'details',
+    helpText: 'District boundary shape',
+  },
   // Location
   // `queer_villages` stores only the FKs — it has no city/country text columns, so
   // those targets wrote nothing. The autocompletes display via the FK.
@@ -163,7 +169,7 @@ export const queerVillageFields: FieldConfig[] = [
     listColumn: true,
     // Links to the Venues list filtered on `queer_village_id`, the key
     // `venues(count)` counts through; scoped by `listEmbedScopes` below.
-    listRender: (row) => countLink(row, 'venues', 'venues', 'queer_village_id'),
+    listRender: (row) => countLink(row, 'venues', 'organizations', 'venue_village_id'),
   },
   {
     name: 'events_count',
@@ -191,8 +197,7 @@ export const queerVillageContentType: ContentTypeConfig = {
   label: { singular: 'Queer Village', plural: 'Queer Villages' },
   color: 'hsl(var(--foreground))',
   fields: queerVillageFields,
-  listSelect:
-    '*,cities(name,population),countries(name,population),venues(count),events(count)',
+  listSelect: '*,cities(name,population),countries(name,population),venues(count),events(count)',
   // The Venues count links to the Venues list; count what that list shows.
   listEmbedScopes: [{ embed: 'venues', type: venueContentType }],
   defaults: { featured: false },
@@ -203,11 +208,15 @@ export const queerVillageContentType: ContentTypeConfig = {
     dedup: {
       searchType: 'queer_village',
       metaTable: 'queer_villages',
-      metaCols: 'id, quality_score:completeness_score, is_featured:featured, trust_score, created_at',
+      metaCols:
+        'id, quality_score:completeness_score, is_featured:featured, trust_score, created_at',
       mergePath: 'entities',
     },
   },
   merge: { column: 'duplicate_of_id', label: 'Merged' },
-  lifecycle: { type: 'queer_village', archive: { column: 'shell_status', value: 'ghost', label: 'Ghost' } },
+  lifecycle: {
+    type: 'queer_village',
+    archive: { column: 'shell_status', value: 'ghost', label: 'Ghost' },
+  },
   publicPath: (row) => (row.slug ? `/villages/${row.slug}` : null),
 };
