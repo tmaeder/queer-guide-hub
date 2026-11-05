@@ -131,3 +131,34 @@ test('city selection recovers from a stale recent and can be reset', async ({ pa
   await page.getByRole('button', { name: 'Use my area', exact: true }).click();
   expect(await page.evaluate(() => sessionStorage.getItem('qg_home_region'))).toBeNull();
 });
+
+test('city labels keep the picker and adjacent link in place', async ({ page }) => {
+  await page.setViewportSize({ width: 412, height: 823 });
+  await page.addInitScript(() => {
+    sessionStorage.setItem(
+      'qg_home_region',
+      JSON.stringify({
+        cityId: '00000000-0000-4000-8000-000000000001',
+        cityName: 'A',
+        ts: Date.now(),
+      }),
+    );
+  });
+  await openHome(page);
+  const picker = page.getByRole('button', { name: /change city/i });
+  const events = page.getByRole('link', { name: 'See all events' });
+  const initialPicker = await picker.boundingBox();
+  const initialEvents = await events.boundingBox();
+  expect(initialPicker).not.toBeNull();
+  expect(initialEvents).not.toBeNull();
+
+  await page.evaluate(() => {
+    const value = JSON.parse(sessionStorage.getItem('qg_home_region')!);
+    value.cityName = 'A very long city name that needs to truncate';
+    sessionStorage.setItem('qg_home_region', JSON.stringify(value));
+    window.dispatchEvent(new Event('qg-home-region-changed'));
+  });
+  await expect(picker).toHaveAccessibleName(/A very long city name/);
+  expect((await picker.boundingBox())!.width).toBe(initialPicker!.width);
+  expect((await events.boundingBox())!.x).toBe(initialEvents!.x);
+});
