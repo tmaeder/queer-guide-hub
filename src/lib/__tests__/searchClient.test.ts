@@ -283,6 +283,15 @@ describe('fetchAutocomplete', () => {
     expect(body).toEqual({ query: 'Berlin', types: [expected], limit: 5 });
   });
 
+  it('forwards caller cancellation to the autocomplete request', async () => {
+    const controller = new AbortController();
+    fetchSpy.mockResolvedValueOnce(jsonResponse({ suggestions: [] }));
+    await fetchAutocomplete('Berlin', undefined, 6, controller.signal);
+    const signal = fetchSpy.mock.calls[0][1].signal as AbortSignal;
+    controller.abort();
+    expect(signal.aborted).toBe(true);
+  });
+
   it('short-circuits to empty array for empty input', async () => {
     expect(await fetchAutocomplete('')).toEqual([]);
     expect(await fetchAutocomplete('   ')).toEqual([]);

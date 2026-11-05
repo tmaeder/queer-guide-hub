@@ -108,9 +108,11 @@ export default function NewsArchive() {
   const {
     articles: searchHits,
     totalHits: searchTotalHits,
+    nextPage: nextSearchPage,
     loading: searchLoading,
     error: searchError,
     searchArticles: runSemanticSearch,
+    cancelSearch: cancelSemanticSearch,
     reset: resetSemanticSearch,
   } = useNewsSearch();
 
@@ -322,8 +324,6 @@ export default function NewsArchive() {
     fetchNames();
   }, [articles]);
 
-  const semanticDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const buildSearchFilters = useCallback(
     (filters: Record<string, unknown>): NewsSearchFilters => ({
       tags: filters.tags as string[] | undefined,
@@ -344,10 +344,24 @@ export default function NewsArchive() {
     [],
   );
 
-  const applyFiltersAndFetch = (filters: Record<string, unknown>) => {
+  useEffect(() => {
+    const query = quickSearch.trim();
+    resetSemanticSearch(query.length >= 2);
+    if (query.length < 2) return;
+    const timer = setTimeout(() => {
+      void runSemanticSearch(query, buildSearchFilters(currentFilters), 0, sortBy);
+    }, 300);
+    return () => {
+      clearTimeout(timer);
+      cancelSemanticSearch();
+    };
+  }, [quickSearch, currentFilters, sortBy, buildSearchFilters,
+    runSemanticSearch, cancelSemanticSearch, resetSemanticSearch]);
+
+  const applyFiltersAndFetch = (filters: Record<string, unknown>, query = quickSearch) => {
     setCurrentFilters(filters);
     setCurrentPage(1);
-    fetchArticles(filters);
+    if (query.trim().length < 2) fetchArticles(filters);
   };
 
   const handleFiltersChange = (filters: Record<string, unknown>) => {
@@ -359,32 +373,20 @@ export default function NewsArchive() {
       sortOrder: option?.order || 'desc',
       ...(activeCategory ? { category: activeCategory } : {}),
     };
-    setCurrentFilters(filtersWithSort);
-    setCurrentPage(1);
-    if (quickSearch.trim().length >= 2) {
-      void runSemanticSearch(quickSearch.trim(), buildSearchFilters(filtersWithSort), 0, sortBy);
-    } else {
-      fetchArticles(filtersWithSort);
-    }
+    applyFiltersAndFetch(filtersWithSort);
   };
 
   const handleQuickSearch = (value: string) => {
     setQuickSearch(value);
-    const q = value.trim();
-    if (semanticDebounce.current) clearTimeout(semanticDebounce.current);
-    if (q.length >= 2) {
-      semanticDebounce.current = setTimeout(() => {
-        void runSemanticSearch(q, buildSearchFilters(currentFilters), 0, sortBy);
-      }, 300);
-    } else {
-      resetSemanticSearch();
+    setCurrentPage(1);
+    if (value.trim().length < 2) {
       const option = sortOptions.find((opt) => opt.value === sortBy);
       applyFiltersAndFetch({
         ...currentFilters,
         search: value || undefined,
         sortField: option?.field || 'published_at',
         sortOrder: option?.order || 'desc',
-      });
+      }, value);
     }
   };
 
@@ -425,11 +427,12 @@ export default function NewsArchive() {
       search: tag,
       sortField: option?.field || 'published_at',
       sortOrder: option?.order || 'desc',
-    });
+    }, tag);
   };
 
-  const handleFilterBySource = (sourceId: string, sourceName: string) => {
-    setQuickSearch(sourceName);
+  const handleFilterBySource = (sourceId: string) => {
+    setQuickSearch('');
+    setActiveCategory(null);
     const option = sortOptions.find((opt) => opt.value === sortBy);
     applyFiltersAndFetch({
       ...currentFilters,
@@ -438,7 +441,7 @@ export default function NewsArchive() {
       category: undefined,
       sortField: option?.field || 'published_at',
       sortOrder: option?.order || 'desc',
-    });
+    }, '');
   };
 
   const handleFilterByCategory = (category: string) => {
@@ -463,7 +466,7 @@ export default function NewsArchive() {
       search: author,
       sortField: option?.field || 'published_at',
       sortOrder: option?.order || 'desc',
-    });
+    }, author);
   };
 
   const getSortedArticles = () => {
@@ -505,9 +508,7 @@ export default function NewsArchive() {
   const clearRightFilter = () => {
     setActiveRight(null);
     const next = { ...currentFilters, tags: undefined };
-    setCurrentFilters(next);
-    setCurrentPage(1);
-    fetchArticles(next);
+    applyFiltersAndFetch(next);
   };
 
   const handleResetAndFocus = () => {
@@ -525,8 +526,8 @@ export default function NewsArchive() {
   const sortedArticles = isSemanticSearch
     ? (searchHits as unknown as typeof articles)
     : getSortedArticles();
-  const displayLoading = isSemanticSearch ? searchLoading : loading;
-  const displayError = isSemanticSearch ? searchError : error;
+  const displayLoading = isSemanticSearch ? searchLoading && nextSearchPage === null : loading;
+  const displayError = isSemanticSearch ? (nextSearchPage === null ? searchError : null) : error;
   /** Retry / Refresh re-run what is on screen. A bare fetchArticles() here
    *  replaced the request with an unfiltered one, so retrying a filtered
    *  archive silently showed the whole corpus. */
@@ -543,8 +544,8 @@ export default function NewsArchive() {
   // Load-More pattern: currentPage is the number of pages currently *visible* (cumulative).
   // Clicking "Load more" increments by 1 and grows the window — old articles stay rendered.
   const visibleCount = currentPage * ARTICLES_PER_PAGE;
-  const paginatedArticles = sortedArticles.slice(0, visibleCount);
-  const hasMore = sortedArticles.length > visibleCount;
+  const paginatedArticles = isSemanticSearch ? sortedArticles : sortedArticles.slice(0, visibleCount);
+  const hasMore = isSemanticSearch ? nextSearchPage !== null : sortedArticles.length > visibleCount;
 
   const visibleArticleIds = useMemo(() => {
     const ids = new Set<string>();
@@ -556,7 +557,11 @@ export default function NewsArchive() {
   const { assets: articleAssets } = useEntityImageAssets('news_article', visibleArticleIds);
 
   const handleLoadMore = () => {
-    setCurrentPage((p) => p + 1);
+    if (!isSemanticSearch) {
+      setCurrentPage((p) => p + 1);
+    } else if (nextSearchPage !== null && !searchLoading) {
+      void runSemanticSearch(quickSearch.trim(), buildSearchFilters(currentFilters), nextSearchPage, sortBy);
+    }
   };
 
   // Per-tab badge counts come from `useNews` (separate count-only queries,
@@ -715,12 +720,8 @@ export default function NewsArchive() {
                 onLoadSearch={(q, f) => {
                   setActiveRight(null);
                   setQuickSearch(q);
-                  setCurrentFilters(f);
-                  if (q.trim().length >= 2) {
-                    void runSemanticSearch(q.trim(), buildSearchFilters(f), 0, sortBy);
-                  } else {
-                    fetchArticles(f);
-                  }
+                  setActiveCategory(typeof f.category === 'string' ? f.category : null);
+                  applyFiltersAndFetch(f, q);
                 }}
                 onOpenHistory={() => setHistoryOpen(true)}
               />
@@ -907,6 +908,7 @@ export default function NewsArchive() {
             {!displayLoading &&
               !displayError &&
               sortedArticles.length === 0 &&
+              !hasMore &&
               (hasActiveFilters ? (
                 <EmptyState
                   icon={Newspaper}
@@ -1100,16 +1102,20 @@ export default function NewsArchive() {
                     )}
                   </AnimatePresence>
 
-                  {/* Load More — replaces numbered pagination. Cumulative window grows on click. */}
-                  {hasMore && viewMode !== 'stories' && (
-                    <div className="flex justify-center pt-4">
-                      <Button variant="outline" onClick={handleLoadMore}>
-                        Load more articles
-                      </Button>
-                    </div>
-                  )}
                 </div>
               )}
+            {hasMore && viewMode !== 'stories' && (
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
+                {isSemanticSearch && searchError && <p role="alert">{searchError}</p>}
+                <Button variant="outline" onClick={handleLoadMore} disabled={isSemanticSearch && searchLoading}>
+                  {isSemanticSearch && searchLoading
+                    ? t('common.loading', 'Loading…')
+                    : isSemanticSearch && searchError
+                      ? t('common.tryAgain', 'Try again')
+                      : t('pages.news.loadMore', 'Load more articles')}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </PageContainer>

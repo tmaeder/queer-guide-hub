@@ -80,15 +80,9 @@ function pickImage(hit: SearchHit): string | undefined {
   return undefined;
 }
 
-interface DedupedResult {
-  hits: SearchHit[];
-  countsByType: Record<string, number>;
-}
-
-function dedupeAndCap(hits: SearchHit[], scoped: boolean): DedupedResult {
+function dedupeAndCap(hits: SearchHit[], scoped: boolean): SearchHit[] {
   const seen = new Set<string>();
   const typeCounts: Record<string, number> = {};
-  const countsByType: Record<string, number> = {};
   const out: SearchHit[] = [];
   const perType = scoped ? MAX_PER_TYPE_SCOPED : MAX_PER_TYPE_ALL;
   const total = scoped ? MAX_SUGGESTIONS_SCOPED : MAX_SUGGESTIONS_ALL;
@@ -99,14 +93,13 @@ function dedupeAndCap(hits: SearchHit[], scoped: boolean): DedupedResult {
     if (seen.has(key)) continue;
     seen.add(key);
 
-    countsByType[t] = (countsByType[t] || 0) + 1;
     typeCounts[t] = (typeCounts[t] || 0) + 1;
     if (typeCounts[t] > perType) continue;
 
     out.push(h);
     if (out.length >= total) break;
   }
-  return { hits: out, countsByType };
+  return out;
 }
 
 function mapHit(hit: SearchHit): SearchSuggestion {
@@ -133,7 +126,6 @@ function mapHit(hit: SearchHit): SearchSuggestion {
 
 export function useSearchSuggestions(query: string, scopeTypes?: string[]) {
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-  const [countsByType, setCountsByType] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -147,7 +139,8 @@ export function useSearchSuggestions(query: string, scopeTypes?: string[]) {
   );
 
   const debounced = useDebounce(query, DEBOUNCE_MS);
-  const active = !!debounced && debounced.length >= MIN_QUERY_LEN;
+  const eligible = query.trim().length >= MIN_QUERY_LEN;
+  const active = eligible && query === debounced;
 
   // Request identity changed → enter loading (or clear, below the minimum)
   // during render, so the effect only does the fetch.
@@ -156,44 +149,30 @@ export function useSearchSuggestions(query: string, scopeTypes?: string[]) {
   if (fetchKey !== prevFetchKey) {
     setPrevFetchKey(fetchKey);
     setError(null);
-    if (fetchKey) {
-      setLoading(true);
-    } else {
-      setSuggestions([]);
-      setCountsByType({});
-      setLoading(false);
-    }
+    setSuggestions([]);
+    setLoading(active);
   }
 
   useEffect(() => {
     if (!active) return;
 
-    let cancelled = false;
+    const controller = new AbortController();
 
-    fetchAutocomplete(debounced, indexKeys, FETCH_LIMIT)
+    fetchAutocomplete(debounced, indexKeys, FETCH_LIMIT, controller.signal)
       .then((hits) => {
-        if (cancelled) return;
-        const { hits: capped, countsByType: counts } = dedupeAndCap(hits, scoped);
-        setSuggestions(capped.map(mapHit));
-        setCountsByType(counts);
+        if (controller.signal.aborted) return;
+        setSuggestions(dedupeAndCap(hits, scoped).map(mapHit));
       })
       .catch((err) => {
-        if (cancelled) return;
-        // Autocomplete is a non-critical enhancement layer — a transient blip
-        // (network glitch, brief 5xx) should not surface a big red banner.
-        console.error('Error fetching suggestions:', err);
-        setSuggestions([]);
-        setCountsByType({});
-        setError(null);
+        if (controller.signal.aborted) return;
+        setError(err instanceof Error ? err.message : 'Suggestions unavailable');
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [active, debounced, indexKeys, scoped]);
 
-  return { suggestions, countsByType, loading, error };
+  return { suggestions, loading: eligible && (!active || loading), error };
 }
