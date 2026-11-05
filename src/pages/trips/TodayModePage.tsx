@@ -77,7 +77,7 @@ export default function TodayModePage() {
   const { data: trip, isLoading, error, refetch } = useTrip(tripId);
   const { data: reservations } = useReservations({ tripId });
   const online = useOnlineStatus();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const userId = user?.id;
   const push = usePushSubscription();
 
@@ -253,7 +253,9 @@ export default function TodayModePage() {
     !!tripId &&
     !accessDenied &&
     (cached?.userId !== userId || cached.tripId !== tripId);
-  if ((isLoading || checkingSnapshot) && !effectiveTrip) {
+  // An offline trip request can remain pending. Only wait for local data offline.
+  const waitingForTrip = online ? isLoading : authLoading || checkingSnapshot;
+  if (waitingForTrip && !effectiveTrip) {
     return (
       <PageContainer className="text-center">
         <TrackLoader size={24} label="Loading" className="mx-auto" />
