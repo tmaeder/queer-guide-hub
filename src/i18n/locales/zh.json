@@ -716,6 +716,7 @@
       "startingNow": "现在开始"
     },
     "bookingAssistant": {
+      "linkStop": "关联到行程站点",
       "wizardTitle": "行程预订",
       "activities": "活动",
       "fromAirport": "出发机场",

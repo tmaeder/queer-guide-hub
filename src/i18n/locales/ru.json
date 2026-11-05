@@ -744,6 +744,7 @@
       "startingNow": "Начинается сейчас"
     },
     "bookingAssistant": {
+      "linkStop": "Связать с остановкой маршрута",
       "wizardTitle": "Бронирования поездки",
       "activities": "Активности",
       "fromAirport": "Аэропорт вылета",

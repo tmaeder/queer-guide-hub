@@ -716,6 +716,7 @@
       "startingNow": "まもなく開始"
     },
     "bookingAssistant": {
+      "linkStop": "旅程の立ち寄り先にリンク",
       "wizardTitle": "旅行の予約",
       "activities": "アクティビティ",
       "fromAirport": "出発空港",

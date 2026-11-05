@@ -720,6 +720,7 @@
       "startingNow": "Commence maintenant"
     },
     "bookingAssistant": {
+      "linkStop": "Associer à une étape de l’itinéraire",
       "wizardTitle": "Réservations du voyage",
       "activities": "Activités",
       "fromAirport": "Aéroport de départ",

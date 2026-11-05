@@ -716,6 +716,7 @@
       "startingNow": "Beginnt jetzt"
     },
     "bookingAssistant": {
+      "linkStop": "Mit einem Stopp im Reiseplan verknüpfen",
       "wizardTitle": "Reisebuchungen",
       "activities": "Aktivitäten",
       "fromAirport": "Abflughafen",

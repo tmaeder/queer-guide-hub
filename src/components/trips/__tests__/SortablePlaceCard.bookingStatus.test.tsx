@@ -15,7 +15,9 @@ vi.mock('../AddReservationDialog', () => ({ AddReservationDialog: () => null }))
 vi.mock('@/hooks/useTripReservations', () => ({
   useTripReservations: () => ({
     data: [
-      { id: 'r1', confirmation_code: 'ABC123', title: 'My Venue' },
+      { id: 'r1', confirmation_code: 'ABC123', title: 'My Venue', status: 'confirmed' },
+      { id: 'r2', status: 'pending' },
+      { id: 'r3', status: 'cancelled' },
     ],
   }),
   useReservationMutations: () => ({ addReservation: { mutateAsync: vi.fn() } }),
@@ -57,6 +59,19 @@ describe('SortablePlaceCard booking status badges', () => {
     expect(badge.textContent).toContain('Booked');
     expect(badge.textContent).toContain('ABC123');
     expect(screen.queryByTestId('mark-booked-btn')).not.toBeInTheDocument();
+  });
+
+  it('shows a pending linked reservation without calling it booked', () => {
+    const place = { ...base, booking_status: 'intent', reservation_id: 'r2' };
+    render(wrap(<SortablePlaceCard place={place} onDelete={vi.fn()} />, ['p1']));
+    expect(screen.getByTestId('booking-badge-pending')).toBeInTheDocument();
+    expect(screen.queryByTestId('mark-booked-btn')).not.toBeInTheDocument();
+  });
+
+  it('shows a cancelled linked reservation as unbooked', () => {
+    const place = { ...base, booking_status: 'booked', reservation_id: 'r3' };
+    render(wrap(<SortablePlaceCard place={place} onDelete={vi.fn()} />, ['p1']));
+    expect(screen.getByTestId('booking-badge-intent')).toBeInTheDocument();
   });
 
   it('renders "Visited" badge when status=completed', () => {

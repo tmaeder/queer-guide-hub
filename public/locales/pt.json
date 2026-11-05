@@ -716,6 +716,7 @@
       "startingNow": "Começa agora"
     },
     "bookingAssistant": {
+      "linkStop": "Associar a uma paragem do itinerário",
       "wizardTitle": "Reservas da viagem",
       "activities": "Atividades",
       "fromAirport": "Aeroporto de partida",

@@ -1458,6 +1458,7 @@
       "startingNow": "Starting now"
     },
     "bookingAssistant": {
+      "linkStop": "Link to itinerary stop",
       "wizardTitle": "Trip bookings",
       "activities": "Activities",
       "fromAirport": "Departure airport",

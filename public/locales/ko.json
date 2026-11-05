@@ -716,6 +716,7 @@
       "startingNow": "지금 시작"
     },
     "bookingAssistant": {
+      "linkStop": "일정의 방문 장소에 연결",
       "wizardTitle": "여행 예약",
       "activities": "액티비티",
       "fromAirport": "출발 공항",

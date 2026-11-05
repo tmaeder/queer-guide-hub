@@ -336,6 +336,12 @@ test('tracks hotel, flight, and activity partner handoffs in the trip', async ({
     .getByRole('navigation', { name: 'Trip workspace' })
     .getByRole('link', { name: 'Itinerary' })
     .click();
+  const stopTitle = `Trip QA hotel stop ${suffix}`;
+  await page.getByRole('button', { name: 'Add stop', exact: true }).first().click();
+  await page.getByRole('tab', { name: /Custom Place/i }).click();
+  await page.getByLabel(/Place Name/i).fill(stopTitle);
+  await dialog.getByRole('button', { name: 'Add Place', exact: true }).click();
+  await expect(page.getByText(stopTitle, { exact: true }).first()).toBeVisible();
   await page.getByRole('link', { name: 'Trip bookings', exact: true }).click();
   const wizard = page.getByRole('region', { name: 'Trip bookings' });
   await expect(wizard.getByRole('button', { name: 'Book', exact: true })).toHaveAttribute(
@@ -380,11 +386,18 @@ test('tracks hotel, flight, and activity partner handoffs in the trip', async ({
     ),
   );
   const hotel = before.data!.find((r) => r.type === 'hotel')!;
-  await wizard
-    .getByText('Rainbow Hotel', { exact: true })
-    .locator('..')
-    .getByRole('button', { name: 'Record confirmation' })
-    .click();
+  const hotelBooking = wizard.getByRole('group', { name: 'Rainbow Hotel', exact: true });
+  await hotelBooking.getByRole('button', { name: 'Link to itinerary stop' }).click();
+  await dialog.getByRole('combobox').selectOption({ label: stopTitle });
+  await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(hotelBooking.getByText(stopTitle, { exact: true })).toBeVisible();
+  const itineraryLink = page
+    .getByRole('navigation', { name: 'Trip workspace' })
+    .getByRole('link', { name: 'Itinerary' });
+  await itineraryLink.click();
+  await expect(page.getByTestId('booking-badge-pending')).toBeVisible();
+  await page.getByRole('link', { name: 'Trip bookings', exact: true }).click();
+  await hotelBooking.getByRole('button', { name: 'Record confirmation' }).click();
   await dialog.getByLabel('Confirmation Code').fill('QA-CONFIRM');
   await dialog.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(dialog).toBeHidden();
@@ -401,4 +414,6 @@ test('tracks hotel, flight, and activity partner handoffs in the trip', async ({
   });
   await page.getByRole('button', { name: 'Reservations', exact: true }).click();
   await expect(page.getByText('QA-CONFIRM', { exact: true })).toBeVisible();
+  await itineraryLink.click();
+  await expect(page.getByTestId('booking-badge-booked')).toContainText('QA-CONFIRM');
 });

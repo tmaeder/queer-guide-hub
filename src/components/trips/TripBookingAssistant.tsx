@@ -85,14 +85,6 @@ export function TripBookingAssistant({
   const [confirming, setConfirming] = useState<Reservation | null>(null);
   const [bookPlace, setBookPlace] = useState<TripPlace | null>(null);
 
-  // Places already added to the itinerary but not yet booked — the actionable
-  // core of the affiliate loop. Each row carries its provider deep-links (dates
-  // prefilled) + a one-tap "Mark booked".
-  const placesToBook = useMemo(
-    () => places.filter((p) => (p.booking_status ?? 'intent') === 'intent'),
-    [places],
-  );
-
   const tabs = [
     {
       key: 'suggestions' as const,
@@ -130,6 +122,42 @@ export function TripBookingAssistant({
     reservations.some((r) => r.type === type && ['confirmed', 'completed'].includes(r.status));
   const hasHotelBooked = isBooked('hotel');
   const pendingReservations = reservations.filter((r) => r.status === 'pending');
+  const trackableReservations = reservations.filter((r) =>
+    ['pending', 'confirmed', 'completed'].includes(r.status),
+  );
+  const placesToBook = places.filter(
+    (place) => (place.booking_status ?? 'intent') === 'intent' && !place.reservation_id,
+  );
+  const availableStops = places.filter(
+    (place) => !place.reservation_id && place.booking_status !== 'completed',
+  );
+  const [linking, setLinking] = useState<Reservation | null>(null);
+  const [stopId, setStopId] = useState('');
+
+  const linkReservation = async () => {
+    if (
+      !canEdit ||
+      !linking ||
+      updatePlace.isPending ||
+      !availableStops.some((stop) => stop.id === stopId)
+    )
+      return;
+    try {
+      await updatePlace.mutateAsync({
+        id: stopId,
+        trip_id: tripId,
+        onlyIfUnlinked: true,
+        reservation_id: linking.id,
+        booking_status: linking.status === 'pending' ? 'intent' : 'booked',
+      });
+      setLinking(null);
+    } catch {
+      toast({
+        title: t('trips.bookingAssistant.saveFailed', 'Could not save reservation'),
+        variant: 'destructive',
+      });
+    }
+  };
 
   const saveOffer = async () => {
     if (!canEdit || !selectedOffer || addReservation.isPending || !reservationsLoaded) return;
@@ -417,31 +445,54 @@ export function TripBookingAssistant({
             </div>
           )}
 
-          {pendingReservations.map((reservation) => (
-            <div
-              key={reservation.id}
-              className="flex flex-wrap items-center gap-2 p-4 bg-muted rounded-element"
-            >
-              <p className="flex-1 font-medium">{reservation.title}</p>
-              <Badge variant="outline">{t('trips.reservations.status.pending', 'Pending')}</Badge>
-              {reservation.booking_url && isValidHttpUrl(reservation.booking_url) && (
-                <Button
-                  asChild
-                  variant={savedReservationId === reservation.id ? 'default' : 'outline'}
-                  size="sm"
-                >
-                  <a href={reservation.booking_url} target="_blank" rel="noopener noreferrer">
-                    {t('trips.bookingAssistant.continueOnPartner', 'Continue on partner site')}
-                  </a>
-                </Button>
-              )}
-              {canEdit && reservation.user_id === user?.id && (
-                <Button variant="outline" size="sm" onClick={() => setConfirming(reservation)}>
-                  {t('trips.bookingAssistant.recordConfirmation', 'Record confirmation')}
-                </Button>
-              )}
-            </div>
-          ))}
+          {trackableReservations.map((reservation) => {
+            const linkedStop = places.find((place) => place.reservation_id === reservation.id);
+            const pending = reservation.status === 'pending';
+            return (
+              <div
+                key={reservation.id}
+                role="group"
+                aria-label={reservation.title}
+                className="flex flex-wrap items-center gap-2 p-4 bg-muted rounded-element"
+              >
+                <p className="flex-1 font-medium">{reservation.title}</p>
+                <Badge variant="outline">
+                  {pending
+                    ? t('trips.reservations.status.pending', 'Pending')
+                    : t('trips.reservations.status.confirmed', 'Confirmed')}
+                </Badge>
+                {linkedStop && <span className="text-sm">{getPlaceName(linkedStop)}</span>}
+                {canEdit && !linkedStop && availableStops.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setStopId('');
+                      setLinking(reservation);
+                    }}
+                  >
+                    {t('trips.bookingAssistant.linkStop', 'Link to itinerary stop')}
+                  </Button>
+                )}
+                {pending && reservation.booking_url && isValidHttpUrl(reservation.booking_url) && (
+                  <Button
+                    asChild
+                    variant={savedReservationId === reservation.id ? 'default' : 'outline'}
+                    size="sm"
+                  >
+                    <a href={reservation.booking_url} target="_blank" rel="noopener noreferrer">
+                      {t('trips.bookingAssistant.continueOnPartner', 'Continue on partner site')}
+                    </a>
+                  </Button>
+                )}
+                {pending && canEdit && reservation.user_id === user?.id && (
+                  <Button variant="outline" size="sm" onClick={() => setConfirming(reservation)}>
+                    {t('trips.bookingAssistant.recordConfirmation', 'Record confirmation')}
+                  </Button>
+                )}
+              </div>
+            );
+          })}
 
           <div className="flex flex-wrap gap-2">
             {[
@@ -608,6 +659,43 @@ export function TripBookingAssistant({
         </DialogContent>
       </Dialog>
 
+      <Dialog
+        open={!!linking}
+        onOpenChange={(open) => {
+          if (!open && !updatePlace?.isPending) setLinking(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {t('trips.bookingAssistant.linkStop', 'Link to itinerary stop')}
+            </DialogTitle>
+            <DialogDescription>{linking?.title}</DialogDescription>
+          </DialogHeader>
+          <select
+            aria-label={t('trips.bookingAssistant.linkStop', 'Link to itinerary stop')}
+            value={stopId}
+            onChange={(event) => setStopId(event.target.value)}
+            className="min-h-11 w-full rounded-element border border-border bg-background px-4"
+          >
+            <option value="">—</option>
+            {availableStops.map((stop) => (
+              <option key={stop.id} value={stop.id}>
+                {getPlaceName(stop)}
+              </option>
+            ))}
+          </select>
+          <DialogFooter>
+            <Button
+              onClick={() => void linkReservation()}
+              disabled={!stopId || updatePlace?.isPending}
+            >
+              {t('common.save', 'Save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {confirming && (
         <AddReservationDialog
           open
@@ -625,6 +713,7 @@ export function TripBookingAssistant({
           open={!!bookPlace}
           onClose={() => setBookPlace(null)}
           tripId={tripId}
+          initialStatus="confirmed"
           initialTitle={getPlaceName(bookPlace)}
           initialType={reservationTypeForCategory(getPlaceCategory(bookPlace))}
           onCreated={(res) => {

@@ -716,6 +716,7 @@
       "startingNow": "يبدأ الآن"
     },
     "bookingAssistant": {
+      "linkStop": "ربط بمحطة في خط السير",
       "wizardTitle": "حجوزات الرحلة",
       "activities": "الأنشطة",
       "fromAirport": "مطار المغادرة",
