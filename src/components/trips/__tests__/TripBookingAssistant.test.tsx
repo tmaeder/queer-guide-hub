@@ -137,7 +137,7 @@ describe('TripBookingAssistant', () => {
     expect(screen.getByRole('dialog', { name: 'Edit Reservation' })).toBeVisible();
     expect(screen.getByLabelText('Title')).toHaveValue(offer.title);
     fireEvent.change(screen.getByLabelText('Confirmation Code'), { target: { value: 'TEST123' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: /^Save$/ }));
     await waitFor(() =>
       expect(update).toHaveBeenCalledWith(
         expect.objectContaining({
