@@ -11,6 +11,7 @@ import {
 } from '@/components/map/mapDomain';
 import { glyphKeyFor } from '@/components/map/mapIcons';
 import { MapShell } from '@/components/map/MapShell';
+import { hrefForSearchResult } from '@/lib/searchRoutes';
 import type { SearchResult } from '@/hooks/useSearch';
 
 interface ResultsMapViewProps {
@@ -51,7 +52,8 @@ export function ResultsMapView({ results, height = 480 }: ResultsMapViewProps) {
     const out: MapStation[] = [];
     for (const r of results) {
       const geo = r._geoloc;
-      if (!geo || typeof geo.lat !== 'number' || typeof geo.lng !== 'number') continue;
+      if (!geo || !Number.isFinite(geo.lat) || !Number.isFinite(geo.lng) ||
+        Math.abs(geo.lat) > 90 || Math.abs(geo.lng) > 180) continue;
       const layer = layerForEntityKey(r.type);
       // A hit whose type has no map layer (a tag, a personality) cannot be a
       // station. Dropped rather than drawn at [0,0], which is the Atlantic.
@@ -69,7 +71,7 @@ export function ResultsMapView({ results, height = 480 }: ResultsMapViewProps) {
         lng: geo.lng,
         name: r.title,
         subtitle: r.location || undefined,
-        linkTo: r.slug ? `/${r.type}/${r.slug}` : undefined,
+        linkTo: hrefForSearchResult(r),
         color: line ? lineColor(line) : areaColor(),
         iconKey: glyphKeyFor(layer, r.category),
         category: r.category,

@@ -28,7 +28,7 @@ function mockSearch(
 ) {
   return async (route: Route, request: Request) => {
     const body = JSON.parse((await request.postData()) || '{}');
-    const page = Number(body.page) || 1;
+    const page = Number(body.page ?? 0);
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -60,32 +60,19 @@ const page2Venues: Hit[] = Array.from({ length: 5 }, (_, i) => ({
 
 test.describe('search UX — universal searchbar', () => {
   test('⌘K hotkey handler is wired up and opens the dropdown', async ({ page }) => {
-    // IT OPENS THE DIALOG SEARCH, NOT THE HERO INPUT, and asserting the hero one
-    // is why this failed every scheduled nightly.
-    //
-    // Measured on prod 2026-10-17: before the hotkey there is ONE combobox,
-    // `aria-controls="qg-search-listbox-hero"`, and no dialog. After Ctrl+K a
-    // `role="dialog"` (aria-label "Search Queer Guide") mounts carrying a SECOND
-    // combobox, `qg-search-listbox-header`, which is expanded AND focused — while
-    // the hero input correctly stays `aria-expanded="false"`.
-    //
-    // So the hotkey was working the whole time and `.first()` resolved to the
-    // wrong element. The assertion is scoped to the dialog's combobox, which is
-    // also the thing the test NAME claims ("opens the dropdown") — the hero
-    // input's state is not evidence either way.
     await page.goto('/');
-    const hero = page.locator('input[role="combobox"][aria-controls="qg-search-listbox-hero"]');
+    const hero = page.getByRole('search', { name: 'Search the network' }).getByRole('combobox');
     await expect(hero).toBeVisible();
     await expect(hero).toHaveAttribute('aria-expanded', 'false');
-    const combo = page.locator('input[role="combobox"][aria-controls="qg-search-listbox-header"]');
+    const combo = page.getByRole('dialog', { name: 'Search Queer Guide' }).getByRole('combobox');
 
     // Real keyboard events through Playwright's high-level API. Try Meta
     // first, fall back to Control (Linux/Windows runners).
     await page.keyboard.press('Meta+KeyK');
-    if ((await combo.getAttribute('aria-expanded')) !== 'true') {
+    if (!(await combo.isVisible())) {
       await page.keyboard.press('Control+KeyK');
     }
-    if ((await combo.getAttribute('aria-expanded')) !== 'true') {
+    if (!(await combo.isVisible())) {
       // Some headless Chromium builds do not honor Meta. As a last-resort
       // verification, dispatch onto the window the same shape the hook
       // listens for.
@@ -116,7 +103,7 @@ test.describe('search UX — universal searchbar', () => {
 
 test.describe('search UX — results page', () => {
   test('active filter chip appears and removing it clears the URL', async ({ page }) => {
-    await page.route(SEARCH_HOST_RE, mockSearch({ 1: page1Venues }, 20));
+    await page.route(SEARCH_HOST_RE, mockSearch({ 0: page1Venues }, 20));
     await page.goto('/search?q=berlin&types=venue');
     // Chip uses the Venues label from CONTENT_TYPES.
     await expect(page.getByText('Venues', { exact: true }).first()).toBeVisible();
@@ -126,7 +113,7 @@ test.describe('search UX — results page', () => {
   });
 
   test('LoadMore appends page 2 results without pagination buttons', async ({ page }) => {
-    await page.route(SEARCH_HOST_RE, mockSearch({ 1: page1Venues, 2: page2Venues }, 25));
+    await page.route(SEARCH_HOST_RE, mockSearch({ 0: page1Venues, 1: page2Venues }, 25));
     await page.goto('/search?q=berlin');
     await expect(page.getByText('Venue 1', { exact: true })).toBeVisible();
     // No paginated "Next page" button — this UI is infinite-scroll only.
@@ -142,7 +129,7 @@ test.describe('search UX — results page', () => {
   });
 
   test('Map view toggle swaps cards out for the map surface', async ({ page }) => {
-    await page.route(SEARCH_HOST_RE, mockSearch({ 1: page1Venues }, 20));
+    await page.route(SEARCH_HOST_RE, mockSearch({ 0: page1Venues }, 20));
     await page.goto('/search?q=berlin');
     await expect(page.getByText('Venue 1', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: /Map view/i }).click();
@@ -168,7 +155,7 @@ test.describe('search UX — results page', () => {
   });
 
   test('Saved searches popover lets you save and reload a search', async ({ page }) => {
-    await page.route(SEARCH_HOST_RE, mockSearch({ 1: page1Venues }, 20));
+    await page.route(SEARCH_HOST_RE, mockSearch({ 0: page1Venues }, 20));
     await page.goto('/search?q=berlin&types=venue');
     // Wait for the page to settle (results fetched, header rendered).
     await expect(page.getByText('Venue 1', { exact: true })).toBeVisible();
@@ -195,7 +182,7 @@ test.describe('search UX — results page', () => {
   });
 
   test('Back to top button appears after scrolling and scrolls back', async ({ page }) => {
-    await page.route(SEARCH_HOST_RE, mockSearch({ 1: page1Venues }, 20));
+    await page.route(SEARCH_HOST_RE, mockSearch({ 0: page1Venues }, 20));
     await page.goto('/search?q=berlin');
     // Wait for the mocked results to render so the document is tall enough to
     // scroll; otherwise scrollTo clamps to 0 and the button never appears.

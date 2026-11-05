@@ -280,7 +280,7 @@ const EMPTY_FACETS: FacetDistribution = {};
 export const useSearch = (
   query: string,
   filters: SearchFilters = {},
-  page = 1,
+  page = 0,
   sort?: string,
   identity: SearchIdentity = {},
 ) => {
@@ -290,10 +290,12 @@ export const useSearch = (
 
   // Allow a filter-only browse (empty query + active filters); only skip a
   // genuinely empty, unfiltered request or a 1-char mid-typing artefact.
-  const trimmedLen = debouncedQuery.trim().length;
+  const trimmedLen = query.trim().length;
   const browseable = hasBrowseFilters(filters);
-  const enabled = trimmedLen >= MIN_QUERY_LEN || browseable;
-  const tooShort = !enabled && trimmedLen > 0;
+  const searchable = trimmedLen >= MIN_QUERY_LEN || browseable;
+  const waiting = searchable && query !== debouncedQuery;
+  const enabled = searchable && !waiting;
+  const tooShort = !searchable && trimmedLen > 0;
 
   const queryKey = ['search', debouncedQuery, filtersKey, page, sort ?? null, userId, sessionId];
   const q = useQuery<SearchPage>({
@@ -301,12 +303,11 @@ export const useSearch = (
     enabled,
     retry: false, // searchFetch already retries a timeout once
     queryFn: async ({ signal }) => {
-      const reqFilters = JSON.parse(filtersKey) as SearchFilters;
       const data = await searchFetch<SearchResponse>(
         '/',
         {
           query: debouncedQuery,
-          filters: toWorkerFilters(reqFilters, sort),
+          filters: toWorkerFilters(filters, sort),
           hitsPerPage: 20,
           page,
           ...(userId ? { user_id: userId } : {}),
@@ -314,10 +315,10 @@ export const useSearch = (
         },
         { signal },
       ).catch((err: unknown) => {
-        console.error('Search error:', err);
+        if (!signal.aborted) console.error('Search error:', err);
         throw err;
       });
-      const results = sanitiseHits(data?.hits, reqFilters);
+      const results = sanitiseHits(data?.hits, filters);
       // P0-1: report the post-filter count so totals don't include hits we
       // just dropped.
       const reportedTotal = data?.totalHits ?? data?.hits?.length ?? 0;
@@ -331,7 +332,7 @@ export const useSearch = (
     },
   });
 
-  const loading = enabled && q.isFetching;
+  const loading = waiting || (enabled && q.isFetching);
   const err = enabled ? q.error : null;
   let error: string | null = null;
   let errorKind: SearchErrorKind = null;
@@ -356,10 +357,9 @@ export const useSearch = (
     error,
     errorKind,
     tooShort,
-    /** Identity of the request `results` belong to, page excluded. Changes
-     *  only when the debounced query/filters/sort do, so callers that
-     *  accumulate pages can tell "next page" from "new search". */
-    resultsKey: hashKey([debouncedQuery, filtersKey, sort ?? null]),
+    refetch: q.refetch,
+    // Includes all inputs except page so pages from different searches never mix.
+    resultsKey: hashKey([query, filtersKey, sort ?? null, userId, sessionId]),
   };
 };
 

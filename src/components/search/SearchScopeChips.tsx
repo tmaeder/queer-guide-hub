@@ -45,8 +45,8 @@ export function SearchScopeChips({ activeScope, onScopeChange }: SearchScopeChip
 
   return (
     <div
-      role="tablist"
-      aria-label={t('search.scope.all', 'Search scope')}
+      role="group"
+      aria-label={t('search.scopeLabel', 'Search scope')}
       className="flex items-center gap-2 overflow-x-auto px-6 py-2 [scrollbar-width:thin]"
     >
       <ScopeChip
@@ -86,8 +86,7 @@ function ScopeChip({
   return (
     <button
       type="button"
-      role="tab"
-      aria-selected={active}
+      aria-pressed={active}
       onClick={onClick}
       className={cn(
         'inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap bg-muted rounded-element py-1 text-13 font-bold transition-colors',

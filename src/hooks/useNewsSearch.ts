@@ -9,7 +9,7 @@
  * country/city) not supported by the worker are applied client-side on the
  * batch-enriched slice.
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { searchFetch, isSearchUnavailable, SEARCH_UNAVAILABLE_MESSAGE } from '@/lib/searchFetch';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -38,8 +38,12 @@ export interface NewsSearchFilters {
 interface WorkerSearchResponse {
   hits: Array<{ objectID?: string; type?: string; [key: string]: unknown }>;
   facetDistribution: Record<string, Record<string, number>>;
-  estimatedTotalHits: number;
+  totalHits?: number;
+  estimatedTotalHits?: number;
 }
+
+const PAGE_SIZE = 24;
+const MAX_SEARCH_PAGE = 200; // search-proxy accepts zero-based pages 0–200.
 
 const SORT_MAP: Record<string, string> = {
   'date-desc': 'date_desc',
@@ -51,8 +55,12 @@ export function useNewsSearch() {
   const [articles, setArticles] = useState<Record<string, unknown>[]>([]);
   const [totalHits, setTotalHits] = useState<number | null>(null);
   const [facets, setFacets] = useState<Record<string, Record<string, number>>>({});
+  const [nextPage, setNextPage] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const activeRequest = useRef<AbortController | null>(null);
+  const cancelSearch = useCallback(() => activeRequest.current?.abort(), []);
+  useEffect(() => cancelSearch, [cancelSearch]);
 
   const searchArticles = useCallback(async (
     query: string,
@@ -63,6 +71,16 @@ export function useNewsSearch() {
     const q = query.trim();
     if (q.length < 2) return;
 
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const { signal } = controller;
+    if (page === 0) {
+      setArticles([]);
+      setNextPage(null);
+      setTotalHits(null);
+      setFacets({});
+    }
     setLoading(true);
     setError(null);
 
@@ -79,26 +97,46 @@ export function useNewsSearch() {
       const result = await searchFetch<WorkerSearchResponse>('/search', {
         query: q,
         filters: workerFilters,
-        hitsPerPage: 24,
+        hitsPerPage: PAGE_SIZE,
         page,
-      });
+      }, { signal });
+      if (signal.aborted) return;
 
-      const rankedIds = result.hits
+      const rankedIds = [...new Set(result.hits
         .filter((h) => h.type === 'news' && h.objectID)
-        .map((h) => h.objectID as string);
+        .map((h) => h.objectID as string))];
 
-      setTotalHits(result.estimatedTotalHits ?? null);
-      setFacets(result.facetDistribution ?? {});
+      const hasLocalFilters = !!(
+        filters.language || filters.mediaType || filters.sentiment || filters.trustScoreMin ||
+        filters.authorNames?.length || filters.sourceIds?.length ||
+        filters.countryIds?.length || filters.cityIds?.length
+      );
+      const total = result.totalHits ?? result.estimatedTotalHits;
+      const more = page < MAX_SEARCH_PAGE && result.hits.length > 0 && (
+        total == null ? result.hits.length === PAGE_SIZE : (page + 1) * PAGE_SIZE < total
+      );
+      const completePage = (items: Record<string, unknown>[]) => {
+        setArticles((previous) => {
+          if (page === 0) return items;
+          const seen = new Set(previous.map((article) => article.id));
+          return [...previous, ...items.filter((item) => !seen.has(item.id))];
+        });
+        setTotalHits(hasLocalFilters ? null : (total ?? null));
+        setFacets(result.facetDistribution ?? {});
+        setNextPage(more ? page + 1 : null);
+      };
 
       if (rankedIds.length === 0) {
-        setArticles([]);
+        completePage([]);
         return;
       }
 
       const { data, error: dbErr } = await supabase
         .from('news_articles')
         .select(SELECT_FIELDS)
-        .in('id', rankedIds);
+        .in('id', rankedIds)
+        .abortSignal(signal);
+      if (signal.aborted) return;
 
       if (dbErr) {
         setError('Failed to load articles.');
@@ -135,25 +173,32 @@ export function useNewsSearch() {
         return true;
       });
 
-      setArticles(postFiltered);
+      completePage(postFiltered);
     } catch (err) {
+      if (signal.aborted) return;
       if (isSearchUnavailable(err)) {
         setError(SEARCH_UNAVAILABLE_MESSAGE);
       } else {
         setError('Search failed. Please try again.');
       }
     } finally {
-      setLoading(false);
+      if (!signal.aborted) {
+        activeRequest.current = null;
+        setLoading(false);
+      }
     }
   }, []);
 
-  const reset = useCallback(() => {
+  const reset = useCallback((pending = false) => {
+    activeRequest.current?.abort();
+    activeRequest.current = null;
     setArticles([]);
+    setNextPage(null);
     setTotalHits(null);
     setFacets({});
     setError(null);
-    setLoading(false);
+    setLoading(pending);
   }, []);
 
-  return { articles, totalHits, facets, loading, error, searchArticles, reset };
+  return { articles, totalHits, facets, nextPage, loading, error, searchArticles, cancelSearch, reset };
 }

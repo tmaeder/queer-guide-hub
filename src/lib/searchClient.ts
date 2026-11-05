@@ -8,6 +8,7 @@
 
 import { analyticsAllowed } from '@/lib/analyticsConsent';
 import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
+import { searchAuthHeaders, searchReadFetch } from '@/lib/searchFetch';
 
 const SEARCH_URL = import.meta.env?.VITE_SEARCH_PROXY_URL || 'https://search.queer.guide';
 
@@ -15,11 +16,15 @@ const SESSION_KEY = 'qg_sid';
 
 export function getSessionId(): string {
   if (typeof window === 'undefined') return '';
-  const existing = localStorage.getItem(SESSION_KEY);
-  if (existing) return existing;
-  const id = crypto.randomUUID();
-  localStorage.setItem(SESSION_KEY, id);
-  return id;
+  try {
+    const existing = localStorage.getItem(SESSION_KEY);
+    if (existing) return existing;
+    const id = crypto.randomUUID();
+    localStorage.setItem(SESSION_KEY, id);
+    return id;
+  } catch {
+    return '';
+  }
 }
 
 export interface SearchHit {
@@ -43,21 +48,21 @@ export interface SearchHit {
   [key: string]: unknown;
 }
 
-// Write endpoints (/track, /feedback, /onboarding) need credentials: 'include'
-// so the signed qg_sid cookie travels — the worker uses it to verify the
-// session id (bug #14). Read endpoints don't need credentials and stay
-// `same-origin` to keep CORS simple.
 const WRITE_PATHS = new Set(['/track', '/feedback', '/onboarding']);
+const PERSONAL_READ_PATHS = new Set(['/recommendations', '/trending']);
 
-async function post<T>(path: string, body: object): Promise<T> {
-  const res = await fetch(`${SEARCH_URL}${path}`, {
+async function post<T>(path: string, body: object, signal?: AbortSignal): Promise<T> {
+  const writes = WRITE_PATHS.has(path);
+  const personal = writes || PERSONAL_READ_PATHS.has(path);
+  const auth = personal ? await searchAuthHeaders() : {};
+  const request = PERSONAL_READ_PATHS.has(path) ? searchReadFetch : fetch;
+  const res = await request(`${SEARCH_URL}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...auth },
     body: JSON.stringify(body),
-    credentials: WRITE_PATHS.has(path) ? 'include' : 'same-origin',
-    keepalive: true,
-    // Same deadline as searchFetch's /search; a hung worker must not hang the UI.
-    signal: AbortSignal.timeout(10_000),
+    credentials: writes ? 'include' : 'same-origin',
+    keepalive: !signal,
+    signal: signal ?? AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`${path} ${res.status}: ${await res.text()}`);
   const data = (await res.json()) as T & { session_verified?: boolean };
@@ -243,8 +248,11 @@ export async function fetchAutocomplete(
   query: string,
   types?: string[],
   limit = 6,
+  signal?: AbortSignal,
 ): Promise<SearchHit[]> {
   if (!query?.trim()) return [];
+  const deadline = AbortSignal.timeout(5_000);
+  const requestSignal = signal ? AbortSignal.any([signal, deadline]) : deadline;
   const data = await post<{ suggestions: SearchHit[] }>('/autocomplete', {
     query,
     // UI scopes historically use index keys (e.g. cities), whereas this
@@ -252,6 +260,6 @@ export async function fetchAutocomplete(
     // so the worker still rejects invalid filters instead of widening them.
     types: types?.map((type) => CONTENT_TYPES.find(({ indexKey }) => indexKey === type)?.id ?? type),
     limit,
-  });
+  }, requestSignal);
   return data.suggestions ?? [];
 }

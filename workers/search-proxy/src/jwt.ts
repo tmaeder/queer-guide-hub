@@ -5,9 +5,13 @@
  * namespace so positive GoTrue results are cached 60s, keeping
  * per-keystroke autocomplete fast.
  */
-import { isAuthenticatedRequest as sharedIsAuthenticatedRequest } from "../../_shared/supabase-jwt";
+import { authenticatedUserId as sharedAuthenticatedUserId } from "../../_shared/supabase-jwt";
 import type { Env } from "./index";
 
+export function authenticatedUserId(request: Request, env: Env): Promise<string | null> {
+	return sharedAuthenticatedUserId(request, env, env.SESSION_CACHE);
+}
+
 export async function isAuthenticatedRequest(request: Request, env: Env): Promise<boolean> {
-	return sharedIsAuthenticatedRequest(request, env, env.SESSION_CACHE);
+	return (await authenticatedUserId(request, env)) !== null;
 }

@@ -10,7 +10,7 @@
  *   GET  /health
  */
 
-import { personalizedRank } from "./rank";
+import { personalizedRank, prioritizeQueryMatches } from "./rank";
 import { embed, rerank, DEFAULT_EMBED_MODEL } from "./ai";
 import { rewriteQuery, type RewrittenQuery } from "./rewrite";
 import { Toucan } from "toucan-js";
@@ -26,15 +26,15 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 		tracesSampleRate: 0.1,
 	});
 }
-import { getBiasVector, getUserSignal, trackEvent, popularEntities, getRecommendations, relatedEntities, fetchDisplayMap } from "./supabase";
+import { getBiasVector, getUserSignal, trackEvent, popularEntities, getRecommendations, relatedEntities } from "./supabase";
 import { handleGo, handleGoRegistry } from "./affiliate";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { expandTagsWithNarrower } from "./pgTagHierarchy";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
 import { pgHybridSearch, pgAutocomplete, type PgSearchArgs } from "./pgSearch";
-import { isAuthenticatedRequest } from "./jwt";
-import { tokenize, isBareLgbtqQuery } from "./queryPrep";
-import { resolveSession } from "./sessionCookie";
+import { authenticatedUserId, isAuthenticatedRequest } from "./jwt";
+import { tokenize } from "./queryPrep";
+import { resolveSession, verifiedSessionId } from "./sessionCookie";
 import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse } from "./util";
 import {
 	parseJsonBody,
@@ -97,6 +97,7 @@ export interface Env {
 // Write endpoints: locked to ALLOWED_ORIGINS so the browser blocks cross-origin
 // writes from random sites. (Server-side scrapers bypass CORS either way.)
 const WRITE_PATHS = new Set(["/track", "/feedback", "/onboarding"]);
+const SESSION_READ_PATHS = new Set(["/", "/search", "/trending", "/recommendations"]);
 
 // search_hybrid timeout for the keyword-only path (no query embedding). See the
 // call site for the measurements — the default 4s in pgSearch.ts is below this
@@ -126,7 +127,7 @@ export type TimedStep = "rewriteMs" | "signalMs" | "recentMs" | "tagsMs" | "syno
 
 /**
  * debug.timings. Background steps (rewriteMs, embedMs, …) are their own wall
- * time and overlap; *WaitMs, pgMs, fallbackMs, rerankMs are time the request
+ * time and overlap; *WaitMs, pgMs, rerankMs are time the request
  * was blocked. A step that did not run is absent, never 0.
  */
 export type SearchTimings = Partial<
@@ -138,7 +139,6 @@ export type SearchTimings = Partial<
 		| "pgMs"
 		| "pgHybridMs"
 		| "pgFacetsMs"
-		| "fallbackMs"
 		| "rerankMs"
 		| "totalMs",
 		number
@@ -156,15 +156,21 @@ export function embedTextFor(base: string, synonyms: string[]): string {
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		const url = new URL(request.url);
-		const cors = { ...(WRITE_PATHS.has(url.pathname)
-			? getCorsHeadersOriginLocked(request, env)
-			: getCorsHeaders(request, env)) };
+		const credentialedCors = getCorsHeadersOriginLocked(request, env);
+		const useCredentialedCors = WRITE_PATHS.has(url.pathname) ||
+			(SESSION_READ_PATHS.has(url.pathname) && !!credentialedCors["Access-Control-Allow-Origin"]);
+		const cors = useCredentialedCors ? credentialedCors : getCorsHeaders(request, env);
+		if (useCredentialedCors && SESSION_READ_PATHS.has(url.pathname)) {
+			cors["X-Search-Session"] = "v2";
+			cors["Access-Control-Allow-Headers"] += ", x-search-analytics";
+		}
 		if (request.method === "OPTIONS") return new Response(null, { headers: cors });
 
 		// Existing per-IP, per-endpoint fixed-minute quota. /health bypasses.
 		if (url.pathname !== "/health") {
 			const rl = await rateLimit(env, request);
 			Object.assign(cors, quotaHeaders(rl.limit, rl.remaining, rl.reset));
+			if (cors["X-Search-Session"]) cors["Access-Control-Expose-Headers"] += ", X-Search-Session";
 			if (!rl.ok) {
 				return json(
 					{ error: "rate_limited", code: "rate_limited", retry_after: rl.retryAfter, limit: rl.limit, window_seconds: 60 },
@@ -241,7 +247,8 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// all — so a signed-in user in a criminalising country silently lost exactly
 	// the content the safety layer gates for them. Every pgHybridSearch call site
 	// must pass this; `src/__tests__/includeGated.test.ts` asserts it.
-	const authed = await isAuthenticatedRequest(request, env);
+	const user_id = (await authenticatedUserId(request, env)) ?? undefined;
+	const authed = !!user_id;
 
 	// Filter-only browse: an empty query with meaningful filters (tags, category,
 	// audience, city, featured, price, date, …) browses the filtered set via
@@ -278,7 +285,8 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			filters: {
 				city: bFilters.city || bFilters.location || undefined,
 				country: bFilters.country || undefined,
-				category: bFilters.categories?.[0],
+				categories: bFilters.categories,
+				cluster_ids: bFilters.cluster_ids,
 				is_featured: bFilters.featured || undefined,
 				is_free: bFilters.is_free,
 				target_groups: bFilters.target_groups,
@@ -299,7 +307,8 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			console.warn("pgBrowse", (e as Error).message);
 			return null;
 		});
-		const bHits = (browse?.hits ?? []) as Array<Record<string, unknown>>;
+		if (!browse) return searchUnavailable(cors);
+		const bHits = browse.hits;
 		return json(
 			{
 				hits: bHits,
@@ -307,8 +316,8 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				nbHits: bHits.length,
 				page: bPageR.value,
 				hitsPerPage: bHppR.value,
-				totalHits: browse?.estimatedTotalHits ?? bHits.length,
-				facetDistribution: reorderFacets(browse?.facetDistribution ?? {}, [], []),
+				totalHits: browse.estimatedTotalHits,
+				facetDistribution: reorderFacets(browse.facetDistribution, [], []),
 				processingTimeMS: Date.now() - started,
 				reason: "filter_browse",
 			},
@@ -350,54 +359,8 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const page = pageR.value;
 
 	const lang = (typeof body.lang === "string" && ["en", "de", "es", "fr"].includes(body.lang) ? body.lang : "en") as "en" | "de" | "es" | "fr";
-	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
-	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
+	const session_id = await verifiedSessionId(request, env);
 	const debug = body.debug === true;
-
-	// Bug #9: a bare LGBTQ+ token query ('gay', 'queer', 'trans') is a
-	// stop-word in the venue/event indexes — running it through the full
-	// pipeline takes ~6s for an essentially random ranking. Route it to
-	// the popular-entities path (sub-200ms) instead.
-	if (isBareLgbtqQuery(tokens)) {
-		// First try the precomputed popular entities (fast path). Hydrate display
-		// fields so they don't render as empty cards.
-		const popular = await popularEntities(env, ["venue", "event"], hitsPerPage * (page + 1));
-		let hits: Array<Record<string, unknown>> = await hydratePopular(env, popular);
-
-		// Fallback: if the popular view returns nothing, browse featured docs
-		// from Postgres (search_hybrid with an empty query + is_featured filter
-		// returns the featured set ranked). Without this, "trans"/"queer"/"gay"
-		// returned []. Bug #9 follow-up (was an empty-query browse).
-		if (hits.length === 0) {
-			const browse = await pgHybridSearch(env, {
-				query: "",
-				queryVec: null,
-				contentTypes: ["venue", "event"],
-				filters: { is_featured: true },
-				includeGated: authed,
-				hitsPerPage: hitsPerPage * (page + 1),
-				page: 0,
-			}).catch(() => null);
-			hits = (browse?.hits ?? []) as Array<Record<string, unknown>>;
-		}
-
-		const slice = hits.slice(page * hitsPerPage, (page + 1) * hitsPerPage);
-		return json(
-			{
-				hits: slice,
-				suggestions: slice.slice(0, 5),
-				nbHits: slice.length,
-				page,
-				hitsPerPage,
-				totalHits: hits.length,
-				facetDistribution: {},
-				processingTimeMS: Date.now() - started,
-				reason: "bare_stopword_query",
-			},
-			200,
-			cors,
-		);
-	}
 
 	// Query rewrite: translates non-EN, extracts intent hints (city, type), adds synonyms.
 	// Enabled when lang != en OR query is short (< 3 words). Skipped for power queries.
@@ -546,6 +509,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// Reuse the speculative literal embedding when the rewrite changed nothing
 	// (the common case on a first-time query, where it missed its budget).
 	const embedReused = embedText === literalEmbedText;
+	if (!embedReused) ctx.waitUntil(literalVecP);
 	const parallelWaitStart = Date.now();
 	const [qVec, signal, recent] = await Promise.all([
 		embedReused
@@ -582,7 +546,8 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		filters: {
 			city: mergedFilters.city || mergedFilters.location || undefined,
 			country: mergedFilters.country || undefined,
-			category: mergedFilters.categories?.[0],
+			categories: mergedFilters.categories,
+			cluster_ids: mergedFilters.cluster_ids,
 			is_featured: mergedFilters.featured || undefined,
 			is_free: mergedFilters.is_free,
 			target_groups: mergedFilters.target_groups,
@@ -622,53 +587,40 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		return null;
 	});
 	timings.pgMs = Date.now() - pgStart;
-	if (pg) {
-		timings.pgHybridMs = pg.hybridMs;
-		timings.pgFacetsMs = pg.facetsMs;
-	}
-	const fused = (pg?.hits ?? []) as FuseItem[];
-	const facetDistribution = pg?.facetDistribution ?? {};
-	const totalHits = pg?.estimatedTotalHits ?? fused.length;
+	if (!pg) return searchUnavailable(cors);
+	timings.pgHybridMs = pg.hybridMs;
+	timings.pgFacetsMs = pg.facetsMs;
+	const fused = pg.hits;
+	const facetDistribution = pg.facetDistribution;
+	const totalHits = pg.estimatedTotalHits;
 	const dbg = { pgSize: fused.length, fusedSize: fused.length };
 
-	// An explicit sort (date/price/distance/trust) means the SQL already ordered
-	// AND paginated the result set. Personalization re-ranking, the cold-start
-	// top-up, and the semantic reranker all reorder hits — which would clobber the
-	// requested sort — so skip them and serve the SQL order verbatim.
+	// Explicit sorts are already applied across the full result set in SQL.
 	const explicitSort = !!mergedFilters.sort && mergedFilters.sort !== "relevance";
-
-	// Personalization nudges (boost/decay) + worker-side exact-title boost
-	// for bug #4.
 	let ranked = explicitSort ? fused : personalizedRank(fused, signal, recent, q);
 
-	// Degraded-service fallback: only when search_hybrid itself failed (timeout /
-	// error → pg null). A SUCCESSFUL answer with few or zero matches is the answer;
-	// padding it with unrelated popular rows is how `q=london` with a geo filter
-	// that matched nothing rendered "20 results" of Barcelona/Sydney/Paris.
-	// v_popular_entities rows are under-hydrated ({content_type, content_id,
-	// score}); hydrate them so they don't render as empty cards.
-	const fallbackStart = Date.now();
-	if (!explicitSort && pg === null && ranked.length < 5) {
-		const popular = await popularEntities(env, pgTypes, 30);
-		ranked = dedupeById([...ranked, ...(await hydratePopular(env, popular))]);
-		timings.fallbackMs = Date.now() - fallbackStart;
-	}
-
-	// Optional reranker on top-20.
-	let final = ranked.slice(0, hitsPerPage);
-	if (!explicitSort && env.ENABLE_RERANKER === "1" && q.split(/\s+/).length >= 2) {
+	if (!explicitSort && env.ENABLE_RERANKER === "1" && tokens.length >= 2) {
 		const pool = ranked.slice(0, 20);
+		const contexts = pool.map((hit) => `${hit.title ?? ""}. ${hit.description ?? ""}`.slice(0, 400));
 		const rerankStart = Date.now();
-		const hydrated = await hydrateTitles(env, pool);
-		const rrkd = await rerank(env, q, hydrated.map((h) => h._snippet || h.title || "")).catch(() => null);
+		const modelOrder = await rerank(env, q, contexts).catch(() => null);
 		timings.rerankMs = Date.now() - rerankStart;
-		if (rrkd) {
-			final = rrkd
-				.map((r) => ({ ...pool[r.index], _rerank: r.score }))
-				.sort((a, b) => (b._rerank || 0) - (a._rerank || 0))
-				.slice(0, hitsPerPage);
+		if (modelOrder) {
+			// Treat model output as scores for existing hits. Partial, duplicate,
+			// and invalid indexes must never change the membership of a page.
+			const scores = new Map<number, number>();
+			for (const row of modelOrder) {
+				if (Number.isInteger(row.index) && row.index >= 0 && row.index < pool.length &&
+					Number.isFinite(row.score) && !scores.has(row.index)) {
+					scores.set(row.index, row.score);
+				}
+			}
+			const rescored = pool.map((hit, index) => ({ ...hit, _rerank: scores.get(index) }));
+			rescored.sort((a, b) => (b._rerank ?? -Infinity) - (a._rerank ?? -Infinity));
+			ranked = [...rescored, ...ranked.slice(pool.length)];
 		}
 	}
+	const final = (explicitSort ? ranked : prioritizeQueryMatches(ranked, q)).slice(0, hitsPerPage);
 
 	// Personalized facet reorder: user interest tags first, then by count.
 	const reorderedFacets = reorderFacets(facetDistribution, signal.recent_tags || [], signal.interests || []);
@@ -676,26 +628,29 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const processingTimeMS = Date.now() - started;
 	timings.totalMs = processingTimeMS;
 
-	// Fire-and-forget analytics log.
-	ctx.waitUntil(
-		fetch(`${env.SUPABASE_URL}/rest/v1/rpc/log_search`, {
-			method: "POST",
-			headers: {
-				apikey: env.SUPABASE_SERVICE_KEY,
-				authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				p_session_id: session_id ?? null,
-				p_query: q,
-				p_lang: lang,
-				p_filters: mergedFilters,
-				p_n_results: final.length,
-				p_took_ms: processingTimeMS,
-				p_had_rewrite: !!rewrite,
-			}),
-		}).catch(() => void 0),
-	);
+	// Count the initial search once, and only when the site reports opt-in.
+	if (page === 0 && request.headers.get("X-Search-Analytics") === "1" &&
+		new Headers(cors).get("X-Search-Session") === "v2") {
+		ctx.waitUntil(
+			fetch(`${env.SUPABASE_URL}/rest/v1/rpc/log_search`, {
+				method: "POST",
+				headers: {
+					apikey: env.SUPABASE_SERVICE_KEY,
+					authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					p_session_id: session_id ?? null,
+					p_query: q,
+					p_lang: lang,
+					p_filters: mergedFilters,
+					p_n_results: final.length,
+					p_took_ms: processingTimeMS,
+					p_had_rewrite: !!rewrite,
+				}),
+			}).catch(() => void 0),
+		);
+	}
 
 	return json(
 		{
@@ -799,42 +754,10 @@ async function handleTrack(request: Request, env: Env, cors: HeadersInit): Promi
 	if (!metadataR.ok) return errorResponse(metadataR, cors);
 	const metadata = metadataR.value;
 
-	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
-	const bodySid = typeof body.session_id === "string" ? body.session_id : undefined;
-	// Bug #14: trust the signed cookie over the body. Mints a fresh signed
-	// cookie if there isn't one yet so future calls bypass the body field.
-	const session = await resolveSession(request, env, bodySid);
+	const session = await resolveSession(request, env);
 	const session_id = session.sid;
 
-	// A WRITE NEEDS A SIGNED SESSION. `resolveSession` has computed `verified`
-	// since bug #14 and nothing has ever read it, so every caller could write:
-	// measured on prod 2026-09-20, a POST with a forged Origin and no cookie
-	// reached validation, i.e. CORS never rejected it. The file's own comment
-	// already conceded this — "Server-side scrapers bypass CORS either way" —
-	// because origin-locking only sets response headers; the browser enforces
-	// it and curl does not.
-	//
-	// Enforcing an allowlisted Origin instead would be theatre: an attacker
-	// sets one header. A signed cookie is the only thing here with teeth, and
-	// the request must survive a round trip to get one.
-	//
-	// THE COST IS ONE EVENT PER SESSION, AND THE BENEFIT IS THE SIGNAL ITSELF.
-	// Over 7 days, 69,357 of 69,670 behavioural events — 99.6% — came from
-	// sessions holding exactly ONE event, the signature of a cookie-less
-	// client minting a fresh session per request. Umami, which is bot-filtered
-	// and consent-gated, saw ~20 sessions/day against ~9,900 here. Only ~112
-	// sessions ever accumulated a second event, which is about the real
-	// visitor count. So the bias vector and trending were built almost
-	// entirely from crawler noise, and this gate is a data-quality fix as much
-	// as a security one.
-	//
-	// A real browser loses only its very first entity view per cookie window,
-	// because the 202 below still carries the Set-Cookie that makes the next
-	// call verified.
-	//
-	// `user_id` is deliberately NOT an escape hatch: it is an unverified body
-	// field on this endpoint, so trusting it would reopen the hole under a
-	// different name.
+	// Mint a cookie on the first call. Require a round trip before recording.
 	if (!session.verified) {
 		const headers: Record<string, string> = { ...(cors as Record<string, string>) };
 		if (session.setCookie) headers["Set-Cookie"] = session.setCookie;
@@ -847,6 +770,7 @@ async function handleTrack(request: Request, env: Env, cors: HeadersInit): Promi
 		);
 	}
 
+	const user_id = (await authenticatedUserId(request, env)) ?? undefined;
 	const id = await trackEvent(env, { user_id, session_id, event_type, entity_type, entity_id, metadata });
 
 	// Record seen-recently in KV for decay (24h TTL).
@@ -907,9 +831,12 @@ async function handleOnboarding(request: Request, env: Env, cors: HeadersInit): 
 	const knownCheck = rejectUnknown(body, ["user_id", "vibes", "home_city", "languages"], "body");
 	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
 
-	const userIdR = validUuid(body.user_id, "user_id");
-	if (!userIdR.ok) return errorResponse(userIdR, cors);
+	const userIdR = validUuid(await authenticatedUserId(request, env), "user_id");
+	if (!userIdR.ok) return json({ error: "Sign in required", code: "unauthorized" }, 401, cors);
 	const user_id = userIdR.value;
+	if (body.user_id != null && body.user_id !== user_id) {
+		return json({ error: "Account mismatch", code: "forbidden" }, 403, cors);
+	}
 
 	const sanitisedArray = (v: unknown, field: string, max = 32): { ok: true; value: string[] } | { ok: false; status: number; error: string; code: string; field?: string } => {
 		if (v === undefined) return { ok: true, value: [] };
@@ -1078,83 +1005,24 @@ function l2Normalize(v: number[]): number[] {
 	return v.map((x) => x / s);
 }
 
-type FuseItem = {
-	id?: string;
-	content_id?: string;
-	type?: string;
-	content_type?: string;
-	_fused?: number;
-	[key: string]: unknown;
-};
-
-function itemId(h: FuseItem): string | null {
-	const id = h.id ?? h.content_id ?? h.objectID;
-	if (!id) return null;
-	return `${h.type ?? h.content_type ?? "x"}:${id}`;
-}
-
-type PopularRow = { content_type: string; content_id: string; score?: number };
-
-// v_popular_entities only carries {content_type, content_id, score} — no
-// type/objectID/title — so dropping these rows straight into the result set
-// renders empty cards (type/title/objectID null). Batch-fetch display fields and
-// project into the same hit shape pgSearch.mapHit emits. Rows that can't be
-// hydrated (no title) are dropped — better a shorter list than a blank card.
-async function hydratePopular(env: Env, popular: PopularRow[]): Promise<FuseItem[]> {
-	if (!popular.length) return [];
-	const display = await fetchDisplayMap(
-		env,
-		popular.map((p) => ({ content_type: p.content_type, content_id: p.content_id })),
-	).catch(() => null);
-	if (!display) return [];
-	const out: FuseItem[] = [];
-	for (const p of popular) {
-		const d = display.get(`${p.content_type}:${p.content_id}`);
-		if (!d?.title) continue;
-		out.push({
-			id: p.content_id,
-			objectID: p.content_id,
-			type: p.content_type,
-			content_type: p.content_type,
-			content_id: p.content_id,
-			title: d.title,
-			name: d.title,
-			slug: d.slug,
-			image_url: d.image_url ?? null,
-			city: d.city,
-			country: d.country,
-			start_date: d.date,
-			_source: "popular",
-			_rankingScore: 0.1,
-			_fused: 0.1,
-		});
-	}
-	return out;
-}
-
-function dedupeById(list: FuseItem[]): FuseItem[] {
-	const seen = new Set<string>();
-	const out: FuseItem[] = [];
-	for (const it of list) {
-		const id = itemId(it);
-		if (!id || seen.has(id)) continue;
-		seen.add(id);
-		out.push(it);
-	}
-	return out;
+function searchUnavailable(cors: HeadersInit): Response {
+	return json({ error: "Search is temporarily unavailable", code: "search_unavailable" }, 503, cors);
 }
 
 /** True when the filters alone can drive a browse (no keyword needed). */
 function hasBrowseFilters(f: ValidatedFilters): boolean {
 	return !!(
+		f.type ||
+		f.types?.length ||
 		(f.tags && f.tags.length) ||
-		(f.categories && f.categories.length) ||
+		f.categories?.length ||
+		f.cluster_ids?.length ||
 		(f.target_groups && f.target_groups.length) ||
 		f.city ||
 		f.country ||
 		f.location ||
 		f.featured ||
-		f.is_free ||
+		typeof f.is_free === "boolean" ||
 		(typeof f.lat === "number" && typeof f.lng === "number") ||
 		f.date_from ||
 		f.date_to ||
@@ -1181,22 +1049,6 @@ function reorderFacets(
 		out[facet] = entries;
 	}
 	return out;
-}
-
-type HydratableHit = {
-	title?: string;
-	description?: string;
-	content_text?: string;
-	_snippet?: string;
-	[key: string]: unknown;
-};
-
-async function hydrateTitles(_env: Env, list: HydratableHit[]): Promise<HydratableHit[]> {
-	// Keyword hits already have title. pgvector hits may not — batch fetch missing.
-	return list.map((h) => ({
-		...h,
-		_snippet: `${h.title ?? ""}. ${h.description ?? h.content_text ?? ""}`.slice(0, 400),
-	}));
 }
 
 // ─────────────────────────────────────────────
@@ -1296,8 +1148,10 @@ async function handleRecommendations(request: Request, env: Env, cors: HeadersIn
 	const lat = typeof body.lat === "number" ? body.lat : null;
 	const lng = typeof body.lng === "number" ? body.lng : null;
 	const radius = typeof body.radius === "number" ? body.radius : null;
-	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
-	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
+	const [subject, session_id] = await Promise.all([
+		authenticatedUserId(request, env), verifiedSessionId(request, env),
+	]);
+	const user_id = subject ?? undefined;
 
 	let excludeIds: string[] | null = null;
 	if (Array.isArray(body.exclude_ids)) {
@@ -1319,7 +1173,7 @@ async function handleRecommendations(request: Request, env: Env, cors: HeadersIn
 		excludeIds,
 		limit,
 		// Safety layer: gated recommendations only for verified-authenticated callers.
-		includeGated: await isAuthenticatedRequest(request, env),
+		includeGated: !!subject,
 	});
 
 	return json(
@@ -1362,8 +1216,10 @@ async function handleTrending(request: Request, env: Env, cors: HeadersInit): Pr
 	if (!limitR.ok) return errorResponse(limitR, cors);
 	const limit = limitR.value;
 
-	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
-	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
+	const [subject, session_id] = await Promise.all([
+		authenticatedUserId(request, env), verifiedSessionId(request, env),
+	]);
+	const user_id = subject ?? undefined;
 
 	// Bug #9: edge cache. Trending only changes meaningfully every few minutes
 	// and the underlying RPC is the slowest endpoint per p95 (~1-3s). Cache
@@ -1462,10 +1318,9 @@ async function handleFeedback(request: Request, env: Env, cors: HeadersInit): Pr
 		if (!r.ok) return errorResponse(r, cors);
 		query = r.value;
 	}
-	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
-	const bodySid = typeof body.session_id === "string" ? body.session_id : undefined;
-	const session = await resolveSession(request, env, bodySid);
+	const session = await resolveSession(request, env);
 
+	const user_id = (await authenticatedUserId(request, env)) ?? undefined;
 	const event_type = body.vote === "up" ? "save" : "dismiss";
 	await trackEvent(env, {
 		user_id,

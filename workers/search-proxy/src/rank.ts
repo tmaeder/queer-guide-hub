@@ -80,3 +80,36 @@ export function personalizedRank(
 function normalize(s: string): string {
 	return String(s || "").trim().toLowerCase();
 }
+
+const LOCATION_CONNECTORS = new Set(["in", "near", "around", "at"]);
+
+function queryWords(value: unknown): string[] {
+	return typeof value === "string"
+		? value.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []
+		: [];
+}
+
+/** Stable within each tier. Semantic and personal ranking can resolve ties,
+ * but a location match alone should not beat an explicit topic in that place. */
+export function prioritizeQueryMatches<T extends RankableHit>(hits: T[], query: string): T[] {
+	const normalized = normalize(query);
+	const terms = [...new Set(queryWords(query).filter((word) => !LOCATION_CONNECTORS.has(word)))];
+	const tier = (hit: T) => {
+		if ([hit.title, ...(hit.aliases ?? [])].some((value) =>
+			typeof value === "string" && normalize(value) === normalized,
+		)) return 2;
+		if (terms.length < 2) return 0;
+
+		const topicWords = new Set([
+			...queryWords(hit.title),
+			...queryWords(hit.category),
+			...(hit.tags ?? []).flatMap(queryWords),
+		]);
+		const locationWords = new Set([...queryWords(hit.city), ...queryWords(hit.country)]);
+		return terms.some((term) => topicWords.has(term) && !locationWords.has(term)) &&
+			terms.every((term) => topicWords.has(term) || locationWords.has(term)) ? 1 : 0;
+	};
+	return hits.map((hit) => ({ hit, tier: tier(hit) }))
+		.sort((a, b) => b.tier - a.tier)
+		.map(({ hit }) => hit);
+}

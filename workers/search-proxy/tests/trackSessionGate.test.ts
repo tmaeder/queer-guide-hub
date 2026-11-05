@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveSession } from "../src/sessionCookie";
+import { resolveSession, verifiedSessionId } from "../src/sessionCookie";
 import type { Env } from "../src/index";
 
 /**
@@ -29,7 +29,7 @@ function post(cookie?: string): Request {
 
 /** Round-trip a mint so the test signs with the real code, never a fixture. */
 async function mintCookieValue(): Promise<string> {
-  const minted = await resolveSession(post(), env, undefined);
+  const minted = await resolveSession(post(), env);
   const setCookie = minted.setCookie;
   if (!setCookie) throw new Error("expected a Set-Cookie when minting");
   return setCookie.split(";")[0]; // "qg_sid=<token>"
@@ -40,14 +40,14 @@ describe("track write gate — resolveSession contract", () => {
     // This is the crawler and the curl case. Over 7 days on prod, 99.6% of
     // behavioural events came from sessions holding exactly one event — the
     // signature of a client that never returns a cookie.
-    const s = await resolveSession(post(), env, undefined);
+    const s = await resolveSession(post(), env);
     expect(s.verified, "no cookie must never be treated as a verified session").toBe(false);
   });
 
   it("the refusal still mints a Set-Cookie, or no client could ever bootstrap", async () => {
     // Load-bearing: the gate returns 202 WITH this header. Drop it and every
     // real browser is permanently stuck on its first request.
-    const s = await resolveSession(post(), env, undefined);
+    const s = await resolveSession(post(), env);
     expect(s.setCookie, "an unverified caller must be given a cookie to come back with").toBeTruthy();
     expect(s.setCookie).toContain("HttpOnly");
     expect(s.setCookie).toContain("Secure");
@@ -58,20 +58,18 @@ describe("track write gate — resolveSession contract", () => {
     // unconditionally would satisfy both assertions above while silently
     // dropping 100% of telemetry.
     const cookie = await mintCookieValue();
-    const s = await resolveSession(post(cookie), env, undefined);
+    const s = await resolveSession(post(cookie), env);
     expect(s.verified, "a signed cookie must verify, or the gate eats real traffic").toBe(true);
     expect(s.setCookie, "an already-verified session needs no re-mint").toBeNull();
   });
 
   it("a forged cookie does not verify", async () => {
-    const s = await resolveSession(post("qg_sid=not-a-real-signature"), env, undefined);
+    const s = await resolveSession(post("qg_sid_v2=bad.9999999999.%%%"), env);
     expect(s.verified).toBe(false);
   });
 
-  it("a body-supplied session_id cannot confer verification", async () => {
-    // The body is attacker-controlled. It may seed the id, never the trust:
-    // if it could, the gate would be bypassable by typing a string.
-    const s = await resolveSession(post(), env, "attacker-supplied-session");
-    expect(s.verified).toBe(false);
+  it("ignores legacy session cookies", async () => {
+    const cookie = (await mintCookieValue()).replace('qg_sid_v2=', 'qg_sid=');
+    expect(await verifiedSessionId(post(cookie), env)).toBeUndefined();
   });
 });
