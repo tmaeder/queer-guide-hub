@@ -73,7 +73,10 @@ test('cleanup refuses unowned prefixes and tables before invoking psql', () => {
 
 test('the production config excludes mutation specs and CI explicitly runs the isolated suite', () => {
   const config = readFileSync('playwright.config.ts', 'utf8');
-  assert.match(config, /testIgnore: \/taxonomy-management/);
+  const ignoredSpecs = config.match(/testIgnore: \/(.+)\//)?.[1];
+  assert.ok(ignoredSpecs, 'The production config must exclude mutation specs');
+  assert.ok(new RegExp(ignoredSpecs).test('taxonomy-management.spec.ts'));
+  assert.ok(new RegExp(ignoredSpecs).test('trip-planner-regression.spec.ts'));
   const workflow = readFileSync('.github/workflows/e2e-pr.yml', 'utf8');
   assert.match(workflow, /steps\.db\.outputs\.mode == 'local'/);
   assert.match(workflow, /npm run test:e2e:taxonomies/);
