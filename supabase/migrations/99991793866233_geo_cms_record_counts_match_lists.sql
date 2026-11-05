@@ -37,7 +37,9 @@ $patch$;
 
 do $verify$
 declare
-  v_src text := pg_get_functiondef('api_private.geo_cms_record(uuid)'::regprocedure);
+  v_src text := regexp_replace(
+    pg_get_functiondef('api_private.geo_cms_record(uuid)'::regprocedure),
+    '--[^' || chr(10) || ']*', '', 'g');
 begin
   if position('v.review_status is distinct from ''archived''' in v_src) = 0
      or position('e.status is distinct from ''cancelled''' in v_src) = 0
