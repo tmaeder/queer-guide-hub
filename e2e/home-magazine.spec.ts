@@ -76,7 +76,9 @@ test('homepage requests do not generate PostgREST client errors', async ({ page 
     }
   });
   await openHome(page);
-  await expect(page.locator('main a[href*="/city/"]').first()).toBeVisible({ timeout: 20_000 });
+  const cities = page.getByRole('region', { name: 'City guides' });
+  await cities.scrollIntoViewIfNeeded();
+  await expect(cities.locator('a[href*="/city/"]').first()).toBeVisible({ timeout: 20_000 });
   expect(failures).toEqual([]);
 });
 

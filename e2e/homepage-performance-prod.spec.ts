@@ -119,3 +119,25 @@ test('news photos never request publisher image hosts before or after mirror loo
     [],
   );
 });
+
+test('mobile defers city-card scripts until the reader approaches the guides', async ({ page }) => {
+  await page.setViewportSize({ width: 412, height: 823 });
+  const cardScripts: string[] = [];
+  page.on('request', (request) => {
+    if (/\/(?:CityCards|CityNetwork)-[^/]+\.js(?:\?.*)?$/.test(request.url())) {
+      cardScripts.push(request.url());
+    }
+  });
+
+  await page.goto('/');
+  const cities = page.getByRole('region', { name: 'City guides' });
+  await expect(cities.getByRole('link', { name: 'All cities' })).toHaveAttribute('href', '/cities');
+  await expect(
+    page.getByRole('region', { name: /^places and events/i }).locator('[aria-busy]'),
+  ).toHaveAttribute('aria-busy', 'false');
+  expect(cardScripts).toEqual([]);
+
+  await cities.scrollIntoViewIfNeeded();
+  await expect(cities.locator('a[href*="/city/"]').first()).toBeVisible();
+  expect(cardScripts.some((url) => /\/CityCards-/.test(url))).toBe(true);
+});
