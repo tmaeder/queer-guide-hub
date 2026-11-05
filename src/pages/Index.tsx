@@ -4,13 +4,25 @@ import { DeferredSection } from '@/components/home/DeferredSection';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { Skeleton } from '@/components/ui/skeleton';
 import { lazyRetry } from '@/utils/lazyRetry';
 
 const HomeContent = lazyRetry(() => import('@/components/home/HomeContent'));
 
-// Keep a full viewport reserved for the content while its code/data loads.
-// The hero and primary navigation never wait for the below-fold bands.
-const contentPlaceholder = <div className="min-h-screen" aria-hidden="true" />;
+// Reserve the shape of the first listings section while its chunk loads.
+const contentPlaceholder = (
+  <PageContainer aria-hidden="true">
+    <Skeleton className="mb-6 h-10 w-2/3 max-w-80" />
+    <div className="divide-y divide-border-hairline rounded-container bg-card">
+      {Array.from({ length: 4 }, (_, index) => (
+        <div key={index} className="flex h-[74px] items-center gap-4 px-4">
+          <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+          <Skeleton className="h-5 w-2/5" />
+        </div>
+      ))}
+    </div>
+  </PageContainer>
+);
 
 const Index = React.memo(() => (
   <div className="min-h-screen">

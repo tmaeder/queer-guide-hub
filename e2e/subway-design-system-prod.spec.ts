@@ -143,46 +143,14 @@ test.describe('production subway design-system contract', () => {
     expect(system.yellow).not.toBe('');
   });
 
-  test('homepage renders one functional four-line network above the fold', async ({ page }) => {
+  test('homepage has three direct discovery links above the fold', async ({ page }) => {
     await gotoReady(page, '/');
-
-    const network = page.locator('.intent-map');
-    await expect(network).toBeVisible();
-    await expect(network.locator('svg path')).toHaveCount(4);
-    await expect(network.locator('li')).toHaveCount(8);
-    await expect(page.locator('.hero-network')).toHaveCount(0);
+    const navigation = page.locator('.subway-hero nav');
+    await expect(navigation.getByRole('link')).toHaveCount(3);
+    for (const path of ['/venues', '/events', '/map']) {
+      await expect(navigation.locator(`a[href="${path}"]`)).toBeInViewport();
+    }
     await expect(page.locator('.network-backdrop')).toHaveCount(0);
-
-    const networkBox = await network.boundingBox();
-    expect(networkBox).not.toBeNull();
-    expect(networkBox!.y).toBeLessThan(900);
-  });
-
-  test('homepage network draws its lines and lands stations in sequence', async ({ page }) => {
-    await gotoReady(page, '/');
-
-    const motion = await page.locator('.intent-map').evaluate((network) => ({
-      tracks: [...network.querySelectorAll('.intent-track-draw')].map((track) => {
-        const style = getComputedStyle(track);
-        return {
-          name: style.animationName,
-          duration: style.animationDuration,
-          delay: style.animationDelay,
-        };
-      }),
-      stations: [...network.querySelectorAll('.intent-station-ring')].map((station) => {
-        const style = getComputedStyle(station);
-        return { name: style.animationName, delay: style.animationDelay };
-      }),
-    }));
-
-    expect(motion.tracks).toHaveLength(4);
-    expect(motion.tracks.every((track) => track.name === 'network-draw')).toBe(true);
-    expect(motion.tracks.every((track) => track.duration === '1.2s')).toBe(true);
-    expect(new Set(motion.tracks.map((track) => track.delay)).size).toBe(4);
-    expect(motion.stations).toHaveLength(8);
-    expect(motion.stations.every((station) => station.name === 'station-pop')).toBe(true);
-    expect(new Set(motion.stations.map((station) => station.delay)).size).toBe(8);
   });
 
   test('interactive cards use the authored diagonal lift', async ({ page }) => {
@@ -286,15 +254,9 @@ test.describe('production subway design-system contract', () => {
     await expect(page.getByTestId('route-journey')).toHaveCount(0, { timeout: 2_000 });
   });
 
-  test('reduced motion keeps the network and cards still', async ({ page }) => {
+  test('reduced motion keeps homepage cards still', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await gotoReady(page, '/');
-
-    const networkMotion = await page.locator('.intent-map').evaluate((network) => ({
-      track: getComputedStyle(network.querySelector('.intent-track-draw')!).animationName,
-      station: getComputedStyle(network.querySelector('.intent-station-ring')!).animationName,
-    }));
-    expect(networkMotion).toEqual({ track: 'none', station: 'none' });
 
     const card = await firstHomeCard(page);
     await card.hover();
@@ -342,14 +304,14 @@ test.describe('production subway design-system contract', () => {
         trackPink: getComputedStyle(document.documentElement)
           .getPropertyValue('--track-pink')
           .trim(),
-        intentMap: !!document.querySelector('.intent-map'),
+        discovery: !!document.querySelector('.subway-hero nav'),
         routeRail: !!document.querySelector('.route-network-rail'),
       }));
 
       expect(shell.mainVisible).toBe(true);
       expect(shell.trackPink).not.toBe('');
       expect(shell.overflow, `${path} has horizontal overflow`).toBeLessThanOrEqual(1);
-      if (path === '/') expect(shell.intentMap).toBe(true);
+      if (path === '/') expect(shell.discovery).toBe(true);
       // /help was exempt from the rail while it carried a bespoke safety
       // header instead of the product chrome. It is an ordinary page now, so
       // it is held to the same shell as everything else — that equivalence is

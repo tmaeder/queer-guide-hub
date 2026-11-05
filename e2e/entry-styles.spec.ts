@@ -50,21 +50,19 @@ test.describe('stylesheet reuse after app startup', () => {
       if (request.resourceType() === 'document') documents++;
     });
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('No straight lines here.');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Find queer places and events',
+    );
     await page
       .locator('.subway-hero')
       .evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().bottom + window.scrollY));
     await expect(
       page.getByRole('heading', { name: 'No ads. No data sales. Just riders.' }),
     ).toBeVisible({ timeout: 20000 });
-    const newsLink = page.locator('a[href="/news"]').first();
-    // The news band is itself deferred; scrolling only as far as Support
-    // cannot mount a link farther down the homepage.
-    for (let step = 0; step < 12 && (await newsLink.count()) === 0; step++) {
-      await page.mouse.wheel(0, 600);
-      await page.waitForTimeout(200);
-    }
-    await newsLink.click({ timeout: 20000 });
+    await page
+      .getByRole('region', { name: 'More from Queer Guide' })
+      .getByRole('link', { name: 'News', exact: true })
+      .click();
     await expect(page).toHaveURL(/\/news$/);
     await expect(page.getByRole('heading', { level: 1, name: 'News.' })).toBeVisible();
     expect(documents).toBe(1);
@@ -100,7 +98,9 @@ test.describe('stylesheet reuse after app startup', () => {
         introduction.getByRole('link', { name: 'Read curated LGBTQ+ news' }),
       ).toHaveAttribute('href', '/news');
       release();
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText('No straight lines here.');
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+        'Find queer places and events',
+      );
     } finally {
       release();
     }

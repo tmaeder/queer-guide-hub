@@ -38,6 +38,7 @@ import { useAdminCounts, readCount } from '@/hooks/useAdminCounts';
 import { useAdminNavPins } from '@/hooks/useAdminNavPins';
 import { cn } from '@/lib/utils';
 import { badgeVariants } from '@/components/ui/badge';
+import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
 
 const COLLAPSE_KEY = 'admin.nav.collapsed';
 
@@ -90,7 +91,7 @@ export function AdminSidebar() {
   // The queue workspace supplies these exact totals through its own request.
   const review = useAdminReviewSummary(
     !['/admin', '/admin/governance', '/admin/inbox', '/admin/review'].includes(
-      location.pathname.replace(/\/$/, ''),
+      trimTrailingSlashes(location.pathname),
     ),
   );
   const { pins, togglePin, isPinned } = useAdminNavPins();

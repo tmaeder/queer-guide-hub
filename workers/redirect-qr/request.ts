@@ -6,6 +6,7 @@ import {
   type QrStyle,
 } from '../../src/lib/redirects/qrRender';
 import { QrImageError, inlineLogo, validateLogoBytes, type QrImageFormat } from './render';
+import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
 const UUID_KEY = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\.(png|jpg)$/;
 const fields = [
   'url',
@@ -160,7 +161,7 @@ export async function parseQrImageRequest(
       if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(storageOrigin))
         throw new QrImageError('Saved logo storage is unavailable.', 503);
       const response = await fetcher(
-        storageOrigin.replace(/\/$/, '') +
+        trimTrailingSlashes(storageOrigin) +
           '/storage/v1/object/public/redirect-brand-assets/' +
           values.logo,
         {
