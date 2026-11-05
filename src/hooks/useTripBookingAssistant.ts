@@ -7,14 +7,6 @@ export interface BookingAssistantCity {
   countries?: { equality_score: number | null; name: string } | null;
 }
 
-export interface BookingAssistantReservation {
-  id: string;
-  type: string;
-  title: string | null;
-  provider: string | null;
-  status: string | null;
-}
-
 export interface BookingAssistantVenue {
   id: string;
   name: string;
@@ -38,17 +30,6 @@ export async function fetchBookingAssistantCities(
     .in('id', cityIds);
   if (error) throw error;
   return (data || []) as BookingAssistantCity[];
-}
-
-export async function fetchTripReservations(
-  tripId: string,
-): Promise<BookingAssistantReservation[]> {
-  const { data, error } = await supabase
-    .from('reservations')
-    .select('id, type, title, provider, status')
-    .eq('trip_id', tripId);
-  if (error) throw error;
-  return (data || []) as BookingAssistantReservation[];
 }
 
 export async function fetchBookingAssistantVenues(

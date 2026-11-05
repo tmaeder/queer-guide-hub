@@ -716,6 +716,11 @@
       "startingNow": "Inizia ora"
     },
     "bookingAssistant": {
+      "completeOnPartner": "Completa la prenotazione sul sito del partner.",
+      "savePending": "Salva come in sospeso",
+      "continueOnPartner": "Continua sul sito del partner",
+      "recordConfirmation": "Registra la conferma",
+      "saveFailed": "Impossibile salvare la prenotazione",
       "tabs": {
         "suggestions": "Suggerimenti",
         "book": "Prenota"

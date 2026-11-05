@@ -1,11 +1,10 @@
 import { useState, useMemo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plane, Hotel, Plus, Shield, MapPin, Star, Check} from '@/components/icons';
+import { useQuery } from '@tanstack/react-query';
+import { Plane, Hotel, Plus, Shield, MapPin, Star, Check } from '@/components/icons';
 import {
   fetchBookingAssistantCities,
-  fetchTripReservations,
   fetchBookingAssistantVenues,
 } from '@/hooks/useTripBookingAssistant';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,13 +12,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { useTripMutations, type TripPlace, type TripDay } from '@/hooks/useTrips';
-import { useTravelDeals } from '@/hooks/useTravelDeals';
+import { useTripMutations, type TripPlace } from '@/hooks/useTrips';
 import { useHotelSearch } from '@/hooks/useHotelSearch';
-import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 import type { BookingResult } from '@/lib/booking/types';
-import { insertRow } from '@/hooks/usePageFetchers';
-import { useAuth } from '@/hooks/useAuth';
+import {
+  useReservationMutations,
+  useTripReservations,
+  type Reservation,
+} from '@/hooks/useTripReservations';
+import { isValidHttpUrl } from '@/utils/url';
 import { formatPrice } from '@/lib/booking/price';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { PlaceBookableLinks } from './PlaceBookableLinks';
@@ -36,20 +37,29 @@ function reservationTypeForCategory(category: string): 'hotel' | 'activity' | 'f
 interface Props {
   tripId: string;
   places: TripPlace[];
-  days: TripDay[];
+  primaryCityId?: string | null;
+  canEdit: boolean;
   startDate?: string;
   endDate?: string;
 }
 
-export function TripBookingAssistant({ tripId, places, _days, startDate, endDate }: Props) {
+export function TripBookingAssistant({
+  tripId,
+  places,
+  primaryCityId,
+  canEdit,
+  startDate,
+  endDate,
+}: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { addPlace, updatePlace } = useTripMutations();
-  const { originIata, _originCity } = useVisitorOrigin();
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { addReservation } = useReservationMutations(tripId);
   const [activeTab, setActiveTab] = useState<'suggestions' | 'booking'>('suggestions');
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [selectedHotel, setSelectedHotel] = useState<BookingResult | null>(null);
+  const [savedHotelId, setSavedHotelId] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState<Reservation | null>(null);
   const [bookPlace, setBookPlace] = useState<TripPlace | null>(null);
 
   // Places already added to the itinerary but not yet booked — the actionable
@@ -71,11 +81,12 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
 
   const cityIds = useMemo(() => {
     const ids = new Set<string>();
+    if (primaryCityId) ids.add(primaryCityId);
     for (const p of places) {
       if (p.city_id) ids.add(p.city_id);
     }
     return Array.from(ids);
-  }, [places]);
+  }, [places, primaryCityId]);
 
   const { data: cities } = useQuery({
     queryKey: qk.trip.suggestions('cities', cityIds),
@@ -84,47 +95,50 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
     staleTime: 10 * 60 * 1000,
   });
 
-  // Fetch reservations to know what's already booked
-  const { data: reservations } = useQuery({
-    queryKey: qk.trip.facet(tripId, 'reservations'),
-    queryFn: () => fetchTripReservations(tripId),
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: reservations = [] } = useTripReservations(tripId);
+  const isBooked = (type: string) =>
+    reservations.some((r) => r.type === type && ['confirmed', 'completed'].includes(r.status));
+  const hasHotelBooked = isBooked('hotel');
+  const hasFlightBooked = isBooked('flight');
+  const pendingHotels = reservations.filter((r) => r.type === 'hotel' && r.status === 'pending');
 
-  const hasHotelBooked = (reservations || []).some((r) => r.type === 'hotel');
-
-  // Affiliate-only booking: open the partner site and save a pending reservation.
-  const openHotelBooking = (hotel: BookingResult) => {
-    if (hotel.bookingUrl) {
-      window.open(hotel.bookingUrl, '_blank', 'noopener,noreferrer');
+  const saveHotel = async () => {
+    if (!canEdit || !selectedHotel || addReservation.isPending) return;
+    const hotel = selectedHotel;
+    const url = hotel.bookingUrl;
+    if (!url || !isValidHttpUrl(url)) return;
+    const existing = pendingHotels.find(
+      (r) => r.provider === hotel.provider && r.booking_url === url,
+    );
+    try {
+      const saved =
+        existing ??
+        (await addReservation.mutateAsync({
+          trip_id: tripId,
+          source: 'provider_api',
+          type: 'hotel',
+          title: hotel.title,
+          status: 'pending',
+          provider: hotel.provider,
+          booking_url: url,
+          amount: hotel.price,
+          currency: hotel.currency,
+          confirmation_code: null,
+          check_in: null,
+          check_out: null,
+          notes: null,
+          place_id: null,
+          attachment_urls: null,
+        }));
+      setSavedHotelId(saved.id);
+      setSelectedHotel(null);
+    } catch {
+      toast({
+        title: t('trips.bookingAssistant.saveFailed', 'Could not save reservation'),
+        variant: 'destructive',
+      });
     }
-    if (!user) return;
-    insertRow('reservations', {
-      user_id: user.id,
-      trip_id: tripId,
-      source: 'provider_api',
-      type: 'hotel',
-      title: hotel.title,
-      status: 'pending',
-      provider: hotel.provider,
-      booking_url: hotel.bookingUrl,
-      total_amount: hotel.price,
-      currency: hotel.currency,
-      raw_provider_data: hotel.providerData || {},
-    })
-      .then(() => {
-        queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'reservations') });
-        toast({
-          title: t('trips.bookingAssistant.reservationSaved', 'Reservation saved'),
-          description: t(
-            'trips.bookingAssistant.completeOnPartner',
-            'Complete your booking on the partner site.',
-          ),
-        });
-      })
-      .catch((err) => console.error('Reservation save failed:', err));
   };
-  const hasFlightBooked = (reservations || []).some((r) => r.type === 'flight');
 
   // Venue suggestions per city
   const { data: venues, isLoading: venuesLoading } = useQuery({
@@ -134,14 +148,11 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
     staleTime: 10 * 60 * 1000,
   });
 
-  // Flight deals for first city
-  const firstCity = cities?.[0];
-  const { data: _flightDeals } = useTravelDeals({
-    origin: originIata || undefined,
-    type: 'popular_routes',
-    limit: 3,
-    enabled: !!originIata && activeTab === 'booking',
-  });
+  const firstCity = cities?.find((city) => city.id === cityIds[0]);
+  const hotelSearchParams = new URLSearchParams({ tab: 'hotels' });
+  if (firstCity) hotelSearchParams.set('city', firstCity.name);
+  if (startDate) hotelSearchParams.set('checkIn', startDate);
+  if (endDate) hotelSearchParams.set('checkOut', endDate);
 
   // Hotel deals for first city
   const { data: hotelResults, isLoading: hotelsLoading } = useHotelSearch({
@@ -202,7 +213,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
     }
   };
 
-  if (cityIds.length === 0) {
+  if (cityIds.length === 0 && places.length === 0 && reservations.length === 0) {
     return (
       <Card>
         <CardContent>
@@ -222,15 +233,16 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
       {/* Tab toggle */}
       <div className="flex gap-1 mb-4">
         {tabs.map(({ key, label, icon: Icon }) => (
-          <Badge
+          <Button
             key={key}
+            size="sm"
             variant={activeTab === key ? 'default' : 'outline'}
+            aria-pressed={activeTab === key}
             onClick={() => setActiveTab(key)}
-            className="cursor-pointer flex items-center gap-1"
           >
             <Icon size={13} />
             {label}
-          </Badge>
+          </Button>
         ))}
       </div>
 
@@ -291,7 +303,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                         variant="ghost"
                         size="sm"
                         onClick={() => handleAddVenue(venue)}
-                        disabled={addingId === venue.id}
+                        disabled={!canEdit || addingId === venue.id}
                       >
                         {addingId === venue.id ? (
                           <TrackLoader size={12} label="Loading" />
@@ -337,12 +349,13 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                         startDate={startDate ?? null}
                         endDate={endDate ?? null}
                         bookingStatus={place.booking_status ?? 'intent'}
-                        onBookingPrompt={() => setBookPlace(place)}
+                        onBookingPrompt={canEdit ? () => setBookPlace(place) : undefined}
                       />
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setBookPlace(place)}
+                        disabled={!canEdit}
                         className="h-6 px-2 text-xs2"
                       >
                         {t('trips.bookingAssistant.markBooked', 'Mark booked')}
@@ -353,6 +366,57 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
               </div>
             </div>
           )}
+
+          {selectedHotel && (
+            <Card>
+              <CardContent className="space-y-4">
+                <h3 className="font-semibold">{selectedHotel.title}</h3>
+                <p>
+                  {t(
+                    'trips.bookingAssistant.completeOnPartner',
+                    'Complete your booking on the partner site.',
+                  )}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={() => void saveHotel()} disabled={addReservation.isPending}>
+                    {t('trips.bookingAssistant.savePending', 'Save as pending')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedHotel(null)}
+                    disabled={addReservation.isPending}
+                  >
+                    {t('common.cancel', 'Cancel')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          {pendingHotels.map((hotel) => (
+            <div
+              key={hotel.id}
+              className="flex flex-wrap items-center gap-2 p-4 bg-muted rounded-element"
+            >
+              <p className="flex-1 font-medium">{hotel.title}</p>
+              <Badge variant="outline">{t('trips.reservations.status.pending', 'Pending')}</Badge>
+              {hotel.booking_url && isValidHttpUrl(hotel.booking_url) && (
+                <Button
+                  asChild
+                  variant={savedHotelId === hotel.id ? 'default' : 'outline'}
+                  size="sm"
+                >
+                  <a href={hotel.booking_url} target="_blank" rel="noopener noreferrer">
+                    {t('trips.bookingAssistant.continueOnPartner', 'Continue on partner site')}
+                  </a>
+                </Button>
+              )}
+              {canEdit && (
+                <Button variant="outline" size="sm" onClick={() => setConfirming(hotel)}>
+                  {t('trips.bookingAssistant.recordConfirmation', 'Record confirmation')}
+                </Button>
+              )}
+            </div>
+          ))}
 
           {/* Still need section */}
           <span className="text-xs text-muted-foreground font-semibold">
@@ -392,10 +456,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                   : t('trips.bookingAssistant.hotel', 'Hotel')}
               </p>
               <Button asChild variant="outline" size="sm">
-                <LocalizedLink
-                  to={`/travel?tab=hotels${firstCity ? `&city=${encodeURIComponent(firstCity.name)}` : ''}`}
-                  className="no-underline"
-                >
+                <LocalizedLink to={`/travel?${hotelSearchParams}`} className="no-underline">
                   {t('trips.bookingAssistant.search', 'Search')}
                 </LocalizedLink>
               </Button>
@@ -425,18 +486,12 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
               ) : hotelResults && hotelResults.length > 0 ? (
                 <div className="flex flex-col gap-2">
                   {hotelResults.slice(0, 2).map((hotel) => (
-                    <div
+                    <button
                       key={hotel.id}
-                      className="flex items-center gap-4 p-4 bg-muted rounded-element cursor-pointer"
-                      onClick={() => openHotelBooking(hotel)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          openHotelBooking(hotel);
-                        }
-                      }}
-                      role="button"
-                      tabIndex={0}
+                      type="button"
+                      className="flex items-center gap-4 p-4 bg-muted rounded-element text-left disabled:opacity-60"
+                      onClick={() => setSelectedHotel(hotel)}
+                      disabled={!canEdit || !hotel.bookingUrl || !isValidHttpUrl(hotel.bookingUrl)}
                     >
                       {hotel.imageUrl && (
                         <img
@@ -465,7 +520,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                       <p className="text-sm font-bold text-primary">
                         {formatPrice(hotel.price, hotel.currency)}
                       </p>
-                    </div>
+                    </button>
                   ))}
                 </div>
               ) : (
@@ -476,6 +531,15 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
             </div>
           )}
         </div>
+      )}
+
+      {confirming && (
+        <AddReservationDialog
+          open
+          onClose={() => setConfirming(null)}
+          tripId={tripId}
+          existing={{ ...confirming, status: 'confirmed' }}
+        />
       )}
 
       {bookPlace && (

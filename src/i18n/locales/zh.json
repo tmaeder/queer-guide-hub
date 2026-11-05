@@ -716,6 +716,11 @@
       "startingNow": "现在开始"
     },
     "bookingAssistant": {
+      "completeOnPartner": "请在合作伙伴网站完成预订。",
+      "savePending": "保存为待确认",
+      "continueOnPartner": "前往合作伙伴网站",
+      "recordConfirmation": "记录预订确认",
+      "saveFailed": "无法保存预订",
       "tabs": {
         "suggestions": "建议",
         "book": "预订"

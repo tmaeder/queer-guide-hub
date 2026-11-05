@@ -716,6 +716,11 @@
       "startingNow": "يبدأ الآن"
     },
     "bookingAssistant": {
+      "completeOnPartner": "أكمل حجزك على موقع الشريك.",
+      "savePending": "حفظ كحجز معلّق",
+      "continueOnPartner": "المتابعة على موقع الشريك",
+      "recordConfirmation": "تسجيل تأكيد الحجز",
+      "saveFailed": "تعذّر حفظ الحجز",
       "tabs": {
         "suggestions": "اقتراحات",
         "book": "احجز"

@@ -1458,6 +1458,11 @@
       "startingNow": "Starting now"
     },
     "bookingAssistant": {
+      "completeOnPartner": "Complete your booking on the partner site.",
+      "savePending": "Save as pending",
+      "continueOnPartner": "Continue on partner site",
+      "recordConfirmation": "Record confirmation",
+      "saveFailed": "Could not save reservation",
       "tabs": {
         "suggestions": "Suggestions",
         "book": "Book"

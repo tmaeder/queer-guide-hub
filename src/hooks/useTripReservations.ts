@@ -72,7 +72,9 @@ const project = (r: ReservationRow): Reservation => ({
   created_at: r.created_at,
 });
 
-type CreateReservationInput = Omit<Reservation, 'id' | 'created_at'>;
+type CreateReservationInput = Omit<Reservation, 'id' | 'created_at'> & {
+  source?: 'manual' | 'provider_api';
+};
 type UpdateReservationInput = Partial<Omit<Reservation, 'id' | 'created_at' | 'trip_id'>> & {
   id: string;
 };
@@ -80,7 +82,7 @@ type UpdateReservationInput = Partial<Omit<Reservation, 'id' | 'created_at' | 't
 const toRow = (input: CreateReservationInput, userId: string): TablesInsert<'reservations'> => ({
   user_id: userId,
   trip_id: input.trip_id,
-  source: 'manual',
+  source: input.source ?? 'manual',
   type: input.type,
   title: input.title,
   status: input.status || 'pending',

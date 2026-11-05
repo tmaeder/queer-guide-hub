@@ -744,6 +744,11 @@
       "startingNow": "Начинается сейчас"
     },
     "bookingAssistant": {
+      "completeOnPartner": "Завершите бронирование на сайте партнёра.",
+      "savePending": "Сохранить как ожидающее",
+      "continueOnPartner": "Перейти на сайт партнёра",
+      "recordConfirmation": "Записать подтверждение",
+      "saveFailed": "Не удалось сохранить бронирование",
       "tabs": {
         "suggestions": "Предложения",
         "book": "Забронировать"

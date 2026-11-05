@@ -720,6 +720,11 @@
       "startingNow": "Commence maintenant"
     },
     "bookingAssistant": {
+      "completeOnPartner": "Finalisez votre réservation sur le site du partenaire.",
+      "savePending": "Enregistrer en attente",
+      "continueOnPartner": "Continuer sur le site du partenaire",
+      "recordConfirmation": "Saisir la confirmation",
+      "saveFailed": "Impossible d’enregistrer la réservation",
       "tabs": {
         "suggestions": "Suggestions",
         "book": "Réserver"

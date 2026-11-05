@@ -716,6 +716,11 @@
       "startingNow": "지금 시작"
     },
     "bookingAssistant": {
+      "completeOnPartner": "제휴사 사이트에서 예약을 완료하세요.",
+      "savePending": "대기 중으로 저장",
+      "continueOnPartner": "제휴사 사이트로 이동",
+      "recordConfirmation": "예약 확인 기록",
+      "saveFailed": "예약을 저장할 수 없습니다",
       "tabs": {
         "suggestions": "제안",
         "book": "예약"

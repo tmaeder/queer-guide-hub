@@ -410,7 +410,8 @@ export default function TripPlannerPage() {
           <TripBookingAssistant
             tripId={trip.id}
             places={trip.trip_places}
-            days={trip.trip_days}
+            primaryCityId={trip.primary_city_id}
+            canEdit={canEdit}
             startDate={trip.start_date ?? undefined}
             endDate={trip.end_date ?? undefined}
           />

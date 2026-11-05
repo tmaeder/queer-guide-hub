@@ -716,6 +716,11 @@
       "startingNow": "Beginnt jetzt"
     },
     "bookingAssistant": {
+      "completeOnPartner": "Schließe deine Buchung auf der Website des Partners ab.",
+      "savePending": "Als ausstehend speichern",
+      "continueOnPartner": "Zur Partner-Website",
+      "recordConfirmation": "Bestätigung eintragen",
+      "saveFailed": "Reservierung konnte nicht gespeichert werden",
       "tabs": {
         "suggestions": "Vorschläge",
         "book": "Buchen"

@@ -716,6 +716,11 @@
       "startingNow": "まもなく開始"
     },
     "bookingAssistant": {
+      "completeOnPartner": "提携先のサイトで予約を完了してください。",
+      "savePending": "保留として保存",
+      "continueOnPartner": "提携先のサイトに進む",
+      "recordConfirmation": "予約確認を記録",
+      "saveFailed": "予約を保存できませんでした",
       "tabs": {
         "suggestions": "おすすめ",
         "book": "予約"
