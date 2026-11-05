@@ -39,6 +39,21 @@ describe('useSearchSuggestions', () => {
     expect(result.current.suggestions).toHaveLength(2);
   });
 
+  it('clears previous suggestions immediately when the query changes', async () => {
+    mockFetchAutocomplete
+      .mockResolvedValueOnce([{ id: '1', type: 'city', title: 'Berlin' }])
+      .mockResolvedValueOnce([{ id: '2', type: 'city', title: 'Bern' }]);
+    const { result, rerender } = renderHook(({ query }) => useSearchSuggestions(query), {
+      initialProps: { query: 'Berlin' },
+    });
+    await waitFor(() => expect(result.current.suggestions[0]?.name).toBe('Berlin'));
+
+    rerender({ query: 'Bern' });
+    expect(result.current.suggestions).toEqual([]);
+    expect(result.current.loading).toBe(true);
+    await waitFor(() => expect(result.current.suggestions[0]?.name).toBe('Bern'));
+  });
+
   it('should cap at 4 per type (unscoped)', async () => {
     mockFetchAutocomplete.mockResolvedValue([
       { id: '1', type: 'event', title: 'Event A', city: 'Berlin' },
@@ -89,12 +104,11 @@ describe('useSearchSuggestions', () => {
     expect(result.current.suggestions[0].subtitle).toBe('Berlin');
   });
 
-  it('should silently fail on autocomplete errors (no banner)', async () => {
+  it('distinguishes autocomplete errors from empty results', async () => {
     mockFetchAutocomplete.mockRejectedValue(new Error('network blip'));
     const { result } = renderHook(() => useSearchSuggestions('Berlin'));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    // Autocomplete is enhancement, not core — surface no error banner.
-    expect(result.current.error).toBeNull();
+    expect(result.current.error).toBe('network blip');
     expect(result.current.suggestions).toEqual([]);
   });
 });

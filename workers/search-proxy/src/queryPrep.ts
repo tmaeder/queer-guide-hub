@@ -1,19 +1,6 @@
 /**
- * Query preprocessing — script detection, token sanitisation, stop-word
- * detection. Used before invoking the search pipeline so we can fast-path
- * the cases that historically produced bad/slow results:
- *
- *   - Non-Latin queries that have no Latin alias in the index (bug #10)
- *     would fuzz-match random Latin documents. We now return empty with
- *     a `reason: 'unsupported_script'` flag.
- *
- *   - Punctuation/emoji-only queries (bug #16) collapse to whitespace
- *     after tokenisation and would otherwise pass through to ranking.
- *
- *   - Bare LGBTQ+ tokens (bug #9) are stop-words for the venue/event
- *     indexes, but on their own they should still produce a result —
- *     they get routed to the popular-entities path rather than the
- *     ranking pipeline.
+ * Script detection and tokenisation for search. Punctuation-only queries
+ * collapse to an empty token list and can skip backend ranking.
  */
 
 export type Script = "latin" | "han" | "cyrillic" | "arabic" | "hebrew" | "devanagari" | "thai" | "korean" | "mixed";
@@ -57,12 +44,4 @@ export function tokenize(s: string): string[] {
 		.trim();
 	if (!cleaned) return [];
 	return cleaned.split(/\s+/);
-}
-
-const LGBTQ_TOKENS = new Set(["gay", "queer", "trans", "lgbt", "lgbtq", "lgbtq+", "lgbti"]);
-
-/** True when the entire query is one or more LGBTQ+ stop-words. */
-export function isBareLgbtqQuery(tokens: string[]): boolean {
-	if (tokens.length === 0) return false;
-	return tokens.every((t) => LGBTQ_TOKENS.has(t.toLowerCase()));
 }

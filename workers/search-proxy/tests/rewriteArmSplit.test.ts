@@ -222,9 +222,11 @@ describe("rewrite augments, never replaces", () => {
 		expect(dbg.rewriteOutcome).toBe("used");
 		expect(dbg.embedReused).toBe(false); // the translation needed its own embedding
 		expect(dbg.pgFailed).toBe(false);
-		for (const k of ["preMs", "synonymsMs", "rewriteMs", "rewriteWaitMs", "embedMs", "embedRewrittenMs", "embedWaitMs", "pgMs", "pgHybridMs", "pgFacetsMs", "totalMs"]) {
+		for (const k of ["preMs", "synonymsMs", "rewriteMs", "rewriteWaitMs", "embedRewrittenMs", "embedWaitMs", "pgMs", "pgHybridMs", "pgFacetsMs", "totalMs"]) {
 			expect(typeof t[k], k).toBe("number");
 		}
+		// The speculative literal embedding may still be in flight at response time.
+		if (t.embedMs !== undefined) expect(typeof t.embedMs).toBe("number");
 		// Steps that did not run are absent, not 0 — a 0 would read as "instant".
 		expect(t.fallbackMs).toBeUndefined();
 		expect(t.rerankMs).toBeUndefined();
@@ -237,6 +239,7 @@ describe("rewrite augments, never replaces", () => {
 		const t = dbg.timings as Record<string, number>;
 		expect(dbg.rewriteOutcome).toBe("over_budget");
 		expect(dbg.embedReused).toBe(true);
+		expect(typeof t.embedMs).toBe("number");
 		// Blocked for roughly the budget, not for the 900 ms the LLM took.
 		expect(t.rewriteWaitMs).toBeGreaterThanOrEqual(250);
 		expect(t.rewriteWaitMs).toBeLessThan(800);

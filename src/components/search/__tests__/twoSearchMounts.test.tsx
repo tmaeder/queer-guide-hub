@@ -8,12 +8,12 @@
  * second ⌘K owner only surfaces as a focus race).
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { renderWithProviders } from '@/test/test-utils';
 
 vi.mock('@/hooks/useSearchSuggestions', () => ({
   useSearchSuggestions: () => ({
     suggestions: [],
-    countsByType: {},
     loading: false,
     error: null,
   }),
@@ -63,18 +63,25 @@ describe('two search mounts on one page', () => {
     expect(addedBySecond).toBeLessThan(withOne);
   });
 
-  it('gives each mount a DISTINCT listbox id', () => {
+  it('connects each open input to its own suggestions listbox', async () => {
     const { container } = renderWithProviders(
       <>
         <UniversalSearchBar />
         <UniversalSearchBar size="hero" hotkey={false} surface="hero" />
       </>,
     );
-    const ids = Array.from(container.querySelectorAll('[aria-controls]')).map((el) =>
-      el.getAttribute('aria-controls'),
-    );
-    expect(ids).toHaveLength(2);
-    expect(new Set(ids).size).toBe(2);
+    const inputs = Array.from(container.querySelectorAll('input[role="combobox"]'));
+    expect(inputs).toHaveLength(2);
+
+    for (const [index, surface] of ['header', 'hero'].entries()) {
+      fireEvent.change(inputs[index], { target: { value: 'Berlin' } });
+      const id = `qg-search-listbox-${surface}`;
+      await waitFor(() => {
+        const box = screen.getByRole('listbox');
+        expect(box.id).toBe(id);
+        expect(document.querySelector('input[aria-controls="' + id + '"]')).toBeTruthy();
+      });
+    }
   });
 
   it('gives each mount a DISTINCT search landmark name', () => {
@@ -97,7 +104,7 @@ describe('two search mounts on one page', () => {
     // unless asked for.
     const { container } = renderWithProviders(<UniversalSearchBar />);
     const input = container.querySelector('input');
-    expect(input?.getAttribute('aria-controls')).toBe('qg-search-listbox-header');
+    expect(input?.getAttribute('aria-controls')).toBeNull();
     expect(container.querySelector('[role="search"]')).toBeTruthy();
   });
 });

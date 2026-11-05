@@ -55,6 +55,19 @@ describe('useSearch', () => {
     await waitFor(() => expect(result.current.results).toHaveLength(1), { timeout: 2000 });
   });
 
+  it('sends date filters when browsing without a keyword', async () => {
+    const from = new Date('2026-11-01T00:00:00Z');
+    const to = new Date('2026-11-30T00:00:00Z');
+    mockFetch.mockResolvedValue(okJson({ hits: [] }));
+    renderHook(() => useSearch('', { types: ['event'], dateRange: [from, to] }));
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalled());
+    expect(JSON.parse(mockFetch.mock.calls[0][1].body)).toMatchObject({
+      query: '',
+      filters: { types: ['event'], date_from: from.toISOString(), date_to: to.toISOString() },
+    });
+  });
+
   it('should handle search error gracefully', async () => {
     // Hook retries 3× with exponential backoff (1s/2s/4s). Fail every attempt
     // so we hit the error branch promptly.

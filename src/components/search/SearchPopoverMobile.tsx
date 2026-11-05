@@ -1,35 +1,24 @@
-import { Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SlidersHorizontal } from '@/components/icons';
-import { Badge } from '@/components/ui/badge';
 import type { SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import type { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
-import type { SearchFilters } from '@/hooks/useSearch';
 import { SearchScopeChips } from './SearchScopeChips';
 import { SearchPopoverResults } from './SearchPopoverResults';
 import { SearchPopoverEmpty } from './SearchPopoverEmpty';
 
-const SearchFiltersPanel = lazy(() =>
-  import('./SearchFiltersPanel').then((m) => ({ default: m.SearchFiltersPanel })),
-);
-
 export interface SearchPopoverMobileProps {
+  listboxId: string;
+  resultsFocused: number | null;
+  setResultsFocused: (index: number) => void;
   query: string;
   activeScope: string | null;
   suggestions: SearchSuggestion[];
-  countsByType: Record<string, number>;
   loading: boolean;
   error: string | null;
   trending: ReturnType<typeof useTrendingSuggestions>['trending'];
   discoverySource?: 'recommended' | 'trending';
-  showFilters: boolean;
-  filters: SearchFilters;
-  setFilters: (f: SearchFilters) => void;
   setScope: (s: string | null) => void;
   onSelect: (s: SearchSuggestion) => void;
   onSearchAll: () => void;
-  onToggleFilters?: () => void;
-  activeFiltersCount?: number;
   onClose: () => void;
   onClear: () => void;
   onPrefetch: (s: SearchSuggestion) => void;
@@ -43,22 +32,19 @@ export interface SearchPopoverMobileProps {
 }
 
 export function SearchPopoverMobile({
+  listboxId,
+  resultsFocused,
+  setResultsFocused,
   query,
   activeScope,
   suggestions,
-  countsByType,
   loading,
   error,
   trending,
   discoverySource,
-  showFilters,
-  filters,
-  setFilters,
   setScope,
   onSelect,
   onSearchAll,
-  onToggleFilters,
-  activeFiltersCount = 0,
   onClose,
   onClear,
   onPrefetch,
@@ -94,21 +80,6 @@ export function SearchPopoverMobile({
               {t('common.clear', 'Clear')}
             </button>
           )}
-          {query && onToggleFilters && (
-            <button
-              type="button"
-              onClick={onToggleFilters}
-              className="relative -mr-2 px-2 py-1 text-foreground"
-              aria-label={t('search.filters', 'Search filters')}
-            >
-              <SlidersHorizontal size={20} />
-              {activeFiltersCount > 0 && (
-                <Badge variant="destructive" className="absolute -right-1 -top-1">
-                  {activeFiltersCount}
-                </Badge>
-              )}
-            </button>
-          )}
         </div>
       </div>
       {query.length === 0 ? (
@@ -138,25 +109,17 @@ export function SearchPopoverMobile({
       ) : (
         <>
           <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
-          {showFilters && (
-            <Suspense fallback={null}>
-              <SearchFiltersPanel filters={filters} onFiltersChange={setFilters} />
-            </Suspense>
-          )}
           <SearchPopoverResults
+            listboxId={listboxId}
             query={query}
             activeScope={activeScope}
             suggestions={suggestions}
-            countsByType={countsByType}
             loading={loading}
             error={error}
-            focusedIndex={null}
+            focusedIndex={resultsFocused}
             onSelect={(s) => onSelect(s)}
-            onHover={() => undefined}
+            onHover={setResultsFocused}
             onPrefetch={onPrefetch}
-            onToggleFilters={onToggleFilters ?? (() => undefined)}
-            filtersOpen={showFilters}
-            activeFiltersCount={activeFiltersCount}
             onSearchAll={onSearchAll}
             onClearScope={() => setScope(null)}
             onAsk={onAsk}

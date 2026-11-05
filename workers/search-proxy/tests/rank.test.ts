@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { personalizedRank, type RankableHit } from "../src/rank";
+import { personalizedRank, prioritizeQueryMatches, type RankableHit } from "../src/rank";
 
 const hit = (over: Partial<RankableHit>): RankableHit => ({ id: "x", content_type: "venue", _fused: 0.5, ...over });
 
@@ -59,5 +59,28 @@ describe("personalizedRank", () => {
 	it("sorts by personal score descending", () => {
 		const out = personalizedRank([hit({ id: "a", _fused: 0.2 }), hit({ id: "b", _fused: 0.8 })], {}, new Set());
 		expect(out.map((h) => h.id)).toEqual(["b", "a"]);
+	});
+});
+
+
+describe("prioritizeQueryMatches", () => {
+	it("ranks a topic in the requested place ahead of location-only matches", () => {
+		const ranked = prioritizeQueryMatches([
+			hit({ id: "bar", title: "Scheune", city: "Berlin" }),
+			hit({ id: "pool", title: "Pool Berlin", city: "Berlin" }),
+			hit({ id: "zurich", title: "Sauna", city: "Zurich" }),
+			hit({ id: "sauna", title: "Lützow", city: "Berlin", category: "Gay Sauna" }),
+			hit({ id: "solf", title: "Solf Sauna", city: "Berlin" }),
+		], "sauna in Berlin");
+		expect(ranked.map(({ id }) => id)).toEqual(["sauna", "solf", "bar", "pool", "zurich"]);
+	});
+
+	it("keeps exact titles above semantic order and preserves the order of ties", () => {
+		const ranked = prioritizeQueryMatches([
+			hit({ id: "category", title: "Venue", category: "Sauna", city: "Berlin" }),
+			hit({ id: "name", title: "Sauna Berlin" }),
+			hit({ id: "other", title: "Other" }),
+		], "Sauna Berlin");
+		expect(ranked.map(({ id }) => id)).toEqual(["name", "category", "other"]);
 	});
 });
