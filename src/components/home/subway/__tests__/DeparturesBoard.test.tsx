@@ -53,9 +53,8 @@ describe('homepage listings', () => {
     };
 
     renderWithProviders(<DeparturesBoard showRegionPicker={false} />);
-    expect(
-      screen.getByRole('heading', { name: 'Places and events worldwide' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Places and events' })).toBeInTheDocument();
+    expect(screen.getByText('Worldwide')).toBeVisible();
     expect(screen.getByRole('link', { name: 'Pride' })).toHaveAttribute('href', '/events/pride');
     expect(screen.getByRole('status')).toHaveTextContent('Couldn’t refresh these results.');
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));

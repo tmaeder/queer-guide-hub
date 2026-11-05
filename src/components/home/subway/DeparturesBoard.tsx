@@ -64,17 +64,20 @@ export function DeparturesBoard({ showRegionPicker = true }: { showRegionPicker?
   const trip = rows.filter((r) => r.rung === 'trip');
 
   const area = data?.scope === 'city' ? region.cityName : region.countryName || region.countryCode;
-  const title =
-    data?.scope === 'network'
-      ? t('home.discovery.listingsGlobal', 'Places and events worldwide')
-      : area && data
-        ? t('home.discovery.listingsArea', 'Places and events in {{city}}', { city: area })
-        : t('home.discovery.listings', 'Places and events');
+  const scope =
+    data?.scope === 'network' ? t('home.discovery.listingsGlobal', 'Worldwide') : data && area;
 
   return (
     <Band
       surface="tint"
-      title={title}
+      title={t('home.discovery.listings', 'Places and events')}
+      description={
+        <span className="relative block min-h-6">
+          <span className="absolute inset-x-0 truncate" title={scope ?? undefined}>
+            {scope}
+          </span>
+        </span>
+      }
       seeAllHref="/events"
       seeAllLabel={t('home.discovery.allEvents', 'See all events')}
       action={showRegionPicker ? <RegionChip region={region} /> : undefined}
