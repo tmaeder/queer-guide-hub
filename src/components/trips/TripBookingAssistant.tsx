@@ -221,6 +221,7 @@ export function TripBookingAssistant({
     checkIn: startDate,
     checkOut: endDate,
     limit: 3,
+    includePartnerSearch: true,
     enabled: activeTab === 'booking' && vertical === 'hotel' && !hasHotelBooked,
   });
 

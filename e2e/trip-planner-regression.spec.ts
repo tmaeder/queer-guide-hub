@@ -280,9 +280,10 @@ test('tracks hotel, flight, and activity partner handoffs in the trip', async ({
       json: {
         hotels: [
           {
-            hotelId: 1,
-            hotelName: 'Rainbow Hotel',
-            priceFrom: 125,
+            hotelId: 'search-Zurich',
+            hotelName: 'Search hotels in Zurich',
+            priceFrom: null,
+            isFallback: true,
             currency: 'CHF',
             bookingUrl: 'https://partner.example/hotel',
           },
@@ -348,7 +349,7 @@ test('tracks hotel, flight, and activity partner handoffs in the trip', async ({
     'aria-pressed',
     'true',
   );
-  await wizard.getByRole('button', { name: /Rainbow Hotel/ }).click();
+  await wizard.getByRole('button', { name: /Search hotels in Zurich/ }).click();
   await dialog.getByRole('button', { name: 'Save as pending' }).click();
   await expect(wizard.getByRole('link', { name: 'Continue on partner site' })).toHaveAttribute(
     'href',
@@ -373,7 +374,7 @@ test('tracks hotel, flight, and activity partner handoffs in the trip', async ({
   await expect(wizard.getByRole('link', { name: 'Continue on partner site' })).toHaveCount(3);
   const before = await admin
     .from('reservations')
-    .select('id,type,status')
+    .select('id,type,status,total_amount,provider')
     .eq('trip_id', tripId)
     .eq('user_id', owner.id);
   expect(before.error).toBeNull();
@@ -386,7 +387,8 @@ test('tracks hotel, flight, and activity partner handoffs in the trip', async ({
     ),
   );
   const hotel = before.data!.find((r) => r.type === 'hotel')!;
-  const hotelBooking = wizard.getByRole('group', { name: 'Rainbow Hotel', exact: true });
+  expect(hotel).toMatchObject({ provider: 'booking.com', total_amount: null });
+  const hotelBooking = wizard.getByRole('group', { name: 'Search hotels in Zurich', exact: true });
   await hotelBooking.getByRole('button', { name: 'Link to itinerary stop' }).click();
   await dialog.getByRole('combobox').selectOption({ label: stopTitle });
   await dialog.getByRole('button', { name: 'Save', exact: true }).click();
