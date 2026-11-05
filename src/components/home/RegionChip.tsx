@@ -87,9 +87,9 @@ export function RegionChip({ region }: { region: HomeRegionApi }) {
       <PopoverTrigger asChild>
         <FilterChip
           active={open}
-          // A fixed minimum width so resolving the region swaps the label
-          // without the band's head reflowing around it.
-          className="min-w-32 justify-between"
+          // Reserve the same width for loading, inferred and selected labels.
+          // The full city remains in the accessible name when text truncates.
+          className="w-36 max-w-full justify-between"
           label={
             <>
               <span className="truncate">{label}</span>
