@@ -1,8 +1,9 @@
-import { type ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { Band } from '@/components/home/Band';
-import { CityCards } from '@/components/home/subway/CityCards';
+import { DeferredSection } from '@/components/home/DeferredSection';
+import { CityCardsSkeleton } from '@/components/home/subway/CityCardsSkeleton';
 import { DeparturesBoard } from '@/components/home/subway/DeparturesBoard';
 import { HomeRegionProvider } from '@/components/home/HomeRegionProvider';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
@@ -10,6 +11,10 @@ import { SupportBand } from '@/components/home/subway/SupportBand';
 import { YourLines } from '@/components/home/YourLines';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { lazyRetry } from '@/utils/lazyRetry';
+
+const CityCards = lazyRetry(() => import('@/components/home/subway/CityCards'));
+const cityCardsLoading = <CityCardsSkeleton />;
 
 const browseLinks = [
   { to: '/travel', label: 'header.intents.travelling.label' },
@@ -37,13 +42,26 @@ function HomeSection({ section, children }: { section: string; children: ReactNo
 }
 
 function RegionalContent({ showRegionPicker = true }: { showRegionPicker?: boolean }) {
+  const { t } = useTranslation();
+
   return (
     <>
       <HomeSection section="departures">
         <DeparturesBoard showRegionPicker={showRegionPicker} />
       </HomeSection>
       <HomeSection section="cities">
-        <CityCards />
+        <Band
+          surface="tint"
+          title={t('home.discovery.cityGuides', 'City guides')}
+          seeAllHref="/cities"
+          seeAllLabel={t('home.discovery.allCities', 'All cities')}
+        >
+          <DeferredSection rootMargin="160px 0px" fallback={cityCardsLoading}>
+            <Suspense fallback={cityCardsLoading}>
+              <CityCards />
+            </Suspense>
+          </DeferredSection>
+        </Band>
       </HomeSection>
     </>
   );

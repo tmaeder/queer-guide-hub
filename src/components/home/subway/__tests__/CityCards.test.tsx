@@ -30,7 +30,7 @@ vi.mock('@/components/home/homeRegionContext', () => ({
 }));
 vi.mock('../CityNetwork', () => ({ CityNetwork: () => <svg data-testid="net" /> }));
 
-import { CityCards } from '../CityCards';
+import CityCards from '../CityCards';
 
 const city = (name: string, equality_score: number | null) => ({
   id: name,

@@ -18,7 +18,9 @@ const gotoReady = async (page: Page, path: string) => {
 /** Activate the deferred content as a reader does before probing a real card. */
 async function firstHomeCard(page: Page) {
   await loadHomeContent(page);
-  const card = page.locator('.card-lift').first();
+  const cities = page.getByRole('region', { name: 'City guides' });
+  await cities.scrollIntoViewIfNeeded();
+  const card = cities.locator('.card-lift').first();
   await expect(card).toBeVisible();
   return card;
 }
