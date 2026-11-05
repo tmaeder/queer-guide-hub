@@ -38,6 +38,8 @@ export interface NewsSearchFilters {
 interface WorkerSearchResponse {
   hits: Array<{ objectID?: string; type?: string; [key: string]: unknown }>;
   facetDistribution: Record<string, Record<string, number>>;
+  /** The worker answered before search_facets did; fetch them with facetsOnly. */
+  facetsPending?: boolean;
   totalHits?: number;
   estimatedTotalHits?: number;
 }
@@ -94,13 +96,24 @@ export function useNewsSearch() {
       const sortMode = SORT_MAP[sort];
       if (sortMode) workerFilters.sort = sortMode;
 
-      const result = await searchFetch<WorkerSearchResponse>('/search', {
+      const requestBody = {
         query: q,
         filters: workerFilters,
         hitsPerPage: PAGE_SIZE,
         page,
-      }, { signal });
+      };
+      const result = await searchFetch<WorkerSearchResponse>('/search', requestBody, { signal });
       if (signal.aborted) return;
+      // The worker does not hold the hits for the facet counts; when they missed
+      // its grace window, fetch them on their own. Same signal, so a newer
+      // search cancels it; failure leaves the panel empty, as before.
+      if (result.facetsPending) {
+        searchFetch<WorkerSearchResponse>('/search', { ...requestBody, facetsOnly: true }, { signal })
+          .then((f) => {
+            if (!signal.aborted) setFacets(f.facetDistribution ?? {});
+          })
+          .catch(() => undefined);
+      }
 
       const rankedIds = [...new Set(result.hits
         .filter((h) => h.type === 'news' && h.objectID)
@@ -122,7 +135,9 @@ export function useNewsSearch() {
           return [...previous, ...items.filter((item) => !seen.has(item.id))];
         });
         setTotalHits(hasLocalFilters ? null : (total ?? null));
-        setFacets(result.facetDistribution ?? {});
+        // A pending block is filled by the facetsOnly follow-up above; writing
+        // {} here could land after it and wipe the panel.
+        if (!result.facetsPending) setFacets(result.facetDistribution ?? {});
         setNextPage(more ? page + 1 : null);
       };
 
