@@ -192,7 +192,7 @@ export const cityFields: FieldConfig[] = [
     hidden: true,
     virtual: true,
     listColumn: true,
-    listRender: (row) => countLink(row, 'venues', 'venues', 'city_id'),
+    listRender: (row) => countLink(row, 'venues', 'organizations', 'venue_city_id'),
   },
   {
     name: 'event_count',

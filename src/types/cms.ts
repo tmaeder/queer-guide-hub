@@ -127,6 +127,28 @@ export interface FieldConfig {
    */
   virtual?: boolean;
   /**
+   * A filter-only field that matches rows through a CHILD table instead of a
+   * column of their own, e.g. organisations "with a venue in city X":
+   * `venues!venues_organization_id_fkey!inner(id)` + `venues.city_id = X`.
+   * Must be `virtual` (it has no column to write) and is `eq`-filterable only.
+   * The child's own merged/archived rows are excluded via `scope`, the same
+   * slice its list shows, so a "1 venue" link never matches a merged one.
+   */
+  embeddedFilter?: {
+    /** Child table, e.g. `venues`. */
+    table: string;
+    /** FK constraint name, required when the embed is ambiguous. */
+    fk?: string;
+    /** Child column compared to the filter value, e.g. `city_id`. */
+    column: string;
+    scope?: {
+      merge?: { column: string };
+      lifecycle?: {
+        archive?: { column: string; value?: string; predicate?: 'equals' | 'present' };
+      };
+    };
+  };
+  /**
    * For `select`-typed filters: load options at runtime from a related table.
    * Replaces the static `options` list at filter render time.
    */

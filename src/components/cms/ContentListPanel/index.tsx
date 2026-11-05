@@ -99,6 +99,13 @@ function activeFilterLabel(filter: Filter, fields: FieldConfig[]): string {
  * persist key and the old type's state — see the note in
  * useContentListController. Keying here is the fix, and it costs three lines.
  */
+/** Venue FK params → the Organisations list's embedded venue filters. */
+const LEGACY_VENUE_FILTERS = [
+  ['city_id', 'venue_city_id'],
+  ['country_id', 'venue_country_id'],
+  ['queer_village_id', 'venue_village_id'],
+] as const;
+
 export function ContentListPanel(props: ContentListPanelProps) {
   const { type } = useParams();
   const typeId = props.configOverride?.id ?? props.contentTypeId ?? type;
@@ -108,6 +115,17 @@ export function ContentListPanel(props: ContentListPanelProps) {
     if (next.has('edit')) next.set('location', next.get('edit')!);
     next.delete('edit');
     next.delete('view');
+    // Old `?city_id=` venue links (bookmarks, older count links) name a venue
+    // column the Organisations list does not have; translate them to its
+    // "has a venue in this place" filter instead of silently dropping them.
+    for (const [from, to] of LEGACY_VENUE_FILTERS) {
+      for (const suffix of ['', FILTER_LABEL_SUFFIX]) {
+        const value = next.get(`${from}${suffix}`);
+        if (value === null) continue;
+        next.delete(`${from}${suffix}`);
+        next.set(`${to}${suffix}`, value);
+      }
+    }
     return (
       <Navigate
         replace

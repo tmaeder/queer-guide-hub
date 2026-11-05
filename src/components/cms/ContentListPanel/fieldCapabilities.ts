@@ -234,6 +234,18 @@ export function capabilitiesFor(field: FieldConfig): FieldCapability {
   // database cannot filter or sort on it at all. It can still be displayed via
   // `listRender`. This is checked FIRST: a virtual `select` must not inherit
   // select's operators.
+  // An embedded filter has no column of its own, but the query layer resolves
+  // it through a child table (`resolveEmbeddedFilters`). Equality only: it is
+  // a deep-link target (an FK id), not something to type into.
+  if (field.embeddedFilter) {
+    return {
+      displayable: false,
+      operators: ['eq'],
+      sortable: false,
+      groupable: false,
+      dateable: false,
+    };
+  }
   if (field.virtual) {
     return {
       displayable: true,

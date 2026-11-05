@@ -1,7 +1,7 @@
 import { useAdminShell } from '@/components/admin/shell/AdminShell';
 import { GeographyLandmarks } from '@/components/admin/GeographyLandmarks';
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   ChevronDown,
@@ -39,7 +39,7 @@ import {
   type GeographyRecord,
   type GeographyType,
 } from '@/hooks/useGeographyCMS';
-import { cmsEditPath, livePath } from '@/lib/cmsLinks';
+import { cmsEditPath, cmsFilteredListPath, livePath } from '@/lib/cmsLinks';
 import { codeToFlagEmoji } from '@/lib/countryFlag';
 
 const ICONS = { country: Globe, city: MapPin, village: Home };
@@ -232,6 +232,71 @@ function GeographyRows({
   );
 }
 
+type PlaceType = GeographyRecord['place_type'];
+
+/**
+ * Where each "Linked content" count leads, per place type. Events and hotels
+ * filter their own FK column. Venues are organisation locations and have no
+ * list of their own (`/admin/content/venues` redirects to Organisations), so
+ * the venue count opens Organisations filtered to "has a live venue here"
+ * (`venue_*_id`, see organization.ts).
+ */
+const LINKED_TARGET: Record<
+  'venues' | 'events' | 'hotels',
+  { registryKey: string; field: Record<PlaceType, string> }
+> = {
+  venues: {
+    registryKey: 'organizations',
+    field: { country: 'venue_country_id', city: 'venue_city_id', village: 'venue_village_id' },
+  },
+  events: {
+    registryKey: 'events',
+    field: { country: 'country_id', city: 'city_id', village: 'queer_village_id' },
+  },
+  hotels: {
+    registryKey: 'hotels',
+    field: { country: 'country_id', city: 'city_id', village: 'queer_village_id' },
+  },
+};
+
+/**
+ * A "Linked content" count that opens the CMS list filtered to this place.
+ * `geo_cms_record` counts the same live, unmerged slice the list shows by
+ * default, so "1 venues" opens one row. Zero stays text: a link to an empty
+ * list is a dead end.
+ */
+function LinkedCount({
+  record,
+  kind,
+  count,
+}: {
+  record: GeographyRecord;
+  kind: keyof typeof LINKED_TARGET;
+  count: number;
+}) {
+  const noun = kind;
+  const target = LINKED_TARGET[kind];
+  const href =
+    count > 0
+      ? cmsFilteredListPath(
+          target.registryKey,
+          target.field[record.place_type],
+          record.id,
+          record.name,
+        )
+      : null;
+  if (!href) return <>{`${count} ${noun}`}</>;
+  return (
+    <Link
+      to={href}
+      className="underline underline-offset-4"
+      aria-label={`Show ${count} ${noun} in ${record.name}`}
+    >
+      {count} {noun}
+    </Link>
+  );
+}
+
 function MoveGeography({ record, onClose }: { record: GeographyRecord; onClose: () => void }) {
   const [search, setSearch] = useState('');
   const type = record.place_type === 'city' ? 'country' : 'city';
@@ -410,7 +475,11 @@ function GeographyDetail({
         <dd>{record.child_count}</dd>
         <dt>Linked content</dt>
         <dd>
-          {record.venue_count} venues · {record.event_count} events · {record.hotel_count} hotels
+          <LinkedCount record={record} kind="venues" count={record.venue_count} />
+          {' · '}
+          <LinkedCount record={record} kind="events" count={record.event_count} />
+          {' · '}
+          <LinkedCount record={record} kind="hotels" count={record.hotel_count} />
         </dd>
       </dl>
       <div className="flex flex-col gap-2">

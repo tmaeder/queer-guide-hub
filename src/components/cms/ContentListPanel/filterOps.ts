@@ -1,4 +1,4 @@
-import type { ContentTypeConfig } from '@/types/cms';
+import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import type { FilterOperator } from './fieldCapabilities';
 import type { Filter, SortSpec } from './viewSpec';
 
@@ -307,4 +307,61 @@ export function applyEmbeddedLiveScope<T extends QueryBuilderLike<T>>(
     }
   }
   return q;
+}
+
+// ── Filters through a child table ──────────────────────────────────
+
+/**
+ * Rewrite filters on `embeddedFilter` fields into PostgREST embedded filters.
+ *
+ * `select` gains one `!inner` embed per such filter, aliased `ef_<field>`, so
+ * only parents with at least one matching child survive, and the filter field
+ * becomes `ef_<field>.<column>`. PostgREST returns each parent once whatever
+ * the number of matching children. Call `applyEmbeddedFilterScopes` after the
+ * filters so the child's merged/archived rows cannot satisfy the match.
+ *
+ * The embed must be part of `select` before any filter is applied, which is
+ * why this returns the select string rather than taking a builder.
+ */
+export function resolveEmbeddedFilters(
+  select: string,
+  filters: Filter[],
+  fields: FieldConfig[],
+): {
+  select: string;
+  filters: Filter[];
+  scopes: Array<{ alias: string; scope: NonNullable<FieldConfig['embeddedFilter']>['scope'] }>;
+} {
+  const byName = new Map(fields.map((f) => [f.name, f]));
+  const embeds: string[] = [];
+  const scopes: Array<{
+    alias: string;
+    scope: NonNullable<FieldConfig['embeddedFilter']>['scope'];
+  }> = [];
+  const out = filters.map((f) => {
+    const ef = byName.get(f.field)?.embeddedFilter;
+    if (!ef) return f;
+    const alias = `ef_${f.field}`;
+    if (!embeds.some((e) => e.startsWith(`${alias}:`))) {
+      embeds.push(`${alias}:${ef.table}${ef.fk ? `!${ef.fk}` : ''}!inner(${ef.column})`);
+      scopes.push({ alias, scope: ef.scope });
+    }
+    return { ...f, field: `${alias}.${ef.column}` };
+  });
+  return {
+    select: embeds.length ? [select, ...embeds].join(',') : select,
+    filters: out,
+    scopes,
+  };
+}
+
+/** Exclude merged/archived children from every embedded filter. */
+export function applyEmbeddedFilterScopes<T extends QueryBuilderLike<T>>(
+  query: T,
+  scopes: ReturnType<typeof resolveEmbeddedFilters>['scopes'],
+): T {
+  return scopes.reduce<T>(
+    (q, { alias, scope }) => (scope ? applyEmbeddedLiveScope(q, alias, scope) : q),
+    query,
+  );
 }
