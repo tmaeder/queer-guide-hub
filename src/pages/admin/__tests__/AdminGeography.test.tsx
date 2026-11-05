@@ -157,4 +157,55 @@ describe('Unified geography workspace', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Check geography' }));
     expect(mocks.verify).toHaveBeenCalledWith('country-1');
   });
+
+  it('links each linked-content count to the CMS list filtered to this place', () => {
+    mocks.selected = {
+      ...country,
+      id: 'city-1',
+      place_type: 'city',
+      source_table: 'cities',
+      name: 'Berlin',
+      venue_count: 1,
+      event_count: 3,
+      hotel_count: 0,
+    };
+    view('/admin/geography?selected=city-1');
+    const detail = within(screen.getByRole('region', { name: 'Selected geography' }));
+    expect(detail.getByRole('link', { name: 'Show 1 venues in Berlin' })).toHaveAttribute(
+      'href',
+      '/admin/content/organizations?venue_city_id=city-1&venue_city_id_label=Berlin',
+    );
+    expect(detail.getByRole('link', { name: 'Show 3 events in Berlin' })).toHaveAttribute(
+      'href',
+      '/admin/content/events?city_id=city-1&city_id_label=Berlin',
+    );
+    // A zero count is text: a link to an empty list is a dead end.
+    expect(detail.queryByRole('link', { name: /hotels in Berlin/ })).not.toBeInTheDocument();
+    expect(detail.getByText(/0 hotels/)).toBeInTheDocument();
+  });
+
+  it('filters a village by queer_village_id and a country by country_id', () => {
+    mocks.selected = {
+      ...country,
+      id: 'village-1',
+      place_type: 'village',
+      source_table: 'queer_villages',
+      name: 'Schoeneberg',
+      venue_count: 2,
+      event_count: 0,
+      hotel_count: 0,
+    };
+    const { unmount } = view('/admin/geography?selected=village-1');
+    expect(screen.getByRole('link', { name: 'Show 2 venues in Schoeneberg' })).toHaveAttribute(
+      'href',
+      '/admin/content/organizations?venue_village_id=village-1&venue_village_id_label=Schoeneberg',
+    );
+    unmount();
+    mocks.selected = { ...country, venue_count: 5, event_count: 0, hotel_count: 0 };
+    view('/admin/geography?selected=country-1');
+    expect(screen.getByRole('link', { name: 'Show 5 venues in Spain' })).toHaveAttribute(
+      'href',
+      '/admin/content/organizations?venue_country_id=country-1&venue_country_id_label=Spain',
+    );
+  });
 });

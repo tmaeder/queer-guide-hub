@@ -4,6 +4,12 @@ import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { ORG_ROLE_LABELS } from '@/lib/organizationRoles';
 import { OrganizationLocationCell, OrganizationWebsiteCell } from './organizationListCells';
 
+/** The slice the venue counts count: not merged away, not archived. */
+export const VENUE_LIVE_SCOPE = {
+  merge: { column: 'duplicate_of_id' },
+  lifecycle: { archive: { column: 'review_status', value: 'archived' } },
+};
+
 export const organizationFields: FieldConfig[] = [
   {
     name: 'name',
@@ -127,6 +133,30 @@ export const organizationFields: FieldConfig[] = [
   { name: 'cover_image_url', label: 'Cover image', type: 'image', group: 'media' },
   { name: 'images', label: 'Images', type: 'images', group: 'media' },
   { name: 'logo_url', label: 'Logo', type: 'image', group: 'media' },
+  // Deep-link filters: organisations with a live venue in a place. The Cities,
+  // Queer villages and Geography counts link here (venues are organisation
+  // locations; `/admin/content/venues` redirects to this list).
+  ...(
+    [
+      ['venue_city_id', 'Venue city', 'city_id'],
+      ['venue_country_id', 'Venue country', 'country_id'],
+      ['venue_village_id', 'Venue queer village', 'queer_village_id'],
+    ] as const
+  ).map(([name, label, column]): FieldConfig => ({
+    name,
+    label,
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    embeddedFilter: {
+      table: 'venues',
+      fk: 'venues_organization_id_fkey',
+      column,
+      // Must equal venueContentType's merge + lifecycle.archive (tested).
+      scope: VENUE_LIVE_SCOPE,
+    },
+  })),
 ];
 
 export const organizationContentType: ContentTypeConfig = {

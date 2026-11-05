@@ -5,6 +5,8 @@ import {
   applyContentSearch,
   applyArchivedView,
   applyMergedView,
+  applyEmbeddedFilterScopes,
+  resolveEmbeddedFilters,
   type ArchivedView,
   type MergedView,
 } from '@/components/cms/ContentListPanel/filterOps';
@@ -108,13 +110,15 @@ export function useGroupedRows({
       const ct = config!;
 
       const fetchOne = async (key: string, label: string): Promise<RowGroup> => {
+        const embedded = resolveEmbeddedFilters(ct.listSelect ?? '*', filters, ct.fields);
         let q = supabase
           .from(ct.tableName as 'events')
-          .select(ct.listSelect ?? '*', { count: 'exact' })
+          .select(embedded.select, { count: 'exact' })
           .range(0, ROWS_PER_GROUP - 1);
 
         if (search) q = applyContentSearch(q as never, ct, search) as typeof q;
-        q = applyFilters(q as never, filters) as typeof q;
+        q = applyFilters(q as never, embedded.filters) as typeof q;
+        q = applyEmbeddedFilterScopes(q as never, embedded.scopes) as typeof q;
         q = applyArchivedView(q as never, ct.lifecycle?.archive, archivedView) as typeof q;
         q = applyMergedView(q as never, ct.merge, mergedView) as typeof q;
 

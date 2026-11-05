@@ -16,6 +16,8 @@ import {
   applyArchivedView,
   applyMergedView,
   applyEmbeddedLiveScope,
+  applyEmbeddedFilterScopes,
+  resolveEmbeddedFilters,
   type ArchivedView,
   type MergedView,
 } from './filterOps';
@@ -268,9 +270,12 @@ export function useContentListController({
         columns.replace(`${embed}(count),`, '').replace(`,${embed}(count)`, ''),
       ct.listSelect ?? '*',
     );
+    // Filters on a child table (organisations "with a venue in city X") need
+    // their `!inner` embed in the select before any filter is applied.
+    const embedded = resolveEmbeddedFilters(select, filters, ct.fields);
     let query = supabase
       .from(ct.tableName as 'events')
-      .select(select, { count: 'exact' })
+      .select(embedded.select, { count: 'exact' })
       .range(from, to);
     query = applySorts(query as never, sorts, resolveSortField) as typeof query;
 
@@ -281,7 +286,8 @@ export function useContentListController({
     // Every filter goes through the shared translator. The previous inline
     // version had five type branches and silently skipped everything else, so
     // filtering on an autocomplete/url/textarea did nothing at all.
-    query = applyFilters(query as never, filters) as typeof query;
+    query = applyFilters(query as never, embedded.filters) as typeof query;
+    query = applyEmbeddedFilterScopes(query as never, embedded.scopes) as typeof query;
     // After the user's own filters, so an explicit filter on the archive column
     // still composes rather than being overwritten.
     query = applyArchivedView(query as never, ct.lifecycle?.archive, archivedView) as typeof query;
