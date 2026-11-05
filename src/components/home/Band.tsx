@@ -78,7 +78,7 @@ export function Band({
                 {eyebrow}
               </Eyebrow>
             )}
-            <h2 id={headingId} className="font-display text-display">
+            <h2 id={headingId} className="font-display text-headline sm:text-display">
               {title}
             </h2>
             {description && (

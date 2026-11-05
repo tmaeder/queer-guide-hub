@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Band } from '@/components/home/Band';
 import { RegionChip } from '@/components/home/RegionChip';
@@ -23,32 +24,24 @@ const formatBoardTime = (iso: string | null, locale: string) => {
 function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
   const href =
     row.kind === 'event' ? `/events/${row.slug || row.id}` : `/venues/${row.slug || row.id}`;
+  const date =
+    row.kind === 'event' && row.startDate ? formatBoardTime(row.startDate, locale) : null;
+
   return (
-    <div className="group relative border-b border-border-hairline last:border-b-0">
-      <div className="grid grid-cols-[42px_1fr_auto] items-center gap-4 px-4 py-4 transition-colors group-hover:bg-surface-container md:grid-cols-[52px_120px_1fr_28px] md:px-6">
-        <RouteBullet type={row.kind} size={42} />
-        {/* Blank, not an em-dash. A standing place has no departure time, and a
-            column of "—" down five of six rows reads as missing data rather
-            than as an attribute that does not apply. The cell keeps its width
-            so the titles stay on one vertical. */}
-        <span className="hidden text-body-lg font-bold tabular-nums md:block">
-          {row.kind === 'event' ? formatBoardTime(row.startDate, locale) : ''}
+    <LocalizedLink
+      to={href}
+      aria-label={row.title}
+      className="grid min-h-[74px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-2 no-underline hover:bg-surface-container focus-visible:-outline-offset-2 md:px-6"
+    >
+      <RouteBullet type={row.kind} size={36} />
+      <span className="min-w-0">
+        <span className="block truncate text-title font-bold">{row.title}</span>
+        <span className="block truncate text-13 text-muted-foreground">
+          {[date, row.via].filter(Boolean).join(' · ')}
         </span>
-        <span className="min-w-0">
-          <span className="block truncate text-title font-bold md:text-headline">{row.title}</span>
-          <span className="mt-0.5 block truncate text-13 text-muted-foreground">
-            {row.kind === 'event' && (
-              <span className="md:hidden">{formatBoardTime(row.startDate, locale)} · </span>
-            )}
-            {row.via}
-          </span>
-        </span>
-        <span className="hidden text-xl font-bold md:block" aria-hidden>
-          →
-        </span>
-      </div>
-      <LocalizedLink to={href} className="absolute inset-0 no-underline" aria-label={row.title} />
-    </div>
+      </span>
+      <TransitIcon name="arrow-right" size={20} className="rtl:rotate-180" />
+    </LocalizedLink>
   );
 }
 
@@ -63,7 +56,17 @@ export function DeparturesBoard({ showRegionPicker = true }: { showRegionPicker?
   const local = rows.filter((r) => r.rung === 'local');
   const trip = rows.filter((r) => r.rung === 'trip');
 
-  const area = data?.scope === 'city' ? region.cityName : region.countryName || region.countryCode;
+  const country =
+    data?.scope === 'country' &&
+    typeof Intl.DisplayNames === 'function' &&
+    region.countryCode &&
+    /^[a-z]{2}$/i.test(region.countryCode)
+      ? new Intl.DisplayNames(i18n.resolvedLanguage ?? i18n.language, {
+          type: 'region',
+          fallback: 'none',
+        }).of(region.countryCode.toUpperCase())
+      : undefined;
+  const area = data?.scope === 'city' ? region.cityName : country || region.countryName;
   const scope =
     data?.scope === 'network' ? t('home.discovery.listingsGlobal', 'Worldwide') : data && area;
 
@@ -82,7 +85,7 @@ export function DeparturesBoard({ showRegionPicker = true }: { showRegionPicker?
       seeAllLabel={t('home.discovery.allEvents', 'See all events')}
       action={showRegionPicker ? <RegionChip region={region} /> : undefined}
     >
-      <div className="bg-card rounded-container shadow-soft" aria-busy={loading}>
+      <div className="overflow-hidden rounded-container bg-card" aria-busy={loading}>
         {loading ? (
           // Skeletons at the loaded row's real height (a two-line title/via
           // stack at py-4), not a flat h-16 that is shorter than the content
@@ -91,7 +94,7 @@ export function DeparturesBoard({ showRegionPicker = true }: { showRegionPicker?
             <div
               key={i}
               aria-hidden="true"
-              className="h-[74px] motion-safe:animate-pulse border-b border-border-hairline last:border-b-0"
+              className="h-[74px] motion-safe:animate-pulse border-b border-border last:border-b-0"
             />
           ))
         ) : isError && rows.length === 0 ? (
@@ -112,7 +115,7 @@ export function DeparturesBoard({ showRegionPicker = true }: { showRegionPicker?
             {trip.length > 0 && (
               <>
                 {local.length > 0 && (
-                  <div className="border-t border-border-hairline px-4 py-2 md:px-6">
+                  <div className="border-t border-border px-4 py-2 md:px-6">
                     <Eyebrow as="div">
                       {t('home.discovery.otherEvents', 'Events elsewhere')}
                     </Eyebrow>
