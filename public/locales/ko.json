@@ -716,6 +716,18 @@
       "startingNow": "지금 시작"
     },
     "bookingAssistant": {
+      "linkStop": "일정의 방문 장소에 연결",
+      "wizardTitle": "여행 예약",
+      "activities": "액티비티",
+      "fromAirport": "출발 공항",
+      "toAirport": "도착 공항",
+      "reviewFlight": "항공편 검색 확인",
+      "noActivitiesFound": "액티비티를 찾을 수 없습니다",
+      "completeOnPartner": "제휴사 사이트에서 예약을 완료하세요.",
+      "savePending": "대기 중으로 저장",
+      "continueOnPartner": "제휴사 사이트로 이동",
+      "recordConfirmation": "예약 확인 기록",
+      "saveFailed": "예약을 저장할 수 없습니다",
       "tabs": {
         "suggestions": "제안",
         "book": "예약"

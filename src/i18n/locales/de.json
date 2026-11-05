@@ -716,6 +716,18 @@
       "startingNow": "Beginnt jetzt"
     },
     "bookingAssistant": {
+      "linkStop": "Mit einem Stopp im Reiseplan verknüpfen",
+      "wizardTitle": "Reisebuchungen",
+      "activities": "Aktivitäten",
+      "fromAirport": "Abflughafen",
+      "toAirport": "Ankunftsflughafen",
+      "reviewFlight": "Flugsuche prüfen",
+      "noActivitiesFound": "Keine Aktivitäten gefunden",
+      "completeOnPartner": "Schließe deine Buchung auf der Website des Partners ab.",
+      "savePending": "Als ausstehend speichern",
+      "continueOnPartner": "Zur Partner-Website",
+      "recordConfirmation": "Bestätigung eintragen",
+      "saveFailed": "Reservierung konnte nicht gespeichert werden",
       "tabs": {
         "suggestions": "Vorschläge",
         "book": "Buchen"

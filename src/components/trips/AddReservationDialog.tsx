@@ -40,7 +40,8 @@ interface Props {
   tripId: string;
   existing?: Reservation;
   initialTitle?: string;
-  initialType?: typeof TYPES[number];
+  initialStatus?: (typeof STATUSES)[number];
+  initialType?: (typeof TYPES)[number];
   onCreated?: (reservation: Reservation) => void;
 }
 
@@ -50,6 +51,7 @@ export function AddReservationDialog({
   tripId,
   existing,
   initialTitle,
+  initialStatus,
   initialType,
   onCreated,
 }: Props) {
@@ -67,7 +69,7 @@ export function AddReservationDialog({
   const [amount, setAmount] = useState(existing?.amount != null ? String(existing.amount) : '');
   const [currency, setCurrency] = useState(existing?.currency || 'EUR');
   const [notes, setNotes] = useState(existing?.notes || '');
-  const [status, setStatus] = useState(existing?.status || 'pending');
+  const [status, setStatus] = useState(existing?.status ?? initialStatus ?? 'pending');
 
   useEffect(() => {
     if (existing) {

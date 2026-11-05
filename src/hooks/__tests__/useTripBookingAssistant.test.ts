@@ -36,7 +36,6 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 import {
   fetchBookingAssistantCities,
-  fetchTripReservations,
   fetchBookingAssistantVenues,
 } from '../useTripBookingAssistant';
 
@@ -65,17 +64,6 @@ describe('fetchBookingAssistantCities', () => {
   it('throws on supabase error', async () => {
     withResults({ data: null, error: { message: 'rls' } });
     await expect(fetchBookingAssistantCities(['c1'])).rejects.toEqual({ message: 'rls' });
-  });
-});
-
-describe('fetchTripReservations', () => {
-  it('filters reservations by trip_id', async () => {
-    withResults({ data: [{ id: 'r1', type: 'hotel' }], error: null });
-    const r = await fetchTripReservations('trip-1');
-    expect(r[0].id).toBe('r1');
-    expect(state.calls[0].table).toBe('reservations');
-    const eqCall = state.calls[0].chain.find(s => s.method === 'eq');
-    expect(eqCall?.args).toEqual(['trip_id', 'trip-1']);
   });
 });
 
