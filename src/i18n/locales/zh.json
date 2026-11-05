@@ -716,6 +716,12 @@
       "startingNow": "现在开始"
     },
     "bookingAssistant": {
+      "wizardTitle": "行程预订",
+      "activities": "活动",
+      "fromAirport": "出发机场",
+      "toAirport": "到达机场",
+      "reviewFlight": "查看航班搜索",
+      "noActivitiesFound": "未找到活动",
       "completeOnPartner": "请在合作伙伴网站完成预订。",
       "savePending": "保存为待确认",
       "continueOnPartner": "前往合作伙伴网站",

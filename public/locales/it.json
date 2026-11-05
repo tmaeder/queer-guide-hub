@@ -716,6 +716,12 @@
       "startingNow": "Inizia ora"
     },
     "bookingAssistant": {
+      "wizardTitle": "Prenotazioni di viaggio",
+      "activities": "Attività",
+      "fromAirport": "Aeroporto di partenza",
+      "toAirport": "Aeroporto di arrivo",
+      "reviewFlight": "Rivedi la ricerca voli",
+      "noActivitiesFound": "Nessuna attività trovata",
       "completeOnPartner": "Completa la prenotazione sul sito del partner.",
       "savePending": "Salva come in sospeso",
       "continueOnPartner": "Continua sul sito del partner",

@@ -744,6 +744,12 @@
       "startingNow": "Начинается сейчас"
     },
     "bookingAssistant": {
+      "wizardTitle": "Бронирования поездки",
+      "activities": "Активности",
+      "fromAirport": "Аэропорт вылета",
+      "toAirport": "Аэропорт прибытия",
+      "reviewFlight": "Проверить поиск рейса",
+      "noActivitiesFound": "Активности не найдены",
       "completeOnPartner": "Завершите бронирование на сайте партнёра.",
       "savePending": "Сохранить как ожидающее",
       "continueOnPartner": "Перейти на сайт партнёра",

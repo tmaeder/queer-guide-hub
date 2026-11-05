@@ -4,6 +4,7 @@ export interface BookingAssistantCity {
   id: string;
   name: string;
   country_id: string | null;
+  major_airport_code?: string | null;
   countries?: { equality_score: number | null; name: string } | null;
 }
 
@@ -26,7 +27,7 @@ export async function fetchBookingAssistantCities(
   if (cityIds.length === 0) return [];
   const { data, error } = await supabase
     .from('cities')
-    .select('id, name, country_id, countries:country_id(equality_score, name)')
+    .select('id, name, country_id, major_airport_code, countries:country_id(equality_score, name)')
     .in('id', cityIds);
   if (error) throw error;
   return (data || []) as BookingAssistantCity[];

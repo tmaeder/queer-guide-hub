@@ -389,12 +389,21 @@ export default function TripPlannerPage() {
             </div>
           </div>
 
-          <LocalizedLink
-            to={`/trips/${trip.id}?view=plan&section=prepare&tool=safety`}
-            className="mt-4 inline-flex min-h-11 items-center gap-2 underline underline-offset-4"
-          >
-            <Shield size={16} aria-hidden /> {t('trips.tabs.safety')}
-          </LocalizedLink>
+          <div className="mt-4 flex flex-wrap gap-x-4">
+            <LocalizedLink
+              to={`/trips/${trip.id}?view=plan&section=prepare&tool=safety`}
+              className="inline-flex min-h-11 items-center gap-2 underline underline-offset-4"
+            >
+              <Shield size={16} aria-hidden /> {t('trips.tabs.safety')}
+            </LocalizedLink>
+            <LocalizedLink
+              to={`/trips/${trip.id}?view=plan&section=prepare&tool=booking`}
+              className="inline-flex min-h-11 items-center gap-2 underline underline-offset-4"
+            >
+              <Ticket size={16} aria-hidden />{' '}
+              {t('trips.bookingAssistant.wizardTitle', 'Trip bookings')}
+            </LocalizedLink>
+          </div>
 
           {phase !== 'memory' && (
             <div className="mt-6">
@@ -407,14 +416,25 @@ export default function TripPlannerPage() {
       {section === 'prepare' || section === 'all' ? (
         <div className="mb-8">
           <TripPreTripBlock trip={trip} />
-          <TripBookingAssistant
-            tripId={trip.id}
-            places={trip.trip_places}
-            primaryCityId={trip.primary_city_id}
-            canEdit={canEdit}
-            startDate={trip.start_date ?? undefined}
-            endDate={trip.end_date ?? undefined}
-          />
+          <section
+            id="trip-tool-booking"
+            className="scroll-mt-40"
+            aria-labelledby="trip-booking-title"
+          >
+            <h2 id="trip-booking-title" className="mb-4 text-title font-bold">
+              {t('trips.bookingAssistant.wizardTitle', 'Trip bookings')}
+            </h2>
+            <TripBookingAssistant
+              key={`${trip.id}:${searchParams.get('tool') === 'booking'}`}
+              tripId={trip.id}
+              places={trip.trip_places}
+              primaryCityId={trip.primary_city_id}
+              canEdit={canEdit}
+              startInBooking={searchParams.get('tool') === 'booking'}
+              startDate={trip.start_date ?? undefined}
+              endDate={trip.end_date ?? undefined}
+            />
+          </section>
         </div>
       ) : null}
 

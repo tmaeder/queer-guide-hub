@@ -716,6 +716,12 @@
       "startingNow": "まもなく開始"
     },
     "bookingAssistant": {
+      "wizardTitle": "旅行の予約",
+      "activities": "アクティビティ",
+      "fromAirport": "出発空港",
+      "toAirport": "到着空港",
+      "reviewFlight": "フライト検索を確認",
+      "noActivitiesFound": "アクティビティが見つかりません",
       "completeOnPartner": "提携先のサイトで予約を完了してください。",
       "savePending": "保留として保存",
       "continueOnPartner": "提携先のサイトに進む",

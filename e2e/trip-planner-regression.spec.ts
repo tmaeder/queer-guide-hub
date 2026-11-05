@@ -270,3 +270,135 @@ test('plans, shares, and reopens a trip with account-scoped offline access', asy
     await expect(nav.getByRole('link', { name: 'Today' })).toHaveCount(0);
   });
 });
+
+test('tracks hotel, flight, and activity partner handoffs in the trip', async ({
+  tripFixture: { owner, ownerPage: page, admin, suffix },
+}) => {
+  // Stub offer discovery while keeping authentication, trip and reservation writes live.
+  await page.route('**/functions/v1/hotel-search', (route) =>
+    route.fulfill({
+      json: {
+        hotels: [
+          {
+            hotelId: 1,
+            hotelName: 'Rainbow Hotel',
+            priceFrom: 125,
+            currency: 'CHF',
+            bookingUrl: 'https://partner.example/hotel',
+          },
+        ],
+      },
+    }),
+  );
+  await page.route('**/functions/v1/activity-search', (route) =>
+    route.fulfill({
+      json: {
+        activities: [
+          {
+            activityId: 2,
+            title: 'Old town walk',
+            price: 32,
+            currency: 'CHF',
+            bookingUrl: 'https://partner.example/activity',
+          },
+        ],
+      },
+    }),
+  );
+
+  const nextYear = new Date().getUTCFullYear() + 1;
+  const seed = new URLSearchParams({
+    cityId: ZURICH,
+    cityName: 'Zurich',
+    countryId: SWITZERLAND,
+    countryName: 'Switzerland',
+    countryCode: 'CH',
+    timezone: TRIP_TIMEZONE,
+    start: `${nextYear}-03-15`,
+    end: `${nextYear}-03-18`,
+  });
+  const title = `Trip QA Zurich ${suffix}`;
+  await page.goto(`/hub/plans?${seed}`);
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('Trip title').fill(title);
+  await dialog.getByRole('button', { name: 'Create trip', exact: true }).click();
+  await expect(page).toHaveURL(/\/trips\/[0-9a-f-]{36}/);
+  const tripId = new URL(page.url()).pathname.split('/').at(-1)!;
+  const owned = await admin
+    .from('trips')
+    .select('id')
+    .eq('id', tripId)
+    .eq('owner_id', owner.id)
+    .single();
+  expect(owned.error).toBeNull();
+
+  await page
+    .getByRole('navigation', { name: 'Trip workspace' })
+    .getByRole('link', { name: 'Itinerary' })
+    .click();
+  await page.getByRole('link', { name: 'Trip bookings', exact: true }).click();
+  const wizard = page.getByRole('region', { name: 'Trip bookings' });
+  await expect(wizard.getByRole('button', { name: 'Book', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await wizard.getByRole('button', { name: /Rainbow Hotel/ }).click();
+  await dialog.getByRole('button', { name: 'Save as pending' }).click();
+  await expect(wizard.getByRole('link', { name: 'Continue on partner site' })).toHaveAttribute(
+    'href',
+    'https://partner.example/hotel',
+  );
+
+  await wizard.getByRole('button', { name: 'Flights', exact: true }).click();
+  const origin = wizard.getByLabel('Departure airport');
+  await origin.fill('LHR');
+  await wizard.getByRole('option', { name: /LHR/ }).first().click();
+  await expect(wizard.getByLabel('Arrival airport')).toHaveValue(/ZRH/);
+  await wizard.getByRole('button', { name: 'Review flight search' }).click();
+  await dialog.getByRole('button', { name: 'Save as pending' }).click();
+  await expect(wizard.getByRole('link', { name: 'Continue on partner site' })).toHaveCount(2);
+
+  await wizard.getByRole('button', { name: 'Activities', exact: true }).click();
+  await wizard.getByRole('button', { name: /Old town walk/ }).click();
+  await dialog.getByRole('button', { name: 'Save as pending' }).click();
+  await expect(wizard.getByRole('link', { name: 'Continue on partner site' })).toHaveCount(3);
+
+  await page.reload();
+  await expect(wizard.getByRole('link', { name: 'Continue on partner site' })).toHaveCount(3);
+  const before = await admin
+    .from('reservations')
+    .select('id,type,status')
+    .eq('trip_id', tripId)
+    .eq('user_id', owner.id);
+  expect(before.error).toBeNull();
+  expect(before.data).toHaveLength(3);
+  expect(before.data).toEqual(
+    expect.arrayContaining(
+      ['hotel', 'flight', 'activity'].map((type) =>
+        expect.objectContaining({ type, status: 'pending' }),
+      ),
+    ),
+  );
+  const hotel = before.data!.find((r) => r.type === 'hotel')!;
+  await wizard
+    .getByText('Rainbow Hotel', { exact: true })
+    .locator('..')
+    .getByRole('button', { name: 'Record confirmation' })
+    .click();
+  await dialog.getByLabel('Confirmation Code').fill('QA-CONFIRM');
+  await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  await expect(wizard.getByRole('link', { name: 'Continue on partner site' })).toHaveCount(2);
+  const confirmed = await admin
+    .from('reservations')
+    .select('id,status,confirmation_code')
+    .eq('id', hotel.id)
+    .single();
+  expect(confirmed.data).toEqual({
+    id: hotel.id,
+    status: 'confirmed',
+    confirmation_code: 'QA-CONFIRM',
+  });
+  await page.getByRole('button', { name: 'Reservations', exact: true }).click();
+  await expect(page.getByText('QA-CONFIRM', { exact: true })).toBeVisible();
+});

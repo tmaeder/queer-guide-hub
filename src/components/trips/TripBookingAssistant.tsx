@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { Plane, Hotel, Plus, Shield, MapPin, Star, Check } from '@/components/icons';
+import { Plane, Hotel, Plus, Shield, MapPin, Star, Check, Ticket } from '@/components/icons';
 import {
   fetchBookingAssistantCities,
   fetchBookingAssistantVenues,
@@ -13,15 +13,28 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useTripMutations, type TripPlace } from '@/hooks/useTrips';
+import { useActivitySearch } from '@/hooks/useActivitySearch';
+import { useAuth } from '@/hooks/useAuth';
+import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
+import { AirportAutocomplete } from '@/components/travel/AirportAutocomplete';
+import { buildAviasalesUrl } from '@/utils/aviasalesUrl';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useHotelSearch } from '@/hooks/useHotelSearch';
-import type { BookingResult } from '@/lib/booking/types';
+import type { BookingResult, BookingVertical } from '@/lib/booking/types';
 import {
   useReservationMutations,
   useTripReservations,
   type Reservation,
 } from '@/hooks/useTripReservations';
 import { isValidHttpUrl } from '@/utils/url';
-import { formatPrice } from '@/lib/booking/price';
+import { formatPrice, hasValidPrice } from '@/lib/booking/price';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { PlaceBookableLinks } from './PlaceBookableLinks';
 import { AddReservationDialog } from './AddReservationDialog';
@@ -34,11 +47,15 @@ function reservationTypeForCategory(category: string): 'hotel' | 'activity' | 'f
   return 'other';
 }
 
+type PartnerOffer = Pick<BookingResult, 'title' | 'provider' | 'vertical' | 'bookingUrl'> &
+  Partial<Pick<BookingResult, 'price' | 'currency'>>;
+
 interface Props {
   tripId: string;
   places: TripPlace[];
   primaryCityId?: string | null;
   canEdit: boolean;
+  startInBooking?: boolean;
   startDate?: string;
   endDate?: string;
 }
@@ -48,6 +65,7 @@ export function TripBookingAssistant({
   places,
   primaryCityId,
   canEdit,
+  startInBooking = false,
   startDate,
   endDate,
 }: Props) {
@@ -55,10 +73,15 @@ export function TripBookingAssistant({
   const { toast } = useToast();
   const { addPlace, updatePlace } = useTripMutations();
   const { addReservation } = useReservationMutations(tripId);
-  const [activeTab, setActiveTab] = useState<'suggestions' | 'booking'>('suggestions');
+  const [activeTab, setActiveTab] = useState<'suggestions' | 'booking'>(
+    startInBooking ? 'booking' : 'suggestions',
+  );
   const [addingId, setAddingId] = useState<string | null>(null);
-  const [selectedHotel, setSelectedHotel] = useState<BookingResult | null>(null);
-  const [savedHotelId, setSavedHotelId] = useState<string | null>(null);
+  const [vertical, setVertical] = useState<BookingVertical>('hotel');
+  const [selectedOffer, setSelectedOffer] = useState<PartnerOffer | null>(null);
+  const [savedReservationId, setSavedReservationId] = useState<string | null>(null);
+  const [originOverride, setOriginOverride] = useState<string>();
+  const [destinationOverride, setDestinationOverride] = useState<string>();
   const [confirming, setConfirming] = useState<Reservation | null>(null);
   const [bookPlace, setBookPlace] = useState<TripPlace | null>(null);
 
@@ -95,20 +118,30 @@ export function TripBookingAssistant({
     staleTime: 10 * 60 * 1000,
   });
 
-  const { data: reservations = [] } = useTripReservations(tripId);
+  const {
+    data: reservations = [],
+    isSuccess: reservationsLoaded,
+    isError: reservationsFailed,
+    refetch: reloadReservations,
+  } = useTripReservations(tripId);
+  const { originIata } = useVisitorOrigin();
+  const { user } = useAuth();
   const isBooked = (type: string) =>
     reservations.some((r) => r.type === type && ['confirmed', 'completed'].includes(r.status));
   const hasHotelBooked = isBooked('hotel');
-  const hasFlightBooked = isBooked('flight');
-  const pendingHotels = reservations.filter((r) => r.type === 'hotel' && r.status === 'pending');
+  const pendingReservations = reservations.filter((r) => r.status === 'pending');
 
-  const saveHotel = async () => {
-    if (!canEdit || !selectedHotel || addReservation.isPending) return;
-    const hotel = selectedHotel;
-    const url = hotel.bookingUrl;
+  const saveOffer = async () => {
+    if (!canEdit || !selectedOffer || addReservation.isPending || !reservationsLoaded) return;
+    const offer = selectedOffer;
+    const url = offer.bookingUrl;
     if (!url || !isValidHttpUrl(url)) return;
-    const existing = pendingHotels.find(
-      (r) => r.provider === hotel.provider && r.booking_url === url,
+    const existing = pendingReservations.find(
+      (r) =>
+        r.user_id === user?.id &&
+        r.type === offer.vertical &&
+        r.provider === offer.provider &&
+        r.booking_url === url,
     );
     try {
       const saved =
@@ -116,13 +149,13 @@ export function TripBookingAssistant({
         (await addReservation.mutateAsync({
           trip_id: tripId,
           source: 'provider_api',
-          type: 'hotel',
-          title: hotel.title,
+          type: offer.vertical,
+          title: offer.title,
           status: 'pending',
-          provider: hotel.provider,
+          provider: offer.provider,
           booking_url: url,
-          amount: hotel.price,
-          currency: hotel.currency,
+          amount: hasValidPrice(offer.price) ? offer.price : null,
+          currency: hasValidPrice(offer.price) ? (offer.currency ?? null) : null,
           confirmation_code: null,
           check_in: null,
           check_out: null,
@@ -130,8 +163,8 @@ export function TripBookingAssistant({
           place_id: null,
           attachment_urls: null,
         }));
-      setSavedHotelId(saved.id);
-      setSelectedHotel(null);
+      setSavedReservationId(saved.id);
+      setSelectedOffer(null);
     } catch {
       toast({
         title: t('trips.bookingAssistant.saveFailed', 'Could not save reservation'),
@@ -160,9 +193,26 @@ export function TripBookingAssistant({
     checkIn: startDate,
     checkOut: endDate,
     limit: 3,
-    enabled: !!firstCity?.name && activeTab === 'booking',
+    enabled: activeTab === 'booking' && vertical === 'hotel' && !hasHotelBooked,
   });
 
+  const { data: activityResults, isLoading: activitiesLoading } = useActivitySearch({
+    city: firstCity?.name,
+    date: startDate,
+    limit: 4,
+    enabled: activeTab === 'booking' && vertical === 'activity',
+  });
+
+  const origin = originOverride ?? originIata ?? '';
+  const destination = destinationOverride ?? firstCity?.major_airport_code ?? '';
+  const flightUrl = buildAviasalesUrl({
+    origin,
+    destination,
+    departDate: startDate,
+    returnDate: endDate,
+  }).url;
+  const results = vertical === 'hotel' ? hotelResults : activityResults;
+  const offersLoading = vertical === 'hotel' ? hotelsLoading : activitiesLoading;
   const existingVenueIds = new Set(places.filter((p) => p.venue_id).map((p) => p.venue_id));
 
   const unsafeCities = (cities || []).filter(
@@ -213,7 +263,7 @@ export function TripBookingAssistant({
     }
   };
 
-  if (cityIds.length === 0 && places.length === 0 && reservations.length === 0) {
+  if (cityIds.length === 0 && places.length === 0 && reservations.length === 0 && !canEdit) {
     return (
       <Card>
         <CardContent>
@@ -367,165 +417,140 @@ export function TripBookingAssistant({
             </div>
           )}
 
-          {selectedHotel && (
-            <Card>
-              <CardContent className="space-y-4">
-                <h3 className="font-semibold">{selectedHotel.title}</h3>
-                <p>
-                  {t(
-                    'trips.bookingAssistant.completeOnPartner',
-                    'Complete your booking on the partner site.',
-                  )}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <Button onClick={() => void saveHotel()} disabled={addReservation.isPending}>
-                    {t('trips.bookingAssistant.savePending', 'Save as pending')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setSelectedHotel(null)}
-                    disabled={addReservation.isPending}
-                  >
-                    {t('common.cancel', 'Cancel')}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          {pendingHotels.map((hotel) => (
+          {pendingReservations.map((reservation) => (
             <div
-              key={hotel.id}
+              key={reservation.id}
               className="flex flex-wrap items-center gap-2 p-4 bg-muted rounded-element"
             >
-              <p className="flex-1 font-medium">{hotel.title}</p>
+              <p className="flex-1 font-medium">{reservation.title}</p>
               <Badge variant="outline">{t('trips.reservations.status.pending', 'Pending')}</Badge>
-              {hotel.booking_url && isValidHttpUrl(hotel.booking_url) && (
+              {reservation.booking_url && isValidHttpUrl(reservation.booking_url) && (
                 <Button
                   asChild
-                  variant={savedHotelId === hotel.id ? 'default' : 'outline'}
+                  variant={savedReservationId === reservation.id ? 'default' : 'outline'}
                   size="sm"
                 >
-                  <a href={hotel.booking_url} target="_blank" rel="noopener noreferrer">
+                  <a href={reservation.booking_url} target="_blank" rel="noopener noreferrer">
                     {t('trips.bookingAssistant.continueOnPartner', 'Continue on partner site')}
                   </a>
                 </Button>
               )}
-              {canEdit && (
-                <Button variant="outline" size="sm" onClick={() => setConfirming(hotel)}>
+              {canEdit && reservation.user_id === user?.id && (
+                <Button variant="outline" size="sm" onClick={() => setConfirming(reservation)}>
                   {t('trips.bookingAssistant.recordConfirmation', 'Record confirmation')}
                 </Button>
               )}
             </div>
           ))}
 
-          {/* Still need section */}
-          <span className="text-xs text-muted-foreground font-semibold">
-            {t('trips.bookingAssistant.stillNeed', 'Still need')}
-          </span>
-
-          {!hasFlightBooked && (
-            <div className="flex items-center gap-2 p-4 bg-muted rounded-element">
-              <Plane size={16} className="text-muted-foreground" />
-              <p className="text-sm flex-1">{t('trips.bookingAssistant.flights', 'Flights')}</p>
-              {/* asChild, not a Link wrapping a Button — that nests a <button>
-                  inside an <a>, which is invalid HTML. */}
-              <Button asChild variant="outline" size="sm">
-                <LocalizedLink to="/travel?tab=flights" className="no-underline">
-                  {t('trips.bookingAssistant.search', 'Search')}
-                </LocalizedLink>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: 'hotel', icon: Hotel, label: t('trips.bookingAssistant.hotel', 'Hotel') },
+              {
+                value: 'flight',
+                icon: Plane,
+                label: t('trips.bookingAssistant.flights', 'Flights'),
+              },
+              {
+                value: 'activity',
+                icon: Ticket,
+                label: t('trips.bookingAssistant.activities', 'Activities'),
+              },
+            ].map(({ value, icon: Icon, label }) => (
+              <Button
+                key={value}
+                size="sm"
+                variant={vertical === value ? 'default' : 'outline'}
+                aria-pressed={vertical === value}
+                onClick={() => setVertical(value as BookingVertical)}
+              >
+                <Icon size={16} aria-hidden /> {label}
               </Button>
-            </div>
-          )}
-          {hasFlightBooked && (
-            <div className="flex items-center gap-2 p-4 opacity-60">
-              <Check size={16} style={{ color: 'hsl(var(--success))' }} />
-              <p className="text-sm">
-                {t('trips.bookingAssistant.flightsBooked', 'Flights booked')}
-              </p>
-            </div>
-          )}
+            ))}
+          </div>
 
-          {!hasHotelBooked && (
-            <div className="flex items-center gap-2 p-4 bg-muted rounded-element">
-              <Hotel size={16} className="text-muted-foreground" />
-              <p className="text-sm flex-1">
-                {firstCity
-                  ? t('trips.bookingAssistant.hotelIn', 'Hotel in {{city}}', {
-                      city: firstCity.name,
-                    })
-                  : t('trips.bookingAssistant.hotel', 'Hotel')}
-              </p>
-              <Button asChild variant="outline" size="sm">
-                <LocalizedLink to={`/travel?${hotelSearchParams}`} className="no-underline">
-                  {t('trips.bookingAssistant.search', 'Search')}
-                </LocalizedLink>
-              </Button>
-            </div>
-          )}
-          {hasHotelBooked && (
-            <div className="flex items-center gap-2 p-4 opacity-60">
-              <Check size={16} style={{ color: 'hsl(var(--success))' }} />
-              <p className="text-sm">{t('trips.bookingAssistant.hotelBooked', 'Hotel booked')}</p>
-            </div>
-          )}
-
-          {/* Quick hotel results */}
-          {!hasHotelBooked && firstCity && (
-            <div>
-              <span className="text-xs text-muted-foreground font-semibold mb-2 block">
-                {t('trips.bookingAssistant.hotelsIn', 'Hotels in {{city}}', {
-                  city: firstCity.name,
-                })}
-              </span>
-              {hotelsLoading ? (
-                <div className="flex flex-col gap-2">
-                  {[1, 2].map((i) => (
-                    <Skeleton key={i} className="h-20" />
-                  ))}
+          {vertical === 'flight' ? (
+            <Card>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <AirportAutocomplete
+                    value={origin}
+                    label={t('trips.bookingAssistant.fromAirport', 'Departure airport')}
+                    onChange={setOriginOverride}
+                  />
+                  <AirportAutocomplete
+                    value={destination}
+                    label={t('trips.bookingAssistant.toAirport', 'Arrival airport')}
+                    onChange={setDestinationOverride}
+                  />
                 </div>
-              ) : hotelResults && hotelResults.length > 0 ? (
+                <Button
+                  disabled={!canEdit || !flightUrl}
+                  onClick={() =>
+                    setSelectedOffer({
+                      vertical: 'flight',
+                      provider: 'aviasales',
+                      title: `${origin} → ${destination}`,
+                      bookingUrl: flightUrl ?? undefined,
+                    })
+                  }
+                >
+                  {t('trips.bookingAssistant.reviewFlight', 'Review flight search')}
+                </Button>
+              </CardContent>
+            </Card>
+          ) : vertical === 'hotel' && hasHotelBooked ? (
+            <div className="flex items-center gap-2 p-4">
+              <Check size={16} aria-hidden />
+              {t('trips.bookingAssistant.hotelBooked', 'Hotel booked')}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {vertical === 'hotel' && (
+                <Button asChild variant="outline" size="sm">
+                  <LocalizedLink to={`/travel?${hotelSearchParams}`}>
+                    {t('trips.bookingAssistant.search', 'Search')}
+                  </LocalizedLink>
+                </Button>
+              )}
+              {offersLoading ? (
+                <Skeleton className="h-20" />
+              ) : results?.length ? (
                 <div className="flex flex-col gap-2">
-                  {hotelResults.slice(0, 2).map((hotel) => (
+                  {results.map((offer) => (
                     <button
-                      key={hotel.id}
+                      key={offer.id}
                       type="button"
                       className="flex items-center gap-4 p-4 bg-muted rounded-element text-left disabled:opacity-60"
-                      onClick={() => setSelectedHotel(hotel)}
-                      disabled={!canEdit || !hotel.bookingUrl || !isValidHttpUrl(hotel.bookingUrl)}
+                      onClick={() => setSelectedOffer(offer)}
+                      disabled={!canEdit || !offer.bookingUrl || !isValidHttpUrl(offer.bookingUrl)}
                     >
-                      {hotel.imageUrl && (
+                      {offer.imageUrl && (
                         <img
-                          src={hotel.imageUrl}
-                          alt={hotel.title}
+                          src={offer.imageUrl}
+                          alt=""
                           className="w-14 h-14 object-cover rounded-element"
                         />
                       )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold truncate">{hotel.title}</p>
-                        <div className="flex items-center gap-1">
-                          {hotel.starRating &&
-                            Array.from({ length: hotel.starRating }).map((_, i) => (
-                              <Star
-                                key={i}
-                                size={10}
-                                style={{ fill: 'currentColor' }}
-                                className="text-primary"
-                              />
-                            ))}
-                          {hotel.rating && (
-                            <span className="text-xs">{hotel.rating.toFixed(1)}</span>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-sm font-bold text-primary">
-                        {formatPrice(hotel.price, hotel.currency)}
-                      </p>
+                      <span className="flex-1 min-w-0">
+                        <span className="block font-semibold break-words">{offer.title}</span>
+                        {offer.rating ? (
+                          <span className="flex items-center gap-1 text-xs">
+                            <Star size={12} aria-hidden /> {offer.rating.toFixed(1)}
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className="text-sm font-bold text-primary">
+                        {formatPrice(offer.price, offer.currency)}
+                      </span>
                     </button>
                   ))}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  {t('trips.bookingAssistant.noHotelsFound', 'No hotels found')}
+                  {vertical === 'hotel'
+                    ? t('trips.bookingAssistant.noHotelsFound', 'No hotels found')
+                    : t('trips.bookingAssistant.noActivitiesFound', 'No activities found')}
                 </p>
               )}
             </div>
@@ -533,10 +558,63 @@ export function TripBookingAssistant({
         </div>
       )}
 
+      <Dialog
+        open={!!selectedOffer}
+        onOpenChange={(open) => {
+          if (!open && !addReservation.isPending) setSelectedOffer(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedOffer?.title}</DialogTitle>
+            <DialogDescription>
+              {t(
+                'trips.bookingAssistant.completeOnPartner',
+                'Complete your booking on the partner site.',
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedOffer && (
+            <div className="flex flex-wrap justify-between gap-2 text-sm">
+              <span>{selectedOffer.provider}</span>
+              {hasValidPrice(selectedOffer.price) && selectedOffer.currency && (
+                <span>{formatPrice(selectedOffer.price, selectedOffer.currency)}</span>
+              )}
+            </div>
+          )}
+          {reservationsFailed && (
+            <div role="alert" className="flex flex-wrap items-center gap-2">
+              <span>{t('trips.contextBar.loadError', 'Trip details could not be loaded')}</span>
+              <Button variant="outline" size="sm" onClick={() => void reloadReservations()}>
+                {t('common.retry', 'Try again')}
+              </Button>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedOffer(null)}
+              disabled={addReservation.isPending}
+            >
+              {t('common.cancel', 'Cancel')}
+            </Button>
+            <Button
+              onClick={() => void saveOffer()}
+              disabled={!canEdit || addReservation.isPending || !reservationsLoaded}
+            >
+              {t('trips.bookingAssistant.savePending', 'Save as pending')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {confirming && (
         <AddReservationDialog
           open
-          onClose={() => setConfirming(null)}
+          onClose={() => {
+            setConfirming(null);
+            setSavedReservationId(null);
+          }}
           tripId={tripId}
           existing={{ ...confirming, status: 'confirmed' }}
         />
