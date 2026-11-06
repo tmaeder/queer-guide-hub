@@ -213,8 +213,8 @@ export function DayCard({
     >
       <CardContent>
         {/* Header */}
-        <div className="flex items-center justify-between mb-4 gap-4">
-          <div className="flex items-center gap-4 flex-1 min-w-0">
+        <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
             <div
               className="flex flex-col items-center justify-center flex-shrink-0 w-14 h-14 rounded-element text-background"
               style={{ backgroundColor: 'hsl(var(--foreground))' }}
@@ -236,7 +236,7 @@ export function DayCard({
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="font-bold leading-tight tracking-tight">
+                <p className="break-words font-bold leading-tight tracking-tight">
                   {format(parseISO(day.date), 'EEEE, MMM d')}
                 </p>
                 {isToday && (
@@ -311,12 +311,12 @@ export function DayCard({
               )}
             </div>
 
-            <Badge variant="outline" className="rounded-full">
+            <Badge variant="outline" className="shrink-0 rounded-full">
               {t('trips.card.placeCount', { count: places.length })}
             </Badge>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1 border-t border-border pt-2 lg:justify-end lg:border-0 lg:pt-0">
             {!readOnly && locatedCount >= 3 && (
               <Button
                 variant="ghost"
@@ -368,7 +368,7 @@ export function DayCard({
                   variant="ghost"
                   size="sm"
                   onClick={() => onAddPlace()}
-                  className="rounded-full"
+                  className="ml-auto rounded-full border border-input lg:ml-0 lg:border-transparent"
                 >
                   <Plus size={14} className="mr-1" />
                   {t('trips.itinerary.add')}
