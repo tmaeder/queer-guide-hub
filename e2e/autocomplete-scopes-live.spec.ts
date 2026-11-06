@@ -50,7 +50,11 @@ for (const scenario of [
     const scoped = await response;
     expect(scoped.status()).toBe(200);
     const payload = await scoped.json();
-    expect(payload.suggestions.length).toBeGreaterThan(0);
+    const { requestStart, responseStart } = scoped.request().timing();
+    expect(
+      payload.suggestions.length,
+      `Scoped autocomplete response after ${Math.round(responseStart - requestStart)} ms`,
+    ).toBeGreaterThan(0);
     expect(payload.suggestions.every((hit: { type: string }) => hit.type === scenario.type)).toBe(
       true,
     );

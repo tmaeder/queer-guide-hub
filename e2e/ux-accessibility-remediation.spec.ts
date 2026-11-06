@@ -75,7 +75,8 @@ test.describe('UX accessibility remediation — production contract', () => {
     await expect(
       page.getByRole('region', { name: /^places and events/i }).locator('[aria-busy]'),
     ).toHaveAttribute('aria-busy', 'false');
-    await section.locator('[aria-busy="true"]').scrollIntoViewIfNeeded();
+    await section.scrollIntoViewIfNeeded();
+    await page.keyboard.press('Tab');
     await expect(section.getByText(/this section could not load/i)).toBeVisible({
       timeout: 30_000,
     });
