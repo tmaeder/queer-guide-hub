@@ -177,3 +177,30 @@ jobs:
         run: |
           echo "::error::Smoke test failed (${{ steps.smoke.outputs.failures }} check(s)) and it was not an origin-broken fault, so no re-upload was attempted. Read the smoke step above: a POISONED EDGE CACHE line needs a purge, a STALE cached document needs a route purge, and neither is fixed by redeploying."
           exit 1
+
+      # Keep the browser checks inside the serialized deploy, after any asset
+      # repair. A UI regression fails the job without triggering a re-upload.
+      - name: Set up Chromium for production smoke tests
+        uses: ./.github/actions/setup-playwright
+        timeout-minutes: 5
+
+      - name: Smoke-test icon proportions and desktop navigation
+        timeout-minutes: 5
+        env:
+          E2E_BASE_URL: ${{ env.SITE_URL }}
+        run: |
+          verify_build() {
+            local live_sha
+            live_sha=$(curl --fail --silent --show-error --max-time 15 \
+              -H 'Cache-Control: no-cache' \
+              "$E2E_BASE_URL/build-id.txt?smoke=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$1")
+            if [[ "$live_sha" != "$GITHUB_SHA" ]]; then
+              echo "::error::Production build mismatch ($1): expected $GITHUB_SHA, got ${live_sha:-<empty>}."
+              return 1
+            fi
+          }
+
+          verify_build before
+          npx --no-install playwright test e2e/icon-proportions.spec.ts \
+            --project=chromium --no-deps --workers=1 --retries=0 --reporter=list
+          verify_build after
