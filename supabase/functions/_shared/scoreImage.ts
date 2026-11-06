@@ -224,6 +224,8 @@ export interface QueerPlaceInput {
   source: ImageResultSource
   /** Entity name (city or country). */
   name: string
+  /** A city cover must name the city; country or capital context is insufficient. */
+  requireSubjectName?: boolean
   /** Country name for a city subject (optional). */
   country?: string
   /** Capital name for a country subject (optional). */
@@ -255,7 +257,7 @@ export function scoreQueerPlaceImage(input: QueerPlaceInput): number {
   const namedContext =
     (country.length > 0 && hasWord(alt, country)) ||
     (capital.length > 0 && hasWord(alt, capital))
-  if (!namedSubject && !namedContext) return Number.NEGATIVE_INFINITY
+  if (!namedSubject && (input.requireSubjectName || !namedContext)) return Number.NEGATIVE_INFINITY
 
   let score = 30 // queer bonus (guaranteed present)
   if (namedSubject) score += 40
