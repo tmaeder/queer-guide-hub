@@ -88,6 +88,26 @@ Deno.test('detail parse merges Festival and Event blocks', () => {
   assertEquals(e.images, ['https://www.gayout.com/uploads/cities/maspalomas/cover.jpg'])
 })
 
+Deno.test('city-only location is not a venue; an explicit street address is retained', () => {
+  const event = (streetAddress?: string) => ({
+    '@type': 'Event', name: 'City Pride', startDate: '2026-12-05',
+    location: {
+      '@type': 'Place', name: 'Washington DC',
+      address: { addressLocality: 'Washington, D.C.', addressCountry: 'United States', streetAddress },
+    },
+  })
+  const parse = (nodes: unknown) => parseEventLd(
+    `<script type="application/ld+json">${JSON.stringify(nodes)}</script>`, MASP_URL, '',
+  )
+  const city = parse(event())
+  assert(city.ok)
+  assertEquals(city.event.city, 'Washington, D.C.')
+  assertEquals(city.event.venueName, undefined)
+  const building = parse([event(), event('1 Example Street')])
+  assert(building.ok)
+  assertEquals(building.event.venueName, 'Washington DC')
+})
+
 Deno.test('description takes the LONGEST candidate, never the first', () => {
   const r = parseEventLd(MASPALOMAS, MASP_URL, '')
   assert(r.ok)

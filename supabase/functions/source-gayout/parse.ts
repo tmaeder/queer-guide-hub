@@ -184,6 +184,8 @@ export type ParseResult =
  * other field takes the first non-empty one.
  */
 export function parseEventLd(html: string, url: string, fallbackName: string): ParseResult {
+  const placeKey = (value: string) => value.normalize('NFKD').toLowerCase()
+    .replace(/[^\p{L}\p{N}]/gu, '')
   const all = ldBlocks(html)
   if (all.length === 0) return { ok: false, reason: 'no_ld' }
   const nodes = all.filter(n => typesOf(n).some(t => EVENT_TYPES.has(t)))
@@ -213,10 +215,15 @@ export function parseEventLd(html: string, url: string, fallbackName: string): P
 
     const loc = n.location as Record<string, unknown> | undefined
     if (loc && typeof loc === 'object') {
-      venueName ??= str(loc.name)
+      const label = str(loc.name)
       const addr = loc.address as Record<string, unknown> | undefined
+      const locality = addr && typeof addr === 'object' ? str(addr.addressLocality) : undefined
+      const localityKey = locality ? placeKey(locality) : ''
+      const cityOnly = localityKey.length > 0 && label && placeKey(label) === localityKey
+        && !str(addr?.streetAddress)
+      if (!cityOnly) venueName ??= label
       if (addr && typeof addr === 'object') {
-        city ??= str(addr.addressLocality)
+        city ??= locality
         country ??= str(addr.addressCountry)
       }
     }
