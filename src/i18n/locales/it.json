@@ -716,6 +716,18 @@
       "startingNow": "Inizia ora"
     },
     "bookingAssistant": {
+      "linkStop": "Collega a una tappa dell’itinerario",
+      "wizardTitle": "Prenotazioni di viaggio",
+      "activities": "Attività",
+      "fromAirport": "Aeroporto di partenza",
+      "toAirport": "Aeroporto di arrivo",
+      "reviewFlight": "Rivedi la ricerca voli",
+      "noActivitiesFound": "Nessuna attività trovata",
+      "completeOnPartner": "Completa la prenotazione sul sito del partner.",
+      "savePending": "Salva come in sospeso",
+      "continueOnPartner": "Continua sul sito del partner",
+      "recordConfirmation": "Registra la conferma",
+      "saveFailed": "Impossibile salvare la prenotazione",
       "tabs": {
         "suggestions": "Suggerimenti",
         "book": "Prenota"
@@ -1930,8 +1942,7 @@
       "places": "Esplora i luoghi",
       "events": "Trova eventi",
       "listings": "Luoghi ed eventi",
-      "listingsArea": "Luoghi ed eventi a {{city}}",
-      "listingsGlobal": "Luoghi ed eventi nel mondo",
+      "listingsGlobal": "In tutto il mondo",
       "cityGuides": "Guide alle città",
       "recent": "Visti di recente",
       "more": "Altro da esplorare",

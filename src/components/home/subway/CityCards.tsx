@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { fetchTrendingCities, fetchPersonalizedCitiesByIds } from '@/hooks/usePersonalizedCities';
-import { Band } from '@/components/home/Band';
 import { useHomeRegionContext } from '@/components/home/homeRegionContext';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { CityPicture } from '@/components/places/CityPicture';
@@ -12,7 +11,7 @@ import { StationBadge } from '@/components/ui/StationBadge';
 import { cityGlyph } from '@/lib/cardGlyphs';
 import { tierForScore, EQUALITY_TIER_LABEL } from '@/utils/equalityScore';
 
-const CARDS = 4;
+import { CITY_GUIDE_COUNT, CityCardsSkeleton } from './CityCardsSkeleton';
 
 /**
  * The country's equality score, said out loud.
@@ -72,16 +71,7 @@ function equalityAriaLabel(name: string, score: number | null | undefined, t: TF
   );
 }
 
-/** "Where are you riding?" — city cards, each carrying an octilinear
- *  abstraction of that city's own transit network.
- *
- *  The visitor's own city leads when we know it, then the editorial set. The
- *  band used to render the same fixed whitelist in the same order for every
- *  visitor forever, which made "where are you riding" a question it never
- *  actually asked. It still never self-hides — the homepage e2e asserts this
- *  heading is present, because a self-hiding band and a broken query look
- *  identical. */
-export function CityCards() {
+export default function CityCards() {
   const { t } = useTranslation();
   const region = useHomeRegionContext();
 
@@ -95,44 +85,23 @@ export function CityCards() {
     queryKey: ['home-destinations', region.cityId],
     enabled: !region.loading,
     queryFn: async () => {
-      const trending = await fetchTrendingCities(200000, CARDS);
+      const trending = await fetchTrendingCities(200000, CITY_GUIDE_COUNT);
       if (!region.cityId) return trending;
       // Already in the editorial set — promote rather than fetch it twice.
       const found = trending.find((c) => c.id === region.cityId);
       if (found) return [found, ...trending.filter((c) => c.id !== region.cityId)];
       const [home] = await fetchPersonalizedCitiesByIds([region.cityId]);
-      return home ? [home, ...trending].slice(0, CARDS) : trending;
+      return home ? [home, ...trending].slice(0, CITY_GUIDE_COUNT) : trending;
     },
     staleTime: 30 * 60_000,
   });
 
-  const loading = region.loading || isLoading;
+  if (region.loading || isLoading) return <CityCardsSkeleton />;
 
   return (
-    <Band
-      surface="tint"
-      title={t('home.discovery.cityGuides', 'City guides')}
-      seeAllHref="/cities"
-      seeAllLabel={t('home.discovery.allCities', 'All cities')}
-    >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-busy={loading}>
-        {loading ? (
-          Array.from({ length: CARDS }).map((_, i) => (
-            // Same shell + an empty diagram box, so the skeleton is exactly
-            // as tall as the loaded card at every breakpoint instead of a
-            // fixed height that only matches at one.
-            <div
-              key={i}
-              className="motion-safe:animate-pulse overflow-hidden rounded-container bg-card"
-            >
-              <div className="aspect-[16/10] w-full bg-muted" />
-              <div className="p-4">
-                <div className="h-6 w-2/3 bg-muted" />
-                <div className="mt-2 h-4 w-1/2 bg-muted" />
-              </div>
-            </div>
-          ))
-        ) : isError && cities.length === 0 ? (
+    <>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {isError && cities.length === 0 ? (
           <HomeSectionError
             className="sm:col-span-2 lg:col-span-4"
             retrying={isFetching}
@@ -179,6 +148,6 @@ export function CityCards() {
       {isError && cities.length > 0 && (
         <HomeSectionError stale retrying={isFetching} onRetry={() => void refetch()} />
       )}
-    </Band>
+    </>
   );
 }

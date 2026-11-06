@@ -1458,6 +1458,18 @@
       "startingNow": "Starting now"
     },
     "bookingAssistant": {
+      "linkStop": "Link to itinerary stop",
+      "wizardTitle": "Trip bookings",
+      "activities": "Activities",
+      "fromAirport": "Departure airport",
+      "toAirport": "Arrival airport",
+      "reviewFlight": "Review flight search",
+      "noActivitiesFound": "No activities found",
+      "completeOnPartner": "Complete your booking on the partner site.",
+      "savePending": "Save as pending",
+      "continueOnPartner": "Continue on partner site",
+      "recordConfirmation": "Record confirmation",
+      "saveFailed": "Could not save reservation",
       "tabs": {
         "suggestions": "Suggestions",
         "book": "Book"
@@ -2126,8 +2138,7 @@
       "places": "Browse places",
       "events": "Find events",
       "listings": "Places and events",
-      "listingsArea": "Places and events in {{city}}",
-      "listingsGlobal": "Places and events worldwide",
+      "listingsGlobal": "Worldwide",
       "cityGuides": "City guides",
       "recent": "Recently viewed",
       "more": "More from Queer Guide",

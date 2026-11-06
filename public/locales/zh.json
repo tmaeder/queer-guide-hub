@@ -716,6 +716,18 @@
       "startingNow": "现在开始"
     },
     "bookingAssistant": {
+      "linkStop": "关联到行程站点",
+      "wizardTitle": "行程预订",
+      "activities": "活动",
+      "fromAirport": "出发机场",
+      "toAirport": "到达机场",
+      "reviewFlight": "查看航班搜索",
+      "noActivitiesFound": "未找到活动",
+      "completeOnPartner": "请在合作伙伴网站完成预订。",
+      "savePending": "保存为待确认",
+      "continueOnPartner": "前往合作伙伴网站",
+      "recordConfirmation": "记录预订确认",
+      "saveFailed": "无法保存预订",
       "tabs": {
         "suggestions": "建议",
         "book": "预订"
@@ -1930,8 +1942,7 @@
       "places": "浏览场所",
       "events": "查找活动",
       "listings": "场所和活动",
-      "listingsArea": "{{city}}的场所和活动",
-      "listingsGlobal": "全球场所和活动",
+      "listingsGlobal": "遍布全球",
       "cityGuides": "城市指南",
       "recent": "最近浏览",
       "more": "探索更多",

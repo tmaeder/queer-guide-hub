@@ -716,6 +716,18 @@
       "startingNow": "まもなく開始"
     },
     "bookingAssistant": {
+      "linkStop": "旅程の立ち寄り先にリンク",
+      "wizardTitle": "旅行の予約",
+      "activities": "アクティビティ",
+      "fromAirport": "出発空港",
+      "toAirport": "到着空港",
+      "reviewFlight": "フライト検索を確認",
+      "noActivitiesFound": "アクティビティが見つかりません",
+      "completeOnPartner": "提携先のサイトで予約を完了してください。",
+      "savePending": "保留として保存",
+      "continueOnPartner": "提携先のサイトに進む",
+      "recordConfirmation": "予約確認を記録",
+      "saveFailed": "予約を保存できませんでした",
       "tabs": {
         "suggestions": "おすすめ",
         "book": "予約"
@@ -1930,8 +1942,7 @@
       "places": "スポットを見る",
       "events": "イベントを探す",
       "listings": "スポットとイベント",
-      "listingsArea": "{{city}}のスポットとイベント",
-      "listingsGlobal": "世界のスポットとイベント",
+      "listingsGlobal": "世界中で",
       "cityGuides": "都市ガイド",
       "recent": "最近見た項目",
       "more": "さらに探す",

@@ -30,7 +30,7 @@ type SnapshotTrip = Pick<
 export type TodayReservation = Pick<
   Reservation,
   'key' | 'trip_id' | 'country_id' | 'type' | 'start_at' | 'end_at' | 'title' | 'provider'
-> & { confirmation_code?: string | null };
+> & { confirmation_code?: string | null; status?: Reservation['status'] };
 
 export interface TripSnapshot {
   savedAt: string;
@@ -111,7 +111,7 @@ export async function cacheTripSnapshot(
     },
     reservations: reservations
       .filter((row) => row.trip_id === id)
-      .map(({ key, trip_id, country_id, type, start_at, end_at, title, provider }) => ({
+      .map(({ key, trip_id, country_id, type, start_at, end_at, title, provider, status }) => ({
         key,
         trip_id,
         country_id,
@@ -120,6 +120,7 @@ export async function cacheTripSnapshot(
         end_at,
         title,
         provider,
+        status,
       })),
   };
   const cache = await caches.open(cacheName(userId));

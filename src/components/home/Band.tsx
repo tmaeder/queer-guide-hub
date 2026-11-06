@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 export interface BandProps {
   title: React.ReactNode;
   eyebrow?: string;
-  description?: string;
+  description?: React.ReactNode;
   seeAllHref?: string;
   seeAllLabel?: string;
   /** Alternation across the page. `paper` is the default. */

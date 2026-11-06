@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { BookingResult } from '@/lib/booking/types';
 import { hasValidPrice } from '@/lib/booking/price';
+import { isValidHttpUrl } from '@/utils/url';
 import type { HotelTypeOption } from '@/components/booking/HotelSearchForm';
 
 interface UseHotelSearchOptions {
@@ -16,6 +17,7 @@ interface UseHotelSearchOptions {
   priceMin?: number;
   priceMax?: number;
   lgbtqFriendlyOnly?: boolean;
+  includePartnerSearch?: boolean;
 }
 
 export function useHotelSearch({
@@ -30,6 +32,7 @@ export function useHotelSearch({
   priceMin,
   priceMax,
   lgbtqFriendlyOnly,
+  includePartnerSearch = false,
 }: UseHotelSearchOptions) {
   return useQuery({
     queryKey: [
@@ -44,6 +47,7 @@ export function useHotelSearch({
       priceMin,
       priceMax,
       lgbtqFriendlyOnly,
+      includePartnerSearch,
     ],
     queryFn: async (): Promise<BookingResult[]> => {
       if (!city) return [];
@@ -65,32 +69,46 @@ export function useHotelSearch({
 
       if (error || !data?.hotels) return [];
 
-      return (data.hotels as Record<string, unknown>[])
-        .map((hotel, i) => ({
-          id: `hl-${hotel.hotelId || i}`,
-          provider: 'hotellook',
-          vertical: 'hotel' as const,
-          title: hotel.hotelName as string,
-          subtitle: hotel.location as string | undefined,
-          imageUrl: hotel.photoUrl as string | undefined,
-          price: hotel.priceFrom as number,
-          originalPrice: hotel.priceOld as number | undefined,
-          currency: (hotel.currency as string) || currency.toUpperCase(),
-          rating: hotel.rating as number | undefined,
-          reviewCount: hotel.reviews as number | undefined,
-          starRating: hotel.stars as number | undefined,
-          lgbtqFriendly: hotel.lgbtqFriendly as boolean | undefined,
-          bookingUrl: hotel.bookingUrl as string | undefined,
-        }))
-        // Defensive client-side backstop: never show 0 / invalid-price cards,
-        // and respect active price bounds even if the edge function slips.
-        .filter((h) => {
-          if (!hasValidPrice(h.price)) return false;
-          if (priceMin !== undefined && h.price < priceMin) return false;
-          if (priceMax !== undefined && h.price > priceMax) return false;
-          if (lgbtqFriendlyOnly && h.lgbtqFriendly !== true) return false;
-          return true;
-        });
+      return (
+        (data.hotels as Record<string, unknown>[])
+          .map((hotel, i) => ({
+            id: `hl-${hotel.hotelId || i}`,
+            provider: hotel.isFallback === true ? 'booking.com' : 'hotellook',
+            vertical: 'hotel' as const,
+            title: hotel.hotelName as string,
+            subtitle: hotel.location as string | undefined,
+            imageUrl: hotel.photoUrl as string | undefined,
+            price: (hotel.priceFrom as number | null) ?? 0,
+            originalPrice: hotel.priceOld as number | undefined,
+            currency: (hotel.currency as string) || currency.toUpperCase(),
+            rating: hotel.rating as number | undefined,
+            reviewCount: hotel.reviews as number | undefined,
+            starRating: hotel.stars as number | undefined,
+            lgbtqFriendly: hotel.lgbtqFriendly as boolean | undefined,
+            bookingUrl: hotel.bookingUrl as string | undefined,
+            isFallback: hotel.isFallback === true,
+          }))
+          // Defensive client-side backstop: never show 0 / invalid-price cards,
+          // and respect active price bounds even if the edge function slips.
+          .filter((h) => {
+            if (h.isFallback) {
+              return (
+                includePartnerSearch &&
+                !hotelType &&
+                priceMin === undefined &&
+                priceMax === undefined &&
+                !lgbtqFriendlyOnly &&
+                !!h.bookingUrl &&
+                isValidHttpUrl(h.bookingUrl)
+              );
+            }
+            if (!hasValidPrice(h.price)) return false;
+            if (priceMin !== undefined && h.price < priceMin) return false;
+            if (priceMax !== undefined && h.price > priceMax) return false;
+            if (lgbtqFriendlyOnly && h.lgbtqFriendly !== true) return false;
+            return true;
+          })
+      );
     },
     enabled: enabled && !!city,
     staleTime: 15 * 60 * 1000,

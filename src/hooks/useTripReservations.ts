@@ -19,6 +19,7 @@ import { qk } from '@/lib/queryKeys';
 export interface Reservation {
   id: string;
   trip_id: string;
+  user_id?: string;
   place_id: string | null;
   type: string;
   title: string;
@@ -39,6 +40,7 @@ type ReservationRow = Pick<
   Tables<'reservations'>,
   | 'id'
   | 'trip_id'
+  | 'user_id'
   | 'type'
   | 'title'
   | 'confirmation_code'
@@ -56,6 +58,7 @@ type ReservationRow = Pick<
 const project = (r: ReservationRow): Reservation => ({
   id: r.id,
   trip_id: r.trip_id ?? '',
+  user_id: r.user_id,
   place_id: null,
   type: r.type,
   title: r.title,
@@ -72,15 +75,19 @@ const project = (r: ReservationRow): Reservation => ({
   created_at: r.created_at,
 });
 
-type CreateReservationInput = Omit<Reservation, 'id' | 'created_at'>;
-type UpdateReservationInput = Partial<Omit<Reservation, 'id' | 'created_at' | 'trip_id'>> & {
+type CreateReservationInput = Omit<Reservation, 'id' | 'created_at' | 'user_id'> & {
+  source?: 'manual' | 'provider_api';
+};
+type UpdateReservationInput = Partial<
+  Omit<Reservation, 'id' | 'created_at' | 'trip_id' | 'user_id'>
+> & {
   id: string;
 };
 
 const toRow = (input: CreateReservationInput, userId: string): TablesInsert<'reservations'> => ({
   user_id: userId,
   trip_id: input.trip_id,
-  source: 'manual',
+  source: input.source ?? 'manual',
   type: input.type,
   title: input.title,
   status: input.status || 'pending',
@@ -110,15 +117,16 @@ const toUpdateRow = (input: Omit<UpdateReservationInput, 'id'>): TablesUpdate<'r
   return out;
 };
 
+const RESERVATION_COLUMNS =
+  'id, trip_id, user_id, type, title, confirmation_code, start_at, end_at, provider, booking_url, total_amount, currency, notes, status, created_at';
+
 export function useTripReservations(tripId: string | undefined) {
   return useQuery({
     queryKey: qk.trip.facet(tripId, 'reservations'),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('reservations')
-        .select(
-          'id, trip_id, type, title, confirmation_code, start_at, end_at, provider, booking_url, total_amount, currency, notes, status, created_at',
-        )
+        .select(RESERVATION_COLUMNS)
         .eq('trip_id', tripId!)
         .order('start_at', { ascending: true, nullsFirst: false });
       if (error) throw error;
@@ -132,9 +140,21 @@ export function useTripReservations(tripId: string | undefined) {
 export function useReservationMutations(tripId: string) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const tripReservationsKey = qk.trip.facet(tripId, 'reservations');
   const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'reservations') });
+    void queryClient.invalidateQueries({ queryKey: tripReservationsKey });
     void queryClient.invalidateQueries({ queryKey: ['reservations', user?.id] });
+  };
+
+  const cacheReservation = (reservation: Reservation) => {
+    queryClient.setQueryData<Reservation[]>(tripReservationsKey, (current) => {
+      if (!current) return current;
+      const rows = current.filter((row) => row.id !== reservation.id);
+      const time = (row: Reservation) =>
+        row.check_in ? Date.parse(row.check_in) : Number.POSITIVE_INFINITY;
+      return [...rows, reservation].sort((a, b) => time(a) - time(b));
+    });
+    invalidate();
   };
 
   const addReservation = useMutation({
@@ -143,14 +163,12 @@ export function useReservationMutations(tripId: string) {
       const { data, error } = await supabase
         .from('reservations')
         .insert(toRow(input, user.id))
-        .select(
-          'id, trip_id, type, title, confirmation_code, start_at, end_at, provider, booking_url, total_amount, currency, notes, status, created_at',
-        )
+        .select(RESERVATION_COLUMNS)
         .single();
       if (error) throw error;
       return project(data as ReservationRow);
     },
-    onSuccess: invalidate,
+    onSuccess: cacheReservation,
   });
 
   const updateReservation = useMutation({
@@ -159,14 +177,12 @@ export function useReservationMutations(tripId: string) {
         .from('reservations')
         .update(toUpdateRow(input))
         .eq('id', id)
-        .select(
-          'id, trip_id, type, title, confirmation_code, start_at, end_at, provider, booking_url, total_amount, currency, notes, status, created_at',
-        )
+        .select(RESERVATION_COLUMNS)
         .single();
       if (error) throw error;
       return project(data as ReservationRow);
     },
-    onSuccess: invalidate,
+    onSuccess: cacheReservation,
   });
 
   const deleteReservation = useMutation({

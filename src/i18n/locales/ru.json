@@ -744,6 +744,18 @@
       "startingNow": "Начинается сейчас"
     },
     "bookingAssistant": {
+      "linkStop": "Связать с остановкой маршрута",
+      "wizardTitle": "Бронирования поездки",
+      "activities": "Активности",
+      "fromAirport": "Аэропорт вылета",
+      "toAirport": "Аэропорт прибытия",
+      "reviewFlight": "Проверить поиск рейса",
+      "noActivitiesFound": "Активности не найдены",
+      "completeOnPartner": "Завершите бронирование на сайте партнёра.",
+      "savePending": "Сохранить как ожидающее",
+      "continueOnPartner": "Перейти на сайт партнёра",
+      "recordConfirmation": "Записать подтверждение",
+      "saveFailed": "Не удалось сохранить бронирование",
       "tabs": {
         "suggestions": "Предложения",
         "book": "Забронировать"
@@ -1962,8 +1974,7 @@
       "places": "Смотреть места",
       "events": "Найти события",
       "listings": "Места и события",
-      "listingsArea": "Места и события в регионе {{city}}",
-      "listingsGlobal": "Места и события по всему миру",
+      "listingsGlobal": "По всему миру",
       "cityGuides": "Гиды по городам",
       "recent": "Недавно просмотренное",
       "more": "Что ещё посмотреть",

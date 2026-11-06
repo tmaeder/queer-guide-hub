@@ -76,7 +76,9 @@ test('homepage requests do not generate PostgREST client errors', async ({ page 
     }
   });
   await openHome(page);
-  await expect(page.locator('main a[href*="/city/"]').first()).toBeVisible({ timeout: 20_000 });
+  const cities = page.getByRole('region', { name: 'City guides' });
+  await cities.scrollIntoViewIfNeeded();
+  await expect(cities.locator('a[href*="/city/"]').first()).toBeVisible({ timeout: 20_000 });
   expect(failures).toEqual([]);
 });
 
@@ -161,4 +163,55 @@ test('city labels keep the picker and adjacent link in place', async ({ page }) 
   await expect(picker).toHaveAccessibleName(/A very long city name/);
   expect((await picker.boundingBox())!.width).toBe(initialPicker!.width);
   expect((await events.boundingBox())!.x).toBe(initialEvents!.x);
+});
+
+test('showing the resolved listing scope does not move the board', async ({ page }) => {
+  await page.setViewportSize({ width: 412, height: 823 });
+  const cityId = '00000000-0000-4000-8000-000000000001';
+  const cityName = 'A very long city name that would wrap a heading';
+  await page.addInitScript(
+    ({ cityId, cityName }) => {
+      sessionStorage.setItem(
+        'qg_home_region',
+        JSON.stringify({ cityId, cityName, ts: Date.now() }),
+      );
+    },
+    { cityId, cityName },
+  );
+
+  let release!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route(
+    (url) =>
+      url.pathname.endsWith('/rest/v1/events') &&
+      url.searchParams.get('city_id') === `eq.${cityId}`,
+    async (route) => {
+      await pending;
+      await route.fulfill({
+        json: Array.from({ length: 4 }, (_, i) => ({
+          id: String(i),
+          slug: `fixture-event-${i}`,
+          title: `Fixture event ${i}`,
+          city: { id: cityId, name: cityName },
+        })),
+      });
+    },
+  );
+  try {
+    await openHome(page);
+    const listings = page.getByRole('region', { name: /^places and events/i });
+    const board = listings.locator('[aria-busy]');
+    await expect(board).toHaveAttribute('aria-busy', 'true');
+    await page.evaluate(() => document.fonts.ready);
+    const loadingTop = (await board.boundingBox())!.y;
+
+    release();
+    await expect(board).toHaveAttribute('aria-busy', 'false');
+    await expect(board.getByRole('link', { name: 'Fixture event 0' })).toBeVisible();
+    expect((await board.boundingBox())!.y).toBe(loadingTop);
+  } finally {
+    release();
+  }
 });
