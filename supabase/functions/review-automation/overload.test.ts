@@ -82,6 +82,9 @@ Deno.test('Review defers a 529 batch, recovers on the next run, and still fails 
   } finally {
     Deno.serve = originalServe
     globalThis.fetch = originalFetch
-    for (const [key, value] of previous) value === undefined ? Deno.env.delete(key) : Deno.env.set(key, value)
+    for (const [key, value] of previous) {
+      if (value === undefined) Deno.env.delete(key)
+      else Deno.env.set(key, value)
+    }
   }
 })
