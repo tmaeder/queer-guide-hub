@@ -33,15 +33,16 @@ describe('useHotelSearch', () => {
     invokeMock.mockResolvedValueOnce({ data: { hotels: [] }, error: null });
 
     const { result } = renderHook(
-      () => useHotelSearch({
-        city: 'Berlin',
-        checkIn: '2026-06-01',
-        checkOut: '2026-06-05',
-        guests: 3,
-        currency: 'usd',
-        limit: 5,
-        hotelType: 'boutique',
-      }),
+      () =>
+        useHotelSearch({
+          city: 'Berlin',
+          checkIn: '2026-06-01',
+          checkOut: '2026-06-05',
+          guests: 3,
+          currency: 'usd',
+          limit: 5,
+          hotelType: 'boutique',
+        }),
       { wrapper },
     );
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -93,7 +94,37 @@ describe('useHotelSearch', () => {
 
     const { result } = renderHook(() => useHotelSearch({ city: 'Berlin' }), { wrapper });
     await waitFor(() => expect(result.current.data).toBeDefined());
-    expect(result.current.data?.map(h => h.id)).toEqual(['hl-b']);
+    expect(result.current.data?.map((h) => h.id)).toEqual(['hl-b']);
+  });
+
+  it('keeps the explicit partner search fallback for the trip wizard only', async () => {
+    invokeMock.mockResolvedValue({
+      data: {
+        hotels: [
+          {
+            hotelId: 'search-Berlin',
+            hotelName: 'Search hotels in Berlin',
+            priceFrom: null,
+            bookingUrl: 'https://www.booking.com/searchresults.html?ss=Berlin',
+            isFallback: true,
+          },
+          { hotelId: 'unknown', hotelName: 'Missing price', priceFrom: null },
+        ],
+      },
+      error: null,
+    });
+
+    const { result, rerender } = renderHook(
+      ({ includePartnerSearch }) => useHotelSearch({ city: 'Berlin', includePartnerSearch }),
+      { wrapper, initialProps: { includePartnerSearch: false } },
+    );
+    await waitFor(() => expect(result.current.data).toEqual([]));
+    rerender({ includePartnerSearch: true });
+    await waitFor(() =>
+      expect(result.current.data).toEqual([
+        expect.objectContaining({ title: 'Search hotels in Berlin', provider: 'booking.com' }),
+      ]),
+    );
   });
 
   it('respects client-side price min/max bounds', async () => {
@@ -113,7 +144,7 @@ describe('useHotelSearch', () => {
       { wrapper },
     );
     await waitFor(() => expect(result.current.data).toBeDefined());
-    expect(result.current.data?.map(h => h.id)).toEqual(['hl-mid']);
+    expect(result.current.data?.map((h) => h.id)).toEqual(['hl-mid']);
   });
 
   it('filters to lgbtqFriendly===true when requested', async () => {
@@ -133,7 +164,7 @@ describe('useHotelSearch', () => {
       { wrapper },
     );
     await waitFor(() => expect(result.current.data).toBeDefined());
-    expect(result.current.data?.map(h => h.id)).toEqual(['hl-a']);
+    expect(result.current.data?.map((h) => h.id)).toEqual(['hl-a']);
   });
 
   it('returns empty array on edge error or missing data', async () => {

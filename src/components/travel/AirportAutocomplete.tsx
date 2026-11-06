@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 import { Plane } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { fetchAirportByIata, searchAirports } from '@/hooks/useAirportSearch';
@@ -25,6 +25,7 @@ export function AirportAutocomplete({
   placeholder = 'Search airports...',
   label,
 }: AirportAutocompleteProps) {
+  const inputId = useId();
   const [_query, setQuery] = useState('');
   const [displayValue, setDisplayValue] = useState(displayLabel || '');
   const [results, setResults] = useState<Airport[]>([]);
@@ -124,8 +125,13 @@ export function AirportAutocomplete({
 
   return (
     <div ref={containerRef} className="relative">
-      {label && <label className="text-sm font-medium mb-1 block">{label}</label>}
+      {label && (
+        <label htmlFor={inputId} className="text-sm font-medium mb-1 block">
+          {label}
+        </label>
+      )}
       <Input
+        id={inputId}
         value={displayValue}
         onChange={(e) => handleInputChange(e.target.value)}
         onFocus={() => {

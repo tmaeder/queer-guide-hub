@@ -48,12 +48,21 @@ function reservationTypeFor(category: string): 'hotel' | 'activity' | 'flight' |
   return 'other';
 }
 
-interface BookingBadgeProps {
-  status: 'intent' | 'booked' | 'completed';
-  confirmationCode?: string | null;
+function getStopBookingStatus(place: TripPlace, reservation?: Reservation) {
+  const status = place.booking_status ?? 'intent';
+  if (status === 'completed' || !reservation?.status) return status;
+  if (reservation.status === 'pending') return 'pending';
+  if (reservation.status === 'confirmed' || reservation.status === 'completed') return 'booked';
+  return 'intent';
 }
 
-function BookingBadge({ status, confirmationCode }: BookingBadgeProps) {
+interface BookingBadgeProps {
+  status: 'intent' | 'booked' | 'completed' | 'pending';
+  confirmationCode?: string | null;
+  pendingLabel: string;
+}
+
+function BookingBadge({ status, confirmationCode, pendingLabel }: BookingBadgeProps) {
   if (status === 'completed') {
     return (
       <span data-testid="booking-badge-completed" className={badgeVariants({ variant: 'mark' })}>
@@ -66,6 +75,16 @@ function BookingBadge({ status, confirmationCode }: BookingBadgeProps) {
       <span data-testid="booking-badge-booked" className={badgeVariants({ variant: 'mark-solid' })}>
         <Check className="w-2.5 h-2.5" />
         Booked{confirmationCode ? ` · ${confirmationCode}` : ''}
+      </span>
+    );
+  }
+  if (status === 'pending') {
+    return (
+      <span
+        data-testid="booking-badge-pending"
+        className={badgeVariants({ variant: 'mark-dashed' })}
+      >
+        {pendingLabel}
       </span>
     );
   }
@@ -116,7 +135,7 @@ export function SortablePlaceCard({
   const Icon = categoryIcons[cat] || Star;
   const eqScore = place.countries?.equality_score ?? null;
   const ringColor = getScoreRingColor(eqScore);
-  const status = place.booking_status ?? 'intent';
+  const status = getStopBookingStatus(place, linkedReservation);
   const isIntent = status === 'intent';
 
   const borderClass = isIntent
@@ -154,7 +173,11 @@ export function SortablePlaceCard({
                 title={`Equality score: ${eqScore}`}
               />
             )}
-            <BookingBadge status={status} confirmationCode={linkedReservation?.confirmation_code} />
+            <BookingBadge
+              status={status}
+              confirmationCode={linkedReservation?.confirmation_code}
+              pendingLabel={t('trips.reservations.status.pending', 'Pending')}
+            />
           </div>
           {place.start_time && (
             <div className="flex items-center gap-0.5 text-muted-foreground">
@@ -188,7 +211,7 @@ export function SortablePlaceCard({
             cityName={place.cities?.name ?? null}
             startDate={tripStartDate ?? null}
             endDate={tripEndDate ?? null}
-            bookingStatus={status}
+            bookingStatus={status === 'pending' ? 'intent' : status}
             onBookingPrompt={() => setBookOpen(true)}
           />
 
@@ -212,6 +235,7 @@ export function SortablePlaceCard({
           open={bookOpen}
           onClose={() => setBookOpen(false)}
           tripId={place.trip_id}
+          initialStatus="confirmed"
           initialTitle={getPlaceName(place)}
           initialType={reservationTypeFor(cat)}
           onCreated={(res) => {

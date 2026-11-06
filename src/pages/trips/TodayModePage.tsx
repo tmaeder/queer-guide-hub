@@ -182,7 +182,8 @@ export default function TodayModePage() {
 
     const reservationItems: TimelineItem[] = (effectiveReservations ?? [])
       .filter((r) => {
-        if (r.trip_id !== effectiveTrip.id) return false;
+        if (r.trip_id !== effectiveTrip.id || r.status === 'cancelled' || r.status === 'failed')
+          return false;
         const start = r.start_at ? new Date(r.start_at) : null;
         const end = r.end_at ? new Date(r.end_at) : null;
         if (!start && !end) return false;

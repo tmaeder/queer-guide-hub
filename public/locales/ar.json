@@ -716,6 +716,18 @@
       "startingNow": "يبدأ الآن"
     },
     "bookingAssistant": {
+      "linkStop": "ربط بمحطة في خط السير",
+      "wizardTitle": "حجوزات الرحلة",
+      "activities": "الأنشطة",
+      "fromAirport": "مطار المغادرة",
+      "toAirport": "مطار الوصول",
+      "reviewFlight": "مراجعة البحث عن رحلة جوية",
+      "noActivitiesFound": "لم يتم العثور على أنشطة",
+      "completeOnPartner": "أكمل حجزك على موقع الشريك.",
+      "savePending": "حفظ كحجز معلّق",
+      "continueOnPartner": "المتابعة على موقع الشريك",
+      "recordConfirmation": "تسجيل تأكيد الحجز",
+      "saveFailed": "تعذّر حفظ الحجز",
       "tabs": {
         "suggestions": "اقتراحات",
         "book": "احجز"

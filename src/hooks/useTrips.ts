@@ -481,28 +481,29 @@ export function useTripMutations() {
     mutationFn: async ({
       id,
       trip_id,
+      onlyIfUnlinked,
       ...input
     }: {
       id: string;
       trip_id?: string;
+      onlyIfUnlinked?: boolean;
       [key: string]: unknown;
     }) => {
       if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        if (onlyIfUnlinked) throw new Error('Linking a reservation requires a connection');
         if (!user) throw new Error('Not signed in');
         await enqueueMutation(user.id, 'trip_places', id, trip_id ?? null, input);
         return { trip_id: trip_id ?? null };
       }
-      const { data, error } = await supabase
-        .from('trip_places')
-        .update(input)
-        .eq('id', id)
-        .select('trip_id')
-        .single();
+      const update = supabase.from('trip_places').update(input).eq('id', id);
+      if (trip_id) update.eq('trip_id', trip_id);
+      if (onlyIfUnlinked) update.is('reservation_id', null).neq('booking_status', 'completed');
+      const { data, error } = await update.select('trip_id').single();
       if (error) throw error;
       return data;
     },
-    onMutate: async ({ id, trip_id, ...input }) => {
-      if (!trip_id) return {};
+    onMutate: async ({ id, trip_id, onlyIfUnlinked, ...input }) => {
+      if (!trip_id || onlyIfUnlinked) return {};
       await queryClient.cancelQueries({ queryKey: qk.trip.detail(trip_id) });
       const key = [...qk.trip.detail(trip_id), user?.id];
       const prev = queryClient.getQueryData<TripWithDetails>(key);
@@ -516,8 +517,11 @@ export function useTripMutations() {
       );
       return { prev, key };
     },
-    onError: (_err, _vars, ctx) => {
+    onError: (_err, vars, ctx) => {
       if (ctx?.prev && ctx.key) queryClient.setQueryData(ctx.key, ctx.prev);
+      if (vars.onlyIfUnlinked && vars.trip_id) {
+        void queryClient.invalidateQueries({ queryKey: qk.trip.detail(vars.trip_id) });
+      }
     },
     onSuccess: (data) => {
       if (data.trip_id && (typeof navigator === 'undefined' || navigator.onLine)) {
