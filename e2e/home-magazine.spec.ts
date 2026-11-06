@@ -74,6 +74,11 @@ test('homepage prioritizes listings and city guides while secondary routes stay 
 test('a returning visitor sees their history and suggested places after local discovery', async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 412, height: 823 });
+  let release!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
   await page.addInitScript(() => {
     const ts = Date.now();
     sessionStorage.setItem(
@@ -87,32 +92,44 @@ test('a returning visitor sees their history and suggested places after local di
   });
   await page.route(
     (url) => url.hostname.startsWith('search.') && url.pathname === '/search',
-    (route) =>
-      route.fulfill({
+    async (route) => {
+      await pending;
+      await route.fulfill({
         headers: { 'Access-Control-Allow-Origin': '*' },
         json: {
-          hits: [
-            {
-              type: 'venue',
-              slug: 'suggested-venue',
-              title: 'Suggested venue',
-              city: 'Berlin',
-              _boostReason: 'interest',
-            },
-          ],
+          hits: Array.from({ length: 4 }, (_, index) => ({
+            type: 'venue',
+            slug: `suggested-venue-${index}`,
+            title: `Suggested venue ${index}`,
+            city: 'Berlin',
+            _boostReason: 'interest',
+          })),
         },
-      }),
+      });
+    },
   );
 
-  await openHome(page);
-  await page.getByRole('region', { name: 'What are you here for?' }).scrollIntoViewIfNeeded();
-  const yourLines = page.getByRole('region', { name: 'Your lines' });
-  await expect(yourLines.getByRole('link', { name: 'Recent venue' })).toBeVisible();
-  await expect(yourLines.getByRole('link', { name: 'Suggested venue' })).toHaveAttribute(
-    'href',
-    '/venues/suggested-venue',
-  );
-  await expect(yourLines.getByText('Matches your interests')).toBeVisible();
+  try {
+    await openHome(page);
+    const cities = page.getByRole('region', { name: 'City guides' });
+    await cities.scrollIntoViewIfNeeded();
+    await expect(cities.locator('a[href^="/city/"]').first()).toBeVisible();
+    const map = page.getByRole('region', { name: 'What are you here for?' });
+    await map.scrollIntoViewIfNeeded();
+    const yourLines = page.getByRole('region', { name: 'Your lines' });
+    await expect(yourLines.getByRole('link', { name: 'Recent venue' })).toBeVisible();
+    const mapPosition = () => map.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    const before = await mapPosition();
+    release();
+    await expect(yourLines.getByRole('link', { name: 'Suggested venue 0' })).toHaveAttribute(
+      'href',
+      '/venues/suggested-venue-0',
+    );
+    await expect(yourLines.getByText('Matches your interests').first()).toBeVisible();
+    expect(await mapPosition()).toBeCloseTo(before);
+  } finally {
+    release();
+  }
 });
 
 test('homepage requests do not generate PostgREST client errors', async ({ page }) => {
