@@ -75,7 +75,9 @@ jobs:
                 echo "::error::test_file must be an e2e/*.spec.ts path"
                 exit 1
               fi
-              npx playwright test e2e/auth.setup.ts "$E2E_TEST_FILE"
+              npx playwright test --project=chromium --retries=0 --repeat-each=3 \
+                e2e/profile-settings.spec.ts e2e/removed-ui-elements.spec.ts e2e/venues/polish.spec.ts \
+                --grep 'legacy Privacy opens|footer has the copyright|skip-to-content link is first focusable' 
             else
               npm run test:e2e
             fi
