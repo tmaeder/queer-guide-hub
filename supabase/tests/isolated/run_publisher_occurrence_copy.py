@@ -117,6 +117,51 @@ do $check$begin
 end $check$;
 """
 sql=schema+paths[0].read_text()+checks
+ticketmaster_fixture = """
+alter table cities add column name text;
+alter table venues add column name text;
+alter table events add column venue_name text;
+insert into countries values(md5('US')::uuid,'US');
+insert into cities values(md5('vegas')::uuid,md5('US')::uuid,null,'Las Vegas');
+insert into events(id,title,description,start_date,external_id,data_source,venue_name,city_id,country_id)
+ select md5('tm:'||g||':'||d)::uuid,'Production '||g,'Complete production description '||g,
+  '2026-10-01 15:00+00'::timestamptz+make_interval(days=>d),'tm:'||g||':'||d,
+  'ticketmaster','Flamingo Showroom',md5('vegas')::uuid,md5('US')::uuid
+ from generate_series(1,4) g cross join generate_series(1,3) d;
+insert into event_sources
+ select id,id,data_source,external_id,null,repeat('b',64),
+  jsonb_build_object('raw',jsonb_build_object('id',external_id,'name',title,'info',description,
+   'url','https://www.ticketmaster.com/show/event/'||upper(md5(external_id)),
+   'dates',jsonb_build_object('start',jsonb_build_object('dateTime',start_date)),
+   '_embedded','{"venues":[{"id":"KovZpZAJanIA","name":"Flamingo Showroom","city":{"name":"Las Vegas"},"country":{"countryCode":"US"}}],"attractions":[{"id":"K8vZ917b-t7"},{"id":"K8vZ9178HlV"}]}'::jsonb))
+ from events where data_source='ticketmaster';
+update event_sources set payload=jsonb_set(payload,'{raw,_embedded,venues,0,id}','"another-venue"')
+ where source_entity_id='tm:2:1';
+update event_sources set payload=jsonb_set(payload,'{raw,dates,start,dateTime}','"2026-10-02T10:00:00Z"')
+ where source_entity_id='tm:3:1';
+update event_sources set payload=jsonb_set(payload,'{raw,_embedded,attractions,0,id}','"another-production"')
+ where source_entity_id='tm:4:1';
+insert into event_quality_issues(id,event_id) select id,id from events where data_source='ticketmaster';
+"""
+ticketmaster_checks = """
+do $check$
+declare result jsonb;
+begin
+ if exists(select 1 from events where data_source='ticketmaster' and
+  api_private.event_description_reuse_expected(id) is distinct from (title='Production 1'))
+ then raise exception 'Ticketmaster cluster proof misclassified a fixture';end if;
+ result:=api_private.run_review_automatic_resolution(200,true);
+ if result->>'publisher_description_findings'<>'3' then raise exception 'Unexpected dry run: %',result;end if;
+ result:=api_private.run_review_automatic_resolution(200,false);
+ if result->>'publisher_description_findings'<>'3' then raise exception 'Unexpected apply: %',result;end if;
+ if (select count(*) from admin_review_repairs where next_value->>'resolution' like '%ticketmaster.com/show/event/%')<>3
+ then raise exception 'Missing publisher URLs from the repair journal';end if;
+ if exists(select 1 from event_quality_issues i join events e on e.id=i.event_id where e.data_source='ticketmaster'
+  and (i.status='resolved') is distinct from (e.title='Production 1')) then raise exception 'Wrong issue resolution';end if;
+end $check$;
+"""
+ticketmaster_migration = ROOT/'supabase/migrations/99991793933400_ticketmaster_occurrence_copy.sql'
+sql += ticketmaster_fixture + ticketmaster_migration.read_text() + ticketmaster_checks
 with tempfile.TemporaryDirectory(prefix='qg-publisher-copy-') as tmp:
  data=Path(tmp)/'data'
  subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
