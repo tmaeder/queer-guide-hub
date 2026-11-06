@@ -67,6 +67,10 @@ export function CityIdentityContext({ value }: { value: unknown }) {
       Math.abs(stored.lng - sourcePoint.lng) > 0.01);
   const retracted = object(city.retracted_identity);
   const classification = object(city.classification);
+  const settlementUnresolved = classification.status === 'unresolved';
+  const placeTypes = Array.isArray(classification.classes)
+    ? [...new Set(classification.classes.map(text).filter(Boolean))]
+    : [];
   const geography = object(city.geography);
   const geographyChecks = object(geography.checks);
   const qid = text(city.wikidata_qid);
@@ -221,6 +225,25 @@ export function CityIdentityContext({ value }: { value: unknown }) {
         <p className="mt-2 text-sm leading-relaxed">
           {text(classification.reason) ?? 'Settlement classification has not been recorded.'}
         </p>
+        {(placeTypes.length > 0 || settlementUnresolved) && (
+          <p className="mt-1 text-sm">
+            {placeTypes.length > 0
+              ? `Recorded place types: ${placeTypes.join(', ')}`
+              : 'The available sources record no place type.'}
+          </p>
+        )}
+        {settlementUnresolved && (
+          <p className="mt-1 text-sm leading-relaxed">
+            Confirm whether the source identifies a city, town, or village at these coordinates.
+          </p>
+        )}
+        {typeof geographyChecks.country_match === 'boolean' && (
+          <p className="mt-1 text-sm">
+            {geographyChecks.country_match
+              ? 'The coordinates match the assigned country.'
+              : 'The coordinates conflict with the assigned country.'}
+          </p>
+        )}
         <p className="mt-1 text-sm text-muted-foreground">Geography: {geographyStatus}</p>
         {text(geographyChecks.reason) && geographyChecks.reason !== classification.reason && (
           <p className="mt-1 text-sm leading-relaxed">{String(geographyChecks.reason)}</p>

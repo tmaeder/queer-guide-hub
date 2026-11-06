@@ -202,7 +202,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
       <ErrorBoundary section="peripheral-chrome" fallback={null}>
         <Suspense fallback={null}>
           <CookieConsentBanner />
-          {!isAdmin && <FeedbackButton />}
+          {!isAdmin && !isHome && <FeedbackButton />}
           {!isAdmin && <InstallBanner />}
         </Suspense>
       </ErrorBoundary>

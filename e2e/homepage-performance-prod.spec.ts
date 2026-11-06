@@ -94,7 +94,9 @@ test('mobile consent and contribution controls load only when opened', async ({ 
   await preferences.getByRole('button', { name: 'Necessary Only', exact: true }).click();
   await expect(preferences).toBeHidden();
   await expect(page.getByRole('region', { name: 'Cookie settings' })).toBeHidden();
-  await page.getByRole('button', { name: 'Contribute to Queer Guide', exact: true }).click();
+  await expect(page.locator('.contribution-trigger')).toHaveCount(0);
+  const support = page.getByRole('region', { name: 'No ads. No data sales. Just riders.' });
+  await support.getByRole('button', { name: 'Contribute to Queer Guide', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Contribute to Queer Guide' })).toBeVisible({
     timeout: 20000,
   });
