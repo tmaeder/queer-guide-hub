@@ -29,6 +29,14 @@ interface NewsStagingPreviewProps {
 const pct = (v: number | undefined) =>
   typeof v === 'number' ? `${Math.round(v <= 1 ? v * 100 : v)}%` : '—';
 
+function sourceHost(url?: string) {
+  try {
+    return url ? new URL(url).hostname.replace(/^www\./, '') : null;
+  } catch {
+    return null;
+  }
+}
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="border-t border-border px-4 py-4 space-y-2">
@@ -119,13 +127,9 @@ export function NewsStagingPreview({ news, editor }: NewsStagingPreviewProps) {
           : 'Recovering the full article'
         : 'The full article could not be confirmed';
 
-  const host = (() => {
-    try {
-      return news.url ? new URL(news.url).hostname.replace(/^www\./, '') : null;
-    } catch {
-      return null;
-    }
-  })();
+  const host = sourceHost(news.url);
+  const isNewsRedirect = host === 'news.google.com';
+  const recoveryUsedRedirect = sourceHost(recovery?.url ?? news.url) === 'news.google.com';
 
   return (
     <div>
@@ -148,7 +152,7 @@ export function NewsStagingPreview({ news, editor }: NewsStagingPreviewProps) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
           >
-            Original on {host ?? 'source'}
+            {isNewsRedirect ? 'Open Google News link' : `Original on ${host ?? 'source'}`}
             <ExternalLink className="h-3 w-3" aria-hidden="true" />
           </a>
         )}
@@ -196,12 +200,14 @@ export function NewsStagingPreview({ news, editor }: NewsStagingPreviewProps) {
               : recovery.status === 'running' && (!expired || recovery.attempts < 2)
                 ? 'The original text is preserved while the publisher page is checked. No decision is needed while recovery runs.'
                 : recovery.reason === 'page_identity_unconfirmed'
-                  ? 'The publisher page could not be matched to this headline. Check the original source and correct its URL before approving.'
+                  ? recoveryUsedRedirect
+                    ? 'The Google News link did not reveal the original article. Find the matching article on the publisher’s site and use its direct URL before approving.'
+                    : 'The publisher page could not be matched to this headline. Check the original source and correct its URL before approving.'
                   : 'The original text is preserved. Check the publisher page for a complete article before approving.'}
           </p>
           {recovery.pageTitle && (
             <p className="text-13 break-words">
-              <span className="text-muted-foreground">Publisher headline: </span>
+              <span className="text-muted-foreground">Page title found </span>
               {recovery.pageTitle}
             </p>
           )}
@@ -226,7 +232,7 @@ export function NewsStagingPreview({ news, editor }: NewsStagingPreviewProps) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs underline underline-offset-4"
             >
-              Check the publisher page
+              {recoveryUsedRedirect ? 'Open checked Google News link' : 'Check the publisher page'}
               <ExternalLink className="h-3 w-3" aria-hidden="true" />
             </a>
           )}
