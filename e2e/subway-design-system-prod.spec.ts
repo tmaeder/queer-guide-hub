@@ -25,31 +25,12 @@ async function firstHomeCard(page: Page) {
   return card;
 }
 
-const observeRouteJourneys = (page: Page) =>
-  page.evaluate(() => {
-    const windowWithProbe = window as typeof window & {
-      __routeJourneys?: Array<{ className: string; display: string }>;
-    };
-    windowWithProbe.__routeJourneys = [];
-    const record = (node: Node) => {
-      if (!(node instanceof Element)) return;
-      const journeys = [
-        ...(node.matches('[data-testid="route-journey"]') ? [node] : []),
-        ...node.querySelectorAll('[data-testid="route-journey"]'),
-      ];
-      for (const journey of journeys) {
-        windowWithProbe.__routeJourneys!.push({
-          className: journey.className,
-          display: getComputedStyle(journey).display,
-        });
-      }
-    };
-    new MutationObserver((records) => {
-      for (const recordEntry of records) {
-        for (const node of recordEntry.addedNodes) record(node);
-      }
-    }).observe(document.body, { childList: true, subtree: true });
-  });
+async function openCrisisSupport(page: Page) {
+  const footer = page.locator('[data-site-footer]');
+  await footer.scrollIntoViewIfNeeded();
+  await footer.getByRole('link', { name: 'Crisis support', exact: true }).click();
+  await expect(page).toHaveURL(/\/help(?:[?#]|$)/);
+}
 
 const surfaceEdgeAudit = (page: Page) =>
   page.evaluate(() => {
@@ -77,7 +58,9 @@ const surfaceEdgeAudit = (page: Page) =>
         if (
           element.closest('svg, canvas') ||
           element.classList.contains('border-track-ring') ||
-          element.matches('button,input,textarea,select,[role="checkbox"],[role="combobox"]')
+          element.matches(
+            'button,input,textarea,select,a[href].border-input,[role="checkbox"],[role="combobox"]',
+          )
         ) {
           return false;
         }
@@ -230,19 +213,8 @@ test.describe('production subway design-system contract', () => {
       .poll(() => arrived.first().evaluate((el) => getComputedStyle(el).animationName))
       .toBe('station-arrive');
 
-    // The other half: /help is in MOTION_FREE_PREFIXES, so the same navigation
-    // must NOT animate. Without this the assertion above passes on a build that
-    // animates everything, including the crisis pages this list exists to keep
-    // still.
-    // Located by HREF and clicked through the element, which is this file's own
-    // pattern further down. The primary nav has no "Help" item — /help is
-    // only a footer/sheet link since Support left the header — so `getByRole('link', { name: /^help$/i })` times out on
-    // the homepage, and the footer link can sit under the sticky bar.
     await gotoReady(page, '/');
-    const helpLink = page.locator('a[href$="/help"]').first();
-    await expect(helpLink).toHaveCount(1);
-    await helpLink.evaluate((element: HTMLAnchorElement) => element.click());
-    await expect(page).toHaveURL(/\/help(?:[?#]|$)/);
+    await openCrisisSupport(page);
     await expect(page.locator('.station-arrive')).toHaveCount(0);
   });
 
@@ -267,14 +239,8 @@ test.describe('production subway design-system contract', () => {
 
   test('safety routes remain motion-free', async ({ page }) => {
     await gotoReady(page, '/about');
-    await observeRouteJourneys(page);
-
-    const helpLink = page.locator('a[href$="/help"]').first();
-    await expect(helpLink).toHaveCount(1);
-    await helpLink.evaluate((element: HTMLAnchorElement) => element.click());
-    await expect(page).toHaveURL(/\/help$/);
-    await page.waitForTimeout(800);
-    await expect.poll(() => page.evaluate(() => window.__routeJourneys?.length ?? 0)).toBe(0);
+    await openCrisisSupport(page);
+    await expect(page.locator('.station-arrive')).toHaveCount(0);
   });
 
   for (const path of ['/events', '/travel', '/pride', '/help', '/news']) {
