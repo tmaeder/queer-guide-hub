@@ -30,12 +30,11 @@ function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
   return (
     <LocalizedLink
       to={href}
-      aria-label={row.title}
       className="grid min-h-[74px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-2 no-underline hover:bg-surface-container focus-visible:-outline-offset-2 md:px-6"
     >
-      <RouteBullet type={row.kind} size={36} />
+      <RouteBullet type={row.kind} size={36} decorative />
       <span className="min-w-0">
-        <span className="block truncate text-title font-bold">{row.title}</span>
+        <span className="block truncate text-title font-bold">{row.title}</span>{' '}
         <span className="block truncate text-13 text-muted-foreground">
           {[date, row.via].filter(Boolean).join(' · ')}
         </span>
