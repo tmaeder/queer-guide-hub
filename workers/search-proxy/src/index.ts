@@ -11,7 +11,7 @@
  */
 
 import { personalizedRank, prioritizeQueryMatches } from "./rank";
-import { embed, rerank, DEFAULT_EMBED_MODEL } from "./ai";
+import { embed, rerank, DEFAULT_EMBED_MODEL, type EmbedTimings } from "./ai";
 import { rewriteQuery, type RewrittenQuery } from "./rewrite";
 import { Toucan } from "toucan-js";
 
@@ -416,7 +416,18 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const tagsP = track("tagsMs", expandTagsWithNarrower(env, filters.tags));
 	const pgSyns = await track("synonymsMs", loadActiveSynonyms(env));
 	const literalEmbedText = embedTextFor(q, Array.from(new Set<string>(expandWithPgSynonyms(q, pgSyns, { locale: lang }))));
-	const literalVecP = track("embedMs", embed(env, literalEmbedText, { cacheKey: `q:${embedModel}:${lang}:${literalEmbedText}` }));
+	// Sub-steps of the embedding, for debug.embedDetail. The KV write runs under
+	// waitUntil: the vector is already in hand by then.
+	const embedDetail: EmbedTimings = {};
+	const bg = (p: Promise<unknown>) => ctx.waitUntil(p);
+	const literalVecP = track(
+		"embedMs",
+		embed(env, literalEmbedText, {
+			cacheKey: `q:${embedModel}:${lang}:${literalEmbedText}`,
+			waitUntil: bg,
+			timings: embedDetail,
+		}),
+	);
 	const rewriteWaitStart = Date.now();
 	const rewrite = shouldRewrite
 		? await withBudget(rewritePromise, lang === "en" ? REWRITE_BUDGET_MS_EN : REWRITE_BUDGET_MS_OTHER)
@@ -527,7 +538,10 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const [qVec, signal, recent] = await Promise.all([
 		embedReused
 			? literalVecP
-			: track("embedRewrittenMs", embed(env, embedText, { cacheKey: `q:${embedModel}:${lang}:${embedText}` })),
+			: track(
+					"embedRewrittenMs",
+					embed(env, embedText, { cacheKey: `q:${embedModel}:${lang}:${embedText}`, waitUntil: bg }),
+				),
 		signalP,
 		recentP,
 	]);
@@ -759,6 +773,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 						rewriteOutcome,
 						rerankOutcome,
 						embedReused,
+						embedDetail,
 						pgFailed: pg === null,
 						rewrite,
 						// Both arms, separately — a single `effectiveQ` is what hid
