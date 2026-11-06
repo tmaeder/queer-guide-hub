@@ -41,7 +41,7 @@ Deno.serve(async req => {
     ? 'validation-2026-10-29' : Deno.env.get('JEV_BUDGET_ACCOUNT') || 'production'
   const started = new Date().toISOString()
   const budgetStarted = Date.now()
-  const summary = { examined: 0, applied: 0, blocked: 0, retry: 0, stale: 0, preview: 0, budget_deferred: 0 }
+  const summary = { examined: 0, applied: 0, blocked: 0, retry: 0, stale: 0, preview: 0, budget_deferred: 0, provider_overload_deferred: 0 }
   const rpc = async <T>(name: string, args: Record<string, unknown> = {}): Promise<T> => {
     const { data, error } = await db.rpc(name, args)
     if (error) throw new Error(`${name}: ${error.message}`)
@@ -71,12 +71,14 @@ Deno.serve(async req => {
       : await rpc<Job[]>('claim_jev_review_jobs', { p_batch: Math.min(16, Math.max(1, Math.trunc(Number(body.batch)) || 8)) })
     let globalFailure: string | null = null
     let budgetDeferred = false
+    let providerOverload: ProviderError | null = null
     for (const job of jobs) {
       summary.examined++
       let context: Context | undefined; let evidence: Evidence[] = []; let result: Record<string, unknown>
       try {
         if (Date.now() - budgetStarted > 150000) throw new Error('worker_budget_deferred')
         if (globalFailure) throw new Error(globalFailure)
+        if (providerOverload) throw providerOverload
         if (budgetDeferred) throw new JevBudgetDeferred('Jev budget deferred')
         if (!(job.queue_type in SOURCES)) throw new Error(`Unregistered Review source: ${job.queue_type}`)
         context = await rpc<Context>('get_jev_review_context', { p_case_id: job.case_id, p_lease_token: job.lease_token })
@@ -107,8 +109,15 @@ Deno.serve(async req => {
           }
         }
       } catch (error) {
-        // Auth, balance, quotas and provider failures are operational failures, retried without data changes.
-        if (error instanceof ProviderError && ([401, 402, 403, 429].includes(error.status) || error.status >= 500 && error.status <= 599)) globalFailure = error.message
+        // TypeSafe overload is temporary. Stop spending provider budget in this
+        // batch and let the durable job retry schedule back off. A completed
+        // deferral must not trip the run-level circuit breaker.
+        if (error instanceof ProviderError && error.status === 529) {
+          providerOverload = error
+          summary.provider_overload_deferred++
+        } else if (error instanceof ProviderError && ([401, 402, 403, 429].includes(error.status) || error.status >= 500 && error.status <= 599)) {
+          globalFailure = error.message
+        }
         if (error instanceof JevBudgetDeferred) { budgetDeferred = true; summary.budget_deferred++ }
         else if (error instanceof JevBudgetError) globalFailure = error.message
         result = { retry: error instanceof Error ? error.message : 'Review evaluation failed' }
@@ -117,7 +126,7 @@ Deno.serve(async req => {
         p_input_hash: context?.input_hash ?? '', p_result: result, p_evidence: evidence, p_dry_run: body.dry_run !== false })
       if (saved.status in summary) summary[saved.status]++
     }
-    await recordRun(Boolean(globalFailure), globalFailure ?? (budgetDeferred ? 'budget_deferred' : undefined))
+    await recordRun(Boolean(globalFailure), globalFailure ?? providerOverload?.message ?? (budgetDeferred ? 'budget_deferred' : undefined))
     return jsonResponse({ success: !globalFailure, ...summary, policy_version: POLICY_VERSION, ...(globalFailure ? { error: globalFailure } : {}) }, globalFailure ? 503 : 200, req)
   } catch (error) {
     console.error('Review automation failed:', error instanceof Error ? error.message : error)
