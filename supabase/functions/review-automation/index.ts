@@ -1,12 +1,14 @@
 import { corsResponse, errorResponse, getServiceClient, jsonResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { buildQuestions, decide, parseEvaluation, POLICY_VERSION, SOURCES, type Context, type Evidence } from './policy.ts'
 import { recoverSources } from './research.ts'
+import { cityDiscoveryInput, discoverCityEvidence } from './city-discovery.ts'
+import { discoverPublisherEvidence, eventPublisherDate, publisherTarget } from './publisher-discovery.ts'
 import { sourceUrl } from './evidence.ts'
 import { ProviderError } from './provider.ts'
 import { STATE_VERSION } from './state.ts'
 import { callJev, createJevBudget, JevBudgetDeferred, JevBudgetError, type JevRequest } from '../_shared/jev-client.ts'
 
-type Job = { case_id: string; lease_token: string; queue_type: string }
+type Job = { case_id: string; lease_token: string; queue_type: string; outcome?: { reason?: string } }
 async function evaluate(body: JevRequest, db: ReturnType<typeof getServiceClient>, account: string) {
   return await callJev(body, {
     apiKey: Deno.env.get('JEV_API_KEY') || Deno.env.get('TYPESAFE_API_KEY') || '',
@@ -41,7 +43,9 @@ Deno.serve(async req => {
     ? 'validation-2026-10-29' : Deno.env.get('JEV_BUDGET_ACCOUNT') || 'production'
   const started = new Date().toISOString()
   const budgetStarted = Date.now()
-  const summary = { examined: 0, applied: 0, blocked: 0, retry: 0, stale: 0, preview: 0, budget_deferred: 0 }
+  const summary = { examined: 0, applied: 0, blocked: 0, retry: 0, stale: 0, preview: 0, budget_deferred: 0, provider_overload_deferred: 0 }
+  const cityDiscovery = { attempted: 0, found: 0, unavailable: 0 }
+  const publisherDiscovery = { looked_up: 0, attempted: 0, found: 0, unavailable: 0 }
   const rpc = async <T>(name: string, args: Record<string, unknown> = {}): Promise<T> => {
     const { data, error } = await db.rpc(name, args)
     if (error) throw new Error(`${name}: ${error.message}`)
@@ -50,7 +54,7 @@ Deno.serve(async req => {
   let runId: number | null = null
   const recordRun = async (failed: boolean, reason?: string) => {
     if (runId !== null) {
-      const { error } = await db.from('admin_automation_runs').update({ status: failed ? 'error' : 'success', finished_at: new Date().toISOString(), items_examined: summary.examined, items_changed: summary.applied, summary: { ...summary, reason, policy_version: POLICY_VERSION } }).eq('id', runId).eq('automation_slug', 'review_jev')
+      const { error } = await db.from('admin_automation_runs').update({ status: failed ? 'error' : 'success', finished_at: new Date().toISOString(), items_examined: summary.examined, items_changed: summary.applied, summary: { ...summary, city_discovery: cityDiscovery, publisher_discovery: publisherDiscovery, reason, policy_version: POLICY_VERSION } }).eq('id', runId).eq('automation_slug', 'review_jev')
       if (error) console.error('Jev run log update failed:', error.message)
     }
     const { error } = await db.from('admin_automations').update({ last_run_at: started, last_run_status: failed ? 'error' : 'success' }).eq('slug', 'review_jev')
@@ -71,12 +75,14 @@ Deno.serve(async req => {
       : await rpc<Job[]>('claim_jev_review_jobs', { p_batch: Math.min(16, Math.max(1, Math.trunc(Number(body.batch)) || 8)) })
     let globalFailure: string | null = null
     let budgetDeferred = false
+    let providerOverload: ProviderError | null = null
     for (const job of jobs) {
       summary.examined++
       let context: Context | undefined; let evidence: Evidence[] = []; let result: Record<string, unknown>
       try {
         if (Date.now() - budgetStarted > 150000) throw new Error('worker_budget_deferred')
         if (globalFailure) throw new Error(globalFailure)
+        if (providerOverload) throw providerOverload
         if (budgetDeferred) throw new JevBudgetDeferred('Jev budget deferred')
         if (!(job.queue_type in SOURCES)) throw new Error(`Unregistered Review source: ${job.queue_type}`)
         context = await rpc<Context>('get_jev_review_context', { p_case_id: job.case_id, p_lease_token: job.lease_token })
@@ -93,6 +99,53 @@ Deno.serve(async req => {
           if (!integrityOnly) {
             const sources = await recoverSources(context)
             evidence = sources.evidence; errors = sources.errors; attempted = sources.attempted
+            const sourceBlocker = ['missing_source', 'missing_source_url', 'source_unavailable', 'conflicting_identity', 'insufficient_confidence'].includes(job.outcome?.reason ?? '')
+            const city = (!evidence.length || sourceBlocker) && cityDiscovery.attempted < 2
+              ? cityDiscoveryInput(context) : null
+            if (city) {
+              cityDiscovery.attempted++
+              try {
+                const { data, error } = await db.from('countries').select('code').eq('id', city.countryId).maybeSingle()
+                if (error) throw new Error('City discovery country lookup failed')
+                const found = data?.code ? await discoverCityEvidence(city, data.code) : null
+                if (found) {
+                  const existing = evidence.findIndex(page => page.url === found.url)
+                  if (existing < 0) evidence.push(found)
+                  else evidence[existing] = found
+                  cityDiscovery.found++
+                }
+              } catch {
+                cityDiscovery.unavailable++
+                errors.push('Wikidata city discovery unavailable')
+              }
+            }
+            const publisher = (!evidence.length || sourceBlocker) && publisherDiscovery.looked_up < 2
+              ? publisherTarget(context) : null
+            if (publisher) {
+              publisherDiscovery.looked_up++
+              try {
+                if (publisher.kind === 'event' && publisher.start) {
+                  const event = await db.from('events').select('timezone').eq('id', publisher.id).maybeSingle()
+                  if (event.error) throw new Error('Publisher event timezone lookup failed')
+                  publisher.date = eventPublisherDate(publisher.start, event.data?.timezone) ?? undefined
+                }
+                const { data, error } = await db.from(publisher.table).select('source_slug,source_url')
+                  .eq(publisher.foreignKey, publisher.id).in('source_slug', publisher.slugs)
+                  .not('source_url', 'is', null).order('is_primary', { ascending: false })
+                  .order('last_seen_at', { ascending: false }).order('id').limit(8)
+                if (error) throw new Error('Publisher catalogue lookup failed')
+                const found = await discoverPublisherEvidence(publisher, data ?? [], evidence)
+                publisherDiscovery.attempted += found.attempted
+                publisherDiscovery.unavailable += found.unavailable
+                if (found.evidence) {
+                  evidence.push(found.evidence)
+                  publisherDiscovery.found++
+                }
+              } catch {
+                publisherDiscovery.unavailable++
+                errors.push('Publisher source discovery unavailable')
+              }
+            }
           }
           if (!evidence.length) result = { blocker: attempted ? 'source_unavailable' : 'missing_source_url', source_errors: errors }
           else {
@@ -107,8 +160,15 @@ Deno.serve(async req => {
           }
         }
       } catch (error) {
-        // Auth, balance, quotas and provider failures are operational failures, retried without data changes.
-        if (error instanceof ProviderError && ([401, 402, 403, 429].includes(error.status) || error.status >= 500 && error.status <= 599)) globalFailure = error.message
+        // TypeSafe overload is temporary. Stop spending provider budget in this
+        // batch and let the durable job retry schedule back off. A completed
+        // deferral must not trip the run-level circuit breaker.
+        if (error instanceof ProviderError && error.status === 529) {
+          providerOverload = error
+          summary.provider_overload_deferred++
+        } else if (error instanceof ProviderError && ([401, 402, 403, 429].includes(error.status) || error.status >= 500 && error.status <= 599)) {
+          globalFailure = error.message
+        }
         if (error instanceof JevBudgetDeferred) { budgetDeferred = true; summary.budget_deferred++ }
         else if (error instanceof JevBudgetError) globalFailure = error.message
         result = { retry: error instanceof Error ? error.message : 'Review evaluation failed' }
@@ -117,8 +177,8 @@ Deno.serve(async req => {
         p_input_hash: context?.input_hash ?? '', p_result: result, p_evidence: evidence, p_dry_run: body.dry_run !== false })
       if (saved.status in summary) summary[saved.status]++
     }
-    await recordRun(Boolean(globalFailure), globalFailure ?? (budgetDeferred ? 'budget_deferred' : undefined))
-    return jsonResponse({ success: !globalFailure, ...summary, policy_version: POLICY_VERSION, ...(globalFailure ? { error: globalFailure } : {}) }, globalFailure ? 503 : 200, req)
+    await recordRun(Boolean(globalFailure), globalFailure ?? providerOverload?.message ?? (budgetDeferred ? 'budget_deferred' : undefined))
+    return jsonResponse({ success: !globalFailure, ...summary, city_discovery: cityDiscovery, publisher_discovery: publisherDiscovery, policy_version: POLICY_VERSION, ...(globalFailure ? { error: globalFailure } : {}) }, globalFailure ? 503 : 200, req)
   } catch (error) {
     console.error('Review automation failed:', error instanceof Error ? error.message : error)
     await recordRun(true, 'review_automation_failed')

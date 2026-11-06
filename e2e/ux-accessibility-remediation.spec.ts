@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { loadHomeContent } from './support/homeContent';
 import { waitForAppReady } from './support/appReady';
 import { REDUCED_MOTION } from './support/reducedMotion';
 
@@ -55,29 +56,32 @@ test.describe('UX accessibility remediation — production contract', () => {
     });
   }
 
-  test('a failed news request leaves a visible recovery action instead of a blank band', async ({
+  test('a failed city guide request leaves a visible recovery action instead of a blank band', async ({
     page,
   }) => {
-    await page.route('**/rest/v1/rpc/get_news_front*', async (route) => {
+    let failRequest = true;
+    await page.route(/\/rest\/v1\/cities\?.*editorial_hook/, async (route) => {
+      if (!failRequest) return route.continue();
       await route.fulfill({
-        status: 503,
+        status: 400,
         contentType: 'application/json',
-        body: JSON.stringify({ message: 'forced production E2E failure' }),
+        body: JSON.stringify({ code: 'PGRST100', message: 'Forced city guide request failure' }),
       });
     });
 
     await gotoHome(page, 1280, 900);
-    for (let index = 0; index < 6; index += 1) {
-      await page.mouse.wheel(0, 900);
-      await page.waitForTimeout(500);
-    }
-
-    const newsHeading = page.getByRole('heading', { name: /latest news/i });
-    await expect(newsHeading).toBeVisible({ timeout: 30_000 });
-    const section = newsHeading.locator('xpath=ancestor::section[1]');
+    await loadHomeContent(page);
+    const section = page.getByRole('region', { name: 'City guides' });
+    await expect(
+      page.getByRole('region', { name: /^places and events/i }).locator('[aria-busy]'),
+    ).toHaveAttribute('aria-busy', 'false');
+    await section.scrollIntoViewIfNeeded();
+    await page.keyboard.press('Tab');
     await expect(section.getByText(/this section could not load/i)).toBeVisible({
       timeout: 30_000,
     });
-    await expect(section.getByRole('button', { name: /try again/i })).toBeVisible();
+    failRequest = false;
+    await section.getByRole('button', { name: /try again/i }).click();
+    await expect(section.locator('a[href*="/city/"]').first()).toBeVisible();
   });
 });

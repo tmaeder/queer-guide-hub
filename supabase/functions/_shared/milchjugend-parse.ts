@@ -320,6 +320,13 @@ export function parseEvent(raw: unknown): MjEvent | null {
   }
 }
 
+// Some city-only venue records accompany events whose location is shared by email.
+export function isWithheldVenue(event: MjEvent): boolean {
+  const venue = event.venue
+  return Boolean(venue?.city && venue.name === venue.city && !venue.street &&
+    /Ort auf Anfrage per Mail/i.test(event.description ?? ''))
+}
+
 /**
  * Venue identity is the venue's own WordPress post id — a real post id, not a
  * provisional one (measured: 1762, 8699, 14758, 15127, all < 10^7). Name+city is
