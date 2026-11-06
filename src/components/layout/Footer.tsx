@@ -136,7 +136,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
-              className={cn(footerLink, 'text-start')}
+              className={cn(footerLink, 'text-start text-background')}
             >
               {t('footer.cookiePreferences', 'Cookie preferences')}
             </button>
@@ -181,7 +181,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             <div className="flex flex-wrap items-center justify-between gap-x-6 md:gap-x-8">
               <LocalizedLink
                 to="/"
-                className={cn(footerLink, 'hover:no-underline')}
+                className={cn(footerLink, 'text-background hover:no-underline')}
                 aria-label={siteName}
               >
                 <Wordmark className="text-title text-background" />
