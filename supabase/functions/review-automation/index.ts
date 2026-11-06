@@ -2,6 +2,7 @@ import { corsResponse, errorResponse, getServiceClient, jsonResponse, requireInt
 import { buildQuestions, decide, parseEvaluation, POLICY_VERSION, SOURCES, type Context, type Evidence } from './policy.ts'
 import { recoverSources } from './research.ts'
 import { cityDiscoveryInput, discoverCityEvidence } from './city-discovery.ts'
+import { discoverPublisherEvidence, eventPublisherDate, publisherTarget } from './publisher-discovery.ts'
 import { sourceUrl } from './evidence.ts'
 import { ProviderError } from './provider.ts'
 import { STATE_VERSION } from './state.ts'
@@ -44,6 +45,7 @@ Deno.serve(async req => {
   const budgetStarted = Date.now()
   const summary = { examined: 0, applied: 0, blocked: 0, retry: 0, stale: 0, preview: 0, budget_deferred: 0, provider_overload_deferred: 0 }
   const cityDiscovery = { attempted: 0, found: 0, unavailable: 0 }
+  const publisherDiscovery = { looked_up: 0, attempted: 0, found: 0, unavailable: 0 }
   const rpc = async <T>(name: string, args: Record<string, unknown> = {}): Promise<T> => {
     const { data, error } = await db.rpc(name, args)
     if (error) throw new Error(`${name}: ${error.message}`)
@@ -52,7 +54,7 @@ Deno.serve(async req => {
   let runId: number | null = null
   const recordRun = async (failed: boolean, reason?: string) => {
     if (runId !== null) {
-      const { error } = await db.from('admin_automation_runs').update({ status: failed ? 'error' : 'success', finished_at: new Date().toISOString(), items_examined: summary.examined, items_changed: summary.applied, summary: { ...summary, city_discovery: cityDiscovery, reason, policy_version: POLICY_VERSION } }).eq('id', runId).eq('automation_slug', 'review_jev')
+      const { error } = await db.from('admin_automation_runs').update({ status: failed ? 'error' : 'success', finished_at: new Date().toISOString(), items_examined: summary.examined, items_changed: summary.applied, summary: { ...summary, city_discovery: cityDiscovery, publisher_discovery: publisherDiscovery, reason, policy_version: POLICY_VERSION } }).eq('id', runId).eq('automation_slug', 'review_jev')
       if (error) console.error('Jev run log update failed:', error.message)
     }
     const { error } = await db.from('admin_automations').update({ last_run_at: started, last_run_status: failed ? 'error' : 'success' }).eq('slug', 'review_jev')
@@ -117,6 +119,33 @@ Deno.serve(async req => {
                 errors.push('Wikidata city discovery unavailable')
               }
             }
+            const publisher = (!evidence.length || sourceBlocker) && publisherDiscovery.looked_up < 2
+              ? publisherTarget(context) : null
+            if (publisher) {
+              publisherDiscovery.looked_up++
+              try {
+                if (publisher.kind === 'event' && publisher.start) {
+                  const event = await db.from('events').select('timezone').eq('id', publisher.id).maybeSingle()
+                  if (event.error) throw new Error('Publisher event timezone lookup failed')
+                  publisher.date = eventPublisherDate(publisher.start, event.data?.timezone) ?? undefined
+                }
+                const { data, error } = await db.from(publisher.table).select('source_slug,source_url')
+                  .eq(publisher.foreignKey, publisher.id).in('source_slug', publisher.slugs)
+                  .not('source_url', 'is', null).order('is_primary', { ascending: false })
+                  .order('last_seen_at', { ascending: false }).order('id').limit(8)
+                if (error) throw new Error('Publisher catalogue lookup failed')
+                const found = await discoverPublisherEvidence(publisher, data ?? [], evidence)
+                publisherDiscovery.attempted += found.attempted
+                publisherDiscovery.unavailable += found.unavailable
+                if (found.evidence) {
+                  evidence.push(found.evidence)
+                  publisherDiscovery.found++
+                }
+              } catch {
+                publisherDiscovery.unavailable++
+                errors.push('Publisher source discovery unavailable')
+              }
+            }
           }
           if (!evidence.length) result = { blocker: attempted ? 'source_unavailable' : 'missing_source_url', source_errors: errors }
           else {
@@ -149,7 +178,7 @@ Deno.serve(async req => {
       if (saved.status in summary) summary[saved.status]++
     }
     await recordRun(Boolean(globalFailure), globalFailure ?? providerOverload?.message ?? (budgetDeferred ? 'budget_deferred' : undefined))
-    return jsonResponse({ success: !globalFailure, ...summary, city_discovery: cityDiscovery, policy_version: POLICY_VERSION, ...(globalFailure ? { error: globalFailure } : {}) }, globalFailure ? 503 : 200, req)
+    return jsonResponse({ success: !globalFailure, ...summary, city_discovery: cityDiscovery, publisher_discovery: publisherDiscovery, policy_version: POLICY_VERSION, ...(globalFailure ? { error: globalFailure } : {}) }, globalFailure ? 503 : 200, req)
   } catch (error) {
     console.error('Review automation failed:', error instanceof Error ? error.message : error)
     await recordRun(true, 'review_automation_failed')
