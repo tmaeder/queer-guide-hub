@@ -4,7 +4,7 @@ import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { normalizeVenueCategory } from '../_shared/venue-category.ts'
 import {
-  parseEvent, venueKey,
+  isWithheldVenue, parseEvent, venueKey,
   type MjEvent, type MjVenue,
 } from '../_shared/milchjugend-parse.ts'
 
@@ -122,6 +122,7 @@ const eventAdapter: SourceAdapter = {
   normalize(raw: RawItem): NormalizedItem {
     const e = raw.data as unknown as MjEvent
     const v = e.venue
+    const venue = isWithheldVenue(e) ? null : v
     const item: StagedItem = {
       entityType: 'event',
       sourceId: e.key,
@@ -135,7 +136,7 @@ const eventAdapter: SourceAdapter = {
       start_date: e.start,
       end_date: e.end,
       dates: { start: e.start, end: e.end ?? undefined },
-      venue_name: v?.name ?? null,
+      venue_name: venue?.name,
       website: e.website ?? e.url,
       ticket_url: e.website ?? e.url,
       location: { ...locationOf(v), timezone: e.timezone ?? 'Europe/Zurich' },
@@ -158,7 +159,7 @@ const eventAdapter: SourceAdapter = {
         milchjugend_key: e.key,
         cost: e.cost,
         categories: e.categories,
-        venue_source_id: v ? venueKey(v) : null,
+        venue_source_id: venue ? venueKey(venue) : null,
       },
     }
     return item
@@ -204,8 +205,9 @@ const venueAdapter: SourceAdapter = {
 function venuesFromEvents(events: RawItem[]): RawItem[] {
   const seen = new Map<string, RawItem>()
   for (const e of events) {
-    const v = (e.data as unknown as MjEvent).venue
-    if (!v?.name) continue
+    const event = e.data as unknown as MjEvent
+    const v = event.venue
+    if (!v?.name || isWithheldVenue(event)) continue
     const key = venueKey(v)
     if (!seen.has(key)) seen.set(key, { sourceId: key, data: v as unknown as Record<string, unknown> })
   }
