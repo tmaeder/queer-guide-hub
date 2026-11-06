@@ -119,7 +119,30 @@ begin
  ) then raise exception 'Explicit format or ambiguity boundary changed';end if;
 end $test$;
 """
-fixture_sql = schema + paths[0].read_text() + checks + title_formats + title_checks
+additional_formats = (ROOT/'supabase/migrations/99991793933460_review_additional_explicit_event_formats.sql').read_text()
+additional_checks = r"""
+do $test$
+begin
+ if exists(
+  select 1 from (values
+   ('Annual Halloween Bash!', 'party'),
+   ('Death Becomes Them Costume Ball', 'party'),
+   ('Weekly Run', 'sports'),
+   ('Sapphic Friendsgiving Potluck', 'social'),
+   ('Self-Defense Class', 'workshop'),
+   ('How to Live in a House on Fire: Staged Reading & Talkback', 'theater'),
+   ('Frights & Delights: A Halloween Double Feature', 'film'),
+   ('Costume Ball and Drag Show', null),
+   ('Weekly Run and Happy Hour', null),
+   ('Happy Hour in the Patch and Rocky Horror Picture Show', null),
+   ('Halloween Edition', null),
+   ('Bears & Scares', null)
+  ) examples(title, expected)
+  where api_private.source_explicit_event_format(title) is distinct from expected
+ ) then raise exception 'Additional source formats or ambiguity boundary changed';end if;
+end $test$;
+"""
+fixture_sql = schema + paths[0].read_text() + checks + title_formats + title_checks + additional_formats + title_checks + additional_checks
 if '--temporary-sql' in sys.argv:
  # Hosted fallback when local disk cannot fit initdb. Every fixture and function
  # lives in this transaction's pg_temp namespace; no public DDL or data writes.
