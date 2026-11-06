@@ -9,7 +9,7 @@ const CITY_QUEUES = new Set(['geography', 'general-review', 'quality-city'])
 /** Only the public settlement name leaves the app as a discovery query. */
 export function cityDiscoveryInput(context: Context) {
   const city = context.record
-  if (!CITY_QUEUES.has(context.item.queue_type) || context.blocker || context.item.risk === 'safety' || !city ||
+  if (!CITY_QUEUES.has(context.item.queue_type) || context.blocker || !city ||
     !context.candidates.length || context.candidates.some(c => c.action !== 'recheck') ||
     !['real', 'placeholder'].includes(String(city.shell_status)) ||
     city.duplicate_of_id || typeof city.country_id !== 'string' || !UUID.test(city.country_id)) return null

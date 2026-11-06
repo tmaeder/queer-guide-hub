@@ -33,7 +33,8 @@ function fixture(extra: Record<string, unknown> = {}, search = [{ id: 'Q1', labe
 Deno.test('discovery excludes protected, merged and non-recheck cases', () => {
   const changed = (record: Context['record']) => cityDiscoveryInput({ ...ctx, record })
   assertEquals(cityDiscoveryInput({ ...ctx, item: { ...ctx.item, queue_type: 'moderation' } }), null)
-  assertEquals(cityDiscoveryInput({ ...ctx, item: { ...ctx.item, risk: 'safety' } }), null)
+  // Geography uses the safety threshold even for public settlement lookups.
+  assertEquals(cityDiscoveryInput({ ...ctx, item: { ...ctx.item, risk: 'safety' } }), changed(ctx.record))
   assertEquals(cityDiscoveryInput({ ...ctx, blocker: 'protected' }), null)
   assertEquals(cityDiscoveryInput({ ...ctx, candidates: [{ ...ctx.candidates[0], action: 'approve' }] }), null)
   assertEquals(changed({ ...ctx.record, shell_status: 'ghost' }), null)
