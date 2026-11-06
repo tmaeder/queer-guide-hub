@@ -50,9 +50,11 @@ test.describe('the figure band', () => {
   test('renders on the gender identity entry', async ({ page }) => {
     await gotoTerm(page, 'gender-identity');
     await expect(page.locator('#figure')).toBeVisible();
-    // Four lines, so four radio groups, one per line.
-    const radios = page.locator('#figure input[type="radio"]');
-    expect(await radios.count()).toBeGreaterThan(10);
+    const lines = page.locator('#figure fieldset');
+    await expect(lines).toHaveCount(4);
+    await expect
+      .poll(() => lines.locator('input:is([type="radio"], [type="checkbox"])').count())
+      .toBeGreaterThan(10);
   });
 
   test('does not render on a term a figure only MENTIONS', async ({ page }) => {
@@ -94,10 +96,12 @@ test.describe('the a11y contract', () => {
   test('puts nothing focusable inside any drawing', async ({ page }) => {
     for (const slug of ['consent', 'gender-identity']) {
       await gotoTerm(page, slug);
-      const count = await page.locator('#figure svg').evaluateAll(
-        (svgs, sel) => svgs.reduce((n, s) => n + s.querySelectorAll(sel).length, 0),
-        FOCUSABLE,
-      );
+      const count = await page
+        .locator('#figure svg')
+        .evaluateAll(
+          (svgs, sel) => svgs.reduce((n, s) => n + s.querySelectorAll(sel).length, 0),
+          FOCUSABLE,
+        );
       expect(count, `${slug} has a focusable element inside an <svg>`).toBe(0);
     }
   });
@@ -110,7 +114,9 @@ test.describe('the a11y contract', () => {
     // asserting something the contract never claimed.
     const hidden = await page
       .locator('#figure [role="img"] svg')
-      .evaluateAll((svgs) => svgs.length > 0 && svgs.every((s) => s.getAttribute('aria-hidden') === 'true'));
+      .evaluateAll(
+        (svgs) => svgs.length > 0 && svgs.every((s) => s.getAttribute('aria-hidden') === 'true'),
+      );
     expect(hidden).toBe(true);
 
     const img = page.locator('#figure [role="img"]').first();
@@ -151,9 +157,9 @@ test.describe('term links out of a figure', () => {
 
   test('every term link a figure does emit resolves to a real entry', async ({ page }) => {
     await gotoTerm(page, 'gender-identity');
-    const hrefs = await page.locator('#figure a[href*="/tags/"]').evaluateAll((as) =>
-      as.map((a) => (a as HTMLAnchorElement).getAttribute('href')!),
-    );
+    const hrefs = await page
+      .locator('#figure a[href*="/tags/"]')
+      .evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).getAttribute('href')!));
     for (const href of [...new Set(hrefs)].slice(0, 6)) {
       const res = await page.request.get(href);
       expect(res.status(), `${href} did not resolve`).toBeLessThan(400);
@@ -162,32 +168,17 @@ test.describe('term links out of a figure', () => {
 });
 
 test.describe('the consent figure interacts', () => {
-  test('selecting a stop lights the route that reaches it', async ({ page }) => {
+  test('advancing on a yes and stopping on a no updates the consent ride', async ({ page }) => {
     await gotoTerm(page, 'consent');
-    const stops = page.locator('#figure ol button');
-    const total = await stops.count();
-    expect(total).toBeGreaterThan(5);
-
-    // Nothing dimmed before a selection.
-    const dimmedAtRest = await stops.evaluateAll((els) =>
-      els.filter((e) => e.parentElement!.className.includes('opacity-40')).length,
-    );
-    expect(dimmedAtRest).toBe(0);
-
-    const last = stops.last();
-    await last.click();
-    await expect(last).toHaveAttribute('aria-pressed', 'true');
-
-    const dimmedAfter = await stops.evaluateAll((els) =>
-      els.filter((e) => e.parentElement!.className.includes('opacity-40')).length,
-    );
-    // Some stops are on the route and some are not — so the count is neither
-    // zero nor everything.
-    expect(dimmedAfter).toBeGreaterThan(0);
-    expect(dimmedAfter).toBeLessThan(total);
-
-    await last.click();
-    await expect(last).toHaveAttribute('aria-pressed', 'false');
+    const ride = page.getByRole('region', { name: 'Ride the line' });
+    await ride.getByRole('button', { name: 'Start', exact: true }).click();
+    await expect(ride.getByText(/Station 1:/)).toBeVisible();
+    await ride.getByRole('button', { name: 'Yes, I asked' }).click();
+    await expect(ride.getByText(/Station 2:/)).toBeVisible();
+    await ride.getByRole('button', { name: /no|unsure|unclear/i }).click();
+    await expect(ride.getByRole('button', { name: 'Start again' })).toBeVisible();
+    await ride.getByRole('button', { name: 'Start again' }).click();
+    await expect(ride.getByText(/Station 1:/)).toBeVisible();
   });
 });
 
@@ -197,7 +188,7 @@ test.describe('the four lines figure interacts', () => {
 
     // No default position: a centred opening state would read as the norm.
     const checkedAtRest = await page
-      .locator('#figure input[type="radio"]')
+      .locator('#figure input:is([type="radio"], [type="checkbox"])')
       .evaluateAll((els) => els.filter((e) => (e as HTMLInputElement).checked).length);
     expect(checkedAtRest).toBe(0);
 
@@ -209,7 +200,7 @@ test.describe('the four lines figure interacts', () => {
     await page.locator('#figure fieldset label').first().click();
     await expect(readout).not.toBeEmpty();
     const checkedAfter = await page
-      .locator('#figure input[type="radio"]')
+      .locator('#figure input:is([type="radio"], [type="checkbox"])')
       .evaluateAll((els) => els.filter((e) => (e as HTMLInputElement).checked).length);
     expect(checkedAfter).toBe(1);
   });
@@ -218,12 +209,13 @@ test.describe('the four lines figure interacts', () => {
 test.describe('mobile', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test('drops the drawing and keeps every control', async ({ page }) => {
+  test('keeps the consent map and ride controls usable on mobile', async ({ page }) => {
     await gotoTerm(page, 'consent');
-    // Below `md` the map is hidden — a 300-unit-wide diagram would overlap
-    // itself — but the SAME list carries every stop, so nothing is lost.
-    await expect(page.locator('#figure svg').first()).toBeHidden();
-    expect(await page.locator('#figure ol button').count()).toBeGreaterThan(5);
+    await expect(page.locator('#figure svg[focusable="false"]')).toBeVisible();
+    const ride = page.getByRole('region', { name: 'Ride the line' });
+    await ride.getByRole('button', { name: 'Start', exact: true }).click();
+    await expect(ride.getByText(/Station 1:/)).toBeVisible();
+    await expect(ride.getByRole('button')).toHaveCount(2);
     // And the page never scrolls sideways.
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

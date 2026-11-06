@@ -10,9 +10,9 @@ test.describe('Guides — unified hub', () => {
   test('/guides renders the hub with guide cards', async ({ page }) => {
     await page.goto('/guides');
     await page.waitForLoadState('domcontentloaded');
-    await expect(
-      page.getByRole('heading', { name: /guides/i, level: 1 }),
-    ).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('heading', { name: /guides/i, level: 1 })).toBeVisible({
+      timeout: 30_000,
+    });
     const guideLinks = page.locator('a[href^="/guides/"]');
     await expect(guideLinks.first()).toBeVisible({ timeout: 30_000 });
   });
@@ -57,11 +57,11 @@ test.describe('Guides — unified hub', () => {
     // this published seed guide must resolve the location relationship.
     await page.goto('/guides/berlin-pride-circuit-2026');
     await expect(
-      page.getByRole('heading', { level: 1, name: /^Berlin Pride circuit 2026/ }),
+      page.getByRole('heading', { level: 1, name: /^Berlin CSD 2026: the archived parade route/ }),
     ).toBeVisible({ timeout: 30_000 });
-    await expect(
-      page.locator('article[id^="pick-"] h3 a[href^="/events/"]').first(),
-    ).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('article[id^="pick-"] h3 a[href^="/events/"]').first()).toBeVisible({
+      timeout: 30_000,
+    });
   });
 
   test('legacy /venues/guides redirects into /guides', async ({ page }) => {
