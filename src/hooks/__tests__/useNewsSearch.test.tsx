@@ -61,3 +61,18 @@ it('appends the next page and keeps earlier results if that request fails', asyn
   expect(result.current.articles).toEqual([{ id: 'first' }, { id: 'second' }]);
   expect(result.current.nextPage).toBeNull();
 });
+
+it('fills pending facet counts from a facetsOnly follow-up that the page write cannot wipe', async () => {
+  searchFetch.mockReset().mockImplementation(async (_path: string, body: Record<string, unknown>) =>
+    body.facetsOnly
+      ? { hits: [], facetDistribution: { tags: { pride: 3 } } }
+      : { hits: [{ type: 'news', objectID: 'a' }], totalHits: 1, facetDistribution: {}, facetsPending: true },
+  );
+  const { result } = renderHook(() => useNewsSearch());
+  await act(async () => result.current.searchArticles('pride march'));
+  await act(async () => {});
+  expect(searchFetch.mock.calls).toHaveLength(2);
+  expect(searchFetch.mock.calls[1][1]).toMatchObject({ query: 'pride march', facetsOnly: true });
+  expect(result.current.facets).toEqual({ tags: { pride: 3 } });
+  expect(result.current.articles).toEqual([{ id: 'a' }]);
+});

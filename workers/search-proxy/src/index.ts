@@ -31,11 +31,11 @@ import { handleGo, handleGoRegistry } from "./affiliate";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { expandTagsWithNarrower } from "./pgTagHierarchy";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
-import { pgHybridSearch, pgAutocomplete, type PgSearchArgs } from "./pgSearch";
+import { pgHybridSearch, pgAutocomplete, type PgSearchArgs, type PgSearchOptions } from "./pgSearch";
 import { authenticatedUserId, isAuthenticatedRequest } from "./jwt";
 import { tokenize } from "./queryPrep";
 import { resolveSession, verifiedSessionId } from "./sessionCookie";
-import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse } from "./util";
+import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse, sha256, withBudget } from "./util";
 import {
 	parseJsonBody,
 	rejectUnknown,
@@ -111,16 +111,23 @@ const KEYWORD_ONLY_RPC_TIMEOUT_MS = 9000;
 export const REWRITE_BUDGET_MS_EN = 300;
 export const REWRITE_BUDGET_MS_OTHER = 1200;
 
-/** Resolves to the promise's value, or null if it has not settled within `ms`. */
-export function withBudget<T>(p: Promise<T | null>, ms: number): Promise<T | null> {
-	let timer: ReturnType<typeof setTimeout> | undefined;
-	const timeout = new Promise<null>((resolve) => {
-		timer = setTimeout(() => resolve(null), ms);
-	});
-	return Promise.race([p, timeout]).finally(() => {
-		if (timer !== undefined) clearTimeout(timer);
-	});
-}
+export { withBudget };
+
+// The reranker (bge-reranker-base) reorders the top 20 on multi-word queries.
+// Measured on prod 2026-11-05 it cost ~0.67s on every first-time multi-word
+// search, after the database had already answered. It gets the same treatment
+// as the rewrite: a short hot-path budget, and on a miss the database order is
+// served while ctx.waitUntil lets the call finish into its KV cache, so a repeat
+// of the same search (identical top 20) gets the reranked order.
+export const RERANK_BUDGET_MS = 300;
+
+// How long the hits wait for search_facets after search_hybrid has answered.
+// On a miss the response carries facetsPending and the client re-sends the same
+// body with {facetsOnly: true}; the late answer is cached under a key derived
+// from the request for FACETS_CACHE_TTL_S, so that follow-up is usually a KV
+// read and never touches search_hybrid.
+export const FACETS_GRACE_MS = 150;
+const FACETS_CACHE_TTL_S = 300;
 
 /** Steps whose wall time /search records into debug.timings via track(). */
 export type TimedStep = "rewriteMs" | "signalMs" | "recentMs" | "tagsMs" | "synonymsMs" | "embedMs" | "embedRewrittenMs";
@@ -140,10 +147,14 @@ export type SearchTimings = Partial<
 		| "pgHybridMs"
 		| "pgFacetsMs"
 		| "rerankMs"
+		| "rerankWaitMs"
 		| "totalMs",
 		number
 	>
 >;
+
+/** Why the hot path did or did not use the reranker's order. */
+export type RerankOutcome = "skipped" | "used" | "failed" | "over_budget";
 
 /** Why the hot path did or did not use the LLM rewrite. */
 export type RewriteOutcome = "skipped" | "used" | "empty" | "over_budget";
@@ -234,10 +245,12 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 
 	const knownCheck = rejectUnknown(
 		body,
-		["query", "filters", "hitsPerPage", "page", "user_id", "session_id", "lang", "debug"],
+		["query", "filters", "hitsPerPage", "page", "user_id", "session_id", "lang", "debug", "facetsOnly"],
 		"body",
 	);
 	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
+	// Facet follow-up for a response that came back with facetsPending.
+	const facetsOnly = body.facetsOnly === true;
 
 	// Safety layer: only a verified-logged-in caller sees high-risk-country
 	// (gated) content. The body's user_id is spoofable, so trust the signed JWT.
@@ -577,19 +590,71 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// timed out and fell back to the popularity list, i.e. correct results were
 	// computed and then thrown away. Give that path headroom; the healthy hybrid
 	// path keeps the tight default so it still fails fast.
+	// Facets depend on the keyword string, the vector (via embedText), the facet
+	// filters and the gating flag — never on the user, so the cache is shared.
+	const facetsKey = `fx:${await sha256(
+		JSON.stringify([keywordQ, embedText, pgArgs.contentTypes, pgArgs.filters, pgArgs.lat, pgArgs.lng, pgArgs.radiusKm, authed]),
+	)}`;
+	if (facetsOnly) {
+		// Keyed on this request's own inputs, including the gating flag, so a
+		// follow-up can only ever read the counts its own search would compute.
+		const cached = await env.EMBED_CACHE.get(facetsKey, { type: "json" }).catch(() => null);
+		if (cached && typeof cached === "object") {
+			return json(
+				{
+					facetDistribution: reorderFacets(
+						cached as Record<string, Record<string, number>>,
+						signal.recent_tags || [],
+						signal.interests || [],
+					),
+					facetsOnly: true,
+					processingTimeMS: Date.now() - started,
+				},
+				200,
+				cors,
+			);
+		}
+	}
+	const pgOpts: PgSearchOptions = facetsOnly
+		? { skipHits: true }
+		: {
+					facetsGraceMs: FACETS_GRACE_MS,
+					onFacetsLate: (late) =>
+						ctx.waitUntil(
+							late
+								.then((f) =>
+									f && Object.keys(f).length
+										? env.EMBED_CACHE.put(facetsKey, JSON.stringify(f), { expirationTtl: FACETS_CACHE_TTL_S })
+										: undefined,
+								)
+								.catch(() => undefined),
+						),
+				};
 	const pgStart = Date.now();
 	const pg = await pgHybridSearch(
 		env,
 		pgArgs,
 		pgArgs.queryVec ? undefined : KEYWORD_ONLY_RPC_TIMEOUT_MS,
+		pgOpts,
 	).catch((e) => {
 		console.warn("pgHybridSearch", (e as Error).message);
 		return null;
 	});
 	timings.pgMs = Date.now() - pgStart;
 	if (!pg) return searchUnavailable(cors);
-	timings.pgHybridMs = pg.hybridMs;
-	timings.pgFacetsMs = pg.facetsMs;
+	if (!facetsOnly) timings.pgHybridMs = pg.hybridMs;
+	if (!pg.facetsPending) timings.pgFacetsMs = pg.facetsMs;
+	if (facetsOnly) {
+		return json(
+			{
+				facetDistribution: reorderFacets(pg.facetDistribution, signal.recent_tags || [], signal.interests || []),
+				facetsOnly: true,
+				processingTimeMS: Date.now() - started,
+			},
+			200,
+			cors,
+		);
+	}
 	const fused = pg.hits;
 	const facetDistribution = pg.facetDistribution;
 	const totalHits = pg.estimatedTotalHits;
@@ -599,12 +664,25 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const explicitSort = !!mergedFilters.sort && mergedFilters.sort !== "relevance";
 	let ranked = explicitSort ? fused : personalizedRank(fused, signal, recent, q);
 
+	let rerankOutcome: RerankOutcome = "skipped";
 	if (!explicitSort && env.ENABLE_RERANKER === "1" && tokens.length >= 2) {
 		const pool = ranked.slice(0, 20);
 		const contexts = pool.map((hit) => `${hit.title ?? ""}. ${hit.description ?? ""}`.slice(0, 400));
 		const rerankStart = Date.now();
-		const modelOrder = await rerank(env, q, contexts).catch(() => null);
-		timings.rerankMs = Date.now() - rerankStart;
+		let rerankSettled = false;
+		const rerankP = rerank(env, q, contexts)
+			.catch(() => null)
+			.finally(() => {
+				rerankSettled = true;
+				timings.rerankMs = Date.now() - rerankStart;
+			});
+		const modelOrder = await withBudget(rerankP, RERANK_BUDGET_MS);
+		timings.rerankWaitMs = Date.now() - rerankStart;
+		if (!rerankSettled) {
+			// Finish in the background so rerank()'s KV cache answers the repeat.
+			ctx.waitUntil(rerankP);
+			rerankOutcome = "over_budget";
+		} else rerankOutcome = modelOrder ? "used" : "failed";
 		if (modelOrder) {
 			// Treat model output as scores for existing hits. Partial, duplicate,
 			// and invalid indexes must never change the membership of a page.
@@ -662,6 +740,9 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			totalHits,
 			processingTimeMS,
 			facetDistribution: reorderedFacets,
+			// Present only when the counts did not make the grace window; the
+			// client re-sends the same body with {facetsOnly: true}.
+			...(pg.facetsPending ? { facetsPending: true } : {}),
 			debug: debug
 				? {
 						backend: "pg",
@@ -676,6 +757,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 						reranker: env.ENABLE_RERANKER === "1",
 						timings,
 						rewriteOutcome,
+						rerankOutcome,
 						embedReused,
 						pgFailed: pg === null,
 						rewrite,

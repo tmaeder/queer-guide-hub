@@ -57,3 +57,14 @@ export async function sha256(text: string): Promise<string> {
 	const hash = await crypto.subtle.digest("SHA-256", buf);
 	return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
+
+/** Resolves to the promise's value, or null if it has not settled within `ms`. */
+export function withBudget<T>(p: Promise<T | null>, ms: number): Promise<T | null> {
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const timeout = new Promise<null>((resolve) => {
+		timer = setTimeout(() => resolve(null), ms);
+	});
+	return Promise.race([p, timeout]).finally(() => {
+		if (timer !== undefined) clearTimeout(timer);
+	});
+}
