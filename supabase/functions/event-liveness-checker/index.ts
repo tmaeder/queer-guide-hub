@@ -33,6 +33,7 @@ const MAX_BODY_BYTES = 600_000
 const BETWEEN_CHECK_DELAY = 400
 const DEFAULT_BATCH_LIMIT = 50
 const UPCOMING_WINDOW_DAYS = 60
+const RUN_BUDGET_MS = 95_000
 
 type Liveness = 'live' | 'sold_out' | 'cancelled' | 'postponed' | 'moved_online' | 'dead_link' | 'unknown'
 
@@ -58,10 +59,20 @@ async function fetchBody(rawUrl: string): Promise<{ httpStatus: number | null; b
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), GET_TIMEOUT)
   try {
-    const resp = await fetch(url, {
-      method: 'GET', signal: controller.signal, redirect: 'follow',
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; QueerGuide-EventLiveness/1.0)', 'Accept': 'text/html,application/xhtml+xml,*/*' },
-    })
+    let target = new URL(url)
+    let resp: Response
+    for (let redirects = 0; ; redirects++) {
+      if (target.username || target.password) throw new Error('blocked_url_credentials')
+      resp = await fetch(target, {
+        method: 'GET', signal: controller.signal, redirect: 'manual',
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; QueerGuide-EventLiveness/1.0)', 'Accept': 'text/html,application/xhtml+xml,*/*' },
+      })
+      if (![301, 302, 303, 307, 308].includes(resp.status)) break
+      const location = resp.headers.get('location')
+      await resp.body?.cancel()
+      if (!location || redirects >= 4) throw new Error('unresolved_redirect')
+      target = assertPublicHttpUrl(new URL(location, target).href)
+    }
     let body: string | null = null
     if (resp.body && resp.status >= 200 && resp.status < 400) {
       const reader = resp.body.getReader()
@@ -70,7 +81,8 @@ async function fetchBody(rawUrl: string): Promise<{ httpStatus: number | null; b
       while (total < MAX_BODY_BYTES) {
         const { done, value } = await reader.read()
         if (done) break
-        chunks.push(value); total += value.length
+        const prefix = value.subarray(0, MAX_BODY_BYTES - total)
+        chunks.push(prefix); total += prefix.length
       }
       reader.cancel().catch(() => {})
       body = new TextDecoder('utf-8', { fatal: false }).decode(concat(chunks))
@@ -139,7 +151,7 @@ function classify(httpStatus: number | null, ld: { eventStatus: string | null; a
   if (av.includes('soldout') || av.includes('sold_out')) return 'sold_out'
   if (httpStatus === null) return 'unknown'        // timeout / network — inconclusive
   if (httpStatus === 404 || httpStatus === 410) return 'dead_link'
-  if (httpStatus >= 200 && httpStatus < 400) return 'live'
+  if (httpStatus >= 200 && httpStatus < 300) return 'live'
   if (httpStatus === 401 || httpStatus === 403) return 'unknown' // blocked, not necessarily dead
   return 'unknown'
 }
@@ -154,24 +166,30 @@ Deno.serve(async (req: Request) => {
   }
 
   const body = await req.json().catch(() => ({}))
-  const batchLimit: number = body.batch_limit ?? DEFAULT_BATCH_LIMIT
+  const batchLimit = Number.isInteger(body.batch_limit)
+    ? Math.max(1, Math.min(DEFAULT_BATCH_LIMIT, body.batch_limit))
+    : DEFAULT_BATCH_LIMIT
   const dryRun: boolean = body.dry_run ?? false
   const eventIds: string[] | undefined = body.event_ids
 
   let query = supabase
     .from('events')
-    .select('id, ticket_url, website, status, start_date, liveness_status, last_verified_at')
+    .select('id, ticket_url, website, status, start_date, end_date, liveness_status, last_verified_at')
     .is('duplicate_of_id', null)
 
   if (eventIds?.length) {
     query = query.in('id', eventIds)
   } else {
+    const now = new Date()
     query = query
       .eq('status', 'active')
-      .gt('start_date', new Date().toISOString())
-      .lt('start_date', new Date(Date.now() + UPCOMING_WINDOW_DAYS * 86400_000).toISOString())
+      // A recurring series may have started months ago while its final
+      // occurrence is still ahead. Match the detector's current-event boundary.
+      .or(`end_date.gte.${now.toISOString()},and(end_date.is.null,start_date.gte.${now.toISOString()})`)
+      .lt('start_date', new Date(now.getTime() + UPCOMING_WINDOW_DAYS * 86400_000).toISOString())
       .or('ticket_url.not.is.null,website.not.is.null')
       .order('last_verified_at', { ascending: true, nullsFirst: true })
+      .order('id')
       .limit(batchLimit)
   }
 
@@ -182,18 +200,30 @@ Deno.serve(async (req: Request) => {
   const counts: Record<string, number> = {}
   const results: Array<Record<string, unknown>> = []
   const existenceSigs: ExistenceSignal[] = []
+  const startedAt = Date.now()
+  const deadline = startedAt + RUN_BUDGET_MS
 
   for (let i = 0; i < events.length; i++) {
+    if (Date.now() + GET_TIMEOUT > deadline) break
     const ev = events[i]
     const target = ev.ticket_url || ev.website
     if (!target) continue
     try {
       const { httpStatus, body: html, error: fetchErr } = await fetchBody(target)
       const ld = html ? parseJsonLd(html) : { eventStatus: null, availability: null }
-      const liveness = classify(httpStatus, ld)
+      const ongoing = Date.parse(ev.start_date) <= startedAt
+        && ev.end_date != null && Date.parse(ev.end_date) >= startedAt
+      const verdict = classify(httpStatus, ld)
+      // An accessible page (or generic JSON-LD on it) does not identify
+      // a future occurrence of an already-started series. Record the real
+      // probe, but do not infer a schedule change or claim an occurrence is live.
+      const liveness = ongoing
+        ? (httpStatus === 404 || httpStatus === 410 ? 'dead_link' : 'unknown')
+        : verdict
       counts[liveness] = (counts[liveness] ?? 0) + 1
 
-      const detail = { url: target, http_status: httpStatus, event_status: ld.eventStatus, availability: ld.availability, fetch_error: fetchErr }
+      const detail = { url: target, http_status: httpStatus, event_status: ld.eventStatus, availability: ld.availability,
+        fetch_error: fetchErr, ...(ongoing ? { scope: 'ongoing', occurrence_verified: false } : {}) }
 
       if (!dryRun) {
         await supabase.from('event_quality_signals').insert({
@@ -215,5 +245,5 @@ Deno.serve(async (req: Request) => {
 
   if (!dryRun) await insertSignals(supabase, existenceSigs)
 
-  return jsonResponse({ checked: results.length, dry_run: dryRun, counts, results }, 200, req)
+  return jsonResponse({ selected: events.length, checked: results.length, dry_run: dryRun, counts, results }, 200, req)
 })
