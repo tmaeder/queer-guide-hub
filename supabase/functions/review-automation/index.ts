@@ -106,8 +106,10 @@ Deno.serve(async req => {
                 const { data, error } = await db.from('countries').select('code').eq('id', city.countryId).maybeSingle()
                 if (error) throw new Error('City discovery country lookup failed')
                 const found = data?.code ? await discoverCityEvidence(city, data.code) : null
-                if (found && !evidence.some(page => page.url === found.url)) {
-                  evidence.push(found)
+                if (found) {
+                  const existing = evidence.findIndex(page => page.url === found.url)
+                  if (existing < 0) evidence.push(found)
+                  else evidence[existing] = found
                   cityDiscovery.found++
                 }
               } catch {

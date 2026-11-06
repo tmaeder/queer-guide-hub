@@ -24,7 +24,7 @@ export function cityDiscoveryInput(context: Context) {
 export async function discoverCityEvidence(input: NonNullable<ReturnType<typeof cityDiscoveryInput>>, countryCode: string, fetcher: typeof fetch = fetch): Promise<Evidence | null> {
   if (!/^[A-Z]{2}$/.test(countryCode)) return null
   const signal = AbortSignal.timeout(9000)
-  let requests = 0
+  let requests = 0, totalBytes = 0
   const resolve = createCitySearchResolver(async (raw) => {
     const url = new URL(raw)
     if (++requests > 7 || url.origin !== 'https://www.wikidata.org' || url.pathname !== '/w/api.php') throw new Error('City discovery request refused')
@@ -42,7 +42,8 @@ export async function discoverCityEvidence(input: NonNullable<ReturnType<typeof 
         const part = await reader.read()
         if (part.done) break
         bytes += part.value.length
-        if (bytes > 1_048_576) throw new Error('Wikidata city discovery response exceeds limit')
+        totalBytes += part.value.length
+        if (bytes > 4_194_304 || totalBytes > 8_388_608) throw new Error('Wikidata city discovery response exceeds limit')
         json += decoder.decode(part.value, { stream: true })
       }
       json += decoder.decode()
