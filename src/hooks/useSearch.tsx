@@ -112,6 +112,8 @@ interface SearchResponse {
   hits?: SearchResult[];
   suggestions?: SearchResult[];
   facetDistribution?: FacetDistribution;
+  /** The worker answered before search_facets did; fetch them with facetsOnly. */
+  facetsPending?: boolean;
   totalHits?: number;
   page?: number;
   hitsPerPage?: number;
@@ -266,6 +268,7 @@ interface SearchPage {
   results: SearchResult[];
   suggestions: SearchResult[];
   facets: FacetDistribution;
+  facetsPending: boolean;
   totalHits: number;
 }
 
@@ -298,23 +301,20 @@ export const useSearch = (
   const tooShort = !searchable && trimmedLen > 0;
 
   const queryKey = ['search', debouncedQuery, filtersKey, page, sort ?? null, userId, sessionId];
+  const requestBody = {
+    query: debouncedQuery,
+    filters: toWorkerFilters(filters, sort),
+    hitsPerPage: 20,
+    page,
+    ...(userId ? { user_id: userId } : {}),
+    ...(sessionId ? { session_id: sessionId } : {}),
+  };
   const q = useQuery<SearchPage>({
     queryKey,
     enabled,
     retry: false, // searchFetch already retries a timeout once
     queryFn: async ({ signal }) => {
-      const data = await searchFetch<SearchResponse>(
-        '/',
-        {
-          query: debouncedQuery,
-          filters: toWorkerFilters(filters, sort),
-          hitsPerPage: 20,
-          page,
-          ...(userId ? { user_id: userId } : {}),
-          ...(sessionId ? { session_id: sessionId } : {}),
-        },
-        { signal },
-      ).catch((err: unknown) => {
+      const data = await searchFetch<SearchResponse>('/', requestBody, { signal }).catch((err: unknown) => {
         if (!signal.aborted) console.error('Search error:', err);
         throw err;
       });
@@ -327,8 +327,23 @@ export const useSearch = (
         results,
         suggestions: sanitiseHits(data?.suggestions, {}),
         facets: sanitiseFacets(data?.facetDistribution),
+        facetsPending: data?.facetsPending === true,
         totalHits: Math.max(results.length, reportedTotal - dropped),
       };
+    },
+  });
+
+  // The worker does not hold the results for the facet counts: when they miss
+  // its grace window it answers with facetsPending and finishes them into a
+  // short-lived cache. Fetch them separately so the results are not re-requested
+  // (and cannot reorder under the reader) just to fill the filter panel.
+  const facetsQ = useQuery<FacetDistribution>({
+    queryKey: [...queryKey, 'facets'],
+    enabled: enabled && q.data?.facetsPending === true,
+    retry: false,
+    queryFn: async ({ signal }) => {
+      const data = await searchFetch<SearchResponse>('/', { ...requestBody, facetsOnly: true }, { signal });
+      return sanitiseFacets(data?.facetDistribution);
     },
   });
 
@@ -350,7 +365,7 @@ export const useSearch = (
   return {
     results: data?.results ?? EMPTY_RESULTS,
     suggestions: data?.suggestions ?? EMPTY_RESULTS,
-    facets: data?.facets ?? EMPTY_FACETS,
+    facets: (data?.facetsPending ? facetsQ.data : data?.facets) ?? EMPTY_FACETS,
     totalHits: data?.totalHits ?? 0,
     loading,
     loadingTimedOut: useLoadingTimedOut(loading, hashKey(queryKey), 15000),

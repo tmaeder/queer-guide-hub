@@ -15,6 +15,7 @@
  */
 
 import type { Env } from "./index";
+import { withBudget } from "./util";
 
 // 6s, not 4s. When this timeout fires, /search serves the v_popular_entities
 // fallback — unrelated rows at _rankingScore 0.1 — instead of the answer. On
@@ -69,6 +70,21 @@ export interface PgSearchResult {
 	/** Wall time of each RPC (they run in parallel, so tookMs ≈ the max). */
 	hybridMs: number;
 	facetsMs: number;
+	/** True when the facet RPC missed its grace window and facetDistribution is {}. */
+	facetsPending: boolean;
+}
+
+export interface PgSearchOptions {
+	/**
+	 * How long to wait for search_facets AFTER search_hybrid has answered. Unset =
+	 * wait for both, as before. On a miss facetDistribution is {} and
+	 * facetsPending is true; the still-running facet promise goes to onFacetsLate
+	 * so the caller can keep it alive (ctx.waitUntil) and cache its answer.
+	 */
+	facetsGraceMs?: number;
+	onFacetsLate?: (facets: Promise<Record<string, Record<string, number>>>) => void;
+	/** Facets-only call: skip search_hybrid entirely. */
+	skipHits?: boolean;
 }
 
 function vecLiteral(v?: number[] | null): string | null {
@@ -137,7 +153,12 @@ function mapHit(h: Record<string, unknown>): Record<string, unknown> {
 	};
 }
 
-export async function pgHybridSearch(env: Env, args: PgSearchArgs, timeoutMs = RPC_TIMEOUT_MS): Promise<PgSearchResult> {
+export async function pgHybridSearch(
+	env: Env,
+	args: PgSearchArgs,
+	timeoutMs = RPC_TIMEOUT_MS,
+	opts: PgSearchOptions = {},
+): Promise<PgSearchResult> {
 	const started = Date.now();
 	const pFilters: Record<string, unknown> = {};
 	if (args.filters?.city) pFilters.city = args.filters.city;
@@ -191,17 +212,42 @@ export async function pgHybridSearch(env: Env, args: PgSearchArgs, timeoutMs = R
 
 	let hybridMs = 0;
 	let facetsMs = 0;
-	const [hybrid, facets] = await Promise.all([
-		callRpc<{ total?: number; hits?: Array<Record<string, unknown>>; filterContract?: number }>(env, "search_hybrid", hybridArgs, timeoutMs).finally(
-			() => (hybridMs = Date.now() - started),
-		),
-		callRpc<Record<string, Record<string, number>>>(env, "search_facets", facetArgs, timeoutMs)
-			.catch(() => ({}))
-			.finally(() => (facetsMs = Date.now() - started)),
-	]);
+	// Started together; the facet RPC never rejects (a failed facet block is {}).
+	const facetsP = callRpc<Record<string, Record<string, number>>>(env, "search_facets", facetArgs, timeoutMs)
+		.catch(() => ({}) as Record<string, Record<string, number>>)
+		.finally(() => (facetsMs = Date.now() - started));
+	const hybrid = opts.skipHits
+		? null
+		: await callRpc<{ total?: number; hits?: Array<Record<string, unknown>>; filterContract?: number }>(
+				env,
+				"search_hybrid",
+				hybridArgs,
+				timeoutMs,
+			).finally(() => (hybridMs = Date.now() - started));
 
-	if ((pFilters.categories || pFilters.cluster_ids) && hybrid?.filterContract !== 2) {
+	if (!opts.skipHits && (pFilters.categories || pFilters.cluster_ids) && hybrid?.filterContract !== 2) {
 		throw new Error("Search filter contract is unavailable");
+	}
+
+	// Facets describe the result set; they must not hold up the results. Wait a
+	// short grace after the hits, then answer without them (the caller fetches
+	// them separately) rather than make every first-time search pay the slower
+	// RPC — measured on prod 2026-11-05, search_facets finished ~0.2s after
+	// search_hybrid on every cold query.
+	let facets: Record<string, Record<string, number>> = {};
+	let facetsPending = false;
+	if (opts.facetsGraceMs === undefined || opts.skipHits) {
+		facets = await facetsP;
+	} else {
+		const settled = await withBudget(
+			facetsP.then((f) => ({ f })),
+			opts.facetsGraceMs,
+		);
+		if (settled) facets = settled.f;
+		else {
+			facetsPending = true;
+			opts.onFacetsLate?.(facetsP);
+		}
 	}
 
 	const hits = (hybrid?.hits ?? []).map(mapHit);
@@ -212,6 +258,7 @@ export async function pgHybridSearch(env: Env, args: PgSearchArgs, timeoutMs = R
 		tookMs: Date.now() - started,
 		hybridMs,
 		facetsMs,
+		facetsPending,
 	};
 }
 

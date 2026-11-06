@@ -68,6 +68,30 @@ describe('useSearch', () => {
     });
   });
 
+  it('fetches pending facet counts separately, without re-requesting the results', async () => {
+    const hits = [{ objectID: '1', title: 'Bar', type: 'venue' }];
+    mockFetch.mockImplementation(async (_url: string, init: RequestInit) => {
+      const body = JSON.parse(init.body as string);
+      return body.facetsOnly
+        ? okJson({ facetDistribution: { type: { venue: 7 } }, facetsOnly: true })
+        : okJson({ hits, facetDistribution: {}, facetsPending: true });
+    });
+    const { result } = renderHook(() => useSearch('bar'));
+    await waitFor(() => expect(result.current.facets).toEqual({ type: { venue: 7 } }), { timeout: 2000 });
+    const bodies = mockFetch.mock.calls.map((c) => JSON.parse(c[1].body));
+    expect(bodies).toHaveLength(2);
+    expect(bodies[1]).toMatchObject({ query: 'bar', facetsOnly: true });
+    expect(bodies[0].facetsOnly).toBeUndefined();
+    expect(result.current.results).toHaveLength(1);
+  });
+
+  it('does not issue a facet follow-up when the counts came inline', async () => {
+    mockFetch.mockResolvedValue(okJson({ hits: [{ objectID: '1', title: 'Bar', type: 'venue' }], facetDistribution: { type: { venue: 1 } } }));
+    const { result } = renderHook(() => useSearch('bar'));
+    await waitFor(() => expect(result.current.facets).toEqual({ type: { venue: 1 } }), { timeout: 2000 });
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
   it('should handle search error gracefully', async () => {
     // Hook retries 3× with exponential backoff (1s/2s/4s). Fail every attempt
     // so we hit the error branch promptly.
