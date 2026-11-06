@@ -96,11 +96,35 @@ do $$declare r jsonb;label text;begin
 end$$;
 """
 paths=list((ROOT/'supabase/migrations').glob('*_source_explicit_event_formats.sql'));assert len(paths)==1
+title_formats = (ROOT/'supabase/migrations/99991793933440_review_publisher_title_formats.sql').read_text()
+title_checks = """
+do $test$
+begin
+ if exists(
+  select 1 from (values
+   ('CLUB KID Advance Screening','film'),
+   ('Basketball Open Gym','sports'),
+   ('Bead Making Class','workshop'),
+   ('Academy Weekly Game Night','social'),
+   ('Between Sessions: Art Show by Therapists','art'),
+   ('Drag Cabaret','drag'),
+   ('Drag Show and Drag Cabaret','drag'),
+   ('Basketball Open Gym and Film Screening',null),
+   ('Board Game Night and Advance Screening',null),
+   ('Art Showroom',null),
+   ('Game Nightlife',null),
+   ('A Queer Evening',null)
+  ) examples(title, expected)
+  where api_private.source_explicit_event_format(title) is distinct from expected
+ ) then raise exception 'Explicit format or ambiguity boundary changed';end if;
+end $test$;
+"""
+fixture_sql = schema + paths[0].read_text() + checks + title_formats + title_checks
 if '--temporary-sql' in sys.argv:
  # Hosted fallback when local disk cannot fit initdb. Every fixture and function
  # lives in this transaction's pg_temp namespace; no public DDL or data writes.
  import re
- sql=schema+paths[0].read_text()+checks
+ sql=fixture_sql
  sql=sql.replace('create role anon;create role authenticated;create role service_role;','').replace('create schema api_private;create schema auth;','')
  sql=sql.replace('api_private.','pg_temp.').replace('public.','pg_temp.').replace('auth.uid','pg_temp.fixture_uid')
  sql=sql.replace('create function assert_admin_or_internal','create function pg_temp.assert_admin_or_internal').replace('create function event_quality_findings','create function pg_temp.event_quality_findings')
@@ -112,7 +136,7 @@ with tempfile.TemporaryDirectory(prefix='qg-source-format-')as tmp:
  subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
  subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55499 -c listen_addresses=','-w','start'],check=True,stdout=subprocess.DEVNULL)
  try:
-  result=subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55499','-d','postgres','-v','ON_ERROR_STOP=1'],input=schema+paths[0].read_text()+checks,text=True,capture_output=True)
+  result=subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55499','-d','postgres','-v','ON_ERROR_STOP=1'],input=fixture_sql,text=True,capture_output=True)
   if result.returncode:raise RuntimeError(result.stderr)
  finally:
   subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
