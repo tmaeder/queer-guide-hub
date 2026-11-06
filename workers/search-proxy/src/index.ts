@@ -66,6 +66,8 @@ export interface Env {
 	ALLOWED_ORIGINS: string;
 	EMBED_CACHE: KVNamespace;
 	EMBED_MODEL?: string;
+	/** ms before a second, hedged embedding call is sent; "0" disables. */
+	EMBED_HEDGE_MS?: string;
 	ENABLE_RERANKER?: string; // "1" to enable
 	SESSION_CACHE: KVNamespace; // per-session recent views for decay
 	/** Awin publisher id — enables awinWrap for known-MID merchants (/go?l= mode). */
