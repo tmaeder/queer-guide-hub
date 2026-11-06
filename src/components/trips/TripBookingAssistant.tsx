@@ -411,6 +411,68 @@ export function TripBookingAssistant({
       {/* Booking Tab */}
       {activeTab === 'booking' && (
         <div className="flex flex-col gap-4">
+          {trackableReservations.map((reservation) => {
+            const linkedStop = places.find((place) => place.reservation_id === reservation.id);
+            const pending = reservation.status === 'pending';
+            return (
+              <div
+                key={reservation.id}
+                role="group"
+                aria-label={reservation.title}
+                className="flex flex-wrap items-center gap-2 rounded-element border border-border bg-muted p-4"
+              >
+                <p className="min-w-0 flex-1 break-words font-medium">{reservation.title}</p>
+                <Badge variant="outline">
+                  {pending
+                    ? t('trips.reservations.status.pending', 'Pending')
+                    : t('trips.reservations.status.confirmed', 'Confirmed')}
+                </Badge>
+                {linkedStop && <span className="text-sm">{getPlaceName(linkedStop)}</span>}
+                <div className="flex w-full flex-wrap items-center gap-2 empty:hidden sm:w-auto">
+                  {pending &&
+                    reservation.booking_url &&
+                    isValidHttpUrl(reservation.booking_url) && (
+                      <Button
+                        asChild
+                        className="h-auto min-h-12 w-full whitespace-normal px-4 py-2 text-center sm:min-h-11 sm:w-auto"
+                      >
+                        <a href={reservation.booking_url} target="_blank" rel="noopener noreferrer">
+                          {t(
+                            'trips.bookingAssistant.continueOnPartner',
+                            'Continue on partner site',
+                          )}
+                          <ExternalLink aria-hidden />
+                        </a>
+                      </Button>
+                    )}
+                  {canEdit && !linkedStop && availableStops.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto flex-1 whitespace-normal px-2 py-2 text-center sm:flex-none sm:px-4"
+                      onClick={() => {
+                        setStopId('');
+                        setLinking(reservation);
+                      }}
+                    >
+                      {t('trips.bookingAssistant.linkStop', 'Link to itinerary stop')}
+                    </Button>
+                  )}
+                  {pending && canEdit && reservation.user_id === user?.id && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto flex-1 whitespace-normal px-2 py-2 text-center sm:flex-none sm:px-4"
+                      onClick={() => setConfirming(reservation)}
+                    >
+                      {t('trips.bookingAssistant.recordConfirmation', 'Record confirmation')}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+
           {/* Places to book — itinerary items still in "intent" status */}
           {placesToBook.length > 0 && (
             <div>
@@ -453,62 +515,6 @@ export function TripBookingAssistant({
               </div>
             </div>
           )}
-
-          {trackableReservations.map((reservation) => {
-            const linkedStop = places.find((place) => place.reservation_id === reservation.id);
-            const pending = reservation.status === 'pending';
-            return (
-              <div
-                key={reservation.id}
-                role="group"
-                aria-label={reservation.title}
-                className="flex flex-wrap items-center gap-2 p-4 bg-muted rounded-element"
-              >
-                <p className="min-w-0 flex-1 break-words font-medium">{reservation.title}</p>
-                <Badge variant="outline">
-                  {pending
-                    ? t('trips.reservations.status.pending', 'Pending')
-                    : t('trips.reservations.status.confirmed', 'Confirmed')}
-                </Badge>
-                {linkedStop && <span className="text-sm">{getPlaceName(linkedStop)}</span>}
-                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-                  {pending &&
-                    reservation.booking_url &&
-                    isValidHttpUrl(reservation.booking_url) && (
-                      <Button
-                        asChild
-                        className="h-auto w-full whitespace-normal px-4 py-2 text-center sm:w-auto"
-                      >
-                        <a href={reservation.booking_url} target="_blank" rel="noopener noreferrer">
-                          {t(
-                            'trips.bookingAssistant.continueOnPartner',
-                            'Continue on partner site',
-                          )}
-                          <ExternalLink aria-hidden />
-                        </a>
-                      </Button>
-                    )}
-                  {canEdit && !linkedStop && availableStops.length > 0 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setStopId('');
-                        setLinking(reservation);
-                      }}
-                    >
-                      {t('trips.bookingAssistant.linkStop', 'Link to itinerary stop')}
-                    </Button>
-                  )}
-                  {pending && canEdit && reservation.user_id === user?.id && (
-                    <Button variant="outline" size="sm" onClick={() => setConfirming(reservation)}>
-                      {t('trips.bookingAssistant.recordConfirmation', 'Record confirmation')}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
 
           <div className="flex flex-wrap gap-2">
             {[

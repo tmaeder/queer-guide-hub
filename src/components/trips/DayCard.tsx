@@ -316,7 +316,7 @@ export function DayCard({
             </Badge>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1 lg:justify-end">
+          <div className="flex flex-wrap items-center gap-1 border-t border-border pt-2 lg:justify-end lg:border-0 lg:pt-0">
             {!readOnly && locatedCount >= 3 && (
               <Button
                 variant="ghost"
@@ -368,7 +368,7 @@ export function DayCard({
                   variant="ghost"
                   size="sm"
                   onClick={() => onAddPlace()}
-                  className="rounded-full"
+                  className="ml-auto rounded-full border border-input lg:ml-0 lg:border-transparent"
                 >
                   <Plus size={14} className="mr-1" />
                   {t('trips.itinerary.add')}
