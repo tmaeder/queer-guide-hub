@@ -18,21 +18,8 @@ import { STATIONS, TRACK_PATHS, VIEWBOX, pct, type Station } from './intentMapGe
  * drawing above them). A station's line comes from `INTENT_TRACK`, the same
  * table the header and footer read, so the three surfaces cannot disagree.
  *
- * Rendered EAGERLY and with no reveal animation — deliberately not wrapped in
- * `HomeDeferred`. Every other homepage section sits behind two independent
- * gates (`DeferredSection`'s IntersectionObserver and `FadeIn`'s `whileInView`,
- * which fires at 15% visibility and ignores `prefers-reduced-motion`). If
- * either fails to fire, the section stays at `opacity: 0` while still occupying
- * its full height. That is a tolerable failure for a marketplace rail and an
- * unacceptable one for the site's primary navigation — a blank band where the
- * nav should be is indistinguishable from a broken page.
- *
- * For the same reason the desktop/mobile split is CSS-only. One `<ul>` renders
- * both layouts; a JS breakpoint gate would be one more way the primary
- * navigation can fail into an empty band, and it would put fourteen anchors in
- * the DOM for seven destinations.
- *
- * It is also above the fold, so there is nothing to defer.
+ * Mounted with the below-fold homepage content. The desktop and mobile
+ * layouts share one list so keyboard focus follows the same stations in both.
  */
 export function IntentMap() {
   const { t, i18n } = useTranslation();
@@ -70,7 +57,7 @@ export function IntentMap() {
           the stage put that bleed 96px inside the window at 1920px and the
           lines read as four short strokes with rounded ends floating in a
           margin. Full bleed is the whole point of the drawing — the section
-          already drops its gutter at `lg`, and `SubwayHero` clips.
+          drops its gutter at `lg` and clips the ends.
           The ONE cap is 120rem: the stations are positioned as percentages of
           this stage, so past 1920 they spread beyond the page column (the
           leftmost plate sat 240px outside it at 2560, measured on prod). Up to

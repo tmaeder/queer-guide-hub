@@ -8,11 +8,12 @@ import { DeparturesBoard } from '@/components/home/subway/DeparturesBoard';
 import { HomeRegionProvider } from '@/components/home/HomeRegionProvider';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { SupportBand } from '@/components/home/subway/SupportBand';
-import { YourLines } from '@/components/home/YourLines';
+import { IntentMap } from '@/components/home/subway/IntentMap';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { lazyRetry } from '@/utils/lazyRetry';
 
+const YourLines = lazyRetry(() => import('@/components/home/YourLines'));
 const CityCards = lazyRetry(() => import('@/components/home/subway/CityCards'));
 const cityCardsLoading = <CityCardsSkeleton />;
 
@@ -63,6 +64,13 @@ function RegionalContent({ showRegionPicker = true }: { showRegionPicker?: boole
           </DeferredSection>
         </Band>
       </HomeSection>
+      <HomeSection section="your-lines">
+        <DeferredSection rootMargin="160px 0px">
+          <Suspense fallback={null}>
+            <YourLines />
+          </Suspense>
+        </DeferredSection>
+      </HomeSection>
     </>
   );
 }
@@ -80,8 +88,8 @@ export default function HomeContent() {
           <RegionalContent />
         </HomeRegionProvider>
       </ErrorBoundary>
-      <HomeSection section="your-lines">
-        <YourLines />
+      <HomeSection section="intent-map">
+        <IntentMap />
       </HomeSection>
       <Band title={t('home.discovery.more')}>
         <ul className="m-0 grid list-none gap-x-6 p-0 sm:grid-cols-2 lg:grid-cols-4">
