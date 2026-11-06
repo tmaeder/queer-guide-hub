@@ -726,9 +726,8 @@ test.describe('design system: visual snapshots', () => {
     await page.waitForSelector('main', { timeout: 30_000 }).catch(() => {});
     await dismissCookieBanner(page);
     await page.waitForTimeout(1000);
-    // The homepage hero is a live MapLibre map (tiles + rotating pins) and the
-    // rails below rotate; mask them so this checks the chrome/layout, not
-    // today's content. Regenerate the baseline via the update-baselines workflow.
+    // Keep the discovery hero and navigation visible. Mask the data-backed
+    // bands below, whose city and listing content can change between runs.
     await expect(page).toHaveScreenshot('home-desktop.png', {
       mask: [
         page.locator('[aria-label="Cookie settings"]'),
