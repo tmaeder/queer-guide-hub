@@ -40,13 +40,15 @@ grant execute on function api_private.ticketmaster_publisher_copy_identity(uuid)
 do $patch$
 declare
  definition text;
+ code text;
  identity_anchor text:='select min(s.payload';
  sibling_anchor text:='s.venue_id=e.venue_id';
  sources_anchor text:=$anchor$s.source_slug='siegessaeule' and s.source_entity_id=e.external_id$anchor$;
  url_anchor text:=$anchor$'url',s.source_url$anchor$;
 begin
  definition:=pg_get_functiondef('api_private.event_publisher_copy_identity(uuid)'::regprocedure);
- if strpos(definition,identity_anchor)=0 then raise exception 'Publisher identity contract changed';end if;
+ code:=regexp_replace(pg_get_functiondef('api_private.event_publisher_copy_identity(uuid)'::regprocedure),'--[^'||chr(10)||']*','','g');
+ if strpos(code,identity_anchor)=0 then raise exception 'Publisher identity contract changed';end if;
  definition:=replace(definition,identity_anchor,
   'select coalesce(api_private.ticketmaster_publisher_copy_identity(p_id),(select min(s.payload');
  definition:=replace(definition,'having count(distinct s.payload#>>''{normalized,metadata,series}'')=1;',
@@ -54,11 +56,13 @@ begin
  execute definition;
 
  definition:=pg_get_functiondef('api_private.event_description_reuse_expected(uuid)'::regprocedure);
- if strpos(definition,sibling_anchor)=0 then raise exception 'Publisher cluster contract changed';end if;
+ code:=regexp_replace(pg_get_functiondef('api_private.event_description_reuse_expected(uuid)'::regprocedure),'--[^'||chr(10)||']*','','g');
+ if strpos(code,sibling_anchor)=0 then raise exception 'Publisher cluster contract changed';end if;
  execute replace(definition,sibling_anchor,'s.venue_id is not distinct from e.venue_id');
 
  definition:=pg_get_functiondef('api_private.reconcile_publisher_event_copy(integer,boolean)'::regprocedure);
- if strpos(definition,sources_anchor)=0 or strpos(definition,url_anchor)=0 then
+ code:=regexp_replace(pg_get_functiondef('api_private.reconcile_publisher_event_copy(integer,boolean)'::regprocedure),'--[^'||chr(10)||']*','','g');
+ if strpos(code,sources_anchor)=0 or strpos(code,url_anchor)=0 then
   raise exception 'Publisher repair evidence contract changed';
  end if;
  definition:=replace(definition,sources_anchor,
