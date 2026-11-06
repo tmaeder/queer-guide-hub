@@ -309,6 +309,7 @@ jobs:
             e2e/hotels-filters.spec.ts \
             e2e/nested-interactive.spec.ts \
             e2e/intent-nav.spec.ts \
+            e2e/icon-proportions.spec.ts \
             e2e/glossary-integration.spec.ts \
             e2e/tags-substance-interactions.spec.ts \
             e2e/tags-sti-guide.spec.ts \

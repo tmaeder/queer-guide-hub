@@ -1,6 +1,6 @@
 import { assertEquals, assertNotEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
 import {
-  cityOrPostal, cleanState, coord, occurrenceKey, parseEvent, parseVenue,
+  cityOrPostal, cleanState, coord, isWithheldVenue, occurrenceKey, parseEvent, parseVenue,
   pickEventType, resolveCountry, stripTags, toIso, venueKey,
 } from './milchjugend-parse.ts'
 
@@ -301,4 +301,16 @@ Deno.test('parseEvent maps the whole real row end to end', () => {
 Deno.test('tags come through as slugs', () => {
   assertEquals(parseEvent(MILCHBAR)!.tags, ['milchbar'])
   assertEquals(parseEvent(RECURRING)!.tags, [])
+})
+
+
+Deno.test('city-only venue with publisher instructions is withheld', () => {
+  const description = 'Ort auf Anfrage per Mail.'
+  const venue = { id: 14489, venue: 'Bern', city: 'Bern', zip: '3000', country: 'Schweiz' }
+  const event = parseEvent({ ...RECURRING, venue, description })!
+  assertEquals(isWithheldVenue(event), true)
+  assertEquals(event.venue?.city, 'Bern')
+  assertEquals(isWithheldVenue({ ...event, description: null }), false)
+  assertEquals(isWithheldVenue(parseEvent({ ...RECURRING, venue: { ...venue, address: 'Musterstrasse 8' }, description })!), false)
+  assertEquals(isWithheldVenue(parseEvent({ ...RECURRING, description })!), false)
 })
