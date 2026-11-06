@@ -1,7 +1,13 @@
+import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
 import { Band } from '@/components/home/Band';
+import { lazyOptional } from '@/utils/lazyRetry';
+
+const FeedbackButton = lazyOptional(() =>
+  import('@/components/feedback/FeedbackButton').then((m) => ({ default: m.FeedbackButton })),
+);
 
 /** "No ads. No data sales. Just riders." — the closing support band.
  *  Paper band with ink CTAs (template: Support section); auth-adaptive. */
@@ -49,6 +55,9 @@ export function SupportBand() {
               </LocalizedLink>
             </>
           )}
+          <Suspense fallback={null}>
+            <FeedbackButton inline />
+          </Suspense>
         </div>
       }
     />

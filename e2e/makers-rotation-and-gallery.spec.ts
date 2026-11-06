@@ -216,7 +216,5 @@ test('the page renders the band, the gallery and the named index', async ({ page
 
   // The coverless makers are named rather than hidden. If this heading is
   // missing, either the split collapsed or the 214 were dropped.
-  await expect(
-    page.getByRole('heading', { name: /Makers we have no photograph of/i }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^Adult makers$/i })).toBeVisible();
 });
