@@ -50,7 +50,28 @@ for (const scenario of [
     const scoped = await response;
     expect(scoped.status()).toBe(200);
     const payload = await scoped.json();
-    const { requestStart, responseStart } = scoped.request().timing();
+    const request = scoped.request();
+    const timing = request.timing();
+    const { requestStart, responseStart } = timing;
+    if (payload.suggestions.length === 0) {
+      const headers = scoped.headers();
+      const diagnostic = {
+        url: scoped.url(),
+        request: request.postDataJSON(),
+        status: scoped.status(),
+        response: payload,
+        timing,
+        cfRay: headers['cf-ray'],
+        serverTiming: headers['server-timing'],
+      };
+      const body = JSON.stringify(diagnostic, null, 2);
+      await test.info().attach('empty-scoped-autocomplete', {
+        body,
+        contentType: 'application/json',
+      });
+      // Keep the evidence in the job log even if report upload fails.
+      console.info('Empty scoped autocomplete response', body);
+    }
     expect(
       payload.suggestions.length,
       `Scoped autocomplete response after ${Math.round(responseStart - requestStart)} ms`,
