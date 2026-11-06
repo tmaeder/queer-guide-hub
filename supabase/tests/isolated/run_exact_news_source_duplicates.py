@@ -18,7 +18,7 @@ create table news_articles(id uuid primary key,url text unique,source_id uuid,pu
  quality_status text default 'passed',quality_decision jsonb,auto_publish_blocked_reasons text[]default '{}',
  content text default 'Keep cleaned catalogue body',title text default 'Cleaned headline',updated_at timestamptz default now());
 create table ingestion_staging(id uuid primary key,target_table text default 'news_articles',source_name text default 'rss-news',source_type text default 'rss-news',
- disposition text default 'pending',review_status text default 'pending_review',reviewed_by uuid,reviewed_at timestamptz,
+ source_entity_id text,disposition text default 'pending',review_status text default 'pending_review',reviewed_by uuid,reviewed_at timestamptz,
  review_notes text,target_record_id uuid,dedup_status text default 'unique',dedup_match_id uuid,dedup_match_table text default 'news_articles',
  dedup_match_score numeric default 0,dedup_details jsonb default '{}',raw_data jsonb,normalized_data jsonb,enriched_data jsonb,
  created_at timestamptz default now(),updated_at timestamptz default now(),processed_at timestamptz);
@@ -84,6 +84,65 @@ do $$declare r jsonb;begin
  r:=api_private.reconcile_exact_news_source_duplicates(100,false);if(r->>'duplicate_sources')::int<>0 or(select count(*)from admin_review_repairs)<>1 then raise exception 'Not idempotent';end if;
 end$$;
 """
+repeat_checks="""
+insert into news_articles(id,url,source_id)
+ values(md5('sentidog article')::uuid,'https://www.sentidog.com/2026/10/14/story',md5('source')::uuid);
+insert into ingestion_staging(id,source_entity_id,raw_data,enriched_data)
+ select md5('sentidog '||n)::uuid,url,
+  jsonb_build_object('url',url,'title','Headline','source_id',md5('source')::uuid,
+   'content','This is a complete original RSS capture of more than fifty characters.'),
+  '{"auto_publish_blocked_reasons":["manual_review_requested","low_confidence"],
+    "quality_decision":{"isAdvertorial":false,"isSatire":false,"needsManualReview":true,"warnings":[]}}'
+ from generate_series(14,21)n
+ cross join lateral (select 'https://www.sentidog.com/2026/10/'||n||'/story' as url) x;
+update ingestion_staging set disposition='inserted',review_status='auto',target_record_id=md5('sentidog article')::uuid
+ where id=md5('sentidog 14')::uuid;
+update ingestion_staging set enriched_data=enriched_data||'{"manual_hold":true}' where id=md5('sentidog 16')::uuid;
+update ingestion_staging set raw_data=jsonb_set(raw_data,'{content}','"Different body with more than fifty characters of unique material."')
+ where id=md5('sentidog 17')::uuid;
+update ingestion_staging set enriched_data=jsonb_set(enriched_data,'{quality_decision,warnings}','["Potential paywall"]')
+ where id=md5('sentidog 18')::uuid;
+insert into content_revisions values('ingestion_staging',md5('sentidog 19')::uuid,'human');
+update ingestion_staging set dedup_status='merge_candidate',dedup_match_id=md5('sentidog article')::uuid where id=md5('sentidog 20')::uuid;
+update ingestion_staging set dedup_status='merge_candidate',dedup_match_id=md5('other article')::uuid where id=md5('sentidog 21')::uuid;
+insert into ingestion_staging(id,source_entity_id,raw_data,enriched_data,disposition,review_status,target_record_id)
+ select md5('repeat ambiguity '||n)::uuid,url,
+  jsonb_set(jsonb_set(raw_data,'{url}',to_jsonb(url)),'{content}',to_jsonb('Another complete original RSS capture of more than fifty characters.'::text)),
+  enriched_data,case when n=24 then 'pending' else 'inserted' end,
+  case when n=24 then 'pending_review' else 'auto' end,
+  case when n=24 then null else md5('sentidog article')::uuid end
+ from ingestion_staging cross join generate_series(22,24)n
+ cross join lateral (select 'https://www.sentidog.com/2026/10/'||n||'/ambiguous' as url) x
+ where id=md5('sentidog 15')::uuid;
+create table repeat_before_stages as select id,to_jsonb(s) value from ingestion_staging s;
+create table repeat_before_articles as select id,to_jsonb(a) value from news_articles a;
+do $$declare r jsonb;begin
+ r:=api_private.run_review_automatic_resolution(100,true);
+ if (r#>>'{sentidog_repeat_captures,duplicate_sources}')::int<>2 or not(r?'exact_news_source_duplicates')
+ then raise exception 'Wrong dry candidates or hook composition %',r;end if;
+ if exists(select 1 from ingestion_staging s join repeat_before_stages b using(id) where to_jsonb(s)<>b.value)
+ then raise exception 'Repeat dry run wrote';end if;
+ if has_function_privilege('authenticated','api_private.reconcile_sentidog_repeat_captures(integer,boolean)','execute')
+ then raise exception 'Repeat function browser access';end if;
+ r:=api_private.run_review_automatic_resolution(100,false);
+ if (r#>>'{sentidog_repeat_captures,duplicate_sources}')::int<>2 then raise exception 'Repeat apply %',r;end if;
+ if (select count(*) from ingestion_staging s join repeat_before_stages b using(id)
+  where s.id in(md5('sentidog 15')::uuid,md5('sentidog 20')::uuid)
+   and s.disposition='skipped' and s.dedup_status='duplicate' and s.dedup_match_id=md5('sentidog article')::uuid
+   and s.enriched_data=b.value->'enriched_data' and s.raw_data=b.value->'raw_data')<>2
+ then raise exception 'Repeat disposition or evidence incorrect';end if;
+ if exists(select 1 from ingestion_staging s join repeat_before_stages b using(id)
+  where s.id not in(md5('sentidog 15')::uuid,md5('sentidog 20')::uuid) and to_jsonb(s)<>b.value)
+ then raise exception 'Ineligible repeat changed';end if;
+ if exists(select 1 from news_articles a join repeat_before_articles b using(id) where to_jsonb(a)<>b.value)
+ then raise exception 'Repeat repair changed catalogue';end if;
+ if (select count(*) from admin_review_repairs where reason='sentidog_exact_date_path_duplicate:v3')<>2
+ then raise exception 'Repeat audit missing';end if;
+ r:=api_private.reconcile_sentidog_repeat_captures(100,false);
+ if (r->>'duplicate_sources')::int<>0 then raise exception 'Repeat repair not idempotent';end if;
+end$$;
+"""
+repeat_migration=ROOT/'supabase/migrations/99991793933500_review_sentidog_repeat_captures.sql'
 policy=(ROOT/'supabase/migrations/20261022180826_review_automatic_resolution.sql').read_text()
 policy=re.search(r'create function api_private.review_news_machine_outcome[\s\S]*?end \$\$;',policy).group(0)
 paths=list((ROOT/'supabase/migrations').glob('*_review_exact_news_source_duplicates.sql'));assert len(paths)==1
@@ -91,7 +150,7 @@ with tempfile.TemporaryDirectory(prefix='qg-news-source-dedup-')as tmp:
  data=Path(tmp)/'data';subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
  subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55499 -c listen_addresses=','-w','start'],check=True,stdout=subprocess.DEVNULL)
  try:
-  result=subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55499','-d','postgres','-v','ON_ERROR_STOP=1'],input=schema+policy+paths[0].read_text()+checks,text=True,capture_output=True)
+  result=subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55499','-d','postgres','-v','ON_ERROR_STOP=1'],input=schema+policy+paths[0].read_text()+checks+repeat_migration.read_text()+repeat_checks,text=True,capture_output=True)
   if result.returncode:raise RuntimeError(result.stderr)
  finally:subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
-print('PASS: 32 duplicate/source/manual/quality cases; pause, browser denial, bounds, hook composition, unchanged catalogue, complete audits and idempotency')
+print('PASS: 32 duplicate/source/manual/quality cases; pause, browser denial, bounds, hook composition, unchanged catalogue, complete audits, idempotency and exact SentidoG repeat captures')
