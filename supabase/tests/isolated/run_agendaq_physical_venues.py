@@ -57,6 +57,50 @@ paths = list((ROOT / 'supabase/migrations').glob('*_agendaq_physical_venue_match
 if len(paths) != 1:
     raise SystemExit('Exactly one physical-venue matching migration required')
 sql = schema + paths[0].read_text() + (Path(__file__).parent / 'agendaq_physical_venues.sql').read_text()
+sql += """
+alter table cities add column name text default 'Paris', add column duplicate_of_id uuid;
+alter table events add column data_source text, add column external_id text,
+ add column is_public boolean default true, add column safety_gated boolean default false;
+alter table venues add column address text, add column postal_code text, add column safety_gated boolean default false;
+alter table event_quality_issues add column evidence jsonb default '{}';
+create table content_revisions(source_table text, source_id uuid, actor_kind text, changed_fields text[]);
+create function city_canonical_key(text) returns text language sql immutable as 'select lower(trim($1))';
+"""
+sql += (ROOT / 'supabase/migrations/99991793933420_agendaq_organizer_location_binding.sql').read_text()
+sql += """
+-- An alias is safe only where one precise location appears in both captures.
+insert into fixture_ids select n,gen_random_uuid(),gen_random_uuid(),gen_random_uuid(),gen_random_uuid()
+from generate_series(100,104) n;
+insert into events(id,title,venue_name,start_date,city_id,country_id,latitude,longitude,data_source,external_id)
+select e,'Show '||n,'Organizer '||n,'2027-01-01T00:00:00Z','00000000-0000-0000-0000-000000000002',
+ '00000000-0000-0000-0000-000000000001',48,2,'agendaq','show-'||n from fixture_ids where n>=100;
+insert into venues(id,name,city_id,country_id,latitude,longitude,address,postal_code)
+select v,'Canonical '||n,'00000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000001',
+ 48,2,'10 Rue Royale','75008' from fixture_ids where n>=100;
+insert into event_sources select es,e,'agendaq','show-'||n,'https://www.agendaq.fr/fr/agenda/show-'||n,repeat('a',64),
+ jsonb_build_object('normalized',jsonb_build_object('start_date','2027-01-01T00:00:00Z'),'raw',
+ jsonb_build_object('slug','show-'||n,'name','Show '||n,'businesses',jsonb_build_array(jsonb_build_object('name','Organizer '||n)),
+ 'locations',jsonb_build_array(jsonb_build_object('id',n,'cc','FR','lat',48,'lon',2,
+ 'addr','{"city":"Paris","street":"Rue Royale","pc":"75008"}'::jsonb)))) from fixture_ids where n>=100;
+insert into venue_sources select f.vs,f.v,'agendaq','place-'||f.n,'https://www.agendaq.fr/fr/guide/place-'||f.n,repeat('b',64),
+ jsonb_build_object('raw',jsonb_build_object('slug','place-'||f.n,'name','Publisher alias',
+ 'locations',s.payload#>'{raw,locations}')) from fixture_ids f join event_sources s on s.id=f.es where f.n>=100;
+insert into event_quality_issues(event_id,issue_code,status) select e,'NAMED_VENUE_UNLINKED','open' from fixture_ids where n>=100;
+update venue_sources set payload=jsonb_set(payload,'{raw,locations,0,addr,pc}','"75009"') where id=(select vs from fixture_ids where n=101);
+update event_sources set payload=jsonb_set(payload,'{raw,locations}',(payload#>'{raw,locations}')||(payload#>'{raw,locations}'))
+ where id=(select es from fixture_ids where n=102);
+update event_quality_issues set evidence='{"manual_hold":true}' where event_id=(select e from fixture_ids where n=103);
+insert into content_revisions select 'events',e,'human',array['venue_name'] from fixture_ids where n=104;
+do $test$
+declare r jsonb;
+begin
+ update admin_automations set enabled=true where slug='event_venue_link';
+ r:=run_event_venue_link();
+ assert (r#>>'{source_location_matches,linked_events}')::int=1,r::text;
+ assert exists(select 1 from events e join fixture_ids f on f.e=e.id where f.n=100 and e.venue_id=f.v);
+ assert not exists(select 1 from events e join fixture_ids f on f.e=e.id where f.n>100 and e.venue_id is not null);
+end $test$;
+"""
 with tempfile.TemporaryDirectory(prefix='qg-agendaq-matching-') as tmp:
     data = Path(tmp) / 'data'
     subprocess.run([binary('initdb'), '-D', str(data), '-A', 'trust', '--no-locale'], check=True, stdout=subprocess.DEVNULL)
