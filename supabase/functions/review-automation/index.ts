@@ -1,12 +1,13 @@
 import { corsResponse, errorResponse, getServiceClient, jsonResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { buildQuestions, decide, parseEvaluation, POLICY_VERSION, SOURCES, type Context, type Evidence } from './policy.ts'
 import { recoverSources } from './research.ts'
+import { cityDiscoveryInput, discoverCityEvidence } from './city-discovery.ts'
 import { sourceUrl } from './evidence.ts'
 import { ProviderError } from './provider.ts'
 import { STATE_VERSION } from './state.ts'
 import { callJev, createJevBudget, JevBudgetDeferred, JevBudgetError, type JevRequest } from '../_shared/jev-client.ts'
 
-type Job = { case_id: string; lease_token: string; queue_type: string }
+type Job = { case_id: string; lease_token: string; queue_type: string; outcome?: { reason?: string } }
 async function evaluate(body: JevRequest, db: ReturnType<typeof getServiceClient>, account: string) {
   return await callJev(body, {
     apiKey: Deno.env.get('JEV_API_KEY') || Deno.env.get('TYPESAFE_API_KEY') || '',
@@ -42,6 +43,7 @@ Deno.serve(async req => {
   const started = new Date().toISOString()
   const budgetStarted = Date.now()
   const summary = { examined: 0, applied: 0, blocked: 0, retry: 0, stale: 0, preview: 0, budget_deferred: 0, provider_overload_deferred: 0 }
+  const cityDiscovery = { attempted: 0, found: 0, unavailable: 0 }
   const rpc = async <T>(name: string, args: Record<string, unknown> = {}): Promise<T> => {
     const { data, error } = await db.rpc(name, args)
     if (error) throw new Error(`${name}: ${error.message}`)
@@ -50,7 +52,7 @@ Deno.serve(async req => {
   let runId: number | null = null
   const recordRun = async (failed: boolean, reason?: string) => {
     if (runId !== null) {
-      const { error } = await db.from('admin_automation_runs').update({ status: failed ? 'error' : 'success', finished_at: new Date().toISOString(), items_examined: summary.examined, items_changed: summary.applied, summary: { ...summary, reason, policy_version: POLICY_VERSION } }).eq('id', runId).eq('automation_slug', 'review_jev')
+      const { error } = await db.from('admin_automation_runs').update({ status: failed ? 'error' : 'success', finished_at: new Date().toISOString(), items_examined: summary.examined, items_changed: summary.applied, summary: { ...summary, city_discovery: cityDiscovery, reason, policy_version: POLICY_VERSION } }).eq('id', runId).eq('automation_slug', 'review_jev')
       if (error) console.error('Jev run log update failed:', error.message)
     }
     const { error } = await db.from('admin_automations').update({ last_run_at: started, last_run_status: failed ? 'error' : 'success' }).eq('slug', 'review_jev')
@@ -95,6 +97,26 @@ Deno.serve(async req => {
           if (!integrityOnly) {
             const sources = await recoverSources(context)
             evidence = sources.evidence; errors = sources.errors; attempted = sources.attempted
+            const sourceBlocker = ['missing_source', 'missing_source_url', 'source_unavailable', 'conflicting_identity', 'insufficient_confidence'].includes(job.outcome?.reason ?? '')
+            const city = (!evidence.length || sourceBlocker) && cityDiscovery.attempted < 2
+              ? cityDiscoveryInput(context) : null
+            if (city) {
+              cityDiscovery.attempted++
+              try {
+                const { data, error } = await db.from('countries').select('code').eq('id', city.countryId).maybeSingle()
+                if (error) throw new Error('City discovery country lookup failed')
+                const found = data?.code ? await discoverCityEvidence(city, data.code) : null
+                if (found) {
+                  const existing = evidence.findIndex(page => page.url === found.url)
+                  if (existing < 0) evidence.push(found)
+                  else evidence[existing] = found
+                  cityDiscovery.found++
+                }
+              } catch {
+                cityDiscovery.unavailable++
+                errors.push('Wikidata city discovery unavailable')
+              }
+            }
           }
           if (!evidence.length) result = { blocker: attempted ? 'source_unavailable' : 'missing_source_url', source_errors: errors }
           else {
@@ -127,7 +149,7 @@ Deno.serve(async req => {
       if (saved.status in summary) summary[saved.status]++
     }
     await recordRun(Boolean(globalFailure), globalFailure ?? providerOverload?.message ?? (budgetDeferred ? 'budget_deferred' : undefined))
-    return jsonResponse({ success: !globalFailure, ...summary, policy_version: POLICY_VERSION, ...(globalFailure ? { error: globalFailure } : {}) }, globalFailure ? 503 : 200, req)
+    return jsonResponse({ success: !globalFailure, ...summary, city_discovery: cityDiscovery, policy_version: POLICY_VERSION, ...(globalFailure ? { error: globalFailure } : {}) }, globalFailure ? 503 : 200, req)
   } catch (error) {
     console.error('Review automation failed:', error instanceof Error ? error.message : error)
     await recordRun(true, 'review_automation_failed')
