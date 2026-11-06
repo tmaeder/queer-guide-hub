@@ -5,19 +5,11 @@ import { test, expect } from '@playwright/test';
 test.describe('Venues — polish & a11y', () => {
   test('skip-to-content link is first focusable element', async ({ page }) => {
     await page.goto('/venues');
-    await page.waitForLoadState('domcontentloaded');
-
-    // Press Tab to focus first element.
+    const skipLink = page.getByRole('link', { name: 'Skip to main content' });
+    // The prerendered guide has links before the interactive app shell mounts.
+    await expect(skipLink).toBeAttached({ timeout: 20_000 });
     await page.keyboard.press('Tab');
-    const focused = await page.evaluate(() => {
-      const el = document.activeElement;
-      return {
-        tag: el?.tagName,
-        text: el?.textContent?.trim(),
-        href: (el as HTMLAnchorElement)?.href ?? null,
-      };
-    });
-    expect(focused.text?.toLowerCase()).toContain('skip to main content');
+    await expect(skipLink).toBeFocused();
   });
 
   test('VenueCard images have non-empty alt text', async ({ page }) => {
