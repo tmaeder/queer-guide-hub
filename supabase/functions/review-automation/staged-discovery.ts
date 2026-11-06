@@ -48,6 +48,14 @@ function articleUrl(value: string): URL {
   return url
 }
 
+export function mergeStagedEvidence(existing: Evidence[], found: Evidence): Evidence[] {
+  const key = (url: string) => {
+    try { return articleUrl(url).href } catch { return url }
+  }
+  const recoveredKey = key(found.url)
+  return [...existing.filter(page => key(page.url) !== recoveredKey), found]
+}
+
 /** Only a direct article tied to the active, exact RSS source; never aggregator text. */
 export async function discoverStagedNews(target: Extract<StagedTarget, {kind:'news'}>, source: Registry, existing: Evidence[], fetcher: typeof fetch = fetch): Promise<Evidence | null> {
   if (!source.is_active || source.auto_paused || source.source_type !== 'rss') return null

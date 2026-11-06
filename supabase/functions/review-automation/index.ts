@@ -3,7 +3,7 @@ import { buildQuestions, decide, parseEvaluation, POLICY_VERSION, SOURCES, type 
 import { recoverSources } from './research.ts'
 import { cityDiscoveryInput, discoverCityEvidence } from './city-discovery.ts'
 import { discoverPublisherEvidence, eventPublisherDate, publisherTarget } from './publisher-discovery.ts'
-import { discoverStagedNews, discoverStagedVenue, stagedDiscoveryId, stagedTarget } from './staged-discovery.ts'
+import { discoverStagedNews, discoverStagedVenue, mergeStagedEvidence, stagedDiscoveryId, stagedTarget } from './staged-discovery.ts'
 import { sourceUrl } from './evidence.ts'
 import { ProviderError } from './provider.ts'
 import { STATE_VERSION } from './state.ts'
@@ -167,9 +167,7 @@ Deno.serve(async req => {
                   found = await discoverStagedVenue(target)
                 }
                 if (found) {
-                  const existing = evidence.findIndex(page => page.url === found.url)
-                  if (existing < 0) evidence.push(found)
-                  else evidence[existing] = found
+                  evidence = mergeStagedEvidence(evidence, found)
                   stagedDiscovery.found++
                 }
               } catch {

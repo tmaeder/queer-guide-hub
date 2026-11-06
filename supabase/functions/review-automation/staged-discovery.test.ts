@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects } from 'jsr:@std/assert'
-import { discoverStagedNews, discoverStagedVenue, stagedDiscoveryId, stagedTarget } from './staged-discovery.ts'
+import { discoverStagedNews, discoverStagedVenue, mergeStagedEvidence, stagedDiscoveryId, stagedTarget } from './staged-discovery.ts'
 import type { Context } from './policy.ts'
 
 const id = '00000000-0000-0000-0000-000000000001'
@@ -63,4 +63,10 @@ Deno.test('venue recovery uses the unique matching sitemap ID and a real detail 
   assertEquals(calls.filter(u => u === good).length, 2)
   const soft404 = ((u: URL) => Promise.resolve(response(u.pathname === '/sitemap.xml' ? sitemap : 'Homepage with Public Cinema Basel'))) as typeof fetch
   assertEquals(await discoverStagedVenue(venue, soft404), null)
+})
+
+Deno.test('tracked variants of a recovered article count as one source', () => {
+  const page = { url: 'https://publisher.example/news/article', text: article, retrieved_at: new Date().toISOString() }
+  const other = { ...page, url: 'https://publisher.example/news/other' }
+  assertEquals(mergeStagedEvidence([{ ...page, url: news.url }, other, page], page), [other, page])
 })
