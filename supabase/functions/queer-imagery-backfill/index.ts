@@ -322,6 +322,7 @@ async function findQueerImage(
           height: img.height,
           source: img.source,
           name: row.name,
+          requireSubjectName: t === 'city',
           country: row.country_name ?? undefined,
           capital: row.capital ?? undefined,
         })

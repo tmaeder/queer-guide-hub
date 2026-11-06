@@ -166,6 +166,16 @@ Deno.test('queer photo connected via country/capital only still passes (lower)',
   assert(s >= QUEER_PLACE_MIN)
 })
 
+Deno.test('city cover rejects another city even when country and capital match', () => {
+  const photo = {
+    alt: 'Pride march in Munich, Germany',
+    width: 1600, height: 1000, source: 'pexels' as const,
+    country: 'Germany', capital: 'Munich', requireSubjectName: true,
+  }
+  assertEquals(scoreQueerPlaceImage({ ...photo, name: 'Kempten' }), Number.NEGATIVE_INFINITY)
+  assert(scoreQueerPlaceImage({ ...photo, name: 'Munich' }) >= QUEER_PLACE_MIN)
+})
+
 Deno.test('queer-place scorer still hard-rejects wildlife', () => {
   const s = scoreQueerPlaceImage({
     alt: 'a flamingo bird at Barcelona pride',
