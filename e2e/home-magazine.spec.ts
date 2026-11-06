@@ -44,10 +44,14 @@ test('homepage prioritizes listings and city guides while secondary routes stay 
   const browse = page.getByRole('region', { name: 'More from Queer Guide' });
   await expect(listings).toBeVisible();
   await expect(cities.getByRole('link', { name: 'All cities' })).toHaveAttribute('href', '/cities');
+  const map = page.getByRole('region', { name: 'What are you here for?' });
+  await expect(map.getByRole('link')).toHaveCount(7);
+  await expect(map.locator('a[href="/search"]')).toBeVisible();
   await expect(browse).toBeVisible();
   expect(await page.locator('main h2').allTextContents()).toEqual([
     expect.stringMatching(/^Places and events/),
     'City guides',
+    'What are you here for?',
     'More from Queer Guide',
     'No ads. No data sales. Just riders.',
   ]);
@@ -62,6 +66,53 @@ test('homepage prioritizes listings and city guides while secondary routes stay 
   ]) {
     await expect(browse.locator(`a[href="${path}"]`)).toBeVisible();
   }
+  await expect(page.getByRole('region', { name: 'Your lines' })).toHaveCount(0);
+  await map.locator('a[href="/search"]').click();
+  await expect(page).toHaveURL(/\/search(?:\?|$)/);
+});
+
+test('a returning visitor sees their history and suggested places after local discovery', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const ts = Date.now();
+    sessionStorage.setItem(
+      'qg_home_region',
+      JSON.stringify({ cityId: '00000000-0000-4000-8000-000000000001', cityName: 'Berlin', ts }),
+    );
+    localStorage.setItem(
+      'qg_recently_viewed',
+      JSON.stringify([{ type: 'venue', slug: 'recent-venue', title: 'Recent venue', ts }]),
+    );
+  });
+  await page.route(
+    (url) => url.hostname.startsWith('search.') && url.pathname === '/search',
+    (route) =>
+      route.fulfill({
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        json: {
+          hits: [
+            {
+              type: 'venue',
+              slug: 'suggested-venue',
+              title: 'Suggested venue',
+              city: 'Berlin',
+              _boostReason: 'interest',
+            },
+          ],
+        },
+      }),
+  );
+
+  await openHome(page);
+  await page.getByRole('region', { name: 'What are you here for?' }).scrollIntoViewIfNeeded();
+  const yourLines = page.getByRole('region', { name: 'Your lines' });
+  await expect(yourLines.getByRole('link', { name: 'Recent venue' })).toBeVisible();
+  await expect(yourLines.getByRole('link', { name: 'Suggested venue' })).toHaveAttribute(
+    'href',
+    '/venues/suggested-venue',
+  );
+  await expect(yourLines.getByText('Matches your interests')).toBeVisible();
 });
 
 test('homepage requests do not generate PostgREST client errors', async ({ page }) => {

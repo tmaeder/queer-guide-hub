@@ -70,6 +70,41 @@ describe('city identity decision context', () => {
       true,
     );
   });
+  it('shows the recorded place types separately from the country check', () => {
+    const { rerender } = render(
+      <CityIdentityContext
+        value={{
+          ...city,
+          classification: {
+            status: 'unresolved',
+            classes: ['administrative district', null, 'administrative district'],
+          },
+          geography: { checks: { country_match: true } },
+        }}
+      />,
+    );
+    expect(screen.getByText('Recorded place types: administrative district')).toBeInTheDocument();
+    expect(screen.getByText('The coordinates match the assigned country.')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Confirm whether the source identifies a city, town, or village at these coordinates.',
+      ),
+    ).toBeInTheDocument();
+    rerender(
+      <CityIdentityContext
+        value={{
+          ...city,
+          classification: { status: 'unresolved', classes: [] },
+          geography: { checks: { country_match: false } },
+        }}
+      />,
+    );
+    expect(screen.getByText('The available sources record no place type.')).toBeInTheDocument();
+    expect(
+      screen.getByText('The coordinates conflict with the assigned country.'),
+    ).toBeInTheDocument();
+  });
+
   it('distinguishes unavailable relationships from a fully checked empty place', () => {
     const { rerender } = render(
       <CityIdentityContext
