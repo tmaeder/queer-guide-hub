@@ -8,6 +8,7 @@ const state = vi.hoisted(() => ({
   isFetching: false,
   error: null as Error | null,
   venueQuery: {} as Record<string, unknown>,
+  articleRecord: null as Record<string, unknown> | null,
 }));
 vi.mock('../JevReviewStatus', () => ({ JevReviewStatus: () => null }));
 vi.mock('@/hooks/useReviewCase', () => ({
@@ -16,6 +17,9 @@ vi.mock('@/hooks/useReviewCase', () => ({
   useRetryReviewResearch: () => ({ mutate: vi.fn(), isPending: false, error: null }),
 }));
 vi.mock('@/hooks/useVenueMatchReview', () => ({ useVenueMatchReview: () => state.venueQuery }));
+vi.mock('@/hooks/useReviewContext', () => ({
+  useReviewContext: () => ({ data: { record: state.articleRecord }, isFetching: false }),
+}));
 vi.mock('@/hooks/useDebounce', () => ({ useDebounce: (value: string) => value }));
 vi.mock('@/components/admin/shell/AdminShell', () => ({
   useAdminShell: () => ({ openEditor: vi.fn() }),
@@ -44,6 +48,7 @@ const item = (family = 'artwork', stage = 'ready'): ReviewItem =>
   }) as unknown as ReviewItem;
 describe('review cases', () => {
   beforeEach(() => {
+    state.articleRecord = null;
     state.venueQuery = {
       data: {
         event: {
@@ -77,6 +82,42 @@ describe('review cases', () => {
       members: [member('one'), member('two')],
       research: null,
     };
+  });
+  it('shows the article and model hints on a pending entity-link case', () => {
+    state.articleRecord = {
+      title: 'Local elections in Delaware',
+      url: 'https://publisher.test/delaware-election',
+      content: 'Delaware voters went to the polls on Tuesday.',
+      quality_decision: { linkedCities: ['Delaware'] },
+    };
+    state.data!.family = 'record';
+    state.data!.members = [
+      {
+        ...member('one'),
+        queue_type: 'entity-links',
+        entity_table: 'news_articles',
+        content_type: 'city',
+        title: 'Delaware Water Gap',
+        meta: { candidate_id: null, context_snippet: 'low_confidence' },
+      },
+    ];
+    render(
+      <ReviewCaseDetail
+        item={item('record', 'blocked')}
+        busy={false}
+        onDecision={vi.fn()}
+        onBack={vi.fn()}
+        onSkip={vi.fn()}
+      />,
+    );
+    const evidence = within(screen.getByRole('region', { name: 'Article and entity proposal' }));
+    expect(evidence.getByText('Delaware Water Gap')).toBeInTheDocument();
+    expect(evidence.getByText('Delaware', { exact: true })).toBeInTheDocument();
+    expect(evidence.getByText('Delaware voters went to the polls on Tuesday.')).toBeInTheDocument();
+    expect(evidence.getByRole('link', { name: 'Open original article' })).toHaveAttribute(
+      'href',
+      'https://publisher.test/delaware-election',
+    );
   });
   it('requires evidence and confirmation, preserves exclusions and submits current evidence version', () => {
     const save = vi.fn();
@@ -142,6 +183,45 @@ describe('review cases', () => {
     expect(
       screen.getByRole('button', { name: 'Queue another research attempt' }),
     ).toBeInTheDocument();
+  });
+  it('compares the live saved start with the extracted date and links the extraction page', () => {
+    state.data!.family = 'record';
+    state.data!.members = [
+      {
+        ...member('one'),
+        queue_type: 'general-review',
+        subtitle: 'date mismatch',
+        meta: {
+          review_type: 'date_mismatch',
+          details: {
+            start_date: '2026-10-30T20:00:00Z',
+            extracted_date: '2026-11-08',
+            page: 'https://example.test/programme',
+          },
+        },
+      },
+    ];
+    render(
+      <ReviewCaseDetail
+        item={item('record', 'blocked')}
+        busy={false}
+        onDecision={vi.fn()}
+        onBack={vi.fn()}
+        onSkip={vi.fn()}
+      />,
+    );
+    const comparison = within(screen.getByRole('region', { name: 'Event date comparison' }));
+    expect(comparison.getByText('Saved start (UTC)')).toBeInTheDocument();
+    expect(comparison.getByText('2026-11-01 20:00')).toHaveAttribute(
+      'datetime',
+      '2026-11-01T20:00:00.000Z',
+    );
+    expect(comparison.getByText('2026-11-08')).toHaveAttribute('datetime', '2026-11-08');
+    expect(comparison.getByText(/saved start changed/)).toBeInTheDocument();
+    expect(comparison.getByRole('link', { name: 'Open page used for extraction' })).toHaveAttribute(
+      'href',
+      'https://example.test/programme',
+    );
   });
   it('shows live artwork and accepts decisions when the server routes blocked research to a person', () => {
     const detail = state.data!;

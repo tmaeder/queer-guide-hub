@@ -3,7 +3,7 @@
 // Strict guards prevent false positives (e.g. "Georgia" the US state vs the country).
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { proseStateContradiction } from '../city-collision-guard.ts'
+import { proseStateContradiction, US_STATE_BY_ABBR } from '../city-collision-guard.ts'
 
 export type EntityType = 'country' | 'city' | 'region' | 'venue' | 'event' | 'personality' | 'organisation'
 
@@ -69,6 +69,23 @@ export interface ResolveResult {
 
 const AUTO_LINK_MIN = 0.85
 const REVIEW_MIN = 0.6
+const US_STATE_NAMES = new Set(Object.values(US_STATE_BY_ABBR).map(norm))
+
+const mentionKey = (value: string) =>
+  norm(value.normalize('NFKD').replace(/\p{M}/gu, '').replace(/[^\p{L}\p{N}]+/gu, ' '))
+
+function unsupportedStateExpansion(hint: string, candidate: string, text: string): boolean {
+  const state = norm(hint)
+  if (!US_STATE_NAMES.has(state)) return false
+  const city = mentionKey(candidate)
+  const stateToken = ` ${state} `
+  const cityToken = ` ${city} `
+  if (city === state || !cityToken.includes(stateToken)) return false
+  const prose = ` ${mentionKey(text)} `
+  const qualifier = cityToken.replace(stateToken, ' ').trim()
+  return prose.includes(stateToken) && !prose.includes(cityToken) &&
+    (qualifier.length <= 2 || !prose.includes(` ${qualifier} `))
+}
 
 export async function resolveEntities(
   supabase: SupabaseClient,
@@ -77,6 +94,7 @@ export async function resolveEntities(
   names: string[],
   body: string,
   nameColumn = 'name',
+  headline = '',
 ): Promise<ResolveResult> {
   const linked: EntityCandidate[] = []
   const needsReview: { name: string; score: number; reason: string }[] = []
@@ -159,6 +177,9 @@ export async function resolveEntities(
       }
     }
     if (!best) continue
+    // A state-only model hint must not manufacture a city by expanding to a
+    // substring match. Keep the candidate when the article names the city.
+    if (entityType === 'city' && unsupportedStateExpansion(name, best.name, headline + ' ' + body)) continue
 
     const guard = passesDisambiguationGuard(entityType, best.name, body)
     if (!guard.ok) {

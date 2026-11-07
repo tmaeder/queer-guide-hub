@@ -17,7 +17,7 @@ create table news_articles(id uuid primary key,url text unique,source_id uuid,pu
  content_hash text,media_type text default 'article',audio_url text,image_url text,duplicate_of_id uuid,
  quality_status text default 'passed',quality_decision jsonb,auto_publish_blocked_reasons text[]default '{}',
  content text default 'Keep cleaned catalogue body',title text default 'Cleaned headline',updated_at timestamptz default now(),
- archived_at timestamptz,last_quality_run_at timestamptz);
+ archived_at timestamptz,last_quality_run_at timestamptz,seo_indexable boolean default false);
 create table admin_review_cases(id uuid primary key,active boolean,item jsonb);
 create table admin_review_automation_jobs(case_id uuid,status text,lease_expires_at timestamptz);
 create table ingestion_staging(id uuid primary key,target_table text default 'news_articles',source_name text default 'rss-news',source_type text default 'rss-news',
@@ -268,17 +268,80 @@ begin
  if (r->>'duplicate_sources')::int<>0 then raise exception 'Original capture cleanup is not idempotent';end if;
 end $$;
 """
+covered_checks="""
+insert into news_articles(id,url,source_id,published_at,image_url,quality_decision,media_type,audio_url,
+  last_quality_run_at,seo_indexable,content)
+ select md5('covered-'||n)::uuid,
+   case when n=8 then 'https://publisher.test/' when n=9 then 'https://publisher.test/covered-9#fragment'
+     else 'https://publisher.test/covered-'||n||'/' end,
+   source_id,published_at,'https://publisher.test/approved-cover.jpg',quality_decision,'podcast',
+   'https://publisher.test/audio-'||n||'.mp3',now(),true,
+   'Intro. The episode notes provide a specific description of the conversation that is already in the catalogue. More context.'
+ from news_articles cross join generate_series(1,10)n where id=md5('1')::uuid;
+update news_articles set fingerprint=news_compute_fingerprint('Episode headline',published_at,source_id,url),
+ content_hash=encode(extensions.digest(convert_to(content,'UTF8'),'sha256'),'hex')
+ where id in(select md5('covered-'||n)::uuid from generate_series(1,10)n);
+insert into ingestion_staging(id,source_entity_id,raw_data,normalized_data,enriched_data)
+ select n.id,n.url,jsonb_build_object('url',n.url,'title','Episode headline','source_id',n.source_id,
+   'published_at',n.published_at,'content',body.text,'image_url',n.image_url,'media_type','podcast','audio_url',n.audio_url),
+   jsonb_build_object('name','Episode headline','urls',jsonb_build_array(n.url),'description',body.text,
+    'content','The episode notes provide a specific description of the conversation that is already in the catalogue.',
+    'metadata',jsonb_build_object('url',n.url,'source_id',n.source_id,'published_at',n.published_at,
+      'media_type','podcast','audio_url',n.audio_url,'excerpt',body.text)),
+   jsonb_build_object('quality_status','review','auto_publish_blocked_reasons','["truncated_body"]'::jsonb,
+     'quality_decision',n.quality_decision)
+ from news_articles n cross join lateral (
+   select case when n.id=md5('covered-3')::uuid then n.content else
+   'The episode notes provide a specific description of the conversation that is already in the catalogue.' end text
+ ) body where n.id in(select md5('covered-'||m)::uuid from generate_series(1,10)m);
+update ingestion_staging set raw_data=jsonb_set(raw_data,'{image_url}','"https://publisher.test/show-cover.jpg"')
+ where id in(md5('covered-2')::uuid,md5('covered-4')::uuid);
+update ingestion_staging set enriched_data=jsonb_set(enriched_data,'{auto_publish_blocked_reasons}','["image_unusable"]')
+ where id=md5('covered-2')::uuid;
+update ingestion_staging set normalized_data=jsonb_set(normalized_data,'{content}', '"New reporting omitted from the saved episode."')
+ where id=md5('covered-5')::uuid;
+update ingestion_staging set raw_data=jsonb_set(raw_data,'{audio_url}','"https://publisher.test/different.mp3"')
+ where id=md5('covered-6')::uuid;
+update ingestion_staging set enriched_data=jsonb_set(enriched_data,'{quality_decision,needsManualReview}','true')
+ where id=md5('covered-7')::uuid;
+update ingestion_staging set normalized_data=jsonb_set(normalized_data,'{content}',raw_data->'content')
+ where id=md5('covered-3')::uuid;
+update news_articles set seo_indexable=false where id=md5('covered-10')::uuid;
+create table covered_before_articles as select n.id,to_jsonb(n) value from news_articles n
+ where n.id in(select md5('covered-'||m)::uuid from generate_series(1,10)m);
+create table covered_before_stages as select s.id,to_jsonb(s) value from ingestion_staging s join covered_before_articles b using(id);
+do $test$
+declare result jsonb; expected jsonb:=jsonb_build_array(md5('covered-1')::uuid,md5('covered-2')::uuid,md5('covered-3')::uuid);
+begin
+ result:=api_private.reconcile_exact_news_source_duplicates(100,true);
+ if not (result->'staging_ids' @> expected and result->'staging_ids' <@ expected)
+ then raise exception 'Covered replay dry run %',result;end if;
+ result:=api_private.run_review_automatic_resolution(100,false);
+ if not (result#>'{exact_news_source_duplicates,staging_ids}' @> expected and result#>'{exact_news_source_duplicates,staging_ids}' <@ expected)
+ then raise exception 'Covered replay sweep %',result;end if;
+ if (select count(*) from admin_review_repairs where reason='covered_podcast_source_duplicate:v1')<>2
+ then raise exception 'Missing covered replay audit';end if;
+ if exists(select 1 from covered_before_articles b join news_articles n using(id) where b.value<>to_jsonb(n))
+ or exists(select 1 from covered_before_stages b join ingestion_staging s using(id)
+  where (expected @> jsonb_build_array(s.id) and (s.disposition<>'skipped' or s.enriched_data<>b.value->'enriched_data'))
+     or (not expected @> jsonb_build_array(s.id) and b.value<>to_jsonb(s)))
+ then raise exception 'Episode, evidence or protected staging row changed';end if;
+ if (api_private.reconcile_exact_news_source_duplicates(100,false)->>'duplicate_sources')::int<>0
+ then raise exception 'Covered replay cleanup is not idempotent';end if;
+end $test$;
+"""
 policy=(ROOT/'supabase/migrations/20261022180826_review_automatic_resolution.sql').read_text()
 policy=re.search(r'create function api_private.review_news_machine_outcome[\s\S]*?end \$\$;',policy).group(0)
 paths=list((ROOT/'supabase/migrations').glob('*_review_exact_news_source_duplicates.sql'));assert len(paths)==1
 podcast_migration=ROOT/'supabase/migrations/99991793933580_review_exact_podcast_source_replays.sql'
 technical_migration=ROOT/'supabase/migrations/99991794050184_review_podcast_technical_replays.sql'
 original_capture_migration=next((ROOT/'supabase/migrations').glob('*_review_original_podcast_capture_replays.sql'))
+covered_migration=ROOT/'supabase/migrations/99991794062518_review_covered_podcast_replays.sql'
 with tempfile.TemporaryDirectory(prefix='qg-news-source-dedup-')as tmp:
  data=Path(tmp)/'data';subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
  subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55499 -c listen_addresses=','-w','start'],check=True,stdout=subprocess.DEVNULL)
  try:
-  result=subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55499','-d','postgres','-v','ON_ERROR_STOP=1'],input=schema+policy+paths[0].read_text()+checks+repeat_migration.read_text()+repeat_checks+podcast_migration.read_text()+podcast_checks+technical_migration.read_text()+technical_checks+original_capture_migration.read_text()+original_capture_checks,text=True,capture_output=True)
+  result=subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55499','-d','postgres','-v','ON_ERROR_STOP=1'],input=schema+policy+paths[0].read_text()+checks+repeat_migration.read_text()+repeat_checks+podcast_migration.read_text()+podcast_checks+technical_migration.read_text()+technical_checks+original_capture_migration.read_text()+original_capture_checks+covered_migration.read_text()+covered_checks,text=True,capture_output=True)
   if result.returncode:raise RuntimeError(result.stderr)
  finally:subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
 print('PASS: source and editorial protections, scheduled duplicate cleanup, audit history and unchanged catalogue')
