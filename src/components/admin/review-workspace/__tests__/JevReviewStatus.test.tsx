@@ -54,3 +54,15 @@ it('shows operational retry reasons and the scheduled retry time', () => {
   expect(screen.getByText('Jev budget deferred')).toBeInTheDocument();
   expect(screen.getByText(/Next check:/)).toBeInTheDocument();
 });
+it('distinguishes a human decision from an evidence blocker', () => {
+  state.data.jobs = [
+    {
+      status: 'blocked',
+      attempts: 1,
+      outcome: { reason: 'visual_evidence_requires_human_review' },
+    },
+  ];
+  render(<JevReviewStatus caseId="case" />);
+  expect(screen.getByText('This case requires a human decision.')).toBeInTheDocument();
+  expect(screen.queryByText(/Waiting for new evidence/)).not.toBeInTheDocument();
+});

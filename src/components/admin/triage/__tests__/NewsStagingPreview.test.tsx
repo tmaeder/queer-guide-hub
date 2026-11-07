@@ -74,6 +74,19 @@ describe('NewsStagingPreview', () => {
 
     expect(screen.getByText('Atlanta')).not.toBeNull();
     expect(screen.getByText('Ginger Nichols')).not.toBeNull();
+    expect(screen.queryByText('Publication held for relevance')).toBeNull();
+  });
+
+  it('explains why a recommendation to publish was held for relevance', () => {
+    const news = readNewsStaging(normalized, {
+      auto_publish_blocked_reasons: ['low_relevance'],
+      quality_decision: { shouldPublish: true, isRelevant: true, relevanceScore: 0.6 },
+    });
+    render(<NewsStagingPreview news={news} />);
+
+    expect(screen.getByRole('heading', { name: 'Publication held for relevance' })).not.toBeNull();
+    expect(screen.getByText(/relevance score of 60%/)).not.toBeNull();
+    expect(screen.getByText(/whether the LGBTQ\+ connection is central/)).not.toBeNull();
   });
 
   it('shows the no-verdict state and falls back to the raw description', () => {

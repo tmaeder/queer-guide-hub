@@ -143,6 +143,48 @@ describe('review cases', () => {
       screen.getByRole('button', { name: 'Queue another research attempt' }),
     ).toBeInTheDocument();
   });
+  it('shows the venue merge trail and the fields still needing business evidence', () => {
+    state.data!.family = 'business_link';
+    state.data!.business_context = {
+      organization: { name: 'Earlier business profile', city: 'Berlin' },
+      previous_venue: { name: 'Earlier venue record' },
+      surviving_venue: {
+        name: 'Surviving venue record',
+        address: '42 Source Street',
+        website: 'https://venue.test/',
+      },
+      surviving_organization: {
+        id: 'surviving-organization',
+        name: 'Current business profile',
+        website: 'javascript:alert(1)',
+      },
+      venue_merge_at: '2026-10-21T12:00:00Z',
+      pending_fields: ['description', 'phone'],
+    };
+    render(
+      <ReviewCaseDetail
+        item={item('business_link', 'research')}
+        busy={false}
+        onDecision={vi.fn()}
+        onBack={vi.fn()}
+        onSkip={vi.fn()}
+      />,
+    );
+    const evidence = within(screen.getByRole('region', { name: 'Business and venue records' }));
+    expect(evidence.getByText('Earlier business profile')).toBeInTheDocument();
+    expect(evidence.getByText('Current business profile')).toBeInTheDocument();
+    expect(evidence.getByText('Earlier venue record')).toBeInTheDocument();
+    expect(evidence.getByText('Surviving venue record')).toBeInTheDocument();
+    expect(evidence.getByText('Description, Phone')).toBeInTheDocument();
+    expect(
+      evidence.getByRole('button', { name: 'Open surviving organization editor' }),
+    ).toBeEnabled();
+    expect(evidence.getByRole('link', { name: 'Venue website' })).toHaveAttribute(
+      'href',
+      'https://venue.test/',
+    );
+    expect(evidence.queryByRole('link', { name: 'Organization website' })).not.toBeInTheDocument();
+  });
   it('uses live comparison and requires renewed confirmation when case evidence changes', () => {
     state.data!.family = 'venue';
     state.data!.members = [member('source-one'), member('source-two')].map((m) => ({
@@ -188,6 +230,52 @@ describe('review cases', () => {
     expect(screen.getByRole('radio')).not.toBeChecked();
     expect(screen.getByRole('button', { name: 'Link selected venue' })).toBeDisabled();
   });
+  it('shows readable research leads without enabling a venue decision', () => {
+    state.data = {
+      ...state.data!,
+      family: 'venue',
+      research: {
+        status: 'blocked',
+        attempts: 1,
+        last_attempt_at: null,
+        next_attempt_at: null,
+        outcome: { reason: 'missing_action_candidate' },
+      },
+      candidates: [
+        {
+          name: 'Catalogue hall',
+          address: '42 Source Street',
+          distance_m: 40,
+          website: 'https://venue.test',
+        },
+        { venue_name: 'Another hall', name_exact: false, website: 'javascript:alert(1)' },
+      ],
+    };
+    render(
+      <ReviewCaseDetail
+        item={item('venue', 'research')}
+        busy={false}
+        onDecision={vi.fn()}
+        onBack={vi.fn()}
+        onSkip={vi.fn()}
+      />,
+    );
+    expect(
+      screen.getByText('Research found no verified catalogue match for this event.'),
+    ).toBeInTheDocument();
+    const leads = within(screen.getByRole('region', { name: 'Research venue candidates' }));
+    expect(leads.getByText('Catalogue hall')).toBeInTheDocument();
+    expect(leads.getByText('42 Source Street')).toBeInTheDocument();
+    expect(leads.getByText('40 m from the event pin')).toBeInTheDocument();
+    expect(leads.getByText('Another hall')).toBeInTheDocument();
+    expect(leads.getByText('Catalogue address not recorded')).toBeInTheDocument();
+    expect(leads.getByRole('link', { name: 'Open catalogue venue website' })).toHaveAttribute(
+      'href',
+      'https://venue.test/',
+    );
+    expect(screen.queryByRole('button', { name: 'Link selected venue' })).not.toBeInTheDocument();
+  });
+
   it('does not offer a decision when current evidence failed to load', () => {
     state.data = null;
     state.error = new Error('Evidence unavailable');

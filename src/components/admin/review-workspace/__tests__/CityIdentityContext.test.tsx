@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { CityIdentityContext } from '../CityIdentityContext';
+import { cityResearchExplanation } from '../reviewEvidence';
 
 const counts = {
   venues: 0,
@@ -45,6 +46,33 @@ const city = {
   official_website: 'javascript:alert(1)',
 };
 describe('city identity decision context', () => {
+  it('shows captured source links and distinguishes a capture from a verified match', () => {
+    const research = {
+      reason: 'missing_source',
+      evidence: [
+        {
+          url: 'https://gazetteer.example/places/123',
+          retrieved_at: '2026-11-07T10:00:00Z',
+          text: 'Official place-name evidence.',
+        },
+        { url: 'javascript:alert(1)', text: 'Unsafe source' },
+      ],
+    };
+    render(<CityIdentityContext value={city} research={research} />);
+    const sources = screen.getByRole('region', { name: 'Sources opened during research' });
+    expect(within(sources).getByRole('link', { name: 'Open gazetteer.example' })).toHaveAttribute(
+      'href',
+      'https://gazetteer.example/places/123',
+    );
+    expect(sources.querySelector('time')).toHaveAttribute('datetime', '2026-11-07T10:00:00.000Z');
+    expect(within(sources).getByText('Read captured text').closest('details')).not.toHaveAttribute(
+      'open',
+    );
+    expect(within(sources).queryByText('Unsafe source')).not.toBeInTheDocument();
+    expect(cityResearchExplanation(research)).toContain('still needs evidence');
+    expect(cityResearchExplanation({ reason: 'missing_source_url' })).toContain('no source link');
+  });
+
   it('puts the stored identity, source conflict and non-venue relationships on the page', () => {
     render(<CityIdentityContext value={city} />);
     const context = screen.getByRole('region', { name: 'Current city identity' });
@@ -116,6 +144,31 @@ describe('city identity decision context', () => {
     rerender(<CityIdentityContext value={{ name: 'Example', relationship_counts: counts }} />);
     expect(screen.getByText('No relationships are currently recorded.')).toBeInTheDocument();
     expect(screen.queryByText('Relationship counts are unavailable.')).not.toBeInTheDocument();
+  });
+  it('identifies a remaining lifecycle decision only when the place and coordinates are verified', () => {
+    const checks = {
+      country_match: true,
+      identity_verified: true,
+      coordinates_verified: true,
+      official_commune_code: '13004',
+    };
+    const placeholder = {
+      name: 'Arles',
+      shell_status: 'placeholder',
+      geography: { status: 'verified', checks },
+    };
+    const { rerender } = render(<CityIdentityContext value={placeholder} />);
+    expect(screen.getByRole('note', { name: 'Lifecycle decision' })).toHaveTextContent(
+      'Place identity verified. Lifecycle decision remains.',
+    );
+    expect(screen.getByText('13004')).toBeInTheDocument();
+    rerender(
+      <CityIdentityContext
+        value={{ ...placeholder, geography: { status: 'country_checked', checks } }}
+      />,
+    );
+    expect(screen.queryByRole('note', { name: 'Lifecycle decision' })).not.toBeInTheDocument();
+    expect(screen.getByText('Geography: Country checked')).toBeInTheDocument();
   });
   it('does not interpret missing or malformed coordinates as zero or make unsafe identifier links', () => {
     const { rerender } = render(

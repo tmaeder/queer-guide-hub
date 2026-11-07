@@ -1,5 +1,5 @@
 import { ExternalLink } from '@/components/icons';
-import { reviewHttpUrl } from './reviewEvidence';
+import { capturedResearchSources, reviewHttpUrl } from './reviewEvidence';
 
 const object = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
@@ -49,7 +49,13 @@ function Link({ url, children }: { url: unknown; children: React.ReactNode }) {
     </a>
   ) : null;
 }
-export function CityIdentityContext({ value }: { value: unknown }) {
+export function CityIdentityContext({
+  value,
+  research = {},
+}: {
+  value: unknown;
+  research?: Record<string, unknown>;
+}) {
   const city = object(value);
   if (!text(city.name))
     return (
@@ -73,6 +79,14 @@ export function CityIdentityContext({ value }: { value: unknown }) {
     : [];
   const geography = object(city.geography);
   const geographyChecks = object(geography.checks);
+  const verifiedPlaceholder =
+    city.shell_status === 'placeholder' &&
+    geography.status === 'verified' &&
+    geographyChecks.identity_verified === true &&
+    geographyChecks.coordinates_verified === true &&
+    geographyChecks.country_match === true;
+  const officialPlaceCode =
+    text(geographyChecks.official_settlement_code) ?? text(geographyChecks.official_commune_code);
   const qid = text(city.wikidata_qid);
   const validQid = qid && /^Q[1-9]\d*$/.test(qid) ? qid : null;
   const oldQid = text(retracted.qid);
@@ -109,9 +123,11 @@ export function CityIdentityContext({ value }: { value: unknown }) {
       ghost: 'Archived',
       merged: 'Merged',
     }[String(city.shell_status)] ?? 'Not recorded';
+  const captures = capturedResearchSources(research);
   const geographyStatus =
     {
       review: 'Review needed',
+      country_checked: 'Country checked',
       stale: 'Evidence needs refreshing',
       verified: 'Verified',
       not_applicable: 'Not applicable',
@@ -222,9 +238,29 @@ export function CityIdentityContext({ value }: { value: unknown }) {
       )}
       <div>
         <h4 className="text-sm font-semibold">Current verification</h4>
+        {verifiedPlaceholder && (
+          <div
+            className="mt-2 space-y-1 bg-muted/40 p-4"
+            role="note"
+            aria-label="Lifecycle decision"
+          >
+            <p className="text-sm font-semibold">
+              Place identity verified. Lifecycle decision remains.
+            </p>
+            <p className="text-sm leading-relaxed">
+              The source evidence confirms the place and its coordinates. Use the linked records
+              below to assess whether this placeholder should become an active place.
+            </p>
+          </div>
+        )}
         <p className="mt-2 text-sm leading-relaxed">
           {text(classification.reason) ?? 'Settlement classification has not been recorded.'}
         </p>
+        {officialPlaceCode && geography.status === 'verified' && (
+          <p className="mt-1 text-sm">
+            Official place code <span className="tabular-nums">{officialPlaceCode}</span>
+          </p>
+        )}
         {(placeTypes.length > 0 || settlementUnresolved) && (
           <p className="mt-1 text-sm">
             {placeTypes.length > 0
@@ -258,6 +294,30 @@ export function CityIdentityContext({ value }: { value: unknown }) {
           </div>
         )}
       </div>
+      {!!captures.length && (
+        <section aria-label="Sources opened during research">
+          <h4 className="text-sm font-semibold">Sources opened during research</h4>
+          <ul className="mt-2 divide-y divide-border">
+            {captures.map(({ url, retrieved, excerpt }, index) => (
+              <li key={`${url}:${index}`} className="space-y-1 py-2">
+                <Link url={url}>Open {new URL(url).hostname}</Link>
+                {retrieved && (
+                  <p className="text-xs text-muted-foreground">
+                    Captured{' '}
+                    <time dateTime={retrieved.toISOString()}>{retrieved.toLocaleString()}</time>
+                  </p>
+                )}
+                {excerpt && (
+                  <details className="text-sm">
+                    <summary className="cursor-pointer">Read captured text</summary>
+                    <p className="mt-2 break-words text-muted-foreground">{excerpt}</p>
+                  </details>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <div>
         <h4 className="text-sm font-semibold">Related records</h4>
         <p className="mt-2 max-w-prose text-sm leading-relaxed text-muted-foreground">

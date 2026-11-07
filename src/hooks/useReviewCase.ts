@@ -17,6 +17,7 @@ export interface ReviewCaseDetails {
   members: Array<ReviewItem & { current_record?: Record<string, unknown> | null }>;
   candidates?: Record<string, unknown>[] | null;
   city_context?: Record<string, unknown> | null;
+  business_context?: BusinessMergeEvidence | null;
   research_enabled?: boolean;
   research: {
     status: string;
@@ -25,6 +26,25 @@ export interface ReviewCaseDetails {
     next_attempt_at: string | null;
     outcome: Record<string, unknown>;
   } | null;
+}
+
+interface BusinessRecordEvidence {
+  id?: string;
+  name: string;
+  city?: string | null;
+  country?: string | null;
+  address?: string | null;
+  website?: string | null;
+  closed?: boolean;
+}
+
+export interface BusinessMergeEvidence {
+  organization: BusinessRecordEvidence;
+  previous_venue: BusinessRecordEvidence | null;
+  surviving_venue: BusinessRecordEvidence | null;
+  surviving_organization: BusinessRecordEvidence | null;
+  venue_merge_at: string | null;
+  pending_fields: string[];
 }
 export const reviewCaseInfo = (item: ReviewItem) => item.meta.review_case as ReviewCaseInfo;
 export function useReviewCase(id: string) {
