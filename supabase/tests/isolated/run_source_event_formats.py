@@ -166,7 +166,53 @@ begin
  ) then raise exception 'Recurring source formats or ambiguity boundary changed';end if;
 end $test$;
 """
-fixture_sql = schema + paths[0].read_text() + checks + title_formats + title_checks + additional_formats + title_checks + additional_checks + recurring_formats + title_checks + additional_checks + recurring_checks
+publisher_formats = next((ROOT/'supabase/migrations').glob('*_review_explicit_publisher_formats.sql')).read_text()
+publisher_checks = """
+insert into events(id,title,start_date,external_id,data_source)
+ select md5(n::text)::uuid,case when n=33 then 'LGBT Families Meet-Up' else 'Pride Fundraiser Dinner' end,
+  '2026-10-25T12:00:00Z',n::text,'lgbtnetwork' from generate_series(32,37)n;
+insert into event_sources
+ select e.id,e.id,e.data_source,e.external_id,'https://lgbtnetwork.org/events/occurrence-'||e.external_id||'/',repeat('a',64),
+ jsonb_build_object('normalized',jsonb_build_object('sourceId',e.external_id,'title',e.title,'start_date',e.start_date,
+  'metadata',jsonb_build_object('source','lgbtnetwork','wp_id',e.external_id,
+   'url','https://lgbtnetwork.org/events/occurrence-'||e.external_id||'/')),
+  'raw',jsonb_build_object('id',e.external_id,'title',e.title,'start',e.start_date,'slug','occurrence-'||e.external_id,
+   'url','https://lgbtnetwork.org/events/occurrence-'||e.external_id||'/'))
+ from events e where e.data_source='lgbtnetwork';
+insert into event_quality_issues(id,event_id,issue_code)
+ select id,id,'CATEGORY_UNRESOLVED' from events where data_source='lgbtnetwork';
+update event_sources set payload=jsonb_set(payload,'{normalized,metadata,wp_id}','"wrong"') where id=md5('34')::uuid;
+update event_sources set payload=jsonb_set(payload,'{raw,start}','"2026-10-26T12:00:00Z"') where id=md5('35')::uuid;
+update event_sources set source_url='https://untrusted.example/occurrence-36/' where id=md5('36')::uuid;
+update event_quality_issues set evidence='{"manual_hold":true}' where id=md5('37')::uuid;
+do $test$ declare result jsonb;begin
+ if exists(
+  select 1 from (values
+   ('Pancake Breakfast','social'),
+   ('Open Play Tennis','sports'),
+   ('Run from Downtown Park','sports'),
+   ('Bikepacking 101 with Devin','workshop'),
+   ('Halloween Queeraoke','social'),
+   ('Townie Masquerade Ball','party'),
+   ('Family Meet-Up','meetup'),
+   ('Fall Into Pride Fundraiser Dinner','fundraiser'),
+   ('Pancake Breakfast and Open Play Tennis',null),
+   ('Masquerade Ball and Drag Show',null),
+   ('Bikepacking 101 and Family Meet-Up',null),
+   ('Halloween at the Park',null)
+  ) examples(title,expected) where api_private.source_explicit_event_format(title) is distinct from expected
+ ) then raise exception 'Publisher format or ambiguity boundary changed'; end if;
+ result:=api_private.reconcile_source_event_formats(100,false);
+ if (result->>'corrected_events')::int<>2
+  or (select event_type from events where id=md5('32')::uuid)<>'fundraiser'
+  or (select event_type from events where id=md5('33')::uuid)<>'meetup'
+  or exists(select 1 from events where id in(select md5(n::text)::uuid from generate_series(34,37)n) and event_type<>'other')
+ then raise exception 'Publisher identity guards failed %',result; end if;
+end $test$;
+"""
+fixture_sql = (schema + paths[0].read_text() + checks + title_formats + title_checks + additional_formats
+               + title_checks + additional_checks + recurring_formats + title_checks + additional_checks + recurring_checks
+               + publisher_formats + title_checks + additional_checks + recurring_checks + publisher_checks)
 if '--temporary-sql' in sys.argv:
  # Hosted fallback when local disk cannot fit initdb. Every fixture and function
  # lives in this transaction's pg_temp namespace; no public DDL or data writes.
@@ -187,4 +233,4 @@ with tempfile.TemporaryDirectory(prefix='qg-source-format-')as tmp:
   if result.returncode:raise RuntimeError(result.stderr)
  finally:
   subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
-print('PASS: 31 source/ownership cases, ambiguous formats, dry/bounds/pause/grants, native hook composition, protected content, audit and idempotency')
+print('PASS: 37 source/ownership cases, ambiguous formats, dry/bounds/pause/grants, native hook composition, protected content, audit and idempotency')
