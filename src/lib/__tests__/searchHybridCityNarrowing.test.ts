@@ -18,6 +18,7 @@ const verify = sql.slice(sql.indexOf('do $verify$'));
 describe('search_hybrid city narrowing', () => {
   it('narrows only for a single lexeme the frequency table knows, at >= 500 docs', () => {
     expect(mig).toContain('p.dcity is not null and d.n_lex = 1 and d.n_found = 1 and d.df >= 500');
+    expect(mig).toContain("numnode(websearch_to_tsquery(''simple'',unaccent(p.eff_q))) = 1");
     // The rejected AND estimates must not come back.
     expect(mig).not.toContain('exp(sum(ln(');
     expect(mig).not.toContain('d.n_found = d.n_lex');
@@ -25,8 +26,9 @@ describe('search_hybrid city narrowing', () => {
 
   it('adds the city term to the FTS arm only when narrowing', () => {
     expect(mig).toContain(
-      "websearch_to_tsquery(''simple'',unaccent(case when (select narrow from kwdf) then p.eff_q||chr(32)||p.dcity else p.eff_q end))),",
+      "websearch_to_tsquery(''simple'',unaccent(p.eff_q)) && plainto_tsquery(''simple'',unaccent(p.dcity))",
     );
+    expect(mig).toContain("else websearch_to_tsquery(''simple'',unaccent(p.eff_q))");
   });
 
   it('limits the trigram fallback to the city only when narrowing', () => {
@@ -67,9 +69,8 @@ describe('search_hybrid city narrowing', () => {
   });
 
   it('P7 does not assume a prod-sized corpus', () => {
-    // CI builds a small local database (~65 lexemes reach 200 docs); a fixed
-    // floor sized against prod (4,556) failed there.
-    expect(verify).toContain('if v_n = 0 and exists (select 1 from public.search_documents) then');
-    expect(verify).not.toMatch(/v_n < \d+/);
+    expect(verify).toContain("select (public.run_search_term_df_refresh()->>'lexemes')::int");
+    expect(verify).toContain('v_n is distinct from (select count(*) from public.search_term_df)');
+    expect(verify).not.toMatch(/v_n\s*[=<]\s*\d+/);
   });
 });
