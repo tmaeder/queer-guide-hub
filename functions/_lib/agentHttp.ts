@@ -1,4 +1,5 @@
 import routes from './appRoutes.json';
+import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
 
 /** RFC 9110: the most specific matching range determines quality. Prefer
  * HTML on a tie so wildcard browser requests retain the normal UI. */
@@ -53,7 +54,7 @@ export function isKnownAppPath(path: string): boolean {
 }
 
 export function appRedirect(path: string, locale: string, search: string): string | null {
-  const redirect = routes.redirects[path.replace(/\/+$/, '') as keyof typeof routes.redirects];
+  const redirect = routes.redirects[trimTrailingSlashes(path) as keyof typeof routes.redirects];
   if (!redirect) return null;
   const prefix = redirect.localized && locale !== 'en' ? '/' + locale : '';
   return (
