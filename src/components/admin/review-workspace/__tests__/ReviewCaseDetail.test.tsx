@@ -143,6 +143,40 @@ describe('review cases', () => {
       screen.getByRole('button', { name: 'Queue another research attempt' }),
     ).toBeInTheDocument();
   });
+  it('shows live artwork and accepts decisions when the server routes blocked research to a person', () => {
+    const detail = state.data!;
+    detail.item = item('artwork', 'ready');
+    detail.research = {
+      status: 'blocked',
+      attempts: 2,
+      last_attempt_at: null,
+      next_attempt_at: null,
+      outcome: { reason: 'visual_evidence_requires_human_review' },
+    };
+    detail.members[0].current_record!.images = ['https://example.test/artwork.jpg'];
+    detail.members[1].current_record!.images = [
+      'https://example.test/current.jpg',
+      'javascript:alert(1)',
+    ];
+    render(
+      <ReviewCaseDetail
+        item={item('artwork', 'research')}
+        busy={false}
+        onDecision={vi.fn()}
+        onBack={vi.fn()}
+        onSkip={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Accept shared artwork (2)' })).toBeInTheDocument();
+    expect(screen.getByText('The flagged image URL appears on the current event.')).toBeVisible();
+    expect(screen.getByRole('img', { name: 'Current artwork for Event two' })).toHaveAttribute(
+      'src',
+      'https://example.test/current.jpg',
+    );
+    expect(
+      screen.queryByRole('img', { name: 'Current artwork for Event one' }),
+    ).not.toBeInTheDocument();
+  });
   it('shows the venue merge trail and the fields still needing business evidence', () => {
     state.data!.family = 'business_link';
     state.data!.business_context = {

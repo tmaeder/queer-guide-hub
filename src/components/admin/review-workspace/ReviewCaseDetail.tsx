@@ -31,6 +31,12 @@ const asObject = (value: unknown): Record<string, unknown> =>
     : {};
 const asList = (value: unknown): Record<string, unknown>[] =>
   Array.isArray(value) ? value.map(asObject) : [];
+const flaggedArtwork = (member: ReviewItem) => {
+  const evidence = asObject(member.meta.evidence);
+  return [evidence.url, ...asList(evidence.images).map((image) => image.url)]
+    .map(reviewHttpUrl)
+    .filter((url): url is string => !!url);
+};
 const venueResearchReasons = new Map([
   ['missing_action_candidate', 'Research found no verified catalogue match for this event.'],
   ['missing_source', 'Research found no source that confirms the physical venue.'],
@@ -77,31 +83,27 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
     info.family === 'venue' && researchReason
       ? venueResearchReasons.get(researchReason)
       : undefined;
-  const stage = outcome.decision_ready
-    ? 'ready'
-    : research?.status === 'blocked'
-      ? 'blocked'
-      : info.stage;
+  const liveItem = data?.item;
+  const stage = liveItem
+    ? reviewCaseInfo(liveItem).stage
+    : outcome.decision_ready
+      ? 'ready'
+      : research?.status === 'blocked'
+        ? 'blocked'
+        : info.stage;
   const selected = members.filter((member) => !excluded.has(member.id));
   const events = new Set(members.map((member) => member.entity_id)).size;
   const candidates = asList(
     data?.candidates ?? outcome.candidates ?? asObject(members[0]?.meta?.details).candidates,
   );
-  const artwork = [
-    ...new Set(
-      members.flatMap((member) => {
-        const evidence = asObject(member.meta.evidence);
-        return [evidence.url, ...asList(evidence.images).map((image) => image.url)]
-          .map(reviewHttpUrl)
-          .filter((url): url is string => !!url);
-      }),
-    ),
-  ];
+  const artwork = [...new Set(members.flatMap(flaggedArtwork))];
   const canSave =
     !!data && !busy && !query.isFetching && confirmed && !!notes.trim() && selected.length > 0;
-  const actionItem = data
-    ? { ...item, meta: { ...item.meta, review_case: { ...info, fingerprint: data.fingerprint } } }
-    : item;
+  const actionItem =
+    liveItem ??
+    (data
+      ? { ...item, meta: { ...item.meta, review_case: { ...info, fingerprint: data.fingerprint } } }
+      : item);
   const title =
     info.family === 'artwork'
       ? 'Review shared artwork'
@@ -252,6 +254,16 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
               <div className="divide-y divide-border border-y border-border">
                 {members.map((member) => {
                   const current = member.current_record ?? {};
+                  const flagged = info.family === 'artwork' ? flaggedArtwork(member) : [];
+                  const liveImages =
+                    info.family === 'artwork' && Array.isArray(current.images)
+                      ? [
+                          ...new Set(
+                            current.images.map(reviewHttpUrl).filter((url): url is string => !!url),
+                          ),
+                        ]
+                      : [];
+                  const differentImages = liveImages.filter((url) => !flagged.includes(url));
                   return (
                     <div key={member.id} className="flex gap-4 py-4">
                       {info.family === 'artwork' && (
@@ -294,6 +306,38 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                           <p className="mt-1 text-sm">
                             Organizer: {String(current.organizer_name)}
                           </p>
+                        )}
+                        {info.family === 'artwork' && (
+                          <div className="mt-2">
+                            {flagged.length > 0 &&
+                              liveImages.some((url) => flagged.includes(url)) && (
+                                <p className="text-sm">
+                                  The flagged image URL appears on the current event.
+                                </p>
+                              )}
+                            {differentImages.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {differentImages.map((url) => (
+                                  <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                                    <img
+                                      src={url}
+                                      alt={`Current artwork for ${member.title}`}
+                                      className="h-20 w-28 bg-muted object-contain"
+                                      loading="lazy"
+                                      referrerPolicy="no-referrer"
+                                    />
+                                  </a>
+                                ))}
+                              </div>
+                            )}
+                            {liveImages.length === 0 && (
+                              <p className="text-sm text-muted-foreground">
+                                {member.current_record
+                                  ? 'The current record has no viewable artwork.'
+                                  : 'The current event record is unavailable.'}
+                              </p>
+                            )}
+                          </div>
                         )}
                         <div className="mt-1 flex flex-wrap gap-x-4">
                           <SourceLink value={current.website} label="Event source" />

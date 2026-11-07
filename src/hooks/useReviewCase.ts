@@ -15,6 +15,7 @@ export interface ReviewCaseDetails {
   family: ReviewCaseInfo['family'];
   fingerprint: string;
   members: Array<ReviewItem & { current_record?: Record<string, unknown> | null }>;
+  item?: ReviewItem;
   candidates?: Record<string, unknown>[] | null;
   city_context?: Record<string, unknown> | null;
   business_context?: BusinessMergeEvidence | null;
