@@ -84,7 +84,7 @@ jobs:
           working-directory: mobile
           script: |
             adb install -r android/app/build/outputs/apk/release/app-release.apk
-            maestro test .maestro --format junit --output maestro-report.xml --debug-output maestro-debug
+            maestro test .maestro --format junit --output maestro-report.xml --debug-output maestro-debug || (maestro hierarchy > maestro-hierarchy.json; adb exec-out screencap -p > maestro-screen.png; exit 1)
 
       - name: Upload Maestro report and screenshots
         if: always()
@@ -95,4 +95,7 @@ jobs:
           path: |
             mobile/maestro-report.xml
             mobile/maestro-debug
+            mobile/maestro-hierarchy.json
+            mobile/maestro-screen.png
+            ~/.maestro/tests
           if-no-files-found: ignore
