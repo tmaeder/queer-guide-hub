@@ -8,6 +8,7 @@ import { MemoryRouter, Routes, Route } from 'react-router';
 vi.mock('@xyflow/react', () => ({
   ReactFlowProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
+vi.mock('../tabs/DataOperationsTab', () => ({ default: () => <div data-testid="inventory" /> }));
 vi.mock('../tabs/OverviewTab', () => ({ default: () => <div data-testid="overview" /> }));
 vi.mock('../PipelineBuilder', () => ({ default: () => <div data-testid="builder" /> }));
 vi.mock('../tabs/MonitorTab', () => ({ default: () => <div data-testid="monitor" /> }));
@@ -90,6 +91,19 @@ describe('UnifiedDataOps', () => {
   it('legacy dedup deep links land on the overview', () => {
     renderAt('/admin/pipelines?tab=dedup');
     expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('opens the inventory by default and keeps the definitions accessible', async () => {
+    renderAt('/admin/pipelines');
+    await screen.findByTestId('inventory');
+    fireEvent.click(screen.getByRole('tab', { name: 'Pipeline and workflow definitions' }));
+    await screen.findByTestId('overview');
+  });
+
+  it('opens the builder for an existing pipeline deep link', async () => {
+    renderAt('/admin/pipelines?pipeline=news-ingestion');
+    expect(screen.getByRole('tab', { name: 'Builder' })).toHaveAttribute('aria-selected', 'true');
+    await screen.findByTestId('builder');
   });
 
   it('clicking tab switches content', () => {

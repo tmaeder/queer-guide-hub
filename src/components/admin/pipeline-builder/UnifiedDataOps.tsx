@@ -13,6 +13,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary, SectionErrorFallback } from '@/components/error/ErrorBoundary';
 
+const DataOperationsTab = lazy(() => import('./tabs/DataOperationsTab'));
 const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
 const PipelineBuilder = lazy(() => import('./PipelineBuilder'));
 const MonitorTab = lazy(() => import('./tabs/MonitorTab'));
@@ -42,6 +43,11 @@ type SubSection = {
   label: string;
   Component: React.LazyExoticComponent<React.ComponentType>;
 };
+
+const OVERVIEW_SUBS: SubSection[] = [
+  { key: 'inventory', label: 'Inventory', Component: DataOperationsTab },
+  { key: 'definitions', label: 'Pipeline and workflow definitions', Component: OverviewTab },
+];
 
 const HEALTH_SUBS: SubSection[] = [
   { key: 'monitor', label: 'Runs', Component: MonitorTab },
@@ -155,8 +161,10 @@ export default function UnifiedDataOps() {
   const [params, setParams] = useSearchParams();
   const rawTab = params.get('tab') ?? '';
   const alias = TAB_ALIAS[rawTab];
+  const hasPipeline = params.has('pipeline') || params.has('pipeline_id');
   const activeTab: Tab =
-    alias?.tab ?? (TAB_KEYS.includes(rawTab as Tab) ? (rawTab as Tab) : 'overview');
+    alias?.tab ??
+    (TAB_KEYS.includes(rawTab as Tab) ? (rawTab as Tab) : hasPipeline ? 'builder' : 'overview');
   const activeSub = alias?.sub ?? params.get('sub') ?? undefined;
 
   const switchTab = useCallback(
@@ -174,19 +182,17 @@ export default function UnifiedDataOps() {
   );
 
   let content: ReactNode;
-  if (activeTab === 'health') {
+  if (activeTab === 'overview') {
+    content = (
+      <SubTabs subs={OVERVIEW_SUBS} active={activeSub ?? 'inventory'} onSelect={switchSub} />
+    );
+  } else if (activeTab === 'health') {
     content = <SubTabs subs={HEALTH_SUBS} active={activeSub ?? 'monitor'} onSelect={switchSub} />;
   } else if (activeTab === 'sources') {
     content = <SubTabs subs={SOURCES_SUBS} active={activeSub ?? 'sources'} onSelect={switchSub} />;
   } else {
     const ActiveComponent =
-      activeTab === 'builder'
-        ? PipelineBuilder
-        : activeTab === 'news'
-          ? NewsTab
-          : activeTab === 'audit'
-            ? AuditTab
-            : OverviewTab;
+      activeTab === 'builder' ? PipelineBuilder : activeTab === 'news' ? NewsTab : AuditTab;
     content = (
       <ErrorBoundary
         section="data-ops-tab"

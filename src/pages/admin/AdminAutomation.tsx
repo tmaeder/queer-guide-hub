@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -105,7 +105,17 @@ export default function AdminAutomation() {
   const { isAdmin } = useAdminRoles();
   const [busySlug, setBusySlug] = useState<string | null>(null);
   const [filterSlug, setFilterSlug] = useState<string | null>(null);
-  const [detailSlug, setDetailSlug] = useState<string | null>(null);
+  const [params, setParams] = useSearchParams();
+  const detailSlug = params.get('automation');
+
+  function setDetailSlug(slug: string | null) {
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      if (slug) next.set('automation', slug);
+      else next.delete('automation');
+      return next;
+    });
+  }
 
   useRegisterAdminCommandAction({
     id: 'automation.view',
@@ -293,6 +303,9 @@ export default function AdminAutomation() {
           </Button>
           {isAdmin && (
             <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/admin/pipelines">Data operations overview</Link>
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
