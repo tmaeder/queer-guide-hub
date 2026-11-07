@@ -200,6 +200,31 @@ Deno.test('a location with no coordinates still parses — 40% of them have none
   assertEquals(v.lat, null)
 })
 
+Deno.test('the published address block preserves an empty street and ignores the copyright year', () => {
+  const html = `<a>${MARKER}</a><h1>Badischer Bahnhof Basel</h1>
+    <a class="event-dropdown-title">Adresse</a>
+    <div id="address">Badischer Bahnhof Basel<br><br>Basel</div>
+    <footer>2005 - <span>2026</span> © GayBasel</footer>`
+  const venue = parseLocation(html, 'https://www.gaybasel.org/locations/55/badischer-bahnhof-basel')
+  assertEquals(venue?.city, 'Basel')
+  assertEquals(venue?.street, null)
+})
+
+Deno.test('the structured address supplies street and postal code', () => {
+  const html = `<a>${MARKER}</a><h1>Kaserne</h1><a>Adresse</a>
+    <div id="address">Kaserne<br />Klybeckstrasse 1b<br />4057 Basel</div>`
+  const venue = parseLocation(html, 'https://www.gaybasel.org/locations/123/kaserne')
+  assertEquals(venue?.street, 'Klybeckstrasse 1b')
+  assertEquals(venue?.city, 'Basel')
+  assertEquals(venue?.postal, '4057')
+})
+
+Deno.test('a variable event location has no standalone venue import', () => {
+  const html = `<a>${MARKER}</a><h1>Wechselnder Austragungsort</h1>
+    <a>Adresse</a><div id="address">Wechselnder Austragungsort<br><br>Basel</div>`
+  assertEquals(parseLocation(html, 'https://www.gaybasel.org/locations/6637/wechselnder-austragungsort'), null)
+})
+
 Deno.test('stripTags decodes &amp; last so escaped markup stays escaped', () => {
   assertEquals(stripTags('<p>Bar &amp; Club</p>'), 'Bar & Club')
   assertEquals(stripTags('a &amp;lt;b&amp;gt;'), 'a &lt;b&gt;')
