@@ -77,6 +77,15 @@ describe('venue comparison', () => {
     );
     expect(screen.getByRole('radio')).not.toBeChecked();
   });
+  it('shows a shared street address as evidence without selecting the venue', () => {
+    (
+      state.query.data as { candidates: { street_address_overlap?: boolean }[] }
+    ).candidates[0].street_address_overlap = true;
+    render(<VenueMatchPanel item={item} busy={false} selection={null} onSelect={vi.fn()} />);
+    expect(screen.getByText(/Different name.*Street address overlaps/)).toBeVisible();
+    expect(screen.getByText(/Check whether the event names a room/)).toBeVisible();
+    expect(screen.getByRole('radio')).not.toBeChecked();
+  });
   it('invalidates a previous selection during background revalidation', () => {
     const onSelect = vi.fn();
     const { rerender } = render(
