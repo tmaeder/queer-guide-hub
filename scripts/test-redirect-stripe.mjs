@@ -121,6 +121,7 @@ try {
       'corsResponse',
       'jsonResponse',
       'errorResponse',
+      'trustedOrigin',
       checkoutCode,
     )(
       {
@@ -134,6 +135,14 @@ try {
       () => new Response(null),
       (body, status) => new Response(JSON.stringify(body), { status }),
       (message, status) => new Response(message, { status }),
+      // Same rule as _shared/supabase-client.ts trustedOrigin (Deno-tested in
+      // _shared/trusted-origin.test.ts): an Origin is used only if it is ours.
+      (req) => {
+        const origin = req.headers.get('Origin') ?? '';
+        return ['https://queer.guide', 'https://www.queer.guide'].includes(origin)
+          ? origin
+          : 'https://queer.guide';
+      },
     );
     for (const recurring of [false, true]) {
       for (const [click, expected] of [
@@ -147,7 +156,12 @@ try {
           new Request('https://fixture.example/checkout', {
             method: 'POST',
             // Public request headers must not choose the donation's workspace.
-            headers: { 'content-type': 'application/json', 'x-qg-redirect-workspace': other },
+            // Nor may a forged Origin choose where Stripe returns the donor.
+            headers: {
+              'content-type': 'application/json',
+              'x-qg-redirect-workspace': other,
+              origin: 'https://evil.example',
+            },
             body: JSON.stringify({
               amount: 500,
               email: 'fixture@example.org',
@@ -158,6 +172,11 @@ try {
           }),
         );
         assert.equal(response.status, 200);
+        for (const key of ['success_url', 'cancel_url'])
+          assert.ok(
+            sessions.at(-1)[key].startsWith('https://queer.guide/donate?'),
+            `${key} must not follow a forged Origin: ${sessions.at(-1)[key]}`,
+          );
         assert.equal(sessions.at(-1).metadata.qg_click_id, expected ?? undefined);
         if (recurring)
           assert.equal(
