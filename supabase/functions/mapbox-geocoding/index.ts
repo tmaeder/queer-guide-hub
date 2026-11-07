@@ -1,4 +1,4 @@
-
+import { getServiceClient } from '../_shared/supabase-client.ts';
 const ALLOWED_ORIGINS = new Set<string>([
   'https://queer.guide',
   'https://www.queer.guide',
@@ -22,12 +22,42 @@ function getOrigin(req: Request) {
   }
 }
 
-function _getClientIp(req: Request) {
+// Same precedence as create-checkout-session's rate limit.
+function getClientIp(req: Request) {
+  const cf = req.headers.get('cf-connecting-ip');
+  if (cf) return cf.trim();
   const xff = req.headers.get('x-forwarded-for');
   if (xff) return xff.split(',')[0].trim();
   const rip = req.headers.get('x-real-ip');
   if (rip) return rip.trim();
   return 'unknown';
+}
+
+// Per-IP lookup budget. The Origin/Referer allowlist below only stops other
+// websites' browsers: any script can send `Origin: https://queer.guide`, so it
+// is not access control. Without a limit, one script could push enough traffic
+// through this proxy for Nominatim to block our address, breaking geocoding
+// site-wide (its usage policy is about 1 request/second). Autocomplete is
+// debounced 300 ms with a 3-character minimum, ~10 calls per address typed, so
+// 120 per 10 minutes covers many searches and shared office/mobile IPs.
+const RATE_LIMIT_MAX = 120;
+const RATE_LIMIT_WINDOW_MINUTES = 10;
+
+async function withinRateLimit(req: Request): Promise<boolean> {
+  const ip = getClientIp(req);
+  if (ip === 'unknown') return true;
+  try {
+    const { data, error } = await getServiceClient().rpc('check_rate_limit_enhanced', {
+      identifier: ip,
+      max_attempts: RATE_LIMIT_MAX,
+      time_window_minutes: RATE_LIMIT_WINDOW_MINUTES,
+      action_type: 'geocoding',
+    });
+    // Fail open: a rate-limit outage must not break every address field.
+    return error ? true : data !== false;
+  } catch {
+    return true;
+  }
 }
 
 function buildCors(origin: string) {
@@ -89,6 +119,13 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: 'Origin not allowed' }), {
       status: 403,
       headers: { ...buildCors(origin), 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!(await withinRateLimit(req))) {
+    return new Response(JSON.stringify({ error: 'Too many requests. Please try again shortly.' }), {
+      status: 429,
+      headers: { ...buildCors(origin), 'Content-Type': 'application/json', 'Retry-After': '60' },
     });
   }
 
