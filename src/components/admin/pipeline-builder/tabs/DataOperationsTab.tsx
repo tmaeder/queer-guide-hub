@@ -201,11 +201,12 @@ export default function DataOperationsTab() {
           entry.kind === 'automation' && entry.identifier
             ? `/admin/automation?automation=${encodeURIComponent(entry.identifier)}`
             : REGISTRIES[entry.kind].href;
+        const action = entry.kind === 'automation' ? 'Manage' : 'Open';
         const label =
-          entry.kind === 'automation' ? `Manage ${entry.name}` : `Open registry for ${entry.name}`;
+          action === 'Manage' ? `${action} ${entry.name}` : `${action} registry for ${entry.name}`;
         return href ? (
           <Link to={href} className={linkClass} aria-label={label}>
-            Open
+            {action}
           </Link>
         ) : (
           '—'
