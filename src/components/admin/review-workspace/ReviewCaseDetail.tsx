@@ -62,6 +62,55 @@ function SourceLink({ value, label }: { value: unknown; label: string }) {
     </a>
   ) : null;
 }
+function EventCategoryContext({ member }: { member: ReviewItem }) {
+  const context = useReviewContext(member);
+  const event = context.data?.record;
+  const suggestion = asObject(asObject(member.meta.evidence).inference);
+  const confidence = suggestion.confidence;
+  const description = typeof event?.description === 'string' ? event.description.trim() : '';
+  return (
+    <section aria-label="Event category evidence" className="mt-4 space-y-4 bg-muted/40 p-4">
+      <h4 className="text-sm font-semibold">Event category evidence</h4>
+      <dl className="grid gap-4 text-sm sm:grid-cols-2">
+        <div>
+          <dt className="text-muted-foreground">Current category</dt>
+          <dd className="font-medium">
+            {typeof event?.event_type === 'string' ? event.event_type : 'Unavailable'}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground">Classifier suggestion</dt>
+          <dd className="font-medium">
+            {typeof suggestion.event_type === 'string' ? suggestion.event_type : 'Unavailable'}
+            {typeof confidence === 'number' &&
+              Number.isFinite(confidence) &&
+              confidence >= 0 &&
+              confidence <= 1 &&
+              ` · ${Math.round(confidence * 100)}% confidence at detection`}
+          </dd>
+        </div>
+      </dl>
+      {description ? (
+        <div>
+          <p className="text-xs font-medium">Current event description</p>
+          <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed">
+            {description}
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          {context.isFetching
+            ? 'Loading the current description…'
+            : 'Current description unavailable.'}
+        </p>
+      )}
+      <p className="text-xs text-muted-foreground">
+        Check the event source for the main activity. A venue type, organizer name or supporting
+        activity can influence the classifier suggestion.
+      </p>
+    </section>
+  );
+}
 function NewsEntityLinkContext({ member }: { member: ReviewItem }) {
   const context = useReviewContext(member);
   const article = context.data?.record;
@@ -466,6 +515,10 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                           <SourceLink value={current.website} label="Event source" />
                           <SourceLink value={current.ticket_url} label="Ticket source" />
                         </div>
+                        {member.queue_type === 'event-quality' &&
+                          member.meta.issue_code === 'CATEGORY_UNRESOLVED' && (
+                            <EventCategoryContext member={member} />
+                          )}
                       </div>
                     </div>
                   );
