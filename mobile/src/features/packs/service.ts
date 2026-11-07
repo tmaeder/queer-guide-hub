@@ -1,5 +1,6 @@
 import { PackError, type PackIndex, type PackIndexEntry } from './format';
 import { getMeta, installPack, removePack, setMeta, type PackDb } from './store';
+import { digestTileChunks, type TileFiles } from './tiles';
 import { verifyIndex, verifyPack } from './verify';
 import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
 
@@ -34,10 +35,20 @@ export const fetchText: FetchText = async (url) => {
   return res.text();
 };
 
-export function createPackService(db: PackDb, config: PackConfig = packConfig, get: FetchText = fetchText) {
+export function createPackService(
+  db: PackDb,
+  config: PackConfig = packConfig,
+  get: FetchText = fetchText,
+  tiles?: TileFiles,
+) {
   const base = () => {
     if (!packsConfigured(config)) throw new PackError('not_configured', 'Offline packs are not set up in this build');
     return trimTrailingSlashes(config.baseUrl!);
+  };
+  // The database already committed, or the operation already failed. A
+  // cleanup error should leave an unreferenced file rather than change that result.
+  const cleanup = async (uri?: string) => {
+    if (uri) await tiles?.remove(uri).catch(() => {});
   };
 
   return {
@@ -52,12 +63,31 @@ export function createPackService(db: PackDb, config: PackConfig = packConfig, g
     async install(entry: PackIndexEntry) {
       const text = await get(`${base()}/${encodeURIComponent(entry.id)}.json`);
       const pack = verifyPack(text, entry);
-      await installPack(db, pack, entry);
+      let tilesUri: string | undefined;
+      let previousTilesUri: string | undefined;
+      try {
+        if (entry.tiles && tiles) {
+          try {
+            tilesUri = await tiles.download(`${base()}/${encodeURIComponent(entry.tiles.file)}`, entry.id);
+          } catch (e) {
+            throw new PackError('network', e instanceof Error ? e.message : 'Tile download failed');
+          }
+          const digest = await digestTileChunks(tiles.chunks(tilesUri));
+          if (digest.sha256 !== entry.tiles.sha256 || digest.bytes !== entry.tiles.bytes) {
+            throw new PackError('digest_mismatch', `Map tiles for ${entry.id} do not match their signed metadata`);
+          }
+        }
+        previousTilesUri = await installPack(db, pack, entry, tilesUri);
+      } catch (error) {
+        await cleanup(tilesUri);
+        throw error;
+      }
+      await cleanup(previousTilesUri);
       return pack;
     },
 
-    remove(id: string) {
-      return removePack(db, id);
+    async remove(id: string) {
+      await cleanup(await removePack(db, id));
     },
   };
 }

@@ -5,7 +5,7 @@ import { space } from '@/theme/tokens';
 import { PackError } from './format';
 import { useInstallPack, useInstalledPacks, usePackIndex, useRemovePack } from './hooks';
 import { packsConfigured } from './service';
-import { mergeRows, SECURITY_CODES } from './rows';
+import { downloadMb, mergeRows, SECURITY_CODES } from './rows';
 
 export function OfflineCitiesSection() {
   const { t, i18n } = useTranslation();
@@ -54,6 +54,10 @@ export function OfflineCitiesSection() {
                   t('packs.places', { count: (row.installed?.venue_count ?? row.available?.venues) || 0 }),
                   row.installed ? t('packs.installed') : null,
                   row.installed ? t('packs.updated', { date: date(row.installed.generated_at) }) : null,
+                  row.available?.tiles ? t('packs.withMap') : null,
+                  row.available && (!row.installed || stale)
+                    ? t('packs.size', { mb: downloadMb(row.available) })
+                    : null,
                 ]
                   .filter(Boolean)
                   .join(' · ')}

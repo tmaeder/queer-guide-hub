@@ -218,8 +218,14 @@ export function subwayRoads(input: LayerSpec[]): LayerSpec[] {
 
 const cache: Partial<Record<string, StyleSpecification>> = {};
 
-export function mapStyle(scheme: 'light' | 'dark', lang = 'en'): StyleSpecification {
-  const key = `${scheme}:${lang}`;
+/**
+ * `offlineTiles`: a downloaded city archive (pmtiles:// url). Used whenever
+ * the map is over that city, so browsing there sends no tile requests at all
+ * and works without a connection. Glyphs and sprites are still fetched
+ * remotely, so labels need a connection (or MapLibre's cache) for now.
+ */
+export function mapStyle(scheme: 'light' | 'dark', lang = 'en', offlineTiles?: string): StyleSpecification {
+  const key = `${scheme}:${lang}:${offlineTiles ?? ''}`;
   const hit = cache[key];
   if (hit) return hit;
   const style: StyleSpecification = {
@@ -227,12 +233,14 @@ export function mapStyle(scheme: 'light' | 'dark', lang = 'en'): StyleSpecificat
     glyphs: `${ASSETS_BASE}/fonts/{fontstack}/{range}.pbf`,
     sprite: `${ASSETS_BASE}/sprites/v4/${scheme}`,
     sources: {
-      [BASEMAP_SOURCE_ID]: {
-        type: 'vector',
-        tiles: [TILE_URL],
-        maxzoom: 15,
-        attribution: '© Protomaps © OpenStreetMap',
-      },
+      [BASEMAP_SOURCE_ID]: offlineTiles
+        ? { type: 'vector', url: offlineTiles, attribution: '© Protomaps © OpenStreetMap' }
+        : {
+            type: 'vector',
+            tiles: [TILE_URL],
+            maxzoom: 15,
+            attribution: '© Protomaps © OpenStreetMap',
+          },
     },
     // POIs dropped, as on the web: their sprite icons carry their own hues.
     layers: subwayRoads(

@@ -9,6 +9,10 @@ name: Mobile offline packs
 #   var     PACK_R2_BUCKET         bucket name
 #   var     PACK_BASE_URL          public https URL serving that bucket
 #   var     PACK_PUBLIC_KEY        the matching public key (also EXPO_PUBLIC_PACK_PUBLIC_KEY)
+# Optional:
+#   var     PMTILES_SOURCE         planet .pmtiles URL to cut per-city map extracts from
+#                                  (e.g. a dated https://build.protomaps.com/YYYYMMDD.pmtiles).
+#                                  Unset = data-only packs; the map stays online.
 # Until they exist the scheduled run warns and exits; a manual run fails.
 
 on:
@@ -36,6 +40,7 @@ jobs:
       PACK_R2_BUCKET: ${{ vars.PACK_R2_BUCKET }}
       PACK_BASE_URL: ${{ vars.PACK_BASE_URL }}
       PACK_PUBLIC_KEY: ${{ vars.PACK_PUBLIC_KEY }}
+      PMTILES_SOURCE: ${{ vars.PMTILES_SOURCE }}
     steps:
       - name: Check configuration
         id: config
@@ -65,6 +70,16 @@ jobs:
       - if: steps.config.outputs.ready == 'true'
         run: npm ci
 
+      # Pinned binary + digest: it writes files that ship into the app.
+      - name: Install go-pmtiles
+        if: steps.config.outputs.ready == 'true' && env.PMTILES_SOURCE != ''
+        working-directory: .
+        run: |
+          curl -fsSL -o /tmp/pmtiles.tgz https://github.com/protomaps/go-pmtiles/releases/download/v1.31.2/go-pmtiles_1.31.2_Linux_x86_64.tar.gz
+          echo "3ed7dbf4ec2e6dfe5e25b6f70d1ffc932729f93c86db353bf514dd71010a312f  /tmp/pmtiles.tgz" | sha256sum -c -
+          sudo tar -xzf /tmp/pmtiles.tgz -C /usr/local/bin pmtiles
+          pmtiles version
+
       - name: Build packs (publishable key only — RLS keeps gated venues out)
         if: steps.config.outputs.ready == 'true'
         run: node scripts/packs/build.mjs --cities-file scripts/packs/cities.txt --out dist/packs
@@ -79,6 +94,11 @@ jobs:
             npx --yes wrangler@4 r2 object put "$PACK_R2_BUCKET/$1" --file "dist/packs/$1" \
               --content-type application/json --cache-control "public, max-age=300" --remote
           }
+          for f in dist/packs/*.pmtiles; do
+            [ -e "$f" ] || continue
+            npx --yes wrangler@4 r2 object put "$PACK_R2_BUCKET/$(basename "$f")" --file "$f" \
+              --content-type application/vnd.pmtiles --cache-control "public, max-age=300" --remote
+          done
           for f in dist/packs/*.json; do
             name=$(basename "$f"); [ "$name" = index.json ] || put "$name"
           done
