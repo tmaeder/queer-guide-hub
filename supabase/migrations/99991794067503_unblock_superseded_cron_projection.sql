@@ -190,7 +190,10 @@ $function$;
 
 do $verify$
 declare
-  v_source text := pg_get_functiondef('public.admin_automation_project_cron_runs(integer)'::regprocedure);
+  v_source text := regexp_replace(
+    pg_get_functiondef('public.admin_automation_project_cron_runs(integer)'::regprocedure),
+    '--[^' || chr(10) || ']*', '', 'g'
+  );
 begin
   if position('later.jobid = v_jobid' in v_source) = 0
      or position('later.runid > d.runid' in v_source) = 0
