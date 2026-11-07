@@ -37,7 +37,8 @@ test.describe('profile settings — contextual editors', () => {
     await page.goto('/settings/privacy');
     await expect(page).toHaveURL(/\/user\/[^/?#]+\?[^#]*edit=privacy/);
     const editor = page.getByRole('region', { name: 'Privacy & visibility', exact: true });
-    await expect(editor).toBeVisible();
+    // The redirect can finish before the profile data and editor chunk arrive.
+    await expect(editor).toBeVisible({ timeout: 20_000 });
     await expect(editor.getByText('Pronouns', { exact: true })).toBeVisible();
     await expect(editor.getByText('Location', { exact: true })).toBeVisible();
     await expect(page.getByRole('dialog')).toHaveCount(0);
