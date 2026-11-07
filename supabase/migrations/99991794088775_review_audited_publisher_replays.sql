@@ -120,9 +120,11 @@ grant execute on function api_private.reconcile_audited_publisher_replays(intege
 do $hook$
 declare
  definition text:=pg_get_functiondef('api_private.run_review_automatic_resolution(integer,boolean)'::regprocedure);
+ code_definition text:=regexp_replace(pg_get_functiondef('api_private.run_review_automatic_resolution(integer,boolean)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g');
  anchor text:=$anchor$jsonb_build_object('dry_run',p_dry_run,$anchor$;
 begin
- if (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>1 then
+ if (length(code_definition)-length(replace(code_definition,anchor,'')))/length(anchor)<>1
+    or (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>1 then
   raise exception 'Automatic resolution return contract changed';
  end if;
  execute replace(definition,anchor,'jsonb_build_object(''audited_publisher_replays'',api_private.reconcile_audited_publisher_replays(v_limit,p_dry_run)) || '||anchor);

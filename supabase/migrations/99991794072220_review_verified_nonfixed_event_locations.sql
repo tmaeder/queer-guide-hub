@@ -42,6 +42,7 @@ grant execute on function api_private.event_has_verified_nonfixed_location(uuid,
 do $patch$
 declare
   definition text;
+  code_definition text;
   target record;
   anchor text:='not api_private.event_source_lists_multiple_venues(e.id,e.data_source,e.external_id,e.venue_name,e.address)';
   addition text:=' and not api_private.event_has_verified_nonfixed_location(e.id,e.field_provenance)';
@@ -52,8 +53,10 @@ begin
     ('public.reconcile_event_venue_link_reviews()'::regprocedure,2)
   ) targets(fn,expected) loop
     definition:=pg_get_functiondef(target.fn);
-    if position(addition in definition)>0 then continue; end if;
-    if (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>target.expected then
+    code_definition:=regexp_replace(pg_get_functiondef(target.fn), '--[^' || chr(10) || ']*', '', 'g');
+    if position(addition in code_definition)>0 then continue; end if;
+    if (length(code_definition)-length(replace(code_definition,anchor,'')))/length(anchor)<>target.expected
+      or (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>target.expected then
       raise exception 'Venue review exclusion changed in %',target.fn;
     end if;
     execute replace(definition,anchor,anchor||addition);

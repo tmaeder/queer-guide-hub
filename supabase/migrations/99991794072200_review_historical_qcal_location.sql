@@ -59,12 +59,14 @@ grant execute on function api_private.event_has_corroborated_historical_qcal_loc
 do $patch$
 declare
   definition text:=pg_get_functiondef('public.event_quality_findings(uuid)'::regprocedure);
+  code_definition text:=regexp_replace(pg_get_functiondef('public.event_quality_findings(uuid)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g');
   anchor text:='and (start_date is null or start_date >= now() - interval ''1 year'')';
   exclusion text:='and not case when e.data_source=''qcal'' and coalesce(e.end_date,e.start_date)<now()-interval ''7 days''
           then api_private.event_has_corroborated_historical_qcal_location(e.id) else false end';
 begin
-  if position(exclusion in definition)>0 then return; end if;
-  if (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>1 then
+  if position(exclusion in code_definition)>0 then return; end if;
+  if (length(code_definition)-length(replace(code_definition,anchor,'')))/length(anchor)<>1
+     or (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>1 then
     raise exception 'Named venue finding scope changed';
   end if;
   execute replace(definition,anchor,anchor||E'\n        '||exclusion);
