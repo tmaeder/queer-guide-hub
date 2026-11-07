@@ -355,28 +355,23 @@ describe('pack service', () => {
       maxzoom: 15,
     };
     /** In-memory stand-in for tilesFs: records what reached disk. */
-    function fakeFiles(served: Uint8Array) {
+    function fakeFiles(...archives: Uint8Array[]) {
       const disk = new Map<string, Uint8Array>();
       const urls: string[] = [];
       const files: TileFiles = {
         async download(url, id) {
           urls.push(url);
-          disk.set(`${id}.part`, served);
-          return `${id}.part`;
+          const uri = `file:///docs/packs/${id}-${urls.length}.pmtiles`;
+          disk.set(uri, archives[urls.length - 1] ?? archives[0]!);
+          return uri;
         },
         async *chunks(uri) {
           const b = disk.get(uri)!;
           yield b.slice(0, 3);
           yield b.slice(3);
         },
-        async commit(temp, id) {
-          disk.set(`${id}.pmtiles`, disk.get(temp)!);
-          disk.delete(temp);
-          return `file:///docs/packs/${id}.pmtiles`;
-        },
-        async remove(id) {
-          disk.delete(`${id}.pmtiles`);
-          disk.delete(`${id}.part`);
+        async remove(uri) {
+          disk.delete(uri);
         },
       };
       return { files, disk, urls };
@@ -392,9 +387,9 @@ describe('pack service', () => {
       const svc = createPackService(db, config, host({ 'zuerich.json': text }).get, files);
       await svc.install(entry);
       expect(urls).toEqual(['https://packs.example/v1/zuerich.pmtiles']);
-      expect([...disk.keys()]).toEqual(['zuerich.pmtiles']);
+      expect([...disk.keys()]).toEqual(['file:///docs/packs/zuerich-1.pmtiles']);
       expect(await listTiles(db)).toEqual([
-        { pack_id: 'zuerich', uri: 'file:///docs/packs/zuerich.pmtiles', bbox: tilesMeta.bbox, maxzoom: 15 },
+        { pack_id: 'zuerich', uri: 'file:///docs/packs/zuerich-1.pmtiles', bbox: tilesMeta.bbox, maxzoom: 15 },
       ]);
 
       await svc.remove('zuerich');
@@ -430,6 +425,25 @@ describe('pack service', () => {
       await svc.install(entryFor(text, p));
       expect(disk.size).toBe(0);
       expect(await listTiles(db)).toEqual([]);
+    });
+
+    it('keeps the installed archive when a replacement fails verification or database commit', async () => {
+      const db = memoryDb();
+      await migrate(db);
+      const p = pack();
+      const text = JSON.stringify(p);
+      const entry = { ...entryFor(text, p), tiles: tilesMeta };
+      const { files, disk } = fakeFiles(archive, archive.slice(0, -1), archive);
+      const get = host({ 'zuerich.json': text }).get;
+      const svc = createPackService(db, config, get, files);
+      await svc.install(entry);
+      const installed = await listTiles(db);
+
+      await expect(svc.install(entry)).rejects.toMatchObject({ code: 'digest_mismatch' });
+      const failingDb = { ...db, transaction: jest.fn().mockRejectedValue(new Error('disk full')) };
+      await expect(createPackService(failingDb, config, get, files).install(entry)).rejects.toThrow('disk full');
+      expect(await listTiles(db)).toEqual(installed);
+      expect([...disk.keys()]).toEqual([installed[0]!.uri]);
     });
 
     it('the index verifier rejects malformed tile metadata but accepts entries without it', () => {

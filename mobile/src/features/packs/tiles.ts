@@ -8,20 +8,22 @@ import type { Bbox } from './format';
  * real implementation is tilesFs.ts.
  */
 export interface TileFiles {
-  /** Download to a temporary location; resolves to its uri. */
+  /** Download to a unique, unreferenced file and return its URI. */
   download(url: string, id: string): Promise<string>;
   /** Stream the bytes at uri (for hashing without holding 50 MB at once). */
   chunks(uri: string): AsyncIterable<Uint8Array>;
-  /** Move a verified temporary download into place; resolves to the final uri. */
-  commit(tempUri: string, id: string): Promise<string>;
-  /** Delete the pack's archive and any partial download. Missing files are fine. */
-  remove(id: string): Promise<void>;
+  /** Delete exactly this file. Missing files are fine. */
+  remove(uri: string): Promise<void>;
 }
 
-export async function sha256OfChunks(chunks: AsyncIterable<Uint8Array>): Promise<string> {
+export async function digestTileChunks(chunks: AsyncIterable<Uint8Array>) {
   const h = sha256.create();
-  for await (const c of chunks) h.update(c);
-  return bytesToHex(h.digest());
+  let bytes = 0;
+  for await (const chunk of chunks) {
+    h.update(chunk);
+    bytes += chunk.byteLength;
+  }
+  return { sha256: bytesToHex(h.digest()), bytes };
 }
 
 export function bboxContains([w, s, e, n]: Bbox, lng: number, lat: number) {

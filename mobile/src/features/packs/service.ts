@@ -1,6 +1,6 @@
 import { PackError, type PackIndex, type PackIndexEntry } from './format';
 import { getMeta, installPack, removePack, setMeta, type PackDb } from './store';
-import { sha256OfChunks, type TileFiles } from './tiles';
+import { digestTileChunks, type TileFiles } from './tiles';
 import { verifyIndex, verifyPack } from './verify';
 import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
 
@@ -45,6 +45,11 @@ export function createPackService(
     if (!packsConfigured(config)) throw new PackError('not_configured', 'Offline packs are not set up in this build');
     return trimTrailingSlashes(config.baseUrl!);
   };
+  // The database already committed, or the operation already failed. A
+  // cleanup error should leave an unreferenced file rather than change that result.
+  const cleanup = async (uri?: string) => {
+    if (uri) await tiles?.remove(uri).catch(() => {});
+  };
 
   return {
     async fetchIndex(): Promise<PackIndex> {
@@ -58,30 +63,31 @@ export function createPackService(
     async install(entry: PackIndexEntry) {
       const text = await get(`${base()}/${encodeURIComponent(entry.id)}.json`);
       const pack = verifyPack(text, entry);
-      // Tiles first: if the archive fails to download or verify, the old
-      // version of the pack (data and tiles) stays exactly as it was.
       let tilesUri: string | undefined;
-      if (entry.tiles && tiles) {
-        let temp: string;
-        try {
-          temp = await tiles.download(`${base()}/${encodeURIComponent(entry.tiles.file)}`, entry.id);
-        } catch (e) {
-          throw new PackError('network', e instanceof Error ? e.message : 'Tile download failed');
+      let previousTilesUri: string | undefined;
+      try {
+        if (entry.tiles && tiles) {
+          try {
+            tilesUri = await tiles.download(`${base()}/${encodeURIComponent(entry.tiles.file)}`, entry.id);
+          } catch (e) {
+            throw new PackError('network', e instanceof Error ? e.message : 'Tile download failed');
+          }
+          const digest = await digestTileChunks(tiles.chunks(tilesUri));
+          if (digest.sha256 !== entry.tiles.sha256 || digest.bytes !== entry.tiles.bytes) {
+            throw new PackError('digest_mismatch', `Map tiles for ${entry.id} do not match their signed metadata`);
+          }
         }
-        if ((await sha256OfChunks(tiles.chunks(temp))) !== entry.tiles.sha256) {
-          await tiles.remove(entry.id);
-          throw new PackError('digest_mismatch', `Map tiles for ${entry.id} do not match their signed digest`);
-        }
-        tilesUri = await tiles.commit(temp, entry.id);
+        previousTilesUri = await installPack(db, pack, entry, tilesUri);
+      } catch (error) {
+        await cleanup(tilesUri);
+        throw error;
       }
-      await installPack(db, pack, entry, tilesUri);
-      if (!tilesUri && tiles) await tiles.remove(entry.id);
+      await cleanup(previousTilesUri);
       return pack;
     },
 
     async remove(id: string) {
-      await removePack(db, id);
-      await tiles?.remove(id);
+      await cleanup(await removePack(db, id));
     },
   };
 }

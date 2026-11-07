@@ -100,12 +100,14 @@ const parseArr = (v: string | null): string[] | null => {
 };
 
 async function deletePackRows(db: PackDb, id: string) {
+  const [oldTiles] = await db.all<{ uri: string }>('SELECT uri FROM pack_tiles WHERE pack_id = ?', [id]);
   await db.run('DELETE FROM venues WHERE pack_id = ?', [id]);
   await db.run('DELETE FROM venues_fts WHERE pack_id = ?', [id]);
   await db.run('DELETE FROM hotlines WHERE pack_id = ?', [id]);
   await db.run('DELETE FROM events WHERE pack_id = ?', [id]);
   await db.run('DELETE FROM events_fts WHERE pack_id = ?', [id]);
   await db.run('DELETE FROM pack_tiles WHERE pack_id = ?', [id]);
+  return oldTiles?.uri;
 }
 
 /**
@@ -119,8 +121,9 @@ export async function installPack(
   /** local uri of the verified tile archive, when the entry carries one */
   tilesUri?: string,
 ) {
+  let previousTilesUri: string | undefined;
   await db.transaction(async (tx) => {
-    await deletePackRows(tx, pack.id);
+    previousTilesUri = await deletePackRows(tx, pack.id);
     for (const v of pack.venues) {
       // A venue now filed under a different city replaces its old copy.
       await tx.run('DELETE FROM venues_fts WHERE venue_id = ?', [v.id]);
@@ -193,6 +196,7 @@ export async function installPack(
       );
     }
   });
+  return previousTilesUri;
 }
 
 export interface InstalledTiles {
@@ -210,10 +214,12 @@ export async function listTiles(db: PackDb): Promise<InstalledTiles[]> {
 }
 
 export async function removePack(db: PackDb, id: string) {
+  let previousTilesUri: string | undefined;
   await db.transaction(async (tx) => {
-    await deletePackRows(tx, id);
+    previousTilesUri = await deletePackRows(tx, id);
     await tx.run('DELETE FROM packs WHERE id = ?', [id]);
   });
+  return previousTilesUri;
 }
 
 export interface InstalledPack {
