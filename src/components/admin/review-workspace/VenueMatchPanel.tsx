@@ -80,7 +80,7 @@ export function VenueMatchPanel({
             {publisher && (
               <div className="space-y-1">
                 <h4 className="font-semibold">Publisher capture</h4>
-                <p>{publisher.venue_name || 'Venue name missing'}</p>
+                <p>{publisher.venue_name || 'Publisher did not name the venue'}</p>
                 <p>{publisher.address || 'Address missing'}</p>
               </div>
             )}
@@ -141,8 +141,8 @@ export function VenueMatchPanel({
         </p>
       ) : context?.candidates.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No open catalogue venue matches in this city. Try another spelling or use the record
-          editor to investigate. The source venue name is preserved.
+          No open catalogue venue matches in this city. Try another spelling or check the publisher
+          listing for a building name.
         </p>
       ) : (
         context && (
@@ -179,13 +179,23 @@ export function VenueMatchPanel({
                         {candidate.address || 'Address not supplied'}
                       </span>
                       <span className="mt-2 block text-xs">
-                        {candidate.name_exact ? 'Exact name' : 'Similar name'} ·{' '}
+                        {candidate.name_exact
+                          ? 'Exact name'
+                          : candidate.street_address_overlap
+                            ? 'Different name'
+                            : 'Similar name'}{' '}
+                        · {candidate.street_address_overlap && 'Street address overlaps · '}
                         {candidate.distance_m == null
                           ? 'Coordinates unavailable'
                           : `${Math.round(candidate.distance_m).toLocaleString()} m from event coordinates`}
                       </span>
                     </span>
                   </label>
+                  {candidate.street_address_overlap && !candidate.name_exact && (
+                    <p className="ml-8 mt-2 text-xs text-muted-foreground">
+                      Check whether the event names a room or another venue at this address.
+                    </p>
+                  )}
                   {website && (
                     <a
                       className="ml-8 mt-2 inline-flex min-h-9 max-w-full items-center gap-2 break-all text-sm underline underline-offset-4"

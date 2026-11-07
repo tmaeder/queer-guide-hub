@@ -8,6 +8,7 @@ export interface VenueMatchCandidate {
   address: string | null;
   website: string | null;
   name_exact: boolean;
+  street_address_overlap?: boolean;
   distance_m: number | null;
 }
 export interface VenueMatchContext {
