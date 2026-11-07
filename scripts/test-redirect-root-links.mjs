@@ -9,6 +9,7 @@ await db.exec('SET ROLE service_role');
 const secret = 'fixture-root-secret-'.repeat(3);
 let handle;
 const source = [
+  '_shared/trim-trailing-slashes.ts',
   '_shared/link-policy.ts',
   '_shared/redirect-native-resolution.ts',
   '_shared/redirect-native-install-browser.ts',
