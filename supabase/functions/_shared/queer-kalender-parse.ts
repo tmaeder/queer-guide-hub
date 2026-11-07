@@ -128,6 +128,27 @@ export function endFromDates(dates: string | null | undefined, startIso: string)
   return Date.parse(iso) >= Date.parse(startIso) ? iso : null
 }
 
+/** Confirm a model's transposed day/month against the exact detail page. */
+export function confirmedQueerCalendarStartDate(
+  html: string, title: string, storedStart: string, extractedDate: string,
+): string | null {
+  const heading = /<h1\b[^>]*>([\s\S]*?)<\/h1>/i.exec(html)
+  if (!heading || text(heading[1]) !== title) return null
+
+  const starts = new Set(Array.from(
+    html.matchAll(/<div class="c-calendar-item__date">\s*<time datetime="([^"]+)"/g),
+    (match) => match[1],
+  ))
+  const [start] = starts
+  if (starts.size !== 1 || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/.test(start)) return null
+  const instant = Date.parse(start)
+  if (!Number.isFinite(instant) || instant !== Date.parse(storedStart)) return null
+
+  const localDate = start.slice(0, 10)
+  const [year, month, day] = localDate.split('-')
+  return day !== month && extractedDate === `${year}-${day}-${month}` ? localDate : null
+}
+
 /** Parse the /en/ listing page. */
 export function parseQueerKalender(html: string): QkEvent[] {
   const out: QkEvent[] = []
