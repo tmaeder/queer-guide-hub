@@ -1,7 +1,7 @@
 import { UUID } from "../_shared/redirect-api.ts";
 import { LEGACY_REDIRECT_WORKSPACE } from "../_shared/redirect-workspace.ts";
 import Stripe from "https://esm.sh/stripe@17?target=deno";
-import { corsResponse, jsonResponse, errorResponse, getServiceClient } from "../_shared/supabase-client.ts";
+import { corsResponse, jsonResponse, errorResponse, getServiceClient, trustedOrigin } from "../_shared/supabase-client.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-12-18.acacia" });
 
@@ -78,7 +78,9 @@ Deno.serve(async (req) => {
       if (data?.user) userId = data.user.id;
     }
 
-    const origin = req.headers.get("Origin") || "https://queer.guide";
+    // Allowlisted only: a direct request can send any Origin, and a raw header
+    // here would return the donor to that site after a genuine Stripe payment.
+    const origin = trustedOrigin(req);
     const successUrl = `${origin}/donate?status=success&session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${origin}/donate?status=cancel`;
 
