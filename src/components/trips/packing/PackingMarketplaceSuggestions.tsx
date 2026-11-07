@@ -104,7 +104,7 @@ export function PackingMarketplaceSuggestions({ tripId }: Props) {
                     rankPosition: s.rank,
                   })
                 }
-                onCtaClick={async () => {
+                onCtaClick={() => {
                   if (!s.externalUrl) {
                     toast({
                       title: t('trips.packing.noBuyUrl'),
@@ -112,7 +112,15 @@ export function PackingMarketplaceSuggestions({ tripId }: Props) {
                     });
                     return;
                   }
-                  await recordSuggestionClick({
+                  // Marketplace listings exit through the first-party /go
+                  // redirect (affiliate attribution, surface=trip_packing).
+                  const href =
+                    (s.listingId && marketplaceGoHref(s.listingId, 'trip_packing')) || s.externalUrl;
+                  // Open first, inside the click: awaiting the telemetry write
+                  // before window.open() spends the click's user activation,
+                  // which Safari treats as a blocked popup. Record in the background.
+                  window.open(href, '_blank', 'noopener,noreferrer');
+                  void recordSuggestionClick({
                     tripId,
                     provider: s.provider,
                     type: 'packing_product',
@@ -120,11 +128,6 @@ export function PackingMarketplaceSuggestions({ tripId }: Props) {
                     listingId: s.listingId,
                     rankPosition: s.rank,
                   });
-                  // Marketplace listings exit through the first-party /go
-                  // redirect (affiliate attribution, surface=trip_packing).
-                  const href =
-                    (s.listingId && marketplaceGoHref(s.listingId, 'trip_packing')) || s.externalUrl;
-                  window.open(href, '_blank', 'noopener,noreferrer');
                 }}
                 secondaryAction={{
                   label: t('trips.packing.addToChecklist'),
