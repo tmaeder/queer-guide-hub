@@ -25,6 +25,7 @@ import { getServiceClient, requireAdmin, corsResponse, errorResponse, jsonRespon
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { scrapedEventRejectReason } from '../_shared/scraped-event-guard.ts'
 import { scrapedNewsStagingSkipReason } from '../_shared/scraped-news-staging-guard.ts'
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -219,7 +220,7 @@ async function crawlViaSitemap(
   const config = source.scrape_config
   const maxPages = Math.min((config.limit as number) || 200, source.max_pages_per_run, MAX_PAGES_PER_INVOCATION)
   const includePatterns = (config.include_paths as string[]) || []
-  const baseUrl = source.url.replace(/\/+$/, '')
+  const baseUrl = trimTrailingSlashes(source.url)
   const pages: { url: string; html: string }[] = []
 
   // 1. Try to find and parse sitemap(s)
