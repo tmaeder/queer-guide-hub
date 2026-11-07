@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
 import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/languages';
 import type { BreadcrumbItem } from '@/contexts/BreadcrumbContext';
+import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
 
 /** Routes where no breadcrumb bar should ever render. */
 const HIDDEN_PREFIXES = [
@@ -111,7 +112,7 @@ export function homeCrumb(t: TFunction): BreadcrumbItem {
  * hidden route, so the global bar renders nothing there.
  */
 export function getRouteBreadcrumbs(pathname: string, t: TFunction): BreadcrumbItem[] | null {
-  const path = stripLocale(pathname).replace(/\/+$/, '') || '/';
+  const path = trimTrailingSlashes(stripLocale(pathname)) || '/';
   if (path === '/') return null;
   if (HIDDEN_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`))) return null;
 
