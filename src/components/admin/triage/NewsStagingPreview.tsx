@@ -86,6 +86,12 @@ export function NewsStagingPreview({ news, editor }: NewsStagingPreviewProps) {
   const [imageBroken, setImageBroken] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const d = news.decision;
+  const relevanceHeld =
+    d?.shouldPublish === true &&
+    d.isRelevant === true &&
+    typeof d.relevanceScore === 'number' &&
+    Number.isFinite(d.relevanceScore) &&
+    news.blockedReasons.includes('low_relevance');
   const keys = [
     ...news.blockedReasons.map(newsGateKey),
     ...(news.reviewReason ? [newsReviewKey(news.reviewReason)] : []),
@@ -151,6 +157,18 @@ export function NewsStagingPreview({ news, editor }: NewsStagingPreviewProps) {
             Original on {host ?? 'source'}
             <ExternalLink className="h-3 w-3" aria-hidden="true" />
           </a>
+        )}
+        {relevanceHeld && (
+          <aside className="space-y-1 rounded-element border border-border bg-muted/50 p-3 text-13">
+            <h3 className="font-semibold">Publication held for relevance</h3>
+            <p>
+              The model recommends publication. The relevance score of {pct(d.relevanceScore)} is
+              below the automatic publication cutoff.
+            </p>
+            <p className="text-muted-foreground">
+              Check whether the LGBTQ+ connection is central to the story.
+            </p>
+          </aside>
         )}
         {news.image && !imageBroken && (
           <figure className="space-y-1">
@@ -234,7 +252,7 @@ export function NewsStagingPreview({ news, editor }: NewsStagingPreviewProps) {
       )}
 
       {/* LLM verdict */}
-      <Section title="Verdict">
+      <Section title="Model recommendation">
         {d ? (
           <>
             <div className="flex flex-wrap items-center gap-1.5">
