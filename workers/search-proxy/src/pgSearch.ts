@@ -25,6 +25,8 @@ import { withBudget } from "./util";
 // this headroom covers the residual cold-cache tail. Two more seconds of wait is
 // better than a confident list of wrong results.
 const RPC_TIMEOUT_MS = 6000;
+// Leave room for edge and network overhead within the client's 5s deadline.
+const AUTOCOMPLETE_RPC_TIMEOUT_MS = 2500;
 
 export interface PgSearchArgs {
 	query: string;
@@ -297,7 +299,7 @@ export async function pgAutocomplete(
 		p_content_types: contentTypes && contentTypes.length ? contentTypes : null,
 		p_limit: limit,
 		p_include_gated: includeGated,
-	});
+	}, AUTOCOMPLETE_RPC_TIMEOUT_MS);
 	return (rows ?? []).map((r) => ({
 		id: r.objectID as string | undefined,
 		type: r.type as string | undefined,

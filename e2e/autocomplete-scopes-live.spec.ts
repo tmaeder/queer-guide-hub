@@ -48,12 +48,11 @@ for (const scenario of [
       .getByRole('button', { name: new RegExp(scenario.scope) })
       .click();
     const scoped = await response;
-    expect(scoped.status()).toBe(200);
     const payload = await scoped.json();
     const request = scoped.request();
     const timing = request.timing();
     const { requestStart, responseStart } = timing;
-    if (payload.suggestions.length === 0) {
+    if (!scoped.ok() || payload.suggestions.length === 0) {
       const headers = scoped.headers();
       const diagnostic = {
         url: scoped.url(),
@@ -65,13 +64,14 @@ for (const scenario of [
         serverTiming: headers['server-timing'],
       };
       const body = JSON.stringify(diagnostic, null, 2);
-      await test.info().attach('empty-scoped-autocomplete', {
+      await test.info().attach('scoped-autocomplete-response', {
         body,
         contentType: 'application/json',
       });
       // Keep the evidence in the job log even if report upload fails.
-      console.info('Empty scoped autocomplete response', body);
+      console.info('Unexpected scoped autocomplete response', body);
     }
+    expect(scoped.status()).toBe(200);
     expect(
       payload.suggestions.length,
       `Scoped autocomplete response after ${Math.round(responseStart - requestStart)} ms`,
