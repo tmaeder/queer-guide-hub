@@ -188,6 +188,52 @@ describe('review cases', () => {
     expect(screen.getByRole('radio')).not.toBeChecked();
     expect(screen.getByRole('button', { name: 'Link selected venue' })).toBeDisabled();
   });
+  it('shows readable research leads without enabling a venue decision', () => {
+    state.data = {
+      ...state.data!,
+      family: 'venue',
+      research: {
+        status: 'blocked',
+        attempts: 1,
+        last_attempt_at: null,
+        next_attempt_at: null,
+        outcome: { reason: 'missing_action_candidate' },
+      },
+      candidates: [
+        {
+          name: 'Catalogue hall',
+          address: '42 Source Street',
+          distance_m: 40,
+          website: 'https://venue.test',
+        },
+        { venue_name: 'Another hall', name_exact: false, website: 'javascript:alert(1)' },
+      ],
+    };
+    render(
+      <ReviewCaseDetail
+        item={item('venue', 'research')}
+        busy={false}
+        onDecision={vi.fn()}
+        onBack={vi.fn()}
+        onSkip={vi.fn()}
+      />,
+    );
+    expect(
+      screen.getByText('Research found no verified catalogue match for this event.'),
+    ).toBeInTheDocument();
+    const leads = within(screen.getByRole('region', { name: 'Research venue candidates' }));
+    expect(leads.getByText('Catalogue hall')).toBeInTheDocument();
+    expect(leads.getByText('42 Source Street')).toBeInTheDocument();
+    expect(leads.getByText('40 m from the event pin')).toBeInTheDocument();
+    expect(leads.getByText('Another hall')).toBeInTheDocument();
+    expect(leads.getByText('Catalogue address not recorded')).toBeInTheDocument();
+    expect(leads.getByRole('link', { name: 'Open catalogue venue website' })).toHaveAttribute(
+      'href',
+      'https://venue.test/',
+    );
+    expect(screen.queryByRole('button', { name: 'Link selected venue' })).not.toBeInTheDocument();
+  });
+
   it('does not offer a decision when current evidence failed to load', () => {
     state.data = null;
     state.error = new Error('Evidence unavailable');
