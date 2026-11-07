@@ -145,6 +145,31 @@ describe('NewsStagingPreview', () => {
     expect(screen.getByText('Raw description body')).not.toBeNull();
   });
 
+  it('identifies a Google News redirect and asks for a direct publisher URL', () => {
+    const url = 'https://news.google.com/rss/articles/test';
+    const news = readNewsStaging(
+      {
+        ...normalized,
+        urls: [url],
+        extraction_meta: { url, page_title: 'Google News', reason: 'page_identity_unconfirmed' },
+      },
+      {
+        review_source_text_recovery: {
+          contract: 'news_source_text_recovery.v1',
+          status: 'no_gain',
+          attempts: 1,
+        },
+      },
+    );
+    render(<NewsStagingPreview news={news} />);
+    expect(screen.getByText(/use its direct URL before approving/)).not.toBeNull();
+    expect(screen.getByText('Page title found')).not.toBeNull();
+    expect(
+      screen.getByRole('link', { name: 'Open checked Google News link' }).getAttribute('href'),
+    ).toBe(url);
+    expect(screen.queryByRole('link', { name: 'Check the publisher page' })).toBeNull();
+  });
+
   it('does not show an exhausted expired attempt as still running', () => {
     const news = readNewsStaging(normalized, {
       review_source_text_recovery: {

@@ -10,7 +10,7 @@ import {
  * same-tab pushes (custom event) and cross-tab changes (native `storage`).
  */
 export function useRecentlyViewed(): RecentlyViewedItem[] {
-  const [items, setItems] = useState<RecentlyViewedItem[]>([]);
+  const [items, setItems] = useState(getRecentlyViewed);
 
   useEffect(() => {
     const sync = () => setItems(getRecentlyViewed());

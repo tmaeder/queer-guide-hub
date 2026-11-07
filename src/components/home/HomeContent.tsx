@@ -11,11 +11,15 @@ import { SupportBand } from '@/components/home/subway/SupportBand';
 import { IntentMap } from '@/components/home/subway/IntentMap';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { lazyRetry } from '@/utils/lazyRetry';
 
 const YourLines = lazyRetry(() => import('@/components/home/YourLines'));
 const CityCards = lazyRetry(() => import('@/components/home/subway/CityCards'));
 const cityCardsLoading = <CityCardsSkeleton />;
+const recommendationsLoading = (
+  <div className="h-72 w-56 rounded-container bg-muted" aria-hidden="true" />
+);
 
 const browseLinks = [
   { to: '/travel', label: 'header.intents.travelling.label' },
@@ -44,6 +48,7 @@ function HomeSection({ section, children }: { section: string; children: ReactNo
 
 function RegionalContent({ showRegionPicker = true }: { showRegionPicker?: boolean }) {
   const { t } = useTranslation();
+  const recent = useRecentlyViewed();
 
   return (
     <>
@@ -64,13 +69,23 @@ function RegionalContent({ showRegionPicker = true }: { showRegionPicker?: boole
           </DeferredSection>
         </Band>
       </HomeSection>
-      <HomeSection section="your-lines">
-        <DeferredSection rootMargin="160px 0px">
-          <Suspense fallback={null}>
-            <YourLines />
-          </Suspense>
-        </DeferredSection>
-      </HomeSection>
+      {recent.length > 0 && (
+        <Band
+          title={t('home.yourLines.title', 'Your lines')}
+          description={t('home.yourLines.description', 'Places and things you looked at recently.')}
+        >
+          {/* Keep the map position stable when the deferred rail gains cards. */}
+          <div className="h-72 overflow-y-auto">
+            <HomeSection section="your-lines">
+              <DeferredSection rootMargin="160px 0px" fallback={recommendationsLoading}>
+                <Suspense fallback={recommendationsLoading}>
+                  <YourLines recent={recent} />
+                </Suspense>
+              </DeferredSection>
+            </HomeSection>
+          </div>
+        </Band>
+      )}
     </>
   );
 }

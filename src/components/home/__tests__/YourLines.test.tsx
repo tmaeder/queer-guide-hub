@@ -2,18 +2,16 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { RecentlyViewedItem } from '@/lib/recentlyViewed';
 import { screen } from '@testing-library/react';
 import { renderWithProviders, expectNoNestedInteractive } from '@/test/test-utils';
 
 const state = vi.hoisted(() => ({
-  recent: [] as unknown[],
+  recent: [] as RecentlyViewedItem[],
   discovery: [] as unknown[],
   discoveryEnabled: null as boolean | null,
 }));
 
-vi.mock('@/hooks/useRecentlyViewed', () => ({
-  useRecentlyViewed: () => state.recent,
-}));
 vi.mock('@/hooks/useRecentlyViewedImages', () => ({
   useRecentlyViewedImages: () => ({}),
 }));
@@ -26,13 +24,13 @@ vi.mock('@/hooks/useYourLines', () => ({
 
 import { YourLines } from '../YourLines';
 
-const recentItem = (slug: string) => ({
+const recentItem = (slug: string): RecentlyViewedItem => ({
   type: 'venue',
   slug,
   title: `Venue ${slug}`,
   city: 'Zürich',
   country: 'CH',
-  image: null,
+  ts: 0,
 });
 
 const discoveryCard = (slug: string) => ({
@@ -57,22 +55,21 @@ describe('YourLines', () => {
     // band already is. Rendering it here produced two near-identical lists,
     // the second claiming the content was the reader's.
     state.discovery = [discoveryCard('a'), discoveryCard('b')];
-    const { container } = renderWithProviders(<YourLines />);
-    expect(container.querySelector('h2')).toBeNull();
+    const { container } = renderWithProviders(<YourLines recent={state.recent} />);
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('does not even fire the discovery query for a cold visitor', () => {
     state.discovery = [discoveryCard('a')];
-    renderWithProviders(<YourLines />);
+    renderWithProviders(<YourLines recent={state.recent} />);
     expect(state.discoveryEnabled).toBe(false);
   });
 
   it('renders once the visitor has history, and leads with it', () => {
     state.recent = [recentItem('cranberry')];
     state.discovery = [discoveryCard('a')];
-    renderWithProviders(<YourLines />);
+    renderWithProviders(<YourLines recent={state.recent} />);
 
-    expect(screen.getByRole('heading', { level: 2 })).toBeTruthy();
     const cards = screen.getAllByRole('listitem');
     // The reader's own item comes first; discovery augments it.
     expect(cards[0].textContent).toContain('Venue cranberry');
@@ -82,7 +79,7 @@ describe('YourLines', () => {
   it('keeps room for recommendations even when the visitor has a full history', () => {
     state.recent = Array.from({ length: 8 }, (_, i) => recentItem(String(i)));
     state.discovery = [discoveryCard('7'), discoveryCard('new')];
-    renderWithProviders(<YourLines />);
+    renderWithProviders(<YourLines recent={state.recent} />);
 
     expect(screen.getByRole('link', { name: 'Discovered new' })).toHaveAttribute(
       'href',
@@ -94,11 +91,7 @@ describe('YourLines', () => {
   it('states a reason on every card', () => {
     state.recent = [recentItem('cranberry')];
     state.discovery = [discoveryCard('a')];
-    renderWithProviders(<YourLines />);
-    // A personalized card with no visible reason is just clutter that happens
-    // to be personal. History's reason is shared, so it is stated once on the
-    // band; each history card names what the thing is.
-    expect(screen.getByText(/you looked at recently/i)).toBeTruthy();
+    renderWithProviders(<YourLines recent={state.recent} />);
     expect(screen.getByText('Venue')).toBeTruthy();
     expect(screen.getByText('In Zürich')).toBeTruthy();
   });
@@ -106,7 +99,7 @@ describe('YourLines', () => {
   it('never nests an interactive element inside the overlay link', () => {
     state.recent = [recentItem('cranberry')];
     state.discovery = [discoveryCard('a')];
-    const { container } = renderWithProviders(<YourLines />);
+    const { container } = renderWithProviders(<YourLines recent={state.recent} />);
     expectNoNestedInteractive(container);
   });
 
@@ -117,7 +110,7 @@ describe('YourLines', () => {
       { ...discoveryCard('cranberry'), title: 'Discovered cranberry' },
       discoveryCard('other'),
     ];
-    renderWithProviders(<YourLines />);
+    renderWithProviders(<YourLines recent={state.recent} />);
     const cards = screen.getAllByRole('listitem');
     const titles = cards.map((c) => c.textContent ?? '');
     expect(titles.filter((t) => /cranberry/i.test(t)).length).toBe(1);
