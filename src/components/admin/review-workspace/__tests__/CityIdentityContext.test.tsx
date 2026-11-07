@@ -145,6 +145,31 @@ describe('city identity decision context', () => {
     expect(screen.getByText('No relationships are currently recorded.')).toBeInTheDocument();
     expect(screen.queryByText('Relationship counts are unavailable.')).not.toBeInTheDocument();
   });
+  it('identifies a remaining lifecycle decision only when the place and coordinates are verified', () => {
+    const checks = {
+      country_match: true,
+      identity_verified: true,
+      coordinates_verified: true,
+      official_commune_code: '13004',
+    };
+    const placeholder = {
+      name: 'Arles',
+      shell_status: 'placeholder',
+      geography: { status: 'verified', checks },
+    };
+    const { rerender } = render(<CityIdentityContext value={placeholder} />);
+    expect(screen.getByRole('note', { name: 'Lifecycle decision' })).toHaveTextContent(
+      'Place identity verified. Lifecycle decision remains.',
+    );
+    expect(screen.getByText('13004')).toBeInTheDocument();
+    rerender(
+      <CityIdentityContext
+        value={{ ...placeholder, geography: { status: 'country_checked', checks } }}
+      />,
+    );
+    expect(screen.queryByRole('note', { name: 'Lifecycle decision' })).not.toBeInTheDocument();
+    expect(screen.getByText('Geography: Country checked')).toBeInTheDocument();
+  });
   it('does not interpret missing or malformed coordinates as zero or make unsafe identifier links', () => {
     const { rerender } = render(
       <CityIdentityContext

@@ -79,6 +79,14 @@ export function CityIdentityContext({
     : [];
   const geography = object(city.geography);
   const geographyChecks = object(geography.checks);
+  const verifiedPlaceholder =
+    city.shell_status === 'placeholder' &&
+    geography.status === 'verified' &&
+    geographyChecks.identity_verified === true &&
+    geographyChecks.coordinates_verified === true &&
+    geographyChecks.country_match === true;
+  const officialPlaceCode =
+    text(geographyChecks.official_settlement_code) ?? text(geographyChecks.official_commune_code);
   const qid = text(city.wikidata_qid);
   const validQid = qid && /^Q[1-9]\d*$/.test(qid) ? qid : null;
   const oldQid = text(retracted.qid);
@@ -119,6 +127,7 @@ export function CityIdentityContext({
   const geographyStatus =
     {
       review: 'Review needed',
+      country_checked: 'Country checked',
       stale: 'Evidence needs refreshing',
       verified: 'Verified',
       not_applicable: 'Not applicable',
@@ -229,9 +238,29 @@ export function CityIdentityContext({
       )}
       <div>
         <h4 className="text-sm font-semibold">Current verification</h4>
+        {verifiedPlaceholder && (
+          <div
+            className="mt-2 space-y-1 bg-muted/40 p-4"
+            role="note"
+            aria-label="Lifecycle decision"
+          >
+            <p className="text-sm font-semibold">
+              Place identity verified. Lifecycle decision remains.
+            </p>
+            <p className="text-sm leading-relaxed">
+              The source evidence confirms the place and its coordinates. Use the linked records
+              below to assess whether this placeholder should become an active place.
+            </p>
+          </div>
+        )}
         <p className="mt-2 text-sm leading-relaxed">
           {text(classification.reason) ?? 'Settlement classification has not been recorded.'}
         </p>
+        {officialPlaceCode && geography.status === 'verified' && (
+          <p className="mt-1 text-sm">
+            Official place code <span className="tabular-nums">{officialPlaceCode}</span>
+          </p>
+        )}
         {(placeTypes.length > 0 || settlementUnresolved) && (
           <p className="mt-1 text-sm">
             {placeTypes.length > 0
