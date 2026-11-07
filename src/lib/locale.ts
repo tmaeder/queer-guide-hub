@@ -1,4 +1,5 @@
 import { isSupportedLocale } from '@/i18n/languages';
+import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
 
 /**
  * Locale-path helpers. The router mounts routes under an optional `/:locale`
@@ -100,6 +101,6 @@ const COMPACT_FOOTER_ROOTS = [
 ];
 
 export function isCompactFooterRoute(pathname: string): boolean {
-  const path = stripLocale(pathname).replace(/\/+$/, '') || '/';
+  const path = trimTrailingSlashes(stripLocale(pathname)) || '/';
   return COMPACT_FOOTER_ROOTS.some((root) => path === root || path.startsWith(`${root}/`));
 }

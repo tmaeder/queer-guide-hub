@@ -35,6 +35,13 @@ import { createClient } from '@supabase/supabase-js'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 
+/** Strips every trailing `/` in linear time (a `/\/+$/` regex is polynomial: js/polynomial-redos). */
+function trimTrailingSlashes(s) {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47) end--;
+  return s.slice(0, end);
+}
+
 const args = process.argv.slice(2)
 const PHASE = args[0]
 const DRY_RUN = args.includes('--dry-run')
@@ -50,7 +57,7 @@ const STATE_PATH = flag('state', './.image-migration-state.json')
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://xqeacpakadqfxjxjcewc.supabase.co'
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-const CDN_BASE = (process.env.IMAGE_CDN_BASE_URL || 'https://img.queer.guide').replace(/\/+$/, '')
+const CDN_BASE = trimTrailingSlashes(process.env.IMAGE_CDN_BASE_URL || 'https://img.queer.guide')
 const CDN_SECRET = process.env.IMAGE_CDN_ADMIN_SECRET || ''
 
 const STORAGE_MARKER = '/storage/v1/object/public/'
