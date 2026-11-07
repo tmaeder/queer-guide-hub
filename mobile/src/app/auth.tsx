@@ -1,5 +1,5 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { Alert, Button, Field, Text } from '@/components/ui';
@@ -28,7 +28,8 @@ type Method = 'code' | 'password' | 'newPassword';
 export default function AuthScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const params = useLocalSearchParams<{ code?: string }>();
+  const params = useLocalSearchParams<{ code?: string; reset?: string }>();
+  const exchangedCode = useRef<string | undefined>(undefined);
   const [mode, setMode] = useState<Mode>('signIn');
   const [method, setMethod] = useState<Method>('code');
   const [codeSent, setCodeSent] = useState(false);
@@ -41,14 +42,15 @@ export default function AuthScreen() {
   const [notice, setNotice] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<'email' | 'password' | 'otp' | null>(null);
 
-  // Recovery link: queerguide://auth?code=… — trade it for a session, then ask for a new password.
+  // Only a recovery callback should open the password replacement form.
   useEffect(() => {
     const code = params.code;
-    if (!code) return;
+    if (params.reset !== '1' || typeof code !== 'string' || !code || exchangedCode.current === code) return;
+    exchangedCode.current = code;
     exchangeRecoveryCode(code)
       .then(() => setMethod('newPassword'))
       .catch((e) => setError(t(`auth.errors.${authErrorKey(e)}`)));
-  }, [params.code, t]);
+  }, [params.code, params.reset, t]);
 
   async function run(action: () => Promise<void>) {
     setError(null);
@@ -79,7 +81,7 @@ export default function AuthScreen() {
       if (tooShort) return;
       return run(async () => {
         await updatePassword(password);
-        router.back();
+        router.replace('/');
       });
     }
     if (method === 'password') {

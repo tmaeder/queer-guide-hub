@@ -2,8 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-localization', () => ({ getLocales: () => [{ languageCode: 'en', regionCode: 'CH' }] }));
-const mockRouter = { back: jest.fn() };
-let mockParams: { code?: string } = {};
+const mockRouter = { back: jest.fn(), replace: jest.fn() };
+let mockParams: { code?: string; reset?: string } = {};
 jest.mock('expo-router', () => ({
   get router() { return mockRouter; },
   Stack: { Screen: () => null },
@@ -75,8 +75,8 @@ it('sends a sign-up code only after consent, carrying the consent moment', async
   expect(mockSendOtp).toHaveBeenCalledWith('a@b.ch', expect.any(Date));
 });
 
-it('turns a recovery link into a set-new-password form', async () => {
-  mockParams = { code: 'pkce-code' };
+it('turns a cold recovery link into a set-new-password form and returns home', async () => {
+  mockParams = { code: 'pkce-code', reset: '1' };
   mockExchange.mockResolvedValue(undefined);
   mockUpdatePassword.mockResolvedValue(undefined);
   await renderScreen();
@@ -84,6 +84,13 @@ it('turns a recovery link into a set-new-password form', async () => {
   await fireEvent.changeText(await screen.findByLabelText('New password'), 'longenough');
   await fireEvent.press(screen.getByRole('button', { name: 'Set new password' }));
   expect(mockUpdatePassword).toHaveBeenCalledWith('longenough');
+  expect(mockRouter.replace).toHaveBeenCalledWith('/');
+});
+
+it('does not treat an unmarked callback as password recovery', async () => {
+  mockParams = { code: 'pkce-code' };
+  await renderScreen();
+  expect(mockExchange).not.toHaveBeenCalled();
 });
 
 it('will not create an account until the 18+ terms consent is given', async () => {
