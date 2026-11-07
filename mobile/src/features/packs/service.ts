@@ -1,6 +1,7 @@
 import { PackError, type PackIndex, type PackIndexEntry } from './format';
 import { getMeta, installPack, removePack, setMeta, type PackDb } from './store';
 import { verifyIndex, verifyPack } from './verify';
+import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
 
 export const LAST_INDEX_KEY = 'last_index_generated_at';
 
@@ -36,7 +37,7 @@ export const fetchText: FetchText = async (url) => {
 export function createPackService(db: PackDb, config: PackConfig = packConfig, get: FetchText = fetchText) {
   const base = () => {
     if (!packsConfigured(config)) throw new PackError('not_configured', 'Offline packs are not set up in this build');
-    return config.baseUrl!.replace(/\/+$/, '');
+    return trimTrailingSlashes(config.baseUrl!);
   };
 
   return {

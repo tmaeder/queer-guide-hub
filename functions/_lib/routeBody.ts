@@ -13,6 +13,8 @@
  * through to a generic template built from routeMeta.
  */
 
+import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
+
 export type RouteBody = {
   h1: string;
   paragraphs: string[];
@@ -552,7 +554,7 @@ const FALLBACK_PARAGRAPH_FOR = (description: string) =>
  * JS — `null` signals "leave alone".
  */
 export function buildNoscriptHtml(pathname: string): string | null {
-  const clean = pathname.replace(/\/+$/, '') || '/';
+  const clean = trimTrailingSlashes(pathname) || '/';
   if (clean === '/help-hotlines' || clean.startsWith('/help')) return null;
   if (clean.startsWith('/safety') || clean.startsWith('/report-')) return null;
 
@@ -580,7 +582,7 @@ export function buildBodyHtml(
   pathname: string,
   fallback: { title: string; description: string },
 ): string {
-  const clean = pathname.replace(/\/+$/, '') || '/';
+  const clean = trimTrailingSlashes(pathname) || '/';
   const entry = STATIC_ROUTE_BODY[clean];
 
   const escape = (s: string) =>
