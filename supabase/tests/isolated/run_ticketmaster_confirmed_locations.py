@@ -80,7 +80,7 @@ insert into event_quality_current select id,array['NAMED_VENUE_UNLINKED','IMAGE_
 update event_sources set payload=jsonb_set(payload,'{raw,_embedded,venues,0,state,name}','"Missouri"') where id=md5('2')::uuid;
 update event_sources set payload=jsonb_set(payload,'{raw,_embedded,venues,0,location,latitude}','"bad"') where id=md5('3')::uuid;
 update event_sources set payload=jsonb_set(payload,'{raw,_embedded,venues}',payload#>'{raw,_embedded,venues}'||payload#>'{raw,_embedded,venues}') where id=md5('4')::uuid;
-insert into venues values(md5('v5')::uuid,md5('city')::uuid,'Other Hall','5 Main St Springfield',null);
+insert into venues values(md5('v5')::uuid,md5('city')::uuid,'Other Hall','5 Main St, Springfield',null);
 update review_queue set details=details||'{"manual_hold":true}' where id=md5('6')::uuid;
 insert into content_revisions values('events',md5('7')::uuid,'human',array['address']);
 update event_quality_issues set reviewed_at=now() where id=md5('8')::uuid;

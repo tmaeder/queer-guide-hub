@@ -61,8 +61,9 @@ language sql stable set search_path='' as $fn$
       and not exists(select 1 from public.event_sources other where other.event_id=e.id and other.id<>s.id)
       and not exists(select 1 from public.venues v where v.city_id=e.city_id and v.duplicate_of_id is null
         and (public.city_canonical_key(v.name)=public.city_canonical_key(p_venue_name)
-          or public.city_canonical_key(v.address)=public.city_canonical_key(p_address)
-          or public.city_canonical_key(v.address) like public.city_canonical_key(p_address)||' %'))
+          or starts_with(
+            btrim(regexp_replace(public.city_canonical_key(v.address),'[^[:alnum:]]+',' ','g'))||' ',
+            btrim(regexp_replace(public.city_canonical_key(p_address),'[^[:alnum:]]+',' ','g'))||' ')))
       and not exists(select 1 from public.content_revisions h where h.source_table='events'
         and h.source_id=e.id and h.actor_kind='human'
         and h.changed_fields&&array['venue_id','venue_name','address','latitude','longitude','city_id','country_id','start_date'])
