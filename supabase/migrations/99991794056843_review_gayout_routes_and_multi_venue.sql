@@ -2,7 +2,10 @@
 -- Keep the display label and suppress only the demand for a single catalogue link.
 do $patch$
 declare
- definition text:=pg_get_functiondef('api_private.event_source_lists_multiple_venues(uuid,text,text,text,text)'::regprocedure);
+ definition text:=regexp_replace(
+  pg_get_functiondef('api_private.event_source_lists_multiple_venues(uuid,text,text,text,text)'::regprocedure),
+  $strip$('(?:[^']|'')*'|"(?:[^"]|"")*")|--[^$strip$||chr(10)||']*',
+  $keep$\1$keep$,'g');
  anchor text:=$anchor$ ) when p_source='gayout'$anchor$;
  extension text:=$branch$ ) when p_source='gayout'
   and p_external_id like '%/mega-events/%'
