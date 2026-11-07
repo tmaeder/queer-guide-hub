@@ -7,6 +7,7 @@ import { HUB_MODULES, HUB_SECTIONS, type HubModule } from '@/config/hubModules';
 import { useInboxUnreadCount } from '@/hooks/useInboxFeed';
 import { stripLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
+import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
 
 function isCurrent(pathname: string, module: HubModule) {
   if (module.id === 'overview') return pathname === '/hub';
@@ -28,7 +29,7 @@ function isCurrent(pathname: string, module: HubModule) {
 export function HubNav({ className }: { className?: string }) {
   const { t } = useTranslation();
   const location = useLocation();
-  const pathname = stripLocale(location.pathname).replace(/\/+$/, '') || '/';
+  const pathname = trimTrailingSlashes(stripLocale(location.pathname)) || '/';
   const unreadCount = useInboxUnreadCount();
   const navRef = useRef<HTMLElement>(null);
 

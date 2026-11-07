@@ -4,6 +4,7 @@ import { personAuthorCandidate } from '../_shared/news-author.ts'
 // without triggering its Deno.serve() entrypoint.
 
 import { stripHtmlTags, decodeHtmlEntities } from '../_shared/news-quality/sanitize.ts'
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 // `maxItems` bounds how many items are PARSED, not just how many are returned.
 // The caller only ever keeps `maxArticles` of these, but this function used to
@@ -160,7 +161,7 @@ export function parseRssItems(
  */
 export function isShowHomepage(itemLink: string | null, channelLink: string | null): boolean {
   if (!itemLink || !channelLink) return false
-  const norm = (u: string) => u.trim().toLowerCase().replace(/\/+$/, '')
+  const norm = (u: string) => trimTrailingSlashes(u.trim().toLowerCase())
   return norm(itemLink) === norm(channelLink)
 }
 
