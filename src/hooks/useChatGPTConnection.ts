@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { openPendingWindow } from '@/lib/openPendingWindow';
 
 export interface ChatGPTConnectionStatus {
   connected: boolean;
@@ -35,6 +36,9 @@ export function useChatGPTConnection() {
   }, []);
 
   const connect = useCallback(async () => {
+    // Open the popup now, inside the click: Safari blocks a window.open() that
+    // runs after the await below, because the click's user activation is gone.
+    const pending = openPendingWindow('chatgpt-oauth', 'width=600,height=700,scrollbars=yes');
     try {
       const { data, error } = await supabase.functions.invoke('chatgpt-oauth', {
         body: { action: 'authorize' },
@@ -43,12 +47,15 @@ export function useChatGPTConnection() {
       if (error) throw error;
 
       if (data?.authorization_url) {
-        // Open OAuth flow in a popup window
-        const popup = window.open(
-          data.authorization_url,
-          'chatgpt-oauth',
-          'width=600,height=700,scrollbars=yes',
-        );
+        if (!pending.navigate(data.authorization_url)) {
+          toast({
+            title: 'Popup blocked',
+            description: 'Allow popups for this site to connect ChatGPT, then try again.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        const popup = pending.window;
 
         // Poll for popup closure and refresh status
         const pollInterval = setInterval(() => {
@@ -58,6 +65,7 @@ export function useChatGPTConnection() {
           }
         }, 1000);
       } else {
+        pending.close();
         toast({
           title: 'Error',
           description: 'Failed to get authorization URL',
@@ -65,6 +73,7 @@ export function useChatGPTConnection() {
         });
       }
     } catch (error: unknown) {
+      pending.close();
       console.error('Error initiating ChatGPT OAuth:', error);
       toast({
         title: 'Connection Error',
