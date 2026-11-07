@@ -17,7 +17,7 @@
     "@cloudflare/workers-types": "^5.20261029.1",
     "domhandler": "^6.0.1",
     "typescript": "~6.0.0",
-    "vitest": "^4.1.12",
+    "vitest": "^5.1.0",
     "wrangler": "^4.155.0"
   },
   "overrides": {
