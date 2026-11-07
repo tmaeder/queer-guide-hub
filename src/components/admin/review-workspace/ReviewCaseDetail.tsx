@@ -8,7 +8,7 @@ import { StructuredValue } from '@/components/admin/triage/StructuredDataView';
 import { useAdminShell } from '@/components/admin/shell/AdminShell';
 import { useReviewCase, useRetryReviewResearch, reviewCaseInfo } from '@/hooks/useReviewCase';
 import type { ReviewDecision, ReviewItem } from '@/hooks/useAdminReview';
-import { reviewHttpUrl } from './reviewEvidence';
+import { cityResearchExplanation, reviewHttpUrl } from './reviewEvidence';
 import { VenueMatchPanel, type VenueMatchSelection } from './VenueMatchPanel';
 import { CityIdentityContext } from './CityIdentityContext';
 
@@ -30,6 +30,17 @@ const asObject = (value: unknown): Record<string, unknown> =>
     : {};
 const asList = (value: unknown): Record<string, unknown>[] =>
   Array.isArray(value) ? value.map(asObject) : [];
+const venueResearchReasons = new Map([
+  ['missing_action_candidate', 'Research found no verified catalogue match for this event.'],
+  ['missing_source', 'Research found no source that confirms the physical venue.'],
+  ['missing_source_url', 'Research has no usable event source link.'],
+  ['source_unavailable', 'The event source could not be reached during research.'],
+  [
+    'insufficient_confidence',
+    'Research found a possible match and needs more evidence to verify it.',
+  ],
+  ['conflicting_identity', 'The sources disagree about the venue’s identity or location.'],
+]);
 function SourceLink({ value, label }: { value: unknown; label: string }) {
   const url = reviewHttpUrl(value);
   return url ? (
@@ -60,6 +71,11 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
   const members = data?.members ?? [];
   const research = data?.research;
   const outcome = research?.outcome ?? {};
+  const researchReason = typeof outcome.reason === 'string' ? outcome.reason : undefined;
+  const venueReason =
+    info.family === 'venue' && researchReason
+      ? venueResearchReasons.get(researchReason)
+      : undefined;
   const stage = outcome.decision_ready
     ? 'ready'
     : research?.status === 'blocked'
@@ -147,7 +163,9 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                     : 'Identity and relationship changes require cited evidence. Missing evidence remains visible as research; it is never treated as verification.'}
               </p>
             </div>
-            {info.family === 'city_identity' && <CityIdentityContext value={data.city_context} />}
+            {info.family === 'city_identity' && (
+              <CityIdentityContext value={data.city_context} research={outcome} />
+            )}
             {info.family !== 'artwork' && (
               <section aria-label="Research status" className="bg-muted/40 p-4">
                 <h3 className="text-sm font-semibold">
@@ -160,9 +178,10 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                         : 'Automatic research is queued or running'}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed">
-                  {typeof outcome.reason === 'string'
-                    ? outcome.reason
-                    : 'The worker will collect source evidence and search for corroborated candidates.'}
+                  {(info.family === 'city_identity' ? cityResearchExplanation(outcome) : null) ??
+                    venueReason ??
+                    researchReason ??
+                    'The worker will collect source evidence and search for corroborated candidates.'}
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">
                   Attempts: {research?.attempts ?? 0} · Last attempt:{' '}
@@ -292,10 +311,50 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                 }
               />
             )}
-            {info.family === 'venue' && stage !== 'ready' && candidates.length > 0 && (
-              <section aria-label="Research venue candidates">
-                <h3 className="mb-2 text-sm font-semibold">Research venue candidates</h3>
-                <StructuredValue value={candidates} />
+            {info.family === 'venue' && stage !== 'ready' && data && (
+              <section aria-label="Research venue candidates" className="space-y-2">
+                <h3 className="text-sm font-semibold">Research venue candidates</h3>
+                <p className="text-sm text-muted-foreground">
+                  {candidates.length
+                    ? 'These are leads from research. Use the event source to verify the physical location. The event pin may be approximate.'
+                    : 'Research has no catalogue candidate for this case. Look for a physical venue and street address in the event source.'}
+                </p>
+                {candidates.length > 0 && (
+                  <ul className="divide-y divide-border border-y border-border">
+                    {candidates.map((candidate, index) => {
+                      const name = candidate.name ?? candidate.venue_name;
+                      const distance = candidate.distance_m;
+                      return (
+                        <li key={index} className="space-y-1 py-4">
+                          <p className="break-words text-sm font-medium">
+                            {typeof name === 'string' ? name : 'Unnamed catalogue candidate'}
+                          </p>
+                          <p className="break-words text-sm text-muted-foreground">
+                            {typeof candidate.address === 'string' && candidate.address.trim()
+                              ? candidate.address
+                              : 'Catalogue address not recorded'}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {candidate.name_exact === true
+                              ? 'Exact name · '
+                              : candidate.name_exact === false
+                                ? 'Similar name · '
+                                : ''}
+                            {typeof distance === 'number' &&
+                            Number.isFinite(distance) &&
+                            distance >= 0
+                              ? `${Math.round(distance).toLocaleString()} m from the event pin`
+                              : 'Distance unavailable'}
+                          </p>
+                          <SourceLink
+                            value={candidate.website}
+                            label="Open catalogue venue website"
+                          />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </section>
             )}
             {Boolean(outcome.source_evidence) && (
@@ -305,10 +364,10 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
               </section>
             )}
             {info.family === 'city_identity' && (
-              <section aria-label="Identity checks">
-                <h3 className="mb-2 text-sm font-semibold">Identity checks and sources</h3>
+              <details className="text-sm">
+                <summary className="cursor-pointer font-medium">Technical research details</summary>
                 <StructuredValue value={outcome} />
-              </section>
+              </details>
             )}
             {item.entity_id && item.entity_table && (
               <Button

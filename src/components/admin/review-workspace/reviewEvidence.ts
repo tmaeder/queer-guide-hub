@@ -73,3 +73,35 @@ export function reviewQuestion(item: ReviewItem): string {
       return 'Does the proposed change match the record and its sources?';
   }
 }
+
+export function capturedResearchSources(research: Record<string, unknown>) {
+  return (Array.isArray(research.evidence) ? research.evidence : []).flatMap((value: unknown) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return [];
+    const evidence = value as Record<string, unknown>;
+    const url = reviewHttpUrl(evidence.url);
+    if (!url) return [];
+    const timestamp = typeof evidence.retrieved_at === 'string' ? evidence.retrieved_at : null;
+    const retrieved =
+      timestamp && Number.isFinite(Date.parse(timestamp)) ? new Date(timestamp) : null;
+    return [
+      { url, retrieved, excerpt: typeof evidence.text === 'string' ? evidence.text.trim() : '' },
+    ];
+  });
+}
+
+export function cityResearchExplanation(research: Record<string, unknown>) {
+  switch (research.reason) {
+    case 'missing_source':
+      return capturedResearchSources(research).length
+        ? 'Research found sources and still needs evidence that identifies this exact settlement.'
+        : 'Research could not find evidence that identifies this exact settlement.';
+    case 'missing_source_url':
+      return 'Research has no source link for this place. A gazetteer or municipal page can help verify its name and location.';
+    case 'conflicting_identity':
+      return 'The sources disagree about which place this record describes.';
+    case 'source_unavailable':
+      return 'Research could not open the source pages for this place.';
+    default:
+      return null;
+  }
+}
