@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { openPendingWindow } from '@/lib/openPendingWindow';
 
 interface Attachment {
   id: string;
@@ -78,14 +79,18 @@ export function PersonalityAttachmentsPanel({ personalityId }: { personalityId: 
   });
 
   const openSnapshot = async (att: Attachment) => {
+    // Open the tab now, inside the click: Safari blocks a window.open() that
+    // runs after the await below, because the click's user activation is gone.
+    const pending = openPendingWindow();
     const { data, error } = await supabase.storage
       .from(BUCKET)
       .createSignedUrl(att.storage_path, 300);
     if (error || !data?.signedUrl) {
+      pending.close();
       toast.error('Could not open snapshot');
       return;
     }
-    window.open(data.signedUrl, '_blank', 'noopener');
+    if (!pending.navigate(data.signedUrl)) window.location.assign(data.signedUrl);
   };
 
   if (!personalityId) {
