@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 // ============================================================
 // Social Card Refresh (Pillar B)
@@ -12,7 +13,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInt
 // ============================================================
 
 const REFRESH_DAYS = 7
-const WORKER_URL = (Deno.env.get('IMAGE_CDN_URL') || 'https://img.queer.guide').replace(/\/$/, '')
+const WORKER_URL = trimTrailingSlashes(Deno.env.get('IMAGE_CDN_URL') || 'https://img.queer.guide')
 const WORKER_SECRET = Deno.env.get('IMAGE_CDN_ADMIN_SECRET') || ''
 
 type Supa = ReturnType<typeof getServiceClient>

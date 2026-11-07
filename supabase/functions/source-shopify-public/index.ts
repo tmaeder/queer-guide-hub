@@ -7,6 +7,7 @@ import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { storefrontPage, publicStorefrontCredentials, type StorefrontProduct } from '../_shared/shopify-storefront.ts'
 import { stripProductHtml } from '../_shared/product-html.ts'
 import { brandFromShopifyProduct } from '../_shared/shopify-product-brand.ts'
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 // ============================================================
 // source-shopify-public — ingest any Shopify storefront via its PUBLIC
@@ -216,7 +217,7 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
   const _auth = await requireInternalOrAdmin(req, supabase); if (_auth instanceof Response) return _auth
   try {
     const body = await req.json().catch(() => ({}))
-    const shopDomain = (body.shop_domain || body.shopDomain || '').replace(/^https?:\/\//, '').replace(/\/$/, '')
+    const shopDomain = trimTrailingSlashes((body.shop_domain || body.shopDomain || '').replace(/^https?:\/\//, ''))
     if (!shopDomain) return jsonResponse(skippedResponse('missing_config', ['shop_domain']), 200, req)
     const sourceSlug = body.source_slug || defaultSlug(shopDomain)
 

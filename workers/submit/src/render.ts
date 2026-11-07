@@ -27,6 +27,7 @@ import type { DetectedItem as SchemaDetectedItem } from "./schema";
 import { extractFromJsonLd, parseLdJson } from "../../../client-sdk/jsonld-core";
 import { buildOgItem, type MetaMap } from "../../../client-sdk/og-core";
 import { assertPublicHttpUrl } from "../../_shared/ssrf-guard";
+import { trimTrailingSlashes } from "../../_shared/trim-trailing-slashes";
 
 const FETCH_TIMEOUT_MS = 8000;
 const EXTRACT_TIMEOUT_MS = 20000;
@@ -69,7 +70,7 @@ async function renderViaWorker(
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), EXTRACT_TIMEOUT_MS);
   try {
-    const res = await fetch(`${opts.extractWorkerUrl.replace(/\/$/, "")}/extract`, {
+    const res = await fetch(`${trimTrailingSlashes(opts.extractWorkerUrl)}/extract`, {
       method: "POST",
       signal: ctrl.signal,
       headers: {

@@ -1,6 +1,7 @@
 // Read-only confirmation of an occurrence's existing date from its publisher.
 import { parseBkaSpielplan, parseLabOratory } from '../../supabase/functions/_shared/berlin-events-parse.ts'
 import { decodeEntities, stripTags } from '../../supabase/functions/_shared/spartacus-parse.ts'
+import { trimTrailingSlashes } from '../lib/trim-trailing-slashes.mjs'
 
 export type CalendarSource='bka-theater'|'lab-oratory'|'haz-ch'
 export type CalendarEntry={source_key:string;title:string;start_date:string;url:string;performance_id?:string}
@@ -44,9 +45,9 @@ export function calendarConfirmsCandidate(candidate:CalendarCandidate,entries:Ca
     ||page.searchParams.get('tid')!==entry.performance_id)return null
   }else if(candidate.data_source==='lab-oratory'){
    if(page.hostname!=='www.lab-oratory.de'||source.hostname!==page.hostname
-    ||page.pathname!=='/'&&page.pathname.replace(/\/$/,'')!==source.pathname.replace(/\/$/,''))return null
+    ||page.pathname!=='/'&&trimTrailingSlashes(page.pathname)!==trimTrailingSlashes(source.pathname))return null
   }else if(page.hostname!=='haz.ch'||source.hostname!==page.hostname
-   ||page.pathname.replace(/\/$/,'')!==source.pathname.replace(/\/$/,''))return null
+   ||trimTrailingSlashes(page.pathname)!==trimTrailingSlashes(source.pathname))return null
  }catch{return null}
  return entry
 }

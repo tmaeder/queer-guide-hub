@@ -15,6 +15,7 @@ let handler;
 let policyRuntime;
 let loseConversionOwnerAfterContext=false;
 const pieces = [
+  '_shared/trim-trailing-slashes.ts',
   '_shared/redirect-api.ts',
   '_shared/redirect-workspace.ts',
   '_shared/redirect-inventory-manifest.ts',

@@ -1,5 +1,6 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { withCircuitBreaker, CircuitOpenError } from './circuit-breaker.ts'
+import { trimTrailingSlashes } from './trim-trailing-slashes.ts'
 
 // Client for the self-hosted deepcrawl extract worker (workers/extract).
 // Fetches a URL server-side and returns cleaned markdown + metadata + (optional)
@@ -61,7 +62,7 @@ export async function extractContent(
       const ctrl = new AbortController()
       const t = setTimeout(() => ctrl.abort('timeout'), timeoutMs)
       try {
-        const res = await fetch(`${base.replace(/\/$/, '')}/extract`, {
+        const res = await fetch(`${trimTrailingSlashes(base)}/extract`, {
           method: 'POST',
           signal: ctrl.signal,
           headers: {

@@ -21,7 +21,9 @@
 // plus a clean ISO-2 `countrycode`. Same rule, same reason, as the
 // `photonReverse` in backfill-venue-cities.
 
-const PHOTON_REVERSE = (Deno.env.get('PHOTON_REVERSE_URL') || 'https://photon.komoot.io/reverse').replace(/\/$/, '')
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
+
+const PHOTON_REVERSE = trimTrailingSlashes(Deno.env.get('PHOTON_REVERSE_URL') || 'https://photon.komoot.io/reverse')
 
 // Politeness interval. Photon's public instance is rate-limited; the repo's
 // existing Photon caller uses 1100ms and this matches it. A self-hosted

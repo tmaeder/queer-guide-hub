@@ -22,8 +22,9 @@ import { mkdir, writeFile, access } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { routesForScope } from './a11y-routes.mjs';
+import { trimTrailingSlashes } from './lib/trim-trailing-slashes.mjs';
 
-const BASE_URL = (process.env.BASE_URL || 'http://localhost:4173').replace(/\/$/, '');
+const BASE_URL = trimTrailingSlashes(process.env.BASE_URL || 'http://localhost:4173');
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const SCOPE = process.env.SCAN_SCOPE || 'public';
 const VIEWPORTS = (process.env.SCAN_VIEWPORTS || 'desktop').split(',').map((s) => s.trim());

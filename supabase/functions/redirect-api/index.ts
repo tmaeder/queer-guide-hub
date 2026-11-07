@@ -23,6 +23,7 @@ import { analyticsFilters } from "../_shared/redirect-analytics.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2.50.5";
 import { boundedJson, conversionInput, createRedirectToken, tokenDigest, UUID } from "../_shared/redirect-api.ts";
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts';
 
 Deno.serve(async (req: Request) => {
  const origin=req.headers.get('origin') ?? '';
@@ -30,7 +31,7 @@ Deno.serve(async (req: Request) => {
  const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
  const rpcError=(error:{code?:string;message:string})=>{const status=error.code==='23505'?409:error.code==='42501'?403:error.code==='P0002'?404:(error.code?.startsWith('22')||['23503','23514'].includes(error.code??''))?400:503;return json({error:status===503?'Redirect API temporarily unavailable':error.message},status);};
  if(req.method==='OPTIONS') return new Response(null,{headers:cors});
- const path=new URL(req.url).pathname.split('/redirect-api')[1]?.replace(/\/$/,'') ?? '';
+ const path=trimTrailingSlashes(new URL(req.url).pathname.split('/redirect-api')[1] ?? '');
  const credential=req.headers.get('Authorization')?.replace(/^Bearer\s+/i,'') ?? '';
  if(!credential)return json({error:'Unauthorized'},401);
  let db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);

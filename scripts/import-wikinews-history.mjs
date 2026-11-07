@@ -22,6 +22,8 @@
 //   node scripts/import-wikinews-history.mjs --limit 200      # cap total staged (testing)
 //   node scripts/import-wikinews-history.mjs --page-size 50   # members per call (≤500)
 
+import { trimTrailingSlashes } from './lib/trim-trailing-slashes.mjs'
+
 const PROJECT = 'xqeacpakadqfxjxjcewc'
 const args = process.argv.slice(2)
 const DRY = args.includes('--dry-run')
@@ -33,7 +35,7 @@ const LIMIT = numArg('--limit', Infinity)
 const PAGE_SIZE = Math.min(numArg('--page-size', 50), 500)
 const MAX_PAGES = 1000 // hard safety stop
 
-const BASE = (process.env.SUPABASE_URL || `https://${PROJECT}.supabase.co`).replace(/\/$/, '')
+const BASE = trimTrailingSlashes(process.env.SUPABASE_URL || `https://${PROJECT}.supabase.co`)
 const FN_URL = `${BASE}/functions/v1/source-rss-news`
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY
 if (!KEY) {

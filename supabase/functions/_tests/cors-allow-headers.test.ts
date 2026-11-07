@@ -12,6 +12,7 @@
  * the shared header list answered. This guard covers every function source.
  */
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 const REQUIRED = ['authorization', 'x-client-info', 'apikey', 'content-type']
 
@@ -24,7 +25,7 @@ async function* sources(dir: string): AsyncGenerator<string> {
 }
 
 Deno.test('every Access-Control-Allow-Headers admits the supabase-js headers', async () => {
-  const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '')
+  const root = trimTrailingSlashes(new URL('..', import.meta.url).pathname)
   const offenders: string[] = []
   let seen = 0
   for await (const f of sources(root)) {

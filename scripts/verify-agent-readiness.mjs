@@ -3,7 +3,8 @@
 // can target local Pages, a preview URL, and production after release.
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
-const base = (process.argv[2] ?? 'http://127.0.0.1:8788').replace(/\/$/, '');
+import { trimTrailingSlashes } from './lib/trim-trailing-slashes.mjs';
+const base = trimTrailingSlashes(process.argv[2] ?? 'http://127.0.0.1:8788');
 const results = [];
 function requireVaryAccept(headers) {
   const tokens = (headers.get('Vary') ?? '').split(',').map((value) => value.trim().toLowerCase());
