@@ -18,6 +18,6 @@ Delete account (guideline 5.1.1(v)).
   for each line whether it says it may contact police. This is intentional.
 - Location is optional; the app is fully usable after denying it.
 
-**Encryption.** Standard HTTPS only — `ITSAppUsesNonExemptEncryption = false`.
+**Encryption.** Standard HTTPS, plus data-at-rest encryption of the on-device database via the standard SQLCipher library (expo-sqlite) with a key in the system keychain — `ITSAppUsesNonExemptEncryption = false`.
 
 **Contact for review:** <name, phone, email — DECISION: who answers>
