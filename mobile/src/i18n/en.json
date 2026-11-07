@@ -117,8 +117,10 @@
     "unlockPrompt": "Unlock"
   },
   "packs": {
+    "size": "{{mb}} MB download",
+    "withMap": "includes map",
     "title": "Offline cities",
-    "body": "Download a city to keep its places and crisis lines on this device. Map tiles and photos still need a connection.",
+    "body": "Download a city to keep its places and crisis lines on this device. Cities with a map work fully offline; photos and map labels still need a connection.",
     "notConfigured": "Offline cities aren't available in this build yet.",
     "loading": "Checking available cities…",
     "error": "Couldn't check available cities.",

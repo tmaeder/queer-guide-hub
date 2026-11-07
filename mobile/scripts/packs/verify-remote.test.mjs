@@ -39,3 +39,16 @@ test('a stale or truncated pack is reported, not passed', () => {
   const sameLength = pack.replace('zuerich', 'zuerick');
   assert.match(checkPack(sameLength, entry), /sha256/);
 });
+
+test('a tile archive is checked against the signed digest', async () => {
+  const { checkTiles } = await import('./verify-remote.mjs');
+  const bytes = new Uint8Array([1, 2, 3, 4]);
+  const tilesEntry = {
+    id: 'zuerich',
+    tiles: { file: 'zuerich.pmtiles', bytes: 4, sha256: bytesToHex(sha256(bytes)) },
+  };
+  assert.equal(checkTiles(bytes, tilesEntry), null);
+  assert.match(checkTiles(new Uint8Array([1, 2, 3, 5]), tilesEntry), /sha256/);
+  assert.match(checkTiles(new Uint8Array([1, 2, 3]), tilesEntry), /bytes/);
+  assert.equal(checkTiles(bytes, { id: 'x' }), null);
+});
