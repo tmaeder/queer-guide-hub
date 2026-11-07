@@ -135,3 +135,37 @@ Deno.test('an exact city key still honors the region conflict guard', async () =
   assertEquals(result.needsReview.length, 1)
   assert(result.needsReview[0].reason.startsWith('city_collision:'))
 })
+
+function fuzzyCityLookup(name: string, region_name: string) {
+  const exact = { limit: () => Promise.resolve({ data: [], error: null }) }
+  const fuzzy = {
+    neq() { return this },
+    is() { return this },
+    limit: () => Promise.resolve({ data: [{ id: 'city', name, region_name }], error: null }),
+  }
+  return {
+    from: () => ({ select: () => ({ eq: () => ({ is: () => exact }), ilike: () => fuzzy }) }),
+  } as unknown as Parameters<typeof resolveEntities>[0]
+}
+
+Deno.test('state-only hints do not queue a city that the article never mentions', async () => {
+  const client = fuzzyCityLookup('California City', 'California')
+  const result = await resolveEntities(client, 'cities', 'city', ['California'], 'California voters elected a senator.')
+  assertEquals(result, { linked: [], needsReview: [] })
+})
+
+Deno.test('a city in the headline remains reviewable even when the body names only the state', async () => {
+  const client = fuzzyCityLookup('California City', 'California')
+  const result = await resolveEntities(
+    client, 'cities', 'city', ['California'], 'California voters elected a senator.', 'name', 'Election night in California City',
+  )
+  assertEquals(result.needsReview.map((row) => row.name), ['California City'])
+})
+
+Deno.test('a separately named city remains reviewable when its state was the model hint', async () => {
+  const client = fuzzyCityLookup('Raleigh, North Carolina', 'North Carolina')
+  const result = await resolveEntities(
+    client, 'cities', 'city', ['North Carolina'], 'Delegates from North Carolina gathered in Raleigh.',
+  )
+  assertEquals(result.needsReview.map((row) => row.name), ['Raleigh, North Carolina'])
+})

@@ -8,6 +8,7 @@ const state = vi.hoisted(() => ({
   isFetching: false,
   error: null as Error | null,
   venueQuery: {} as Record<string, unknown>,
+  articleRecord: null as Record<string, unknown> | null,
 }));
 vi.mock('../JevReviewStatus', () => ({ JevReviewStatus: () => null }));
 vi.mock('@/hooks/useReviewCase', () => ({
@@ -16,6 +17,9 @@ vi.mock('@/hooks/useReviewCase', () => ({
   useRetryReviewResearch: () => ({ mutate: vi.fn(), isPending: false, error: null }),
 }));
 vi.mock('@/hooks/useVenueMatchReview', () => ({ useVenueMatchReview: () => state.venueQuery }));
+vi.mock('@/hooks/useReviewContext', () => ({
+  useReviewContext: () => ({ data: { record: state.articleRecord }, isFetching: false }),
+}));
 vi.mock('@/hooks/useDebounce', () => ({ useDebounce: (value: string) => value }));
 vi.mock('@/components/admin/shell/AdminShell', () => ({
   useAdminShell: () => ({ openEditor: vi.fn() }),
@@ -44,6 +48,7 @@ const item = (family = 'artwork', stage = 'ready'): ReviewItem =>
   }) as unknown as ReviewItem;
 describe('review cases', () => {
   beforeEach(() => {
+    state.articleRecord = null;
     state.venueQuery = {
       data: {
         event: {
@@ -77,6 +82,42 @@ describe('review cases', () => {
       members: [member('one'), member('two')],
       research: null,
     };
+  });
+  it('shows the article and model hints on a pending entity-link case', () => {
+    state.articleRecord = {
+      title: 'Local elections in Delaware',
+      url: 'https://publisher.test/delaware-election',
+      content: 'Delaware voters went to the polls on Tuesday.',
+      quality_decision: { linkedCities: ['Delaware'] },
+    };
+    state.data!.family = 'record';
+    state.data!.members = [
+      {
+        ...member('one'),
+        queue_type: 'entity-links',
+        entity_table: 'news_articles',
+        content_type: 'city',
+        title: 'Delaware Water Gap',
+        meta: { candidate_id: null, context_snippet: 'low_confidence' },
+      },
+    ];
+    render(
+      <ReviewCaseDetail
+        item={item('record', 'blocked')}
+        busy={false}
+        onDecision={vi.fn()}
+        onBack={vi.fn()}
+        onSkip={vi.fn()}
+      />,
+    );
+    const evidence = within(screen.getByRole('region', { name: 'Article and entity proposal' }));
+    expect(evidence.getByText('Delaware Water Gap')).toBeInTheDocument();
+    expect(evidence.getByText('Delaware', { exact: true })).toBeInTheDocument();
+    expect(evidence.getByText('Delaware voters went to the polls on Tuesday.')).toBeInTheDocument();
+    expect(evidence.getByRole('link', { name: 'Open original article' })).toHaveAttribute(
+      'href',
+      'https://publisher.test/delaware-election',
+    );
   });
   it('requires evidence and confirmation, preserves exclusions and submits current evidence version', () => {
     const save = vi.fn();

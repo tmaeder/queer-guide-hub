@@ -251,7 +251,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
         // Resolve entity links against real DB rows + collect review items.
         const [countryRes, cityRes, personRes, orgRes] = await Promise.all([
           resolveEntities(supabase, 'countries', 'country', decision.linkedCountries, sani.content),
-          resolveEntities(supabase, 'cities', 'city', decision.linkedCities, sani.content),
+          resolveEntities(supabase, 'cities', 'city', decision.linkedCities, sani.content, 'name', sani.title || title),
           resolveEntities(supabase, 'personalities', 'personality', decision.linkedPersonalities, sani.content),
           resolveEntities(supabase, 'organizations', 'organisation', decision.linkedOrganisations, sani.content),
         ])
