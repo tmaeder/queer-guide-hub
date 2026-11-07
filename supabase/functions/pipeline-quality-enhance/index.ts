@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
+import { boundedInt, getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts'
 import { sanitizeArticle } from '../_shared/news-quality/sanitize.ts'
@@ -87,44 +87,34 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
     // below) so a 24-item batch fits the 150s wall clock — the old sequential
     // batch of 5 was far slower than the commit node (500/run), so most
     // articles committed before ever getting a quality verdict.
-    const batchSize     = Math.min(60, body.batch_size ?? 24)
+    const batchSize     = boundedInt(body.batch_size, 24, 60)
     const concurrency   = Math.min(6, Math.max(1, body.concurrency ?? 4))
     const dryRun        = body.dry_run === true
 
-    let q = supabase
-      .from('ingestion_staging')
-      .select('id, normalized_data, enriched_data, target_table')
-      .in('target_table', ['news_articles'])
-      // apply_enrichment() writes 'enriched' on success — not 'success'.
-      // 'completed' is written by an older enrich path. A row whose empty verdict
-      // was reset for a retry can carry it, and selecting 'enriched' alone left
-      // those rows unjudgeable forever (64 measured on 2026-10-23).
-      // 'failed' is included because the verdict reads nothing the enrichment
-      // stage produces: a news row whose summary/tags call returned no data is
-      // still judgeable, and enrichment failure is terminal, so excluding it
-      // parked those rows as "awaiting_llm_verdict" forever (7 on 2026-10-25).
-      .in('enrichment_status', ['enriched', 'completed', 'failed'])
-      // Never spend an LLM call on a row a deterministic gate already discarded:
-      // validate-reject stamps disposition='rejected', dedup marks duplicates
-      // (disposition stays 'pending' there, hence the separate neq). validate
-      // and dedup run on their own ticks without waiting for a quality verdict,
-      // so this saves calls in the CURRENT order too, and becomes the main cost
-      // gate once they move ahead of the LLM stages. Both columns are NOT NULL
-      // DEFAULT 'pending' — no NULL trap.
-      .eq('disposition', 'pending')
-      .neq('dedup_status', 'duplicate')
-      // Skip rows already quality-enhanced. apply_enrichment re-stamps
-      // enrichment_status='enriched' on our own write, so without this filter the
-      // node re-selects the oldest rows every tick and the backlog never drains.
-      .filter('enriched_data->>quality_status', 'is', null)
-      // Retried rows (empty/failed verdict) go behind first attempts, so a run of
-      // flaky completions cannot monopolise every batch.
-      .order('enriched_data->quality_attempts', { ascending: true, nullsFirst: true })
-      .order('created_at', { ascending: true })
-      .limit(batchSize)
-    if (pipelineRunId) q = q.eq('pipeline_run_id', pipelineRunId)
-
-    const { data: items, error } = await q
+    let { data: items, error } = await supabase.rpc('news_quality_enhance_candidates', {
+      p_pipeline_run_id: pipelineRunId ?? null,
+      p_limit: batchSize,
+    })
+    // The deploy can update Edge Functions even when the DB migration is
+    // delayed. Fall back only when the RPC is absent, not when a query fails.
+    if (error?.code === 'PGRST202' || error?.code === '42883') {
+      let legacyQuery = supabase
+        .from('ingestion_staging')
+        .select('id, normalized_data, enriched_data')
+        .eq('target_table', 'news_articles')
+        .in('enrichment_status', ['enriched', 'completed', 'failed'])
+        .eq('disposition', 'pending')
+        .neq('dedup_status', 'duplicate')
+        .filter('enriched_data->>quality_status', 'is', null)
+        .order('enriched_data->quality_attempts', { ascending: true, nullsFirst: true })
+        .order('created_at', { ascending: true })
+        .order('id', { ascending: true })
+        .limit(batchSize)
+      if (pipelineRunId) legacyQuery = legacyQuery.eq('pipeline_run_id', pipelineRunId)
+      const legacy = await legacyQuery
+      items = legacy.data
+      error = legacy.error
+    }
     if (error) return errorResponse(`load: ${error.message}`, 500, req)
     if (!items || items.length === 0) {
       return jsonResponse({ success: true, items: 0, input_version: STAGED_NEWS_INPUT_VERSION,
