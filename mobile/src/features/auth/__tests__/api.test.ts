@@ -2,6 +2,9 @@ const mockAuth = {
   signInWithPassword: jest.fn(),
   signUp: jest.fn(),
   signOut: jest.fn(),
+  signInWithOtp: jest.fn(),
+  verifyOtp: jest.fn(),
+  resetPasswordForEmail: jest.fn(),
 };
 const mockInvoke = jest.fn();
 const mockRpc = jest.fn();
@@ -22,15 +25,59 @@ import {
   confirmationMatches,
   deleteAccount,
   deletionConfirmationTarget,
+  resetPassword,
+  sendOtp,
   signOut,
   signUp,
   validateCredentials,
+  verifyOtp,
 } from '../api';
 
 beforeEach(() => {
   jest.clearAllMocks();
   mockAuth.signUp.mockResolvedValue({ error: null });
   mockAuth.signOut.mockResolvedValue({ error: null });
+  mockAuth.signInWithOtp.mockResolvedValue({ error: null });
+  mockAuth.verifyOtp.mockResolvedValue({ error: null });
+  mockAuth.resetPasswordForEmail.mockResolvedValue({ error: null });
+});
+
+describe('sendOtp', () => {
+  it('creates an account only with the same consent timestamps signUp writes', async () => {
+    await sendOtp(' a@b.ch ', new Date('2026-11-01T10:00:00Z'));
+    await signUp('a@b.ch', 'longenough', new Date('2026-11-01T10:00:00Z'));
+    const otpData = mockAuth.signInWithOtp.mock.calls[0][0].options.data;
+    expect(mockAuth.signInWithOtp.mock.calls[0][0]).toMatchObject({
+      email: 'a@b.ch',
+      options: { shouldCreateUser: true },
+    });
+    expect(otpData).toEqual(mockAuth.signUp.mock.calls[0][0].options.data);
+  });
+
+  it('never creates an account (or stamps consent) when signing in', async () => {
+    await sendOtp('a@b.ch');
+    expect(mockAuth.signInWithOtp).toHaveBeenCalledWith({
+      email: 'a@b.ch',
+      options: { shouldCreateUser: false },
+    });
+  });
+
+  it('throws the server error', async () => {
+    mockAuth.signInWithOtp.mockResolvedValue({ error: { code: 'otp_disabled' } });
+    await expect(sendOtp('a@b.ch')).rejects.toEqual({ code: 'otp_disabled' });
+  });
+});
+
+it('verifies an email code', async () => {
+  await verifyOtp(' a@b.ch ', ' 123456 ');
+  expect(mockAuth.verifyOtp).toHaveBeenCalledWith({ email: 'a@b.ch', token: '123456', type: 'email' });
+});
+
+it('sends the reset link back into the app', async () => {
+  await resetPassword('a@b.ch');
+  expect(mockAuth.resetPasswordForEmail).toHaveBeenCalledWith('a@b.ch', {
+    redirectTo: 'queerguide://auth?reset=1',
+  });
 });
 
 describe('signUp', () => {
@@ -112,6 +159,10 @@ it('maps server errors to messages and never passes raw text through', () => {
   expect(authErrorKey({ code: 'weak_password' })).toBe('weakPassword');
   expect(authErrorKey({ status: 429 })).toBe('rateLimited');
   expect(authErrorKey({ code: 'captcha_failed' })).toBe('captcha');
+  expect(authErrorKey({ code: 'otp_expired' })).toBe('otpInvalid');
+  expect(authErrorKey({ message: 'Token has expired or is invalid' })).toBe('otpInvalid');
+  expect(authErrorKey({ code: 'otp_disabled' })).toBe('noAccount');
+  expect(authErrorKey({ message: 'Signups not allowed for otp' })).toBe('noAccount');
   expect(authErrorKey({ name: 'AuthRetryableFetchError' })).toBe('network');
   expect(authErrorKey({ message: 'database exploded at row 7' })).toBe('unknown');
 });
