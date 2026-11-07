@@ -10,6 +10,7 @@ import {
 import { STATIC_ROUTE_BODY } from '../../functions/_lib/routeBody';
 import { INTENT_NAV } from '@/config/navigation';
 import { clientRedirectPaths } from '../test/routeTable';
+import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
 
 /**
  * Contract tests for the edge SEO tables.
@@ -236,7 +237,7 @@ describe('STATIC_ROUTE_BODY', () => {
   // all three /community/* targets of the /people body — the /people SEO fix
   // had moved the same defect one hop down without anyone noticing.
   const bodyLinks = Object.entries(STATIC_ROUTE_BODY).flatMap(([key, body]) =>
-    (body.links ?? []).map((l) => ({ from: key, href: l.href.split('?')[0].replace(/\/+$/, '') })),
+    (body.links ?? []).map((l) => ({ from: key, href: trimTrailingSlashes(l.href.split('?')[0]) })),
   );
 
   it('never links the crawler at a page that serves the homepage title', () => {
