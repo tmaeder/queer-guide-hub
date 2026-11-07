@@ -21,10 +21,9 @@ type Props = {
   onSkip: () => void;
   onBack: () => void;
 };
-const date = (value: unknown) =>
-  typeof value === 'string' && Number.isFinite(Date.parse(value))
-    ? new Date(value).toLocaleString()
-    : 'Not recorded';
+const timestamp = (value: unknown) =>
+  typeof value === 'string' && Number.isFinite(Date.parse(value)) ? new Date(value) : null;
+const date = (value: unknown) => timestamp(value)?.toLocaleString() ?? 'Not recorded';
 const asObject = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -111,7 +110,9 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
         ? 'Match the event venue'
         : info.family === 'city_identity'
           ? 'Establish this place’s identity'
-          : 'Research the business relationship';
+          : info.family === 'business_link'
+            ? 'Research the business relationship'
+            : 'Review the reported issue';
   return (
     <section className="flex h-full min-h-0 flex-col bg-background" aria-label={title}>
       <header className="flex shrink-0 items-center justify-between gap-4 border-b border-border px-4 py-4 md:px-6">
@@ -254,6 +255,15 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
               <div className="divide-y divide-border border-y border-border">
                 {members.map((member) => {
                   const current = member.current_record ?? {};
+                  const dateMismatch = member.meta.review_type === 'date_mismatch';
+                  const dateEvidence = asObject(member.meta.details);
+                  const savedStart = dateMismatch ? timestamp(current.start_date) : null;
+                  const startAtDetection = dateMismatch ? timestamp(dateEvidence.start_date) : null;
+                  const extractedDate =
+                    typeof dateEvidence.extracted_date === 'string' &&
+                    /^\d{4}-\d{2}-\d{2}$/.test(dateEvidence.extracted_date)
+                      ? dateEvidence.extracted_date
+                      : null;
                   const flagged = info.family === 'artwork' ? flaggedArtwork(member) : [];
                   const liveImages =
                     info.family === 'artwork' && Array.isArray(current.images)
@@ -286,8 +296,51 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                         <p className="mt-1 text-xs text-muted-foreground">
                           {member.subtitle} · {member.source_label ?? member.queue_type}
                         </p>
-                        {Boolean(current.start_date) && (
-                          <p className="mt-2 text-sm">{date(current.start_date)}</p>
+                        {dateMismatch ? (
+                          <section aria-label="Event date comparison" className="mt-4 space-y-2">
+                            <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+                              <div>
+                                <dt className="text-muted-foreground">Saved start (UTC)</dt>
+                                <dd className="mt-1 font-medium tabular-nums">
+                                  {savedStart ? (
+                                    <time dateTime={savedStart.toISOString()}>
+                                      {savedStart.toISOString().slice(0, 16).replace('T', ' ')}
+                                    </time>
+                                  ) : (
+                                    'Unavailable'
+                                  )}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="text-muted-foreground">Extracted date</dt>
+                                <dd className="mt-1 font-medium tabular-nums">
+                                  {extractedDate ? (
+                                    <time dateTime={extractedDate}>{extractedDate}</time>
+                                  ) : (
+                                    'Unavailable'
+                                  )}
+                                </dd>
+                              </div>
+                            </dl>
+                            {savedStart &&
+                              startAtDetection &&
+                              savedStart.getTime() !== startAtDetection.getTime() && (
+                                <p className="text-sm text-muted-foreground">
+                                  The saved start changed after this finding was created.
+                                </p>
+                              )}
+                            <p className="text-sm text-muted-foreground">
+                              Check that the source identifies this occurrence, including the year.
+                            </p>
+                            <SourceLink
+                              value={dateEvidence.page}
+                              label="Open page used for extraction"
+                            />
+                          </section>
+                        ) : (
+                          Boolean(current.start_date) && (
+                            <p className="mt-2 text-sm">{date(current.start_date)}</p>
+                          )
                         )}
                         {Boolean(current.venue_name || current.city) && (
                           <p className="mt-1 text-sm">

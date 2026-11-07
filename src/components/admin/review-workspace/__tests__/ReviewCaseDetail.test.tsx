@@ -143,6 +143,45 @@ describe('review cases', () => {
       screen.getByRole('button', { name: 'Queue another research attempt' }),
     ).toBeInTheDocument();
   });
+  it('compares the live saved start with the extracted date and links the extraction page', () => {
+    state.data!.family = 'record';
+    state.data!.members = [
+      {
+        ...member('one'),
+        queue_type: 'general-review',
+        subtitle: 'date mismatch',
+        meta: {
+          review_type: 'date_mismatch',
+          details: {
+            start_date: '2026-10-30T20:00:00Z',
+            extracted_date: '2026-11-08',
+            page: 'https://example.test/programme',
+          },
+        },
+      },
+    ];
+    render(
+      <ReviewCaseDetail
+        item={item('record', 'blocked')}
+        busy={false}
+        onDecision={vi.fn()}
+        onBack={vi.fn()}
+        onSkip={vi.fn()}
+      />,
+    );
+    const comparison = within(screen.getByRole('region', { name: 'Event date comparison' }));
+    expect(comparison.getByText('Saved start (UTC)')).toBeInTheDocument();
+    expect(comparison.getByText('2026-11-01 20:00')).toHaveAttribute(
+      'datetime',
+      '2026-11-01T20:00:00.000Z',
+    );
+    expect(comparison.getByText('2026-11-08')).toHaveAttribute('datetime', '2026-11-08');
+    expect(comparison.getByText(/saved start changed/)).toBeInTheDocument();
+    expect(comparison.getByRole('link', { name: 'Open page used for extraction' })).toHaveAttribute(
+      'href',
+      'https://example.test/programme',
+    );
+  });
   it('shows live artwork and accepts decisions when the server routes blocked research to a person', () => {
     const detail = state.data!;
     detail.item = item('artwork', 'ready');
