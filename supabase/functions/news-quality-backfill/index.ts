@@ -272,7 +272,7 @@ async function processJob(
   // country_ids/city_ids gap on live rows, not just the verdict.
   const [countryRes, cityRes] = await Promise.all([
     resolveEntities(supabase, 'countries', 'country', decision.linkedCountries ?? [], sani.content),
-    resolveEntities(supabase, 'cities', 'city', decision.linkedCities ?? [], sani.content),
+    resolveEntities(supabase, 'cities', 'city', decision.linkedCities ?? [], sani.content, 'name', sani.title),
   ])
   const countryIds = countryRes.linked.map((c) => c.id)
   const cityIds = cityRes.linked.map((c) => c.id)

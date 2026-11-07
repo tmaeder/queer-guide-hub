@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { StructuredValue } from '@/components/admin/triage/StructuredDataView';
 import { useAdminShell } from '@/components/admin/shell/AdminShell';
 import { useReviewCase, useRetryReviewResearch, reviewCaseInfo } from '@/hooks/useReviewCase';
+import { useReviewContext } from '@/hooks/useReviewContext';
 import type { ReviewDecision, ReviewItem } from '@/hooks/useAdminReview';
 import { cityResearchExplanation, reviewHttpUrl } from './reviewEvidence';
 import { VenueMatchPanel, type VenueMatchSelection } from './VenueMatchPanel';
@@ -61,6 +62,70 @@ function SourceLink({ value, label }: { value: unknown; label: string }) {
       <ExternalLink size={14} />
     </a>
   ) : null;
+}
+function NewsEntityLinkContext({ member }: { member: ReviewItem }) {
+  const context = useReviewContext(member);
+  const article = context.data?.record;
+  const verdict = asObject(article?.quality_decision);
+  const hintFields: Record<string, string> = {
+    city: 'linkedCities',
+    country: 'linkedCountries',
+    personality: 'linkedPersonalities',
+    organisation: 'linkedOrganisations',
+  };
+  const hints = verdict[hintFields[member.content_type ?? '']];
+  const names = Array.isArray(hints)
+    ? hints
+        .filter((value): value is string => typeof value === 'string' && !!value.trim())
+        .slice(0, 10)
+    : [];
+  const body =
+    typeof article?.content === 'string' ? article.content.replace(/\s+/g, ' ').trim() : '';
+  const mention = body.toLocaleLowerCase().indexOf(member.title.toLocaleLowerCase());
+  const start = Math.max(0, mention - 160);
+  const snippet = body.slice(start, start + 420);
+  return (
+    <section
+      aria-label="Article and entity proposal"
+      className="space-y-2 rounded-element bg-muted/40 p-4"
+    >
+      <h4 className="text-sm font-semibold">Article and entity proposal</h4>
+      {article ? (
+        <>
+          <p className="break-words text-sm font-medium">{String(article.title ?? '')}</p>
+          <SourceLink value={article.url} label="Open original article" />
+          <dl className="space-y-2 text-sm">
+            <div>
+              <dt className="text-muted-foreground">Suggested {member.content_type ?? 'entity'}</dt>
+              <dd className="break-words">{member.title}</dd>
+            </div>
+            {!!names.length && (
+              <div>
+                <dt className="text-muted-foreground">Names extracted by the model</dt>
+                <dd className="break-words">{names.join(' · ')}</dd>
+              </div>
+            )}
+          </dl>
+          {snippet && (
+            <div>
+              <p className="text-xs font-medium">
+                {mention >= 0 ? 'Text around the suggested name' : 'Article excerpt'}
+              </p>
+              <p className="mt-2 break-words text-sm leading-relaxed text-muted-foreground">
+                {start > 0 ? '…' : ''}
+                {snippet}
+                {start + snippet.length < body.length ? '…' : ''}
+              </p>
+            </div>
+          )}
+        </>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          {context.isFetching ? 'Loading article details…' : 'Article details are unavailable.'}
+        </p>
+      )}
+    </section>
+  );
 }
 export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack }: Props) {
   const info = reviewCaseInfo(item);
@@ -169,6 +234,11 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
             {info.family === 'city_identity' && (
               <CityIdentityContext value={data.city_context} research={outcome} />
             )}
+            {members
+              .filter((member) => member.queue_type === 'entity-links')
+              .map((member) => (
+                <NewsEntityLinkContext key={member.id} member={member} />
+              ))}
             {info.family === 'business_link' && data.business_context && (
               <BusinessMergeContext
                 value={data.business_context}
