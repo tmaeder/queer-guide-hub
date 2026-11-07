@@ -1,5 +1,7 @@
 // Pure helpers for bluesky-mentions: which posts may be stored, and which
 // queer.guide links they carry. No network, so they are unit-tested directly.
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
+
 
 /** Labels that keep a post out of the rail entirely (Bluesky global values). */
 const BLOCKED_LABELS = new Set(['porn', 'sexual', 'nudity', 'graphic-media', 'gore', 'nsfl', '!hide', '!warn'])
@@ -43,7 +45,7 @@ export function queerGuidePaths(post: BskyPostView): string[] {
   for (const u of urls) {
     try {
       const url = new URL(u)
-      if (url.hostname === 'queer.guide' || url.hostname === 'www.queer.guide') out.add(url.pathname.replace(/\/+$/, ''))
+      if (url.hostname === 'queer.guide' || url.hostname === 'www.queer.guide') out.add(trimTrailingSlashes(url.pathname))
     } catch { /* not a URL */ }
   }
   return [...out]

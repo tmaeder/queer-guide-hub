@@ -3,6 +3,8 @@
  * Titles ≤ 60 chars, descriptions ≤ 155 chars (Google snippet limits).
  */
 
+import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
+
 export type RouteMeta = {
   title: string;
   description: string;
@@ -500,7 +502,7 @@ export type MetaOverrides = {
 };
 
 export function resolveMeta(pathname: string, overrides?: MetaOverrides): RouteMeta {
-  const clean = pathname.replace(/\/+$/, '') || '/';
+  const clean = trimTrailingSlashes(pathname) || '/';
   const fallbackOg = overrides?.og_image_url ?? DEFAULT_OG_IMAGE;
   const exact = STATIC_ROUTE_META[clean];
   if (exact) return { ogImage: fallbackOg, ...exact };
@@ -514,7 +516,7 @@ export function resolveMeta(pathname: string, overrides?: MetaOverrides): RouteM
 }
 
 export function canonicalUrl(pathname: string): string {
-  const clean = pathname.replace(/\/+$/, '') || '/';
+  const clean = trimTrailingSlashes(pathname) || '/';
   return `${SITE_ORIGIN}${clean}`;
 }
 
@@ -569,7 +571,7 @@ const CLIENT_REDIRECT_STUBS = new Set([
 export function isIndexable(pathname: string): boolean {
   // These Hub modules have useful anonymous content. The remaining modules are
   // personal, consent-gated, or signed-in workspaces.
-  const clean = pathname.replace(/\/+$/, '') || '/';
+  const clean = trimTrailingSlashes(pathname) || '/';
   if (new Set(['/hub/feed', '/hub/members', '/hub/groups', '/hub/people']).has(clean)) {
     return true;
   }
@@ -668,7 +670,7 @@ export function startsWithLocale(pathname: string): boolean {
  * locale gets no prefix; any other locale gets `/{code}`.
  */
 export function localizedUrl(locale: string, basePath: string): string {
-  const clean = basePath.replace(/\/+$/, '') || '/';
+  const clean = trimTrailingSlashes(basePath) || '/';
   if (locale === DEFAULT_LOCALE) return `${SITE_ORIGIN}${clean}`;
   return `${SITE_ORIGIN}/${locale}${clean === '/' ? '' : clean}`;
 }
