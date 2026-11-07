@@ -183,7 +183,7 @@ export function parseLocation(html: unknown, url: string): GbVenue | null {
   const id = idFromUrl(url, 'locations')
   if (!id) return null
 
-  const text = h
+  const text = h.split(/<footer\b/i, 1)[0]
     .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<[^>]+>/g, '\n')
   const lines = text.split('\n').map((l) => stripTags(l)).filter(Boolean)
@@ -193,25 +193,47 @@ export function parseLocation(html: unknown, url: string): GbVenue | null {
   // "(tba)" is the site's placeholder for an unannounced venue, not a place.
   if (!name || /^\(tba\)$/i.test(name)) return null
 
-  const ai = lines.findIndex((l) => /^Adresse$/i.test(l))
-  const block = ai >= 0 ? lines.slice(ai + 1, ai + 6) : []
-  // The block repeats the venue name, then street, then city — but it can also
-  // carry UI labels, and those look exactly like a city to a "letters only"
-  // test. Measured on the first live run: 20 venues were staged with
-  // city="Website" because that link sits inside the address block. Any label
-  // added here must also be excluded, hence a list rather than one special case.
-  const LABELS = /^(Karte|Website|Webseite|Details|Telefon|Tel\.?|E-?Mail|Kontakt|Anfahrt|Öffnungszeiten|Facebook|Instagram)$/i
-  const rest = block.filter((l) =>
-    l !== name && !LABELS.test(l) && !/^\d{4}\s*-$/.test(l))
-  const cityIdx = rest.findIndex((l) => /^(\d{4,5}\s+)?[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ .'-]+$/.test(l) && !/strasse|str\.|gasse|weg|platz|allee|\d+\s*[A-Za-z]?$/i.test(l))
-  const cityRaw = cityIdx >= 0 ? rest[cityIdx] : null
-  const street = rest.find((l) => l !== cityRaw) ?? null
+  let street: string | null
+  let cityRaw: string | null
+  const address = h.match(/<div\b[^>]*\s+id\s*=\s*(["'])address\1[^>]*>([\s\S]*?)<\/div>/i)?.[2]
+  if (address !== undefined) {
+    // The three slots are name, street and locality. An empty street is an
+    // empty slot, and the surrounding controls and footer are outside the div.
+    const [, sourceStreet, sourceLocality] = address.split(/<br\b[^>]*>/i).map(stripTags)
+    const contactLine = /^(?:anrufen|mail|e-mail|telefon)\s*:|^24-std\.-hotline\b|^für anmeldungen und kontakt\b|^genaue adresse siehe\b/i
+    street = sourceStreet && !contactLine.test(sourceStreet) ? sourceStreet : null
+    cityRaw = sourceLocality && !contactLine.test(sourceLocality) ? sourceLocality : null
+    // Some location records put the full mailing address in the street slot.
+    const fused = !cityRaw && street?.match(/^(.+),\s*(\d{4,5}\s+\p{L}.+)$/u)
+    if (fused) {
+      street = fused[1]
+      cityRaw = fused[2]
+    } else if (!cityRaw && sourceLocality && street && !/\d/.test(street)) {
+      street = null
+    }
+  } else {
+    const ai = lines.findIndex((l) => /^Adresse$/i.test(l))
+    const block = ai >= 0 ? lines.slice(ai + 1, ai + 6) : []
+    const labels = /^(Karte|Website|Webseite|Details|Telefon|Tel\.?|E-?Mail|Kontakt|Anfahrt|Öffnungszeiten|Facebook|Instagram)$/i
+    const rest = block.filter((l) =>
+      l !== name && !labels.test(l) && !/^\d{4}\s*-?$/.test(l))
+    cityRaw = rest.find((l) => /^(\d{4,5}\s+)?[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ .'-]+$/.test(l) && !/strasse|str\.|gasse|weg|platz|allee|\d+\s*[A-Za-z]?$/i.test(l)) ?? null
+    street = rest.find((l) => l !== cityRaw) ?? null
+  }
   const { postal, city } = splitLocality(cityRaw)
 
   // The separator class excludes `-` so a NEGATIVE longitude is never read as
   // the gap between the pair. Trailing position makes it literal, no escape.
   const cm = h.match(/(4[0-9]\.\d{4,})[^0-9-]{1,30}([0-9]{1,2}\.\d{4,})/)
   const coord = cm ? plausibleCoord(cm[1], cm[2]) : null
+  // These agenda labels describe a test, a variable location or an online
+  // entry. A street or a map pin takes precedence over the label.
+  if (!street && !coord && (
+    /^(test|div\.|diverse|wechselnder austragungsort|zoom|online shop)$/i.test(name)
+    || name === 'Basel' && city === 'Basel'
+  )) {
+    return null
+  }
 
   return {
     id, slug: slugFromUrl(url) ?? id, url, name,
