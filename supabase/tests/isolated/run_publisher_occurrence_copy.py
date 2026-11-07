@@ -162,6 +162,62 @@ end $check$;
 """
 ticketmaster_migration = ROOT/'supabase/migrations/99991793933400_ticketmaster_occurrence_copy.sql'
 sql += ticketmaster_fixture + ticketmaster_migration.read_text() + ticketmaster_checks
+recurring_copy_fixture = """
+alter table events add column city text;
+create table content_revisions(source_table text,source_id uuid,actor_kind text,changed_fields text[]);
+create function city_canonical_key(text)returns text language sql immutable as 'select lower($1)';
+insert into countries values(md5('CH')::uuid,'CH');
+insert into cities values(md5('zurich')::uuid,md5('CH')::uuid,null,'Zurich');
+insert into events(id,title,description,start_date,external_id,data_source,city_id,country_id,city)
+ select md5('haz:'||g||':'||d)::uuid,'Recurring program '||g,'Complete publisher program description '||g,
+  '2026-10-01 15:00+00'::timestamptz+make_interval(days=>d),'program-'||chr(96+g)||'-'||d,
+  'haz-ch',md5('zurich')::uuid,md5('CH')::uuid,'Zurich'
+ from generate_series(1,4) g cross join generate_series(1,3) d;
+insert into event_sources
+ select e.id,e.id,e.data_source,e.external_id,'https://haz.ch/event/'||e.external_id||'/',repeat('c',64),
+  jsonb_build_object('raw',jsonb_build_object('slug',e.external_id,'title',e.title,'url','https://haz.ch/event/'||e.external_id||'/'),
+   'normalized',jsonb_build_object('sourceId',e.external_id,'title',e.title,'description',e.description,'start_date',e.start_date,
+    'location',jsonb_build_object('city','Zurich','country','CH','timezone','Europe/Zurich'),
+    'metadata',jsonb_build_object('source','haz-ch','url','https://haz.ch/event/'||e.external_id||'/','venue_source_id','room|zurich')))
+ from events e where e.data_source='haz-ch';
+-- The exact publisher occurrence may have a second source alias.
+insert into event_sources
+ select md5('alias')::uuid,event_id,source_slug,'alternate-url',source_url,payload_hash,payload
+ from event_sources where id=md5('haz:1:1')::uuid;
+update event_sources set payload=jsonb_set(payload,'{normalized,metadata,venue_source_id}','"different-room"')
+ where id=md5('haz:2:1')::uuid;
+update event_sources set payload=jsonb_set(payload,'{normalized,start_date}','"2026-12-12T15:00:00Z"')
+ where id=md5('haz:3:1')::uuid;
+insert into content_revisions values('events',md5('haz:4:1')::uuid,'human',array['description']);
+insert into event_quality_issues(id,event_id) select id,id from events where data_source='haz-ch';
+update event_quality_issues set evidence=evidence||'{"manual_hold":true}' where event_id=md5('haz:4:2')::uuid;
+"""
+recurring_copy_checks = """
+do $check$
+declare result jsonb;
+begin
+ if exists(select 1 from events e where e.data_source='haz-ch' and
+  api_private.event_description_reuse_expected(e.id) is distinct from
+   (e.title='Recurring program 1' or e.id=md5('haz:4:3')::uuid))
+ then raise exception 'Recurring publisher cases misclassified';end if;
+ result:=api_private.run_review_automatic_resolution(200,true);
+ if result->>'publisher_description_findings'<>'4' then raise exception 'Recurring dry run %',result;end if;
+ result:=api_private.run_review_automatic_resolution(200,false);
+ if result->>'publisher_description_findings'<>'4' then raise exception 'Recurring apply %',result;end if;
+ if (select count(*) from admin_review_repairs where next_value->>'resolution' like '%"publisher_occurrences": {"series": "program-%')<>4
+ then raise exception 'Missing recurring evidence in the repair journal';end if;
+ result:=api_private.run_review_automatic_resolution(200,false);
+ if result->>'publisher_description_findings'<>'0' then raise exception 'Recurring repeat %',result;end if;
+end $check$;
+update event_sources set payload=jsonb_set(payload,'{normalized,description}','"Different captured text"')
+ where id=md5('haz:1:1')::uuid;
+do $check$begin
+ if not exists(select 1 from event_quality_findings(md5('haz:1:3')::uuid) where issue_code='DESCRIPTION_REUSED')
+ then raise exception 'Changed peer must restore finding';end if;
+end $check$;
+"""
+recurring_migration = next((ROOT/'supabase/migrations').glob('*_review_recurring_publisher_copy.sql'))
+sql += recurring_copy_fixture + recurring_migration.read_text() + recurring_copy_checks
 with tempfile.TemporaryDirectory(prefix='qg-publisher-copy-') as tmp:
  data=Path(tmp)/'data'
  subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
