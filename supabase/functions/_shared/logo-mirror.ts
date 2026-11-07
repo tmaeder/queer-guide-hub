@@ -17,7 +17,9 @@
  *   IMAGE_CDN_ADMIN_SECRET  must equal the image-cdn Worker's ADMIN_SECRET
  */
 
-const CDN_BASE = (Deno.env.get('IMAGE_CDN_BASE_URL') || 'https://img.queer.guide').replace(/\/+$/, '')
+import { trimTrailingSlashes } from './trim-trailing-slashes.ts'
+
+const CDN_BASE = trimTrailingSlashes(Deno.env.get('IMAGE_CDN_BASE_URL') || 'https://img.queer.guide')
 const CDN_SECRET = Deno.env.get('IMAGE_CDN_ADMIN_SECRET') || ''
 
 const EXT_BY_TYPE: Record<string, string> = {

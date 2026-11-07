@@ -71,6 +71,7 @@ import {
 import { PUBLIC_DOCUMENTS, pageMarkdown } from './_lib/agentContent';
 import { STATIC_ROUTE_BODY } from './_lib/routeBody';
 import { redirectReportPage, setRedirectReportHeaders } from './_lib/redirectReportPage';
+import { trimTrailingSlashes } from '../src/lib/trimTrailingSlashes';
 
 // Prefixes that look like static assets. If the SPA catch-all in
 // _redirects falls through and we'd otherwise serve index.html for one
@@ -290,7 +291,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // self-canonical and exposes hreflang alternates to its 10 siblings.
   const { locale, basePath } = splitLocale(pathname);
   const representation = preferredContent(request.headers.get('Accept'));
-  const cleanPath = basePath.replace(/\/+$/, '') || '/';
+  const cleanPath = trimTrailingSlashes(basePath) || '/';
   const redirect = appRedirect(cleanPath, locale, url.search);
   if (redirect) return new Response(null, { status: 301, headers: { Location: redirect } });
 

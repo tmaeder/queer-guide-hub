@@ -12,6 +12,13 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, hexToBytes, utf8ToBytes } from '@noble/hashes/utils.js';
 import { parseArgs } from 'node:util';
 
+/** Strips every trailing `/` in linear time (a `/\/+$/` regex is polynomial: js/polynomial-redos). */
+function trimTrailingSlashes(s) {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47) end--;
+  return s.slice(0, end);
+}
+
 export function checkIndex(text, publicKeyHex) {
   const { payload, sig } = JSON.parse(text);
   if (typeof payload !== 'string' || typeof sig !== 'string') throw new Error('index envelope is malformed');
@@ -38,7 +45,7 @@ async function get(url) {
 
 async function main() {
   const { values } = parseArgs({ options: { expect: { type: 'string' } } });
-  const base = (process.env.PACK_BASE_URL ?? '').replace(/\/+$/, '');
+  const base = trimTrailingSlashes(process.env.PACK_BASE_URL ?? '');
   const key = process.env.PACK_PUBLIC_KEY ?? '';
   if (!/^https:\/\//.test(base)) throw new Error('PACK_BASE_URL must be an https URL');
   if (!/^[0-9a-f]{64}$/i.test(key)) throw new Error('PACK_PUBLIC_KEY (64 hex chars) is required');
