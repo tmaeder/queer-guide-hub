@@ -86,6 +86,43 @@ export async function resolveEntities(
     const name = rawName.trim()
     if (!name || name.length < 2) continue
 
+    if (table === 'cities' && entityType === 'city' && nameColumn === 'name') {
+      // Use the catalogue's unaccented key for names such as Montréal. ASCII
+      // input already has the same key after case and whitespace normalization.
+      const keyResult = /^[\x20-\x7e]+$/.test(name)
+        ? { data: norm(name), error: null }
+        : await supabase.rpc('city_canonical_key', { p_name: name })
+      if (keyResult.error) {
+        console.warn(`entity-link city key lookup failed: ${keyResult.error.message}`)
+        continue
+      }
+      const { data: exact, error: exactError } = await supabase
+        .from('cities')
+        .select('id, name, region_name')
+        .eq('canonical_key', keyResult.data)
+        .is('duplicate_of_id', null)
+        .limit(2)
+
+      if (exactError) {
+        console.warn(`entity-link exact city lookup failed: ${exactError.message}`)
+        continue
+      }
+      if (exact?.length) {
+        if (exact.length > 1) {
+          needsReview.push({ name, score: 1, reason: 'ambiguous:multiple canonical cities share this name' })
+        } else {
+          const city = exact[0]
+          const collision = proseStateContradiction(city, body)
+          if (collision) {
+            needsReview.push({ name: city.name, score: 1, reason: `city_collision:${collision}` })
+          } else {
+            linked.push({ id: city.id, name: city.name, score: 1 })
+          }
+        }
+        continue
+      }
+    }
+
     // Cheap exact-ish prefilter via ilike; trigram score for ranking.
     // Cities also select `region_name`: it is the only thing the collision
     // guard below can corroborate the article's prose against.
