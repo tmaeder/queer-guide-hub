@@ -159,7 +159,7 @@ export function NewsStagingPreview({ news, editor }: NewsStagingPreviewProps) {
           </a>
         )}
         {relevanceHeld && (
-          <aside className="space-y-1 rounded-element border border-border bg-muted/50 p-3 text-13">
+          <aside className="space-y-1 rounded-element border border-border bg-muted/50 p-4 text-13">
             <h3 className="font-semibold">Publication held for relevance</h3>
             <p>
               The model recommends publication. The relevance score of {pct(d.relevanceScore)} is
