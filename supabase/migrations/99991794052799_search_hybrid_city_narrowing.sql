@@ -77,8 +77,6 @@ end
 $fn$;
 revoke all on function public.run_search_term_df_refresh() from public, anon, authenticated;
 
-select public.run_search_term_df_refresh();
-
 insert into public.admin_automations (slug, name, description, managed_by, enabled, "trigger", schedule, action)
 values (
   'search_term_df_refresh',
@@ -117,9 +115,23 @@ declare
     'kw as (select doc_id, rank() over (order by greatest(kw_rank,trg) desc) rk from cand where kw_hit=1)'
   ];
   v_to text[] := array[
-    'kwdf as materialized (select coalesce(p.dcity is not null and d.n_lex = 1 and d.n_found = 1 and d.df >= 500, false) narrow, coalesce(d.df, 0) df from p2 p left join lateral (select cardinality(l.arr) n_lex, count(t.lexeme) n_found, min(t.ndoc) df from (select tsvector_to_array(to_tsvector(''simple'', unaccent(coalesce(p.eff_q, '''')))) arr) l left join public.search_term_df t on t.lexeme = any(l.arr) group by l.arr) d on true),
+    'kwdf as materialized (
+  select coalesce(p.dcity is not null and d.n_lex = 1 and d.n_found = 1 and d.df >= 500
+    and numnode(websearch_to_tsquery(''simple'',unaccent(p.eff_q))) = 1, false) narrow,
+    coalesce(d.df, 0) df
+  from p2 p left join lateral (
+    select cardinality(l.arr) n_lex, count(t.lexeme) n_found, min(t.ndoc) df
+    from (select tsvector_to_array(to_tsvector(''simple'',unaccent(coalesce(p.eff_q, '''')))) arr) l
+    left join public.search_term_df t on t.lexeme = any(l.arr)
+    group by l.arr
+  ) d on true
+),
 ftsonly as materialized (',
-    'where p.eff_q is not null and sd.search_tsv @@ websearch_to_tsquery(''simple'',unaccent(case when (select narrow from kwdf) then p.eff_q||chr(32)||p.dcity else p.eff_q end))),',
+    'where p.eff_q is not null and sd.search_tsv @@ (
+      case when (select narrow from kwdf)
+        then websearch_to_tsquery(''simple'',unaccent(p.eff_q)) && plainto_tsquery(''simple'',unaccent(p.dcity))
+        else websearch_to_tsquery(''simple'',unaccent(p.eff_q))
+      end)),',
     '< 20 and sd.title % p.eff_q and (not (select narrow from kwdf) or lower(sd.city)=lower(p.dcity)))',
     'kw as (select doc_id, rank() over (order by greatest(kw_rank,trg) desc) * (select case when narrow then greatest(1.0, df::numeric / greatest((select count(*) from ftsonly), 1)) else 1.0 end from kwdf) rk from cand where kw_hit=1)'
   ];
@@ -150,17 +162,15 @@ begin
   select prosrc, proconfig into v_src, v_cfg from pg_proc
    where oid = 'api_private.search_hybrid(text,extensions.vector,text[],jsonb,double precision,double precision,double precision,timestamp with time zone,integer,integer,timestamp with time zone,timestamp with time zone,numeric,numeric,text)'::regprocedure;
   if position('kwdf as materialized' in v_src) = 0 then raise exception 'P1 failed: kwdf CTE missing'; end if;
-  if position('when (select narrow from kwdf) then p.eff_q||chr(32)||p.dcity' in v_src) = 0 then raise exception 'P2 failed: city term not added to the narrowed FTS'; end if;
+  if position('&& plainto_tsquery(''simple'',unaccent(p.dcity))' in v_src) = 0 then raise exception 'P2 failed: city term not added to the narrowed FTS'; end if;
   if position('(not (select narrow from kwdf) or lower(sd.city)=lower(p.dcity))' in v_src) = 0 then raise exception 'P3 failed: trigram arm not narrowed'; end if;
   if position('df::numeric / greatest((select count(*) from ftsonly), 1)' in v_src) = 0 then raise exception 'P4 failed: keyword rank not scaled'; end if;
   if position('d.n_lex = 1 and d.n_found = 1 and d.df >= 500' in v_src) = 0 then raise exception 'P5 failed: single-lexeme narrowing gate missing'; end if;
   if not ('plan_cache_mode=force_custom_plan' = any(v_cfg)) then raise exception 'P6 failed: function SET clause lost'; end if;
-  -- Corpus-size independent on purpose: CI builds a small local database where
-  -- only ~65 lexemes reach 200 documents (prod: 4,556), and a fixed floor sized
-  -- against prod failed there. The claim is that the refresh ran and wrote.
-  select count(*) into v_n from public.search_term_df;
-  if v_n = 0 and exists (select 1 from public.search_documents) then
-    raise exception 'P7 failed: search_term_df is empty although search_documents has rows';
+  -- A corpus can have documents and still have no terms above the frequency floor.
+  select (public.run_search_term_df_refresh()->>'lexemes')::int into v_n;
+  if v_n is distinct from (select count(*) from public.search_term_df) then
+    raise exception 'P7 failed: search_term_df row count differs from refresh result';
   end if;
   if not exists (select 1 from cron.job where jobname = 'search_term_df_refresh') then raise exception 'P8 failed: refresh cron missing'; end if;
   if has_table_privilege('anon', 'public.search_term_df', 'select') then raise exception 'P9 failed: anon can read search_term_df'; end if;
