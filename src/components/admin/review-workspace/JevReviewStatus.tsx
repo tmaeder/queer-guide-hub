@@ -46,6 +46,13 @@ export function JevReviewStatus({ caseId }: { caseId?: string }) {
   const { enabled, counts, jobs, production_budget: budget } = query.data;
   const job = jobs[0];
   const reason = job?.outcome.blocker || job?.outcome.reason || job?.outcome.retry;
+  const requiresHumanDecision =
+    job?.status === 'blocked' &&
+    [
+      'visual_evidence_requires_human_review',
+      'mandatory_human_publication_review',
+      'protected_review',
+    ].includes(job.outcome.reason ?? '');
   const dollars = (nano: number) =>
     (nano / 1e9).toLocaleString(undefined, { style: 'currency', currency: 'USD' });
   if (caseId && !job) return null;
@@ -58,7 +65,11 @@ export function JevReviewStatus({ caseId }: { caseId?: string }) {
           </p>
           {reason && <p className="mt-1">{reason.replace(/_/g, ' ')}</p>}
           {job.status === 'blocked' && (
-            <p className="mt-1">Waiting for new evidence or a repaired prerequisite.</p>
+            <p className="mt-1">
+              {requiresHumanDecision
+                ? 'This case requires a human decision.'
+                : 'Waiting for new evidence or a repaired prerequisite.'}
+            </p>
           )}
           {job.status === 'retry' && (
             <p className="mt-1">Next check: {new Date(job.next_attempt_at).toLocaleString()}</p>

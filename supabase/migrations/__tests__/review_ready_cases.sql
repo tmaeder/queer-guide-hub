@@ -35,4 +35,31 @@ begin
  if not v_result or not exists(select 1 from public.admin_review_research_jobs where case_id=v_id and status='retry' and next_attempt_at>now()+interval '50 minutes') then
   raise exception 'Retry backoff not applied'; end if;
 end $test$;
+
+do $live_staging$
+declare
+  v_staging_id uuid := gen_random_uuid();
+  v_case_id uuid := gen_random_uuid();
+  item jsonb := jsonb_build_object('queue_type','staging','id',v_staging_id);
+begin
+  insert into public.ingestion_staging(id,source_type,target_table,raw_data,review_status,disposition)
+  values(v_staging_id,'review-routing-fixture','marketplace_listings','{}','pending_review','pending');
+  insert into public.admin_review_cases(id,case_key,family,stage,required_role,item,members,fingerprint,created_at)
+  values(v_case_id,'staging:'||v_staging_id,'record','ready','admin',item,jsonb_build_array(item),'v1',now());
+  insert into public.admin_review_automation_jobs(case_id,fingerprint,status,outcome)
+  values(v_case_id,'v1','blocked','{"reason":"missing_source"}');
+  if not exists(select 1 from public.admin_review_case_worklist where id=v_case_id and work_stage='blocked') then
+    raise exception 'An open staging case with missing evidence did not remain blocked';
+  end if;
+  update public.admin_review_automation_jobs j set outcome='{"reason":"protected_review"}'
+  where j.case_id=v_case_id and j.fingerprint='v1';
+  if not exists(select 1 from public.admin_review_case_worklist where id=v_case_id and work_stage='ready') then
+    raise exception 'A ready case that requires a person was hidden under Blocked';
+  end if;
+  update public.ingestion_staging s set review_status='auto',disposition='committed'
+  where s.id=v_staging_id;
+  if exists(select 1 from public.admin_review_case_worklist where id=v_case_id) then
+    raise exception 'A reconciled staging case remained visible until the next refresh';
+  end if;
+end $live_staging$;
 rollback;
