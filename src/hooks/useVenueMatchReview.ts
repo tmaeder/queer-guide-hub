@@ -21,6 +21,11 @@ export interface VenueMatchContext {
     updated_at: string;
     source_url: string | null;
   };
+  publisher_location?: {
+    venue_name: string | null;
+    address: string | null;
+    source_url: string | null;
+  } | null;
   city: string | null;
   country: string | null;
   candidates: VenueMatchCandidate[];
