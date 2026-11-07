@@ -142,7 +142,31 @@ begin
  ) then raise exception 'Additional source formats or ambiguity boundary changed';end if;
 end $test$;
 """
-fixture_sql = schema + paths[0].read_text() + checks + title_formats + title_checks + additional_formats + title_checks + additional_checks
+recurring_formats = (ROOT/'supabase/migrations/99991793933520_review_recurring_source_format_labels.sql').read_text()
+recurring_checks = r"""
+do $test$
+begin
+ if exists(
+  select 1 from (values
+   ('Ukraine is Queer vol. 5 (Mezipatra shorts screening)', 'film'),
+   ('Fall Flag Football Games (Week 7)', 'sports'),
+   ('DC Front Runners Saturday Walk and Run', 'sports'),
+   ('First Fridays Member Mixer', 'social'),
+   ('LAGLCC November Networking Mixer', 'social'),
+   ('House Music Night', 'party'),
+   ('Friday Night Rotating DJs', 'party'),
+   ('Jamie''s Birthday Bash', 'party'),
+   ('Member Mixer and Shorts Screening', null),
+   ('Flag Football Games and Birthday Bash', null),
+   ('Flag Football Fundraiser', null),
+   ('Community Walk and Run', null),
+   ('DJ Workshop', null)
+  ) examples(title, expected)
+  where api_private.source_explicit_event_format(title) is distinct from expected
+ ) then raise exception 'Recurring source formats or ambiguity boundary changed';end if;
+end $test$;
+"""
+fixture_sql = schema + paths[0].read_text() + checks + title_formats + title_checks + additional_formats + title_checks + additional_checks + recurring_formats + title_checks + additional_checks + recurring_checks
 if '--temporary-sql' in sys.argv:
  # Hosted fallback when local disk cannot fit initdb. Every fixture and function
  # lives in this transaction's pg_temp namespace; no public DDL or data writes.
