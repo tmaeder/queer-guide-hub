@@ -63,6 +63,7 @@ describe('Data operations inventory', () => {
     renderOverview();
     const table = screen.getByRole('table', { name: 'Sources and automations inventory' });
     const action = await within(table).findByRole('link', { name: 'Manage Event sweep' });
+    expect(action).toHaveTextContent(/^Manage$/);
     expect(action).toHaveAttribute('href', '/admin/automation?automation=event_sweep');
     expect(within(table).getAllByRole('row')[1]).toHaveTextContent('Last run failed');
     expect(rpc).toHaveBeenCalledWith('admin_data_operations_overview');

@@ -35,8 +35,17 @@ export function VenueMatchPanel({
   useEffect(() => {
     if (selection && !selectionCurrent) onSelect(null);
   }, [onSelect, selection, selectionCurrent]);
-  const source = reviewHttpUrl(context?.event.source_url);
+  const publisher = context?.publisher_location;
+  const publisherUrl = reviewHttpUrl(publisher?.source_url);
+  const source = publisherUrl || reviewHttpUrl(context?.event.source_url);
   const location = [context?.city, context?.country].filter(Boolean).join(', ');
+  const differs = (saved: string | null | undefined, captured: string | null | undefined) =>
+    !!saved?.trim() &&
+    !!captured?.trim() &&
+    saved.trim().toLowerCase() !== captured.trim().toLowerCase();
+  const locationDiffers =
+    differs(context?.event.venue_name, publisher?.venue_name) ||
+    differs(context?.event.address, publisher?.address);
   // Selection belongs to this exact live query. A search/reload immediately
   // clears it so a previous response cannot submit a stale hidden candidate.
   const clear = () => {
@@ -62,8 +71,23 @@ export function VenueMatchPanel({
       </div>
       {context && (
         <div className="space-y-2 bg-muted/40 p-4 text-sm">
-          <p className="font-medium">{context.event.venue_name || 'No source venue name'}</p>
-          <p>{context.event.address || 'Source address not recorded'}</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
+              <h4 className="font-semibold">Saved event location</h4>
+              <p>{context.event.venue_name || 'Venue name missing'}</p>
+              <p>{context.event.address || 'Address missing'}</p>
+            </div>
+            {publisher && (
+              <div className="space-y-1">
+                <h4 className="font-semibold">Publisher capture</h4>
+                <p>{publisher.venue_name || 'Venue name missing'}</p>
+                <p>{publisher.address || 'Address missing'}</p>
+              </div>
+            )}
+          </div>
+          {locationDiffers && (
+            <p className="font-medium">The publisher capture differs from the saved location.</p>
+          )}
           <p className="flex items-center gap-2 text-muted-foreground">
             <MapPin size={14} />
             {location || 'Location missing'}
@@ -75,12 +99,12 @@ export function VenueMatchPanel({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 underline underline-offset-4"
             >
-              Check event source
+              {publisherUrl ? 'Open publisher listing' : 'Open event website'}
               <ExternalLink size={14} />
             </a>
           )}
           <p className="text-xs text-muted-foreground">
-            Compare the source name, address and website. Names alone can describe different places.
+            Compare the venue name and street address with the catalogue options below.
           </p>
         </div>
       )}
