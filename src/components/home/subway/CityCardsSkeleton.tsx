@@ -10,9 +10,10 @@ export function CityCardsSkeleton() {
           className="motion-safe:animate-pulse overflow-hidden rounded-container bg-card"
         >
           <div className="aspect-[16/10] w-full bg-muted" />
-          <div className="p-4">
+          <div className="min-h-28 p-4">
             <div className="h-6 w-2/3 bg-muted" />
             <div className="mt-2 h-4 w-1/2 bg-muted" />
+            <div className="mt-2 h-4 w-1/3 bg-muted" />
           </div>
         </div>
       ))}
