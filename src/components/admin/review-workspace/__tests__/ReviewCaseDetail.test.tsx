@@ -143,6 +143,41 @@ describe('review cases', () => {
       screen.getByRole('button', { name: 'Queue another research attempt' }),
     ).toBeInTheDocument();
   });
+  it('shows the venue merge trail and the fields still needing business evidence', () => {
+    state.data!.family = 'business_link';
+    state.data!.business_context = {
+      organization: { name: 'Earlier business profile', city: 'Berlin' },
+      previous_venue: { name: 'Earlier venue record' },
+      surviving_venue: {
+        name: 'Surviving venue record',
+        address: '42 Source Street',
+        website: 'https://venue.test/',
+      },
+      surviving_organization: { name: 'Current business profile', website: 'javascript:alert(1)' },
+      venue_merge_at: '2026-10-21T12:00:00Z',
+      pending_fields: ['description', 'phone'],
+    };
+    render(
+      <ReviewCaseDetail
+        item={item('business_link', 'research')}
+        busy={false}
+        onDecision={vi.fn()}
+        onBack={vi.fn()}
+        onSkip={vi.fn()}
+      />,
+    );
+    const evidence = within(screen.getByRole('region', { name: 'Business and venue records' }));
+    expect(evidence.getByText('Earlier business profile')).toBeInTheDocument();
+    expect(evidence.getByText('Current business profile')).toBeInTheDocument();
+    expect(evidence.getByText('Earlier venue record')).toBeInTheDocument();
+    expect(evidence.getByText('Surviving venue record')).toBeInTheDocument();
+    expect(evidence.getByText('Description, Phone')).toBeInTheDocument();
+    expect(evidence.getByRole('link', { name: 'Venue website' })).toHaveAttribute(
+      'href',
+      'https://venue.test/',
+    );
+    expect(evidence.queryByRole('link', { name: 'Organization website' })).not.toBeInTheDocument();
+  });
   it('uses live comparison and requires renewed confirmation when case evidence changes', () => {
     state.data!.family = 'venue';
     state.data!.members = [member('source-one'), member('source-two')].map((m) => ({

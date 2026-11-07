@@ -11,6 +11,7 @@ import type { ReviewDecision, ReviewItem } from '@/hooks/useAdminReview';
 import { cityResearchExplanation, reviewHttpUrl } from './reviewEvidence';
 import { VenueMatchPanel, type VenueMatchSelection } from './VenueMatchPanel';
 import { CityIdentityContext } from './CityIdentityContext';
+import { BusinessMergeContext } from './BusinessMergeContext';
 
 type Props = {
   item: ReviewItem;
@@ -165,6 +166,9 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
             </div>
             {info.family === 'city_identity' && (
               <CityIdentityContext value={data.city_context} research={outcome} />
+            )}
+            {info.family === 'business_link' && data.business_context && (
+              <BusinessMergeContext value={data.business_context} />
             )}
             {info.family !== 'artwork' && (
               <section aria-label="Research status" className="bg-muted/40 p-4">
