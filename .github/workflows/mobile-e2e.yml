@@ -79,6 +79,9 @@ jobs:
           api-level: 34
           arch: x86_64
           target: google_apis
+          # The runner's default AVD is a 320x640 phone: half of each screen is
+          # below the fold and flows fail on layout, not on the app.
+          profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           working-directory: mobile
