@@ -16,7 +16,8 @@ create table admin_review_repairs(entity_type text,entity_id uuid,reason text,pr
 create table news_articles(id uuid primary key,url text unique,source_id uuid,published_at timestamptz,fingerprint text,
  content_hash text,media_type text default 'article',audio_url text,image_url text,duplicate_of_id uuid,
  quality_status text default 'passed',quality_decision jsonb,auto_publish_blocked_reasons text[]default '{}',
- content text default 'Keep cleaned catalogue body',title text default 'Cleaned headline',updated_at timestamptz default now());
+ content text default 'Keep cleaned catalogue body',title text default 'Cleaned headline',updated_at timestamptz default now(),
+ archived_at timestamptz);
 create table ingestion_staging(id uuid primary key,target_table text default 'news_articles',source_name text default 'rss-news',source_type text default 'rss-news',
  source_entity_id text,disposition text default 'pending',review_status text default 'pending_review',reviewed_by uuid,reviewed_at timestamptz,
  review_notes text,target_record_id uuid,dedup_status text default 'unique',dedup_match_id uuid,dedup_match_table text default 'news_articles',
@@ -190,15 +191,39 @@ begin
  if (r->>'duplicate_sources')::integer<>0 then raise exception 'Podcast disposition was not idempotent';end if;
 end $$;
 """
+technical_checks="""
+update ingestion_staging set enriched_data=jsonb_set(enriched_data,'{auto_publish_blocked_reasons}',
+ '["truncated_body","image_unusable"]') where id in (md5('podcast-2')::uuid,md5('podcast-3')::uuid,md5('podcast-6')::uuid);
+update news_articles set auto_publish_blocked_reasons=array['truncated_body'] where id=md5('podcast-6')::uuid;
+update news_articles set archived_at=now() where id=md5('podcast-3')::uuid;
+create table technical_before_articles as select id,to_jsonb(n)value from news_articles n where media_type='podcast';
+create table technical_before_stages as select s.id,to_jsonb(s)value from ingestion_staging s join technical_before_articles p using(id);
+do $$
+declare r jsonb;
+begin
+ r:=api_private.reconcile_exact_news_source_duplicates(100,true);
+ if r->'staging_ids'<>jsonb_build_array(md5('podcast-6')::uuid)
+ then raise exception 'Technical duplicate candidates %',r;end if;
+ r:=api_private.run_review_automatic_resolution(100,false);
+ if r#>'{exact_news_source_duplicates,staging_ids}'<>jsonb_build_array(md5('podcast-6')::uuid)
+ then raise exception 'Technical duplicate disposition %',r;end if;
+ if exists(select 1 from technical_before_articles b join news_articles n using(id) where b.value<>to_jsonb(n))
+ then raise exception 'Canonical episode or its flags changed';end if;
+ if exists(select 1 from technical_before_stages b join ingestion_staging s using(id)
+  where s.id<>md5('podcast-6')::uuid and b.value<>to_jsonb(s))
+ then raise exception 'Protected or changed capture was modified';end if;
+end $$;
+"""
 policy=(ROOT/'supabase/migrations/20261022180826_review_automatic_resolution.sql').read_text()
 policy=re.search(r'create function api_private.review_news_machine_outcome[\s\S]*?end \$\$;',policy).group(0)
 paths=list((ROOT/'supabase/migrations').glob('*_review_exact_news_source_duplicates.sql'));assert len(paths)==1
 podcast_migration=ROOT/'supabase/migrations/99991793933580_review_exact_podcast_source_replays.sql'
+technical_migration=ROOT/'supabase/migrations/99991794046319_review_podcast_technical_replays.sql'
 with tempfile.TemporaryDirectory(prefix='qg-news-source-dedup-')as tmp:
  data=Path(tmp)/'data';subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
  subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55499 -c listen_addresses=','-w','start'],check=True,stdout=subprocess.DEVNULL)
  try:
-  result=subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55499','-d','postgres','-v','ON_ERROR_STOP=1'],input=schema+policy+paths[0].read_text()+checks+repeat_migration.read_text()+repeat_checks+podcast_migration.read_text()+podcast_checks,text=True,capture_output=True)
+  result=subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55499','-d','postgres','-v','ON_ERROR_STOP=1'],input=schema+policy+paths[0].read_text()+checks+repeat_migration.read_text()+repeat_checks+podcast_migration.read_text()+podcast_checks+technical_migration.read_text()+technical_checks,text=True,capture_output=True)
   if result.returncode:raise RuntimeError(result.stderr)
  finally:subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
-print('PASS: 32 duplicate/source/manual/quality cases; pause, browser denial, bounds, hook composition, unchanged catalogue, complete audits, idempotency and exact SentidoG and podcast repeat captures')
+print('PASS: source and editorial protections, scheduled duplicate cleanup, audit history and unchanged catalogue')
