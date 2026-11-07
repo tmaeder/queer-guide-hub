@@ -25,6 +25,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { openPendingWindow } from '@/lib/openPendingWindow';
 import { useToast } from '@/hooks/use-toast';
 import { AddDocumentDialog } from './AddDocumentDialog';
 import {
@@ -74,8 +75,12 @@ export function DocumentsList({ tripId, embedded = false, readOnly = false }: Pr
   const [deleteCandidate, setDeleteCandidate] = useState<TripDocument | null>(null);
 
   const handleDownload = async (doc: TripDocument) => {
+    // Open the tab now, inside the click: Safari blocks a window.open() that
+    // runs after the await below, because the click's user activation is gone.
+    const pending = openPendingWindow();
     const url = await getDocumentDownloadUrl(doc);
     if (!url) {
+      pending.close();
       toast({
         title: t('docs.download.failedTitle', 'Could not open document'),
         description: t(
@@ -86,7 +91,8 @@ export function DocumentsList({ tripId, embedded = false, readOnly = false }: Pr
       });
       return;
     }
-    window.open(url, '_blank', 'noopener,noreferrer');
+    // Popup blocked or closed meanwhile: open the document in this tab instead.
+    if (!pending.navigate(url)) window.location.assign(url);
   };
 
   const confirmDelete = () => {

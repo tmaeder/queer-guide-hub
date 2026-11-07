@@ -26,6 +26,20 @@ export function getCorsHeaders(req?: Request): Record<string, string> {
 }
 
 /**
+ * The request's Origin when it is one of ours, else `fallback`.
+ *
+ * Use this — never the raw header — whenever an Origin is turned into a URL
+ * the visitor will be sent to (Stripe success/cancel URLs, email links, ...).
+ * CORS only stops a BROWSER on another site from reading the response; a
+ * direct request can set any Origin it likes, so a raw header would let anyone
+ * mint a genuine queer.guide checkout that returns the payer to their domain.
+ */
+export function trustedOrigin(req: Request, fallback = 'https://queer.guide'): string {
+  const origin = req.headers.get('Origin') ?? ''
+  return ALLOWED_ORIGINS.has(origin) ? origin : fallback
+}
+
+/**
  * @deprecated Use getCorsHeaders(req) for origin-validated CORS.
  * This is kept temporarily for backward compatibility but will be removed.
  * All functions should migrate to getCorsHeaders(req).

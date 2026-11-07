@@ -250,7 +250,13 @@ export async function dispatchDomainInstructionMail(
       retryAfter = instructionRetryAfter(response);
       if (response.ok) {
         const data = await instructionProviderJson(response);
-        if (data && typeof data.id === 'string' && /^[A-Za-z0-9_-]{1,200}$/.test(data.id)) {
+        // Keep the raw Cloudflare Message-ID so delivery events can match it.
+        if (
+          data &&
+          typeof data.id === 'string' &&
+          data.id.length <= 200 &&
+          /^(?:[A-Za-z0-9_-]+|<[A-Za-z0-9._+-]+@[A-Za-z0-9.-]+>)$/.test(data.id)
+        ) {
           outcome = 'sent';
           providerId = data.id;
         }
