@@ -22,6 +22,11 @@ with targets as materialized (
  select e.id,s.id source_id,s.source_url,s.payload_hash,
   public.event_quality_description_fingerprint(e.description) fingerprint,
   e.title,e.start_date,e.data_source,e.city_id,e.country_id,
+  (e.start_date at time zone case
+   when e.data_source in ('haz-ch','milchjugend') then 'Europe/Zurich'
+   when e.data_source in ('siegessaeule','ticketcorner') then 'Europe/Berlin'
+   when e.data_source='lgbtnetwork' then 'America/New_York'
+  end)::date occurrence_date,
   public.city_canonical_key(coalesce(ci.name,e.city)) location_city,
   coalesce(s.payload#>>'{normalized,metadata,venue_source_id}',s.payload#>>'{normalized,venue_name}') location_key,
   coalesce(s.payload#>>'{normalized,location,address}','') location_address,
@@ -79,21 +84,22 @@ with targets as materialized (
  and not exists(select 1 from public.event_sources peer where peer.event_id=e.id and peer.source_slug=s.source_slug and peer.source_entity_id=s.source_entity_id and peer.id<>s.id)
 ), eligible as (
 select t.id,t.title,t.data_source, p.series,p.location_key,p.location_address,p.location_city,p.source_id,p.source_url,p.payload_hash,p.fingerprint,
- count(distinct other.start_date) occurrence_count,
- jsonb_agg(jsonb_build_object('id',other.source_id,'url',other.source_url,'payload_hash',other.payload_hash,'start_date',other.start_date) order by other.start_date) captures
+ count(distinct other.occurrence_date) occurrence_count,
+ jsonb_agg(jsonb_build_object('id',other.source_id,'url',other.source_url,'payload_hash',other.payload_hash,
+  'start_date',other.start_date,'occurrence_date',other.occurrence_date) order by other.start_date) captures
 from targets t join publisher p on p.id=t.id
 join publisher other on other.fingerprint=p.fingerprint and other.data_source=p.data_source and other.series=p.series
  and other.city_id is not distinct from p.city_id and other.country_id=p.country_id
  and other.location_city=p.location_city and other.location_key=p.location_key and other.location_address=p.location_address and other.title=p.title
 where p.series is not null and nullif(btrim(p.location_key),'') is not null and nullif(p.location_city,'') is not null
 group by t.id,t.title,t.data_source,p.series,p.location_key,p.location_address,p.location_city,p.source_id,p.source_url,p.payload_hash,p.fingerprint
-having count(distinct other.start_date)>=3 and count(distinct other.source_url)>=3
+having count(distinct other.occurrence_date)>=3 and count(distinct other.source_url)>=3
 )
 select jsonb_build_object(
  'series',p.series,'source_url',p.source_url,'payload_hash',p.payload_hash,'occurrence_count',p.occurrence_count,
  'examples',(select jsonb_agg(sample.entry order by sample.entry->>'start_date') from (
-  select distinct on(entry->>'start_date') entry from jsonb_array_elements(p.captures) entry
-  order by entry->>'start_date',entry->>'id' limit 3
+  select distinct on(entry->>'occurrence_date') entry from jsonb_array_elements(p.captures) entry
+  order by entry->>'occurrence_date',entry->>'start_date',entry->>'id' limit 3
  ) sample)
 ) from eligible p;
 $fn$;

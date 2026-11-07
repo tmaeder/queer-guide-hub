@@ -170,9 +170,11 @@ insert into countries values(md5('CH')::uuid,'CH');
 insert into cities values(md5('zurich')::uuid,md5('CH')::uuid,null,'Zurich');
 insert into events(id,title,description,start_date,external_id,data_source,city_id,country_id,city)
  select md5('haz:'||g||':'||d)::uuid,'Recurring program '||g,'Complete publisher program description '||g,
-  '2026-10-01 15:00+00'::timestamptz+make_interval(days=>d),'program-'||chr(96+g)||'-'||d,
+  case when g=5 then '2026-10-01 21:30+00'::timestamptz+make_interval(hours=>d)
+   else '2026-10-01 15:00+00'::timestamptz+make_interval(days=>d) end,
+  'program-'||chr(96+g)||'-'||d,
   'haz-ch',md5('zurich')::uuid,md5('CH')::uuid,'Zurich'
- from generate_series(1,4) g cross join generate_series(1,3) d;
+ from generate_series(1,5) g cross join generate_series(1,3) d;
 insert into event_sources
  select e.id,e.id,e.data_source,e.external_id,'https://haz.ch/event/'||e.external_id||'/',repeat('c',64),
   jsonb_build_object('raw',jsonb_build_object('slug',e.external_id,'title',e.title,'url','https://haz.ch/event/'||e.external_id||'/'),
