@@ -56,7 +56,7 @@ const sampleRun = {
 
 import AdminAutomation from '../AdminAutomation';
 
-function setupQueryResponses(rows: typeof sampleAutomation[], runs: typeof sampleRun[]) {
+function setupQueryResponses(rows: (typeof sampleAutomation)[], runs: (typeof sampleRun)[]) {
   mocks.supabase.from.mockImplementation((table: string) => {
     if (table === 'admin_automations') {
       return {
@@ -80,10 +80,10 @@ function setupQueryResponses(rows: typeof sampleAutomation[], runs: typeof sampl
   });
 }
 
-function wrap(node: React.ReactNode) {
+function wrap(node: React.ReactNode, path = '/admin/automation') {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return (
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[path]}>
       <QueryClientProvider client={qc}>{node}</QueryClientProvider>
     </MemoryRouter>
   );
@@ -103,6 +103,11 @@ describe('AdminAutomation', () => {
     expect(screen.getByText(/Recent runs/i)).toBeTruthy();
   });
 
+  it('opens the requested automation from an inventory deep link', async () => {
+    render(wrap(<AdminAutomation />, '/admin/automation?automation=event_auto_archive'));
+    expect(await screen.findByRole('dialog')).toHaveTextContent(sampleAutomation.description);
+  });
+
   it('shows Pause all + Resume all header buttons for admins', () => {
     render(wrap(<AdminAutomation />));
     expect(screen.getByRole('button', { name: /^Pause all$/ })).toBeTruthy();
@@ -111,8 +116,6 @@ describe('AdminAutomation', () => {
 
   it('shows Recent runs prompt when no filter active', () => {
     render(wrap(<AdminAutomation />));
-    expect(
-      screen.getByText(/"Filter runs" on any automation row/i),
-    ).toBeTruthy();
+    expect(screen.getByText(/"Filter runs" on any automation row/i)).toBeTruthy();
   });
 });
