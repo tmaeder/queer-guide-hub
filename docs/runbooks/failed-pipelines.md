@@ -84,3 +84,44 @@ source or enrichment call may have written data before its response was lost.
 The pilot marks that run failed and preserves the error on the step. To select
 the standard execution path for a new run, set `context.reliability_pilot`
 to `false`.
+
+Set `context.fast_step_wake` to `true` on a new pilot run to try faster
+handoffs. The executor issues at most eight wake-ups per run and reserves up
+to two slots at a time. The queue dispatcher still delivers the original
+messages, and duplicate deliveries can safely acknowledge the existing
+claim. Retries still follow the scheduled backoff.
+
+To compare fast and scheduled runs, use the same pipeline snapshot and dry-run
+inputs. Set `context.fast_step_wake` to `false` for the scheduled control. This
+query measures handoff time for first attempts, grouped by snapshot version.
+Track queue depth and fast-wake errors during the comparison.
+
+```sql
+WITH handoffs AS (
+  SELECT r.pipeline_version,
+    COALESCE(r.context->'fast_step_wake' = 'true'::jsonb, false) AS fast_wake,
+    EXTRACT(EPOCH FROM ((node.state->>'started_at')::timestamptz - predecessor.finished_at)) AS seconds
+  FROM public.pipeline_runs r
+  CROSS JOIN LATERAL jsonb_each(r.node_states) node(id, state)
+  CROSS JOIN LATERAL (
+    SELECT max((r.node_states->(edge->>'source')->>'completed_at')::timestamptz) AS finished_at
+    FROM jsonb_array_elements(r.pipeline_snapshot->'edges') edge
+    WHERE edge->>'target' = node.id
+  ) predecessor
+  WHERE r.reliable_steps AND r.pipeline_name = 'tags-ingestion'
+    AND r.status = 'completed' AND r.context->'dry_run' = 'true'::jsonb
+    AND r.started_at >= now() - interval '14 days'
+    AND node.state->>'attempt' = '1' AND predecessor.finished_at IS NOT NULL
+)
+SELECT pipeline_version, fast_wake, count(*) AS handoffs,
+  percentile_cont(0.5) WITHIN GROUP (ORDER BY seconds) AS p50_seconds,
+  percentile_cont(0.95) WITHIN GROUP (ORDER BY seconds) AS p95_seconds
+FROM handoffs WHERE seconds >= 0
+GROUP BY pipeline_version, fast_wake ORDER BY pipeline_version, fast_wake;
+```
+
+## Historical Equaldex timeline
+
+The scraper returns `historical_timeline_not_news` for live attempts to stage
+Equaldex timeline entries as news. This is a policy skip. A targeted dry run
+can still preview the extracted timeline.

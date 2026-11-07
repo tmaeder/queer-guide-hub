@@ -86,7 +86,7 @@ async function handleStart(
   }
 
   // Create pipeline_run record
-  const context = {
+  const context: Record<string, unknown> = {
     dry_run: body.dry_run ?? false,
     triggered_by: body.triggered_by ?? 'manual',
     batch_size: body.batch_size ?? 50,
@@ -94,12 +94,13 @@ async function handleStart(
     ...(body.context || {}),
   }
 
-  if (pipeline.name === 'tags-ingestion' && (context as Record<string, unknown>).reliability_pilot === true) {
+  if (pipeline.name === 'tags-ingestion' && context.reliability_pilot === true) {
     const { data: runId, error } = await supabase.rpc('start_reliable_tags_pipeline', {
       p_pipeline: pipeline.id,
       p_context: context,
     })
     if (error) throw new Error(`Failed to start reliability pilot: ${error.message}`)
+    wakeReadyPilotSteps(supabase, runId, context)
     const targets = new Set(edges.map(edge => edge.target))
     return jsonResponse({
       success: true,
@@ -399,6 +400,7 @@ async function handleReliableStep(
       ...attempt, p_outcome: outcome, p_items: items, p_error: message,
     })
     if (error) throw new Error(error.message)
+    if (accepted && outcome !== 'retry') wakeReadyPilotSteps(supabase, run.id, run.context)
     return jsonResponse({
       success: true, node: nodeId, status: accepted ? outcome : 'ignored',
     }, 200, req)
@@ -430,6 +432,7 @@ async function handleReliableStep(
       p_dry_run: payload.dry_run === true,
     })
     if (error) return finish('retry', 0, error.message)
+    if (items != null) wakeReadyPilotSteps(supabase, run.id, run.context)
     return jsonResponse({
       success: true, node: nodeId, status: items == null ? 'ignored' : 'completed', items_out: items,
     }, 200, req)
@@ -476,6 +479,49 @@ async function handleReliableStep(
   }
   const items = Number(result.items || result.items_processed || result.items_total || 0)
   return finish('completed', Number.isSafeInteger(items) && items >= 0 && items <= 2147483647 ? items : 0)
+}
+
+function wakeReadyPilotSteps(
+  supabase: SupabaseClient,
+  runId: string,
+  context: Record<string, unknown>,
+): void {
+  const runtime = (globalThis as typeof globalThis & {
+    EdgeRuntime?: { waitUntil(promise: Promise<unknown>): void }
+  }).EdgeRuntime
+  if (context.fast_step_wake !== true || !runtime) return
+
+  // The scheduling transaction already committed. A failed wake leaves the
+  // normal queue delivery intact, and the claim RPC arbitrates either arrival.
+  runtime.waitUntil((async () => {
+    const { data: nodes, error } = await supabase.rpc('reserve_reliable_pipeline_wakes', { p_run: runId })
+    if (error) throw new Error(error.message)
+    const nodeIds = nodes as string[] | null
+    if (!nodeIds?.length) return
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    if (!supabaseUrl || !serviceKey) throw new Error('Missing internal executor credentials')
+    const internalSecret = Deno.env.get('INTERNAL_INVOKE_SECRET')
+    await Promise.all(nodeIds.map(async nodeId => {
+      try {
+        const response = await fetch(`${supabaseUrl}/functions/v1/pipeline-executor`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${serviceKey}`,
+            'apikey': serviceKey,
+            ...(internalSecret ? { 'X-Internal-Secret': internalSecret } : {}),
+          },
+          body: JSON.stringify({ action: 'continue', pipeline_run_id: runId, current_node_id: nodeId }),
+        })
+        await response.body?.cancel()
+        if (!response.ok) console.warn(`[pipeline-executor] Fast wake HTTP ${response.status} for ${runId}/${nodeId}`)
+      } catch (error) {
+        console.warn(`[pipeline-executor] Fast wake failed for ${runId}/${nodeId}:`, error)
+      }
+    }))
+  })().catch(error => console.warn(`[pipeline-executor] Fast wake reservation failed for ${runId}:`, error)))
 }
 
 /**

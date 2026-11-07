@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { StructuredValue } from '@/components/admin/triage/StructuredDataView';
 import { useAdminShell } from '@/components/admin/shell/AdminShell';
 import { useReviewCase, useRetryReviewResearch, reviewCaseInfo } from '@/hooks/useReviewCase';
+import { useReviewContext } from '@/hooks/useReviewContext';
 import type { ReviewDecision, ReviewItem } from '@/hooks/useAdminReview';
 import { cityResearchExplanation, reviewHttpUrl } from './reviewEvidence';
 import { VenueMatchPanel, type VenueMatchSelection } from './VenueMatchPanel';
@@ -21,10 +22,9 @@ type Props = {
   onSkip: () => void;
   onBack: () => void;
 };
-const date = (value: unknown) =>
-  typeof value === 'string' && Number.isFinite(Date.parse(value))
-    ? new Date(value).toLocaleString()
-    : 'Not recorded';
+const timestamp = (value: unknown) =>
+  typeof value === 'string' && Number.isFinite(Date.parse(value)) ? new Date(value) : null;
+const date = (value: unknown) => timestamp(value)?.toLocaleString() ?? 'Not recorded';
 const asObject = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -61,6 +61,70 @@ function SourceLink({ value, label }: { value: unknown; label: string }) {
       <ExternalLink size={14} />
     </a>
   ) : null;
+}
+function NewsEntityLinkContext({ member }: { member: ReviewItem }) {
+  const context = useReviewContext(member);
+  const article = context.data?.record;
+  const verdict = asObject(article?.quality_decision);
+  const hintFields: Record<string, string> = {
+    city: 'linkedCities',
+    country: 'linkedCountries',
+    personality: 'linkedPersonalities',
+    organisation: 'linkedOrganisations',
+  };
+  const hints = verdict[hintFields[member.content_type ?? '']];
+  const names = Array.isArray(hints)
+    ? hints
+        .filter((value): value is string => typeof value === 'string' && !!value.trim())
+        .slice(0, 10)
+    : [];
+  const body =
+    typeof article?.content === 'string' ? article.content.replace(/\s+/g, ' ').trim() : '';
+  const mention = body.toLocaleLowerCase().indexOf(member.title.toLocaleLowerCase());
+  const start = Math.max(0, mention - 160);
+  const snippet = body.slice(start, start + 420);
+  return (
+    <section
+      aria-label="Article and entity proposal"
+      className="space-y-2 rounded-element bg-muted/40 p-4"
+    >
+      <h4 className="text-sm font-semibold">Article and entity proposal</h4>
+      {article ? (
+        <>
+          <p className="break-words text-sm font-medium">{String(article.title ?? '')}</p>
+          <SourceLink value={article.url} label="Open original article" />
+          <dl className="space-y-2 text-sm">
+            <div>
+              <dt className="text-muted-foreground">Suggested {member.content_type ?? 'entity'}</dt>
+              <dd className="break-words">{member.title}</dd>
+            </div>
+            {!!names.length && (
+              <div>
+                <dt className="text-muted-foreground">Names extracted by the model</dt>
+                <dd className="break-words">{names.join(' · ')}</dd>
+              </div>
+            )}
+          </dl>
+          {snippet && (
+            <div>
+              <p className="text-xs font-medium">
+                {mention >= 0 ? 'Text around the suggested name' : 'Article excerpt'}
+              </p>
+              <p className="mt-2 break-words text-sm leading-relaxed text-muted-foreground">
+                {start > 0 ? '…' : ''}
+                {snippet}
+                {start + snippet.length < body.length ? '…' : ''}
+              </p>
+            </div>
+          )}
+        </>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          {context.isFetching ? 'Loading article details…' : 'Article details are unavailable.'}
+        </p>
+      )}
+    </section>
+  );
 }
 export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack }: Props) {
   const info = reviewCaseInfo(item);
@@ -111,7 +175,9 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
         ? 'Match the event venue'
         : info.family === 'city_identity'
           ? 'Establish this place’s identity'
-          : 'Research the business relationship';
+          : info.family === 'business_link'
+            ? 'Research the business relationship'
+            : 'Review the reported issue';
   return (
     <section className="flex h-full min-h-0 flex-col bg-background" aria-label={title}>
       <header className="flex shrink-0 items-center justify-between gap-4 border-b border-border px-4 py-4 md:px-6">
@@ -169,6 +235,11 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
             {info.family === 'city_identity' && (
               <CityIdentityContext value={data.city_context} research={outcome} />
             )}
+            {members
+              .filter((member) => member.queue_type === 'entity-links')
+              .map((member) => (
+                <NewsEntityLinkContext key={member.id} member={member} />
+              ))}
             {info.family === 'business_link' && data.business_context && (
               <BusinessMergeContext
                 value={data.business_context}
@@ -254,6 +325,15 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
               <div className="divide-y divide-border border-y border-border">
                 {members.map((member) => {
                   const current = member.current_record ?? {};
+                  const dateMismatch = member.meta.review_type === 'date_mismatch';
+                  const dateEvidence = asObject(member.meta.details);
+                  const savedStart = dateMismatch ? timestamp(current.start_date) : null;
+                  const startAtDetection = dateMismatch ? timestamp(dateEvidence.start_date) : null;
+                  const extractedDate =
+                    typeof dateEvidence.extracted_date === 'string' &&
+                    /^\d{4}-\d{2}-\d{2}$/.test(dateEvidence.extracted_date)
+                      ? dateEvidence.extracted_date
+                      : null;
                   const flagged = info.family === 'artwork' ? flaggedArtwork(member) : [];
                   const liveImages =
                     info.family === 'artwork' && Array.isArray(current.images)
@@ -286,8 +366,51 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                         <p className="mt-1 text-xs text-muted-foreground">
                           {member.subtitle} · {member.source_label ?? member.queue_type}
                         </p>
-                        {Boolean(current.start_date) && (
-                          <p className="mt-2 text-sm">{date(current.start_date)}</p>
+                        {dateMismatch ? (
+                          <section aria-label="Event date comparison" className="mt-4 space-y-2">
+                            <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+                              <div>
+                                <dt className="text-muted-foreground">Saved start (UTC)</dt>
+                                <dd className="mt-1 font-medium tabular-nums">
+                                  {savedStart ? (
+                                    <time dateTime={savedStart.toISOString()}>
+                                      {savedStart.toISOString().slice(0, 16).replace('T', ' ')}
+                                    </time>
+                                  ) : (
+                                    'Unavailable'
+                                  )}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="text-muted-foreground">Extracted date</dt>
+                                <dd className="mt-1 font-medium tabular-nums">
+                                  {extractedDate ? (
+                                    <time dateTime={extractedDate}>{extractedDate}</time>
+                                  ) : (
+                                    'Unavailable'
+                                  )}
+                                </dd>
+                              </div>
+                            </dl>
+                            {savedStart &&
+                              startAtDetection &&
+                              savedStart.getTime() !== startAtDetection.getTime() && (
+                                <p className="text-sm text-muted-foreground">
+                                  The saved start changed after this finding was created.
+                                </p>
+                              )}
+                            <p className="text-sm text-muted-foreground">
+                              Check that the source identifies this occurrence, including the year.
+                            </p>
+                            <SourceLink
+                              value={dateEvidence.page}
+                              label="Open page used for extraction"
+                            />
+                          </section>
+                        ) : (
+                          Boolean(current.start_date) && (
+                            <p className="mt-2 text-sm">{date(current.start_date)}</p>
+                          )
                         )}
                         {Boolean(current.venue_name || current.city) && (
                           <p className="mt-1 text-sm">

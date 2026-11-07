@@ -24,6 +24,7 @@ import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
 import { getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { scrapedEventRejectReason } from '../_shared/scraped-event-guard.ts'
+import { scrapedNewsStagingSkipReason } from '../_shared/scraped-news-staging-guard.ts'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -776,7 +777,7 @@ function extractWikiList(
 
   let currentCountry = ''
   $('h2, h3, ul > li').each((_, el) => {
-    const tag = (el as Record<string, unknown>).tagName?.toLowerCase()
+    const tag = el.tagName.toLowerCase()
     if (tag === 'h2' || tag === 'h3') {
       const text = $(el).find('.mw-headline').text().trim() || $(el).text().replace(/\[edit\]/gi, '').trim()
       if (text && !skipHeadings.has(text.toLowerCase())) {
@@ -841,7 +842,7 @@ function extractWikiCountryTables(
     let country = ''
     let prev = $(table).prev()
     while (prev.length) {
-      const tag = (prev[0] as unknown).tagName?.toLowerCase()
+      const tag = prev[0]?.tagName.toLowerCase()
       if (tag === 'h2' || tag === 'h3') {
         country = prev.find('.mw-headline').text().trim() || prev.text().replace(/\[edit\]/gi, '').trim()
         break
@@ -1179,8 +1180,23 @@ async function processSource(
   items_staged: number
   pages_crawled: number
   error?: string
+  skipped_reason?: string
   preview?: ExtractedItem[]
 }> {
+  const skipReason = scrapedNewsStagingSkipReason(source, dryRun)
+  if (skipReason) {
+    console.info(`[${source.slug}] Skipped news staging: ${skipReason}`)
+    // Advance the scheduler without counting a policy skip as a source failure.
+    const { error } = await supabase.from('scrape_sources').update({
+      last_run_at: new Date().toISOString(),
+    }).eq('id', source.id)
+    if (error) console.warn(`[${source.slug}] Could not record skipped attempt: ${error.message}`)
+    return {
+      source_slug: source.slug, items_found: 0, items_staged: 0, pages_crawled: 0,
+      skipped_reason: skipReason,
+    }
+  }
+
   const startTime = Date.now()
   let allItems: ExtractedItem[] = []
   let pagesCrawled = 0
