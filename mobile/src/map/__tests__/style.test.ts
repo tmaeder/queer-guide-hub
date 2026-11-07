@@ -52,3 +52,17 @@ it('light and dark differ (dark mode is real)', () => {
     mapStyle('dark').layers.find((l) => l.id === 'background'),
   );
 });
+
+describe('offline tiles', () => {
+  it('reads a downloaded archive through pmtiles:// and keeps every layer', () => {
+    const online = mapStyle('light');
+    const offline = mapStyle('light', 'en', 'pmtiles://file:///docs/packs/zuerich.pmtiles');
+    expect(offline.sources.protomaps).toMatchObject({
+      type: 'vector',
+      url: 'pmtiles://file:///docs/packs/zuerich.pmtiles',
+    });
+    expect(offline.sources.protomaps).not.toHaveProperty('tiles');
+    expect(offline.layers.map((l) => l.id)).toEqual(online.layers.map((l) => l.id));
+    expect(mapStyle('light').sources.protomaps).toMatchObject({ tiles: [TILE_URL] });
+  });
+});

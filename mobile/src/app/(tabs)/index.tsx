@@ -10,6 +10,8 @@ import { MAX_MAP_VENUES, useVenuesInBounds, type Bounds } from '@/api/venues';
 import { EventRow, VenueRow } from '@/components/rows';
 import { Button, StateMessage, Text } from '@/components/ui';
 import { QuickExitButton } from '@/features/discreet/QuickExitButton';
+import { useInstalledTiles } from '@/features/packs/hooks';
+import { bboxContains, pmtilesUrl } from '@/features/packs/tiles';
 import { MAP_FONT_BOLD, mapStyle } from '@/map/style';
 import { eventsToGeoJSON } from '@/map/eventsGeoJSON';
 import { venuesToGeoJSON } from '@/map/venuesGeoJSON';
@@ -27,10 +29,21 @@ export default function ExploreScreen() {
   const { colors, scheme } = useTheme();
   const camera = useRef<CameraRef>(null);
   const [bounds, setBounds] = useState<Bounds | null>(null);
+  const [center, setCenter] = useState<[number, number]>(INITIAL_CENTER);
   const [locationDenied, setLocationDenied] = useState(false);
   const zoomRef = useRef(INITIAL_ZOOM);
 
-  const style = useMemo(() => mapStyle(scheme, i18n.language), [scheme, i18n.language]);
+  const tiles = useInstalledTiles().data;
+  // A downloaded city's archive is used whenever the map is centred over it:
+  // no tile requests leave the device there, online or not.
+  const offlineTiles = useMemo(() => {
+    const hit = tiles?.find((t) => bboxContains(t.bbox, center[0], center[1]));
+    return hit ? pmtilesUrl(hit.uri) : undefined;
+  }, [center, tiles]);
+  const style = useMemo(
+    () => mapStyle(scheme, i18n.language, offlineTiles),
+    [scheme, i18n.language, offlineTiles],
+  );
   const [mode, setMode] = useState<'places' | 'events'>('places');
   const venues = useVenuesInBounds(mode === 'places' ? bounds : null);
   const events = useEventsInBounds(bounds, mode === 'events');
@@ -78,6 +91,7 @@ export default function ExploreScreen() {
           const { bounds: b, zoom } = e.nativeEvent;
           zoomRef.current = zoom;
           setBounds(zoom >= MIN_FETCH_ZOOM ? b : null);
+          setCenter([(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]);
         }}
       >
         <Camera ref={camera} initialViewState={{ center: INITIAL_CENTER, zoom: INITIAL_ZOOM }} />

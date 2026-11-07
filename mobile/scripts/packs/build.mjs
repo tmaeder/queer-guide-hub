@@ -17,7 +17,10 @@
 import { ed25519 } from '@noble/curves/ed25519.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, hexToBytes, utf8ToBytes } from '@noble/hashes/utils.js';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { createReadStream } from 'node:fs';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 
@@ -132,6 +135,74 @@ async function hotlines() {
   return list;
 }
 
+const KM_PER_DEG_LAT = 111.32;
+/** Points further than this from the city's median are treated as misgeocoded. */
+const CITY_RADIUS_KM = 40;
+const PAD_KM = 3;
+const MIN_HALF_SPAN_KM = 4;
+// z14, not the planet's z15: 2.5x smaller (Berlin 34 vs 89 MB) and MapLibre overzooms the rest.
+export const TILE_MAXZOOM = 14;
+
+/**
+ * [west, south, east, north] covering a city's places. Robust to the stray
+ * venue geocoded to the wrong continent: points far from the median are
+ * dropped before the box is taken, so one bad row cannot turn a 20 MB
+ * extract into a 2 GB one. Null when there is nothing to centre on.
+ */
+export function packBbox(points) {
+  const pts = points.filter(
+    (p) => Number.isFinite(p.longitude) && Number.isFinite(p.latitude) && !(p.longitude === 0 && p.latitude === 0),
+  );
+  if (!pts.length) return null;
+  const median = (xs) => {
+    const s = [...xs].sort((a, b) => a - b);
+    return s[Math.floor(s.length / 2)];
+  };
+  const cLng = median(pts.map((p) => p.longitude));
+  const cLat = median(pts.map((p) => p.latitude));
+  const kmPerDegLng = KM_PER_DEG_LAT * Math.cos((cLat * Math.PI) / 180);
+  const near = pts.filter(
+    (p) => Math.hypot((p.longitude - cLng) * kmPerDegLng, (p.latitude - cLat) * KM_PER_DEG_LAT) <= CITY_RADIUS_KM,
+  );
+  let w = Math.min(...near.map((p) => p.longitude));
+  let e = Math.max(...near.map((p) => p.longitude));
+  let s = Math.min(...near.map((p) => p.latitude));
+  let n = Math.max(...near.map((p) => p.latitude));
+  const padLng = PAD_KM / kmPerDegLng;
+  const padLat = PAD_KM / KM_PER_DEG_LAT;
+  const minLng = MIN_HALF_SPAN_KM / kmPerDegLng;
+  const minLat = MIN_HALF_SPAN_KM / KM_PER_DEG_LAT;
+  w = Math.min(w - padLng, cLng - minLng);
+  e = Math.max(e + padLng, cLng + minLng);
+  s = Math.min(s - padLat, cLat - minLat);
+  n = Math.max(n + padLat, cLat + minLat);
+  const r = (x) => Math.round(x * 1e5) / 1e5;
+  return [r(Math.max(w, -180)), r(Math.max(s, -85)), r(Math.min(e, 180)), r(Math.min(n, 85))];
+}
+
+async function sha256File(path) {
+  const h = createHash('sha256');
+  for await (const chunk of createReadStream(path)) h.update(chunk);
+  return h.digest('hex');
+}
+
+/** Cut the city's vector tiles out of the planet archive (go-pmtiles reads byte ranges, no planet download). */
+async function extractTiles(source, bbox, outDir, slug) {
+  // Without a bbox go-pmtiles extracts the WHOLE PLANET (~70 GB). Refuse anything not city-sized.
+  if (!Array.isArray(bbox) || bbox.length !== 4 || bbox[2] - bbox[0] > 2 || bbox[3] - bbox[1] > 2) {
+    throw new Error(`Refusing tile extract for ${slug}: bbox ${JSON.stringify(bbox)} is not city-sized`);
+  }
+  const file = `${slug}.pmtiles`;
+  const path = join(outDir, file);
+  const res = spawnSync(
+    process.env.PMTILES_BIN ?? 'pmtiles',
+    ['extract', source, path, `--bbox=${bbox.join(',')}`, `--maxzoom=${TILE_MAXZOOM}`],
+    { stdio: ['ignore', 'inherit', 'inherit'] },
+  );
+  if (res.status !== 0) throw new Error(`pmtiles extract failed for ${slug} (exit ${res.status ?? res.error?.message})`);
+  return { file, bytes: (await stat(path)).size, sha256: await sha256File(path), bbox, maxzoom: TILE_MAXZOOM };
+}
+
 export function signIndex(index, secretHex) {
   const payload = JSON.stringify(index);
   const sig = bytesToHex(ed25519.sign(utf8ToBytes(payload), hexToBytes(secretHex)));
@@ -155,6 +226,10 @@ async function main() {
   if (keyRole(KEY) !== 'anon') throw new Error('Packs must be built with the publishable (anon) key');
   const secret = process.env.PACK_SIGNING_KEY;
   if (!secret || !/^[0-9a-f]{64}$/i.test(secret)) throw new Error('PACK_SIGNING_KEY (64 hex chars) is required');
+
+  // Planet PMTiles to cut city extracts from. Unset = data-only packs (the map stays online).
+  const tileSource = process.env.PMTILES_SOURCE;
+  if (!tileSource) console.warn('PMTILES_SOURCE is not set: packs will carry no offline map tiles');
 
   const allHotlines = await hotlines();
   const generated_at = new Date().toISOString();
@@ -182,6 +257,8 @@ async function main() {
     const text = JSON.stringify(pack);
     const bytes = utf8ToBytes(text);
     await writeFile(join(values.out, `${city.slug}.json`), text);
+    const bbox = packBbox([...venues, ...events]);
+    const tiles = tileSource && bbox ? await extractTiles(tileSource, bbox, values.out, city.slug) : undefined;
     entries.push({
       id: city.slug,
       name: city.name,
@@ -190,8 +267,12 @@ async function main() {
       bytes: bytes.length,
       sha256: bytesToHex(sha256(bytes)),
       venues: venues.length,
+      ...(tiles ? { tiles } : {}),
     });
-    console.log(`  ${city.slug}: ${venues.length} venues, ${events.length} events, ${pack.hotlines.length} hotlines, ${bytes.length} bytes`);
+    console.log(
+      `  ${city.slug}: ${venues.length} venues, ${events.length} events, ${pack.hotlines.length} hotlines, ${bytes.length} bytes` +
+        (tiles ? `, tiles ${(tiles.bytes / 1e6).toFixed(1)} MB` : ''),
+    );
   }
 
   entries.sort((a, b) => a.name.localeCompare(b.name));
