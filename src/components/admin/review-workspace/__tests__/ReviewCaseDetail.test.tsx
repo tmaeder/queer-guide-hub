@@ -153,7 +153,11 @@ describe('review cases', () => {
         address: '42 Source Street',
         website: 'https://venue.test/',
       },
-      surviving_organization: { name: 'Current business profile', website: 'javascript:alert(1)' },
+      surviving_organization: {
+        id: 'surviving-organization',
+        name: 'Current business profile',
+        website: 'javascript:alert(1)',
+      },
       venue_merge_at: '2026-10-21T12:00:00Z',
       pending_fields: ['description', 'phone'],
     };
@@ -172,6 +176,9 @@ describe('review cases', () => {
     expect(evidence.getByText('Earlier venue record')).toBeInTheDocument();
     expect(evidence.getByText('Surviving venue record')).toBeInTheDocument();
     expect(evidence.getByText('Description, Phone')).toBeInTheDocument();
+    expect(
+      evidence.getByRole('button', { name: 'Open surviving organization editor' }),
+    ).toBeEnabled();
     expect(evidence.getByRole('link', { name: 'Venue website' })).toHaveAttribute(
       'href',
       'https://venue.test/',

@@ -168,7 +168,10 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
               <CityIdentityContext value={data.city_context} research={outcome} />
             )}
             {info.family === 'business_link' && data.business_context && (
-              <BusinessMergeContext value={data.business_context} />
+              <BusinessMergeContext
+                value={data.business_context}
+                onOpenOrganization={(id) => openEditor('organizations', id)}
+              />
             )}
             {info.family !== 'artwork' && (
               <section aria-label="Research status" className="bg-muted/40 p-4">

@@ -1,4 +1,5 @@
 import { ExternalLink } from '@/components/icons';
+import { Button } from '@/components/ui/button';
 import type { BusinessMergeEvidence } from '@/hooks/useReviewCase';
 import { reviewHttpUrl } from './reviewEvidence';
 
@@ -16,9 +17,16 @@ const fieldLabels: Record<string, string> = {
   timezone: 'Time zone',
 };
 
-export function BusinessMergeContext({ value }: { value: BusinessMergeEvidence }) {
+export function BusinessMergeContext({
+  value,
+  onOpenOrganization,
+}: {
+  value: BusinessMergeEvidence;
+  onOpenOrganization: (id: string) => void;
+}) {
   const mergeDate = value.venue_merge_at ? new Date(value.venue_merge_at) : null;
   const pendingFields = value.pending_fields.map((field) => fieldLabels[field] ?? field);
+  const survivingOrganizationId = value.surviving_organization?.id;
   const rows = [
     { label: 'Organization under review', record: value.organization },
     { label: 'Organization linked to the surviving venue', record: value.surviving_organization },
@@ -76,6 +84,11 @@ export function BusinessMergeContext({ value }: { value: BusinessMergeEvidence }
           <h4 className="text-sm font-semibold">Fields to verify before merging</h4>
           <p className="text-sm text-muted-foreground">{pendingFields.join(', ')}</p>
         </div>
+      )}
+      {survivingOrganizationId && (
+        <Button variant="outline" onClick={() => onOpenOrganization(survivingOrganizationId)}>
+          Open surviving organization editor
+        </Button>
       )}
     </section>
   );

@@ -11,7 +11,7 @@ returns jsonb language sql stable security definer set search_path='' as $fn$
   'surviving_venue',case when k.id is not null then jsonb_build_object('name',k.name,
    'city',kc.name,'address',case when not k.safety_gated then k.address end,
    'website',case when not k.safety_gated then k.website end,'closed',k.closed_at is not null) end,
-  'surviving_organization',case when ko.id is not null then jsonb_build_object('name',ko.name,
+  'surviving_organization',case when ko.id is not null then jsonb_build_object('id',ko.id,'name',ko.name,
    'city',koc.name,'country',kco.name,'website',case when not ko.safety_gated then ko.website end) end,
   'venue_merge_at',a.created_at,
   'pending_fields',case when ko.id is not null and ko.id<>o.id then

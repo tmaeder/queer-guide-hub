@@ -29,6 +29,7 @@ export interface ReviewCaseDetails {
 }
 
 interface BusinessRecordEvidence {
+  id?: string;
   name: string;
   city?: string | null;
   country?: string | null;
