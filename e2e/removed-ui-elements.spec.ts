@@ -190,12 +190,14 @@ test.describe('the footer carries no data attribution', () => {
 
   test('the footer has the copyright but no ODbL credit', async ({ page }) => {
     await open(page, '/');
-    const footer = page.locator('footer');
+    const footer = page.locator('[data-site-footer]');
     await expect(footer).toBeVisible({ timeout: BOOT });
-    await footer.scrollIntoViewIfNeeded();
-    // Positive control: "no ODbL in the footer" also passes on a footer that
-    // failed to render at all.
-    await expect(footer.getByText(/Queer Guide/).first()).toBeVisible();
+    const copyright = footer.getByText(/^©\s+\d{4} Queer Guide$/);
+    // Homepage sections can move the footer before its observer mounts the content.
+    await expect(async () => {
+      await footer.scrollIntoViewIfNeeded({ timeout: 1_000 });
+      await expect(copyright).toBeVisible({ timeout: 500 });
+    }).toPass({ timeout: BOOT });
     await expect(footer.getByRole('link', { name: 'OpenStreetMap' })).toHaveCount(0);
     await expect(footer.getByRole('link', { name: 'GeoNames' })).toHaveCount(0);
     await expect(footer).not.toContainText('ODbL');
