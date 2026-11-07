@@ -84,14 +84,63 @@ do $$declare r jsonb;begin
  r:=api_private.reconcile_exact_news_source_duplicates(100,false);if(r->>'duplicate_sources')::int<>0 or(select count(*)from admin_review_repairs)<>1 then raise exception 'Not idempotent';end if;
 end$$;
 """
+
+podcast_checks="""
+insert into news_articles(id,url,source_id,published_at,image_url,quality_decision,media_type,audio_url)
+ select md5('podcast-'||n)::uuid,'https://publisher.test/episode-'||n,source_id,published_at,image_url,
+ quality_decision,'podcast','https://publisher.test/enclosure-'||n||'.mp3'
+ from news_articles cross join generate_series(1,6)n where id=md5('1')::uuid;
+update news_articles set fingerprint=news_compute_fingerprint('Publisher episode',published_at,source_id,url),
+ content_hash=encode(extensions.digest(convert_to('Original episode notes with enough content','UTF8'),'sha256'),'hex')
+ where media_type='podcast';
+insert into ingestion_staging(id,raw_data,normalized_data,enriched_data)
+ select id,jsonb_build_object('url',url,'title','Publisher episode','source_id',source_id,'published_at',published_at,
+ 'content','Original episode notes with enough content','image_url',image_url,'media_type','podcast','audio_url',audio_url),
+ jsonb_build_object('name','Publisher episode','urls',jsonb_build_array(url),'description','Original episode notes with enough content',
+ 'metadata',jsonb_build_object('url',url,'source_id',source_id,'published_at',published_at,'media_type','podcast','audio_url',audio_url)),
+ jsonb_build_object('quality_status','review','auto_publish_blocked_reasons',jsonb_build_array('low_relevance','manual_review_requested'),
+ 'quality_decision',quality_decision||'{"needsManualReview":true,"isRelevant":false,"shouldPublish":false}'::jsonb)
+ from news_articles where media_type='podcast';
+update ingestion_staging set enriched_data=enriched_data||'{"manual_hold":true}'where id=md5('podcast-2')::uuid;
+update ingestion_staging set enriched_data=jsonb_set(enriched_data,'{auto_publish_blocked_reasons}',
+ '["low_relevance","manual_review_requested","entity_links_pending_review"]')where id=md5('podcast-3')::uuid;
+update ingestion_staging set raw_data=jsonb_set(raw_data,'{audio_url}','"https://publisher.test/changed.mp3"')where id=md5('podcast-4')::uuid;
+update ingestion_staging set normalized_data=normalized_data||'{"content":"New publisher notes require a separate verdict."}'
+ where id=md5('podcast-5')::uuid;
+update ingestion_staging set enriched_data=jsonb_set(enriched_data,'{auto_publish_blocked_reasons}',
+ '["manual_review_requested"]')where id=md5('podcast-6')::uuid;
+create table before_podcasts as select id,to_jsonb(n)value from news_articles n where media_type='podcast';
+create table before_podcast_stages as select s.id,to_jsonb(s)value from ingestion_staging s join before_podcasts p using(id);
+do $$
+declare r jsonb;
+begin
+ r:=api_private.reconcile_exact_news_source_duplicates(100,true);
+ if r->'staging_ids'<>jsonb_build_array(md5('podcast-1')::uuid) then raise exception 'Wrong podcast candidates %',r;end if;
+ r:=api_private.run_review_automatic_resolution(100,false);
+ if r#>'{exact_news_source_duplicates,staging_ids}'<>jsonb_build_array(md5('podcast-1')::uuid)
+ then raise exception 'Wrong automatic podcast disposition %',r;end if;
+ if exists(select 1 from before_podcasts b join news_articles n using(id)where b.value<>to_jsonb(n))
+ then raise exception 'Published episode changed';end if;
+ if exists(select 1 from before_podcast_stages b join ingestion_staging s using(id)
+  where s.id<>md5('podcast-1')::uuid and b.value<>to_jsonb(s))
+ then raise exception 'Refused podcast capture changed';end if;
+ if not exists(select 1 from ingestion_staging s join before_podcast_stages b using(id)
+  where s.id=md5('podcast-1')::uuid and s.disposition='skipped' and s.review_status='pending_review'
+   and s.dedup_status='duplicate' and s.reviewed_by is null and s.enriched_data=b.value->'enriched_data')
+ then raise exception 'Podcast verdict changed or duplicate was not cleared';end if;
+ r:=api_private.reconcile_exact_news_source_duplicates(100,false);
+ if (r->>'duplicate_sources')::integer<>0 then raise exception 'Podcast disposition was not idempotent';end if;
+end $$;
+"""
 policy=(ROOT/'supabase/migrations/20261022180826_review_automatic_resolution.sql').read_text()
 policy=re.search(r'create function api_private.review_news_machine_outcome[\s\S]*?end \$\$;',policy).group(0)
 paths=list((ROOT/'supabase/migrations').glob('*_review_exact_news_source_duplicates.sql'));assert len(paths)==1
+podcast_migration=(ROOT/'supabase/migrations/99991793933580_review_exact_podcast_source_replays.sql').read_text()
 with tempfile.TemporaryDirectory(prefix='qg-news-source-dedup-')as tmp:
  data=Path(tmp)/'data';subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
  subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55499 -c listen_addresses=','-w','start'],check=True,stdout=subprocess.DEVNULL)
  try:
-  result=subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55499','-d','postgres','-v','ON_ERROR_STOP=1'],input=schema+policy+paths[0].read_text()+checks,text=True,capture_output=True)
+  result=subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55499','-d','postgres','-v','ON_ERROR_STOP=1'],input=schema+policy+paths[0].read_text()+checks+podcast_migration+podcast_checks,text=True,capture_output=True)
   if result.returncode:raise RuntimeError(result.stderr)
  finally:subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
-print('PASS: 32 duplicate/source/manual/quality cases; pause, browser denial, bounds, hook composition, unchanged catalogue, complete audits and idempotency')
+print('PASS: 32 original cases and 6 podcast replay cases; pause, browser denial, bounds, hook composition, unchanged catalogue, complete audits and idempotency')
