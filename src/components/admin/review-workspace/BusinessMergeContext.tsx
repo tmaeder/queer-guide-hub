@@ -26,6 +26,9 @@ export function BusinessMergeContext({
 }) {
   const mergeDate = value.venue_merge_at ? new Date(value.venue_merge_at) : null;
   const pendingFields = value.pending_fields.map((field) => fieldLabels[field] ?? field);
+  const pendingContacts = (['email', 'phone'] as const).filter((field) =>
+    value.pending_fields.includes(field),
+  );
   const survivingOrganizationId = value.surviving_organization?.id;
   const rows = [
     { label: 'Organization under review', record: value.organization },
@@ -52,15 +55,23 @@ export function BusinessMergeContext({
         {rows.map(({ label, record }) => {
           if (!record) return null;
           const website = reviewHttpUrl(record.website);
-          const location =
-            record.address || [record.city, record.country].filter(Boolean).join(', ');
+          const locality = [record.city, record.country].filter(Boolean).join(', ');
           return (
             <div className="min-w-0 space-y-1" key={label}>
               <dt className="text-xs text-muted-foreground">{label}</dt>
               <dd className="break-words text-sm font-medium">{record.name}</dd>
-              {location && (
-                <dd className="break-words text-sm text-muted-foreground">{location}</dd>
+              {record.address && (
+                <dd className="break-words text-sm text-muted-foreground">{record.address}</dd>
               )}
+              {locality && (
+                <dd className="break-words text-sm text-muted-foreground">{locality}</dd>
+              )}
+              {pendingContacts.map((field) => (
+                <dd className="break-words text-sm" key={field}>
+                  <span className="text-muted-foreground">{fieldLabels[field]} · </span>
+                  {record[field]?.trim() || 'Unavailable'}
+                </dd>
+              ))}
               {record.closed && <dd className="text-sm">Marked closed in the catalogue</dd>}
               {website && (
                 <dd>
