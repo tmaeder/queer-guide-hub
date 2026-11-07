@@ -62,7 +62,7 @@ jobs:
           key: ${{ steps.key.outputs.cache_key }}
           restore-keys: ${{ steps.key.outputs.cache_key }}-
       - if: steps.cached.outputs.cache-matched-key == ''
-        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3
+        uses: supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13 # v3
         with:
           version: 2.98.2
       - name: Dump schema, public data, and static registries

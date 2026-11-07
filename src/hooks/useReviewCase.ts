@@ -36,6 +36,8 @@ interface BusinessRecordEvidence {
   country?: string | null;
   address?: string | null;
   website?: string | null;
+  email?: string | null;
+  phone?: string | null;
   closed?: boolean;
 }
 

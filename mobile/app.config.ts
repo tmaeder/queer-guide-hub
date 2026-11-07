@@ -71,8 +71,9 @@ const config: ExpoConfig = {
     'expo-image',
     'expo-font',
     '@maplibre/maplibre-react-native',
-    // FTS5 powers offline search over downloaded city packs.
-    ['expo-sqlite', { enableFTS: true }],
+    // FTS5 powers offline search over downloaded city packs; SQLCipher
+    // encrypts the pack + saved-places database at rest (packs/db.ts).
+    ['expo-sqlite', { enableFTS: true, useSQLCipher: true }],
     // Off by default; the permission prompt only appears from Me → Notifications.
     'expo-notifications',
     [

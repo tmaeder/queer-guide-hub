@@ -1,5 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSyncExternalStore } from 'react';
+import { encryptedSavedBackend } from '@/features/packs/db';
 
 /**
  * Saved places. Signed out they live only on this device; signed in they are
@@ -77,7 +77,7 @@ export function createSavedStore(backend: SavedBackend) {
   };
 }
 
-export const savedStore = createSavedStore(AsyncStorage);
+export const savedStore = createSavedStore(encryptedSavedBackend);
 
 export function useSaved() {
   return useSyncExternalStore(savedStore.subscribe, savedStore.getAll, savedStore.getAll);

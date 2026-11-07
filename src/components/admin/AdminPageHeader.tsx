@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router';
 import { ArrowLeft } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { getNavItemByRoute } from '@/config/adminNavigation';
+import { sanitizeRedirect } from '@/lib/authRedirect';
 
 interface AdminPageHeaderProps {
   /** Optional context supplied by the page. The shell owns route orientation,
@@ -40,7 +41,11 @@ export function AdminPageHeader({
   const resolvedEyebrow = eyebrow;
 
   // Auto back-link: explicit prop wins, else a `?from=` route param.
-  const fromParam = searchParams.get('from');
+  // Same-origin paths only: `?from=https://other.site` used to render a "Back"
+  // link off the site, and admin routes skip the leave-site notice, so one
+  // click left queer.guide with no warning. sanitizeRedirect is the guard the
+  // login and onboarding redirects already use.
+  const fromParam = sanitizeRedirect(searchParams.get('from'));
   const back =
     backTo ??
     (fromParam ? { route: fromParam, label: getNavItemByRoute(fromParam)?.label ?? 'Back' } : null);
