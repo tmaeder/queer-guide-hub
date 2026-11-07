@@ -22,6 +22,40 @@ export class SupabaseClient {
     };
   }
 
+  async countRecentTestMail(recipient: string): Promise<number> {
+    const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const query = new URLSearchParams({
+      select: 'id',
+      to_address: `eq.${recipient}`,
+      received_at: `gte.${since}`,
+    });
+    const response = await fetch(`${this.url}/rest/v1/email_ingestions?${query}`, {
+      method: 'HEAD',
+      headers: this.headers({ prefer: 'count=exact' }),
+    });
+    const count = response.headers.get('content-range')?.split('/').pop();
+    if (!response.ok || !count || !/^\d+$/.test(count)) {
+      throw new Error(`Test inbox rate limit check failed (${response.status})`);
+    }
+    return Number(count);
+  }
+
+  async insertTestMail(row: {
+    id: string;
+    to_address: string;
+    from_address: string;
+    subject: string;
+    body_text: string | null;
+  }): Promise<void> {
+    const response = await fetch(`${this.url}/rest/v1/email_ingestions`, {
+      method: 'POST',
+      headers: this.headers({ prefer: 'resolution=ignore-duplicates,return=minimal' }),
+      // This message has no content for the ingestion pipeline to process.
+      body: JSON.stringify({ ...row, status: 'no_content' }),
+    });
+    if (!response.ok) throw new Error(`Test inbox delivery failed (${response.status})`);
+  }
+
   /** Resolve an inbound username local-part → user_id, or null. */
   async resolveUsername(username: string): Promise<string | null> {
     const r = await fetch(`${this.url}/rest/v1/rpc/user_id_for_username`, {
