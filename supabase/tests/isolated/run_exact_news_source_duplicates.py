@@ -17,7 +17,9 @@ create table news_articles(id uuid primary key,url text unique,source_id uuid,pu
  content_hash text,media_type text default 'article',audio_url text,image_url text,duplicate_of_id uuid,
  quality_status text default 'passed',quality_decision jsonb,auto_publish_blocked_reasons text[]default '{}',
  content text default 'Keep cleaned catalogue body',title text default 'Cleaned headline',updated_at timestamptz default now(),
- archived_at timestamptz);
+ archived_at timestamptz,last_quality_run_at timestamptz);
+create table admin_review_cases(id uuid primary key,active boolean,item jsonb);
+create table admin_review_automation_jobs(case_id uuid,status text,lease_expires_at timestamptz);
 create table ingestion_staging(id uuid primary key,target_table text default 'news_articles',source_name text default 'rss-news',source_type text default 'rss-news',
  source_entity_id text,disposition text default 'pending',review_status text default 'pending_review',reviewed_by uuid,reviewed_at timestamptz,
  review_notes text,target_record_id uuid,dedup_status text default 'unique',dedup_match_id uuid,dedup_match_table text default 'news_articles',
@@ -214,16 +216,69 @@ begin
  then raise exception 'Protected or changed capture was modified';end if;
 end $$;
 """
+original_capture_checks="""
+insert into news_articles(id,url,source_id,published_at,image_url,quality_decision,media_type,audio_url,
+ last_quality_run_at,quality_status,auto_publish_blocked_reasons)
+ select md5('capture-'||n)::uuid,'https://publisher.test/capture-'||n,source_id,published_at,image_url,
+ quality_decision||case when n=2 then '{"shouldPublish":false,"isRelevant":false}'::jsonb else '{}'::jsonb end,
+ 'podcast','https://publisher.test/capture-'||n||'.mp3',now(),
+ case when n=2 then 'rejected' else 'passed' end,array['truncated_body']
+ from news_articles cross join generate_series(1,8)n where id=md5('1')::uuid;
+update news_articles set fingerprint=news_compute_fingerprint('Original capture',published_at,source_id,url),
+ content_hash=encode(extensions.digest(convert_to('The original RSS notes have enough content.','UTF8'),'sha256'),'hex')
+ where url like 'https://publisher.test/capture-%';
+insert into ingestion_staging(id,source_entity_id,raw_data,normalized_data,enriched_data)
+ select id,url,jsonb_build_object('url',url,'title','Original capture','source_id',source_id,
+ 'published_at',published_at,'content','The original RSS notes have enough content.',
+ 'image_url',image_url,'media_type','podcast','audio_url',audio_url),
+ jsonb_build_object('name','Original capture','urls',jsonb_build_array(url),
+ 'description','The original RSS notes have enough content.','content','Captured page chrome and show recommendations.',
+ 'extraction_meta','{"method":"worker:fetch","applied":true}'::jsonb,
+ 'metadata',jsonb_build_object('url',url,'source_id',source_id,'published_at',published_at,
+ 'media_type','podcast','audio_url',audio_url,'excerpt','The original RSS notes have enough content.')),
+ jsonb_build_object('quality_status','review','auto_publish_blocked_reasons','["low_quality","truncated_body"]'::jsonb,
+ 'quality_decision',quality_decision) from news_articles where url like 'https://publisher.test/capture-%';
+update ingestion_staging set normalized_data=normalized_data-'extraction_meta' where id=md5('capture-3')::uuid;
+update ingestion_staging set raw_data=jsonb_set(raw_data,'{audio_url}','"https://publisher.test/alternate.mp3"')
+ where id=md5('capture-4')::uuid;
+update news_articles set archived_at=now() where id=md5('capture-5')::uuid;
+update ingestion_staging set enriched_data=enriched_data||'{"manual_hold":true}' where id=md5('capture-6')::uuid;
+insert into admin_review_cases values(md5('active case')::uuid,true,
+ jsonb_build_object('id',md5('capture-7')::uuid,'queue_type','staging'));
+insert into admin_review_automation_jobs values(md5('active case')::uuid,'running',now()+interval '2 minutes');
+update ingestion_staging set raw_data=jsonb_set(raw_data,'{content}','"New notes from the publisher."')
+ where id=md5('capture-8')::uuid;
+create table capture_before_articles as select id,to_jsonb(n)value from news_articles n where url like 'https://publisher.test/capture-%';
+create table capture_before_stages as select s.id,to_jsonb(s)value from ingestion_staging s join capture_before_articles p using(id);
+do $$
+declare r jsonb; expected jsonb:=jsonb_build_array(md5('capture-1')::uuid,md5('capture-2')::uuid);
+begin
+ r:=api_private.reconcile_exact_news_source_duplicates(100,true);
+ if not (r->'staging_ids' @> expected and r->'staging_ids' <@ expected) then raise exception 'Original capture candidates %',r;end if;
+ r:=api_private.run_review_automatic_resolution(100,false);
+ if not (r#>'{exact_news_source_duplicates,staging_ids}' @> expected and r#>'{exact_news_source_duplicates,staging_ids}' <@ expected)
+ then raise exception 'Original capture disposition %',r;end if;
+ if exists(select 1 from capture_before_articles b join news_articles n using(id) where b.value<>to_jsonb(n))
+ then raise exception 'Canonical podcast was modified';end if;
+ if exists(select 1 from capture_before_stages b join ingestion_staging s using(id)
+  where (expected @> jsonb_build_array(s.id) and (s.disposition<>'skipped' or s.enriched_data<>b.value->'enriched_data'))
+     or (not expected @> jsonb_build_array(s.id) and b.value<>to_jsonb(s)))
+ then raise exception 'Protected source was changed or duplicate was not retired';end if;
+ r:=api_private.reconcile_exact_news_source_duplicates(100,false);
+ if (r->>'duplicate_sources')::int<>0 then raise exception 'Original capture cleanup is not idempotent';end if;
+end $$;
+"""
 policy=(ROOT/'supabase/migrations/20261022180826_review_automatic_resolution.sql').read_text()
 policy=re.search(r'create function api_private.review_news_machine_outcome[\s\S]*?end \$\$;',policy).group(0)
 paths=list((ROOT/'supabase/migrations').glob('*_review_exact_news_source_duplicates.sql'));assert len(paths)==1
 podcast_migration=ROOT/'supabase/migrations/99991793933580_review_exact_podcast_source_replays.sql'
 technical_migration=ROOT/'supabase/migrations/99991794050184_review_podcast_technical_replays.sql'
+original_capture_migration=next((ROOT/'supabase/migrations').glob('*_review_original_podcast_capture_replays.sql'))
 with tempfile.TemporaryDirectory(prefix='qg-news-source-dedup-')as tmp:
  data=Path(tmp)/'data';subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
  subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55499 -c listen_addresses=','-w','start'],check=True,stdout=subprocess.DEVNULL)
  try:
-  result=subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55499','-d','postgres','-v','ON_ERROR_STOP=1'],input=schema+policy+paths[0].read_text()+checks+repeat_migration.read_text()+repeat_checks+podcast_migration.read_text()+podcast_checks+technical_migration.read_text()+technical_checks,text=True,capture_output=True)
+  result=subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55499','-d','postgres','-v','ON_ERROR_STOP=1'],input=schema+policy+paths[0].read_text()+checks+repeat_migration.read_text()+repeat_checks+podcast_migration.read_text()+podcast_checks+technical_migration.read_text()+technical_checks+original_capture_migration.read_text()+original_capture_checks,text=True,capture_output=True)
   if result.returncode:raise RuntimeError(result.stderr)
  finally:subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
 print('PASS: source and editorial protections, scheduled duplicate cleanup, audit history and unchanged catalogue')

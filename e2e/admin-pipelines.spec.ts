@@ -89,8 +89,8 @@ test.describe('Admin pipelines — unauthenticated', () => {
 test.describe('Admin pipelines — authenticated', () => {
   test.skip(!authenticated, ADMIN_SESSION_REQUIRED);
 
-  test('Overview tab renders with summary cards and table', async ({ page }) => {
-    await gotoAdmin(page, '/admin/pipelines', HEADING);
+  test('Pipeline and workflow definitions show summary cards and table', async ({ page }) => {
+    await gotoAdmin(page, '/admin/pipelines?tab=overview&sub=definitions', HEADING);
     // role=tab, not role=button: UnifiedDataOps renders `<button role="tab">`,
     // and an explicit ARIA role wins, so getByRole('button') matched nothing.
     await expect(page.getByRole('tab', { name: 'Overview' })).toBeVisible({ timeout: 15_000 });
