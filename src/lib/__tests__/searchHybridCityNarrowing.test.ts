@@ -61,8 +61,15 @@ describe('search_hybrid city narrowing', () => {
 
   it('verify block raises on each postcondition', () => {
     for (const p of ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9']) {
-      expect(verify).toMatch(new RegExp(`then raise exception '${p} failed`));
+      expect(verify).toMatch(new RegExp(`then\\s+raise exception '${p} failed`));
     }
     expect(verify).toContain("position('d.n_lex = 1 and d.n_found = 1 and d.df >= 500' in v_src) = 0");
+  });
+
+  it('P7 does not assume a prod-sized corpus', () => {
+    // CI builds a small local database (~65 lexemes reach 200 docs); a fixed
+    // floor sized against prod (4,556) failed there.
+    expect(verify).toContain('if v_n = 0 and exists (select 1 from public.search_documents) then');
+    expect(verify).not.toMatch(/v_n < \d+/);
   });
 });
