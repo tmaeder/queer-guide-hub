@@ -82,18 +82,16 @@ describe('projector cursor fast-forward', () => {
     expect(read).toBeLessThan(loop);
   });
 
-  it('refuses to jump past a non-terminal run', () => {
-    // A run with no outcome yet must be re-read next tick. Assert the CONDITION,
-    // not the message or the comment naming it.
-    expect(body).toMatch(/v_hit_barrier\s*:=\s*true/);
-    expect(body).toMatch(/not\s+v_hit_barrier/);
-    // ...and the barrier must be set in the same branch that stops the loop.
-    const barrierBranch = body.match(
-      /if\s+d\.status\s+not\s+in\s*\(\s*'succeeded'\s*,\s*'failed'\s*\)\s*then([\s\S]{0,200}?)end\s+if/i,
+  it('keeps an unfinished run as a barrier unless the same job has since finished', () => {
+    const branch = body.match(
+      /if\s+d\.status\s+not\s+in\s*\(\s*'succeeded'\s*,\s*'failed'\s*\)\s*then([\s\S]+?)if\s+d\.status\s*=\s*'failed'/i,
+    )?.[1];
+    expect(branch, 'non-terminal branch missing').toBeDefined();
+    expect(branch).toMatch(
+      /if not exists\s*\([\s\S]+?later\.jobid = v_jobid\s+and later\.runid > d\.runid\s+and later\.runid <= v_global_max\s+and later\.status in \('succeeded', 'failed'\)\s*\) then\s+v_hit_barrier := true;\s+exit;/,
     );
-    expect(barrierBranch, 'non-terminal branch missing').not.toBeNull();
-    expect(barrierBranch![1]).toMatch(/v_hit_barrier\s*:=\s*true/);
-    expect(barrierBranch![1]).toMatch(/\bexit\b/);
+    expect(branch).toMatch(/v_cursor := d\.runid;[\s\S]+?v_superseded := v_superseded \+ 1;\s+continue;/);
+    expect(branch).not.toMatch(/insert\s+into\s+public\.admin_automation_runs/);
   });
 
   it('refuses to jump past an unread tail', () => {
