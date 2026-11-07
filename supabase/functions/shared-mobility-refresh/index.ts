@@ -18,12 +18,24 @@ const UA = 'QueerGuideBot/1.0 (https://queer.guide)';
 const MIN_VEHICLES = 2000; // measured 23,370 nationally on 2026-10-22
 
 async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}/${path}`, {
-    headers: { 'User-Agent': UA },
-    signal: AbortSignal.timeout(20_000),
-  });
-  if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
-  return (await res.json()) as T;
+  // Retry each resource independently. Two 12s attempts plus a short pause
+  // leave time to aggregate and write before the 30s cron request expires.
+  for (let attempt = 0; ; attempt++) {
+    if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 250));
+    let res: Response;
+    try {
+      res = await fetch(`${BASE}/${path}`, {
+        headers: { 'User-Agent': UA },
+        signal: AbortSignal.timeout(12_000),
+      });
+      if (res.ok) return (await res.json()) as T;
+    } catch (error) {
+      if (attempt > 0) throw error;
+      continue;
+    }
+    await res.body?.cancel();
+    if (attempt > 0 || res.status < 500) throw new Error(`${path}: HTTP ${res.status}`);
+  }
 }
 
 Deno.serve(async (req: Request) => {
