@@ -123,7 +123,7 @@ export default function CityCards() {
                 className="card-lift group group/card relative flex flex-col overflow-hidden bg-card rounded-container shadow-soft"
               >
                 <CityPicture id={city.id} slug={city.slug} name={city.name} glyph={glyph} />
-                <div className={badge ? 'px-4 pb-4' : 'p-4'}>
+                <div className={badge ? 'flow-root min-h-28 px-4 pb-4' : 'min-h-28 p-4'}>
                   {badge && <StationBadge glyph={glyph} className="-mt-8 mb-2" />}
                   {/* The score's meaning lives on the footer line, not as a bare
                       number beside the name — see EqualityLine. */}

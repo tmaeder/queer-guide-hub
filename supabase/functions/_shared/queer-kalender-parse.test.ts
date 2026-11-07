@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
-import { parseQueerKalender, parseLocation, parseDetails, endFromDates } from './queer-kalender-parse.ts'
+import { confirmedQueerCalendarStartDate, parseQueerKalender, parseLocation, parseDetails, endFromDates } from './queer-kalender-parse.ts'
 
 // Real markup from https://queer-kalender.nl/en/ captured 2026-09-28, trimmed
 // of the inline SVGs. Both calendar deeplinks are kept because the parser
@@ -140,4 +140,16 @@ Deno.test('qk: event_type is inferred and on-vocabulary', () => {
   assertEquals(LEGAL.has(parseQueerKalender(ARTICLE)[0].eventType), true)
   const drag = parseQueerKalender(ARTICLE.replace('Bottoms up bar', 'Drag Bingo Night'))[0]
   assertEquals(drag.eventType, 'drag')
+})
+
+Deno.test('qk: detail timestamp resolves only the same occurrence with swapped day and month', () => {
+  const date = '<div class="c-calendar-item__date"><time datetime="2026-11-08T00:15:00+01:00"><span>08-11-2026</span></time></div>'
+  const page = '<h1>Karaoke Night</h1>' + date + date
+  const stored = '2026-11-07T23:15:00Z'
+  assertEquals(confirmedQueerCalendarStartDate(page, 'Karaoke Night', stored, '2026-08-11'), '2026-11-08')
+  assertEquals(confirmedQueerCalendarStartDate(page, 'Karaoke Night', stored, '2026-08-12'), null)
+  assertEquals(confirmedQueerCalendarStartDate(page, 'Different event', stored, '2026-08-11'), null)
+  assertEquals(confirmedQueerCalendarStartDate(page, 'Karaoke Night', '2026-11-08T00:15:00Z', '2026-08-11'), null)
+  assertEquals(confirmedQueerCalendarStartDate(page + date.replace('11-08T', '11-15T'), 'Karaoke Night', stored, '2026-08-11'), null)
+  assertEquals(confirmedQueerCalendarStartDate('<h1>Karaoke Night</h1>', 'Karaoke Night', stored, '2026-08-11'), null)
 })

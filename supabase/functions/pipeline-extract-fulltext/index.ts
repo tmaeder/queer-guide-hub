@@ -3,6 +3,7 @@ import { personAuthorCandidate } from '../_shared/news-author.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { extractArticle } from '../_shared/news-quality/extract.ts'
 import { extractContent } from '../_shared/extract-client.ts'
+import { hasCompletePodcastNotes } from './podcast-notes.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { fetchRecoveryHtml, recoveryPageTitle, recoverySource, sourceRecoveryProposal } from './source-recovery.ts'
 
@@ -199,11 +200,14 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
 
         const merged: Record<string, unknown> = { ...n }
 
-        // Stash cleaned markdown for the enrich stage regardless of the body swap.
-        if (markdown) merged.markdown = markdown
+        // An episode page often has a player and site chrome. Keep complete
+        // feed notes as the body and enrichment input even when the page is longer.
+        const keepPodcastNotes = targetTable === 'news_articles' && hasCompletePodcastNotes(n, rssContent)
+        if (markdown && !keepPodcastNotes) merged.markdown = markdown
 
         // Swap in full text only when it's a clear gain over the RSS stub.
         if (
+          !keepPodcastNotes &&
           bodyText &&
           bodyText.length > rssContent.length * MIN_GAIN_RATIO &&
           bodyText.length >= 250
