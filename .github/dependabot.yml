@@ -109,6 +109,36 @@ updates:
     # typescript majors break typescript-eslint; see the root entry.
     ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
+  # Expo app. Expo SDK 58 pins react, react-dom, react-native and the
+  # react-native-* modules to exact versions that `expo-doctor` (mobile-ci.yml)
+  # checks. Any bump outside those pins fails CI and needs `npx expo install
+  # --fix` or an SDK upgrade, so those packages are ignored here. Security
+  # updates for them still open, because `ignore` only applies to version
+  # updates.
+  - package-ecosystem: npm
+    directory: /mobile
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    ignore:
+      # Expo SDK pins; upgraded together with the SDK via `npx expo install`.
+      - dependency-name: 'expo'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'expo-*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'jest-expo'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react'
+      - dependency-name: 'react-dom'
+      - dependency-name: 'react-native'
+      - dependency-name: 'react-native-*'
+      - dependency-name: '@react-native-async-storage/async-storage'
+      # Vendored patched copy (file:vendor/deepmerge, GHSA-gcqx-w48m-w2h4);
+      # there is no upstream release to move to.
+      - dependency-name: 'deepmerge'
+      # typescript majors break the toolchain; see the root entry.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+
   # Cover standalone tools, infrastructure, SDKs, and every worker package.
   - package-ecosystem: npm
     directory: /infra/mail/smtp-relay
