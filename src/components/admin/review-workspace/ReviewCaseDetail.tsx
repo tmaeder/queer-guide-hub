@@ -8,7 +8,7 @@ import { StructuredValue } from '@/components/admin/triage/StructuredDataView';
 import { useAdminShell } from '@/components/admin/shell/AdminShell';
 import { useReviewCase, useRetryReviewResearch, reviewCaseInfo } from '@/hooks/useReviewCase';
 import type { ReviewDecision, ReviewItem } from '@/hooks/useAdminReview';
-import { reviewHttpUrl } from './reviewEvidence';
+import { cityResearchExplanation, reviewHttpUrl } from './reviewEvidence';
 import { VenueMatchPanel, type VenueMatchSelection } from './VenueMatchPanel';
 import { CityIdentityContext } from './CityIdentityContext';
 
@@ -163,7 +163,9 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                     : 'Identity and relationship changes require cited evidence. Missing evidence remains visible as research; it is never treated as verification.'}
               </p>
             </div>
-            {info.family === 'city_identity' && <CityIdentityContext value={data.city_context} />}
+            {info.family === 'city_identity' && (
+              <CityIdentityContext value={data.city_context} research={outcome} />
+            )}
             {info.family !== 'artwork' && (
               <section aria-label="Research status" className="bg-muted/40 p-4">
                 <h3 className="text-sm font-semibold">
@@ -176,7 +178,8 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                         : 'Automatic research is queued or running'}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed">
-                  {venueReason ??
+                  {(info.family === 'city_identity' ? cityResearchExplanation(outcome) : null) ??
+                    venueReason ??
                     researchReason ??
                     'The worker will collect source evidence and search for corroborated candidates.'}
                 </p>
@@ -361,10 +364,10 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
               </section>
             )}
             {info.family === 'city_identity' && (
-              <section aria-label="Identity checks">
-                <h3 className="mb-2 text-sm font-semibold">Identity checks and sources</h3>
+              <details className="text-sm">
+                <summary className="cursor-pointer font-medium">Technical research details</summary>
                 <StructuredValue value={outcome} />
-              </section>
+              </details>
             )}
             {item.entity_id && item.entity_table && (
               <Button
