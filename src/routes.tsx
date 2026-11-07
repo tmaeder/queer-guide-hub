@@ -392,7 +392,7 @@ export const AppRoutes = () => {
           <ErrorBoundary key={location.pathname} section="route">
             <Suspense
               fallback={
-                <PageContainer>
+                <PageContainer data-route-loading>
                   <PageLoadingState
                     count={2}
                     label={t('common.loadingPage', 'Loading this station')}
