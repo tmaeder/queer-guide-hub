@@ -1186,25 +1186,23 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 		indexes = ["venues", "events", "cities", "countries", "personalities", "news", "marketplace", "queer_villages", "groups", "tags", "organizations"];
 	}
 
-	// Bug #9: 800ms hard timeout on autocomplete. Falls back to popular-cities
-	// cache so the dropdown never blocks user typing. Cache populated on cold
-	// start in KV by the `populatePopularCache` helper below.
-	const AUTOCOMPLETE_TIMEOUT_MS = 800;
-
-	// Postgres-native typeahead via the search_autocomplete RPC (prefix-first +
-	// trigram fuzzy, type-diversified in SQL). 800ms hard timeout so the dropdown
-	// never blocks typing; on timeout/error we return whatever we have ([]).
 	const pgTypes = indexes.map((i) => INDEX_TO_PG_TYPE[i]).filter(Boolean) as string[];
 	// Safety layer: surface gated suggestions only to verified-authenticated callers.
 	const autocompleteAuthed = await isAuthenticatedRequest(request, env);
-	const suggestions = await Promise.race([
-		pgAutocomplete(env, q, pgTypes.length ? pgTypes : null, limit, autocompleteAuthed),
-		new Promise<null>((resolve) => setTimeout(() => resolve(null), AUTOCOMPLETE_TIMEOUT_MS)),
-	]).catch((e) => {
-		console.warn("pgAutocomplete", (e as Error).message);
-		return null;
-	});
-	return json({ suggestions: (suggestions ?? []).slice(0, limit) }, 200, cors);
+	const started = Date.now();
+	try {
+		const suggestions = await pgAutocomplete(env, q, pgTypes.length ? pgTypes : null, limit, autocompleteAuthed);
+		return json({ suggestions: suggestions.slice(0, limit) }, 200, cors);
+	} catch (error) {
+		const timedOut = error === "pg-rpc-timeout";
+		console.warn({
+			event: "autocomplete_rpc_failed",
+			rayId: request.headers.get("cf-ray"),
+			rpcMs: Date.now() - started,
+			reason: timedOut ? "timeout" : "upstream_error",
+		});
+		return json({ error: "Autocomplete temporarily unavailable", code: "autocomplete_unavailable" }, 503, cors);
+	}
 }
 
 // ─────────────────────────────────────────────
