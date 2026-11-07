@@ -209,7 +209,7 @@
     "husky": "^9.1.7",
     "jsdom": "30.1.3",
     "knip": "^6.44.1",
-    "libpg-query": "^17.7.4",
+    "libpg-query": "^17.8.2",
     "lint-staged": "^17.6.0",
     "parse5": "8.1.0",
     "playwright": "^1.62.1",
