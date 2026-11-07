@@ -53,6 +53,7 @@
 // rewriting the name on that basis would corrupt them.
 
 import { decodeEntities, stripTags } from './spartacus-parse.ts'
+import { trimTrailingSlashes } from './trim-trailing-slashes.ts'
 
 /** Values that mean "no data", not data. Compared case-insensitively. */
 const NULL_SENTINELS = new Set([
@@ -243,7 +244,7 @@ export function normalizeUrl(raw: string | null | undefined): string | null {
   try {
     const parsed = new URL(url)
     if (!parsed.hostname.includes('.')) return null
-    return parsed.toString().replace(/\/$/, '')
+    return trimTrailingSlashes(parsed.toString())
   } catch {
     return null
   }

@@ -4,8 +4,9 @@ import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { canQueryNamedPlace, selectFeature, type Feature } from './evidence.ts'
 import { fetchOfficialAddress } from './official-address.ts'
 import { countryContradicts, postalContradicts } from '../backfill-venue-cities/geocode-guard.ts'
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
-const BASE = (Deno.env.get('LOCATION_PHOTON_URL') || 'https://photon.komoot.io').replace(/\/$/, '')
+const BASE = trimTrailingSlashes(Deno.env.get('LOCATION_PHOTON_URL') || 'https://photon.komoot.io')
 const delay = () => new Promise(r => setTimeout(r, 1100))
 const must = (result: { error: { message: string } | null }) => { if (result.error) throw new Error(result.error.message) }
 

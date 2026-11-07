@@ -34,6 +34,11 @@ function runtime() {
     new URL(root + '_shared/link-policy.ts', import.meta.url),
     'utf8',
   ).replace(/^export\s+/gm, '');
+  // redirect-api/index.ts imports trimTrailingSlashes; inline it with the rest.
+  const trimSource = readFileSync(
+    new URL(root + '_shared/trim-trailing-slashes.ts', import.meta.url),
+    'utf8',
+  ).replace(/^export\s+/gm, '');
   const links = readFileSync(new URL(root + '_shared/redirect-links.ts', import.meta.url), 'utf8')
     .replace(/^import .*;\s*$/gm, '')
     .replace(/^export\s+/gm, '');
@@ -48,7 +53,9 @@ function runtime() {
     .replace(/^import .*;\s*$/gm, '')
     .replace(/^export\s+/gm, '');
   const code = ts.transpileModule(
-    shared +
+    trimSource +
+      '\n' +
+      shared +
       '\n' +
       workspace +
       '\n' +

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { UUID } from './redirect-api.ts';
 import { previewImageInfo } from './redirect-presentation.ts';
+import { trimTrailingSlashes } from './trim-trailing-slashes.ts';
 export const QR_ASSET_BUCKET = 'redirect-brand-assets';
 // Keep only the awaitable SDK result at this boundary, avoiding nominal
 // PostgREST builder types across Edge import providers. Runtime guards below
@@ -26,7 +27,7 @@ export function qrAssetStorageConfig(url: string, key: string): QrAssetStorage |
     /\s/.test(key)
   )
     return null;
-  return { origin: url.replace(/\/$/, ''), serviceKey: key };
+  return { origin: trimTrailingSlashes(url), serviceKey: key };
 }
 export async function qrLogoInput(value: unknown) {
   if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -236,7 +237,7 @@ export function qrLogoPublicResponse<T>(value: T, projectUrl: string): QrLogoPub
       output[field] = {
         ...asset,
         url:
-          projectUrl.replace(/\/$/, '') +
+          trimTrailingSlashes(projectUrl) +
           '/storage/v1/object/public/' +
           QR_ASSET_BUCKET +
           '/' +

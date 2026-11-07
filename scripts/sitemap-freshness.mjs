@@ -12,6 +12,8 @@
 // faithful target for a data-freshness check. Override with an arg or
 // SITEMAP_BASE to audit a different origin.
 
+import { trimTrailingSlashes } from './lib/trim-trailing-slashes.mjs'
+
 const BASE = process.argv[2] ?? process.env.SITEMAP_BASE ?? 'https://queer-guide.pages.dev';
 
 // maxAgeDays is only set for sitemaps fed by a continuous pipeline where a stale
@@ -122,7 +124,7 @@ const daysSince = (iso) => {
 };
 
 async function audit({ path, minEntries, kind, maxAgeDays }) {
-  const url = `${BASE.replace(/\/$/, '')}${path}`;
+  const url = `${trimTrailingSlashes(BASE)}${path}`;
   console.log(`\n${path}`);
   let res;
   try {

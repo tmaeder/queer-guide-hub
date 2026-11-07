@@ -6,6 +6,7 @@ import {
   corsResponse,
 } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 // Backfill verified image candidates for cities missing a usable cover.
 // Multiple candidates are ranked by city/country/landmark evidence. Ambiguous
@@ -156,9 +157,9 @@ function canonicalUrl(value: string): string {
     const url = new URL(value)
     url.search = ''
     url.hash = ''
-    return url.toString().replace(/\/$/, '')
+    return trimTrailingSlashes(url.toString())
   } catch {
-    return value.split(/[?#]/, 1)[0].replace(/\/$/, '')
+    return trimTrailingSlashes(value.split(/[?#]/, 1)[0])
   }
 }
 

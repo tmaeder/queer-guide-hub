@@ -4,6 +4,7 @@ import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_
 import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { extractCategoryKeywords, extractGaychEventArtwork } from '../_shared/gaych-parse.ts'
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 // ============================================================
 // Source: gay.ch/parties — the Swiss queer party agenda
@@ -184,7 +185,7 @@ function parseEvent(html: string, url: string): ParsedEvent | null {
   const links = [...side.matchAll(/href="(https?:\/\/[^"]+)"/g)].map((m) => m[1])
 
   return {
-    slug: url.replace(/^.*\/parties\//, '').replace(/\/$/, ''),
+    slug: trimTrailingSlashes(url.replace(/^.*\/parties\//, '')),
     url,
     title,
     start,

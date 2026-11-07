@@ -1,4 +1,5 @@
 import { decodeEntities } from './html-entities.ts'
+import { trimTrailingSlashes } from './trim-trailing-slashes.ts'
 // ============================================================
 // kweer.io — Zurich queer party promoter (Wix Events)
 //
@@ -60,7 +61,7 @@ export const stripTags = (s: unknown): string =>
  */
 export function pagesFromSitemap(xml: unknown): string[] {
   const locs = [...String(xml ?? '').matchAll(/<loc>\s*(?:<!\[CDATA\[)?([^<\]]+?)(?:\]\]>)?\s*<\/loc>/g)]
-    .map((m) => m[1].trim().replace(/\/form\/?$/, '').replace(/\/$/, ''))
+    .map((m) => trimTrailingSlashes(m[1].trim().replace(/\/form\/?$/, '')))
     .filter((l) => /\/event-details\//.test(l))
   return [...new Set(locs)]
 }
