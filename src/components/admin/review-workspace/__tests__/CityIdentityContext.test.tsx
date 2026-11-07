@@ -46,6 +46,37 @@ const city = {
   official_website: 'javascript:alert(1)',
 };
 describe('city identity decision context', () => {
+  it('shows dated registry observations only for the current pin', () => {
+    const url = 'https://tigerweb.geo.census.gov/registry';
+    const observation = {
+      url,
+      title: 'U.S. Census Bureau township boundaries',
+      observation: 'One linked venue pin fell outside the boundary.',
+      latitude: 43.31483,
+      longitude: -88.270368,
+      observed_at: '2026-11-07T10:00:00Z',
+    };
+    const value = {
+      ...city,
+      classification: {
+        ...city.classification,
+        sources: [url],
+        review_observations: [observation],
+      },
+    };
+    const { rerender } = render(<CityIdentityContext value={value} />);
+    const registry = screen.getByRole('region', { name: 'Registry observations' });
+    expect(within(registry).getByText(observation.observation)).toBeInTheDocument();
+    expect(within(registry).getByRole('link', { name: observation.title })).toHaveAttribute(
+      'href',
+      url,
+    );
+    expect(registry.querySelector('time')).toHaveAttribute('datetime', '2026-11-07T10:00:00.000Z');
+    expect(screen.queryByRole('link', { name: 'Classification source' })).not.toBeInTheDocument();
+    rerender(<CityIdentityContext value={{ ...value, latitude: 43.315 }} />);
+    expect(screen.queryByRole('region', { name: 'Registry observations' })).not.toBeInTheDocument();
+  });
+
   it('shows captured source links and distinguishes a capture from a verified match', () => {
     const research = {
       reason: 'missing_source',
