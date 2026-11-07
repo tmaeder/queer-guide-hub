@@ -27,6 +27,7 @@ const EmailImportsTab = lazy(() =>
     default: m.EmailIngestionsManager,
   })),
 );
+const TestInboxTab = lazy(() => import('./tabs/TestInboxTab'));
 const SourcesTab = lazy(() => import('./tabs/SourcesTab'));
 const ErrorsTab = lazy(() => import('./tabs/ErrorsTab'));
 const AlertsTab = lazy(() => import('./tabs/AlertsTab'));
@@ -62,6 +63,7 @@ const SOURCES_SUBS: SubSection[] = [
   { key: 'sources', label: 'Source registry', Component: SourcesTab },
   { key: 'imports', label: 'Manual imports', Component: ManualImportsTab },
   { key: 'email', label: 'Email history', Component: EmailImportsTab },
+  { key: 'test-inbox', label: 'Test inbox', Component: TestInboxTab },
   { key: 'coverage', label: 'Coverage', Component: CoverageTab },
   { key: 'integrations', label: 'Integrations', Component: IntegrationsTab },
   { key: 'backfills', label: 'Backfills', Component: BackfillsTab },

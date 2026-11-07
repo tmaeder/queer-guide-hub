@@ -21,7 +21,7 @@ import PostalMime from 'postal-mime';
 import { callWorkersAi, type AiBinding } from './workersai';
 import { bytesToPgHex, encryptBody } from './crypto';
 import { SupabaseClient } from './supabase';
-import { buildMailboxRow } from './mailbox';
+import { buildMailboxRow, capText } from './mailbox';
 
 export interface Env {
   INBOX_DOMAIN: string; // "queer.guide"
@@ -43,8 +43,10 @@ const RESERVED_LOCAL_PARTS = new Set([
   'submit', 'tip', 'press', 'bug', 'feedback', 'info', 'hello', 'contact',
   'support', 'admin', 'noreply', 'no-reply', 'postmaster', 'hostmaster',
   'webmaster', 'abuse', 'mail', 'security', 'root', 'system', 'api', 'help',
-  'team', 'staff', 'moderator', 'official',
+  'team', 'staff', 'moderator', 'official', 'test',
 ]);
+
+const ADMIN_TEST_ADDRESS = 'test@queer.guide';
 
 const USERNAME_RE = /^[a-z][a-z0-9._]{1,18}[a-z0-9]$/;
 
@@ -99,13 +101,54 @@ export default {
     env: Env,
     _ctx: ExecutionContext,
   ): Promise<void> {
+    const isAdminTestMail = message.to.trim().toLowerCase() === ADMIN_TEST_ADDRESS;
     const username = extractLocalPart(message.to, env.INBOX_DOMAIN);
-    if (!username) return; // drop silently
+    if (!username && !isAdminTestMail) return; // drop silently
 
     const maxRaw = Number(env.MAILBOX_MAX_RAW_BYTES || '5242880');
     if (typeof message.rawSize === 'number' && message.rawSize > maxRaw) return;
 
     const sb = new SupabaseClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+
+    if (isAdminTestMail) {
+      const recent = await sb.countRecentTestMail(ADMIN_TEST_ADDRESS);
+      if (recent >= Number(env.MAILBOX_HOURLY_LIMIT || '60')) return;
+
+      const raw = await readStream(message.raw);
+      if (raw.byteLength > maxRaw) return;
+
+      const mime = await PostalMime.parse(raw);
+      const envelopeFrom = message.from.trim();
+      // The Message-ID stays stable even when a retry adds new transport headers.
+      const digest = await crypto.subtle.digest(
+        'SHA-256',
+        mime.messageId
+          ? new TextEncoder().encode(
+              JSON.stringify([ADMIN_TEST_ADDRESS, envelopeFrom, mime.messageId]),
+            )
+          : raw,
+      );
+      const hex = bytesToPgHex(new Uint8Array(digest)).slice(2, 34);
+      const id = [
+        hex.slice(0, 8),
+        hex.slice(8, 12),
+        hex.slice(12, 16),
+        hex.slice(16, 20),
+        hex.slice(20),
+      ].join('-');
+      await sb.insertTestMail({
+        id,
+        to_address: ADMIN_TEST_ADDRESS,
+        from_address: envelopeFrom,
+        subject: mime.subject?.trim().replace(/\0/g, '').slice(0, 998) || '(no subject)',
+        body_text: capText(
+          (mime.text?.trim() || stripHtml(mime.html ?? '')).replace(/\0/g, ''),
+          Number(env.MAILBOX_MAX_BODY_CHARS || '262144'),
+        ),
+      });
+      return;
+    }
+    if (!username) return;
 
     let userId: string | null;
     try {
