@@ -34,7 +34,7 @@ Deno.test('Disambiguation only applies to countries, not cities', () => {
   assert(r.ok)
 })
 
-function cityLookup(rows: { id: string; name: string; region_name: string }[]) {
+function cityLookup(rows: { id: string; name: string; region_name: string; shell_status?: string }[]) {
   const client = {
     rpc(name: string, args: unknown) {
       assertEquals(name, 'city_canonical_key')
@@ -67,6 +67,46 @@ function cityLookup(rows: { id: string; name: string; region_name: string }[]) {
   }
   return client as unknown as Parameters<typeof resolveEntities>[0]
 }
+
+Deno.test('an exact archived city name does not fall back to a different settlement', async () => {
+  const client = cityLookup([
+    { id: 'texas', name: 'Texas', region_name: 'Texas', shell_status: 'ghost' },
+  ])
+  const result = await resolveEntities(client, 'cities', 'city', ['Texas'], 'A law in Texas.')
+  assertEquals(result, { linked: [], needsReview: [] })
+})
+
+Deno.test('fuzzy city search excludes archived and merged records before limiting candidates', async () => {
+  const filters: unknown[][] = []
+  const fuzzy = {
+    ilike(column: string, pattern: string) {
+      filters.push([column, pattern])
+      return this
+    },
+    neq(column: string, value: string) {
+      filters.push([column, value])
+      return this
+    },
+    is(column: string, value: null) {
+      filters.push([column, value])
+      return this
+    },
+    limit(count: number) {
+      filters.push([count])
+      return Promise.resolve({ data: [], error: null })
+    },
+  }
+  const client = {
+    from: () => ({
+      select: () => ({
+        ...fuzzy,
+        eq: () => ({ is: () => ({ limit: () => Promise.resolve({ data: [], error: null }) }) }),
+      }),
+    }),
+  } as unknown as Parameters<typeof resolveEntities>[0]
+  await resolveEntities(client, 'cities', 'city', ['Texa'], 'A law in Texa.')
+  assertEquals(filters, [['name', '%Texa%'], ['shell_status', 'ghost'], ['duplicate_of_id', null], [8]])
+})
 
 Deno.test('city resolution prefers the canonical key for accented city names', async () => {
   const client = cityLookup([{ id: 'montreal', name: 'Montreal', region_name: 'Quebec' }])

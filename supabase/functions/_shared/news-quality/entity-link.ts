@@ -98,7 +98,7 @@ export async function resolveEntities(
       }
       const { data: exact, error: exactError } = await supabase
         .from('cities')
-        .select('id, name, region_name')
+        .select('id, name, region_name, shell_status')
         .eq('canonical_key', keyResult.data)
         .is('duplicate_of_id', null)
         .limit(2)
@@ -108,6 +108,9 @@ export async function resolveEntities(
         continue
       }
       if (exact?.length) {
+        // An exact archived name can be a region filed as a city. Stop here
+        // so the fuzzy lookup cannot substitute a different settlement.
+        if (exact.every((city) => city.shell_status === 'ghost')) continue
         if (exact.length > 1) {
           needsReview.push({ name, score: 1, reason: 'ambiguous:multiple canonical cities share this name' })
         } else {
@@ -126,11 +129,12 @@ export async function resolveEntities(
     // Cheap exact-ish prefilter via ilike; trigram score for ranking.
     // Cities also select `region_name`: it is the only thing the collision
     // guard below can corroborate the article's prose against.
-    const { data, error } = await supabase
+    const lookup = supabase
       .from(table)
       .select(table === 'cities' ? `id, ${nameColumn}, region_name` : `id, ${nameColumn}`)
       .ilike(nameColumn, `%${name.slice(0, 60)}%`)
-      .limit(8)
+    if (table === 'cities') lookup.neq('shell_status', 'ghost').is('duplicate_of_id', null)
+    const { data, error } = await lookup.limit(8)
 
     if (error) {
       // Unresolvable, not reviewable — a human can't act on a failed lookup.
