@@ -1,13 +1,19 @@
 appId: guide.queer.app
-name: Sign-in rejects a malformed email before any network call
+name: Sign-in rejects a malformed email before any network call (code and password paths)
 tags: [smoke]
 ---
 - launchApp:
     clearState: true
 - tapOn: "Me"
 - tapOn: "Sign in or create account"
+# Default path: email code.
 - tapOn: "Email"
 - inputText: "not-an-email"
+- tapOn: "Email me a code"
+- assertVisible: "Enter a valid email address."
+# Secondary path: password.
+# The email field keeps the malformed address across the switch.
+- tapOn: "Use a password instead"
 - tapOn: "Password"
 - inputText: "long-enough-password"
 - tapOn:
