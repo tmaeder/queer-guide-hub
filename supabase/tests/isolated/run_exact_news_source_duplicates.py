@@ -218,7 +218,7 @@ policy=(ROOT/'supabase/migrations/20261022180826_review_automatic_resolution.sql
 policy=re.search(r'create function api_private.review_news_machine_outcome[\s\S]*?end \$\$;',policy).group(0)
 paths=list((ROOT/'supabase/migrations').glob('*_review_exact_news_source_duplicates.sql'));assert len(paths)==1
 podcast_migration=ROOT/'supabase/migrations/99991793933580_review_exact_podcast_source_replays.sql'
-technical_migration=ROOT/'supabase/migrations/99991794051516_review_podcast_technical_replays.sql'
+technical_migration=ROOT/'supabase/migrations/99991794050184_review_podcast_technical_replays.sql'
 with tempfile.TemporaryDirectory(prefix='qg-news-source-dedup-')as tmp:
  data=Path(tmp)/'data';subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
  subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55499 -c listen_addresses=','-w','start'],check=True,stdout=subprocess.DEVNULL)

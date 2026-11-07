@@ -2,12 +2,10 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Image } from '@/components/ui/Image';
-import { Band } from './Band';
 import { useHomeRegionContext } from './homeRegionContext';
-import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useRecentlyViewedImages } from '@/hooks/useRecentlyViewedImages';
 import { useYourLinesDiscovery } from '@/hooks/useYourLines';
-import { recentlyViewedHref, type RecentlyViewedType } from '@/lib/recentlyViewed';
+import { recentlyViewedHref, type RecentlyViewedItem, type RecentlyViewedType } from '@/lib/recentlyViewed';
 import { type FallbackTheme } from '@/utils/fallbackImages';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
@@ -77,10 +75,9 @@ interface LineCard {
  * these cards will carry their own controls and an <a> wrapping a button is
  * invalid HTML and an axe `nested-interactive` failure.
  */
-export function YourLines() {
+export function YourLines({ recent }: { recent: RecentlyViewedItem[] }) {
   const { t } = useTranslation();
   const region = useHomeRegionContext();
-  const recent = useRecentlyViewed();
   const resolvedImages = useRecentlyViewedImages(recent);
 
   // A thread needs a first stitch. Without any history of their own, the
@@ -139,60 +136,55 @@ export function YourLines() {
   if (!hasOwnThread || cards.length === 0) return null;
 
   return (
-    <Band
-      title={t('home.yourLines.title', 'Your lines')}
-      description={t('home.yourLines.description', 'Places and things you looked at recently.')}
-    >
-      <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-4">
-        {cards.map((c) => (
-          <li
-            key={c.key}
-            className="card-lift group relative flex flex-col overflow-hidden bg-card rounded-container shadow-soft"
-          >
-            {!c.image && c.type === 'city' && hasCityNetwork(c.slug) ? (
-              // A themed fallback tile says "city". The city's own network says
-              // WHICH city — better placeholder, same empty-image branch.
-              <div className="flex aspect-[16/10] items-center justify-center bg-background p-4">
-                <CityNetwork slug={c.slug} variant="thumb" className="h-full" />
-              </div>
-            ) : (
-              // 16:10 is the house card ratio. The old fixed 112px strip was
-              // ~4:1 on a desktop column, which cut photos to a slit.
-              <Image
-                imageUrl={c.image}
-                fallbackEntityType={fallbackTheme(c.type)}
-                fallbackKey={c.slug}
-                imageRole="cover"
-                aspect="card"
-                fit={CONTAINED_TYPES.has(c.type) ? 'contain' : 'cover'}
-                plate="paper"
-                rounded="top"
-                alt=""
-              />
-            )}
-            <div className="flex flex-1 flex-col gap-1 p-4">
-              {c.reason && (
-                <span className="block truncate text-2xs uppercase tracking-label text-muted-foreground">
-                  {c.reason}
-                </span>
-              )}
-              <span className="line-clamp-2 text-title font-bold">{c.title}</span>
-              {c.subtitle && (
-                <span className="block truncate text-13 text-muted-foreground">{c.subtitle}</span>
-              )}
+    <ul className="m-0 flex h-full snap-x list-none gap-4 overflow-x-auto p-2 pb-4 scrollbar-thin">
+      {cards.map((c) => (
+        <li
+          key={c.key}
+          className="group relative flex w-56 shrink-0 snap-start flex-col overflow-hidden rounded-container bg-card shadow-soft"
+        >
+          {!c.image && c.type === 'city' && hasCityNetwork(c.slug) ? (
+            // A themed fallback tile says "city". The city's own network says
+            // WHICH city — better placeholder, same empty-image branch.
+            <div className="flex aspect-[16/10] items-center justify-center bg-background p-4">
+              <CityNetwork slug={c.slug} variant="thumb" className="h-full" />
             </div>
-            {/* Sibling of the card body, never a wrapper. `no-underline` is
-                load-bearing: the unlayered `li a` rule in index.css would
-                otherwise set `display:inline` and collapse the overlay. */}
-            <LocalizedLink
-              to={c.href}
-              className="absolute inset-0 no-underline"
-              aria-label={c.title}
+          ) : (
+            // 16:10 is the house card ratio. The old fixed 112px strip was
+            // ~4:1 on a desktop column, which cut photos to a slit.
+            <Image
+              imageUrl={c.image}
+              fallbackEntityType={fallbackTheme(c.type)}
+              fallbackKey={c.slug}
+              imageRole="cover"
+              aspect="card"
+              fit={CONTAINED_TYPES.has(c.type) ? 'contain' : 'cover'}
+              plate="paper"
+              rounded="top"
+              alt=""
             />
-          </li>
-        ))}
-      </ul>
-    </Band>
+          )}
+          <div className="flex flex-1 flex-col gap-1 p-4">
+            {c.reason && (
+              <span className="block truncate text-2xs uppercase tracking-label text-muted-foreground">
+                {c.reason}
+              </span>
+            )}
+            <span className="line-clamp-2 text-title font-bold">{c.title}</span>
+            {c.subtitle && (
+              <span className="block truncate text-13 text-muted-foreground">{c.subtitle}</span>
+            )}
+          </div>
+          {/* Sibling of the card body, never a wrapper. `no-underline` is
+              load-bearing: the unlayered `li a` rule in index.css would
+              otherwise set `display:inline` and collapse the overlay. */}
+          <LocalizedLink
+            to={c.href}
+            className="absolute inset-0 rounded-container no-underline focus-visible:-outline-offset-2"
+            aria-label={c.title}
+          />
+        </li>
+      ))}
+    </ul>
   );
 }
 

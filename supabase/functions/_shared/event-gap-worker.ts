@@ -9,6 +9,7 @@ import { gateImages } from './image-gate.ts'
 import { readImageDimensions } from './image-dimensions.ts'
 import { evaluateCover } from './image-probe.ts'
 import { storedAgendaqDescription } from './event-source-copy.ts'
+import { confirmedQueerCalendarStartDate } from './queer-kalender-parse.ts'
 import { boundedInt, cleanDescription, hasUnverifiedLongRange, supportedContentPatch, imageCandidates, mapConcurrent, sourceArtwork, sourceCancellation, sourceUrls, storedDescription, structuredEvent, text, type GapEvent, type GapLane, type GapPatch, type SourceEvidence } from './event-gap-core.ts'
 
 type Candidate = { event_id: string; event: GapEvent; sources: SourceEvidence[] }
@@ -179,8 +180,20 @@ export function serveEventGaps(lane: GapLane) {
           if (!ai) return await finish(c, {}, {}, 'failed', { reason: 'extraction_failed' })
           const date = text(ai.extracted_date).slice(0, 10)
           const start = text(c.event.start_date).slice(0, 10)
+          let dateCorrection: { extracted: string; publisher: string } | undefined
           if (date && start && Math.abs(Date.parse(date) - Date.parse(start)) > 86400000) {
-            return await finish(c, {}, { source_url: fetched.url, confidence: ai.confidence }, 'review', { reason: 'date_mismatch', extracted_date: date, start_date: start })
+            const sourceId = text(c.event.external_id)
+            const publisherDate = c.event.data_source === 'queer-kalender' &&
+              /^\d+$/.test(sourceId) &&
+              fetched.url.startsWith(`https://queer-kalender.nl/en/page/${sourceId}/`) &&
+              c.sources.some((source) => source.source_slug === 'queer-kalender' && source.source_url === fetched.url)
+              ? confirmedQueerCalendarStartDate(html, c.event.title, text(c.event.start_date), date)
+              : null
+            if (!publisherDate) {
+              return await finish(c, {}, { source_url: fetched.url, confidence: ai.confidence }, 'review', { reason: 'date_mismatch', extracted_date: date, start_date: start })
+            }
+            dateCorrection = { extracted: date, publisher: publisherDate }
+            ai.extracted_date = publisherDate
           }
           const end = text(ai.extracted_end_date).slice(0, 10)
           if (/^\d{4}-\d{2}-\d{2}$/.test(end) && end < new Date().toISOString().slice(0, 10)) {
@@ -192,7 +205,7 @@ export function serveEventGaps(lane: GapLane) {
             if (quote.length < 8 || !pageText.replace(/\s+/g, ' ').toLowerCase().includes(quote)) delete ai[field as 'safety_notes' | 'dress_code' | 'lineup']
           }
           const patch = supportedContentPatch(c.event, ai as Record<string, unknown>, pageText)
-          return await finish(c, patch, { source_url: fetched.url, confidence: ai.confidence }, (ai.confidence ?? 0) < 0.8 ? 'review' : 'updated', { method: 'grounded_extraction', ai_attempts: 1, extraction: ai })
+          return await finish(c, patch, { source_url: fetched.url, confidence: ai.confidence }, (ai.confidence ?? 0) < 0.8 ? 'review' : 'updated', { method: 'grounded_extraction', ai_attempts: 1, extraction: ai, ...(dateCorrection ? { date_transposition: dateCorrection } : {}) })
         }
         return await finish(c, {}, {}, 'no_change', { reason: urls.length ? 'no_usable_evidence' : 'no_event_page' })
       } catch (err) {
