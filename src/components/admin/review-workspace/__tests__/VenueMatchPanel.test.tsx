@@ -42,7 +42,7 @@ describe('venue comparison', () => {
     expect(screen.getByText('Zürich, Switzerland')).toBeVisible();
     expect(screen.getByText('42 Main Street')).toBeVisible();
     expect(screen.getByText(/Similar name/)).toHaveTextContent('1,200 m');
-    expect(screen.getByRole('link', { name: 'Check event source' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Open event website' })).toHaveAttribute(
       'href',
       'https://example.org/event',
     );
@@ -56,6 +56,25 @@ describe('venue comparison', () => {
       target: { value: 'other' },
     });
     expect(onSelect).toHaveBeenLastCalledWith(null);
+    expect(screen.getByRole('radio')).not.toBeChecked();
+  });
+  it('shows a conflicting publisher capture alongside the saved location', () => {
+    Object.assign(state.query.data as object, {
+      publisher_location: {
+        venue_name: 'Publisher Hall',
+        address: '17 Other Street',
+        source_url: 'https://publisher.example/listing',
+      },
+    });
+    render(<VenueMatchPanel item={item} busy={false} selection={null} onSelect={vi.fn()} />);
+    expect(screen.getByText('42 Main Street, Zürich')).toBeVisible();
+    expect(screen.getByText('Publisher Hall')).toBeVisible();
+    expect(screen.getByText('17 Other Street')).toBeVisible();
+    expect(screen.getByText(/capture differs from the saved location/)).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Open publisher listing' })).toHaveAttribute(
+      'href',
+      'https://publisher.example/listing',
+    );
     expect(screen.getByRole('radio')).not.toBeChecked();
   });
   it('invalidates a previous selection during background revalidation', () => {
