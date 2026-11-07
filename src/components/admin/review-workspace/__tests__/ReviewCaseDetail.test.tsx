@@ -260,11 +260,18 @@ describe('review cases', () => {
   it('shows the venue merge trail and the fields still needing business evidence', () => {
     state.data!.family = 'business_link';
     state.data!.business_context = {
-      organization: { name: 'Earlier business profile', city: 'Berlin' },
+      organization: {
+        name: 'Earlier business profile',
+        city: 'Berlin',
+        address: '42 Source Street',
+        phone: '+49 30 5550100',
+      },
       previous_venue: { name: 'Earlier venue record' },
       surviving_venue: {
         name: 'Surviving venue record',
         address: '42 Source Street',
+        city: 'Potsdam',
+        phone: '+49 331 5550100',
         website: 'https://venue.test/',
       },
       surviving_organization: {
@@ -290,6 +297,10 @@ describe('review cases', () => {
     expect(evidence.getByText('Earlier venue record')).toBeInTheDocument();
     expect(evidence.getByText('Surviving venue record')).toBeInTheDocument();
     expect(evidence.getByText('Description, Phone')).toBeInTheDocument();
+    expect(evidence.getByText('Berlin')).toBeVisible();
+    expect(evidence.getByText('Potsdam')).toBeVisible();
+    expect(evidence.getByText(/\+49 30 5550100/)).toBeVisible();
+    expect(evidence.getByText(/\+49 331 5550100/)).toBeVisible();
     expect(
       evidence.getByRole('button', { name: 'Open surviving organization editor' }),
     ).toBeEnabled();
