@@ -1,4 +1,5 @@
 import { decodeEntities as sharedDecodeEntities } from './html-entities.ts'
+import { trimTrailingSlashes } from './trim-trailing-slashes.ts'
 // adult-profile-probe — pure helpers for resolving an adult performer's
 // profile on pornhub / xhamster / xvideos.
 //
@@ -192,7 +193,7 @@ export async function probeProfile(
         if (!/^https:\/\/(?:[a-z]+\.)?xhamster\.com\/(?:pornstars|creators)\//i.test(r.location)) {
           return { hit: false }
         }
-        final = r.location.split('?')[0].replace(/\/$/, '')
+        final = trimTrailingSlashes(r.location.split('?')[0])
         r = await fetcher(final)
       }
       if (r.status !== 200) return { hit: false }
@@ -216,7 +217,7 @@ export async function probeProfile(
       if (!/^https:\/\/(?:[a-z]+\.)?xvideos\.com\/(?:models|profiles|pornstars)\//i.test(r.location)) {
         return { hit: false }
       }
-      final = r.location.split('?')[0].replace(/\/$/, '')
+      final = trimTrailingSlashes(r.location.split('?')[0])
       r = await fetcher(final)
     }
     if (r.status !== 200) return { hit: false }

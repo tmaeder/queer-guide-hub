@@ -56,6 +56,8 @@
  * would have caught neither.
  */
 
+import { trimTrailingSlashes } from './lib/trim-trailing-slashes.mjs'
+
 /** Final-path shapes that mean "this document is gone" despite a 200. */
 const ERROR_PATH = /(pagenotfound|\/error\b|wearesorry|\/404\b|not[-_]?found)/i
 
@@ -149,8 +151,8 @@ for (const row of rows) {
     try {
       const a = new URL(url)
       const b = new URL(r.final)
-      const from = `${a.hostname.replace(/^www\./, '')}${a.pathname.replace(/\/$/, '')}`
-      const to = `${b.hostname.replace(/^www\./, '')}${b.pathname.replace(/\/$/, '')}`
+      const from = `${a.hostname.replace(/^www\./, '')}${trimTrailingSlashes(a.pathname)}`
+      const to = `${b.hostname.replace(/^www\./, '')}${trimTrailingSlashes(b.pathname)}`
       if (from !== to) {
         moved.push({ slug, from, to })
       }

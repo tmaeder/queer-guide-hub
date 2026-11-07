@@ -1,5 +1,6 @@
 import { distanceKm } from './geo-link-guards.ts'
 import { normalizeCoordinate } from './venue-pipeline-utils.ts'
+import { trimTrailingSlashes } from './trim-trailing-slashes.ts'
 
 export interface RegisteredGayoutVenue {
   id: string; name: string; latitude: number | string | null; longitude: number | string | null
@@ -19,7 +20,7 @@ function sourceUrl(raw: unknown): string | null {
   try {
     const u = new URL(raw)
     if (u.protocol !== 'https:' || u.hostname !== 'www.gayout.com' || u.port || u.username || u.password || u.search || u.hash) return null
-    return u.href.replace(/\/$/, '')
+    return trimTrailingSlashes(u.href)
   } catch { return null }
 }
 /** A bounded attributable publisher summary, never page chrome or review prose. */

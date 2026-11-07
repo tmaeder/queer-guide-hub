@@ -6,6 +6,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { pickProductDescription } from '../_shared/product-html.ts'
 import { decodeHtmlEntities } from '../_shared/news-quality/sanitize.ts'
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 // ============================================================
 // source-woocommerce-public — ingest any WooCommerce storefront via its PUBLIC
@@ -95,7 +96,7 @@ Deno.serve(withErrorReporting('source-woocommerce-public', async (req) => {
   const _auth = await requireInternalOrAdmin(req, supabase); if (_auth instanceof Response) return _auth
   try {
     const body = await req.json().catch(() => ({}))
-    const shopDomain = (body.shop_domain || body.shopDomain || '').replace(/^https?:\/\//, '').replace(/\/$/, '')
+    const shopDomain = trimTrailingSlashes((body.shop_domain || body.shopDomain || '').replace(/^https?:\/\//, ''))
     if (!shopDomain) return jsonResponse(skippedResponse('missing_config', ['shop_domain']), 200, req)
     const sourceSlug = body.source_slug || defaultSlug(shopDomain)
     const adapter = makeAdapter(shopDomain, sourceSlug)

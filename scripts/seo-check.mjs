@@ -12,6 +12,8 @@
 //
 // Exits 0 on pass, 1 on any failure.
 
+import { trimTrailingSlashes } from './lib/trim-trailing-slashes.mjs'
+
 const BASE = process.argv[2] ?? process.env.SEO_CHECK_BASE ?? 'https://queer.guide';
 const ROUTES = [
   '/',
@@ -132,7 +134,7 @@ const BOT_UA =
   'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 
 async function check(path) {
-  const url = `${BASE.replace(/\/$/, '')}${path}`;
+  const url = `${trimTrailingSlashes(BASE)}${path}`;
   const [humanRes, botRes] = await Promise.all([
     fetch(url, { headers: { 'User-Agent': 'queer-guide-seo-check/1' } }),
     fetch(url, { headers: { 'User-Agent': BOT_UA } }),
@@ -180,7 +182,7 @@ const pass = (msg) => {
 // generators hardcode ORIGIN as queer.guide, so a preview/mirror run must
 // re-point the path at its own BASE or it would silently audit production.
 async function firstLocPath(base, file) {
-  const res = await fetch(`${base.replace(/\/$/, '')}/${file}`, {
+  const res = await fetch(`${trimTrailingSlashes(base)}/${file}`, {
     headers: { 'User-Agent': 'queer-guide-seo-check/1' },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -302,8 +304,8 @@ async function main() {
 
     if (!r.canonical) failures += fail('missing <link rel="canonical">');
     else {
-      const canonPath = new URL(r.canonical).pathname.replace(/\/$/, '') || '/';
-      const wantPath = r.path.replace(/\/$/, '') || '/';
+      const canonPath = trimTrailingSlashes(new URL(r.canonical).pathname) || '/';
+      const wantPath = trimTrailingSlashes(r.path) || '/';
       if (canonPath !== wantPath) failures += fail(`canonical path "${canonPath}" != "${wantPath}"`);
       else pass(`canonical: ${r.canonical}`);
     }
