@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
     switch (action) {
       case 'start':
-        return await handleStart(supabase, supabaseUrl, serviceKey, body, req)
+        return await handleStart(supabase, body, req)
       case 'continue':
         return await handleContinue(supabase, supabaseUrl, serviceKey, body, req)
       default:
@@ -52,8 +52,6 @@ Deno.serve(async (req) => {
 
 async function handleStart(
   supabase: SupabaseClient,
-  supabaseUrl: string,
-  serviceKey: string,
   body: Record<string, unknown>,
   req: Request
 ): Promise<Response> {
@@ -94,6 +92,22 @@ async function handleStart(
     batch_size: body.batch_size ?? 50,
     ...(pipeline.default_context || {}),
     ...(body.context || {}),
+  }
+
+  if (pipeline.name === 'tags-ingestion' && (context as Record<string, unknown>).reliability_pilot === true) {
+    const { data: runId, error } = await supabase.rpc('start_reliable_tags_pipeline', {
+      p_pipeline: pipeline.id,
+      p_context: context,
+    })
+    if (error) throw new Error(`Failed to start reliability pilot: ${error.message}`)
+    const targets = new Set(edges.map(edge => edge.target))
+    return jsonResponse({
+      success: true,
+      pipeline_run_id: runId,
+      pipeline_name: pipeline.name,
+      total_steps: nodes.length,
+      initial_nodes: nodes.filter(node => !targets.has(node.id)).map(node => node.id),
+    }, 200, req)
   }
 
   // Snapshot pipeline definition so future edits don't mutate this run's
@@ -182,6 +196,10 @@ async function handleContinue(
     return jsonResponse({ success: true, message: `Run is ${run.status}, skipping` }, 200, req)
   }
 
+  if (run.reliable_steps) {
+    return handleReliableStep(supabase, supabaseUrl, serviceKey, run, currentNodeId, req)
+  }
+
   const pipeline = run.pipeline_definitions
   const nodes = pipeline.nodes as PipelineNode[]
   const edges = pipeline.edges as PipelineEdge[]
@@ -208,7 +226,7 @@ async function handleContinue(
     const { data: lockResult } = await supabase.rpc('pg_try_advisory_lock', { key: lockKey })
     if (!lockResult) {
       // Another invocation is already checking this node — re-enqueue with jitter
-      await enqueueStep(supabase, body as PipelineMessage, 5 + Math.floor(Math.random() * 10))
+      await enqueueStep(supabase, body, 5 + Math.floor(Math.random() * 10))
       return jsonResponse({ success: true, message: 'Fan-in lock contention, re-enqueued' }, 200, req)
     }
     // Re-fetch node_states to avoid stale reads
@@ -221,7 +239,7 @@ async function handleContinue(
     // exit above), so only tolerated failures (continue_on_error) reach here.
     if (upstreamState && upstreamState.status !== 'completed' && upstreamState.status !== 'skipped' && upstreamState.status !== 'failed') {
       // Upstream not ready — re-enqueue with delay
-      await enqueueStep(supabase, body as PipelineMessage, 10)
+      await enqueueStep(supabase, body, 10)
       return jsonResponse({ success: true, message: 'Waiting for upstream', waiting_on: edge.source }, 200, req)
     }
   }
@@ -354,6 +372,112 @@ async function handleContinue(
   }
 }
 
+async function handleReliableStep(
+  supabase: SupabaseClient,
+  supabaseUrl: string,
+  serviceKey: string,
+  run: { id: string; pipeline_snapshot: { nodes: PipelineNode[]; edges: PipelineEdge[]; timeout_seconds?: number }; context: Record<string, unknown> },
+  nodeId: string,
+  req: Request,
+): Promise<Response> {
+  const graph = run.pipeline_snapshot
+  const node = graph.nodes.find(candidate => candidate.id === nodeId)
+  if (!node) return errorResponse(`Node ${nodeId} not found in pipeline snapshot`, 400, req)
+
+  const step = { p_run: run.id, p_node: nodeId }
+  const { data: claim, error: claimError } = await supabase.rpc('claim_reliable_pipeline_step', step)
+  if (claimError) throw new Error(claimError.message)
+  if (!claim) return jsonResponse({ success: true, node: nodeId, status: 'ignored' }, 200, req)
+
+  const attempt = { ...step, p_token: claim.token }
+  const finish = async (
+    outcome: 'completed' | 'skipped' | 'failed' | 'uncertain' | 'retry',
+    items = 0,
+    message: string | null = null,
+  ) => {
+    const { data: accepted, error } = await supabase.rpc('finish_reliable_pipeline_step', {
+      ...attempt, p_outcome: outcome, p_items: items, p_error: message,
+    })
+    if (error) throw new Error(error.message)
+    return jsonResponse({
+      success: true, node: nodeId, status: accepted ? outcome : 'ignored',
+    }, 200, req)
+  }
+
+  const nodeStates = claim.node_states as Record<string, NodeState>
+  for (const edge of graph.edges) {
+    if (edge.target === nodeId && edge.condition && !evaluateCondition(edge.condition, {
+      items_count: nodeStates[edge.source]?.items_out || 0,
+      items_valid: 0,
+      items_invalid: 0,
+      entity_type: String(run.context.entity_type ?? ''),
+      source_name: String(run.context.source_name ?? ''),
+      dry_run: run.context.dry_run === true,
+    })) return finish('skipped')
+  }
+
+  const payload = {
+    dry_run: run.context.dry_run || false,
+    batch_size: run.context.batch_size || 50,
+    ...node.data?.config,
+    pipeline_run_id: run.id,
+    node_id: nodeId,
+  }
+  if (claim.tag_commit) {
+    const { data: items, error } = await supabase.rpc('commit_reliable_pipeline_tags', {
+      ...attempt,
+      p_limit: Number(payload.batch_size),
+      p_dry_run: payload.dry_run === true,
+    })
+    if (error) return finish('retry', 0, error.message)
+    return jsonResponse({
+      success: true, node: nodeId, status: items == null ? 'ignored' : 'completed', items_out: items,
+    }, 200, req)
+  }
+
+  const { data: nodeType, error: lookupError } = await supabase.from('pipeline_node_types')
+    .select('edge_function').eq('slug', node.type).maybeSingle()
+  if (lookupError) return finish('failed', 0, lookupError.message)
+
+  if (!nodeType?.edge_function) {
+    let itemsOut: number
+    try {
+      const result = await handleBuiltInNode(supabase, node, run, nodeStates)
+      itemsOut = result.items_out
+    } catch (error) {
+      return finish('failed', 0, (error as Error).message)
+    }
+    return finish('completed', itemsOut)
+  }
+
+  let response: Response
+  let result: Record<string, unknown>
+  try {
+    const internalSecret = Deno.env.get('INTERNAL_INVOKE_SECRET')
+    response = await fetch(`${supabaseUrl}/functions/v1/${nodeType.edge_function}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceKey}`,
+        ...(internalSecret ? { 'X-Internal-Secret': internalSecret } : {}),
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout((graph.timeout_seconds ?? 150) * 1000),
+    })
+    result = await response.json()
+  } catch (error) {
+    return finish('uncertain', 0, `Interrupted step requires operator review: ${(error as Error).message}`)
+  }
+  const message = typeof result?.error === 'string' ? result.error : `HTTP ${response.status}`
+  if (response.status >= 500) return finish('uncertain', 0, `Step requires operator review: ${message}`)
+  if (!response.ok || result?.success === false) return finish('failed', 0, message)
+  if (!result || typeof result !== 'object' || Array.isArray(result)) {
+    return finish('uncertain', 0, 'Invalid step response requires operator review')
+  }
+  const items = Number(result.items || result.items_processed || result.items_total || 0)
+  return finish('completed', Number.isSafeInteger(items) && items >= 0 && items <= 2147483647 ? items : 0)
+}
+
 /**
  * Node failure disposition. Nodes with config.continue_on_error (e.g. one
  * merchant source in a multi-source fan-in) mark themselves failed+tolerated
@@ -407,7 +531,7 @@ async function handleNodeFailure(
     .eq('id', runId)
 
   // Skip all downstream nodes so they don't hang as 'pending'
-  skipDescendants(nodes, edges, nodeId, nodeStates)
+  skipDescendants(edges, nodeId, nodeStates)
   await updateNodeStates(supabase, runId, nodeStates)
 
   return jsonResponse({
@@ -558,7 +682,6 @@ function hashCode(s: string): number {
 
 /** Mark all transitive descendants of a failed node as 'skipped' */
 function skipDescendants(
-  nodes: PipelineNode[],
   edges: PipelineEdge[],
   failedNodeId: string,
   nodeStates: Record<string, NodeState>
