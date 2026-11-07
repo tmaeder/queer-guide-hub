@@ -33,6 +33,25 @@ export interface PackIndexEntry {
   /** lowercase hex sha256 of the pack file's bytes */
   sha256: string;
   venues: number;
+  /**
+   * Optional vector-tile extract for the city (a PMTiles archive). Lives in
+   * the signed index, so its digest is authenticated by the same signature.
+   * Absent = the map stays online-only for this city.
+   */
+  tiles?: PackTiles;
+}
+
+/** [west, south, east, north] in degrees */
+export type Bbox = [number, number, number, number];
+
+export interface PackTiles {
+  /** file name next to index.json */
+  file: string;
+  bytes: number;
+  /** lowercase hex sha256 of the archive */
+  sha256: string;
+  bbox: Bbox;
+  maxzoom: number;
 }
 
 export interface PackIndex {

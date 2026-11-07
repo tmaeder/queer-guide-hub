@@ -36,6 +36,22 @@ export function checkPack(text, entry) {
   return null;
 }
 
+/** The tile archive an entry pins, if it has one. */
+export function checkTiles(bytes, entry) {
+  const t = entry.tiles;
+  if (!t) return null;
+  if (bytes.length !== t.bytes) return `${entry.id} tiles: ${bytes.length} bytes, index says ${t.bytes}`;
+  const digest = bytesToHex(sha256(bytes));
+  if (digest !== t.sha256) return `${entry.id} tiles: sha256 ${digest.slice(0, 12)}… ≠ index ${t.sha256.slice(0, 12)}…`;
+  return null;
+}
+
+async function getBytes(url) {
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
+  return new Uint8Array(await res.arrayBuffer());
+}
+
 async function get(url) {
   // no-store: verify what the CDN serves now, not what this runner cached.
   const res = await fetch(url, { cache: 'no-store' });
@@ -61,9 +77,14 @@ async function main() {
   for (const entry of index.packs) {
     const err = checkPack(await get(`${base}/${encodeURIComponent(entry.id)}.json`), entry);
     if (err) problems.push(err);
+    if (entry.tiles) {
+      const tilesErr = checkTiles(await getBytes(`${base}/${encodeURIComponent(entry.tiles.file)}`), entry);
+      if (tilesErr) problems.push(tilesErr);
+    }
   }
   if (problems.length) throw new Error(`${problems.length} pack(s) do not match the index:\n  ${problems.join('\n  ')}`);
-  console.log(`OK: ${index.packs.length} packs verified at ${base} (index ${index.generated_at})`);
+  const withTiles = index.packs.filter((p) => p.tiles).length;
+  console.log(`OK: ${index.packs.length} packs (${withTiles} with map tiles) verified at ${base} (index ${index.generated_at})`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
