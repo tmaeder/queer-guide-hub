@@ -34,6 +34,7 @@
 
 import { inferEventType } from './berlin-events-parse.ts'
 import { stripTagsAndDecode } from './html-entities.ts'
+import { trimTrailingSlashes } from './trim-trailing-slashes.ts'
 
 export interface G4uCard {
   slug: string
@@ -117,7 +118,7 @@ export function parseListing(html: string): G4uCard[] {
     const href = /href='(https:\/\/www\.gaytravel4u\.com\/event\/[^']+)'/.exec(art)
     const titleM = /slide-entry-title entry-title'[^>]*><a[^>]*>([\s\S]*?)<\/a>/.exec(art)
     if (!href || !titleM) continue
-    const slug = href[1].replace(/\/+$/, '').split('/').pop() ?? ''
+    const slug = trimTrailingSlashes(href[1]).split('/').pop() ?? ''
     if (!slug || seen.has(slug)) continue
     seen.add(slug)
 
