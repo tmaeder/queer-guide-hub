@@ -1135,16 +1135,19 @@ h2:not(.font-sans),
   }
 }
 
-/* Route transition (RouteFade). CSS-only replacement for the framer-motion
-   MotionPage: the incoming route paints immediately (no exit-animation wait)
-   and fades in. No fill-mode — if the animation never runs, content is
-   simply visible. */
-.route-fade {
-  animation: fade-in var(--motion-fast) cubic-bezier(0.22, 1, 0.36, 1);
+/* Start the arrival when the route's Suspense fallback leaves. Opacity keeps
+   the page visible throughout and leaves fixed descendants viewport-relative. */
+@keyframes route-arrive {
+  from {
+    opacity: 0.78;
+  }
+  to {
+    opacity: 1;
+  }
 }
-@media (prefers-reduced-motion: reduce) {
-  .route-fade {
-    animation: none;
+@media (prefers-reduced-motion: no-preference) {
+  .route-fade:not(:has(> [data-route-loading])) {
+    animation: route-arrive var(--motion-route-arrival) cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
@@ -1857,26 +1860,6 @@ h2:not(.font-sans),
     transform: none;
   }
 }
-
-/* ── Paper feed ────────────────────────────────────────────────────────
-   Route transition. Replaces the flat .route-fade crossfade with a short
-   vertical feed, the way a sheet advances through a press. No fill-mode
-   dependency: if the animation never runs the page is simply visible. */
-/* ── Station arrival ───────────────────────────────────────────────────
-   The route transition. Replaces `paper-feed`, whose own comment described
-   it as "the way a sheet feeds through a press" — a printing metaphor left
-   over from the retired PASTE-UP identity.
-
-   A train does not fade in; it decelerates and comes to rest. So the easing
-   is pure deceleration (ease.decel from lib/animation) rather than the
-   smooth in-out curve, and the travel is short — content settles the last
-   few pixels into the platform rather than sliding across it.
-
-   No overshoot. A bouncing carriage is a derailment, and elastic easing is
-   banned outside the joy zone anyway.
-
-   Animates only FROM a displaced state, so if animations never run (reduced
-   motion, headless, print) content renders at its natural resting position. */
 
 /* ── Route travel ─────────────────────────────────────────────────────
    Lines draw only when they communicate a route or an interaction. Ambient

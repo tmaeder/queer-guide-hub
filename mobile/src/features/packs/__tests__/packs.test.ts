@@ -18,6 +18,7 @@ import {
   getMeta,
   installPack,
   listInstalled,
+  listTiles,
   migrate,
   offlineHotlines,
   removePack,
@@ -29,7 +30,9 @@ import {
   venuesInBounds,
 } from '../store';
 import { sha256Hex, verifyIndex, verifyPack } from '../verify';
-import { mergeRows } from '../rows';
+import { downloadMb, mergeRows } from '../rows';
+import { bboxContains, type TileFiles } from '../tiles';
+import { sha256 } from '@noble/hashes/sha2.js';
 
 const secret = ed25519.utils.randomSecretKey();
 const PUB = bytesToHex(ed25519.getPublicKey(secret));
@@ -342,6 +345,124 @@ describe('pack service', () => {
     expect(await listInstalled(db)).toEqual([]);
   });
 
+  describe('map tiles', () => {
+    const archive = new Uint8Array([0x50, 0x4d, 1, 2, 3, 4, 5, 6]);
+    const tilesMeta = {
+      file: 'zuerich.pmtiles',
+      bytes: archive.length,
+      sha256: bytesToHex(sha256(archive)),
+      bbox: [8.4, 47.3, 8.65, 47.45] as [number, number, number, number],
+      maxzoom: 15,
+    };
+    /** In-memory stand-in for tilesFs: records what reached disk. */
+    function fakeFiles(...archives: Uint8Array[]) {
+      const disk = new Map<string, Uint8Array>();
+      const urls: string[] = [];
+      const files: TileFiles = {
+        async download(url, id) {
+          urls.push(url);
+          const uri = `file:///docs/packs/${id}-${urls.length}.pmtiles`;
+          disk.set(uri, archives[urls.length - 1] ?? archives[0]!);
+          return uri;
+        },
+        async *chunks(uri) {
+          const b = disk.get(uri)!;
+          yield b.slice(0, 3);
+          yield b.slice(3);
+        },
+        async remove(uri) {
+          disk.delete(uri);
+        },
+      };
+      return { files, disk, urls };
+    }
+
+    it('downloads and records a verified archive with the pack', async () => {
+      const db = memoryDb();
+      await migrate(db);
+      const p = pack();
+      const text = JSON.stringify(p);
+      const entry = { ...entryFor(text, p), tiles: tilesMeta };
+      const { files, disk, urls } = fakeFiles(archive);
+      const svc = createPackService(db, config, host({ 'zuerich.json': text }).get, files);
+      await svc.install(entry);
+      expect(urls).toEqual(['https://packs.example/v1/zuerich.pmtiles']);
+      expect([...disk.keys()]).toEqual(['file:///docs/packs/zuerich-1.pmtiles']);
+      expect(await listTiles(db)).toEqual([
+        { pack_id: 'zuerich', uri: 'file:///docs/packs/zuerich-1.pmtiles', bbox: tilesMeta.bbox, maxzoom: 15 },
+      ]);
+
+      await svc.remove('zuerich');
+      expect(disk.size).toBe(0);
+      expect(await listTiles(db)).toEqual([]);
+    });
+
+    it('refuses a tampered archive and leaves nothing behind', async () => {
+      const db = memoryDb();
+      await migrate(db);
+      const p = pack();
+      const text = JSON.stringify(p);
+      const tampered = archive.slice();
+      tampered[5] = 99;
+      const { files, disk } = fakeFiles(tampered);
+      const svc = createPackService(db, config, host({ 'zuerich.json': text }).get, files);
+      await expect(svc.install({ ...entryFor(text, p), tiles: tilesMeta })).rejects.toMatchObject({
+        code: 'digest_mismatch',
+      });
+      expect(disk.size).toBe(0);
+      expect(await listInstalled(db)).toEqual([]);
+      expect(await listTiles(db)).toEqual([]);
+    });
+
+    it('a pack rebuilt without tiles drops the old archive', async () => {
+      const db = memoryDb();
+      await migrate(db);
+      const p = pack();
+      const text = JSON.stringify(p);
+      const { files, disk } = fakeFiles(archive);
+      const svc = createPackService(db, config, host({ 'zuerich.json': text }).get, files);
+      await svc.install({ ...entryFor(text, p), tiles: tilesMeta });
+      await svc.install(entryFor(text, p));
+      expect(disk.size).toBe(0);
+      expect(await listTiles(db)).toEqual([]);
+    });
+
+    it('keeps the installed archive when a replacement fails verification or database commit', async () => {
+      const db = memoryDb();
+      await migrate(db);
+      const p = pack();
+      const text = JSON.stringify(p);
+      const entry = { ...entryFor(text, p), tiles: tilesMeta };
+      const { files, disk } = fakeFiles(archive, archive.slice(0, -1), archive);
+      const get = host({ 'zuerich.json': text }).get;
+      const svc = createPackService(db, config, get, files);
+      await svc.install(entry);
+      const installed = await listTiles(db);
+
+      await expect(svc.install(entry)).rejects.toMatchObject({ code: 'digest_mismatch' });
+      const failingDb = { ...db, transaction: jest.fn().mockRejectedValue(new Error('disk full')) };
+      await expect(createPackService(failingDb, config, get, files).install(entry)).rejects.toThrow('disk full');
+      expect(await listTiles(db)).toEqual(installed);
+      expect([...disk.keys()]).toEqual([installed[0]!.uri]);
+    });
+
+    it('the index verifier rejects malformed tile metadata but accepts entries without it', () => {
+      const p = pack();
+      const text = JSON.stringify(p);
+      const ok: PackIndex = { format: 1, generated_at: 'x', packs: [{ ...entryFor(text, p), tiles: tilesMeta }] };
+      expect(verifyIndex(signed(ok), PUB).packs[0]!.tiles).toEqual(tilesMeta);
+      const badBbox = { ...ok, packs: [{ ...ok.packs[0]!, tiles: { ...tilesMeta, bbox: [9, 47, 8, 48] } }] };
+      expect(code(() => verifyIndex(signed(badBbox as PackIndex), PUB))).toBe('bad_format');
+      const badFile = { ...ok, packs: [{ ...ok.packs[0]!, tiles: { ...tilesMeta, file: '../x.pmtiles' } }] };
+      expect(code(() => verifyIndex(signed(badFile as PackIndex), PUB))).toBe('bad_format');
+    });
+
+    it('bboxContains', () => {
+      expect(bboxContains(tilesMeta.bbox, 8.54, 47.37)).toBe(true);
+      expect(bboxContains(tilesMeta.bbox, 13.4, 52.5)).toBe(false);
+    });
+  });
+
   it('refuses to run against a non-https host', async () => {
     const db = memoryDb();
     await migrate(db);
@@ -395,5 +516,19 @@ describe('mergeRows', () => {
       ['berlin', true, false],
       ['old', false, true],
     ]);
+  });
+});
+
+describe('downloadMb', () => {
+  const base = { id: 'x', name: 'X', country: 'CH', generated_at: 'x', sha256: 'a'.repeat(64), venues: 1 };
+  it('counts the map archive, and never shows 0 MB', () => {
+    expect(downloadMb({ ...base, bytes: 234_494 })).toBe(1);
+    expect(
+      downloadMb({
+        ...base,
+        bytes: 634_971,
+        tiles: { file: 'x.pmtiles', bytes: 88_918_664, sha256: 'b'.repeat(64), bbox: [13, 52, 14, 53], maxzoom: 15 },
+      }),
+    ).toBe(90);
   });
 });

@@ -117,8 +117,10 @@
     "unlockPrompt": "Unlock"
   },
   "packs": {
+    "size": "{{mb}} MB download",
+    "withMap": "includes map",
     "title": "Offline cities",
-    "body": "Download a city to keep its places and crisis lines on this device. Map tiles and photos still need a connection.",
+    "body": "Download a city to keep its places and crisis lines on this device. Cities with a map work fully offline; photos and map labels still need a connection.",
     "notConfigured": "Offline cities aren't available in this build yet.",
     "loading": "Checking available cities…",
     "error": "Couldn't check available cities.",
@@ -155,7 +157,7 @@
     "terms": "Terms",
     "privacy": "Privacy Policy",
     "consentRequired": "Accept the terms and confirm you are 18 or older to create an account.",
-    "forgot": "Forgot password? Reset it on the web",
+    "forgot": "Forgot password? Email me a reset link",
     "errors": {
       "invalidCredentials": "Email or password is wrong.",
       "alreadyRegistered": "An account with this email already exists. Sign in instead.",
@@ -163,8 +165,21 @@
       "rateLimited": "Too many attempts. Wait a minute and try again.",
       "captcha": "Sign-in needs a verification step the app can't show yet. Use queer.guide on the web for now.",
       "network": "No connection. Check your network and try again.",
-      "unknown": "Something went wrong. Try again."
-    }
+      "unknown": "Something went wrong. Try again.",
+      "otpInvalid": "That code is wrong or expired. Request a new one.",
+      "noAccount": "No account uses this email. Create one instead."
+    },
+    "code": "Code",
+    "sendCode": "Email me a code",
+    "verifyCode": "Continue",
+    "codeSent": "We sent a 6-digit code to {{email}}. It expires soon.",
+    "codeInvalid": "Enter the {{n}}-digit code from the email.",
+    "changeEmail": "Use a different email",
+    "usePassword": "Use a password instead",
+    "useCode": "Use an email code instead",
+    "resetSent": "If an account exists for this email, a reset link is on its way. Open it on this phone.",
+    "newPassword": "New password",
+    "setPassword": "Set new password"
   },
   "account": {
     "title": "Account",

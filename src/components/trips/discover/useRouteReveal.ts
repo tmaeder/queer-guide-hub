@@ -27,8 +27,8 @@ export const LEG_STAGGER_MS = 90;
  * page shows a static default line. CLAUDE.md keeps travel content free of
  * decorative motion because it is safety-adjacent; this is result-arrival
  * feedback on an explicit user action, which is the functional category the
- * design system already runs on this route (RouteFade wraps every route in
- * `.station-arrive`, Button's loading state is a TrackLoader). Firing it on
+ * design system already runs on this route (RouteFade handles page
+ * arrivals, Button's loading state is a TrackLoader). Firing it on
  * page load would move it out of that category.
  */
 export function useRouteReveal(count: number, generation: number) {
