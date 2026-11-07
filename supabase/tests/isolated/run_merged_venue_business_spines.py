@@ -61,9 +61,11 @@ if len(paths) != 1:
     raise SystemExit('Exactly one merged venue business spine migration required')
 selector = ROOT / 'supabase/migrations/99991792814000_business_spine_keyed_selector.sql'
 alias_migration = ROOT / 'supabase/migrations/99991794051729_review_contact_bound_venue_business_aliases.sql'
+street_migration = ROOT / 'supabase/migrations/99991794071000_review_audited_venue_street_aliases.sql'
 fixtures = Path(__file__).parent
 sql = schema + paths[0].read_text() + selector.read_text() + (fixtures / 'merged_venue_business_spines.sql').read_text()
 sql += alias_migration.read_text() + (fixtures / 'contact_bound_venue_business_aliases.sql').read_text()
+sql += street_migration.read_text() + (fixtures / 'audited_venue_street_aliases.sql').read_text()
 with tempfile.TemporaryDirectory(prefix='qg-business-spines-') as tmp:
     data = Path(tmp) / 'data'
     subprocess.run([binary('initdb'), '-D', str(data), '-A', 'trust', '--no-locale', '--wal-segsize=1'], check=True, stdout=subprocess.DEVNULL)

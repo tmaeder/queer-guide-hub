@@ -150,7 +150,7 @@ describe('durable instruction mail transport', () => {
     const db = database(),
       fetcher = vi
         .fn<typeof fetch>()
-        .mockResolvedValue(Response.json({ status: 'accepted', id: 'provider-accepted' }));
+        .mockResolvedValue(Response.json({ status: 'accepted', id: '<canary-123@queer.guide>' }));
     expect(await dispatchDomainInstructionMail(db, config, fetcher, id)).toMatchObject({ sent: 1 });
     expect(db.rpc.mock.calls[0]).toEqual([
       'claim_redirect_domain_instruction_mail',
@@ -181,7 +181,7 @@ describe('durable instruction mail transport', () => {
         p_id: id,
         p_lease: lease,
         p_outcome: 'sent',
-        p_provider_id: 'provider-accepted',
+        p_provider_id: '<canary-123@queer.guide>',
         p_retry_after: null,
         p_retry: true,
       },
