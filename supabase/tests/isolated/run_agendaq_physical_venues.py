@@ -101,6 +101,24 @@ begin
  assert not exists(select 1 from events e join fixture_ids f on f.e=e.id where f.n>100 and e.venue_id is not null);
 end $test$;
 """
+sql += """
+create schema api_private;
+create schema auth;
+create function auth.uid() returns uuid language sql as 'select null::uuid';
+create or replace function city_canonical_key(text) returns text language sql immutable
+ as $key$select lower(trim(regexp_replace($1,'[[:space:]]+',' ','g')))$key$;
+alter table events add column address text;
+alter table event_quality_issues add column detector text default 'event-quality-scan',
+ add column evidence_hash text;
+alter table event_quality_current add column issue_codes text[];
+create table admin_review_repairs(entity_type text,entity_id uuid,reason text,previous_value jsonb,next_value jsonb);
+create function event_quality_findings(p_id uuid) returns table(issue_code text,evidence jsonb)
+ language sql stable as 'select ''NAMED_VENUE_UNLINKED'',jsonb_build_object(''venue_name'',e.venue_name)
+ from public.events e where e.id=p_id and e.venue_name is not null and e.venue_id is null';
+"""
+sql += (ROOT / 'supabase/migrations/99991794045601_review_agendaq_publisher_location_labels.sql').read_text()
+sql += (Path(__file__).parent / 'agendaq_publisher_location_labels.sql').read_text()
+
 with tempfile.TemporaryDirectory(prefix='qg-agendaq-matching-') as tmp:
     data = Path(tmp) / 'data'
     subprocess.run([binary('initdb'), '-D', str(data), '-A', 'trust', '--no-locale'], check=True, stdout=subprocess.DEVNULL)
