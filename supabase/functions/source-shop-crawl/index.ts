@@ -6,6 +6,7 @@ import { extractContent } from '../_shared/extract-client.ts'
 import { splitAuthor } from '../_shared/book-title.ts'
 import { allowedSitemap, decodeSitemapBytes, readCanonicalPageUrl, readCatalogProductLinks, readCrawlCategoryLabels, readCrawlImageUrl, readCrawlMakerBrand, readMagentoGalleryImages, readSelectedProduct, readSitemapLocations, readStaticSchema, type Selectors } from './crawl-support.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 // ============================================================
 // source-shop-crawl — ingest storefronts that expose NO machine feed.
@@ -165,7 +166,7 @@ function entityKey(url: string, cfg: CrawlConfig): string | null {
     if (m) return m[1]
   }
   try {
-    const seg = new URL(url).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop()
+    const seg = trimTrailingSlashes(new URL(url).pathname).split('/').filter(Boolean).pop()
     return seg ? decodeURIComponent(seg) : null
   } catch { return null }
 }
