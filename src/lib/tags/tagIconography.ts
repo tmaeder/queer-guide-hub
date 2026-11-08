@@ -103,7 +103,7 @@ export const STOP_GLYPHS_BY_LINE: Record<string, Record<string, TransitIconName>
     subcultures: 'after-dark', // 128
     'media-film-music': 'tune', // 120
     'art-literature-zines': 'gallery', // 88
-    'drag-performance': 'theater', // 47
+    'drag-performance': 'theater',
     'sports-recreation': 'gym', // 36
     'symbols-flags': 'pride', // 52 — the `pride` path is a flag on a pole
   },
@@ -151,7 +151,7 @@ export const STOP_GLYPHS: Record<string, TransitIconName> = Object.assign(
  * `tagIconography.test.ts` assert exactly that: **no entry here may equal its
  * own stop's glyph.** Redundancy is a test failure, not a matter of taste.
  *
- * Every mark already exists in the set. Each pick is a term whose own object or
+ * Each pick is a term whose own object or
  * concept is drawn — the implement, the garment, the room, the flag — so the
  * glyph is about THAT term and not its neighbourhood. Terms with no honestly
  * distinct mark are deliberately absent and inherit their stop; a forced pick
@@ -257,7 +257,97 @@ export const TERM_GLYPHS_BY_STOP: Record<string, Record<string, TransitIconName>
 
   'media-film-music': { actor: 'theater', 'film-festival': 'ticket' },
 
-  'drag-performance': { voguing: 'disco' },
+  'drag-performance': {
+    // Performance and programming.
+    drag: 'stage',
+    'drag-culture': 'community',
+    revue: 'stage',
+    'drag-show': 'ticket',
+    burlesque: 'stage',
+    'queer-performance': 'stage',
+    'queer-performance-art': 'gallery',
+    'rupaul-s-drag-race': 'screen',
+    'werk-room': 'hanger',
+    'drag-conventions': 'events',
+    'drag-event': 'events',
+    'drag-brunch-queens': 'restaurant',
+    circus: 'circus-tent',
+    circuses: 'circus-tent',
+
+    // Performer roles, titles and community.
+    'drag-queen': 'crown',
+    'drag-king': 'crown',
+    'afab-queen-assigned-female-at-birth-queen': 'crown',
+    'ballroom-queen': 'crown',
+    bioqueen: 'crown',
+    'faux-queen': 'crown',
+    'trans-queens': 'crown',
+    'nonbinary-drag-performer': 'profile',
+    dragperformer: 'profile',
+    entertainer: 'profile',
+    comedian: 'smile',
+    'comedy-queen': 'smile',
+    escapologist: 'unlock',
+    vedette: 'sparkle',
+    legendary: 'award',
+    'drag-community': 'community',
+    'drag-house': 'home-base',
+    'drag-family': 'share',
+    'drag-mother': 'share',
+    'drag-daughter': 'share',
+    'drag-ambassador': 'megaphone',
+    'drag-activism': 'march',
+    'drag-career': 'briefcase',
+
+    // Movement, sound and competition.
+    'ballroom-culture': 'dance-steps',
+    voguing: 'dance-steps',
+    'death-drop': 'dance-steps',
+    'go-go-boys': 'dance-steps',
+    'sissy-that-walk': 'music',
+    'lip-sync-assassins': 'mic',
+    'lip-sync': 'mic',
+    singer: 'mic',
+    'drag-queen-pageant': 'award',
+    'drag-king-competition': 'award',
+    'drag-competition': 'award',
+    'pageant-queen': 'award',
+    'beauty-queen': 'award',
+
+    // Appearance, preparation and the runway.
+    'beat-face': 'makeup-compact',
+    'drag-king-makeup': 'makeup-compact',
+    'prosthetic-makeup': 'makeup-compact',
+    'baking-makeup': 'makeup-compact',
+    'drag-makeup': 'makeup-compact',
+    'drag-lashes': 'eye',
+    'blocking-brows': 'eye',
+    'glam-queen': 'jewelry',
+    'camp-queen': 'sparkle',
+    'look-queen': 'apparel',
+    'drag-king-fashion-designer': 'hanger',
+    'drag-wardrobe': 'hanger',
+    'drag-jewelry': 'jewelry',
+    'drag-shoes-platforms-stilettos': 'platform-heel',
+    'drag-runway': 'runway',
+    'werk-the-runway': 'runway',
+    breastplate: 'apparel',
+    'drag-persona': 'identity',
+    'gender-illusion': 'identity',
+    'gender-illusionist': 'identity',
+    'androgynous-drag': 'apparel',
+    'drag-kinging': 'stage',
+    'drag-transformation': 'makeup-compact',
+
+    // History, language and etiquette.
+    'drag-king-history': 'history',
+    'drag-etiquette': 'list',
+    'slang-from-drag-culture': 'chat',
+    'category-is': 'megaphone',
+    werk: 'chat',
+    'shantay-you-stay': 'chat',
+    'charisma-uniqueness-nerve-and-talent-c-u-n-t': 'chat',
+  },
 
   'events-scene': { sexparty: 'disco', 'outdoor-event': 'outdoor', clubnight: 'disco' },
 
@@ -299,12 +389,8 @@ export const TERM_GLYPHS_BY_STOP: Record<string, Record<string, TransitIconName>
 
   'slang-terminology': { spanking: 'paddle', femme: 'salon', 'rainbow-flag': 'rainbow' },
 
-  // Ballroom and the leather scene live HERE, not under Drag & Performance —
-  // checked against the corpus rather than guessed, which is also what makes
-  // `theater` a real pick here instead of a restatement of drag's own mark.
   subcultures: {
-    ballroom: 'theater',
-    'ballroom-culture': 'theater',
+    ballroom: 'dance-steps',
     'leather-community': 'gear-fetish',
     jock: 'gym',
     'japanese-culture': 'cafe',

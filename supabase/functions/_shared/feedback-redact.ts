@@ -75,16 +75,3 @@ export function redactSubmissionForClaude<T extends { data?: FeedbackData; [k: s
   };
   return { ...submission, data: cleaned };
 }
-
-/**
- * Hash a prompt deterministically so dispatch_claude_routine can dedupe
- * identical re-dispatches. Browser-compatible (Deno + browser both have
- * crypto.subtle).
- */
-export async function hashPrompt(prompt: string): Promise<string> {
-  const enc = new TextEncoder();
-  const buf = await crypto.subtle.digest('SHA-256', enc.encode(prompt));
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
