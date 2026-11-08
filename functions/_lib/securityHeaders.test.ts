@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   SONNER_STYLE_HASH,
   EMPTY_STYLE_HASH,
+  FORCE_GRAPH_STYLE_HASHES,
   CSP_REPORT_GROUP,
   CSP_REPORT_PATH,
   STATIC_SECURITY_HEADERS,
@@ -47,12 +48,14 @@ describe('security headers', () => {
   it('requires a nonce for stylesheet blocks, retaining only the attribute exception', () => {
     const policy = directives(buildContentSecurityPolicy('abc'));
     expect(policy.get('style-src')).toBe(
-      `'self' 'nonce-abc' ${SONNER_STYLE_HASH} ${EMPTY_STYLE_HASH}`,
+      `'self' 'nonce-abc' ${SONNER_STYLE_HASH} ${EMPTY_STYLE_HASH} ${FORCE_GRAPH_STYLE_HASHES.join(' ')}`,
     );
     expect(policy.get('style-src-attr')).toBe("'unsafe-inline'");
     const file = readFileSync(resolve(process.cwd(), 'public/_headers'), 'utf8');
     const fallback = directives(file.match(/^ {2}Content-Security-Policy: (.+)$/m)?.[1] ?? '');
-    expect(fallback.get('style-src')).toBe(`'self' ${SONNER_STYLE_HASH} ${EMPTY_STYLE_HASH}`);
+    expect(fallback.get('style-src')).toBe(
+      `'self' ${SONNER_STYLE_HASH} ${EMPTY_STYLE_HASH} ${FORCE_GRAPH_STYLE_HASHES.join(' ')}`,
+    );
     expect(fallback.get('style-src-attr')).toBe("'unsafe-inline'");
   });
 
@@ -65,6 +68,21 @@ describe('security headers', () => {
     ).toBeTruthy();
     const css = JSON.parse(literal!);
     expect(`'sha256-${createHash('sha256').update(css).digest('base64')}'`).toBe(SONNER_STYLE_HASH);
+  });
+
+  it('authorizes only the exact installed force-graph and float-tooltip stylesheets', () => {
+    const hashes = ['force-graph/dist/force-graph.mjs', 'float-tooltip/dist/float-tooltip.mjs'].map(
+      (f) => {
+        const file = readFileSync(resolve(process.cwd(), 'node_modules', f), 'utf8');
+        const literal = file.match(/var css_\w+ = ("(?:[^"\\]|\\.)*");/)?.[1];
+        expect(
+          literal,
+          `${f} changed its injector; re-audit before updating the allowlist`,
+        ).toBeTruthy();
+        return `'sha256-${createHash('sha256').update(JSON.parse(literal!)).digest('base64')}'`;
+      },
+    );
+    expect(hashes).toEqual(FORCE_GRAPH_STYLE_HASHES);
   });
 
   it('reports CSP violations via report-uri and report-to, backed by Reporting-Endpoints', () => {
