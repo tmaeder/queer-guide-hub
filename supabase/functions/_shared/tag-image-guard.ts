@@ -31,14 +31,6 @@
 
 /** Sources that may illustrate a glossary entry, mirroring the DB vocabulary. */
 export type TagImageSource = 'wikidata:p18' | 'wikimedia' | 'pexels' | 'unsplash'
-
-export const TAG_IMAGE_SOURCES: readonly TagImageSource[] = [
-  'wikidata:p18',
-  'wikimedia',
-  'pexels',
-  'unsplash',
-] as const
-
 /**
  * Non-photographic Commons files. Narrower than queer-imagery-backfill's copy
  * on purpose: that one rejects `flag_of` and `.svg` because a milestone wants a
