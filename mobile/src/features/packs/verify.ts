@@ -14,7 +14,7 @@ import {
 
 const HEX = /^[0-9a-f]+$/i;
 
-export function isBbox(b: unknown): b is Bbox {
+function isBbox(b: unknown): b is Bbox {
   return (
     Array.isArray(b) &&
     b.length === 4 &&

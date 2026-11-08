@@ -7,7 +7,7 @@ import { tileFiles } from './tilesFs';
 
 const service = async () => createPackService(await packDb(), undefined, undefined, tileFiles);
 
-export const packKeys = {
+const packKeys = {
   index: ['packs', 'index'] as const,
   installed: ['packs', 'installed'] as const,
   tiles: ['packs', 'tiles'] as const,
