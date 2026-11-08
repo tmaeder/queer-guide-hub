@@ -1867,6 +1867,109 @@ const DEFS = {
     ],
   },
 
+  scales: {
+    name: 'Scales',
+    group: 'Signals',
+    hex: Y,
+    t: 'none',
+    use: 'Justice, legal rights and equal treatment.',
+    l: [
+      'M 50 18 C 49 39 49 60 50 81 M 29 82 C 40 81 60 81 71 82 M 24 28 C 38 27 62 27 76 28',
+      'M 26 29 C 21 40 16 50 14 59 C 19 69 33 69 38 59 C 36 49 30 39 26 29 M 14 59 C 22 58 30 58 38 59',
+      'M 74 29 C 70 39 64 49 62 59 C 67 69 81 69 86 59 C 84 50 79 40 74 29 M 62 59 C 70 58 78 58 86 59',
+    ],
+  },
+
+  'awareness-ribbon': {
+    name: 'Awareness Ribbon',
+    group: 'Signals',
+    hex: M,
+    t: 'none',
+    use: 'HIV and AIDS awareness, campaigns and remembrance.',
+    l: [
+      'M 33 82 C 47 65 63 44 65 30 C 67 20 60 15 50 15 C 40 15 33 20 35 30 C 36 38 41 46 46 53',
+      'M 55 65 C 61 71 67 78 70 85 C 72 81 77 79 80 76 C 69 64 59 52 51 40 C 47 34 45 29 46 25 C 49 23 53 23 56 25',
+      'M 38 60 C 35 67 27 73 21 77 C 24 80 29 83 33 82',
+    ],
+  },
+
+  'measuring-tape': {
+    name: 'Measuring Tape',
+    group: 'Market',
+    hex: Y,
+    t: 'none',
+    use: 'Clothing sizes, garment fit and measurements.',
+    l: [
+      'M 16 35 C 36 34 64 34 84 35 C 85 45 85 56 84 66 C 64 67 36 67 16 66 C 15 56 15 45 16 35 Z',
+      'M 32 35 C 31 40 31 46 32 51 M 50 35 C 49 43 49 50 50 58 M 68 35 C 67 40 67 46 68 51',
+    ],
+  },
+
+  'musical-note': {
+    name: 'Musical Note',
+    group: 'Events',
+    hex: Y,
+    t: 'none',
+    use: 'Music genres, musicians and live music.',
+    l: [
+      'M 41 66 C 43 48 43 33 41 23 C 54 20 67 17 80 17 C 82 30 82 48 80 60',
+      'M 42 37 C 53 34 67 31 81 31',
+      'M 41 66 C 43 73 33 81 24 80 C 16 79 15 72 22 67 C 29 61 38 61 41 66 Z',
+      'M 80 60 C 82 67 72 75 63 74 C 55 73 54 66 61 61 C 68 55 77 55 80 60 Z',
+    ],
+  },
+
+  ball: {
+    name: 'Ball',
+    group: 'Events',
+    hex: Y,
+    t: 'none',
+    use: 'Ball sports, teams and participation.',
+    l: [
+      ring(50, 50, 33),
+      'M 27 27 C 32 54 46 68 72 75 M 76 30 C 51 34 35 50 27 74',
+    ],
+  },
+
+  'ballot-box': {
+    name: 'Ballot Box',
+    group: 'Community',
+    hex: G,
+    t: 'none',
+    use: 'Voting, elections and suffrage.',
+    l: [
+      'M 37 43 C 31 36 26 28 22 21 C 36 18 52 15 67 15 C 73 21 77 31 81 39 C 75 38 68 41 63 43',
+      'M 31 47 C 43 46 57 46 69 47 M 20 49 C 18 59 18 72 20 82 C 40 83 60 83 80 82 C 82 72 82 59 80 49',
+      'M 20 49 C 22 45 24 43 27 42 M 80 49 C 79 45 76 42 73 42',
+    ],
+  },
+
+  microbe: {
+    name: 'Microbe',
+    group: 'Safety',
+    hex: C,
+    t: 'none',
+    use: 'Viruses, bacteria and other infectious organisms.',
+    l: [
+      ring(50, 50, 23),
+      'M 50 15 C 49 19 49 23 50 27 M 50 73 C 49 77 49 81 50 85 M 15 50 C 19 49 23 49 27 50 M 73 50 C 77 49 81 49 85 50',
+      'M 25 25 C 27 29 30 32 34 34 M 66 66 C 68 70 71 73 75 75 M 25 75 C 29 73 32 70 34 66 M 66 34 C 70 32 73 29 75 25',
+      `${ring(43, 44, 2)} ${ring(57, 56, 2)}`,
+    ],
+  },
+
+  seat: {
+    name: 'Seat',
+    group: 'Places',
+    hex: C,
+    t: 'none',
+    use: 'Seating, seated activities and chairs.',
+    l: [
+      'M 23 54 C 21 44 18 33 18 24 C 18 18 28 18 30 24 C 34 32 36 45 37 49 C 48 48 63 48 74 49 C 81 50 82 61 75 63 C 59 64 41 64 26 63 C 24 62 23 57 23 54 Z',
+      'M 30 64 C 30 71 28 78 25 84 M 69 64 C 72 70 74 77 75 84',
+    ],
+  },
+
   // Interface set (replaced lucide-react). One file per drawing batch.
   ...BATCH_A,
   ...BATCH_B,

@@ -42,6 +42,7 @@
 
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { lineForCategory, DEFAULT_CATEGORY_ICON } from '@/lib/tags/categoryIdentity';
+import { GLOSSARY_GLYPH_GROUPS } from './glossaryGlyphGroups';
 
 /**
  * Taxonomy stops, grouped by the line they hang off. Outer key is
@@ -183,7 +184,7 @@ export const TERM_GLYPHS_BY_STOP: Record<string, Record<string, TransitIconName>
     paddle: 'paddle',
     leather: 'gear-fetish',
     latex: 'gear-fetish',
-    jockstrap: 'underwear',
+    jockstrap: 'jockstrap',
     apparel: 'apparel',
   },
 
@@ -192,8 +193,8 @@ export const TERM_GLYPHS_BY_STOP: Record<string, Record<string, TransitIconName>
     lingerie: 'underwear',
     panties: 'underwear',
     'butt-plugs': 'toy-plug',
-    denim: 'apparel',
-    socks: 'apparel',
+    denim: 'trousers',
+    socks: 'sock',
   },
 
   'practices-play': {
@@ -399,7 +400,9 @@ export const TERM_GLYPHS_BY_STOP: Record<string, Record<string, TransitIconName>
 
 /** Flattened for lookup, keyed by `unified_tags.slug`. */
 export const TAG_GLYPH_OVERRIDES: Record<string, TransitIconName> = Object.assign(
-  {},
+  Object.fromEntries(
+    GLOSSARY_GLYPH_GROUPS.flatMap(([glyph, slugs]) => slugs.map((slug) => [slug, glyph] as const)),
+  ),
   ...Object.values(TERM_GLYPHS_BY_STOP),
 );
 
