@@ -6,7 +6,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { anthropicMessages } from '../_shared/anthropic-shim.ts';
-import { getCorsHeaders } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 import { checkUserRateLimit } from '../_shared/user-rate-limit.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -54,6 +54,17 @@ async function generateBatch(): Promise<string[]> {
 Deno.serve(async (req) => {
   const cors = corsFor(req);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  // The gateway's verify_jwt also accepts the public anon key, which has no
+  // `sub`, and checkUserRateLimit lets an unkeyable caller through. So without
+  // this check anyone could loop LLM calls with the key shipped in the site's
+  // JavaScript. Only signed-in users pick a username.
+  const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
+  const { data: userData } = token
+    ? await getServiceClient().auth.getUser(token)
+    : { data: { user: null } };
+  if (!userData?.user) {
+    return new Response(JSON.stringify({ error: 'Sign in required' }), { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } });
+  }
   if (!(await checkUserRateLimit(req, 'generate-usernames', 60, 3600))) {
     return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), { status: 429, headers: { ...cors, 'Content-Type': 'application/json' } });
   }
