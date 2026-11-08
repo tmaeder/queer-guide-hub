@@ -90,7 +90,7 @@ Real: „Schauspielerin **+** Aktivistin **+** Autorin". Ein Beruf-Feld, mehrere
    - Suchindex: `search_documents_index_personalities` nimmt `roles` auf (in der Migration).
    - ⏳ Offen: nach Live-Migration `types` regenerieren (Cast in PersonalityDetail entfernbar);
      Freitext der Website greift automatisch über den erweiterten Indexer.
-3. **Tool (`tools/person-db`) — GEBAUT hinter `ROLES_ENABLED`:** Type + `PERSONALITY_COLUMNS`
+3. **Tool (`tools/person-db`, 2026-11 entfernt) — GEBAUT hinter `ROLES_ENABLED`:** Type + `PERSONALITY_COLUMNS`
    (roles nur wenn Flag), Edit-Maske Feld „Tätigkeit(en)" (Chips), Detail-Feld, Freitext `fetchAlpha`
    trifft Beruf+Tätigkeit. **Nach Migration `ROLES_ENABLED = true` in `config.ts`.**
 

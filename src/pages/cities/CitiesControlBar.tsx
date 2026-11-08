@@ -2,9 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { EqualityChip } from './EqualityChip';
-import { EQUALITY_TIERS, CITIES_SORT_KEYS } from '@/utils/citiesFilter';
-import { EQUALITY_TIER_LABEL } from '@/utils/equalityScore';
-import type { CitiesSortKey, EqualityTier } from '@/utils/citiesFilter';
+import { CITIES_SORT_KEYS, type CitiesSortKey } from '@/utils/citiesFilter';
+import { EQUALITY_TIERS, EQUALITY_TIER_LABEL, type EqualityTier } from '@/utils/equalityScore';
 
 interface CitiesControlBarProps {
   q: string;

@@ -61,16 +61,3 @@ export function usePrideCalendar({ year, enabled = true }: UsePrideCalendarOptio
     },
   });
 }
-
-export function usePrideCalendarSummary(year: number) {
-  const { data, isLoading } = usePrideCalendar({ year });
-  const summary = data
-    ? {
-        total: data.length,
-        countries: new Set(data.map((e) => e.country).filter(Boolean)).size,
-        cities: new Set(data.map((e) => e.city).filter(Boolean)).size,
-        featured: data.filter((e) => e.is_featured).length,
-      }
-    : { total: 0, countries: 0, cities: 0, featured: 0 };
-  return { summary, isLoading };
-}

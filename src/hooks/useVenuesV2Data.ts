@@ -68,26 +68,6 @@ export function useFeaturedVenue() {
   return { venue: data ?? null, loading: isLoading };
 }
 
-export function useEditorsPicks(limit = 8) {
-  const { user } = useAuth();
-  const { data, isLoading } = useQuery({
-    queryKey: ['venues-editors-picks', user?.id ?? 'anon', limit],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('venues')
-        .select('*')
-        .eq('is_featured', true)
-        .neq('data_source', 'refuge-restrooms')
-        .neq('review_status', 'archived')
-        .is('duplicate_of_id', null)
-        .order('updated_at', { ascending: false })
-        .limit(limit);
-      return (data as Venue[]) ?? [];
-    },
-  });
-  return { venues: data ?? NONE, loading: isLoading };
-}
-
 export function useCityLeaderboard(cityId: string | null, limit = 5) {
   const { data, isLoading, isPlaceholderData } = useQuery({
     queryKey: ['venue-leaderboard', cityId, limit],
