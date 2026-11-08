@@ -153,13 +153,6 @@ export function isValidIsoCode(raw: unknown): boolean {
   const s = String(raw).trim().toUpperCase()
   return /^[A-Z]{2,3}$/.test(s)
 }
-
-export function normalizeIsoCode(raw: unknown): string | null {
-  if (!raw) return null
-  const s = String(raw).trim().toUpperCase()
-  return /^[A-Z]{2,3}$/.test(s) ? s : null
-}
-
 export function validateCountryNormalized(n: Record<string, unknown>): ValidationOutcome {
   const errors: string[] = []
   const warnings: string[] = []
