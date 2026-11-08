@@ -118,6 +118,7 @@ export async function fetchWikipediaImage(name: string): Promise<string | null> 
     return d.thumbnail?.source ?? d.originalimage?.source ?? null
   } catch { return null }
 }
+
 /**
  * Mirror an external image into our own Cloudflare R2 bucket (served from
  * img.queer.guide) and return the token-free public URL. We host NO images on

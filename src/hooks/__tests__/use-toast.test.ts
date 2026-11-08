@@ -49,9 +49,9 @@ describe('use-toast (sonner shim)', () => {
     expect(sonnerToast).toHaveBeenCalledWith('Just a note', expect.not.objectContaining({ description: 'Just a note' }));
   });
 
-  it('useToast exposes toasts (empty) and dismiss', () => {
+  it('useToast forwards dismiss to Sonner', () => {
     const { result } = renderHook(() => useToast());
-    expect(Array.isArray(result.current.toasts)).toBe(true);
-    expect(typeof result.current.dismiss).toBe('function');
+    result.current.dismiss('id-1');
+    expect(sonnerToast.dismiss).toHaveBeenCalledWith('id-1');
   });
 });
