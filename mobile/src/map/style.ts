@@ -17,7 +17,7 @@ import { dark, light, type TokenName } from '@/theme/tokens';
 export const TILE_URL =
   'https://protomaps-tiles.maeder-tobiassimon.workers.dev/planet/{z}/{x}/{y}.mvt';
 
-export const BASEMAP_SOURCE_ID = 'protomaps';
+const BASEMAP_SOURCE_ID = 'protomaps';
 const ASSETS_BASE = 'https://protomaps.github.io/basemaps-assets';
 
 /** Noto until the brand-glyph mirror exists (same rule as the web). */
@@ -62,7 +62,7 @@ const commaHsl = (channels: string, alpha?: number) => {
   return alpha == null ? `hsl(${h}, ${s}, ${l})` : `hsla(${h}, ${s}, ${l}, ${alpha})`;
 };
 
-export function paperFlavor(p: Palette): Flavor {
+function paperFlavor(p: Palette): Flavor {
   const P = commaHsl(p.background);
   const ink = (a?: number) => commaHsl(p.foreground, a);
   const inkMuted = () => commaHsl(p['muted-foreground']);
@@ -174,7 +174,7 @@ export function paperFlavor(p: Palette): Flavor {
   };
 }
 
-export const ROAD_WIDTH_SCALE = 1.5;
+const ROAD_WIDTH_SCALE = 1.5;
 const NON_STREET = /^roads_(rail|runway|taxiway|pier)$/;
 type LayerSpec = StyleSpecification['layers'][number];
 
@@ -191,7 +191,7 @@ function scaleWidth(value: unknown, k: number): unknown {
 }
 
 /** Same transform as the web's `subwayRoads()`: one round-capped stroke per street. */
-export function subwayRoads(input: LayerSpec[]): LayerSpec[] {
+function subwayRoads(input: LayerSpec[]): LayerSpec[] {
   return input.flatMap((layer) => {
     if (layer.type !== 'line' || layer['source-layer'] !== 'roads') return [layer];
     if (NON_STREET.test(layer.id)) return [layer];

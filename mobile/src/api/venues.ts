@@ -10,7 +10,7 @@ type VenueRow = Database['public']['Tables']['venues']['Row'];
 export const VENUE_LIST_COLUMNS =
   'id, slug, name, category, latitude, longitude, city, address, is_featured' as const;
 
-export const VENUE_DETAIL_COLUMNS =
+const VENUE_DETAIL_COLUMNS =
   'id, slug, name, category, latitude, longitude, city, country, address, description, website, phone, instagram, images, tags, accessibility_attributes' as const;
 
 export type VenueListItem = Pick<
@@ -105,7 +105,7 @@ async function fetchVenueBySlugOnline(slug: string): Promise<VenueDetail | null>
   return (data as VenueDetail | null) ?? null;
 }
 
-export const venueKeys = {
+const venueKeys = {
   bounds: (b: Bounds) => ['venues', 'bounds', ...b] as const,
   detail: (slug: string) => ['venues', 'detail', slug] as const,
 };
