@@ -129,7 +129,7 @@ jobs:
           # Pinned to match ci.yml's lint job: on newer node 22.x the eslint
           # flat-config loader crashes with ERR_INTERNAL_ASSERTION while
           # importing the CJS eslint.config.js (nightly reds 2026-07-19..21).
-          node-version: "22.20.0"
+          node-version: "22.22.2"
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci --prefer-offline --no-audit

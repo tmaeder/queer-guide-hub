@@ -18,10 +18,9 @@
 --
 -- The gate scripts read this table first and use a row only if computed_at is
 -- under 30 minutes old (3 missed refreshes). Anything else — no row, a stale
--- row, the table not existing yet — falls back to calling the RPC live with its
--- existing retry. So this cannot make a gate laxer than it is today: at worst a
--- gate sees data up to 30 minutes old, and a stopped cron degrades to the old
--- live behaviour rather than to a pass.
+-- row, a failed latest refresh, the table not existing yet — falls back to calling the RPC live with its
+-- existing retry. Gate results can be up to 30 minutes old. A stopped
+-- cron falls back to live evaluation once its snapshot expires.
 --
 -- result holds exactly what PostgREST returned before: a jsonb array of
 -- {gate, severity, failures, detail} rows for the three table functions, the
@@ -47,7 +46,7 @@ create or replace function public.refresh_gate_snapshots()
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $fn$
 declare
   v_rpc  text;
@@ -115,29 +114,10 @@ select cron.schedule(
   $cron$set statement_timeout='60s'; select public.refresh_gate_snapshots();$cron$
 );
 
--- Fill the table now rather than waiting for the first tick, so gates benefit
--- from the moment this applies.
-select public.refresh_gate_snapshots();
-
+-- Let cron fill the snapshots outside the migration transaction. Until then,
+-- callers use the existing live RPC and its retry.
 do $verify$
-declare
-  v_n   int;
-  v_bad int;
 begin
-  select count(*), count(*) filter (where computed_at is null or result is null)
-    into v_n, v_bad from public.gate_snapshots;
-  if v_n <> 4 then
-    raise exception 'P1 failed: expected 4 gate snapshot rows, found %', v_n;
-  end if;
-  if v_bad > 0 then
-    raise exception 'P2 failed: % gate snapshot(s) have no result: %', v_bad,
-      (select string_agg(rpc || ' -> ' || coalesce(last_error, '?'), '; ')
-         from public.gate_snapshots where result is null);
-  end if;
-  if (select jsonb_typeof(result) from public.gate_snapshots where rpc = 'release_gate_checks') <> 'array'
-     or (select jsonb_typeof(result) from public.gate_snapshots where rpc = 'tag_hygiene_stats') <> 'object' then
-    raise exception 'P3 failed: snapshot shapes do not match what PostgREST returns';
-  end if;
   if has_table_privilege('anon', 'public.gate_snapshots', 'select')
      or has_table_privilege('authenticated', 'public.gate_snapshots', 'select') then
     raise exception 'P4 failed: gate_snapshots is readable by anon/authenticated';

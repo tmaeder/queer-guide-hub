@@ -31,10 +31,17 @@ interface Props {
   tripPlaces: TripPlace[];
   tripDays?: TripDay[];
   tripId?: string;
+  canGenerate?: boolean;
   primaryCountryId?: string | null;
 }
 
-export function TripSafetyBriefing({ tripPlaces, tripDays, tripId, primaryCountryId }: Props) {
+export function TripSafetyBriefing({
+  tripPlaces,
+  tripDays,
+  tripId,
+  primaryCountryId,
+  canGenerate,
+}: Props) {
   const { t } = useTranslation();
 
   const countryIds = useMemo(
@@ -76,7 +83,7 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId, primaryCountr
     <div>
       <RiskSnapshot report={report} />
 
-      {tripId && <AiSafetyNarrativeCard tripId={tripId} canGenerate />}
+      {tripId && <AiSafetyNarrativeCard tripId={tripId} canGenerate={canGenerate} />}
 
       {report.crossBorderWarnings.length > 0 && (
         <div className="mb-4">

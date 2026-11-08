@@ -222,7 +222,8 @@ Deno.serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
     // The service-role client below bypasses RLS, so check access here.
-    if ((await tripAccess(admin, trip_id, userResp.user.id)) === 'none') {
+    const access = await tripAccess(admin, trip_id, userResp.user.id);
+    if (access === 'none') {
       return new Response(JSON.stringify({ error: 'trip not found' }), {
         status: 404,
         headers: { ...cors, 'content-type': 'application/json' },
@@ -240,6 +241,13 @@ Deno.serve(async (req) => {
           headers: { ...cors, 'content-type': 'application/json' },
         });
       }
+    }
+
+    if (access !== 'edit') {
+      return new Response(JSON.stringify({ error: 'Trip edit access is required' }), {
+        status: 403,
+        headers: { ...cors, 'content-type': 'application/json' },
+      });
     }
 
     if (!(await checkUserRateLimit(req, 'trip-safety-narrative', 20, 3600))) {

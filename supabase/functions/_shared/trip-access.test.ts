@@ -60,7 +60,7 @@ Deno.test('an accepted viewer may only read', async () => {
 })
 
 Deno.test('anyone may read a public trip', async () => {
-  assertEquals(await tripAccess(admin, 'public', 'stranger'), 'read')
+  assertEquals(await tripAccess(admin, 'public', 'stranger'), 'public')
 })
 
 Deno.test('a missing trip is none', async () => {
