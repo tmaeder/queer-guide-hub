@@ -4,7 +4,7 @@
   "version": "1.1.0",
   "type": "module",
   "engines": {
-    "node": ">=22"
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   },
   "scripts": {
     "dev": "vite",
@@ -202,14 +202,14 @@
     "sharp": "0.35.5",
     "stripe": "23.1.0",
     "tailwindcss": "^4.3.0",
-    "tldts": "^7.4.19",
     "tsx": "^4.23.15",
     "typescript": "~5.9.0",
     "typescript-eslint": "^8.72.1",
     "tz-lookup": "^6.1.25",
     "vite": "^8.3.6",
     "vitest": "^5.1.0",
-    "wrangler": "4.158.0"
+    "wrangler": "4.158.0",
+    "tldts": "^7.4.19"
   },
   "overrides": {
     "picomatch@<2.3.2": "^2.3.2",

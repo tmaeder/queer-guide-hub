@@ -459,7 +459,7 @@ export default function TripPlannerPage() {
       {/* === POST-TRIP MEMORY === */}
       {(section === 'together' || section === 'all') && phase === 'memory' && (
         <div className="mt-8 space-y-4">
-          <MemoryRecapCard tripId={trip.id} />
+          <MemoryRecapCard tripId={trip.id} canGenerate={canEdit} />
           <PostTripMemoryPrompt trip={trip} />
         </div>
       )}
@@ -612,6 +612,7 @@ function TripWorkspaceTools({
                   tripPlaces={trip.trip_places}
                   tripDays={trip.trip_days}
                   tripId={trip.id}
+                  canGenerate={canEdit}
                 />
               </AccordionContent>
             </AccordionItem>

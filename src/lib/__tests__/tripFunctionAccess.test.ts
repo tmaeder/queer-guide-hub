@@ -16,7 +16,12 @@ const src = (fn: string) =>
     .join('\n');
 
 const cases: Array<{ fn: string; firstRead: string; llm: string; limit: number }> = [
-  { fn: 'trip-cost-estimate', firstRead: 'await loadTrip(admin, trip_id)', llm: 'await askClaude(', limit: 30 },
+  {
+    fn: 'trip-cost-estimate',
+    firstRead: 'await loadTrip(admin, trip_id)',
+    llm: 'await askClaude(',
+    limit: 30,
+  },
   { fn: 'trip-recap', firstRead: ".from('trip_recaps')", llm: 'await generateSummary(', limit: 20 },
   {
     fn: 'trip-safety-narrative',
@@ -29,17 +34,24 @@ const cases: Array<{ fn: string; firstRead: string; llm: string; limit: number }
 describe.each(cases)('$fn', ({ fn, firstRead, llm, limit }) => {
   const s = src(fn);
 
-  it('checks trip access before reading the trip with the service-role client', () => {
-    const gate = s.indexOf("if ((await tripAccess(admin, trip_id, ");
+  it('checks trip access before reading trip data', () => {
+    const gate = s.indexOf('await tripAccess(admin, trip_id, ');
     expect(gate).toBeGreaterThan(-1);
     expect(s.indexOf(firstRead)).toBeGreaterThan(gate);
-    expect(s.slice(gate, gate + 300)).toMatch(/=== 'none'\) \{\s*return new Response\([^]*?status: 404/);
+    expect(s.slice(gate, gate + 300)).toMatch(
+      /=== 'none'(?: \|\| access === 'public')?\) \{\s*return new Response\([^]*?status: 404/,
+    );
   });
 
   it('rate-limits the caller before the LLM call', () => {
     const rl = s.indexOf(`checkUserRateLimit(req, '${fn}', ${limit}, 3600)`);
-    expect(rl).toBeGreaterThan(s.indexOf("if ((await tripAccess("));
+    expect(rl).toBeGreaterThan(s.indexOf('await tripAccess(admin, trip_id, '));
     expect(s.indexOf(llm, rl)).toBeGreaterThan(rl);
+    if (fn !== 'trip-cost-estimate') {
+      const editGate = s.indexOf("if (access !== 'edit')");
+      expect(editGate).toBeGreaterThan(s.indexOf(firstRead));
+      expect(rl).toBeGreaterThan(editGate);
+    }
   });
 });
 

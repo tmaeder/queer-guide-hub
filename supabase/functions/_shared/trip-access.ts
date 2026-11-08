@@ -9,10 +9,11 @@
  * nothing, as in the database.
  *
  *   'none'  - may not see the trip at all
- *   'read'  - may see it (public trip, or a viewer member)
+ *   'public' - may see the public itinerary
+ *   'read'   - accepted viewer with access to private member data
  *   'edit'  - owner, or an accepted owner/editor member
  */
-export type TripAccess = 'none' | 'read' | 'edit'
+export type TripAccess = 'none' | 'public' | 'read' | 'edit'
 
 // deno-lint-ignore no-explicit-any
 type Client = any
@@ -34,5 +35,5 @@ export async function tripAccess(admin: Client, tripId: string, userId: string):
     .not('accepted_at', 'is', null)
     .maybeSingle()
   if (member) return member.role === 'owner' || member.role === 'editor' ? 'edit' : 'read'
-  return trip.is_public === true ? 'read' : 'none'
+  return trip.is_public === true ? 'public' : 'none'
 }
