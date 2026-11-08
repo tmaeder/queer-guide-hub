@@ -1,11 +1,10 @@
-# src/
+# Web app
 
-The React 19 + Vite + TypeScript + Tailwind frontend (the queer.guide SPA).
+[`main.tsx`](main.tsx) mounts [`App.tsx`](App.tsx). [`routes.tsx`](routes.tsx) defines the routes.
 
-What lives here:
-- `pages/` route-level screens; `components/` reusable UI (`components/ui/` = shadcn primitives, design-system-locked — see CLAUDE.md Design); `hooks/`, `lib/`, `utils/` shared logic; `integrations/` (Supabase client), `i18n/` (11 languages), `providers/`, `theme/`, `config/`, `routes.tsx`.
+- `pages/` contains route-level screens. `components/` contains reusable UI, including shared primitives in `components/ui/`.
+- `hooks/`, `lib/`, and `utils/` contain shared logic. `integrations/` contains the Supabase client and `i18n/` contains translations.
+- Co-locate tests in `__tests__/` and use the `@/*` alias for imports from `src/`.
+- Follow the [design system](../docs/design-system/README.md). Keep heavy dependencies such as maps, editors, and PDF or spreadsheet tooling lazy-loaded.
 
-Conventions:
-- Co-locate tests in `__tests__/` next to the code; import via the `@/*` → `src/*` alias.
-- Honor the monochrome design system and 8pt spacing rhythm (ESLint enforces). No new color literals in public UI.
-- Heavy deps (maps, editor, charts, pdf, xlsx) must stay lazy-loaded / in their Vite manual chunk.
+See the [repository map](../docs/architecture/repo-map.md) for the edge, database, and mobile entry points.
