@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { articleOf } from './support/glossaryProse';
 
 // Glossary entries must not publish the GENERIC sense of an ordinary English
 // word, and must not publish placeholder prose.
@@ -20,12 +21,6 @@ import { test, expect } from '@playwright/test';
 
 const BOT_UA =
   'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
-
-/** The tag's own prose block, excluding the nav/rails that follow it. */
-function articleOf(html: string): string {
-  const m = html.match(/<article[\s\S]*?<\/article>/i);
-  return m ? m[0] : '';
-}
 
 interface Case {
   slug: string;

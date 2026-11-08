@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { articleOf } from './support/glossaryProse';
 
 // Inline glossary links in body prose, and the tag → content crawler links that
 // shipped alongside them.
@@ -33,12 +34,6 @@ const BOT_UA =
 /** The prerendered bot body, excluding nothing — nav included. */
 function botBody(html: string): string {
   const m = html.match(/<main data-prerendered="bot-ua"[\s\S]*?<\/main>/i);
-  return m ? m[0] : '';
-}
-
-/** The prose block only: nav and rail links live outside <article>. */
-function articleOf(html: string): string {
-  const m = html.match(/<article[\s\S]*?<\/article>/i);
   return m ? m[0] : '';
 }
 
