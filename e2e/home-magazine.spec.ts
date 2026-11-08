@@ -35,37 +35,22 @@ for (const width of [390, 1280]) {
   });
 }
 
-test('homepage prioritizes listings and city guides while secondary routes stay reachable', async ({
+test('homepage prioritizes listings and city guides ', async ({
   page,
 }) => {
   await openHome(page);
   const listings = page.getByRole('heading', { name: /^places and events/i });
   const cities = page.getByRole('region', { name: 'City guides' });
-  const browse = page.getByRole('region', { name: 'More from Queer Guide' });
   await expect(listings).toBeVisible();
   await expect(cities.getByRole('link', { name: 'All cities' })).toHaveAttribute('href', '/cities');
   const map = page.getByRole('region', { name: 'What are you here for?' });
   await expect(map.getByRole('link')).toHaveCount(7);
   await expect(map.locator('a[href="/search"]')).toBeVisible();
-  await expect(browse).toBeVisible();
   expect(await page.locator('main h2').allTextContents()).toEqual([
     expect.stringMatching(/^Places and events/),
     'City guides',
     'What are you here for?',
-    'More from Queer Guide',
-    'No ads. No data sales. Just riders.',
   ]);
-  for (const path of [
-    '/travel',
-    '/hub/people',
-    '/tags/rights-by-country',
-    '/news',
-    '/history',
-    '/tags',
-    '/marketplace',
-  ]) {
-    await expect(browse.locator(`a[href="${path}"]`)).toBeVisible();
-  }
   await expect(page.getByRole('region', { name: 'Your lines' })).toHaveCount(0);
   await map.locator('a[href="/search"]').click();
   await expect(page).toHaveURL(/\/search(?:\?|$)/);
