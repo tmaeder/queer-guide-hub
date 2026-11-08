@@ -82,6 +82,24 @@ select public.run_event_quality_scan(5000, 'all', false);
 Repeat in resumable batches. Do not fill absent descriptions, categories,
 venues, coordinates, or images without attributable evidence.
 
+## Event artwork
+
+- Prefer artwork from the organizer or a publisher that identifies the specific
+  event and edition. An editor can approve series artwork for multiple dates of
+  the same recurring event. Keep the source and credit with the asset.
+- Check that the artwork remains legible in the card crop and meets the cover
+  size checks. A social-preview image, organizer logo, or city photo alone
+  does not establish that the artwork belongs to the event.
+- Leave the image field empty when suitable artwork is unavailable. Cards
+  already have a calendar or event-type tile, and event details can lead with
+  the date, venue, and other facts. Recently viewed event cards resolve their
+  covers from the current record so withdrawn artwork stays out of old history.
+- Use the source-owned `event-image-backfill` for gaps. Keep the legacy
+  generic stock producer retired. Review repeated URLs and matching content
+  hashes together with source evidence and series identity. For confirmed
+  unrelated machine stock, remove the affected event references, retain the
+  previous URLs in field provenance, and verify that search reflects the repair.
+
 ## Source and queue validation
 
 - Inspect `event_source_quality_daily` against `event_source_quality_budgets`.

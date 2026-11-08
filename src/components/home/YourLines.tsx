@@ -5,7 +5,11 @@ import { Image } from '@/components/ui/Image';
 import { useHomeRegionContext } from './homeRegionContext';
 import { useRecentlyViewedImages } from '@/hooks/useRecentlyViewedImages';
 import { useYourLinesDiscovery } from '@/hooks/useYourLines';
-import { recentlyViewedHref, type RecentlyViewedItem, type RecentlyViewedType } from '@/lib/recentlyViewed';
+import {
+  recentlyViewedHref,
+  type RecentlyViewedItem,
+  type RecentlyViewedType,
+} from '@/lib/recentlyViewed';
 import { type FallbackTheme } from '@/utils/fallbackImages';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
@@ -106,9 +110,9 @@ export function YourLines({ recent }: { recent: RecentlyViewedItem[] }) {
         // Every history card has the same reason, so it lives once in the band
         // description; the card's label says WHAT the thing is instead.
         reason: t(`home.yourLines.type.${it.type}`, TYPE_LABEL[it.type] ?? ''),
-        // The live row wins over the URL saved at view time; a row found with
-        // no usable image (flagged, removed) must not fall back to the snapshot.
-        image: key in resolvedImages ? resolvedImages[key] : it.image,
+        // Only a live event cover can override the calendar tile. Old visits
+        // may have saved retired artwork, including for events since removed.
+        image: key in resolvedImages ? resolvedImages[key] : it.type === 'event' ? null : it.image,
         type: it.type,
         slug: it.slug,
       });
