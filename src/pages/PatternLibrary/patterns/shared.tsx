@@ -11,11 +11,6 @@ export const Logo = ({ size = 20, mark = true }) => (
   </span>
 );
 
-// Compatibility shim — prefer rule lines, but keep PrideBar callable
-export const PrideBar = ({ height = 1 }) => (
-  <div style={{ height, background: "var(--ink)" }} />
-);
-
 export const TopNav = ({ active = "Discover" }) => (
   <div className="shell-nav">
     <div style={{ display: "flex", alignItems: "center", gap: 28 }}>

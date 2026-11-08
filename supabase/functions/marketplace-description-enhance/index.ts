@@ -29,7 +29,6 @@ import { parseMarketplaceEnhancement, descriptionResponseFormat } from '../_shar
 // Cost: cheap 8B default + central llm_budget daily cap (500/day).
 // ============================================================
 
-const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...getCorsHeaders(), 'Content-Type': 'application/json' } })
 const client = () => getServiceClient()
 
 const SYSTEM_PROMPT = `You rewrite e-commerce product descriptions for the queer.guide marketplace. Given a product title and its source description (often German), return ONE concise, factual ENGLISH paragraph (40-600 characters) describing what the product IS and its key real features. RULES: translate to natural English if not English; remove duplicated specifications, shipping/returns/payment, SKU/article numbers, store policy, and marketing slop (discover, curated, elevate, premium experience, must-have); PRESERVE factual measurements, materials, care instructions, and safety information; keep adult/fetish wording factual, plain, neutral; do NOT invent sizes, materials, measurements, brands, or claims not in the source; if already clean English just tighten it. Return ONLY minified JSON, no markdown: {"description":"...","source_lang":"de|en|fr|other"}`
@@ -80,6 +79,10 @@ async function enhance(title: string, source: string, modelOverride?: string): P
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
+    status,
+    headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+  })
   const supabase = client()
   const auth = await requireInternalOrAdmin(req, supabase)
   if (auth instanceof Response) return auth

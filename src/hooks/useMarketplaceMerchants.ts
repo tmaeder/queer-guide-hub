@@ -104,20 +104,6 @@ export function useMarketplaceMerchants() {
   return { ...query, upsert, remove, sync };
 }
 
-/** Affiliate-partner options for the merchant edit dialog. */
-export function useAffiliatePartnerOptions() {
-  return useQuery({
-    queryKey: ['affiliate-partner-options'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('affiliate_partners')
-        .select('id, partner_name')
-        .order('partner_name');
-      return data ?? [];
-    },
-  });
-}
-
 /** Organization options for the merchant edit dialog. */
 export function useOrganizationOptions() {
   return useQuery({
