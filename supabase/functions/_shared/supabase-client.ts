@@ -17,10 +17,11 @@ const baseCorsHeaders = {
  * Build CORS headers with origin validation.
  * Returns the request origin only if it's in the allowlist.
  */
-export function getCorsHeaders(req?: Request): Record<string, string> {
-  const origin = req?.headers.get('Origin') ?? ''
+export function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get('Origin') ?? ''
   return {
     ...baseCorsHeaders,
+    Vary: 'Origin',
     'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : '',
   }
 }
@@ -37,16 +38,6 @@ export function getCorsHeaders(req?: Request): Record<string, string> {
 export function trustedOrigin(req: Request, fallback = 'https://queer.guide'): string {
   const origin = req.headers.get('Origin') ?? ''
   return ALLOWED_ORIGINS.has(origin) ? origin : fallback
-}
-
-/**
- * @deprecated Use getCorsHeaders(req) for origin-validated CORS.
- * This is kept temporarily for backward compatibility but will be removed.
- * All functions should migrate to getCorsHeaders(req).
- */
-export const corsHeaders = {
-  ...baseCorsHeaders,
-  'Access-Control-Allow-Origin': 'https://queer.guide',
 }
 
 /**
@@ -89,7 +80,7 @@ export function getAnonClient(): SupabaseClient {
 const ERROR_CODE_RE = /^[a-z][a-z0-9_]{0,63}$/
 const GENERIC_ERROR = 'Internal server error'
 
-export function jsonResponse(data: unknown, status = 200, req?: Request): Response {
+export function jsonResponse(data: unknown, status: number, req: Request): Response {
   let body = data
   if (status === 500 && data && typeof data === 'object' && !Array.isArray(data)) {
     const err = (data as Record<string, unknown>).error
@@ -100,18 +91,18 @@ export function jsonResponse(data: unknown, status = 200, req?: Request): Respon
   }
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...(req ? getCorsHeaders(req) : corsHeaders), 'Content-Type': 'application/json' },
+    headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
   })
 }
 
 /** Uniform error body `{ error, success: false }`; 500s are sanitised by jsonResponse. */
-export function errorResponse(message: unknown, status = 500, req?: Request): Response {
+export function errorResponse(message: unknown, status: number, req: Request): Response {
   const msg = typeof message === 'string' && message.trim().length > 0 ? message : GENERIC_ERROR
   return jsonResponse({ error: msg, success: false }, status, req)
 }
 
-export function corsResponse(req?: Request): Response {
-  return new Response('ok', { headers: req ? getCorsHeaders(req) : corsHeaders })
+export function corsResponse(req: Request): Response {
+  return new Response('ok', { headers: getCorsHeaders(req) })
 }
 
 /**

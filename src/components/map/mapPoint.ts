@@ -2,24 +2,11 @@ import type { PointFeature, PointFeatureProps } from '@/hooks/useViewportPoints'
 import { ENTITY_BULLET, lineFor, type MapStation } from './mapDomain';
 import { glyphKeyFor } from './mapIcons';
 
-/**
- * Flattened, render-ready view of a map point — consumed by the rich popup
- * card, the hover preview, and the departures board. Built once from a GeoJSON
- * feature so the UI layers don't each re-parse the `meta` JSON blob.
- *
- * @deprecated Prefer `MapStation` from `./mapDomain`, which this now aliases.
- * The interface moved there so a station has ONE shape across viewport
- * discovery, search results, trip stops and route stops — a parallel type was
- * the alternative, and two types that must agree eventually don't. The alias
- * keeps the ~10 existing readers unedited.
- */
-export type MapPointSummary = MapStation;
-
 /** Every place on one spot that no zoom can separate (a cluster of identical
  *  coordinates), handed to the results list instead of a fan-out ring. */
 export interface MapPointStack {
   center: [number, number];
-  points: MapPointSummary[];
+  points: MapStation[];
 }
 
 function parseMeta(raw: unknown): Record<string, unknown> {

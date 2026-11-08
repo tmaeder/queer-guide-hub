@@ -3,12 +3,11 @@ import { useSearchParams } from 'react-router';
 import {
   CITIES_SORT_KEYS,
   type CitiesSortKey,
-  type EqualityTier,
-  EQUALITY_TIERS,
   isCitiesSortKey,
   isEqualityTier,
   parseSetParam,
 } from '@/utils/citiesFilter';
+import { EQUALITY_TIERS, type EqualityTier } from '@/utils/equalityScore';
 
 export type CitiesView = 'list' | 'map';
 
