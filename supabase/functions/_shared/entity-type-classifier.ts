@@ -16,10 +16,6 @@
 
 export type EntityType = 'personality' | 'venue' | 'event' | 'tag' | 'unknown'
 
-export const ENTITY_TYPES: readonly EntityType[] = [
-  'personality', 'venue', 'event', 'tag', 'unknown',
-] as const
-
 const HINT_ALIASES: Record<string, EntityType> = {
   personality: 'personality',
   person: 'personality',
