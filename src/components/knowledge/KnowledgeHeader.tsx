@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PageIntro } from '@/components/layout/PageIntro';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cn } from '@/lib/utils';
@@ -31,15 +32,13 @@ export function KnowledgeHeader({ section, children }: KnowledgeHeaderProps) {
 
   return (
     <PageContainer as="header" className="pb-0 md:pb-0">
-      <h1 className="text-display font-bold leading-tight md:text-hero">
-        {t('knowledge.title', 'Knowledge')}
-      </h1>
-      <p className="mt-4 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
-        {t(
+      <PageIntro
+        title={t('knowledge.title', 'Knowledge')}
+        lede={t(
           'knowledge.lede',
           'The words we use, the people who shaped queer life, and the history behind both.',
         )}
-      </p>
+      />
       <nav
         aria-label={t('knowledge.navigation', 'Knowledge sections')}
         className="mt-6 flex flex-wrap gap-2 border-b border-border-hairline pb-4"
