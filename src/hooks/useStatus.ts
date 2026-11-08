@@ -1,9 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useProfile, type Profile } from '@/hooks/useProfile';
-import {
-  DEFAULT_PRESENCE_VISIBILITY,
-  type PresenceVisibility,
-} from '@/lib/presence';
+import { DEFAULT_PRESENCE_VISIBILITY, type PresenceVisibility } from '@/lib/presence';
 
 export interface TravelMode {
   city_id?: string;
@@ -143,22 +140,4 @@ export function useStatus(): {
   );
 
   return { status, loading, setStatus, clearStatus };
-}
-
-/**
- * Compute a short-form summary of a UserStatus for compact display
- * ("👋 Hello · open-to-msg · Visiting Berlin"). Returns empty string when
- * there's nothing visible.
- */
-export function summarizeStatus(s: UserStatus | null): string {
-  if (!s) return '';
-  if (s.dndActive) return 'Do not disturb';
-  const parts: string[] = [];
-  if (s.emoji && s.text) parts.push(`${s.emoji} ${s.text}`);
-  else if (s.emoji) parts.push(s.emoji);
-  else if (s.text) parts.push(s.text);
-  if (s.travel?.city_name) {
-    parts.push(`Visiting ${s.travel.city_name}`);
-  }
-  return parts.join(' · ');
 }

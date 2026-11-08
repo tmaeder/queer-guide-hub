@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { submitItem } from "../shared/api";
+import { submitItem } from "../shared/api/submit";
 import {
   clearSession,
   getValidAccessToken,

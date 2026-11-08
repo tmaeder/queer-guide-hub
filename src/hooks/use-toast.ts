@@ -66,10 +66,7 @@ function toast(props: ToastInput = {}): ToastReturn {
 }
 
 function useToast() {
-  // `toasts` is retained (always empty) for any legacy consumer that still
-  // destructures it; Sonner owns the actual render queue now.
   return {
-    toasts: [] as never[],
     toast,
     dismiss: (toastId?: string) => sonnerToast.dismiss(toastId),
   };

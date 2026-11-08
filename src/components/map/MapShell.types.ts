@@ -8,14 +8,7 @@ import {
 } from './mapDomain';
 
 export type MapSurface =
-  | 'discover'
-  | 'search'
-  | 'venues'
-  | 'city'
-  | 'country'
-  | 'trip'
-  | 'travel'
-  | 'admin';
+  'discover' | 'search' | 'venues' | 'city' | 'country' | 'trip' | 'travel' | 'admin';
 
 export type MapFilterKey =
   | 'category'
@@ -63,18 +56,6 @@ export interface MapShellState {
   filters: MapShellFilters;
   viewport?: { center: [number, number]; zoom: number };
 }
-
-export const FILTER_LABELS: Record<MapFilterKey, string> = {
-  category: 'Category',
-  tags: 'Tags',
-  'near-me': 'Near me',
-  time: 'Time',
-  accessibility: 'Accessibility',
-  'queer-owned': 'Queer-owned',
-  price: 'Price',
-  safety: 'Safety',
-  era: 'Era',
-};
 
 /**
  * DISPLAY labels only. The KEYS are URL state (`?view=…`), so renaming them
