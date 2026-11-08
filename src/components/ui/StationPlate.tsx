@@ -60,7 +60,7 @@ export function StationPlate({
       />
       <circle cx="200" cy="125" r="56" strokeWidth={5} className="fill-background stroke-foreground" />
       <g transform="translate(170 95) scale(0.6)">
-        <TransitIcon name={icon ?? THEME_ICON[theme]} size={100} ticks={false} />
+        <TransitIcon name={icon ?? THEME_ICON[theme]} size={100} />
       </g>
     </svg>
   );

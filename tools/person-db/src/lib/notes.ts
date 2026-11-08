@@ -57,10 +57,6 @@ export function checkedIds(): Set<string> {
   return ids
 }
 
-export function allEntries(): Store {
-  return readStore()
-}
-
 // Set of ids that have any local note/tag — for a "has notes" badge.
 export function annotatedIds(): Set<string> {
   const store = readStore()

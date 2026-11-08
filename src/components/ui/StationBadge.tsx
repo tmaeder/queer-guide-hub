@@ -27,7 +27,7 @@ export function StationBadge({ glyph, className }: { glyph: TransitIconName; cla
         className,
       )}
     >
-      <TransitIcon name={glyph} size={32} ticks={false} />
+      <TransitIcon name={glyph} size={32} />
     </span>
   );
 }
