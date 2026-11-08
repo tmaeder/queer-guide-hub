@@ -20,9 +20,15 @@ for (const width of [1440, 390, 320]) {
       await page.keyboard.press('End');
       await footer.scrollIntoViewIfNeeded();
       await footer.getByRole('button', { name: 'Toggle theme' }).click();
-      await page
-        .getByRole('menuitem', { name: theme === 'dark' ? 'Dark' : 'Light', exact: true })
-        .click();
+      // By keyboard, not pointer: at 390px the fixed bottom dock can sit over
+      // the opened menu, and a pointer click then retries its hit-test until
+      // the 30s timeout (the 2026-11-08 nightly failure, menu open on screen).
+      const item = page.getByRole('menuitem', {
+        name: theme === 'dark' ? 'Dark' : 'Light',
+        exact: true,
+      });
+      await item.focus();
+      await item.press('Enter');
       await expect(page.locator('html')).toHaveClass(new RegExp(`\\b${theme}\\b`));
 
       const destinations = footer.locator('.footer-destination');
