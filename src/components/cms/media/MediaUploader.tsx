@@ -1,12 +1,12 @@
 /**
  * MediaUploader
  * Drag-and-drop file upload component with preview and progress indicator.
- * Uses react-dropzone for DnD and useCMSMedia for the actual upload.
+ * Uses useFileDrop for DnD and useCMSMedia for the actual upload.
  */
 
 import { useState, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { useDropzone } from 'react-dropzone';
+import { useFileDrop } from '@/hooks/useFileDrop';
 import { Upload, X, FileText } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -64,13 +64,9 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
     setErrorMsg(null);
   };
 
-  const dropzoneAccept: Record<string, string[]> | undefined = accept
-    ? { [accept]: [] }
-    : undefined;
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useFileDrop({
     onDrop,
-    accept: dropzoneAccept,
+    accept: accept ? [accept] : undefined,
     multiple: false,
     disabled: uploading,
   });

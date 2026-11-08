@@ -6,7 +6,6 @@
 import { useParams, useLocation } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useMemo, useEffect, useRef, useCallback, type ReactNode } from 'react';
-import { Controller } from 'react-hook-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -136,7 +135,7 @@ function SubmitFormInner({ config, embedded, onBack }: SubmitFormInnerProps) {
     reset,
     honeypot,
     setHoneypot,
-    control,
+    setField,
   } = useSubmission(config);
 
   // Auto-detect city from title — when title contains a known city name, pre-fill city field
@@ -473,19 +472,13 @@ function SubmitFormInner({ config, embedded, onBack }: SubmitFormInnerProps) {
                   key={fieldConfig.name}
                   style={{ gridColumn: fieldConfig.colSpan === 2 ? '1 / -1' : undefined }}
                 >
-                  <Controller
-                    control={control}
-                    name={fieldConfig.name}
-                    render={({ field, fieldState }) => (
-                      <FieldRenderer
-                        field={fieldConfig}
-                        value={field.value ?? ''}
-                        onChange={(val) => field.onChange(val)}
-                        error={fieldState.error?.message ?? errors[fieldConfig.name]}
-                        setFields={setFields}
-                        allValues={data}
-                      />
-                    )}
+                  <FieldRenderer
+                    field={fieldConfig}
+                    value={data[fieldConfig.name] ?? ''}
+                    onChange={(val) => setField(fieldConfig.name, val)}
+                    error={errors[fieldConfig.name]}
+                    setFields={setFields}
+                    allValues={data}
                   />
                 </div>
               ))}
