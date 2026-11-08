@@ -7,10 +7,8 @@ import { CityCardsSkeleton } from '@/components/home/subway/CityCardsSkeleton';
 import { DeparturesBoard } from '@/components/home/subway/DeparturesBoard';
 import { HomeRegionProvider } from '@/components/home/HomeRegionProvider';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
-import { SupportBand } from '@/components/home/subway/SupportBand';
 import { IntentMap } from '@/components/home/subway/IntentMap';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { lazyRetry } from '@/utils/lazyRetry';
 
@@ -20,16 +18,6 @@ const cityCardsLoading = <CityCardsSkeleton />;
 const recommendationsLoading = (
   <div className="h-72 w-56 rounded-container bg-muted" aria-hidden="true" />
 );
-
-const browseLinks = [
-  { to: '/travel', label: 'header.intents.travelling.label' },
-  { to: '/hub/people', label: 'header.intents.meet.label' },
-  { to: '/tags/rights-by-country', label: 'knowledge.rights' },
-  { to: '/news', label: 'breadcrumb.news' },
-  { to: '/history', label: 'knowledge.history' },
-  { to: '/tags', label: 'knowledge.terms' },
-  { to: '/marketplace', label: 'breadcrumb.marketplace' },
-] as const;
 
 function HomeSection({ section, children }: { section: string; children: ReactNode }) {
   return (
@@ -91,8 +79,6 @@ function RegionalContent({ showRegionPicker = true }: { showRegionPicker?: boole
 }
 
 export default function HomeContent() {
-  const { t } = useTranslation();
-
   return (
     <>
       <ErrorBoundary
@@ -106,18 +92,6 @@ export default function HomeContent() {
       <HomeSection section="intent-map">
         <IntentMap />
       </HomeSection>
-      <Band title={t('home.discovery.more')}>
-        <ul className="m-0 grid list-none gap-x-6 p-0 sm:grid-cols-2 lg:grid-cols-4">
-          {browseLinks.map(({ to, label }) => (
-            <li key={to} className="border-t border-border-hairline">
-              <LocalizedLink to={to} className="flex min-h-12 items-center py-2 font-bold">
-                {t(label)}
-              </LocalizedLink>
-            </li>
-          ))}
-        </ul>
-      </Band>
-      <SupportBand />
     </>
   );
 }
