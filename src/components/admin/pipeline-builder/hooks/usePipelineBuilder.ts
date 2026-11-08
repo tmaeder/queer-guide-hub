@@ -1,11 +1,6 @@
 import { slugify } from '@/lib/slugify';
 import { useCallback, useState } from 'react';
-import {
-  useNodesState,
-  useEdgesState,
-  addEdge,
-  type Connection,
-} from '@xyflow/react';
+import { useNodesState, useEdgesState, addEdge, type Connection } from '@xyflow/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
@@ -104,46 +99,15 @@ export function usePipelineDefinitions() {
   });
 }
 
-/** Fetch a single pipeline definition by ID */
-export function usePipelineDefinition(id: string | undefined) {
-  return useQuery({
-    queryKey: ['pipeline-definition', id],
-    queryFn: async () => {
-      if (!id) return null;
-      const { data, error } = await untypedFrom('pipeline_definitions')
-        .select('*')
-        .eq('id', id)
-        .single();
-      if (error) throw error;
-      return data as unknown as PipelineDefinition;
-    },
-    enabled: !!id,
-  });
-}
-
-/** Fetch a single pipeline definition by slug/name — used for URL-param loading */
-export function usePipelineDefinitionByName(name: string | undefined) {
-  return useQuery({
-    queryKey: ['pipeline-definition-by-name', name],
-    queryFn: async () => {
-      if (!name) return null;
-      const { data, error } = await untypedFrom('pipeline_definitions')
-        .select('*')
-        .eq('name', name)
-        .maybeSingle();
-      if (error) throw error;
-      return data as PipelineDefinition | null;
-    },
-    enabled: !!name,
-  });
-}
-
 /**
  * Expand persisted nodes (type=<slug>) into the canvas shape (type='baseNode',
  * data enriched from node types). Shared by the builder's loadPipeline and the
  * read-only run-snapshot view.
  */
-export function storedNodesToCanvas(nodes: StoredPipelineNode[], nodeTypes?: PipelineNodeType[]): AppNode[] {
+export function storedNodesToCanvas(
+  nodes: StoredPipelineNode[],
+  nodeTypes?: PipelineNodeType[],
+): AppNode[] {
   const typeBySlug = new Map<string, PipelineNodeType>();
   for (const nt of nodeTypes || []) typeBySlug.set(nt.slug, nt);
 
@@ -185,7 +149,7 @@ export function usePipelineBuilder(pipelineId?: string) {
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)),
-    [setEdges]
+    [setEdges],
   );
 
   /** Add a node to the canvas from a node type */
@@ -211,7 +175,7 @@ export function usePipelineBuilder(pipelineId?: string) {
       setNodes((nds) => [...nds, newNode]);
       return id;
     },
-    [setNodes]
+    [setNodes],
   );
 
   /**
@@ -223,13 +187,13 @@ export function usePipelineBuilder(pipelineId?: string) {
   const loadPipeline = useCallback(
     (pipeline: LoadablePipeline, nodeTypes?: PipelineNodeType[]) => {
       setNodes(storedNodesToCanvas(pipeline.nodes, nodeTypes));
-      setEdges((pipeline.edges || []).map(e => ({ ...e, animated: true })));
+      setEdges((pipeline.edges || []).map((e) => ({ ...e, animated: true })));
       setPipelineName(pipeline.display_name || pipeline.name);
       setPipelineSlug(pipeline.name);
       setCurrentPipelineId(pipeline.id);
       setPipelineDescription(pipeline.description || '');
     },
-    [setNodes, setEdges]
+    [setNodes, setEdges],
   );
 
   /** Save mutation — converts type='baseNode' back to node type slug for executor */
@@ -238,7 +202,7 @@ export function usePipelineBuilder(pipelineId?: string) {
       const name = overrides?.name || pipelineName || `pipeline-${Date.now()}`;
       const slug = pipelineSlug || slugify(name);
 
-      const serializedNodes = nodes.map(n => {
+      const serializedNodes = nodes.map((n) => {
         const d = (n.data || {}) as Record<string, unknown>;
         const nodeTypeSlug = (d.nodeTypeSlug as string) || n.type || '';
         return {
@@ -307,14 +271,17 @@ export function usePipelineBuilder(pipelineId?: string) {
         if (error) throw error;
         return data as RunResult;
       } catch (e) {
-        if ((e as Error).name === 'AbortError') throw new Error('Pipeline executor timed out after 30s', { cause: e });
+        if ((e as Error).name === 'AbortError')
+          throw new Error('Pipeline executor timed out after 30s', { cause: e });
         throw e;
       } finally {
         clearTimeout(timeout);
       }
     },
     onSuccess: (data) => {
-      toast.success(data?.dry_run ? 'Dry run started' : 'Pipeline started', { description: `Run ID: ${data?.pipeline_run_id}` });
+      toast.success(data?.dry_run ? 'Dry run started' : 'Pipeline started', {
+        description: `Run ID: ${data?.pipeline_run_id}`,
+      });
     },
     onError: (error: Error) => {
       toast.error(`Run failed: ${error.message}`);
@@ -322,14 +289,24 @@ export function usePipelineBuilder(pipelineId?: string) {
   });
 
   return {
-    nodes, edges, setNodes, setEdges,
-    onNodesChange, onEdgesChange, onConnect,
-    addNode, loadPipeline,
-    pipelineName, setPipelineName,
-    pipelineSlug, setPipelineSlug,
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    addNode,
+    loadPipeline,
+    pipelineName,
+    setPipelineName,
+    pipelineSlug,
+    setPipelineSlug,
     currentPipelineId,
-    pipelineDescription, setPipelineDescription,
-    selectedNodeId, setSelectedNodeId,
+    pipelineDescription,
+    setPipelineDescription,
+    selectedNodeId,
+    setSelectedNodeId,
     save: saveMutation.mutate,
     isSaving: saveMutation.isPending,
     run: runMutation.mutate,
