@@ -222,19 +222,6 @@
     <link rel="apple-touch-startup-image" href="/icons/splash/apple-splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
     <link rel="apple-touch-startup-image" href="/icons/splash/apple-splash-2732x2048.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 
-    <!-- Dark mode removed 2026-08 (subway-map rebrand: fixed paper/ink
-         identity). Strip any persisted dark class before paint so a
-         returning dark-mode user gets the light poster immediately. -->
-    <script>
-      (function () {
-        try {
-          document.documentElement.classList.remove('dark');
-          document.documentElement.classList.add('light');
-          localStorage.removeItem('ui-theme');
-        } catch (e) { /* private mode — fine */ }
-      })();
-    </script>
-
     <!-- GetYourGuide widget script is loaded on-demand by ActivitiesWidget component -->
 
     <!-- Umami Analytics is loaded only after the user grants analytics
