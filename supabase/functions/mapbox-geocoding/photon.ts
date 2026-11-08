@@ -48,6 +48,15 @@ const NUMBER_FIRST = new Set(['US', 'GB', 'CA', 'AU', 'NZ', 'IE', 'ZA', 'IN', 'P
 
 const SETTLEMENT_TYPES = new Set(['city', 'town', 'village', 'hamlet'])
 
+/**
+ * Administrative AREAS that share a name with a settlement inside them. Without
+ * a marker, Zurich the canton (Photon type "state") and Zurich the city both
+ * read "Zurich, Switzerland" and the user cannot tell which one they picked.
+ * "region" rather than "state": Photon's `state` layer is every country's
+ * first-level division (canton, Land, province), not only US states.
+ */
+const AREA_LABELS: Record<string, string> = { state: 'region', county: 'county' }
+
 function str(v: unknown): string | undefined {
   return typeof v === 'string' && v.trim() ? v.trim() : undefined
 }
@@ -67,7 +76,10 @@ export function photonToMapbox(f: PhotonFeature): MapboxLikeFeature | null {
   const isSettlement = SETTLEMENT_TYPES.has(String(p.type ?? '')) ||
     SETTLEMENT_TYPES.has(String(p.osm_value ?? ''))
   const city = str(p.city) ?? (isSettlement ? name : undefined)
-  const state = str(p.state)
+  const areaLabel = isSettlement ? undefined : AREA_LABELS[String(p.type ?? '')]
+  // A region result IS the region: carry its own name as `state` so selecting
+  // it fills the state field instead of leaving it empty.
+  const state = str(p.state) ?? (String(p.type ?? '') === 'state' ? name : undefined)
   const country = str(p.country)
   const postcode = str(p.postcode)
 
@@ -83,12 +95,17 @@ export function photonToMapbox(f: PhotonFeature): MapboxLikeFeature | null {
     if (s && !parts.some((x) => x.toLowerCase() === s.toLowerCase())) parts.push(s)
   }
   // A named POI ("Zürich Hauptbahnhof") leads; a house/street result's `name`
-  // is usually empty or repeats the street.
-  if (name && name !== street) push(name)
+  // is usually empty or repeats the street. A name equal to the city is left to
+  // the city line below, which may prefix a postcode — pushing both printed
+  // "Zurich, 59547 Zurich" (the dedupe compares whole strings, so it missed).
+  const sameAsCity = !!(name && city && name.toLowerCase() === city.toLowerCase())
+  if (name && name !== street && !sameAsCity) push(areaLabel ? `${name} (${areaLabel})` : name)
   push(streetLine)
   push(postcode && city ? `${postcode} ${city}` : city)
   // Canton/city-state names repeat the city (Zurich, Zurich): skip that echo.
-  if (!(state && city && state.toLowerCase() === city.toLowerCase())) push(state)
+  // A region result already led with its own name, so skip it there too.
+  const stateIsSelf = !!(areaLabel && state && name && state.toLowerCase() === name.toLowerCase())
+  if (!(state && city && state.toLowerCase() === city.toLowerCase()) && !stateIsSelf) push(state)
   push(country)
 
   const context: Array<{ id: string; text: string }> = []
@@ -110,6 +127,7 @@ export function photonToMapbox(f: PhotonFeature): MapboxLikeFeature | null {
     properties: {
       ...p,
       ...(city ? { city } : {}),
+      ...(state ? { state } : {}),
       ...(countryCode ? { country_code: countryCode.toLowerCase() } : {}),
     },
     geometry: { type: 'Point', coordinates: [lng, lat] },

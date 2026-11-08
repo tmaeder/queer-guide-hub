@@ -71,3 +71,33 @@ Deno.test('parseLngLat accepts the Mapbox "lng,lat" convention and rejects junk'
   assertEquals(parseLngLat('abc,def'), null)
   assertEquals(parseLngLat('8.5,95'), null)
 })
+
+// Both are real results for "Zurich" (lang=en), 2026-11-08.
+const ZURICH_CANTON = {
+  properties: {
+    osm_type: 'R', osm_id: 1690227, osm_key: 'place', osm_value: 'state', type: 'state',
+    name: 'Zurich', country: 'Switzerland', countrycode: 'CH',
+  },
+  geometry: { coordinates: [8.656394, 47.4133024] as [number, number] },
+}
+const ZURICH_MONTANA = {
+  properties: {
+    osm_type: 'N', osm_id: 151369534, osm_key: 'place', osm_value: 'hamlet', type: 'district',
+    name: 'Zurich', county: 'Blaine', state: 'Montana', country: 'United States', postcode: '59547', countrycode: 'US',
+  },
+  geometry: { coordinates: [-109.0304432, 48.5844436] as [number, number] },
+}
+
+Deno.test('a region is labelled as one, so it cannot read like the city of the same name', () => {
+  const canton = photonToMapbox(ZURICH_CANTON)!
+  const city = photonToMapbox(ZURICH_CITY)!
+  assertEquals(canton.place_name, 'Zurich (region), Switzerland')
+  assert(canton.place_name !== city.place_name)
+  // Selecting the region fills the state field, and nothing claims it is a city.
+  assertEquals(canton.properties.state, 'Zurich')
+  assertEquals(canton.properties.city, undefined)
+})
+
+Deno.test('a settlement named after its own city is not printed twice', () => {
+  assertEquals(photonToMapbox(ZURICH_MONTANA)!.place_name, '59547 Zurich, Montana, United States')
+})
