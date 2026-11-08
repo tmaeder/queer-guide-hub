@@ -42,10 +42,6 @@ export const TRANSLATION_LOCALES: readonly string[] = SUPPORTED_LOCALES.filter(
   (l) => l !== DEFAULT_LOCALE,
 )
 
-export function isSupportedLocale(value: string): value is SupportedLocale {
-  return (SUPPORTED_LOCALES as readonly string[]).includes(value)
-}
-
 /** True for a locale the pipeline may write into a `*_i18n` column. */
 export function isTranslationLocale(value: string): boolean {
   return TRANSLATION_LOCALES.includes(value)
