@@ -376,7 +376,7 @@ jobs:
       # identically; keep the two in step. It runs with an empty config file
       # because the repo's vite.config.ts imports plugins this job never
       # installs, and `vite preview` needs none of them.
-      - run: npm i -g lighthouse@12 vite@8.3.5
+      - run: npm i -g lighthouse@12 vite@8.3.6
       - name: Download dist
         if: needs.build.result == 'success'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
