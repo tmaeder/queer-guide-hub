@@ -96,7 +96,7 @@ describe('PickerLine', () => {
       <PickerLine options={opts().slice(0, 3)} activeId={null} onSelect={vi.fn()} label="Pace" />,
     );
     const list = container.querySelector('[role="group"]') as HTMLElement;
-    expect(list.style.gridTemplateColumns).toBe('repeat(3, minmax(0, 1fr))');
+    expect(list.style.gridTemplateColumns).toMatch(/^repeat\(3, minmax\(0(?:px)?, 1fr\)\)$/);
   });
 
   it('renders nothing below two options', () => {
