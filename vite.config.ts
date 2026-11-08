@@ -315,7 +315,7 @@ export default defineConfig(({ mode }) => ({
             { name: 'maplibre', test: /node_modules\/(maplibre-gl|@protomaps)\// },
             {
               name: 'tiptap',
-              test: /node_modules\/(@tiptap|lowlight|prosemirror-|highlight\.js)\//,
+              test: /node_modules\/(@tiptap|prosemirror-)\//,
             },
             { name: 'pdfjs', test: /node_modules\/pdfjs-dist\// },
             { name: 'mammoth', test: /node_modules\/mammoth\// },
