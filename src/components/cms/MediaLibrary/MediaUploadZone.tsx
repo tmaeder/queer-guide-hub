@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import { useFileDrop } from '@/hooks/useFileDrop';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
@@ -101,6 +101,7 @@ export function MediaUploadZone() {
 
   const onDrop = useCallback(
     (accepted: File[]) => {
+      if (!accepted.length) return;
       const newFiles: UploadFile[] = accepted.map((file) => ({
         file,
         id: crypto.randomUUID(),
@@ -125,14 +126,13 @@ export function MediaUploadZone() {
     }
   }, [files, queryClient]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useFileDrop({
     onDrop,
-    accept: ALLOWED_TYPES.reduce((acc, type) => ({ ...acc, [type]: [] }), {}),
+    accept: ALLOWED_TYPES,
     maxSize: MAX_FILE_SIZE,
     onDropRejected: (rejections) => {
       for (const r of rejections) {
-        const reason = r.errors[0]?.message || 'Invalid file';
-        toast({ title: `Rejected: ${r.file.name}`, description: reason, variant: 'destructive' });
+        toast({ title: `Rejected: ${r.file.name}`, description: r.reason, variant: 'destructive' });
       }
     },
   });

@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 import jsQR from 'jsqr';
-import JSZip from 'jszip';
+import { strFromU8, unzipSync } from 'fflate';
 import { execFileSync } from 'node:child_process';
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { buildQrBundle } from '../qrBundle';
@@ -67,17 +67,17 @@ describe('bulk verified QR ZIP', () => {
       [b.id, { ...DEFAULT_QR_STYLE, dots: 'circle' as const, foreground: '#660022' }],
     ]);
     const result = await buildQrBundle([a, b], DEFAULT_QR_STYLE, 'all', { stylesById: styles });
-    const zip = await JSZip.loadAsync(Buffer.from(result.bytes));
-    expect(await zip.file('001-style-a.svg')!.async('string')).toContain('fill="#003366"');
-    expect(await zip.file('002-style-b.svg')!.async('string')).toContain('fill="#660022"');
-    for (const file of Object.values(zip.files).filter((file) => file.name.endsWith('.png'))) {
-      const bytes = await file.async('uint8array');
+    const zip = unzipSync(new Uint8Array(result.bytes));
+    expect(strFromU8(zip['001-style-a.svg'])).toContain('fill="#003366"');
+    expect(strFromU8(zip['002-style-b.svg'])).toContain('fill="#660022"');
+    for (const [name, fileBytes] of Object.entries(zip).filter(([name]) => name.endsWith('.png'))) {
+      const bytes = fileBytes;
       const { data, info } = await sharp(bytes)
         .ensureAlpha()
         .raw()
         .toBuffer({ resolveWithObject: true });
       expect(jsQR(new Uint8ClampedArray(data), info.width, info.height)?.data).toBe(
-        file.name.startsWith('001')
+        name.startsWith('001')
           ? 'https://queer.guide/go/style-a?qg_qr=1'
           : 'https://queer.guide/go/style-b?qg_qr=1',
       );
@@ -104,16 +104,18 @@ describe('bulk verified QR ZIP', () => {
       ]),
     );
     const result = await buildQrBundle([a, b], DEFAULT_QR_STYLE, 'all', { stylesById: styles });
-    const zip = await JSZip.loadAsync(Buffer.from(result.bytes));
-    expect(await zip.file('001-logo-a.svg')!.async('string')).toContain(logos[0]);
-    expect(await zip.file('002-logo-b.svg')!.async('string')).toContain(logos[1]);
-    for (const file of Object.values(zip.files).filter((file) => /\.(png|jpg)$/.test(file.name))) {
-      const { data, info } = await sharp(await file.async('uint8array'))
+    const zip = unzipSync(new Uint8Array(result.bytes));
+    expect(strFromU8(zip['001-logo-a.svg'])).toContain(logos[0]);
+    expect(strFromU8(zip['002-logo-b.svg'])).toContain(logos[1]);
+    for (const [name, fileBytes] of Object.entries(zip).filter(([name]) =>
+      /\.(png|jpg)$/.test(name),
+    )) {
+      const { data, info } = await sharp(fileBytes)
         .ensureAlpha()
         .raw()
         .toBuffer({ resolveWithObject: true });
       expect(jsQR(new Uint8ClampedArray(data), info.width, info.height)?.data).toBe(
-        file.name.startsWith('001')
+        name.startsWith('001')
           ? 'https://queer.guide/go/logo-a?qg_qr=1'
           : 'https://queer.guide/go/logo-b?qg_qr=1',
       );
@@ -132,18 +134,18 @@ describe('bulk verified QR ZIP', () => {
     });
     const normal = { ...root, id: 'normal', source: 'https://links.community.com/pride' };
     const result = await buildQrBundle([root, normal], DEFAULT_QR_STYLE, 'png');
-    const archive = await JSZip.loadAsync(Buffer.from(result.bytes));
-    expect(await archive.file('manifest.csv')!.async('string')).toContain(
-      'https://links.community.com/?qg_qr=1',
-    );
-    for (const file of Object.values(archive.files).filter((file) => file.name.endsWith('.png'))) {
-      const bytes = await file.async('uint8array');
+    const archive = unzipSync(new Uint8Array(result.bytes));
+    expect(strFromU8(archive['manifest.csv'])).toContain('https://links.community.com/?qg_qr=1');
+    for (const [name, fileBytes] of Object.entries(archive).filter(([name]) =>
+      name.endsWith('.png'),
+    )) {
+      const bytes = fileBytes;
       const { data, info } = await sharp(bytes)
         .ensureAlpha()
         .raw()
         .toBuffer({ resolveWithObject: true });
       expect(jsQR(new Uint8ClampedArray(data), info.width, info.height)?.data).toBe(
-        file.name.startsWith('001')
+        name.startsWith('001')
           ? 'https://links.community.com/?qg_qr=1'
           : 'https://links.community.com/pride?qg_qr=1',
       );
@@ -162,17 +164,17 @@ describe('bulk verified QR ZIP', () => {
       'all',
       { onProgress: (value) => progress.push(value) },
     );
-    const archive = await JSZip.loadAsync(Buffer.from(bundle.bytes));
-    const names = Object.keys(archive.files);
+    const archive = unzipSync(new Uint8Array(bundle.bytes));
+    const names = Object.keys(archive);
     expect(names).toHaveLength(10);
     expect(new Set(names).size).toBe(10);
     expect(names.every((name) => !name.includes('/') && !name.includes('..'))).toBe(true);
-    const manifest = await archive.file('manifest.csv')!.async('string');
+    const manifest = strFromU8(archive['manifest.csv']);
     expect(manifest).toContain('https://queer.guide/go/pride?utm_source=print&qg_qr=1#details');
     expect(manifest).toContain('https://queer.guide/events/community');
     expect(progress).toEqual([0, 1, 2, 3]);
     for (const name of names.filter((name) => name !== 'manifest.csv')) {
-      const bytes = await archive.file(name)!.async('uint8array');
+      const bytes = archive[name];
       const { data, info } = await sharp(bytes)
         .ensureAlpha()
         .raw()
