@@ -221,13 +221,13 @@ export default function Travel() {
     <IntentPageLayout
       breadcrumbLabel={t('header.intents.travelling.label', 'Travelling')}
       breadcrumbHref="/travel"
-      eyebrow="Travelling"
+      compactHero
       title={
         activeTrip?.primary_city_name
           ? t('pages.travel.activeTitle', 'Planning {{city}}', {
               city: activeTrip.primary_city_name,
             })
-          : t('pages.travel.title', 'Where are you going?')
+          : t('header.intents.travelling.label', 'Travelling')
       }
       lede={
         activeTrip?.primary_city_name
@@ -237,8 +237,8 @@ export default function Travel() {
               { city: activeTrip.primary_city_name },
             )
           : t(
-              'pages.travel.lede',
-              'Pick a place, build the trip, book the pieces — with the legal picture built in.',
+              'pages.travel.intro',
+              'Explore queer destinations, check local laws and plan your trip from itinerary to booking.',
             )
       }
       sections={sections}

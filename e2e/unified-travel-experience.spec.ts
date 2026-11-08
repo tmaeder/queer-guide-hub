@@ -17,15 +17,11 @@ test.describe('unified travel experience', () => {
   // The Browse/Plan tablist was removed — /travel is now a single hub page
   // (src/pages/Travel.tsx).
   //
-  // The h1 is matched by its ACTUAL copy, not the word "travel". The planner
-  // redesign (#2621/#2694) and the subway rebrand left the heading as the
-  // question "Where are you going?", which /travel/i cannot match — the test
-  // then read as "the travel hub does not render" while the hub was fine.
   test('/travel renders the travel hub', async ({ page }) => {
     await page.goto('/travel');
-    await expect(page.getByRole('heading', { level: 1, name: /where are you going/i })).toBeVisible(
-      { timeout: 15_000 },
-    );
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Travelling', exact: true }),
+    ).toBeVisible({ timeout: 15_000 });
   });
 
   // WAS: 'legacy ?mode=browse is dropped from the URL'. The rebuilt /travel has
@@ -39,9 +35,9 @@ test.describe('unified travel experience', () => {
   test('a legacy ?mode= URL still lands on the travel hub', async ({ page }) => {
     await page.goto('/travel?mode=browse');
     await expect(page).toHaveURL(/\/travel/);
-    await expect(page.getByRole('heading', { level: 1, name: /where are you going/i })).toBeVisible(
-      { timeout: 15_000 },
-    );
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Travelling', exact: true }),
+    ).toBeVisible({ timeout: 15_000 });
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/travel$/);
   });
 

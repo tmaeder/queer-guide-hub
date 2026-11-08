@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
 import { EditorialDetailLayout, type SectionDef } from '@/components/entity/editorial';
+import { PageIntro } from '@/components/layout/PageIntro';
 import { PageHero } from '@/components/discovery';
 import { cn } from '@/lib/utils';
 
 export interface IntentPageLayoutProps {
   /** Optional page-specific hero. Defaults to the shared PageHero treatment. */
   header?: ReactNode;
+  compactHero?: boolean;
   eyebrow?: ReactNode;
   title: ReactNode;
   lede?: ReactNode;
@@ -47,6 +49,7 @@ export interface IntentPageLayoutProps {
  */
 export function IntentPageLayout({
   header,
+  compactHero = false,
   eyebrow,
   title,
   lede,
@@ -78,18 +81,21 @@ export function IntentPageLayout({
         sectionNavVariant={sectionNavVariant}
         header={
           <>
-            {header ?? (
-              /* `bare` — EditorialDetailLayout already puts this inside a
+            {header ??
+              (compactHero ? (
+                <PageIntro title={title} lede={lede} />
+              ) : (
+                /* `bare` — EditorialDetailLayout already puts this inside a
                  PageContainer, and two nested containers double the gutter. */
-              <PageHero
-                bare
-                eyebrow={eyebrow}
-                title={title}
-                lede={lede}
-                size={heroSize}
-                className={heroClassName}
-              />
-            )}
+                <PageHero
+                  bare
+                  eyebrow={eyebrow}
+                  title={title}
+                  lede={lede}
+                  size={heroSize}
+                  className={heroClassName}
+                />
+              ))}
             {scopeBar ? <div className="mt-6">{scopeBar}</div> : null}
             {featured ? <div className="mt-8">{featured}</div> : null}
           </>
