@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-// @ts-expect-error -- plain .mjs operator helper, no type declarations
 import { readGateSnapshot } from '../../../scripts/lib/gate-rpc.mjs';
 
 /**
@@ -11,7 +10,7 @@ const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString(
 
 function stubFetch(status: number, body: unknown) {
   const fetchMock = vi.fn(
-    async () =>
+    async (_url: string) =>
       new Response(JSON.stringify(body), {
         status,
         headers: { 'content-type': 'application/json' },

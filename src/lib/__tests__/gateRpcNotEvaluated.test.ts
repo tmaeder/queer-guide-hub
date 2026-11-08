@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-// @ts-expect-error - plain .mjs helper, no types; exercised behaviourally on purpose.
 import { callRpc, notEvaluated, stallReason, NO_RESPONSE } from '../../../scripts/lib/gate-rpc.mjs';
 
 /**
