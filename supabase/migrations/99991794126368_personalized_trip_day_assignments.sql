@@ -1,7 +1,9 @@
 alter table public.trips
   add column adult_count smallint check (adult_count between 1 and 9);
 
-create or replace function public.create_trip_with_stops(p_id uuid, p_trip jsonb, p_stops jsonb)
+-- A distinct endpoint prevents an updated client from writing through the
+-- old RPC before the migration lands and silently losing day assignments.
+create function public.create_personalized_trip(p_id uuid, p_trip jsonb, p_stops jsonb)
 returns uuid
 language plpgsql
 security invoker
@@ -65,3 +67,6 @@ begin
   return p_id;
 end;
 $$;
+
+revoke all on function public.create_personalized_trip(uuid, jsonb, jsonb) from public, anon;
+grant execute on function public.create_personalized_trip(uuid, jsonb, jsonb) to authenticated;

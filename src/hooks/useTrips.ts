@@ -375,7 +375,9 @@ export function useTripMutations() {
         creationRequest.current = { payload, id: requestId ?? crypto.randomUUID() };
       }
       const request = creationRequest.current;
-      const { data, error } = await untypedRpc<string>('create_trip_with_stops', {
+      const rpc =
+        trip.adult_count === undefined ? 'create_trip_with_stops' : 'create_personalized_trip';
+      const { data, error } = await untypedRpc<string>(rpc, {
         p_id: request.id,
         p_trip: trip,
         p_stops: stops,
