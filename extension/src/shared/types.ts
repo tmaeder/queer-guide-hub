@@ -7,20 +7,9 @@
  */
 
 export type EntityType =
-  | "venue"
-  | "event"
-  | "stay"
-  | "marketplace_item"
-  | "news_article"
-  | "place"
-  | "organization";
+  'venue' | 'event' | 'stay' | 'marketplace_item' | 'news_article' | 'place' | 'organization';
 
-export type ExtractionMethod =
-  | "jsonld"
-  | "opengraph"
-  | "microdata"
-  | "dom"
-  | "manual";
+export type ExtractionMethod = 'jsonld' | 'opengraph' | 'microdata' | 'dom' | 'manual';
 
 export interface DetectedItem {
   entity_type: EntityType;
@@ -34,12 +23,6 @@ export interface DetectedItem {
   /** Source page URL. */
   source_url: string;
 }
-
-export interface SubmitRequest {
-  item: DetectedItem;
-  notes?: string;
-}
-
 export interface SubmitResponse {
   submission_id: string | number;
   disposition: string;
