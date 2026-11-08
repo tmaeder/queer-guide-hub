@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MapRail } from '../MapRail';
-import type { MapPointSummary } from '../../mapPoint';
+import type { MapStation } from '../../mapDomain';
 
 // A real shape: one geocode carrying far more places than the old 30-card cap.
 const points = Array.from(
@@ -18,7 +18,7 @@ const points = Array.from(
       color: 'hsl(0 0% 0%)',
       featured: false,
       live: false,
-    }) as unknown as MapPointSummary,
+    }) as unknown as MapStation,
 );
 
 const base = { onHover: vi.fn(), onSelect: vi.fn() };

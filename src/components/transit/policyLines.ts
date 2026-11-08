@@ -33,10 +33,6 @@ export const POLICY_LINES: Record<string, PolicyLine> = {
 /** The four contract pages, in the order they appear on the hub. */
 export const LEGAL_LINE_ORDER = ['terms', 'privacy', 'cookies', 'dmca'] as const;
 
-export function policyLine(slug: string): PolicyLine | undefined {
-  return POLICY_LINES[slug];
-}
-
 /** The track a RouteStrip should draw for a slug — `undefined` means ink. */
 export function policyTrack(slug: string): Track | undefined {
   const line = POLICY_LINES[slug];

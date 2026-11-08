@@ -27,46 +27,6 @@ export interface EditorialCoverRow {
   published: boolean;
 }
 
-// ---------------------------------------------------------------------------
-// Drafts queue
-// ---------------------------------------------------------------------------
-
-export function usePendingDrafts(entityType: EditorialEntityType) {
-  return useQuery({
-    queryKey: ['editorial-drafts', entityType],
-    queryFn: async (): Promise<EditorialDraft[]> => {
-      const { data, error } = await supabase
-        .from('editorial_drafts')
-        .select('id, entity_type, entity_id, draft_hook, draft_long, status, generated_at, model')
-        .eq('entity_type', entityType)
-        .eq('status', 'pending')
-        .order('generated_at', { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return (data ?? []) as EditorialDraft[];
-    },
-  });
-}
-
-export function useEntityName(entity_type: EditorialEntityType, entity_id: string) {
-  return useQuery({
-    queryKey: ['editorial-draft-entity', entity_type, entity_id],
-    queryFn: async () => {
-      const table =
-        entity_type === 'country' ? 'countries'
-        : entity_type === 'city' ? 'cities'
-        : 'queer_villages';
-      const { data } = await supabase
-        .from(table as 'countries')
-        .select('name')
-        .eq('id', entity_id)
-        .maybeSingle();
-      return (data as { name?: string } | null)?.name ?? '(unknown)';
-    },
-    staleTime: 60_000,
-  });
-}
-
 export function useGenerateDrafts() {
   const qc = useQueryClient();
   return useMutation({
@@ -76,43 +36,6 @@ export function useGenerateDrafts() {
       });
       if (error) throw error;
       return data as { drafted: number; failed: number; candidates: number };
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['editorial-drafts'] }),
-  });
-}
-
-export function useSaveDraft() {
-  return useMutation({
-    mutationFn: async (input: { id: string; draft_hook: string; draft_long: string | null }) => {
-      const { error } = await supabase
-        .from('editorial_drafts')
-        .update({ draft_hook: input.draft_hook, draft_long: input.draft_long })
-        .eq('id', input.id);
-      if (error) throw error;
-    },
-  });
-}
-
-export function useApproveDraft() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.rpc('approve_editorial_draft', { p_draft_id: id });
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['editorial-drafts'] }),
-  });
-}
-
-export function useRejectDraft() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('editorial_drafts')
-        .update({ status: 'rejected', reviewed_at: new Date().toISOString() })
-        .eq('id', id);
-      if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['editorial-drafts'] }),
   });

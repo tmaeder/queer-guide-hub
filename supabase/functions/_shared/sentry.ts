@@ -6,26 +6,7 @@
  *
  *   supabase secrets set SENTRY_DSN=<dsn>
  *
- * Usage in a function:
- *
- *   import { initSentry, captureError, withSentry } from "../_shared/sentry.ts";
- *
- *   initSentry("my-function-name");        // optional, called from withSentry
- *
- *   serve((req) =>
- *     withSentry("my-function-name", async () => {
- *       // ...handler logic
- *     })
- *   );
- *
- * Or for finer control:
- *
- *   try {
- *     // ...
- *   } catch (err) {
- *     captureError(err, { context: "post-fetch" });
- *     throw err;
- *   }
+ * Edge handlers report errors through report-api-error.ts.
  */
 
 import * as Sentry from "npm:@sentry/deno@^8";
@@ -94,22 +75,5 @@ export function captureError(
     }
   } catch {
     // never let Sentry break a request
-  }
-}
-
-/**
- * Wrap a serve handler so any thrown error gets reported and re-thrown.
- * Initializes Sentry on first call.
- */
-export async function withSentry<T>(
-  functionName: string,
-  handler: () => Promise<T>,
-): Promise<T> {
-  initSentry(functionName);
-  try {
-    return await handler();
-  } catch (err) {
-    captureError(err, { function: functionName });
-    throw err;
   }
 }
