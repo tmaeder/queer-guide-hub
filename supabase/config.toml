@@ -740,3 +740,14 @@ verify_jwt = false
 # Fixed synthetic validation fixtures; same internal-secret/admin handler authentication.
 [functions.jev-validation]
 verify_jwt = false
+
+# Cron-invoked; recovered from the deployed copy, which ran with verify_jwt=false.
+[functions.country-image-health]
+verify_jwt = false
+
+[functions.venue-description-backfill]
+verify_jwt = false
+
+# Cron dispatcher authenticates with the shared internal secret.
+[functions.milestone-source-health]
+verify_jwt = false

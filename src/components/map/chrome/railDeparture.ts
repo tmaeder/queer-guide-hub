@@ -2,7 +2,7 @@ import { formatDistance } from '@/lib/formatDistance';
 import { timeUntil } from '@/utils/relativeTime';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { ENTITY_BULLET } from '../mapDomain';
-import type { MapPointSummary } from '../mapPoint';
+import type { MapStation } from '../mapDomain';
 
 /**
  * Map-layer type → route-bullet key.
@@ -25,7 +25,7 @@ export const bulletTypeForLayer = (type: LayerType): string => ENTITY_BULLET[typ
  * neither is known the column is an em-dash — the repo's absence convention —
  * because inventing a plausible time is the one thing a board must never do.
  */
-export function departureTime(point: MapPointSummary): string {
+export function departureTime(point: MapStation): string {
   if (point.type === 'events') {
     if (point.live) return 'Now';
     const countdown = timeUntil(point.startDate);
@@ -45,7 +45,7 @@ export function departureTime(point: MapPointSummary): string {
  * `urgent` drives a pink station dot rather than colouring the text, so the
  * state is never encoded by hue alone (WCAG 1.4.1) — the label carries it.
  */
-export function departureStatus(point: MapPointSummary): {
+export function departureStatus(point: MapStation): {
   status?: string;
   urgent?: boolean;
 } {

@@ -53,7 +53,7 @@ type FavRow = {
   venue: { slug: string; name: string; category: string | null; city: string | null } | null;
 };
 
-export const supabaseSync: SyncDeps = {
+const supabaseSync: SyncDeps = {
   async listFavorites(userId) {
     const { data, error } = await supabase
       .from('venue_favorites')

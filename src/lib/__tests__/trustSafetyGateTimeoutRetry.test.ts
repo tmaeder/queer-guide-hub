@@ -38,7 +38,8 @@ const ADOPTERS = [
     call: 'callGates',
     rpc: 'trust_safety_gate_status',
   },
-  { file: 'scripts/check-data-quality-gates.mjs', call: 'callGates', rpc: 'release_gate_checks' },
+  // The retry lives in callWithRetry(), whose single-call parameter is callOnce.
+  { file: 'scripts/check-data-quality-gates.mjs', call: 'callOnce', rpc: 'release_gate_checks' },
   { file: 'scripts/check-tag-hygiene.mjs', call: 'callStats', rpc: 'tag_hygiene_stats' },
 ] as const;
 
@@ -114,6 +115,26 @@ describe('check-trust-safety-gates.mjs — gate semantics', () => {
     expect(CODE).toContain('CRITICAL gate(s) breached');
     // Two live exits: the RPC-unreachable one and the breached-gate one.
     expect(CODE.match(/process\.exit\(1\)/g) ?? []).toHaveLength(2);
+  });
+});
+
+describe('check-data-quality-gates.mjs — every gate RPC gets the retry', () => {
+  // #5209 (2026-11-08): release_gate_checks timed out, retried and passed, then
+  // event_quality_gate_checks timed out in the same load window with no retry
+  // and failed the PR. The retry must cover every RPC this script calls.
+  const CODE = stripComments(read('scripts/check-data-quality-gates.mjs'));
+
+  it.each(['release_gate_checks', 'personality_quality_gate_checks', 'event_quality_gate_checks'])(
+    '%s is called through callWithRetry',
+    (rpc) => {
+      expect(CODE).toMatch(new RegExp(`await callWithRetry\\('${rpc}'`));
+    },
+  );
+
+  it('calls no gate RPC outside the helper', () => {
+    const rpcs = CODE.match(/rest\/v1\/rpc\/(\w+)/g) ?? [];
+    expect(rpcs.length).toBe(3);
+    expect(CODE.match(/await callWithRetry\(/g) ?? []).toHaveLength(3);
   });
 });
 

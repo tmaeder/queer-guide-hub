@@ -76,62 +76,6 @@ export function useUnifiedTriageQueue(filters: TriageFilters) {
  */
 export const AUTO_DECISION_MIN_CONFIDENCE = 0.8;
 
-/** Server-side count of ALL staging rows eligible for high-confidence bulk
- * approve (at or above the bar, LLM-rejected excluded) — not limited to the
- * current page. Measured when the bar moved to 0.80: staging's highest
- * confidence is 0.500, so this reads 0 and the lowered bar drains nothing
- * there. */
-export function useHighConfCount(contentTypes: string[] | null, enabled: boolean) {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ['triage-high-conf-count', contentTypes],
-    queryFn: async (): Promise<number> => {
-      const { data, error } = await untypedRpc<{ eligible: number }>(
-        'triage_bulk_approve_high_conf',
-        {
-          p_min_confidence: AUTO_DECISION_MIN_CONFIDENCE,
-          p_content_types: contentTypes,
-          p_user_id: user?.id,
-          p_dry_run: true,
-        },
-      );
-      if (error) throw error;
-      return (data as { eligible: number })?.eligible ?? 0;
-    },
-    enabled,
-    staleTime: 30_000,
-    refetchInterval: 60_000,
-  });
-}
-
-/** One-shot set-based approve of every eligible staging row (see above). */
-export function useBulkApproveHighConf() {
-  const qc = useQueryClient();
-  const { user } = useAuth();
-  return useMutation({
-    mutationFn: async (params: {
-      contentTypes: string[] | null;
-    }): Promise<{ approved: number }> => {
-      const { data, error } = await untypedRpc<{ approved: number }>(
-        'triage_bulk_approve_high_conf',
-        {
-          p_min_confidence: AUTO_DECISION_MIN_CONFIDENCE,
-          p_content_types: params.contentTypes,
-          p_user_id: user?.id,
-          p_dry_run: false,
-        },
-      );
-      if (error) throw error;
-      return (data as { approved: number }) ?? { approved: 0 };
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['triage-queue'] });
-      qc.invalidateQueries({ queryKey: ['admin-counts'] });
-      qc.invalidateQueries({ queryKey: ['triage-high-conf-count'] });
-    },
-  });
-}
-
 export type TriageActionType = 'approve' | 'reject' | 'skip' | 'reopen';
 
 export function useTriageAction() {

@@ -142,7 +142,7 @@ export function Field({
  * accessibilityLiveRegion; iOS has no live regions, so VoiceOver users would
  * never hear an error that appears under the button they just pressed.
  */
-export function useAnnounce(message: string | null | undefined) {
+function useAnnounce(message: string | null | undefined) {
   useEffect(() => {
     if (message) AccessibilityInfo.announceForAccessibility(message);
   }, [message]);
