@@ -1,4 +1,5 @@
 import type { Plugin } from 'vite';
+import { trimTrailingSlashes } from '../lib/trim-trailing-slashes.mjs';
 
 interface StaticModuleInfo {
   importedIds: readonly string[];
@@ -28,7 +29,7 @@ export function startupSourceModules(
   lookup: ModuleLookup,
 ): Set<string> {
   const early = staticClosure(firstPaint, lookup);
-  const prefix = normalize(sourceDirectory).replace(/\/$/, '') + '/';
+  const prefix = trimTrailingSlashes(normalize(sourceDirectory)) + '/';
   return new Set(
     [...staticClosure(bootstrap, lookup)].filter((id) => {
       const normalized = normalize(id);
@@ -45,7 +46,7 @@ export function startupSourceModules(
 /** Uses the public build graph before Rolldown assigns output chunk groups. */
 export function startupChunk(sourceDirectory: string) {
   let modules = new Set<string>();
-  const prefix = normalize(sourceDirectory).replace(/\/$/, '') + '/';
+  const prefix = trimTrailingSlashes(normalize(sourceDirectory)) + '/';
   const plugin: Plugin = {
     name: 'consolidate-startup-source',
     apply: 'build',

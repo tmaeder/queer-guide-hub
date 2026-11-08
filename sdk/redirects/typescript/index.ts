@@ -1,3 +1,10 @@
+
+/** Strips every trailing `/` in linear time (no regex: avoids CodeQL js/incomplete-sanitization and js/polynomial-redos). */
+function trimTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47) end--;
+  return s.slice(0, end);
+}
 export { verifyWebhook } from './webhooks.js';
 export interface PasswordBranding {
   linkId: string;
@@ -375,7 +382,7 @@ export class RedirectsClient {
       throw new Error('Provide a valid workspace ID');
     this.workspaceId = options.workspaceId?.toLowerCase();
     this.token = token;
-    this.base = url.href.replace(/\/$/, '');
+    this.base = trimTrailingSlashes(url.href);
     this.timeout = options.timeoutMs ?? 10000;
     if (!Number.isFinite(this.timeout) || this.timeout <= 0)
       throw new Error('Timeout must be positive');

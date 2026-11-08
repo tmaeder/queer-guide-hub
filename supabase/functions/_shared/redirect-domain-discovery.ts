@@ -1,6 +1,7 @@
 import { getDomain } from 'tldts';
 import { redirectHostname } from './redirect-domains.ts';
 import { DOMAIN_CONNECT_PROVIDER, DOMAIN_CONNECT_SERVICE } from './redirect-domain-connect.ts';
+import { trimTrailingSlashes } from './trim-trailing-slashes.ts';
 
 type Provider = 'cloudflare' | 'vercel';
 export type DomainConnectDiscovery =
@@ -17,11 +18,11 @@ function endpoint(value: unknown, purpose: 'settings' | 'api' | 'sync', provider
   const family = url.hostname === 'cloudflare.com' || url.hostname.endsWith('.cloudflare.com') ? 'cloudflare' : url.hostname === 'vercel.com' || url.hostname.endsWith('.vercel.com') ? 'vercel' : null;
   if (!family || provider && provider !== family) return null;
   if (purpose === 'sync' && (family === 'cloudflare' ? url.origin !== 'https://dash.cloudflare.com' : url.origin !== 'https://vercel.com')) return null;
-  if (family === 'cloudflare' && purpose !== 'sync' && (url.origin !== 'https://api.cloudflare.com' || url.pathname.replace(/\/$/, '') !== '/client/v4/dns/domainconnect')) return null;
-  url.pathname = url.pathname.replace(/\/$/, '') || '/';
+  if (family === 'cloudflare' && purpose !== 'sync' && (url.origin !== 'https://api.cloudflare.com' || trimTrailingSlashes(url.pathname) !== '/client/v4/dns/domainconnect')) return null;
+  url.pathname = trimTrailingSlashes(url.pathname) || '/';
   return url;
 }
-function base(url: URL) { return url.href.replace(/\/$/, ''); }
+function base(url: URL) { return trimTrailingSlashes(url.href); }
 async function body(response: Response, max: number) {
   if (!response.body) return '';
   const reader = response.body.getReader(), decoder = new TextDecoder('utf-8', { fatal: true });

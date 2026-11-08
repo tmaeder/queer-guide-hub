@@ -20,6 +20,8 @@
  * fail-closed) serves search-proxy and assistant.
  */
 
+import { trimTrailingSlashes } from "./trim-trailing-slashes";
+
 export interface AuthedUser {
 	sub: string; // auth.users.id
 	email?: string;
@@ -76,7 +78,7 @@ export function createSupabaseJwtVerifier(jose: JoseLike) {
 	let jwksUrl: string | null = null;
 
 	function getJwks(supabaseUrl: string): unknown {
-		const url = `${supabaseUrl.replace(/\/$/, "")}/auth/v1/.well-known/jwks.json`;
+		const url = `${trimTrailingSlashes(supabaseUrl)}/auth/v1/.well-known/jwks.json`;
 		if (jwksCache && jwksUrl === url) return jwksCache;
 		jwksUrl = url;
 		jwksCache = jose.createRemoteJWKSet(new URL(url));
@@ -116,7 +118,7 @@ export function createSupabaseJwtVerifier(jose: JoseLike) {
 
 		// 3. GoTrue network fallback.
 		if (opts.supabaseUrl && opts.authApiKey) {
-			const res = await fetch(`${opts.supabaseUrl.replace(/\/$/, "")}/auth/v1/user`, {
+			const res = await fetch(`${trimTrailingSlashes(opts.supabaseUrl)}/auth/v1/user`, {
 				headers: { apikey: opts.authApiKey, Authorization: `Bearer ${token}` },
 				signal: AbortSignal.timeout(opts.authApiTimeoutMs ?? 8000),
 			});

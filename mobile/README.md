@@ -66,11 +66,25 @@ back from an old file.
   key and refuses a service-role key, so RLS keeps safety-gated venues out
   of every pack (Dubai builds with 0 venues). It also refuses to build when
   the help page has no hotlines.
-- **Not offline yet:** map tiles and photos.
+- **Map tiles.** With `PMTILES_SOURCE` set, the builder cuts each city's
+  vector tiles (z0–14; MapLibre overzooms past that) out of a planet PMTiles archive with `go-pmtiles
+  extract` (byte ranges, no planet download) and pins the archive in the
+  signed index like the pack itself. The bbox comes from the city's own
+  places, ignoring anything more than 40 km from their median, so one
+  misgeocoded venue cannot blow up the extract. The app downloads the
+  archive, hashes it in a stream, and only then installs; while the map is
+  centred over a downloaded city it reads the local file (`pmtiles://`), so
+  browsing there sends no tile requests at all. Measured 2026-11-07 on the
+  20261106 planet: Zürich 15 MB, Berlin 34 MB, London 41 MB (z15 would be
+  32 / 89 / 99 MB).
+- **Not offline yet:** photos, and map labels (glyphs and sprites are still
+  fetched remotely, so the offline map has streets but no text unless
+  MapLibre cached them).
 
 ```sh
 node scripts/packs/keygen.mjs            # once; private half -> secret store
-PACK_SIGNING_KEY=… node scripts/packs/build.mjs --cities berlin,zuerich --out dist/packs
+PACK_SIGNING_KEY=… PMTILES_SOURCE=https://build.protomaps.com/YYYYMMDD.pmtiles \
+  node scripts/packs/build.mjs --cities berlin,zuerich --out dist/packs
 ```
 
 Upload `dist/packs/` to a static https host, then build the app with
@@ -153,8 +167,8 @@ Me → Notifications registers this phone's native APNs/FCM token in
 
 ## Not done yet
 
-Tracked in the strategy doc's work breakdown: offline map tiles (PMTiles
-extracts in packs), pack hosting (the publish job is ready; it needs a
+Tracked in the strategy doc's work breakdown: offline map labels (bundled
+glyphs/sprites), pack hosting (the publish job is ready; it needs a
 bucket and keys), news in search, passkey and
 OAuth sign-in and universal links
 (queer.guide already serves AASA / assetlinks from the redirect-domain

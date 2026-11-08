@@ -16,7 +16,9 @@
  *   node scripts/seo-linkcheck.mjs --max=50              # crawl at most 50 URLs
  */
 
-const BASE = (process.env.QG_BASE ?? 'https://queer.guide').replace(/\/$/, '');
+import { trimTrailingSlashes } from './lib/trim-trailing-slashes.mjs'
+
+const BASE = trimTrailingSlashes(process.env.QG_BASE ?? 'https://queer.guide');
 const STRICT = process.argv.includes('--strict');
 const MAX = (() => {
   const arg = process.argv.find((a) => a.startsWith('--max='));
