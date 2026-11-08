@@ -178,11 +178,21 @@ signing fingerprint), in-app password reset, a push sender (APNs key / FCM
 project).
 Store metadata is drafted in `store/` but not yet submitted.
 
+**Open (Android):** Back from a screen opened by a link while the app was
+already running closes the app instead of returning to Explore. Seen on the
+CI emulator (the task closes through `MainActivityDefault`, the activity-alias
+the discreet-mode icons add); `unstable_settings.initialRouteName` covers the
+cold-start case only. Needs a check on a real device before it is called an
+emulator quirk.
+
 ## Device E2E (Maestro)
 
 Flows live in `.maestro/` and run against a dev or preview build on a
-simulator/emulator: `maestro test .maestro`. They select by English copy, and
-CI does not run Maestro, so `src/__tests__/maestroFlows.test.ts` fails if a
+simulator/emulator: `maestro test .maestro`. `.github/workflows/mobile-e2e.yml`
+runs them on an Android emulator against a release APK on every push to
+`main` that touches `mobile/` (not on PRs: ~25 min); the report and failure
+screenshots are uploaded as the `maestro-android` artifact. They select by
+English copy, so `src/__tests__/maestroFlows.test.ts` also fails on PRs if a
 flow taps or asserts a string that is no longer in `en.json`. Venue `mylord`
 (Zurich) is the fixed test place; if it is ever merged or closed, change the
 flow and the test's `DATA` set together.
