@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
-import * as SliderPrimitive from '@radix-ui/react-slider';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTranslation } from 'react-i18next';
 import type { DateRange } from 'react-day-picker';
-import type { MapShellFilters } from './MapShell.types';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 
 function fmt(d: Date | undefined): string {
@@ -136,102 +133,6 @@ export const TimePopover = ({ value, onChange, trigger }: TimePopoverProps) => {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-auto p-0 overflow-hidden">
         <TimeRangePicker value={value} onChange={onChange} onDone={() => setOpen(false)} />
-      </PopoverContent>
-    </Popover>
-  );
-};
-
-interface EraPopoverProps {
-  value?: MapShellFilters['era'];
-  onChange: (next: MapShellFilters['era'] | undefined) => void;
-  trigger?: React.ReactNode;
-  min?: number;
-  max?: number;
-}
-
-/**
- * Decade-range slider for the Era filter chip. Two thumbs, snapped to
- * decade boundaries. The historic LGBTQ+ overlay (personalities born or
- * active in the range) reads this value once Phase 4 data plumbing
- * lands.
- */
-export const EraPopover = ({
-  value,
-  onChange,
-  trigger,
-  min = 1900,
-  max = Math.floor(new Date().getFullYear() / 10) * 10,
-}: EraPopoverProps) => {
-  const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState<[number, number]>([
-    value?.decadeStart ?? 1950,
-    value?.decadeEnd ?? max,
-  ]);
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        {trigger ?? (
-          <Button variant="ghost" size="sm" aria-label="Era" title="Era" className="h-8 px-2">
-            <span className="mr-1.5 inline-flex">
-              <TransitIcon name="hours" size={18} />
-            </span>
-            <span className="text-xs">
-              {value ? `${value.decadeStart}s–${value.decadeEnd}s` : 'Any era'}
-            </span>
-          </Button>
-        )}
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 p-4 border-border">
-        <div className="flex items-baseline justify-between mb-4">
-          <span className="text-xs text-muted-foreground">Era</span>
-          <span className="text-sm font-medium tabular-nums">
-            {draft[0]}s – {draft[1]}s
-          </span>
-        </div>
-        <SliderPrimitive.Root
-          className={cn('relative flex w-full touch-none select-none items-center h-5')}
-          min={min}
-          max={max}
-          step={10}
-          value={draft}
-          onValueChange={(v) => setDraft([v[0], v[1]] as [number, number])}
-          minStepsBetweenThumbs={1}
-          aria-label="Decade range"
-        >
-          <SliderPrimitive.Track className="relative h-0.5 w-full grow bg-border">
-            <SliderPrimitive.Range className="absolute h-full bg-foreground" />
-          </SliderPrimitive.Track>
-          <SliderPrimitive.Thumb
-            aria-label="Start decade"
-            className="block h-4 w-4 border border-border-hairline bg-background focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          />
-          <SliderPrimitive.Thumb
-            aria-label="End decade"
-            className="block h-4 w-4 border border-border-hairline bg-background focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          />
-        </SliderPrimitive.Root>
-        <div className="flex items-center justify-between gap-2 mt-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              onChange(undefined);
-              setOpen(false);
-            }}
-          >
-            Clear
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              onChange({ decadeStart: draft[0], decadeEnd: draft[1] });
-              setOpen(false);
-            }}
-          >
-            Apply
-          </Button>
-        </div>
       </PopoverContent>
     </Popover>
   );

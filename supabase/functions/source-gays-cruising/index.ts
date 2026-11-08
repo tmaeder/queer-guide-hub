@@ -168,6 +168,7 @@ Deno.serve(
           items: 0,
         },
         428,
+        req,
       )
     }
 
@@ -191,10 +192,10 @@ Deno.serve(
           consent_ref: consentRef,
           items: deduped.length,
           sample: deduped.slice(0, 5).map((r) => adapter.normalize(r)),
-        })
+        }, 200, req)
       }
 
-      const result = await writeToStaging(getServiceClient(), adapter, deduped, {
+      const written = await writeToStaging(getServiceClient(), adapter, deduped, {
         batchSize,
         targetTable: 'venues',
         entityType: 'venue',
@@ -206,9 +207,10 @@ Deno.serve(
         items: deduped.length,
         items_total: deduped.length,
         items_processed: deduped.length,
-        items_succeeded: result?.inserted ?? deduped.length,
-        items_failed: result?.failed ?? 0,
-      })
+        items_succeeded: written,
+        items_skipped: deduped.length - written,
+        items_failed: 0,
+      }, 200, req)
     } catch (err) {
       console.error('source-gays-cruising failed', err)
       return errorResponse('Internal server error', 500, req)

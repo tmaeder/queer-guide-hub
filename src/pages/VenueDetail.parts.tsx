@@ -176,13 +176,6 @@ function asHoursShape(
   return hours as { display?: string; regular?: HoursPeriod[]; open_now?: boolean };
 }
 
-/** Surface the scraper's `open_now` flag when present; null = unknown. */
-export function getOpenNow(hours: unknown): boolean | null {
-  const shape = asHoursShape(hours);
-  if (shape && typeof shape.open_now === 'boolean') return shape.open_now;
-  return null;
-}
-
 // Google-sourced `regular` arrays split an overnight shift at midnight: a bar
 // open Tue 22:00–04:00 arrives as {day:2, 2200, +0000} plus {day:3, 0000, 0400}.
 // Rendered verbatim that reads "Wed 00:00–04:00, 22:00–00:00 (next day)", which

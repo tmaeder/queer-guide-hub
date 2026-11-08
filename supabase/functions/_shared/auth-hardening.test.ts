@@ -1,6 +1,6 @@
 import { assert, assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
 import { timingSafeEqual, signHmac, verifyHmac } from './hmac.ts'
-import { boundedInt, errorResponse, hasInternalSecret, jsonResponse, pgrstValue, requireAnyRole, STAFF_ROLES } from './supabase-client.ts'
+import { boundedInt, corsResponse, errorResponse, hasInternalSecret, jsonResponse, pgrstValue, requireAnyRole, STAFF_ROLES } from './supabase-client.ts'
 import { hasValidWebhookSecret } from './webhook-auth.ts'
 
 Deno.test('timingSafeEqual', () => {
@@ -32,17 +32,33 @@ Deno.test('secret gates fail closed and match exactly', () => {
 })
 
 Deno.test('errorResponse never echoes free text on 500', async () => {
+  const req = new Request('https://example.test')
   const body = async (r: Response) => (await r.json()).error
   const err = console.error
   console.error = () => {}
   try {
-    assertEquals(await body(errorResponse('duplicate key violates "users_pkey"', 500)), 'Internal server error')
-    assertEquals(await body(errorResponse('upsert_failed', 500)), 'upsert_failed')
-    assertEquals(await body(errorResponse('Missing authorization header', 401)), 'Missing authorization header')
-    assertEquals(await body(errorResponse(new Error('x'), 500)), 'Internal server error')
-    assertEquals(await body(errorResponse('upstream said no', 502)), 'upstream said no')
+    assertEquals(await body(errorResponse('duplicate key violates "users_pkey"', 500, req)), 'Internal server error')
+    assertEquals(await body(errorResponse('upsert_failed', 500, req)), 'upsert_failed')
+    assertEquals(await body(errorResponse('Missing authorization header', 401, req)), 'Missing authorization header')
+    assertEquals(await body(errorResponse(new Error('x'), 500, req)), 'Internal server error')
+    assertEquals(await body(errorResponse('upstream said no', 502, req)), 'upstream said no')
   } finally {
     console.error = err
+  }
+})
+
+Deno.test('shared responses validate each request origin', () => {
+  for (const [origin, expected] of [
+    ['https://queer.guide', 'https://queer.guide'],
+    ['https://www.queer.guide', 'https://www.queer.guide'],
+    ['https://example.test', ''],
+    ['', ''],
+  ]) {
+    const req = new Request('https://example.test', { headers: origin ? { Origin: origin } : {} })
+    for (const response of [corsResponse(req), jsonResponse({}, 200, req), errorResponse('bad input', 400, req)]) {
+      assertEquals(response.headers.get('Access-Control-Allow-Origin'), expected)
+      assertEquals(response.headers.get('Vary'), 'Origin')
+    }
   }
 })
 
@@ -99,14 +115,15 @@ Deno.test('ingest-api-error compares its secret in constant time', async () => {
 })
 
 Deno.test('jsonResponse sanitises a free-text error on 500 only', async () => {
+  const req = new Request('https://example.test')
   const err = console.error
   console.error = () => {}
   try {
-    const leaky = await (jsonResponse({ success: false, error: 'column "x" does not exist', n: 3 }, 500)).json()
+    const leaky = await (jsonResponse({ success: false, error: 'column "x" does not exist', n: 3 }, 500, req)).json()
     assertEquals(leaky, { success: false, error: 'Internal server error', n: 3 })
-    assertEquals((await jsonResponse({ error: 'load_failed' }, 500).json()).error, 'load_failed')
-    assertEquals((await jsonResponse({ error: 'bad input here' }, 400).json()).error, 'bad input here')
-    assertEquals(await jsonResponse([1, 2], 500).json(), [1, 2])
+    assertEquals((await jsonResponse({ error: 'load_failed' }, 500, req).json()).error, 'load_failed')
+    assertEquals((await jsonResponse({ error: 'bad input here' }, 400, req).json()).error, 'bad input here')
+    assertEquals(await jsonResponse([1, 2], 500, req).json(), [1, 2])
   } finally {
     console.error = err
   }

@@ -87,22 +87,22 @@ Deno.serve(async (req) => {
     // Route actions
     switch (action) {
       case 'dispatch':
-        return await handleDispatch(supabase, supabaseUrl, supabaseServiceRoleKey)
+        return await handleDispatch(req, supabase, supabaseUrl, supabaseServiceRoleKey)
 
       case 'enqueue':
-        return await handleEnqueue(supabase, payload)
+        return await handleEnqueue(req, supabase, payload)
 
       case 'retry':
-        return await handleRetry(supabase, payload)
+        return await handleRetry(req, supabase, payload)
 
       case 'cancel':
-        return await handleCancel(supabase, payload)
+        return await handleCancel(req, supabase, payload)
 
       case 'health_check':
-        return await handleHealthCheck(supabase)
+        return await handleHealthCheck(req, supabase)
 
       case 'metrics':
-        return await handleMetrics(supabase)
+        return await handleMetrics(req, supabase)
 
       default:
         return errorResponse(`Unknown action: ${action}`, 400, req)
@@ -117,6 +117,7 @@ Deno.serve(async (req) => {
 // ─── DISPATCH: Read queues and invoke edge functions ────────────────────────
 
 async function handleDispatch(
+  req: Request,
   supabase: SupabaseClient,
   supabaseUrl: string,
   serviceRoleKey: string
@@ -136,7 +137,7 @@ async function handleDispatch(
       success: true,
       message: 'Max concurrency reached, skipping dispatch',
       running: runningCount,
-    })
+    }, 200, req)
   }
 
   // Load workflow definitions (cached in memory for this invocation)
@@ -297,7 +298,7 @@ async function handleDispatch(
     dispatched: totalDispatched,
     duration_ms: Date.now() - startTime,
     results,
-  })
+  }, 200, req)
 }
 
 // Fire-and-forget edge function invocation with result tracking
@@ -448,11 +449,12 @@ async function moveToDeadLetter(
 // ─── ENQUEUE: Manually queue a workflow ─────────────────────────────────────
 
 async function handleEnqueue(
+  req: Request,
   supabase: SupabaseClient,
   payload: Record<string, unknown>
 ): Promise<Response> {
   const workflowName = payload.workflow as string
-  if (!workflowName) return errorResponse('Missing "workflow" parameter', 400)
+  if (!workflowName) return errorResponse('Missing "workflow" parameter', 400, req)
 
   const { data: def, error } = await supabase
     .from('workflow_definitions')
@@ -460,7 +462,7 @@ async function handleEnqueue(
     .eq('name', workflowName)
     .single()
 
-  if (error || !def) return errorResponse(`Unknown workflow: ${workflowName}`, 404)
+  if (error || !def) return errorResponse(`Unknown workflow: ${workflowName}`, 404, req)
 
   const { _workflow, _action, ...restPayload } = payload
   const msgPayload = {
@@ -472,24 +474,25 @@ async function handleEnqueue(
   const { data: msgId, error: sendError } = await supabase
     .rpc('pgmq_send', { p_queue: def.queue_name, p_msg: msgPayload })
 
-  if (sendError) return errorResponse(`Failed to enqueue: ${sendError.message}`)
+  if (sendError) return errorResponse(`Failed to enqueue: ${sendError.message}`, 500, req)
 
   return jsonResponse({
     success: true,
     message: `Enqueued ${workflowName} to ${def.queue_name}`,
     msg_id: msgId,
     queue: def.queue_name,
-  })
+  }, 200, req)
 }
 
 // ─── RETRY: Retry a dead-lettered or failed run ────────────────────────────
 
 async function handleRetry(
+  req: Request,
   supabase: SupabaseClient,
   payload: Record<string, unknown>
 ): Promise<Response> {
   const runId = payload.run_id as string
-  if (!runId) return errorResponse('Missing "run_id" parameter', 400)
+  if (!runId) return errorResponse('Missing "run_id" parameter', 400, req)
 
   const { data: run, error } = await supabase
     .from('workflow_runs')
@@ -497,9 +500,9 @@ async function handleRetry(
     .eq('id', runId)
     .single()
 
-  if (error || !run) return errorResponse(`Run not found: ${runId}`, 404)
+  if (error || !run) return errorResponse(`Run not found: ${runId}`, 404, req)
   if (!['failed', 'dead_letter'].includes(run.status)) {
-    return errorResponse(`Can only retry failed/dead_letter runs, got: ${run.status}`, 400)
+    return errorResponse(`Can only retry failed/dead_letter runs, got: ${run.status}`, 400, req)
   }
 
   const def = run.workflow_definitions as WorkflowDefinition
@@ -513,7 +516,7 @@ async function handleRetry(
   const { data: msgId, error: sendError } = await supabase
     .rpc('pgmq_send', { p_queue: def.queue_name, p_msg: msgPayload })
 
-  if (sendError) return errorResponse(`Failed to re-enqueue: ${sendError.message}`)
+  if (sendError) return errorResponse(`Failed to re-enqueue: ${sendError.message}`, 500, req)
 
   // Update original run status
   await supabase
@@ -526,17 +529,18 @@ async function handleRetry(
     message: `Re-enqueued ${run.workflow_name}`,
     original_run_id: runId,
     new_msg_id: msgId,
-  })
+  }, 200, req)
 }
 
 // ─── CANCEL: Cancel a queued run ────────────────────────────────────────────
 
 async function handleCancel(
+  req: Request,
   supabase: SupabaseClient,
   payload: Record<string, unknown>
 ): Promise<Response> {
   const runId = payload.run_id as string
-  if (!runId) return errorResponse('Missing "run_id" parameter', 400)
+  if (!runId) return errorResponse('Missing "run_id" parameter', 400, req)
 
   const { data: run, error } = await supabase
     .from('workflow_runs')
@@ -544,7 +548,7 @@ async function handleCancel(
     .eq('id', runId)
     .single()
 
-  if (error || !run) return errorResponse(`Run not found: ${runId}`, 404)
+  if (error || !run) return errorResponse(`Run not found: ${runId}`, 404, req)
 
   if (run.pgmq_msg_id && run.status === 'queued') {
     await supabase.rpc('pgmq_delete', { p_queue: run.queue_name, p_msg_id: run.pgmq_msg_id })
@@ -555,12 +559,13 @@ async function handleCancel(
     .update({ status: 'cancelled', completed_at: new Date().toISOString() })
     .eq('id', runId)
 
-  return jsonResponse({ success: true, message: `Cancelled run ${runId}` })
+  return jsonResponse({ success: true, message: `Cancelled run ${runId}` }, 200, req)
 }
 
 // ─── HEALTH CHECK: Verify scheduled workflows ran recently ──────────────────
 
 async function handleHealthCheck(
+  req: Request,
   supabase: SupabaseClient
 ): Promise<Response> {
   const { data: definitions } = await supabase
@@ -598,12 +603,13 @@ async function handleHealthCheck(
     healthy: issues.length === 0,
     issues,
     checked_at: new Date().toISOString(),
-  })
+  }, 200, req)
 }
 
 // ─── METRICS: Queue depths and recent run stats ─────────────────────────────
 
 async function handleMetrics(
+  req: Request,
   supabase: SupabaseClient
 ): Promise<Response> {
   // Queue metrics
@@ -639,5 +645,5 @@ async function handleMetrics(
     queues: queueMetrics,
     runs_24h: stats,
     generated_at: new Date().toISOString(),
-  })
+  }, 200, req)
 }

@@ -26,18 +26,15 @@ import {
 export type { Pt } from '@/components/transit/lineGeometry';
 export { pct } from '@/components/transit/lineGeometry';
 
-/** @deprecated Prefer `BendingLine` from `@/components/transit/lineGeometry`. */
-export type EraLine = BendingLine;
-
 export const H_VIEW = ERA_H.view;
 export const V_ROW = ERA_V.row;
 export const V_GUTTER = ERA_V.gutter;
 
-export function horizontalLine(n: number): EraLine {
+export function horizontalLine(n: number): BendingLine {
   return bendHorizontal(n, ERA_H);
 }
 
-export function verticalLine(n: number): EraLine {
+export function verticalLine(n: number): BendingLine {
   return bendVertical(n, ERA_V);
 }
 
