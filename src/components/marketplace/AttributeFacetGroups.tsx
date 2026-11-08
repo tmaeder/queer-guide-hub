@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { PickerRow } from '@/components/transit/PickerRow';
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import { tagGlyphOverride } from '@/lib/tags/tagIconography';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { MarketplaceTagFacet } from '@/hooks/useMarketplaceQueries';
 import {
@@ -55,7 +57,8 @@ function KindPicker({
           {facets.map((f) => (
             <li key={f.slug}>
               <PickerRow selected={selected.includes(f.slug)} onClick={() => onToggle(f.slug)}>
-                <span>
+                <span className="flex items-center gap-1.5">
+                  <TransitIcon name={tagGlyphOverride(f.slug) ?? 'tag'} size={12} className="shrink-0" />
                   {f.name}
                   <span className="ml-1.5 text-xs tabular-nums opacity-70">
                     {f.count.toLocaleString()}

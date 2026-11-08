@@ -4,6 +4,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router';
+import { TRANSIT_ICON_PATHS } from '@/components/transit/transitIconPaths';
+import { fineIcon } from '@/lib/marketplaceCategoryMeta';
 
 vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
 vi.mock('@/components/layout/PageHeader', () => ({
@@ -66,6 +68,9 @@ describe('MarketplaceCategory', () => {
     renderAt('/marketplace/category/apparel?g=tops');
     expect(screen.getByRole('heading', { level: 1, name: 'Tops' })).toBeInTheDocument();
     expect(screen.getByText(/Marketplace · Apparel/)).toBeInTheDocument();
+    const headerGlyph = screen.getByRole('heading', { level: 1 }).parentElement?.querySelector('svg path');
+    expect(headerGlyph).toHaveAttribute('d', TRANSIT_ICON_PATHS[fineIcon('', 'tops', 'apparel')]);
+    expect(headerGlyph).toHaveAttribute('fill', 'none');
   });
 
   it('keeps the department as the heading when no group is chosen, with no stock lede', () => {

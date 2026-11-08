@@ -6,6 +6,7 @@ import { useSearchParams } from 'react-router';
 // two labelled chips now, which is both more legible than a pair of ambiguous
 // icons and the reason no icon gap had to be filled.
 import { TransitIcon } from '@/components/transit/TransitIcon';
+import { departmentGlyph } from './departmentPlate';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { PickerRow } from '@/components/transit/PickerRow';
 import { Button } from '@/components/ui/button';
@@ -309,7 +310,12 @@ export function MarketplaceControlBar({
               <FilterChip
                 active={Boolean(filters.department)}
                 aria-label="Filter by department"
-                label={filters.department ? departmentLabel(filters.department) : 'Department'}
+                label={
+                  <>
+                    <TransitIcon name={departmentGlyph(filters.department)} size={16} />
+                    {filters.department ? departmentLabel(filters.department) : 'Department'}
+                  </>
+                }
               />
             </PopoverTrigger>
             <PopoverContent align="start" className="w-64 p-2">
@@ -328,7 +334,8 @@ export function MarketplaceControlBar({
                       selected={filters.department === d}
                       onClick={() => pickDepartment(d)}
                     >
-                      <span>
+                      <span className="flex items-center gap-1.5">
+                        <TransitIcon name={departmentGlyph(d)} size={16} className="shrink-0" />
                         {departmentLabel(d)}
                         <span className="ml-1.5 text-xs tabular-nums opacity-70">
                           {(departmentCounts.get(d) ?? 0).toLocaleString()}
