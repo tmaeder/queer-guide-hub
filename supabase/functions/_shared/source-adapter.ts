@@ -304,34 +304,3 @@ export async function writeToStaging(
   return inserted
 }
 
-/**
- * Create a standard edge function handler from a SourceAdapter.
- * Handles the HTTP request/response lifecycle.
- */
-export function createSourceHandler(adapter: SourceAdapter, targetTable: string) {
-  return async (req: Request, supabase: SupabaseClient): Promise<{ items: number; dryRun: boolean }> => {
-    const body = await req.json().catch(() => ({}))
-    const config: AdapterConfig = {
-      batchSize: body.batchSize ?? body.batch_size ?? 50,
-      offset: body.offset,
-      filters: body.filters ?? {},
-      apiKey: body.apiKey,
-      dryRun: body.dry_run ?? body.dryRun ?? false,
-      pipelineRunId: body.pipeline_run_id,
-      nodeId: body.node_id,
-    }
-
-    const rawItems = await adapter.fetch(config)
-
-    if (config.dryRun) {
-      return { items: rawItems.length, dryRun: true }
-    }
-
-    const written = await writeToStaging(supabase, adapter, rawItems, {
-      ...config,
-      targetTable,
-    })
-
-    return { items: written, dryRun: false }
-  }
-}
