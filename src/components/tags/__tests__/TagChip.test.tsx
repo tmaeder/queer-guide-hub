@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
+import { TRANSIT_ICON_PATHS } from '@/components/transit/transitIconPaths';
 import { TagChip } from '../TagChip';
 
 const wrap = (ui: React.ReactNode) => <MemoryRouter>{ui}</MemoryRouter>;
@@ -33,6 +34,18 @@ describe('TagChip', () => {
     const chip = container.querySelector('[data-tag-slug="bear-bar"]');
     expect(chip?.tagName).toBe('SPAN');
     expect(chip).toHaveTextContent('Bear Bar');
+  });
+
+  it('shows a shared outline even for a tag without a specific glyph', () => {
+    render(wrap(<TagChip tag="unmapped-topic" />));
+    const glyph = screen.getByRole('link').querySelector('svg[aria-hidden="true"] path');
+    expect(glyph).toHaveAttribute('d', TRANSIT_ICON_PATHS.tag);
+    expect(glyph).toHaveAttribute('fill', 'none');
+  });
+
+  it('uses the resolved taxonomy glyph when provided', () => {
+    render(wrap(<TagChip tag="unmapped-topic" icon="library" />));
+    expect(screen.getByRole('link').querySelector('path')).toHaveAttribute('d', TRANSIT_ICON_PATHS.library);
   });
 
   it('shows a count when greater than zero', () => {
