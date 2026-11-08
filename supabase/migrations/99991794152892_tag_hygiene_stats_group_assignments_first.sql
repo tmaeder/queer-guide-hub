@@ -47,12 +47,13 @@ declare
   v_old2 text := E'select distinct lower(btrim(t)) as s\n          from ev, unnest(coalesce(tags, \'{}\'::text[])) t\n         where btrim(t) <> \'\'';
   v_new2 text := E'select distinct lower(btrim(r)) as s\n          from (select distinct t as r from ev, unnest(coalesce(tags, \'{}\'::text[])) t) raw\n         where btrim(r) <> \'\'';
 begin
-  v_src  := pg_get_functiondef(v_fn);
-  v_code := regexp_replace(v_src, '--[^' || chr(10) || ']*', '', 'g');
+  v_code := regexp_replace(pg_get_functiondef(v_fn), '--[^' || chr(10) || ']*', '', 'g');
   if position('uta_groups as materialized' in v_code) > 0 then
     raise notice 'tag_hygiene_stats: already groups assignments first — no-op';
     return;
   end if;
+  -- Raw text, comments included: replace() must act on exactly what executes.
+  v_src := pg_get_functiondef(v_fn);
   if (length(v_src) - length(replace(v_src, v_old1, ''))) / length(v_old1) <> 1 then
     raise exception 'tag_hygiene_stats: uta_rollup anchor not found exactly once — re-derive from pg_get_functiondef()';
   end if;
