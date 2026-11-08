@@ -118,32 +118,6 @@ export async function fetchWikipediaImage(name: string): Promise<string | null> 
     return d.thumbnail?.source ?? d.originalimage?.source ?? null
   } catch { return null }
 }
-
-export async function fetchFirstPexelsUrl(key: string, query: string): Promise<string | null> {
-  try {
-    const r = await fetch(
-      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=3&orientation=landscape`,
-      { headers: { Authorization: key } },
-    )
-    if (!r.ok) return null
-    const d = await r.json()
-    const p = d.photos?.[0]
-    return p ? (p.src?.large2x ?? p.src?.large ?? p.src?.medium ?? null) : null
-  } catch { return null }
-}
-
-export async function fetchFirstUnsplashUrl(key: string, query: string): Promise<string | null> {
-  try {
-    const r = await fetch(
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=3&orientation=landscape`,
-      { headers: { Authorization: `Client-ID ${key}` } },
-    )
-    if (!r.ok) return null
-    const d = await r.json()
-    return d.results?.[0]?.urls?.regular ?? null
-  } catch { return null }
-}
-
 /**
  * Mirror an external image into our own Cloudflare R2 bucket (served from
  * img.queer.guide) and return the token-free public URL. We host NO images on
