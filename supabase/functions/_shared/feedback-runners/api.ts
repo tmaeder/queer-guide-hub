@@ -10,6 +10,6 @@ export const apiFixRunner: FixRunner = {
   name: 'api',
   // deno-lint-ignore require-await
   async dispatch() {
-    throw new Error('api runner not_implemented — pick mock, github_actions, or webhook');
+    throw new Error('api runner not_implemented — pick mock, webhook, or local');
   },
 };
