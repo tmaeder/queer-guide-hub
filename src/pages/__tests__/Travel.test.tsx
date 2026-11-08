@@ -44,8 +44,8 @@ vi.mock('@/components/travel/TripCockpit', () => ({
 vi.mock('@/components/travel/StartTripHero', () => ({
   StartTripHero: () => <div data-testid="start-hero" />,
 }));
-vi.mock('@/components/trips/TripTemplates', () => ({
-  TripTemplates: () => <div data-testid="templates" />,
+vi.mock('@/components/travel/PersonalizedTripPlanner', () => ({
+  PersonalizedTripPlanner: () => <div data-testid="personalized-planner" />,
 }));
 vi.mock('@/components/travel/DiscoverableTripsRail', () => ({
   DiscoverableTripsRail: () => <div data-testid="discoverable" />,
@@ -146,9 +146,9 @@ describe('Travel page (Travelling intent)', () => {
     expect(screen.queryByTestId('start-hero')).toBeNull();
   });
 
-  it('renders templates and public trips for everyone', () => {
+  it('renders the personalized planner and public trips for everyone', () => {
     renderAt('/travel');
-    expect(screen.getByTestId('templates')).toBeInTheDocument();
+    expect(screen.getByTestId('personalized-planner')).toBeInTheDocument();
     expect(screen.getByTestId('discoverable')).toBeInTheDocument();
   });
 

@@ -37,6 +37,7 @@ export interface Trip {
   start_date: string | null;
   end_date: string | null;
   currency: string;
+  adult_count?: number | null;
   status: 'planning' | 'active' | 'completed' | 'archived';
   is_public: boolean;
   created_at: string;
@@ -186,6 +187,7 @@ type CreateTripInput = {
   start_date?: string;
   end_date?: string;
   currency?: string;
+  adult_count?: number;
   cover_image_url?: string;
   // Geo anchor — required for new trips (enforced client-side in CreateTripDialog)
   primary_city_id: string;
@@ -358,11 +360,19 @@ export function useTripMutations() {
 
   const creationRequest = useRef<{ payload: string; id: string } | undefined>(undefined);
   const createTripWithStops = useMutation({
-    mutationFn: async ({ trip, stops }: { trip: CreateTripInput; stops: TripPlaceInsert[] }) => {
+    mutationFn: async ({
+      trip,
+      stops,
+      requestId,
+    }: {
+      trip: CreateTripInput;
+      stops: (TripPlaceInsert & { day_date?: string })[];
+      requestId?: string;
+    }) => {
       if (!user) throw new Error('Not signed in');
-      const payload = JSON.stringify([user.id, trip, stops]);
+      const payload = JSON.stringify([user.id, trip, stops, requestId]);
       if (creationRequest.current?.payload !== payload) {
-        creationRequest.current = { payload, id: crypto.randomUUID() };
+        creationRequest.current = { payload, id: requestId ?? crypto.randomUUID() };
       }
       const request = creationRequest.current;
       const { data, error } = await untypedRpc<string>('create_trip_with_stops', {

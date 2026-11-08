@@ -68,6 +68,7 @@ interface Props {
   startInBooking?: boolean;
   startDate?: string;
   endDate?: string;
+  adults?: number;
 }
 
 export function TripBookingAssistant({
@@ -78,6 +79,7 @@ export function TripBookingAssistant({
   startInBooking = false,
   startDate,
   endDate,
+  adults,
 }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -222,12 +224,14 @@ export function TripBookingAssistant({
   if (firstCity) hotelSearchParams.set('city', firstCity.name);
   if (startDate) hotelSearchParams.set('checkIn', startDate);
   if (endDate) hotelSearchParams.set('checkOut', endDate);
+  if (adults) hotelSearchParams.set('guests', String(adults));
 
   // Hotel deals for first city
   const { data: hotelResults, isLoading: hotelsLoading } = useHotelSearch({
     city: firstCity?.name,
     checkIn: startDate,
     checkOut: endDate,
+    guests: adults,
     limit: 3,
     includePartnerSearch: true,
     enabled: activeTab === 'booking' && vertical === 'hotel' && !hasHotelBooked,
@@ -247,6 +251,7 @@ export function TripBookingAssistant({
     destination,
     departDate: startDate,
     returnDate: endDate,
+    adults,
   }).url;
   const results = vertical === 'hotel' ? hotelResults : activityResults;
   const offersLoading = vertical === 'hotel' ? hotelsLoading : activitiesLoading;
@@ -411,6 +416,14 @@ export function TripBookingAssistant({
       {/* Booking Tab */}
       {activeTab === 'booking' && (
         <div className="flex flex-col gap-4">
+          {canEdit && (
+            <p className="text-sm text-muted-foreground">
+              {t('trips.bookingAssistant.partnerPayment', 'Complete payment with the travel partner.')}{' '}
+              <LocalizedLink to={`/trips/${tripId}?view=plan&section=prepare&tool=confirmation`}>
+                {t('trips.inbox.importConfirmation', 'Import a booking confirmation')}
+              </LocalizedLink>
+            </p>
+          )}
           {trackableReservations.map((reservation) => {
             const linkedStop = places.find((place) => place.reservation_id === reservation.id);
             const pending = reservation.status === 'pending';

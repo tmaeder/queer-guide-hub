@@ -23567,6 +23567,7 @@ export type Database = {
       }
       trips: {
         Row: {
+          adult_count: number | null
           cover_image_url: string | null
           created_at: string
           currency: string
@@ -23591,6 +23592,7 @@ export type Database = {
           vibe_tags: string[]
         }
         Insert: {
+          adult_count?: number | null
           cover_image_url?: string | null
           created_at?: string
           currency?: string
@@ -23615,6 +23617,7 @@ export type Database = {
           vibe_tags?: string[]
         }
         Update: {
+          adult_count?: number | null
           cover_image_url?: string | null
           created_at?: string
           currency?: string
