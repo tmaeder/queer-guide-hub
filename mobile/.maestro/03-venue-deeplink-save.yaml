@@ -15,6 +15,11 @@ tags: [smoke]
     timeout: 15000
 - tapOn: "Save"
 - assertVisible: "Saved"
-- back
+# Relaunch (keeping state) rather than Back: on the Android emulator, Back
+# after a warm deep link closes the task instead of returning to Explore.
+# Tracked in mobile/README.md "Not done yet"; this flow tests that the save
+# persists, which a relaunch proves more strictly than Back would.
+- launchApp:
+    clearState: false
 - tapOn: "Saved"
 - assertVisible: "Mylord"

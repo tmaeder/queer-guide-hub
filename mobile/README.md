@@ -178,6 +178,13 @@ signing fingerprint), in-app password reset, a push sender (APNs key / FCM
 project).
 Store metadata is drafted in `store/` but not yet submitted.
 
+**Open (Android):** Back from a screen opened by a link while the app was
+already running closes the app instead of returning to Explore. Seen on the
+CI emulator (the task closes through `MainActivityDefault`, the activity-alias
+the discreet-mode icons add); `unstable_settings.initialRouteName` covers the
+cold-start case only. Needs a check on a real device before it is called an
+emulator quirk.
+
 ## Device E2E (Maestro)
 
 Flows live in `.maestro/` and run against a dev or preview build on a
