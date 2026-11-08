@@ -16,8 +16,8 @@ import type { RecentlyViewedItem, RecentlyViewedType } from '@/lib/recentlyViewe
  * would otherwise stay on the card until the reader happened to revisit the
  * page. A key that is PRESENT with `null` means the row was found and has no
  * usable image: callers must not fall back to the stale stored URL then. A key
- * that is ABSENT means "not resolved" (row missing, RLS-hidden, still loading),
- * and the stored URL is the right fallback.
+ * that is ABSENT means "not resolved" (row missing, RLS-hidden, still loading).
+ * Event cards use a calendar tile until a current cover is resolved.
  *
  * Safety-gated rows in high-risk countries are RLS-filtered for anonymous
  * callers, so they simply resolve to no image (clean fallback) — intended.
@@ -56,8 +56,8 @@ const SOURCES: Record<RecentlyViewedType, SourceConfig> = {
   },
   event: {
     table: 'events',
-    cols: 'slug, images, logo_url',
-    pick: (r) => pickValid([...asArray(r.images), r.logo_url]),
+    cols: 'slug, images',
+    pick: (r) => pickValid(asArray(r.images)),
   },
   city: {
     table: 'cities',
