@@ -493,35 +493,3 @@ export function useDestinationCities(limit = 8) {
     queryFn: () => fetchTrendingCities(200_000, limit),
   });
 }
-
-// `VerifiedBrand` + `useVerifiedOwnedBrands` moved to
-// src/hooks/useMarketplaceBrands.ts when /shop folded into /marketplace. This
-// file is the data layer for the Intent Router composite pages; with no intent
-// page consuming it, a marketplace query living here only invites the next
-// person to import intent data into a marketplace component.
-
-/** Recent news scoped to a country, for the intent pages' news sections. */
-export function useIntentNews(countryId: string | null | undefined, limit = 5) {
-  return useQuery({
-    queryKey: ['intent-news', countryId, limit],
-    staleTime: 300_000,
-    queryFn: async (): Promise<
-      { id: string; title: string; slug: string | null; published_at: string | null }[]
-    > => {
-      let q = supabase
-        .from('news_articles')
-        .select('id, title, slug, published_at')
-        .order('published_at', { ascending: false, nullsFirst: false })
-        .limit(limit);
-      if (countryId) q = q.contains('country_ids', [countryId]);
-      const { data, error } = await q;
-      if (error) throw error;
-      return (data ?? []) as {
-        id: string;
-        title: string;
-        slug: string | null;
-        published_at: string | null;
-      }[];
-    },
-  });
-}

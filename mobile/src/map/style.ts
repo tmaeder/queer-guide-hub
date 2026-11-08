@@ -21,7 +21,6 @@ export const BASEMAP_SOURCE_ID = 'protomaps';
 const ASSETS_BASE = 'https://protomaps.github.io/basemaps-assets';
 
 /** Noto until the brand-glyph mirror exists (same rule as the web). */
-export const MAP_FONT_REGULAR = 'Noto Sans Regular';
 export const MAP_FONT_BOLD = 'Noto Sans Medium';
 
 type Rgb = [number, number, number];

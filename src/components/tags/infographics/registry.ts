@@ -24,10 +24,6 @@ import { consentFlowMeta } from './figures/consentFlow/meta';
 /** Declaration order is the tie-break wherever two figures rank equally. */
 export const INFOGRAPHICS: readonly InfographicMeta[] = [fourLinesMeta, consentFlowMeta];
 
-export const INFOGRAPHICS_BY_ID: ReadonlyMap<string, InfographicMeta> = new Map(
-  INFOGRAPHICS.map((f) => [f.id, f]),
-);
-
 /** How many inline bands a single term may host before the rest become links. */
 export const MAX_INLINE_FIGURES = 2;
 

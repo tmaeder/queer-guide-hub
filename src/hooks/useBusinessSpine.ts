@@ -5,7 +5,7 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 
 export type OrgEntityType = 'venue' | 'hotel' | 'merchant' | 'affiliate_partner' | 'brand';
 
@@ -260,37 +260,6 @@ export interface OrgLinkSuggestion {
   created_at: string;
 }
 
-export function useOrgLinkSuggestions() {
-  return useQuery({
-    queryKey: ['org-link-suggestions'],
-    queryFn: async (): Promise<OrgLinkSuggestion[]> => {
-      const { data, error } = await untypedFrom('org_link_suggestions')
-        .select('*')
-        .eq('status', 'open')
-        .order('confidence', { ascending: false })
-        .limit(200);
-      if (error) throw new Error(error.message);
-      return (data ?? []) as unknown as OrgLinkSuggestion[];
-    },
-  });
-}
-
-export function useDecideOrgAdoption() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (args: { id: string; approve: boolean; orgId?: string; note?: string }) => {
-      const { error } = await untypedRpc('decide_org_adoption', {
-        p_id: args.id,
-        p_approve: args.approve,
-        p_org_id: args.orgId ?? null,
-        p_note: args.note ?? null,
-      });
-      if (error) throw new Error(error.message);
-    },
-    onSuccess: () => invalidateOrg(qc),
-  });
-}
-
 export interface OrgSpineDrift {
   hotels_unlinked: number;
   merchants_unlinked: number;
@@ -363,62 +332,4 @@ export interface BusinessBrandQualityFilters {
   state?: Extract<QualityFindingState, 'fail' | 'pending'>;
   dimension?: string;
   resolution?: 'open' | 'waived';
-}
-
-export function useBusinessBrandQualityStats() {
-  return useQuery({
-    queryKey: ['business-brand-quality-stats'],
-    queryFn: async (): Promise<BusinessBrandQualityStats | null> => {
-      const { data, error } = await untypedRpc<BusinessBrandQualityStats>(
-        'business_brand_quality_stats',
-      );
-      if (error) throw new Error(error.message);
-      return data ?? null;
-    },
-    staleTime: 60_000,
-  });
-}
-
-export function useBusinessBrandQualityFindings(filters: BusinessBrandQualityFilters) {
-  return useQuery({
-    queryKey: [
-      'business-brand-quality-findings',
-      filters.entityType ?? '',
-      filters.state ?? '',
-      filters.dimension ?? '',
-      filters.resolution ?? 'open',
-    ],
-    queryFn: async (): Promise<BusinessBrandQualityFinding[]> => {
-      const { data, error } = await untypedRpc<BusinessBrandQualityFinding[]>(
-        'business_brand_quality_findings',
-        {
-          p_entity_type: filters.entityType ?? null,
-          p_state: filters.state ?? null,
-          p_dimension: filters.dimension ?? null,
-          p_resolution: filters.resolution ?? 'open',
-          p_limit: 200,
-        },
-      );
-      if (error) throw new Error(error.message);
-      return data ?? [];
-    },
-  });
-}
-
-export function useResolveBusinessBrandQualityFindings() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (args: { ids: number[]; action: 'waive' | 'reopen'; note?: string }) => {
-      const { data, error } = await untypedRpc<{ action: string; changed: number }>(
-        'resolve_business_brand_quality_findings',
-        { p_ids: args.ids, p_action: args.action, p_note: args.note ?? null },
-      );
-      if (error) throw new Error(error.message);
-      return data;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['business-brand-quality-findings'] });
-      qc.invalidateQueries({ queryKey: ['business-brand-quality-stats'] });
-    },
-  });
 }

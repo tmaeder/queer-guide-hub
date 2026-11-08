@@ -4,32 +4,6 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 const STORAGE_KEY = "qg_session_v1";
 
-/**
- * Minimal Supabase Auth client adapted for chrome.storage.local. We do not
- * use @supabase/supabase-js directly — its localStorage adapter does not
- * map cleanly onto MV3 service workers, and we only need three operations:
- * sendMagicLink, exchangeCodeForSession, getValidAccessToken (with refresh).
- */
-
-export async function sendMagicLink(email: string, redirectTo: string): Promise<void> {
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", apikey: ANON_KEY },
-    body: JSON.stringify({ email, options: { emailRedirectTo: redirectTo } }),
-  });
-  if (!res.ok) throw new Error(`magic link failed ${res.status}: ${await res.text()}`);
-}
-
-export async function exchangeCodeForSession(code: string): Promise<AuthSession> {
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=pkce`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", apikey: ANON_KEY },
-    body: JSON.stringify({ auth_code: code }),
-  });
-  if (!res.ok) throw new Error(`code exchange failed ${res.status}`);
-  return await persist(await res.json());
-}
-
 export async function getValidAccessToken(): Promise<string | null> {
   const session = await loadSession();
   if (!session) return null;

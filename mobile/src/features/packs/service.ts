@@ -91,5 +91,3 @@ export function createPackService(
     },
   };
 }
-
-export type PackService = ReturnType<typeof createPackService>;

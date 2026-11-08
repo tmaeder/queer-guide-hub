@@ -132,9 +132,6 @@ export function readRightValue(
   return { kind, valueKey: hit.key, raw };
 }
 
-/** Vocabulary coverage, for the drift test. */
-export const KNOWN_RIGHT_VALUES: readonly string[] = Object.keys(VOCAB);
-
 /**
  * The scalar a topic's column actually carries.
  *

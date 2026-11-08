@@ -80,23 +80,6 @@ export function goHref(params: GoLinkParams): string {
 }
 
 /**
- * Fire a viewport-impression beacon for a CTA (kind=impression). No-op when
- * the proxy origin is unset or the browser has no beacon support.
- */
-export function beaconImpression(params: GoLinkParams): void {
-  if (!SEARCH_PROXY_URL || typeof navigator === 'undefined') return;
-  try {
-    const qs = goQuery(params);
-    qs.set('beacon', '1');
-    const href = `${trimTrailingSlashes(SEARCH_PROXY_URL)}/go?${qs.toString()}`;
-    if (navigator.sendBeacon) navigator.sendBeacon(href);
-    else void fetch(href, { method: 'GET', keepalive: true, mode: 'no-cors' });
-  } catch {
-    // analytics must never break UX
-  }
-}
-
-/**
  * Recognise a stored outbound URL (e.g. hotels.booking_url) as a known partner
  * and tag it for attribution: Booking.com gets the affiliate `aid` when absent,
  * then the surface sub-id is applied. Unknown hosts pass through untouched so
