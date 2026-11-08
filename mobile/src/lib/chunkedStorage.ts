@@ -14,7 +14,7 @@ export interface KeyValueBackend {
   deleteItemAsync(key: string): Promise<void>;
 }
 
-export const CHUNK_SIZE = 1800;
+const CHUNK_SIZE = 1800;
 
 /** SecureStore keys may only contain [A-Za-z0-9._-]. */
 export function safeKey(key: string): string {

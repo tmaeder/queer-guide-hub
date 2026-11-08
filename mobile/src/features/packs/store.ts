@@ -17,7 +17,7 @@ export interface PackDb {
 }
 export type SqlValue = string | number | null;
 
-export const SCHEMA = `
+const SCHEMA = `
 CREATE TABLE IF NOT EXISTS packs (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,

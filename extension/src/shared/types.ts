@@ -15,7 +15,7 @@ export type EntityType =
   | "place"
   | "organization";
 
-export type ExtractionMethod =
+type ExtractionMethod =
   | "jsonld"
   | "opengraph"
   | "microdata"
