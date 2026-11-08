@@ -1,13 +1,12 @@
 import { memo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { MapPin, Star, DollarSign } from '@/components/icons';
+import { Star, DollarSign } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Image } from '@/components/ui/Image';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import type { Hotel } from '@/hooks/useHotels';
-import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { safeText } from '@/utils/safeDisplay';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
@@ -44,40 +43,13 @@ function PriceIndicator({ range }: { range: number | null }) {
   );
 }
 
-const HotelCardFixture = () => (
-  <div className="overflow-hidden rounded-container h-full flex flex-col bg-card">
-    <div className="bg-accent flex items-center justify-center" style={{ height: 180 }}>
-      <MapPin size={32} className="text-muted-foreground" />
-    </div>
-    <div className="p-4 flex-1 flex flex-col gap-1">
-      <p className="font-semibold truncate">Sample Hotel</p>
-      <div className="flex items-center gap-1 text-muted-foreground">
-        <MapPin size={14} />
-        <p className="text-sm truncate">Berlin, Germany</p>
-      </div>
-      <div className="flex items-center gap-2 mt-auto pt-2">
-        <Star size={14} />
-        <p className="text-sm font-semibold">4.5</p>
-        <Badge className="text-2xs" variant="outline" style={{ padding: '1px 5px' }}>
-          LGBTQ+
-        </Badge>
-      </div>
-    </div>
-  </div>
-);
-
 function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
   const { t } = useTranslation();
   if (loading || !hotel) {
     return (
-      <Skeleton
-        name="hotel-card"
-        loading={true}
-        fixture={<HotelCardFixture />}
-        fallback={<PageLoadingState count={1} />}
-      >
-        <div />
-      </Skeleton>
+      <div>
+        <PageLoadingState count={1} />
+      </div>
     );
   }
 
@@ -97,7 +69,7 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
     hotel.star_rating > 0;
 
   return (
-    <Skeleton name="hotel-card" loading={false} fixture={<HotelCardFixture />}>
+    <div>
       <LocalizedLink to={`/hotels/${hotel.slug}`} className="no-underline">
         <CardHoverEffect>
           <div className="group group/card overflow-hidden rounded-container bg-card transition-colors duration-normal h-full flex flex-col">
@@ -195,7 +167,7 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
           </div>
         </CardHoverEffect>
       </LocalizedLink>
-    </Skeleton>
+    </div>
   );
 }
 
