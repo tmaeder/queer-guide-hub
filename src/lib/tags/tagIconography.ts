@@ -332,18 +332,9 @@ export const KIND_GLYPHS: Record<string, TransitIconName> = {
   audience: 'near-you',
 };
 
-/**
- * The term's glyph if and ONLY if it has one of its own — no category tier, no
- * fallback. For `TagChip`, which receives a slug and nothing else.
- *
- * Returning `undefined` rather than the `library` fallback is the point: a chip
- * renders on venue, event and news pages as well as the glossary, and stamping
- * a books glyph on every unrecognised term there would be noise. A chip with no
- * mark is already the established look (`icon` defaults to false), so the only
- * visible change is that recognisable terms gain a real mark.
- */
+/** A term-specific glyph for surfaces that only know the tag slug. */
 export function tagGlyphOverride(slug?: string | null): TransitIconName | undefined {
-  return TAG_GLYPH_OVERRIDES[slug ?? ''];
+  return slug && Object.hasOwn(TAG_GLYPH_OVERRIDES, slug) ? TAG_GLYPH_OVERRIDES[slug] : undefined;
 }
 
 /**
@@ -361,7 +352,7 @@ export function resolveTagGlyph(input: {
   entityKind?: string | null;
 }): TransitIconName {
   return (
-    TAG_GLYPH_OVERRIDES[input.slug ?? ''] ??
+    tagGlyphOverride(input.slug) ??
     STOP_GLYPHS[input.stopSlug ?? ''] ??
     lineForCategory(input.parentName)?.icon ??
     KIND_GLYPHS[input.entityKind ?? ''] ??

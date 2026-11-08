@@ -29,6 +29,7 @@ export const SITE_ICON_ARTWORK: Partial<Record<TransitIconName, string>> = {
   route: `${ring(24, 73, 8)} ${ring(76, 27, 8)} M 32 73 H 64 A 12 12 0 0 0 64 49 H 37 A 11 11 0 0 1 37 27 H 68`,
   'home-base': 'M 14 48 L 50 17 L 86 48 M 23 41 V 82 H 77 V 41 M 42 82 V 59 H 58 V 82',
   events: 'M 26 26 H 74 Q 82 26 82 34 V 75 Q 82 83 74 83 H 26 Q 18 83 18 75 V 34 Q 18 26 26 26 Z M 33 17 V 34 M 67 17 V 34 M 18 44 H 82 M 35 59 H 44 M 56 59 H 65 M 35 70 H 44',
+  tag: `M 17 17 H 47 L 84 54 Q 87 57 84 60 L 60 84 Q 57 87 54 84 L 17 47 Z ${ring(32, 32, 4)}`,
   ticket: 'M 15 29 H 85 V 41 A 9 9 0 0 0 85 59 V 71 H 15 V 59 A 9 9 0 0 0 15 41 Z M 62 36 V 42 M 62 48 V 52 M 62 58 V 64',
   profile: `${ring(50, 33, 15)} M 21 81 V 73 A 17 17 0 0 1 38 56 H 62 A 17 17 0 0 1 79 73 V 81`,
   community: `${ring(39, 33, 13)} M 15 79 V 71 A 16 16 0 0 1 31 55 H 47 A 16 16 0 0 1 63 71 V 79 M 65 21 A 13 13 0 0 1 65 46 M 72 56 Q 85 59 85 72 V 79`,
