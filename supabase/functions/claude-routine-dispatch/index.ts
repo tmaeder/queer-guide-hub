@@ -14,7 +14,7 @@
 //         on prompt_hash, inserts a queued feedback_routine_runs row).
 //      d. If the row is freshly queued, hands it to the runner adapter.
 //         Sync runners (mock) report fix_proposed inline; async runners
-//         (github_actions, webhook) post back to claude-routine-callback.
+//         (webhook) post back to claude-routine-callback.
 //
 // Backwards-compat: still accepts { run_id } from older clients that
 // reserve the run themselves.

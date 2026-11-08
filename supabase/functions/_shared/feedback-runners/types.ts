@@ -7,8 +7,8 @@
 // called against the Supabase RPC layer.
 //
 // For sync runners (mock, future api), the runner can complete the whole thing
-// inside dispatch() before returning. For async runners (github_actions,
-// webhook), dispatch() returns immediately with an externalRef and the actual
+// inside dispatch() before returning. For async runners (webhook), dispatch()
+// returns immediately with an externalRef and the actual
 // progress arrives later via the callback edge function.
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
@@ -37,7 +37,7 @@ export interface FixDispatchResult {
 }
 
 export interface FixRunner {
-  name: 'mock' | 'github_actions' | 'webhook' | 'api' | 'local';
+  name: 'mock' | 'webhook' | 'api' | 'local';
   dispatch(input: FixDispatchInput): Promise<FixDispatchResult>;
 }
 
@@ -62,6 +62,6 @@ export interface RetestDispatchResult {
 }
 
 export interface RetestRunner {
-  name: 'mock' | 'github_actions' | 'webhook' | 'local';
+  name: 'mock' | 'webhook' | 'local';
   dispatch(input: RetestDispatchInput): Promise<RetestDispatchResult>;
 }

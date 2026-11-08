@@ -49,7 +49,7 @@ const RETEST_KINDS: RetestKind[] = ['typecheck', 'lint', 'unit', 'e2e', 'targete
 // never implemented (every `api` dispatch failed with "not_implemented"), so they
 // are removed to stop dead-end runs. `local` (feedback-fix skill / local daemon)
 // is the canonical path; `mock` stays for dry testing.
-const RUNNERS: RoutineRunner[] = ['local', 'mock', 'github_actions'];
+const RUNNERS: RoutineRunner[] = ['local', 'mock'];
 
 interface Props {
   story: FeedbackStory;

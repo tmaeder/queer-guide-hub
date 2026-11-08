@@ -157,8 +157,8 @@ export function useDispatchClaudeRoutine() {
   return useMutation({
     mutationFn: async (args: {
       storyId: string;
-      runner?: 'mock' | 'github_actions' | 'webhook' | 'api';
-      runner?: 'mock' | 'github_actions' | 'webhook' | 'api' | 'local';
+      runner?: 'mock' | 'webhook' | 'api';
+      runner?: 'mock' | 'webhook' | 'api' | 'local';
       /** When set, the admin's edited prompt overrides the server-built one. */
       promptOverride?: string;
     }) => {
@@ -197,7 +197,7 @@ export function useStartRetest() {
       runId: string;
       storyId: string;
       kind: RetestKind;
-      runner?: 'mock' | 'github_actions' | 'webhook' | 'local';
+      runner?: 'mock' | 'webhook' | 'local';
     }) => {
       const { data: retest, error } = await supabase.rpc('start_retest', {
         p_run_id: args.runId,
