@@ -2,7 +2,7 @@ name: design-audit
 # Regenerates public/design-audit.json (token usage / unused tokens / lint
 # suppressions / doc drift) so the /admin/design Audit tab never goes stale.
 #
-# Same direct-push-to-main pattern as claude-md-drift: runs post-merge or on a
+# Direct-push-to-main pattern: runs post-merge or on a
 # schedule, never touches a PR branch, commits with a `skip-checks: true`
 # trailer so a docs-artifact bump doesn't trigger a full CI/deploy rebuild.
 on:
