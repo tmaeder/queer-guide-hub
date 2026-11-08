@@ -7,16 +7,16 @@ import { Badge } from '@/components/ui/badge';
 import { formatDistance } from '@/lib/formatDistance';
 import { timeUntil } from '@/utils/relativeTime';
 import { iconForMarker, categoryLabel } from './mapIcons';
-import type { MapPointSummary } from './mapPoint';
+import type { MapStation } from './mapDomain';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 
 type CardVariant = 'popup' | 'rail' | 'hover';
 
 export interface MapEntityCardProps {
-  point: MapPointSummary;
+  point: MapStation;
   variant?: CardVariant;
   onNavigate?: (href: string) => void;
-  onShare?: (point: MapPointSummary) => void;
+  onShare?: (point: MapStation) => void;
   className?: string;
 }
 
@@ -46,7 +46,7 @@ function MarkerGlyph({ icon, size = 20 }: { icon: TransitIconName; size?: number
 }
 
 /** Small signal pills shared across variants. */
-function Signals({ point, compact }: { point: MapPointSummary; compact?: boolean }) {
+function Signals({ point, compact }: { point: MapStation; compact?: boolean }) {
   const price = priceLabel(point.priceRange);
   const dist = point.distanceKm != null ? formatDistance(point.distanceKm * 1000) : null;
   const countdown = point.type === 'events' && !point.live ? timeUntil(point.startDate) : null;

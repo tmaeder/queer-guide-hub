@@ -35,11 +35,6 @@ export interface DetectedItem {
   source_url: string;
 }
 
-export interface SubmitRequest {
-  item: DetectedItem;
-  notes?: string;
-}
-
 export interface SubmitResponse {
   submission_id: string | number;
   disposition: string;

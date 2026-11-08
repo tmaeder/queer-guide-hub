@@ -80,11 +80,8 @@ export type MapStationAction = 'open' | 'save' | 'addToTrip' | 'share' | 'direct
 /**
  * One plottable thing, flattened and render-ready.
  *
- * This is the former `MapPointSummary` (built once from a GeoJSON feature so
- * the popup card, the hover preview and the departures board don't each
- * re-parse the `meta` blob) plus the line/state/verification fields the
- * ecosystem needs. `mapPoint.ts` keeps re-exporting the old name as a
- * deprecated alias so existing consumers need no edit.
+ * A GeoJSON feature is parsed once so the popup card, hover preview, and
+ * departures board can share the same station data.
  */
 export interface MapStation {
   /** `venue-<uuid>` — the existing feature-id convention, and the key every

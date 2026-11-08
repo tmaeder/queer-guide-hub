@@ -124,12 +124,6 @@
       "project": ["src/**/*.{ts,tsx}", "tests/**/*.ts"]
     },
 
-    // Standalone Vite admin tool, explicitly outside the main build/deploy.
-    "tools/person-db": {
-      "entry": ["index.html", "src/main.tsx"],
-      "project": ["src/**/*.{ts,tsx}"]
-    },
-
     // Node service deployed by Dockerfile; package.json `main` is the entry.
     "infra/twenty/nas/smtp-relay": {
       "entry": ["index.mjs"],

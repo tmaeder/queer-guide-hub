@@ -33,8 +33,6 @@ const callGates = () =>
     body: '{}',
   });
 
-let res = await callGates();
-
 // A gate script has THREE outcomes and only two are about the gate: it passed,
 // it was breached, or IT WAS NEVER EVALUATED — the safety checks silently did
 // not run and the PR goes red for a reason unrelated to its diff. Retry once:
@@ -68,22 +66,34 @@ let res = await callGates();
 // A non-evaluation never becomes a pass: it still exits 1 below. Any other
 // non-ok status is the server answering and still fails at once — a real gate
 // breach must never be retried into silence.
+//
+// ALL THREE gate RPCs go through this helper. Until 2026-11-08 only
+// release_gate_checks did, so one 57014 on event_quality_gate_checks or
+// personality_quality_gate_checks failed the PR outright (#5209: the release
+// call timed out, retried and passed, then the event call timed out in the
+// same load window with no retry).
 const RETRY_DELAY_MS = 30_000;
-if (notEvaluated(res)) {
-  console.warn(
-    `⚠ release_gate_checks did not evaluate any gate — ${stallReason(res)}. ` +
-      `Retrying ONCE in ${RETRY_DELAY_MS / 1000}s, to sample a different load window.`,
-  );
-  await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
-  const t0 = Date.now();
-  res = await callGates();
-  console.warn(
-    `⚠ retry ${res.ok ? 'SUCCEEDED' : 'FAILED'} after ${Date.now() - t0}ms. If it FAILED on the ` +
-      'statement timeout, the RPC is near its 8s ceiling — re-measure per arm (see migration ' +
-      '20270401100400) rather than retrying harder. If it FAILED with no HTTP response, that is ' +
-      'the network or the instance, not this query, and no amount of re-measuring the arms helps.',
-  );
+async function callWithRetry(rpc, callOnce) {
+  let res = await callOnce();
+  if (notEvaluated(res)) {
+    console.warn(
+      `⚠ ${rpc} did not evaluate any gate — ${stallReason(res)}. ` +
+        `Retrying ONCE in ${RETRY_DELAY_MS / 1000}s, to sample a different load window.`,
+    );
+    await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+    const t0 = Date.now();
+    res = await callOnce();
+    console.warn(
+      `⚠ ${rpc} retry ${res.ok ? 'SUCCEEDED' : 'FAILED'} after ${Date.now() - t0}ms. If it FAILED on the ` +
+        'statement timeout, the RPC is near its 8s ceiling — re-measure per arm (see migration ' +
+        '20270401100400) rather than retrying harder. If it FAILED with no HTTP response, that is ' +
+        'the network or the instance, not this query, and no amount of re-measuring the arms helps.',
+    );
+  }
+  return res;
 }
+
+const res = await callWithRetry('release_gate_checks', callGates);
 
 if (!res.ok) {
   console.error(`release_gate_checks → HTTP ${res.status}: ${res.body}`);
@@ -128,11 +138,13 @@ for (const r of rows.sort(
 // contract can remain stable for older deployments. PGRST202 means the branch
 // is being checked before its migration has reached the target database; warn
 // during that rollout window, but every other RPC failure remains fatal.
-const personalityRes = await callRpc(`${BASE}/rest/v1/rpc/personality_quality_gate_checks`, {
-  method: 'POST',
-  headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
-  body: '{}',
-});
+const personalityRes = await callWithRetry('personality_quality_gate_checks', () =>
+  callRpc(`${BASE}/rest/v1/rpc/personality_quality_gate_checks`, {
+    method: 'POST',
+    headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+    body: '{}',
+  }),
+);
 if (!personalityRes.ok) {
   const body = personalityRes.body;
   if (personalityRes.status === 404 && body.includes('PGRST202')) {
@@ -153,11 +165,13 @@ if (!personalityRes.ok) {
 // Event programme gates remain advisory while event_quality_rollout is in
 // shadow mode. The RPC promotes zero-tolerance gates to critical only after
 // enforcement is explicitly enabled.
-const eventRes = await callRpc(`${BASE}/rest/v1/rpc/event_quality_gate_checks`, {
-  method: 'POST',
-  headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
-  body: '{}',
-});
+const eventRes = await callWithRetry('event_quality_gate_checks', () =>
+  callRpc(`${BASE}/rest/v1/rpc/event_quality_gate_checks`, {
+    method: 'POST',
+    headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+    body: '{}',
+  }),
+);
 if (!eventRes.ok) {
   const body = eventRes.body;
   if (eventRes.status === 404 && body.includes('PGRST202')) {

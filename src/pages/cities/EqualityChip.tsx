@@ -1,6 +1,5 @@
 import { cn } from '@/lib/utils';
-import { tierFor } from '@/utils/citiesFilter';
-import { EQUALITY_TIER_LABEL, getScoreRingColor } from '@/utils/equalityScore';
+import { tierForScore, EQUALITY_TIER_LABEL, getScoreRingColor } from '@/utils/equalityScore';
 
 interface EqualityChipProps {
   score: number | null | undefined;
@@ -46,7 +45,7 @@ export function EqualityChip({
   showLabel = false,
   variant = 'plate',
 }: EqualityChipProps) {
-  const tier = tierFor(score);
+  const tier = tierForScore(score);
   const label = showLabel || score == null ? EQUALITY_TIER_LABEL[tier] : `${Math.round(score)}`;
   const dotColor = getScoreRingColor(score);
   const ariaLabel =
