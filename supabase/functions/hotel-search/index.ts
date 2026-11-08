@@ -50,16 +50,19 @@ Deno.serve(async (req) => {
       return errorResponse('Internal server error', 500, req);
     }
 
+    const adults = Number.isInteger(guests) && guests > 0 ? guests : 2;
+    const bookingSearch = { city, checkIn, checkOut, adults };
+
     // Try multiple data sources
-    let hotels = await searchViaTPCache(city, checkIn, checkOut, currency, limit, apiToken);
+    let hotels = await searchViaTPCache(bookingSearch, currency, limit, apiToken);
 
     if (hotels.length === 0) {
-      hotels = await searchViaTPLookup(city, currency, limit, apiToken);
+      hotels = await searchViaTPLookup(bookingSearch, currency, limit, apiToken);
     }
 
     // If still no results, return Booking.com search link as single result
     if (hotels.length === 0) {
-      hotels = [buildBookingFallback(city, checkIn, checkOut, guests, currency)];
+      hotels = [buildBookingFallback(bookingSearch, currency)];
     }
 
     // Cross-reference with our own hotels table for LGBTQ+ friendly flags
@@ -97,13 +100,20 @@ Deno.serve(async (req) => {
   }
 });
 
+interface BookingSearch {
+  city: string;
+  checkIn?: string;
+  checkOut?: string;
+  adults: number;
+}
+
 /**
  * Search via Travelpayouts cache endpoint (still operational post-Hotellook closure)
  */
 async function searchViaTPCache(
-  city: string, checkIn: string | undefined, checkOut: string | undefined,
-  currency: string, limit: number, token: string,
+  search: BookingSearch, currency: string, limit: number, token: string,
 ): Promise<Record<string, unknown>[]> {
+  const { city, checkIn, checkOut } = search;
   const url = new URL(`${TP_BASE}/cache.json`);
   url.searchParams.set('location', city);
   url.searchParams.set('currency', currency);
@@ -129,7 +139,7 @@ async function searchViaTPCache(
       priceOld: h.priceOld,
       currency: currency.toUpperCase(),
       photoUrl: h.hotel_id ? `https://photo.hotellook.com/image_v2/crop/h${h.hotel_id}_0/640/480.auto` : undefined,
-      bookingUrl: buildBookingUrl(h.hotelName as string || city, city, checkIn, checkOut),
+      bookingUrl: buildBookingUrl(h.hotelName as string, search),
       lgbtqFriendly: false,
     }));
   } catch {
@@ -141,8 +151,9 @@ async function searchViaTPCache(
  * Search via TP lookup + selections (for city-based browsing)
  */
 async function searchViaTPLookup(
-  city: string, currency: string, limit: number, token: string,
+  search: BookingSearch, currency: string, limit: number, token: string,
 ): Promise<Record<string, unknown>[]> {
+  const { city } = search;
   // Resolve city to location ID
   const lookupUrl = new URL(`${TP_BASE}/lookup.json`);
   lookupUrl.searchParams.set('query', city);
@@ -186,7 +197,7 @@ async function searchViaTPLookup(
       priceOld: h.priceOld,
       currency: currency.toUpperCase(),
       photoUrl: h.photoId ? `https://photo.hotellook.com/image_v2/crop/h${h.id}_${h.photoId}/640/480.auto` : undefined,
-      bookingUrl: buildBookingUrl(h.name as string || '', city, undefined, undefined),
+      bookingUrl: buildBookingUrl(h.name as string, search),
       lgbtqFriendly: false,
     }));
   } catch {
@@ -197,12 +208,10 @@ async function searchViaTPLookup(
 /**
  * Build Booking.com affiliate search URL
  */
-function buildBookingUrl(
-  hotelName: string, city: string,
-  checkIn?: string, checkOut?: string,
-): string {
+function buildBookingUrl(hotelName: string, { city, checkIn, checkOut, adults }: BookingSearch): string {
   const params = new URLSearchParams();
   params.set('ss', hotelName || city);
+  params.set('group_adults', String(adults));
   params.set('aid', '2381426'); // Travelpayouts Booking.com sub-affiliate
   params.set('label', `queerguide-${MARKER}`);
   if (checkIn) params.set('checkin', checkIn);
@@ -210,10 +219,8 @@ function buildBookingUrl(
   return `${BOOKING_AFFILIATE_BASE}?${params.toString()}`;
 }
 
-function buildBookingFallback(
-  city: string, checkIn: string | undefined, checkOut: string | undefined,
-  guests: number, currency: string,
-): Record<string, unknown> {
+function buildBookingFallback(search: BookingSearch, currency: string): Record<string, unknown> {
+  const { city } = search;
   return {
     hotelId: `search-${city}`,
     hotelName: `Search hotels in ${city}`,
@@ -223,7 +230,7 @@ function buildBookingFallback(
     reviews: null,
     priceFrom: null,
     currency: currency.toUpperCase(),
-    bookingUrl: buildBookingUrl(city, city, checkIn, checkOut),
+    bookingUrl: buildBookingUrl(city, search),
     lgbtqFriendly: false,
     isFallback: true,
   };
