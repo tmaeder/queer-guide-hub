@@ -1,7 +1,5 @@
-import i18n from 'i18next';
+import i18n, { type BackendModule, type LanguageDetectorModule } from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
-import HttpBackend from 'i18next-http-backend';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, isSupportedLocale } from './languages';
 import { isRtlLocale } from '@/lib/locale';
 // English bundles inline so the most common visitor never blocks on a
@@ -13,21 +11,70 @@ const resources = {
   en: { translation: en },
 };
 
-// Custom detector: read locale from the first URL path segment
-const pathDetector = {
-  name: 'path',
-  lookup() {
+const STORAGE_KEY = 'i18nextLng';
+
+// Order: URL path segment, saved choice, browser, <html lang>. i18next picks
+// the first supported entry (load: 'languageOnly' maps 'fr-FR' to 'fr').
+export const languageDetector: LanguageDetectorModule = {
+  type: 'languageDetector',
+  detect() {
     const segment = window.location.pathname.split('/')[1];
-    if (segment && isSupportedLocale(segment)) return segment;
-    return undefined;
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem(STORAGE_KEY);
+    } catch {
+      /* storage blocked */
+    }
+    const candidates = [
+      segment && isSupportedLocale(segment) ? segment : undefined,
+      saved,
+      ...(navigator.languages ?? []),
+      navigator.language,
+      document.documentElement.lang,
+    ];
+    return candidates.filter((c): c is string => !!c);
+  },
+  cacheUserLanguage(lng) {
+    if (lng === 'cimode') return;
+    try {
+      localStorage.setItem(STORAGE_KEY, lng);
+    } catch {
+      /* storage blocked */
+    }
   },
 };
 
-const languageDetector = new LanguageDetector();
-languageDetector.addDetector(pathDetector);
+// CF Pages serves /locales/*.json from /public at long-cache TTLs.
+// The second callback arg tells i18next whether a retry is worthwhile.
+export const localeBackend: BackendModule = {
+  type: 'backend',
+  init() {},
+  read(lng, _ns, callback) {
+    if (!isSupportedLocale(lng)) {
+      callback(new Error('Unsupported locale'), false);
+      return;
+    }
+    void fetch(`/locales/${lng}.json`).then(
+      (res) => {
+        if (!res.ok) {
+          callback(
+            new Error(`locale ${lng}: HTTP ${res.status}`),
+            res.status === 0 || res.status >= 500,
+          );
+          return;
+        }
+        return res.json().then(
+          (data) => callback(null, data),
+          (error) => callback(error, false),
+        );
+      },
+      (error) => callback(error, true),
+    );
+  },
+};
 
 i18n
-  .use(HttpBackend)
+  .use(localeBackend)
   .use(languageDetector)
   .use(initReactI18next)
   .init({
@@ -42,11 +89,6 @@ i18n
     load: 'languageOnly', // 'fr-FR' → load 'fr'
     debug: process.env.NODE_ENV === 'development',
 
-    backend: {
-      // CF Pages serves these from /public at long-cache TTLs.
-      loadPath: '/locales/{{lng}}.json',
-    },
-
     // English bundles inline so the common case still inits synchronously
     // and avoids the t()-returns-key flash. Non-English locales arrive
     // via the backend; main.tsx awaits loadLanguages() before render so
@@ -57,17 +99,10 @@ i18n
       escapeValue: false,
     },
 
-    detection: {
-      order: ['path', 'localStorage', 'navigator', 'htmlTag'],
-      lookupLocalStorage: 'i18nextLng',
-      caches: ['localStorage'],
-    },
-
     react: {
       useSuspense: false,
     },
   });
-
 
 // WCAG 3.1.1 / 3.1.2 — keep <html lang> + dir in sync with the active locale
 // so screen readers pronounce content correctly and Arabic switches to RTL.
