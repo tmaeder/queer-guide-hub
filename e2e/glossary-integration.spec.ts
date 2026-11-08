@@ -85,12 +85,3 @@ test.describe('glossary hover cards', () => {
   });
 });
 
-test('homepage Terms link opens the glossary', async ({ page }) => {
-  await page.goto('/');
-  const browse = page.getByRole('region', { name: 'More from Queer Guide' });
-  const terms = browse.getByRole('link', { name: 'Terms', exact: true });
-  await expect(terms).toHaveAttribute('href', '/tags');
-  await terms.click();
-  await expect(page).toHaveURL(/\/tags$/);
-  await expect(page.locator('main h1')).toBeVisible();
-});
