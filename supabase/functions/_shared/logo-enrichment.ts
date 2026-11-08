@@ -61,36 +61,6 @@ export function buildLogoProbeUrl(domain: string): string | null {
   return `https://img.logo.dev/${domain}?token=${LOGO_DEV_API_KEY}&size=128&format=png&fallback=404`
 }
 
-/**
- * Resolve a logo URL from a website.
- *
- * With `verify` (the default) we only return a URL when the domain has a *real*
- * brand logo — probed via `fallback=404`. This deliberately rejects logo.dev's
- * monogram fallback: under the logo-first display rule a monogram `logo_url`
- * would mask the venue's own photos, which is usually a downgrade. Domains
- * without a real logo resolve to null (the caller still marks them attempted, so
- * they aren't retried). Pass `verify = false` to skip the network probe and
- * return the unverified URL (monogram included).
- */
-export async function resolveLogoUrl(
-  website: string | null | undefined,
-  verify = true,
-): Promise<string | null> {
-  const storeUrl = logoUrlFromWebsite(website)
-  if (!storeUrl) return null
-  if (!verify) return storeUrl
-
-  const probeUrl = buildLogoProbeUrl(extractDomain(website) ?? '')
-  if (!probeUrl) return null
-  try {
-    // GET (not HEAD) so the 404 fallback status is reliably reflected.
-    const res = await fetch(probeUrl, { method: 'GET' })
-    return res.ok ? storeUrl : null
-  } catch {
-    return null
-  }
-}
-
 export interface FetchedLogo {
   bytes: Uint8Array
   contentType: string
