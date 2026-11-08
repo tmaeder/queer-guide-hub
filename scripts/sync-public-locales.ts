@@ -4,7 +4,7 @@
  *
  * `src/i18n/locales/` is the single source of truth for translations.
  * Only `en.json` is bundled inline (src/i18n/index.ts); every other locale is
- * fetched at runtime from `public/locales/{{lng}}.json` via i18next-http-backend.
+ * fetched at runtime from `public/locales/{{lng}}.json` by the locale backend in src/i18n/index.ts.
  * Those two dirs silently drifted in the past — non-English edits made in
  * src/i18n/locales/ never reached users because public/ was never regenerated.
  *
