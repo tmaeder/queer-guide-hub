@@ -19,7 +19,8 @@ import {
 import type { SectionDef } from '@/components/entity/editorial';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
-import { PageHero } from '@/components/discovery';
+import { PageIntro } from '@/components/layout/PageIntro';
+import { Button } from '@/components/ui/button';
 import { NoStationTrack } from '@/components/transit/NoStationTrack';
 import './going-out.css';
 
@@ -200,33 +201,38 @@ export default function GoingOut() {
     },
   ];
 
+  const title = cityName
+    ? t('pages.goingOut.titleCity', 'Going out in {{city}}', { city: cityName })
+    : t('header.intents.goingOut.label', 'Going out');
+  const lede = t(
+    'pages.goingOut.intro',
+    'Find queer bars, clubs, cafés and saunas, and see what events are coming up.',
+  );
+
   return (
     <IntentPageLayout
       className="going-out-page"
       breadcrumbLabel={t('header.intents.goingOut.label', 'Going out')}
       breadcrumbHref="/going-out"
       sectionNavVariant="subway"
+      title={title}
+      lede={lede}
       header={
-        <PageHero
-          bare
-          size="md"
-          className="going-out-hero"
-          title={cityName ? `Going out in ${cityName}` : 'Going out'}
-          lede="Bars, clubs, cafés and saunas from the community, plus whatever is actually on while you are there."
-        >
-          <div className="going-out-hero__actions">
-            <a className="going-out-hero__primary" href="#plan">
-              Find your next stop
-            </a>
-            <a className="going-out-hero__secondary" href="#whats-on">
-              See what’s on
-            </a>
+        <PageIntro className="going-out-hero" title={title} lede={lede}>
+          <div className="mt-6 flex flex-wrap gap-4">
+            <Button asChild>
+              <a className="no-underline" href="#plan">
+                {t('pages.goingOut.findStop', 'Find your next stop')}
+              </a>
+            </Button>
+            <Button asChild variant="soft">
+              <a className="no-underline" href="#whats-on">
+                {t('pages.goingOut.seeEvents', 'See what’s on')}
+              </a>
+            </Button>
           </div>
-        </PageHero>
+        </PageIntro>
       }
-      eyebrow={cityName ? `In ${cityName}` : 'Tonight'}
-      title={cityName ? `Going out in ${cityName}` : 'Going out'}
-      lede="Bars, clubs, cafés and saunas from the community, plus whatever is actually on while you are there."
       sections={sections}
       footer={
         resolvedSlug ? (
