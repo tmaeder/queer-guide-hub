@@ -49,14 +49,3 @@ export interface SourceConnector {
   cleanup(): Promise<void>;
 }
 
-/** Result of a connector run */
-export interface ConnectorRunResult {
-  source: SourceName;
-  entityType: EntityType | null;
-  discovered: number;
-  fetched: number;
-  parsed: number;
-  errors: Array<{ url: string; message: string; statusCode?: number }>;
-  blockedByRobots: number;
-  duration: number;
-}

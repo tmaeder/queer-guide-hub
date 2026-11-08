@@ -91,8 +91,6 @@
 
     "scraper": {
       "entry": [
-        "src/cli.ts",
-        "src/db/migrate.ts",
         "scripts/*.ts",
         "tests/**/*.test.ts"
       ],
