@@ -207,7 +207,7 @@
     "globals": "^17.14.0",
     "happy-dom": "21.0.4",
     "husky": "^9.1.7",
-    "jsdom": "30.1.3",
+    "jsdom": "31.0.0",
     "knip": "^6.44.1",
     "libpg-query": "^17.8.2",
     "lint-staged": "^17.6.0",
