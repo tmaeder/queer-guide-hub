@@ -26,7 +26,7 @@ for (const width of [412, 1280]) {
       .locator('.subway-hero')
       .evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().bottom + window.scrollY));
     await expect(
-      page.getByRole('heading', { name: 'No ads. No data sales. Just riders.' }),
+      page.getByRole('heading', { name: 'What are you here for?' }),
     ).toBeVisible({ timeout: 20_000 });
     await hero.locator('a[href="/venues"]').click();
     await expect(page).toHaveURL(/\/venues(?:\?|$)/);
@@ -74,7 +74,7 @@ test('localized homepage keeps its locale through navigation', async ({ page }) 
   await expect(page).toHaveURL(/\/de\/events(?:\?|$)/);
 });
 
-test('mobile consent and contribution controls load only when opened', async ({ page }) => {
+test('mobile consent controls load only when opened', async ({ page }) => {
   await page.setViewportSize({ width: 412, height: 844 });
   const scripts: string[] = [];
   page.on('request', (request) => {
@@ -94,12 +94,6 @@ test('mobile consent and contribution controls load only when opened', async ({ 
   await preferences.getByRole('button', { name: 'Necessary Only', exact: true }).click();
   await expect(preferences).toBeHidden();
   await expect(page.getByRole('region', { name: 'Cookie settings' })).toBeHidden();
-  await expect(page.locator('.contribution-trigger')).toHaveCount(0);
-  const support = page.getByRole('region', { name: 'No ads. No data sales. Just riders.' });
-  await support.getByRole('button', { name: 'Contribute to Queer Guide', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'Contribute to Queer Guide' })).toBeVisible({
-    timeout: 20000,
-  });
 });
 
 test('news photos never request publisher image hosts before or after mirror lookup', async ({
