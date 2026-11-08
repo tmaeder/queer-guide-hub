@@ -70,14 +70,21 @@ test.describe('Going out — shared subway system', () => {
     test(`inherits the ${theme} theme with readable supporting copy`, async ({ page }) => {
       await openGoingOut(page, theme);
 
-      const surfaces = await page.locator('.going-out-hero').evaluate((hero) => ({
-        hero: getComputedStyle(hero).backgroundColor,
-        root: getComputedStyle(document.documentElement).getPropertyValue('--background').trim(),
-        inherited: getComputedStyle(hero).getPropertyValue('--background').trim(),
-      }));
+      const surfaces = await page.locator('.going-out-hero').evaluate((hero) => {
+        let element: Element | null = hero;
+        let color = getComputedStyle(hero).backgroundColor;
+        while (color === 'rgba(0, 0, 0, 0)' && element?.parentElement) {
+          element = element.parentElement;
+          color = getComputedStyle(element).backgroundColor;
+        }
+        return {
+          hero: color,
+          root: getComputedStyle(document.documentElement).getPropertyValue('--background').trim(),
+          inherited: getComputedStyle(hero).getPropertyValue('--background').trim(),
+        };
+      });
       expect(surfaces.inherited).toBe(surfaces.root);
-      // Inheritance alone would also pass on a black painted container. The
-      // visible hero surface must equal the shared theme's actual background.
+      // Check the visible page surface, including any paint from ancestors.
       const expectedSurface = await page.evaluate(() => {
         const probe = document.createElement('span');
         probe.style.backgroundColor = 'hsl(var(--background))';

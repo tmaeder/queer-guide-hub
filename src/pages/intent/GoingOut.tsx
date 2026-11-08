@@ -218,7 +218,7 @@ export default function GoingOut() {
       title={title}
       lede={lede}
       header={
-        <PageIntro className="going-out-hero bg-background" title={title} lede={lede}>
+        <PageIntro className="going-out-hero" title={title} lede={lede}>
           <div className="mt-6 flex flex-wrap gap-4">
             <Button asChild>
               <a className="no-underline" href="#plan">
