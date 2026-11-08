@@ -19,7 +19,7 @@ import { getMeta, migrate, setMeta, type PackDb } from './store';
  * signed-in users.
  */
 export const DB_NAME = 'packs.db';
-export const KEY_NAME = 'qg.packs.dbkey.v1';
+const KEY_NAME = 'qg.packs.dbkey.v1';
 
 const toHex = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
 
