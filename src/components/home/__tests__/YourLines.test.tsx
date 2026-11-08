@@ -8,12 +8,13 @@ import { renderWithProviders, expectNoNestedInteractive } from '@/test/test-util
 
 const state = vi.hoisted(() => ({
   recent: [] as RecentlyViewedItem[],
+  images: {} as Record<string, string | null>,
   discovery: [] as unknown[],
   discoveryEnabled: null as boolean | null,
 }));
 
 vi.mock('@/hooks/useRecentlyViewedImages', () => ({
-  useRecentlyViewedImages: () => ({}),
+  useRecentlyViewedImages: () => state.images,
 }));
 vi.mock('@/hooks/useYourLines', () => ({
   useYourLinesDiscovery: (_r: unknown, _l: number, enabled = true) => {
@@ -45,6 +46,7 @@ const discoveryCard = (slug: string) => ({
 
 beforeEach(() => {
   state.recent = [];
+  state.images = {};
   state.discovery = [];
   state.discoveryEnabled = null;
 });
@@ -74,6 +76,31 @@ describe('YourLines', () => {
     // The reader's own item comes first; discovery augments it.
     expect(cards[0].textContent).toContain('Venue cranberry');
     expect(cards.length).toBeGreaterThan(1);
+  });
+
+  it('uses a calendar tile for an unresolved event and only shows its current cover', () => {
+    const recent: RecentlyViewedItem[] = [
+      {
+        ...recentItem('die-montagsspieler'),
+        type: 'event',
+        title: 'Die Montagsspieler',
+        image: 'https://cdn.example/retired.jpg',
+      },
+    ];
+    const { container, rerender } = renderWithProviders(<YourLines recent={recent} />);
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.querySelector('[data-fallback="station"]')).toBeInTheDocument();
+
+    state.images = { 'event:die-montagsspieler': 'https://cdn.example/official.jpg' };
+    rerender(<YourLines recent={recent} />);
+    expect(container.querySelector('img')).toHaveAttribute(
+      'src',
+      'https://cdn.example/official.jpg',
+    );
+
+    state.images = { 'event:die-montagsspieler': null };
+    rerender(<YourLines recent={recent} />);
+    expect(container.querySelector('img')).toBeNull();
   });
 
   it('keeps room for recommendations even when the visitor has a full history', () => {

@@ -82,15 +82,15 @@ export function DesignAuditTab({ controller }: { controller: DesignSettingsContr
 
       {staleDays !== null && staleDays > STALE_AFTER_DAYS && (
         <p className="rounded-element border p-4 text-13 text-muted-foreground">
-          Audit artifact is {staleDays} days old — regenerate with{' '}
-          <code className="font-mono">node scripts/design-audit.mjs</code>.
+          Audit artifact is {staleDays} days old. It is regenerated on every deploy, so nothing has
+          deployed since then.
         </p>
       )}
       {artifact.isSuccess && !data && (
         <p className="rounded-element border p-4 text-13 text-muted-foreground">
-          <AdminEmpty variant="inline" noun="audit artifact" className="inline" /> Generate one with{' '}
-          <code className="font-mono">node scripts/design-audit.mjs</code> and commit
-          public/design-audit.json.
+          <AdminEmpty variant="inline" noun="audit artifact" className="inline" /> It is generated
+          on every build. Locally, run{' '}
+          <code className="font-mono">node scripts/design-audit.mjs</code>.
         </p>
       )}
 

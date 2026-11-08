@@ -15,7 +15,7 @@ describe('TransitIcon', () => {
   });
 
   it('draws every map glyph as a single outline using the shared geometry', () => {
-    expect(TRANSIT_ICON_NAMES).toHaveLength(280);
+    expect(TRANSIT_ICON_NAMES).toHaveLength(288);
     for (const name of TRANSIT_ICON_NAMES) {
       const { container, unmount } = render(<TransitIcon name={name} color={ink} />);
       const paths = container.querySelectorAll('path');
