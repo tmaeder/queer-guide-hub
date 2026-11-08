@@ -64,12 +64,12 @@ export const GLOSSARY_GLYPH_GROUPS: readonly (readonly [TransitIconName, readonl
     'e-stim-machine', 'electro',
   ]],
   ['briefcase', [
-    'architect', 'child-labor', 'employment-non-discrimination', 'gender-equity-in-the-workplace',
+    'child-labor', 'employment-non-discrimination', 'gender-equity-in-the-workplace',
     'inclusive-employment-practices', 'lgbtq-workplace-rights', 'migrant-workers-rights',
     'right-to-work', 'workplace-discrimination', 'workplace-equality',
   ]],
   ['building', [
-    'arnsberg', 'auckland', 'bangkok', 'beijing', 'berlin', 'bielefeld', 'braunschweig', 'brisbane',
+    'architect', 'arnsberg', 'auckland', 'bangkok', 'beijing', 'berlin', 'bielefeld', 'braunschweig', 'brisbane',
     'buenos-aires', 'casablanca', 'castro-district', 'chueca-neighbourhood', 'columbus-ohio',
     'copenhagen', 'cranbrook', 'cuauhtemoc', 'denver', 'east-berlin', 'freiburg-im-breisgau',
     'gay-village', 'gayborhood', 'guatemala-city', 'harrisburg', 'indianapolis', 'kazan', 'kolkata',
@@ -409,8 +409,8 @@ export const GLOSSARY_GLYPH_GROUPS: readonly (readonly [TransitIconName, readonl
   ]],
   ['outdoor', [
     'camping', 'community-garden', 'garden', 'hiking', 'mountain', 'nude-hiking', 'nudist-camp',
-    'nudist-hiking-group', 'nudist-hiking-trail', 'outdoor', 'outdoor-activities', 'outdoor-pool',
-    'outdoor-recreation', 'outdoor-seating', 'outdoor-space', 'park', 'tents',
+    'nudist-hiking-group', 'nudist-hiking-trail', 'outdoor', 'outdoor-activities',
+    'outdoor-recreation', 'outdoor-space', 'park', 'tents',
   ]],
   ['paddle', [
     'bare-bottom-spanking', 'bare-handed-spanking', 'belt-spanking', 'breast-spanking', 'cane',
@@ -549,7 +549,7 @@ export const GLOSSARY_GLYPH_GROUPS: readonly (readonly [TransitIconName, readonl
     'gaming', 'queer-representation-in-video-games',
   ]],
   ['seat', [
-    'sitting-69', 'sitting-blowjob', 'sitting-bull', 'sitting-cannonball', 'sitting-rimjob',
+    'outdoor-seating', 'sitting-69', 'sitting-blowjob', 'sitting-bull', 'sitting-cannonball', 'sitting-rimjob',
   ]],
   ['shield', [
     'asylum', 'asylum-for-lgbtq-refugees', 'asylum-process', 'asylum-refugees', 'asylum-rights',
@@ -680,7 +680,7 @@ export const GLOSSARY_GLYPH_GROUPS: readonly (readonly [TransitIconName, readonl
     'beach-resort', 'canary-islands', 'caribbean', 'clothing-optional-beaches', 'coastal',
     'croatian-coast', 'diving', 'east-coast', 'faunetflux', 'florida-keys', 'gender-fluid',
     'greek-islands', 'indonesia', 'island', 'key-west', 'lagos-island', 'lake', 'lake-resort',
-    'lake-tahoe', 'mediterranean-coast', 'nude-swimming', 'nudist-swimming-pool', 'ponds', 'pool',
+    'lake-tahoe', 'mediterranean-coast', 'nude-swimming', 'nudist-swimming-pool', 'outdoor-pool', 'ponds', 'pool',
     'pool-hall', 'pool-tables', 'spanish-coast', 'surfing', 'swimming', 'swimming-pool',
     'victoria-island',
   ]],
