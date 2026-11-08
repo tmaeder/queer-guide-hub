@@ -43,9 +43,6 @@ export const TRIPSIT_COMBOS_URL = 'https://raw.githubusercontent.com/TripSit/dru
 /** Value of `substance_interactions.source` for every row this path owns. */
 export const TRIPSIT_SOURCE = 'tripsit'
 
-/** Value of `substance_interactions.source_url`. The poster is what people know. */
-export const TRIPSIT_SOURCE_URL = 'https://combo.tripsit.me/'
-
 /** Circuit-breaker key. Registered in the migration; an unseeded breaker never trips. */
 export const TRIPSIT_CIRCUIT = 'tripsit'
 

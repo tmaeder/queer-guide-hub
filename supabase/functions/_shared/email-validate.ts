@@ -24,9 +24,3 @@ export async function hasMxRecords(domain: string): Promise<boolean> {
   }
 }
 
-/** Convenience: true when the address parses and its domain has MX records. */
-export async function emailDomainValid(email: string): Promise<boolean> {
-  const at = (email ?? '').lastIndexOf('@')
-  if (at <= 0 || at === email.length - 1) return false
-  return await hasMxRecords(email.slice(at + 1))
-}
