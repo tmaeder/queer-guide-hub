@@ -40,7 +40,7 @@ export function TagChipRow({
   tags,
   max = 12,
   size = 'default',
-  icon = false,
+  icon = true,
   linkless = false,
   more,
   className,
