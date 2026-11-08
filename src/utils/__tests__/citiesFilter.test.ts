@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import {
   filterAndSortCities,
-  tierFor,
   parseSetParam,
   isCitiesSortKey,
   isEqualityTier,
   type CityForFilter,
 } from '@/utils/citiesFilter';
+import { tierForScore } from '@/utils/equalityScore';
 
 const city = (overrides: Partial<CityForFilter> & { id: string; name: string }): CityForFilter => ({
   population: 1_000_000,
@@ -25,23 +25,23 @@ const FIXTURES: CityForFilter[] = [
 
 const noCounts: ReadonlyMap<string, number> = new Map();
 
-describe('tierFor', () => {
+describe('tierForScore', () => {
   it('maps scores to existing equalityScore.ts cutoffs', () => {
-    expect(tierFor(95)).toBe('very-high');
-    expect(tierFor(80)).toBe('very-high');
-    expect(tierFor(79)).toBe('high');
-    expect(tierFor(60)).toBe('high');
-    expect(tierFor(59)).toBe('moderate');
-    expect(tierFor(40)).toBe('moderate');
-    expect(tierFor(39)).toBe('low');
-    expect(tierFor(20)).toBe('low');
-    expect(tierFor(19)).toBe('very-low');
-    expect(tierFor(0)).toBe('very-low');
+    expect(tierForScore(95)).toBe('very-high');
+    expect(tierForScore(80)).toBe('very-high');
+    expect(tierForScore(79)).toBe('high');
+    expect(tierForScore(60)).toBe('high');
+    expect(tierForScore(59)).toBe('moderate');
+    expect(tierForScore(40)).toBe('moderate');
+    expect(tierForScore(39)).toBe('low');
+    expect(tierForScore(20)).toBe('low');
+    expect(tierForScore(19)).toBe('very-low');
+    expect(tierForScore(0)).toBe('very-low');
   });
 
   it('returns "unknown" for null / undefined', () => {
-    expect(tierFor(null)).toBe('unknown');
-    expect(tierFor(undefined)).toBe('unknown');
+    expect(tierForScore(null)).toBe('unknown');
+    expect(tierForScore(undefined)).toBe('unknown');
   });
 });
 

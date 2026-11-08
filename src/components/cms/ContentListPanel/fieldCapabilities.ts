@@ -289,10 +289,6 @@ export function displayableFields(fields: FieldConfig[]): FieldConfig[] {
   return fields.filter((f) => capabilitiesFor(f).displayable);
 }
 
-export function filterableFields(fields: FieldConfig[]): FieldConfig[] {
-  return fields.filter((f) => capabilitiesFor(f).operators.length > 0);
-}
-
 export function sortableFields(fields: FieldConfig[]): FieldConfig[] {
   return fields.filter((f) => capabilitiesFor(f).sortable);
 }

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink } from '@/components/icons';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { featuresFromStations, type MapPointStack, type MapPointSummary } from './mapPoint';
+import { featuresFromStations, type MapPointStack } from './mapPoint';
 import {
   areaColor,
   lineColor,
@@ -101,7 +101,7 @@ export interface ExploreMapProps {
   route?: MapRoute;
   /** Fired (debounced, on data/viewport change) with the point summaries
    *  currently inside the visible bounds. Powers the departure board. */
-  onPointsInView?: (points: MapPointSummary[]) => void;
+  onPointsInView?: (points: MapStation[]) => void;
   /** Ambient "Showing <city>" string after an auto-fly, or null when it
    *  expires. Published rather than rendered so `MapNotice` can arbitrate it
    *  against the empty state and the first-run nudge — three overlays mounting

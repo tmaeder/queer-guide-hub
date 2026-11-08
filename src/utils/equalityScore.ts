@@ -4,7 +4,7 @@
  * Higher = more equal rights. Used for display and sorting.
  *
  * Tier cutoffs are the single source of truth — getScoreLabel,
- * getScoreRingColor, and src/utils/citiesFilter.tierFor() all derive
+ * getScoreRingColor, and tierForScore all derive
  * from EQUALITY_TIER_CUTOFFS so a change here flows everywhere.
  */
 

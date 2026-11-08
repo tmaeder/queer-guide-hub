@@ -294,9 +294,7 @@ async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: 
       profession: occupation,
       nationality,
       birth_place: birthPlace,
-      // Already normalised ISO dates — readTimeClaim did the formatting, so do
-      // NOT re-run formatWikidataDate here (it expects a raw "+YYYY-…" snak and
-      // would reject an already-formatted value).
+      // readTimeClaim has already normalised these dates to ISO format.
       birth_date: birthDate,
       death_date: deathDate,
       // Presence of a P570 statement is the death signal, even when the snak

@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import {
-  communityLevel,
   communityTierName,
   progressToNextCommunityLevel,
   pointsToNextLevel,
@@ -106,23 +105,4 @@ export function useCommunityScore(): {
 
   const view = useMemo(() => (row ? enrich(row) : null), [row]);
   return { data: view, loading };
-}
-
-/**
- * Convenience: derives level/tier/progress from any points value, without
- * needing a database row. Useful for previewing "you'd be level N" UX.
- */
-export function deriveCommunityScore(points: number): {
-  level: number;
-  tier: string;
-  progress: number;
-  pointsToNext: number;
-} {
-  const lvl = communityLevel(points);
-  return {
-    level: lvl,
-    tier: communityTierName(lvl),
-    progress: progressToNextCommunityLevel(points, lvl),
-    pointsToNext: pointsToNextLevel(points, lvl),
-  };
 }

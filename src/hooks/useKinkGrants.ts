@@ -1,6 +1,4 @@
-import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import type { KinkCompareStatus, KinkGrant } from '@/lib/kinks/types';
@@ -19,7 +17,7 @@ export function useMyKinkGrants(includeRevoked = false) {
       if (!includeRevoked) q = q.is('revoked_at', null);
       const { data, error } = await q;
       if (error) throw error;
-      return ((data ?? []) as unknown as KinkGrant[]);
+      return (data ?? []) as unknown as KinkGrant[];
     },
   });
 }
@@ -63,37 +61,4 @@ export function useKinkCompareStatus(otherId: string | undefined) {
       return data ?? 'none';
     },
   });
-}
-
-/**
- * Realtime receipts: refresh grant-derived state when someone grants/revokes
- * toward me (unlock receipts, compare handshake progress).
- */
-export function useKinkGrantListener(onChange?: (grant: KinkGrant) => void) {
-  const { user } = useAuth();
-  const qc = useQueryClient();
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel(`kink-grants-in:${user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'kink_grants',
-          filter: `grantee_id=eq.${user.id}`,
-        },
-        (payload) => {
-          qc.invalidateQueries({ queryKey: ['kink-grants'] });
-          qc.invalidateQueries({ queryKey: ['kink-compare'] });
-          qc.invalidateQueries({ queryKey: ['kink-visible'] });
-          if (payload.new) onChange?.(payload.new as KinkGrant);
-        },
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, qc, onChange]);
 }
