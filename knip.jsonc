@@ -77,9 +77,7 @@
         // .github/workflows/eslint.yml installs @microsoft/eslint-formatter-sarif
         // with --no-save on purpose; knip's Actions plugin misparses the name.
         "eslint-formatter-.*"
-      ],
-      // Binary is `boneyard`, package is `boneyard-js`.
-      "ignoreBinaries": ["boneyard"]
+      ]
     },
 
     // All 11 workers share one shape: wrangler `main` is src/index.ts, and the
