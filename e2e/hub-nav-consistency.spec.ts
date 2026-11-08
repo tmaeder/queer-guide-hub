@@ -11,7 +11,8 @@ import { test, expect, type Page } from '@playwright/test';
 // GroupInviteAccept, PeopleMode and Cruising; as a sibling on Community; inside
 // the hero container on /hub/people. Four vertical offsets for one control.
 // Fixed 2026-10-10 (#4277): HubNav takes nothing but `className`, HubNavBar owns
-// placement.
+// placement. The Meet people landing renders the shared HubNav below its
+// page introduction, inside the existing content container.
 //
 // src/components/hub/__tests__/hubNavConsistency.test.ts guards the same change,
 // but it is a SOURCE SCAN — it proves the bar is rendered and not configured
