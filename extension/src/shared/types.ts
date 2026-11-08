@@ -15,7 +15,7 @@ export type EntityType =
   | "place"
   | "organization";
 
-export type ExtractionMethod =
+type ExtractionMethod =
   | "jsonld"
   | "opengraph"
   | "microdata"
@@ -33,11 +33,6 @@ export interface DetectedItem {
   extraction_method: ExtractionMethod;
   /** Source page URL. */
   source_url: string;
-}
-
-export interface SubmitRequest {
-  item: DetectedItem;
-  notes?: string;
 }
 
 export interface SubmitResponse {

@@ -2,7 +2,7 @@
 // @ts-nocheck
 /* eslint-disable */
 import React from 'react';
-import { Logo, PrideBar, TopNav, Footer } from './shared';
+import { Logo, TopNav, Footer } from './shared';
 
 /* ============== DESKTOP PATTERNS ============== */
 
@@ -1671,6 +1671,6 @@ Object.assign(window, {
   PatternMarketplace, PatternMarketDetail,
   PatternSearch, PatternTags, PatternWeather,
   PatternAdmin, PatternCMS, PatternSecurity,
-  Logo, PrideBar, TopNav, Footer, Field, FilterBar,
+  Logo, TopNav, Footer, Field, FilterBar,
 });
 

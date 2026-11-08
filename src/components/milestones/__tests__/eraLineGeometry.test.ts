@@ -6,8 +6,8 @@ import {
   horizontalLine,
   pct,
   verticalLine,
-  type EraLine,
 } from '../eraLineGeometry';
+import type { BendingLine } from '@/components/transit/lineGeometry';
 import { HISTORY_ERAS } from '@/config/historyEras';
 
 /** Every coordinate pair a `C` command ends on, in order. */
@@ -35,7 +35,7 @@ const COUNTS = [2, 3, 4, 5, 6, 7, 8, 9, 10];
 describe.each([
   ['horizontalLine', horizontalLine],
   ['verticalLine', verticalLine],
-])('%s', (_name, make: (n: number) => EraLine) => {
+])('%s', (_name, make: (n: number) => BendingLine) => {
   it.each(COUNTS)('produces one segment per era (n=%i)', (n) => {
     const line = make(n);
     expect(line.segments).toHaveLength(n);

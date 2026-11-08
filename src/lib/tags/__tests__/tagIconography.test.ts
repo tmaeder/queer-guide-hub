@@ -11,6 +11,7 @@ import {
   STOP_GLYPHS_BY_LINE,
   TAG_GLYPH_OVERRIDES,
   resolveTagGlyph,
+  tagGlyphOverride,
 } from '@/lib/tags/tagIconography';
 
 const MIGRATIONS = join(process.cwd(), 'supabase/migrations');
@@ -208,6 +209,26 @@ describe('tagIconography', () => {
     expect(glyphs).toHaveLength(6);
     expect(new Set(glyphs).size).toBe(6);
     expect(glyphs).not.toContain('consent');
+  });
+
+  it.each([
+    ['drag-house', 'home-base'],
+    ['drag-queen-pageant', 'award'],
+    ['drag-king-makeup', 'makeup-compact'],
+    ['drag-shoes-platforms-stilettos', 'platform-heel'],
+    ['lip-sync-assassins', 'mic'],
+    ['werk-the-runway', 'runway'],
+    ['death-drop', 'dance-steps'],
+    ['circus', 'circus-tent'],
+  ])('uses the meaning of %s in both the glossary and standalone tag chips', (slug, glyph) => {
+    expect(resolveTagGlyph({ slug, stopSlug: 'drag-performance' })).toBe(glyph);
+    expect(tagGlyphOverride(slug)).toBe(glyph);
+  });
+
+  it('retains the theater mask for theater itself', () => {
+    expect(resolveTagGlyph({ slug: 'improvisational-theatre', stopSlug: 'drag-performance' })).toBe(
+      'theater',
+    );
   });
 
   it('gives the five Health stops five different marks', () => {
