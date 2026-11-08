@@ -10,7 +10,7 @@ type EventRow = Database['public']['Tables']['events']['Row'];
 export const EVENT_LIST_COLUMNS =
   'id, slug, title, start_date, end_date, timezone, latitude, longitude, city, event_type, venue_name' as const;
 
-export const EVENT_DETAIL_COLUMNS = `id, slug, title, start_date, end_date, timezone, latitude, longitude, city, country,
+const EVENT_DETAIL_COLUMNS = `id, slug, title, start_date, end_date, timezone, latitude, longitude, city, country,
   address, event_type, venue_name, description, ticket_url, website, is_free, price_min, price_max, currency,
   age_restriction, accessibility_attributes, tags, venue:venues!venue_id(slug, name)` as const;
 
@@ -159,7 +159,7 @@ export function formatEventWhen(
 }
 
 /** Longer than this, a row is a standing listing (opening hours), not an event. */
-export const ONGOING_AFTER_MS = 14 * 24 * 60 * 60_000;
+const ONGOING_AFTER_MS = 14 * 24 * 60 * 60_000;
 
 export const isOngoing = (e: Pick<EventListItem, 'start_date' | 'end_date'>) =>
   !!e.end_date && new Date(e.end_date).getTime() - new Date(e.start_date).getTime() > ONGOING_AFTER_MS;
