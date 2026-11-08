@@ -155,13 +155,6 @@ updates:
     ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
-    directory: /tools/person-db
-    schedule: { interval: weekly }
-    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
-    # typescript majors break typescript-eslint; see the root entry.
-    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
-
-  - package-ecosystem: npm
     directory: /workers/assistant
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
