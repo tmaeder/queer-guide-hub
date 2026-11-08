@@ -28,12 +28,14 @@ export const languageDetector: LanguageDetectorModule = {
     const candidates = [
       segment && isSupportedLocale(segment) ? segment : undefined,
       saved,
-      ...(navigator.languages ?? [navigator.language]),
+      ...(navigator.languages ?? []),
+      navigator.language,
       document.documentElement.lang,
     ];
     return candidates.filter((c): c is string => !!c);
   },
   cacheUserLanguage(lng) {
+    if (lng === 'cimode') return;
     try {
       localStorage.setItem(STORAGE_KEY, lng);
     } catch {
@@ -48,13 +50,26 @@ export const localeBackend: BackendModule = {
   type: 'backend',
   init() {},
   read(lng, _ns, callback) {
-    fetch(`/locales/${lng}.json`)
-      .then(async (res) => {
-        if (!res.ok)
-          return callback(new Error(`locale ${lng}: HTTP ${res.status}`), res.status >= 500);
-        callback(null, await res.json());
-      })
-      .catch((err) => callback(err, true));
+    if (!isSupportedLocale(lng)) {
+      callback(new Error('Unsupported locale'), false);
+      return;
+    }
+    void fetch(`/locales/${lng}.json`).then(
+      (res) => {
+        if (!res.ok) {
+          callback(
+            new Error(`locale ${lng}: HTTP ${res.status}`),
+            res.status === 0 || res.status >= 500,
+          );
+          return;
+        }
+        return res.json().then(
+          (data) => callback(null, data),
+          (error) => callback(error, false),
+        );
+      },
+      (error) => callback(error, true),
+    );
   },
 };
 

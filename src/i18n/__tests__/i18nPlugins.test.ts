@@ -19,18 +19,22 @@ describe('languageDetector', () => {
     window.history.replaceState(null, '', '/de/events');
     localStorage.setItem('i18nextLng', 'fr');
     vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['es-ES', 'en']);
+    vi.spyOn(navigator, 'language', 'get').mockReturnValue('es');
     document.documentElement.lang = 'it';
-    expect(detect()).toEqual(['de', 'fr', 'es-ES', 'en', 'it']);
+    expect(detect()).toEqual(['de', 'fr', 'es-ES', 'en', 'es', 'it']);
   });
 
   it('ignores a path segment that is not a locale', () => {
     window.history.replaceState(null, '', '/events');
-    vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['en']);
+    vi.spyOn(navigator, 'languages', 'get').mockReturnValue([]);
+    vi.spyOn(navigator, 'language', 'get').mockReturnValue('en');
     expect(detect()).toEqual(['en']);
   });
 
   it('saves the chosen language', () => {
     languageDetector.cacheUserLanguage!('pt');
+    expect(localStorage.getItem('i18nextLng')).toBe('pt');
+    languageDetector.cacheUserLanguage!('cimode');
     expect(localStorage.getItem('i18nextLng')).toBe('pt');
   });
 });
@@ -46,6 +50,18 @@ describe('localeBackend', () => {
     vi.stubGlobal('fetch', fetchMock);
     expect(await read('fr')).toEqual([null, { hi: 'salut' }]);
     expect(fetchMock).toHaveBeenCalledWith('/locales/fr.json');
+  });
+
+  it('does not request unsupported locales', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    expect((await read('../outside'))[1]).toBe(false);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('does not retry malformed locale JSON', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('<html>')));
+    expect((await read('fr'))[1]).toBe(false);
   });
 
   it('asks for a retry on 5xx and network errors, not on 404', async () => {
