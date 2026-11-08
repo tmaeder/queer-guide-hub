@@ -16,7 +16,7 @@ const criticalCeilings = JSON.parse(
   await readFile(new URL('./data-quality-gate-baseline.json', import.meta.url), 'utf8'),
 );
 
-import { callRpc, notEvaluated, stallReason } from './lib/gate-rpc.mjs';
+import { callRpc, notEvaluated, readGateSnapshot, stallReason } from './lib/gate-rpc.mjs';
 
 const BASE = process.env.SUPABASE_URL;
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -74,6 +74,9 @@ const callGates = () =>
 // same load window with no retry).
 const RETRY_DELAY_MS = 30_000;
 async function callWithRetry(rpc, callOnce) {
+  // Precomputed every 10 min by pg_cron; null (missing/stale) falls back to live.
+  const snap = await readGateSnapshot(BASE, KEY, rpc);
+  if (snap) return snap;
   let res = await callOnce();
   if (notEvaluated(res)) {
     console.warn(
