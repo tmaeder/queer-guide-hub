@@ -11,7 +11,7 @@ export function setOfflineDb(db: Promise<PackDb> | null) {
   offlineDb = db;
 }
 
-export function getOfflineDb(): Promise<PackDb> | null {
+function getOfflineDb(): Promise<PackDb> | null {
   return offlineDb;
 }
 
