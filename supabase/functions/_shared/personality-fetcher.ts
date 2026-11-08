@@ -1,6 +1,4 @@
 
-export const WIKIDATA_USER_AGENT = 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
-
 export async function fetchWikidataEntityLabel(entityId: string): Promise<string> {
   try {
     const url = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&format=json&props=labels&languages=en`

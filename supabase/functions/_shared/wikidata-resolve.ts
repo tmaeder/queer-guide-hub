@@ -234,11 +234,6 @@ export function readClaimIds(entity: Record<string, unknown>, prop: string): str
   }
   return ids;
 }
-
-export async function readEntityLabel(qid: string): Promise<string | null> {
-  return entityLabel(qid);
-}
-
 // ---------------------------------------------------------------------------
 // Personhood lookup (inverse of resolveByNameAndProfession): given a name,
 // decide whether the best-matching Wikidata entity is a human (P31=Q5) or a

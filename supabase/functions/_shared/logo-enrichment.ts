@@ -62,25 +62,6 @@ export function buildLogoProbeUrl(domain: string): string | null {
 }
 
 /**
- * Check if a logo.dev URL actually returns an image (HEAD request).
- * Returns the URL if valid, null if 404 or error.
- *
- * NOTE: this is a plain reachability check. logo.dev serves a 200 monogram by
- * default, so a HEAD on the bare URL passes even when no real logo exists — use
- * {@link resolveLogoUrl} (which probes with `fallback=404`) to gate on a *real*
- * logo.
- */
-export async function verifyLogoUrl(logoUrl: string): Promise<string | null> {
-  try {
-    const res = await fetch(logoUrl, { method: 'HEAD' })
-    if (res.ok) return logoUrl
-    return null
-  } catch {
-    return null
-  }
-}
-
-/**
  * Resolve a logo URL from a website.
  *
  * With `verify` (the default) we only return a URL when the domain has a *real*
