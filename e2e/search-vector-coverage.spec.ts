@@ -52,10 +52,18 @@ const MIN_ORGS = 4; // measured 12
 type Hit = { type?: string; title?: string };
 
 async function search(request: APIRequestContext, query: string): Promise<Hit[]> {
-  const res = await request.post(SEARCH_URL, {
-    data: { query },
-    headers: { 'content-type': 'application/json' },
-  });
+  const post = () =>
+    request.post(SEARCH_URL, {
+      data: { query },
+      headers: { 'content-type': 'application/json' },
+    });
+  let res = await post();
+  // A 502/503/504 means the worker or its upstream did not answer, not that
+  // search answered wrongly. Ask once more; a persistent outage still fails.
+  if ([502, 503, 504].includes(res.status())) {
+    await new Promise((r) => setTimeout(r, 3_000));
+    res = await post();
+  }
   expect(res.status(), `${SEARCH_URL} should answer 200 for ${JSON.stringify(query)}`).toBe(200);
   const body = (await res.json()) as { hits?: Hit[] };
   // A 200 carrying no `hits` array at all is a worker/RPC fault, not an empty
@@ -69,9 +77,10 @@ const orgCount = (hits: Hit[]) => hits.filter((h) => h.type === 'organization').
 test.describe('search vector coverage (live worker, prod)', () => {
   test('a meaningless query returns no unrelated results — the control', async ({ request }) => {
     const hits = await search(request, CONTROL_QUERY);
-    expect(hits, 'successful empty search must not be padded with unrelated popular results').toEqual(
-      [],
-    );
+    expect(
+      hits,
+      'successful empty search must not be padded with unrelated popular results',
+    ).toEqual([]);
   });
 
   test('a semantic organization query retrieves organizations', async ({ request }) => {
