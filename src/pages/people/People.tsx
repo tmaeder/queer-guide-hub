@@ -27,7 +27,7 @@ import {
 import type { SectionDef } from '@/components/entity/editorial';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
-import { HubNavBar } from '@/components/hub/HubNavBar';
+import { HubNav } from '@/components/hub/HubNav';
 import { lazyRetry } from '@/utils/lazyRetry';
 
 const PeopleConnectionMap = lazyRetry(() => import('@/components/people/PeopleConnectionMap'));
@@ -330,17 +330,11 @@ export default function People() {
 
   return (
     <>
-      {/* Above IntentPageLayout, not inside it via `topNav`: the layout nests
-          its header in its own PageContainer, which put the bar at a different
-          offset from every other hub route. */}
-      <HubNavBar />
       <IntentPageLayout
         sectionNavClassName="border-b-0"
-        heroSize="sm"
-        heroClassName="py-4 md:py-6"
+        compactHero
         breadcrumbLabel={t('header.intents.meet.label', 'Meet people')}
         breadcrumbHref="/hub/people"
-        eyebrow={cityName ? `In ${cityName}` : undefined}
         title={
           cityName
             ? t('people.titleCity', {
@@ -350,23 +344,31 @@ export default function People() {
             : t('header.intents.meet.label', 'Meet people')
         }
         lede={t(
-          'people.lede',
-          'The spaces, groups and events where queer people actually gather — plus the members, travel buddies and dates you can find here.',
+          'people.intro',
+          'Find queer community spaces, groups and events, and meet people who share your interests.',
         )}
         scopeBar={
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="soft" size="sm" className="gap-2" onClick={() => setIntentOpen(true)}>
-              <SlidersHorizontal size={14} aria-hidden />
-              {t('people.intent.button', "I'm here for…")}
-            </Button>
-            {showNudge ? (
-              <span className="text-13 text-muted-foreground">
-                {t(
-                  'people.intent.nudge',
-                  'Tell us what you’re here for so we can rank people for you.',
-                )}
-              </span>
-            ) : null}
+          <div className="space-y-4">
+            <HubNav />
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="soft"
+                size="sm"
+                className="gap-2"
+                onClick={() => setIntentOpen(true)}
+              >
+                <SlidersHorizontal size={14} aria-hidden />
+                {t('people.intent.button', "I'm here for…")}
+              </Button>
+              {showNudge ? (
+                <span className="text-13 text-muted-foreground">
+                  {t(
+                    'people.intent.nudge',
+                    'Tell us what you’re here for so we can rank people for you.',
+                  )}
+                </span>
+              ) : null}
+            </div>
           </div>
         }
         featured={

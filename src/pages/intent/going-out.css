@@ -4,50 +4,6 @@
   color: hsl(var(--foreground));
 }
 
-.going-out-hero h1 {
-  max-width: 20ch;
-}
-
-.going-out-hero__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.going-out-hero__primary,
-.going-out-hero__secondary {
-  display: inline-flex;
-  min-height: 3rem;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius-element);
-  font-size: var(--text-13);
-  font-weight: 700;
-  text-decoration: none;
-  transition:
-    background-color var(--motion-normal),
-    color var(--motion-normal);
-}
-
-.going-out-hero__primary {
-  color: hsl(var(--background));
-  background: hsl(var(--foreground));
-}
-
-.going-out-hero__primary:hover {
-  background: hsl(var(--foreground) / 0.85);
-}
-
-.going-out-hero__secondary {
-  color: hsl(var(--foreground));
-  background: hsl(var(--muted));
-}
-
-.going-out-hero__secondary:hover {
-  background: hsl(var(--surface-container));
-}
-
 .going-out-page nav[aria-label='Sections'] a[aria-current='true']::before {
   background: hsl(var(--track-pink));
 }

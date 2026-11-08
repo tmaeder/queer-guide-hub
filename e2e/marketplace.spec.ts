@@ -95,7 +95,7 @@ test.describe('Marketplace — discovery surface', () => {
   }) => {
     await page.goto('/marketplace');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page.getByRole('heading', { name: 'Marketplace', level: 1 })).toBeVisible({
+    await expect(page.getByRole('heading', { name: 'Shop', level: 1, exact: true })).toBeVisible({
       timeout: 30_000,
     });
     await expect(page.locator('#category-tiles')).toBeVisible({ timeout: 30_000 });

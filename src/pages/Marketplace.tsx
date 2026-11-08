@@ -441,9 +441,8 @@ const Marketplace = () => {
           last stationary band before the grid and sticks from there on. */}
       <div className="min-h-screen relative">
         <MarketplaceMasthead
-          eyebrow="Marketplace · Yellow line"
-          title={t('pages.marketplace.title', 'Marketplace.')}
-          lede={t('pages.marketplace.subtitle', 'Queer-friendly products and services.')}
+          title={t('header.intents.shop.label', 'Shop')}
+          lede={t('header.intents.shop.subtitle', 'Books, apparel, art and gifts')}
           count={
             loading && total === 0
               ? 'Counting…'
@@ -451,20 +450,25 @@ const Marketplace = () => {
           }
           actions={
             <>
-              <Button onClick={handleListBusiness}>
-                {t('pages.marketplace.listBusiness', 'List your business')}
+              <Button asChild>
+                <LocalizedLink to="/marketplace/categories" className="no-underline">
+                  {t('pages.marketplace.browseCategories', 'Browse categories')}
+                </LocalizedLink>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="soft" asChild>
                 <LocalizedLink to="/marketplace/brands" className="no-underline">
                   {t('marketplace.allMakers', 'All makers')}
                 </LocalizedLink>
+              </Button>
+              <Button variant="ghost" onClick={handleListBusiness}>
+                {t('pages.marketplace.listBusiness', 'List your business')}
               </Button>
             </>
           }
         >
           {/* Disclosure BEFORE the monetised links, not after an infinite
               grid — which is where the full statement used to sit alone. */}
-          <AffiliateDisclosure variant="strip" className="mt-8" />
+          <AffiliateDisclosure variant="strip" className="mt-6" />
         </MarketplaceMasthead>
 
         {/* Band wrappers are `div`, not `section`: each already contains a
