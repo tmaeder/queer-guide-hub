@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { TRANSIT_ICON_NAMES } from '@/components/transit/transitIconPaths';
 import { parentOrder } from '@/components/resources/categoryMeta';
 import { CATEGORY_LINES, DEFAULT_CATEGORY_ICON } from '@/lib/tags/categoryIdentity';
+import { GLOSSARY_GLYPH_GROUPS } from '@/lib/tags/glossaryGlyphGroups';
 import {
   KIND_GLYPHS,
   TERM_GLYPHS_BY_STOP,
@@ -223,6 +224,36 @@ describe('tagIconography', () => {
   ])('uses the meaning of %s in both the glossary and standalone tag chips', (slug, glyph) => {
     expect(resolveTagGlyph({ slug, stopSlug: 'drag-performance' })).toBe(glyph);
     expect(tagGlyphOverride(slug)).toBe(glyph);
+  });
+
+  it.each([
+    ['hiv', 'sexual-health', 'awareness-ribbon'],
+    ['hiv-testing', 'sexual-health', 'test-tube'],
+    ['vaccination', 'sexual-health', 'syringe'],
+    ['human-rights', 'legal-rights', 'scales'],
+    ['freedom-of-speech', 'legal-rights', 'megaphone'],
+    ['women-s-suffrage', 'legal-rights', 'ballot-box'],
+    ['berlin', 'travel-destinations', 'building'],
+    ['australia', 'travel-destinations', 'globe'],
+    ['size-xl', 'expression-presentation', 'measuring-tape'],
+    ['color-pink', 'expression-presentation', 'palette'],
+    ['needle-exchange-program', 'substances-harm-reduction', 'syringe'],
+    ['figure-skating', 'sports-recreation', 'snow'],
+  ])('resolves the specific outline for %s in the glossary and in chips', (slug, stopSlug, glyph) => {
+    expect(resolveTagGlyph({ slug, stopSlug })).toBe(glyph);
+    expect(tagGlyphOverride(slug)).toBe(glyph);
+  });
+
+  it('lists each curated glossary slug once', () => {
+    const seen = new Set<string>();
+    for (const [glyph, slugs] of GLOSSARY_GLYPH_GROUPS) {
+      for (const slug of slugs) {
+        expect(seen.has(slug), slug).toBe(false);
+        expect(TAG_GLYPH_OVERRIDES[slug], slug).toBe(glyph);
+        seen.add(slug);
+      }
+    }
+    expect(seen.size).toBeGreaterThan(1_500);
   });
 
   it('retains the theater mask for theater itself', () => {
