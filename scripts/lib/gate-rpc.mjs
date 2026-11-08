@@ -192,3 +192,40 @@ export function stallReason(result) {
   if (result.body?.includes('PGRST002')) return 'PostgREST could not reach Postgres (PGRST002)'
   return 'Postgres statement_timeout (57014)'
 }
+
+/**
+ * Read a gate RPC's precomputed result from public.gate_snapshots
+ * (refreshed every 10 min by pg_cron, migration 99991794155541).
+ *
+ * Returns a callRpc-shaped success ({ ok, status, body, data }) when the row
+ * is under `maxAgeMin` old, or null when it is missing, stale, failed to
+ * refresh, or the table does not exist yet. Callers fall back to the live RPC
+ * on null, so a snapshot can only make a gate faster, never laxer: a stopped
+ * cron degrades to the old live behaviour, not to a pass.
+ */
+export const SNAPSHOT_MAX_AGE_MIN = 30
+
+export async function readGateSnapshot(base, key, rpc, maxAgeMin = SNAPSHOT_MAX_AGE_MIN) {
+  const res = await callRpc(
+    `${base}/rest/v1/gate_snapshots?rpc=eq.${encodeURIComponent(rpc)}&select=result,computed_at,last_error`,
+    { headers: { apikey: key, Authorization: `Bearer ${key}` } },
+  )
+  const row = res.ok && Array.isArray(res.data) ? res.data[0] : null
+  if (!row || row.result == null || !row.computed_at) {
+    console.warn(
+      `⚠ ${rpc}: no usable snapshot (${res.ok ? 'no row' : `HTTP ${res.status}`}) — calling it live.`,
+    )
+    return null
+  }
+  const ageMin = (Date.now() - Date.parse(row.computed_at)) / 60_000
+  if (!(ageMin >= 0 && ageMin <= maxAgeMin)) {
+    console.warn(
+      `⚠ ${rpc}: snapshot is ${Math.round(ageMin)} min old (limit ${maxAgeMin})` +
+        (row.last_error ? `, last refresh failed: ${row.last_error}` : '') +
+        ' — calling it live. Check the gate_snapshots_refresh cron.',
+    )
+    return null
+  }
+  console.log(`${rpc}: using the ${Math.round(ageMin)} min old snapshot (refreshed every 10 min).`)
+  return { ok: true, status: 200, body: null, data: row.result }
+}
