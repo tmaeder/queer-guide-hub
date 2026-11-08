@@ -2,11 +2,6 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
-vi.mock('boneyard-js/react', () => ({
-  Skeleton: ({ children, loading, fixture }: Record<string, unknown>) =>
-    loading ? fixture : children,
-}));
-
 vi.mock('@/components/layout/PageLoadingState', () => ({
   PageLoadingState: () => <div>Loading...</div>,
 }));
@@ -113,7 +108,8 @@ describe('GroupCard', () => {
         <GroupCard loading />
       </MemoryRouter>,
     );
-    expect(screen.getByText('Sample Group')).toBeInTheDocument();
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    expect(screen.queryByRole('link')).toBeNull();
   });
 
   it('should link to group detail page', () => {

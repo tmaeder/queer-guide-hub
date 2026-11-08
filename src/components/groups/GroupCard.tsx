@@ -2,7 +2,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Image } from '@/components/ui/Image';
 import { StationBadge } from '@/components/ui/StationBadge';
 import {
@@ -15,49 +14,9 @@ import {
   ExternalLink,
 } from '@/components/icons';
 import { Group } from '@/hooks/useGroups';
-import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { JoyBurst } from '@/components/messaging/JoyBurst';
 import { useGroupJoinBurstTrigger } from '@/components/groups/useGroupJoinBurstTrigger';
-
-const GroupCardFixture = () => (
-  <Card>
-    <CardHeader>
-      <div className="pb-4">
-        <div className="flex items-start gap-4">
-          <Avatar>
-            <AvatarFallback>S</AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <p className="font-semibold">Sample Group</p>
-            <div className="flex items-center gap-1">
-              <Users size={12} />
-              <p className="text-sm font-medium">42</p>
-              <p className="text-sm text-muted-foreground">members</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </CardHeader>
-    <CardContent>
-      <p className="text-sm text-muted-foreground mb-4">A sample group description.</p>
-      <div className="flex flex-wrap gap-1 mb-4">
-        <Badge variant="outline" className="border-0">
-          <span className="text-xs">Tag 1</span>
-        </Badge>
-        <Badge variant="outline" className="border-0">
-          <span className="text-xs">Tag 2</span>
-        </Badge>
-      </div>
-      <div className="flex gap-2">
-        <Button variant="ghost" size="sm">
-          View
-        </Button>
-        <Button size="sm">Join</Button>
-      </div>
-    </CardContent>
-  </Card>
-);
 
 interface GroupCardProps {
   group?: Group;
@@ -93,14 +52,9 @@ export const GroupCard = ({
 
   if (loading || !group) {
     return (
-      <Skeleton
-        name="group-card"
-        loading={true}
-        fixture={<GroupCardFixture />}
-        fallback={<PageLoadingState count={1} />}
-      >
-        <div />
-      </Skeleton>
+      <div>
+        <PageLoadingState count={1} />
+      </div>
     );
   }
 

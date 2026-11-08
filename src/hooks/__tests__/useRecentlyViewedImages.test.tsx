@@ -9,6 +9,7 @@ import type { RecentlyViewedItem } from '@/lib/recentlyViewed';
 // In-memory stand-in for the entity tables.
 const TABLES: Record<string, Array<Record<string, unknown>>> = {
   venues: [{ slug: 'the-eagle', images: ['https://cdn.example/eagle.webp'], logo_url: null }],
+  events: [{ slug: 'game-night', images: [], logo_url: 'https://cdn.example/organizer.png' }],
   cities: [
     {
       slug: 'berlin',
@@ -57,6 +58,14 @@ function wrapper() {
 }
 
 describe('useRecentlyViewedImages', () => {
+  it('does not substitute a logo for an event cover', async () => {
+    const items: RecentlyViewedItem[] = [
+      { type: 'event', slug: 'game-night', title: 'Game Night', ts: 1 },
+    ];
+    const { result } = renderHook(() => useRecentlyViewedImages(items), { wrapper: wrapper() });
+    await waitFor(() => expect(result.current['event:game-night']).toBeNull());
+  });
+
   it('resolves a real image for entries stored without one', async () => {
     inSpy.mockClear();
     const items: RecentlyViewedItem[] = [
