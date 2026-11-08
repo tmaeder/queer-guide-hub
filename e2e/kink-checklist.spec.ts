@@ -26,9 +26,6 @@ import { test, expect } from '@playwright/test';
 // row was deleted. Each case now asserts whichever branch rendered, with a
 // control that exactly one of them did — the CTA path is still asserted if it is
 // ever reachable again, and the opted-in path is asserted meanwhile.
-//
-// Two-party compare coverage is a skeleton (like intimate-visibility.spec.ts)
-// pending dedicated opted-in fixtures — see queerguide_kink_checklist memory.
 
 const hasAuth = !!(process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD);
 
@@ -108,38 +105,5 @@ test.describe('kink checklist gating', () => {
       // rather than leaking anything about whether the link ever existed.
       await expect(page.getByRole('heading', { name: /link not available/i })).toBeVisible();
     }
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Two-party coverage (wizard ratings, category visibility, compare handshake,
-// share-link viewing). Requires two intimate-eligible seeded accounts.
-// Set env: E2E_KINK_USER_A / E2E_KINK_USER_B (email:password each), both
-// already opted into the intimate layer (consent_18plus_at set through the
-// real onboarding UI, not forged). Skipped by default until fixtures land —
-// same pattern as intimate-visibility.spec.ts.
-// ---------------------------------------------------------------------------
-const userA = process.env.E2E_KINK_USER_A;
-const userB = process.env.E2E_KINK_USER_B;
-
-test.describe('kink checklist compare (two-party)', () => {
-  test.skip(!userA || !userB, 'requires E2E_KINK_USER_A/B env vars (opted-in accounts)');
-
-  test('A rates items and sets category visibility', async ({ page: _page }) => {
-    test.skip(true, 'requires seed/login fixtures');
-  });
-
-  test('B requests compare, A accepts, both see only the overlap', async ({ page: _page }) => {
-    test.skip(true, 'requires seed/login fixtures');
-  });
-
-  test('a hard-limit rating never appears in the compare view', async ({ page: _page }) => {
-    test.skip(true, 'requires seed/login fixtures');
-  });
-
-  test('A creates a share link; B views only include_in_share categories', async ({
-    page: _page,
-  }) => {
-    test.skip(true, 'requires seed/login fixtures');
   });
 });
