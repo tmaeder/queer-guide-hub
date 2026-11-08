@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { glossaryEntry } from './support/glossaryProse';
+import { articleOf, glossaryEntry } from './support/glossaryProse';
 
 // The queer-theory vocabulary must be READABLE, and the wrong-entity links this
 // pass cleared must stay cleared.
@@ -17,11 +17,6 @@ import { glossaryEntry } from './support/glossaryProse';
 // mention queer theory" is vacuously true on a 404 or an empty <article>.
 
 const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
-
-function articleOf(html: string): string {
-  const m = html.match(/<article[\s\S]*?<\/article>/i);
-  return m ? m[0] : '';
-}
 
 interface Case {
   slug: string;

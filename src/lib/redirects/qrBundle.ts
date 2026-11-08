@@ -45,8 +45,8 @@ export async function buildQrBundle(
     };
   });
   options.signal?.throwIfAborted();
-  const { default: JSZip } = await import('jszip');
-  const zip = new JSZip();
+  const { zipSync } = await import('fflate');
+  const zip: Record<string, Uint8Array> = {};
   let total = 0,
     firstPreview = '';
   const manifest: string[][] = [['ID', 'Source', 'Encoded URL', 'Files']];
@@ -86,7 +86,7 @@ export async function buildQrBundle(
       if (total > MAX_BYTES)
         throw new Error('QR export exceeds 64 MB. Select fewer links or one format.');
       const file = name + '.' + extension;
-      zip.file(file, data);
+      zip[file] = data;
       files.push(file);
     }
     manifest.push([row.id, row.source, url, files.join(';')]);
@@ -97,12 +97,11 @@ export async function buildQrBundle(
   );
   total += manifestBytes.byteLength;
   if (total > MAX_BYTES) throw new Error('QR export exceeds 64 MB. Select fewer links.');
-  zip.file('manifest.csv', Uint8Array.from(manifestBytes));
+  zip['manifest.csv'] = manifestBytes;
   options.signal?.throwIfAborted();
-  // JSZip does not provide cancellation for generateAsync. Never throw from its
-  // update callback: errors there can escape the returned promise. A late cancel
-  // discards the completed bounded archive before the UI can offer it.
-  const bytes = await zip.generateAsync({ type: 'arraybuffer', compression: 'STORE' });
+  // Level 0 = STORE: PNG/JPG are already compressed. A late cancel discards
+  // the completed bounded archive before the UI can offer it.
+  const bytes = zipSync(zip, { level: 0 });
   options.signal?.throwIfAborted();
   if (bytes.byteLength > MAX_BYTES) throw new Error('QR export exceeds 64 MB. Select fewer links.');
   return { bytes, count: rows.length, firstPreview };

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { zodFieldErrors } from '@/lib/zodFieldErrors';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -83,28 +82,30 @@ export default function Signup({ onBack, redirectTo }: Props) {
     }),
   });
 
-  type FormValues = z.infer<typeof schema>;
-
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    control,
-    formState: { errors, isSubmitting },
-  } = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    mode: 'onSubmit',
-    reValidateMode: 'onChange',
-    defaultValues: { email: '', password: '', consent: false as never },
+  const [values, setValues] = useState<{ email: string; password: string; consent: boolean }>({
+    email: '',
+    password: '',
+    consent: false,
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [attempted, setAttempted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { email, password, consent } = values;
 
-  // `useWatch`, not the `watch()` returned by `useForm` — `watch` is a fresh
-  // unmemoizable function on every render, so React Compiler skips compiling
-  // this whole component (react-hooks/incompatible-library). `useWatch`
-  // subscribes to the same store and is compiler-safe.
-  const email = useWatch({ control, name: 'email' });
-  const password = useWatch({ control, name: 'password' });
-  const consent = useWatch({ control, name: 'consent' });
+  // Validate on submit; after the first attempt, revalidate on every change.
+  // The consent box validates itself immediately.
+  const update = (patch: Partial<typeof values>) => {
+    const next = { ...values, ...patch };
+    setValues(next);
+    if (attempted) setErrors(zodFieldErrors(schema, next));
+    else if ('consent' in patch) {
+      const consentError = zodFieldErrors(schema, next).consent;
+      setErrors((prev) => {
+        const { consent: _drop, ...rest } = prev;
+        return consentError ? { ...rest, consent: consentError } : rest;
+      });
+    }
+  };
 
   useEffect(() => {
     emit('signup_landing_view');
@@ -118,7 +119,7 @@ export default function Signup({ onBack, redirectTo }: Props) {
       ? t('auth.errors.passwordTooWeak', 'Please choose a stronger password')
       : null;
 
-  const onValid = async (values: FormValues) => {
+  const onValid = async () => {
     if (strengthError) {
       setSubmitError(strengthError);
       emit('signup_validation_error', { metadata: { error: 'password_too_weak' } });
@@ -171,18 +172,26 @@ export default function Signup({ onBack, redirectTo }: Props) {
     navigate(`/onboarding/welcome${next}`, { replace: true });
   };
 
-  const onInvalid = () => {
+  const onInvalid = (fieldErrors: Record<string, string>) => {
     emit('signup_validation_error', {
-      metadata: { fields: Object.keys(errors) },
+      metadata: { fields: Object.keys(fieldErrors) },
     });
   };
 
-  const firstError =
-    submitError ??
-    errors.email?.message ??
-    errors.password?.message ??
-    errors.consent?.message ??
-    null;
+  const handleFormSubmit = async () => {
+    setAttempted(true);
+    const fieldErrors = zodFieldErrors(schema, values);
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length) return onInvalid(fieldErrors);
+    setIsSubmitting(true);
+    try {
+      await onValid();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const firstError = submitError ?? errors.email ?? errors.password ?? errors.consent ?? null;
 
   return (
     <Card className="max-w-md mx-auto rounded-container">
@@ -226,8 +235,9 @@ export default function Signup({ onBack, redirectTo }: Props) {
               stopped". Every rejection now goes through onInvalid. */}
           <form
             onSubmit={(e) => {
+              e.preventDefault();
               emit('signup_submit_attempt');
-              void handleSubmit(onValid, onInvalid)(e);
+              void handleFormSubmit();
             }}
             className="flex flex-col gap-4"
             noValidate
@@ -241,7 +251,9 @@ export default function Signup({ onBack, redirectTo }: Props) {
                 placeholder={t('auth.placeholders.email', 'you@example.com')}
                 disabled={isSubmitting}
                 aria-invalid={!!errors.email}
-                {...register('email')}
+                name="email"
+                value={email}
+                onChange={(e) => update({ email: e.target.value })}
               />
             </div>
 
@@ -255,7 +267,9 @@ export default function Signup({ onBack, redirectTo }: Props) {
                   placeholder={t('auth.placeholders.passwordMin8', 'At least 8 characters')}
                   disabled={isSubmitting}
                   aria-invalid={!!errors.password}
-                  {...register('password')}
+                  name="password"
+                  value={password}
+                  onChange={(e) => update({ password: e.target.value })}
                 />
                 <Button
                   type="button"
@@ -283,9 +297,7 @@ export default function Signup({ onBack, redirectTo }: Props) {
               <Checkbox
                 id="signup-consent"
                 checked={consent === true}
-                onCheckedChange={(v) =>
-                  setValue('consent', (v === true) as never, { shouldValidate: true })
-                }
+                onCheckedChange={(v) => update({ consent: v === true })}
                 aria-label={t(
                   'auth.consent.combinedAria',
                   'Accept terms, privacy, confirm 18 or older, and acknowledge the 18+ dating platform',

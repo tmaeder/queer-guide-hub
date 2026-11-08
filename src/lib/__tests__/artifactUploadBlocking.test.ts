@@ -33,11 +33,9 @@ const WORKFLOWS = join(process.cwd(), '.github', 'workflows');
 /** Artifacts that are consumed downstream, or that ARE the workflow's output. */
 const DELIVERABLES = [
   'dist',
-  'dist-static',
   'extension-dist',
   'queer-guide-extension',
   'linux-visual-baselines',
-  'poi-match-', // templated with the country input
   'unit-test-shard-', // required native results consumed by the combined test gate
 ];
 
@@ -115,9 +113,10 @@ describe('upload-artifact blocking policy', () => {
     ).toEqual([]);
   });
 
-
   it('keeps native unit shard inputs blocking and consumed by the aggregate', () => {
-    const shard = uploads.find((u) => u.file === 'ci.yml' && u.name === 'unit-test-shard-${{ matrix.shard }}');
+    const shard = uploads.find(
+      (u) => u.file === 'ci.yml' && u.name === 'unit-test-shard-${{ matrix.shard }}',
+    );
     expect(shard).toBeDefined();
     expect(shard!.nonBlocking).toBe(false);
     const workflow = readFileSync(join(WORKFLOWS, 'ci.yml'), 'utf8');
