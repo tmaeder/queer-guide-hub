@@ -6,6 +6,27 @@ import {
   requireInternalOrAdmin,
 } from '../_shared/supabase-client.ts'
 import { readImageDimensions } from '../_shared/image-dimensions.ts'
+import { readProbeBody } from '../_shared/probe-body.ts'
+import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
+import { boundedBatch, workBudget } from '../_shared/work-budget.ts'
+
+const MAX_IMAGE_BYTES = 20 * 1024 * 1024
+const REDIRECTS = new Set([301, 302, 303, 307, 308])
+
+async function fetchImage(url: string, signal: AbortSignal): Promise<Response> {
+  let target = assertPublicHttpUrl(url)
+  for (let hops = 0; hops < 5; hops++) {
+    const response = await fetch(target, {
+      redirect: 'manual', signal,
+      headers: { 'User-Agent': 'QueerGuide-CountryImageHealth/1.0' },
+    })
+    const next = response.headers.get('location')
+    if (!REDIRECTS.has(response.status) || !next) return response
+    await response.body?.cancel().catch(() => {})
+    target = assertPublicHttpUrl(new URL(next, target).href)
+  }
+  throw new Error('Too many image redirects')
+}
 
 interface ProbeRow {
   asset_id: string
@@ -25,7 +46,8 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body = await req.json().catch(() => ({}))
-    const limit = Math.min(100, Math.max(1, Number(body.batch_limit ?? 40)))
+    const limit = boundedBatch(body.batch_limit, 40, 100)
+    const budget = workBudget()
     const { data, error } = await supabase.from('image_asset_links')
       .select('asset_id, entity_id, image_assets!inner(id,url,health_consecutive_failures,health_checked_at,status)')
       .eq('entity_type', 'country').eq('role', 'cover')
@@ -37,6 +59,7 @@ Deno.serve(async (req: Request) => {
     let healthy = 0
     let failed = 0
     for (const row of (data ?? []) as unknown as ProbeRow[]) {
+      if (!budget.canStart()) break
       const asset = row.image_assets
       if (!asset) continue
       const checkedAt = new Date().toISOString()
@@ -45,26 +68,24 @@ Deno.serve(async (req: Request) => {
       let probeError: string | null = null
       let body: Uint8Array | null = null
       try {
-        const response = await fetch(asset.url, {
-          method: 'GET', redirect: 'follow', signal: AbortSignal.timeout(25_000),
-          headers: { 'User-Agent': 'QueerGuide-CountryImageHealth/1.0' },
-        })
-        const declaredBytes = Number(response.headers.get('content-length') ?? 0)
-        if (declaredBytes > 20 * 1024 * 1024) {
-          throw new Error(`image exceeds 20 MiB probe limit (${declaredBytes} bytes)`)
-        }
+        const response = await fetchImage(asset.url, budget.signal(25_000))
         status = response.status
         contentType = response.headers.get('content-type')
-        if (status >= 200 && status < 400 && contentType?.toLowerCase().startsWith('image/')) {
-          body = new Uint8Array(await response.arrayBuffer())
-          if (body.byteLength > 20 * 1024 * 1024) throw new Error('image exceeds 20 MiB probe limit')
-        } else if (response.body) await response.body.cancel()
+        if (response.ok && contentType?.toLowerCase().startsWith('image/')) {
+          const declaredBytes = Number(response.headers.get('content-length') ?? 0)
+          if (declaredBytes > MAX_IMAGE_BYTES) {
+            await response.body?.cancel().catch(() => {})
+            throw new Error(`image exceeds 20 MiB probe limit (${declaredBytes} bytes)`)
+          }
+          body = await readProbeBody(response, MAX_IMAGE_BYTES)
+        } else {
+          await response.body?.cancel().catch(() => {})
+        }
       } catch (cause) {
         probeError = cause instanceof Error ? cause.message : 'probe failed'
       }
 
-      const ok = status >= 200 && status < 400
-        && !!contentType?.toLowerCase().startsWith('image/') && !!body
+      const ok = probeError === null && !!body?.byteLength
       const failures = ok ? 0 : asset.health_consecutive_failures + 1
       const dimensions = body ? readImageDimensions(body) : null
       const contentHash = body ? await sha256(body) : null
@@ -101,7 +122,7 @@ Deno.serve(async (req: Request) => {
       })
     }
 
-    return jsonResponse({ success: true, checked: (data ?? []).length, healthy, failed }, 200, req)
+    return jsonResponse({ success: true, checked: healthy + failed, healthy, failed }, 200, req)
   } catch (cause) {
     return errorResponse(cause instanceof Error ? cause.message : 'country image health failed', 500, req)
   }

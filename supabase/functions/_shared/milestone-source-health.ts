@@ -1,4 +1,5 @@
 import { assertPublicHttpUrl } from './ssrf-guard.ts'
+import { readProbeBody } from './probe-body.ts'
 
 export type MilestoneSourceHealth =
   | 'healthy'
@@ -25,7 +26,7 @@ export function detectMilestoneDateEvidence(
   if (!bodyText) return false
   const [year, month, day] = milestoneDate.slice(0, 10).split('-').map(Number)
   if (!year) return false
-  const normalized = bodyText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').toLowerCase()
+  const normalized = bodyText.replace(/<[^<>]+>/g, ' ').replace(/\s+/g, ' ').toLowerCase()
   const yearPattern = new RegExp(`\\b${year}\\b`)
   if (!yearPattern.test(normalized) || precision === 'year') return yearPattern.test(normalized)
 
@@ -69,30 +70,26 @@ export async function probeMilestoneSource(
 
   const timeoutMs = opts.timeoutMs ?? 10_000
   const fetchImpl = opts.fetchImpl ?? fetch
-  const run = async (method: 'HEAD' | 'GET') => {
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), timeoutMs)
-    try {
-      return await fetchImpl(url, {
-        method,
-        redirect: 'manual',
-        signal: controller.signal,
-        headers: { 'User-Agent': 'QueerGuide-MilestoneSourceChecker/1.0 (+https://queer.guide/about)' },
-      })
-    } finally {
-      clearTimeout(timer)
-    }
-  }
+  const run = (method: 'HEAD' | 'GET') =>
+    fetchImpl(url, {
+      method,
+      redirect: 'manual',
+      signal: AbortSignal.timeout(timeoutMs),
+      headers: { 'User-Agent': 'QueerGuide-MilestoneSourceChecker/1.0 (+https://queer.guide/about)' },
+    })
 
   try {
     let response = await run('HEAD')
     let bodyText: string | null = null
     if ((response.status >= 200 && response.status < 300) || [401, 403, 405].includes(response.status) || response.status >= 500) {
       try {
-        response = await run('GET')
-        if (response.status >= 200 && response.status < 300) {
-          bodyText = (await response.text()).slice(0, 1_000_000)
+        const get = await run('GET')
+        if (get.status >= 200 && get.status < 300) {
+          bodyText = new TextDecoder().decode(await readProbeBody(get, 1_000_000, true))
+        } else {
+          await get.body?.cancel().catch(() => {})
         }
+        response = get
       } catch {
         // Preserve the explicit HEAD result; it remains indeterminate, not dead.
       }

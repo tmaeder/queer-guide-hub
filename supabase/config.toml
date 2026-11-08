@@ -747,3 +747,7 @@ verify_jwt = false
 
 [functions.venue-description-backfill]
 verify_jwt = false
+
+# Cron dispatcher authenticates with the shared internal secret.
+[functions.milestone-source-health]
+verify_jwt = false

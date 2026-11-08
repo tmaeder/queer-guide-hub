@@ -10,25 +10,11 @@ import { detectMilestoneDateEvidence, probeMilestoneSource } from '../_shared/mi
 
 const DEFAULT_BATCH = 50
 
-function hasVerifiedServiceRoleClaim(req: Request): boolean {
-  const token = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '')
-  if (!token) return false
-  try {
-    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
-    return JSON.parse(atob(payload)).role === 'service_role'
-  } catch {
-    return false
-  }
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   const auth = await requireInternalOrAdmin(req, supabase)
-  // The platform gateway has already verified this JWT. Accept its service-role
-  // claim as a rotation-safe fallback when the function's injected legacy key
-  // has not yet caught up with the Management API key set.
-  if (auth instanceof Response && !hasVerifiedServiceRoleClaim(req)) return auth
+  if (auth instanceof Response) return auth
 
   try {
     const body = await req.json().catch(() => ({}))
