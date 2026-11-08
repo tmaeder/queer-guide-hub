@@ -29,7 +29,9 @@ describe('generate-usernames requires a signed-in user', () => {
   });
 
   it('answers 401 when there is no user', () => {
-    expect(src).toMatch(/if \(!userData\?\.user\) \{\s*return new Response\(JSON\.stringify\(\{ error: 'Sign in required' \}\), \{ status: 401/);
+    expect(src).toMatch(
+      /if \(!userData\?\.user\) \{\s*return new Response\(JSON\.stringify\(\{ error: 'Sign in required' \}\), \{ status: 401/,
+    );
   });
 });
 
@@ -57,5 +59,19 @@ describe('check_rate_limit_enhanced keys signed-in callers on themselves', () =>
     expect(verify).toContain('SET LOCAL ROLE authenticated');
     expect(verify).toMatch(/IF victim_rows <> 0 THEN\s+RAISE EXCEPTION/);
     expect(verify).toMatch(/IF own_rows <> 1 THEN\s+RAISE EXCEPTION/);
+  });
+
+  // RESET ROLE returns to session_user, which under `supabase db push` is the
+  // CLI's login role (cli_login_postgres) with no USAGE on schema public: the
+  // reads after it raised 42501 and aborted db push on main on 2026-11-08.
+  it('returns to the migration role it saved, never RESET ROLE', () => {
+    const verify = sql.slice(sql.indexOf('DO $verify$'));
+    expect(verify).not.toMatch(/\bRESET\s+ROLE\b/i);
+    expect(verify).toMatch(/migration_role constant text := current_user;/);
+    const back = verify.indexOf("EXECUTE format('SET LOCAL ROLE %I', migration_role);");
+    const call = verify.indexOf('public.check_rate_limit_enhanced(');
+    const read = verify.indexOf('FROM public.auth_rate_limit_keys');
+    expect(back).toBeGreaterThan(call);
+    expect(read).toBeGreaterThan(back);
   });
 });
