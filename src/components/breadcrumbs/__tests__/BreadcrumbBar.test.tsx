@@ -46,6 +46,20 @@ describe('BreadcrumbBar route stops', () => {
     expect(container.querySelector('[data-icon="chevron-right"]')).not.toBeInTheDocument();
   });
 
+  it.each([
+    ['/tags', 'pink'],
+    ['/de/tags/c/health', 'pink'],
+    ['/news', 'blue'],
+    ['/fr/news/all', 'blue'],
+    ['/marketplace', 'yellow'],
+  ])('uses the navigation track colour for %s', (pathname, colour) => {
+    renderBar(pathname);
+
+    expect(screen.getByTestId('breadcrumb-track')).toHaveClass(
+      `route-network-rail__track--${colour}`,
+    );
+  });
+
   it('keeps collapsed intermediate stops reachable from an overflow station', async () => {
     const user = userEvent.setup();
     const { container } = renderBar('/venues/example-club', <LongTrailPublisher />);
