@@ -21,6 +21,7 @@ import {
   corsResponse,
 } from '../_shared/supabase-client.ts'
 import { anthropicMessages } from '../_shared/anthropic-shim.ts'
+import { checkUserRateLimit } from '../_shared/user-rate-limit.ts'
 import { timingSafeEqual } from '../_shared/hmac.ts'
 
 interface SlotByItem { item_id: string }
@@ -314,6 +315,10 @@ Deno.serve(async (req) => {
         .eq('id', body.trip_id)
         .maybeSingle()
       if (!trip) return errorResponse('forbidden', 403, req)
+      // Each paste is one paid LLM call.
+      if (!(await checkUserRateLimit(req, 'trip-inbox-slot', 30, 3600))) {
+        return errorResponse('rate_limited', 429, req)
+      }
     }
 
     let parsed: ParsedBooking | null = null
