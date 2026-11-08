@@ -18,16 +18,8 @@ import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { Youtube } from '@tiptap/extension-youtube';
-import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
-import { common, createLowlight } from 'lowlight';
 import { cn } from '@/lib/utils';
 import { EditorToolbar } from './EditorToolbar';
-
-/* ------------------------------------------------------------------ */
-/*  Create lowlight instance with common languages                     */
-/* ------------------------------------------------------------------ */
-
-const lowlight = createLowlight(common);
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                              */
@@ -76,10 +68,7 @@ export function RichTextEditor({
         ? undefined
         : ((normalized as string | Record<string, unknown> | null) ?? undefined),
     extensions: [
-      StarterKit.configure({
-        // Disable the built-in codeBlock in favour of CodeBlockLowlight
-        codeBlock: false,
-      }),
+      StarterKit,
       ImageExt.configure({
         HTMLAttributes: { style: 'max-width:100%;height:auto;border-radius:6px;' },
       }),
@@ -103,7 +92,6 @@ export function RichTextEditor({
           style: 'max-width:100%;aspect-ratio:16/9;width:100%;height:auto;border-radius:6px;',
         },
       }),
-      CodeBlockLowlight.configure({ lowlight }),
     ],
     onUpdate: ({ editor: ed }) => {
       onChange?.(ed.getJSON() as Record<string, unknown>, ed.getHTML());
