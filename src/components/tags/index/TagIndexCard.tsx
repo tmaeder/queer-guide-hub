@@ -96,7 +96,7 @@ export function TagIndexRow({ tag, uses, icon, categoryLabel, aliasMatch }: TagI
           chip, where a 24px mark sat inside a 10px uppercase pill and made the
           pill lumpy — and where the one thing that says what the TERM is sat
           furthest from the term's name. */}
-      {icon && <TransitIcon name={icon} size={30} ticks={false} />}
+      {icon && <TransitIcon name={icon} size={30} />}
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 text-title font-bold leading-tight">
           <span className="break-words">{tag.name}</span>
