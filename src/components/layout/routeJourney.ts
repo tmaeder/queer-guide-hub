@@ -1,3 +1,4 @@
+import { findActiveIntent, INTENT_TRACK } from '@/config/navigation';
 import { stripLocale } from '@/lib/locale';
 
 export type JourneyTrack = 'pink' | 'blue' | 'green' | 'yellow';
@@ -17,7 +18,12 @@ export function isRouteMotionAllowed(pathname: string): boolean {
 }
 
 export function routeJourneyTrack(pathname: string): JourneyTrack {
-  const segment = stripLocale(pathname).split('/').filter(Boolean)[0] ?? '';
+  const path = stripLocale(pathname);
+  const intentId = findActiveIntent(path)?.id;
+  // Match the navigation on Knowledge and News, including their child routes.
+  if (intentId === 'glossary' || intentId === 'news') return INTENT_TRACK[intentId];
+
+  const segment = path.split('/').filter(Boolean)[0] ?? '';
   if (['people', 'community', 'groups', 'hub', 'messages', 'intimate'].includes(segment)) {
     return 'green';
   }
@@ -28,9 +34,7 @@ export function routeJourneyTrack(pathname: string): JourneyTrack {
   ) {
     return 'blue';
   }
-  if (
-    ['guides', 'tags', 'news', 'history', 'marketplace', 'podcasts', 'sitemap'].includes(segment)
-  ) {
+  if (['guides', 'history', 'marketplace', 'podcasts', 'sitemap'].includes(segment)) {
     return 'yellow';
   }
   return 'pink';
