@@ -9,7 +9,7 @@ import { createChunkedStorage } from './chunkedStorage';
  * src/integrations/supabase/client.ts. Only the publishable key may ever be
  * bundled; every read is governed by RLS. Overridable for staging builds.
  */
-export const SUPABASE_URL =
+const SUPABASE_URL =
   process.env.EXPO_PUBLIC_SUPABASE_URL ?? 'https://xqeacpakadqfxjxjcewc.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY =
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??

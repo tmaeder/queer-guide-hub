@@ -33,76 +33,22 @@ export function extractDomain(url: string | null | undefined): string | null {
 }
 
 /**
- * Build a logo.dev CDN URL for the given domain.
- * Returns null if no API key is configured or domain is empty.
+ * Use `fallback=404` so missing logos return HTTP 404. The caller stores a URL
+ * for the mirrored image, keeping this tokenized URL private.
  */
-export function buildLogoUrl(domain: string): string | null {
-  if (!LOGO_DEV_API_KEY || !domain) return null
-  return `https://img.logo.dev/${domain}?token=${LOGO_DEV_API_KEY}&size=128&format=png`
-}
-
-/**
- * Build a logo URL from a website URL. Combines extractDomain + buildLogoUrl.
- */
-export function logoUrlFromWebsite(website: string | null | undefined): string | null {
-  const domain = extractDomain(website)
-  if (!domain) return null
-  return buildLogoUrl(domain)
-}
-
-/**
- * Build the *probe* URL for a domain — identical to the stored URL but with
- * `fallback=404`, so logo.dev returns HTTP 404 (instead of a generic
- * first-letter monogram, its 200 default) when it has no real logo for the
- * domain. Used only to decide whether a real logo exists; never stored.
- */
-export function buildLogoProbeUrl(domain: string): string | null {
+function buildLogoProbeUrl(domain: string): string | null {
   if (!LOGO_DEV_API_KEY || !domain) return null
   return `https://img.logo.dev/${domain}?token=${LOGO_DEV_API_KEY}&size=128&format=png&fallback=404`
 }
 
-/**
- * Resolve a logo URL from a website.
- *
- * With `verify` (the default) we only return a URL when the domain has a *real*
- * brand logo — probed via `fallback=404`. This deliberately rejects logo.dev's
- * monogram fallback: under the logo-first display rule a monogram `logo_url`
- * would mask the venue's own photos, which is usually a downgrade. Domains
- * without a real logo resolve to null (the caller still marks them attempted, so
- * they aren't retried). Pass `verify = false` to skip the network probe and
- * return the unverified URL (monogram included).
- */
-export async function resolveLogoUrl(
-  website: string | null | undefined,
-  verify = true,
-): Promise<string | null> {
-  const storeUrl = logoUrlFromWebsite(website)
-  if (!storeUrl) return null
-  if (!verify) return storeUrl
-
-  const probeUrl = buildLogoProbeUrl(extractDomain(website) ?? '')
-  if (!probeUrl) return null
-  try {
-    // GET (not HEAD) so the 404 fallback status is reliably reflected.
-    const res = await fetch(probeUrl, { method: 'GET' })
-    return res.ok ? storeUrl : null
-  } catch {
-    return null
-  }
-}
-
-export interface FetchedLogo {
+interface FetchedLogo {
   bytes: Uint8Array
   contentType: string
 }
 
 /**
- * Outcome of one logo.dev probe. The OUTCOME is the point: `fetchRealLogo`
- * collapsed every non-200 into null, so an expired token, a rate limit and a
- * genuine "we don't have this brand" were indistinguishable — all three read as
- * "no logo exists", the batch stamped the row attempted, and the run reported
- * success. A caller that cannot tell those apart cannot notice its upstream has
- * died.
+ * The batch distinguishes a missing brand from upstream failures so it can
+ * mark the former as attempted and retry the latter.
  */
 export type LogoProbeOutcome =
   | 'found'
@@ -112,7 +58,7 @@ export type LogoProbeOutcome =
   | 'unconfigured' // no LOGO_DEV_API_KEY, or no usable domain in the website
   | 'error' // 5xx, network failure, or a 200 too small to be an image
 
-export interface LogoProbe {
+interface LogoProbe {
   outcome: LogoProbeOutcome
   logo: FetchedLogo | null
   status?: number
@@ -142,13 +88,6 @@ export async function probeRealLogo(website: string | null | undefined): Promise
   } catch {
     return { outcome: 'error', logo: null }
   }
-}
-
-/** Bytes-or-null wrapper over {@link probeRealLogo}, for callers that only act on a hit. */
-export async function fetchRealLogo(
-  website: string | null | undefined,
-): Promise<FetchedLogo | null> {
-  return (await probeRealLogo(website)).logo
 }
 
 /** Small delay helper for rate limiting in batch operations */
