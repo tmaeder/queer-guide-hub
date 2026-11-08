@@ -16,6 +16,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { anthropicMessages } from '../_shared/anthropic-shim.ts';
 import { getCorsHeaders } from '../_shared/supabase-client.ts';
+import { checkUserRateLimit } from '../_shared/user-rate-limit.ts';
+import { tripAccess } from '../_shared/trip-access.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -187,6 +189,13 @@ Deno.serve(async (req) => {
     }
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    // The service-role client below bypasses RLS, so check access here.
+    if ((await tripAccess(admin, trip_id, userId)) === 'none') {
+      return new Response(JSON.stringify({ error: 'trip not found' }), {
+        status: 404,
+        headers: { ...cors, 'content-type': 'application/json' },
+      });
+    }
 
     // Return cached unless refresh
     if (!refresh) {
@@ -200,6 +209,13 @@ Deno.serve(async (req) => {
           headers: { ...cors, 'content-type': 'application/json' },
         });
       }
+    }
+
+    if (!(await checkUserRateLimit(req, 'trip-recap', 20, 3600))) {
+      return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), {
+        status: 429,
+        headers: { ...cors, 'content-type': 'application/json' },
+      });
     }
 
     const { trip, budget } = await loadTrip(admin, trip_id);
