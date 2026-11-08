@@ -1,13 +1,9 @@
 import { useEffect, useRef, type MutableRefObject } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { type GeoJSONSource, type MapLayerMouseEvent } from 'maplibre-gl';
-import {
-  summaryFromFeature,
-  type MapPointStack,
-  type MapPointSummary,
-} from '@/components/map/mapPoint';
+import { summaryFromFeature, type MapPointStack } from '@/components/map/mapPoint';
 import type { PointFeature, PointFeatureProps } from '@/hooks/useViewportPoints';
-import { MAP_LINES, MAP_LINE_IDS, type MapLine } from '@/components/map/mapDomain';
+import { MAP_LINES, MAP_LINE_IDS, type MapLine, type MapStation } from '@/components/map/mapDomain';
 import {
   POINTS_SOURCE,
   CLUSTERS_LAYER,
@@ -77,7 +73,7 @@ interface UsePointLayersParams {
   showPopup: (
     map: maplibregl.Map,
     lngLat: maplibregl.LngLat | [number, number],
-    point: MapPointSummary,
+    point: MapStation,
   ) => void;
   startPulse: () => void;
   spiderfy: (map: maplibregl.Map, center: [number, number], leaves: PointFeature[]) => void;

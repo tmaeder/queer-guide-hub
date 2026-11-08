@@ -1,18 +1,9 @@
 /**
  * Pure helpers for the /cities directory. Kept out of the data hook so the
  * filter / sort / tier logic is testable without supabase or React.
- *
- * Tier types + thresholds live in src/utils/equalityScore.ts as the single
- * source of truth — re-exported here for ergonomic imports by the cities
- * surface and to preserve the historical `tierFor` name.
  */
 
 import { tierForScore, EQUALITY_TIERS, type EqualityTier } from '@/utils/equalityScore';
-
-export { EQUALITY_TIERS, type EqualityTier };
-
-/** Back-compat alias for the cities surface's pre-refactor name. */
-export const tierFor = tierForScore;
 
 export type CitiesSortKey = 'venues' | 'population' | 'name' | 'equality';
 
@@ -104,7 +95,7 @@ function matchesContinent(city: CityForFilter, continents: Set<string>): boolean
 
 function matchesTier(city: CityForFilter, tiers: Set<EqualityTier>): boolean {
   if (!tiers.size) return true;
-  return tiers.has(tierFor(city.countries?.equality_score));
+  return tiers.has(tierForScore(city.countries?.equality_score));
 }
 
 export function filterAndSortCities<T extends CityForFilter>(

@@ -2,7 +2,8 @@
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { EMPTY_FAV } from '@/components/map/mapDebug';
-import { summaryFromFeature, type MapPointSummary } from '@/components/map/mapPoint';
+import { summaryFromFeature } from '@/components/map/mapPoint';
+import type { MapStation } from '@/components/map/mapDomain';
 import type { PointFeature } from '@/hooks/useViewportPoints';
 import type { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
@@ -15,7 +16,7 @@ interface UseInBoundsCountParams {
   visitorGeo: VisitorGeo;
   favoriteIds?: Set<string>;
   savedOnly: boolean;
-  onPointsInViewRef: MutableRefObject<((points: MapPointSummary[]) => void) | undefined>;
+  onPointsInViewRef: MutableRefObject<((points: MapStation[]) => void) | undefined>;
 }
 
 /**

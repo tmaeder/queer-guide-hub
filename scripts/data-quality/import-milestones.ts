@@ -5,7 +5,7 @@
 // English titles/descriptions.
 //
 // One-shot import of the curated queer-history milestones from the person-db
-// curation tool (tools/person-db/src/lib/milestones.ts, ~110 entries) into the
+// curation tool (the removed tools/person-db; ~110 entries) into the
 // live `milestones` table + `milestone_links` (personality N:M).
 //
 // Resolution: German country names → alpha-2 via the tool's flags.ts map (plus
@@ -33,7 +33,7 @@ import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { nameToAlpha2 } from '../../tools/person-db/src/lib/flags'
+import { nameToAlpha2 } from './lib/country-flags'
 
 // Frozen seed export of the removed tools/person-db milestone module (#2215).
 // Canonical data lives in the `milestones` table; this file only re-imports.

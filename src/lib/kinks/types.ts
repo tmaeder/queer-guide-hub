@@ -103,9 +103,6 @@ export const AXIS_SIDES: Record<KinkAxis, KinkSide[]> = {
   dom_sub: ['dominant', 'submissive'],
 };
 
-/** Positive ratings (everything shown to others; no/hard_limit stay private). */
-export const POSITIVE_RATINGS: KinkRatingValue[] = ['favorite', 'like', 'curious', 'maybe'];
-
 export function itemAxis(item: KinkItem, category: KinkCategory): KinkAxis {
   return item.axis_override ?? category.axis;
 }

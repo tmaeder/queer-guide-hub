@@ -5,9 +5,9 @@ import { LINE_LABELS, VIEW_LABELS } from '../MapShell.types';
 import { bulletTypeForLayer, departureStatus, departureTime } from '../chrome/railDeparture';
 import { LAYER_DEFS } from '@/config/mapLayers';
 import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
-import type { MapPointSummary } from '../mapPoint';
+import type { MapStation } from '../mapDomain';
 
-const point = (over: Partial<MapPointSummary> = {}): MapPointSummary => ({
+const point = (over: Partial<MapStation> = {}): MapStation => ({
   id: '1',
   type: 'venues',
   entity: 'venue',
