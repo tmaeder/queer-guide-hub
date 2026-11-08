@@ -1,5 +1,5 @@
 // claude-routine-callback
-// Webhook endpoint for async runners (github_actions, webhook) to report back
+// Webhook endpoint for async runners (webhook) to report back
 // progress and fix_proposed events. Verifies HMAC before touching the DB.
 //
 // Body shape (POST):

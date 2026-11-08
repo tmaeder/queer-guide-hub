@@ -25,7 +25,7 @@ import { fileURLToPath } from 'node:url'
 const HERE = dirname(fileURLToPath(import.meta.url))
 const BASELINE = join(HERE, 'tag-hygiene-baseline.json')
 
-import { callRpc, notEvaluated, stallReason } from './lib/gate-rpc.mjs'
+import { callRpc, notEvaluated, readGateSnapshot, stallReason } from './lib/gate-rpc.mjs'
 
 const BASE = process.env.SUPABASE_URL
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -43,7 +43,9 @@ const callStats = () =>
     body: '{}',
   })
 
-let res = await callStats()
+// Precomputed every 10 min by pg_cron; null (missing/stale) falls back to live.
+// --update writes the baseline, so it always measures live.
+let res = (!UPDATE && (await readGateSnapshot(BASE, KEY, 'tag_hygiene_stats'))) || (await callStats())
 
 // 57014 is Postgres's statement_timeout on `authenticator`, NOT a hygiene metric
 // growing. The RPC ran out of time, so NO metric was evaluated at all and the PR

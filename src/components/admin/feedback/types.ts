@@ -145,14 +145,9 @@ export interface FeedbackStory {
 
 // ── Routine + Retest ───────────────────────────────────────────
 export type RoutineRunStatus =
-  | 'queued'
-  | 'dispatched'
-  | 'in_progress'
-  | 'fix_proposed'
-  | 'failed'
-  | 'cancelled';
+  'queued' | 'dispatched' | 'in_progress' | 'fix_proposed' | 'failed' | 'cancelled';
 
-export type RoutineRunner = 'mock' | 'github_actions' | 'webhook' | 'api' | 'local';
+export type RoutineRunner = 'mock' | 'webhook' | 'api' | 'local';
 
 export interface FeedbackRoutineRun {
   id: string;
@@ -183,7 +178,7 @@ export interface FeedbackRetestRun {
   routine_run_id: string;
   status: RetestStatus;
   kind: RetestKind;
-  runner: 'mock' | 'github_actions' | 'webhook' | 'local';
+  runner: 'mock' | 'webhook' | 'local';
   external_ref: string | null;
   result: Record<string, unknown> | null;
   created_by: string | null;
