@@ -44,9 +44,7 @@ export function BackToTopButton() {
 
   // PORTALED TO <body>, and that is the whole fix.
   //
-  // Rendered in place it sits inside SearchResults → RouteFade's
-  // `.station-arrive` (which carries a transform during the arrival animation,
-  // making it the containing block for `position: fixed`) → LayoutShell's
+  // Rendered in place it sits inside SearchResults → LayoutShell's
   // `<div className="relative z-10">` content wrapper. That wrapper opens a
   // stacking context, so this button's `z-index: 40` is scoped INSIDE it and
   // is not comparable with the footer's. The footer is the wrapper's later

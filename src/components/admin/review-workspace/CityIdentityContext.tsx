@@ -116,6 +116,25 @@ export function CityIdentityContext({
       url = reviewHttpUrl(entry.url);
     if (url) sources.set(url, text(entry.title) ?? 'Geography source');
   }
+  const observations = new Map<string, { note: string; title: string; captured: Date | null }>();
+  for (const value of Array.isArray(classification.review_observations)
+    ? classification.review_observations
+    : []) {
+    const entry = object(value);
+    const url = reviewHttpUrl(entry.url);
+    const note = text(entry.observation);
+    const checked = point(entry.latitude, entry.longitude);
+    if (!url || !note || !stored || checked?.lat !== stored.lat || checked.lng !== stored.lng) {
+      continue;
+    }
+    const observedAt = text(entry.observed_at);
+    observations.set(url, {
+      note,
+      title: text(entry.title) ?? 'Open registry evidence',
+      captured: observedAt && Number.isFinite(Date.parse(observedAt)) ? new Date(observedAt) : null,
+    });
+    sources.delete(url);
+  }
   const lifecycle =
     {
       placeholder: 'Unresolved placeholder',
@@ -294,6 +313,25 @@ export function CityIdentityContext({
           </div>
         )}
       </div>
+      {observations.size > 0 && (
+        <section aria-label="Registry observations">
+          <h4 className="text-sm font-semibold">Registry observations</h4>
+          <ul className="mt-2 divide-y divide-border">
+            {[...observations].map(([url, { note, title, captured }]) => (
+              <li key={url} className="space-y-2 py-2">
+                <p className="text-sm leading-relaxed">{note}</p>
+                <Link url={url}>{title}</Link>
+                {captured && (
+                  <p className="text-xs text-muted-foreground">
+                    Captured{' '}
+                    <time dateTime={captured.toISOString()}>{captured.toLocaleString()}</time>
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {!!captures.length && (
         <section aria-label="Sources opened during research">
           <h4 className="text-sm font-semibold">Sources opened during research</h4>

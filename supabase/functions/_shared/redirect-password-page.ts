@@ -1,4 +1,6 @@
 /* eslint no-control-regex: "off" -- Rejecting ASCII control characters is intentional input/header validation. */
+import { trimTrailingSlashes } from './trim-trailing-slashes.ts';
+
 export interface PasswordPageBranding {
   brandName: string | null;
   logo: { url: string; width: number; height: number } | null;
@@ -45,7 +47,7 @@ export function passwordPageBranding(
     asset.height <= 1024 &&
     /^[a-f0-9]{64}$/.test(asset.sha256)
   ) {
-    imageOrigin = projectUrl.replace(/\/$/, '');
+    imageOrigin = trimTrailingSlashes(projectUrl);
     logo = {
       url: imageOrigin + '/storage/v1/object/public/redirect-brand-assets/' + asset.key,
       width: asset.width,

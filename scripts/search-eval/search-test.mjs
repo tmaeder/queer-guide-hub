@@ -23,7 +23,9 @@
  *   GET  /health        → 200
  */
 
-const BASE = (process.env.SEARCH_URL || 'https://search.queer.guide').replace(/\/$/, '');
+import { trimTrailingSlashes } from '../lib/trim-trailing-slashes.mjs'
+
+const BASE = trimTrailingSlashes(process.env.SEARCH_URL || 'https://search.queer.guide');
 const JSON_OUT = process.argv.includes('--json');
 const SESSION = 'cowork-search-test';
 

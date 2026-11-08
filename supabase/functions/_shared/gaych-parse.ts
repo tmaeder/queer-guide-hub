@@ -1,5 +1,6 @@
 import { decodeEntities } from './html-entities.ts'
 import { parse, type DefaultTreeAdapterTypes } from 'npm:parse5@8.0.1'
+import { trimTrailingSlashes } from './trim-trailing-slashes.ts'
 
 /** Only this event page's published Plone artwork, after matching its Event. */
 export function gaychEventArtworkEvidence(
@@ -11,7 +12,7 @@ export function gaychEventArtworkEvidence(
   try { page = new URL(pageUrl) } catch { return null }
   if (html.length > 600_000 || page.origin !== 'https://gay.ch' || page.username || page.password || page.search || page.hash
     || !/^\/parties\/[^/]+\/?$/.test(page.pathname)) return null
-  const path = page.pathname.replace(/\/$/, '')
+  const path = trimTrailingSlashes(page.pathname)
   const key = (value: unknown) => typeof value === 'string'
     ? value.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') : ''
   const day = (value: unknown) => {

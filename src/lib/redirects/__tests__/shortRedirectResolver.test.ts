@@ -34,6 +34,13 @@ function runtime() {
   const passwordPage = readFileSync(
     join(__dirname, '../../../../supabase/functions/_shared/redirect-password-page.ts'),
     'utf8',
+  )
+    .replace(/^import .*;\s*$/gm, '')
+    .replace(/^export\s+/gm, '');
+  // redirect-password-page.ts imports trimTrailingSlashes; inline it the same way.
+  const trimSource = readFileSync(
+    join(__dirname, '../../../../supabase/functions/_shared/trim-trailing-slashes.ts'),
+    'utf8',
   ).replace(/^export\s+/gm, '');
   const presentation = readFileSync(
     join(__dirname, '../../../../supabase/functions/_shared/redirect-presentation.ts'),
@@ -66,6 +73,8 @@ function runtime() {
       visitor +
       '\n' +
       relay +
+      '\n' +
+      trimSource +
       '\n' +
       passwordPage +
       '\n' +

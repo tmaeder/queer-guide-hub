@@ -60,6 +60,7 @@ import { chromium } from 'playwright';
 import { writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { trimTrailingSlashes } from '../lib/trim-trailing-slashes.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT_FILE = join(HERE, 'drgay-topic-index.json');
@@ -150,7 +151,7 @@ async function sitemapUrls() {
           const p = new URL(u);
           if (p.host !== HOST || !p.pathname.startsWith(LOCALE)) return false;
           if (p.pathname.includes('/alt/')) return false;
-          const path = p.pathname.slice(LOCALE.length).replace(/\/$/, '');
+          const path = trimTrailingSlashes(p.pathname.slice(LOCALE.length));
           if (SWISS_SERVICE_PAGES.some((s) => path.startsWith(s))) return false;
           return CONTENT_SECTIONS.includes(path.split('/')[0]);
         } catch {

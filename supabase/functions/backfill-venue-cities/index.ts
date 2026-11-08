@@ -21,6 +21,7 @@ import {
   type PhotonFeature,
   type GeoVenue,
 } from './geocode-guard.ts'
+import { trimTrailingSlashes } from '../_shared/trim-trailing-slashes.ts'
 
 // Batch geocode venues missing city data.
 // Two modes controlled by `mode` param:
@@ -31,7 +32,7 @@ import {
 // Call with: { "mode": "forward", "batch_size": 25 }
 // Idempotent & resumable — always picks the next unprocessed batch.
 
-const NOMINATIM_BASE = (Deno.env.get('NOMINATIM_URL') || 'https://nominatim.openstreetmap.org').replace(/\/$/, '')
+const NOMINATIM_BASE = trimTrailingSlashes(Deno.env.get('NOMINATIM_URL') || 'https://nominatim.openstreetmap.org')
 const NOMINATIM_AUTH = Deno.env.get('NOMINATIM_BASIC_AUTH') || ''
 const SLEEP_MS = Deno.env.get('NOMINATIM_URL') ? 50 : 1100
 // Soft deadline for a batch loop. The forward cron posts with

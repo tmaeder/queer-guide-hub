@@ -6,11 +6,38 @@ import {
   PackError,
   type PackIndex,
   type PackIndexEntry,
+  type Bbox,
   type PackPayload,
+  type PackTiles,
   type SignedIndex,
 } from './format';
 
 const HEX = /^[0-9a-f]+$/i;
+
+export function isBbox(b: unknown): b is Bbox {
+  return (
+    Array.isArray(b) &&
+    b.length === 4 &&
+    b.every((n) => typeof n === 'number' && Number.isFinite(n)) &&
+    b[0] >= -180 && b[2] <= 180 && b[1] >= -90 && b[3] <= 90 &&
+    b[0] < b[2] && b[1] < b[3]
+  );
+}
+
+function isTiles(t: unknown): t is PackTiles {
+  const v = t as Record<string, unknown>;
+  return (
+    !!v &&
+    typeof v.file === 'string' &&
+    /^[a-z0-9-]+\.pmtiles$/.test(v.file) &&
+    typeof v.bytes === 'number' &&
+    v.bytes > 0 &&
+    typeof v.sha256 === 'string' &&
+    /^[0-9a-f]{64}$/.test(v.sha256) &&
+    isBbox(v.bbox) &&
+    typeof v.maxzoom === 'number'
+  );
+}
 
 function isEntry(e: unknown): e is PackIndexEntry {
   const v = e as Record<string, unknown>;
@@ -24,7 +51,8 @@ function isEntry(e: unknown): e is PackIndexEntry {
     typeof v.bytes === 'number' &&
     typeof v.sha256 === 'string' &&
     /^[0-9a-f]{64}$/.test(v.sha256) &&
-    typeof v.venues === 'number'
+    typeof v.venues === 'number' &&
+    (v.tiles === undefined || isTiles(v.tiles))
   );
 }
 

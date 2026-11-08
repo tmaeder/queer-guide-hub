@@ -51,6 +51,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync, existsSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { trimTrailingSlashes } from '../lib/trim-trailing-slashes.mjs';
 
 const PROJECT = 'xqeacpakadqfxjxjcewc';
 const OUT = join(process.cwd(), 'out-swiss-events');
@@ -400,7 +401,7 @@ function parseGayChEvent(html, url) {
 
   return {
     source: 'gay-ch',
-    sourceId: url.replace(/^.*\/parties\//, '').replace(/\/$/, ''),
+    sourceId: trimTrailingSlashes(url.replace(/^.*\/parties\//, '')),
     url,
     title,
     start,

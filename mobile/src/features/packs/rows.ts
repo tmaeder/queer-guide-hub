@@ -18,3 +18,8 @@ export function mergeRows(available: PackIndexEntry[], installed: InstalledPack[
   for (const i of installed) rows.set(i.id, { ...rows.get(i.id), id: i.id, name: i.name, installed: i });
   return [...rows.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
+
+/** What tapping Download costs, data plus map archive, in whole MB (at least 1). */
+export function downloadMb(entry: PackIndexEntry): number {
+  return Math.max(1, Math.round((entry.bytes + (entry.tiles?.bytes ?? 0)) / 1_000_000));
+}

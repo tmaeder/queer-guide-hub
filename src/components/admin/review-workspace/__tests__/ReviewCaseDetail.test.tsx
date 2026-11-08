@@ -119,6 +119,42 @@ describe('review cases', () => {
       'https://publisher.test/delaware-election',
     );
   });
+  it('shows the current category and description beside the detector suggestion', () => {
+    state.articleRecord = {
+      event_type: 'other',
+      description: 'A happy hour with drink specials at the sports bar.',
+    };
+    state.data!.family = 'record';
+    state.data!.members = [
+      {
+        ...member('one'),
+        subtitle: 'CATEGORY_UNRESOLVED',
+        meta: {
+          issue_code: 'CATEGORY_UNRESOLVED',
+          evidence: { inference: { event_type: 'sports', confidence: 0.85 } },
+        },
+      },
+    ];
+    render(
+      <ReviewCaseDetail
+        item={item('record', 'blocked')}
+        busy={false}
+        onDecision={vi.fn()}
+        onBack={vi.fn()}
+        onSkip={vi.fn()}
+      />,
+    );
+    const evidence = within(screen.getByRole('region', { name: 'Event category evidence' }));
+    expect(evidence.getByText('other')).toBeInTheDocument();
+    expect(evidence.getByText('sports · 85% confidence at detection')).toBeInTheDocument();
+    expect(
+      evidence.getByText('A happy hour with drink specials at the sports bar.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Event source' })).toHaveAttribute(
+      'href',
+      'https://example.test/event',
+    );
+  });
   it('requires evidence and confirmation, preserves exclusions and submits current evidence version', () => {
     const save = vi.fn();
     render(

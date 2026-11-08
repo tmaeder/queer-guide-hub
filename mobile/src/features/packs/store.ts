@@ -1,7 +1,7 @@
 import type { EventDetail, EventListItem } from '@/api/events';
 import type { Hotline } from '@/api/hotlines';
 import type { Bounds, VenueDetail, VenueListItem } from '@/api/venues';
-import type { PackIndexEntry, PackPayload } from './format';
+import type { Bbox, PackIndexEntry, PackPayload } from './format';
 
 /**
  * The few SQLite operations the pack store needs. expo-sqlite implements it
@@ -59,6 +59,14 @@ CREATE TABLE IF NOT EXISTS hotlines (
   PRIMARY KEY (pack_id, id)
 );
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS pack_tiles (
+  pack_id TEXT PRIMARY KEY,
+  uri TEXT NOT NULL,
+  bbox TEXT NOT NULL,
+  maxzoom INTEGER NOT NULL,
+  sha256 TEXT NOT NULL,
+  bytes INTEGER NOT NULL
+);
 CREATE TABLE IF NOT EXISTS events (
   id TEXT PRIMARY KEY,
   pack_id TEXT NOT NULL,
@@ -92,20 +100,30 @@ const parseArr = (v: string | null): string[] | null => {
 };
 
 async function deletePackRows(db: PackDb, id: string) {
+  const [oldTiles] = await db.all<{ uri: string }>('SELECT uri FROM pack_tiles WHERE pack_id = ?', [id]);
   await db.run('DELETE FROM venues WHERE pack_id = ?', [id]);
   await db.run('DELETE FROM venues_fts WHERE pack_id = ?', [id]);
   await db.run('DELETE FROM hotlines WHERE pack_id = ?', [id]);
   await db.run('DELETE FROM events WHERE pack_id = ?', [id]);
   await db.run('DELETE FROM events_fts WHERE pack_id = ?', [id]);
+  await db.run('DELETE FROM pack_tiles WHERE pack_id = ?', [id]);
+  return oldTiles?.uri;
 }
 
 /**
  * Replace a pack's rows atomically. A crash mid-import rolls back to the
  * previous version of the pack rather than leaving half a city.
  */
-export async function installPack(db: PackDb, pack: PackPayload, entry: PackIndexEntry) {
+export async function installPack(
+  db: PackDb,
+  pack: PackPayload,
+  entry: PackIndexEntry,
+  /** local uri of the verified tile archive, when the entry carries one */
+  tilesUri?: string,
+) {
+  let previousTilesUri: string | undefined;
   await db.transaction(async (tx) => {
-    await deletePackRows(tx, pack.id);
+    previousTilesUri = await deletePackRows(tx, pack.id);
     for (const v of pack.venues) {
       // A venue now filed under a different city replaces its old copy.
       await tx.run('DELETE FROM venues_fts WHERE venue_id = ?', [v.id]);
@@ -171,14 +189,37 @@ export async function installPack(db: PackDb, pack: PackPayload, entry: PackInde
         new Date().toISOString(),
       ],
     );
+    if (entry.tiles && tilesUri) {
+      await tx.run(
+        'INSERT INTO pack_tiles (pack_id, uri, bbox, maxzoom, sha256, bytes) VALUES (?, ?, ?, ?, ?, ?)',
+        [pack.id, tilesUri, JSON.stringify(entry.tiles.bbox), entry.tiles.maxzoom, entry.tiles.sha256, entry.tiles.bytes],
+      );
+    }
   });
+  return previousTilesUri;
+}
+
+export interface InstalledTiles {
+  pack_id: string;
+  uri: string;
+  bbox: Bbox;
+  maxzoom: number;
+}
+
+export async function listTiles(db: PackDb): Promise<InstalledTiles[]> {
+  const rows = await db.all<Omit<InstalledTiles, 'bbox'> & { bbox: string }>(
+    'SELECT pack_id, uri, bbox, maxzoom FROM pack_tiles ORDER BY pack_id',
+  );
+  return rows.map((r) => ({ ...r, bbox: JSON.parse(r.bbox) as Bbox }));
 }
 
 export async function removePack(db: PackDb, id: string) {
+  let previousTilesUri: string | undefined;
   await db.transaction(async (tx) => {
-    await deletePackRows(tx, id);
+    previousTilesUri = await deletePackRows(tx, id);
     await tx.run('DELETE FROM packs WHERE id = ?', [id]);
   });
+  return previousTilesUri;
 }
 
 export interface InstalledPack {

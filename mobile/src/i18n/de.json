@@ -117,8 +117,10 @@
     "unlockPrompt": "Entsperren"
   },
   "packs": {
+    "size": "{{mb}} MB Download",
+    "withMap": "mit Karte",
     "title": "Offline-Städte",
-    "body": "Lade eine Stadt herunter, um ihre Orte und Krisennummern auf diesem Gerät zu behalten. Karten und Fotos brauchen weiterhin eine Verbindung.",
+    "body": "Lade eine Stadt herunter, um ihre Orte und Krisennummern auf diesem Gerät zu behalten. Städte mit Karte funktionieren ganz offline; Fotos und Kartenbeschriftungen brauchen weiterhin eine Verbindung.",
     "notConfigured": "Offline-Städte sind in dieser Version noch nicht verfügbar.",
     "loading": "Verfügbare Städte werden geprüft…",
     "error": "Verfügbare Städte konnten nicht geprüft werden.",
@@ -155,7 +157,7 @@
     "terms": "AGB",
     "privacy": "Datenschutzerklärung",
     "consentRequired": "Akzeptiere die AGB und bestätige, dass du 18 oder älter bist, um ein Konto zu erstellen.",
-    "forgot": "Passwort vergessen? Im Web zurücksetzen",
+    "forgot": "Passwort vergessen? Link zum Zurücksetzen senden",
     "errors": {
       "invalidCredentials": "E-Mail oder Passwort ist falsch.",
       "alreadyRegistered": "Mit dieser E-Mail gibt es bereits ein Konto. Melde dich stattdessen an.",
@@ -163,8 +165,21 @@
       "rateLimited": "Zu viele Versuche. Warte eine Minute und versuche es erneut.",
       "captcha": "Die Anmeldung braucht einen Prüfschritt, den die App noch nicht zeigen kann. Nutze vorerst queer.guide im Web.",
       "network": "Keine Verbindung. Prüfe dein Netzwerk und versuche es erneut.",
-      "unknown": "Etwas ist schiefgelaufen. Versuche es erneut."
-    }
+      "unknown": "Etwas ist schiefgelaufen. Versuche es erneut.",
+      "otpInvalid": "Der Code ist falsch oder abgelaufen. Fordere einen neuen an.",
+      "noAccount": "Mit dieser E-Mail gibt es kein Konto. Erstelle stattdessen eins."
+    },
+    "code": "Code",
+    "sendCode": "Code per E-Mail senden",
+    "verifyCode": "Weiter",
+    "codeSent": "Wir haben einen 6-stelligen Code an {{email}} gesendet. Er ist nur kurz gültig.",
+    "codeInvalid": "Gib den {{n}}-stelligen Code aus der E-Mail ein.",
+    "changeEmail": "Andere E-Mail verwenden",
+    "usePassword": "Stattdessen Passwort verwenden",
+    "useCode": "Stattdessen E-Mail-Code verwenden",
+    "resetSent": "Falls ein Konto mit dieser E-Mail existiert, ist ein Link unterwegs. Öffne ihn auf diesem Telefon.",
+    "newPassword": "Neues Passwort",
+    "setPassword": "Neues Passwort festlegen"
   },
   "account": {
     "title": "Konto",
