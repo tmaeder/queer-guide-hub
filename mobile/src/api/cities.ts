@@ -37,9 +37,9 @@ export async function fetchCityBySlug(slug: string): Promise<CityDetail | null> 
 }
 
 export const CITY_VENUE_LIMIT = 200;
-export const CITY_EVENT_LIMIT = 50;
+const CITY_EVENT_LIMIT = 50;
 
-export async function fetchCityVenues(cityId: string): Promise<VenueListItem[]> {
+async function fetchCityVenues(cityId: string): Promise<VenueListItem[]> {
   const { data, error } = await publicVenues(VENUE_LIST_COLUMNS)
     .eq('city_id', cityId)
     .order('is_featured', { ascending: false })
@@ -50,7 +50,7 @@ export async function fetchCityVenues(cityId: string): Promise<VenueListItem[]> 
 }
 
 /** The events feed's predicate (see fetchEventsInBounds), scoped to one city. */
-export async function fetchCityEvents(cityId: string, now = new Date()): Promise<EventListItem[]> {
+async function fetchCityEvents(cityId: string, now = new Date()): Promise<EventListItem[]> {
   const { data, error } = await supabase
     .from('events')
     .select(EVENT_LIST_COLUMNS)

@@ -1789,6 +1789,84 @@ const DEFS = {
     f: [[ring(50, 50, 34), 'T']],
     l: ['M 26 42 C 36 70 64 70 74 42'],
   },
+  stage: {
+    name: 'Stage',
+    group: 'Events',
+    hex: Y,
+    t: 'none',
+    use: 'Stagecraft, revues and live performance.',
+    l: [
+      'M 18 81 C 17 61 17 39 18 20 C 38 19 62 19 82 20 C 83 39 83 61 82 81',
+      'M 18 81 C 38 80 62 80 82 81',
+      'M 39 20 C 38 36 31 46 18 50 M 61 20 C 62 36 69 46 82 50',
+    ],
+  },
+
+  'makeup-compact': {
+    name: 'Makeup Compact',
+    group: 'Market',
+    hex: M,
+    t: 'none',
+    use: 'Makeup, cosmetics and application techniques.',
+    l: [
+      'M 18 57 C 23 34 40 18 58 16 C 69 15 77 23 74 34 C 71 43 64 50 55 53',
+      'M 18 57 C 18 49 33 45 50 45 C 67 45 82 49 82 57 C 82 65 67 70 50 70 C 33 70 18 65 18 57',
+      'M 18 57 C 17 62 17 66 18 71 C 20 79 33 83 50 83 C 67 83 80 79 82 71 C 83 66 83 62 82 57',
+    ],
+  },
+
+  runway: {
+    name: 'Runway',
+    group: 'Events',
+    hex: Y,
+    t: 'none',
+    use: 'Runway walks, fashion shows and catwalk presentation.',
+    l: [
+      'M 19 22 C 39 21 61 21 81 22 C 81 28 83 33 86 36 C 78 37 70 37 62 36 C 65 51 69 67 74 81 C 58 82 42 82 26 81 C 31 67 35 51 38 36 C 30 37 22 37 14 36 C 17 33 19 28 19 22 Z',
+      `${ring(21, 62, 2)} ${ring(79, 62, 2)}`,
+    ],
+  },
+
+  'dance-steps': {
+    name: 'Dance Steps',
+    group: 'Events',
+    hex: Y,
+    t: 'none',
+    use: 'Dance, choreography and performance movement.',
+    l: [
+      'M 35 68 C 25 65 21 57 25 47 C 29 37 39 39 43 47 C 47 56 43 65 35 68 Z',
+      'M 32 79 C 35 78 38 78 41 79',
+      'M 65 52 C 55 49 51 41 55 31 C 59 21 69 23 73 31 C 77 40 73 49 65 52 Z',
+      'M 62 63 C 65 62 68 62 71 63',
+    ],
+  },
+
+  'circus-tent': {
+    name: 'Circus Tent',
+    group: 'Events',
+    hex: Y,
+    t: 'none',
+    use: 'Circus, big tops and circus performance.',
+    l: [
+      'M 14 52 C 29 43 42 32 50 20 C 58 32 71 43 86 52 C 62 53 38 53 14 52 Z',
+      'M 21 53 C 20 62 20 71 21 80 C 40 81 60 81 79 80 C 80 71 80 62 79 53',
+      'M 39 80 C 39 66 44 61 50 59 C 56 61 61 66 61 80',
+      'M 36 52 C 42 42 47 31 50 20 C 53 31 58 42 64 52',
+    ],
+  },
+
+  'platform-heel': {
+    name: 'Platform Heel',
+    group: 'Market',
+    hex: M,
+    t: 'none',
+    use: 'Heels, platform shoes and stage footwear.',
+    l: [
+      'M 19 64 C 31 62 42 58 52 48 C 62 38 67 29 72 24 C 81 29 85 40 81 51 C 73 49 67 54 59 64 C 49 77 38 79 19 77 C 14 76 14 67 19 64 Z',
+      'M 81 51 C 79 61 79 69 80 78 M 73 78 C 75 79 78 79 80 78',
+    ],
+  },
+
   // Interface set (replaced lucide-react). One file per drawing batch.
   ...BATCH_A,
   ...BATCH_B,
