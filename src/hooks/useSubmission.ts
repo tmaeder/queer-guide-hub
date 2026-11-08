@@ -1,21 +1,20 @@
 /**
- * useSubmission — React Hook Form + Zod backed wizard state for community submissions.
+ * useSubmission — Zod-validated wizard state for community submissions.
  *
- * Public surface is kept shape-compatible with the prior imperative hook so
- * SubmitForm and other callers keep working. The underlying form state /
- * validation is now driven by RHF, with Zod schemas derived from the field
- * registry (buildSubmissionSchema).
+ * Errors change only when a step is validated (nextStep / goToStep / submit),
+ * not on every keystroke, matching the prior React Hook Form `onSubmit` mode.
  */
 
-import { useCallback, useMemo, useState } from 'react';
-import { useForm, useWatch, type FieldValues, type Path } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { SubmissionTypeConfig } from '@/config/submissionRegistry';
 import { ensureProtocol } from '@/utils/ensureProtocol';
 import { buildSubmissionSchema } from '@/hooks/submission/buildSubmissionSchema';
+import { zodFieldErrors } from '@/lib/zodFieldErrors';
+
+type Values = Record<string, unknown>;
 
 export interface NextStepResult {
   ok: boolean;
@@ -28,58 +27,24 @@ export function useSubmission(config: SubmissionTypeConfig) {
 
   const { fullSchema } = useMemo(() => buildSubmissionSchema(config), [config]);
 
-  const form = useForm<FieldValues>({
-    resolver: zodResolver(fullSchema),
-    mode: 'onSubmit',
-    reValidateMode: 'onChange',
-    defaultValues: config.defaults as FieldValues,
-    shouldFocusError: true,
-  });
-
+  const [data, setData] = useState<Values>(() => ({ ...(config.defaults as Values) }));
+  // Mirrors `data` synchronously so validation right after setField sees the new value.
+  const valuesRef = useRef<Values>(data);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [honeypot, setHoneypot] = useState('');
   const [stepAnnouncement, setStepAnnouncement] = useState('');
 
-  // useWatch returns a memoizable subscription; form.watch() returns a
-  // function that the React Compiler can't memoize safely (CodeQL
-  // react-hooks/incompatible-library).
-  const data = useWatch({ control: form.control }) as FieldValues;
-  const errors = form.formState.errors;
-
-  const errorKeysSig = Object.keys(errors).join(',');
-  const flatErrors = useMemo(() => {
-    const out: Record<string, string> = {};
-    for (const [name, err] of Object.entries(errors)) {
-      const message = (err as { message?: string } | undefined)?.message;
-      if (message) out[name] = message;
-    }
-    return out;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [errorKeysSig]);
+  const setFields = useCallback((fields: Values) => {
+    valuesRef.current = { ...valuesRef.current, ...fields };
+    setData(valuesRef.current);
+  }, []);
 
   const setField = useCallback(
-    (name: string, value: unknown) => {
-      form.setValue(name as Path<FieldValues>, value as FieldValues[string], {
-        shouldDirty: true,
-        shouldTouch: true,
-        shouldValidate: form.formState.isSubmitted,
-      });
-    },
-    [form],
-  );
-
-  const setFields = useCallback(
-    (fields: Record<string, unknown>) => {
-      for (const [name, value] of Object.entries(fields)) {
-        form.setValue(name as Path<FieldValues>, value as FieldValues[string], {
-          shouldDirty: true,
-          shouldTouch: true,
-          shouldValidate: form.formState.isSubmitted,
-        });
-      }
-    },
-    [form],
+    (name: string, value: unknown) => setFields({ [name]: value }),
+    [setFields],
   );
 
   const validateStep = useCallback(
@@ -88,33 +53,44 @@ export function useSubmission(config: SubmissionTypeConfig) {
       if (!step) return { ok: true };
 
       // Normalize string-looking URL fields before validating (so `foo.com` parses).
+      const normalized: Values = {};
       for (const fieldName of step.fields) {
-        const current = form.getValues(fieldName as Path<FieldValues>);
-        if (typeof current === 'string' && current.trim() && !/^https?:\/\//i.test(current) && /^[a-z0-9.-]+\.[a-z]{2,}/i.test(current)) {
-          const normalized = ensureProtocol(current) as string;
+        const current = valuesRef.current[fieldName];
+        if (
+          typeof current === 'string' &&
+          current.trim() &&
+          !/^https?:\/\//i.test(current) &&
+          /^[a-z0-9.-]+\.[a-z]{2,}/i.test(current)
+        ) {
+          const next = ensureProtocol(current) as string;
           try {
-            new URL(normalized);
-            if (normalized !== current) {
-              form.setValue(fieldName as Path<FieldValues>, normalized as FieldValues[string], {
-                shouldValidate: false,
-              });
-            }
+            new URL(next);
+            if (next !== current) normalized[fieldName] = next;
           } catch {
             /* Zod will flag */
           }
         }
       }
+      if (Object.keys(normalized).length) setFields(normalized);
 
-      const ok = await form.trigger(step.fields as Path<FieldValues>[]);
-      if (ok) {
+      const all = zodFieldErrors(fullSchema, valuesRef.current);
+      setErrors((prev) => {
+        const out = { ...prev };
+        for (const name of step.fields) {
+          if (all[name]) out[name] = all[name];
+          else delete out[name];
+        }
+        return out;
+      });
+      const firstInvalid = step.fields.find((name) => all[name]);
+      if (!firstInvalid) {
         setStepAnnouncement('');
         return { ok: true };
       }
-      const firstInvalid = step.fields.find((name) => form.formState.errors[name]);
       setStepAnnouncement('Please fix the highlighted fields before continuing.');
       return { ok: false, firstInvalid };
     },
-    [config.steps, form],
+    [config.steps, fullSchema, setFields],
   );
 
   const nextStep = useCallback(async (): Promise<NextStepResult> => {
@@ -166,8 +142,9 @@ export function useSubmission(config: SubmissionTypeConfig) {
       return;
     }
 
+    setIsSubmitting(true);
     try {
-      const values = form.getValues();
+      const values = valuesRef.current;
       const { error } = await supabase.from('community_submissions' as 'venues').insert({
         content_type: config.id,
         data: values,
@@ -185,32 +162,36 @@ export function useSubmission(config: SubmissionTypeConfig) {
       const match = message.match(/invalid_url:([a-z_]+)/i);
       if (match) {
         const fieldName = match[1];
-        form.setError(fieldName as Path<FieldValues>, {
-          type: 'server',
-          message: 'Please enter a full valid URL like https://example.com',
-        });
+        setErrors((prev) => ({
+          ...prev,
+          [fieldName]: 'Please enter a full valid URL like https://example.com',
+        }));
       }
       toast({
         title: 'Submission failed',
         description: match ? 'Please fix form errors and try again.' : message,
         variant: 'destructive',
       });
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [config, honeypot, user, toast, validateStep, form]);
+  }, [config, honeypot, user, toast, validateStep]);
 
   const reset = useCallback(() => {
-    form.reset(config.defaults as FieldValues);
+    valuesRef.current = { ...(config.defaults as Values) };
+    setData(valuesRef.current);
+    setErrors({});
     setCurrentStep(0);
     setIsSubmitted(false);
     setHoneypot('');
     setStepAnnouncement('');
-  }, [form, config.defaults]);
+  }, [config.defaults]);
 
   return {
     data,
-    errors: flatErrors,
+    errors,
     currentStep,
-    isSubmitting: form.formState.isSubmitting,
+    isSubmitting,
     isSubmitted,
     totalSteps: config.steps.length,
     stepAnnouncement,
@@ -223,6 +204,5 @@ export function useSubmission(config: SubmissionTypeConfig) {
     reset,
     honeypot,
     setHoneypot,
-    control: form.control,
   };
 }

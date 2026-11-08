@@ -4,7 +4,6 @@ on:
     workflows:
       - edge-fn-cors-check
       - bundle-shape
-      - claude-md-drift
       - "Lint & a11y gate"
     types: [completed]
 
