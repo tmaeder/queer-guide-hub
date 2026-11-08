@@ -16,7 +16,8 @@ tags: [smoke]
 - tapOn: "Use a password instead"
 - tapOn: "Password"
 - inputText: "long-enough-password"
+# By id: "Sign in" is also the screen title and a tab, and Android exposes
+# each label twice, so a text index lands on a different element per platform.
 - tapOn:
-    text: "Sign in"
-    index: 1
+    id: "auth-submit"
 - assertVisible: "Enter a valid email address."

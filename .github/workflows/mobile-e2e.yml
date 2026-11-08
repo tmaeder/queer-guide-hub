@@ -1,0 +1,112 @@
+name: Mobile E2E (Maestro, Android)
+
+# Builds a release APK of the Expo app in mobile/ and runs every flow in
+# mobile/.maestro on an Android emulator. Main-only plus manual: a native
+# build + emulator boot is ~25 min, too slow to gate every PR. The flows
+# read live queer.guide data (venue "mylord" in Zurich), so a failure can
+# also mean the data moved; see mobile/README.md "Device E2E".
+# iOS is deferred: macOS runners cost 10x.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-e2e.yml"
+  # Also on a PR that changes this workflow, so an edit to it is proven before it lands.
+  pull_request:
+    paths:
+      - ".github/workflows/mobile-e2e.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      - run: npm ci
+
+      # Release variant: the JS bundle is embedded, so no Metro server is
+      # needed on the runner. Expo's template signs release with the debug
+      # keystore, which is all an emulator needs.
+      - name: Build release APK
+        run: |
+          npx expo prebuild --platform android --clean --no-install
+          cd android && ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=x86_64
+          ls -la app/build/outputs/apk/release/
+
+      # Pinned zip + digest rather than the curl|bash installer.
+      - name: Install Maestro
+        working-directory: .
+        run: |
+          curl -fsSL -o /tmp/maestro.zip https://github.com/mobile-dev-inc/Maestro/releases/download/cli-2.12.1/maestro.zip
+          echo "54dbb0716425626604973cbb374c585ca30272375d9ce15177a1152765ddd9d7  /tmp/maestro.zip" | sha256sum -c -
+          unzip -q /tmp/maestro.zip -d "$HOME"
+          echo "$HOME/maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Enable KVM
+        working-directory: .
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run Maestro flows on an emulator
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          # The runner's default AVD is a 320x640 phone: half of each screen is
+          # below the fold and flows fail on layout, not on the app.
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -memory 4096 -cores 4
+          working-directory: mobile
+          script: |
+            # A software-rendered Pixel 6 is slow enough that the system launcher
+            # can ANR; its "isn't responding" dialog then covers every flow.
+            # Hiding error dialogs does not hide an app crash: the process still
+            # dies, and the pidof check below fails on it.
+            adb shell settings put global hide_error_dialogs 1
+            adb install -r android/app/build/outputs/apk/release/app-release.apk
+            adb logcat -c
+            adb shell monkey -p guide.queer.app -c android.intent.category.LAUNCHER 1 && sleep 15 && adb shell pidof guide.queer.app || (adb logcat -d > maestro-logcat.txt; echo "::error::guide.queer.app is not running 15s after launch; crash log in the maestro-android artifact"; grep -E "FATAL|AndroidRuntime|ReactNativeJS" maestro-logcat.txt | head -60; exit 1)
+            maestro test .maestro --format junit --output maestro-report.xml --test-output-dir maestro-out || (maestro hierarchy > maestro-hierarchy.json; adb exec-out screencap -p > maestro-screen.png; adb logcat -d > maestro-logcat.txt; exit 1)
+
+      - name: Upload Maestro report and screenshots
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: maestro-android
+          path: |
+            mobile/maestro-report.xml
+            mobile/maestro-out
+            mobile/maestro-hierarchy.json
+            mobile/maestro-screen.png
+            mobile/maestro-logcat.txt
+            ~/.maestro/tests
+          if-no-files-found: ignore

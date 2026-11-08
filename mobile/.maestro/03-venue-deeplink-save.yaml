@@ -4,12 +4,22 @@ tags: [smoke]
 ---
 - launchApp:
     clearState: true
+# Wait for the app's JS before sending the link: on a cold emulator a link
+# fired 1-2 s after launch arrives before the router listens and is dropped.
+- extendedWaitUntil:
+    visible: "Explore"
+    timeout: 30000
 - openLink: "queerguide://venues/mylord"
 - extendedWaitUntil:
     visible: "Mylord"
     timeout: 15000
 - tapOn: "Save"
 - assertVisible: "Saved"
-- back
+# Relaunch (keeping state) rather than Back: on the Android emulator, Back
+# after a warm deep link closes the task instead of returning to Explore.
+# Tracked in mobile/README.md "Not done yet"; this flow tests that the save
+# persists, which a relaunch proves more strictly than Back would.
+- launchApp:
+    clearState: false
 - tapOn: "Saved"
 - assertVisible: "Mylord"
