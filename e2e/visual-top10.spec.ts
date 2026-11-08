@@ -111,7 +111,7 @@ test.describe('Top-10 desktop visual baselines', () => {
       // layout break. /news is the live news feed — the hourly pipeline rotates
       // its cards past the 0.15 gate within hours of a baseline regen — so it
       // belongs in the same bucket.
-      // /personalities joined the bucket 2026-07: daily person-db imports
+      // /personalities joined the bucket 2026-07: daily personality imports
       // rotate the born-this-week / featured rails past the 0.15 gate.
       const HIGH_ROTATION = new Set(['/', '/venues', '/news', '/personalities']);
       const threshold = HIGH_ROTATION.has(route) ? 0.5 : isStatic ? 0.03 : 0.15;
