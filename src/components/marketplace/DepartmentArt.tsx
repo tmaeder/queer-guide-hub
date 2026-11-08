@@ -37,26 +37,8 @@ import {
  * what Brand Guidelines §08 wants, since it forbids treatments on photos but
  * says nothing against illustration that never pretends to be one.
  *
- * THE LINE IS YELLOW; THE MARKS ARE NOT. This paragraph used to read "ONE HUE,
- * NOT FOUR" and argued that painting eleven stops in four colours would assert
- * four routes that do not exist. That rule was reversed deliberately when Icon
- * System v2 landed (2026-10-17): under v2 a track colour belongs to the ICON,
- * chosen by what the icon means, and an icon that drops its colour on one
- * surface is a different icon there. So the department MARK now renders in its
- * own hue, exactly as the same glyph does in the glossary, the nav and search.
- *
- * What did NOT change is the LINE: `--track-yellow` still carries the route
- * through every plate, and the route is what says "one line, eleven stops".
- * The hue of a station's mark was never what asserted a route — the stroke
- * running between the stations is. 1.4.11 is unaffected: every mark is still
- * fill-with-an-ink-outline, and it meets the disc at that outline.
- *
- * The ACTIVE tile is the exception and it is arithmetic, not taste. Its disc
- * inverts to `fill-foreground`, and a mark whose outline is ink is invisible on
- * an ink disc — the `bg-foreground` trap, where the class names still read
- * correctly and the glyph disappears. The active tile therefore draws the
- * monochrome rendition in `currentColor` against `text-background`, which is
- * theme-aware where a literal would not be.
+ * The yellow route connects the stops. Department glyphs use the foreground
+ * ink, which follows the station disc when the active tile inverts.
  *
  * The `index` / `count` pair is load-bearing, not decoration — see
  * `plateWindow`. Pass the position in the RENDERED tile list, not in
@@ -161,13 +143,9 @@ export function DepartmentArt({
         transform={`translate(${cx - 50 * g} ${PLATE_MID - 50 * g}) scale(${g})`}
         className={active ? 'text-background' : undefined}
       >
-        {/* `ticks={false}`: the disc is this glyph's boundary, so its tick
-            margin is interior — ticks here read as marks ON the disc, not as
-            motion around the icon. */}
         <TransitIcon
           name={glyph ?? departmentGlyph(slug)}
           size={100}
-          ticks={false}
           {...(active ? { color: 'currentColor' } : {})}
         />
       </g>

@@ -16,7 +16,6 @@
     "@supabase/supabase-js": "^2.119.0",
     "i18n-iso-countries": "^7.14.0",
     "jspdf": "^4.2.1",
-    "prop-types": "^15.8.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-simple-maps": "^5.0.5",
