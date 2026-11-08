@@ -403,6 +403,14 @@ export default function TripPlannerPage() {
               <Ticket size={16} aria-hidden />{' '}
               {t('trips.bookingAssistant.wizardTitle', 'Trip bookings')}
             </LocalizedLink>
+            {canEdit && (
+              <LocalizedLink
+                to={`/trips/${trip.id}?view=plan&section=prepare&tool=confirmation`}
+                className="inline-flex min-h-11 items-center gap-2 underline underline-offset-4"
+              >
+                {t('trips.inbox.importConfirmation', 'Import a booking confirmation')}
+              </LocalizedLink>
+            )}
           </div>
 
           {phase !== 'memory' && (
@@ -415,7 +423,9 @@ export default function TripPlannerPage() {
 
       {section === 'prepare' || section === 'all' ? (
         <div className="mb-8">
-          <TripPreTripBlock trip={trip} />
+          <div id="trip-tool-confirmation" className="scroll-mt-40">
+            <TripPreTripBlock trip={trip} />
+          </div>
           <section
             id="trip-tool-booking"
             className="scroll-mt-40"
@@ -431,6 +441,7 @@ export default function TripPlannerPage() {
               primaryCityId={trip.primary_city_id}
               canEdit={canEdit}
               startInBooking={searchParams.get('tool') === 'booking'}
+              adults={trip.adult_count ?? undefined}
               startDate={trip.start_date ?? undefined}
               endDate={trip.end_date ?? undefined}
             />

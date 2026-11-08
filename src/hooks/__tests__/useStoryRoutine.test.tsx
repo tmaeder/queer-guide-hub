@@ -10,7 +10,12 @@ type MockResult = { data: unknown; error: { message: string } | null };
 
 const state = vi.hoisted(() => ({
   results: [] as MockResult[],
-  calls: [] as Array<{ table?: string; rpc?: string; invoke?: string; chain: Array<{ method: string; args: unknown[] }> }>,
+  calls: [] as Array<{
+    table?: string;
+    rpc?: string;
+    invoke?: string;
+    chain: Array<{ method: string; args: unknown[] }>;
+  }>,
 }));
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -67,7 +72,9 @@ import {
   useUnarchiveStory,
 } from '../useStoryRoutine';
 
-function withResults(...r: MockResult[]) { state.results.push(...r); }
+function withResults(...r: MockResult[]) {
+  state.results.push(...r);
+}
 function wrapper({ children }: { children: ReactNode }) {
   const qc = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
@@ -109,9 +116,9 @@ describe('useStoryRoutineRuns', () => {
     await waitFor(() => expect(result.current.data).toBeDefined());
 
     expect(state.calls[0].table).toBe('feedback_routine_runs');
-    const eq = state.calls[0].chain.find(s => s.method === 'eq');
+    const eq = state.calls[0].chain.find((s) => s.method === 'eq');
     expect(eq?.args).toEqual(['story_id', 's1']);
-    const order = state.calls[0].chain.find(s => s.method === 'order');
+    const order = state.calls[0].chain.find((s) => s.method === 'order');
     expect(order?.args[0]).toBe('created_at');
   });
 
@@ -170,30 +177,58 @@ describe('useStoryEvents', () => {
     renderHook(() => useStoryEvents('s1', 50), { wrapper });
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
-    const limit = state.calls[0].chain.find(s => s.method === 'limit');
+    const limit = state.calls[0].chain.find((s) => s.method === 'limit');
     expect(limit?.args).toEqual([50]);
   });
 });
 
 describe('RPC mutations — happy paths', () => {
   it.each([
-    ['approve_story_for_claude', () => useApproveStoryForClaude(), { storyId: 's1', note: 'lgtm' }, { p_story_id: 's1', p_note: 'lgtm' }],
-    ['mark_story_needs_followup', () => useMarkStoryNeedsFollowup(), { storyId: 's1', reason: 'unclear' }, { p_story_id: 's1', p_reason: 'unclear' }],
-    ['cancel_routine_run', () => useCancelRoutineRun(), { runId: 'r1', storyId: 's1', reason: 'wrong fix' }, { p_run_id: 'r1', p_reason: 'wrong fix' }],
-    ['verify_story', () => useVerifyStory(), { storyId: 's1', outcome: 'resolved' as const, note: 'shipped' }, { p_story_id: 's1', p_outcome: 'resolved', p_note: 'shipped' }],
-    ['archive_story', () => useArchiveStory(), { storyId: 's1', reason: 'duplicate' }, { p_story_id: 's1', p_reason: 'duplicate' }],
+    [
+      'approve_story_for_claude',
+      () => useApproveStoryForClaude(),
+      { storyId: 's1', note: 'lgtm' },
+      { p_story_id: 's1', p_note: 'lgtm' },
+    ],
+    [
+      'mark_story_needs_followup',
+      () => useMarkStoryNeedsFollowup(),
+      { storyId: 's1', reason: 'unclear' },
+      { p_story_id: 's1', p_reason: 'unclear' },
+    ],
+    [
+      'cancel_routine_run',
+      () => useCancelRoutineRun(),
+      { runId: 'r1', storyId: 's1', reason: 'wrong fix' },
+      { p_run_id: 'r1', p_reason: 'wrong fix' },
+    ],
+    [
+      'verify_story',
+      () => useVerifyStory(),
+      { storyId: 's1', outcome: 'resolved' as const, note: 'shipped' },
+      { p_story_id: 's1', p_outcome: 'resolved', p_note: 'shipped' },
+    ],
+    [
+      'archive_story',
+      () => useArchiveStory(),
+      { storyId: 's1', reason: 'duplicate' },
+      { p_story_id: 's1', p_reason: 'duplicate' },
+    ],
     ['unarchive_story', () => useUnarchiveStory(), { storyId: 's1' }, { p_story_id: 's1' }],
-  ] as const)('calls %s RPC with correct args', async (rpcName, useHook, mutateArgs, expectedArgs) => {
-    withResults({ data: null, error: null });
-    const { result } = renderHook(() => useHook(), { wrapper });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (result.current as any).mutateAsync(mutateArgs);
+  ] as const)(
+    'calls %s RPC with correct args',
+    async (rpcName, useHook, mutateArgs, expectedArgs) => {
+      withResults({ data: null, error: null });
+      const { result } = renderHook(() => useHook(), { wrapper });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (result.current as any).mutateAsync(mutateArgs);
 
-    const call = state.calls[0];
-    expect(call.rpc).toBe(rpcName);
-    const [, args] = call.chain[0].args as [string, Record<string, unknown>];
-    expect(args).toEqual(expectedArgs);
-  });
+      const call = state.calls[0];
+      expect(call.rpc).toBe(rpcName);
+      const [, args] = call.chain[0].args as [string, Record<string, unknown>];
+      expect(args).toEqual(expectedArgs);
+    },
+  );
 });
 
 describe('useDispatchClaudeRoutine', () => {
@@ -202,7 +237,7 @@ describe('useDispatchClaudeRoutine', () => {
     const { result } = renderHook(() => useDispatchClaudeRoutine(), { wrapper });
     const out = await result.current.mutateAsync({
       storyId: 's1',
-      runner: 'github_actions',
+      runner: 'webhook',
       promptOverride: 'custom prompt',
     });
 
@@ -212,7 +247,7 @@ describe('useDispatchClaudeRoutine', () => {
     const [, opts] = call.chain[0].args as [string, { body: Record<string, unknown> }];
     expect(opts.body).toEqual({
       story_id: 's1',
-      runner: 'github_actions',
+      runner: 'webhook',
       prompt_override: 'custom prompt',
     });
   });
@@ -220,9 +255,9 @@ describe('useDispatchClaudeRoutine', () => {
   it('throws on edge error', async () => {
     withResults({ data: null, error: { message: 'down' } });
     const { result } = renderHook(() => useDispatchClaudeRoutine(), { wrapper });
-    await expect(
-      result.current.mutateAsync({ storyId: 's1' }),
-    ).rejects.toEqual({ message: 'down' });
+    await expect(result.current.mutateAsync({ storyId: 's1' })).rejects.toEqual({
+      message: 'down',
+    });
   });
 });
 

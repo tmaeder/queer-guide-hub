@@ -183,39 +183,33 @@ test.describe('production subway design-system contract', () => {
   test('client-side navigation plays the arrival animation, and skips it on motion-free routes', async ({
     page,
   }) => {
-    // THE JOURNEY OVERLAY NO LONGER EXISTS, which is why this could never pass.
-    // `grep -rn 'route-journey' src/` returns NOTHING: there is no element with
-    // `data-testid="route-journey"` and no `route-journey--<track>` class in the
-    // app. What survives is `RouteFade` (20 lines), which puts a `station-arrive`
-    // class on the route wrapper when `isRouteMotionAllowed(pathname)`.
+    // RouteFade (src/components/layout/RouteFade.tsx) puts `route-fade` on the
+    // route wrapper when the destination is in a different section and
+    // isRouteMotionAllowed(pathname). Until 5aa73ba6c (2026-11-07) the class was
+    // `station-arrive`; this test kept asserting the old name and failed every
+    // nightly after the rename.
     //
-    // NOTE FOR WHOEVER TOUCHES THE SIBLING TEST: 'reduced motion suppresses the
-    // route journey' is currently PASSING VACUOUSLY for the same reason — it
-    // asserts that element is hidden and absent, which is trivially true of an
-    // element that is never rendered. It is left alone here rather than guessed
-    // at, because asserting what reduced motion does to `station-arrive` needs
-    // its own measurement.
+    // The animation is gated on the page having finished loading
+    // (`.route-fade:not(:has(> [data-route-loading]))`), so the computed name
+    // is polled. Measured on prod 2026-11-08 via client-side nav from /:
+    //   -> /going-out   1 `.route-fade`; "none" while loading, "route-arrive" at ~400ms
+    //   -> /help        0 `.route-fade`   (a MOTION_FREE_PREFIXES entry)
     //
-    // Measured on prod 2026-10-17 via client-side nav from /:
-    //   -> /going-out   1 `.station-arrive`, computed animationName "station-arrive"
-    //   -> /help        0 `.station-arrive`   (a MOTION_FREE_PREFIXES entry)
-    //
-    // So the pair below is the real contract and is strictly better than a count
-    // of overlays: it asserts the animation runs AND that the motion-free list is
+    // The pair is the contract: the animation runs, AND the motion-free list is
     // honoured, which is the half that protects the crisis pages.
     await gotoReady(page, '/');
     await page.locator('header nav[aria-label="Primary"] a').first().click();
     await expect(page).toHaveURL(/\/going-out$/);
 
-    const arrived = page.locator('.station-arrive');
+    const arrived = page.locator('.route-fade');
     await expect(arrived).toHaveCount(1);
     await expect
       .poll(() => arrived.first().evaluate((el) => getComputedStyle(el).animationName))
-      .toBe('station-arrive');
+      .toBe('route-arrive');
 
     await gotoReady(page, '/');
     await openCrisisSupport(page);
-    await expect(page.locator('.station-arrive')).toHaveCount(0);
+    await expect(page.locator('.route-fade')).toHaveCount(0);
   });
 
   test('reduced motion suppresses the route journey', async ({ page }) => {
@@ -240,7 +234,7 @@ test.describe('production subway design-system contract', () => {
   test('safety routes remain motion-free', async ({ page }) => {
     await gotoReady(page, '/about');
     await openCrisisSupport(page);
-    await expect(page.locator('.station-arrive')).toHaveCount(0);
+    await expect(page.locator('.route-fade')).toHaveCount(0);
   });
 
   for (const path of ['/events', '/travel', '/pride', '/help', '/news']) {

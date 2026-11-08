@@ -102,7 +102,7 @@ copy under `~/Library/LaunchAgents` (user-only perms) and never commit it.
 ## Flip dispatches to use it
 
 The runner adapter is selected per-dispatch in the admin UI — there's a
-dropdown in the Dispatch card with `mock | local | github_actions | webhook | api`.
+dropdown in the Dispatch card with `mock | local | webhook | api`.
 Pick `local` once for the next run; the choice is per-run, not global.
 
 For a global default, set `FEEDBACK_FIX_RUNNER=local` /

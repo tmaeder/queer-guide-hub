@@ -58,8 +58,8 @@ The production generator and ZIP contents are verified locally with real raster
 images and an independent Python ZIP reader. Local native-browser generation was also checked at desktop and mobile sizes,
 and a completed downloaded fixture ZIP passed scan and CRC inspection. Live
 production behavior and workspace/domain logo precedence remain unverified or unfinished.
-[JSZip generation API](https://stuk.github.io/jszip/documentation/api_jszip/generate_async.html)
-documents the archive format used by this implementation.
+The archive is written with [fflate `zipSync`](https://github.com/101arrowz/fflate)
+at level 0 (STORE), since PNG/JPG are already compressed.
 
 ## Managed CSV import and round-trip export
 

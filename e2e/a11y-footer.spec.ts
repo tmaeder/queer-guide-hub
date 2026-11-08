@@ -105,19 +105,30 @@ test.describe('Footer a11y', () => {
     // and fonts before sampling the composited colours.
     await waitForAppReady(page);
 
-    const bad = await page.evaluate(
-      ({ helpers, floor }) => {
-        // The helper is injected as source and eval'd in page scope: a
-        // Playwright `evaluate` callback cannot close over an imported
-        // function, and inlining it in three specs is how the oklab bug would
-        // have survived in two of them.
-        eval(helpers);
-        const footers = Array.from(document.querySelectorAll('#root footer'));
-        // @ts-expect-error — defined by the injected helper source.
-        return __lowContrastControls(footers[footers.length - 1], floor);
-      },
-      { helpers: CONTRAST_HELPERS, floor: INVISIBLE_FLOOR },
-    );
+    // Re-measured until it settles (5s). The 2026-11-08 nightly sampled the
+    // inherited-colour bottom-row links as ink on the ink plate once, and the
+    // failure screenshot taken moments later shows them painted paper; the
+    // retry passed. The defect this guards is a control that STAYS invisible,
+    // which still fails after the window — with the last reading printed.
+    const measure = () =>
+      page.evaluate(
+        ({ helpers, floor }) => {
+          // The helper is injected as source and eval'd in page scope: a
+          // Playwright `evaluate` callback cannot close over an imported
+          // function, and inlining it in three specs is how the oklab bug would
+          // have survived in two of them.
+          eval(helpers);
+          const footers = Array.from(document.querySelectorAll('#root footer'));
+          // @ts-expect-error — defined by the injected helper source.
+          return __lowContrastControls(footers[footers.length - 1], floor);
+        },
+        { helpers: CONTRAST_HELPERS, floor: INVISIBLE_FLOOR },
+      );
+    let bad = await measure();
+    await expect
+      .poll(async () => (bad = await measure())?.length ?? -1, { timeout: 5_000 })
+      .toBe(0)
+      .catch(() => {});
 
     // The probe must have FOUND the footer. A null return means the selector
     // missed, and "no low-contrast controls" would then be vacuously true.
