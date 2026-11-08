@@ -1,4 +1,13 @@
 import { checkIpRateLimit } from '../_shared/ip-rate-limit.ts';
+import { parseLngLat, photonLang, photonToMapbox, type PhotonFeature } from './photon.ts';
+
+// Despite the name, this function has never called Mapbox: it returns a
+// Mapbox-SHAPED FeatureCollection for the frontend address autocomplete.
+// Upstream is Photon (OSM data) because public Nominatim answers 403 to the
+// Supabase egress — see ./photon.ts.
+const PHOTON_SEARCH = Deno.env.get('PHOTON_SEARCH_URL') || 'https://photon.komoot.io/api';
+const PHOTON_REVERSE = Deno.env.get('PHOTON_REVERSE_URL') || 'https://photon.komoot.io/reverse';
+const UPSTREAM_TIMEOUT_MS = 8000;
 
 const ALLOWED_ORIGINS = new Set<string>([
   'https://queer.guide',
@@ -35,44 +44,6 @@ function buildCors(origin: string) {
   } as Record<string, string>;
 }
 
-/**
- * Build a Mapbox-compatible place_name string from Nominatim properties.
- */
-function _buildPlaceName(displayName: string, _address: Record<string, unknown>): string {
-  return displayName || 'Unknown';
-}
-
-/**
- * Transform a Nominatim result into a Mapbox-compatible feature.
- * Nominatim returns: { place_id, osm_id, display_name, lat, lon, address, ... }
- * The frontend expects: { id, place_name, center: [lng, lat], context }
- */
-function nominatimToMapbox(result: Record<string, unknown>): unknown {
-  const lat = parseFloat(result.lat as string) || 0;
-  const lng = parseFloat(result.lon as string) || 0;
-  const displayName = (result.display_name as string) || 'Unknown';
-  const address = (result.address as Record<string, unknown>) || {};
-
-  const context: Array<{ id: string; text: string }> = [];
-  if (address.city) context.push({ id: 'place', text: address.city });
-  if (address.state) context.push({ id: 'region', text: address.state });
-  if (address.country) context.push({ id: 'country', text: address.country });
-  if (address.postcode) context.push({ id: 'postcode', text: address.postcode });
-
-  return {
-    id: `nominatim.${result.osm_id || result.place_id || Math.random().toString(36).slice(2)}`,
-    place_name: displayName,
-    center: [lng, lat], // [lng, lat] — same order as Mapbox
-    context,
-    properties: address,
-    geometry: {
-      type: 'Point',
-      coordinates: [lng, lat],
-    },
-    type: 'Feature',
-  };
-}
-
 Deno.serve(async (req) => {
   const origin = getOrigin(req);
 
@@ -106,55 +77,63 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Use Nominatim (OpenStreetMap free geocoding service)
-    let nominatimUrl: string;
+    const lang = photonLang(req.headers.get('Accept-Language'));
+    let upstreamUrl: string;
     if (isReverseGeocode) {
       // query format: "lng,lat" (Mapbox convention)
-      const [lng, lat] = query.split(',').map((s: string) => s.trim());
-      nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}`;
+      const point = parseLngLat(String(query));
+      if (!point) {
+        return new Response(
+          JSON.stringify({ error: 'Reverse geocode query must be "lng,lat"' }),
+          { status: 400, headers: { ...buildCors(origin), 'Content-Type': 'application/json' } }
+        );
+      }
+      upstreamUrl = `${PHOTON_REVERSE}?lat=${point.lat}&lon=${point.lng}&lang=${lang}&limit=1`;
     } else {
-      nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`;
+      const q = String(query).trim().slice(0, 200);
+      upstreamUrl = `${PHOTON_SEARCH}?q=${encodeURIComponent(q)}&limit=5&lang=${lang}`;
     }
 
-    const acceptLanguage = req.headers.get('Accept-Language') || 'en';
-    const emptyResult = {
-      type: 'FeatureCollection',
-      features: [] as unknown[],
-    };
-
-    const nominatimResponse = await fetch(nominatimUrl, {
-      headers: {
-        'User-Agent': 'queer.guide geocoding service',
-        'Accept-Language': acceptLanguage,
-      },
-    });
-
-    // Degrade gracefully on 3rd-party hiccup: return an empty feature collection
-    // so the autocomplete UI shows "no match" instead of "save failed".
-    if (!nominatimResponse.ok) {
-      console.warn(`Nominatim API non-OK: ${nominatimResponse.status} for query "${query}"`);
-      return new Response(JSON.stringify(emptyResult), {
+    // Graceful degradation on an upstream failure: an empty collection so the
+    // autocomplete shows "no match" rather than a toast per keystroke. The
+    // x-geocoder-degraded header and the console.error keep that distinguishable
+    // from a genuine no-match — the previous version logged only a warn, which
+    // is how a 100% Nominatim 403 rate read as quiet for weeks.
+    const degraded = (reason: string) => {
+      console.error(`Photon geocoding failed: ${reason} (reverse=${!!isReverseGeocode}) for query "${String(query).slice(0, 80)}"`);
+      return new Response(JSON.stringify({ type: 'FeatureCollection', features: [] }), {
         headers: {
           ...buildCors(origin),
           'Content-Type': 'application/json',
-          'Cache-Control': 'public, max-age=60',
+          'Cache-Control': 'no-store',
+          'x-geocoder-degraded': reason,
         },
       });
-    }
-
-    const nominatimData = await nominatimResponse.json();
-
-    // Transform Nominatim response to Mapbox-compatible format
-    // Nominatim returns array for search, single object for reverse
-    const results = Array.isArray(nominatimData) ? nominatimData : [nominatimData];
-    const transformedFeatures = results.map(nominatimToMapbox);
-
-    const response = {
-      type: 'FeatureCollection',
-      features: transformedFeatures,
     };
 
-    return new Response(JSON.stringify(response), {
+    let upstream: Response;
+    try {
+      upstream = await fetch(upstreamUrl, {
+        headers: { 'User-Agent': 'queer.guide geocoding service (https://queer.guide)' },
+        signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+      });
+    } catch (e) {
+      return degraded(`fetch_${e instanceof Error ? e.name : 'error'}`);
+    }
+    if (!upstream.ok) return degraded(`http_${upstream.status}`);
+
+    let body: { features?: PhotonFeature[] };
+    try {
+      body = await upstream.json();
+    } catch {
+      return degraded('bad_json');
+    }
+
+    const features = (body.features ?? [])
+      .map(photonToMapbox)
+      .filter((f): f is NonNullable<typeof f> => f !== null);
+
+    return new Response(JSON.stringify({ type: 'FeatureCollection', features }), {
       headers: {
         ...buildCors(origin),
         'Content-Type': 'application/json',
