@@ -234,7 +234,8 @@ export default function AuthScreen() {
       {error ? <Alert message={error} /> : null}
       {notice ? <Text accessibilityLiveRegion="polite">{notice}</Text> : null}
 
-      <Button label={submitLabel} busy={busy} onPress={() => void submit()} />
+      {/* testID: the label repeats elsewhere on screen (title, tab), so E2E taps this by id. */}
+      <Button testID="auth-submit" label={submitLabel} busy={busy} onPress={() => void submit()} />
 
       {method === 'code' && codeSent ? (
         <ActionText label={t('auth.changeEmail')} onPress={reset} />

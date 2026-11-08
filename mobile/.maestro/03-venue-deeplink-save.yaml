@@ -4,6 +4,11 @@ tags: [smoke]
 ---
 - launchApp:
     clearState: true
+# Wait for the app's JS before sending the link: on a cold emulator a link
+# fired 1-2 s after launch arrives before the router listens and is dropped.
+- extendedWaitUntil:
+    visible: "Explore"
+    timeout: 30000
 - openLink: "queerguide://venues/mylord"
 - extendedWaitUntil:
     visible: "Mylord"

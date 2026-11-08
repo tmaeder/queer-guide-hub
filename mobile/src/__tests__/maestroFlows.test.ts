@@ -41,6 +41,24 @@ function selectors(steps: unknown[]): string[] {
   return out;
 }
 
+/** `tapOn: { id }` selectors, which must exist as a testID in the app source. */
+function ids(steps: unknown[]): string[] {
+  return steps.flatMap((step) => {
+    const v = step && typeof step === 'object' ? (step as Record<string, unknown>).tapOn : undefined;
+    const id = v && typeof v === 'object' ? (v as { id?: unknown }).id : undefined;
+    return typeof id === 'string' ? [id] : [];
+  });
+}
+
+function sourceFiles(dir: string): string[] {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) return e.name === '__tests__' ? [] : sourceFiles(p);
+    return /\.tsx?$/.test(e.name) ? [p] : [];
+  });
+}
+const SOURCE = sourceFiles(path.join(__dirname, '..')).map((f) => fs.readFileSync(f, 'utf8')).join('\n');
+
 function resolves(sel: string): boolean {
   if (DATA.has(sel) || CATALOG.includes(sel)) return true;
   if (!/[.*+?()[\]]/.test(sel)) return false;
@@ -69,5 +87,6 @@ describe('Maestro flows', () => {
     const sels = selectors(docs[1] as unknown[]);
     expect(sels.length).toBeGreaterThan(0);
     expect(sels.filter((s) => !resolves(s))).toEqual([]);
+    expect(ids(docs[1] as unknown[]).filter((id) => !SOURCE.includes(`testID="${id}"`))).toEqual([]);
   });
 });
