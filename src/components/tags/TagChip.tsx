@@ -3,6 +3,7 @@ import { X } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TransitIcon } from '@/components/transit/TransitIcon';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { tagGlyphOverride } from '@/lib/tags/tagIconography';
 import { normalizeTagName } from '@/utils/tagNormalization';
 import { HoverCard, HoverCardTrigger } from '@/components/ui/hover-card';
@@ -16,15 +17,8 @@ export interface TagChipProps {
   /** Optional usage / overlap count shown after the label. */
   count?: number;
   size?: 'sm' | 'default';
-  /**
-   * Show the term's own leading glyph, when it has one
-   * (`tagGlyphOverride`). This used to render a generic lucide `Tag` on every
-   * chip; it is a `TransitIcon` now, because the tag system is a TransitIcon
-   * surface and a surface never mixes the two sets. A term with no glyph of its
-   * own renders no icon rather than a generic one — a chip with no mark is
-   * already the default look, so nothing regresses.
-   */
-  icon?: boolean;
+  /** Override the leading glyph or hide it with false. */
+  icon?: boolean | TransitIconName;
   /** Filter mode — renders a removable button instead of a link. */
   removable?: boolean;
   /** Selected-facet state (filled vs outline). */
@@ -64,7 +58,7 @@ export function TagChip({
   name,
   count,
   size = 'default',
-  icon = false,
+  icon = true,
   removable = false,
   active = false,
   linkless = false,
@@ -91,11 +85,8 @@ export function TagChip({
     className,
   );
 
-  // 14/16, not the old 10/12: `TransitIcon`'s stroke ramp puts an 11-unit
-  // stroke on a 100-unit grid below 24px, and at 10px that fuses into a blob.
-  // These are drawn marks, not a hinted icon font.
-  const iconSize = size === 'sm' ? 18 : 16;
-  const glyph = icon ? tagGlyphOverride(tag) : undefined;
+  const iconSize = size === 'sm' ? 10 : 12;
+  const glyph = icon === true ? (tagGlyphOverride(tag) ?? 'tag') : icon;
   const content = (
     <>
       {glyph && <TransitIcon name={glyph} size={iconSize} className="shrink-0 opacity-70" />}
