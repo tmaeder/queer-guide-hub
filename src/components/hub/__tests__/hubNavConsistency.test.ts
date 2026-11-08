@@ -3,7 +3,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Every `/hub/*` route must render the same wayfinding bar, in the same place.
+ * Every `/hub/*` route must render the same wayfinding bar. Meet people places it below its introduction.
  *
  * This is a source scan rather than a render test on purpose: the 17 hub routes
  * are spread over nine page components with their own auth gates, loading
@@ -57,6 +57,10 @@ function hubRoutes(): Array<{ path: string; component: string }> {
 const sources = componentSources();
 const routes = hubRoutes();
 
+function navMarkup(path: string) {
+  return path === '/hub/people' ? '<HubNav />' : '<HubNavBar />';
+}
+
 describe('hub navigation is the same control on every /hub page', () => {
   // Positive control. Every assertion below is a `for` over `routes`, so a regex
   // that stops matching turns this file green while checking nothing — the
@@ -74,12 +78,12 @@ describe('hub navigation is the same control on every /hub page', () => {
     }
   });
 
-  it('renders HubNavBar on every hub route', () => {
+  it('renders the shared navigation on every hub route', () => {
     for (const r of routes) {
       const src = sources.get(r.component) ?? '';
       // HubShell is the one sanctioned indirection; it is asserted below.
-      const ok = src.includes('<HubNavBar />') || src.includes('<HubShell');
-      expect(ok, `${r.path} (${r.component}) renders no HubNavBar`).toBe(true);
+      const ok = src.includes(navMarkup(r.path)) || src.includes('<HubShell');
+      expect(ok, `${r.path} (${r.component}) renders no shared navigation`).toBe(true);
     }
   });
 
@@ -102,8 +106,8 @@ describe('hub navigation is the same control on every /hub page', () => {
         // (`<Navigate />`) and helper sub-components render no page chrome.
         if (!jsx.includes('<PageContainer') && !jsx.includes('<IntentPageLayout')) continue;
         expect(
-          jsx.includes('<HubNavBar />'),
-          `${r.component}: a returned screen renders no HubNavBar`,
+          jsx.includes(navMarkup(r.path)),
+          `${r.component}: a returned screen renders no shared navigation`,
         ).toBe(true);
       }
     }
@@ -114,7 +118,7 @@ describe('hub navigation is the same control on every /hub page', () => {
     expect(shell).toContain('<HubNavBar />');
   });
 
-  it('HubNavBar is the only placement, and it is a sibling with pb-0', () => {
+  it('HubNavBar supplies the standalone placement with pb-0', () => {
     const bar = readFileSync(join(ROOT, 'src/components/hub/HubNavBar.tsx'), 'utf8');
     // pb-0 is what lets the bar sit above a page's own PageContainer without the
     // two stacking their vertical padding.

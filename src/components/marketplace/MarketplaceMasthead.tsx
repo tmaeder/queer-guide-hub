@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { PageIntro } from '@/components/layout/PageIntro';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -7,7 +8,7 @@ import { MarketplaceLineArt } from './MarketplaceLineArt';
 
 interface MarketplaceMastheadProps {
   /** Uppercase kicker, e.g. `Marketplace · Yellow line`. */
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   lede?: ReactNode;
   /**
@@ -62,7 +63,7 @@ export function MarketplaceMasthead({
 }: MarketplaceMastheadProps) {
   return (
     <header className="border-b border-border-hairline">
-      <PageContainer flush className="pb-8 pt-8 md:pb-12 md:pt-16">
+      <PageContainer className={eyebrow ? 'md:pt-16' : undefined}>
         {backTo && (
           <LocalizedLink
             to={backTo.to}
@@ -73,37 +74,27 @@ export function MarketplaceMasthead({
         )}
         <div className="flex flex-wrap items-end justify-between gap-8">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-4">
-              <RouteBullet type="marketplace" size={44} />
-              <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-                {eyebrow}
-              </p>
-            </div>
-            {/* THE LADDER WAS INVERTED AT BOTH BREAKPOINTS. It read
-                `hub → text-hero` (76 flat) and `page → text-display md:text-hero`
-                (52 → 76), so at md and up the two ranks resolved to the SAME
-                76px and the hierarchy the `size` prop's own comment describes —
-                "a category never shouts as loudly as the index that lists it" —
-                did not exist at the widths that have room for it. Below md it
-                was worse than absent: the HUB took the 76px (roughly one word
-                per line on a 390px screen) while the subordinate page got the
-                readable 52.
-
-                Now hub is 52 → 76 and page 32 → 52: distinct at every width,
-                1.46x and 1.63x apart (both clear of the ≥1.25x adjacent-rank
-                rule), and the larger rank is the one that steps down on mobile.
-
-                Neither takes md:text-hero-xl — that rank is for marketing
-                covers, not a listing index. */}
-            <h1
-              className={cn(
-                'mt-4 font-display leading-[0.95]',
-                size === 'hub' ? 'text-display md:text-hero' : 'text-headline md:text-display',
-              )}
-            >
-              {title}
-            </h1>
-            {lede && <p className="mt-4 max-w-reading text-body-lg">{lede}</p>}
+            {eyebrow ? (
+              <>
+                <div className="flex items-center gap-4">
+                  <RouteBullet type="marketplace" size={44} />
+                  <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                    {eyebrow}
+                  </p>
+                </div>
+                <h1
+                  className={cn(
+                    'mt-4 font-display leading-[0.95]',
+                    size === 'hub' ? 'text-display md:text-hero' : 'text-headline md:text-display',
+                  )}
+                >
+                  {title}
+                </h1>
+                {lede && <p className="mt-4 max-w-reading text-body-lg">{lede}</p>}
+              </>
+            ) : (
+              <PageIntro title={title} lede={lede} />
+            )}
             {count !== null && (
               <p className="mt-6 flex items-center gap-4 text-13 text-muted-foreground">
                 <span
@@ -116,9 +107,13 @@ export function MarketplaceMasthead({
           </div>
           {/* Decorative, and last in the DOM so a screen reader reaches the
               lede and the count before anything ornamental. */}
-          <MarketplaceLineArt className="hidden md:block" />
+          <MarketplaceLineArt className={eyebrow ? 'hidden md:block' : 'hidden lg:block'} />
         </div>
-        {actions && <div className="mt-8 flex flex-wrap items-center gap-4">{actions}</div>}
+        {actions && (
+          <div className={cn('flex flex-wrap items-center', eyebrow ? 'mt-8 gap-4' : 'mt-6 gap-4')}>
+            {actions}
+          </div>
+        )}
         {children}
       </PageContainer>
     </header>

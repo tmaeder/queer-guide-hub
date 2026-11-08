@@ -64,7 +64,7 @@ test.describe('stylesheet reuse after app startup', () => {
       .getByRole('link', { name: 'News', exact: true })
       .click();
     await expect(page).toHaveURL(/\/news$/);
-    await expect(page.getByRole('heading', { level: 1, name: 'News.' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'News', exact: true })).toBeVisible();
     expect(documents).toBe(1);
     expect(entryStylesheets).toEqual([]);
   });
