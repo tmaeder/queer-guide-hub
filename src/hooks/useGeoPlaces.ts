@@ -185,47 +185,11 @@ export function useGeoChildren(parentId: string | null) {
   });
 }
 
-/** Candidate parents for a move, restricted to the legal parent types. */
-export function useGeoMoveCandidates(legalTypes: string[], search: string, enabled: boolean) {
-  return useQuery({
-    queryKey: ['geo-move-candidates', legalTypes.join(','), search],
-    enabled: enabled && search.length >= 2,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('geo_places')
-        .select('id, name, slug, place_type')
-        .in('place_type', legalTypes)
-        .ilike('name', `%${search}%`)
-        .is('duplicate_of_id', null)
-        .limit(10);
-      if (error) throw error;
-      return attachCityCodes(data ?? []);
-    },
-  });
-}
-
 export interface GeoMoveResult {
   moved: string;
   type: string;
   new_parent: string;
   repaired?: Record<string, number>;
-}
-
-export function useGeoMoveNode(nodeId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (newParentId: string): Promise<GeoMoveResult> => {
-      const { data, error } = await supabase.rpc('geo_move_node', {
-        p_id: nodeId,
-        p_new_parent_id: newParentId,
-      });
-      if (error) throw error;
-      return data as unknown as GeoMoveResult;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['geo-children'] });
-    },
-  });
 }
 
 /** Full landmark profile row (admin edit dialog). */
@@ -326,50 +290,6 @@ export function useSaveLandmark(options: {
       queryClient.invalidateQueries({ queryKey: ['geo-children'] });
       queryClient.invalidateQueries({ queryKey: ['landmark-profile'] });
       queryClient.invalidateQueries({ queryKey: ['landmark-spine'] });
-    },
-  });
-}
-
-/** Review state of a landmark + approve action (needs_review → false). */
-export function useLandmarkReview(placeId: string | undefined, enabled: boolean) {
-  const queryClient = useQueryClient();
-  const state = useQuery({
-    queryKey: ['landmark-review-state', placeId],
-    enabled: enabled && !!placeId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('geo_landmark_profiles')
-        .select('needs_review, landmark_kind')
-        .eq('place_id', placeId!)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-  });
-  const approve = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from('geo_landmark_profiles')
-        .update({ needs_review: false })
-        .eq('place_id', placeId!);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['landmark-review-state', placeId] });
-    },
-  });
-  return { state, approve };
-}
-
-export function useDeleteLandmark() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (placeId: string) => {
-      const { error } = await supabase.from('geo_places').delete().eq('id', placeId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['geo-children'] });
     },
   });
 }

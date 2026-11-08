@@ -108,20 +108,6 @@ export function classifyBoundaries(
   );
 }
 
-/** Tally `rightsClass` across already-joined features — what the fill layer
- *  is actually painting, as opposed to a count over the raw country list
- *  (which can diverge when a country has no boundary geometry or vice versa). */
-export function summariseFeatureClasses(
-  features: readonly GeoJSON.Feature[],
-): Record<MapClass, number> {
-  const counts: Record<MapClass, number> = { ...EMPTY_CLASS_COUNTS };
-  for (const f of features) {
-    const cls = f.properties?.rightsClass as MapClass | undefined;
-    if (cls && cls in counts) counts[cls] += 1;
-  }
-  return counts;
-}
-
 /**
  * "World map: {topic}. {n} protected, {n} partial, …" — every non-zero class
  * in `MAP_CLASS_ORDER` (most-restrictive first), so the announced summary can

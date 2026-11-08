@@ -596,19 +596,6 @@ export function getBreadcrumbsForRoute(pathname: string): Array<{ label: string;
 }
 
 /**
- * Build an uppercase eyebrow string for a route, e.g. "CONTENT · VENUES".
- * Derived from the breadcrumb resolver (last two labels, minus "Admin Console").
- * Used as the default `eyebrow` for AdminPageHeader so pages only supply a title.
- */
-export function getEyebrowForRoute(pathname: string): string | undefined {
-  const crumbs = getBreadcrumbsForRoute(pathname)
-    .filter((c) => c.label !== 'Admin Console')
-    .map((c) => c.label);
-  if (crumbs.length === 0) return undefined;
-  return crumbs.slice(-2).join(' · ').toUpperCase();
-}
-
-/**
  * Returns all nav items that have a `countTable` configured.
  * Useful for batch-fetching row counts from Supabase.
  */
