@@ -11,7 +11,7 @@
     "predev": "node scripts/check-env.mjs",
     "check:env": "node scripts/check-env.mjs",
     "check:security-headers": "node scripts/check-security-headers.mjs",
-    "check:pages-routing": "node scripts/check-pages-routing.mjs && node scripts/design-audit.mjs",
+    "check:pages-routing": "node scripts/check-pages-routing.mjs",
     "check:npm-audit": "node scripts/check-npm-audit.mjs",
     "prebuild": "node scripts/agent-route-manifest.mjs && tsx scripts/sync-public-locales.ts --write && node scripts/check-pages-routing.mjs && node scripts/design-audit.mjs",
     "build": "vite build",
