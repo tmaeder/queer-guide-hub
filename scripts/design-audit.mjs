@@ -7,7 +7,8 @@
  * docs/design-system/README.md. Writes public/design-audit.json, which the
  * /admin/design Audit tab renders.
  *
- * Run manually (or from CI): node scripts/design-audit.mjs
+ * Runs in `prebuild`, so every deploy ships a current artifact. The output is
+ * gitignored. Run by hand for local dev: node scripts/design-audit.mjs
  */
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
