@@ -2,7 +2,7 @@ import { ShieldAlert } from '@/components/icons';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { EntityMap } from '@/components/map/EntityMap';
 import { MapInset } from '@/components/transit/MapInset';
-import { StopList, type Stop } from '@/components/transit/StopList';
+import { type Stop } from '@/components/transit/StopList';
 import { OccurrenceList, type Occurrence } from '@/components/transit/OccurrenceList';
 import { venueStops, newsRows } from '@/components/transit/entityRows';
 import { LegalLine } from '@/components/rights/CountryLegalLine';
@@ -185,11 +185,6 @@ export function countryVenueStops(venues: VenueRelation[]): Stop[] {
   return venueStops(venues, { limit: 6, includeCity: true });
 }
 
-export function CountryVenuesTab({ venues }: { venues: VenueRelation[] }) {
-  if (venues.length === 0) return null;
-  return <StopList stops={countryVenueStops(venues)} />;
-}
-
 /** Spec module 03 — the next departures nationwide. */
 export function countryOccurrences(
   events: EventRelation[],
@@ -220,20 +215,6 @@ export function countryOccurrences(
       ) : undefined,
     };
   });
-}
-
-export function CountryEventsTab({
-  events,
-  locale,
-  openLabel,
-}: {
-  events: EventRelation[];
-  locale: string;
-  openLabel: string;
-}) {
-  const occurrences = countryOccurrences(events, locale, openLabel);
-  if (occurrences.length === 0) return null;
-  return <OccurrenceList occurrences={occurrences} />;
 }
 
 export function CountryTravelTab({

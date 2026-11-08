@@ -42,7 +42,6 @@ import { EntityMap } from '@/components/map/EntityMap';
 import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
-import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchEventBySlugOrId } from '@/hooks/usePageFetchers';
@@ -994,30 +993,6 @@ export function EventWhoIsGoing({
         </p>
       )}
     </div>
-  );
-}
-
-/**
- * "People you may know" at this event.
- *
- * It lives in the page FOOTER, not inside the "Who's going" section, because
- * it is a self-hiding composite rail — it decides internally whether it has
- * anything, and the section filter cannot see that decision. That is the
- * house invariant ("a self-hiding rail is never a section"), and breaking it
- * is what made the section render a heading with nothing under it for a
- * SIGNED-IN reader on a past event: the count is zero, the "be the first"
- * prompt is suppressed once the event is over, and the rail returns null when
- * the discovery RPC finds no matches — which is the normal cold-start result.
- * The footer has no stations, so a rail that hides itself there costs nothing.
- */
-export function EventPeopleRail({ event }: { event: EventWithRelations }) {
-  const { t } = useTranslation();
-  return (
-    <PeopleHereRail
-      mode="locals"
-      eventId={event.id}
-      title={t('events.peopleYouMayKnow', 'People you may know')}
-    />
   );
 }
 

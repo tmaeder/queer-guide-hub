@@ -307,11 +307,6 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
 
 const BY_PATH = new Map(ADMIN_ARCHETYPES.map((e) => [e.path, e]));
 
-/** Registry entry for a route path relative to /admin, or undefined. */
-export function getArchetypeEntry(path: string): AdminArchetypeEntry | undefined {
-  return BY_PATH.get(path);
-}
-
 /** Registry entry for a live pathname, following dynamic segments. */
 function entryForRoute(pathname: string): AdminArchetypeEntry | undefined {
   const rest = trimTrailingSlashes(pathname.replace(/^\/admin\/?/, ''));
