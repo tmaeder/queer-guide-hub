@@ -116,32 +116,6 @@ export async function trackEvent(
 	})) as string;
 }
 
-export async function semanticSearch(
-	env: Env,
-	opts: { queryVec: number[]; contentTypes?: string[] | null; biasWeight?: number; limit?: number },
-): Promise<Array<{ content_type: string; content_id: string; score: number; metadata: Record<string, unknown> }>> {
-	const pg = formatVec(opts.queryVec);
-	try {
-		return await rpc<Array<{ content_type: string; content_id: string; score: number; metadata: Record<string, unknown> }>>(
-			env,
-			"personalized_semantic_search",
-			{
-				p_query_vec: pg,
-				p_bias_vec: null,
-				p_bias_weight: 0,
-				p_content_types: opts.contentTypes ?? null,
-				p_limit: opts.limit ?? 100,
-			},
-		);
-	} catch (e) {
-		// Fail-soft: empty semantic hits → /search degrades to keyword-only
-		// instead of timing out. Bug observed 2026-05-03 when the RPC stalled
-		// indefinitely after a large data update.
-		console.warn("personalized_semantic_search", (e as Error).message);
-		return [];
-	}
-}
-
 /**
  * "More like this" — embedding neighbours via the related_entities RPC over the
  * unified search_documents table (liveness-filtered, seed excluded server-side).
@@ -224,10 +198,6 @@ export async function popularEntities(env: Env, contentTypes: string[], limit = 
 	} finally {
 		clearTimeout(timer);
 	}
-}
-
-function formatVec(v: number[]): string {
-	return `[${v.join(",")}]`;
 }
 
 // Per-content-type table + display-field spec for metadata enrichment.
