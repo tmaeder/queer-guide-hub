@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: '22.20.0'
+          node-version: '22.22.2'
           cache: npm
       - run: npm ci --prefer-offline --no-audit
       - run: npm run test:merge-policy
@@ -79,7 +79,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: '22.20.0'
+          node-version: '22.22.2'
           cache: npm
       - run: npm ci --prefer-offline --no-audit
       # Real check of the whole app (tsconfig.app.json) with a baseline ratchet:
@@ -101,7 +101,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: '22.20.0'
+          node-version: '22.22.2'
           cache: npm
       - run: npm ci --prefer-offline --no-audit
       - run: |
@@ -137,7 +137,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: '22.20.0'
+          node-version: '22.22.2'
           cache: npm
       - run: npm ci --prefer-offline --no-audit
       # These server regressions have their own Node config. Execute once;
@@ -191,7 +191,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: '22.20.0'
+          node-version: '22.22.2'
           cache: npm
       - run: npm ci --prefer-offline --no-audit
       - name: Download all required shard evidence
@@ -238,7 +238,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: '22.20.0'
+          node-version: '22.22.2'
       - run: npm install
         working-directory: scraper
       - run: npm test
@@ -264,7 +264,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: '22.20.0'
+          node-version: '22.22.2'
       - name: Run tests for each worker with a test script
         # `npm install` (not `npm ci`) to match the established
         # extension-ci.yml pattern for sub-package installs.
@@ -302,7 +302,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: '22.20.0'
+          node-version: '22.22.2'
       - name: Resolve migration base ref
         run: |
           BASE="${{ github.base_ref }}"

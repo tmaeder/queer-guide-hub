@@ -190,7 +190,8 @@ Deno.serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     // The service-role client below bypasses RLS, so check access here.
-    if ((await tripAccess(admin, trip_id, userId)) === 'none') {
+    const access = await tripAccess(admin, trip_id, userId);
+    if (access === 'none' || access === 'public') {
       return new Response(JSON.stringify({ error: 'trip not found' }), {
         status: 404,
         headers: { ...cors, 'content-type': 'application/json' },
@@ -199,7 +200,7 @@ Deno.serve(async (req) => {
 
     // Return cached unless refresh
     if (!refresh) {
-      const { data: cached } = await admin
+      const { data: cached } = await userClient
         .from('trip_recaps')
         .select('*')
         .eq('trip_id', trip_id)
@@ -211,6 +212,13 @@ Deno.serve(async (req) => {
       }
     }
 
+    if (access !== 'edit') {
+      return new Response(JSON.stringify({ error: 'Trip edit access is required' }), {
+        status: 403,
+        headers: { ...cors, 'content-type': 'application/json' },
+      });
+    }
+
     if (!(await checkUserRateLimit(req, 'trip-recap', 20, 3600))) {
       return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), {
         status: 429,
@@ -218,11 +226,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { trip, budget } = await loadTrip(admin, trip_id);
+    const { trip, budget } = await loadTrip(userClient, trip_id);
     const highlights = buildHighlights(trip, budget);
     const summary = await generateSummary(highlights, trip.title);
 
-    const { data: upserted, error: upsertErr } = await admin
+    const { data: upserted, error: upsertErr } = await userClient
       .from('trip_recaps')
       .upsert({
         trip_id,

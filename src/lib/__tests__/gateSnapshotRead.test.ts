@@ -51,6 +51,12 @@ describe('readGateSnapshot', () => {
     expect(await readGateSnapshot('https://x', 'k', 'tag_hygiene_stats')).toBeNull();
   });
 
+  it('falls back to live if the latest refresh failed even when the stored result is fresh', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    stubFetch(200, [{ result: [], computed_at: minutesAgo(4), last_error: '57014: timeout' }]);
+    expect(await readGateSnapshot('https://x', 'k', 'event_quality_gate_checks')).toBeNull();
+  });
+
   it('returns null when the row has never succeeded', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     stubFetch(200, [{ result: null, computed_at: null, last_error: '57014: timeout' }]);

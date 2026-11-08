@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Sparkles, MapPin, Calendar, Wallet, RefreshCw} from '@/components/icons';
+import { Sparkles, MapPin, Calendar, Wallet, RefreshCw } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,9 +11,10 @@ import { useTripRecap, useGenerateTripRecap } from '@/hooks/useTripRecap';
 
 interface Props {
   tripId: string;
+  canGenerate?: boolean;
 }
 
-export function MemoryRecapCard({ tripId }: Props) {
+export function MemoryRecapCard({ tripId, canGenerate = true }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { data: recap, isLoading } = useTripRecap(tripId);
@@ -67,6 +68,7 @@ export function MemoryRecapCard({ tripId }: Props) {
   }
 
   if (!recap) {
+    if (!canGenerate) return null;
     return (
       <Card>
         <CardContent>
@@ -113,19 +115,17 @@ export function MemoryRecapCard({ tripId }: Props) {
           <span className="uppercase tracking-wider font-bold text-xs text-foreground">
             {t('trips.recap.badge', 'Trip recap')}
           </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleGenerate(true)}
-            disabled={generate.isPending}
-            aria-label={t('trips.recap.regenerate', 'Regenerate recap')}
-          >
-            {generate.isPending ? (
-              <TrackLoader size={14} />
-            ) : (
-              <RefreshCw size={14} />
-            )}
-          </Button>
+          {canGenerate && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleGenerate(true)}
+              disabled={generate.isPending}
+              aria-label={t('trips.recap.regenerate', 'Regenerate recap')}
+            >
+              {generate.isPending ? <TrackLoader size={14} /> : <RefreshCw size={14} />}
+            </Button>
+          )}
         </div>
 
         <p className="whitespace-pre-wrap mb-4 text-body-lg" style={{ lineHeight: 1.65 }}>

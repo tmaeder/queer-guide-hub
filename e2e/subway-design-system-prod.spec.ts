@@ -218,8 +218,10 @@ test.describe('production subway design-system contract', () => {
 
     await page.locator('header nav[aria-label="Primary"] a').first().click();
     await expect(page).toHaveURL(/\/going-out$/);
-    await expect(page.getByTestId('route-journey')).toBeHidden();
-    await expect(page.getByTestId('route-journey')).toHaveCount(0, { timeout: 2_000 });
+    const arrival = page.locator('.route-fade');
+    await expect(arrival).toHaveCount(1);
+    await expect(arrival.locator(':scope > [data-route-loading]')).toHaveCount(0);
+    await expect(arrival).toHaveCSS('animation-name', 'none');
   });
 
   test('reduced motion keeps homepage cards still', async ({ page }) => {

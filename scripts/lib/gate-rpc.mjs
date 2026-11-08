@@ -200,7 +200,7 @@ export function stallReason(result) {
  * Returns a callRpc-shaped success ({ ok, status, body, data }) when the row
  * is under `maxAgeMin` old, or null when it is missing, stale, failed to
  * refresh, or the table does not exist yet. Callers fall back to the live RPC
- * on null, so a snapshot can only make a gate faster, never laxer: a stopped
+ * on null, so a stopped
  * cron degrades to the old live behaviour, not to a pass.
  */
 export const SNAPSHOT_MAX_AGE_MIN = 30
@@ -211,9 +211,12 @@ export async function readGateSnapshot(base, key, rpc, maxAgeMin = SNAPSHOT_MAX_
     { headers: { apikey: key, Authorization: `Bearer ${key}` } },
   )
   const row = res.ok && Array.isArray(res.data) ? res.data[0] : null
-  if (!row || row.result == null || !row.computed_at) {
+  const shapeValid = rpc === 'tag_hygiene_stats'
+    ? row?.result != null && typeof row.result === 'object' && !Array.isArray(row.result)
+    : Array.isArray(row?.result)
+  if (!row || !shapeValid || !row.computed_at || row.last_error) {
     console.warn(
-      `⚠ ${rpc}: no usable snapshot (${res.ok ? 'no row' : `HTTP ${res.status}`}) — calling it live.`,
+      `⚠ ${rpc}: no usable snapshot (${row?.last_error ? 'last refresh failed' : res.ok ? 'missing or invalid data' : `HTTP ${res.status}`}) — calling it live.`,
     )
     return null
   }
@@ -221,7 +224,6 @@ export async function readGateSnapshot(base, key, rpc, maxAgeMin = SNAPSHOT_MAX_
   if (!(ageMin >= 0 && ageMin <= maxAgeMin)) {
     console.warn(
       `⚠ ${rpc}: snapshot is ${Math.round(ageMin)} min old (limit ${maxAgeMin})` +
-        (row.last_error ? `, last refresh failed: ${row.last_error}` : '') +
         ' — calling it live. Check the gate_snapshots_refresh cron.',
     )
     return null
