@@ -201,25 +201,17 @@ export default defineConfig(({ mode }) => ({
       // Shared edge evidence parsers keep their pinned Deno npm specifier.
       'npm:parse5@8.0.1': 'parse5',
     },
-    // P0 audit follow-up: boneyard-js/react bundles its own React, which
-    // ends up in a separate Vite optimizeDeps cache bucket from the app's
-    // React, producing two `useRef` implementations and the classic
-    // "Invalid hook call" error on every <Skeleton> render in dev. Force
-    // dedupe so both modules share one instance.
+    // One React instance even if a dependency ships its own copy.
     dedupe: ['react', 'react-dom'],
   },
   optimizeDeps: {
-    // Pre-bundle boneyard-js/react against the same React instance Vite
-    // already has cached, so the Skeleton hooks resolve to the same
-    // dispatcher as the rest of the app.
-    //
     // Pre-bundle clsx + tailwind-merge + cva (the trio used by
     // `src/lib/utils.ts#cn()` on every page) so rolldown sees them as
     // canonical shared modules. Without this, recharts pre-bundles clsx
     // into its own chunk and every cn() consumer transitively static-
     // imports the recharts chunk — dragging ~92 KB onto pages that don't
     // use any chart.
-    include: ['boneyard-js/react', 'clsx', 'tailwind-merge', 'class-variance-authority'],
+    include: ['clsx', 'tailwind-merge', 'class-variance-authority'],
     // maplibre-gl 6 derives its worker URL at runtime from a template
     // variable, so the dep optimizer can't emit maplibre-gl-worker.mjs and the
     // map hangs forever in dev. Excluding it serves maplibre from source.
@@ -319,7 +311,6 @@ export default defineConfig(({ mode }) => ({
             },
             { name: 'pdfjs', test: /node_modules\/pdfjs-dist\// },
             { name: 'mammoth', test: /node_modules\/mammoth\// },
-            { name: 'boneyard', test: /node_modules\/boneyard-js\// },
             // Both our field metrics and Sentry use web-vitals. Give it a
             // neutral home so the startup metrics import cannot pull in the
             // entire optional diagnostics SDK through a shared dependency.
@@ -362,7 +353,7 @@ export default defineConfig(({ mode }) => ({
     modulePreload: {
       resolveDependencies(_filename, deps) {
         const skip =
-          /\b(recharts|graph|exceljs|pdfjs|mammoth|tiptap|maplibre|framer-motion|boneyard|xyflow|dnd-kit)-[A-Za-z0-9_-]+\.js$/;
+          /\b(recharts|graph|exceljs|pdfjs|mammoth|tiptap|maplibre|framer-motion|xyflow|dnd-kit)-[A-Za-z0-9_-]+\.js$/;
         return deps.filter((d) => !skip.test(d));
       },
     },

@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { buildAviasalesUrl, getAffiliateUrl } from '@/utils/aviasalesUrl';
 import { trackTravelEvent } from '@/utils/travelAnalytics';
 import type { TravelDeal } from '@/hooks/useTravelDeals';
-import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 interface TravelDealCardProps {
@@ -65,9 +64,9 @@ export function TravelDealCard({
 }: TravelDealCardProps) {
   if (loading || !deal) {
     return (
-      <Skeleton name="travel-deal-card" loading={true} fallback={<PageLoadingState count={1} />}>
-        <div />
-      </Skeleton>
+      <div>
+        <PageLoadingState count={1} />
+      </div>
     );
   }
   const handleBookClick = () => {

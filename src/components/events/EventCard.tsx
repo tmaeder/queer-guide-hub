@@ -11,7 +11,6 @@ import { format } from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
-import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
@@ -56,16 +55,6 @@ interface EventCardProps {
    */
   socialSignal?: EventSocialSignal;
 }
-
-const EventCardFixture = () => (
-  <Card hoverable className="overflow-hidden">
-    <div className="aspect-[16/10] bg-muted" />
-    <div className="p-4">
-      <p className="text-title font-bold leading-tight">Sample Event Title</p>
-      <p className="mt-1 text-xs text-muted-foreground">Jun 15</p>
-    </div>
-  </Card>
-);
 
 function formatEventDate(startDate: string, endDate?: string | null) {
   const start = new Date(startDate);
@@ -142,13 +131,10 @@ export const EventCard = memo(function EventCard({
   const eventTypeLabel = useEventTypeLabel(eventTypeTag);
 
   return (
-    <Skeleton
-      name="event-card"
-      loading={loading || !event}
-      fixture={<EventCardFixture />}
-      fallback={<PageLoadingState count={1} />}
-    >
-      {event && (
+    <div>
+      {loading || !event ? (
+        <PageLoadingState count={1} />
+      ) : (
         <CardHoverEffect>
           <Card hoverable="group" className="overflow-hidden">
             <Image
@@ -267,6 +253,6 @@ export const EventCard = memo(function EventCard({
           />
         </CardHoverEffect>
       )}
-    </Skeleton>
+    </div>
   );
 });

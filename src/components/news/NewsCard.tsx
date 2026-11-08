@@ -16,7 +16,6 @@ import { resolveNewsImage } from '@/utils/resolveNewsImage';
 import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { safeText } from '@/utils/safeDisplay';
 import { resolvePublisherName } from '@/lib/publisherName';
-import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import type { NewsCategory } from '@/hooks/useNews';
 import { useTranslation } from 'react-i18next';
@@ -30,20 +29,6 @@ type NewsArticle = Tables<'news_articles'> & {
   audio_url?: string | null;
   duration_seconds?: number | null;
 };
-
-const NewsCardFixture = () => (
-  <Card>
-    <CardHeader style={{ flexDirection: 'column' }} className="flex gap-2">
-      <p className="text-2xs uppercase tracking-wider text-muted-foreground">
-        Politics · Source · 2h ago
-      </p>
-      <h3 className="text-15 font-semibold leading-tight">Sample News Headline</h3>
-    </CardHeader>
-    <CardContent style={{ flexDirection: 'column' }} className="flex gap-2">
-      <p className="text-sm text-muted-foreground">A sample excerpt for the news article.</p>
-    </CardContent>
-  </Card>
-);
 
 interface NewsCardProps {
   article?: NewsArticle;
@@ -121,14 +106,9 @@ const NewsCardImpl = ({
 
   if (loading || !article) {
     return (
-      <Skeleton
-        name="news-card"
-        loading={true}
-        fixture={<NewsCardFixture />}
-        fallback={<PageLoadingState count={1} />}
-      >
-        <div />
-      </Skeleton>
+      <div>
+        <PageLoadingState count={1} />
+      </div>
     );
   }
 

@@ -7,7 +7,6 @@ import { MapPin, BadgeCheck, iconSlug } from '@/components/icons';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
-import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
@@ -74,16 +73,6 @@ interface VenueCardProps {
   socialSignal?: { friends_saved: number; trip_usage: number };
 }
 
-const VenueCardFixture = () => (
-  <Card hoverable className="overflow-hidden">
-    <div className="aspect-[16/10] bg-muted" />
-    <div className="p-4">
-      <p className="text-body-lg font-semibold leading-tight">Sample Venue Name</p>
-      <p className="mt-1 text-xs text-muted-foreground">Berlin, Germany</p>
-    </div>
-  </Card>
-);
-
 function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps) {
   const { t, i18n } = useTranslation();
   const visual = getVenueVisual(venue);
@@ -108,13 +97,10 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
       : null;
 
   return (
-    <Skeleton
-      name="venue-card"
-      loading={loading || !venue}
-      fixture={<VenueCardFixture />}
-      fallback={<PageLoadingState count={1} />}
-    >
-      {venue && (
+    <div>
+      {loading || !venue ? (
+        <PageLoadingState count={1} />
+      ) : (
         <CardHoverEffect>
           <Card hoverable="group" className="overflow-hidden">
             <Image
@@ -265,7 +251,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
           />
         </CardHoverEffect>
       )}
-    </Skeleton>
+    </div>
   );
 }
 
