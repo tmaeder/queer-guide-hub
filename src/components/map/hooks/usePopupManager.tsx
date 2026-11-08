@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import * as maplibregl from 'maplibre-gl';
 import { MapEntityCard } from '@/components/map/MapEntityCard';
 import { ENTITY_BULLET, lineFor } from '@/components/map/mapDomain';
-import type { MapPointSummary } from '@/components/map/mapPoint';
+import type { MapStation } from '@/components/map/mapDomain';
 import type { MapMarker } from '@/hooks/useExploreMapData';
 import { hapticTrigger } from '@/hooks/useHaptics';
 
@@ -39,11 +39,11 @@ export function usePopupManager({
   // ActiveTripProvider" and, once that was bridged, "useNavigate() may be used
   // only in the context of a <Router>" — the popup rendered empty. A portal
   // ends that class of bug instead of chasing the next missing context.
-  const [card, setCard] = useState<{ container: HTMLElement; point: MapPointSummary } | null>(null);
+  const [card, setCard] = useState<{ container: HTMLElement; point: MapStation } | null>(null);
 
   // ── Helper: native share with clipboard fallback ─────────────────────────
   const sharePoint = useCallback(
-    async (point: MapPointSummary) => {
+    async (point: MapStation) => {
       hapticTrigger('nudge');
       if (!point.linkTo) return;
       const absoluteUrl = new URL(point.linkTo, window.location.origin).toString();
@@ -84,7 +84,7 @@ export function usePopupManager({
   // Portals <MapEntityCard> into the popup's DOM node (see `card` above). The
   // card is cleared on popup close / replace.
   const showPopup = useCallback(
-    (map: maplibregl.Map, lngLat: maplibregl.LngLat | [number, number], point: MapPointSummary) => {
+    (map: maplibregl.Map, lngLat: maplibregl.LngLat | [number, number], point: MapStation) => {
       hapticTrigger('nudge');
       popupRootRef.current?.unmount();
       popupRootRef.current = null;
@@ -122,7 +122,7 @@ export function usePopupManager({
   );
 
   // Adapter for callers that still produce the legacy MapMarker shape
-  // (area circles, boundary polygons). Maps it onto a MapPointSummary.
+  // (area circles, boundary polygons). Maps it onto a MapStation.
   const showPopupFromMarker = useCallback(
     (map: maplibregl.Map, lngLat: maplibregl.LngLat, marker: MapMarker) => {
       const meta = (marker.meta ?? {}) as Record<string, unknown>;

@@ -1,6 +1,7 @@
 import { useEffect, useRef, type MutableRefObject } from 'react';
 import * as maplibregl from 'maplibre-gl';
-import { summaryFromFeature, type MapPointSummary } from '@/components/map/mapPoint';
+import { summaryFromFeature } from '@/components/map/mapPoint';
+import type { MapStation } from '@/components/map/mapDomain';
 import type { PointFeature } from '@/hooks/useViewportPoints';
 
 interface UseSelectionFlyerParams {
@@ -11,7 +12,7 @@ interface UseSelectionFlyerParams {
   showPopup: (
     map: maplibregl.Map,
     lngLat: maplibregl.LngLat | [number, number],
-    point: MapPointSummary,
+    point: MapStation,
   ) => void;
 }
 
