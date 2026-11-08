@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { PageIntro } from '@/components/layout/PageIntro';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { RouteBullet } from '@/components/transit/RouteBullet';
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cn } from '@/lib/utils';
 import { MarketplaceLineArt } from './MarketplaceLineArt';
@@ -10,6 +12,7 @@ interface MarketplaceMastheadProps {
   /** Uppercase kicker, e.g. `Marketplace · Yellow line`. */
   eyebrow?: string;
   title: string;
+  glyph?: TransitIconName;
   lede?: ReactNode;
   /**
    * The count row. ALWAYS rendered when the surface HAS a count, even while
@@ -54,6 +57,7 @@ interface MarketplaceMastheadProps {
 export function MarketplaceMasthead({
   eyebrow,
   title,
+  glyph,
   lede,
   count,
   actions,
@@ -77,7 +81,11 @@ export function MarketplaceMasthead({
             {eyebrow ? (
               <>
                 <div className="flex items-center gap-4">
-                  <RouteBullet type="marketplace" size={44} />
+                  {glyph ? (
+                    <TransitIcon name={glyph} size={44} className="shrink-0" />
+                  ) : (
+                    <RouteBullet type="marketplace" size={44} />
+                  )}
                   <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
                     {eyebrow}
                   </p>

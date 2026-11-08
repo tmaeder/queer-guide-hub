@@ -26,6 +26,7 @@ import {
   DEPARTMENT_GROUPS,
   DEPARTMENT_LABELS,
   GROUP_FINE,
+  departmentOf,
   fineLabel,
   groupLabel,
 } from '@/lib/marketplaceTaxonomy';
@@ -40,12 +41,10 @@ function prettify(slug: string): string {
  * `text-background/70` when the chip fills — a muted foreground on an ink fill
  * is unreadable, which is what the previous hand-rolled chip did.
  */
-function chipLabel(text: string, count: number, active: boolean, icon?: TransitIconName) {
+function chipLabel(text: string, count: number, active: boolean, icon: TransitIconName) {
   return (
     <>
-      {/* Full-colour mark: its outline is currentColor, so it inverts with
-          the chip on hover/active while the track-colour fill stays. */}
-      {icon && <TransitIcon name={icon} size={20} className="shrink-0" />}
+      <TransitIcon name={icon} size={16} className="shrink-0" />
       {text}{' '}
       <span className={active ? 'text-background/70' : 'text-muted-foreground'}>
         {count.toLocaleString()}
@@ -80,6 +79,13 @@ export default function MarketplaceCategory() {
   // while the breadcrumb and the grid both said tops, so the heading named a
   // different set of listings from the one on screen.
   const heading = isDepartment && activeGroup ? groupLabel(activeGroup) : name;
+  const categoryGlyph = isDepartment
+    ? fineIcon(activeFine, activeGroup, subcategory)
+    : fineIcon(
+        subcategory,
+        Object.keys(GROUP_FINE).find((group) => GROUP_FINE[group].includes(subcategory)) ?? subcategory,
+        departmentOf(subcategory),
+      );
   // Tag refinements live in ?tags= so a refined view is shareable / back-button
   // safe (they were useState-only before — invisible in the URL).
   const selectedTags = useMemo(
@@ -244,6 +250,7 @@ export default function MarketplaceCategory() {
         backTo={{ label: 'All categories', to: '/marketplace/categories' }}
         eyebrow={heading !== name ? `Marketplace · ${name}` : 'Marketplace · Station'}
         title={heading}
+        glyph={categoryGlyph}
         // No lede: the one this page had ("Queer-friendly products and
         // services in this category.") was the same sentence on every
         // category, so it took a line and told the reader nothing.
