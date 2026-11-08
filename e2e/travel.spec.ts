@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
  *
  * The /travel route is the front door of the trip-building system:
  *   - Plan-a-trip hero (StartTripHero for anon, TripCockpit when signed in)
- *   - Trip templates + public trips
+ *   - Personalized itinerary preview + public trips
  *   - Queer villages + Pride scroller
  *   - Book now accordion (collapsed by default; expanded with ?intent=book,
  *     ?tab= or ?city= deep links)
@@ -23,6 +23,8 @@ test.describe('Travel hub (/travel)', () => {
       timeout: 15000,
     });
     await expect(page.getByTestId('travel-plan-trip')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Build your own itinerary' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Start from a template' })).toHaveCount(0);
   });
 
   test('closes with the legal briefing instead of leading with it', async ({ page }) => {

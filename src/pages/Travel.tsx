@@ -18,7 +18,7 @@ import { GoNowRail } from '@/components/travel/GoNowRail';
 import { DestinationGrid } from '@/components/travel/DestinationGrid';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
-import { TripTemplates } from '@/components/trips/TripTemplates';
+import { PersonalizedTripPlanner } from '@/components/travel/PersonalizedTripPlanner';
 import { useAuth } from '@/hooks/useAuth';
 import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 import { AMBIENT_TRIP_CONTEXT_ENABLED } from '@/lib/trips/ambientTripFlags';
@@ -117,7 +117,7 @@ export default function Travel() {
       content: (
         <div>
           {user ? <TripCockpit /> : <StartTripHero />}
-          <TripTemplates />
+          <PersonalizedTripPlanner countries={countries} />
           <div className="mt-12">
             <DiscoverableTripsRail />
           </div>

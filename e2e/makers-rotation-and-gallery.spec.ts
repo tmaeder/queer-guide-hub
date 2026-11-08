@@ -54,10 +54,19 @@ async function rpc<T>(
   fn: string,
   body: Record<string, unknown> = {},
 ): Promise<T[]> {
-  const res = await request.post(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
-    headers: { ...(await anonHeaders(request)), 'Content-Type': 'application/json' },
-    data: body,
-  });
+  const post = async () =>
+    request.post(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+      headers: { ...(await anonHeaders(request)), 'Content-Type': 'application/json' },
+      data: body,
+    });
+  let res = await post();
+  // A 57014 is the 8s PostgREST statement timeout under prod load: the
+  // function was not evaluated, which says nothing about the directory. Ask
+  // once more after a pause; a persistent timeout still fails below.
+  if (res.status() === 500 && (await res.text()).includes('"57014"')) {
+    await new Promise((r) => setTimeout(r, 3_000));
+    res = await post();
+  }
   // A 404 here is the PGRST202 shape: the function is missing, or an argument
   // was renamed. Both are silent in the browser — the band just never renders.
   expect(res.ok(), `rpc/${fn} -> HTTP ${res.status()}: ${await res.text()}`).toBeTruthy();

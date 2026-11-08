@@ -696,9 +696,6 @@
     "src/hooks/useStatus.ts": {
       "react-hooks/purity": 1
     },
-    "src/hooks/useSubmission.ts": {
-      "react-hooks/exhaustive-deps": 1
-    },
     "src/hooks/useTargetGroups.tsx": {
       "react-hooks/set-state-in-effect": 1
     },

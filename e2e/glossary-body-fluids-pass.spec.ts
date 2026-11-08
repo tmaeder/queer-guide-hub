@@ -1,7 +1,7 @@
 import { reviewerTagRows, hasReviewerSession } from './support/reviewerRegistry';
 import { test, expect } from '@playwright/test';
 import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
-import { glossaryEntry } from './support/glossaryProse';
+import { articleOf, glossaryEntry } from './support/glossaryProse';
 import { currentArticleTagSlug } from './support/tagSitemap';
 
 // End-to-end guard for the four body-fluids glossary passes shipped in #3960 and
@@ -47,12 +47,6 @@ const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/b
 // handles. A missing key FAILS there rather than skipping, which is the
 // property this group depends on. This file carried its own copy until #3967
 // promoted the logic; one implementation, so the two cannot drift.
-
-/** The tag's own prose block, excluding the nav and rails that follow it. */
-function articleOf(html: string): string {
-  const m = html.match(/<article[\s\S]*?<\/article>/i);
-  return m ? m[0] : '';
-}
 
 // DELIBERATELY NOT USING e2e/support/glossaryProse.ts's unlinkGlossary() here,
 // and the reason is measured rather than assumed. That helper exists because a
