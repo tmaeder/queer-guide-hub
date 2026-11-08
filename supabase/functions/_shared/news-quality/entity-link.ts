@@ -14,12 +14,6 @@ export interface EntityCandidate {
   reason?: string
 }
 
-export interface ResolveOptions {
-  bodySnippet: string
-  // Words that must appear nearby (case-insensitive) for an auto-link.
-  requireContextFor?: Record<string, string[]>
-}
-
 const COUNTRY_DISAMBIG: Record<string, string[]> = {
   georgia: ['tbilisi', 'caucasus', 'georgian government', 'kakheti', 'batumi', '.ge'],
   // North Macedonia vs Macedonia (Greek region) — require country signals

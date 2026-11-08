@@ -233,7 +233,7 @@ export interface ChatCompletionResult {
 // Model ids + tier map now live in cf-model-map.ts so llm-client.ts (the
 // OpenAI-compat client behind the Anthropic shim) applies the SAME mapping.
 // Re-exported because callers and tests import it from here.
-export { CF_MODEL_DEFAULT, CF_MODEL_STRONG, mapToCfModel } from './cf-model-map.ts'
+export { mapToCfModel } from './cf-model-map.ts'
 
 /**
  * Coerce an LLM `content` field to a string. Workers AI (and occasionally the
