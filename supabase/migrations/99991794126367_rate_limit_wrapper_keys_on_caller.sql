@@ -52,6 +52,12 @@ DECLARE
   own_rows integer;
   victim_rows integer;
   allowed boolean;
+  -- The role to come back to. NOT `RESET ROLE`: that returns to session_user,
+  -- and under `supabase db push` the session user is the CLI's login role
+  -- (cli_login_postgres), which has no USAGE on schema public — so the reads
+  -- below failed with 42501 and aborted db push on main (2026-11-08). Same
+  -- trap 99991793214012 documents. current_user here is the migration role.
+  migration_role constant text := current_user;
 BEGIN
   BEGIN
     PERFORM set_config(
@@ -61,7 +67,7 @@ BEGIN
     );
     SET LOCAL ROLE authenticated;
     allowed := public.check_rate_limit_enhanced(victim, 5, 60, 'zz_probe');
-    RESET ROLE;
+    EXECUTE format('SET LOCAL ROLE %I', migration_role);
 
     SELECT count(*) INTO own_rows FROM public.auth_rate_limit_keys
      WHERE key = 'user:' || probe_uid || '_zz_probe';
