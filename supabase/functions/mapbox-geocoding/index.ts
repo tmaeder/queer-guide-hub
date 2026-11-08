@@ -1,3 +1,4 @@
+import { checkIpRateLimit } from '../_shared/ip-rate-limit.ts';
 
 const ALLOWED_ORIGINS = new Set<string>([
   'https://queer.guide',
@@ -22,13 +23,9 @@ function getOrigin(req: Request) {
   }
 }
 
-function _getClientIp(req: Request) {
-  const xff = req.headers.get('x-forwarded-for');
-  if (xff) return xff.split(',')[0].trim();
-  const rip = req.headers.get('x-real-ip');
-  if (rip) return rip.trim();
-  return 'unknown';
-}
+// Bound each client's geocoding traffic independently of the browser CORS check.
+const RATE_LIMIT_MAX = 120;
+const RATE_LIMIT_WINDOW_SECONDS = 600;
 
 function buildCors(origin: string) {
   const allowOrigin = ALLOWED_ORIGINS.has(origin) ? origin : '';
@@ -89,6 +86,13 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: 'Origin not allowed' }), {
       status: 403,
       headers: { ...buildCors(origin), 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!(await checkIpRateLimit(req, 'mapbox-geocoding', RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_SECONDS))) {
+    return new Response(JSON.stringify({ error: 'Too many requests. Please try again shortly.' }), {
+      status: 429,
+      headers: { ...buildCors(origin), 'Content-Type': 'application/json', 'Retry-After': String(RATE_LIMIT_WINDOW_SECONDS) },
     });
   }
 
