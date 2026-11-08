@@ -1,10 +1,10 @@
 /**
- * The site's icon components — every one a custom Icon System v2 drawing.
+ * The site's shared outline icon components.
  *
  * This module replaced `lucide-react` wholesale. It keeps lucide's export
  * NAMES so ~785 call sites moved by changing one import path, but nothing here
  * draws a lucide glyph: each name resolves to a slug in
- * `components/transit/iconDefs.ts`, and several names share one drawing
+ * `components/transit/transitIconPaths.ts`, and several names share one drawing
  * (`CheckCircle`, `CircleCheck` and `BadgeCheck` are all `success`).
  *
  * Size comes from the caller the way it did under lucide — the `size` prop, a
@@ -13,17 +13,16 @@
  * `fill="none"` (or `style.fill: none`, or `hollow`) draws the outline only:
  * the "off" half of a heart or star toggle.
  *
- * Add a name by adding a line to the map below; draw a new glyph in
- * `transit/defs/`. Importing `lucide-react` is an ESLint error.
+ * Add a name by adding a line to the map below. Importing `lucide-react` is an ESLint error.
  */
 import { forwardRef, type CSSProperties, type ForwardRefExoticComponent, type RefAttributes, type SVGProps } from 'react';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { displaySize } from '@/components/transit/iconKit';
-import type { TransitIconName } from '@/components/transit/transitIconPaths';
+import { FILLABLE_ICONS, type TransitIconName } from '@/components/transit/transitIconPaths';
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'ref' | 'name'> {
   size?: number | string;
-  /** Accepted for call-site compatibility and ignored: v2 strokes are set by size. */
+  /** Accepted for call-site compatibility and ignored: the shared artwork sets the stroke weight. */
   strokeWidth?: number | string;
   absoluteStrokeWidth?: boolean;
   /** Outline only, no track colour — the "off" state of a toggle icon. */
@@ -32,7 +31,7 @@ export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'ref' | 'name'>
 
 export type Icon = ForwardRefExoticComponent<IconProps & RefAttributes<SVGSVGElement>>;
 
-/** The v2 drawing an icon component resolves to — lets a plate redraw the same glyph large. */
+/** The drawing an icon component resolves to — lets a plate redraw the same glyph large. */
 export const iconSlug = (icon: unknown): TransitIconName | undefined =>
   (icon as { slug?: TransitIconName } | null)?.slug;
 /** Kept under the old names so typed props (`icon: LucideIcon`) did not have to move. */
@@ -54,10 +53,8 @@ function classSize(className?: string): number | null | 'css' {
 
 /**
  * Lucide drew these as outlines and call sites filled them with a `fill-*` class
- * to mean "on" (liked, starred, saved). A v2 drawing is filled by default, so for
- * these the old convention is kept: no fill class means the hollow "off" state.
+ * to mean "on" (liked, starred, saved). No fill class means the hollow "off" state.
  */
-const TOGGLE_SLUGS = new Set<TransitIconName>(['saved', 'star', 'bookmark', 'thumbs-up', 'thumbs-down']);
 const hasFillClass = (className?: string) => /(^|\s)(?:[a-z-]+:)*fill-(?!none\b)/.test(className ?? '');
 
 export function iconFor(slug: TransitIconName, displayName: string): Icon {
@@ -75,7 +72,7 @@ export function iconFor(slug: TransitIconName, displayName: string): Icon {
       hollow ??
       (fill === 'none' ||
         style?.fill === 'none' ||
-        (TOGGLE_SLUGS.has(slug) && !hasFillClass(className) && (fill == null || fill === 'none')));
+        (FILLABLE_ICONS.has(slug) && !hasFillClass(className) && (fill == null || fill === 'none')));
     const shown = displaySize(px);
     // lucide's `color` tinted the stroke. Here it tints the outline (via
     // currentColor) — passing it to TransitIcon would switch to the
