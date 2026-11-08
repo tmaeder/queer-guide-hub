@@ -114,7 +114,7 @@ export interface PlaceRow {
  * a per-day reset makes every day's first stop tie with every other day's.
  */
 export function itineraryToPlaceRows(
-  result: ItineraryResult,
+  result: Pick<ItineraryResult, 'days'>,
   dayIdByDate: Map<string, string>,
 ): PlaceRow[] {
   const rows: PlaceRow[] = [];
