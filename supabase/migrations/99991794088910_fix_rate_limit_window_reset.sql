@@ -15,8 +15,8 @@
 -- autocomplete through this function; under the old body every regular user
 -- would eventually be stuck at one lookup per window.
 --
--- Fix: the upsert restarts the count at 1 when the stored attempt is older
--- than the window, and increments it otherwise. Same signature, same
+-- The upsert resets expired counters and atomically rejects attempts when
+-- the current counter is at the limit. Same signature, same
 -- SECURITY DEFINER / search_path, and CREATE OR REPLACE keeps the existing
 -- grants, so the public wrapper public.check_rate_limit_enhanced (a thin SQL
 -- function delegating here, from 20261021174528) needs no change.
@@ -34,44 +34,39 @@ CREATE OR REPLACE FUNCTION api_private.check_rate_limit_enhanced(
 AS $function$
 DECLARE
   current_attempts integer;
-  window_start timestamp;
+  window_start timestamptz := now() - make_interval(mins => time_window_minutes);
+  rate_key text := identifier || '_' || action_type;
 BEGIN
-  window_start := NOW() - (time_window_minutes || ' minutes')::interval;
+  INSERT INTO public.auth_rate_limit_keys AS keys (key, attempt_count, last_attempt)
+  VALUES (rate_key, 1, now())
+  ON CONFLICT (key) DO UPDATE
+  SET attempt_count = CASE
+        WHEN keys.last_attempt > window_start THEN keys.attempt_count + 1
+        ELSE 1
+      END,
+      last_attempt = EXCLUDED.last_attempt
+  WHERE keys.last_attempt <= window_start OR keys.attempt_count < max_attempts;
 
-  SELECT COALESCE(attempt_count, 0) INTO current_attempts
-  FROM public.auth_rate_limit_keys
-  WHERE key = identifier || '_' || action_type
-    AND last_attempt > window_start;
-
-  IF current_attempts >= max_attempts THEN
-    -- Log rate limit exceeded
-    PERFORM public.log_enhanced_security_event(
-      'RATE_LIMIT_EXCEEDED',
-      auth.uid(),
-      jsonb_build_object(
-        'identifier', identifier,
-        'action_type', action_type,
-        'attempts', current_attempts,
-        'max_attempts', max_attempts
-      ),
-      'high'
-    );
-    RETURN FALSE;
+  IF FOUND THEN
+    RETURN TRUE;
   END IF;
 
-  INSERT INTO public.auth_rate_limit_keys (key, attempt_count, last_attempt)
-  VALUES (identifier || '_' || action_type, 1, NOW())
-  ON CONFLICT (key)
-  DO UPDATE SET
-    -- A stored attempt older than the window starts a new window.
-    attempt_count = CASE
-      WHEN public.auth_rate_limit_keys.last_attempt > window_start
-        THEN public.auth_rate_limit_keys.attempt_count + 1
-      ELSE 1
-    END,
-    last_attempt = NOW();
+  SELECT keys.attempt_count INTO current_attempts
+  FROM public.auth_rate_limit_keys AS keys
+  WHERE keys.key = rate_key;
 
-  RETURN TRUE;
+  PERFORM public.log_enhanced_security_event(
+    'RATE_LIMIT_EXCEEDED',
+    auth.uid(),
+    jsonb_build_object(
+      'identifier', identifier,
+      'action_type', action_type,
+      'attempts', current_attempts,
+      'max_attempts', max_attempts
+    ),
+    'high'
+  );
+  RETURN FALSE;
 END;
 $function$;
 
