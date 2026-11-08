@@ -52,6 +52,12 @@ DECLARE
   own_rows integer;
   victim_rows integer;
   allowed boolean;
+  -- Not RESET ROLE: under `supabase db push` the session logs in as a
+  -- temporary login role and then switches to postgres, so RESET ROLE lands
+  -- on that login role, which cannot read public tables (it failed the first
+  -- push with 42501 permission denied for schema public). Switch back to the
+  -- role this block started as instead.
+  prior_role constant text := current_user;
 BEGIN
   BEGIN
     PERFORM set_config(
@@ -61,7 +67,7 @@ BEGIN
     );
     SET LOCAL ROLE authenticated;
     allowed := public.check_rate_limit_enhanced(victim, 5, 60, 'zz_probe');
-    RESET ROLE;
+    EXECUTE format('SET LOCAL ROLE %I', prior_role);
 
     SELECT count(*) INTO own_rows FROM public.auth_rate_limit_keys
      WHERE key = 'user:' || probe_uid || '_zz_probe';

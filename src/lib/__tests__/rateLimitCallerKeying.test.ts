@@ -58,4 +58,14 @@ describe('check_rate_limit_enhanced keys signed-in callers on themselves', () =>
     expect(verify).toMatch(/IF victim_rows <> 0 THEN\s+RAISE EXCEPTION/);
     expect(verify).toMatch(/IF own_rows <> 1 THEN\s+RAISE EXCEPTION/);
   });
+
+  it('switches back to the role it started as, never RESET ROLE', () => {
+    // Under `supabase db push` the session user is a temporary login role that
+    // SET ROLEs to postgres; RESET ROLE lands on the login role, which cannot
+    // read public tables. That aborted the first push with 42501.
+    const verify = sql.slice(sql.indexOf('DO $verify$'));
+    expect(verify).not.toMatch(/RESET\s+ROLE/i);
+    expect(verify).toContain('prior_role constant text := current_user;');
+    expect(verify).toContain("EXECUTE format('SET LOCAL ROLE %I', prior_role);");
+  });
 });
