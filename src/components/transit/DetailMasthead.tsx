@@ -100,7 +100,6 @@ export function DetailMasthead({
             size={size === 'compact' ? 32 : 44}
             // Ticks need the icon's own margin, and here it is flush against a
             // bullet and a text run.
-            ticks={false}
           />
         )}
         {eyebrow && (
