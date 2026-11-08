@@ -1,5 +1,6 @@
 import { corsResponse, jsonResponse, errorResponse, getServiceClient } from "../_shared/supabase-client.ts";
 import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
+import { checkIpRateLimit } from "../_shared/ip-rate-limit.ts";
 
 function escapeHtml(s: string): string {
   return s
@@ -28,6 +29,13 @@ Deno.serve(async (req) => {
     }
     if (!message || typeof message !== "string" || message.length < 10) {
       return errorResponse("Message must be at least 10 characters", 400, req);
+    }
+
+    // The per-email limit below is keyed on a field the sender chooses, so
+    // varying it would send unlimited notification emails. Cap each client
+    // address too.
+    if (!(await checkIpRateLimit(req, "contact-form", 5, 3600))) {
+      return errorResponse("Too many submissions. Please try again later.", 429, req);
     }
 
     const serviceClient = getServiceClient();
