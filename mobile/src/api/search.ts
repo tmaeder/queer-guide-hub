@@ -10,10 +10,10 @@ import { supabase } from '@/lib/supabase';
  * downloaded city packs answer from their FTS5 indexes — places, and events
  * not over yet. One hook, so the screen does not care which.
  */
-export const SEARCH_URL = process.env.EXPO_PUBLIC_SEARCH_URL ?? 'https://search.queer.guide';
+const SEARCH_URL = process.env.EXPO_PUBLIC_SEARCH_URL ?? 'https://search.queer.guide';
 export const MIN_QUERY = 2;
 
-export type HitKind = 'venue' | 'event' | 'city';
+type HitKind = 'venue' | 'event' | 'city';
 
 export interface SearchHit {
   kind: HitKind;
@@ -75,7 +75,7 @@ export function toHits(raw: ProxyHit[], nowMs = Date.now()): SearchHit[] {
   });
 }
 
-export async function searchOnline(query: string, signal?: AbortSignal): Promise<SearchHit[]> {
+async function searchOnline(query: string, signal?: AbortSignal): Promise<SearchHit[]> {
   // Safety layer, same as the web: the proxy shows safety-gated places only to
   // a verified signed-in caller, and it trusts the JWT, never a body field.
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };

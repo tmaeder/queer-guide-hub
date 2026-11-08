@@ -5,7 +5,7 @@ import de from './de.json';
 import en from './en.json';
 
 export const resources = { en: { translation: en }, de: { translation: de } } as const;
-export const SUPPORTED = Object.keys(resources) as Array<keyof typeof resources>;
+const SUPPORTED = Object.keys(resources) as Array<keyof typeof resources>;
 
 /** First device language we ship a catalog for; English otherwise. */
 export function pickLanguage(deviceLanguages: Array<string | null | undefined>): keyof typeof resources {
@@ -28,5 +28,3 @@ i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
   returnNull: false,
 });
-
-export default i18n;
