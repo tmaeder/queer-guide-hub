@@ -45,6 +45,13 @@ function RootStack() {
   );
 }
 
+/**
+ * A queer.guide link opens a venue/event/city screen directly. Without an
+ * initial route that screen is the only thing on the stack, so Back closes
+ * the app instead of returning to Explore (found by the Android Maestro run).
+ */
+export const unstable_settings = { initialRouteName: '(tabs)' };
+
 export default function RootLayout() {
   const [queryClient] = useState(
     () =>
