@@ -57,14 +57,14 @@ test.describe('stylesheet reuse after app startup', () => {
       .locator('.subway-hero')
       .evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().bottom + window.scrollY));
     await expect(
-      page.getByRole('heading', { name: 'No ads. No data sales. Just riders.' }),
+      page.getByRole('heading', { name: 'What are you here for?' }),
     ).toBeVisible({ timeout: 20000 });
     await page
-      .getByRole('region', { name: 'More from Queer Guide' })
-      .getByRole('link', { name: 'News', exact: true })
+      .getByRole('region', { name: 'What are you here for?' })
+      .locator('a[href="/search"]')
       .click();
-    await expect(page).toHaveURL(/\/news$/);
-    await expect(page.getByRole('heading', { level: 1, name: 'News', exact: true })).toBeVisible();
+    await expect(page).toHaveURL(/\/search(?:\?|$)/);
+    await expect(page.locator('main')).toBeVisible();
     expect(documents).toBe(1);
     expect(entryStylesheets).toEqual([]);
   });
