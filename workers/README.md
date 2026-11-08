@@ -1,10 +1,11 @@
-# workers/
+# Cloudflare Workers
 
-Cloudflare Workers — edge services deployed independently of the SPA.
+Each service has its own Wrangler configuration with its entry point, bindings, and routes. Use that configuration when developing or deploying from the service directory.
 
-What lives here (one dir each, own `wrangler` config + `.dev.vars`):
-- `search-proxy` (Meilisearch proxy, holds the API key), `ingest` (search-intelligence pipeline), `submit` (extension submissions → `ingestion_staging`), `snapshot-archiver` (editorial snapshots), `image-cdn` / `image-ingest` (R2-backed image delivery + ingestion), `geo` (geolocation), `trip-inbox` (trip inbox slots).
+- [Search proxy](search-proxy/README.md) serves hybrid search from PostgreSQL.
+- [Assistant](assistant/README.md) runs the conversational concierge.
+- [Extraction](extract/README.md) turns supported web pages into Markdown.
+- [Submissions](submit/README.md) stages browser extension submissions for ingestion.
+- [Snapshot archiver](snapshot-archiver/README.md) stores administrative and editorial snapshots.
 
-Conventions:
-- Develop with `wrangler dev`, deploy with `wrangler deploy` from the worker's own directory.
-- Secrets live in `.dev.vars` (local) / Wrangler secrets (prod) — never commit them.
+Keep local secrets in `.dev.vars` and deployed secrets in Wrangler secrets. See the [operations runbook](../docs/operations.md) for service health checks.
