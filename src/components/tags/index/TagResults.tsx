@@ -112,7 +112,7 @@ export function TagResults({
               tag={tag.slug}
               name={tag.name}
               count={usageCounts[tag.name] || 0}
-              icon
+              icon={glyphFor(tag)}
             />
           ))}
         </div>
