@@ -147,6 +147,16 @@ export const SONNER_STYLE_HASH = "'sha256-StEaX+se6YS7pqjzrzMIA0KaX9zF/8zAhvQXZA
 // authorizes zero CSS; the filled sheet is still held to SONNER_STYLE_HASH.
 export const EMPTY_STYLE_HASH = "'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='";
 
+// force-graph (city district network) and its float-tooltip dependency each
+// inject one fixed un-nonced <style> at module evaluation, via the same
+// empty-then-fill pattern as Sonner. Blocked, the graph canvas loses
+// display:block/user-select:none and the tooltip loses its positioning.
+// Regression test recomputes both from the installed packages.
+export const FORCE_GRAPH_STYLE_HASHES = [
+  "'sha256-jtRRMYY2VbEXuBKbHvqM1/fPT8vazFrEooXdvwUK4y8='", // force-graph
+  "'sha256-9xjtvxMT1ApHlgn9ohbh2FNfvK5Tqtzy94BjfXBeMSY='", // float-tooltip
+];
+
 export function buildContentSecurityPolicy(nonce: string): string {
   return [
     "default-src 'none'",
@@ -154,7 +164,7 @@ export function buildContentSecurityPolicy(nonce: string): string {
     `script-src ${SCRIPT_SRC_HOSTS.join(' ')} 'nonce-${nonce}' ${CF_PAGES_INLINE_SCRIPT_HASHES.join(' ')}`,
     // Keep attributes separate: allowing style= must not authorize arbitrary
     // stylesheet blocks. Runtime styles use the document nonce (get-nonce).
-    `style-src 'self' 'nonce-${nonce}' ${SONNER_STYLE_HASH} ${EMPTY_STYLE_HASH}`,
+    `style-src 'self' 'nonce-${nonce}' ${SONNER_STYLE_HASH} ${EMPTY_STYLE_HASH} ${FORCE_GRAPH_STYLE_HASHES.join(' ')}`,
     "style-src-attr 'unsafe-inline'",
     `img-src ${IMG_SRC.join(' ')}`,
     `media-src ${MEDIA_SRC.join(' ')}`,
