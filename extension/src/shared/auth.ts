@@ -1,8 +1,9 @@
-import type { AuthSession } from './types';
+import type { AuthSession } from "./types";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-const STORAGE_KEY = 'qg_session_v1';
+const STORAGE_KEY = "qg_session_v1";
+
 export async function getValidAccessToken(): Promise<string | null> {
   const session = await loadSession();
   if (!session) return null;
@@ -11,8 +12,8 @@ export async function getValidAccessToken(): Promise<string | null> {
   }
   // Refresh.
   const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', apikey: ANON_KEY },
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: ANON_KEY },
     body: JSON.stringify({ refresh_token: session.refresh_token }),
   });
   if (!res.ok) {
@@ -49,12 +50,14 @@ export async function persistSharedSession(input: {
     access_token: input.access_token,
     refresh_token: input.refresh_token,
     expires_at:
-      typeof claims.exp === 'number'
+      typeof claims.exp === "number"
         ? claims.exp
         : Math.floor(Date.now() / 1000) + (input.expires_in ?? 3600),
     user: {
-      id: input.user?.id ?? (typeof claims.sub === 'string' ? claims.sub : ''),
-      email: input.user?.email ?? (typeof claims.email === 'string' ? claims.email : undefined),
+      id: input.user?.id ?? (typeof claims.sub === "string" ? claims.sub : ""),
+      email:
+        input.user?.email ??
+        (typeof claims.email === "string" ? claims.email : undefined),
     },
   };
   await chrome.storage.local.set({ [STORAGE_KEY]: session });
@@ -63,9 +66,9 @@ export async function persistSharedSession(input: {
 
 function decodeJwtClaims(token: string): Record<string, unknown> {
   try {
-    const payload = token.split('.')[1];
+    const payload = token.split(".")[1];
     if (!payload) return {};
-    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
     return JSON.parse(json);
   } catch {
     return {};

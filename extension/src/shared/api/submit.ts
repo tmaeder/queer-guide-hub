@@ -1,5 +1,5 @@
-import type { DetectedItem, SubmitResponse } from '../types';
-import { API, authHeaders, ensureOk } from './client';
+import type { DetectedItem, SubmitResponse } from "../types";
+import { API, authHeaders, ensureOk } from "./client";
 
 export async function submitItem(
   item: DetectedItem,
@@ -7,7 +7,7 @@ export async function submitItem(
   notes?: string,
 ): Promise<SubmitResponse> {
   const res = await fetch(`${API}/submit`, {
-    method: 'POST',
+    method: "POST",
     headers: authHeaders(accessToken, true),
     body: JSON.stringify({
       entity_type: item.entity_type,
@@ -19,6 +19,6 @@ export async function submitItem(
       extraction_method: item.extraction_method,
     }),
   });
-  await ensureOk(res, 'submit');
+  await ensureOk(res, "submit");
   return (await res.json()) as SubmitResponse;
 }

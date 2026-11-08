@@ -1,8 +1,9 @@
-import type { DetectedItem } from '../types';
-import { extractDomHeuristics } from './dom-heuristics';
-import { extractJsonLd } from './jsonld';
-import { extractMicrodata } from './microdata';
-import { extractOpenGraph } from './opengraph';
+import type { DetectedItem } from "../types";
+import { extractDomHeuristics } from "./dom-heuristics";
+import { extractJsonLd } from "./jsonld";
+import { extractMicrodata } from "./microdata";
+import { extractOpenGraph } from "./opengraph";
+
 /**
  * Run all extractors and merge by (entity_type, normalized name) — the
  * highest-confidence variant wins, with lower-confidence fields filling
@@ -23,9 +24,7 @@ export function extractAll(doc: Document, sourceUrl: string): DetectedItem[] {
 function mergeByEntity(items: DetectedItem[]): DetectedItem[] {
   const groups = new Map<string, DetectedItem[]>();
   for (const item of items) {
-    const name = String(item.raw_data.name ?? item.raw_data.title ?? '')
-      .toLowerCase()
-      .trim();
+    const name = String(item.raw_data.name ?? item.raw_data.title ?? "").toLowerCase().trim();
     const key = `${item.entity_type}|${name}`;
     const arr = groups.get(key) ?? [];
     arr.push(item);
@@ -37,7 +36,7 @@ function mergeByEntity(items: DetectedItem[]): DetectedItem[] {
     const winner = arr[0]!;
     for (let i = 1; i < arr.length; i++) {
       for (const [k, v] of Object.entries(arr[i]!.raw_data)) {
-        if (winner.raw_data[k] === undefined && v !== undefined && v !== '') {
+        if (winner.raw_data[k] === undefined && v !== undefined && v !== "") {
           winner.raw_data[k] = v;
         }
       }
