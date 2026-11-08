@@ -10,7 +10,7 @@ import { MapNavControls } from './chrome/MapNavControls';
 import { MapNotice } from './chrome/MapNotice';
 import { MapRail } from './chrome/MapRail';
 import { FilterChips } from './FilterChips';
-import type { MapPointStack, MapPointSummary } from './mapPoint';
+import type { MapPointStack } from './mapPoint';
 import { useMapShellState } from '@/hooks/useMapShellState';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,7 +23,7 @@ import {
 } from './MapShell.types';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { fetchLayersForPlan, viewRenderPlan } from './mapShellAdapters';
-import type { MapDataSource, MapLine } from './mapDomain';
+import type { MapDataSource, MapLine, MapStation } from './mapDomain';
 import { shareParamsFromContext, shareUrl } from '@/lib/mapContext';
 import { PreferenceChips } from '@/components/preferences/PreferenceChips';
 import { usePreferenceChips, accessibilitySlugsFromChips } from '@/hooks/usePreferenceChips';
@@ -114,7 +114,7 @@ export const MapShell = ({
   const { t } = useTranslation();
 
   // Spotlight rail state — the in-view point feed + hover/selection sync.
-  const [pointsInView, setPointsInView] = useState<MapPointSummary[]>([]);
+  const [pointsInView, setPointsInView] = useState<MapStation[]>([]);
   // A co-located stack the user opened from the map; while set, the board
   // lists that spot's places instead of everything in view.
   const [stack, setStack] = useState<MapPointStack | null>(null);

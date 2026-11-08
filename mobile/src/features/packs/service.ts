@@ -13,7 +13,7 @@ export interface PackConfig {
   publicKey: string | undefined;
 }
 
-export const packConfig: PackConfig = {
+const packConfig: PackConfig = {
   baseUrl: process.env.EXPO_PUBLIC_PACK_BASE_URL,
   publicKey: process.env.EXPO_PUBLIC_PACK_PUBLIC_KEY,
 };
@@ -23,7 +23,7 @@ export const packsConfigured = (c: PackConfig = packConfig) =>
 
 type FetchText = (url: string) => Promise<string>;
 
-export const fetchText: FetchText = async (url) => {
+const fetchText: FetchText = async (url) => {
   let res: Response;
   try {
     // no-store: a cached index would defeat the rollback check's purpose
@@ -91,5 +91,3 @@ export function createPackService(
     },
   };
 }
-
-export type PackService = ReturnType<typeof createPackService>;

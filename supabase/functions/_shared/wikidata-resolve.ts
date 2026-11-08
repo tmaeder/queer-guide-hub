@@ -234,6 +234,7 @@ export function readClaimIds(entity: Record<string, unknown>, prop: string): str
   }
   return ids;
 }
+
 // ---------------------------------------------------------------------------
 // Personhood lookup (inverse of resolveByNameAndProfession): given a name,
 // decide whether the best-matching Wikidata entity is a human (P31=Q5) or a

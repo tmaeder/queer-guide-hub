@@ -5,10 +5,10 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { cn } from '@/lib/utils';
 import { DepartureRow } from '@/components/transit/DepartureRow';
 import { bulletTypeForLayer, departureStatus, departureTime } from './railDeparture';
-import type { MapPointSummary } from '../mapPoint';
+import type { MapStation } from '../mapDomain';
 
 export interface MapRailProps {
-  points: MapPointSummary[];
+  points: MapStation[];
   selectedId?: string | null;
   loading?: boolean;
   onHover: (id: string | null) => void;
@@ -29,7 +29,7 @@ export interface MapRailProps {
 }
 
 /** Rank: featured first, then live/open-now, then nearest, then alphabetical. */
-function rankPoints(points: MapPointSummary[]): MapPointSummary[] {
+function rankPoints(points: MapStation[]): MapStation[] {
   return [...points].sort((a, b) => {
     if (a.featured !== b.featured) return a.featured ? -1 : 1;
     if (a.live !== b.live) return a.live ? -1 : 1;
