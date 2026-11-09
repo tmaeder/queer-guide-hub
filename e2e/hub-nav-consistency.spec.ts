@@ -40,9 +40,11 @@ const ROUTES: ReadonlyArray<{ path: string; active: string; shell: string }> = [
  *  from i18n and a locale edit must not silently empty this suite. */
 const NAV = 'nav:has(a[href$="/hub/dating"])';
 
-async function openHub(page: Page, path: string) {
+async function openHub(page: Page, path: string, mobile = false) {
   await page.goto(path, { waitUntil: 'domcontentloaded' });
-  const nav = page.locator(NAV).first();
+  const nav = mobile
+    ? page.getByRole('navigation', { name: 'Hub modules' })
+    : page.locator(NAV).first();
   await expect(nav, `${path}: the hub nav never rendered`).toBeVisible({ timeout: 20_000 });
   return nav;
 }
@@ -96,7 +98,7 @@ test.describe('hub nav', () => {
       await page.setViewportSize({ width, height: 900 });
       const positions = [];
       for (const route of ROUTES) {
-        const nav = await openHub(page, route.path);
+        const nav = await openHub(page, route.path, width === 390);
         const position = await nav.evaluate((el) => {
           const breadcrumb = document.querySelector('.route-network-rail');
           if (!breadcrumb) throw new Error('Missing breadcrumb rail');
@@ -113,6 +115,37 @@ test.describe('hub nav', () => {
       }
     });
   }
+
+  test('the phone selector reveals every destination and updates after navigation', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const nav = await openHub(page, '/hub/people', true);
+    const trigger = nav.getByRole('button', { name: 'Hub modules: People' });
+    const menu = page.getByRole('menu', { name: 'Hub modules: People' });
+    await expect(nav.getByRole('button')).toHaveCount(1);
+    await expect(nav.getByRole('link')).toHaveCount(0);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    await trigger.focus();
+    await trigger.press('Enter');
+    await expect(menu.getByRole('menuitem')).toHaveText([...PILLS]);
+    await expect(menu.getByRole('menuitem', { name: 'People' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+    await expect(trigger).toBeFocused();
+
+    await trigger.click();
+    await menu.getByRole('menuitem', { name: 'Groups' }).click();
+    await expect(page).toHaveURL(/\/hub\/groups$/);
+    await expect(nav.getByRole('button', { name: 'Hub modules: Groups' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+  });
 
   test('the breadcrumb rail is the same height on every route', async ({ page }) => {
     const rails: Record<string, number | null> = {};
