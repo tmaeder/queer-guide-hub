@@ -39,7 +39,7 @@ describe('TripWorkspaceHero', () => {
       />,
     );
     expect(screen.getByRole('heading', { name: 'Berlin after dark' })).toBeInTheDocument();
-    expect(screen.getByText('Berlin')).toBeInTheDocument();
+    expect(screen.getAllByText('Berlin')).toHaveLength(2);
     expect(screen.getByText(/Jun 1 – Jun 5/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /choose a place to stay/i })).toBeInTheDocument();
   });

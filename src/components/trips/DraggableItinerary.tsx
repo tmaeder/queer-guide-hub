@@ -383,38 +383,48 @@ export function DraggableItinerary({
         )}
 
         {/* Day spine */}
-        {sortedDays.map((meta) => {
-          const dayPlaces = placesByContainer[meta.day.id] || [];
-          return (
-            <DayCard
-              key={meta.day.id}
-              day={meta.day}
-              dayNumber={meta.dayNumber}
-              totalDays={sortedDays.length}
-              isFirst={meta.isFirst}
-              isLast={meta.isLast}
-              isToday={meta.isToday}
-              isPast={meta.isPast}
-              isFuture={meta.isFuture}
-              places={dayPlaces}
-              tripStartDate={trip.start_date}
-              tripEndDate={trip.end_date}
-              editingTitle={editingDayId === meta.day.id}
-              draftTitle={editDayTitle}
-              activeDragId={activeDragId}
-              onStartEditTitle={() => startEditDay(meta.day)}
-              onChangeDraftTitle={setEditDayTitle}
-              onSaveTitle={saveEditDay}
-              onCancelEditTitle={() => setEditingDayId(null)}
-              onAddPlace={(slot) => onAddPlace(meta.day.id, slot)}
-              onDeletePlace={handleDelete}
-              renderMoveActions={renderMoveActions}
-              conflicts={conflictsByDay[meta.day.id]}
-              fallbackCoord={tripCoord}
-              readOnly={readOnly}
+        {sortedDays.length > 0 ? (
+          <div className="relative">
+            <span
+              aria-hidden="true"
+              className="route-draw route-draw-y absolute bottom-10 left-[3.25rem] top-10 w-1 rounded-full bg-track-pink"
             />
-          );
-        })}
+            <div className="relative">
+              {sortedDays.map((meta) => {
+                const dayPlaces = placesByContainer[meta.day.id] || [];
+                return (
+                  <DayCard
+                    key={meta.day.id}
+                    day={meta.day}
+                    dayNumber={meta.dayNumber}
+                    totalDays={sortedDays.length}
+                    isFirst={meta.isFirst}
+                    isLast={meta.isLast}
+                    isToday={meta.isToday}
+                    isPast={meta.isPast}
+                    isFuture={meta.isFuture}
+                    places={dayPlaces}
+                    tripStartDate={trip.start_date}
+                    tripEndDate={trip.end_date}
+                    editingTitle={editingDayId === meta.day.id}
+                    draftTitle={editDayTitle}
+                    activeDragId={activeDragId}
+                    onStartEditTitle={() => startEditDay(meta.day)}
+                    onChangeDraftTitle={setEditDayTitle}
+                    onSaveTitle={saveEditDay}
+                    onCancelEditTitle={() => setEditingDayId(null)}
+                    onAddPlace={(slot) => onAddPlace(meta.day.id, slot)}
+                    onDeletePlace={handleDelete}
+                    renderMoveActions={renderMoveActions}
+                    conflicts={conflictsByDay[meta.day.id]}
+                    fallbackCoord={tripCoord}
+                    readOnly={readOnly}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
 
         {!itineraryIsEmpty && !readOnly && (
           <Button
