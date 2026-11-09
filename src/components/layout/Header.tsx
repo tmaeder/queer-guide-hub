@@ -402,7 +402,9 @@ export function Header() {
       // wordmark and the tab row still land on the page content's vertical.
       className={cn(
         'site-header island island-capped sticky',
-        compact && !isMobile ? 'island-ink bg-foreground text-background' : 'bg-background',
+        compact && !isMobile
+          ? 'island-ink bg-foreground text-background'
+          : 'bg-card dark:bg-background',
       )}
       // z-40, NOT the 1100 this carried before. Every portaled overlay in the
       // app — dialog, alert-dialog, dropdown, popover, select, sheet, tooltip,

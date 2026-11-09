@@ -12,7 +12,7 @@
   overflow: auto;
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius-element);
-  background: #fafaf5;
+  background: #fff;
   color: #111;
   padding: 24px;
 }
@@ -72,7 +72,7 @@
   padding: 12px 20px;
   border-radius: 12px;
   background: #111;
-  color: #fafaf5;
+  color: #fff;
   text-decoration: none;
 }
 .email-canvas .tiptap img {
@@ -81,18 +81,18 @@
 }
 .email-canvas .tiptap hr {
   margin: 24px 0;
-  border-top: 1px solid #b8b8b0;
+  border-top: 1px solid #b8b8b8;
 }
 .email-canvas .email-variable {
   display: inline;
-  background: #e2e2d7;
+  background: #eaeaea;
   border-radius: 4px;
   padding: 2px 4px;
   font-family: var(--font-mono);
   font-size: 0.9em;
 }
 .email-canvas .tiptap ::selection {
-  background: #d0d0bb;
+  background: #d4d4d4;
 }
 .email-inspector {
   min-width: 0;

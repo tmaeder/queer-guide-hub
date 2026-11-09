@@ -51,14 +51,14 @@ both.
 
 | Token                                    | Value                                                     | Usage                                          |
 | ---------------------------------------- | --------------------------------------------------------- | ---------------------------------------------- |
-| `--background`                           | `60 16.3% 91.6%` (#EDEDE6 frame)                          | **The page. Not paper.**                       |
-| `--card` / `--popover`                   | `60 33% 97%` (#FAFAF5 paper)                              | The sheet, one rung above the page             |
-| `--muted` / `--accent`                   | `60 22.2% 92.9%` (#F1F1E9 wash)                           | Insets, chips, card hover tint                 |
-| `--surface-container-high`               | `60 13.2% 89.6%` (#E8E8E1)                                | Image wells                                    |
-| `--foreground`                           | `0 0% 6.7%` (#111 ink)                                    | Type, marks, station rings                     |
-| `--border`                               | `60 7.4% 81.4%`                                           | Legacy/data channel; UI utility is transparent |
+| `--background`                           | `0 0% 96.1%` (#F5F5F5)                                   | Light gray page and browser chrome             |
+| `--card` / `--popover`                   | `0 0% 100%` (#FFFFFF)                                    | White cards and floating sheets                |
+| `--muted` / `--accent`                   | `0 0% 91.8%` (#EAEAEA)                                   | Insets, chips, card hover tint                 |
+| `--surface-container-high`               | `0 0% 89%` (#E3E3E3)                                     | Image wells                                    |
+| `--foreground`                           | `0 0% 6.7%` (#111111)                                    | Type, marks, station rings                     |
+| `--border`                               | `0 0% 83.1%` (#D4D4D4)                                   | Row dividers                                   |
 | `--border-hairline`                      | ink channels @ `--hairline-alpha` (0%)                    | Compatibility token; visually retired          |
-| `--input`                                | `60 4.8% 44.9%`                                           | Form-control boundary — 3:1 on page and card   |
+| `--input`                                | `0 0% 45.5%` (#747474)                                           | Form-control boundary — 3:1 on page and card   |
 | `--track-ring`                           | `0 0% 6.7%`                                               | The ink ring a track-coloured mark wears       |
 | `--muted-foreground`                     | `0 0% 33%`                                                | Secondary text                                 |
 | `--destructive`                          | `0 70% 38%`                                               | **Danger. The only non-track semantic hue.**   |
@@ -66,10 +66,10 @@ both.
 | `--radius-panel/container/element/badge` | `26 / 18 / 12 / 9 px`                                     | `rounded-full` for circles only                |
 | `--shadow-soft` / `-hover` / `-lg`       | `0 16px 40px .06` / `0 12px 30px .13` / `0 24px 60px .10` | Rest / lift / floats over a scrim              |
 
-**`--background` is not paper, and that is the load-bearing fact of the whole
-system.** The page is a rung _below_ the card, and that step plus the soft
-shadow is what replaced the 3px ink cage. Restoring `--background` to paper
-without also restoring the cage yields an invisible card, not a subtler one.
+**White & Graphite** gives the light theme a neutral gray canvas, white
+cards and fields, and darker gray insets. The difference in tone and the soft
+shadow separate cards from the canvas. The four-track ground remains part of
+the Subway Map identity.
 
 `--radius-panel` and `--hairline-alpha` are declared in `@theme` only — they
 are deliberately absent from `tokenCatalog.ts`, `functions/_lib/branding.ts`

@@ -8,16 +8,16 @@
  */
 
 .qg-pl {
-  --paper: #f6f3ec; --paper-2: #ece7db; --paper-3: #ffffff;
-  --ink: #14110d; --ink-2: #2a2620; --muted: #6f6a5d; --muted-2: #a39d8e;
-  --line: rgba(20,17,13,0.10); --line-strong: rgba(20,17,13,0.20);
+  --paper: #f5f5f5; --paper-2: #eaeaea; --paper-3: #ffffff;
+  --ink: #111111; --ink-2: #262626; --muted: #555555; --muted-2: #666666;
+  --line: rgba(17,17,17,0.10); --line-strong: rgba(17,17,17,0.20);
   --accent: #b53d2c;
   --c1:#7a2e2a; --c2:#c2683a; --c3:#caa14a; --c4:#3f6b5a; --c5:#2c4256; --c6:#5a3d6e;
   --font-display:"Instrument Serif", "Iowan Old Style", Georgia, serif;
   --font-body:"Inter Tight", system-ui, sans-serif;
   --font-mono:"JetBrains Mono", ui-monospace, monospace;
 
-  background:#dfd8c6;
+  background:#e0e0e0;
   font-family:var(--font-body);
   color:var(--ink);
   font-size:13.5px;
@@ -42,9 +42,9 @@
 .qg-pl .btn--ghost{background:transparent;color:var(--ink)}
 .qg-pl .btn--accent{background:var(--accent);border-color:var(--accent);color:#fff}
 .qg-pl .card{background:var(--paper-3);border:1px solid var(--line);border-radius:4px;overflow:hidden}
-.qg-pl .ph{background:linear-gradient(135deg,#d8d0bd 0%,#c6bda7 100%);position:relative}
-.qg-pl .ph::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(20,17,13,0.06) 1px, transparent 1px);background-size:18px 18px;mix-blend-mode:multiply}
-.qg-pl .ph::after{content:attr(data-ph);position:absolute;left:14px;bottom:12px;font-family:var(--font-mono);font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(20,17,13,0.55);white-space:nowrap}
+.qg-pl .ph{background:linear-gradient(135deg,#d4d4d4 0%,#bfbfbf 100%);position:relative}
+.qg-pl .ph::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(17,17,17,0.06) 1px, transparent 1px);background-size:18px 18px;mix-blend-mode:multiply}
+.qg-pl .ph::after{content:attr(data-ph);position:absolute;left:14px;bottom:12px;font-family:var(--font-mono);font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(17,17,17,0.55);white-space:nowrap}
 .qg-pl .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .qg-pl .grid{display:grid;gap:12px}
 .qg-pl .lbl{font-family:var(--font-mono);font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted)}

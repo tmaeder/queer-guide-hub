@@ -267,7 +267,7 @@
      migration and no headroom against that validator's 150-key cap. Operators
      have no business retheming a plate whose whole job is to be neutral under
      somebody else's artwork. */
-  --color-logo-plate: hsl(60 33% 97%);
+  --color-logo-plate: hsl(0 0% 100%);
 
   /* The ink counterpart, for the ~8% of marks that are white-on-transparent
      and would be invisible on the plate above. It is a LITERAL for exactly the
@@ -433,17 +433,10 @@
     U+A720-A7FF;
 }
 
-/* ── CSS Variables — Subway-map identity (paper/ink + 4 track colors) ──
-   Ink #111 plus four SEMANTIC track colors (wayfinding lines, one accent
-   per context) and the destructive red.
-
-   Surfaces re-valued 2026-08-17 (soft re-skin). The neutral ladder is now
-   frame #EDEDE6 (the page) < wash #F1F1E9 (insets) < paper #FAFAF5 (the
-   card). THE PAGE IS NO LONGER PAPER. That one step is load-bearing: it
-   is what separates a card from the page now that container keylines are
-   gone, and every other surface value follows from it. Do not "restore"
-   --background to paper without also restoring the 3px ink cage — the two
-   are a pair, and paper-on-paper with no border is an invisible card. */
+/* ── White & Graphite — Subway Map light theme ──────────────────────────
+   White sheets and fields sit above a neutral gray page. A deeper gray
+   marks insets and hover states. Ink and the four wayfinding colors carry
+   the hierarchy. */
 
 :root {
   /* Bump this integer to force a new stylesheet content hash — the deploy-only
@@ -454,32 +447,26 @@
      index-BWI3mGiS.css to index-Bt7ko9Qm.css. */
   --asset-rev: 1;
 
-  /* Page = paper #FAFAF5 again, with the GROUND LAYER on top of it (see
-     `body` below). The 2026-08-17 re-skin used a frame-grey page so a paper
-     card had a tonal step to sit on; the brand update replaces that step with
-     the tiled bezier ground, so a card separates by COVERING the pattern
-     rather than by being lighter than it. Card and page are the same colour on
-     purpose — remove the ground and cards go invisible again. */
-  --background: 60 33% 97%;
+  --background: 0 0% 96.1%;
   --foreground: 0 0% 6.7%;
 
-  --card: 60 33% 97%;
+  --card: 0 0% 100%;
   --card-foreground: 0 0% 6.7%;
 
-  --popover: 60 33% 97%;
+  --popover: 0 0% 100%;
   --popover-foreground: 0 0% 6.7%;
 
   --primary: 0 0% 6.7%;
-  --primary-foreground: 60 33% 97%;
+  --primary-foreground: 0 0% 100%;
 
   --secondary: 0 0% 6.7%;
-  --secondary-foreground: 60 33% 97%;
+  --secondary-foreground: 0 0% 100%;
 
-  /* Wash #EAEADE — the inset, and the card hover tint. */
-  --muted: 60 22.2% 89.4%;
+  /* Gray inset and card hover tint. */
+  --muted: 0 0% 91.8%;
   --muted-foreground: 0 0% 33%;
 
-  --accent: 60 22.2% 89.4%;
+  --accent: 0 0% 91.8%;
   --accent-foreground: 0 0% 6.7%;
 
   /* Sole permitted hue: error semantics. `--warning` was a literal duplicate of
@@ -491,13 +478,13 @@
      --destructive-foreground to near-black in dark instead. Darkening the red
      to fix the button broke the text case in reverse — see #2366. */
   --destructive: 0 70% 38%;
-  --destructive-foreground: 60 33% 97%;
+  --destructive-foreground: 0 0% 100%;
   --warning: 0 0% 6.7%;
-  --warning-foreground: 60 33% 97%;
+  --warning-foreground: 0 0% 100%;
 
   /* Success / info collapse to neutral foreground — differentiated by icon + label, not color. */
   --success: 0 0% 6.7%;
-  --success-foreground: 60 33% 97%;
+  --success-foreground: 0 0% 100%;
 
   /* ── Track colors — SEMANTIC wayfinding lines (subway-map rebrand).
      One accent per context. FILL-ONLY: never body text.
@@ -524,9 +511,9 @@
   /* HSL channel values stay override-compatible for charts and data graphics.
      UI utilities no longer expose them as visible keylines: cards, lists and
      controls separate with tonal fills, spacing and focus rings. */
-  --border: 60 7.4% 81.4%;
-  --input: 60 4.8% 44.9%;
-  --input-bg: 60 33% 97%;
+  --border: 0 0% 83.1%;
+  --input: 0 0% 45.5%;
+  --input-bg: 0 0% 100%;
   --ring: 330 100% 56%;
   /* Legacy divider call sites are intentionally transparent. The supplied
      templates separate content with spacing and tonal surfaces, not rules. */
@@ -563,13 +550,13 @@
   --header-pinned-h: 52px;
   --header-pinned-bottom: calc(var(--island-inset) + var(--header-pinned-h));
 
-  --sidebar-background: 60 33% 97%;
+  --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 0 0% 6.7%;
   --sidebar-primary: 0 0% 6.7%;
-  --sidebar-primary-foreground: 60 33% 97%;
-  --sidebar-accent: 60 22.2% 89.4%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 0 0% 91.8%;
   --sidebar-accent-foreground: 0 0% 6.7%;
-  --sidebar-border: 60 7.4% 81.4%;
+  --sidebar-border: 0 0% 83.1%;
   --sidebar-ring: 0 0% 6.7%;
 
   --radius: var(--radius-element);
@@ -584,17 +571,14 @@
   --border-hairline: 0 0% 6.7%;
   --transition-smooth: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* Surface tonal layering. The design system names four: paper #FAFAF5
-     (the card), wash #F1F1E9 (insets), frame #EDEDE6 (the page), well
-     #E8E8E1 (image wells). They land on the first five rungs; the last two
-     are derived continuations of the same ramp, not spec'd values. */
-  --surface: 60 33% 97%;
-  --surface-container-lowest: 60 33% 97%;
-  --surface-container-low: 60 22.2% 89.4%;
-  --surface-container: 60 15.8% 88.8%;
-  --surface-container-high: 60 15% 84.3%;
-  --surface-container-highest: 60 12% 87%;
-  --surface-dim: 60 11% 85%;
+  /* Neutral surface ramp, from white sheets to gray wells. */
+  --surface: 0 0% 100%;
+  --surface-container-lowest: 0 0% 100%;
+  --surface-container-low: 0 0% 96.1%;
+  --surface-container: 0 0% 91.8%;
+  --surface-container-high: 0 0% 89%;
+  --surface-container-highest: 0 0% 85%;
+  --surface-dim: 0 0% 85%;
   --inverse-surface: 0 0% 6.7%;
 
   --z-dropdown: 50;
@@ -863,11 +847,8 @@ html {
    separated by tinted fields "plus radius and a single soft shadow", and
    this is the field the whole product sits on.
 
-   It is LOAD-BEARING, not decoration. `--background` and `--card` are both
-   paper #FAFAF5, so a card is distinguished by COVERING the pattern, not by
-   being a lighter tone. Delete this and every card goes invisible — the same
-   failure mode the frame-grey page was introduced to avoid on 2026-08-17,
-   solved a different way.
+   The neutral page tone and the card shadow separate white cards from the
+   canvas. Opaque cards also cover the tracks, keeping content easy to read.
 
    Data-URI, not an <img> or a component: it must paint before first
    contentful paint on every route, under every surface, with no request.

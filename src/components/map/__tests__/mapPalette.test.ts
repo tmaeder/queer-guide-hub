@@ -236,18 +236,9 @@ describe('map palette across modes', () => {
     ).toEqual([...TRACKS].sort());
   });
 
-  it('swaps ink and paper between modes', () => {
-    const fg = COLOR_TOKENS.find((t) => t.key === 'foreground')!;
-    const bg = COLOR_TOKENS.find((t) => t.key === 'background')!;
-    // An exact swap, not merely "different": dark paper IS light ink.
-    expect(fg.dark).toBe(bg.light);
-    expect(bg.dark).toBe(fg.light);
-  });
-
   it('builds a different basemap per mode', async () => {
-    // The map-level consequence of the swap, and the assertion the old
-    // light-only fixture could not make at all. Needs the module reset for the
-    // same cache-slot reason as above.
+    // The two themes must paint different basemaps. Reset the module so
+    // each mode builds its own cached style.
     const paperOf = async (m: Mode) => {
       mode = m;
       vi.resetModules();
