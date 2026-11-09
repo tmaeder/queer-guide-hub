@@ -16,6 +16,7 @@ vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }))
 vi.mock('@/hooks/useInboxFeed', () => ({ useInboxFeed: () => ({ unreadCount: mockUnread }) }));
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => mockTrips }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => navigateSpy }));
+vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => true }));
 vi.mock('@/hooks/useHaptics', () => ({ useHaptics: () => ({ trigger: hapticSpy }) }));
 // Reduced motion → static pills, no motion/react layout animation in jsdom.
 vi.mock('@/lib/motion', () => ({ useMotionTokens: () => ({ reduced: true }) }));
@@ -123,6 +124,20 @@ describe('MobileBottomNav', () => {
     renderAt('/');
     fireEvent.click(screen.getByText('Hub'));
     expect(navigateSpy).toHaveBeenCalledWith('/auth', { state: { from: '/hub' } });
+  });
+
+  it('opens Hub navigation from the active dock tab for a signed-out visitor', () => {
+    renderAt('/hub/people');
+    const hub = screen.getByRole('link', { name: 'Hub' });
+    expect(hub).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(screen.getByRole('link', { name: 'Explore' })).not.toHaveAttribute('aria-current');
+    fireEvent.click(hub);
+    expect(screen.getByRole('dialog', { name: 'Hub' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Discover people' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(navigateSpy).not.toHaveBeenCalled();
   });
 
   it('does not gate Hub when signed in', () => {

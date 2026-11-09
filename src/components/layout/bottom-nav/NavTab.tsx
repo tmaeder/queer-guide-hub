@@ -17,12 +17,11 @@ interface NavTabProps {
   onTap: () => void;
   /**
    * When set, the tap is intercepted (navigation prevented) and this runs
-   * instead. Two callers: the anonymous auth gate, and Explore — which opens
-   * the intent sheet rather than navigating to `/search`. `to` is still
+   * instead. Used by dialog openers and the anonymous auth gate. `to` is still
    * required and still rendered, so the slot keeps a real href for
    * middle-click, "open in new tab" and crawlers.
    */
-  onIntercept?: () => void;
+  onIntercept?: (trigger: HTMLAnchorElement) => void;
   badgeCount?: number;
   badgeLabel?: string;
   /** When signed in and this is the identity tab, render the avatar. */
@@ -31,6 +30,7 @@ interface NavTabProps {
   longPress?: LongPressHandlers;
   /** Secondary affordance rendered inside the slot (e.g. the trip-count dot). */
   accessory?: ReactNode;
+  labelAccessory?: ReactNode;
   /** Set when onIntercept opens a dialog rather than navigating. */
   hasPopup?: boolean;
   /** Companion to hasPopup — the dialog's open state. */
@@ -67,6 +67,7 @@ export function NavTab({
   avatar,
   longPress,
   accessory,
+  labelAccessory,
   hasPopup,
   expanded,
 }: NavTabProps) {
@@ -80,9 +81,9 @@ export function NavTab({
         {...longPress}
         onClick={(e) => {
           onTap();
-          if (onIntercept) {
+          if (onIntercept && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
             e.preventDefault();
-            onIntercept();
+            onIntercept(e.currentTarget);
           }
         }}
         className={cn(
@@ -144,7 +145,10 @@ export function NavTab({
             of the five slots is only ~58px wide, and `fr` "Parcourir" and `ko`
             "둘러보기" both reach that. Truncating keeps the box; the full
             string stays available as the link's accessible name. */}
-        <span className="w-full truncate px-0.5 text-center">{label}</span>
+        <span className="flex w-full items-center justify-center gap-0.5 px-0.5">
+          <span className="truncate">{label}</span>
+          {labelAccessory}
+        </span>
       </LocalizedLink>
       {/* The accessory is a SIBLING of the link, not a child — it is
           `pointer-events-none` decoration (the chevron hint) and must not
