@@ -14,7 +14,6 @@ type SpotlightEvent = Pick<
   | 'title'
   | 'title_i18n'
   | 'images'
-  | 'image_url'
   | 'start_date'
   | 'timezone'
   | 'venue_name'

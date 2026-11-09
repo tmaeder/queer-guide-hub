@@ -23,7 +23,6 @@ const event = {
   venue_name: 'The Library',
   organizer_name: 'Community Collective',
   images: null,
-  image_url: null,
   liveness_status: 'live',
   age_restriction: null as string | null,
 };

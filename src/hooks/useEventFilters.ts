@@ -304,21 +304,22 @@ export function useEventFilters() {
     setSort('date-asc');
   };
 
-  const hasNonCityFilters =
+  const hasNonCityFilters = Boolean(
     search ||
-    eventTypes.length > 0 ||
-    selectedTags.length > 0 ||
-    accessibilityAttrs.length > 0 ||
-    targetGroupsFilter.length > 0 ||
-    languages.length > 0 ||
-    ageRestriction ||
-    startDate ||
-    endDate ||
-    nearMe ||
-    showPast ||
-    isFree ||
-    featuredOnly ||
-    activePreset;
+      eventTypes.length > 0 ||
+      selectedTags.length > 0 ||
+      accessibilityAttrs.length > 0 ||
+      targetGroupsFilter.length > 0 ||
+      languages.length > 0 ||
+      ageRestriction ||
+      startDate ||
+      endDate ||
+      nearMe ||
+      showPast ||
+      isFree ||
+      featuredOnly ||
+      activePreset,
+  );
 
   const hasActiveFilters = hasNonCityFilters || cities.length > 0;
   const isDefaultBrowse =
