@@ -1,4 +1,4 @@
-import { BookOpen, Compass, Luggage, Map } from 'lucide-react';
+import { BookOpen, Compass, Luggage, Map } from '@/components/icons';
 import { useLocation } from 'react-router';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { stripLocale } from '@/lib/locale';

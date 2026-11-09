@@ -1,4 +1,4 @@
-import { CalendarDays, MapPin, Route, Users } from 'lucide-react';
+import { CalendarDays, MapPin, Route, Users } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import type { TripWithDetails } from '@/hooks/useTrips';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';

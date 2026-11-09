@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderWithProviders, screen } from '@/test/test-utils';
 import type { TripWithDetails } from '@/hooks/useTrips';
-import type { Reservation } from '@/hooks/useTripReservations';
+import type { Reservation } from '@/hooks/useReservations';
 import { TripAtAGlance } from '../TripAtAGlance';
 
 const trip = {

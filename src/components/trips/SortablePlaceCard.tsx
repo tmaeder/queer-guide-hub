@@ -152,7 +152,7 @@ export function SortablePlaceCard({
       <div
         data-trip-place-id={place.id}
         role="group"
-        aria-label={place.name}
+        aria-label={getPlaceName(place)}
         tabIndex={-1}
         onFocus={focusOnMap}
         className={`group flex flex-wrap items-center gap-2 bg-background border ${borderClass} rounded-container px-4 py-2 mb-1.5 min-h-11 transition-all hover:bg-muted/60 ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}

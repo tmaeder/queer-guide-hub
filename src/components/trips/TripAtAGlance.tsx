@@ -1,7 +1,7 @@
-import { BedDouble, CalendarHeart, MapPinned, Plane, WalletCards } from 'lucide-react';
+import { BedDouble, CalendarDays, MapPinned, Plane, Wallet } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import type { TripWithDetails } from '@/hooks/useTrips';
-import type { Reservation } from '@/hooks/useTripReservations';
+import type { Reservation } from '@/hooks/useReservations';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 interface Props {
@@ -70,7 +70,7 @@ export function TripAtAGlance({ trip, reservations }: Props) {
       value: eventCount
         ? t('trips.glance.eventCount', { count: eventCount, defaultValue: `${eventCount} saved` })
         : t('trips.glance.findEvents', 'Find an event'),
-      icon: CalendarHeart,
+      icon: CalendarDays,
       href: `/trips/${trip.id}?view=plan&section=plan#trip-itinerary`,
     },
     {
@@ -89,7 +89,7 @@ export function TripAtAGlance({ trip, reservations }: Props) {
             defaultValue: `${bookedCount} confirmed`,
           })
         : t('trips.glance.reviewBookings', 'Review bookings'),
-      icon: WalletCards,
+      icon: Wallet,
       href: `/trips/${trip.id}?view=plan&section=prepare`,
     },
   ];

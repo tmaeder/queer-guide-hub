@@ -16,7 +16,7 @@ import {
   Sparkles,
   Train,
   TramFront,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
