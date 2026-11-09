@@ -46,7 +46,7 @@ export const Y = '#FFD500';
  *  belongs to the artwork, not the theme. */
 export const ink = '#111111';
 /** Windows, doors, inner holes, station rings and highlights. */
-export const paper = '#FAFAF5';
+export const paper = '#FFFFFF';
 
 export type TrackColor = typeof M | typeof C | typeof G | typeof Y;
 

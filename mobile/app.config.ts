@@ -20,8 +20,8 @@ const config: ExpoConfig = {
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
-  // Paper (#FAFAF5) — matches --background in src/index.css.
-  backgroundColor: '#FAFAF5',
+  // Matches the light --background in src/index.css.
+  backgroundColor: '#F5F5F5',
   ios: {
     bundleIdentifier: IS_DEV ? 'guide.queer.app.dev' : 'guide.queer.app',
     supportsTablet: true,

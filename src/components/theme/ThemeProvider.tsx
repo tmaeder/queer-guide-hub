@@ -62,7 +62,7 @@ export function ThemeProvider({
     root.classList.add(resolvedMode);
 
     // Update theme-color meta tags for browser chrome
-    const themeColor = resolvedMode === 'dark' ? '#111111' : '#EDEDE6';
+    const themeColor = resolvedMode === 'dark' ? '#111111' : '#F5F5F5';
     document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
       meta.content = themeColor;
     });

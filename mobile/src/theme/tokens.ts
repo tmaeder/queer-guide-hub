@@ -32,16 +32,16 @@ export type TokenName = (typeof TOKEN_NAMES)[number];
 type Palette = Record<TokenName, string>;
 
 export const light: Palette = {
-  background: '60 33% 97%',
+  background: '0 0% 96.1%',
   foreground: '0 0% 6.7%',
-  card: '60 33% 97%',
+  card: '0 0% 100%',
   'card-foreground': '0 0% 6.7%',
   primary: '0 0% 6.7%',
-  'primary-foreground': '60 33% 97%',
-  muted: '60 22.2% 89.4%',
+  'primary-foreground': '0 0% 100%',
+  muted: '0 0% 91.8%',
   'muted-foreground': '0 0% 33%',
   destructive: '0 70% 38%',
-  border: '60 7.4% 81.4%',
+  border: '0 0% 83.1%',
   'track-pink': '330 100% 56%',
   'track-blue': '193 100% 45%',
   'track-green': '135.6 74.5% 52.4%',

@@ -125,7 +125,7 @@ export default function TripBookletPage() {
         .booklet .cover { padding: 60px 0 24px; text-align: left; }
         .booklet .cover .meta { font-size: 14px; color: #666; margin-top: 8px; }
         .booklet .toolbar { position: sticky; top: 0; background: #fff; padding: 8px 0 16px; display: flex; gap: 8px; }
-        .booklet .toolbar button { padding: 8px 12px; border: 0; border-radius: 12px; background: #111; color: #FAFAF5; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 700; }
+        .booklet .toolbar button { padding: 8px 12px; border: 0; border-radius: 12px; background: #111; color: #fff; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 700; }
       `}</style>
 
       <div className="booklet">
