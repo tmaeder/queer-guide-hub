@@ -19,6 +19,7 @@ import { DestinationGrid } from '@/components/travel/DestinationGrid';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { PersonalisedTripPackages } from '@/components/travel/PersonalisedTripPackages';
+import { TravelJourneyNav } from '@/components/travel/TravelJourneyNav';
 import { useAuth } from '@/hooks/useAuth';
 import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 import { AMBIENT_TRIP_CONTEXT_ENABLED } from '@/lib/trips/ambientTripFlags';
@@ -219,6 +220,7 @@ export default function Travel() {
 
   return (
     <IntentPageLayout
+      topNav={<TravelJourneyNav />}
       breadcrumbLabel={t('header.intents.travelling.label', 'Travelling')}
       breadcrumbHref="/travel"
       compactHero

@@ -137,6 +137,11 @@ export function SortablePlaceCard({
   const ringColor = getScoreRingColor(eqScore);
   const status = getStopBookingStatus(place, linkedReservation);
   const isIntent = status === 'intent';
+  const focusOnMap = () => {
+    window.dispatchEvent(
+      new CustomEvent('queer-guide:trip-place-focus', { detail: { placeId: place.id } }),
+    );
+  };
 
   const borderClass = isIntent
     ? 'border-dashed border-border'
@@ -145,6 +150,11 @@ export function SortablePlaceCard({
   return (
     <div ref={setNodeRef} style={style}>
       <div
+        data-trip-place-id={place.id}
+        role="group"
+        aria-label={place.name}
+        tabIndex={-1}
+        onFocus={focusOnMap}
         className={`group flex flex-wrap items-center gap-2 bg-background border ${borderClass} rounded-container px-4 py-2 mb-1.5 min-h-11 transition-all hover:bg-muted/60 ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
       >
         {!readOnly && (
