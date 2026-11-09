@@ -8,6 +8,7 @@ export interface IntentPageLayoutProps {
   /** Optional page-specific hero. Defaults to the shared PageHero treatment. */
   header?: ReactNode;
   compactHero?: boolean;
+  topNav?: ReactNode;
   eyebrow?: ReactNode;
   title: ReactNode;
   lede?: ReactNode;
@@ -27,7 +28,7 @@ export interface IntentPageLayoutProps {
   breadcrumbParents?: { label: string; href: string }[];
   sectionNavVariant?: 'default' | 'subway';
   className?: string;
-  heroSize?: 'sm' | 'md' | 'lg';
+  heroSize?: 'xs' | 'sm' | 'md' | 'lg';
   heroClassName?: string;
   sectionNavClassName?: string;
 }
@@ -50,6 +51,7 @@ export interface IntentPageLayoutProps {
 export function IntentPageLayout({
   header,
   compactHero = false,
+  topNav,
   eyebrow,
   title,
   lede,
@@ -97,6 +99,7 @@ export function IntentPageLayout({
                 />
               ))}
             {scopeBar ? <div className="mt-6">{scopeBar}</div> : null}
+            {topNav ? <div className="mt-6">{topNav}</div> : null}
             {featured ? <div className="mt-8">{featured}</div> : null}
           </>
         }

@@ -122,7 +122,6 @@ function deriveSeasonalTemplates(pool: Station[], now: Date): TripTemplate[] {
     if (!station) continue;
     used.add(station.id);
 
-    const hasEvent = station.eventMonths.some((m) => inWindow.has(m));
     out.push({
       id: `seasonal:${vibe}:${station.id}`,
       title: `${VIBE_TITLE[vibe]} in ${station.name}`,
@@ -135,10 +134,11 @@ function deriveSeasonalTemplates(pool: Station[], now: Date): TripTemplate[] {
       coverImageUrl: station.imageUrl,
       source: 'seasonal',
       vibe,
-      reason:
-        hasEvent && station.nextEventTitle
-          ? station.nextEventTitle
-          : `${vibeCount(station, vibe)} places listed`,
+      // The event signal remains a ranking input, but an unrelated upcoming
+      // event is not automatically evidence for this specific vibe. Keep the
+      // visible explanation tied to the measured venue corpus; event-led
+      // packages carry their own structured event below.
+      reason: `${vibeCount(station, vibe)} matched places`,
     });
   }
   return out;

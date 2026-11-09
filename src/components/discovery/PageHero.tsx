@@ -18,7 +18,7 @@ interface PageHeroProps {
   primaryCta?: CTA;
   secondaryCta?: CTA;
   align?: 'left' | 'center';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   /** Skip the page gutter + cap because a parent PageContainer already applies
    *  them (IntentPageLayout renders the hero inside EditorialDetailLayout).
    *  Nesting two containers doubles the gutter. */
@@ -67,12 +67,14 @@ const PlainFrame = ({
 }) => <div className={className}>{children}</div>;
 
 const SIZE_PADDING: Record<NonNullable<PageHeroProps['size']>, string> = {
+  xs: 'py-6 md:py-8',
   sm: 'py-10 md:py-12',
   md: 'py-12 md:py-16',
   lg: 'py-16 md:py-20 lg:py-24',
 };
 
 const SIZE_TITLE: Record<NonNullable<PageHeroProps['size']>, string> = {
+  xs: 'text-title md:text-headline',
   sm: 'text-headline md:text-display',
   md: 'text-display md:text-hero',
   lg: 'text-hero md:text-hero-xl',
