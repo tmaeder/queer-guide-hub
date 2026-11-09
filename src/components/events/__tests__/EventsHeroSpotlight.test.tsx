@@ -4,7 +4,6 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { EventsHeroSpotlight } from '../EventsHeroSpotlight';
 import { selectDiscoveryEvent } from '@/lib/discoveryEvent';
-import type { Database } from '@/integrations/supabase/types';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -13,7 +12,6 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-type Event = Database['public']['Tables']['events']['Row'];
 const event = {
   id: 'event-id',
   slug: 'community-library',
@@ -24,9 +22,11 @@ const event = {
   city: 'New York',
   venue_name: 'The Library',
   organizer_name: 'Community Collective',
+  images: null,
+  image_url: null,
   liveness_status: 'live',
-  age_restriction: null,
-} as Event;
+  age_restriction: null as string | null,
+};
 
 describe('EventsHeroSpotlight', () => {
   it('links to the listing and shows the local date, place, and organiser', () => {

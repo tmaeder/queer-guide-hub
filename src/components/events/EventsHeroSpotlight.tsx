@@ -7,9 +7,22 @@ import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 import { isValidTimezone } from '@/utils/timezone';
 
-type Event = Database['public']['Tables']['events']['Row'];
+type SpotlightEvent = Pick<
+  Database['public']['Tables']['events']['Row'],
+  | 'id'
+  | 'slug'
+  | 'title'
+  | 'title_i18n'
+  | 'images'
+  | 'image_url'
+  | 'start_date'
+  | 'timezone'
+  | 'venue_name'
+  | 'city'
+  | 'organizer_name'
+>;
 
-export function EventsHeroSpotlight({ event }: { event: Event }) {
+export function EventsHeroSpotlight({ event }: { event: SpotlightEvent }) {
   const { t, i18n } = useTranslation();
   const title = localizedField(event.title, event.title_i18n as I18nMap, i18n.language);
   const artwork = resolveEntityImage('event', event).url;
