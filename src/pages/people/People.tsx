@@ -352,7 +352,7 @@ export default function People() {
             <HubNav />
             <div className="flex flex-wrap items-center gap-2">
               <Button
-                variant="soft"
+                variant="outline"
                 size="sm"
                 className="gap-2"
                 onClick={() => setIntentOpen(true)}
