@@ -1,79 +1,62 @@
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Calendar, Sparkles } from '@/components/icons';
-import { useEventSpotlight } from '@/hooks/useEventSpotlight';
+import { ArrowRight, Calendar } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { format, differenceInCalendarDays } from 'date-fns';
-import { dateFnsLocaleFor } from '@/i18n/dateFnsLocale';
+import { Image } from '@/components/ui/Image';
+import type { Database } from '@/integrations/supabase/types';
+import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { isValidTimezone } from '@/utils/timezone';
 
-export function EventsHeroSpotlight() {
+type Event = Database['public']['Tables']['events']['Row'];
+
+export function EventsHeroSpotlight({ event }: { event: Event }) {
   const { t, i18n } = useTranslation();
-  const dfLocale = dateFnsLocaleFor(i18n.language);
-  const { spotlight } = useEventSpotlight();
-
-  if (!spotlight) return null;
-
-  const { event, clusterCount } = spotlight;
-  const start = new Date(event.start_date);
-  const end = event.end_date ? new Date(event.end_date) : null;
-  const daysUntil = differenceInCalendarDays(start, new Date());
-  const dateLabel =
-    end && start.toDateString() !== end.toDateString()
-      ? `${format(start, 'MMM d', { locale: dfLocale })} – ${format(end, 'MMM d', { locale: dfLocale })}`
-      : format(start, 'MMM d, yyyy', { locale: dfLocale });
-
-  const countdown =
-    daysUntil <= 0
-      ? t('pages.events.spotlight.happeningNow', 'Happening now')
-      : daysUntil === 1
-        ? t('pages.events.spotlight.tomorrow', 'Starts tomorrow')
-        : t('pages.events.spotlight.inDays', {
-            count: daysUntil,
-            defaultValue: `Starts in ${daysUntil} days`,
-          });
+  const title = localizedField(event.title, event.title_i18n as I18nMap, i18n.language);
+  const artwork = resolveEntityImage('event', event).url;
+  const timeZone = event.timezone && isValidTimezone(event.timezone) ? event.timezone : undefined;
+  const date = new Intl.DateTimeFormat(i18n.language, {
+    timeZone,
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  }).format(new Date(event.start_date));
+  const place = [event.venue_name, event.city].filter(Boolean).join(' · ');
 
   return (
     <LocalizedLink
-      to={`/events/${event.slug}`}
-      className="group block rounded-container bg-card px-6 py-4 sm:px-6 sm:py-6 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 focus-visible:ring-offset-2 no-underline"
-      style={{ color: 'inherit' }}
+      to={`/events/${event.slug || event.id}`}
+      className="group flex min-w-0 items-stretch overflow-hidden rounded-container bg-card no-underline outline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
     >
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1.5">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>{t('pages.events.spotlight.eyebrow', 'Spotlight')}</span>
-            <span aria-hidden>·</span>
-            <span>{countdown}</span>
-          </div>
-          <h2 className="text-lg sm:text-xl font-semibold tracking-tight truncate">
-            {event.title}
-          </h2>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1 flex-wrap">
-            <span className="inline-flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5" />
-              {dateLabel}
-            </span>
-            {event.city && (
-              <>
-                <span aria-hidden>·</span>
-                <span>{event.city}</span>
-              </>
-            )}
-            {clusterCount > 1 && event.city && (
-              <>
-                <span aria-hidden>·</span>
-                <span>
-                  {t('pages.events.spotlight.nearbyCount', {
-                    count: clusterCount,
-                    city: event.city,
-                    defaultValue: `${clusterCount} events in ${event.city}`,
-                  })}
-                </span>
-              </>
-            )}
-          </div>
+      {artwork && (
+        <div className="w-1/4 max-w-48 shrink-0 bg-muted [&>div]:h-full">
+          <Image
+            src={artwork}
+            alt=""
+            aspect="auto"
+            rounded="none"
+            imageRole="thumb"
+            priority
+            sizes="(min-width: 1024px) 192px, 22vw"
+          />
         </div>
-        <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+      )}
+      <div className="flex min-w-0 flex-1 items-center gap-2 px-4 py-4 md:gap-4 md:px-6 md:py-6">
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <Calendar size={16} aria-hidden="true" className="shrink-0" />
+            <time dateTime={event.start_date}>{date}</time>
+          </p>
+          <h2 className="mt-2 text-balance break-words font-display text-title leading-tight group-hover:underline sm:text-headline rtl:font-sans rtl:font-bold">
+            {title}
+          </h2>
+          {place && <p className="mt-2 break-words text-sm text-muted-foreground">{place}</p>}
+          {event.organizer_name && event.organizer_name !== event.venue_name && (
+            <p className="mt-1 break-words text-13 text-muted-foreground">
+              {t('events.organizer', 'Organizer')} · {event.organizer_name}
+            </p>
+          )}
+        </div>
+        <ArrowRight size={20} aria-hidden="true" className="shrink-0 rtl:rotate-180" />
       </div>
     </LocalizedLink>
   );

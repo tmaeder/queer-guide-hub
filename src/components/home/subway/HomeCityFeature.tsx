@@ -4,6 +4,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { Image } from '@/components/ui/Image';
 import { ImageCredit } from '@/components/ui/ImageCredit';
+import { DISCOVERY_EVENT_WINDOW_MS, selectDiscoveryEvent } from '@/lib/discoveryEvent';
 import { useEventsQuery } from '@/hooks/useEvents';
 import { useOptimizedCity } from '@/hooks/usePlaces';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
@@ -13,8 +14,6 @@ import { CityNetwork } from './CityNetwork';
 const CITY_SLUG = 'zuerich';
 const CITY_HREF = `/city/${CITY_SLUG}`;
 const CITY_TIMEZONE = 'Europe/Zurich';
-const EVENT_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
-const UNAVAILABLE_EVENTS = new Set(['dead', 'cancelled', 'dead_link']);
 
 export function HomeCityFeature() {
   const { t, i18n } = useTranslation();
@@ -25,7 +24,7 @@ export function HomeCityFeature() {
   const [now] = useState(Date.now);
   // A day-stable window keeps the query cached and distant featured events out.
   const start = new Date(now).setUTCHours(0, 0, 0, 0);
-  const end = start + EVENT_WINDOW_MS;
+  const end = start + DISCOVERY_EVENT_WINDOW_MS;
   const { events } = useEventsQuery(
     city?.id
       ? {
@@ -35,15 +34,10 @@ export function HomeCityFeature() {
         }
       : null,
   );
-  const event = events
-    .filter(
-      (item) =>
-        item.city_id === city?.id &&
-        Date.parse(item.start_date) >= now &&
-        !UNAVAILABLE_EVENTS.has(item.liveness_status) &&
-        item.age_restriction !== '18+',
-    )
-    .sort((a, b) => Date.parse(a.start_date) - Date.parse(b.start_date))[0];
+  const event = selectDiscoveryEvent(
+    events.filter((item) => item.city_id === city?.id),
+    now,
+  );
   const date = event
     ? new Intl.DateTimeFormat(i18n.language, {
         timeZone: CITY_TIMEZONE,

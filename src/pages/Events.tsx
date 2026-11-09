@@ -15,7 +15,8 @@ import { EventsTimelineView } from '@/components/events/EventsTimelineView';
 const EventsMapView = lazy(() =>
   import('@/components/events/EventsMapView').then((m) => ({ default: m.EventsMapView })),
 );
-import { PageHero } from '@/components/discovery';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { selectDiscoveryEvent } from '@/lib/discoveryEvent';
 import { LoadMore } from '@/components/transit/LoadMore';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
@@ -86,6 +87,20 @@ const Events = () => {
   const { data: windowCounts } = useEventWindowCounts(f.cities.length === 1 ? f.cities[0] : null);
 
   const [_selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [openedAt] = useState(Date.now);
+  const spotlight =
+    f.isDefaultBrowse && !loading && !error ? selectDiscoveryEvent(events, openedAt) : undefined;
+  const coverage = typeof windowCounts?.upcoming === 'number' && (
+    <CoverageNote>
+      {windowCounts.upcoming === 0
+        ? 'We have no upcoming events listed. That means we have no record — not that nothing is happening.'
+        : `${windowCounts.upcoming.toLocaleString()} upcoming events listed${
+            typeof windowCounts['next-7-days'] === 'number'
+              ? `, ${windowCounts['next-7-days']} of them in the next 7 days`
+              : ''
+          }. Listings come from organisers and submissions, so a quiet week here is a gap in our coverage rather than a quiet scene.`}
+    </CoverageNote>
+  );
 
   const handleAttendanceUpdate = async (
     eventId: string,
@@ -123,12 +138,16 @@ const Events = () => {
 
   return (
     <div className="min-h-screen">
-      <PageHero
-        title={t('pages.events.title', 'Events.')}
-        lede={t('pages.events.subtitle', 'Community events in your area')}
-        primaryCta={{ label: t('pages.events.submitEvent', 'Add an event'), href: '/submit' }}
-        size="md"
-      />
+      <PageContainer
+        as="header"
+        flush
+        className="grid items-center gap-4 py-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-8 md:py-8"
+      >
+        <h1 className="min-w-0 break-words font-display text-display leading-none md:text-hero rtl:font-sans rtl:font-bold">
+          {t('pages.events.title', 'Events.')}
+        </h1>
+        {spotlight && <EventsHeroSpotlight event={spotlight} />}
+      </PageContainer>
       {/* ---- Control band ---------------------------------------------------
        *
        *  ONE band, full-bleed and sticky, holding everything that was previously
@@ -231,30 +250,7 @@ const Events = () => {
           </div>
         )}
 
-        <EventTypeLegend />
-
-        {/* Editor-curated spotlight — only when browsing unfiltered */}
-        {!f.hasActiveFilters && (
-          <div className="mb-6">
-            <EventsHeroSpotlight />
-          </div>
-        )}
-
-        {/* Coverage honesty — sits directly above the results, where it does its
-            work: it is the difference between "the scene is dead" and "we have
-            no listings". Kept out of the sticky band on purpose; it is prose,
-            and prose in a sticky bar is paid for on every screen. */}
-        {typeof windowCounts?.upcoming === 'number' ? (
-          <CoverageNote>
-            {windowCounts.upcoming === 0
-              ? 'We have no upcoming events listed. That means we have no record — not that nothing is happening.'
-              : `${windowCounts.upcoming.toLocaleString()} upcoming events listed${
-                  typeof windowCounts['next-7-days'] === 'number'
-                    ? `, ${windowCounts['next-7-days']} of them in the next 7 days`
-                    : ''
-                }. Listings come from organisers and submissions, so a quiet week here is a gap in our coverage rather than a quiet scene.`}
-          </CoverageNote>
-        ) : null}
+        {events.length === 0 && coverage}
 
         {/* Count + sort + view mode. Was a sticky 175px bar; see the note in
             EventsResultHeader for why none of the three earns that. */}
@@ -415,6 +411,17 @@ const Events = () => {
             onLoadMore={loadMore}
           />
         )}
+
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+          <EventTypeLegend />
+          <LocalizedLink
+            to="/submit/event"
+            className="inline-flex min-h-11 items-center rounded-element text-sm font-bold underline underline-offset-4"
+          >
+            {t('pages.events.submitEvent', 'Add an event')}
+          </LocalizedLink>
+        </div>
+        {events.length > 0 && coverage}
 
         {/* Editorial cross-links go AFTER the events, not before them.
          *

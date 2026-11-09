@@ -74,6 +74,7 @@ describe('useEventFilters — URL filters must reach the FIRST fetch', () => {
     expect(filters.dateRange).toBeDefined();
     expect(filters.dateRange!.start).toContain('2026-09-11');
     expect(filters.dateRange!.end).toContain('2026-09-12');
+    expect(result.current.isDefaultBrowse).toBe(false);
   });
 
   it('issues no unfiltered query alongside it', async () => {
@@ -127,5 +128,16 @@ describe('useEventFilters — URL filters must reach the FIRST fetch', () => {
     });
 
     expect(result.current.request.filters).toMatchObject({ cities: ['Berlin'] });
+    expect(result.current.isDefaultBrowse).toBe(true);
+  });
+
+  it('distinguishes a shared city link from automatic local discovery', () => {
+    visitorLocation.value = { city: 'Berlin' };
+    const { result } = renderHook(() => useEventFilters(), {
+      wrapper: wrapperFor('/events?cities=Berlin'),
+    });
+
+    expect(result.current.request.filters).toMatchObject({ cities: ['Berlin'] });
+    expect(result.current.isDefaultBrowse).toBe(false);
   });
 });
