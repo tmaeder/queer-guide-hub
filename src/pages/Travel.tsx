@@ -18,7 +18,7 @@ import { GoNowRail } from '@/components/travel/GoNowRail';
 import { DestinationGrid } from '@/components/travel/DestinationGrid';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
-import { TripTemplates } from '@/components/trips/TripTemplates';
+import { PersonalisedTripPackages } from '@/components/travel/PersonalisedTripPackages';
 import { useAuth } from '@/hooks/useAuth';
 import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 import { AMBIENT_TRIP_CONTEXT_ENABLED } from '@/lib/trips/ambientTripFlags';
@@ -35,15 +35,15 @@ import {
 import type { SectionDef } from '@/components/entity/editorial';
 
 /**
- * `/travel` — the Travelling intent, planner-first.
+ * `/travel` — the Travelling intent, inspiration-first.
  *
  * Rebuilt at its existing path rather than given a new one: `/travel` already
  * has STATIC_ROUTE_META and STATIC_ROUTE_BODY entries and existing rankings, so
  * keeping the URL means this redesign cannibalises nothing.
  *
- * The page opens on the trip planner — plan, then book, with the legal picture
- * as a compact briefing near the end instead of the lead. The planner is the
- * most built-out system on the site and this page is its front door; safety
+ * The page opens on personalised, evidence-backed packages and then exposes
+ * the full planner — inspiration first, without hiding the useful machinery.
+ * Safety
  * data (250/250 countries covered) stays on-page as "Know before you go" and
  * in full depth inside each trip's safety briefing.
  */
@@ -82,7 +82,7 @@ export default function Travel() {
   useEffect(() => {
     // No entityType: 'intent' is not a member of EntityType, and inventing one
     // would feed a synthetic type into the personalization bias vector.
-    track({ eventType: 'page_view', metadata: { intent: 'travelling', layout: 'planner-first' } });
+    track({ eventType: 'page_view', metadata: { intent: 'travelling', layout: 'packages-first' } });
   }, [track]);
 
   // Booking deep links scroll to the book section. EditorialDetailLayout's own
@@ -99,7 +99,7 @@ export default function Travel() {
   useMeta({
     title: 'Plan LGBTQ+ Trips — Queer Travel Planner | Queer Guide',
     description:
-      'Build a queer trip in one place: pick a destination on the map, plan the days, and book flights, stays and activities — with the legal picture built in.',
+      'Discover personalised queer trip packages with real events, venues, stays and transport, then shape every day of the itinerary.',
     canonicalPath: '/travel',
   });
 
@@ -112,12 +112,12 @@ export default function Travel() {
   const sections: SectionDef[] = [
     {
       id: 'plan',
-      label: t('pages.travel.sections.plan', 'Plan your trip'),
-      kicker: t('pages.travel.sections.planKicker', 'The planner'),
+      label: t('pages.travel.packages.section', 'Find your escape'),
+      kicker: t('pages.travel.packages.sectionKicker', 'Made for you'),
       content: (
         <div>
-          {user ? <TripCockpit /> : <StartTripHero />}
-          <TripTemplates />
+          <PersonalisedTripPackages />
+          <div className="mt-12">{user ? <TripCockpit /> : <StartTripHero />}</div>
           <div className="mt-12">
             <DiscoverableTripsRail />
           </div>
@@ -227,7 +227,7 @@ export default function Travel() {
           ? t('pages.travel.activeTitle', 'Planning {{city}}', {
               city: activeTrip.primary_city_name,
             })
-          : t('pages.travel.title', 'Where are you going?')
+          : t('pages.travel.packages.title', 'Trips made for you')
       }
       lede={
         activeTrip?.primary_city_name
@@ -237,10 +237,11 @@ export default function Travel() {
               { city: activeTrip.primary_city_name },
             )
           : t(
-              'pages.travel.lede',
-              'Pick a place, build the trip, book the pieces — with the legal picture built in.',
+              'pages.travel.packages.lede',
+              'Choose a mood and start with a complete idea: a real event, queer places, a stay and every way to get there.',
             )
       }
+      heroSize="xs"
       sections={sections}
     />
   );

@@ -1,10 +1,10 @@
 /**
  * @vitest-environment jsdom
  *
- * /travel is the Travelling intent, planner-first.
+ * /travel is the Travelling intent, packages-first.
  *
- * The page opens on the trip planner (the most built-out system on the site,
- * and this page is its front door), keeps villages/pride/booking as discovery
+ * The page opens on personalised trip packages, keeps the full planner just
+ * below them, and retains villages/pride/booking as discovery
  * and transaction sections, and closes with a compact "Know before you go"
  * legal briefing — safety data stays on-page but no longer leads.
  *
@@ -44,8 +44,8 @@ vi.mock('@/components/travel/TripCockpit', () => ({
 vi.mock('@/components/travel/StartTripHero', () => ({
   StartTripHero: () => <div data-testid="start-hero" />,
 }));
-vi.mock('@/components/trips/TripTemplates', () => ({
-  TripTemplates: () => <div data-testid="templates" />,
+vi.mock('@/components/travel/PersonalisedTripPackages', () => ({
+  PersonalisedTripPackages: () => <div data-testid="personalised-packages" />,
 }));
 vi.mock('@/components/travel/DiscoverableTripsRail', () => ({
   DiscoverableTripsRail: () => <div data-testid="discoverable" />,
@@ -129,7 +129,7 @@ describe('Travel page (Travelling intent)', () => {
   it('leads with the planner and closes with the legal briefing', () => {
     renderAt('/travel');
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent ?? '');
-    expect(headings[0]).toMatch(/plan your trip/i);
+    expect(headings[0]).toMatch(/find your escape/i);
     expect(headings[headings.length - 1]).toMatch(/know before you go/i);
   });
 
@@ -148,7 +148,7 @@ describe('Travel page (Travelling intent)', () => {
 
   it('renders templates and public trips for everyone', () => {
     renderAt('/travel');
-    expect(screen.getByTestId('templates')).toBeInTheDocument();
+    expect(screen.getByTestId('personalised-packages')).toBeInTheDocument();
     expect(screen.getByTestId('discoverable')).toBeInTheDocument();
   });
 
@@ -196,7 +196,7 @@ describe('Travel page (Travelling intent)', () => {
     expect(screen.getByText(/criminalised/i)).toBeInTheDocument();
   });
 
-  it('fires a planner-first page_view without inventing an entity type', () => {
+  it('fires a packages-first page_view without inventing an entity type', () => {
     // 'intent' is not a member of EntityType; sending one would pollute the
     // personalization bias vector with a synthetic type.
     renderAt('/travel');
@@ -204,6 +204,6 @@ describe('Travel page (Travelling intent)', () => {
     const payload = trackFn.mock.calls[0][0];
     expect(payload.eventType).toBe('page_view');
     expect(payload.entityType).toBeUndefined();
-    expect(payload.metadata.layout).toBe('planner-first');
+    expect(payload.metadata.layout).toBe('packages-first');
   });
 });

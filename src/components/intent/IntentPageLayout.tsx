@@ -3,6 +3,7 @@ import { EditorialDetailLayout, type SectionDef } from '@/components/entity/edit
 import { PageHero } from '@/components/discovery';
 
 export interface IntentPageLayoutProps {
+  topNav?: ReactNode;
   eyebrow?: ReactNode;
   title: ReactNode;
   lede?: ReactNode;
@@ -16,6 +17,7 @@ export interface IntentPageLayoutProps {
   disableProgress?: boolean;
   breadcrumbLabel: string;
   breadcrumbHref: string;
+  heroSize?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
 /**
@@ -34,6 +36,7 @@ export interface IntentPageLayoutProps {
  * detail page does not.
  */
 export function IntentPageLayout({
+  topNav,
   eyebrow,
   title,
   lede,
@@ -45,6 +48,7 @@ export function IntentPageLayout({
   disableProgress = false,
   breadcrumbLabel,
   breadcrumbHref,
+  heroSize = 'md',
 }: IntentPageLayoutProps) {
   return (
     <EditorialDetailLayout
@@ -55,9 +59,10 @@ export function IntentPageLayout({
       breadcrumbs={[{ label: breadcrumbLabel, href: breadcrumbHref }]}
       header={
         <>
+          {topNav}
           {/* `bare` — EditorialDetailLayout already puts this inside a
               PageContainer, and two nested containers double the gutter. */}
-          <PageHero bare eyebrow={eyebrow} title={title} lede={lede} size="md" />
+          <PageHero bare eyebrow={eyebrow} title={title} lede={lede} size={heroSize} />
           {scopeBar ? <div className="mt-6">{scopeBar}</div> : null}
         </>
       }
