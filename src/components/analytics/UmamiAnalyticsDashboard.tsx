@@ -601,7 +601,7 @@ export const UmamiAnalyticsDashboard = () => {
                       fill="#8884d8"
                       dataKey="count"
                     >
-                      {stats.topCountries.slice(0, 5).map((entry, index) => (
+                      {stats.topCountries.slice(0, 5).map((_entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>

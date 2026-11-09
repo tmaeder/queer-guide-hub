@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 
 type ModerationFlag = Database['public']['Tables']['moderation_flags']['Row'];
-type _ModerationFlagInsert = Database['public']['Tables']['moderation_flags']['Insert'];
 
 export interface CreateFlagParams {
   content_type: string;
@@ -31,20 +30,22 @@ export function useModeration() {
       // Direct insert — RLS policy "Authenticated users can create flags"
       // requires auth.uid() IS NOT NULL. The legacy create-moderation-flag
       // edge function was removed in 83830700.
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('Must be logged in to create a report');
 
       const { data, error } = await supabase
         .from('moderation_flags')
         .insert({
-          content_type:      params.content_type,
-          content_id:        params.content_id,
-          flag_type:         params.flag_type,
-          reason:            params.reason,
+          content_type: params.content_type,
+          content_id: params.content_id,
+          flag_type: params.flag_type,
+          reason: params.reason,
           suggested_changes: params.suggested_changes ?? null,
-          reporter_user_id:  user.id,
-          source:            'user',
-          status:            'OPEN',
+          reporter_user_id: user.id,
+          source: 'user',
+          status: 'OPEN',
         })
         .select()
         .single();
@@ -52,111 +53,116 @@ export function useModeration() {
       if (error) throw error;
       return { success: true, flag: data };
     } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : String(error) || 'Failed to create report' };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchFlags = useCallback(async (
-    filters: ModerationFilters = {},
-    page = 0,
-    pageSize = 20,
-  ) => {
-    setLoading(true);
-    try {
-      let query = supabase
-        .from('moderation_flags')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(page * pageSize, (page + 1) * pageSize - 1);
-
-      if (filters.status) query = query.eq('status', filters.status);
-      if (filters.flag_type) query = query.eq('flag_type', filters.flag_type);
-      if (filters.content_type) query = query.eq('content_type', filters.content_type);
-      if (filters.source) query = query.eq('source', filters.source);
-
-      const { data, error, count } = await query;
-      if (error) throw error;
-
-      setFlags(data || []);
-      setTotalCount(count || 0);
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching moderation flags:', error);
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const updateFlagStatus = useCallback(async (
-    flagId: string,
-    status: 'OPEN' | 'IN_REVIEW' | 'RESOLVED' | 'REJECTED',
-    resolution_note?: string,
-  ) => {
-    setLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const updates: Record<string, unknown> = {
-        status,
-        updated_at: new Date().toISOString(),
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error) || 'Failed to create report',
       };
-      if (status === 'RESOLVED' || status === 'REJECTED') {
-        updates.resolved_by = user?.id || null;
-        updates.resolved_at = new Date().toISOString();
-        if (resolution_note) updates.resolution_note = resolution_note;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchFlags = useCallback(
+    async (filters: ModerationFilters = {}, page = 0, pageSize = 20) => {
+      setLoading(true);
+      try {
+        let query = supabase
+          .from('moderation_flags')
+          .select('*', { count: 'exact' })
+          .order('created_at', { ascending: false })
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (filters.status) query = query.eq('status', filters.status);
+        if (filters.flag_type) query = query.eq('flag_type', filters.flag_type);
+        if (filters.content_type) query = query.eq('content_type', filters.content_type);
+        if (filters.source) query = query.eq('source', filters.source);
+
+        const { data, error, count } = await query;
+        if (error) throw error;
+
+        setFlags(data || []);
+        setTotalCount(count || 0);
+        return data || [];
+      } catch (error) {
+        console.error('Error fetching moderation flags:', error);
+        return [];
+      } finally {
+        setLoading(false);
       }
+    },
+    [],
+  );
 
-      const { data, error } = await supabase
-        .from('moderation_flags')
-        .update(updates)
-        .eq('id', flagId)
-        .select()
-        .single();
+  const updateFlagStatus = useCallback(
+    async (
+      flagId: string,
+      status: 'OPEN' | 'IN_REVIEW' | 'RESOLVED' | 'REJECTED',
+      resolution_note?: string,
+    ) => {
+      setLoading(true);
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        const updates: Record<string, unknown> = {
+          status,
+          updated_at: new Date().toISOString(),
+        };
+        if (status === 'RESOLVED' || status === 'REJECTED') {
+          updates.resolved_by = user?.id || null;
+          updates.resolved_at = new Date().toISOString();
+          if (resolution_note) updates.resolution_note = resolution_note;
+        }
 
-      if (error) throw error;
-      setFlags(prev => prev.map(f => f.id === flagId ? data : f));
-      return { success: true };
-    } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : String(error) };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        const { data, error } = await supabase
+          .from('moderation_flags')
+          .update(updates)
+          .eq('id', flagId)
+          .select()
+          .single();
 
-  const bulkUpdateFlags = useCallback(async (
-    flagIds: string[],
-    status: 'RESOLVED' | 'REJECTED',
-    resolution_note?: string,
-  ) => {
-    setLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const updates: Record<string, unknown> = {
-        status,
-        resolved_by: user?.id || null,
-        resolved_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      if (resolution_note) updates.resolution_note = resolution_note;
+        if (error) throw error;
+        setFlags((prev) => prev.map((f) => (f.id === flagId ? data : f)));
+        return { success: true };
+      } catch (error: unknown) {
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
-      const { error } = await supabase
-        .from('moderation_flags')
-        .update(updates)
-        .in('id', flagIds);
+  const bulkUpdateFlags = useCallback(
+    async (flagIds: string[], status: 'RESOLVED' | 'REJECTED', resolution_note?: string) => {
+      setLoading(true);
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        const updates: Record<string, unknown> = {
+          status,
+          resolved_by: user?.id || null,
+          resolved_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        if (resolution_note) updates.resolution_note = resolution_note;
 
-      if (error) throw error;
-      setFlags(prev => prev.map(f =>
-        flagIds.includes(f.id) ? { ...f, ...updates } as ModerationFlag : f
-      ));
-      return { success: true };
-    } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : String(error) };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        const { error } = await supabase.from('moderation_flags').update(updates).in('id', flagIds);
+
+        if (error) throw error;
+        setFlags((prev) =>
+          prev.map((f) => (flagIds.includes(f.id) ? ({ ...f, ...updates } as ModerationFlag) : f)),
+        );
+        return { success: true };
+      } catch (error: unknown) {
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   return { flags, totalCount, loading, createFlag, fetchFlags, updateFlagStatus, bulkUpdateFlags };
 }

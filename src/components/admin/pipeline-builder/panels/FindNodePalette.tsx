@@ -22,7 +22,7 @@ interface FindNodePaletteProps {
  */
 export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProps) {
   const [open, setOpen] = useState(false);
-  const { _fitView, setCenter, getNode } = useReactFlow();
+  const { setCenter, getNode } = useReactFlow();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

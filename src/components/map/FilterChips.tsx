@@ -1,4 +1,3 @@
-import React from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { X } from '@/components/icons';
 import { useTranslation } from 'react-i18next';

@@ -7,7 +7,6 @@ import type { Database } from '@/integrations/supabase/types';
 import { COMPETED_IN_EMBED, competedInColumn, parseCompetedIn } from '@/lib/competedInFilter';
 
 type PersonalityRow = Database['public']['Tables']['personalities']['Row'];
-type _PersonalityInsert = Database['public']['Tables']['personalities']['Insert'];
 
 export interface Personality {
   id: string;

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useToast } from '@/hooks/use-toast';
@@ -82,7 +81,6 @@ function AddSavedToTripButton({ item }: { item: FavoriteItem }) {
  */
 export function SavedTab() {
   const { user } = useAuth();
-  const { _t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { toast } = useToast();
   const {

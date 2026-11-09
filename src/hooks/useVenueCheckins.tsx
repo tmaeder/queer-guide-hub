@@ -3,17 +3,6 @@ import { mirrorActivity } from '@/hooks/blueskyActivity';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-type _VenueCheckin = {
-  id: string;
-  venue_id: string;
-  user_id: string;
-  checked_in_at: string;
-  latitude: number;
-  longitude: number;
-  distance_meters: number | null;
-  created_at: string;
-};
-
 const MAX_CHECKIN_DISTANCE_METERS = 100; // 100 meters radius
 
 export function useVenueCheckins() {

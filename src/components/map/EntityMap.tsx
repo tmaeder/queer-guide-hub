@@ -5,7 +5,7 @@
  * no viewport-based fetching, no filters panel.
  */
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import * as maplibregl from 'maplibre-gl';
