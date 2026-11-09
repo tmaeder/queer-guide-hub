@@ -96,6 +96,14 @@ beforeEach(() => {
 });
 
 describe('People hub', () => {
+  it('places the preferences action alongside the page title', async () => {
+    renderWithProviders(<People />);
+    await screen.findByTestId('people-connection-map');
+    const title = screen.getByRole('heading', { level: 1 });
+    const action = screen.getByRole('button', { name: /I'm here for/i });
+    expect(title.closest('header')).toContainElement(action);
+  });
+
   it('puts a privacy-safe connection map before the content rails', async () => {
     renderWithProviders(<People />);
     expect(await screen.findByTestId('people-connection-map')).toBeInTheDocument();
