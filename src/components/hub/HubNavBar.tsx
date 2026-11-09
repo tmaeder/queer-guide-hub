@@ -10,12 +10,6 @@ import { HubNav } from '@/components/hub/HubNav';
  * so the two never stack their vertical padding (the doubled-gap trap
  * PeopleMode's own comment records).
  *
- * Before this existed the bar sat at four different offsets depending on which
- * page you were on (`py-8 md:py-12` inside the content container on GroupDetail
- * and PeopleMode, `pt-6 md:pt-8` as a sibling on Community, inside the hero
- * container on /hub/people), so it visibly jumped as you moved between hub
- * tabs. Render this, not `HubNav`, unless the bar genuinely has to live inside
- * an existing container.
  */
 export function HubNavBar() {
   return (

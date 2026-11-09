@@ -1,31 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-// The hub nav must be the SAME control on every /hub route.
-//
-// It was not. `HubNav` took `activeModule`, `showIdentity`, `showUnread` and
-// `unreadCount`, and HubShell was the only caller that passed any of them — so
-// the identity block and the Messages unread badge appeared on Overview, Feed,
-// Messages, Plans and Saved, and silently vanished on the other twelve routes.
-// The bar jumped horizontally as you moved between two hub tabs. Placement
-// drifted the same way: inside the page's own PageContainer on GroupDetail,
-// GroupInviteAccept, PeopleMode and Cruising; as a sibling on Community; inside
-// the hero container on /hub/people. Four vertical offsets for one control.
-// Fixed 2026-10-10 (#4277): HubNav takes nothing but `className`, HubNavBar owns
-// placement. The Meet people landing renders the shared HubNav below its
-// page introduction, inside the existing content container.
-//
-// src/components/hub/__tests__/hubNavConsistency.test.ts guards the same change,
-// but it is a SOURCE SCAN — it proves the bar is rendered and not configured
-// away, not that it reaches a browser looking the same. This spec is the other
-// half, and it runs against whatever `E2E_BASE_URL` points at (prod by default).
-//
-// Anonymous on purpose: it is the role most of the hub's traffic arrives as, and
-// it is what makes this runnable with no credentials. The cost is that the two
-// signed-in affordances — the avatar block and the unread badge — are NOT
-// covered here. `HubIdentityBlock` returns null when signed out, which is why
-// the bar legitimately starts flush left below. Those are covered by
-// HubPage.test.tsx, not by this file.
-
+// Check the shared wayfinding across the public Hub shells, without credentials.
 /** Registry order. Deliberately duplicated from src/config/hubModules.ts: a
  *  guard that imports the thing it guards passes when both move together. */
 const GROUPS = ['HOME', 'COMMUNITY', 'CONNECT', 'PERSONAL'] as const;
@@ -51,9 +26,13 @@ const ROUTES: ReadonlyArray<{ path: string; active: string; shell: string }> = [
   { path: '/hub', active: 'Overview', shell: 'HubShell' },
   { path: '/hub/feed', active: 'Feed', shell: 'HubShell (public)' },
   { path: '/hub/members', active: 'Members', shell: 'Community' },
+  { path: '/hub/friends', active: 'Friends', shell: 'Community' },
   { path: '/hub/groups', active: 'Groups', shell: 'Community' },
   { path: '/hub/people', active: 'People', shell: 'IntentPageLayout' },
+  { path: '/hub/travel', active: 'Travel buddies', shell: 'PeopleMode' },
   { path: '/hub/nearby', active: 'Nearby', shell: 'PeopleMode' },
+  { path: '/hub/messages', active: 'Messages', shell: 'HubShell + AuthGate' },
+  { path: '/hub/plans', active: 'Plans', shell: 'HubShell + AuthGate' },
   { path: '/hub/saved', active: 'Saved', shell: 'HubShell + AuthGate' },
 ];
 
@@ -112,41 +91,30 @@ test.describe('hub nav', () => {
     });
   }
 
-  test('the bar sits at the same left edge on every route', async ({ page }) => {
-    // The horizontal jump was the most visible half of the defect: HubShell
-    // rendered the identity block and the others did not, so the pills started
-    // at a different x depending on which tab you were on.
-    const lefts: Record<string, number> = {};
-    for (const route of ROUTES) {
-      const nav = await openHub(page, route.path);
-      const box = await nav.locator('a').first().boundingBox();
-      expect(box, `${route.path}: first pill has no box`).not.toBeNull();
-      lefts[route.path] = Math.round(box!.x);
-    }
-    const distinct = new Set(Object.values(lefts));
-    expect(distinct.size, `pill left edges differ across routes: ${JSON.stringify(lefts)}`).toBe(1);
-  });
+  for (const width of [1440, 390]) {
+    test(`the Hub rail keeps its position at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      const positions = [];
+      for (const route of ROUTES) {
+        const nav = await openHub(page, route.path);
+        const position = await nav.evaluate((el) => {
+          const breadcrumb = document.querySelector('.route-network-rail');
+          if (!breadcrumb) throw new Error('Missing breadcrumb rail');
+          const { x, top } = el.getBoundingClientRect();
+          return { x, gap: top - breadcrumb.getBoundingClientRect().bottom };
+        });
+        positions.push({ path: route.path, ...position });
+      }
+      // Compare the rail itself because the active link can scroll its contents.
+      const [first] = positions;
+      for (const position of positions) {
+        expect(Math.abs(position.x - first.x), position.path).toBeLessThanOrEqual(2);
+        expect(Math.abs(position.gap - first.gap), position.path).toBeLessThanOrEqual(2);
+      }
+    });
+  }
 
   test('the breadcrumb rail is the same height on every route', async ({ page }) => {
-    // The vertical half, fixed separately. /hub/people publishes its own
-    // breadcrumb trail through IntentPageLayout, so BreadcrumbBar rendered the
-    // real (taller) breadcrumb there; every other hub route derived NOTHING and
-    // fell through to RouteNetworkRail, which is shorter. The nav sat 20px lower
-    // on /hub/people than on its siblings. Giving /hub a SEGMENT_SECTIONS entry
-    // levels them — and incidentally gives sixteen hub routes a reachable
-    // breadcrumb they never had, since RouteNetworkRail is aria-hidden.
-    //
-    // Measures the RAIL, not the nav's absolute y. The first draft asserted the
-    // pills' top offset and was wrong twice over: on prod the supposedly level
-    // routes read 184/184/185/184/186/184, and adding a `document.fonts.ready`
-    // wait made it worse and run-dependent (184/186/187/189/184) — so the
-    // jitter is page-level noise, not font swap, and no tolerance on an
-    // absolute offset is both tight enough to catch the defect and stable.
-    //
-    // The rail's own height is decided solely by which variant BreadcrumbBar
-    // renders, so it is exact. Probed on prod before the fix: six hub routes at
-    // 52px (the aria-hidden RouteNetworkRail) and /hub/people at 72px (the real
-    // breadcrumb) — precisely the 20px the nav was displaced by.
     const rails: Record<string, number | null> = {};
     for (const route of ROUTES) {
       await openHub(page, route.path);
