@@ -9,6 +9,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { UpcomingEvents } from '@/components/intent/UpcomingEvents';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
@@ -328,46 +329,41 @@ export default function People() {
     },
   ];
 
+  const title = cityName
+    ? t('people.titleCity', { defaultValue: 'Meet people in {{city}}', city: cityName })
+    : t('header.intents.meet.label', 'Meet people');
+
   return (
     <>
       <HubNavBar />
       <IntentPageLayout
         sectionNavClassName="border-b-0"
-        compactHero
         breadcrumbLabel={t('header.intents.meet.label', 'Meet people')}
         breadcrumbHref="/hub/people"
-        title={
-          cityName
-            ? t('people.titleCity', {
-                defaultValue: 'Meet people in {{city}}',
-                city: cityName,
-              })
-            : t('header.intents.meet.label', 'Meet people')
-        }
-        lede={t(
-          'people.intro',
-          'Find queer community spaces, groups and events, and meet people who share your interests.',
-        )}
-        scopeBar={
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => setIntentOpen(true)}
-            >
-              <SlidersHorizontal size={14} aria-hidden />
-              {t('people.intent.button', "I'm here for…")}
-            </Button>
-            {showNudge ? (
-              <span className="text-13 text-muted-foreground">
+        title={title}
+        header={
+          <PageHeader
+            title={title}
+            subtitle={t(
+              'people.intro',
+              'Find queer community spaces, groups and events, and meet people who share your interests.',
+            )}
+            actions={
+              <Button variant="outline" onClick={() => setIntentOpen(true)}>
+                <SlidersHorizontal size={16} aria-hidden />
+                {t('people.intent.button', "I'm here for…")}
+              </Button>
+            }
+          >
+            {showNudge && (
+              <p className="text-13 text-muted-foreground sm:text-end">
                 {t(
                   'people.intent.nudge',
                   'Tell us what you’re here for so we can rank people for you.',
                 )}
-              </span>
-            ) : null}
-          </div>
+              </p>
+            )}
+          </PageHeader>
         }
         featured={
           <section aria-labelledby="people-map-heading">
