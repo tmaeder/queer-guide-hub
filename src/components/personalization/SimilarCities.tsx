@@ -16,14 +16,7 @@ interface SimilarCitiesProps {
   limit?: number;
 }
 
-export function SimilarCities({
-  cityId,
-  _cityName,
-  countryId,
-  equalityScore,
-  _latitude,
-  limit = 6,
-}: SimilarCitiesProps) {
+export function SimilarCities({ cityId, countryId, equalityScore, limit = 6 }: SimilarCitiesProps) {
   const { data: cities, isLoading } = useQuery({
     queryKey: ['similar-cities', cityId, countryId, limit],
     queryFn: async () => {

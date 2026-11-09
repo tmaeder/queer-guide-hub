@@ -4,7 +4,6 @@ import { useToast } from '@/hooks/use-toast';
 import type { Database } from '@/integrations/supabase/types';
 
 type AppRole = Database['public']['Enums']['app_role'];
-type _AuditLog = Database['public']['Tables']['user_role_audit_log']['Row'];
 
 export function useSecureRoleManagement() {
   const [loading, setLoading] = useState(false);
@@ -13,11 +12,11 @@ export function useSecureRoleManagement() {
   const assignRole = async (userId: string, role: AppRole) => {
     try {
       setLoading(true);
-      
+
       // Use the new secure function
       const { error } = await supabase.rpc('assign_user_role', {
         user_id: userId,
-        role_name: role
+        role_name: role,
       });
 
       if (error) throw error;
@@ -30,16 +29,16 @@ export function useSecureRoleManagement() {
           p_metadata: {
             target_user_id: userId,
             assigned_role: role,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           },
-          p_severity: 'info'
+          p_severity: 'info',
         });
       } catch (logError) {
         console.error('Failed to log security event:', logError);
       }
 
       toast({
-        title: "Role Assigned",
+        title: 'Role Assigned',
         description: `Successfully assigned ${role} role to user.`,
       });
 
@@ -57,18 +56,18 @@ export function useSecureRoleManagement() {
             target_user_id: userId,
             attempted_role: role,
             error_message: errorMessage,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           },
-          p_severity: 'high'
+          p_severity: 'high',
         });
       } catch (logError) {
         console.error('Failed to log security event:', logError);
       }
 
       toast({
-        title: "Error",
-        description: errorMessage || "Failed to assign role",
-        variant: "destructive"
+        title: 'Error',
+        description: errorMessage || 'Failed to assign role',
+        variant: 'destructive',
       });
       return { success: false, error };
     } finally {
@@ -79,7 +78,7 @@ export function useSecureRoleManagement() {
   const removeRole = async (userId: string, role: AppRole) => {
     try {
       setLoading(true);
-      
+
       // Remove role by deleting from user_roles table
       const { error } = await supabase
         .from('user_roles')
@@ -90,7 +89,7 @@ export function useSecureRoleManagement() {
       if (error) throw error;
 
       toast({
-        title: "Role Removed",
+        title: 'Role Removed',
         description: `Successfully removed ${role} role from user.`,
       });
 
@@ -99,9 +98,9 @@ export function useSecureRoleManagement() {
       console.error('Error removing role:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       toast({
-        title: "Error",
-        description: errorMessage || "Failed to remove role",
-        variant: "destructive"
+        title: 'Error',
+        description: errorMessage || 'Failed to remove role',
+        variant: 'destructive',
       });
       return { success: false, error };
     } finally {
@@ -113,11 +112,13 @@ export function useSecureRoleManagement() {
     try {
       const { data, error } = await supabase
         .from('user_role_audit_log')
-        .select(`
+        .select(
+          `
           *,
           admin_profile:profiles!user_role_audit_log_admin_user_id_fkey(display_name),
           target_profile:profiles!user_role_audit_log_target_user_id_fkey(display_name)
-        `)
+        `,
+        )
         .order('timestamp', { ascending: false })
         .limit(100);
 
@@ -133,6 +134,6 @@ export function useSecureRoleManagement() {
     assignRole,
     removeRole,
     fetchAuditLogs,
-    loading
+    loading,
   };
 }

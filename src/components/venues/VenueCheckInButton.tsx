@@ -38,7 +38,7 @@ export function VenueCheckInButton({
   onCheckInSuccess,
   compact = false,
 }: VenueCheckInButtonProps) {
-  const { checkInAtVenue, loading, _MAX_CHECKIN_DISTANCE_METERS } = useVenueCheckins();
+  const { checkInAtVenue, loading } = useVenueCheckins();
   const { user } = useAuth();
   const [isPublic, setIsPublic] = useState(false);
   const [locationVisibility, setLocationVisibility] = useState<'private' | 'friends' | 'public'>(

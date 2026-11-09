@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { type Root } from 'react-dom/client';
 import * as maplibregl from 'maplibre-gl';

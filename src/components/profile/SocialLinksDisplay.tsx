@@ -1,15 +1,6 @@
-import {
-  Globe,
-  Music,
-  ExternalLink
-} from '@/components/icons';
+import { Globe, Music, ExternalLink } from '@/components/icons';
 import { Twitter, Instagram, Linkedin, Github, Facebook, Youtube } from '@/components/icons/brand';
 import { Button } from '@/components/ui/button';
-
-interface _SocialLink {
-  platform: string;
-  url: string;
-}
 
 interface SocialLinksDisplayProps {
   socialLinks: Record<string, unknown>;
@@ -25,10 +16,14 @@ const PLATFORM_CONFIGS = {
   facebook: { name: 'Facebook', icon: Facebook },
   youtube: { name: 'YouTube', icon: Youtube },
   tiktok: { name: 'TikTok', icon: Music },
-  website: { name: 'Website', icon: Globe }
+  website: { name: 'Website', icon: Globe },
 };
 
-export function SocialLinksDisplay({ socialLinks, showLabels = false, size = 'md' }: SocialLinksDisplayProps) {
+export function SocialLinksDisplay({
+  socialLinks,
+  showLabels = false,
+  size = 'md',
+}: SocialLinksDisplayProps) {
   if (!socialLinks || Object.keys(socialLinks).length === 0) {
     return null;
   }
@@ -36,7 +31,7 @@ export function SocialLinksDisplay({ socialLinks, showLabels = false, size = 'md
   const iconSizeMap = {
     sm: { width: 16, height: 16 },
     md: { width: 20, height: 20 },
-    lg: { width: 24, height: 24 }
+    lg: { width: 24, height: 24 },
   };
 
   const iconStyle = iconSizeMap[size];
@@ -54,11 +49,7 @@ export function SocialLinksDisplay({ socialLinks, showLabels = false, size = 'md
     if (config) {
       const Icon = config.icon;
       return (
-        <Button
-          variant="outline"
-          size={size === 'sm' ? 'sm' : 'default'}
-          asChild
-        >
+        <Button variant="outline" size={size === 'sm' ? 'sm' : 'default'} asChild>
           <a
             href={formatUrl(url)}
             target="_blank"
@@ -79,11 +70,7 @@ export function SocialLinksDisplay({ socialLinks, showLabels = false, size = 'md
 
     // Custom platform
     return (
-      <Button
-        variant="outline"
-        size={size === 'sm' ? 'sm' : 'default'}
-        asChild
-      >
+      <Button variant="outline" size={size === 'sm' ? 'sm' : 'default'} asChild>
         <a
           href={formatUrl(url)}
           target="_blank"
@@ -107,11 +94,7 @@ export function SocialLinksDisplay({ socialLinks, showLabels = false, size = 'md
       {Object.entries(socialLinks).map(([platform, url]) => {
         if (!url || typeof url !== 'string') return null;
 
-        return (
-          <div key={platform}>
-            {getSocialIcon(platform, url)}
-          </div>
-        );
+        return <div key={platform}>{getSocialIcon(platform, url)}</div>;
       })}
     </div>
   );

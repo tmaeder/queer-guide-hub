@@ -15,7 +15,6 @@ import {
 } from '@/components/icons';
 import { formatEventDateTime } from '@/lib/event-time';
 import { GroupEvent } from '@/hooks/useGroupEvents';
-import { useAuth } from '@/hooks/useAuth';
 
 interface GroupEventCardProps {
   event: GroupEvent;
@@ -38,8 +37,6 @@ export function GroupEventCard({
   isDeleting,
   canManage,
 }: GroupEventCardProps) {
-  const { _user } = useAuth();
-
   const formatEventDate = (startDate: string, endDate?: string) => {
     return formatEventDateTime(startDate, endDate);
   };

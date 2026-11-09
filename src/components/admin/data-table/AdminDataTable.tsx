@@ -62,7 +62,6 @@ export function AdminDataTable<TData extends { id: string }>({
     onRowClick,
     rowClassName,
     onBulkEditSuccess,
-    _onBulkDeleteSuccess,
     allowBulkDelete = true,
   } = config;
 
