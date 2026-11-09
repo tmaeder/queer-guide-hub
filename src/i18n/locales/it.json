@@ -1922,6 +1922,12 @@
     "error": "Impossibile inviare l'allarme. Riprova."
   },
   "home": {
+    "cityFeature": {
+      "exploreCity": "Esplora Zurigo",
+      "browseEvents": "Scopri gli eventi a Zurigo",
+      "whatsOn": "Cosa c’è in programma",
+      "communitySpace": "Spazio comunitario"
+    },
     "discovery": {
       "openMap": "Apri la mappa",
       "search": "Cerca luoghi ed eventi…",

@@ -1922,6 +1922,12 @@
     "error": "アラートの送信に失敗しました。もう一度お試しください。"
   },
   "home": {
+    "cityFeature": {
+      "exploreCity": "チューリッヒを探索",
+      "browseEvents": "チューリッヒのイベントを見る",
+      "whatsOn": "イベント情報",
+      "communitySpace": "コミュニティスペース"
+    },
     "discovery": {
       "openMap": "地図を開く",
       "search": "スポットやイベントを検索…",

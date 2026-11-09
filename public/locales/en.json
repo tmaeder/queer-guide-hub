@@ -2118,6 +2118,12 @@
     "error": "Failed to send alert. Please try again."
   },
   "home": {
+    "cityFeature": {
+      "exploreCity": "Explore Zürich",
+      "browseEvents": "Browse Zürich events",
+      "whatsOn": "What’s on",
+      "communitySpace": "Community space"
+    },
     "discovery": {
       "openMap": "Open the map",
       "search": "Search places and events…",

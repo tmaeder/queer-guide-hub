@@ -1922,6 +1922,12 @@
     "error": "No se pudo enviar la alerta. Inténtalo de nuevo."
   },
   "home": {
+    "cityFeature": {
+      "exploreCity": "Explora Zúrich",
+      "browseEvents": "Ver eventos en Zúrich",
+      "whatsOn": "Qué hay",
+      "communitySpace": "Espacio comunitario"
+    },
     "discovery": {
       "openMap": "Abrir el mapa",
       "search": "Buscar lugares y eventos…",

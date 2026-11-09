@@ -1922,6 +1922,12 @@
     "error": "发送求助失败，请重试。"
   },
   "home": {
+    "cityFeature": {
+      "exploreCity": "探索苏黎世",
+      "browseEvents": "浏览苏黎世活动",
+      "whatsOn": "活动预告",
+      "communitySpace": "社区空间"
+    },
     "discovery": {
       "openMap": "打开地图",
       "search": "搜索场所和活动…",

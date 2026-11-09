@@ -1922,6 +1922,12 @@
     "error": "Falha ao enviar alerta. Tente novamente."
   },
   "home": {
+    "cityFeature": {
+      "exploreCity": "Explore Zurique",
+      "browseEvents": "Ver eventos em Zurique",
+      "whatsOn": "O que acontece",
+      "communitySpace": "Espaço comunitário"
+    },
     "discovery": {
       "openMap": "Abrir o mapa",
       "search": "Pesquisar lugares e eventos…",

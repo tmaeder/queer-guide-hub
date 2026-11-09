@@ -1922,6 +1922,12 @@
     "error": "알림을 보내지 못했어요. 다시 시도해 주세요."
   },
   "home": {
+    "cityFeature": {
+      "exploreCity": "취리히 둘러보기",
+      "browseEvents": "취리히 이벤트 보기",
+      "whatsOn": "이벤트 소식",
+      "communitySpace": "커뮤니티 공간"
+    },
     "discovery": {
       "openMap": "지도 열기",
       "search": "장소와 이벤트 검색…",
