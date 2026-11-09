@@ -2,34 +2,24 @@ import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useParams, useSearchParams } from 'react-router';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import {
-  MapPin,
   Shield,
   Wallet,
   Ticket,
   CheckSquare,
   MessageCircle,
   Share2,
-  ArrowLeft,
   Plus,
   Sparkles,
   MessagesSquare,
   FileText,
   Download,
   Check,
-  MoreHorizontal,
   Lightbulb,
   NotebookPen,
   CalendarRange,
 } from '@/components/icons';
-import { format, differenceInCalendarDays, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useTrip, canEditTrip, type TripWithDetails } from '@/hooks/useTrips';
 import { useAuth } from '@/hooks/useAuth';
@@ -48,8 +38,7 @@ import { ImportPlacesDialog } from '@/components/trips/ImportPlacesDialog';
 import { ShareTripDialog } from '@/components/trips/ShareTripDialog';
 import { TripBookingAssistant } from '@/components/trips/TripBookingAssistant';
 import { TripSuggestions } from '@/components/trips/TripSuggestions';
-import { TripCoverBand } from '@/components/trips/TripCoverBand';
-import { TripProgressRing } from '@/components/trips/TripProgressRing';
+import { TripAtAGlance } from '@/components/trips/TripAtAGlance';
 import { TripDocExpiryBanner } from '@/components/trips/TripDocExpiryBanner';
 import { TripPreTripBlock } from '@/components/trips/TripPreTripBlock';
 import { MemoryRecapCard } from '@/components/trips/MemoryRecapCard';
@@ -69,7 +58,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { classifyTripError } from '@/utils/tripError';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
@@ -177,6 +165,9 @@ export default function TripPlannerPage() {
 
   const safetyAlert = useMemo(() => (trip ? hasSafetyWarnings(trip) : false), [trip]);
   const phase = trip ? getTripPhase(trip) : 'plan';
+  const hasMappedPlaces = trip?.trip_places.some(
+    (place) => place.latitude != null && place.longitude != null,
+  );
   const section: TripWorkspaceSection | 'all' = AMBIENT_TRIP_WORKSPACE_ENABLED
     ? getTripWorkspaceSection(searchParams, phase)
     : 'all';
@@ -217,84 +208,40 @@ export default function TripPlannerPage() {
     );
   }
 
-  const dateRange =
-    trip.start_date && trip.end_date
-      ? `${format(parseISO(trip.start_date), 'MMM d')} – ${format(
-          parseISO(trip.end_date),
-          'MMM d, yyyy',
-        )} · ${t('trips.planner.days', {
-          count: differenceInCalendarDays(parseISO(trip.end_date), parseISO(trip.start_date)) + 1,
-        })}`
-      : trip.start_date
-        ? t('trips.card.fromDate', {
-            date: format(parseISO(trip.start_date), 'MMM d, yyyy'),
-          })
-        : null;
-
-  const statusLabel = t(`trips.status.${trip.status}`);
-  const overlayBtnStyle: React.CSSProperties = {
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    borderColor: 'rgba(255,255,255,0.3)',
-    color: 'hsl(var(--background))',
-  };
-
   return (
     <PageContainer>
-      {/* Back to trips */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate('/trips')}
-        className="mb-4 pl-2 pr-4"
-      >
-        <ArrowLeft size={16} className="mr-1.5" />
-        {t('trips.backToTrips')}
-      </Button>
+      <TripAtAGlance trip={trip} reservations={reservations ?? []} />
 
-      {/* Cover band */}
-      <TripCoverBand
-        trip={trip}
-        dateRange={dateRange}
-        statusLabel={statusLabel}
-        actions={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" style={overlayBtnStyle} className="min-h-11">
-                <MoreHorizontal size={16} className="mr-1.5" />
-                {t('trips.workspace.actions', 'Trip actions')}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                disabled={!reservations || savingOffline}
-                onSelect={() => void handleSaveOffline()}
-              >
-                {offlineSaved ? <Check size={16} /> : <Download size={16} />}
-                {t('trips.planner.saveOfflineAria', 'Save trip for offline use')}
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <LocalizedLink to={`/trips/${tripId}?view=booklet`}>
-                  <FileText size={16} /> {t('trips.booklet.print', 'Print / Save as PDF')}
-                </LocalizedLink>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        }
+      <div
+        className="mb-6 flex flex-wrap items-center justify-end gap-2"
+        aria-label={t('trips.workspace.tripActions', 'Trip actions')}
       >
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div
-                className="rounded-full p-1.5"
-                style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}
-              >
-                <TripProgressRing trip={trip} size={68} />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>{t('trips.planner.progressTooltip')}</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </TripCoverBand>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={!reservations || savingOffline}
+          onClick={() => void handleSaveOffline()}
+        >
+          {offlineSaved ? (
+            <Check size={16} className="mr-1.5" />
+          ) : (
+            <Download size={16} className="mr-1.5" />
+          )}
+          {offlineSaved
+            ? t('trips.planner.offlineSaved', 'Saved')
+            : t('trips.planner.saveOffline', 'Offline')}
+        </Button>
+        <Button variant="ghost" size="sm" asChild>
+          <LocalizedLink to={`/trips/${tripId}?view=booklet`}>
+            <FileText size={16} className="mr-1.5" />
+            {t('trips.planner.booklet', 'Booklet')}
+          </LocalizedLink>
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => setShareOpen(true)}>
+          <Share2 size={16} className="mr-1.5" />
+          {t('trips.share.title')}
+        </Button>
+      </div>
 
       {pendingOffline > 0 && (
         <div
@@ -337,7 +284,10 @@ export default function TripPlannerPage() {
 
       {section === 'plan' || section === 'all' ? (
         <>
-          <div className="flex flex-wrap items-center justify-between mb-6 gap-4 mt-2">
+          <div
+            id="trip-itinerary"
+            className="scroll-mt-40 flex flex-wrap items-center justify-between mb-6 gap-4 mt-2"
+          >
             <span className="inline-flex items-center gap-2 rounded-full bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
               {t('trips.planner.placesCount', { count: trip.trip_places.length })}
@@ -376,8 +326,14 @@ export default function TripPlannerPage() {
           </div>
 
           {/* === TIMELINE SPINE === */}
-          <div className="flex gap-6">
-            <div className="flex-1 min-w-0">
+          <div
+            className={
+              hasMappedPlaces
+                ? 'grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.72fr)]'
+                : undefined
+            }
+          >
+            <div className="min-w-0">
               <DraggableItinerary
                 trip={trip}
                 onAddPlace={(dayId) => {
@@ -387,6 +343,18 @@ export default function TripPlannerPage() {
                 readOnly={!canEdit}
               />
             </div>
+            {hasMappedPlaces ? (
+              <aside className="min-w-0" aria-label={t('trips.map.tripMap', 'Trip map')}>
+                <div className="sticky top-[calc(var(--header-pinned-bottom)+7rem)] h-[32rem] overflow-hidden rounded-container bg-surface-container">
+                  <TripMap
+                    places={trip.trip_places}
+                    days={trip.trip_days}
+                    startDate={trip.start_date ?? undefined}
+                    endDate={trip.end_date ?? undefined}
+                  />
+                </div>
+              </aside>
+            ) : null}
           </div>
 
           <div className="mt-4 flex flex-wrap gap-x-4">
@@ -558,23 +526,6 @@ function TripWorkspaceTools({
                   startDate={trip.start_date ?? undefined}
                   endDate={trip.end_date ?? undefined}
                 />
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="map" id="trip-tool-map" className="scroll-mt-40">
-              <AccordionTrigger>
-                <span className="inline-flex items-center gap-2">
-                  <MapPin size={16} /> {t('trips.tabs.map')}
-                </span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="h-[400px] md:h-[560px]">
-                  <TripMap
-                    places={trip.trip_places}
-                    days={trip.trip_days}
-                    startDate={trip.start_date ?? undefined}
-                    endDate={trip.end_date ?? undefined}
-                  />
-                </div>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="ai" id="trip-tool-ai" className="scroll-mt-40">
