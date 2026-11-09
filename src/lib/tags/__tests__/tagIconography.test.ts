@@ -233,6 +233,11 @@ describe('tagIconography', () => {
     ['human-rights', 'legal-rights', 'scales'],
     ['freedom-of-speech', 'legal-rights', 'megaphone'],
     ['women-s-suffrage', 'legal-rights', 'ballot-box'],
+    ['right-to-vote', 'legal-rights', 'ballot-box'],
+    ['freedom-of-assembly', 'legal-rights', 'community'],
+    ['freedom-of-association', 'legal-rights', 'link'],
+    ['right-to-water', 'legal-rights', 'drop'],
+    ['legal-gender-recognition', 'legal-rights', 'identity'],
     ['berlin', 'travel-destinations', 'building'],
     ['australia', 'travel-destinations', 'globe'],
     ['size-xl', 'expression-presentation', 'measuring-tape'],
@@ -254,6 +259,12 @@ describe('tagIconography', () => {
       }
     }
     expect(seen.size).toBeGreaterThan(1_500);
+  });
+
+  it('retains the document outline for treaties and official records', () => {
+    for (const slug of ['convention-on-the-rights-of-the-child', 'birth-certificates']) {
+      expect(resolveTagGlyph({ slug, stopSlug: 'legal-rights' })).toBe('documents');
+    }
   });
 
   it('retains the theater mask for theater itself', () => {
