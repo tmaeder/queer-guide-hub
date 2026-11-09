@@ -2,7 +2,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { HubNav } from '@/components/hub/HubNav';
 
 /**
- * The hub's wayfinding bar, placed identically on every `/hub/*` route.
+ * The desktop Hub bar. On phones, the bottom dock supplies Hub navigation.
  *
  * It owns the container and the top offset so no page has to, and it is always
  * a SIBLING above the page's own content container — never nested inside one.
@@ -13,7 +13,7 @@ import { HubNav } from '@/components/hub/HubNav';
  */
 export function HubNavBar() {
   return (
-    <PageContainer className="pb-0 pt-6 md:pt-8">
+    <PageContainer className="hidden pb-0 pt-8 md:block">
       <HubNav />
     </PageContainer>
   );

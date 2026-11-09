@@ -13,6 +13,8 @@ import {
   Bookmark,
   type LucideIcon,
 } from '@/components/icons';
+import { stripLocale } from '@/lib/locale';
+import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
 
 /**
  * Registry for the unified /hub community, connection, and personal modules.
@@ -153,6 +155,15 @@ export const HUB_MODULES: HubModule[] = [
     section: 'personal',
   },
 ];
+
+export function getActiveHubModule(pathname: string) {
+  const path = trimTrailingSlashes(stripLocale(pathname));
+  return HUB_MODULES.find((module) =>
+    module.id === 'overview'
+      ? path === module.path
+      : path === module.path || path.startsWith(`${module.path}/`),
+  );
+}
 
 export const HUB_SECTIONS: Array<{
   id: HubSectionId;
