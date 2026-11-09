@@ -123,7 +123,7 @@ test.describe('hub nav', () => {
         }),
       );
     });
-    await page.goto('/hub/people', { waitUntil: 'domcontentloaded' });
+    await page.goto('/going-out', { waitUntil: 'domcontentloaded' });
     const main = page.getByRole('main');
     const trigger = page.getByRole('navigation', { name: 'Navigation' }).getByRole('link', {
       name: 'Hub',
@@ -133,10 +133,17 @@ test.describe('hub nav', () => {
     const hubNav = sheet.getByRole('navigation', { name: 'Hub modules' });
 
     await expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
+    await trigger.click();
+    await expect(page).toHaveURL(/\/going-out$/);
+    await expect(hubNav.getByRole('link')).toHaveText([...PILLS]);
+    await expect(hubNav.locator('[aria-current]')).toHaveCount(0);
+    expect(await sheet.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    await hubNav.getByRole('link', { name: 'People' }).click();
+    await expect(page).toHaveURL(/\/hub\/people$/);
+    await expect(sheet).toBeHidden();
+
     await expect(main.getByRole('navigation', { name: 'Hub modules' })).toHaveCount(0);
     await trigger.press('Enter');
-    await expect(hubNav.getByRole('link')).toHaveText([...PILLS]);
-    expect(await sheet.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
     await expect(hubNav.getByRole('link', { name: 'People' })).toHaveAttribute(
       'aria-current',
       'page',

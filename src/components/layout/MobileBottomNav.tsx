@@ -42,7 +42,7 @@ function isTabActive(tab: BottomNavTab, path: string): boolean {
  * "what are you here for?" chooser — on tap; long-press does the same and is
  * now only a shortcut, not the sole route. Its href stays `/search` so
  * middle-click and no-JS still reach discovery. Hub opens its section sheet
- * from within the Hub and carries the unread badge. You shows the signed-in avatar. Auth-only destinations gate on tap. The
+ * from the dock and carries the unread badge. You shows the signed-in avatar. Auth-only destinations gate on tap. The
  * dock never scrolls away (spec panel 12), honours safe-area-inset-bottom,
  * hides on md+ and on the full-bleed /map.
  */
@@ -73,7 +73,7 @@ export function MobileBottomNav() {
 
   const path = stripLocale(pathname);
   const inHub = path === '/hub' || path.startsWith('/hub/');
-  const hubSheetOpen = isMobile && inHub && hubOpenPath === pathname;
+  const hubSheetOpen = isMobile && hubOpenPath === pathname;
   const openHub = (trigger: HTMLAnchorElement) => {
     hubTrigger.current = trigger;
     setHubOpenPath(pathname);
@@ -147,7 +147,7 @@ export function MobileBottomNav() {
         <ul className="island island-dock island-ink flex items-center gap-0.5 bg-foreground px-1.5 text-background">
           {BOTTOM_NAV_TABS.map((tab) => {
             const isExplore = tab.id === 'explore';
-            const opensHub = tab.id === 'hub' && inHub;
+            const isHub = tab.id === 'hub';
             const anonGated = tab.authGated && !user;
             const showUnread = tab.badge === 'unread' && !!user;
             // The "You" tab points at the own public profile, which needs the
@@ -159,7 +159,7 @@ export function MobileBottomNav() {
                 to={to}
                 icon={tab.icon}
                 label={t(tab.labelKey, FALLBACK_LABEL[tab.id])}
-                active={inHub ? opensHub : isTabActive(tab, path)}
+                active={inHub ? isHub : isTabActive(tab, path)}
                 reduced={reduced}
                 onTap={tapHaptic}
                 // Explore opens the intent sheet on TAP. Previously the sheet
@@ -172,15 +172,15 @@ export function MobileBottomNav() {
                   isExplore
                     ? // onTap already fired the haptic — openExplore would double it.
                       () => setSheetOpen(true)
-                    : opensHub
+                    : isHub
                       ? openHub
                       : anonGated
                         ? () => navigate('/auth', { state: { from: tab.to } })
                         : undefined
                 }
-                hasPopup={isExplore || opensHub}
+                hasPopup={isExplore || isHub}
                 expanded={isExplore ? sheetOpen : hubSheetOpen}
-                labelAccessory={opensHub && <ChevronUp className="h-3 w-3 shrink-0" aria-hidden />}
+                labelAccessory={isHub && <ChevronUp className="h-3 w-3 shrink-0" aria-hidden />}
                 badgeCount={showUnread ? unreadCount : undefined}
                 badgeLabel={
                   showUnread

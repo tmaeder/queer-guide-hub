@@ -119,11 +119,17 @@ describe('MobileBottomNav', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
-  it('gates Hub for anon: routes to /auth with return-to', () => {
-    mockUser = null;
-    renderAt('/');
-    fireEvent.click(screen.getByText('Hub'));
-    expect(navigateSpy).toHaveBeenCalledWith('/auth', { state: { from: '/hub' } });
+  it.each([null, { id: 'u-1' }])('opens the Hub sheet from outside the Hub for user %j', (user) => {
+    mockUser = user;
+    renderAt('/going-out');
+    const hub = screen.getByRole('link', { name: 'Hub' });
+    expect(hub).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(hub).not.toHaveAttribute('aria-current');
+    fireEvent.click(hub);
+    const sheet = screen.getByRole('dialog', { name: 'Hub' });
+    expect(sheet).toBeInTheDocument();
+    expect(sheet.querySelector('[aria-current]')).toBeNull();
+    expect(navigateSpy).not.toHaveBeenCalled();
   });
 
   it('opens Hub navigation from the active dock tab for a signed-out visitor', () => {
@@ -137,13 +143,6 @@ describe('MobileBottomNav', () => {
       'aria-current',
       'page',
     );
-    expect(navigateSpy).not.toHaveBeenCalled();
-  });
-
-  it('does not gate Hub when signed in', () => {
-    mockUser = { id: 'u-1' };
-    renderAt('/');
-    fireEvent.click(screen.getByText('Hub'));
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
