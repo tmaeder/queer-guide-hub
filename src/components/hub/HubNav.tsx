@@ -3,37 +3,19 @@ import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { HubIdentityBlock } from '@/components/hub/HubIdentityBlock';
-import { Check, ChevronDown } from '@/components/icons';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { HUB_MODULES, HUB_SECTIONS, type HubModule } from '@/config/hubModules';
+import { getActiveHubModule, HUB_MODULES, HUB_SECTIONS, type HubModule } from '@/config/hubModules';
 import { useInboxUnreadCount } from '@/hooks/useInboxFeed';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { isRtlLocale, stripLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
-import { trimTrailingSlashes } from '@/lib/trimTrailingSlashes';
-
-function isCurrent(pathname: string, module: HubModule) {
-  if (module.id === 'overview') return pathname === '/hub';
-  return pathname === module.path || pathname.startsWith(`${module.path}/`);
-}
 
 /** Shared Hub destinations with the current module derived from the URL. */
 export function HubNav({ className }: { className?: string }) {
-  const { t, i18n } = useTranslation();
-  const location = useLocation();
-  const pathname = trimTrailingSlashes(stripLocale(location.pathname)) || '/';
+  const { t } = useTranslation();
+  const { pathname } = useLocation();
   const unreadCount = useInboxUnreadCount();
   const isMobile = useIsMobile();
   const navLabel = t('hub.nav', 'Hub sections');
-  const activeModule = HUB_MODULES.find((module) => isCurrent(pathname, module));
+  const activeModule = getActiveHubModule(pathname);
   const sections = HUB_SECTIONS.map((section) => ({
     id: section.id,
     label: section.labelKey
@@ -77,63 +59,7 @@ export function HubNav({ className }: { className?: string }) {
     );
   };
 
-  if (isMobile) {
-    const Icon = activeModule?.icon;
-    const currentLabel = activeModule
-      ? t(activeModule.labelKey, activeModule.defaultLabel)
-      : navLabel;
-
-    return (
-      <nav aria-label={navLabel} className={className}>
-        <DropdownMenu dir={isRtlLocale(i18n?.language) ? 'rtl' : 'ltr'}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="soft"
-              className="w-full justify-start px-4"
-              aria-label={activeModule ? `${navLabel}: ${currentLabel}` : navLabel}
-            >
-              {Icon && <Icon aria-hidden />}
-              <span className="truncate">{currentLabel}</span>
-              <ChevronDown className="ms-auto" aria-hidden />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            tabIndex={0}
-            className="max-h-[min(65dvh,var(--radix-dropdown-menu-content-available-height))] w-[var(--radix-dropdown-menu-trigger-width)] overflow-y-auto overscroll-contain bg-surface-container-highest p-2 shadow-island"
-          >
-            {sections.map(({ id, label, modules }) => (
-              <DropdownMenuGroup key={id} aria-label={label} className="mt-2 first:mt-0">
-                {label && (
-                  <DropdownMenuLabel className="text-2xs uppercase tracking-label text-muted-foreground">
-                    {label}
-                  </DropdownMenuLabel>
-                )}
-                {modules.map((module) => {
-                  const active = module === activeModule;
-                  return (
-                    <DropdownMenuItem asChild key={module.id}>
-                      <LocalizedLink
-                        to={module.path}
-                        aria-current={active ? 'page' : undefined}
-                        className={cn(
-                          'min-h-11 gap-2 no-underline',
-                          active && 'bg-surface-container font-semibold',
-                        )}
-                      >
-                        {moduleLabel(module)}
-                        {active && <Check className="ms-auto h-4 w-4 shrink-0" aria-hidden />}
-                      </LocalizedLink>
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuGroup>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </nav>
-    );
-  }
+  if (isMobile) return null;
 
   return (
     <div className={cn('flex min-w-0 items-center gap-4', className)}>

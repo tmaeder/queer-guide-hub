@@ -118,7 +118,7 @@ describe('hub navigation is the same control on every /hub page', () => {
     const bar = readFileSync(join(ROOT, 'src/components/hub/HubNavBar.tsx'), 'utf8');
     // pb-0 is what lets the bar sit above a page's own PageContainer without the
     // two stacking their vertical padding.
-    expect(bar).toMatch(/<PageContainer className="pb-0 pt-6 md:pt-8">/);
+    expect(bar).toMatch(/<PageContainer className="hidden pb-0 pt-8 md:block">/);
     expect(bar).toContain('<HubNav />');
   });
 
