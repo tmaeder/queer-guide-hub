@@ -61,7 +61,21 @@ export function TripWorkspaceHero({ trip, dateRange, statusLabel }: Props) {
         aria-hidden="true"
       />
 
-      <div className="relative grid min-h-[20rem] items-end gap-8 px-4 pb-6 pt-24 sm:px-8 md:grid-cols-[minmax(0,1fr)_auto] md:px-10 md:pb-8">
+      {trip.primary_city_name ? (
+        <div
+          aria-hidden="true"
+          className="absolute right-8 top-8 hidden rotate-2 border-2 border-white/55 px-4 py-4 text-center text-white/90 backdrop-blur-sm md:block"
+        >
+          <span className="block text-3xs font-semibold uppercase tracking-[0.24em]">
+            queer.guide
+          </span>
+          <span className="mt-1 block max-w-36 truncate font-display text-xl uppercase tracking-tight">
+            {trip.primary_city_name}
+          </span>
+        </div>
+      ) : null}
+
+      <div className="relative grid min-h-[22rem] items-end gap-8 px-4 pb-6 pt-28 sm:px-8 md:grid-cols-[minmax(0,1fr)_auto] md:px-10 md:pb-8">
         <div className="min-w-0">
           <LocalizedLink
             to="/hub/plans"
@@ -80,7 +94,7 @@ export function TripWorkspaceHero({ trip, dateRange, statusLabel }: Props) {
               </span>
             ) : null}
           </div>
-          <h1 className="max-w-4xl text-balance font-display text-display leading-[0.92] tracking-tight text-white md:text-hero">
+          <h1 className="max-w-3xl text-balance font-display text-display leading-[0.92] tracking-tight text-white md:text-hero">
             {title}
           </h1>
           <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/85">
@@ -126,12 +140,12 @@ export function TripWorkspaceHero({ trip, dateRange, statusLabel }: Props) {
               ))}
             </div>
           ) : null}
-          <div className="rounded-full bg-white p-1 text-foreground shadow-sm">
+          <div className="rounded-full bg-white p-1 text-foreground shadow-[0_14px_34px_hsl(0_0%_0%/0.28)] ring-4 ring-track-pink">
             <TripProgressRing trip={trip} size={58} />
           </div>
           <LocalizedLink
             to={nextHref}
-            className="inline-flex min-h-11 items-center rounded-full bg-white px-6 text-sm font-bold text-black no-underline transition-transform duration-normal hover:-translate-y-0.5 active:translate-y-0"
+            className="inline-flex min-h-11 items-center rounded-full bg-white px-6 text-sm font-bold text-black no-underline shadow-[0_12px_28px_hsl(0_0%_0%/0.22)] transition-[transform,box-shadow] duration-normal hover:-translate-y-1 hover:shadow-[0_16px_32px_hsl(0_0%_0%/0.30)] active:translate-y-0"
           >
             {nextLabel} →
           </LocalizedLink>
