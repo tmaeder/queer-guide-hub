@@ -16,6 +16,7 @@ vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }))
 vi.mock('@/hooks/useInboxFeed', () => ({ useInboxFeed: () => ({ unreadCount: mockUnread }) }));
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => mockTrips }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => navigateSpy }));
+vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => true }));
 vi.mock('@/hooks/useHaptics', () => ({ useHaptics: () => ({ trigger: hapticSpy }) }));
 // Reduced motion → static pills, no motion/react layout animation in jsdom.
 vi.mock('@/lib/motion', () => ({ useMotionTokens: () => ({ reduced: true }) }));
@@ -118,17 +119,30 @@ describe('MobileBottomNav', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
-  it('gates Hub for anon: routes to /auth with return-to', () => {
-    mockUser = null;
-    renderAt('/');
-    fireEvent.click(screen.getByText('Hub'));
-    expect(navigateSpy).toHaveBeenCalledWith('/auth', { state: { from: '/hub' } });
+  it.each([null, { id: 'u-1' }])('opens the Hub sheet from outside the Hub for user %j', (user) => {
+    mockUser = user;
+    renderAt('/going-out');
+    const hub = screen.getByRole('link', { name: 'Hub' });
+    expect(hub).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(hub).not.toHaveAttribute('aria-current');
+    fireEvent.click(hub);
+    const sheet = screen.getByRole('dialog', { name: 'Hub' });
+    expect(sheet).toBeInTheDocument();
+    expect(sheet.querySelector('[aria-current]')).toBeNull();
+    expect(navigateSpy).not.toHaveBeenCalled();
   });
 
-  it('does not gate Hub when signed in', () => {
-    mockUser = { id: 'u-1' };
-    renderAt('/');
-    fireEvent.click(screen.getByText('Hub'));
+  it('opens Hub navigation from the active dock tab for a signed-out visitor', () => {
+    renderAt('/hub/people');
+    const hub = screen.getByRole('link', { name: 'Hub' });
+    expect(hub).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(screen.getByRole('link', { name: 'Explore' })).not.toHaveAttribute('aria-current');
+    fireEvent.click(hub);
+    expect(screen.getByRole('dialog', { name: 'Hub' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Discover people' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 

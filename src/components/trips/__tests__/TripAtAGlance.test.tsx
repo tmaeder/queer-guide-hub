@@ -32,5 +32,17 @@ describe('TripAtAGlance', () => {
     expect(screen.getByText('Choose a stay')).toBeInTheDocument();
     expect(screen.getByText('Find an event')).toBeInTheDocument();
     expect(screen.getByText('Add a place')).toBeInTheDocument();
+    expect(screen.getByText('Add transport').closest('a')).toHaveAttribute('aria-current', 'step');
+  });
+
+  it('marks a fully prepared route as complete without a current stop', () => {
+    const reservations = [
+      { id: 'r1', type: 'flight', status: 'confirmed' },
+      { id: 'r2', type: 'hotel', status: 'confirmed' },
+    ] as Reservation[];
+    renderWithProviders(<TripAtAGlance trip={trip} reservations={reservations} />);
+
+    expect(screen.getByText('5/5')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { current: 'step' })).not.toBeInTheDocument();
   });
 });

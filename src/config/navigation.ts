@@ -534,7 +534,6 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
     labelKey: 'header.mobileNav.hub',
     // Old /messages and /me both redirect into /hub — keep them lighting this tab.
     activePrefixes: ['/hub', '/messages', '/me'],
-    authGated: true,
     badge: 'unread',
   },
   {

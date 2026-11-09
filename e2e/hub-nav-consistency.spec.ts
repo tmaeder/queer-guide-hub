@@ -40,11 +40,9 @@ const ROUTES: ReadonlyArray<{ path: string; active: string; shell: string }> = [
  *  from i18n and a locale edit must not silently empty this suite. */
 const NAV = 'nav:has(a[href$="/hub/dating"])';
 
-async function openHub(page: Page, path: string, mobile = false) {
+async function openHub(page: Page, path: string) {
   await page.goto(path, { waitUntil: 'domcontentloaded' });
-  const nav = mobile
-    ? page.getByRole('navigation', { name: 'Hub modules' })
-    : page.locator(NAV).first();
+  const nav = page.locator(NAV).first();
   await expect(nav, `${path}: the hub nav never rendered`).toBeVisible({ timeout: 20_000 });
   return nav;
 }
@@ -93,58 +91,73 @@ test.describe('hub nav', () => {
     });
   }
 
-  for (const width of [1440, 390]) {
-    test(`the Hub rail keeps its position at ${width}px`, async ({ page }) => {
-      await page.setViewportSize({ width, height: 900 });
-      const positions = [];
-      for (const route of ROUTES) {
-        const nav = await openHub(page, route.path, width === 390);
-        const position = await nav.evaluate((el) => {
-          const breadcrumb = document.querySelector('.route-network-rail');
-          if (!breadcrumb) throw new Error('Missing breadcrumb rail');
-          const { x, top } = el.getBoundingClientRect();
-          return { x, gap: top - breadcrumb.getBoundingClientRect().bottom };
-        });
-        positions.push({ path: route.path, ...position });
-      }
-      // Compare the rail itself because the active link can scroll its contents.
-      const [first] = positions;
-      for (const position of positions) {
-        expect(Math.abs(position.x - first.x), position.path).toBeLessThanOrEqual(2);
-        expect(Math.abs(position.gap - first.gap), position.path).toBeLessThanOrEqual(2);
-      }
+  test('the desktop Hub rail keeps its position across routes', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const positions = [];
+    for (const route of ROUTES) {
+      const nav = await openHub(page, route.path);
+      const position = await nav.evaluate((el) => {
+        const breadcrumb = document.querySelector('.route-network-rail');
+        if (!breadcrumb) throw new Error('Missing breadcrumb rail');
+        const { x, top } = el.getBoundingClientRect();
+        return { x, gap: top - breadcrumb.getBoundingClientRect().bottom };
+      });
+      positions.push({ path: route.path, ...position });
+    }
+    // Compare the rail itself because the active link can scroll its contents.
+    const [first] = positions;
+    for (const position of positions) {
+      expect(Math.abs(position.x - first.x), position.path).toBeLessThanOrEqual(2);
+      expect(Math.abs(position.gap - first.gap), position.path).toBeLessThanOrEqual(2);
+    }
+  });
+
+  test('phones switch Hub sections from the bottom dock', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 780 });
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'queer-guide-cookie-consent',
+        JSON.stringify({
+          version: '1.0',
+          preferences: { necessary: true, functional: false, analytics: false, marketing: false },
+        }),
+      );
     });
-  }
+    await page.goto('/going-out', { waitUntil: 'domcontentloaded' });
+    const main = page.getByRole('main');
+    const trigger = page.getByRole('navigation', { name: 'Navigation' }).getByRole('link', {
+      name: 'Hub',
+      exact: true,
+    });
+    const sheet = page.getByRole('dialog', { name: 'Hub' });
+    const hubNav = sheet.getByRole('navigation', { name: 'Hub modules' });
 
-  test('the phone selector reveals every destination and updates after navigation', async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    const nav = await openHub(page, '/hub/people', true);
-    const trigger = nav.getByRole('button', { name: 'Hub modules: People' });
-    const menu = page.getByRole('menu', { name: 'Hub modules: People' });
-    await expect(nav.getByRole('button')).toHaveCount(1);
-    await expect(nav.getByRole('link')).toHaveCount(0);
-    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
+    await trigger.click();
+    await expect(page).toHaveURL(/\/going-out$/);
+    await expect(hubNav.getByRole('link')).toHaveText([...PILLS]);
+    await expect(hubNav.locator('[aria-current]')).toHaveCount(0);
+    expect(await sheet.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    await hubNav.getByRole('link', { name: 'People' }).click();
+    await expect(page).toHaveURL(/\/hub\/people$/);
+    await expect(sheet).toBeHidden();
 
-    await trigger.focus();
+    await expect(main.getByRole('navigation', { name: 'Hub modules' })).toHaveCount(0);
     await trigger.press('Enter');
-    await expect(menu.getByRole('menuitem')).toHaveText([...PILLS]);
-    await expect(menu.getByRole('menuitem', { name: 'People' })).toHaveAttribute(
+    await expect(hubNav.getByRole('link', { name: 'People' })).toHaveAttribute(
       'aria-current',
       'page',
     );
     await page.keyboard.press('Escape');
-    await expect(menu).toBeHidden();
+    await expect(sheet).toBeHidden();
     await expect(trigger).toBeFocused();
 
     await trigger.click();
-    await menu.getByRole('menuitem', { name: 'Groups' }).click();
+    await hubNav.getByRole('link', { name: 'Groups' }).click();
     await expect(page).toHaveURL(/\/hub\/groups$/);
-    await expect(nav.getByRole('button', { name: 'Hub modules: Groups' })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
+    await expect(sheet).toBeHidden();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(main.getByRole('navigation', { name: 'Hub modules' })).toHaveCount(0);
   });
 
   test('the breadcrumb rail is the same height on every route', async ({ page }) => {

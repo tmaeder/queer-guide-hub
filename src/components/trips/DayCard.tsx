@@ -209,15 +209,20 @@ export function DayCard({
     <Card
       data-day-id={day.id}
       data-day-today={isToday ? 'true' : undefined}
-      className={`mb-4 rounded-container overflow-hidden ${cardBorder} ${dimClass} bg-surface-container`}
+      className={`group/day mb-5 rounded-container overflow-hidden ${cardBorder} ${dimClass} bg-surface-container`}
     >
       <CardContent>
         {/* Header */}
         <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-4">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
             <div
-              className="flex flex-col items-center justify-center flex-shrink-0 w-14 h-14 rounded-element text-background"
-              style={{ backgroundColor: 'hsl(var(--foreground))' }}
+              className={`flex h-14 w-14 flex-shrink-0 flex-col items-center justify-center rounded-full border-[4px] transition-transform duration-normal group-hover/day:-rotate-3 group-hover/day:scale-105 ${
+                isToday
+                  ? 'border-track-ring bg-track-pink text-track-ring'
+                  : isPast
+                    ? 'border-track-ring bg-foreground text-background'
+                    : 'border-foreground bg-background text-foreground'
+              }`}
               aria-hidden="true"
             >
               <span
