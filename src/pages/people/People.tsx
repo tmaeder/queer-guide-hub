@@ -27,7 +27,7 @@ import {
 import type { SectionDef } from '@/components/entity/editorial';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
-import { HubNav } from '@/components/hub/HubNav';
+import { HubNavBar } from '@/components/hub/HubNavBar';
 import { lazyRetry } from '@/utils/lazyRetry';
 
 const PeopleConnectionMap = lazyRetry(() => import('@/components/people/PeopleConnectionMap'));
@@ -330,6 +330,7 @@ export default function People() {
 
   return (
     <>
+      <HubNavBar />
       <IntentPageLayout
         sectionNavClassName="border-b-0"
         compactHero
@@ -348,27 +349,24 @@ export default function People() {
           'Find queer community spaces, groups and events, and meet people who share your interests.',
         )}
         scopeBar={
-          <div className="space-y-4">
-            <HubNav />
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={() => setIntentOpen(true)}
-              >
-                <SlidersHorizontal size={14} aria-hidden />
-                {t('people.intent.button', "I'm here for…")}
-              </Button>
-              {showNudge ? (
-                <span className="text-13 text-muted-foreground">
-                  {t(
-                    'people.intent.nudge',
-                    'Tell us what you’re here for so we can rank people for you.',
-                  )}
-                </span>
-              ) : null}
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => setIntentOpen(true)}
+            >
+              <SlidersHorizontal size={14} aria-hidden />
+              {t('people.intent.button', "I'm here for…")}
+            </Button>
+            {showNudge ? (
+              <span className="text-13 text-muted-foreground">
+                {t(
+                  'people.intent.nudge',
+                  'Tell us what you’re here for so we can rank people for you.',
+                )}
+              </span>
+            ) : null}
           </div>
         }
         featured={
