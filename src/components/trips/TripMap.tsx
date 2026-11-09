@@ -170,6 +170,21 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
     if (any) mapRef.current.fitBounds(bounds, { padding: 60, maxZoom: 14 });
   };
 
+  useEffect(() => {
+    const handleFocus = (event: Event) => {
+      const placeId = (event as CustomEvent<{ placeId?: string }>).detail?.placeId;
+      const place = places.find((candidate) => candidate.id === placeId);
+      if (!place || place.latitude == null || place.longitude == null || !mapRef.current) return;
+      mapRef.current.easeTo({
+        center: [place.longitude, place.latitude],
+        zoom: Math.max(mapRef.current.getZoom(), 13),
+        duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 500,
+      });
+    };
+    window.addEventListener('queer-guide:trip-place-focus', handleFocus);
+    return () => window.removeEventListener('queer-guide:trip-place-focus', handleFocus);
+  }, [places]);
+
   // Recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -253,6 +268,13 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
         .setLngLat([place.longitude!, place.latitude!])
         .setPopup(popup)
         .addTo(map);
+
+      el.addEventListener('click', () => {
+        const target = document.querySelector<HTMLElement>(`[data-trip-place-id="${place.id}"]`);
+        if (!target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.focus({ preventScroll: true });
+      });
 
       markersRef.current.push(marker);
 

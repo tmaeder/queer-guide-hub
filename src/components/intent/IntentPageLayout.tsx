@@ -59,11 +59,11 @@ export function IntentPageLayout({
       breadcrumbs={[{ label: breadcrumbLabel, href: breadcrumbHref }]}
       header={
         <>
-          {topNav}
           {/* `bare` — EditorialDetailLayout already puts this inside a
               PageContainer, and two nested containers double the gutter. */}
           <PageHero bare eyebrow={eyebrow} title={title} lede={lede} size={heroSize} />
           {scopeBar ? <div className="mt-6">{scopeBar}</div> : null}
+          {topNav ? <div className="mt-6">{topNav}</div> : null}
         </>
       }
       sections={sections}

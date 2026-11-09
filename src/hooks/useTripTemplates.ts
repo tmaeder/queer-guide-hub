@@ -80,6 +80,15 @@ export interface TripTemplate {
   vibe: VibeId | null;
   /** A measured line about why this is here. Never a claim we cannot check. */
   reason: string | null;
+  /** Structured anchor event for event-led packages and trip seeding. */
+  event: {
+    id: string;
+    title: string;
+    slug: string;
+    startDate: string;
+  } | null;
+  /** Measured matching venue count when the source provides one. */
+  venueCount: number | null;
 }
 
 /**
@@ -139,6 +148,8 @@ function deriveSeasonalTemplates(pool: Station[], now: Date): TripTemplate[] {
       // visible explanation tied to the measured venue corpus; event-led
       // packages carry their own structured event below.
       reason: `${vibeCount(station, vibe)} matched places`,
+      event: null,
+      venueCount: vibeCount(station, vibe),
     });
   }
   return out;
@@ -182,7 +193,7 @@ export function useTripTemplates() {
         supabase
           .from('events')
           .select(
-            'id, title, start_date, end_date, images, city_id, event_type, cities(id, name, image_url, country_id, countries:country_id(currency))',
+            'id, title, slug, start_date, end_date, images, city_id, event_type, cities(id, name, image_url, country_id, countries:country_id(currency))',
           )
           .eq('is_featured', true)
           .gte('start_date', now.toISOString().slice(0, 10))
@@ -213,6 +224,7 @@ export function useTripTemplates() {
       type EventRow = {
         id: string;
         title: string;
+        slug: string;
         start_date: string;
         end_date: string | null;
         images: string[] | null;
@@ -242,6 +254,13 @@ export function useTripTemplates() {
           source: 'event',
           vibe: null,
           reason: raw.start_date.slice(0, 10),
+          event: {
+            id: raw.id,
+            title: raw.title,
+            slug: raw.slug,
+            startDate: raw.start_date.slice(0, 10),
+          },
+          venueCount: null,
         });
       }
 
@@ -274,6 +293,8 @@ export function useTripTemplates() {
           source: 'preference',
           vibe: null,
           reason: null,
+          event: null,
+          venueCount: null,
         }));
 
       // Only the two remote tiers here. The seasonal tier is derived from the

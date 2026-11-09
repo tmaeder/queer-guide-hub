@@ -29,6 +29,7 @@ import {
 } from '@/lib/lines/generateLine';
 import { seasonWindows, type SeasonId } from '@/lib/lines/seasons';
 import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
+import { TravelJourneyNav } from '@/components/travel/TravelJourneyNav';
 
 /**
  * /trips/discover — the line generator.
@@ -243,6 +244,7 @@ export default function TripsDiscoverPage() {
     now,
     createTrip,
     addPlacesBulk,
+    activeTripContext,
     t,
     toast,
   ]);
@@ -262,14 +264,14 @@ export default function TripsDiscoverPage() {
     <>
       {/* 1 — Masthead */}
       <header className="border-b border-border-hairline">
-        <PageContainer flush className="pb-8 pt-8 md:pb-12 md:pt-16">
+        <PageContainer flush className="pb-8 pt-8 md:pt-10">
           <Eyebrow variant="kicker" as="div">
             {t('trips.discover.eyebrowRoute', 'Route builder')}
           </Eyebrow>
-          <h1 className="mt-6 font-display text-hero leading-[0.95]">
+          <h1 className="mt-4 max-w-4xl text-balance font-display text-display leading-[0.95] md:text-hero">
             {t('trips.discover.titleRoute', 'Three cities. One line.')}
           </h1>
-          <p className="mt-6 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
+          <p className="mt-4 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
             {t(
               'trips.discover.ledeRoute',
               'Tell us what you are after and how fast you move. We draw you a line through real cities — with the venue counts, the legal status and what is on while you are there.',
@@ -277,6 +279,10 @@ export default function TripsDiscoverPage() {
           </p>
         </PageContainer>
       </header>
+
+      <PageContainer flush>
+        <TravelJourneyNav />
+      </PageContainer>
 
       {/* 2 — The picker */}
       <section
