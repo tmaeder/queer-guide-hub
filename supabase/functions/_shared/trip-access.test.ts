@@ -1,4 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { tripAccess } from './trip-access.ts'
 
 // A fake service-role client that answers the two queries tripAccess makes,
@@ -40,7 +41,7 @@ const members: Member[] = [
   { trip_id: 'private', user_id: 'viewer', role: 'viewer', accepted_at: '2026-01-01' },
   { trip_id: 'private', user_id: 'invited', role: 'editor', accepted_at: null },
 ]
-const admin = fakeAdmin(trips, members)
+const admin = fakeAdmin(trips, members) as unknown as SupabaseClient
 
 Deno.test('a stranger cannot reach a private trip', async () => {
   assertEquals(await tripAccess(admin, 'private', 'stranger'), 'none')
