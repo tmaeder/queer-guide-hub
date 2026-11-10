@@ -61,6 +61,7 @@ interface VenueCardProps {
     venue_reviews?: Array<{ rating: number }>;
   };
   loading?: boolean;
+  coverAspect?: 'card' | 'hero';
   events?: Event[];
   onViewDetails?: (venue: Venue) => void;
   onAmenityClick?: (amenity: string) => void;
@@ -73,7 +74,7 @@ interface VenueCardProps {
   socialSignal?: { friends_saved: number; trip_usage: number };
 }
 
-function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps) {
+function VenueCardImpl({ venue, loading = false, coverAspect = 'card', socialSignal }: VenueCardProps) {
   const { t, i18n } = useTranslation();
   const visual = getVenueVisual(venue);
   const categoryIcon = venueCategoryIcon(venue?.category);
@@ -108,7 +109,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
               fit={visual.fit}
               plate={visual.plate ?? undefined}
               alt={venue.name}
-              aspect="card"
+              aspect={coverAspect}
               imageRole="cover"
               fallbackEntityType="venue"
               fallbackIcon={categoryIcon}

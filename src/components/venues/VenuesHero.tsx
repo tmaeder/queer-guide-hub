@@ -1,76 +1,72 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin } from '@/components/icons';
+import { ArrowRight } from '@/components/icons';
+import { Image } from '@/components/ui/Image';
 import { useFeaturedVenue } from '@/hooks/useVenuesV2Data';
+import { useVenueCategoryLabel } from '@/lib/venueCategories';
+import { venueClosureLabel } from '@/lib/venueClosureLabel';
 import { getVenueVisual } from '@/lib/venueVisual';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import type { Database } from '@/integrations/supabase/types';
 
-export function VenuesHero() {
-  const { t } = useTranslation();
-  const { venue, loading } = useFeaturedVenue();
+type Venue = Database['public']['Tables']['venues']['Row'];
 
-  if (loading) {
-    return <Skeleton className="h-[280px] w-full rounded-container" />;
-  }
+export function VenuesHero({ fallback }: { fallback?: Venue }) {
+  const { t, i18n } = useTranslation();
+  const { venue: featured } = useFeaturedVenue();
+  const featuredVenue =
+    featured && !featured.safety_gated && !venueClosureLabel(featured) ? featured : null;
+  const venue = featuredVenue ?? fallback;
+  const category = useVenueCategoryLabel(venue?.category);
   if (!venue) return null;
 
-  const visual = getVenueVisual(venue);
-  const blurb = (venue.description ?? '').split(/(?<=[.!?])\s+/)[0];
+  const photo = venue.images?.find(isValidImageUrl);
+  const visual = photo ? { src: photo, fit: 'cover' as const, plate: null } : getVenueVisual(venue);
+  const name = localizedField(venue.name, venue.name_i18n as I18nMap, i18n.language);
+  const description = localizedField(
+    venue.description,
+    venue.description_i18n as I18nMap,
+    i18n.language,
+  ).split(/(?<=[.!?])\s+/)[0];
+  const place = [category, venue.city || venue.country].filter(Boolean).join(' · ');
 
   return (
     <section
-      className="relative overflow-hidden rounded-container bg-card"
-      aria-label={t('venues.hero.label', 'Featured venue')}
+      aria-label={featuredVenue ? t('venues.hero.label', 'Featured venue') : t('venues.title', 'Venues')}
+      className="min-w-0 overflow-hidden rounded-panel bg-card"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2">
+      <LocalizedLink
+        to={`/venues/${venue.slug || venue.id}`}
+        className="group flex min-w-0 items-stretch no-underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+      >
         {visual.src && (
-          <div
-            className={`relative h-56 min-h-[240px] overflow-hidden rounded-container bg-center bg-no-repeat md:h-full ${
-              visual.isLogo
-                ? `bg-origin-content bg-contain p-6 ${
-                    // Same rule as the card tile: a logo's ground must not flip
-                    // with the theme, or the mark is erased in one of the two.
-                    visual.plate === 'ink' ? 'bg-logo-plate-ink' : 'bg-logo-plate'
-                  }`
-                : 'bg-muted bg-cover'
-            }`}
-            style={{ backgroundImage: `url(${visual.src})` }}
-            aria-hidden
-          >
-            {/* Readability scrim only over photos — a gradient over a contained logo looks wrong. */}
-            {!visual.isLogo && (
-              <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-black/15" />
-            )}
+          <div className="w-1/4 max-w-36 shrink-0 self-center">
+            <Image
+              src={visual.src}
+              alt=""
+              aspect="square"
+              fit={visual.fit}
+              plate={visual.plate ?? undefined}
+              rounded="none"
+              priority
+              sizes="(min-width: 1024px) 144px, 23vw"
+            />
           </div>
         )}
-        <div className="flex flex-col justify-between gap-6 p-6 md:p-10">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
-              {t('venues.hero.kicker', 'Featured this week')}
-            </p>
-            <h1 className="text-display font-semibold leading-tight tracking-tight">
-              {venue.name}
-            </h1>
-            {(venue.city || venue.country) && (
-              <p className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-                <MapPin size={14} />
-                {[venue.city, venue.country].filter(Boolean).join(', ')}
-              </p>
-            )}
-            {blurb && (
-              <p className="mt-4 text-body-lg text-muted-foreground line-clamp-3">{blurb}</p>
+        <div className="flex min-w-0 flex-1 items-center gap-2 px-4 py-4 md:gap-4 md:px-6">
+          <div className="min-w-0 flex-1">
+            {place && <p className="break-words text-13 text-muted-foreground">{place}</p>}
+            <h2 className="mt-1 break-words font-display text-title leading-tight group-hover:underline sm:text-headline rtl:font-sans rtl:font-bold">
+              {name}
+            </h2>
+            {description && (
+              <p className="mt-2 line-clamp-2 text-15 text-muted-foreground">{description}</p>
             )}
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button asChild>
-              <LocalizedLink to={`/venues/${venue.slug ?? venue.id}`}>
-                {t('venues.hero.cta', 'Read more')}
-              </LocalizedLink>
-            </Button>
-          </div>
+          <ArrowRight size={20} aria-hidden className="shrink-0 rtl:rotate-180" />
         </div>
-      </div>
+      </LocalizedLink>
     </section>
   );
 }

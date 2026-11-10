@@ -65,6 +65,7 @@ export function EntitySingle({
   }
 
   const single = descriptor.single ?? {};
+  const opening = sections.find((section) => section.id === single.openingSectionId);
   const { related, mobileBar, overlays } = descriptor;
 
   return (
@@ -77,9 +78,11 @@ export function EntitySingle({
         lead={single.lead}
         tags={single.tags}
         action={single.action}
+        density={single.density}
         body={
           <>
             {single.bodyLead}
+            {opening && <SingleSectionList sections={[{ ...opening, variant: 'compact' }]} />}
             <SingleRouteRail
               sections={sections}
               activeId={activeId}
@@ -89,7 +92,7 @@ export function EntitySingle({
               label="Sections"
               className="lg:hidden"
             />
-            <SingleSectionList sections={sections} />
+            <SingleSectionList sections={sections.filter((section) => section !== opening)} />
             {single.bodyTail}
           </>
         }
