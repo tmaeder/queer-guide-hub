@@ -122,7 +122,7 @@ describe('People hub', () => {
     expect(screen.getAllByText('Community spaces').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Groups to join').length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: 'Kaserne' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Queer Hiking', exact: true })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^Queer Hiking$/ })).toBeInTheDocument();
   });
 
   it('uses route links instead of the retired mode tab strip', () => {
