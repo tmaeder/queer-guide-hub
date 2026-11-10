@@ -28,6 +28,7 @@ export function MobileHubSheet({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         aria-describedby={undefined}
+        overlayClassName="bg-black/20 backdrop-blur-none"
         className="inset-x-0 bottom-0 top-auto mx-auto max-h-[85dvh] grid-cols-1 translate-x-0 translate-y-0 overflow-y-auto rounded-b-none pb-[max(1.5rem,env(safe-area-inset-bottom))] data-[state=open]:animate-none data-[state=closed]:animate-none"
         onCloseAutoFocus={(event) => {
           event.preventDefault();
