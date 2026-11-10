@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
@@ -8,6 +9,7 @@ import { cn } from '@/lib/utils';
 
 interface MobileHubSheetProps {
   open: boolean;
+  openedByPointer: boolean;
   onOpenChange: (open: boolean) => void;
   unreadCount: number;
   onDismissFocus: () => void;
@@ -15,6 +17,7 @@ interface MobileHubSheetProps {
 
 export function MobileHubSheet({
   open,
+  openedByPointer,
   onOpenChange,
   unreadCount,
   onDismissFocus,
@@ -23,13 +26,21 @@ export function MobileHubSheet({
   const { pathname } = useLocation();
   const activeModule = getActiveHubModule(pathname);
   const title = t('header.mobileNav.hub', 'Hub');
+  const contentRef = useRef<HTMLDivElement>(null);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        ref={contentRef}
         aria-describedby={undefined}
         overlayClassName="bg-black/20 backdrop-blur-none"
-        className="inset-x-0 bottom-0 top-auto mx-auto max-h-[85dvh] grid-cols-1 translate-x-0 translate-y-0 overflow-y-auto rounded-b-none pb-[max(1.5rem,env(safe-area-inset-bottom))] data-[state=open]:animate-none data-[state=closed]:animate-none"
+        className="mobile-hub-sheet inset-x-0 bottom-0 top-auto mx-auto max-h-[85dvh] grid-cols-1 translate-x-0 translate-y-0 overflow-y-auto rounded-b-none pb-[max(1.5rem,env(safe-area-inset-bottom))] data-[state=open]:animate-none data-[state=closed]:animate-none"
+        onOpenAutoFocus={(event) => {
+          if (openedByPointer) {
+            event.preventDefault();
+            contentRef.current?.focus({ preventScroll: true });
+          }
+        }}
         onCloseAutoFocus={(event) => {
           event.preventDefault();
           onDismissFocus();
