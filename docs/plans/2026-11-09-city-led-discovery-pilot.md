@@ -21,3 +21,9 @@ Test whether visitors can find one thing they would do and one way to connect. C
 Community Groups opens with recently active public groups and the next public group meetup, when one is listed in the next 30 days. Group and event details, browsing, signing in, and group creation are reachable from the opening.
 
 Group details lead with the group’s description, the next meetup, and the action that fits the visitor’s membership. Signed-out visitors can preview public groups and their eligible meetups. Private meetup details are reserved for members.
+
+## Public discovery follow-through
+
+Cities opens with links to destinations that have upcoming events. Country and village guides bring visit ideas forward after the safety verdict. Stays places a featured hotel in its opening and keeps the directory above the inspiration rails. Organizations introduces active support and advocacy organizations. Hotel and organization profiles bring their main action closer to the title. Event details show available artwork alongside the essential decision information. The default Pride and Personalities pages lead with upcoming celebrations and featured people. The glossary introduces readers to real definitions before the taxonomy.
+
+The remaining audit covers Knowledge detail pages, competition and personality details, News archive, Shop departments and guides, and public Hub discovery. News already leads with a story, and History already leads with dated milestones. Search, maps, and filtered views should give the visitor their requested results first. Account, admin, editing, and booking flows need clear task order and compact controls.

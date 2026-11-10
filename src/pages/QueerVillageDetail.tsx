@@ -1,4 +1,6 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { selectDiscoveryEvent } from '@/lib/discoveryEvent';
+import { GeoOpeningLinks, type GeoOpeningLink } from '@/components/geo/GeoOpeningLinks';
 import { censusCount } from '@/lib/censusParts';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -61,6 +63,7 @@ const VILLAGE_EVENT_LIMIT = 12;
 
 export default function QueerVillageDetail() {
   const { t, i18n } = useTranslation();
+  const [openedAt] = useState(Date.now);
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
   const navigate = useLocalizedNavigate();
@@ -321,6 +324,29 @@ export default function QueerVillageDetail() {
   if (cityName) census.push(cityName);
   if (countryName) census.push(countryName);
 
+  const nextEvent = selectDiscoveryEvent(events.filter((event) => !event.safety_gated), openedAt);
+  const openVenue = venues.find((venue) =>
+    !venue.closed_at && !venue.closed_on && !venue.safety_gated &&
+    ['cafe', 'restaurant', 'bar', 'community'].includes(venue.category),
+  );
+  const visitLinks: GeoOpeningLink[] = [];
+  if (nextEvent) {
+    visitLinks.push({
+      href: `/events/${nextEvent.slug || nextEvent.id}`,
+      title: nextEvent.title,
+      label: t('people.sections.whatsOn', "What's on"),
+      icon: 'events',
+    });
+  }
+  if (openVenue) {
+    visitLinks.push({
+      href: `/venues/${openVenue.slug || openVenue.id}`,
+      title: openVenue.name,
+      label: t('cities.detail.section.venues', 'Where to go'),
+      icon: 'map',
+    });
+  }
+
   return (
     <SinglePage
       type="queer_village"
@@ -389,6 +415,7 @@ export default function QueerVillageDetail() {
               village.countries?.slug ? `/country/${village.countries.slug}#rights` : null
             }
           />
+          <GeoOpeningLinks links={visitLinks} />
           <GeoRouteRail
             sections={sections}
             activeId={activeId}

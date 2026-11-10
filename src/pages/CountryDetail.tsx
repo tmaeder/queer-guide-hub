@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { censusCount, censusParts } from '@/lib/censusParts';
+import { GeoOpeningLinks, type GeoOpeningLink } from '@/components/geo/GeoOpeningLinks';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -464,6 +465,18 @@ export default function CountryDetail() {
       }
     : null;
 
+  const visitLinks: GeoOpeningLink[] = [];
+  if (!hasAnyCriminalizationSignal(country.lgbti_criminalization)) {
+    for (const city of cities.slice(0, 2)) {
+      visitLinks.push({
+        href: `/city/${city.slug || city.id}`,
+        title: city.name,
+        label: t('cities.opening.cityGuide', 'City guide'),
+        icon: 'map',
+      });
+    }
+  }
+
   const eyebrowParts = [t('country.eyebrow', 'Country')];
   if (country.continents?.name) eyebrowParts.push(country.continents.name);
 
@@ -508,6 +521,7 @@ export default function CountryDetail() {
           <section aria-label={t('country.overview', 'Overview')}>
             <SafetyVerdict countryId={country.id} equalityScore={country.equality_score ?? null} />
           </section>
+          <GeoOpeningLinks links={visitLinks} />
           <GeoRouteRail
             sections={sections}
             activeId={activeId}

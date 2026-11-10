@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { LifeBuoy, Megaphone, Newspaper, Search, ShoppingBag } from '@/components/icons';
-import { PageHeader } from '@/components/layout/PageHeader';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { ArrowRight } from '@/components/icons';
 import { OrganizationCard } from '@/components/organizations/OrganizationCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -117,6 +118,18 @@ export default function Organizations() {
   const tabs = TABS.filter((t) => !PROBED.has(t.id) || probeHit[t.id] || t.id === active);
 
   const showOverview = active === 'all' && !q;
+  const { data: support = [] } = useOrganizationsList({
+    role: 'support', limit: OVERVIEW_SIZE, enabled: showOverview,
+  });
+  const { data: advocacy = [] } = useOrganizationsList({
+    role: 'advocacy', limit: OVERVIEW_SIZE, enabled: showOverview,
+  });
+  const supportLead = support.find((org) => !org.dissolved_at && org.slug);
+  const advocacyLead = advocacy.find((org) => !org.dissolved_at && org.slug && org.id !== supportLead?.id);
+  const introductions = [
+    { org: supportLead, label: 'Support' },
+    { org: advocacyLead, label: 'Advocacy' },
+  ];
   const { data: orgs = [], isLoading } = useOrganizationsList({
     role,
     q: q || undefined,
@@ -148,10 +161,32 @@ export default function Organizations() {
 
   return (
     <PageContainer>
-      <PageHeader
-        title="Organizations"
-        subtitle="Support organizations, advocacy groups, news outlets, and shops in the LGBTQ+ community."
-      />
+      <header className="mb-6 grid min-w-0 items-end gap-4 md:grid-cols-2 md:gap-8">
+        <div>
+          <h1 className="font-display text-headline leading-tight md:text-display">Organizations</h1>
+          <p className="mt-2 max-w-reading text-pretty text-muted-foreground">
+            Find queer organizations to turn to, learn from, or get involved with.
+          </p>
+        </div>
+        {showOverview && (supportLead || advocacyLead) && (
+          <ul aria-label="Organizations to get to know" className="divide-y divide-border border-y border-border">
+            {introductions.map(({ org, label }) => org && (
+              <li key={org.id}>
+                <LocalizedLink
+                  to={`/organizations/${org.slug}`}
+                  className="group flex min-h-14 items-center justify-between gap-4 py-2 text-foreground no-underline"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm text-muted-foreground">{label}</p>
+                    <p className="break-words font-semibold group-hover:underline">{org.name}</p>
+                  </div>
+                  <ArrowRight size={16} className="shrink-0" aria-hidden="true" />
+                </LocalizedLink>
+              </li>
+            ))}
+          </ul>
+        )}
+      </header>
 
       <label className="mb-4 flex h-12 items-center gap-2 bg-card px-4 shadow-soft rounded-container">
         <Search size={20} aria-hidden="true" className="shrink-0 text-muted-foreground" />

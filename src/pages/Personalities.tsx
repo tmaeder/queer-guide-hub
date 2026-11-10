@@ -390,6 +390,8 @@ export default function Personalities() {
         </div>
       </KnowledgeHeader>
       <PageContainer className="relative">
+        {!hasAnyFilter && view === 'grid' && <FeaturedPersonalityRail />}
+
         {/* NSFW visibility hint — surfaces the otherwise-hidden adult filter. */}
         <div className="mb-6 text-13 text-muted-foreground">
           {filters.exclude_adult !== false ? (
@@ -427,7 +429,7 @@ export default function Personalities() {
           <EraLine activeEra={activeEra} onEraSelect={handleEraSelect} />
         </section>
 
-        {/* Editorial entry points + featured rail — only on the cold default view */}
+        {/* Editorial entry points on the default view. */}
         {!hasAnyFilter && (
           <>
             <EditorialEntries
@@ -435,7 +437,6 @@ export default function Personalities() {
               onProfessionSelect={handleProfessionSelect}
             />
             <CompetitionsLineKey />
-            <FeaturedPersonalityRail />
           </>
         )}
 

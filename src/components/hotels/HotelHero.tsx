@@ -1,9 +1,10 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MapPin, ArrowRight } from '@/components/icons';
 import type { Hotel } from '@/hooks/useHotels';
-import { getFallbackImage } from '@/utils/fallbackImages';
+import { Image } from '@/components/ui/Image';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import { safeText } from '@/utils/safeDisplay';
+import { hotelGlyph } from '@/lib/cardGlyphs';
 
 interface HotelHeroProps {
   hotel: Hotel;
@@ -17,8 +18,7 @@ function excerpt(text: string | null | undefined, max = 180): string {
 }
 
 export function HotelHero({ hotel }: HotelHeroProps) {
-  const fallback = getFallbackImage('hotel', hotel.id);
-  const image = isValidImageUrl(hotel.images?.[0]) ? hotel.images![0] : fallback;
+  const image = hotel.images?.find(isValidImageUrl);
   const name = safeText(hotel.name);
   const city = safeText(hotel.city);
   const country = safeText(hotel.country);
@@ -28,47 +28,32 @@ export function HotelHero({ hotel }: HotelHeroProps) {
   return (
     <LocalizedLink
       to={`/hotels/${hotel.slug}`}
-      className="block group no-underline"
-      style={{ color: 'inherit' }}
+      className="group grid min-w-0 grid-cols-[5rem_minmax(0,1fr)] items-center gap-4 rounded-container bg-muted/55 p-4 text-foreground no-underline sm:grid-cols-[8rem_minmax(0,1fr)]"
       aria-label={name}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2">
-        <div className="relative bg-muted aspect-[4/3] md:aspect-auto md:min-h-[360px] overflow-hidden">
-          { }
-          <img
-            src={image}
-            alt={name}
-            className="absolute inset-0 w-full h-full object-cover"
-            loading="eager"
-            decoding="async"
-            fetchPriority="high"
-            referrerPolicy="no-referrer"
-            onError={(e) => {
-              if ((e.target as HTMLImageElement).src !== fallback)
-                (e.target as HTMLImageElement).src = fallback;
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        </div>
-        <div className="p-6 md:p-10 flex flex-col gap-4 justify-center bg-card">
-          <span className="text-xs uppercase tracking-wider text-muted-foreground">
-            Featured stay
-          </span>
-          <h2 className="text-3xl md:text-4xl font-semibold leading-tight">{name}</h2>
-          {location && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <MapPin className="w-4 h-4" />
-              <span className="text-sm">{location}</span>
-            </div>
-          )}
-          {note && (
-            <p className="text-sm md:text-base text-foreground/80 leading-relaxed">{note}</p>
-          )}
-          <div className="inline-flex items-center gap-2 text-sm font-medium mt-2 group-hover:underline">
-            View hotel
-            <ArrowRight className="w-4 h-4" />
-          </div>
-        </div>
+      <Image
+        src={image}
+        alt=""
+        aspect="square"
+        imageRole="thumb"
+        rounded="element"
+        fallbackEntityType="hotel"
+        fallbackKey={hotel.id}
+        fallbackGlyph={hotelGlyph(hotel.hotel_type)}
+        referrerPolicy="no-referrer"
+      />
+      <div className="min-w-0">
+        {location && (
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <MapPin size={14} className="shrink-0" aria-hidden="true" />
+            {location}
+          </p>
+        )}
+        <h2 className="mt-1 break-words font-sans text-title font-bold group-hover:underline">{name}</h2>
+        {note && <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{note}</p>}
+        <span className="mt-2 inline-flex items-center gap-2 text-sm font-semibold">
+          View stay <ArrowRight size={16} aria-hidden="true" />
+        </span>
       </div>
     </LocalizedLink>
   );

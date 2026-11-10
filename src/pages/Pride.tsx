@@ -84,6 +84,10 @@ export default function PridePage() {
   const { data: events = [], isLoading } = usePrideCalendar({ year });
 
   const filtered = useMemo(() => applyPrideFilters(events, filters), [events, filters]);
+  const hasFilters = Object.keys(filtersToParams(filters)).length > 0;
+  const upcoming = !isLoading && (
+    <PrideUpNext events={filtered} selectedId={selectedId} onSelect={setSelectedId} limit={4} />
+  );
 
   // Shared with PrideTable via react-query's cache (same key), so the .ics
   // export ships the parade / festival / week breakdown without a second fetch.
@@ -166,6 +170,8 @@ export default function PridePage() {
         </p>
       </header>
 
+      {!hasFilters && upcoming && <div className="mb-6">{upcoming}</div>}
+
       {/* Filters above the timeline */}
       <div className="mb-6">
         <PrideFilterRail filters={filters} setFilters={setFilters} events={events} />
@@ -204,10 +210,7 @@ export default function PridePage() {
           </section>
         )}
 
-        {/* Up next */}
-        {!isLoading && (
-          <PrideUpNext events={filtered} selectedId={selectedId} onSelect={setSelectedId} />
-        )}
+        {hasFilters && upcoming}
 
         {/* Map */}
         <section aria-labelledby="map-heading">
