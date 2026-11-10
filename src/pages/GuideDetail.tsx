@@ -1,7 +1,7 @@
 import { GuideProse } from '@/components/guides/GuideProse';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Clock, BookOpen } from '@/components/icons';
+import { ArrowDown, ArrowLeft, Clock, BookOpen } from '@/components/icons';
 import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { useGuide, questPhase, type GuideSection } from '@/hooks/useGuides';
 import { useGuideReadTracker } from '@/hooks/useGuideReadTracker';
@@ -122,7 +122,7 @@ const GuideDetail = () => {
 
   return (
     <article className="min-h-screen">
-      <PageContainer as="header" flush size="reading" className="max-w-4xl pt-8 pb-12">
+      <PageContainer as="header" flush size="reading" className="max-w-4xl py-4 md:py-8">
         <LocalizedLink
           to="/guides"
           className="inline-flex items-center gap-2 text-13 text-muted-foreground hover:text-foreground mb-8"
@@ -134,11 +134,17 @@ const GuideDetail = () => {
         <p className="text-xs2 uppercase tracking-[0.2em] text-muted-foreground mb-4">
           {eyebrowParts.join(' · ')}
         </p>
-        <h1 className="text-hero leading-[1.05] mb-6">{guide.title}</h1>
+        <h1 className="mb-4 font-display text-headline leading-tight md:text-display">{guide.title}</h1>
         {guide.dek && (
           <p className="italic text-body-lg text-muted-foreground max-w-2xl">{guide.dek}</p>
         )}
-        <div className="mt-6 flex justify-end gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {!isQuest && picks.length > 0 && (
+            <a href="#guide-picks" className="inline-flex min-h-11 items-center gap-2 pe-2 text-sm font-semibold underline-offset-4 hover:underline">
+              <ArrowDown size={16} aria-hidden="true" />
+              {t('guides.detail.viewPicks', 'See the picks')}
+            </a>
+          )}
           <ShareMenu
             url={window.location.href}
             title={guide.title}
@@ -214,7 +220,7 @@ const GuideDetail = () => {
       )}
 
       {picks.length > 0 && (
-        <PageContainer as="section" flush className="max-w-5xl space-y-16">
+        <PageContainer as="section" flush id="guide-picks" tabIndex={-1} className="max-w-5xl space-y-16 scroll-mt-28">
           {picks.map((pick, i) => (
             <GuidePickBlock key={pick.id} pick={pick} index={i} />
           ))}

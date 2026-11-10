@@ -8,7 +8,6 @@ import { GuideCard } from '@/components/guides/GuideCard';
 import { GuidesFilterBar, type GuidesHubFilters } from '@/components/guides/GuidesFilterBar';
 import { ActiveQuestBanner } from '@/components/guides/ActiveQuestBanner';
 import { ContinueReadingRail } from '@/components/guides/ContinueReadingRail';
-import { PageHero } from '@/components/discovery';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
   PageContainer,
@@ -65,19 +64,24 @@ const Guides = () => {
     setSearchParams(params, { replace: true });
   };
 
+  const lead = !filters.format && !filters.entity && guides[0]?.is_featured
+    ? guides[0]
+    : undefined;
+  const remainingGuides = lead ? guides.slice(1) : guides;
+
   return (
     <div className="min-h-screen">
-      <PageHero
-        eyebrow={t('guides.hub.eyebrow', 'Editorial')}
-        title={t('guides.hub.title', 'Guides')}
-        lede={t(
-          'guides.hub.lede',
-          'Comparison-driven guides, curated lists and community quests — written by editors, no fluff.',
-        )}
-        size="md"
-      />
-      <PageContainer>
+      <PageContainer flush className="pb-8">
+        <header className="py-4 md:py-8">
+          <h1 className="font-display text-headline leading-tight md:text-display">
+            {t('guides.hub.title', 'Guides')}
+          </h1>
+          <p className="mt-2 max-w-reading text-muted-foreground">
+            {t('guides.hub.opening', 'Find places worth a stop, ideas for your next trip, and things to do together.')}
+          </p>
+        </header>
         <ActiveQuestBanner />
+        {lead && <div className="mb-6"><GuideCard guide={lead} size="hero" priority /></div>}
         <div
           className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} mb-8 overflow-hidden rounded-container border-b border-border-hairline bg-background py-2`}
         >
@@ -109,15 +113,11 @@ const Guides = () => {
           />
         ) : (
           <div className="grid grid-cols-12 gap-6">
-            {guides.map((g, i) =>
-              i === 0 && g.is_featured && filters.format === null && filters.entity === null ? (
-                <GuideCard key={g.id} guide={g} size="hero" priority />
-              ) : (
-                <div key={g.id} className="col-span-12 md:col-span-6 lg:col-span-4">
-                  <GuideCard guide={g} priority={i < 3} />
-                </div>
-              ),
-            )}
+            {remainingGuides.map((guide, i) => (
+              <div key={guide.id} className="col-span-12 md:col-span-6 lg:col-span-4">
+                <GuideCard guide={guide} priority={!lead && i < 3} />
+              </div>
+            ))}
           </div>
         )}
       </PageContainer>

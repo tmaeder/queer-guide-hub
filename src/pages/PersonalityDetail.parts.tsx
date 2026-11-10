@@ -214,6 +214,12 @@ export function PersonalityHero({
             </Editable>
           </h1>
 
+          {personality.bio && (
+            <p className="mt-2 line-clamp-2 max-w-reading text-muted-foreground">
+              {personality.bio.trim().split('\n')[0]}
+            </p>
+          )}
+
           {personality.pronouns && (
             <p className="mb-2 mt-2 text-13 text-muted-foreground">({personality.pronouns})</p>
           )}
