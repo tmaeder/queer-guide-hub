@@ -71,7 +71,7 @@ export function HomeCityFeature() {
           <h2 id="home-city-feature-title" className="text-headline leading-none">
             <LocalizedLink
               to={CITY_HREF}
-              aria-label={t('home.cityFeature.exploreCity', 'Explore Zürich')}
+              aria-label={t('home.cityFeature.exploreCity', 'Zürich city guide')}
               className="inline-flex min-h-11 items-center gap-2 rounded-element bg-card px-4 py-2 font-display text-foreground underline-offset-4 hover:underline rtl:font-sans rtl:font-bold"
             >
               Zürich

@@ -25,8 +25,8 @@ for (const width of [390, 1280]) {
       await expect(link).toBeInViewport();
       await expect(link).toHaveAttribute('href', path);
     }
-    const feature = hero.getByRole('region', { name: 'Explore Zürich' });
-    const city = feature.getByRole('link', { name: 'Explore Zürich' });
+    const feature = hero.getByRole('region', { name: 'Zürich city guide' });
+    const city = feature.getByRole('link', { name: 'Zürich city guide' });
     const community = feature.getByRole('link', {
       name: 'Community space Regenbogenhaus',
       exact: true,
@@ -75,7 +75,7 @@ test('the city feature links to the directory when there is no upcoming event', 
   await openHome(page);
   await eventsRequest;
 
-  const feature = page.getByRole('region', { name: 'Explore Zürich' });
+  const feature = page.getByRole('region', { name: 'Zürich city guide' });
   await expect(feature.getByRole('link', { name: /Browse Zürich events/ })).toHaveAttribute(
     'href',
     '/events?city=Zurich',
