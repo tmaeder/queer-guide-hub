@@ -133,8 +133,13 @@ describe('contextual profile editing', () => {
   });
   it('puts account controls in an owner-only profile tab', async () => {
     renderAt('/user/u1/account');
-    expect(screen.getByRole('tab', { name: 'Account' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Account settings', level: 1 })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Account' })).toHaveAttribute('aria-selected', 'true');
     expect(await screen.findByTestId('editor')).toHaveTextContent('account');
+    expect(screen.queryByRole('button', { name: 'Edit profile' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Back to your profile' }));
+    await waitFor(() => expect(screen.getByTestId('location').textContent).toBe('/user/u1'));
+    expect(screen.getByRole('button', { name: 'Edit profile' })).toBeTruthy();
   });
   it('opens the profile editor in place rather than leaving for settings', async () => {
     renderAt('/user/u1');

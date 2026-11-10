@@ -117,6 +117,7 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
 
   if (isMeRoute && !user) return null;
 
+  const isAccount = tab === 'account';
   const basePath = isMeRoute ? '/me' : `/user/${params.userId}`;
   const setTab = async (next: string) => {
     if (editorRef.current && !(await editorRef.current.savePending())) return;
@@ -247,93 +248,107 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
   }
 
   return (
-    <PageContainer>
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          {isMeRoute ? (
-            <h1 className="sr-only">Your profile</h1>
-          ) : (
-            <Button variant="outline" onClick={() => navigate(-1)} className="rounded-element">
-              <ArrowLeft size={16} className="mr-2" />
-              Back
+    <PageContainer flush={isAccount} className={isAccount ? 'pb-8 pt-4 md:pb-12 md:pt-8' : undefined}>
+      <div className="flex min-w-0 flex-col gap-4 md:gap-6">
+        {isAccount ? (
+          <header>
+            <Button variant="ghost" className="mb-2 -ms-2" onClick={() => void setTab('overview')}>
+              <ArrowLeft size={16} aria-hidden="true" />
+              {t('profile.account.backToProfile', 'Back to your profile')}
             </Button>
-          )}
-          <div className="flex flex-wrap items-center justify-end gap-2 ml-auto">
-            {ownView && (
-              <Button variant="outline" asChild>
-                <LocalizedLink to="/hub/saved">
-                  <Heart size={16} className="mr-2" aria-hidden="true" />
-                  {t('profile.favoritesShortcut', 'Favorites')}
-                </LocalizedLink>
+            <h1 className="font-display text-headline leading-tight md:text-display">
+              {t('profile.account.title', 'Account settings')}
+            </h1>
+            <p className="mt-2 max-w-reading text-muted-foreground">
+              {t('profile.account.description', 'Manage how you sign in, what you hear from us, and the data you keep here.')}
+            </p>
+          </header>
+        ) : (
+          <div className="flex items-center justify-between">
+            {isMeRoute ? (
+              <h1 className="sr-only">Your profile</h1>
+            ) : (
+              <Button variant="outline" onClick={() => navigate(-1)} className="rounded-element">
+                <ArrowLeft size={16} className="mr-2" />
+                Back
               </Button>
             )}
-            {isOwnProfile && (
-              <>
-                <ViewAsToggle
-                  lens={lens}
-                  onChange={(next) => void changeLens(next)}
-                  className="hidden md:inline-flex"
-                />
-                <Sheet open={viewAsOpen} onOpenChange={setViewAsOpen}>
-                  <SheetTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      aria-label="View profile as…"
-                      className="rounded-element md:hidden"
-                    >
-                      <Eye size={16} />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="bottom" className="pb-8">
-                    <SheetHeader className="mb-4">
-                      <SheetTitle>View profile as</SheetTitle>
-                    </SheetHeader>
-                    <div className="flex flex-col gap-2">
-                      {LENS_OPTIONS.map(({ value, label, hint }) => (
-                        <button
-                          key={value}
-                          type="button"
-                          aria-pressed={lens === value}
-                          onClick={() => {
-                            void changeLens(value);
-                          }}
-                          className={
-                            'rounded-element p-4 text-left transition-colors bg-surface-container' +
-                            (lens === value ? 'bg-muted/40' : 'border-border hover:bg-muted/30')
-                          }
-                        >
-                          <span className="block text-sm font-medium">{label}</span>
-                          <span className="block text-13 text-muted-foreground">{hint}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </SheetContent>
-                </Sheet>
-              </>
-            )}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleShare}
-              aria-label="Share profile"
-              className="rounded-element"
-            >
-              <Share2 size={16} />
-            </Button>
-            {!isOwnProfile && (
+            <div className="flex flex-wrap items-center justify-end gap-2 ml-auto">
+              {ownView && (
+                <Button variant="outline" asChild>
+                  <LocalizedLink to="/hub/saved">
+                    <Heart size={16} className="mr-2" aria-hidden="true" />
+                    {t('profile.favoritesShortcut', 'Favorites')}
+                  </LocalizedLink>
+                </Button>
+              )}
+              {isOwnProfile && (
+                <>
+                  <ViewAsToggle
+                    lens={lens}
+                    onChange={(next) => void changeLens(next)}
+                    className="hidden md:inline-flex"
+                  />
+                  <Sheet open={viewAsOpen} onOpenChange={setViewAsOpen}>
+                    <SheetTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        aria-label="View profile as…"
+                        className="rounded-element md:hidden"
+                      >
+                        <Eye size={16} />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="bottom" className="pb-8">
+                      <SheetHeader className="mb-4">
+                        <SheetTitle>View profile as</SheetTitle>
+                      </SheetHeader>
+                      <div className="flex flex-col gap-2">
+                        {LENS_OPTIONS.map(({ value, label, hint }) => (
+                          <button
+                            key={value}
+                            type="button"
+                            aria-pressed={lens === value}
+                            onClick={() => {
+                              void changeLens(value);
+                            }}
+                            className={
+                              'rounded-element p-4 text-left transition-colors bg-surface-container' +
+                              (lens === value ? 'bg-muted/40' : 'border-border hover:bg-muted/30')
+                            }
+                          >
+                            <span className="block text-sm font-medium">{label}</span>
+                            <span className="block text-13 text-muted-foreground">{hint}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                </>
+              )}
               <Button
                 variant="outline"
                 size="icon"
-                aria-label="Report user"
+                onClick={handleShare}
+                aria-label="Share profile"
                 className="rounded-element"
               >
-                <Flag size={16} />
+                <Share2 size={16} />
               </Button>
-            )}
+              {!isOwnProfile && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Report user"
+                  className="rounded-element"
+                >
+                  <Flag size={16} />
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-
+        )}
         {ownView ||
         !isOwnProfile ||
         sectionVisible(
@@ -342,23 +357,25 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
           'public',
         ) ? (
           <>
-            <ProfileHeader
-              profile={
-                isOwnProfile
-                  ? previewFilterProfile(profile as unknown as Record<string, unknown>, lens)
-                  : (profile as unknown as Record<string, unknown>)
-              }
-              isOwnProfile={ownView}
-              status={status}
-              score={score}
-              onEditStatus={() => setStatusPickerOpen(true)}
-              onEditProfile={() => void openEditor('profile')}
-              onEditAvatar={() => void openEditor('avatar')}
-              onEditSignals={() => void openEditor('status')}
-            />
+            {!isAccount && (
+              <ProfileHeader
+                profile={
+                  isOwnProfile
+                    ? previewFilterProfile(profile as unknown as Record<string, unknown>, lens)
+                    : (profile as unknown as Record<string, unknown>)
+                }
+                isOwnProfile={ownView}
+                status={status}
+                score={score}
+                onEditStatus={() => setStatusPickerOpen(true)}
+                onEditProfile={() => void openEditor('profile')}
+                onEditAvatar={() => void openEditor('avatar')}
+                onEditSignals={() => void openEditor('status')}
+              />
+            )}
 
-            <Tabs value={tab} onValueChange={setTab} style={{ width: '100%' }}>
-              <ScrollableTabList>
+            <Tabs value={tab} onValueChange={setTab} className="w-full min-w-0">
+              <ScrollableTabList aria-label={t('profile.sections', 'Profile sections')}>
                 {(
                   [
                     ['overview', t('profile.tabs.overview', 'Overview')],
@@ -468,7 +485,7 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
           </p>
         )}
       </div>
-      {ownView && <StatusPicker open={statusPickerOpen} onOpenChange={setStatusPickerOpen} />}
+      {ownView && !isAccount && <StatusPicker open={statusPickerOpen} onOpenChange={setStatusPickerOpen} />}
     </PageContainer>
   );
 }

@@ -84,7 +84,7 @@ export function PasswordStrengthMeter({ password, email, onScoreChange }: Props)
         ))}
       </div>
       {password && (
-        <span className="text-xs" style={{ color: COLORS[score] }}>
+        <span className="text-xs text-foreground">
           {labels[score]}
           {feedback ? ` — ${feedback}` : ''}
         </span>

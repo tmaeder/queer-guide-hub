@@ -46,7 +46,7 @@ function VisibilityRow({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
       <div>
         <Label htmlFor={id}>
           <span className="text-sm font-medium">{label}</span>
@@ -54,7 +54,7 @@ function VisibilityRow({
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger id={id} className="w-40 shrink-0">
+        <SelectTrigger id={id} className="w-full sm:w-40 sm:shrink-0">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -208,7 +208,7 @@ export function PrivacyTab({
             <CardTitle>Security Settings</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <div>
                 <Label>
                   <span className="text-sm font-medium">Passkey Authentication</span>
