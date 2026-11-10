@@ -922,8 +922,10 @@ body {
 
 /* Route navigation and the skip link focus this non-interactive landmark.
    Its viewport-wide outline looks like a pink divider below the breadcrumb.
-   Keep focus transfer, while leaving control focus indicators intact. */
-#main-content:focus {
+   The Hub sheet also takes focus as a container when opened by tap.
+   Keep focus transfer and leave control focus indicators intact. */
+#main-content:focus,
+.mobile-hub-sheet:focus {
   outline: none !important;
 }
 
