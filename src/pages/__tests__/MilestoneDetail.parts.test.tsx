@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MilestoneHero, MilestoneSidebar } from '../MilestoneDetail.parts';
+import { MilestoneHero, MilestoneSidebar, MilestoneSources, MilestoneStory } from '../MilestoneDetail.parts';
 import type { Milestone } from '@/types/milestone';
 
 vi.mock('@/components/routing/LocalizedLink', () => ({
@@ -94,6 +94,15 @@ describe('MilestoneHero', () => {
       </>,
     );
     expect(screen.getAllByText(/28 June 1969|June 28, 1969/)).toHaveLength(1);
+  });
+
+  it('links the opening to the story and the available sources', () => {
+    const entry = milestone({ sources: [{ label: 'Archive', url: 'https://example.org/archive' }] });
+    render(<><MilestoneHero milestone={entry} /><MilestoneStory milestone={entry} /><MilestoneSources milestone={entry} /></>);
+    expect(screen.getByRole('link', { name: 'What happened' }).getAttribute('href')).toBe('#story');
+    expect(screen.getByRole('link', { name: 'Sources' }).getAttribute('href')).toBe('#sources');
+    expect(document.getElementById('story')?.textContent).toContain(entry.description);
+    expect(document.getElementById('sources')?.textContent).toContain('Archive');
   });
 
   it('renders tags in the hero, at spine position S4', () => {

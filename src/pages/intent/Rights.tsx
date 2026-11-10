@@ -1,3 +1,4 @@
+import { KnowledgeReadingLinks } from '@/components/knowledge/KnowledgeReadingLinks';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -371,7 +372,7 @@ export default function RightsIntent() {
       ]}
       breadcrumbLabel={t('header.nav.rightsByCountry', 'Rights by country')}
       breadcrumbHref="/tags/rights-by-country"
-      eyebrow="Know before you go"
+      compactHero
       title="LGBTQ+ rights and safety, country by country"
       lede="Legal status for every country and territory we cover — criminalisation, partnership recognition, and how they compare. We can tell you what the law says; we cannot tell you what it means for your particular situation."
       scopeBar={
@@ -387,6 +388,12 @@ export default function RightsIntent() {
             onShowCriminalising={showInTable}
           />
         ) : null
+      }
+      topNav={
+        <KnowledgeReadingLinks links={[
+          { href: '/tags/rights-by-country/trans', label: t('rights.trans.title', 'Trans rights and safety') },
+          { href: '/tags/rights-by-country/sources', label: t('knowledge.rightsSources', 'Sources and methodology') },
+        ]} />
       }
       sections={sections}
       loading={isLoading}

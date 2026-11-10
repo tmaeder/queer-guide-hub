@@ -41,6 +41,7 @@ import { fetchTagWithCategories, type TagLegalSourceRow } from '@/hooks/usePageF
 import { placeTagRedirect } from '@/lib/placeTagRedirects';
 import { TagLegalSource } from '@/components/tags/TagLegalSource';
 import { TagClinicalSource } from '@/components/tags/TagClinicalSource';
+import { isUmbrellaRightsTag, rightTopicForTag, rightTopicHref } from '@/lib/rights/tagRightTopics';
 import { buildTagJsonLd } from '@/lib/tags/tagJsonLd';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 import { useTagUsageBreakdown, totalUses } from '@/hooks/useTagUsageBreakdown';
@@ -53,8 +54,9 @@ import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import { extractSections } from '@/lib/htmlSections';
 import { getCategoryShortName } from '@/components/resources/categoryMeta';
 import { resolveTagGlyph } from '@/lib/tags/tagIconography';
-import { PageContainer } from '@/components/layout/PageContainer';
-import { SinglePage, SingleSection } from '@/components/transit/SinglePage';
+import { PageContainer, SECTION_SCROLL_MARGIN } from '@/components/layout/PageContainer';
+import { KnowledgeReadingLinks, type KnowledgeReadingLink } from '@/components/knowledge/KnowledgeReadingLinks';
+import { SinglePage } from '@/components/transit/SinglePage';
 import { RouteStrip, type RouteStation } from '@/components/transit/RouteStrip';
 import { FactGrid, type Fact } from '@/components/transit/FactGrid';
 import { StatLine } from '@/components/transit/StatLine';
@@ -618,7 +620,9 @@ export default function TagDetail() {
           },
         ]
       : []),
-    { label: t('tags.detail.factTagged', 'Tagged on'), value: totalUses(usage) || 0 },
+    ...(totalUses(usage) > 0
+      ? [{ label: t('tags.detail.factTagged', 'Tagged on'), value: totalUses(usage) }]
+      : []),
     ...extractFacts(tag.scientific_data),
   ];
 
@@ -634,8 +638,53 @@ export default function TagDetail() {
     },
   ].filter((s) => s.value > 0);
 
+  const rightTopic = rightTopicForTag(tag.slug);
+  const hasLegalSource = legalSources.some((source) => source.official_title && source.source_url);
+  const hasSources = Boolean(
+    hasLegalSource ||
+    rightTopic ||
+    isUmbrellaRightsTag(tag.slug) ||
+    clinicalSources.some((source) => source.official_title && source.source_url) ||
+    references.length ||
+    tag.wikipedia_url ||
+    tag.wikidata_id,
+  );
+  const readingLinks: KnowledgeReadingLink[] = [];
+  if (hasStiProfile) {
+    readingLinks.push({ href: '/tags/sti-guide', label: t('stiGuide.title', 'The STI guide') });
+  }
+  if (interactionCount > 0) {
+    readingLinks.push({
+      href: '/tags/interactions',
+      label: t('interactions.title', 'Drug interaction chart'),
+    });
+  }
+  if (hasLegalSource || rightTopic || isUmbrellaRightsTag(tag.slug)) {
+    readingLinks.push({
+      href: rightTopic ? rightTopicHref(rightTopic) : '/tags/rights-by-country',
+      label: t('header.nav.rightsByCountry', 'Rights by country'),
+    });
+  }
+  if (hasSources) {
+    readingLinks.push({ href: '#term-sources', label: t('knowledge.sources', 'Sources and references') });
+  }
+  if (tag.long_description) {
+    readingLinks.push({ href: '#about', label: t('knowledge.fullEntry', 'Read the full entry') });
+  }
+  if (readingLinks.length < 3) {
+    const categorySlug = childSlug ?? parentSlug ?? (primary?.level === 0 ? primary.slug : undefined);
+    readingLinks.push({
+      href: categorySlug ? `/tags/c/${encodeURIComponent(categorySlug)}` : '/tags',
+      label: categorySlug
+        ? t('knowledge.moreTerms', 'More terms in this topic')
+        : t('knowledge.glossary', 'Browse the glossary'),
+    });
+  }
+
   const body = (
     <>
+      {displayDescription && facts.length > 0 && <FactGrid facts={facts} />}
+
       {stations.length > 1 && (
         <RouteStrip
           stations={stations}
@@ -646,17 +695,8 @@ export default function TagDetail() {
         />
       )}
 
-      {facts.length > 0 && <FactGrid facts={facts} />}
-
-      {(tag.description || tag.long_description) && (
-        <section id="about">
-          {tag.description && (
-            <p className="max-w-reading text-body-lg leading-relaxed">
-              {/* `currentSlug` is what stops a definition linking to itself —
-                  the rule InfographicTermChip established for figures. */}
-              <GlossaryLinkedText text={displayDescription} currentSlug={tag.slug} />
-            </p>
-          )}
+      {tag.long_description && (
+        <section id="about" className={SECTION_SCROLL_MARGIN}>
           {wiki ? (
             <div className="mt-6">
               <TagWikiContent html={wiki.htmlWithIds} currentSlug={tag.slug} />
@@ -733,27 +773,11 @@ export default function TagDetail() {
       <TagInterchange tagId={tag.id} tagName={tag.name} />
 
       <TagLinkedContent tagId={tag.id} tagName={tag.name} tagSlug={tag.slug} />
-
-      {!tag.description && !tag.long_description && (
-        <SingleSection title={t('tags.detail.about', 'About')}>
-          <p className="text-13 italic text-muted-foreground">
-            {t('tags.detail.noDefinition', 'No definition has been written for this term yet.')}
-          </p>
-        </SingleSection>
-      )}
     </>
   );
 
   const rail = (
     <>
-      {/* Rendered synchronously, outside every loading branch: a failed
-          ontology or linked-content fetch must not be able to blank a content
-          note. */}
-      <TagSafetyCallout
-        isSensitive={tag.is_sensitive}
-        topics={(tag as { sensitive_topics?: string[] | null }).sensitive_topics}
-      />
-
       {stats.length > 0 && (
         <SidebarCard eyebrow={t('tags.detail.whereItAppears', 'Where it appears')}>
           {/* Plain labels: StatLine keys its rows by `label`, so it takes a
@@ -764,80 +788,82 @@ export default function TagDetail() {
         </SidebarCard>
       )}
 
-      {/* Above "Elsewhere" on purpose: the law a term comes from outranks
-          "you can also read about this on Wikipedia". Sits alongside the
-          diagnostic-codes pointer below — a term is either clinical or legal,
-          so in practice only one of the two ever renders. */}
-      <TagLegalSource sources={legalSources} tagSlug={tag.slug} />
-      <TagClinicalSource sources={clinicalSources} />
+      <div id="term-sources" tabIndex={-1} className={`grid gap-4 empty:hidden ${SECTION_SCROLL_MARGIN}`}>
+        {/* Above "Elsewhere" on purpose: the law a term comes from outranks
+            "you can also read about this on Wikipedia". Sits alongside the
+            diagnostic-codes pointer below — a term is either clinical or legal,
+            so in practice only one of the two ever renders. */}
+        <TagLegalSource sources={legalSources} tagSlug={tag.slug} />
+        <TagClinicalSource sources={clinicalSources} />
 
-      {/* The flag an identity HAS (lesbian → lesbian flag). The tag that IS a
-          flag gets the full band in the body instead — never both. */}
-      <TagFlagRailCard tagSlug={tag.slug} />
+        {/* The flag an identity HAS (lesbian → lesbian flag). The tag that IS a
+            flag gets the full band in the body instead — never both. */}
+        <TagFlagRailCard tagSlug={tag.slug} />
 
-      {(tag.wikipedia_url ||
-        tag.wikidata_id ||
-        medicalCodeCount > 0 ||
-        workbookCount > 0 ||
-        references.length > 0) && (
-        <SidebarCard eyebrow={t('tags.detail.elsewhere', 'Elsewhere')}>
-          {/* An in-page anchor rather than the codes themselves: the rail is
-              240px and the band has four groups. This row is a pointer, not a
-              second copy. */}
-          {medicalCodeCount > 0 && (
-            <SidebarRow
-              label={t('tags.detail.codes.title', 'Diagnostic codes')}
-              value={<a href="#codes">{medicalCodeCount}</a>}
-            />
-          )}
-          {/* Same pointer convention — the band is in the body, this is a
-              count that jumps to it. */}
-          {workbookCount > 0 && (
-            <SidebarRow
-              label={t('tags.detail.workbooks.title', 'Exercises')}
-              value={<a href="#workbooks">{workbookCount}</a>}
-            />
-          )}
-          {tag.wikipedia_url && (
-            <SidebarRow
-              label="Wikipedia"
-              value={
-                <a href={tag.wikipedia_url} target="_blank" rel="noopener noreferrer">
-                  {t('tags.detail.readThere', 'Read')}
-                </a>
-              }
-            />
-          )}
-          {tag.wikidata_id && (
-            <SidebarRow
-              label="Wikidata"
-              value={
-                <a
-                  href={`https://www.wikidata.org/wiki/${tag.wikidata_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {tag.wikidata_id}
-                </a>
-              }
-            />
-          )}
-          {/* Reference links with no dedicated column — saferparty.ch on the
-              substance terms. The label is the URL's host rather than
-              `claim_summary`, so nothing the RPC did not vet gets printed. */}
-          {references.map((s) => (
-            <SidebarRow
-              key={s.source_url}
-              label={sourceHost(s.source_url)}
-              value={
-                <a href={s.source_url} target="_blank" rel="noopener noreferrer">
-                  {t('tags.detail.readThere', 'Read')}
-                </a>
-              }
-            />
-          ))}
-        </SidebarCard>
-      )}
+        {(tag.wikipedia_url ||
+          tag.wikidata_id ||
+          medicalCodeCount > 0 ||
+          workbookCount > 0 ||
+          references.length > 0) && (
+          <SidebarCard eyebrow={t('tags.detail.elsewhere', 'Elsewhere')}>
+            {/* An in-page anchor rather than the codes themselves: the rail is
+                240px and the band has four groups. This row is a pointer, not a
+                second copy. */}
+            {medicalCodeCount > 0 && (
+              <SidebarRow
+                label={t('tags.detail.codes.title', 'Diagnostic codes')}
+                value={<a href="#codes">{medicalCodeCount}</a>}
+              />
+            )}
+            {/* Same pointer convention — the band is in the body, this is a
+                count that jumps to it. */}
+            {workbookCount > 0 && (
+              <SidebarRow
+                label={t('tags.detail.workbooks.title', 'Exercises')}
+                value={<a href="#workbooks">{workbookCount}</a>}
+              />
+            )}
+            {tag.wikipedia_url && (
+              <SidebarRow
+                label="Wikipedia"
+                value={
+                  <a href={tag.wikipedia_url} target="_blank" rel="noopener noreferrer">
+                    {t('tags.detail.readThere', 'Read')}
+                  </a>
+                }
+              />
+            )}
+            {tag.wikidata_id && (
+              <SidebarRow
+                label="Wikidata"
+                value={
+                  <a
+                    href={`https://www.wikidata.org/wiki/${tag.wikidata_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {tag.wikidata_id}
+                  </a>
+                }
+              />
+            )}
+            {/* Reference links with no dedicated column — saferparty.ch on the
+                substance terms. The label is the URL's host rather than
+                `claim_summary`, so nothing the RPC did not vet gets printed. */}
+            {references.map((s) => (
+              <SidebarRow
+                key={s.source_url}
+                label={sourceHost(s.source_url)}
+                value={
+                  <a href={s.source_url} target="_blank" rel="noopener noreferrer">
+                    {t('tags.detail.readThere', 'Read')}
+                  </a>
+                }
+              />
+            ))}
+          </SidebarCard>
+        )}
+      </div>
 
       <ProvenanceLine
         addedBy={
@@ -910,8 +936,25 @@ export default function TagDetail() {
         status={
           ENTITY_KIND_LABELS[(tag as { entity_kind?: string }).entity_kind ?? ''] ?? undefined
         }
-        lead={<GlossaryLinkedText text={displayDescription} currentSlug={tag.slug} />}
-        tags={<TagAliasesDisplay tagId={tag.id} />}
+        density="dense"
+        lead={displayDescription ? (
+          <span id={!tag.long_description ? 'about' : undefined} className={SECTION_SCROLL_MARGIN}>
+            <GlossaryLinkedText text={displayDescription} currentSlug={tag.slug} />
+          </span>
+        ) : !tag.long_description
+          ? t('tags.detail.noDefinition', 'No definition has been written for this term yet.')
+          : undefined}
+        tags={
+          <div className="grid gap-4">
+            {!displayDescription && facts.length > 0 && <FactGrid facts={facts} />}
+            <TagSafetyCallout
+              isSensitive={tag.is_sensitive}
+              topics={(tag as { sensitive_topics?: string[] | null }).sensitive_topics}
+            />
+            <KnowledgeReadingLinks links={readingLinks.slice(0, 3)} />
+            <TagAliasesDisplay tagId={tag.id} />
+          </div>
+        }
         action={
           <div className="flex items-center gap-2">
             <FollowTagButton tagId={tag.id} tagName={tag.name} tagSlug={tag.slug} />

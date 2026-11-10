@@ -1,3 +1,4 @@
+import { KnowledgeReadingLinks } from '@/components/knowledge/KnowledgeReadingLinks';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -400,6 +401,11 @@ export default function RightsSources() {
           )}
           className="overflow-visible"
         >
+          <KnowledgeReadingLinks links={[
+            { href: '#source', label: t('rights.sources.section.source', 'The source') },
+            { href: '/tags/rights-by-country', label: t('header.nav.rightsByCountry', 'Rights by country') },
+            { href: '/tags/rights-by-country/trans', label: t('rights.trans.title', 'Trans rights and safety') },
+          ]} />
           <MethodRoute
             stops={methodStops}
             ariaLabel={t('rights.sources.route.aria', 'Method route')}

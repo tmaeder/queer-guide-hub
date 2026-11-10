@@ -1,4 +1,7 @@
 import { useParams } from 'react-router';
+import { KnowledgeReadingLinks, type KnowledgeReadingLink } from '@/components/knowledge/KnowledgeReadingLinks';
+import { useCompetitionHistory } from '@/hooks/useCompetitions';
+import { useMilestonesForEntity } from '@/hooks/useMilestones';
 import { useTrackView } from '@/hooks/useTrackView';
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -44,6 +47,9 @@ export default function PersonalityDetail() {
     queryFn: () => fetchPersonalityBySlug(slug!),
     retry: false,
   });
+
+  const { data: milestones } = useMilestonesForEntity('personality', personality?.id);
+  const { data: competitions } = useCompetitionHistory(personality?.id);
 
   // Merged-duplicate slug redirect (personality_slug_redirects); client-side
   // fallback for in-app navigation — the edge middleware handles the 301.
@@ -136,6 +142,25 @@ export default function PersonalityDetail() {
     );
   }
 
+  const readingLinks: KnowledgeReadingLink[] = [];
+  if (personality?.bio || personality?.description) {
+    readingLinks.push({
+      href: '#personality-biography',
+      label: personality.bio
+        ? t('knowledge.biography', 'Read the biography')
+        : t('knowledge.personAbout', 'About this person'),
+    });
+  }
+  if (milestones?.length) {
+    readingLinks.push({ href: '#personality-history', label: t('milestones.forPerson', 'Milestones') });
+  }
+  if (competitions?.length) {
+    readingLinks.push({
+      href: '#personality-competitions',
+      label: t('knowledge.competitionRecords', 'Competition records'),
+    });
+  }
+
   const tabs = personality
     ? [
         {
@@ -157,14 +182,19 @@ export default function PersonalityDetail() {
         ]}
         hero={
           personality ? (
-            <PersonalityHero
-              personality={personality}
-              countryId={countryId}
-              onProfessionClick={(profession) =>
-                navigate(`/personalities?profession=${encodeURIComponent(profession)}`)
-              }
-              onContentUpdated={refetch}
-            />
+            <>
+              <PersonalityHero
+                personality={personality}
+                countryId={countryId}
+                onProfessionClick={(profession) =>
+                  navigate(`/personalities?profession=${encodeURIComponent(profession)}`)
+                }
+                onContentUpdated={refetch}
+              />
+              {readingLinks.length > 0 && (
+                <div className="mt-4"><KnowledgeReadingLinks links={readingLinks} /></div>
+              )}
+            </>
           ) : null
         }
         tabs={tabs}
@@ -174,17 +204,21 @@ export default function PersonalityDetail() {
       />
       {personality && (
         <PageContainer flush>
-          <MilestonesForEntity
-            entityType="personality"
-            entityId={personality.id}
-            heading={t('milestones.forPerson', 'Milestones')}
-          />
+          <div id="personality-history" className="scroll-mt-24">
+            <MilestonesForEntity
+              entityType="personality"
+              entityId={personality.id}
+              heading={t('milestones.forPerson', 'Milestones')}
+            />
+          </div>
           {/* Renders nothing unless this person actually competed, so it costs
               nothing on the ~15k personalities who did not. */}
-          <CompetitionsForEntity
-            personalityId={personality.id}
-            heading={t('competitions.forPerson', 'Drag Race & pageants')}
-          />
+          <div id="personality-competitions" className="scroll-mt-24">
+            <CompetitionsForEntity
+              personalityId={personality.id}
+              heading={t('competitions.forPerson', 'Drag Race & pageants')}
+            />
+          </div>
           <SimilarItems
             entity={{ type: 'personality', id: personality.id }}
             contentTypes={['personality']}
