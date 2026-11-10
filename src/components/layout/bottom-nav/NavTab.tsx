@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { NavBadge } from './NavBadge';
@@ -21,7 +21,7 @@ interface NavTabProps {
    * required and still rendered, so the slot keeps a real href for
    * middle-click, "open in new tab" and crawlers.
    */
-  onIntercept?: (trigger: HTMLAnchorElement) => void;
+  onIntercept?: (event: MouseEvent<HTMLAnchorElement>) => void;
   badgeCount?: number;
   badgeLabel?: string;
   /** When signed in and this is the identity tab, render the avatar. */
@@ -83,7 +83,7 @@ export function NavTab({
           onTap();
           if (onIntercept && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
             e.preventDefault();
-            onIntercept(e.currentTarget);
+            onIntercept(e);
           }
         }}
         className={cn(
