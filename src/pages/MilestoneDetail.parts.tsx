@@ -19,6 +19,7 @@ import { displayableMilestoneImage } from '@/lib/milestoneImage';
 import { detailHref } from '@/lib/searchRoutes';
 import { cn } from '@/lib/utils';
 import type { Milestone, MilestoneLink } from '@/types/milestone';
+import { KnowledgeReadingLinks, type KnowledgeReadingLink } from '@/components/knowledge/KnowledgeReadingLinks';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 
 export function MilestoneHero({ milestone }: { milestone: Milestone }) {
@@ -36,6 +37,18 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
   // Persecution/negative milestones keep imagery documentary-sized — never a
   // full-bleed celebratory hero.
   const restrained = isRestrainedMilestone(milestone, era);
+  const readingLinks: KnowledgeReadingLink[] = [];
+  if (milestone.description) {
+    readingLinks.push({ href: '#story', label: t('milestones.sections.story', 'What happened') });
+  }
+  if (milestone.sources.length > 0) {
+    readingLinks.push({ href: '#sources', label: t('milestones.sections.sources', 'Sources') });
+  }
+  const linked = milestone.links?.find((link) => linkedHref(link));
+  const href = linked && linkedHref(linked);
+  readingLinks.push(href && linked
+    ? { href, label: linked.name }
+    : { href: '/history', label: t('knowledge.history', 'Queer history timeline') });
   return (
     // A plain div: DetailMasthead already renders the <header>, and nesting one
     // inside another is a landmark smell for no benefit.
@@ -52,6 +65,8 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
         eyebrow={t('milestones.eyebrow', 'Queer history')}
         title={milestone.title}
         status={dateLabel}
+        compact
+        size="compact"
       />
       {/* Module 01 — the fact strip. These five facts were a chip row unique to
           this type; the grid is the same grid every other single uses, which is
@@ -93,6 +108,7 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
           },
         ]}
       />
+      <div className="mt-4"><KnowledgeReadingLinks links={readingLinks} /></div>
       {imageUrl && (
         <figure className={cn('mt-6', restrained ? 'max-w-sm' : '')}>
           <span className="block overflow-hidden bg-muted">
@@ -133,7 +149,7 @@ export function MilestoneStory({ milestone }: { milestone: Milestone }) {
     // `aria-labelledby="milestone-story"` pointed at an id that never existed.
     // A real heading is the fix; max-w-[68ch] is the measure cap VenueOverview
     // already uses — without it the widened frame runs ~118 characters a line.
-    <SingleSection title={t('milestones.sections.story', 'What happened')}>
+    <SingleSection id="story" title={t('milestones.sections.story', 'What happened')}>
       <p className="max-w-[68ch] whitespace-pre-line text-body-lg leading-relaxed">
         <GlossaryLinkedText text={milestone.description} />
       </p>
@@ -145,7 +161,7 @@ export function MilestoneStory({ milestone }: { milestone: Milestone }) {
 export function MilestoneSources({ milestone }: { milestone: Milestone }) {
   const { t } = useTranslation();
   return (
-    <SingleSection title={t('milestones.sections.sources', 'Sources')}>
+    <SingleSection id="sources" title={t('milestones.sections.sources', 'Sources')}>
       <ol className="space-y-2">
         {milestone.sources.map((s, i) => (
           <li key={`${s.label}-${i}`} className="flex items-start gap-2 text-15">

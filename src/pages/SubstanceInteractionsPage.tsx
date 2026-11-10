@@ -1,3 +1,4 @@
+import { KnowledgeReadingLinks } from '@/components/knowledge/KnowledgeReadingLinks';
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -169,9 +170,17 @@ export default function SubstanceInteractionsPage() {
         )}
       </p>
 
+      <div className="mt-4">
+        <KnowledgeReadingLinks links={[
+          { href: '#checker-h', label: t('interactions.checkTitle', 'Check a combination') },
+          { href: '#grid-h', label: t('interactions.gridTitle', 'Every combination') },
+          ...(credits.length > 0 ? [{ href: '#interaction-sources', label: t('knowledge.sources', 'Sources and references') }] : []),
+        ]} />
+      </div>
+
       {/* ── Pair checker ─────────────────────────────────────────────── */}
       <section className="mt-8 bg-muted rounded-element p-4" aria-labelledby="checker-h">
-        <h2 id="checker-h" className="text-title font-bold">
+        <h2 id="checker-h" className="scroll-mt-24 text-title font-bold">
           {t('interactions.checkTitle', 'Check a combination')}
         </h2>
         <div className="mt-4 flex flex-col gap-4 sm:flex-row">
@@ -265,7 +274,7 @@ export default function SubstanceInteractionsPage() {
 
       {/* ── Full grid ────────────────────────────────────────────────── */}
       <section className="mt-8" aria-labelledby="grid-h">
-        <h2 id="grid-h" className="text-title font-bold">
+        <h2 id="grid-h" className="scroll-mt-24 text-title font-bold">
           {t('interactions.gridTitle', 'Every combination')}
         </h2>
         <p className="mt-2 text-13 text-muted-foreground">
@@ -372,8 +381,9 @@ export default function SubstanceInteractionsPage() {
           contributed somewhere. */}
       {credits.length > 0 && (
         <p
+          id="interaction-sources"
           data-testid="interaction-credit"
-          className="mt-8 text-13 leading-relaxed text-muted-foreground"
+          className="mt-8 scroll-mt-24 text-13 leading-relaxed text-muted-foreground"
         >
           {t('interactions.credit', 'Interaction data researched and published by')}{' '}
           {credits.map((s, i) => (

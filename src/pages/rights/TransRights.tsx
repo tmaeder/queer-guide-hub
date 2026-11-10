@@ -1,3 +1,4 @@
+import { KnowledgeReadingLinks } from '@/components/knowledge/KnowledgeReadingLinks';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -639,12 +640,19 @@ export default function TransRights() {
       ]}
       breadcrumbLabel={t('rights.trans.breadcrumb', 'Trans')}
       breadcrumbHref="/tags/rights-by-country/trans"
-      eyebrow={t('rights.trans.eyebrow', 'Rights')}
+      compactHero
       title={t('rights.trans.title', 'Trans rights and safety')}
       lede={t(
         'rights.trans.lede',
         'Whether a country will change your documents, what it makes you give up first, and what TGEU has been able to record about violence against trans people. Three separate things — we keep them separate.',
       )}
+      topNav={
+        <KnowledgeReadingLinks links={[
+          { href: '#recognition', label: t('rights.trans.section.recognition', 'Legal gender recognition') },
+          { href: '#sources', label: t('rights.trans.section.sources', 'Sources') },
+          { href: '/tags/rights-by-country', label: t('header.nav.rightsByCountry', 'Rights by country') },
+        ]} />
+      }
       sections={sections}
       loading={isLoading}
       error={(error as Error) ?? null}

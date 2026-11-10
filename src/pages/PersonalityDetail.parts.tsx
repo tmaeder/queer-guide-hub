@@ -468,7 +468,7 @@ export function PersonalityOverview({
         {personality.description && !personality.bio && (
           <Card>
             <CardHeader>
-              <CardTitle>About</CardTitle>
+              <CardTitle id="personality-biography" className="scroll-mt-24">About</CardTitle>
             </CardHeader>
             <CardContent>
               <Editable
@@ -491,7 +491,7 @@ export function PersonalityOverview({
         {personality.bio && (
           <Card>
             <CardHeader>
-              <CardTitle>Biography</CardTitle>
+              <CardTitle id="personality-biography" className="scroll-mt-24">Biography</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-4">

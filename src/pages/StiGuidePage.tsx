@@ -1,3 +1,4 @@
+import { KnowledgeReadingLinks } from '@/components/knowledge/KnowledgeReadingLinks';
 import { useMemo, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -462,7 +463,7 @@ export default function StiGuidePage() {
     <PageContainer>
       {/* ── Masthead ─────────────────────────────────────────────────────── */}
       <Eyebrow>{t('stiGuide.eyebrow', 'Sexual health')}</Eyebrow>
-      <h1 className="mt-2 font-display text-hero">{t('stiGuide.title', 'The STI guide')}</h1>
+      <h1 className="mt-2 font-display text-headline md:text-display">{t('stiGuide.title', 'The STI guide')}</h1>
       <p className="mt-6 max-w-reading text-body-lg leading-relaxed">
         {t(
           'stiGuide.intro',
@@ -479,6 +480,13 @@ export default function StiGuidePage() {
         )}
       </p>
 
+      <div className="mt-4">
+        <KnowledgeReadingLinks links={[
+          { href: '#testing-h', label: t('stiGuide.testingTitle', 'When to test') },
+          { href: '#protect-h', label: t('stiGuide.protectTitle', 'What protects you') },
+          { href: '#testing-sites', label: t('testing.where_to_test', 'Where to get tested') },
+        ]} />
+      </div>
       <Key />
 
       {/* The four plates as stations. Earns its place on length alone: the
