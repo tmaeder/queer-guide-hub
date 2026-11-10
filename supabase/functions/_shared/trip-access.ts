@@ -1,3 +1,5 @@
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+
 /**
  * What the caller may do with a trip, decided the way the database's own RLS
  * decides it, for edge functions that read and write trip data with the
@@ -13,8 +15,6 @@
  *   'read'   - accepted viewer with access to private member data
  *   'edit'  - owner, or an accepted owner/editor member
  */
-import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-
 export type TripAccess = 'none' | 'public' | 'read' | 'edit'
 
 export async function tripAccess(admin: SupabaseClient, tripId: string, userId: string): Promise<TripAccess> {
