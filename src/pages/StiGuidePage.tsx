@@ -1,4 +1,3 @@
-import { KnowledgeReadingLinks } from '@/components/knowledge/KnowledgeReadingLinks';
 import { useMemo, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -480,15 +479,6 @@ export default function StiGuidePage() {
         )}
       </p>
 
-      <div className="mt-4">
-        <KnowledgeReadingLinks links={[
-          { href: '#testing-h', label: t('stiGuide.testingTitle', 'When to test') },
-          { href: '#protect-h', label: t('stiGuide.protectTitle', 'What protects you') },
-          { href: '#testing-sites', label: t('testing.where_to_test', 'Where to get tested') },
-        ]} />
-      </div>
-      <Key />
-
       {/* The four plates as stations. Earns its place on length alone: the
           per-infection blocks put the narrow layout at ~12,600px, so "when do I
           test" is eleven infection blocks below the fold and a reader who came
@@ -502,8 +492,9 @@ export default function StiGuidePage() {
         onNavigate={goToStation}
         orientation="horizontal"
         label={t('stiGuide.sections', 'Sections')}
-        className="mt-8"
+        className="mt-4"
       />
+      <Key />
 
       {/* ── 01 · How it spreads ──────────────────────────────────────────── */}
       <Plate
