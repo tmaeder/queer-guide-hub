@@ -1,3 +1,5 @@
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+
 /**
  * What the caller may do with a trip, decided the way the database's own RLS
  * decides it, for edge functions that read and write trip data with the
@@ -15,10 +17,7 @@
  */
 export type TripAccess = 'none' | 'public' | 'read' | 'edit'
 
-// deno-lint-ignore no-explicit-any
-type Client = any
-
-export async function tripAccess(admin: Client, tripId: string, userId: string): Promise<TripAccess> {
+export async function tripAccess(admin: SupabaseClient, tripId: string, userId: string): Promise<TripAccess> {
   const { data: trip, error } = await admin
     .from('trips')
     .select('id, owner_id, is_public')
