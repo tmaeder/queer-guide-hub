@@ -25,6 +25,16 @@ for (const width of [390, 1280]) {
       await expect(link).toBeInViewport();
       await expect(link).toHaveAttribute('href', path);
     }
+    const feature = hero.getByRole('region', { name: 'Zürich city guide' });
+    const city = feature.getByRole('link', { name: 'Zürich city guide' });
+    const community = feature.getByRole('link', {
+      name: 'Community space Regenbogenhaus',
+      exact: true,
+    });
+    await expect(city).toBeInViewport();
+    await expect(city).toHaveAttribute('href', '/city/zuerich');
+    await expect(community).toBeInViewport();
+    await expect(community).toHaveAttribute('href', '/venues/regenbogenhaus');
     expect(await page.locator('html').evaluate((el) => el.scrollWidth)).toBeLessThanOrEqual(width);
 
     await hero.getByRole('combobox').click();
@@ -46,7 +56,8 @@ test('homepage prioritizes listings and city guides ', async ({
   const map = page.getByRole('region', { name: 'What are you here for?' });
   await expect(map.getByRole('link')).toHaveCount(7);
   await expect(map.locator('a[href="/search"]')).toBeVisible();
-  expect(await page.locator('main h2').allTextContents()).toEqual([
+  expect((await page.locator('main h2').allTextContents()).map((text) => text.trim())).toEqual([
+    'Zürich',
     expect.stringMatching(/^Places and events/),
     'City guides',
     'What are you here for?',
@@ -54,6 +65,22 @@ test('homepage prioritizes listings and city guides ', async ({
   await expect(page.getByRole('region', { name: 'Your lines' })).toHaveCount(0);
   await map.locator('a[href="/search"]').click();
   await expect(page).toHaveURL(/\/search(?:\?|$)/);
+});
+
+test('the city feature links to the directory when there is no upcoming event', async ({ page }) => {
+  await page.route('**/rest/v1/rpc/search_events', (route) => route.fulfill({ json: [] }));
+  const eventsRequest = page.waitForResponse((response) =>
+    response.url().endsWith('/rest/v1/rpc/search_events'),
+  );
+  await openHome(page);
+  await eventsRequest;
+
+  const feature = page.getByRole('region', { name: 'Zürich city guide' });
+  await expect(feature.getByRole('link', { name: /Browse Zürich events/ })).toHaveAttribute(
+    'href',
+    '/events?city=Zurich',
+  );
+  await expect(feature.locator('time')).toHaveCount(0);
 });
 
 test('a returning visitor sees their history and suggested places after local discovery', async ({

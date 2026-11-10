@@ -46,10 +46,11 @@ const NONE: never[] = [];
 // venues are safety-gated by RLS, so every venues query keys on the viewer:
 // the app does not clear the query cache on sign-out, and an entry fetched
 // while signed in must never be served to an anonymous visitor.
-export function useFeaturedVenue() {
+export function useFeaturedVenue(enabled = true) {
   const { user } = useAuth();
   const { data, isLoading } = useQuery({
     queryKey: ['venues-featured-hero', user?.id ?? 'anon'],
+    enabled,
     queryFn: async () => {
       const { data } = await supabase
         .from('venues')

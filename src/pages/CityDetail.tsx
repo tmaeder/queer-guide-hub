@@ -31,7 +31,6 @@ import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { SeeAllLink } from '@/components/ui/SectionHeader';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { GeoPhotoInset } from '@/components/geo/GeoPhotoInset';
 import { GeoSafetyBanner, GeoSafetyVerdict } from '@/components/geo/GeoSafetyBlock';
 import { GeoSectionList, GeoRouteRail } from '@/components/geo/GeoSections';
 import {
@@ -44,6 +43,7 @@ import { NearbyTriptych } from '@/components/discovery/NearbyTriptych';
 import { CityLandmarksRail } from '@/components/geo/CityLandmarksRail';
 import { CityActions } from './city-detail/CityActions';
 import { CityAtAGlance } from './city-detail/CityAtAGlance';
+import { CityDiscoveryLead } from './city-detail/CityDiscoveryLead';
 import { CityOverviewTab } from './city-detail/CityOverviewTab';
 import { CityRightsTab } from './city-detail/CityRightsTab';
 import { CityVenuesTab, CityDistricts, CityEventsTab } from './city-detail/CityVenuesTab.parts';
@@ -67,22 +67,25 @@ export default function CityDetail() {
   const { toggleFavorite, isFavorited } = useFavorites('city');
   const { fetchCityImage } = useCityImages();
   const { city, loading, refetch: refetchCity } = useOptimizedCity(slug ?? '');
+  const cityPhoto = resolveEntityImage('city', city);
   useTrackView({
     type: 'city',
     slug: city?.slug,
     title: city?.name,
-    image: resolveEntityImage('city', city).url ?? undefined,
+    image: cityPhoto.url ?? undefined,
     country: city?.countries?.name,
   });
   // Sync fast path mirroring fetchCityImage's short-circuit (curated wins,
   // then unflagged image_url) so the photo inset exists in the FIRST render for
   // every backfilled city instead of waiting on a JS round-trip. The async
   // edge/Pexels path below only runs on a true miss.
-  const syncImageUrl = city
-    ? city.curated_image_url || (!city.image_flagged && city.image_url) || ''
-    : '';
-  const [fetchedImageUrl, setFetchedImageUrl] = useState<string>('');
-  const imageUrl = syncImageUrl || fetchedImageUrl;
+  const syncImageUrl = cityPhoto.url;
+  const [fetchedImage, setFetchedImage] = useState<{
+    cityId: string;
+    url: string;
+    metadata?: unknown;
+  }>();
+  const currentFallback = fetchedImage?.cityId === city?.id ? fetchedImage : undefined;
   const { track } = useTrackEvent();
 
   useEffect(() => {
@@ -173,34 +176,39 @@ export default function CityDetail() {
   const { villages, loading: villagesLoading } = useQueerVillages({ cityId: city?.id ?? null });
 
   useEffect(() => {
-    if (!city) return;
-    // Only hit the network for the photo on a true miss — the sync fast path
-    // above already covers curated/unflagged images.
-    if (!syncImageUrl) {
-      (async () => {
-        try {
-          const result = await fetchCityImage(city.id, city.name, city.countries?.name || '', {
-            existing: {
-              image_url: city.image_url,
-              curated_image_url: city.curated_image_url,
-              image_flagged: city.image_flagged,
-            },
+    if (!city || syncImageUrl) return;
+    let current = true;
+    void (async () => {
+      try {
+        const result = await fetchCityImage(city.id, city.name, city.countries?.name || '', {
+          existing: {
+            image_url: city.image_url,
+            curated_image_url: city.curated_image_url,
+            image_flagged: city.image_flagged,
+          },
+        });
+        if (!current) return;
+        if (result?.image_url) {
+          setFetchedImage({
+            cityId: city.id,
+            url: result.image_url,
+            metadata: result.image_metadata,
           });
-          if (result?.image_url) {
-            setFetchedImageUrl(result.image_url);
-            return;
-          }
-          // Miss: prefer a real gallery photo over the abstract texture fallback
-          const { data } = await supabase.functions.invoke('get-pexels-images', {
-            body: { query: city.name, type: 'city' },
-          });
-          const first = data?.images?.[0];
-          setFetchedImageUrl(first?.url || first?.thumbnail || '');
-        } catch {
-          // Image loading failure is non-critical, fallback to no image
+          return;
         }
-      })();
-    }
+        const { data } = await supabase.functions.invoke('get-pexels-images', {
+          body: { query: city.name, type: 'city' },
+        });
+        const first = data?.images?.[0];
+        const url = first?.url || first?.thumbnail;
+        if (current && url) setFetchedImage({ cityId: city.id, url, metadata: first });
+      } catch {
+        // The opening still works with its safety verdict and any local listings.
+      }
+    })();
+    return () => {
+      current = false;
+    };
   }, [city, syncImageUrl, fetchCityImage]);
 
   const breadcrumbs = useMemo(
@@ -291,12 +299,6 @@ export default function CityDetail() {
           presentation: 'disclosure',
           content: (
             <div className="flex flex-col gap-6">
-              <GeoPhotoInset
-                src={imageUrl}
-                alt={city.name}
-                fallbackKey={city.id}
-                caption={city.countries?.name ?? null}
-              />
               {city.editorial_hook &&
                 introduction.lead !== city.editorial_hook.trim() &&
                 city.editorial_hook !== city.description && (
@@ -399,12 +401,24 @@ export default function CityDetail() {
 
   const eyebrowParts = [t('cities.detail.eyebrow', 'City')];
   if (city.countries?.name) eyebrowParts.push(city.countries.name);
+  const criminalization = city.countries?.lgbti_criminalization as
+    | Record<string, unknown>
+    | null
+    | undefined;
+  const safetyFirst = !city.countries || hasAnyCriminalizationSignal(criminalization);
+  const safetyBanner = (
+    <GeoSafetyBanner
+      criminalization={criminalization}
+      countryName={city.countries?.name}
+      cityId={city.id}
+    />
+  );
 
   return (
     <>
       <SinglePage
         type="city"
-        density="compact"
+        density="dense"
         eyebrow={eyebrowParts.join(' · ')}
         title={localizedField(
           city.name,
@@ -442,14 +456,7 @@ export default function CityDetail() {
         }
         body={
           <>
-            {/* Safety first, full width, above everything. */}
-            <GeoSafetyBanner
-              criminalization={
-                city.countries?.lgbti_criminalization as Record<string, unknown> | null | undefined
-              }
-              countryName={city.countries?.name}
-              cityId={city.id}
-            />
+            {safetyFirst && safetyBanner}
             <TripCoveringBanner
               target={{ type: 'city', cityId: city.id, countryId: city.countries?.id ?? null }}
             />
@@ -460,13 +467,22 @@ export default function CityDetail() {
                   : 'lg:grid-cols-1'
               }
             >
-              <div className="flex flex-col gap-4">
-                <GeoSafetyVerdict
-                  countryId={city.countries?.id}
-                  equalityScore={city.countries?.equality_score}
-                />
-                <CityAtAGlance city={city} />
-              </div>
+              <CityDiscoveryLead
+                cityId={city.id}
+                cityName={city.name}
+                timeZone={city.timezone}
+                imageUrl={syncImageUrl || currentFallback?.url}
+                imageMetadata={syncImageUrl ? cityPhoto.metadata : currentFallback?.metadata}
+                events={events}
+                venues={venues}
+                safety={
+                  <GeoSafetyVerdict
+                    countryId={city.countries?.id}
+                    equalityScore={city.countries?.equality_score}
+                  />
+                }
+              />
+              <CityAtAGlance city={city} />
               <CityMapTab
                 city={city}
                 venues={venues.slice(0, 12)}
@@ -474,6 +490,7 @@ export default function CityDetail() {
                 openLabel={t('cities.detail.openMap', 'Open the full map')}
               />
             </LocationOverview>
+            {!safetyFirst && safetyBanner}
             <GeoRouteRail
               sections={sections}
               activeId={activeId}

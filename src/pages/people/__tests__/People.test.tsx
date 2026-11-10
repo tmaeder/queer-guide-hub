@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
+import { within } from '@testing-library/react';
 import { renderWithProviders, screen, expectNoNestedInteractive } from '@/test/test-utils';
 
 const profile = { user_mode: null as string | null };
@@ -96,17 +97,20 @@ beforeEach(() => {
 });
 
 describe('People hub', () => {
-  it('places the preferences action alongside the page title', async () => {
+  it('places the preferences action alongside the page title', () => {
     renderWithProviders(<People />);
-    await screen.findByTestId('people-connection-map');
     const title = screen.getByRole('heading', { level: 1 });
     const action = screen.getByRole('button', { name: /I'm here for/i });
     expect(title.closest('header')).toContainElement(action);
   });
 
-  it('puts a privacy-safe connection map before the content rails', async () => {
+  it('keeps the connection map reachable after the listings', () => {
     renderWithProviders(<People />);
-    expect(await screen.findByTestId('people-connection-map')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Kaserne' }).compareDocumentPosition(
+      screen.getByRole('heading', { name: 'Connection map' }),
+    ) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const opening = screen.getByRole('heading', { level: 1 }).closest('header')!;
+    expect(within(opening).getByRole('link', { name: 'Connection map' })).toHaveAttribute('href', '#map');
     expect(screen.getAllByText('Connection map').length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: 'Open full map' })).toHaveAttribute('href', '/map');
   });
@@ -117,8 +121,8 @@ describe('People hub', () => {
     renderWithProviders(<People />);
     expect(screen.getAllByText('Community spaces').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Groups to join').length).toBeGreaterThan(0);
-    expect(screen.getByText('Kaserne')).toBeInTheDocument();
-    expect(screen.getByText('Queer Hiking')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Kaserne' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^Queer Hiking$/ })).toBeInTheDocument();
   });
 
   it('uses route links instead of the retired mode tab strip', () => {
@@ -159,6 +163,7 @@ describe('People hub', () => {
     spacesScope = 'country';
     renderWithProviders(<People />);
     expect(screen.getByText(/Nothing is listed in Zürich itself/)).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Kaserne' })).toBeNull();
   });
 
   // EditorialDetailLayout prints a section's label and "see all" action even

@@ -10,8 +10,10 @@ test.describe('Venues — URL ↔ state contract', () => {
     await page.waitForLoadState('domcontentloaded');
 
     // Search input pre-filled.
-    const search = page.getByPlaceholder('Search venues & organizations...');
+    const search = page.getByRole('textbox', { name: /search venues/i });
     await expect(search).toHaveValue('berghain');
+    await expect(page.getByRole('heading', { name: 'Venues', level: 1 })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Featured venue' })).toHaveCount(0);
 
     // Sort dropdown set to Newest (created_at).
     const sortTrigger = page.getByRole('combobox', { name: /sort venues/i });

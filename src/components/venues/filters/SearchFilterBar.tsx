@@ -1,7 +1,8 @@
 import { Input } from '@/components/ui/input';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Navigation} from '@/components/icons';
+import { Search, Filter, Navigation } from '@/components/icons';
+import { useTranslation } from 'react-i18next';
 
 interface SearchFilterBarProps {
   search: string;
@@ -27,22 +28,30 @@ export function SearchFilterBar({
   onToggleAdvanced,
   activeFilterCount,
 }: SearchFilterBarProps) {
+  const { t } = useTranslation();
   return (
-    <div className="flex flex-col sm:flex-row gap-4">
-      <div className="relative flex-1">
-        <Search
-          aria-hidden="true"
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
-        />
+    <div className="flex items-start gap-2">
+      <div className="relative min-w-0 flex-1">
         <Input
-          placeholder="Search venues & organizations..."
+          placeholder={t('search.placeholders.venues', 'Search venues…')}
+          aria-label={t('search.placeholders.venues', 'Search venues…')}
           value={search}
           onChange={(e) => onSearchInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && onSearch()}
-          className="pl-12 h-11 rounded-element"
+          className="h-11 rounded-element pe-12"
         />
+        <Button
+          type="button"
+          onClick={onSearch}
+          variant="ghost"
+          size="icon"
+          className="absolute end-0 top-0 size-11 rounded-element"
+          aria-label="Search"
+        >
+          <Search size={16} />
+        </Button>
       </div>
-      <div className="flex gap-2">
+      <div className="flex shrink-0 gap-2">
         <Button
           variant={nearMe ? 'default' : 'outline'}
           onClick={onNearMeToggle}
@@ -53,14 +62,12 @@ export function SearchFilterBar({
         >
           {isDetectingLocation ? <TrackLoader size={16} /> : <Navigation size={16} />}
         </Button>
-        <Button onClick={onSearch} size="icon" className="h-11 w-11 rounded-element" aria-label="Search">
-          <Search size={16} />
-        </Button>
         <Button
           variant={showAdvanced ? 'default' : 'outline'}
           onClick={onToggleAdvanced}
-          className="h-11 rounded-element gap-2"
+          className="h-11 min-w-11 gap-1 rounded-element px-2"
           aria-label="Toggle filters"
+          aria-expanded={showAdvanced}
         >
           <Filter size={16} />
           {activeFilterCount > 0 && (

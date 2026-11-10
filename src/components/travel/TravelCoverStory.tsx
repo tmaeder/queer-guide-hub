@@ -1,65 +1,86 @@
 import { useTranslation } from 'react-i18next';
 import { ArrowRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { ExternalImg } from '@/components/ui/ExternalImg';
+import { Image } from '@/components/ui/Image';
+import { ImageCredit } from '@/components/ui/ImageCredit';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
-import { getFallbackImage } from '@/utils/fallbackImages';
 import { useTravelCoverStory } from '@/hooks/useTravelCoverStory';
+import { useGoNowDestinations } from '@/hooks/useGoNowDestinations';
 
-/**
- * Editorial cover for the inspiration section — image-led plate with the
- * current editorial headline + pull quote. Self-hides when no cover is live:
- * the rails below are whitelist-backed and never empty, so an invented
- * fallback story would only duplicate them.
- */
+/** Lead with the published cover, or use a real destination from the seasonal rail. */
 export function TravelCoverStory() {
   const { t } = useTranslation();
   const { data: story, isLoading } = useTravelCoverStory();
+  const { data: destinations } = useGoNowDestinations(6);
 
-  if (isLoading || !story) return null;
-  const img = isValidImageUrl(story.imageUrl) ? story.imageUrl : null;
-  if (!img) return null;
+  if (isLoading) return null;
 
-  const body = (
-    <article className="group relative overflow-hidden rounded-container bg-surface-container">
-      <div className="relative aspect-[16/9] sm:aspect-[21/9]">
-        <ExternalImg
-          src={img}
-          cfWidth={1200}
-          fallbackSrc={getFallbackImage('place', story.headline)}
-          alt={story.entityName ?? story.headline}
-          className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
-        />
-        <div className="img-scrim-readable absolute inset-0" />
-        <div className="absolute bottom-0 start-0 end-0 p-6 text-white sm:p-8">
-          <p className="mb-2 text-2xs uppercase tracking-[0.18em] opacity-90">
-            {t('pages.travel.cover.kicker', 'Cover story')}
-            {story.entityName ? ` · ${story.entityName}` : ''}
-          </p>
-          <h3 className="font-display text-display font-bold leading-tight">{story.headline}</h3>
-          {story.pullQuote && (
-            <p className="mt-2 max-w-prose text-body-lg opacity-90">{story.pullQuote}</p>
-          )}
-          <p className="mt-4 flex items-center gap-2 text-13 font-medium">
-            {story.author && <span className="opacity-90">{story.author}</span>}
-            {story.href && (
-              <span className="inline-flex items-center gap-1.5">
-                {t('pages.travel.cover.read', 'Read the guide')}
-                <ArrowRight size={14} aria-hidden />
-              </span>
-            )}
-          </p>
-        </div>
+  const published = story?.href ? story : null;
+  const destination = published
+    ? undefined
+    : (destinations?.find((item) => isValidImageUrl(item.imageUrl) || hasCityNetwork(item.slug)) ??
+      destinations?.[0]);
+  const href =
+    published?.href || (destination && `/city/${destination.slug || destination.cityId}`);
+  if (!href) return null;
+
+  const image = published?.imageUrl ?? destination?.imageUrl;
+  const title = published?.headline ?? destination?.name;
+  const context = published?.entityName ?? destination?.countryName;
+  const credit = destination?.imageMetadata as
+    | { attribution?: string; photographer?: string; license?: string }
+    | undefined;
+  const network =
+    destination && hasCityNetwork(destination.slug) ? (
+      <div className="h-full bg-muted px-8 py-4" aria-hidden="true">
+        <CityNetwork slug={destination.slug} variant="thumb" className="h-full" />
       </div>
-    </article>
-  );
+    ) : null;
+  const detail =
+    published?.pullQuote ??
+    (destination?.reason.kind === 'trending'
+      ? destination.editorialHook || t('pages.travel.goNow.trending', 'Trending now')
+      : destination?.reason.label);
 
-  if (!story.href) return <div className="mb-12">{body}</div>;
   return (
-    <div className="mb-12">
-      <LocalizedLink to={story.href} className="block no-underline" aria-label={story.headline}>
-        {body}
-      </LocalizedLink>
-    </div>
+    <LocalizedLink
+      to={href}
+      className="group block min-w-0 overflow-hidden rounded-panel bg-card no-underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+    >
+      {isValidImageUrl(image) ? (
+        <Image
+          src={image}
+          alt=""
+          aspect="hero"
+          rounded="none"
+          priority
+          sizes="(min-width: 1024px) 52vw, 92vw"
+          fallbackArtwork={network}
+        >
+          <ImageCredit
+            attribution={credit?.attribution || credit?.photographer}
+            license={credit?.license}
+            className="absolute bottom-2 start-2 hidden rounded-badge bg-card px-2 py-1 group-has-[img]:block"
+          />
+        </Image>
+      ) : network ? (
+        <div className="aspect-[21/9]">{network}</div>
+      ) : null}
+      <div className="flex items-center gap-4 px-4 py-4 sm:px-6">
+        <div className="min-w-0 flex-1">
+          {context && <p className="text-13 text-muted-foreground">{context}</p>}
+          <h2 className="break-words font-display text-headline leading-tight group-hover:underline rtl:font-sans rtl:font-bold">
+            {title}
+          </h2>
+          {detail && <p className="mt-2 line-clamp-2 text-15 text-muted-foreground">{detail}</p>}
+          {published?.author && (
+            <p className="mt-2 text-13 text-muted-foreground">{published.author}</p>
+          )}
+        </div>
+        <ArrowRight size={20} aria-hidden className="shrink-0 rtl:rotate-180" />
+      </div>
+    </LocalizedLink>
   );
 }

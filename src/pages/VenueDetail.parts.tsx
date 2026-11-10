@@ -13,7 +13,12 @@ import { BrandMark } from '@/components/marketplace/BrandMark';
 import { useVenueCategoryLabel } from '@/lib/venueCategories';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { MapInset } from '@/components/transit/MapInset';
-import { PhotoInset } from '@/components/transit/PhotoInset';
+import type { ReactNode } from 'react';
+import { Image } from '@/components/ui/Image';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+import { venueClosureLabel } from '@/lib/venueClosureLabel';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { isValidTimezone } from '@/utils/timezone';
 import { TripAction } from '@/components/trips/TripAction';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
@@ -30,7 +35,6 @@ import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard
 import { EntityMap, type EntityMapMarker } from '@/components/map/EntityMap';
 import { NearbyMapLegend } from '@/components/map/NearbyMapLegend';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
-import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { buildPlaceChain } from '@/config/breadcrumbs';
 import type { TFunction } from 'i18next';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
@@ -352,7 +356,7 @@ export function VenueActions({
   onShare: () => void;
   t: TFunction;
 }) {
-  const isClosed = Boolean(venue.closed_at);
+  const isClosed = venueClosureLabel(venue) !== null;
   return (
     <>
       {!isClosed && (
@@ -422,40 +426,104 @@ export function VenueActions({
   );
 }
 
-/** Cover photo + the country's criminalisation banner — the two things the
- *  hero carried that are not the masthead. Rendered at the top of the body. */
-export function VenueBodyLead({ venue }: { venue: VenueWithRelations }) {
+/** The story and visit links share the opening with real venue imagery. */
+export function VenueBodyLead({
+  venue,
+  hasLocation,
+  hasHours,
+  nextEvent,
+  children,
+}: {
+  venue: VenueWithRelations;
+  hasLocation?: boolean;
+  hasHours?: boolean;
+  nextEvent?: Database['public']['Tables']['events']['Row'];
+  children?: ReactNode;
+}) {
+  const { t, i18n } = useTranslation();
+  const photo = venue.images?.find(isValidImageUrl);
+  if (!photo && !venue.logo_url && !hasLocation && !hasHours && !nextEvent && !children) return null;
+
+  const eventDate = nextEvent
+    ? new Intl.DateTimeFormat(i18n?.language, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        timeZone:
+          nextEvent.timezone && isValidTimezone(nextEvent.timezone) ? nextEvent.timezone : undefined,
+      }).format(new Date(nextEvent.start_date))
+    : null;
+
   return (
-    <>
-      {venue.countries?.lgbti_criminalization && (
-        <SafetyAlertBanner
-          criminalization={venue.countries.lgbti_criminalization as Record<string, unknown>}
-          countryName={venue.countries.name ?? ''}
-        />
+    <div className={photo ? 'grid min-w-0 gap-4 md:grid-cols-2 md:items-start md:gap-6' : 'min-w-0'}>
+      <div className="min-w-0 space-y-4">
+        {!photo && venue.logo_url && (
+          <BrandMark
+            name={venue.name}
+            logoUrl={venue.logo_url}
+            onInk={Boolean(venue.logo_on_ink)}
+            className="h-24 w-24 rounded-container"
+            monogramClassName="font-display text-headline"
+            padding="p-2.5"
+          />
+        )}
+        {children}
+        {(hasLocation || hasHours) && (
+          <div className="flex flex-wrap gap-x-4">
+            {hasLocation && (
+              <a href="#location" className="inline-flex min-h-11 items-center font-bold underline underline-offset-4">
+                {t('venues.detail.section.location', 'Location & contact')}
+              </a>
+            )}
+            {hasHours && (
+              <a href="#hours" className="inline-flex min-h-11 items-center font-bold underline underline-offset-4">
+                {t('venues.detail.section.hours', 'Opening hours')}
+              </a>
+            )}
+          </div>
+        )}
+        {nextEvent && (
+          <LocalizedLink
+            to={`/events/${nextEvent.slug || nextEvent.id}`}
+            className="group block rounded-element bg-card px-4 py-2 no-underline outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring"
+          >
+            <span className="block text-13 text-muted-foreground">
+              {t('venues.detail.section.whatsOn', "What's on here")} ·{' '}
+              <time dateTime={nextEvent.start_date}>{eventDate}</time>
+            </span>
+            <span className="block break-words font-bold group-hover:underline">
+              {localizedField(nextEvent.title, nextEvent.title_i18n as I18nMap, i18n?.language)}
+            </span>
+          </LocalizedLink>
+        )}
+      </div>
+      {photo && (
+        <figure className="m-0 min-w-0 overflow-hidden rounded-panel">
+          <Image
+            src={photo}
+            alt={venue.name}
+            aspect="card"
+            rounded="none"
+            priority
+            fallbackEntityType="venue"
+            fallbackKey={venue.id}
+            fallbackArtwork={
+              venue.logo_url ? (
+                <div className="flex h-full items-center justify-center">
+                  <BrandMark
+                    name={venue.name}
+                    logoUrl={venue.logo_url}
+                    onInk={Boolean(venue.logo_on_ink)}
+                    className="size-24"
+                  />
+                </div>
+              ) : undefined
+            }
+            sizes="(min-width: 1024px) 32vw, (min-width: 768px) 45vw, 92vw"
+          />
+        </figure>
       )}
-      {/* A PHOTOGRAPH only. The logo used to fall in here when a venue had no
-          photo, and a logo is a small mark: stretched to the hero frame it
-          rendered as a blurred banner (Atlanta Eagle's ~200px logo at
-          ~900px wide). Logo-only venues get the mark at mark size instead. */}
-      {venue.images?.[0] ? (
-        <PhotoInset
-          src={venue.images[0]}
-          alt={venue.name}
-          fallbackEntityType="venue"
-          fallbackKey={venue.id}
-          priority
-          caption={[venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ') || null}
-        />
-      ) : venue.logo_url ? (
-        <BrandMark
-          name={venue.name}
-          logoUrl={venue.logo_url}
-          className="h-24 w-24 rounded-container"
-          monogramClassName="font-display text-headline"
-          padding="p-2.5"
-        />
-      ) : null}
-    </>
+    </div>
   );
 }
 

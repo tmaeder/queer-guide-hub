@@ -1,18 +1,20 @@
 import { useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GroupCard } from '@/components/groups/GroupCard';
 import { GroupInvitationReview } from '@/components/groups/GroupInvitationReview';
 import { GroupDiscoveryRail } from '@/components/groups/GroupDiscoveryRail';
+import { GroupDiscoveryOpening } from '@/components/groups/GroupDiscoveryOpening';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { Button } from '@/components/ui/button';
 import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
 import { GroupFilters } from '@/components/groups/GroupFilters';
 import { useGroups } from '@/hooks/useGroups';
 import { useRecommendedGroups } from '@/hooks/useRecommendedGroups';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { Users, Search, TrendingUp, Sparkles, Star } from '@/components/icons';
+import { ArrowDown, Users, Search, TrendingUp, Sparkles, Star } from '@/components/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PageHeader } from '@/components/layout/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -35,8 +37,13 @@ export default function Groups() {
     isLeaving,
   } = useGroups();
   const [searchParams] = useSearchParams();
+  const { pathname } = useLocation();
   // /my-groups redirects here with ?tab=mine — land on the My Groups tab.
-  const initialTab = searchParams.get('tab') === 'mine' && user ? 'my-groups' : 'discover';
+  const mine = searchParams.get('tab') === 'mine' && !!user;
+  const [selectedTab, setSelectedTab] = useState<string | null>(null);
+  const activeTab =
+    (selectedTab === 'my-groups' && !user ? null : selectedTab) ??
+    (mine ? 'my-groups' : 'discover');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showMyGroups, setShowMyGroups] = useState(false);
@@ -93,27 +100,33 @@ export default function Groups() {
     [groups],
   );
 
-  const trendingGroups = useMemo(
+  const groupsByActivity = useMemo(
     () =>
       [...groups]
-        .filter((g) => !g.is_private)
+        .filter((g) => !g.is_private && !g.archived_at)
         .sort(
           (a, b) =>
             new Date(b.last_activity_at ?? b.created_at).getTime() -
             new Date(a.last_activity_at ?? a.created_at).getTime(),
-        )
-        .slice(0, 12),
+        ),
     [groups],
+  );
+
+  const [recentCutoff] = useState(() => Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const recentGroups = groupsByActivity.filter(
+    (group) => Date.parse(group.last_activity_at ?? group.created_at) >= recentCutoff,
   );
 
   const popularGroups = useMemo(
     () =>
       [...groups]
-        .filter((g) => !g.is_private)
+        .filter((g) => !g.is_private && !g.archived_at)
         .sort((a, b) => b.member_count - a.member_count)
         .slice(0, 6),
     [groups],
   );
+
+  const openingGroups = (recentGroups.length > 0 ? recentGroups : popularGroups).slice(0, 2);
 
   const railHandlers = {
     isAuthenticated: !!user,
@@ -126,30 +139,59 @@ export default function Groups() {
   };
 
   return (
-    <PageContainer className="flex flex-col gap-6 relative">
-      <PageHeader
-        title={t('pages.groups.title', 'Community Groups')}
-        subtitle={t(
-          'pages.groups.subtitle',
-          'Connect with like-minded people, share experiences, and build meaningful relationships in safe and inclusive spaces.',
+    <PageContainer flush className="relative flex flex-col gap-6 pb-8 pt-4 md:pb-12">
+      <header className="grid gap-4">
+        <div>
+          <h1 className="font-display text-headline leading-tight tracking-tight md:text-display">
+            {t('pages.groups.title', 'Community Groups')}
+          </h1>
+          <p className="mt-2 max-w-reading text-pretty text-muted-foreground">
+            {t(
+              'pages.groups.opening.subtitle',
+              'Find a queer group, show up to a meetup, or start something of your own.',
+            )}
+          </p>
+        </div>
+        {!mine && (
+          <GroupDiscoveryOpening
+            groups={openingGroups}
+            groupsLoading={isLoading}
+            recentlyActive={recentGroups.length > 0}
+          />
         )}
-        actions={
-          user ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {!mine && (
+            <Button asChild variant="soft">
+              <a href="#group-directory">
+                <ArrowDown size={16} aria-hidden="true" />
+                {t('pages.groups.opening.browse', 'Browse groups')}
+              </a>
+            </Button>
+          )}
+          {user ? (
             <CreateGroupDialog
               onCreateGroup={createGroup}
               isCreating={isCreating}
               open={createOpen}
               onOpenChange={setCreateOpen}
             />
-          ) : undefined
-        }
-      />
+          ) : (
+            <Button asChild variant="ghost">
+              <LocalizedLink to={`/auth?redirect=${encodeURIComponent(pathname)}`}>
+                {t('pages.groups.opening.signIn', 'Sign in to join')}
+              </LocalizedLink>
+            </Button>
+          )}
+        </div>
+      </header>
       <GroupInvitationReview />
 
       <Tabs
-        defaultValue={initialTab}
-        style={{ flexDirection: 'column', gap: '1.5rem' }}
-        className="flex"
+        id="group-directory"
+        tabIndex={-1}
+        value={activeTab}
+        onValueChange={setSelectedTab}
+        className="flex scroll-mt-28 flex-col gap-6"
       >
         <TabsList
           style={{ width: '100%', gridTemplateColumns: user ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}
@@ -298,13 +340,6 @@ export default function Groups() {
                   {...railHandlers}
                 />
               )}
-
-              <GroupDiscoveryRail
-                title={t('pages.groups.trending', 'Trending this week')}
-                icon={TrendingUp}
-                groups={trendingGroups}
-                {...railHandlers}
-              />
 
               <div className="flex flex-col gap-4">
                 <h2 className="text-lg font-semibold flex items-center gap-2">

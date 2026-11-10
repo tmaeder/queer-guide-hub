@@ -1,5 +1,5 @@
 import { VenueRatingForm } from '@/components/venues/VenueRatingForm';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { OnBluesky } from '@/components/social/OnBluesky';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +14,9 @@ import { useVenueSafetyScore } from '@/hooks/useVenueSafetySignals';
 import { TripAction } from '@/components/trips/TripAction';
 import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
 import { EntityKindChips } from '@/components/entity/EntityKindChips';
+import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
+import { selectDiscoveryEvent } from '@/lib/discoveryEvent';
+import { useVenueCategoryLabel } from '@/lib/venueCategories';
 import {
   fetchVenue,
   VenueActions,
@@ -44,9 +47,6 @@ import type {
   EntityDescriptorResult,
 } from '@/components/entity/entityDescriptor';
 
-// Same key as /venues, so the two share one cached upcoming-events list.
-const ALL_UPCOMING = {};
-
 /**
  * Venue adapter: turns the raw venue query into a normalised `EntityDescriptor`.
  * Owns the add-to-trip dialog + check-in refresh state so the shell stays dumb.
@@ -55,7 +55,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
   const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { events } = useEventsQuery(ALL_UPCOMING);
+  const [openedAt] = useState(Date.now);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['venue-detail', slug],
@@ -69,6 +69,8 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
   });
 
   const venue: VenueWithRelations | null = data?.venue ?? null;
+  const categoryLabel = useVenueCategoryLabel(venue?.category);
+  const { events: venueEvents } = useEventsQuery(venue ? { venueIds: [venue.id] } : null);
   const reviews: VenueReview[] = useMemo(() => data?.reviews ?? [], [data]);
   const notFound = data?.notFound ?? false;
   const averageRating = useMemo(
@@ -113,7 +115,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
     const countryName = venue.countries?.name ?? null;
     const closure = venueClosureLabel(venue);
     const isClosed = closure !== null;
-    const venueEvents = events.filter((e) => e.venue_id === venue.id);
+
     const lat = typeof venue.latitude === 'number' ? venue.latitude : null;
     const lng = typeof venue.longitude === 'number' ? venue.longitude : null;
 
@@ -140,6 +142,23 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
       ratingCount: reviews.length,
     });
 
+    const hasLocation = Boolean(
+      venue.address ||
+      venue.phone ||
+      venue.email ||
+      venue.website ||
+      venue.instagram ||
+      hasSocialLinks(venue.social_links) ||
+      (lat !== null && lng !== null),
+    );
+    const hasHours = !isClosed && hasUsableHours(venue.hours);
+    const nextEvent = isClosed ? undefined : selectDiscoveryEvent(venueEvents, openedAt);
+    const opening = (
+      <VenueBodyLead venue={venue} hasLocation={hasLocation} hasHours={hasHours} nextEvent={nextEvent}>
+        {venue.description && <VenueAbout venue={venue} onContentUpdated={refetch} />}
+      </VenueBodyLead>
+    );
+
     return {
       source: 'venue',
       id: venue.id,
@@ -148,53 +167,18 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
       // `EntitySingle` builds the masthead from `single`; `hero` is only read
       // by the legacy scroll shell, which venue no longer uses.
       hero: null,
-      // Spec module order for `venue`: 01 fact strip, 02 hours (the OWNER
-      // module), 03 occurrences, 04 access, 08 nested entity, 16 map inset.
-      //
-      // Module 02 is the type's owner and renders for 626 of 23,335 live
-      // venues — 2.7%. `venues.hours` is free-form jsonb that only the scraper
-      // path fills. It is not faked for the other 97.3%; the section is simply
-      // absent, and the gap is written down rather than papered over.
-      // Module 04 is worse: 6 venues have `accessibility_attributes` at all.
+      // Start with the venue's story. The section list only exposes stops with data.
       sections: [
         {
           id: 'about',
           title: t('venues.detail.section.about', 'About'),
           when: Boolean(venue.description),
-          render: () => <VenueAbout venue={venue} onContentUpdated={refetch} />,
+          render: () => opening,
         },
         {
-          // Location & contact is a SECTION here, not the rail it used to be.
-          //
-          // Measured on prod: a typical venue put 301px in the 1fr column and
-          // 1,028px in the 360px rail — the frame gave the wide column to
-          // almost nothing and squeezed the address, the contact links and the
-          // map into the narrow one. The venue corpus is thin by nature (hours
-          // 2.5%, amenities 8.4%, a real description 46% of 25,186 rows), so
-          // unlike a city or country this type has no long body to balance a
-          // sidebar against.
-          //
-          // A section rather than a `bodyLead` block because bodyLead renders
-          // BEFORE everything: parked there it pushed "About" from 470px down
-          // to 1,601px on Stonewall Inn, burying the description under the
-          // contact card. As a section it takes its place in the fixed module
-          // order and earns a station on the route strip.
-          //
-          // The e2e contract is unaffected: `detail-content.spec.ts` locates
-          // the word "Contact" and `.flex.items-center.gap-3 a[target=_blank]`
-          // anywhere on the page, never scoped to an <aside>; the markup is
-          // unchanged, only its column.
           id: 'location',
           title: t('venues.detail.section.location', 'Location & contact'),
-          when: Boolean(
-            venue.address ||
-            venue.phone ||
-            venue.email ||
-            venue.website ||
-            venue.instagram ||
-            hasSocialLinks(venue.social_links) ||
-            (typeof venue.latitude === 'number' && typeof venue.longitude === 'number'),
-          ),
+          when: hasLocation,
           render: () => (
             <VenueLocationContact
               venue={venue}
@@ -273,7 +257,11 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         },
       ],
       single: {
-        eyebrow: [t('venues.detail.eyebrow', 'Venue'), cityName].filter(Boolean).join(' · '),
+        eyebrow: [venue.category ? categoryLabel : t('venues.detail.eyebrow', 'Venue'), cityName]
+          .filter(Boolean)
+          .join(' · '),
+        density: 'compact',
+        openingSectionId: 'about',
         status:
           closure === 'temporarily_closed'
             ? t('venues.detail.temporarilyClosed', 'Temporarily closed')
@@ -285,25 +273,15 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         track: 'pink',
         bodyLead: (
           <>
-            <VenueBodyLead venue={venue} />
-            {/* Self-hides when the venue is in no guide, so it stays out of
-                `sections` — a station pointing at nothing is a dead stop. */}
-            <VenueGuides venue={venue} />
-            <OnBluesky
-              entityType="venue"
-              entityId={venue.id}
-              gated={Boolean((venue as { safety_gated?: boolean }).safety_gated)}
+            <SafetyAlertBanner
+              criminalization={venue.countries?.lgbti_criminalization}
+              countryName={countryName ?? ''}
             />
+            {!venue.description && opening}
           </>
         ),
-        // AFTER the sections, not in bodyLead. Up there it put a definition of
-        // a generic tag ("Queer-Friendly — Welcoming to queer people") between
-        // the photo and the venue's own description on every tagged venue.
-        bodyTail: <FromTheGlossary tags={venue.tags} />,
-        tags: (
+        bodyTail: (
           <div className="flex flex-col gap-4">
-            {/* What this page is — a venue, and also an organisation when one
-                runs it. Same chips, same slot as the organisation page. */}
             <EntityKindChips
               kinds={[
                 { kind: 'venue' },
@@ -320,6 +298,9 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
             />
             <VenueFacts venue={venue} t={t} />
             <VenueTags venue={venue} onContentUpdated={refetch} />
+            <VenueGuides venue={venue} />
+            <OnBluesky entityType="venue" entityId={venue.id} gated={Boolean(venue.safety_gated)} />
+            <FromTheGlossary tags={venue.tags} />
           </div>
         ),
         action: <VenueActions venue={venue} onShare={handleShare} t={t} />,
@@ -382,7 +363,9 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
     };
   }, [
     venue,
-    events,
+    venueEvents,
+    categoryLabel,
+    openedAt,
     reviews,
     averageRating,
     nearbyPoints,

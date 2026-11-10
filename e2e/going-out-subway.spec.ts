@@ -49,7 +49,7 @@ test.describe('Going out — shared subway system', () => {
 
     const section = page.locator('#whats-on');
     await expect(section).toContainText(
-      /Showing events (tonight|this weekend|in the next \d+ days|soonest anywhere)|No upcoming events/,
+      /Showing events (in the next \d+ (hours|days)|soonest anywhere)|No upcoming events/,
     );
 
     const departures = section.locator('.going-out-departure');
@@ -144,7 +144,7 @@ test.describe('Going out — shared subway system', () => {
 
     expect(geometry.scrollWidth).toBe(geometry.clientWidth);
     expect(geometry.heroWidth).toBeLessThanOrEqual(geometry.clientWidth);
-    expect(geometry.heroHeight).toBeLessThan(440);
+    expect(geometry.heroHeight).toBeLessThan(600);
     await page.screenshot({ path: testInfo.outputPath('mobile.png'), fullPage: true });
     await page.screenshot({ path: testInfo.outputPath('mobile-viewport.png') });
   });

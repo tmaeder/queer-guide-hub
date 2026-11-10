@@ -20,23 +20,9 @@ import type { SectionDef } from '@/components/entity/editorial';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 import { PageIntro } from '@/components/layout/PageIntro';
-import { Button } from '@/components/ui/button';
+import { GoingOutHighlights } from '@/components/intent/GoingOutHighlights';
 import { NoStationTrack } from '@/components/transit/NoStationTrack';
 import './going-out.css';
-
-/**
- * `/going-out` — bars, clubs and what is actually on.
- *
- * Venue-led by necessity, not by preference. The corpus holds 315 future events
- * in total and 18 within the next seven days across 130 cities, so the median
- * city has nothing on tonight; a calendar-led page would render an empty grid
- * almost everywhere. It leads with 7,015 nightlife venues instead and treats
- * events as a bonus, labelled with the time window they actually came from.
- *
- * "Open now" is deliberately absent as a filter: opening hours exist on 609 of
- * 23,484 venues (2.6%), so filtering on them would discard 97% of the catalogue
- * on arrival.
- */
 
 export default function GoingOut() {
   const { t } = useTranslation();
@@ -69,6 +55,18 @@ export default function GoingOut() {
 
   const sections: SectionDef[] = [
     {
+      id: 'whats-on',
+      label: "What's on",
+      content: (
+        <UpcomingEvents eventsResult={eventsResult} cityName={cityName} variant="going-out" />
+      ),
+      action: (
+        <LocalizedLink to="/events" className="text-13 no-underline hover:underline">
+          All events
+        </LocalizedLink>
+      ),
+    },
+    {
       id: 'plan',
       label: 'Where to go',
       kicker: cityName ? `Nightlife in ${cityName}` : 'Nightlife near you',
@@ -83,7 +81,10 @@ export default function GoingOut() {
           <ul className="going-out-venues list-none p-0 m-0 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {venues.map((v) => (
               <li key={v.id}>
-                <VenueCard venue={v as unknown as Parameters<typeof VenueCard>[0]['venue']} />
+                <VenueCard
+                  venue={v as unknown as Parameters<typeof VenueCard>[0]['venue']}
+                  coverAspect="hero"
+                />
               </li>
             ))}
           </ul>
@@ -114,18 +115,6 @@ export default function GoingOut() {
           className="text-13 no-underline hover:underline"
         >
           All venues
-        </LocalizedLink>
-      ),
-    },
-    {
-      id: 'whats-on',
-      label: "What's on",
-      content: (
-        <UpcomingEvents eventsResult={eventsResult} cityName={cityName} variant="going-out" />
-      ),
-      action: (
-        <LocalizedLink to="/events" className="text-13 no-underline hover:underline">
-          All events
         </LocalizedLink>
       ),
     },
@@ -218,20 +207,24 @@ export default function GoingOut() {
       title={title}
       lede={lede}
       header={
-        <PageIntro className="going-out-hero" title={title} lede={lede}>
-          <div className="mt-6 flex flex-wrap gap-4">
-            <Button asChild>
-              <a className="no-underline" href="#plan">
-                {t('pages.goingOut.findStop', 'Find your next stop')}
-              </a>
-            </Button>
-            <Button asChild variant="soft">
-              <a className="no-underline" href="#whats-on">
+        <header className="going-out-hero grid items-center gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12">
+          <PageIntro title={title} lede={lede}>
+            <div className="mt-4 flex flex-wrap gap-x-4">
+              <a className="inline-flex min-h-11 items-center font-bold underline underline-offset-4" href="#whats-on">
                 {t('pages.goingOut.seeEvents', 'See what’s on')}
               </a>
-            </Button>
-          </div>
-        </PageIntro>
+              <a className="inline-flex min-h-11 items-center font-bold underline underline-offset-4" href="#plan">
+                {t('pages.goingOut.findStop', 'Find your next stop')}
+              </a>
+            </div>
+          </PageIntro>
+          <GoingOutHighlights
+            venues={venues}
+            eventsResult={locLoading ? undefined : eventsResult}
+            cityName={cityName}
+            waitingForVenues={locLoading || venuesLoading}
+          />
+        </header>
       }
       sections={sections}
       footer={

@@ -1922,6 +1922,12 @@
     "backHome": "Zurück zur Startseite"
   },
   "home": {
+    "cityFeature": {
+      "exploreCity": "Zürich entdecken",
+      "browseEvents": "Veranstaltungen in Zürich",
+      "whatsOn": "Was läuft",
+      "communitySpace": "Community-Treffpunkt"
+    },
     "discovery": {
       "openMap": "Karte öffnen",
       "search": "Orte und Events suchen…",

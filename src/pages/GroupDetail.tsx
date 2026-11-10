@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { useParams } from 'react-router';
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { useLocation, useParams } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge, badgeVariants } from '@/components/ui/badge';
+import { Image } from '@/components/ui/Image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -19,17 +18,13 @@ import {
   Settings,
   Calendar,
   MessageSquare,
-  Clock,
-  Shield,
-  Crown,
-  User,
   Folder,
   Scale,
 } from '@/components/icons';
 import { useQueryClient } from '@tanstack/react-query';
-import { useGroups, Group } from '@/hooks/useGroups';
+import { useGroups } from '@/hooks/useGroups';
 import { useGroupPosts } from '@/hooks/useGroupPosts';
-import { useGroupEvents } from '@/hooks/useGroupEvents';
+import { useGroupEvents, usePublicGroupMeetup } from '@/hooks/useGroupEvents';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { GroupPostCard } from '@/components/groups/GroupPostCard';
@@ -39,6 +34,7 @@ import { AddMemberDialog } from '@/components/groups/AddMemberDialog';
 import { InviteFriendsDialog } from '@/components/groups/InviteFriendsDialog';
 import { CreateGroupEventDialog } from '@/components/groups/CreateGroupEventDialog';
 import { GroupEventCard } from '@/components/groups/GroupEventCard';
+import { GroupNextMeetup } from '@/components/groups/GroupNextMeetup';
 import { useTranslation } from 'react-i18next';
 import { Editable } from '@/components/admin/inline/Editable';
 import { GroupCollections } from '@/components/groups/GroupCollections';
@@ -48,14 +44,26 @@ import { HubNavBar } from '@/components/hub/HubNavBar';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
-  const navigate = useLocalizedNavigate();
-  const { user } = useAuth();
+  const { pathname } = useLocation();
+  const { user, loading: authLoading } = useAuth();
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { groups, userGroups, isLoading, joinGroup, isJoining, leaveGroup, isLeaving } =
-    useGroups();
+  const {
+    groups, userGroups, isLoading, joinGroup, isJoining,
+    requestJoin, isRequesting, leaveGroup, isLeaving,
+  } = useGroups();
+  const listedGroup = groups.find((item) => item.id === groupId);
+  const membership = userGroups.find((item) => item.id === groupId);
+  const group = listedGroup ?? membership;
+  const listedRole = listedGroup && 'user_role' in listedGroup ? listedGroup.user_role : undefined;
+  const role = typeof listedRole === 'string' ? listedRole : membership?.user_role;
+  const pending = listedGroup?.has_pending_request;
+  const canViewGroup = !!group && (!!user || (!group.is_private && !group.archived_at));
+  const canViewEvents = !!user && !!group && (!group.is_private || !!group.is_member);
+  const publicMeetup = usePublicGroupMeetup(groupId, !authLoading && !user && canViewGroup);
+  const signInPath = `/auth?redirect=${encodeURIComponent(pathname)}`;
 
   const {
     posts,
@@ -67,11 +75,13 @@ export default function GroupDetail() {
     unlikePost,
     voteOnPoll,
     togglePin,
-  } = useGroupPosts(groupId || '');
+  } = useGroupPosts(user && group ? group.id : '');
 
   const {
     events,
     isLoading: eventsLoading,
+    isError: eventsError,
+    refetch: refetchEvents,
     createEvent,
     isCreatingEvent,
     joinEvent,
@@ -80,53 +90,26 @@ export default function GroupDetail() {
     isLeavingEvent,
     deleteEvent,
     isDeletingEvent,
-  } = useGroupEvents(groupId || '');
+  } = useGroupEvents(canViewEvents ? group.id : '');
 
-  const [group, setGroup] = useState<Group | null>(null);
   const [activeTab, setActiveTab] = useState('about');
+  const [openedAt] = useState(Date.now);
 
-  useEffect(() => {
-    if (!groupId) return;
-
-    const foundGroup = [...groups, ...userGroups].find((g) => g.id === groupId);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setGroup(foundGroup || null);
-  }, [groupId, groups, userGroups]);
-
-  const handleJoin = () => {
-    if (!group) return;
-
-    joinGroup(group.id);
-    setGroup((prev) =>
-      prev ? { ...prev, is_member: true, member_count: prev.member_count + 1 } : null,
-    );
-  };
-
-  const handleLeave = () => {
-    if (!group) return;
-
-    leaveGroup(group.id);
-    setGroup((prev) =>
-      prev ? { ...prev, is_member: false, member_count: prev.member_count - 1 } : null,
-    );
-  };
-
-  if (!user) {
-    return (
-      <>
-        <HubNavBar />
-        <PageContainer>
-          <Alert>
-            <AlertDescription>
-              {t('pages.groupDetail.signInRequired', 'Please sign in to view group details.')}
-            </AlertDescription>
-          </Alert>
-        </PageContainer>
-      </>
-    );
+  function openSection(tab: string, target = 'group-detail-sections') {
+    setActiveTab(tab);
+    requestAnimationFrame(() => {
+      const section = document.getElementById(target);
+      section?.focus({ preventScroll: true });
+      section?.scrollIntoView({ block: 'start' });
+    });
   }
 
-  if (isLoading) {
+  function refreshGroup() {
+    void queryClient.invalidateQueries({ queryKey: ['groups'] });
+    void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
+  }
+
+  if (authLoading || isLoading) {
     return (
       <>
         <HubNavBar />
@@ -135,6 +118,26 @@ export default function GroupDetail() {
             <div className="h-8 bg-muted rounded-element w-1/3" />
             <div className="h-32 bg-muted rounded-element" />
             <div className="h-64 bg-muted rounded-element" />
+          </div>
+        </PageContainer>
+      </>
+    );
+  }
+
+  if (!user && !canViewGroup) {
+    return (
+      <>
+        <HubNavBar />
+        <PageContainer className="grid gap-4">
+          <Alert>
+            <AlertDescription>
+              {t('pages.groupDetail.signInRequired', 'Please sign in to view group details.')}
+            </AlertDescription>
+          </Alert>
+          <div>
+            <Button asChild>
+              <LocalizedLink to={signInPath}>{t('common.signIn', 'Sign in')}</LocalizedLink>
+            </Button>
           </div>
         </PageContainer>
       </>
@@ -163,210 +166,190 @@ export default function GroupDetail() {
     );
   }
 
-  const canManage = group.user_role === 'admin' || group.user_role === 'moderator';
+  const canManage = role === 'admin' || role === 'moderator';
+  const meetup = canViewEvents
+    ? events.find(
+        (event) =>
+          Date.parse(event.start_date) >= openedAt &&
+          !['dead', 'cancelled', 'dead_link'].includes(event.liveness_status),
+      )
+    : !user ? publicMeetup.data : undefined;
 
   return (
     <>
       <HubNavBar />
-      <PageContainer className="flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="soft" onClick={() => navigate(-1)}>
-            <ArrowLeft size={16} className="mr-2" />
-            Back
-          </Button>
-        </div>
-
-        {/* Group Hero */}
-        <Card>
-          <CardContent style={{ padding: '32px' }}>
-            <div className="flex flex-col md:flex-row gap-6">
-              <Avatar style={{ height: 96, width: 96 }}>
-                <AvatarImage src={group.image_url || undefined} alt={group.name} />
-                <AvatarFallback className="bg-foreground text-background text-2xl">
-                  {group.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-
-              <div className="flex-1 text-center md:text-left flex flex-col gap-4">
-                <div>
-                  <div className="flex items-center gap-4 justify-center md:justify-start mb-2">
-                    <h1 className="text-3xl font-bold">
-                      <Editable
-                        contentType="community_groups"
-                        recordId={group.id}
-                        field="name"
-                        value={group.name}
-                        onSaved={(next) =>
-                          setGroup((prev) => (prev ? { ...prev, name: String(next ?? '') } : prev))
-                        }
-                      >
-                        {group.name}
-                      </Editable>
-                    </h1>
-                    {/* Labelled, not a bare icon. A reader asked to see that a group is
-                      public up here, and an icon-only cue is also a WCAG 1.4.1 failure —
-                      lock vs globe at 20px carries the whole meaning. The wording is
-                      lifted from the About tab's copy of this same fact, which this
-                      change removes. */}
-                    <Badge variant="outline" className="flex items-center gap-1 border-0">
-                      {group.is_private ? <Lock size={12} /> : <Globe size={12} />}
-                      {group.is_private ? 'Private group' : 'Public group'}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center gap-4 justify-center md:justify-start text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Users size={16} />
-                      <span>{group.member_count} members</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock size={16} />
-                      <span>Created {new Date(group.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-
-                  {group.user_role && (
-                    <div className="flex justify-center md:justify-start mt-2">
-                      <Badge
-                        variant="secondary"
-                        style={{ alignItems: 'center', gap: '4px' }}
-                        className="flex border-0"
-                      >
-                        {group.user_role === 'admin' && <Crown size={12} />}
-                        {group.user_role === 'moderator' && <Shield size={12} />}
-                        {group.user_role === 'member' && <User size={12} />}
-                        {group.user_role}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-
-                {group.description && (
+      <PageContainer flush className="flex min-w-0 flex-col gap-6 pb-8 pt-4 md:pb-12">
+        <header className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-8">
+          <div className="grid min-w-0 gap-4">
+            <LocalizedLink
+              to="/hub/groups"
+              className="inline-flex min-h-11 w-fit items-center gap-2 text-sm font-semibold text-muted-foreground underline-offset-4 hover:underline"
+            >
+              <ArrowLeft size={16} aria-hidden="true" />
+              {t('pages.groupDetail.opening.allGroups', 'All groups')}
+            </LocalizedLink>
+            <div className="flex min-w-0 items-start gap-4">
+              <div className="w-16 shrink-0 sm:w-20">
+                <Image
+                  src={group.image_url}
+                  alt=""
+                  aspect="square"
+                  imageRole="thumb"
+                  rounded="element"
+                  fallbackEntityType="default"
+                  fallbackKey={group.id}
+                  fallbackGlyph="community"
+                />
+              </div>
+              <div className="min-w-0">
+                <h1 className="break-words font-display text-headline leading-tight tracking-tight md:text-display">
                   <Editable
                     contentType="community_groups"
                     recordId={group.id}
-                    field="description"
-                    value={group.description}
-                    onSaved={(next) =>
-                      setGroup((prev) =>
-                        prev ? { ...prev, description: String(next ?? '') } : prev,
-                      )
-                    }
-                    fieldOverride={{ type: 'textarea' }}
-                    as="div"
+                    field="name"
+                    value={group.name}
+                    onSaved={refreshGroup}
                   >
-                    <p className="text-muted-foreground">{group.description}</p>
+                    {group.name}
                   </Editable>
-                )}
-
-                {group.tags && group.tags.length > 0 && (
-                  <div className="flex flex-col gap-2">
-                    <span className="text-sm font-medium text-muted-foreground">Tags:</span>
-                    <div className="flex flex-wrap gap-2">
-                      {group.tags.map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="border-0 text-xs cursor-pointer"
-                          onClick={() => navigate(`/tags/${encodeURIComponent(tag)}`)}
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-2 justify-center md:justify-start">
-                  {!group.is_member ? (
-                    <Button onClick={handleJoin} disabled={isJoining}>
-                      <UserPlus size={16} className="mr-2" />
-                      {isJoining ? 'Joining...' : 'Join Group'}
-                    </Button>
-                  ) : (
-                    <Button onClick={handleLeave} disabled={isLeaving} variant="soft">
-                      <UserMinus size={16} className="mr-2" />
-                      {isLeaving ? 'Leaving...' : 'Leave Group'}
-                    </Button>
-                  )}
-
-                  {group.is_member && <InviteFriendsDialog groupId={group.id} />}
-
-                  {canManage && (
-                    <Button variant="soft" onClick={() => setActiveTab('members')}>
-                      <Settings size={16} className="mr-2" />
-                      Manage Group
-                    </Button>
-                  )}
-
-                  <AdminEditButton
-                    contentType="community_groups"
-                    contentId={group.id}
-                    contentName={group.name}
-                    currentData={group as unknown as Record<string, unknown>}
-                    size="default"
-                    exportable
-                  />
-                </div>
+                </h1>
+                <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                  <span className="inline-flex items-center gap-1">
+                    {group.is_private ? <Lock size={14} aria-hidden="true" /> : <Globe size={14} aria-hidden="true" />}
+                    {group.is_private
+                      ? t('pages.groupDetail.opening.privateGroup', 'Private group')
+                      : t('pages.groupDetail.opening.publicGroup', 'Public group')}
+                  </span>
+                  <span>
+                    {t('pages.groups.opening.memberCount', {
+                      count: group.member_count,
+                      defaultValue_one: '{{count}} member',
+                      defaultValue_other: '{{count}} members',
+                    })}
+                  </span>
+                  {group.city && <span>{group.city}</span>}
+                </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList
-            style={{ width: '100%', gridTemplateColumns: 'repeat(6, 1fr)' }}
-            className="grid"
-          >
-            {/* "Rules", not "About": the About content moved into the hero (see the tab
-              body), so the label has to say what the tab now actually holds. The `value`
-              stays "about" — it is the default tab and is referenced elsewhere; renaming
-              the key would be a behaviour change dressed up as a label fix. */}
-            <TabsTrigger
-              value="about"
-              style={{ alignItems: 'center', gap: '8px' }}
-              className="flex"
+            <Editable
+              contentType="community_groups"
+              recordId={group.id}
+              field="description"
+              value={group.description}
+              onSaved={refreshGroup}
+              fieldOverride={{ type: 'textarea' }}
+              as="div"
             >
-              <Scale size={16} />
-              Rules
+              <p className="max-w-reading whitespace-pre-line break-words text-pretty text-muted-foreground">
+                {group.description?.trim() ||
+                  t('pages.groupDetail.opening.noDescription', 'This group hasn’t added a description yet.')}
+              </p>
+            </Editable>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {!user ? (
+                <Button asChild>
+                  <LocalizedLink to={signInPath}>
+                    {t('pages.groups.opening.signIn', 'Sign in to join')}
+                  </LocalizedLink>
+                </Button>
+              ) : group.is_member ? (
+                <>
+                  {group.chat_conversation_id ? (
+                    <Button asChild>
+                      <LocalizedLink to={`/hub/messages?filter=groups&conversation=${group.chat_conversation_id}`}>
+                        <MessageSquare size={16} aria-hidden="true" />
+                        {t('pages.groupDetail.opening.chat', 'Open group chat')}
+                      </LocalizedLink>
+                    </Button>
+                  ) : (
+                    <Button onClick={() => openSection('posts')}>
+                      <MessageSquare size={16} aria-hidden="true" />
+                      {t('pages.groupDetail.opening.discussion', 'See group discussions')}
+                    </Button>
+                  )}
+                  <InviteFriendsDialog groupId={group.id} />
+                </>
+              ) : group.is_private ? (
+                <Button
+                  disabled={isRequesting || pending}
+                  onClick={() => requestJoin({ groupId: group.id })}
+                >
+                  <Lock size={16} aria-hidden="true" />
+                  {pending
+                    ? t('pages.groupDetail.opening.requested', 'Request pending')
+                    : isRequesting
+                      ? t('pages.groupDetail.opening.requesting', 'Sending request…')
+                      : t('pages.groupDetail.opening.request', 'Request to join')}
+                </Button>
+              ) : (
+                <Button onClick={() => joinGroup(group.id)} disabled={isJoining}>
+                  <UserPlus size={16} aria-hidden="true" />
+                  {isJoining
+                    ? t('pages.groupDetail.opening.joining', 'Joining…')
+                    : t('pages.groupDetail.opening.join', 'Join group')}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="lg:mt-12">
+            <GroupNextMeetup
+              meetup={meetup}
+              loading={user ? eventsLoading : publicMeetup.isLoading}
+              error={user ? eventsError : publicMeetup.isError}
+              onRetry={() => void (user ? refetchEvents() : publicMeetup.refetch())}
+              emptyMessage={
+                group.is_private && !group.is_member
+                  ? t('pages.groupDetail.opening.memberMeetups', 'Meetups are visible to group members.')
+                  : user
+                    ? t('pages.groupDetail.opening.noMeetups', 'No upcoming meetups are listed yet.')
+                    : t('pages.groupDetail.opening.noPublicMeetups', 'No upcoming public meetups are listed yet.')
+              }
+              eventPath={!user && publicMeetup.data ? `/events/${publicMeetup.data.slug || publicMeetup.data.id}` : undefined}
+              onViewEvents={
+                meetup && user
+                  ? () => openSection('events', `group-event-${meetup.id}`)
+                  : group.is_member
+                    ? () => openSection('events')
+                    : undefined
+              }
+            />
+          </div>
+        </header>
+
+        {user && <Tabs
+          id="group-detail-sections"
+          tabIndex={-1}
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="min-w-0 scroll-mt-28"
+        >
+          <TabsList aria-label={t('pages.groupDetail.sections', 'Group sections')} className="w-full">
+            <TabsTrigger value="about" className="gap-2">
+              <Scale size={16} aria-hidden="true" />
+              {t('pages.groupDetail.rules', 'Rules')}
             </TabsTrigger>
-            <TabsTrigger
-              value="members"
-              style={{ alignItems: 'center', gap: '8px' }}
-              className="flex"
-            >
-              <Users size={16} />
-              Members
+            <TabsTrigger value="members" className="gap-2">
+              <Users size={16} aria-hidden="true" />
+              {t('pages.groupDetail.members', 'Members')}
             </TabsTrigger>
-            <TabsTrigger value="chat" style={{ alignItems: 'center', gap: '8px' }} className="flex">
-              <MessageSquare size={16} />
-              Chat
+            <TabsTrigger value="chat" className="gap-2">
+              <MessageSquare size={16} aria-hidden="true" />
+              {t('pages.groupDetail.chat', 'Chat')}
             </TabsTrigger>
-            <TabsTrigger
-              value="posts"
-              style={{ alignItems: 'center', gap: '8px' }}
-              className="flex"
-            >
-              <MessageSquare size={16} />
-              Posts
+            <TabsTrigger value="posts" className="gap-2">
+              <MessageSquare size={16} aria-hidden="true" />
+              {t('pages.groupDetail.posts', 'Posts')}
             </TabsTrigger>
-            <TabsTrigger
-              value="events"
-              style={{ alignItems: 'center', gap: '8px' }}
-              className="flex"
-            >
-              <Calendar size={16} />
-              Events
+            <TabsTrigger value="events" className="gap-2">
+              <Calendar size={16} aria-hidden="true" />
+              {t('pages.groupDetail.events', 'Events')}
             </TabsTrigger>
-            <TabsTrigger
-              value="collections"
-              style={{ alignItems: 'center', gap: '8px' }}
-              className="flex"
-            >
-              <Folder size={16} />
-              Collections
+            <TabsTrigger value="collections" className="gap-2">
+              <Folder size={16} aria-hidden="true" />
+              {t('pages.groupDetail.collections', 'Collections')}
             </TabsTrigger>
           </TabsList>
 
@@ -375,14 +358,6 @@ export default function GroupDetail() {
             style={{ flexDirection: 'column', gap: '24px' }}
             className="flex"
           >
-            {/* Rules only.
-              This card used to restate the hero verbatim — description, member count,
-              visibility, created date and tags all render above under a "Group Details"
-              sub-heading, which is what a reader meant by "the group details are shown
-              twice, a grouping in the upper area would be cleaner". The hero is the copy
-              that survives: it is the one wired to `Editable` for admin inline editing,
-              and up-top is where the reader asked for it. Rules were the only thing this
-              card held that the hero does not. */}
             {group.rules ? (
               <Card>
                 <CardHeader>
@@ -399,6 +374,47 @@ export default function GroupDetail() {
                 </CardContent>
               </Card>
             )}
+            <div className="flex flex-wrap items-center gap-2">
+              {group.tags?.map((tag) => (
+                <LocalizedLink
+                  key={tag}
+                  to={`/tags/${encodeURIComponent(tag)}`}
+                  className={badgeVariants({ variant: 'outline' })}
+                >
+                  {tag}
+                </LocalizedLink>
+              ))}
+              {role && <Badge variant="secondary">{role}</Badge>}
+              <span className="text-sm text-muted-foreground">
+                {t('pages.groupDetail.opening.created', 'Created {{date}}', {
+                  date: new Date(group.created_at).toLocaleDateString(),
+                })}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {group.is_member && (
+                <Button onClick={() => leaveGroup(group.id)} disabled={isLeaving} variant="soft">
+                  <UserMinus size={16} aria-hidden="true" />
+                  {isLeaving
+                    ? t('pages.groupDetail.opening.leaving', 'Leaving…')
+                    : t('pages.groupDetail.opening.leave', 'Leave group')}
+                </Button>
+              )}
+              {canManage && (
+                <Button variant="soft" onClick={() => openSection('members')}>
+                  <Settings size={16} aria-hidden="true" />
+                  {t('pages.groupDetail.opening.manage', 'Manage group')}
+                </Button>
+              )}
+              <AdminEditButton
+                contentType="community_groups"
+                contentId={group.id}
+                contentName={group.name}
+                currentData={group as unknown as Record<string, unknown>}
+                size="default"
+                exportable
+              />
+            </div>
           </TabsContent>
 
           <TabsContent
@@ -590,17 +606,18 @@ export default function GroupDetail() {
             ) : (
               <div className="flex flex-col gap-4">
                 {events.map((event) => (
-                  <GroupEventCard
-                    key={event.id}
-                    event={event}
-                    onJoinEvent={joinEvent}
-                    onLeaveEvent={leaveEvent}
-                    onDeleteEvent={canManage ? deleteEvent : undefined}
-                    isJoining={isJoiningEvent}
-                    isLeaving={isLeavingEvent}
-                    isDeleting={isDeletingEvent}
-                    canManage={canManage}
-                  />
+                  <div key={event.id} id={`group-event-${event.id}`} tabIndex={-1} className="scroll-mt-28">
+                    <GroupEventCard
+                      event={event}
+                      onJoinEvent={joinEvent}
+                      onLeaveEvent={leaveEvent}
+                      onDeleteEvent={canManage ? deleteEvent : undefined}
+                      isJoining={isJoiningEvent}
+                      isLeaving={isLeavingEvent}
+                      isDeleting={isDeletingEvent}
+                      canManage={canManage}
+                    />
+                  </div>
                 ))}
               </div>
             )}
@@ -613,7 +630,7 @@ export default function GroupDetail() {
           >
             <GroupCollections groupId={groupId!} isMember={Boolean(group.is_member)} />
           </TabsContent>
-        </Tabs>
+        </Tabs>}
       </PageContainer>
     </>
   );

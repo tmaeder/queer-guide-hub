@@ -34,10 +34,10 @@ export function QuickFilters({ value, onChange, hasLocation }: QuickFiltersProps
         type="button"
         size="sm"
         variant={value.openNow ? 'default' : 'outline'}
-        className="rounded-badge h-8"
+        className="h-8 gap-2 rounded-badge px-2"
         onClick={() => onChange({ ...value, openNow: !value.openNow || undefined })}
       >
-        <Clock className="mr-2 h-3.5 w-3.5" />
+        <Clock className="h-3.5 w-3.5" />
         {t('venues.quickFilters.openNow', 'Open now')}
       </Button>
 
@@ -47,10 +47,10 @@ export function QuickFilters({ value, onChange, hasLocation }: QuickFiltersProps
             type="button"
             size="sm"
             variant={value.radiusKm != null ? 'default' : 'outline'}
-            className="rounded-badge h-8"
+            className="h-8 gap-2 rounded-badge px-2"
             disabled={!hasLocation}
           >
-            <MapPin className="mr-2 h-3.5 w-3.5" />
+            <MapPin className="h-3.5 w-3.5" />
             {value.radiusKm
               ? t('venues.quickFilters.radiusKm', { km: value.radiusKm, defaultValue: 'Within {{km}} km' })
               : t('venues.quickFilters.radius', 'Distance')}
@@ -80,9 +80,9 @@ export function QuickFilters({ value, onChange, hasLocation }: QuickFiltersProps
             type="button"
             size="sm"
             variant={value.priceLevel != null ? 'default' : 'outline'}
-            className="rounded-badge h-8"
+            className="h-8 gap-2 rounded-badge px-2"
           >
-            <DollarSign className="mr-2 h-3.5 w-3.5" />
+            <DollarSign className="h-3.5 w-3.5" />
             {value.priceLevel
               ? '$'.repeat(value.priceLevel)
               : t('venues.quickFilters.price', 'Price')}

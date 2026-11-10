@@ -88,6 +88,9 @@ export interface EntitySingleShape {
   /** Rendered at the TOP of the body, above the route rail and the sections —
    *  the cover photo and any banner that must precede everything. */
   bodyLead?: ReactNode;
+  /** A section that belongs in the opening, before the mobile route rail. */
+  openingSectionId?: string;
+  density?: 'default' | 'compact' | 'dense';
   /** Rendered at the END of the body, after every section. For tertiary
    *  material that should not stand between the reader and the page's own
    *  content (the venue page's glossary teaser). */

@@ -304,22 +304,29 @@ export function useEventFilters() {
     setSort('date-asc');
   };
 
-  const hasActiveFilters =
+  const hasNonCityFilters = Boolean(
     search ||
-    cities.length > 0 ||
-    eventTypes.length > 0 ||
-    selectedTags.length > 0 ||
-    accessibilityAttrs.length > 0 ||
-    targetGroupsFilter.length > 0 ||
-    languages.length > 0 ||
-    ageRestriction ||
-    startDate ||
-    endDate ||
-    nearMe ||
-    showPast ||
-    isFree ||
-    featuredOnly ||
-    activePreset;
+      eventTypes.length > 0 ||
+      selectedTags.length > 0 ||
+      accessibilityAttrs.length > 0 ||
+      targetGroupsFilter.length > 0 ||
+      languages.length > 0 ||
+      ageRestriction ||
+      startDate ||
+      endDate ||
+      nearMe ||
+      showPast ||
+      isFree ||
+      featuredOnly ||
+      activePreset,
+  );
+
+  const hasActiveFilters = hasNonCityFilters || cities.length > 0;
+  const isDefaultBrowse =
+    !hasNonCityFilters &&
+    viewMode === 'grid' &&
+    sort === 'date-asc' &&
+    (cities.length === 0 || (cities.length === 1 && cities[0] === autoLocationLabel));
 
   /**
    * How many of the FILTER SHEET's own dimensions are set — the number on the
@@ -436,6 +443,7 @@ export function useEventFilters() {
     tgOptions,
     // derived
     hasActiveFilters,
+    isDefaultBrowse,
     sheetFilterCount,
     // handlers
     request,

@@ -43,7 +43,7 @@ test.describe('Venues — polish & a11y', () => {
       await page.waitForTimeout(500);
 
       // Search input should be empty.
-      const search = page.getByPlaceholder('Search venues & organizations...');
+      const search = page.getByRole('textbox', { name: /search venues/i });
       await expect(search).toHaveValue('');
 
       // URL should have no q param.

@@ -54,6 +54,7 @@ import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { useGridColumns } from '@/components/ui/useGridColumns';
 import { cn } from '@/lib/utils';
 import { getVenueVisual } from '@/lib/venueVisual';
+import { venueClosureLabel } from '@/lib/venueClosureLabel';
 import { useTranslation } from 'react-i18next';
 import { VENUES_V2_ENABLED } from '@/lib/featureFlags';
 import {
@@ -269,6 +270,12 @@ const Venues = () => {
     (k) => k !== 'userLocation' && k !== 'nearMe',
   );
   const showRails = VENUES_V2_ENABLED && !hasAnyFilters && viewMode === 'grid';
+  const showFeature = showRails && !nearMe && !chipKey && sortBy === 'relevance';
+  const fallbackFeature = showFeature
+    ? venues.find((venue) =>
+        !venueClosureLabel(venue) && !venue.safety_gated && Boolean(venue.description),
+      )
+    : undefined;
   const { venues: recentVenues } = useRecentVenues(8, !hasAnyFilters && !VENUES_V2_ENABLED);
 
   const updateParams = useCallback(
@@ -364,34 +371,15 @@ const Venues = () => {
   return (
     <div className="min-h-screen overflow-x-clip">
       <AchievementToast />
-      <PageContainer className="min-w-0 space-y-8">
-        {/* Editorial top: hero + personal strip when v2 + grid view */}
-        {showRails && (
-          <div className="space-y-6">
-            <VenuesHero />
-            {user && <VenuesPersonalStrip />}
+      <PageContainer className="min-w-0 space-y-4 pt-4 md:space-y-4 md:pt-6">
+        <header className="grid items-center gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-8">
+          <div className="min-w-0">
+            <h1 className="break-words font-display text-display leading-none md:text-hero rtl:font-sans rtl:font-bold">
+              {t('venues.title', 'Venues')}
+            </h1>
           </div>
-        )}
-
-        {VENUES_V2_ENABLED && (
-          <QuickFilters
-            value={
-              {
-                openNow: urlOpenNow || undefined,
-                radiusKm: urlRadius ?? undefined,
-                priceLevel: urlPrice ?? undefined,
-              } as QuickFiltersValue
-            }
-            hasLocation={!!userLocation}
-            onChange={(v) =>
-              updateParams({
-                openNow: v.openNow ? '1' : undefined,
-                radius: v.radiusKm != null ? String(v.radiusKm) : undefined,
-                price: v.priceLevel != null ? String(v.priceLevel) : undefined,
-              })
-            }
-          />
-        )}
+          {showFeature && <VenuesHero fallback={fallbackFeature} />}
+        </header>
 
         <VenueFilters
           key={`${urlSearch}|${urlCategory}`}
@@ -412,6 +400,26 @@ const Venues = () => {
           }
           onFiltersChange={handleFiltersChange}
         />
+
+        {VENUES_V2_ENABLED && (
+          <QuickFilters
+            value={
+              {
+                openNow: urlOpenNow || undefined,
+                radiusKm: urlRadius ?? undefined,
+                priceLevel: urlPrice ?? undefined,
+              } as QuickFiltersValue
+            }
+            hasLocation={!!userLocation}
+            onChange={(v) =>
+              updateParams({
+                openNow: v.openNow ? '1' : undefined,
+                radius: v.radiusKm != null ? String(v.radiusKm) : undefined,
+                price: v.priceLevel != null ? String(v.priceLevel) : undefined,
+              })
+            }
+          />
+        )}
 
         {/* Toolbar */}
         <div
@@ -438,7 +446,7 @@ const Venues = () => {
                     {parts.length > 0 && (
                       <span className="ml-1 text-xs">· {parts.join(' · ')}</span>
                     )}
-                    {!hasActiveFilters && datasetTotal !== null && datasetTotal !== shown && (
+                    {!hasActiveFilters && datasetTotal !== null && datasetTotal > shown && (
                       <span className="ml-1 text-xs">of {datasetTotal.toLocaleString()}</span>
                     )}
                   </p>
@@ -450,7 +458,7 @@ const Venues = () => {
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger
                 aria-label={t('pages.venues.sortBy', 'Sort venues')}
-                className="w-36 h-9 text-sm"
+                className="h-9 w-28 text-sm sm:w-36"
               >
                 <SelectValue />
               </SelectTrigger>
@@ -510,20 +518,6 @@ const Venues = () => {
             >
               {error && !loading && <ErrorState message={error} onRetry={refetch} />}
 
-              {showRails && <GuidesRail filters={{ entityType: 'venue', limit: 6 }} />}
-
-              {showRails && (
-                <VenuesRails
-                  userLocation={userLocation}
-                  primaryCityId={primaryCity.id}
-                  primaryCityName={primaryCity.name}
-                />
-              )}
-
-              {showRails && (
-                <LeaderboardWidget cityId={primaryCity.id} cityName={primaryCity.name} />
-              )}
-
               {loading && (
                 <div className={gridClass}>
                   {Array.from({ length: 8 }).map((_, i) => (
@@ -572,6 +566,44 @@ const Venues = () => {
                   />
                 ))}
 
+              {/* Section header for canonical grid when V2 + filters active */}
+              {VENUES_V2_ENABLED && hasAnyFilters && !loading && venues.length > 0 && (
+                <h2 className="text-headline font-semibold tracking-tight -mb-6">
+                  {t('venues.results.title', 'Matching venues')}
+                </h2>
+              )}
+
+              {!loading && venues.length > 0 && (
+                <VirtualizedGrid
+                  items={venues}
+                  columns={gridColumns}
+                  rowClassName={gridClass}
+                  estimateRowHeight={420}
+                  virtualizeAfter={12}
+                  overscan={2}
+                  itemKey={(venue) => venue.id}
+                  renderItem={(venue, index) => (
+                    <div className={index >= PAGE_SIZE ? 'content-enter' : undefined}>
+                      <VenueCard
+                        venue={venue}
+                        events={events}
+                        onViewDetails={handleViewDetails}
+                        coverAspect="hero"
+                      />
+                    </div>
+                  )}
+                />
+              )}
+
+              {venues.length > 0 && (
+                <LoadMore
+                  hasMore={hasMore}
+                  loading={loadingMore}
+                  // The next page of the request that built this list.
+                  onLoadMore={loadMore}
+                  resetKey={chipKey}
+                />
+              )}
               {/* Legacy "Recently added" rail only when V2 flag is OFF */}
               {!VENUES_V2_ENABLED &&
                 !loading &&
@@ -601,39 +633,21 @@ const Venues = () => {
                   );
                 })()}
 
-              {/* Section header for canonical grid when V2 + filters active */}
-              {VENUES_V2_ENABLED && hasAnyFilters && !loading && venues.length > 0 && (
-                <h2 className="text-headline font-semibold tracking-tight -mb-6">
-                  {t('venues.results.title', 'Matching venues')}
-                </h2>
-              )}
+              {showRails && <GuidesRail filters={{ entityType: 'venue', limit: 6 }} />}
 
-              {!loading && venues.length > 0 && (
-                <VirtualizedGrid
-                  items={venues}
-                  columns={gridColumns}
-                  rowClassName={gridClass}
-                  estimateRowHeight={420}
-                  virtualizeAfter={12}
-                  overscan={2}
-                  itemKey={(venue) => venue.id}
-                  renderItem={(venue, index) => (
-                    <div className={index >= PAGE_SIZE ? 'content-enter' : undefined}>
-                      <VenueCard venue={venue} events={events} onViewDetails={handleViewDetails} />
-                    </div>
-                  )}
+              {showRails && (
+                <VenuesRails
+                  userLocation={userLocation}
+                  primaryCityId={primaryCity.id}
+                  primaryCityName={primaryCity.name}
                 />
               )}
 
-              {venues.length > 0 && (
-                <LoadMore
-                  hasMore={hasMore}
-                  loading={loadingMore}
-                  // The next page of the request that built this list.
-                  onLoadMore={loadMore}
-                  resetKey={chipKey}
-                />
+              {showRails && (
+                <LeaderboardWidget cityId={primaryCity.id} cityName={primaryCity.name} />
               )}
+
+              {showRails && user && <VenuesPersonalStrip />}
             </motion.div>
           ) : (
             <motion.div

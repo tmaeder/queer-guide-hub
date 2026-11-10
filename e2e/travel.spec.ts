@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * E2E tests for the Travel hub page (planner-first layout).
+ * E2E tests for the Travel hub and its planning tools.
  *
  * The /travel route is the front door of the trip-building system:
  *   - Plan-a-trip hero (StartTripHero for anon, TripCockpit when signed in)
@@ -23,7 +23,8 @@ test.describe('Travel hub (/travel)', () => {
       timeout: 15000,
     });
     await expect(page.getByTestId('travel-plan-trip')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Build your own itinerary' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'What kind of escape do you need?' })).toBeVisible();
+    await expect(page.locator('header a[href="#plan"]')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Start from a template' })).toHaveCount(0);
   });
 

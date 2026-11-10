@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
+import { PageIntro } from '@/components/layout/PageIntro';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { PrideScroller } from '@/components/travel/PrideScroller';
@@ -42,8 +43,8 @@ import type { SectionDef } from '@/components/entity/editorial';
  * has STATIC_ROUTE_META and STATIC_ROUTE_BODY entries and existing rankings, so
  * keeping the URL means this redesign cannibalises nothing.
  *
- * The page opens on personalised, evidence-backed packages and then exposes
- * the full planner — inspiration first, without hiding the useful machinery.
+ * The page opens with a destination, then exposes personalised packages and
+ * the full planner. Active trips and booking links retain their own paths.
  * Safety
  * data (250/250 countries covered) stays on-page as "Know before you go" and
  * in full depth inside each trip's safety briefing.
@@ -83,7 +84,7 @@ export default function Travel() {
   useEffect(() => {
     // No entityType: 'intent' is not a member of EntityType, and inventing one
     // would feed a synthetic type into the personalization bias vector.
-    track({ eventType: 'page_view', metadata: { intent: 'travelling', layout: 'packages-first' } });
+    track({ eventType: 'page_view', metadata: { intent: 'travelling', layout: 'destination-led' } });
   }, [track]);
 
   // Booking deep links scroll to the book section. EditorialDetailLayout's own
@@ -131,7 +132,6 @@ export default function Travel() {
       kicker: t('pages.travel.sections.inspirationKicker', 'Destinations'),
       content: (
         <div>
-          <TravelCoverStory />
           <GoNowRail />
           <div className="mb-6 flex flex-wrap items-center justify-end">
             <BrowseVisitedToolbar value={visitedFilter} onChange={onVisitedChange} />
@@ -218,32 +218,52 @@ export default function Travel() {
     },
   ];
 
+  const activeCity = activeTrip?.primary_city_name;
+  const showCover = !activeTrip && !bookIntent;
+  const title = activeCity
+    ? t('pages.travel.activeTitle', 'Planning {{city}}', { city: activeCity })
+    : t('pages.travel.packages.title', 'Trips made for you');
+  const lede = activeCity
+    ? t(
+        'pages.travel.activeLede',
+        'Add places and events for {{city}} directly to your active trip.',
+        { city: activeCity },
+      )
+    : t(
+        'pages.travel.packages.lede',
+        'Choose a mood and start with a complete idea: a real event, queer places, a stay and every way to get there.',
+      );
+
   return (
     <IntentPageLayout
       topNav={<TravelJourneyNav />}
       breadcrumbLabel={t('header.intents.travelling.label', 'Travelling')}
       breadcrumbHref="/travel"
-      compactHero
-      title={
-        activeTrip?.primary_city_name
-          ? t('pages.travel.activeTitle', 'Planning {{city}}', {
-              city: activeTrip.primary_city_name,
-            })
-          : t('pages.travel.packages.title', 'Trips made for you')
+      title={title}
+      header={
+        <header className="grid items-center gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12">
+          <PageIntro title={title} lede={lede}>
+            <div className="mt-4 flex flex-wrap items-center gap-x-4">
+              {activeTrip && !bookIntent ? (
+                <LocalizedLink
+                  to={`/trips/${activeTrip.id}`}
+                  className="inline-flex min-h-11 items-center font-bold underline underline-offset-4"
+                >
+                  {t('pages.travel.resume.title', 'Continue planning')}
+                </LocalizedLink>
+              ) : (
+                <a href="#plan" className="inline-flex min-h-11 items-center font-bold underline underline-offset-4">
+                  {t('pages.travel.packages.section', 'Find your escape')}
+                </a>
+              )}
+              <a href="#safety" className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">
+                {t('pages.travel.sections.safety', 'Know before you go')}
+              </a>
+            </div>
+          </PageIntro>
+          {showCover && <TravelCoverStory />}
+        </header>
       }
-      lede={
-        activeTrip?.primary_city_name
-          ? t(
-              'pages.travel.activeLede',
-              'Add places and events for {{city}} directly to your active trip.',
-              { city: activeTrip.primary_city_name },
-            )
-          : t(
-              'pages.travel.packages.lede',
-              'Choose a mood and start with a complete idea: a real event, queer places, a stay and every way to get there.',
-            )
-      }
-      heroSize="xs"
       sections={sections}
     />
   );

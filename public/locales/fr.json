@@ -1926,6 +1926,12 @@
     "error": "Échec de l'envoi de l'alerte. Réessaie."
   },
   "home": {
+    "cityFeature": {
+      "exploreCity": "Explorer Zurich",
+      "browseEvents": "Voir les événements à Zurich",
+      "whatsOn": "À l’affiche",
+      "communitySpace": "Espace communautaire"
+    },
     "discovery": {
       "openMap": "Ouvrir la carte",
       "search": "Rechercher des lieux et événements…",

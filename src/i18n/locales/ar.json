@@ -1932,6 +1932,12 @@
     "error": "فشل إرسال التنبيه. يرجى المحاولة مجدداً."
   },
   "home": {
+    "cityFeature": {
+      "exploreCity": "استكشف زيورخ",
+      "browseEvents": "تصفّح فعاليات زيورخ",
+      "whatsOn": "الفعاليات",
+      "communitySpace": "مساحة مجتمعية"
+    },
     "discovery": {
       "openMap": "افتح الخريطة",
       "search": "ابحث عن أماكن وفعاليات…",
