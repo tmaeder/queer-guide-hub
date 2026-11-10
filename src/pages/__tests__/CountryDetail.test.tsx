@@ -108,7 +108,7 @@ describe('CountryDetail', () => {
       [...container.querySelectorAll('article section[id]')].map((el) => el.id).slice(0, 3),
     ).toEqual(['cities', 'travel', 'rights']);
     const ideas = screen.getByRole('list', { name: 'Ideas for your visit' });
-    expect(within(ideas).getByRole('link', { name: /Berlin/ })).toHaveAttribute('href', '/city/berlin');
+    expect(within(ideas).getByRole('link', { name: /Berlin/ }).getAttribute('href')).toBe('/city/berlin');
     expect(screen.getByText('Capital')).toBeVisible();
     const travel = container.querySelector('#travel-detail');
     expect(travel).not.toBeVisible();
