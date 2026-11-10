@@ -3,7 +3,7 @@ import { mirrorRsvp } from '@/hooks/blueskyActivity';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { DISCOVERY_EVENT_WINDOW_MS, selectDiscoveryEvent } from '@/lib/discoveryEvent';
+import { DISCOVERY_EVENT_WINDOW_MS } from '@/lib/discoveryEvent';
 
 export interface GroupEvent {
   id: string;
@@ -64,16 +64,17 @@ export interface CreateGroupEventData {
 
 const publicMeetupKey = ['public-group-meetup'] as const;
 
-export function usePublicGroupMeetup() {
+export function usePublicGroupMeetup(groupId?: string, enabled = true) {
   return useQuery({
-    queryKey: publicMeetupKey,
+    queryKey: [...publicMeetupKey, groupId ?? null],
+    enabled,
     staleTime: 60_000,
     queryFn: async () => {
       const now = Date.now();
-      const { data, error } = await supabase
+      const query = supabase
         .from('events')
         .select(
-          'id, slug, title, start_date, city, timezone, liveness_status, age_restriction, group:community_groups!events_group_id_fkey!inner(name)',
+          'id, slug, title, start_date, end_date, venue_name, city, timezone, group:community_groups!events_group_id_fkey!inner(name)',
         )
         .eq('group.is_private', false)
         .is('group.archived_at', null)
@@ -83,13 +84,18 @@ export function usePublicGroupMeetup() {
         .not('liveness_status', 'in', '(dead,cancelled,dead_link)')
         .or('age_restriction.is.null,age_restriction.not.in.("18+","21+")')
         .gte('start_date', new Date(now).toISOString())
-        .lt('start_date', new Date(now + DISCOVERY_EVENT_WINDOW_MS).toISOString())
         .order('start_date')
         .order('id')
         .limit(1);
+      if (groupId) {
+        query.eq('group_id', groupId);
+      } else {
+        query.lt('start_date', new Date(now + DISCOVERY_EVENT_WINDOW_MS).toISOString());
+      }
+      const { data, error } = await query;
 
       if (error) throw error;
-      return selectDiscoveryEvent(data ?? [], now) ?? null;
+      return data?.[0] ?? null;
     },
   });
 }
@@ -98,10 +104,11 @@ export const useGroupEvents = (groupId: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const eventsKey = ['group-events', groupId, user?.id ?? null] as const;
 
   // Fetch group events
-  const { data: events = [], isLoading } = useQuery({
-    queryKey: ['group-events', groupId],
+  const { data: events = [], isLoading, isError, refetch } = useQuery({
+    queryKey: eventsKey,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('events')
@@ -164,7 +171,7 @@ export const useGroupEvents = (groupId: string) => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['group-events', groupId] });
+      queryClient.invalidateQueries({ queryKey: eventsKey });
       queryClient.invalidateQueries({ queryKey: publicMeetupKey });
       toast({
         title: 'Event created',
@@ -195,7 +202,7 @@ export const useGroupEvents = (groupId: string) => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['group-events', groupId] });
+      queryClient.invalidateQueries({ queryKey: eventsKey });
       toast({
         title: 'Joined event',
         description: "You've successfully joined the event.",
@@ -224,7 +231,7 @@ export const useGroupEvents = (groupId: string) => {
       mirrorRsvp(eventId, 'not_going');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['group-events', groupId] });
+      queryClient.invalidateQueries({ queryKey: eventsKey });
       toast({
         title: 'Left event',
         description: "You've left the event.",
@@ -252,7 +259,7 @@ export const useGroupEvents = (groupId: string) => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['group-events', groupId] });
+      queryClient.invalidateQueries({ queryKey: eventsKey });
       queryClient.invalidateQueries({ queryKey: publicMeetupKey });
       toast({
         title: 'Event deleted',
@@ -272,6 +279,8 @@ export const useGroupEvents = (groupId: string) => {
   return {
     events,
     isLoading,
+    isError,
+    refetch,
     createEvent: createEventMutation.mutate,
     isCreatingEvent: createEventMutation.isPending,
     joinEvent: joinEventMutation.mutate,
