@@ -91,7 +91,7 @@ test.describe('hub nav', () => {
     });
   }
 
-  test('the desktop Hub rail keeps its position across routes', async ({ page }) => {
+  test('the desktop Hub rail aligns across routes and follows the People opening', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     const positions = [];
     for (const route of ROUTES) {
@@ -100,7 +100,14 @@ test.describe('hub nav', () => {
         const breadcrumb = document.querySelector('.route-network-rail');
         if (!breadcrumb) throw new Error('Missing breadcrumb rail');
         const { x, top } = el.getBoundingClientRect();
-        return { x, gap: top - breadcrumb.getBoundingClientRect().bottom };
+        const heading = document.querySelector('main h1');
+        return {
+          x,
+          gap: top - breadcrumb.getBoundingClientRect().bottom,
+          followsHeading: Boolean(
+            heading && heading.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING,
+          ),
+        };
       });
       positions.push({ path: route.path, ...position });
     }
@@ -108,7 +115,11 @@ test.describe('hub nav', () => {
     const [first] = positions;
     for (const position of positions) {
       expect(Math.abs(position.x - first.x), position.path).toBeLessThanOrEqual(2);
-      expect(Math.abs(position.gap - first.gap), position.path).toBeLessThanOrEqual(2);
+      if (position.path === '/hub/people') {
+        expect(position.followsHeading).toBe(true);
+      } else {
+        expect(Math.abs(position.gap - first.gap), position.path).toBeLessThanOrEqual(2);
+      }
     }
   });
 

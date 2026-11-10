@@ -9,7 +9,6 @@ import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
-import { PageHeader } from '@/components/layout/PageHeader';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { UpcomingEvents } from '@/components/intent/UpcomingEvents';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
@@ -28,7 +27,9 @@ import {
 import type { SectionDef } from '@/components/entity/editorial';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
-import { HubNavBar } from '@/components/hub/HubNavBar';
+import { HubNav } from '@/components/hub/HubNav';
+import { PeopleDiscoveryLead } from '@/components/people/PeopleDiscoveryLead';
+import { DeferredSection } from '@/components/home/DeferredSection';
 import { lazyRetry } from '@/utils/lazyRetry';
 
 const PeopleConnectionMap = lazyRetry(() => import('@/components/people/PeopleConnectionMap'));
@@ -251,6 +252,29 @@ export default function People() {
       ),
     },
     {
+      id: 'map',
+      label: t('people.sections.map', 'Connection map'),
+      description: t(
+        'people.sections.mapDescription',
+        'Explore public gathering places, queer neighbourhoods and events—or switch to the protected cruising map.',
+      ),
+      action: (
+        <LocalizedLink to="/map" className="text-13 font-semibold no-underline hover:underline">
+          {t('people.fullMap', 'Open full map')}
+        </LocalizedLink>
+      ),
+      content: (
+        <DeferredSection
+          rootMargin="200px 0px"
+          fallback={<Skeleton className="h-[clamp(22rem,58vh,32rem)] w-full" />}
+        >
+          <Suspense fallback={<Skeleton className="h-[clamp(22rem,58vh,32rem)] w-full" />}>
+            <PeopleConnectionMap />
+          </Suspense>
+        </DeferredSection>
+      ),
+    },
+    {
       id: 'members',
       label: t('people.sections.members', 'Members'),
       kicker: t('people.sections.membersKicker', 'People you can message directly'),
@@ -335,61 +359,51 @@ export default function People() {
 
   return (
     <>
-      <HubNavBar />
       <IntentPageLayout
         sectionNavClassName="border-b-0"
         breadcrumbLabel={t('header.intents.meet.label', 'Meet people')}
         breadcrumbHref="/hub/people"
         title={title}
         header={
-          <PageHeader
-            title={title}
-            subtitle={t(
-              'people.intro',
-              'Find queer community spaces, groups and events, and meet people who share your interests.',
-            )}
-            actions={
-              <Button variant="outline" onClick={() => setIntentOpen(true)}>
-                <SlidersHorizontal size={16} aria-hidden />
-                {t('people.intent.button', "I'm here for…")}
-              </Button>
-            }
-          >
-            {showNudge && (
-              <p className="text-13 text-muted-foreground sm:text-end">
-                {t(
-                  'people.intent.nudge',
-                  'Tell us what you’re here for so we can rank people for you.',
-                )}
-              </p>
-            )}
-          </PageHeader>
-        }
-        featured={
-          <section aria-labelledby="people-map-heading">
-            <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <h2 id="people-map-heading" className="font-display text-headline font-bold">
-                  {t('people.sections.map', 'Connection map')}
-                </h2>
-                <p className="mt-2 max-w-2xl text-muted-foreground">
+          <>
+            <div className="grid items-center gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12">
+              <header className="min-w-0">
+                <h1 className="text-balance font-display text-display leading-tight md:text-hero rtl:font-sans rtl:font-bold">
+                  {title}
+                </h1>
+                <p className="mt-2 max-w-[45ch] text-15 text-muted-foreground md:text-body-lg">
                   {t(
-                    'people.sections.mapDescription',
-                    'Explore public gathering places, queer neighbourhoods and events—or switch to the protected cruising map.',
+                    'people.intro',
+                    'Find queer community spaces, groups and events, and meet people who share your interests.',
                   )}
                 </p>
-              </div>
-              <LocalizedLink
-                to="/map"
-                className="text-13 font-semibold no-underline hover:underline"
-              >
-                {t('people.fullMap', 'Open full map')}
-              </LocalizedLink>
+                <div className="mt-4 flex flex-wrap items-center gap-4">
+                  <Button variant="outline" onClick={() => setIntentOpen(true)}>
+                    <SlidersHorizontal size={16} aria-hidden />
+                    {t('people.intent.button', "I'm here for…")}
+                  </Button>
+                  <a
+                    href="#map"
+                    className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4"
+                  >
+                    {t('people.sections.map', 'Connection map')}
+                  </a>
+                </div>
+                {showNudge && (
+                  <p className="mt-2 text-13 text-muted-foreground">
+                    {t(
+                      'people.intent.nudge',
+                      'Tell us what you’re here for so we can rank people for you.',
+                    )}
+                  </p>
+                )}
+              </header>
+              <PeopleDiscoveryLead spaces={spacesResult} groups={groups} events={eventsResult} />
             </div>
-            <Suspense fallback={<Skeleton className="h-[clamp(22rem,58vh,32rem)] w-full" />}>
-              <PeopleConnectionMap />
-            </Suspense>
-          </section>
+            <div className="mt-6 hidden md:block">
+              <HubNav />
+            </div>
+          </>
         }
         sections={sections}
         footer={

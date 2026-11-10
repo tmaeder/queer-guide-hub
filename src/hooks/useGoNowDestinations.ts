@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { fetchTrendingCities, type PersonalizedCityRow } from './usePersonalizedCities';
 
 export interface GoNowReason {
@@ -12,6 +13,7 @@ export interface GoNowDestination {
   name: string;
   slug: string | null;
   imageUrl: string | null;
+  imageMetadata?: unknown;
   editorialHook: string | null;
   countryName: string | null;
   equalityScore: number | null;
@@ -27,6 +29,9 @@ interface GoNowEventRow {
     name: string;
     slug: string | null;
     image_url: string | null;
+    curated_image_url?: string | null;
+    image_flagged?: boolean;
+    image_metadata?: unknown;
     editorial_hook: string | null;
   } | null;
   country: { name: string; equality_score: number | null } | null;
@@ -70,11 +75,13 @@ export function groupEventsByCity(rows: GoNowEventRow[]): GoNowDestination[] {
     if (!city || seen.has(city.id)) continue;
     seen.add(city.id);
     const dates = formatEventDateLabel(row.start_date, row.end_date);
+    const image = resolveEntityImage('city', city);
     out.push({
       cityId: city.id,
       name: city.name,
       slug: city.slug,
-      imageUrl: city.image_url,
+      imageUrl: image.url,
+      imageMetadata: image.metadata,
       editorialHook: city.editorial_hook,
       countryName: row.country?.name ?? null,
       equalityScore: row.country?.equality_score ?? null,
@@ -130,10 +137,12 @@ export function useGoNowDestinations(limit = 6) {
         .from('events')
         .select(
           `title, start_date, end_date,
-           city:cities(id, name, slug, image_url, editorial_hook),
+           city:cities(id, name, slug, image_url, curated_image_url, image_flagged, image_metadata, editorial_hook),
            country:countries(name, equality_score)`,
         )
         .or('event_type.ilike.%pride%,event_type.ilike.%festival%')
+        .eq('status', 'active')
+        .not('liveness_status', 'in', '(dead,cancelled,dead_link)')
         .gte('start_date', now.toISOString())
         .lte('start_date', end.toISOString())
         .is('duplicate_of_id', null)

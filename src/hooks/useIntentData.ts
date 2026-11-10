@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchTrendingCities } from '@/hooks/usePersonalizedCities';
+import { useAuth } from '@/hooks/useAuth';
 
 /**
  * Data layer for the Intent Router composite pages.
@@ -93,6 +94,10 @@ export interface IntentEvent {
   slug: string | null;
   start_date: string;
   city: string | null;
+  images: string[] | null;
+  timezone: string | null;
+  age_restriction: string | null;
+  liveness_status: string;
 }
 
 /** Which rung of the fallback ladder produced the events we are showing. */
@@ -122,24 +127,28 @@ const WINDOW_DAYS: Record<Exclude<EventWindow, 'anywhere'>, number> = {
  * falls back to the soonest events anywhere rather than to nothing.
  */
 export function useEventsWithFallback(cityId: string | null | undefined, limit = 6) {
+  const { user, loading } = useAuth();
   return useQuery({
-    queryKey: ['intent-events-fallback', cityId, limit],
+    queryKey: ['intent-events-fallback', user?.id ?? 'anon', cityId, limit],
+    enabled: !loading,
     staleTime: 300_000,
     queryFn: async (): Promise<EventsWithFallback> => {
-      const select = 'id, title, slug, start_date, city';
       const now = new Date().toISOString();
+      const upcoming = () =>
+        supabase
+          .from('events')
+          .select('id, title, slug, start_date, city, images, timezone, age_restriction, liveness_status')
+          .eq('status', 'active')
+          .is('duplicate_of_id', null)
+          .not('liveness_status', 'in', '(dead,cancelled,dead_link)')
+          .gte('start_date', now)
+          .order('start_date', { ascending: true })
+          .limit(limit);
 
       if (cityId) {
         for (const w of ['tonight', 'this-weekend', 'next-7-days', 'next-30-days'] as const) {
           const until = new Date(Date.now() + WINDOW_DAYS[w] * 86_400_000).toISOString();
-          const { data, error } = await supabase
-            .from('events')
-            .select(select)
-            .eq('city_id', cityId)
-            .gte('start_date', now)
-            .lte('start_date', until)
-            .order('start_date', { ascending: true })
-            .limit(limit);
+          const { data, error } = await upcoming().eq('city_id', cityId).lte('start_date', until);
           if (error) throw error;
           if (data && data.length > 0) return { events: data as IntentEvent[], window: w };
         }
@@ -147,12 +156,7 @@ export function useEventsWithFallback(cityId: string | null | undefined, limit =
 
       // Nothing in this city in the next 30 days (the common case). Show the
       // soonest events anywhere instead of an empty state.
-      const { data, error } = await supabase
-        .from('events')
-        .select(select)
-        .gte('start_date', now)
-        .order('start_date', { ascending: true })
-        .limit(limit);
+      const { data, error } = await upcoming();
       if (error) throw error;
       return { events: (data ?? []) as IntentEvent[], window: 'anywhere' };
     },
@@ -164,6 +168,7 @@ export interface MeetSpace {
   name: string;
   slug: string | null;
   description: string | null;
+  imageUrl: string | null;
   /** 'venue' rows link to /venues/:slug, 'village' rows to /place/:slug. */
   kind: 'venue' | 'village';
 }
@@ -190,12 +195,14 @@ export function useMeetSpaces(
   countryCode: string | null | undefined,
   limit = 8,
 ) {
+  const { user, loading } = useAuth();
   return useQuery({
-    queryKey: ['intent-meet-spaces', cityId, countryCode, limit],
+    queryKey: ['intent-meet-spaces', user?.id ?? 'anon', cityId, countryCode, limit],
+    enabled: !loading,
     staleTime: 300_000,
     queryFn: async (): Promise<{ spaces: MeetSpace[]; scope: MeetScope }> => {
-      const venueCols = 'id, name, slug, description';
-      const villageCols = 'id, name, slug, description';
+      const venueCols = 'id, name, slug, description, images';
+      const villageCols = 'id, name, slug, description, image_url';
 
       const collect = async (
         column: 'city_id' | 'country_id',
@@ -206,6 +213,8 @@ export function useMeetSpaces(
             .from('venues')
             .select(venueCols)
             .eq('category', 'community_center')
+            .is('closed_at', null)
+            .is('closed_on', null)
             .eq(column, value)
             .is('duplicate_of_id', null)
             .order('quality_score', { ascending: false, nullsFirst: false })
@@ -221,12 +230,14 @@ export function useMeetSpaces(
         if (venues.error) throw venues.error;
         if (villages.error) throw villages.error;
         return [
-          ...((villages.data ?? []) as Omit<MeetSpace, 'kind'>[]).map((v): MeetSpace => ({
+          ...(villages.data ?? []).map(({ image_url, ...v }): MeetSpace => ({
             ...v,
+            imageUrl: image_url,
             kind: 'village',
           })),
-          ...((venues.data ?? []) as Omit<MeetSpace, 'kind'>[]).map((v): MeetSpace => ({
+          ...(venues.data ?? []).map(({ images, ...v }): MeetSpace => ({
             ...v,
+            imageUrl: images?.[0] ?? null,
             kind: 'venue',
           })),
         ].slice(0, limit);

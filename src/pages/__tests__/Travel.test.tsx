@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  *
- * /travel is the Travelling intent, packages-first.
+ * /travel is the Travelling intent, with a destination in the opening.
  *
  * The page opens on personalised trip packages, keeps the full planner just
  * below them, and retains villages/pride/booking as discovery
@@ -22,12 +22,16 @@ const { useTrackMock, trackFn, authMock, countriesMock, intentLocationMock } = v
   countriesMock: vi.fn(),
   intentLocationMock: vi.fn(),
 }));
+const activeTrip = vi.hoisted(() => ({ current: null as { id: string; primary_city_name: string } | null }));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (_k: string, d?: string) => d ?? _k }),
 }));
 vi.mock('@/hooks/useTrackEvent', () => ({ useTrackEvent: useTrackMock }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: authMock }));
+vi.mock('@/hooks/useActiveTrip', () => ({
+  useOptionalActiveTrip: () => ({ activeTrip: activeTrip.current }),
+}));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
 vi.mock('@/hooks/useIntentData', () => ({ useAllCountriesRights: countriesMock }));
 vi.mock('@/hooks/useIntentLocation', () => ({ useIntentLocation: intentLocationMock }));
@@ -111,6 +115,7 @@ beforeEach(() => {
   countriesMock.mockReset();
   intentLocationMock.mockReset();
   sessionStorage.clear();
+  activeTrip.current = null;
 
   useTrackMock.mockReturnValue({ track: trackFn });
   authMock.mockReturnValue({ user: null });
@@ -126,8 +131,14 @@ beforeEach(() => {
 });
 
 describe('Travel page (Travelling intent)', () => {
-  it('leads with the planner and closes with the legal briefing', () => {
+  it('puts the cover before the planner and closes with the legal briefing', () => {
     renderAt('/travel');
+    expect(screen.getByTestId('cover-story').closest('header')).toContainElement(
+      screen.getByRole('heading', { level: 1 }),
+    );
+    expect(screen.getByTestId('cover-story').compareDocumentPosition(
+      screen.getByTestId('personalised-packages'),
+    ) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent ?? '');
     expect(headings[0]).toMatch(/find your escape/i);
     expect(headings[headings.length - 1]).toMatch(/know before you go/i);
@@ -144,6 +155,17 @@ describe('Travel page (Travelling intent)', () => {
     renderAt('/travel');
     expect(screen.getByTestId('cockpit')).toBeInTheDocument();
     expect(screen.queryByTestId('start-hero')).toBeNull();
+  });
+
+  it('offers the active trip directly from the opening', () => {
+    authMock.mockReturnValue({ user: { id: 'u1' } });
+    activeTrip.current = { id: 'trip-1', primary_city_name: 'Zürich' };
+    renderAt('/travel');
+    expect(screen.getByRole('link', { name: 'Continue planning' })).toHaveAttribute(
+      'href',
+      '/trips/trip-1',
+    );
+    expect(screen.queryByTestId('cover-story')).toBeNull();
   });
 
   it('renders the personalized planner and public trips for everyone', () => {
@@ -170,6 +192,7 @@ describe('Travel page (Travelling intent)', () => {
   it('opens the booking accordion on ?intent=book', () => {
     renderAt('/travel?intent=book');
     expect(screen.getByTestId('book')).toHaveAttribute('data-open', 'true');
+    expect(screen.queryByTestId('cover-story')).toBeNull();
   });
 
   it('opens the booking accordion on ?tab= and ?city= deep links', () => {
@@ -196,7 +219,7 @@ describe('Travel page (Travelling intent)', () => {
     expect(screen.getByText(/criminalised/i)).toBeInTheDocument();
   });
 
-  it('fires a packages-first page_view without inventing an entity type', () => {
+  it('fires a destination-led page_view without inventing an entity type', () => {
     // 'intent' is not a member of EntityType; sending one would pollute the
     // personalization bias vector with a synthetic type.
     renderAt('/travel');
@@ -204,6 +227,6 @@ describe('Travel page (Travelling intent)', () => {
     const payload = trackFn.mock.calls[0][0];
     expect(payload.eventType).toBe('page_view');
     expect(payload.entityType).toBeUndefined();
-    expect(payload.metadata.layout).toBe('packages-first');
+    expect(payload.metadata.layout).toBe('destination-led');
   });
 });

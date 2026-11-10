@@ -10,6 +10,6 @@ Feature Zürich in the homepage opening, with its existing city photograph and t
 
 City guides bring the photo and up to two local listings into the opening overview, with the safety verdict first and the map and practical details below. Events leads with a near-term listing from the current feed during default browsing. Shared filters, search, timeline, and map views go straight to their results and controls.
 
-Carry the same approach into Meet people and Travel. Give each discovery page one concrete opening subject before its secondary navigation. Keep filters easy to find and give search results, signed-in workspaces, and safety information the density appropriate to their tasks.
+Meet people opens with local gatherings and community spaces when available, plus a public group. The connection map has a shortcut in the opening and loads when approached. Travel opens with the published cover or a seasonal destination and its reason to go. An active trip gets a direct continuation link, and booking links open the booking section.
 
 Test whether visitors can find one thing they would do and one way to connect. Compare that experience with time to reach search, event and venue detail opens, and actions that carry an idea into a trip. Review at mobile and desktop widths, with missing imagery, sparse listings, and signed-in travel context.

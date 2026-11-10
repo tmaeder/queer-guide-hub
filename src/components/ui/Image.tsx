@@ -56,6 +56,8 @@ interface ImageProps {
    * a vocabulary map rather than an icon component (hotel types, professions).
    */
   fallbackGlyph?: TransitIconName;
+  /** Subject-specific artwork to use when every photo source fails. */
+  fallbackArtwork?: React.ReactNode;
 
   // ── Layout ──────────────────────────────────────────────────────────
   alt: string;
@@ -140,6 +142,7 @@ export const Image = ({
   fallbackKey,
   fallbackIcon: FallbackIcon,
   fallbackGlyph,
+  fallbackArtwork,
   alt,
   aspect = 'card',
   fit = 'cover',
@@ -338,7 +341,9 @@ export const Image = ({
           </div>
         )
       ) : showingFallback ? (
-        <StationPlate theme={fallbackEntityType} fallbackKey={fallbackKey} icon={fallbackGlyph} />
+        fallbackArtwork ?? (
+          <StationPlate theme={fallbackEntityType} fallbackKey={fallbackKey} icon={fallbackGlyph} />
+        )
       ) : (
         photo
       )}
