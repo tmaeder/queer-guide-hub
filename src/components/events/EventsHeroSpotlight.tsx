@@ -58,7 +58,7 @@ export function EventsHeroSpotlight({ event }: { event: SpotlightEvent }) {
             <Calendar size={16} aria-hidden="true" className="shrink-0" />
             <time dateTime={event.start_date}>{date}</time>
           </p>
-          <h2 className="mt-2 text-balance break-words font-display text-title leading-tight group-hover:underline sm:text-headline rtl:font-sans rtl:font-bold">
+          <h2 className="mt-2 text-balance break-words font-sans text-title font-bold leading-tight group-hover:underline sm:text-headline rtl:font-sans rtl:font-bold">
             {title}
           </h2>
           {place && <p className="mt-2 break-words text-sm text-muted-foreground">{place}</p>}

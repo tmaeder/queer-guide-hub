@@ -65,7 +65,7 @@ function Highlight({
       )}
       <div className="min-w-0 flex-1">
         <p className="text-13 text-muted-foreground">{label}</p>
-        <h2 className="mt-1 break-words font-display text-title leading-tight group-hover:underline sm:text-headline rtl:font-sans rtl:font-bold">
+        <h2 className="mt-1 break-words font-sans text-title font-bold leading-tight group-hover:underline sm:text-headline rtl:font-sans rtl:font-bold">
           {title}
         </h2>
         <p className="mt-1 break-words text-13 text-muted-foreground">{detail}</p>

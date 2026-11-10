@@ -33,7 +33,7 @@ export function GroupDiscoveryOpening({
     <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       {(groupsLoading || groups.length > 0) && (
         <section aria-labelledby="groups-opening-heading" className="min-w-0">
-          <h2 id="groups-opening-heading" className="mb-2 font-display text-title font-semibold">
+          <h2 id="groups-opening-heading" className="mb-2 font-sans text-title font-bold">
             {recentlyActive
               ? t('pages.groups.opening.active', 'Recently active groups')
               : t('pages.groups.opening.explore', 'Groups to explore')}
@@ -82,7 +82,7 @@ export function GroupDiscoveryOpening({
         aria-labelledby="groups-meetup-heading"
         className="min-w-0 rounded-container bg-muted/55 p-4"
       >
-        <h2 id="groups-meetup-heading" className="flex items-center gap-2 font-display text-title font-semibold">
+        <h2 id="groups-meetup-heading" className="flex items-center gap-2 font-sans text-title font-bold">
           <CalendarDays size={18} aria-hidden="true" />
           {t('pages.groups.opening.meetup', 'Next group meetup')}
         </h2>
