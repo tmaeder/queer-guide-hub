@@ -1,5 +1,5 @@
 {
-  "total": 416,
+  "total": 414,
   "files": {
     "src/components/admin/CloudflareDashboard.tsx": {
       "react-hooks/set-state-in-effect": 1
@@ -774,9 +774,6 @@
     },
     "src/pages/EntityDetail.tsx": {
       "react-hooks/exhaustive-deps": 2
-    },
-    "src/pages/GroupDetail.tsx": {
-      "react-hooks/set-state-in-effect": 1
     },
     "src/pages/HelpHotlines.tsx": {
       "react-hooks/set-state-in-effect": 1

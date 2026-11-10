@@ -41,7 +41,7 @@ export function GroupNextMeetup({
       aria-labelledby="group-next-meetup"
       className="min-w-0 rounded-container bg-muted/55 p-4 sm:p-6"
     >
-      <h2 id="group-next-meetup" className="flex items-center gap-2 font-display text-title font-semibold">
+      <h2 id="group-next-meetup" className="flex items-center gap-2 font-sans text-title font-bold">
         <CalendarDays size={18} className="shrink-0" aria-hidden="true" />
         {t('pages.groupDetail.opening.nextMeetup', 'Next meetup')}
       </h2>
