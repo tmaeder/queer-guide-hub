@@ -203,6 +203,8 @@ export default function MarketplaceCategory() {
     };
   }, [isDepartment, subcategory, activeGroup, activeFine, includeAdult, selectedTags]);
 
+  const showGuideInOpening = isDepartment && !includeAdult && !activeGroup && !activeFine && selectedTags.length === 0;
+
   useMeta({
     title: heading ? `${heading} — Marketplace` : 'Marketplace category',
     description: `Browse ${name || 'this category'} on Queer Guide.`,
@@ -261,6 +263,12 @@ export default function MarketplaceCategory() {
       />
 
       <PageContainer>
+        {showGuideInOpening && (
+          <GuidesRail
+            compact
+            filters={{ entityType: 'marketplace', department: subcategory, limit: 3 }}
+          />
+        )}
         {/* One scrolling line on phones. Wrapped, Apparel's ten chips took
             five rows (~230px) before the facets and the grid. The row bleeds to
             the screen edge so a chip cut off there reads as "more this way". */}

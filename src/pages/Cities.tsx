@@ -8,6 +8,7 @@ import { buildPrideByCity } from '@/utils/prideForCity';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { RouteBullet } from '@/components/transit/RouteBullet';
+import { ArrowRight } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cn } from '@/lib/utils';
 import { CitiesControlBar } from './cities/CitiesControlBar';
@@ -84,6 +85,10 @@ export default function Cities() {
 
   const hasActiveFilters = url.q.length > 0 || url.continents.size > 0 || url.tiers.size > 0;
   const showMap = url.view === 'map';
+  const openingCities =
+    !hasActiveFilters && !showMap && !url.city && url.sort === 'venues'
+      ? filtered.filter((city) => !city.high_risk && city.upcoming_event_count > 0).slice(0, 2)
+      : [];
 
   // Defer the map mount until after first paint. When the user has explicitly
   // asked for the map view, mount on the next tick instead of waiting for idle.
@@ -96,48 +101,58 @@ export default function Cities() {
 
   return (
     <div className="relative">
-      {/* ---- Masthead ------------------------------------------------------ */}
-      {/* Not PageHero: it ships rounded-full pill CTAs and a spotlight effect,
-          the one primitive the rebrand has not reached. */}
       <header className="border-b border-border-hairline">
-        <PageContainer flush className="pb-6 pt-6 md:pb-12 md:pt-16">
-          <div className="flex items-center gap-4">
-            <RouteBullet type="city" size={44} />
-            <span className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-              {t('cities.lineEyebrow', 'Cities · Green line')}
-            </span>
+        <PageContainer flush className="grid min-w-0 items-end gap-4 py-4 md:grid-cols-2 md:gap-8 md:py-8">
+          <div className="min-w-0">
+            <h1 className="font-display text-headline leading-tight md:text-display">
+              {t('cities.title', 'Cities.')}
+            </h1>
+            <p className="mt-2 max-w-reading text-pretty text-muted-foreground">
+              {t('cities.opening.description', 'Find queer places to go, events to plan around, and city guides for your next trip.')}
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <Button asChild variant="soft">
+                <LocalizedLink to="/travel">{t('cities.planTrip', 'Plan a trip')}</LocalizedLink>
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => url.setView(showMap ? 'list' : 'map')}
+                aria-pressed={showMap}
+              >
+                {showMap ? t('cities.viewList', 'List') : t('cities.openMap', 'Open the map')}
+              </Button>
+            </div>
           </div>
-          {/* Anton comes from the global h1 rule; adding font-bold would ask a
-              single-weight face to synthesize one.
-              Rank 1 is `text-hero`, but 76px flat on a 390px screen is 84px of
-              one word — `PageHero` steps its own sizes for the same reason. The
-              rank is preserved at the width the ladder was measured for. */}
-          <h1 className="mt-4 font-display text-display leading-[0.95] text-foreground md:text-hero">
-            {t('cities.title', 'Cities.')}
-          </h1>
-          <p className="mt-4 max-w-reading text-body-lg text-muted-foreground">
-            {loading
-              ? t('cities.counting', 'Counting…')
-              : t(
-                  'cities.inView',
-                  '{{count}} cities in the directory, ranked by how much of each one we hold.',
-                  {
-                    count: cities.length,
-                  },
-                )}
-          </p>
-          <div className="mt-6 flex flex-wrap items-center gap-4 md:mt-8">
-            <Button asChild>
-              <LocalizedLink to="/travel">{t('cities.planTrip', 'Plan a trip')}</LocalizedLink>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => url.setView(showMap ? 'list' : 'map')}
-              aria-pressed={showMap}
-            >
-              {showMap ? t('cities.viewList', 'List') : t('cities.openMap', 'Open the map')}
-            </Button>
-          </div>
+          {openingCities.length > 0 && (
+            <section aria-labelledby="cities-opening-title" className="min-w-0">
+              <h2 id="cities-opening-title" className="mb-2 font-sans text-title font-bold">
+                {t('cities.opening.upcoming', 'Cities with something coming up')}
+              </h2>
+              <ul className="divide-y divide-border-hairline border-y border-border-hairline">
+                {openingCities.map((city) => (
+                  <li key={city.id}>
+                    <LocalizedLink
+                      to={`/city/${city.slug || city.id}`}
+                      className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 py-2 text-foreground no-underline hover:underline"
+                    >
+                      <RouteBullet type="city" size={32} />
+                      <div className="min-w-0">
+                        <h3 className="break-words font-semibold">{city.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {[city.countries?.name, t('cities.opening.events', {
+                            count: city.upcoming_event_count,
+                            defaultValue_one: '{{count}} upcoming event',
+                            defaultValue_other: '{{count}} upcoming events',
+                          })].filter(Boolean).join(' · ')}
+                        </p>
+                      </div>
+                      <ArrowRight size={16} aria-hidden="true" />
+                    </LocalizedLink>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </PageContainer>
       </header>
 

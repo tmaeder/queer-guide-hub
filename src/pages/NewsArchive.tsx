@@ -23,7 +23,7 @@ import { NewsSearchInput } from '@/components/news/NewsSearchInput';
 import { NewsSavedSearchesPanel } from '@/components/news/NewsSavedSearchesPanel';
 import { ReadingHistoryPanel } from '@/components/news/ReadingHistoryPanel';
 import { FollowedTagsRail } from '@/components/news/FollowedTagsRail';
-import { PageHero, spansForPreset } from '@/components/discovery';
+import { spansForPreset } from '@/components/discovery';
 
 const NEWS_SPAN_CLASS: Record<string, string> = {
   sm: 'col-span-12 md:col-span-6 xl:col-span-4',
@@ -42,7 +42,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
-import { Newspaper, Grid3X3, List, SortAsc, Filter, TrendingUp, Layers } from '@/components/icons';
+import { Newspaper, Grid3X3, List, SortAsc, Filter, Layers } from '@/components/icons';
 import { useNewsStories } from '@/hooks/useNewsStories';
 import { StoryCard } from '@/components/news/StoryCard';
 import { fetchNamesByIds } from '@/hooks/usePageFetchers';
@@ -585,6 +585,7 @@ export default function NewsArchive() {
     !activeCategory &&
     !activeRight &&
     !quickSearch &&
+    !hasActiveFilters &&
     featuredArticles.length > 0;
 
   const activeRightTags = activeRight ? newsTagsForRight(activeRight) : [];
@@ -604,27 +605,35 @@ export default function NewsArchive() {
 
   return (
     <div className="min-h-screen relative">
-      <PageHero
-        title={t('pages.news.title', 'News.')}
-        lede={t(
-          'pages.news.subtitle',
-          'Stay informed with the latest news and stories from the LGBTQ+ community worldwide',
+      <PageContainer flush className="relative pb-8">
+        <header className="py-4 md:py-8">
+          <h1 className="font-display text-headline leading-tight md:text-display">
+            {t('pages.news.archiveTitle', 'News archive')}
+          </h1>
+          <p className="mt-2 max-w-reading text-muted-foreground">
+            {t('pages.news.archiveLede', 'Read LGBTQ+ reporting from around the world or look up a story.')}
+          </p>
+        </header>
+        {/* Featured Section — single hero on page 1 with no filters. Secondary featured articles already appear in the grid below. */}
+        {showFeatured && featuredArticles[0] && (
+          <section className="mb-6" aria-labelledby="featured-stories-heading">
+            <h2 id="featured-stories-heading" className="sr-only">
+              Featured story
+            </h2>
+            <NewsCard
+              article={featuredArticles[0]}
+              variant="featured"
+              priority
+              hideDate
+              onViewArticle={handleViewArticle}
+              sourcesMap={sourcesMap}
+              categoriesMap={categoriesMap}
+              tags={articleTags[featuredArticles[0].id] || []}
+              imageAsset={articleAssets.get(featuredArticles[0].id)}
+            />
+          </section>
         )}
-        size="md"
-      >
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <Newspaper size={16} />
-            {articles.length} articles
-          </span>
-          <span className="flex items-center gap-1.5">
-            <TrendingUp size={16} />
-            {sources.length} sources
-          </span>
-        </div>
-      </PageHero>
-      {/* pb-24 reserves space for the fixed bottom-right Feedback FAB so it doesn't overlap the last row of cards / pagination. */}
-      <PageContainer className="relative">
+
         {/* Category Tabs (sticky) */}
         {categories.length > 0 && (
           <div
@@ -675,26 +684,6 @@ export default function NewsArchive() {
               );
             })}
           </div>
-        )}
-
-        {/* Featured Section — single hero on page 1 with no filters. Secondary featured articles already appear in the grid below. */}
-        {showFeatured && featuredArticles[0] && (
-          <section className="mb-6" aria-labelledby="featured-stories-heading">
-            <h2 id="featured-stories-heading" className="sr-only">
-              Featured story
-            </h2>
-            <NewsCard
-              article={featuredArticles[0]}
-              variant="featured"
-              priority
-              hideDate
-              onViewArticle={handleViewArticle}
-              sourcesMap={sourcesMap}
-              categoriesMap={categoriesMap}
-              tags={articleTags[featuredArticles[0].id] || []}
-              imageAsset={articleAssets.get(featuredArticles[0].id)}
-            />
-          </section>
         )}
 
         {/* Quick Search & Controls. Deliberately NOT sticky: it used to pin at

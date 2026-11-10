@@ -167,10 +167,6 @@ export default function CompetitionCategoryPage({ category }: { category: Compet
         lead={def ? t(def.blurbKey, def.blurb) : undefined}
       />
 
-      {!loading && !failed && def && (
-        <StatStations track={def.bullet.track} icon={def.icon} totals={totals} />
-      )}
-
       {/*
        * Renders on ONE of the six pages, and that is the design. See
        * CompetitionWinnersRail's header for the measured coverage: three
@@ -179,6 +175,10 @@ export default function CompetitionCategoryPage({ category }: { category: Compet
        * we have no picture of.
        */}
       {!loading && !failed && <CompetitionWinnersRail entries={entries} />}
+
+      {!loading && !failed && def && (
+        <StatStations track={def.bullet.track} icon={def.icon} totals={totals} />
+      )}
 
       {!loading && !failed && <CompetitionAdminPanel competitions={competitions} />}
 

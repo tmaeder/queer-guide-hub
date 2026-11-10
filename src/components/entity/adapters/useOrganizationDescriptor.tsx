@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles } from '@/components/icons';
+import { ArrowRight, Sparkles } from '@/components/icons';
+import { Button } from '@/components/ui/button';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
 import { MilestoneRow } from '@/components/milestones/MilestoneRow';
 import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
@@ -116,7 +117,9 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
           .filter(Boolean)
           .join(' · '),
         track: 'green',
-        lead: org.editorial_hook ?? undefined,
+        density: 'compact',
+        lead: org.editorial_hook ||
+          (org.description ? <span className="line-clamp-2">{org.description}</span> : undefined),
         bodyLead: <OrgBodyLead org={org} />,
         tags: (
           <div className="flex flex-col gap-4">
@@ -138,7 +141,19 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
             <OrgTags org={org} />
           </div>
         ),
-        action: <OrgActions org={org} />,
+        action: (
+          <>
+            {orgHasLocationOrContact(org) && (
+              <Button asChild variant="soft">
+                <a href="#location">
+                  {t('venues.detail.section.location', 'Location & contact')}
+                  <ArrowRight size={16} aria-hidden="true" />
+                </a>
+              </Button>
+            )}
+            <OrgActions org={org} />
+          </>
+        ),
         // Same rail as the venue page, so the two-column frame matches.
         rail: (
           <div className="flex flex-col gap-6">

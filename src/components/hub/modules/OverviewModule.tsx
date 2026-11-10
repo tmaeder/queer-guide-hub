@@ -140,6 +140,19 @@ export function OverviewModule() {
           <p className="text-sm text-muted-foreground">
             {t('hub.overview.allCaughtUp', { defaultValue: 'All caught up.' })}
           </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button asChild variant="soft">
+              <LocalizedLink to="/hub/groups">
+                {t('pages.groups.opening.browse', 'Browse groups')}
+              </LocalizedLink>
+            </Button>
+            <Button asChild variant="ghost">
+              <LocalizedLink to="/events">
+                {t('hub.overview.whatsOn', 'See what’s on')}
+                <ArrowRight size={16} aria-hidden="true" />
+              </LocalizedLink>
+            </Button>
+          </div>
         </div>
       ) : (
         <>

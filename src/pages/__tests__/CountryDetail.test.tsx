@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -107,7 +107,8 @@ describe('CountryDetail', () => {
     expect(
       [...container.querySelectorAll('article section[id]')].map((el) => el.id).slice(0, 3),
     ).toEqual(['cities', 'travel', 'rights']);
-    expect(screen.getByRole('link', { name: /Berlin/ })).toBeVisible();
+    const ideas = screen.getByRole('list', { name: 'Ideas for your visit' });
+    expect(within(ideas).getByRole('link', { name: /Berlin/ }).getAttribute('href')).toBe('/city/berlin');
     expect(screen.getByText('Capital')).toBeVisible();
     const travel = container.querySelector('#travel-detail');
     expect(travel).not.toBeVisible();

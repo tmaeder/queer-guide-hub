@@ -23,10 +23,12 @@ export function GuidesRail({
   title,
   filters = {},
   alwaysRender = false,
+  compact = false,
 }: {
   title?: string;
   filters?: GuidesFilter;
   alwaysRender?: boolean;
+  compact?: boolean;
 }) {
   const { t } = useTranslation();
   const { data: guides = [] } = useGuides({ limit: 6, ...filters });
@@ -37,6 +39,21 @@ export function GuidesRail({
   if (filters.entityType) params.set('entity', filters.entityType);
   if (filters.category) params.set('category', filters.category);
   const seeAll = params.size > 0 ? `/guides?${params.toString()}` : '/guides';
+
+  const lead = compact ? guides[0] : undefined;
+  if (lead) {
+    return (
+      <LocalizedLink
+        to={`/guides/${lead.slug}`}
+        className="group mb-4 flex min-h-14 flex-col justify-center rounded-element bg-surface-container px-4 py-2 text-foreground no-underline"
+      >
+        <span className="text-sm text-muted-foreground">
+          {t('guides.rail.buyingGuide', 'Buying guide')}
+        </span>
+        <span className="font-semibold group-hover:underline">{lead.title}</span>
+      </LocalizedLink>
+    );
+  }
 
   return (
     <section className="my-12" aria-labelledby="guides-rail-heading">

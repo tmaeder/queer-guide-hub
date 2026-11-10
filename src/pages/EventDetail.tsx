@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/Image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -421,25 +422,14 @@ export default function EventDetail() {
           .join(' · ')}
         title={localizedField(event.title, event.title_i18n as I18nMap, i18n.language)}
         status={eventStatusLabel(event)}
-        // No lead: the standfirst below carries where-and-whether-it-is-on,
-        // and `events.description` is long-form (98.8% populated) — it belongs
-        // in the About section, not squeezed under the title.
         tags={
-          <div className="flex flex-col gap-2">
-            <EventMasthead
-              event={event}
-              cityName={cityName}
-              countryName={countryName}
-              cityLink={cityLink}
-              countryLink={countryLink}
-            />
-            {/* `events.tags` is populated on 82.5% of the corpus (32,910 of
-                39,899) and was rendered NOWHERE — the single biggest piece of
-                already-collected data missing from this page. */}
-            {event.tags && event.tags.length > 0 && (
-              <TagChipRow tags={event.tags} max={6} more="expand" />
-            )}
-          </div>
+          <EventMasthead
+            event={event}
+            cityName={cityName}
+            countryName={countryName}
+            cityLink={cityLink}
+            countryLink={countryLink}
+          />
         }
         body={
           <>
@@ -465,6 +455,21 @@ export default function EventDetail() {
                 {decisionCard}
               </ErrorBoundary>
             </div>
+            {eventOgImage && (
+              <div className="max-w-reading overflow-hidden rounded-container bg-surface-container">
+                <Image
+                  src={eventOgImage}
+                  alt=""
+                  heightPx={224}
+                  imageRole="cover"
+                  fit="contain"
+                  rounded="none"
+                />
+              </div>
+            )}
+            {event.tags && event.tags.length > 0 && (
+              <TagChipRow tags={event.tags} max={6} more="expand" />
+            )}
             <EventPlanHint event={event} isPast={isPast} />
             <ErrorBoundary section="event-for-you" fallback={null}>
               <EventForYou

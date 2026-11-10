@@ -124,25 +124,12 @@ export function HotelHero({
   const bookingLink = hotel.booking_url ? tagKnownAffiliateUrl(hotel.booking_url, 'hotel') : null;
   return (
     <>
-      <ParallaxHero className="w-full h-[300px] mb-6">
-        <img
-          loading="lazy"
-          src={isValidImageUrl(heroImage) ? heroImage : heroFallback}
-          alt={hotel.name}
-          referrerPolicy="no-referrer"
-          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-            if ((e.target as HTMLImageElement).src !== heroFallback)
-              (e.target as HTMLImageElement).src = heroFallback;
-          }}
-          className="w-full h-full object-cover"
-        />
-      </ParallaxHero>
       <div className="flex justify-between items-start flex-wrap gap-4 mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             {/* The page's only h1. It was an h4, so the hotel page had no
                 top-level heading at all. */}
-            <h1 className="font-display text-display leading-none">
+            <h1 className="break-words font-display text-headline leading-tight md:text-display">
               <Editable
                 contentType="hotels"
                 recordId={hotel.id}
@@ -162,7 +149,7 @@ export function HotelHero({
               : cityName || countryName || ''}
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <TripAction
             intent={{
               kind: 'add_entity',
@@ -243,6 +230,19 @@ export function HotelHero({
         {/* No location chip: the line under the title already says
             "London, United Kingdom", and so does the breadcrumb. */}
       </div>
+      <ParallaxHero className="mt-4 h-48 w-full overflow-hidden rounded-container sm:h-72">
+        <img
+          loading="lazy"
+          src={isValidImageUrl(heroImage) ? heroImage : heroFallback}
+          alt={hotel.name}
+          referrerPolicy="no-referrer"
+          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+            if ((e.target as HTMLImageElement).src !== heroFallback)
+              (e.target as HTMLImageElement).src = heroFallback;
+          }}
+          className="w-full h-full object-cover"
+        />
+      </ParallaxHero>
     </>
   );
 }

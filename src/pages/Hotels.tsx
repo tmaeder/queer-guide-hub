@@ -19,7 +19,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useMeta } from '@/hooks/useMeta';
 import { EmptyState, type EmptyStateFilterChip } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
-import { PageHero } from '@/components/discovery';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 // Map view is heavy (maplibre-gl ~200kb). Only load when toggled.
@@ -187,40 +187,29 @@ export default function Hotels() {
 
   return (
     <div className="relative">
-      <PageHero
-        title={t('pages.hotels.title', 'Stays.')}
-        lede={t('pages.hotels.subtitle', 'LGBTQ+ friendly accommodations worldwide')}
-        primaryCta={{ label: t('pages.hotels.planTrip', 'Plan a trip'), href: '/travel' }}
-        secondaryCta={{
-          label: t('pages.hotels.submitHotel', 'Submit hotel'),
-          icon: <Plus size={16} />,
-          onClick: () => navigate('/submit/hotel'),
-        }}
-        size="md"
-      />
-      <PageContainer className="space-y-10 relative">
+      <PageContainer flush className="grid min-w-0 items-center gap-4 py-4 lg:grid-cols-2 lg:gap-8 lg:py-8">
+        <header>
+          <h1 className="font-display text-headline leading-tight md:text-display">
+            {t('pages.hotels.title', 'Stays.')}
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            {t('pages.hotels.subtitle', 'LGBTQ+ friendly accommodations worldwide')}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button asChild variant="soft">
+              <LocalizedLink to="/travel">{t('pages.hotels.planTrip', 'Plan a trip')}</LocalizedLink>
+            </Button>
+            <Button variant="ghost" onClick={() => navigate('/submit/hotel')}>
+              <Plus size={16} aria-hidden="true" />
+              {t('pages.hotels.submitHotel', 'Submit hotel')}
+            </Button>
+          </div>
+        </header>
         {showDiscovery && featuredHotel && <HotelHero hotel={featuredHotel} />}
+      </PageContainer>
+      <PageContainer flush className="relative space-y-10 pb-8">
 
         <VibeChipsRow active={vibe} onChange={setVibe} />
-
-        {showDiscovery && topCities.length > 0 && (
-          <section className="space-y-4">
-            <h3 className="text-lg font-semibold">Top cities for queer stays</h3>
-            <DestinationTiles cities={topCities} />
-          </section>
-        )}
-
-        {showDiscovery && inVillages.length > 0 && (
-          <HotelScrollerRow
-            title="In queer villages"
-            subtitle="Hotels in historic LGBTQ+ neighborhoods"
-            hotels={inVillages}
-          />
-        )}
-
-        {showDiscovery && picks.length > 0 && (
-          <HotelScrollerRow title="Editor's picks" hotels={picks} />
-        )}
 
         <section className="space-y-4">
           <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -352,6 +341,25 @@ export default function Hotels() {
             </>
           )}
         </section>
+        {showDiscovery && topCities.length > 0 && (
+          <section className="space-y-4">
+            <h3 className="text-lg font-semibold">Top cities for queer stays</h3>
+            <DestinationTiles cities={topCities} />
+          </section>
+        )}
+
+        {showDiscovery && inVillages.length > 0 && (
+          <HotelScrollerRow
+            title="In queer villages"
+            subtitle="Hotels in historic LGBTQ+ neighborhoods"
+            hotels={inVillages}
+          />
+        )}
+
+        {showDiscovery && picks.length > 0 && (
+          <HotelScrollerRow title="Editor's picks" hotels={picks} />
+        )}
+
       </PageContainer>
     </div>
   );
