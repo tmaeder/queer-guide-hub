@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState } from 'react';
+import { Fragment, useRef, useState, type MouseEvent } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -60,7 +60,7 @@ export function MobileBottomNav() {
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
-  const [hubOpenPath, setHubOpenPath] = useState<string | null>(null);
+  const [hubOpening, setHubOpening] = useState<{ path: string; byPointer: boolean } | null>(null);
   const hubTrigger = useRef<HTMLAnchorElement>(null);
 
   const openExplore = () => {
@@ -73,10 +73,10 @@ export function MobileBottomNav() {
 
   const path = stripLocale(pathname);
   const inHub = path === '/hub' || path.startsWith('/hub/');
-  const hubSheetOpen = isMobile && hubOpenPath === pathname;
-  const openHub = (trigger: HTMLAnchorElement) => {
-    hubTrigger.current = trigger;
-    setHubOpenPath(pathname);
+  const hubSheetOpen = isMobile && hubOpening?.path === pathname;
+  const openHub = (event: MouseEvent<HTMLAnchorElement>) => {
+    hubTrigger.current = event.currentTarget;
+    setHubOpening({ path: pathname, byPointer: event.detail > 0 });
   };
   const tapHaptic = () => trigger('nudge');
 
@@ -214,10 +214,13 @@ export function MobileBottomNav() {
       <MobileNavSheet open={sheetOpen} onOpenChange={setSheetOpen} />
       <MobileHubSheet
         open={hubSheetOpen}
-        onOpenChange={(open) => setHubOpenPath(open ? pathname : null)}
+        openedByPointer={hubOpening?.byPointer ?? false}
+        onOpenChange={(open) => {
+          if (!open) setHubOpening(null);
+        }}
         unreadCount={user ? unreadCount : 0}
         onDismissFocus={() => {
-          setHubOpenPath(null);
+          setHubOpening(null);
           hubTrigger.current?.focus({ preventScroll: true });
         }}
       />
