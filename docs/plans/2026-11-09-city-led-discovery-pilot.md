@@ -14,4 +14,6 @@ Meet people opens with local gatherings and community spaces when available, plu
 
 The Venues directory pairs its title with a real featured place during default browsing and puts results before guides and recommendations. Venue pages open with the description and available photo, with shortcuts to location and hours and a dated event when one is available.
 
+Going out opens with a dated event and a place to visit when listings are available. Events outside the selected city name their location, and the opening gives a local venue priority when the event is elsewhere.
+
 Test whether visitors can find one thing they would do and one way to connect. Compare that experience with time to reach search, event and venue detail opens, and actions that carry an idea into a trip. Review at mobile and desktop widths, with missing imagery, sparse listings, and signed-in travel context.

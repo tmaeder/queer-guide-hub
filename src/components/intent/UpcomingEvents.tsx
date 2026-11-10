@@ -3,6 +3,8 @@ import { CoverageNote } from '@/components/intent/CoverageNote';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import type { EventWindow, EventsWithFallback } from '@/hooks/useIntentData';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+import { isValidTimezone } from '@/utils/timezone';
 
 /**
  * The "What's on" body, shared by /going-out and /people.
@@ -22,8 +24,8 @@ import { cn } from '@/lib/utils';
 // Not exported: both callers now render <UpcomingEvents/> rather than
 // building the sentence themselves, so this has exactly one consumer.
 const WINDOW_LABEL: Record<EventWindow, string> = {
-  tonight: 'tonight',
-  'this-weekend': 'this weekend',
+  tonight: 'in the next 24 hours',
+  'this-weekend': 'in the next 3 days',
   'next-7-days': 'in the next 7 days',
   'next-30-days': 'in the next 30 days',
   anywhere: 'soonest anywhere',
@@ -40,6 +42,7 @@ export function UpcomingEvents({
   variant?: 'default' | 'going-out';
   borderless?: boolean;
 }) {
+  const { i18n } = useTranslation();
   const events = eventsResult?.events ?? [];
   const departuresBoard = variant === 'going-out';
 
@@ -62,15 +65,17 @@ export function UpcomingEvents({
         <ul className="going-out-departures m-0 list-none p-0">
           {events.map((event) => {
             const startsAt = new Date(event.start_date);
+            const timeZone =
+              event.timezone && isValidTimezone(event.timezone) ? event.timezone : undefined;
             return (
               <li key={event.id} className="going-out-departure group relative">
                 <span className="going-out-departure-bullet">
                   <RouteBullet type="event" size={34} />
                 </span>
-                <span className="going-out-departure-date tabular-nums">
-                  <strong>{startsAt.toLocaleDateString(undefined, { day: '2-digit' })}</strong>
-                  <span>{startsAt.toLocaleDateString(undefined, { month: 'short' })}</span>
-                </span>
+                <time dateTime={event.start_date} className="going-out-departure-date tabular-nums">
+                  <strong>{startsAt.toLocaleDateString(i18n?.language, { day: '2-digit', timeZone })}</strong>
+                  <span>{startsAt.toLocaleDateString(i18n?.language, { month: 'short', timeZone })}</span>
+                </time>
                 <span className="going-out-departure-title">{event.title}</span>
                 <span className="going-out-departure-city">
                   {event.city ?? 'Destination to be confirmed'}

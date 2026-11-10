@@ -63,19 +63,24 @@ export interface IntentVenue {
   price_range: number | null;
   verified: boolean | null;
   closed_at: string | null;
+  closure_status: string | null;
+  safety_gated: boolean | null;
+  logo_url: string | null;
+  logo_on_ink: boolean | null;
 }
 
 /** Nightlife venues for a city, ranked by the site's own quality signal. */
 export function useNightlifeVenues(cityId: string | null | undefined, limit = 12) {
+  const { user, loading } = useAuth();
   return useQuery({
-    queryKey: ['intent-nightlife', cityId, limit],
-    enabled: !!cityId,
+    queryKey: ['intent-nightlife', user?.id ?? 'anon', cityId, limit],
+    enabled: Boolean(cityId) && !loading,
     staleTime: 300_000,
     queryFn: async (): Promise<IntentVenue[]> => {
       const { data, error } = await supabase
         .from('venues')
         .select(
-          'id, name, slug, category, city, state, description, images, hours, tags, price_range, verified, closed_at',
+          'id, name, slug, category, city, state, description, images, hours, tags, price_range, verified, closed_at, closure_status, safety_gated, logo_url, logo_on_ink',
         )
         .eq('city_id', cityId!)
         .is('duplicate_of_id', null)
