@@ -57,6 +57,11 @@ function hubRoutes(): Array<{ path: string; component: string }> {
 const sources = componentSources();
 const routes = hubRoutes();
 
+function hasSharedNavigation(jsx: string): boolean {
+  return jsx.includes('<HubNavBar />') ||
+    (jsx.includes('<IntentPageLayout') && jsx.includes('<HubNav />'));
+}
+
 describe('hub navigation is the same control on every /hub page', () => {
   // Positive control. Every assertion below is a `for` over `routes`, so a regex
   // that stops matching turns this file green while checking nothing — the
@@ -77,8 +82,9 @@ describe('hub navigation is the same control on every /hub page', () => {
   it('renders the shared navigation on every hub route', () => {
     for (const r of routes) {
       const src = sources.get(r.component) ?? '';
-      // HubShell is the one sanctioned indirection; it is asserted below.
-      const ok = src.includes('<HubNavBar />') || src.includes('<HubShell');
+      // The intent layout embeds the same rail after its editorial opening.
+      // HubShell is checked separately below.
+      const ok = hasSharedNavigation(src) || src.includes('<HubShell');
       expect(ok, `${r.path} (${r.component}) renders no shared navigation`).toBe(true);
     }
   });
@@ -102,7 +108,7 @@ describe('hub navigation is the same control on every /hub page', () => {
         // (`<Navigate />`) and helper sub-components render no page chrome.
         if (!jsx.includes('<PageContainer') && !jsx.includes('<IntentPageLayout')) continue;
         expect(
-          jsx.includes('<HubNavBar />'),
+          hasSharedNavigation(jsx),
           `${r.component}: a returned screen renders no shared navigation`,
         ).toBe(true);
       }
