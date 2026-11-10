@@ -55,14 +55,14 @@ test.describe('Groups — QA fixtures', () => {
       timeout: 10_000,
     });
     // Other fixture groups should be filtered out.
-    await expect(page.getByText('LGBTQ+ Book Club')).not.toBeVisible();
+    await expect(page.locator('#group-directory').getByText('LGBTQ+ Book Club')).not.toBeVisible();
     await expect(page.getByText('Polyamory Discussion Circle')).not.toBeVisible();
   });
 
   test('search "Polyamory" returns exactly the Polyamory group', async ({ page }) => {
     await groupSearch(page).fill('Polyamory');
     await expect(page.getByText('Polyamory Discussion Circle').first()).toBeVisible();
-    await expect(page.getByText('LGBTQ+ Book Club')).not.toBeVisible();
+    await expect(page.locator('#group-directory').getByText('LGBTQ+ Book Club')).not.toBeVisible();
   });
 
   test('empty-match state is distinct from "No groups here yet"', async ({ page }) => {
@@ -72,11 +72,12 @@ test.describe('Groups — QA fixtures', () => {
     await expect(page.getByText(/no groups here yet/i)).not.toBeVisible();
     // Clear-filters CTA resets results.
     await page.getByRole('button', { name: /clear filters/i }).click();
-    await expect(page.getByText('LGBTQ+ Book Club').first()).toBeVisible();
+    await expect(page.locator('#group-directory').getByText('LGBTQ+ Book Club').first()).toBeVisible();
   });
 
   test('public group shows Join CTA; private group shows Request to Join', async ({ page }) => {
     const publicCard = page
+      .locator('#group-directory')
       .locator('text=LGBTQ+ Book Club')
       .locator('xpath=ancestor::*[contains(@class,"MuiCard") or contains(@class,"card")][1]')
       .first();

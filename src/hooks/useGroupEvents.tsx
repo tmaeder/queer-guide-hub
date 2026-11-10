@@ -3,6 +3,7 @@ import { mirrorRsvp } from '@/hooks/blueskyActivity';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { DISCOVERY_EVENT_WINDOW_MS, selectDiscoveryEvent } from '@/lib/discoveryEvent';
 
 export interface GroupEvent {
   id: string;
@@ -59,6 +60,38 @@ export interface CreateGroupEventData {
   age_restriction?: string;
   organizer_name?: string;
   organizer_contact?: string;
+}
+
+const publicMeetupKey = ['public-group-meetup'] as const;
+
+export function usePublicGroupMeetup() {
+  return useQuery({
+    queryKey: publicMeetupKey,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const now = Date.now();
+      const { data, error } = await supabase
+        .from('events')
+        .select(
+          'id, slug, title, start_date, city, timezone, liveness_status, age_restriction, group:community_groups!events_group_id_fkey!inner(name)',
+        )
+        .eq('group.is_private', false)
+        .is('group.archived_at', null)
+        .eq('safety_gated', false)
+        .eq('status', 'active')
+        .is('duplicate_of_id', null)
+        .not('liveness_status', 'in', '(dead,cancelled,dead_link)')
+        .or('age_restriction.is.null,age_restriction.not.in.("18+","21+")')
+        .gte('start_date', new Date(now).toISOString())
+        .lt('start_date', new Date(now + DISCOVERY_EVENT_WINDOW_MS).toISOString())
+        .order('start_date')
+        .order('id')
+        .limit(1);
+
+      if (error) throw error;
+      return selectDiscoveryEvent(data ?? [], now) ?? null;
+    },
+  });
 }
 
 export const useGroupEvents = (groupId: string) => {
@@ -132,6 +165,7 @@ export const useGroupEvents = (groupId: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-events', groupId] });
+      queryClient.invalidateQueries({ queryKey: publicMeetupKey });
       toast({
         title: 'Event created',
         description: 'Your group event has been created successfully.',
@@ -219,6 +253,7 @@ export const useGroupEvents = (groupId: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-events', groupId] });
+      queryClient.invalidateQueries({ queryKey: publicMeetupKey });
       toast({
         title: 'Event deleted',
         description: 'The event has been deleted successfully.',
