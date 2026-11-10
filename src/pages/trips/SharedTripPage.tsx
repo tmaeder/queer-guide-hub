@@ -178,7 +178,7 @@ function SharedTripPage() {
   if (!data || !data.trip) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <h5 className="text-2xl font-bold mb-2">{t('trips.shared.notFoundTitle')}</h5>
+        <h1 className="mb-2 text-2xl font-bold">{t('trips.shared.notFoundTitle')}</h1>
         <p className="text-sm text-muted-foreground">{t('trips.shared.notFoundDescription')}</p>
       </div>
     );
@@ -344,13 +344,6 @@ function SharedTripPage() {
           </Card>
         )}
 
-        {/* Map */}
-        {mapPlaces.some((p) => p.latitude && p.longitude) && (
-          <div className="h-[300px] mb-4 rounded-container overflow-hidden">
-            <TripMap places={mapPlaces as never} days={mapDays} />
-          </div>
-        )}
-
         <Tabs defaultValue="itinerary">
           <TabsList>
             <TabsTrigger value="itinerary">{t('trips.shared.tabs.itinerary')}</TabsTrigger>
@@ -509,6 +502,17 @@ function SharedTripPage() {
             </TabsContent>
           )}
         </Tabs>
+
+        {mapPlaces.some((place) => place.latitude != null && place.longitude != null) && (
+          <section aria-labelledby="shared-trip-map" className="mt-6">
+            <h2 id="shared-trip-map" className="mb-4 font-sans text-title font-bold">
+              {t('trips.shared.tripMap', 'Trip map')}
+            </h2>
+            <div className="h-[300px] overflow-hidden rounded-container">
+              <TripMap places={mapPlaces as never} days={mapDays} />
+            </div>
+          </section>
+        )}
 
         {/* Conversion CTA */}
         <Card className="mt-6">

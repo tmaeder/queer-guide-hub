@@ -68,22 +68,8 @@ export default function PlaceDetail() {
 
   const overview = place ? (
     <div className="flex flex-col gap-6">
-      {place.description && (
-        <p className="max-w-prose text-body-lg leading-relaxed">{place.description}</p>
-      )}
-      <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {profile?.address && (
-          <div className="flex items-start gap-2">
-            <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-            <div>
-              <dt className="text-2xs uppercase tracking-wide text-muted-foreground">
-                {t('geo.place.address', 'Address')}
-              </dt>
-              <dd>{profile.address}</dd>
-            </div>
-          </div>
-        )}
-        {profile?.website && (
+      {profile?.website && (
+        <dl>
           <div className="flex items-start gap-2">
             <ExternalLink className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             <div>
@@ -97,8 +83,8 @@ export default function PlaceDetail() {
               </dd>
             </div>
           </div>
-        )}
-      </dl>
+        </dl>
+      )}
       {profile?.accessibility_notes && (
         <div className="rounded-element p-4 bg-surface-container">
           <div className="mb-2 flex items-center gap-2 font-medium">
@@ -164,15 +150,8 @@ export default function PlaceDetail() {
       hero={
         place ? (
           <div className="flex flex-col gap-4">
-            {place.image_url && (
-              <img
-                src={place.image_url}
-                alt={place.name}
-                className="max-h-[420px] w-full rounded-container object-cover"
-              />
-            )}
             <div className="flex flex-wrap items-center gap-4">
-              <h1 className="text-display font-display">{place.name}</h1>
+              <h1 className="break-words font-display text-headline leading-tight md:text-display">{place.name}</h1>
               <Badge variant="outline" className="gap-1">
                 <LandmarkKindIcon kind={kind} className="h-3 w-3" />
                 {landmarkKindLabel(kind, t)}
@@ -187,6 +166,22 @@ export default function PlaceDetail() {
                 exportable
               />
             </div>
+            {place.description && (
+              <p className="max-w-reading text-body-lg leading-relaxed">{place.description}</p>
+            )}
+            {profile?.address && (
+              <p className="flex items-start gap-2 text-15 text-muted-foreground">
+                <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                {profile.address}
+              </p>
+            )}
+            {place.image_url && (
+              <img
+                src={place.image_url}
+                alt={place.name}
+                className="max-h-[420px] w-full rounded-container object-cover"
+              />
+            )}
             {profile?.tags && profile.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {profile.tags.map((tag) => (

@@ -262,6 +262,9 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
             <p className="mt-2 max-w-reading text-muted-foreground">
               {t('profile.account.description', 'Manage how you sign in, what you hear from us, and the data you keep here.')}
             </p>
+            <Button className="mt-4" variant="outline" onClick={() => void openEditor('privacy')}>
+              {t('profile.account.profilePrivacy', 'Profile privacy')}
+            </Button>
           </header>
         ) : (
           <div className="flex items-center justify-between">
@@ -416,31 +419,30 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
 
               <TabsContent value="travel">
                 <h2 className="sr-only">{t('profile.tabs.travel', 'Travel')}</h2>
-                {ownView && (
-                  <div className="mb-6 flex flex-col gap-4">
+                {ownView && requestedEditor === 'travel' && (
+                  <div className="mb-6">
+                    <Suspense fallback={<PageLoadingState variant="list" count={2} />}>
+                      <ProfileEditor section="travel" onClose={closeEditor} editorRef={editorRef} />
+                    </Suspense>
+                  </div>
+                )}
+                <TravelTab
+                  userId={profile.user_id}
+                  isOwnProfile={ownView}
+                  preferences={ownView && requestedEditor !== 'travel' && (
                     <div className="flex flex-wrap gap-2">
                       <Button variant="outline" onClick={() => void openEditor('travel')}>
-                        Travel preferences
+                        {t('profile.travel.preferences', 'Travel preferences')}
                       </Button>
                       <Button
                         variant="ghost"
                         onClick={() => void openEditor('privacy', 'travel_visibility')}
                       >
-                        Travel visibility
+                        {t('profile.travel.visibility', 'Travel visibility')}
                       </Button>
                     </div>
-                    {requestedEditor === 'travel' && (
-                      <Suspense fallback={<PageLoadingState variant="list" count={2} />}>
-                        <ProfileEditor
-                          section="travel"
-                          onClose={closeEditor}
-                          editorRef={editorRef}
-                        />
-                      </Suspense>
-                    )}
-                  </div>
-                )}
-                <TravelTab userId={profile.user_id} isOwnProfile={ownView} />
+                  )}
+                />
               </TabsContent>
 
               <TabsContent value="groups">

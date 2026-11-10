@@ -58,18 +58,25 @@ describe('NewsStoryDetail', () => {
     });
   });
 
-  it('renders story title + article list', async () => {
+  it('leads with the story summary and links to the selected lead article once', async () => {
     fetchStoryMock.mockResolvedValue({
       title: 'Pride 2026',
       article_count: 3,
       first_seen_at: '2026-05-01',
       last_updated_at: '2026-05-15',
       summary: 'lots happened',
-      articles: [{ id: 'a1', slug: 'a-1', title: 'Coverage A', image_url: null, published_at: '2026-05-15' }],
+      hero_article_id: 'a2',
+      articles: [
+        { id: 'a1', slug: 'a-1', title: 'Coverage A', image_url: null, published_at: '2026-05-15' },
+        { id: 'a2', slug: 'a-2', title: 'Coverage B', image_url: null, published_at: '2026-05-14' },
+      ],
     });
     renderAt('pride-2026');
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Pride 2026' })).toBeInTheDocument());
-    expect(screen.getByText('Coverage A')).toBeInTheDocument();
+    expect(screen.getByText('lots happened')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Start here Coverage B/ })).toHaveAttribute('href', '/news/a-2');
+    expect(screen.getByRole('link', { name: /Coverage A/ })).toHaveAttribute('href', '/news/a-1');
+    expect(screen.getAllByText('Coverage B')).toHaveLength(1);
     expect(screen.getByText(/3 articles/)).toBeInTheDocument();
   });
 });

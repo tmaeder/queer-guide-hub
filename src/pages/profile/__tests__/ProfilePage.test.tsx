@@ -141,6 +141,14 @@ describe('contextual profile editing', () => {
     await waitFor(() => expect(screen.getByTestId('location').textContent).toBe('/user/u1'));
     expect(screen.getByRole('button', { name: 'Edit profile' })).toBeTruthy();
   });
+  it('opens profile privacy from account settings after saving pending changes', async () => {
+    renderAt('/user/u1/account');
+    expect(await screen.findByTestId('editor')).toHaveTextContent('account');
+    fireEvent.click(screen.getByRole('button', { name: 'Profile privacy' }));
+    await waitFor(() => expect(screen.getByTestId('editor')).toHaveTextContent('privacy'));
+    expect(state.savePending).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('location')).toHaveTextContent('/user/u1?edit=privacy');
+  });
   it('opens the profile editor in place rather than leaving for settings', async () => {
     renderAt('/user/u1');
     fireEvent.click(screen.getByRole('button', { name: 'Edit profile' }));
@@ -152,6 +160,7 @@ describe('contextual profile editing', () => {
     renderAt('/user/u2/account?edit=privacy');
     expect(screen.queryByRole('tab', { name: 'Account' })).toBeNull();
     expect(screen.queryByTestId('editor')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Profile privacy' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Edit profile' })).toBeNull();
   });
   it('hides account and editors while previewing a public profile', async () => {

@@ -405,7 +405,7 @@ export function MarketplaceContent({ listing, reviews, onContentUpdated }: Conte
   return (
     <>
       {listing.description && (
-        <SingleSection title="About this listing" note={provenance ?? undefined}>
+        <SingleSection id="listing-details" title="About this listing" note={provenance ?? undefined}>
           <Editable
             contentType="marketplace_listings"
             recordId={listing.id}
@@ -423,7 +423,7 @@ export function MarketplaceContent({ listing, reviews, onContentUpdated }: Conte
       )}
 
       {listing.shipping_available && listing.shipping_info && (
-        <SingleSection title="Shipping">
+        <SingleSection id="listing-shipping" title="Shipping">
           <p className="max-w-reading leading-relaxed text-muted-foreground">
             {listing.shipping_info}
           </p>

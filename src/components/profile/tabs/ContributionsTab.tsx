@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { profileEditPath } from '@/lib/profileEditing';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { UserPostsList } from '@/components/posts/UserPostsList';
@@ -16,6 +17,7 @@ interface ContributionsTabProps {
 
 /** What this user gave to the community: posts, reviews, photos, submissions. */
 export function ContributionsTab({ userId, isOwnProfile, lens = 'you', privacySettings = {} }: ContributionsTabProps) {
+  const { t } = useTranslation();
   const ownView = isOwnProfile && lens === 'you';
   const visible = sectionVisible(
     privacySettings.contributions_visibility as string | undefined,
@@ -34,30 +36,44 @@ export function ContributionsTab({ userId, isOwnProfile, lens = 'you', privacySe
       </p>
     );
   }
+  const posts = { id: 'contribution-posts', title: t('profile.contributions.posts', 'Posts') };
+  const reviews = { id: 'contribution-reviews', title: t('profile.contributions.reviews', 'Reviews') };
+  const photos = { id: 'contribution-photos', title: t('profile.contributions.photos', 'Photos') };
+  const submissions = { id: 'contribution-submissions', title: t('profile.contributions.submissions', 'Submissions') };
+  const watches = { id: 'contribution-watches', title: t('profile.contributions.watches', 'Watched sites') };
+  const sections = ownView ? [posts, reviews, photos, submissions, watches] : [posts, reviews, photos];
+
   return (
     <div className="flex flex-col gap-8">
-      <section aria-label="Posts" className="flex flex-col gap-4">
-        <h2 className="text-title font-semibold">Posts</h2>
+      <nav aria-label={t('profile.contributions.jumpTo', 'On this page')} className="flex flex-wrap gap-x-4 gap-y-2 border-b border-border-hairline pb-4">
+        {sections.map(({ id, title }) => (
+          <a key={id} href={`#${id}`} className="py-2 text-13 font-medium underline underline-offset-4">
+            {title}
+          </a>
+        ))}
+      </nav>
+      <section id={posts.id} aria-label={posts.title} className="flex flex-col gap-4">
+        <h3 className="font-sans text-title font-bold">{posts.title}</h3>
         <UserPostsList userId={userId} isOwnProfile={ownView} />
       </section>
-      <section aria-label="Reviews" className="flex flex-col gap-4">
-        <h2 className="text-title font-semibold">Reviews</h2>
+      <section id={reviews.id} aria-label={reviews.title} className="flex flex-col gap-4">
+        <h3 className="font-sans text-title font-bold">{reviews.title}</h3>
         <UserReviewsList userId={userId} />
       </section>
-      <section aria-label="Photos" className="flex flex-col gap-4">
-        <h2 className="text-title font-semibold">Photos</h2>
+      <section id={photos.id} aria-label={photos.title} className="flex flex-col gap-4">
+        <h3 className="font-sans text-title font-bold">{photos.title}</h3>
         <PhotoGallery userId={userId} isOwnProfile={ownView} />
       </section>
       {ownView && (
-        <section aria-label="Submissions" className="flex flex-col gap-4">
-          <h2 className="text-title font-semibold">Submissions</h2>
+        <section id={submissions.id} aria-label={submissions.title} className="flex flex-col gap-4">
+          <h3 className="font-sans text-title font-bold">{submissions.title}</h3>
           <p className="text-13 text-muted-foreground -mt-2">Visible only to you.</p>
           <UserSubmissionsList />
         </section>
       )}
       {ownView && (
-        <section aria-label="Watched sites" className="flex flex-col gap-4">
-          <h2 className="text-title font-semibold">Watched sites</h2>
+        <section id={watches.id} aria-label={watches.title} className="flex flex-col gap-4">
+          <h3 className="font-sans text-title font-bold">{watches.title}</h3>
           <p className="text-13 text-muted-foreground -mt-2">
             Sites we re-check for new content to import. Visible only to you.
           </p>

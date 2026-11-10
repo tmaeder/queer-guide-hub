@@ -1,3 +1,4 @@
+import { boundArticleBody, cleanExcerpt } from '@/utils/htmlDecode';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
@@ -292,6 +293,7 @@ export default function MarketplaceItemDetail() {
   const tags = data?.tags ?? [];
   const variants = data?.variants ?? [];
   const price = formatListingPrice(listing);
+  const opening = boundArticleBody(cleanExcerpt(listing.description ?? ''), 240).text;
   // DetailMasthead takes a scalar `title` prop, so localization happens here
   // where the row is still in scope. Gallery alt text uses the same string.
   const displayTitle = localizedField(listing.title, listing.title_i18n as I18nMap, i18n.language);
@@ -311,6 +313,10 @@ export default function MarketplaceItemDetail() {
       <ProductFacts listing={listing} />
       {variants.length > 0 && <VariantAvailability variants={variants} />}
       <MarketplaceContent listing={listing} reviews={reviews} onContentUpdated={refetch} />
+      <div className="flex flex-col gap-4 empty:hidden">
+        <CommunityTags listing={listing} />
+        <ProductTags tags={tags} department={listing.department} />
+      </div>
       <FeaturedInGuides entityType="marketplace" entityId={listing.id} />
       {/* NOT wrapped in a SingleSection: BrandStoryBlock renders its own
           `#brand-story` h2, and nesting it would put two headings on one
@@ -347,29 +353,27 @@ export default function MarketplaceItemDetail() {
   return (
     <SinglePage
       type="marketplace"
+      density="compact"
       eyebrow={productEyebrow(listing, curatedName)}
       title={displayTitle}
       status={status}
       lead={
-        <span className="flex flex-wrap items-center gap-4">
-          <span className="font-display text-headline leading-none tabular-nums">
-            {price.primary}
-          </span>
-          {averageRating > 0 && (
-            <span className="flex items-center gap-2 text-15">
-              <RatingRings value={averageRating} />
-              <span className="tabular-nums">
-                {averageRating.toFixed(1)} ({reviews.length})
-              </span>
+        <span className="flex flex-col gap-2">
+          <span className="flex flex-wrap items-center gap-4">
+            <span className="font-display text-headline leading-none tabular-nums">
+              {price.primary}
             </span>
-          )}
+            {averageRating > 0 && (
+              <span className="flex items-center gap-2 text-15">
+                <RatingRings value={averageRating} />
+                <span className="tabular-nums">
+                  {averageRating.toFixed(1)} ({reviews.length})
+                </span>
+              </span>
+            )}
+          </span>
+          {opening && <span className="break-words">{opening}</span>}
         </span>
-      }
-      tags={
-        <div className="flex flex-col gap-4">
-          <CommunityTags listing={listing} />
-          <ProductTags tags={tags} department={listing.department} />
-        </div>
       }
       action={
         <>
@@ -400,6 +404,16 @@ export default function MarketplaceItemDetail() {
               gated: listing.content_rating === 'adult' || listing.content_rating === 'explicit',
             }}
           />
+          {listing.description && (
+            <Button asChild variant="ghost">
+              <a href="#listing-details">{t('marketplace.listingDetails', 'Listing details')}</a>
+            </Button>
+          )}
+          {listing.shipping_available && listing.shipping_info && (
+            <Button asChild variant="ghost">
+              <a href="#listing-shipping">{t('marketplace.shipping', 'Shipping')}</a>
+            </Button>
+          )}
         </>
       }
       body={body}

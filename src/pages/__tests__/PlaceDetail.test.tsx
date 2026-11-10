@@ -12,14 +12,14 @@ vi.mock('@/hooks/useGeoPlaces', () => ({
       id: 'l1',
       name: 'Tiergarten',
       slug: 'tiergarten',
-      description: null,
-      image_url: null,
+      description: 'A large public park in central Berlin.',
+      image_url: '/tiergarten.jpg',
       latitude: null,
       longitude: null,
       safety_gated: false,
       geo_landmark_profiles: {
         landmark_kind: 'park',
-        address: null,
+        address: 'Straße des 17. Juni, Berlin',
         website: null,
         accessibility_notes: null,
         tags: [],
@@ -53,14 +53,18 @@ vi.mock('@/components/admin/AdminEditButton', () => ({
 import PlaceDetail from '../PlaceDetail';
 
 describe('PlaceDetail admin menu', () => {
-  it('gives staff the landmark admin menu with the record export', () => {
-    const { getByTestId } = render(
+  it('shows the landmark facts before its photo and keeps the staff edit menu', () => {
+    const { getByTestId, getByText, getByRole } = render(
       <MemoryRouter initialEntries={['/place/tiergarten']}>
         <Routes>
           <Route path="/place/:slug" element={<PlaceDetail />} />
         </Routes>
       </MemoryRouter>,
     );
+    const image = getByRole('img', { name: 'Tiergarten' });
+    for (const copy of ['A large public park in central Berlin.', 'Straße des 17. Juni, Berlin']) {
+      expect(getByText(copy).compareDocumentPosition(image) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
     const btn = getByTestId('admin-edit');
     expect(btn).toHaveAttribute('data-type', 'landmarks');
     expect(btn).toHaveAttribute('data-id', 'l1');

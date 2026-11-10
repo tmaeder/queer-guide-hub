@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,10 +35,11 @@ import { AtlasMap } from '@/components/footprint/AtlasMap';
 interface TravelTabProps {
   userId: string;
   isOwnProfile: boolean;
+  preferences?: ReactNode;
 }
 
-export function TravelTab({ userId, isOwnProfile }: TravelTabProps) {
-  return isOwnProfile ? <OwnTravel /> : <PublicTravel userId={userId} />;
+export function TravelTab({ userId, isOwnProfile, preferences }: TravelTabProps) {
+  return isOwnProfile ? <OwnTravel preferences={preferences} /> : <PublicTravel userId={userId} />;
 }
 
 /* ---------- public lens: footprint_public_stats honoring per-stat share flags ---------- */
@@ -128,7 +129,7 @@ function PublicTravel({ userId }: { userId: string }) {
 
 /* ---------- own lens: full footprint + trips/favorites summaries ---------- */
 
-function OwnTravel() {
+function OwnTravel({ preferences }: { preferences?: ReactNode }) {
   const { data: marks = [], isLoading } = useMyPlaceMarks();
   const { data: stats } = useFootprintStats();
   const { data: nudge } = useFootprintReturnNudge();
@@ -325,6 +326,8 @@ function OwnTravel() {
           </CardContent>
         </Card>
       )}
+
+      {preferences}
 
       <StatsPanel stats={effectiveStats} />
 

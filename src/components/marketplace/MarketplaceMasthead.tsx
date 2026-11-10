@@ -67,7 +67,7 @@ export function MarketplaceMasthead({
 }: MarketplaceMastheadProps) {
   return (
     <header className="border-b border-border-hairline">
-      <PageContainer className={eyebrow ? 'md:pt-16' : undefined}>
+      <PageContainer className={size === 'hub' && eyebrow ? 'md:pt-16' : undefined}>
         {backTo && (
           <LocalizedLink
             to={backTo.to}
