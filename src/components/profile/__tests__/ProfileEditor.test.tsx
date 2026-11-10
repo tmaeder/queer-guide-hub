@@ -47,7 +47,10 @@ vi.mock('@/components/profile/AvatarChooser', () => ({
   AvatarChooser: () => <div>Avatar editor</div>,
 }));
 vi.mock('@/components/profile/UsernamePanel', () => ({ UsernamePanel: () => null }));
-vi.mock('@/components/profile/ChangePasswordPanel', () => ({ ChangePasswordPanel: () => null }));
+vi.mock('@/components/profile/ChangePasswordPanel', () => ({
+  ChangePasswordPanel: () => <input aria-label="New password" />,
+}));
+vi.mock('@/components/profile/EmailPreferences', () => ({ EmailPreferences: () => null }));
 vi.mock('@/components/profile/PreferencesMirrorCard', () => ({
   PreferencesMirrorCard: () => null,
 }));
@@ -102,6 +105,19 @@ describe('Settings workspace', () => {
   ])('preserves the %s editor deep link', (query, editor) => {
     renderAt(`/user/u1${query}`);
     expect(screen.getByText(editor)).toBeTruthy();
+  });
+
+  it('groups account controls and opens the password form on demand', () => {
+    renderAt('/user/u1?edit=account');
+    const sections = screen.getByRole('navigation', { name: 'Jump to account settings' });
+    expect(sections).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Notifications' })).toHaveAttribute('href', '#account-notifications');
+    expect(screen.getByRole('region', { name: 'Travel and documents' })).toBeTruthy();
+    const password = screen.getByRole('button', { name: 'Change password' });
+    expect(password).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(password);
+    expect(password).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('textbox', { name: 'New password' })).toBeVisible();
   });
 
   it('follows a new section link within the mounted workspace and keeps only one editor open', () => {

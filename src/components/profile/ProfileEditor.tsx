@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useImperativeHandle, useRef, type Ref } from 'react';
+import { useState, useEffect, useCallback, useImperativeHandle, useRef, type ReactNode, type Ref } from 'react';
+import { useTranslation } from 'react-i18next';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
@@ -158,6 +159,26 @@ function SaveStatusLine({
   );
 }
 
+function AccountSection({
+  id, title, children,
+}: {
+  id: string;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      id={id}
+      tabIndex={-1}
+      aria-labelledby={`${id}-heading`}
+      className="grid min-w-0 gap-4 scroll-mt-[calc(var(--header-pinned-bottom)+1rem)]"
+    >
+      <h2 id={`${id}-heading`} className="font-sans text-title font-bold">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
 function ProfileSettingsContent({
   profile,
   updateProfile,
@@ -171,6 +192,7 @@ function ProfileSettingsContent({
   editorRef,
   focusField,
 }: ContentProps) {
+  const { t } = useTranslation();
   const px = profile as ProfileX | null | undefined;
   const [formData, setFormData] = useState<ProfileFormData>(() => initFormData(profile));
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -339,6 +361,13 @@ function ProfileSettingsContent({
   };
   const username = px?.username ?? null;
   const autosaves = section === 'profile' || section === 'dating' || section === 'privacy';
+  const isAccount = section === 'account';
+  const accountSections = {
+    signIn: { id: 'account-sign-in', title: t('profile.account.signIn', 'Sign-in and security') },
+    notifications: { id: 'account-notifications', title: t('profile.account.notifications', 'Notifications') },
+    travel: { id: 'account-travel', title: t('profile.account.travel', 'Travel and documents') },
+    data: { id: 'account-data', title: t('profile.account.data', 'Data and account deletion') },
+  };
   const editor =
     section === 'profile' ? (
       <BasicInfoTab
@@ -400,41 +429,75 @@ function ProfileSettingsContent({
       </>
     ) : (
       <>
-        <Card>
-          <CardContent className="pt-6 flex flex-col gap-4">
-            <div>
-              <h3 className="font-semibold">Username</h3>
-              <p className="text-sm text-muted-foreground">Your unique queer.guide handle.</p>
-            </div>
-            <UsernamePanel
-              username={username}
-              autoAssigned={px?.username_auto_assigned ?? false}
-              onChanged={() => void refetchProfile()}
-            />
-          </CardContent>
-        </Card>
-        <ChangePasswordPanel />
-        <PrivacyTab
-          formData={formData}
-          hasPasskey={hasPasskey}
-          onPrivacyChange={handlePrivacyChange}
-          showVisibility={false}
-        />
-        <PushNotificationSettings />
-        <EmailPreferences />
-        <TravelForwardingSettings username={username} />
-        <Collapsible>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost">
-              Personal documents
-              <ChevronDown className="ml-2 size-4" aria-hidden />
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-4">
-            <DocumentsList tripId={null} embedded readOnly />
-          </CollapsibleContent>
-        </Collapsible>
-        <DangerZone username={username} />
+        <nav aria-label={t('profile.account.jumpTo', 'Jump to account settings')}>
+          <ul className="flex flex-wrap gap-2">
+            {Object.values(accountSections).map(({ id, title }) => (
+              <li key={id}>
+                <a
+                  href={`#${id}`}
+                  className="inline-flex min-h-11 items-center rounded-element bg-surface-container px-4 py-2 text-sm font-semibold text-foreground no-underline hover:underline"
+                >
+                  {title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <AccountSection {...accountSections.signIn}>
+          <Card>
+            <CardContent className="flex flex-col gap-4 pt-6">
+              <div>
+                <h3 className="font-semibold">{t('profile.account.username', 'Username')}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {t('profile.account.handle', 'Your unique queer.guide handle.')}
+                </p>
+              </div>
+              <UsernamePanel
+                username={username}
+                autoAssigned={px?.username_auto_assigned ?? false}
+                onChanged={() => void refetchProfile()}
+              />
+            </CardContent>
+          </Card>
+          <PrivacyTab
+            formData={formData}
+            hasPasskey={hasPasskey}
+            onPrivacyChange={handlePrivacyChange}
+            showVisibility={false}
+          />
+          <Collapsible className="rounded-container bg-surface-container p-4">
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="group w-full justify-between whitespace-normal text-start">
+                {t('profile.account.changePassword', 'Change password')}
+                <ChevronDown className="size-4 shrink-0 group-data-[state=open]:rotate-180" aria-hidden="true" />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent forceMount className="mt-4 p-2 data-[state=closed]:hidden">
+              <ChangePasswordPanel />
+            </CollapsibleContent>
+          </Collapsible>
+        </AccountSection>
+        <AccountSection {...accountSections.notifications}>
+          <PushNotificationSettings />
+          <EmailPreferences />
+        </AccountSection>
+        <AccountSection {...accountSections.travel}>
+          <TravelForwardingSettings username={username} />
+          <Collapsible className="rounded-container bg-surface-container p-4">
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="group w-full justify-between whitespace-normal text-start">
+                {t('profile.account.documents', 'Personal documents')}
+                <ChevronDown className="size-4 shrink-0 group-data-[state=open]:rotate-180" aria-hidden="true" />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-4">
+              <DocumentsList tripId={null} embedded readOnly />
+            </CollapsibleContent>
+          </Collapsible>
+        </AccountSection>
+        <AccountSection {...accountSections.data}>
+          <DangerZone username={username} />
+        </AccountSection>
       </>
     );
   return (
@@ -442,38 +505,39 @@ function ProfileSettingsContent({
       ref={panelRef}
       id="profile-editor"
       tabIndex={-1}
-      aria-labelledby="profile-editor-title"
-      className="flex max-w-reading flex-col gap-6 scroll-mt-[calc(var(--header-pinned-bottom)+1rem)] outline-none"
+      aria-label={isAccount ? t('profile.account.controls', 'Account controls') : undefined}
+      aria-labelledby={isAccount ? undefined : 'profile-editor-title'}
+      className="flex min-w-0 max-w-reading flex-col gap-6 scroll-mt-[calc(var(--header-pinned-bottom)+1rem)] outline-none"
     >
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 id="profile-editor-title" className="font-sans text-title font-bold">
-            {TITLES[section]}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {section === 'account'
-              ? 'Only you can access these controls.'
-              : section === 'profile'
-                ? 'Profile details save automatically. Social links use their Save button.'
-                : section === 'dating'
-                  ? 'Identity details save automatically. Dating preferences have their own controls.'
-                  : section === 'avatar'
-                    ? 'Choose how your profile appears.'
-                    : section === 'travel'
-                      ? 'Personalize the places and trips you discover.'
-                      : section === 'status'
-                        ? 'Set your vibe and what you’re looking for.'
-                        : 'Changes save automatically.'}
-          </p>
-        </div>
-        {onClose && (
-          <Button variant="outline" onClick={() => void close()} disabled={saveStatus === 'saving'}>
-            <Check className="mr-2 size-4" aria-hidden />
-            {autosaves ? 'Done' : 'Close'}
-          </Button>
-        )}
-      </header>
-      <div className="flex flex-col gap-6">{editor}</div>
+      {!isAccount && (
+        <header className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 id="profile-editor-title" className="font-sans text-title font-bold">
+              {TITLES[section]}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {section === 'profile'
+                  ? 'Profile details save automatically. Social links use their Save button.'
+                  : section === 'dating'
+                    ? 'Identity details save automatically. Dating preferences have their own controls.'
+                    : section === 'avatar'
+                      ? 'Choose how your profile appears.'
+                      : section === 'travel'
+                        ? 'Personalize the places and trips you discover.'
+                        : section === 'status'
+                          ? 'Set your vibe and what you’re looking for.'
+                          : 'Changes save automatically.'}
+            </p>
+          </div>
+          {onClose && (
+            <Button variant="outline" onClick={() => void close()} disabled={saveStatus === 'saving'}>
+              <Check className="mr-2 size-4" aria-hidden />
+              {autosaves ? 'Done' : 'Close'}
+            </Button>
+          )}
+        </header>
+      )}
+      <div className={isAccount ? 'flex min-w-0 flex-col gap-8' : 'flex min-w-0 flex-col gap-6'}>{editor}</div>
       {autosaves && (
         <div className="sticky bottom-[calc(4.5rem+var(--island-inset)+env(safe-area-inset-bottom,0px))] z-10 rounded-element bg-card px-4 py-4 md:bottom-4">
           <SaveStatusLine
