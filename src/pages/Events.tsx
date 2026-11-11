@@ -434,7 +434,10 @@ const Events = () => {
          *  events, editorial about events outranked the events.
          *
          *  Same placement `/cities` uses for its tail cards. */}
-        <GuidesRail filters={{ entityType: 'event', limit: 6 }} />
+        <GuidesRail
+          title={t('guides.rail.titleWorldwide', 'Guides from everywhere')}
+          filters={{ entityType: 'event', limit: 6 }}
+        />
       </PageContainer>
     </div>
   );

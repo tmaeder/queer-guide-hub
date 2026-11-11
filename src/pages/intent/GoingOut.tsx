@@ -30,6 +30,7 @@ export default function GoingOut() {
   const citySlug = params.get('city');
   const {
     cityId,
+    countryId,
     cityName,
     citySlug: resolvedSlug,
     loading: locLoading,
@@ -37,7 +38,7 @@ export default function GoingOut() {
 
   const { data: venues, isLoading: venuesLoading } = useNightlifeVenues(cityId, 12);
   const { data: eventsResult } = useEventsWithFallback(cityId, 6);
-  const { data: cities } = useDestinationCities(8);
+  const { data: cities } = useDestinationCities(8, { excludeCityId: cityId, countryId });
   // Same query CityLandmarksRail runs; react-query dedupes it. Used only to
   // decide whether the "Scenes" section should exist at all.
   const { data: landmarks } = useCityLandmarks(cityId ?? undefined);
@@ -210,10 +211,16 @@ export default function GoingOut() {
         <header className="going-out-hero grid items-center gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12">
           <PageIntro title={title} lede={lede}>
             <div className="mt-4 flex flex-wrap gap-x-4">
-              <a className="inline-flex min-h-11 items-center font-bold underline underline-offset-4" href="#whats-on">
+              <a
+                className="inline-flex min-h-11 items-center font-bold underline underline-offset-4"
+                href="#whats-on"
+              >
                 {t('pages.goingOut.seeEvents', 'See what’s on')}
               </a>
-              <a className="inline-flex min-h-11 items-center font-bold underline underline-offset-4" href="#plan">
+              <a
+                className="inline-flex min-h-11 items-center font-bold underline underline-offset-4"
+                href="#plan"
+              >
                 {t('pages.goingOut.findStop', 'Find your next stop')}
               </a>
             </div>

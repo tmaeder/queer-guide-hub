@@ -132,19 +132,21 @@ const Venues = () => {
   const rawView = searchParams.get('view') ?? 'grid';
   const viewMode: 'grid' | 'map' = VALID_VIEWS.has(rawView) ? (rawView as 'grid' | 'map') : 'grid';
 
-  // Geolocation captured once for ranking + rails. Silent failure if denied.
+  // Geolocation only when the visitor asks for "near me" — never prompted on load.
+  // Near me is the one filter the URL does not carry; it holds until toggled off.
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
     null,
   );
+  const [nearMe, setNearMe] = useState(false);
   useEffect(() => {
-    if (!VENUES_V2_ENABLED) return;
+    if (!VENUES_V2_ENABLED || !nearMe || userLocation) return;
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => setUserLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
       () => {},
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 600_000 },
     );
-  }, []);
+  }, [nearMe, userLocation]);
 
   // Primary city from discovery_profile (used for leaderboard widget + Top-in-city rail).
   const { data: discoveryProfile } = useDiscoveryProfile();
@@ -190,10 +192,6 @@ const Venues = () => {
     if (urlCategory) f.category = urlCategory;
     return f;
   }, [urlSearch, urlCategory]);
-
-  // Near me is the one filter the URL does not carry. The near-me toggle sets
-  // it and it holds until toggled off; it used to vanish on the next URL change.
-  const [nearMe, setNearMe] = useState(false);
 
   // Traveling preference chips — saved accessibility needs apply by default,
   // interest vibes are opt-in per session. Contributions merge into every
@@ -272,8 +270,8 @@ const Venues = () => {
   const showRails = VENUES_V2_ENABLED && !hasAnyFilters && viewMode === 'grid';
   const showFeature = showRails && !nearMe && !chipKey && sortBy === 'relevance';
   const fallbackFeature = showFeature
-    ? venues.find((venue) =>
-        !venueClosureLabel(venue) && !venue.safety_gated && Boolean(venue.description),
+    ? venues.find(
+        (venue) => !venueClosureLabel(venue) && !venue.safety_gated && Boolean(venue.description),
       )
     : undefined;
   const { venues: recentVenues } = useRecentVenues(8, !hasAnyFilters && !VENUES_V2_ENABLED);
@@ -633,7 +631,12 @@ const Venues = () => {
                   );
                 })()}
 
-              {showRails && <GuidesRail filters={{ entityType: 'venue', limit: 6 }} />}
+              {showRails && (
+                <GuidesRail
+                  title={t('guides.rail.titleWorldwide', 'Guides from everywhere')}
+                  filters={{ entityType: 'venue', limit: 6 }}
+                />
+              )}
 
               {showRails && (
                 <VenuesRails
