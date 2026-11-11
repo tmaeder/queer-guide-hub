@@ -5,7 +5,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders, expectNoNestedInteractive } from '@/test/test-utils';
 
-const state = vi.hoisted(() => ({ cities: [] as unknown[], error: null as Error | null }));
+const state = vi.hoisted(() => ({
+  cities: [] as unknown[],
+  local: [] as unknown[],
+  countryId: null as string | null,
+  error: null as Error | null,
+}));
 
 vi.mock('@/hooks/usePersonalizedCities', () => ({
   fetchTrendingCities: async () => {
@@ -13,13 +18,14 @@ vi.mock('@/hooks/usePersonalizedCities', () => ({
     return state.cities;
   },
   fetchPersonalizedCitiesByIds: async () => [],
+  fetchCountryCities: async () => state.local,
 }));
 vi.mock('@/components/home/homeRegionContext', () => ({
   useHomeRegionContext: () => ({
-    cityId: null,
+    cityId: state.countryId ? 'Winterthur' : null,
     citySlug: null,
     cityName: null,
-    countryId: null,
+    countryId: state.countryId,
     countryCode: null,
     countryName: null,
     source: 'none',
@@ -45,7 +51,20 @@ const city = (name: string, equality_score: number | null) => ({
 
 beforeEach(() => {
   state.cities = [];
+  state.local = [];
+  state.countryId = null;
   state.error = null;
+});
+
+describe('CityCards — region', () => {
+  it('keeps the band in the visitor country, home city first, no trending mix-in', async () => {
+    state.countryId = 'CH';
+    state.local = [city('Zürich', 80), city('Winterthur', 80), city('Geneva', 80)];
+    state.cities = [city('Berlin', 100)];
+    renderWithProviders(<CityCards />);
+    const names = (await screen.findAllByRole('link')).map((l) => l.getAttribute('href'));
+    expect(names).toEqual(['/city/winterthur', '/city/zürich', '/city/geneva']);
+  });
 });
 
 describe('CityCards — equality score', () => {

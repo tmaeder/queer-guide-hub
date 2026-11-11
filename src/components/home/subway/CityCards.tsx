@@ -2,7 +2,11 @@ import type { TFunction } from 'i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { fetchTrendingCities, fetchPersonalizedCitiesByIds } from '@/hooks/usePersonalizedCities';
+import {
+  fetchCountryCities,
+  fetchTrendingCities,
+  fetchPersonalizedCitiesByIds,
+} from '@/hooks/usePersonalizedCities';
 import { useHomeRegionContext } from '@/components/home/homeRegionContext';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { CityPicture } from '@/components/places/CityPicture';
@@ -82,9 +86,21 @@ export default function CityCards() {
     isFetching,
     refetch,
   } = useQuery({
-    queryKey: ['home-destinations', region.cityId],
+    queryKey: ['home-destinations', region.cityId, region.countryId],
     enabled: !region.loading,
     queryFn: async () => {
+      // A known region keeps the band in the visitor's country — mixing in
+      // Berlin or Madrid under a Winterthur page reads as a broken filter.
+      if (region.countryId) {
+        const local = await fetchCountryCities(region.countryId, CITY_GUIDE_COUNT + 1);
+        const home = region.cityId
+          ? (local.find((c) => c.id === region.cityId) ??
+            (await fetchPersonalizedCitiesByIds([region.cityId]))[0])
+          : undefined;
+        const rest = local.filter((c) => c.id !== home?.id);
+        const cities = home ? [home, ...rest] : rest;
+        if (cities.length > 0) return cities.slice(0, CITY_GUIDE_COUNT);
+      }
       const trending = await fetchTrendingCities(200000, CITY_GUIDE_COUNT);
       if (!region.cityId) return trending;
       // Already in the editorial set — promote rather than fetch it twice.

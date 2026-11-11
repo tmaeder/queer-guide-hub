@@ -28,6 +28,25 @@ export async function fetchPersonalizedCitiesByIds(
   return (data ?? []) as unknown as PersonalizedCityRow[];
 }
 
+/** The most populous cities in one country — the homepage's "near you" set. */
+export async function fetchCountryCities(
+  countryId: string,
+  limit: number,
+): Promise<PersonalizedCityRow[]> {
+  const { data, error } = await supabase
+    .from('cities')
+    .select(
+      'id, name, slug, image_url, is_capital, is_regional_capital, population, editorial_hook, best_time_to_visit, countries:country_id(name, equality_score)',
+    )
+    .eq('country_id', countryId)
+    .is('duplicate_of_id', null)
+    .not('slug', 'like', 'tmp-%')
+    .order('population', { ascending: false, nullsFirst: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as unknown as PersonalizedCityRow[];
+}
+
 // Editorial whitelist — the cities actual queer travelers care about. Order
 // is significant: matches are surfaced in the order listed here, so Berlin /
 // Madrid / Mexico City beat whichever mid-size US city happens to win a raw

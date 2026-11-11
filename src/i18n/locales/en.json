@@ -2119,8 +2119,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "Zürich city guide",
-      "browseEvents": "Browse Zürich events",
+      "exploreCity": "{{city}} city guide",
+      "browseEvents": "Browse {{city}} events",
       "whatsOn": "What’s on",
       "communitySpace": "Community space"
     },

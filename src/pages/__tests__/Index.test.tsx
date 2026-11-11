@@ -4,6 +4,7 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/usePlaces', () => ({ useOptimizedCity: () => ({ city: null }) }));
+vi.mock('@/hooks/useHomeRegion', () => ({ useHomeRegion: () => ({ loading: false }) }));
 vi.mock('@/hooks/useEvents', () => ({ useEventsQuery: () => ({ events: [] }) }));
 vi.mock('@/components/home/subway/HeroSearch', () => ({ HeroSearch: () => null }));
 vi.mock('@/components/home/HomeContent', () => ({

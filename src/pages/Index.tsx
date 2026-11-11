@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { SubwayHero } from '@/components/home/subway/SubwayHero';
 import { DeferredSection } from '@/components/home/DeferredSection';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import { HomeRegionProvider } from '@/components/home/HomeRegionProvider';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,23 +26,26 @@ const contentPlaceholder = (
 );
 
 const Index = React.memo(() => (
-  <div className="min-h-screen">
-    <SubwayHero />
-    <ErrorBoundary
-      section="home-content"
-      fallback={({ onRetry }) => (
-        <PageContainer>
-          <HomeSectionError onRetry={onRetry} />
-        </PageContainer>
-      )}
-    >
-      <DeferredSection rootMargin="200px 0px" fallback={contentPlaceholder}>
-        <Suspense fallback={contentPlaceholder}>
-          <HomeContent />
-        </Suspense>
-      </DeferredSection>
-    </ErrorBoundary>
-  </div>
+  // Region wraps the hero too, so the featured city matches the bands below.
+  <HomeRegionProvider>
+    <div className="min-h-screen">
+      <SubwayHero />
+      <ErrorBoundary
+        section="home-content"
+        fallback={({ onRetry }) => (
+          <PageContainer>
+            <HomeSectionError onRetry={onRetry} />
+          </PageContainer>
+        )}
+      >
+        <DeferredSection rootMargin="200px 0px" fallback={contentPlaceholder}>
+          <Suspense fallback={contentPlaceholder}>
+            <HomeContent />
+          </Suspense>
+        </DeferredSection>
+      </ErrorBoundary>
+    </div>
+  </HomeRegionProvider>
 ));
 
 Index.displayName = 'Index';

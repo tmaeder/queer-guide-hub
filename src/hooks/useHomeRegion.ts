@@ -172,7 +172,12 @@ export function useHomeRegion(): HomeRegionApi {
   const { data: prefs, isLoading: prefsLoading } = useUserTravelPreferences();
   const { data: trip, isLoading: tripLoading } = useDerivedTravelIntent(!override);
 
-  const tripCityId = override ? null : (trip?.cityId ?? null);
+  // Only a dated, current-or-upcoming trip outranks home: the RPC also returns
+  // undated wishlist trips (no end date never expires), which would otherwise
+  // pin the homepage to that city indefinitely.
+  const today = new Date().toISOString().slice(0, 10);
+  const tripIsLive = !!trip?.startDate && (trip.endDate ?? trip.startDate) >= today;
+  const tripCityId = override || !tripIsLive ? null : (trip?.cityId ?? null);
   const profileCityId = override || tripCityId ? null : (prefs?.home_city_id ?? null);
   const { data: tripCity, isLoading: tripCityLoading } = useCityIdentity(tripCityId);
   const { data: profileCity, isLoading: profileCityLoading } = useCityIdentity(profileCityId);

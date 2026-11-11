@@ -5,7 +5,6 @@ import { Band } from '@/components/home/Band';
 import { DeferredSection } from '@/components/home/DeferredSection';
 import { CityCardsSkeleton } from '@/components/home/subway/CityCardsSkeleton';
 import { DeparturesBoard } from '@/components/home/subway/DeparturesBoard';
-import { HomeRegionProvider } from '@/components/home/HomeRegionProvider';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { IntentMap } from '@/components/home/subway/IntentMap';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -85,9 +84,7 @@ export default function HomeContent() {
         section="home-region"
         fallback={() => <RegionalContent showRegionPicker={false} />}
       >
-        <HomeRegionProvider>
-          <RegionalContent />
-        </HomeRegionProvider>
+        <RegionalContent />
       </ErrorBoundary>
       <HomeSection section="intent-map">
         <IntentMap />

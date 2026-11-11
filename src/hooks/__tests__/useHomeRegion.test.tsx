@@ -16,7 +16,14 @@ const mocks = vi.hoisted(() => ({
     inferred: false,
   },
   prefs: { data: null as { home_city_id: string | null } | null, isLoading: false },
-  trip: { data: null as { cityId: string | null } | null, isLoading: false },
+  trip: {
+    data: null as {
+      cityId: string | null;
+      startDate?: string | null;
+      endDate?: string | null;
+    } | null,
+    isLoading: false,
+  },
   cityRows: {} as Record<string, unknown>,
 }));
 
@@ -103,7 +110,7 @@ describe('useHomeRegion ladder', () => {
 
   it('prefers the next trip over the profile home city', async () => {
     mocks.prefs = { data: { home_city_id: 'home-1' }, isLoading: false };
-    mocks.trip = { data: { cityId: 'trip-1' }, isLoading: false };
+    mocks.trip = { data: { cityId: 'trip-1', startDate: '2999-01-01' }, isLoading: false };
     mocks.cityRows['home-1'] = cityRow('home-1', 'Hamburg');
     mocks.cityRows['trip-1'] = cityRow('trip-1', 'Lisbon');
 
@@ -112,9 +119,20 @@ describe('useHomeRegion ladder', () => {
     expect(result.current.cityName).toBe('Lisbon');
   });
 
+  it('ignores an undated trip — it is a wishlist, not where the visitor is going', async () => {
+    mocks.prefs = { data: { home_city_id: 'home-1' }, isLoading: false };
+    mocks.trip = { data: { cityId: 'trip-1', startDate: null, endDate: null }, isLoading: false };
+    mocks.cityRows['home-1'] = cityRow('home-1', 'Hamburg');
+    mocks.cityRows['trip-1'] = cityRow('trip-1', 'Berlin');
+
+    const { result } = render();
+    await waitFor(() => expect(result.current.source).toBe('profile'));
+    expect(result.current.cityName).toBe('Hamburg');
+  });
+
   it('lets an explicit override beat every automatic rung', async () => {
     mocks.intent = { ...mocks.intent, cityId: 'ip-1', cityName: 'Berlin', countryId: 'de' };
-    mocks.trip = { data: { cityId: 'trip-1' }, isLoading: false };
+    mocks.trip = { data: { cityId: 'trip-1', startDate: '2999-01-01' }, isLoading: false };
     mocks.cityRows['trip-1'] = cityRow('trip-1', 'Lisbon');
 
     const { result } = render();
