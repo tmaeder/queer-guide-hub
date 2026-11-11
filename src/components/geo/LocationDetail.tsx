@@ -8,13 +8,15 @@ import { EXPLORE_SETTLE_MS, isExploreBodyEmpty } from './exploreEmpty';
 export function LocationOverview({
   children,
   className,
+  label = 'Overview',
 }: {
   children: React.ReactNode;
   className?: string;
+  label?: string;
 }) {
   return (
     <section
-      aria-label="Overview"
+      aria-label={label}
       className={cn('grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6', className)}
     >
       {children}

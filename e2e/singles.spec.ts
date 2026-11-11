@@ -162,7 +162,7 @@ for (const route of ROUTES) {
       await open(page, route.path);
       if (route.path.startsWith('/villages/')) {
         await expect(page.getByTestId('single-rail')).toHaveCount(0);
-        await page.getByRole('link', { name: 'Open map', exact: true }).click();
+        await page.getByRole('button', { name: 'Open map', exact: true }).click();
         await expect(page.locator('#map-detail')).toBeVisible();
         await expect(
           page.locator('article').getByRole('link', { name: 'Correct this page' }),

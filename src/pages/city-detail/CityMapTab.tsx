@@ -1,4 +1,6 @@
+import { useTranslation } from 'react-i18next';
 import { EntityMap } from '@/components/map/EntityMap';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { MapInset } from '@/components/transit/MapInset';
 import { useLocation } from 'react-router';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -25,12 +27,32 @@ export interface CityMapTabProps {
  * frame wants a bare canvas, and `/map` is one link away.
  */
 export function CityMapTab({ city, venues = [], caption, openLabel }: CityMapTabProps) {
+  const { t } = useTranslation();
   const visitedLookup = useVisitedPlaceLookup();
   const { pathname, search } = useLocation();
   if (typeof city.latitude !== 'number' || typeof city.longitude !== 'number') return null;
 
   return (
-    <MapInset caption={caption}>
+    <MapInset
+      caption={caption}
+      heading={t('header.nav.map', 'Map')}
+      className="min-w-0 bg-transparent p-0"
+      action={
+        openLabel && (
+          <LocalizedLink
+            to={mapUrl({
+              center: [city.longitude, city.latitude],
+              zoom: 11,
+              back: `${pathname}${search}`,
+            })}
+            className="inline-flex min-h-11 items-center gap-2 rounded-element bg-foreground px-4 text-13 font-bold text-background no-underline hover:opacity-90"
+          >
+            {openLabel}
+            <TransitIcon name="arrow-right" size={16} className="shrink-0 rtl:rotate-180" />
+          </LocalizedLink>
+        )
+      }
+    >
       <EntityMap
         center={[Number(city.longitude), Number(city.latitude)]}
         zoom={11}
@@ -65,31 +87,6 @@ export function CityMapTab({ city, venues = [], caption, openLabel }: CityMapTab
             })),
         ]}
       />
-      {openLabel && (
-        <LocalizedLink
-          /**
-           * A real CAMERA, not a slug.
-           *
-           * `?city=` was never in /map's param schema, so this link has been
-           * DEAD since it shipped: `useMapShellState` ignored the param and
-           * the reader landed on the world view, having asked for a city.
-           *
-           * No slug resolver is added, deliberately — this component already
-           * holds the centroid, so `?lat&lng&z` answers it with params that
-           * already work. A `city=berlin` form needs a slug->centroid lookup
-           * and a query to produce a camera the caller can already compute;
-           * that is a readable-URL/SEO decision, not this fix.
-           */
-          to={mapUrl({
-            center: [city.longitude, city.latitude],
-            zoom: 11,
-            back: `${pathname}${search}`,
-          })}
-          className="block border-t border-border-hairline px-2 py-2 text-2xs font-bold uppercase tracking-label no-underline transition-colors hover:bg-foreground hover:text-background"
-        >
-          {openLabel}
-        </LocalizedLink>
-      )}
     </MapInset>
   );
 }

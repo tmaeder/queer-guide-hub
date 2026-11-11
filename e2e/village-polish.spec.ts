@@ -20,7 +20,7 @@ for (const viewport of [
     });
 
     test('leads with a bounded walk and expands the remaining stops', async ({ page }) => {
-      const sections = page.locator('article section[id]');
+      const sections = page.locator('article section[id]:not(#map)');
       expect(await sections.first().getAttribute('id')).toBe('walk');
       const walk = page.locator('#walk');
       const total = await walk.locator('li').count();
@@ -53,7 +53,7 @@ for (const viewport of [
         'false',
       );
       await expect(map.locator('canvas')).toHaveCount(0);
-      await page.getByRole('link', { name: 'Open map', exact: true }).click();
+      await page.getByRole('button', { name: 'Open map', exact: true }).click();
       await expect(map.locator('button[aria-controls="map-detail"]')).toHaveAttribute(
         'aria-expanded',
         'true',
@@ -62,7 +62,7 @@ for (const viewport of [
       await expect(map.locator('canvas')).toBeVisible();
       await expect(map.getByRole('status')).toHaveCount(0, { timeout: 30_000 });
       await expect(map.getByRole('button', { name: 'Zoom in', exact: true })).toBeEnabled();
-      await expect(page).toHaveURL(/#map$/);
+      await expect(page.locator('section[aria-label="Overview"] #map-detail')).toBeVisible();
       const history = page.locator('#about');
       await history.getByRole('button', { name: 'Show more', exact: true }).click();
       await expect(history.locator('[id="about-detail"]')).toBeVisible();

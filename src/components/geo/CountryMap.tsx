@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { type CountryMapData, countryMapUrl, hasCountryMap } from './countryMapIndex';
@@ -38,6 +39,7 @@ export function CountryMap({
   name: string;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const known = hasCountryMap(code);
 
   const { data } = useQuery<CountryMapData>({
@@ -140,6 +142,25 @@ export function CountryMap({
           <div className="aspect-[10/7] w-full animate-pulse bg-muted" />
         )}
       </div>
+      {!!data?.dots.length && (
+        <figcaption className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-2 text-13 text-muted-foreground">
+          {data.dots.some((dot) => !dot.c) && (
+            <span className="inline-flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className="size-2 rounded-full border border-track-ring bg-track-yellow"
+              />
+              {t('country.section.cities', 'Cities')}
+            </span>
+          )}
+          {data.label && (
+            <span className="inline-flex items-center gap-2">
+              <span aria-hidden="true" className="h-2 w-4 rounded-badge bg-track-yellow" />
+              {t('country.facts.capital', 'Capital')}
+            </span>
+          )}
+        </figcaption>
+      )}
     </figure>
   );
 }

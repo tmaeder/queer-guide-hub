@@ -16,15 +16,17 @@ export function GeoOpeningLinks({ links }: { links: GeoOpeningLink[] }) {
   return (
     <ul
       aria-label={t('cities.opening.visit', 'Ideas for your visit')}
-      className="grid min-w-0 gap-2 sm:grid-cols-2"
+      className="min-w-0 divide-y divide-border-hairline"
     >
       {links.map(({ href, title, label, icon }) => (
         <li key={href} className="min-w-0">
           <LocalizedLink
             to={href}
-            className="group flex min-h-14 items-center gap-4 rounded-element bg-surface-container px-4 py-2 text-foreground no-underline"
+            className="group flex min-h-14 items-center gap-4 py-2 text-foreground no-underline"
           >
-            <TransitIcon name={icon} size={18} className="shrink-0" />
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-surface-container-high">
+              <TransitIcon name={icon} size={18} />
+            </span>
             <span className="min-w-0 flex-1">
               <span className="block text-sm text-muted-foreground">{label}</span>
               <span className="block break-words font-semibold group-hover:underline">{title}</span>

@@ -68,5 +68,16 @@ export function CityAtAGlance({ city }: CityAtAGlanceProps) {
       value: t('cities.detail.travel.noAirport', 'No'),
     });
 
-  return <FactGrid facts={facts} variant="strip" />;
+  if (facts.length === 0) return null;
+
+  return (
+    <div className="min-w-0">
+      <h2 className="text-title font-bold">{t('guides.detail.atAGlance', 'At a glance')}</h2>
+      <FactGrid
+        facts={facts}
+        variant="strip"
+        className="rounded-none bg-transparent px-0 pb-0 pt-2 md:grid-cols-3 xl:grid-cols-5"
+      />
+    </div>
+  );
 }

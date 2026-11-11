@@ -1,14 +1,12 @@
 import { ShieldAlert } from '@/components/icons';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { EntityMap } from '@/components/map/EntityMap';
-import { MapInset } from '@/components/transit/MapInset';
 import { type Stop } from '@/components/transit/StopList';
 import { OccurrenceList, type Occurrence } from '@/components/transit/OccurrenceList';
 import { venueStops, newsRows } from '@/components/transit/entityRows';
 import { LegalLine } from '@/components/rights/CountryLegalLine';
 import type { LegalStation } from '@/lib/rights/legalLine';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { mapUrl } from '@/lib/mapContext';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
@@ -294,67 +292,34 @@ export function CountryNewsTab({
   return <OccurrenceList occurrences={rows} floodFirst={false} />;
 }
 
-/**
- * Spec module 16 — required on countries. Rail-sized; the full map is a link.
- *
- * `EntityMap`, NOT `MapShell`: MapShell's search field, layer switcher and
- * filter bar are absolutely positioned for a full-bleed canvas and overflowed
- * the 360px rail, clipping the filter chip against the viewport. `MapInset` is
- * "a frame, not a second map" — the frame wants a bare canvas.
- */
-export function CountryMapTab({
-  country,
-  caption,
-  openLabel,
-}: {
-  country: CountryRelation;
-  caption?: string;
-  openLabel?: string;
-}) {
+/** The interactive fallback for countries without a silhouette. */
+export function CountryMapTab({ country }: { country: CountryRelation }) {
   const visitedLookup = useVisitedPlaceLookup();
   if (typeof country.latitude !== 'number' || typeof country.longitude !== 'number') return null;
   const center: [number, number] = [Number(country.longitude), Number(country.latitude)];
 
   return (
-    <MapInset caption={caption}>
-      <EntityMap
-        center={center}
-        zoom={4}
-        visitedLookup={visitedLookup}
-        height={280}
-        markers={[
-          {
-            id: country.id,
-            lat: Number(country.latitude),
-            lng: Number(country.longitude),
-            name: country.name ?? 'Country',
-            type: 'countries',
-            primary: true,
-            // `type` is the map LAYER ('countries'); `entityType` is the
-            // place-mark vocabulary ('country'). Two different namespaces
-            // that differ by one letter, which is exactly how a visited
-            // lookup silently never matches.
-            entityType: 'country' as const,
-            entityId: country.id,
-          },
-        ]}
-      />
-      {openLabel && (
-        <LocalizedLink
-          /** Same dead param as the city link — `?country=` was never in the
-           *  schema. The country centroid is already here; zoom 4 is country
-           *  scale, where the city rail reads as a set of places rather than
-           *  one street. */
-          to={mapUrl({
-            center: [Number(country.longitude), Number(country.latitude)],
-            zoom: 4,
-            lines: ['M', 'E'],
-          })}
-          className="block border-t border-border-hairline px-2 py-2 text-2xs font-bold uppercase tracking-label no-underline transition-colors hover:bg-foreground hover:text-background"
-        >
-          {openLabel}
-        </LocalizedLink>
-      )}
-    </MapInset>
+    <EntityMap
+      center={center}
+      zoom={4}
+      visitedLookup={visitedLookup}
+      height={280}
+      markers={[
+        {
+          id: country.id,
+          lat: Number(country.latitude),
+          lng: Number(country.longitude),
+          name: country.name ?? 'Country',
+          type: 'countries',
+          primary: true,
+          // `type` is the map LAYER ('countries'); `entityType` is the
+          // place-mark vocabulary ('country'). Two different namespaces
+          // that differ by one letter, which is exactly how a visited
+          // lookup silently never matches.
+          entityType: 'country' as const,
+          entityId: country.id,
+        },
+      ]}
+    />
   );
 }

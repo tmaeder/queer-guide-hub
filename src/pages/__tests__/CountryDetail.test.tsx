@@ -108,7 +108,11 @@ describe('CountryDetail', () => {
       [...container.querySelectorAll('article section[id]')].map((el) => el.id).slice(0, 3),
     ).toEqual(['cities', 'travel', 'rights']);
     const ideas = screen.getByRole('list', { name: 'Ideas for your visit' });
-    expect(within(ideas).getByRole('link', { name: /Berlin/ }).getAttribute('href')).toBe('/city/berlin');
+    expect(
+      within(ideas)
+        .getByRole('link', { name: /Berlin/ })
+        .getAttribute('href'),
+    ).toBe('/city/berlin');
     expect(screen.getByText('Capital')).toBeVisible();
     const travel = container.querySelector('#travel-detail');
     expect(travel).not.toBeVisible();
@@ -124,12 +128,14 @@ describe('CountryDetail', () => {
     expect(screen.queryByText('LGBTI rights overview')).not.toBeInTheDocument();
   });
 
-  it('retains one map with travel essentials when there are no listed cities', () => {
+  it('retains one overview map and visible travel essentials when there are no listed cities', () => {
     state.country = { ...germany, latitude: 52.5, longitude: 13.4 };
     const { container } = renderPage();
     expect(container.querySelector('#cities')).toBeNull();
     expect(screen.getAllByTestId('map')).toHaveLength(1);
-    expect(container.querySelector('#travel')?.contains(screen.getByTestId('map'))).toBe(true);
+    expect(
+      within(screen.getByRole('region', { name: 'Overview' })).getByTestId('map'),
+    ).toBeVisible();
     expect(screen.getByText('Capital')).toBeVisible();
   });
 

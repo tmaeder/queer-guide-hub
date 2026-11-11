@@ -11,6 +11,8 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { TrackLoader } from '@/components/transit/TrackLoader';
+import { MapInset } from '@/components/transit/MapInset';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { SinglePage } from '@/components/transit/SinglePage';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { mapUrl } from '@/lib/mapContext';
@@ -58,7 +60,11 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { publishedCountryEditorial } from '@/lib/countryEditorial';
 import { useMeta } from '@/hooks/useMeta';
-import { LocationActionMenu, LocationExploreMore } from '@/components/geo/LocationDetail';
+import {
+  LocationActionMenu,
+  LocationExploreMore,
+  LocationOverview,
+} from '@/components/geo/LocationDetail';
 import { CountryPhotoGallery } from '@/components/country/CountryPhotoGallery';
 import { CountryDiscoveryGallery } from '@/components/country/CountryDiscoveryGallery';
 
@@ -202,30 +208,6 @@ export default function CountryDetail() {
   const hasMap =
     hasSilhouette ||
     (typeof country?.latitude === 'number' && typeof country?.longitude === 'number');
-  const countryMap =
-    country && hasMap ? (
-      hasSilhouette ? (
-        <div>
-          <CountryMap code={country.code} name={country.name} />
-          <LocalizedLink
-            to={
-              typeof country.latitude === 'number' && typeof country.longitude === 'number'
-                ? mapUrl({
-                    center: [country.longitude, country.latitude],
-                    zoom: 4,
-                    lines: ['M', 'E'],
-                  })
-                : '/map'
-            }
-            className="mt-2 inline-flex min-h-12 items-center rounded-element px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {t('country.openMap', 'Open the full map')}
-          </LocalizedLink>
-        </div>
-      ) : (
-        <CountryMapTab country={country} openLabel={t('country.openMap', 'Open the full map')} />
-      )
-    ) : null;
   const weatherNow = weatherData?.current?.temperature ?? weatherData?.temperature ?? null;
   const photos = useMemo(() => {
     const candidates = [
@@ -256,12 +238,9 @@ export default function CountryDetail() {
           title: t('country.section.cities', 'Cities'),
           content:
             cities.length > 0 ? (
-              <div className={hasMap ? 'grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]' : undefined}>
-                <div className="min-w-0">
-                  <CountryCitiesTab cities={cities} />
-                  <div className="mt-4">{seeAll('/cities')}</div>
-                </div>
-                {countryMap}
+              <div>
+                <CountryCitiesTab cities={cities} />
+                <div className="mt-4">{seeAll('/cities')}</div>
               </div>
             ) : null,
         },
@@ -270,18 +249,6 @@ export default function CountryDetail() {
           title: t('country.section.travel', 'Travel'),
           variant: 'compact',
           presentation: 'disclosure',
-          preview: (
-            <div
-              className={
-                cities.length === 0 && hasMap
-                  ? 'grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]'
-                  : undefined
-              }
-            >
-              <CountryFactSheet country={country} weatherNow={weatherNow} scope="essentials" />
-              {cities.length === 0 ? countryMap : null}
-            </div>
-          ),
           content: (
             <div className="flex flex-col gap-6">
               <CountryFactSheet country={country} scope="reference" />
@@ -518,10 +485,86 @@ export default function CountryDetail() {
             countryId={country.id}
           />
           <TripCoveringBanner target={{ type: 'country', countryId: country.id }} />
-          <section aria-label={t('country.overview', 'Overview')}>
-            <SafetyVerdict countryId={country.id} equalityScore={country.equality_score ?? null} />
-          </section>
-          <GeoOpeningLinks links={visitLinks} />
+          <div className="grid gap-4">
+            <LocationOverview
+              label={t('country.overview', 'Overview')}
+              className={
+                hasMap
+                  ? 'items-start rounded-panel bg-surface-container p-4 sm:p-6'
+                  : 'rounded-panel bg-surface-container p-4 sm:p-6 lg:grid-cols-1'
+              }
+            >
+              <div className="lg:col-span-full">
+                <SafetyVerdict
+                  countryId={country.id}
+                  equalityScore={country.equality_score ?? null}
+                  className="p-4"
+                />
+              </div>
+              {visitLinks.length > 0 && (
+                <div className="min-w-0">
+                  <h2 className="font-display text-headline leading-tight">
+                    {t('cities.opening.visit', 'Ideas for your visit')}
+                  </h2>
+                  <GeoOpeningLinks links={visitLinks} />
+                  {cities.length > visitLinks.length && (
+                    <a
+                      href="#cities"
+                      className="inline-flex min-h-11 items-center gap-2 text-13 font-bold underline-offset-4 hover:underline"
+                    >
+                      {t('country.section.cities', 'Cities')}
+                      <TransitIcon name="arrow-right" size={16} className="rtl:rotate-180" />
+                    </a>
+                  )}
+                </div>
+              )}
+              {hasMap && (
+                <MapInset
+                  heading={t('country.section.map', 'Map')}
+                  className={
+                    visitLinks.length
+                      ? 'min-w-0 bg-transparent p-0'
+                      : 'min-w-0 bg-transparent p-0 lg:col-span-full'
+                  }
+                  action={
+                    <LocalizedLink
+                      to={
+                        typeof country.latitude === 'number' &&
+                        typeof country.longitude === 'number'
+                          ? mapUrl({
+                              center: [country.longitude, country.latitude],
+                              zoom: 4,
+                              lines: ['M', 'E'],
+                            })
+                          : '/map'
+                      }
+                      className="inline-flex min-h-11 items-center gap-2 rounded-element bg-foreground px-4 text-13 font-bold text-background no-underline hover:opacity-90"
+                    >
+                      {t('country.openMap', 'Open the full map')}
+                      <TransitIcon
+                        name="arrow-right"
+                        size={16}
+                        className="shrink-0 rtl:rotate-180"
+                      />
+                    </LocalizedLink>
+                  }
+                >
+                  {hasSilhouette ? (
+                    <div className="flex justify-center">
+                      <CountryMap
+                        code={country.code}
+                        name={countryName}
+                        className="w-full max-w-xs p-0"
+                      />
+                    </div>
+                  ) : (
+                    <CountryMapTab country={country} />
+                  )}
+                </MapInset>
+              )}
+            </LocationOverview>
+            <CountryFactSheet country={country} weatherNow={weatherNow} scope="essentials" />
+          </div>
           <GeoRouteRail
             sections={sections}
             activeId={activeId}

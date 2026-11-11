@@ -46,7 +46,12 @@ function DisclosureSection({ section }: { section: SingleSectionDef }) {
   const panelId = `${section.id}-detail`;
   return (
     <section id={section.id} className={SECTION_SCROLL_MARGIN}>
-      <div className="flex items-start justify-between gap-4">
+      <div
+        className={cn(
+          'flex items-start justify-between gap-4',
+          section.disclosureLabel && 'flex-wrap items-center',
+        )}
+      >
         <div className="min-w-0">
           <h2
             ref={headingRef}
@@ -69,9 +74,18 @@ function DisclosureSection({ section }: { section: SingleSectionDef }) {
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((value) => !value)}
-          className="inline-flex shrink-0 items-center gap-2 rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-surface-container active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className={cn(
+            'inline-flex shrink-0 items-center gap-2 rounded-element px-4 py-2 text-13 font-bold transition-colors active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            section.disclosureLabel
+              ? 'min-h-11 bg-foreground text-background hover:opacity-90'
+              : 'hover:bg-surface-container',
+          )}
         >
-          {open ? t('common.showLess', 'Show less') : t('common.showMore', 'Show more')}
+          {open
+            ? section.disclosureLabel
+              ? t('common.close', 'Close')
+              : t('common.showLess', 'Show less')
+            : (section.disclosureLabel ?? t('common.showMore', 'Show more'))}
           <ChevronDown
             aria-hidden="true"
             className={cn(

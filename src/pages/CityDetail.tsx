@@ -51,11 +51,7 @@ import { CityTravelTab } from './city-detail/CityTravelTab';
 import { CityNewsTab } from './city-detail/CityNewsTab';
 import { CityMapTab } from './city-detail/CityMapTab';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
-import {
-  LocationActionMenu,
-  LocationExploreMore,
-  LocationOverview,
-} from '@/components/geo/LocationDetail';
+import { LocationActionMenu, LocationExploreMore } from '@/components/geo/LocationDetail';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { cityIntroduction } from './city-detail/cityIntroduction';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
@@ -402,9 +398,7 @@ export default function CityDetail() {
   const eyebrowParts = [t('cities.detail.eyebrow', 'City')];
   if (city.countries?.name) eyebrowParts.push(city.countries.name);
   const criminalization = city.countries?.lgbti_criminalization as
-    | Record<string, unknown>
-    | null
-    | undefined;
+    Record<string, unknown> | null | undefined;
   const safetyFirst = !city.countries || hasAnyCriminalizationSignal(criminalization);
   const safetyBanner = (
     <GeoSafetyBanner
@@ -460,36 +454,35 @@ export default function CityDetail() {
             <TripCoveringBanner
               target={{ type: 'city', cityId: city.id, countryId: city.countries?.id ?? null }}
             />
-            <LocationOverview
-              className={
-                typeof city.latitude === 'number' && typeof city.longitude === 'number'
-                  ? undefined
-                  : 'lg:grid-cols-1'
+            <CityDiscoveryLead
+              cityId={city.id}
+              cityName={city.name}
+              timeZone={city.timezone}
+              imageUrl={syncImageUrl || currentFallback?.url}
+              imageMetadata={syncImageUrl ? cityPhoto.metadata : currentFallback?.metadata}
+              events={events}
+              venues={venues}
+              safety={
+                <GeoSafetyVerdict
+                  countryId={city.countries?.id}
+                  equalityScore={city.countries?.equality_score}
+                  className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-none border-t border-border-hairline bg-transparent px-0 py-2 [&>div]:mb-0"
+                />
               }
-            >
-              <CityDiscoveryLead
-                cityId={city.id}
-                cityName={city.name}
-                timeZone={city.timezone}
-                imageUrl={syncImageUrl || currentFallback?.url}
-                imageMetadata={syncImageUrl ? cityPhoto.metadata : currentFallback?.metadata}
-                events={events}
-                venues={venues}
-                safety={
-                  <GeoSafetyVerdict
-                    countryId={city.countries?.id}
-                    equalityScore={city.countries?.equality_score}
+              facts={<CityAtAGlance city={city} />}
+              map={
+                typeof city.latitude === 'number' && typeof city.longitude === 'number' ? (
+                  <CityMapTab
+                    city={city}
+                    venues={venues.slice(0, 12)}
+                    caption={
+                      city.region_name === city.name ? undefined : (city.region_name ?? undefined)
+                    }
+                    openLabel={t('cities.detail.openMap', 'Open the full map')}
                   />
-                }
-              />
-              <CityAtAGlance city={city} />
-              <CityMapTab
-                city={city}
-                venues={venues.slice(0, 12)}
-                caption={city.region_name ?? undefined}
-                openLabel={t('cities.detail.openMap', 'Open the full map')}
-              />
-            </LocationOverview>
+                ) : undefined
+              }
+            />
             {!safetyFirst && safetyBanner}
             <GeoRouteRail
               sections={sections}

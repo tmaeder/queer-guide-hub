@@ -24,6 +24,8 @@ import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
+import { GeoPhotoInset } from '@/components/geo/GeoPhotoInset';
+import { ImageCredit } from '@/components/ui/ImageCredit';
 import { GeoSafetyBanner, GeoSafetyVerdict } from '@/components/geo/GeoSafetyBlock';
 import { GeoSectionList, GeoRouteRail } from '@/components/geo/GeoSections';
 import {
@@ -46,7 +48,11 @@ import {
   VillagePhotos,
   VillageMapInset,
 } from './QueerVillageDetail.parts';
-import { LocationActionMenu, LocationExploreMore } from '@/components/geo/LocationDetail';
+import {
+  LocationActionMenu,
+  LocationExploreMore,
+  LocationOverview,
+} from '@/components/geo/LocationDetail';
 
 // `equality_score` + `lgbti_criminalization` are new here: the village page had
 // no safety layer at all, which meant a district in a criminalising country
@@ -161,6 +167,17 @@ export default function QueerVillageDetail() {
   const sections: GeoSection[] = village
     ? geoSections([
         {
+          id: 'map',
+          title: t('village.section.map', 'Map'),
+          presentation: 'disclosure',
+          mountWhenOpen: true,
+          disclosureLabel: t('village.action.openMap', 'Open map'),
+          content:
+            typeof village.latitude === 'number' && typeof village.longitude === 'number' ? (
+              <VillageMapInset village={village} venues={venues} />
+            ) : null,
+        },
+        {
           id: 'walk',
           title: t('village.section.walk', 'Venues'),
           note: t(
@@ -201,21 +218,11 @@ export default function QueerVillageDetail() {
             ) : null,
         },
         {
-          id: 'map',
-          title: t('village.section.map', 'Map'),
-          presentation: 'disclosure',
-          mountWhenOpen: true,
-          content:
-            typeof village.latitude === 'number' && typeof village.longitude === 'number' ? (
-              <VillageMapInset village={village} venues={venues} />
-            ) : null,
-        },
-        {
           id: 'about',
           title: t('village.section.about', 'About {{name}}', { name: village.name }),
           presentation: 'disclosure',
           content:
-            village.image_url || village.history || village.notable_landmarks?.length ? (
+            village.history || village.notable_landmarks?.length ? (
               <VillageAbout village={village} onContentUpdated={refetch} t={t} />
             ) : null,
         },
@@ -324,10 +331,16 @@ export default function QueerVillageDetail() {
   if (cityName) census.push(cityName);
   if (countryName) census.push(countryName);
 
-  const nextEvent = selectDiscoveryEvent(events.filter((event) => !event.safety_gated), openedAt);
-  const openVenue = venues.find((venue) =>
-    !venue.closed_at && !venue.closed_on && !venue.safety_gated &&
-    ['cafe', 'restaurant', 'bar', 'community'].includes(venue.category),
+  const nextEvent = selectDiscoveryEvent(
+    events.filter((event) => !event.safety_gated),
+    openedAt,
+  );
+  const openVenue = venues.find(
+    (venue) =>
+      !venue.closed_at &&
+      !venue.closed_on &&
+      !venue.safety_gated &&
+      ['cafe', 'restaurant', 'bar', 'community'].includes(venue.category),
   );
   const visitLinks: GeoOpeningLink[] = [];
   if (nextEvent) {
@@ -347,6 +360,14 @@ export default function QueerVillageDetail() {
     });
   }
 
+  const mapSection = sections.find((section) => section.id === 'map');
+  const imageMetadata = village.image_metadata;
+  const photoSource = imageMetadata?.photographer_url;
+  const photoCredit =
+    imageMetadata?.photographer || imageMetadata?.license ? (
+      <ImageCredit attribution={imageMetadata.photographer} license={imageMetadata.license} />
+    ) : undefined;
+
   return (
     <SinglePage
       type="queer_village"
@@ -364,14 +385,6 @@ export default function QueerVillageDetail() {
       }
       action={
         <>
-          {typeof village.latitude === 'number' && typeof village.longitude === 'number' && (
-            <a
-              href="#map"
-              className="inline-flex min-h-11 items-center rounded-element bg-foreground px-6 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-foreground/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              {t('village.action.openMap', 'Open map')}
-            </a>
-          )}
           <button
             type="button"
             onClick={handleFavoriteToggle}
@@ -408,14 +421,56 @@ export default function QueerVillageDetail() {
               countryId: village.countries?.id ?? null,
             }}
           />
-          <GeoSafetyVerdict
-            countryId={village.countries?.id}
-            equalityScore={village.countries?.equality_score}
-            rightsHref={
-              village.countries?.slug ? `/country/${village.countries.slug}#rights` : null
+          <LocationOverview
+            className={
+              village.image_url
+                ? 'items-start rounded-panel bg-surface-container p-4 sm:p-6'
+                : 'rounded-panel bg-surface-container p-4 sm:p-6 lg:grid-cols-1'
             }
-          />
-          <GeoOpeningLinks links={visitLinks} />
+          >
+            <div className="flex min-w-0 flex-col gap-4">
+              {(visitLinks.length > 0 || venues.length > 0) && (
+                <h2 className="font-display text-headline leading-tight">
+                  {t('cities.detail.section.nearby', 'Nearby')}
+                </h2>
+              )}
+              <GeoOpeningLinks links={visitLinks} />
+              {venues.length > 0 && (
+                <a
+                  href="#walk"
+                  className="inline-flex min-h-11 w-fit items-center rounded-element bg-surface-container-high px-4 text-13 font-bold no-underline hover:bg-surface-container-highest"
+                >
+                  {t('village.section.walk', 'Venues')}
+                </a>
+              )}
+              <GeoSafetyVerdict
+                countryId={village.countries?.id}
+                equalityScore={village.countries?.equality_score}
+                rightsHref={
+                  village.countries?.slug ? `/country/${village.countries.slug}#rights` : null
+                }
+                className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-none border-t border-border-hairline bg-transparent px-0 py-2 [&>div]:mb-0"
+              />
+              {mapSection && <GeoSectionList sections={[mapSection]} />}
+            </div>
+            <GeoPhotoInset
+              src={village.image_url}
+              alt={imageMetadata?.alt || village.name}
+              fallbackKey={village.slug}
+              className="min-w-0 bg-transparent p-0"
+              caption={
+                photoCredit &&
+                typeof photoSource === 'string' &&
+                /^https:\/\//i.test(photoSource) ? (
+                  <a href={photoSource} className="underline underline-offset-2">
+                    {photoCredit}
+                  </a>
+                ) : (
+                  photoCredit
+                )
+              }
+            />
+          </LocationOverview>
           <GeoRouteRail
             sections={sections}
             activeId={activeId}
@@ -424,7 +479,7 @@ export default function QueerVillageDetail() {
             track="green"
             label={t('village.sections', 'Sections')}
           />
-          <GeoSectionList sections={sections} />
+          <GeoSectionList sections={sections.filter((section) => section.id !== 'map')} />
         </>
       }
       footer={
