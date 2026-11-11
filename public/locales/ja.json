@@ -1923,8 +1923,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "チューリッヒを探索",
-      "browseEvents": "チューリッヒのイベントを見る",
+      "exploreCity": "{{city}}を探索",
+      "browseEvents": "{{city}}のイベントを見る",
       "whatsOn": "イベント情報",
       "communitySpace": "コミュニティスペース"
     },

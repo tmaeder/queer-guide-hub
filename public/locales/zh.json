@@ -1923,8 +1923,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "探索苏黎世",
-      "browseEvents": "浏览苏黎世活动",
+      "exploreCity": "探索{{city}}",
+      "browseEvents": "浏览{{city}}活动",
       "whatsOn": "活动预告",
       "communitySpace": "社区空间"
     },
