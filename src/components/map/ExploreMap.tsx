@@ -42,6 +42,8 @@ import { usePointLayers } from '@/components/map/hooks/usePointLayers';
 import { useSharedMobilityLayer } from '@/components/map/hooks/useSharedMobilityLayer';
 import { snapshotAgeMinutes } from '@/hooks/useSharedMobility';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
+import { useIntentLocation } from '@/hooks/useIntentLocation';
+import { useCityCentre } from '@/hooks/regionOverride';
 import { useToast } from '@/hooks/use-toast';
 import {
   useCountryBoundaries,
@@ -375,11 +377,18 @@ export const ExploreMap = ({
   }, []);
 
   const { location: visitorGeo } = useVisitorLocation();
+  // Picked/profile region (not IP — `inferred` marks an IP answer, and
+  // visitorGeo already carries finer IP coordinates).
+  const intent = useIntentLocation(null);
+  const regionCityId = !intent.inferred ? intent.cityId : null;
+  const { data: regionCentre, isLoading: regionCentreLoading } = useCityCentre(regionCityId);
 
   useMapAutoFly({
     skipAutoFly,
     initialCenter,
     visitorGeo,
+    region: regionCentre ? { ...regionCentre, name: intent.cityName } : null,
+    regionPending: intent.loading || regionCentreLoading,
     flyToLocation,
     setViewport,
     showLocationHint,
