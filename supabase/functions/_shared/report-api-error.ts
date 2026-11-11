@@ -40,7 +40,7 @@ export async function reportApiError(
     const message = e?.message ?? String(err)
     const normalized = message
       .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '<UUID>')
-      .replace(/\d{4}-\d{2}-\d{2}[T ][\d:.Z+\-]+/g, '<TS>')
+      .replace(/\d{4}-\d{2}-\d{2}[T ][\d:.Z+-]+/g, '<TS>')
       .replace(/\b\d{4,}\b/g, '<NUM>')
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`edge-function:${functionName}:${normalized}`))
     const fingerprint = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('')
