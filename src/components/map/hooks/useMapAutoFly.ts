@@ -8,6 +8,11 @@ interface UseMapAutoFlyParams {
   skipAutoFly: boolean;
   initialCenter?: [number, number];
   visitorGeo: VisitorGeo;
+  /** The region the visitor picked on the homepage (or their profile home
+   *  city). Outranks IP geo. `regionPending` holds IP geo back until it has
+   *  resolved, so the map does not fly to the IP city and then away again. */
+  region?: { latitude: number; longitude: number; name: string | null } | null;
+  regionPending?: boolean;
   flyToLocation: (lng: number, lat: number, zoom?: number) => void;
   setViewport: (v: MapViewport) => void;
   showLocationHint: (label: string) => void;
@@ -30,6 +35,8 @@ export function useMapAutoFly({
   skipAutoFly,
   initialCenter,
   visitorGeo,
+  region = null,
+  regionPending = false,
   flyToLocation,
   setViewport,
   showLocationHint,
@@ -41,13 +48,27 @@ export function useMapAutoFly({
   const userGeoFiredRef = useRef(false);
 
   useEffect(() => {
-    if (skipAutoFly || initialCenter || !visitorGeo) return;
-    if (userGeoFiredRef.current) return;
+    if (skipAutoFly || initialCenter || userGeoFiredRef.current) return;
+    const target = region
+      ? { lng: region.longitude, lat: region.latitude, city: region.name }
+      : !regionPending && visitorGeo
+        ? { lng: visitorGeo.longitude, lat: visitorGeo.latitude, city: visitorGeo.city ?? null }
+        : null;
+    if (!target) return;
     userGeoFiredRef.current = true;
-    setViewport({ center: [visitorGeo.longitude, visitorGeo.latitude], zoom: 10 });
-    flyToLocation(visitorGeo.longitude, visitorGeo.latitude, 10);
-    showLocationHint(visitorGeo.city ? `Showing ${visitorGeo.city}` : 'Showing your area');
-  }, [visitorGeo, flyToLocation, skipAutoFly, initialCenter, showLocationHint, setViewport]);
+    setViewport({ center: [target.lng, target.lat], zoom: 10 });
+    flyToLocation(target.lng, target.lat, 10);
+    showLocationHint(target.city ? `Showing ${target.city}` : 'Showing your area');
+  }, [
+    region,
+    regionPending,
+    visitorGeo,
+    flyToLocation,
+    skipAutoFly,
+    initialCenter,
+    showLocationHint,
+    setViewport,
+  ]);
 
   useEffect(() => {
     if (skipAutoFly || initialCenter || fallbackFiredRef.current) return;

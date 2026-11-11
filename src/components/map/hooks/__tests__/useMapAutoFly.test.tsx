@@ -11,15 +11,27 @@ import { useMapAutoFly, WORLD_CENTER, WORLD_ZOOM } from '../useMapAutoFly';
 
 afterEach(() => vi.useRealTimers());
 
-function setup(visitorGeo: Parameters<typeof useMapAutoFly>[0]['visitorGeo']) {
+type P = Parameters<typeof useMapAutoFly>[0];
+
+function setup(visitorGeo: P['visitorGeo'], extra: Partial<P> = {}) {
   const flyToLocation = vi.fn();
   const setViewport = vi.fn();
   const showLocationHint = vi.fn();
-  renderHook(() =>
-    useMapAutoFly({ skipAutoFly: false, visitorGeo, flyToLocation, setViewport, showLocationHint }),
+  const view = renderHook((props: Partial<P>) =>
+    useMapAutoFly({
+      skipAutoFly: false,
+      visitorGeo,
+      flyToLocation,
+      setViewport,
+      showLocationHint,
+      ...extra,
+      ...props,
+    }),
   );
-  return { flyToLocation, setViewport, showLocationHint };
+  return { flyToLocation, setViewport, showLocationHint, rerender: view.rerender };
 }
+
+const IP = { latitude: 52.52, longitude: 13.4, city: 'Berlin' };
 
 describe('useMapAutoFly', () => {
   it('falls back to a neutral world view with no city toast', () => {
@@ -35,5 +47,23 @@ describe('useMapAutoFly', () => {
     const m = setup({ latitude: 38.72, longitude: -9.14, city: 'Lisbon' });
     expect(m.flyToLocation).toHaveBeenCalledWith(-9.14, 38.72, 10);
     expect(m.showLocationHint).toHaveBeenCalledWith('Showing Lisbon');
+  });
+
+  it('centres on the picked region over IP geo', () => {
+    const m = setup(IP, { region: { latitude: 38.72, longitude: -9.14, name: 'Lisbon' } });
+    expect(m.flyToLocation).toHaveBeenCalledTimes(1);
+    expect(m.flyToLocation).toHaveBeenCalledWith(-9.14, 38.72, 10);
+    expect(m.showLocationHint).toHaveBeenCalledWith('Showing Lisbon');
+  });
+
+  it('holds IP geo back while the region is still resolving', () => {
+    const m = setup(IP, { regionPending: true });
+    expect(m.flyToLocation).not.toHaveBeenCalled();
+    m.rerender({
+      regionPending: false,
+      region: { latitude: 38.72, longitude: -9.14, name: 'Lisbon' },
+    });
+    expect(m.flyToLocation).toHaveBeenCalledTimes(1);
+    expect(m.flyToLocation).toHaveBeenCalledWith(-9.14, 38.72, 10);
   });
 });

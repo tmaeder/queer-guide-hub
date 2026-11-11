@@ -113,3 +113,26 @@ export function useCityIdentity(cityId: string | null | undefined) {
     },
   });
 }
+
+/**
+ * Centre of a city, for the map. Read from `cities`, held only in the query
+ * cache — never written to the override, which stores identity, not position.
+ */
+export function useCityCentre(cityId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['region-city-centre', cityId],
+    enabled: !!cityId,
+    staleTime: 60 * 60 * 1000,
+    queryFn: async (): Promise<{ latitude: number; longitude: number } | null> => {
+      const { data } = await supabase
+        .from('cities')
+        .select('latitude, longitude')
+        .eq('id', cityId!)
+        .maybeSingle();
+      const row = data as { latitude: number | null; longitude: number | null } | null;
+      return row?.latitude != null && row?.longitude != null
+        ? { latitude: row.latitude, longitude: row.longitude }
+        : null;
+    },
+  });
+}
