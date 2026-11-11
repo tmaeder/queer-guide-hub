@@ -263,6 +263,9 @@ describe('TagDetail — page', () => {
     renderPage();
     expect(await screen.findByRole('heading', { level: 1, name: 'Bear' })).toBeInTheDocument();
     expect(screen.getByText('Practice')).toBeInTheDocument();
+    expect(screen.getAllByText(BASE.description)).toHaveLength(1);
+    const related = screen.getByRole('link', { name: 'More terms in this topic' });
+    expect(related.getAttribute('href')).toBe('/tags/c/slang-terminology');
   });
 
   // `concept` is the default kind for an unclassified row, so a chip reading
@@ -425,6 +428,9 @@ describe('TagDetail — page', () => {
     ];
     renderPage();
     expect(await screen.findByText('en.saferparty.ch')).toBeInTheDocument();
+    const shortcut = screen.getByRole('link', { name: 'Sources and references' });
+    expect(shortcut.getAttribute('href')).toBe('#term-sources');
+    expect(document.getElementById('term-sources')?.textContent).toContain('en.saferparty.ch');
     const link = screen
       .getAllByRole('link')
       .find((a) => a.getAttribute('href') === 'https://en.saferparty.ch/substanzen/mdma');
@@ -438,6 +444,7 @@ describe('TagDetail — page', () => {
     renderPage();
     await screen.findByRole('heading', { level: 1, name: 'Bear' });
     expect(screen.queryByText(/Elsewhere/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Sources and references' })).toBeNull();
   });
 });
 

@@ -462,7 +462,7 @@ export default function StiGuidePage() {
     <PageContainer>
       {/* ── Masthead ─────────────────────────────────────────────────────── */}
       <Eyebrow>{t('stiGuide.eyebrow', 'Sexual health')}</Eyebrow>
-      <h1 className="mt-2 font-display text-hero">{t('stiGuide.title', 'The STI guide')}</h1>
+      <h1 className="mt-2 font-display text-headline md:text-display">{t('stiGuide.title', 'The STI guide')}</h1>
       <p className="mt-6 max-w-reading text-body-lg leading-relaxed">
         {t(
           'stiGuide.intro',
@@ -479,8 +479,6 @@ export default function StiGuidePage() {
         )}
       </p>
 
-      <Key />
-
       {/* The four plates as stations. Earns its place on length alone: the
           per-infection blocks put the narrow layout at ~12,600px, so "when do I
           test" is eleven infection blocks below the fold and a reader who came
@@ -494,8 +492,9 @@ export default function StiGuidePage() {
         onNavigate={goToStation}
         orientation="horizontal"
         label={t('stiGuide.sections', 'Sections')}
-        className="mt-8"
+        className="mt-4"
       />
+      <Key />
 
       {/* ── 01 · How it spreads ──────────────────────────────────────────── */}
       <Plate
