@@ -13,16 +13,18 @@ interface UseMapAutoFlyParams {
   showLocationHint: (label: string) => void;
 }
 
-// Berlin — used as a curated fallback when neither URL state, an explicit prop,
-// nor IP geolocation provides a center within ~2.5 s. Avoids the cold-load
-// Sahara view (DEFAULT_CENTER = [0, 20] is empty desert → reads as "broken").
-const FALLBACK_CENTER: [number, number] = [13.405, 52.52];
-const FALLBACK_ZOOM = 10;
+// Neutral world view when neither URL state, an explicit prop, nor IP
+// geolocation provides a center within ~2.5 s. It used to be Berlin with a
+// "Showing Berlin" toast, which told a visitor anywhere else that we thought
+// they were in Berlin. Centred off the Sahara (DEFAULT_CENTER = [0, 20] reads
+// as "broken"); no toast, because there is no city to name.
+// A fly still happens: the initial world fetch is deferred until it does.
+export const WORLD_CENTER: [number, number] = [15, 30];
+export const WORLD_ZOOM = 1.8;
 
 /**
- * Auto-fly to the visitor's IP geolocation on load, with a Berlin fallback if
- * geolocation hasn't resolved within 2.5s. Extracted verbatim from ExploreMap —
- * behavior-preserving.
+ * Auto-fly to the visitor's IP geolocation on load, falling back to a neutral
+ * world view if geolocation hasn't resolved within 2.5s.
  */
 export function useMapAutoFly({
   skipAutoFly,
@@ -32,10 +34,10 @@ export function useMapAutoFly({
   setViewport,
   showLocationHint,
 }: UseMapAutoFlyParams) {
-  // Berlin fallback fired (cosmetic, prevents repeat toast).
+  // World fallback fired.
   const fallbackFiredRef = useRef(false);
-  // True only when we flew to the *user's* real location. Berlin fallback
-  // does NOT set this, so a late-arriving visitorGeo still overrides Berlin.
+  // True only when we flew to the *user's* real location. The world fallback
+  // does NOT set this, so a late-arriving visitorGeo still overrides it.
   const userGeoFiredRef = useRef(false);
 
   useEffect(() => {
@@ -52,9 +54,8 @@ export function useMapAutoFly({
     const timer = setTimeout(() => {
       if (visitorGeo || fallbackFiredRef.current || userGeoFiredRef.current) return;
       fallbackFiredRef.current = true;
-      setViewport({ center: FALLBACK_CENTER, zoom: FALLBACK_ZOOM });
-      flyToLocation(FALLBACK_CENTER[0], FALLBACK_CENTER[1], FALLBACK_ZOOM);
-      showLocationHint('Showing Berlin');
+      setViewport({ center: WORLD_CENTER, zoom: WORLD_ZOOM });
+      flyToLocation(WORLD_CENTER[0], WORLD_CENTER[1], WORLD_ZOOM);
     }, 2500);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
