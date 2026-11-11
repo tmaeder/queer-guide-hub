@@ -6,12 +6,12 @@ import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useCanonicalProfession, usePersonalitiesByProfession } from '@/hooks/usePageFetchers';
 import { useMeta } from '@/hooks/useMeta';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Users, MapPin, Calendar, User } from '@/components/icons';
+import { ArrowLeft } from '@/components/icons';
 import { PersonalityCard } from '@/components/personalities/PersonalityCard';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { calculateAge } from '@/lib/personAge';
 
@@ -155,90 +155,33 @@ export default function ProfessionDetail() {
     );
   }
 
+  const birthplaceCount = new Set(
+    professionData.personalities.map((person) => person.birth_place).filter(Boolean),
+  ).size;
+  const ages = professionData.personalities
+    .map((person) => calculateAge(person.birth_date as string | null, person.death_date as string | null))
+    .filter((age): age is number => age !== null);
+  const youngest = ages.length > 0 ? Math.min(...ages) : null;
+  const oldest = ages.length > 0 ? Math.max(...ages) : null;
+  const includesDeceased = professionData.personalities.some((person) => person.death_date);
+
   return (
     <PageContainer>
       <div className="flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <User size={32} className="text-primary" />
-          {/* Was an <h4>, with an <h6> below it and no <h1> anywhere on the page —
-              axe `page-has-heading-one`, and a heading order that jumps h4 -> h6.
-              The visual rank was always page-title; only the element was wrong. */}
-          <h1 className="text-headline font-bold">{professionData.name}</h1>
-          <Badge variant="secondary">
-            {professionData.totalCount} {professionData.totalCount === 1 ? 'person' : 'people'}
-          </Badge>
-        </div>
+        <header>
+          <LocalizedLink to="/tags" className="text-13 font-medium underline underline-offset-4">
+            {t('breadcrumb.tags', 'Resources')}
+          </LocalizedLink>
+          <h1 className="mt-2 break-words font-display text-headline leading-tight md:text-display">
+            {professionData.name}
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            {professionData.totalCount} {professionData.totalCount === 1 ? 'person' : 'people'} in the Queer Guide archive
+          </p>
+        </header>
 
-        {/* Stats Overview.
-            The three cards below use CardTitle, which is a hard <h3>. With the page
-            title now a real <h1>, that would jump h1 -> h3 and trip axe
-            `heading-order`, so the section carries its own h2. It is sr-only because
-            the cards are self-labelling on screen — this names the group for a
-            screen reader without duplicating a visible label. */}
-        <h2 className="sr-only">Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total People</CardTitle>
-              <Users size={16} className="text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-xl font-bold">{professionData.totalCount}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Locations</CardTitle>
-              <MapPin size={16} className="text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-xl font-bold">
-                {
-                  new Set(professionData.personalities.map((p) => p.birth_place).filter(Boolean))
-                    .size
-                }
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Age Range</CardTitle>
-              <Calendar size={16} className="text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              {(() => {
-                // This card read "32-434" on /professions/Politician because it
-                // aged everyone against today and ignored `death_date`. Ages now
-                // come from the shared calculator, which ends a life at its death
-                // date and returns null for anything a human cannot have been.
-                const ages = professionData.personalities
-                  .map((p) =>
-                    calculateAge(p.birth_date as string | null, p.death_date as string | null),
-                  )
-                  .filter((age): age is number => age !== null);
-                const deceased = professionData.personalities.some((p) => p.death_date);
-                if (ages.length === 0) return <p className="text-xl font-bold">N/A</p>;
-                const min = Math.min(...ages);
-                const max = Math.max(...ages);
-                return (
-                  <>
-                    <p className="text-xl font-bold">{min === max ? `${min}` : `${min}-${max}`}</p>
-                    {deceased && (
-                      <p className="text-2xs text-muted-foreground">Age at death where known</p>
-                    )}
-                  </>
-                );
-              })()}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* People Grid */}
-        <div>
-          <h2 className="text-title font-semibold mb-4">People in {professionData.name}</h2>
+        <section aria-labelledby="profession-people">
+          <h2 id="profession-people" className="sr-only">People in {professionData.name}</h2>
           {professionData.personalities.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {professionData.personalities.map((personality) => {
@@ -261,7 +204,36 @@ export default function ProfessionDetail() {
               </CardContent>
             </Card>
           )}
-        </div>
+        </section>
+
+        {(birthplaceCount > 0 || youngest !== null) && (
+          <section aria-labelledby="profession-overview" className="border-t border-border-hairline pt-4">
+            <h2 id="profession-overview" className="font-sans text-title font-bold">
+              About this archive
+            </h2>
+            <dl className="mt-4 flex flex-wrap gap-8 text-13">
+              {birthplaceCount > 0 && (
+                <div>
+                  <dt className="text-muted-foreground">Birthplaces recorded</dt>
+                  <dd className="mt-2 font-semibold tabular-nums">{birthplaceCount}</dd>
+                </div>
+              )}
+              {youngest !== null && (
+                <div>
+                  <dt className="text-muted-foreground">Age range</dt>
+                  <dd className="mt-2">
+                    <span className="font-semibold tabular-nums">
+                      {youngest === oldest ? youngest : `${youngest}–${oldest}`}
+                    </span>
+                    {includesDeceased && (
+                      <span className="ml-2 text-muted-foreground">Age at death where known</span>
+                    )}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </section>
+        )}
       </div>
     </PageContainer>
   );

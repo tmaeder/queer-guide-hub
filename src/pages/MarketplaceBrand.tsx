@@ -112,7 +112,7 @@ export default function MarketplaceBrand() {
   return (
     <div className="min-h-screen">
       <header className="border-b border-border-hairline">
-        <PageContainer flush className="pb-8 pt-8 md:pb-12 md:pt-12">
+        <PageContainer flush className="py-6 md:py-8">
           <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
             {/* ONE column carries everything, actions included. The CTA used to
                 sit in a `flex-1` + `flex-wrap` sibling, and a `flex-1` item
@@ -133,9 +133,53 @@ export default function MarketplaceBrand() {
                   monogramClassName="font-display text-headline"
                   padding="p-2.5"
                 />
-                <h1 className="min-w-0 break-words font-display text-display leading-[0.95] md:text-hero">
+                <h1 className="min-w-0 break-words font-display text-headline leading-[0.95] md:text-display">
                   {brand.display_name}
                 </h1>
+              </div>
+
+              {brand.story && <p className="mt-6 max-w-reading text-body-lg">{brand.story}</p>}
+
+              {ownership.length > 0 && (
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {ownership.map((o) => (
+                    <Badge key={o} variant="soft">
+                      {OWNERSHIP_LABEL.get(o)}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              {/* ONE listing count on this page, and it is the grid's own
+                  "24 of 452 listings" below. The masthead used to also print
+                  `product_count` ("501 total listings"), which counts adult
+                  listings the grid hides until the reader opts in — two
+                  numbers that disagreed with no way to tell why. The site is
+                  stated once, here; the FactGrid band that repeated it (and a
+                  "catalogue key" that is an internal join column) is gone. */}
+              {host && <p className="mt-6 text-13 text-muted-foreground">{host}</p>}
+
+              <div className="mt-6 flex flex-wrap items-center gap-2">
+                <Button asChild>
+                  <a href="#maker-listings">{t('marketplace.browseListings', 'Browse listings')}</a>
+                </Button>
+                {brand.website && (
+                  <Button asChild variant="outline">
+                    <a href={brand.website} target="_blank" rel="noopener noreferrer">
+                      {t('marketplace.visitBrandSite', 'Visit brand site')}
+                      <span aria-hidden="true"> ↗</span>
+                    </a>
+                  </Button>
+                )}
+                {brandId && (
+                  <AdminEditButton
+                    contentType="marketplace_brands"
+                    contentId={brandId}
+                    contentName={brand.display_name}
+                    onSaved={() => window.location.reload()}
+                    exportable
+                  />
+                )}
               </div>
 
               {brand.logo_credit && (
@@ -166,48 +210,6 @@ export default function MarketplaceBrand() {
                 </div>
               )}
 
-              {brand.story && <p className="mt-6 max-w-reading text-body-lg">{brand.story}</p>}
-
-              {ownership.length > 0 && (
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {ownership.map((o) => (
-                    <Badge key={o} variant="soft">
-                      {OWNERSHIP_LABEL.get(o)}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              {/* ONE listing count on this page, and it is the grid's own
-                  "24 of 452 listings" below. The masthead used to also print
-                  `product_count` ("501 total listings"), which counts adult
-                  listings the grid hides until the reader opts in — two
-                  numbers that disagreed with no way to tell why. The site is
-                  stated once, here; the FactGrid band that repeated it (and a
-                  "catalogue key" that is an internal join column) is gone. */}
-              {host && <p className="mt-6 text-13 text-muted-foreground">{host}</p>}
-
-              {(brand.website || brandId) && (
-                <div className="mt-6 flex flex-wrap items-center gap-2">
-                  {brand.website && (
-                    <Button asChild>
-                      <a href={brand.website} target="_blank" rel="noopener noreferrer">
-                        {t('marketplace.visitBrandSite', 'Visit brand site')}
-                        <span aria-hidden="true"> ↗</span>
-                      </a>
-                    </Button>
-                  )}
-                  {brandId && (
-                    <AdminEditButton
-                      contentType="marketplace_brands"
-                      contentId={brandId}
-                      contentName={brand.display_name}
-                      onSaved={() => window.location.reload()}
-                      exportable
-                    />
-                  )}
-                </div>
-              )}
             </div>
 
             {/* The line, beside the mark rather than as an empty ink bar above
@@ -218,7 +220,7 @@ export default function MarketplaceBrand() {
         </PageContainer>
       </header>
 
-      <PageContainer>
+      <PageContainer id="maker-listings">
         {!acknowledged && (
           <Button variant="outline" className="mb-6" onClick={() => setAdultRequested(true)}>
             {t('marketplace.showAdultMakerListings', 'Show adult listings (18+)')}

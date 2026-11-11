@@ -3,14 +3,12 @@ import { useParams } from 'react-router';
 import { fetchStoryBySlug, type StoryDetail } from '@/hooks/useNewsStories';
 import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Badge } from '@/components/ui/badge';
-import { Layers, Clock, ArrowLeft } from '@/components/icons';
-import { formatDistanceToNow, format } from 'date-fns';
+import { ArrowLeft, ArrowRight, Newspaper } from '@/components/icons';
+import { format, isValid } from 'date-fns';
 import { safeText } from '@/utils/safeDisplay';
 import { decodeHtmlEntities } from '@/utils/htmlDecode';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Newspaper } from '@/components/icons';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function NewsStoryDetail() {
@@ -72,71 +70,92 @@ export default function NewsStoryDetail() {
     );
   }
 
+  const featured = story.articles.find((article) => article.id === story.hero_article_id)
+    ?? story.articles[0];
+  const otherArticles = story.articles.filter((article) => article.id !== featured?.id);
+  const updatedAt = new Date(story.last_updated_at);
+
   return (
     <PageContainer size="reading">
       <LocalizedLink
         to="/news"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 no-underline"
+        className="mb-6 inline-flex items-center gap-2 text-13 text-muted-foreground no-underline hover:text-foreground"
       >
-        <ArrowLeft size={14} /> Back to News
+        <ArrowLeft size={14} aria-hidden="true" /> Back to News
       </LocalizedLink>
 
-      <div className="flex items-center gap-2 mb-4">
-        <Badge
-          style={{ backgroundColor: 'hsl(var(--foreground))' }}
-          className="inline-flex items-center gap-1 text-background"
-        >
-          <Layers size={10} aria-hidden="true" />
-          {story.article_count} articles
-        </Badge>
-        <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-          <Clock size={12} aria-hidden="true" />
-          Updated {formatDistanceToNow(new Date(story.last_updated_at), { addSuffix: true })}
-        </span>
-      </div>
+      <header className="border-b border-border-hairline pb-6">
+        <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">News · Story</p>
+        <h1 className="mt-2 break-words font-display text-headline leading-tight md:text-display">
+          {title}
+        </h1>
+        {story.summary && (
+          <p className="mt-4 text-body-lg leading-relaxed">{story.summary}</p>
+        )}
+        <p className="mt-4 text-13 text-muted-foreground">
+          {story.article_count} {story.article_count === 1 ? 'article' : 'articles'}
+          {isValid(updatedAt) && (
+            <> · Updated <time dateTime={story.last_updated_at}>{format(updatedAt, 'PP')}</time></>
+          )}
+        </p>
+      </header>
 
-      <h1 className="text-3xl md:text-4xl font-bold leading-tight mb-4">{title}</h1>
+      {featured ? (
+        <section aria-labelledby="story-coverage" className="mt-6">
+          <h2 id="story-coverage" className="font-sans text-title font-bold">Coverage</h2>
+          <LocalizedLink
+            to={`/news/${featured.slug}`}
+            className="mt-4 flex items-center justify-between gap-4 rounded-container border border-border-hairline bg-card p-4 text-inherit no-underline hover:bg-muted sm:p-6"
+          >
+            <div className="min-w-0">
+              <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">Start here</p>
+              <h3 className="mt-2 break-words font-sans text-title font-bold leading-snug">
+                {safeText(decodeHtmlEntities(featured.title))}
+              </h3>
+            </div>
+            <ArrowRight size={18} className="shrink-0" aria-hidden="true" />
+          </LocalizedLink>
 
-      {story.summary && <p className="text-lg text-muted-foreground mb-8">{story.summary}</p>}
-
-      <h2 className="text-sm uppercase tracking-widest text-muted-foreground mb-4">Coverage</h2>
-      <ol className="flex flex-col gap-4 list-none p-0 m-0">
-        {story.articles.map((a) => (
-          <li key={a.id}>
-            <LocalizedLink
-              to={`/news/${a.slug}`}
-              className="flex gap-4 p-4 rounded-element hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {a.image_url && (
-                <img
-                  loading="lazy"
-                  src={a.image_url}
-                  alt=""
-                  width={120}
-                  height={80}
-                  className="rounded-element shrink-0"
-                  style={{ width: 120, height: 80, objectFit: 'cover' }}
-                />
-              )}
-              <div className="flex flex-col gap-1 min-w-0 flex-1">
-                <h3
-                  className="text-base font-semibold leading-snug m-0 overflow-hidden"
-                  style={{
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                  }}
-                >
-                  {safeText(decodeHtmlEntities(a.title))}
-                </h3>
-                <p className="text-xs text-muted-foreground m-0">
-                  {a.published_at ? format(new Date(a.published_at), 'PP') : ''}
-                </p>
-              </div>
-            </LocalizedLink>
-          </li>
-        ))}
-      </ol>
+          {otherArticles.length > 0 && (
+            <ol className="m-0 mt-4 flex list-none flex-col divide-y divide-border-hairline p-0">
+              {otherArticles.map((article) => {
+                const publishedAt = article.published_at && new Date(article.published_at);
+                return (
+                  <li key={article.id}>
+                    <LocalizedLink
+                      to={`/news/${article.slug}`}
+                      className="flex items-start gap-4 rounded-element py-4 text-inherit no-underline hover:bg-muted"
+                    >
+                      {article.image_url && (
+                        <img
+                          loading="lazy"
+                          src={article.image_url}
+                          alt=""
+                          width={120}
+                          height={80}
+                          className="aspect-[3/2] h-auto w-16 shrink-0 rounded-element object-cover sm:w-[120px]"
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <h3 className="break-words text-base font-semibold leading-snug">
+                          {safeText(decodeHtmlEntities(article.title))}
+                        </h3>
+                        {publishedAt && isValid(publishedAt) && (
+                          <time dateTime={article.published_at ?? undefined} className="mt-2 block text-13 text-muted-foreground">
+                            {format(publishedAt, 'PP')}
+                          </time>
+                        )}
+                      </div>
+                    </LocalizedLink>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </section>
+      ) : (
+        <p className="mt-6 text-muted-foreground">Coverage is currently unavailable.</p>
+      )}
     </PageContainer>
   );
 }

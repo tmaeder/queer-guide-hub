@@ -78,15 +78,20 @@ export default function MarketplaceMerchant() {
         // The listing count belongs to the grid below, which owns the query.
         count={null}
         actions={
-          <Button asChild variant="outline">
-            <a href={`https://${cleanDomain}`} target="_blank" rel="noopener noreferrer">
-              Visit merchant site
-            </a>
-          </Button>
+          <>
+            <Button asChild>
+              <a href="#merchant-listings">{t('marketplace.browseListings', 'Browse listings')}</a>
+            </Button>
+            <Button asChild variant="outline">
+              <a href={`https://${cleanDomain}`} target="_blank" rel="noopener noreferrer">
+                Visit merchant site
+              </a>
+            </Button>
+          </>
         }
       />
 
-      <PageContainer>
+      <PageContainer id="merchant-listings">
         <MarketplaceFilteredView
           filters={{ merchantDomain: cleanDomain }}
           emptyTitle="No listings from this merchant yet."

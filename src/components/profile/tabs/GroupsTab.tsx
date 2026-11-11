@@ -1,6 +1,7 @@
 import { profileEditPath } from '@/lib/profileEditing';
 import { GroupCard } from '@/components/groups/GroupCard';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Users } from '@/components/icons';
 import { sectionVisible, type ProfileLens } from '@/lib/profileLens';
@@ -97,31 +98,40 @@ export function GroupsTab({
   const viewerById = new Map(viewerGroups.map((g) => [g.id, g]));
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {userGroups.map((ug) => {
-        const hydrated =
-          viewerById.get(ug.id) ??
-          ({
-            ...ug,
-            rules: null,
-            created_by: '',
-            created_at: ug.joinedAt ?? '',
-            updated_at: '',
-          } as Group);
-        return (
-          <GroupCard
-            key={ug.id}
-            group={hydrated}
-            isAuthenticated={!!user}
-            onJoin={joinGroup}
-            onRequestJoin={(id) => requestJoin({ groupId: id })}
-            onLeave={leaveGroup}
-            isJoining={isJoining}
-            isRequesting={isRequesting}
-            isLeaving={isLeaving}
-          />
-        );
-      })}
+    <div className="flex flex-col gap-4">
+      {isOwnProfile && lens === 'you' && (
+        <Button asChild variant="outline" className="self-start">
+          <LocalizedLink to="/hub/groups?tab=mine">
+            {t('profile.groups.manage', 'Manage my groups')}
+          </LocalizedLink>
+        </Button>
+      )}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {userGroups.map((ug) => {
+          const hydrated =
+            viewerById.get(ug.id) ??
+            ({
+              ...ug,
+              rules: null,
+              created_by: '',
+              created_at: ug.joinedAt ?? '',
+              updated_at: '',
+            } as Group);
+          return (
+            <GroupCard
+              key={ug.id}
+              group={hydrated}
+              isAuthenticated={!!user}
+              onJoin={joinGroup}
+              onRequestJoin={(id) => requestJoin({ groupId: id })}
+              onLeave={leaveGroup}
+              isJoining={isJoining}
+              isRequesting={isRequesting}
+              isLeaving={isLeaving}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -49,6 +49,9 @@ export function ProgressTab() {
 
         <TabsContent value="score" className="flex flex-col gap-6">
           <Guarded>
+            <MissionsRow />
+          </Guarded>
+          <Guarded>
             {score ? (
               <div className="flex flex-col gap-2">
                 <ScoreLevelChip
@@ -69,9 +72,6 @@ export function ProgressTab() {
             ) : (
               <div className="h-20 rounded-element bg-card animate-pulse" />
             )}
-          </Guarded>
-          <Guarded>
-            <MissionsRow />
           </Guarded>
           <Guarded>
             <StreaksPanel />

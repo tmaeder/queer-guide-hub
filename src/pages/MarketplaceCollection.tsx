@@ -72,17 +72,25 @@ const MarketplaceCollection = () => {
         backTo={{ label: 'Marketplace', to: '/marketplace' }}
         eyebrow="Marketplace · Collection"
         title={collection.title}
-        lede={collection.subtitle ?? undefined}
+        lede={collection.editor_blurb?.trim() || collection.subtitle || undefined}
         count={`${listings.length.toLocaleString()} item${listings.length !== 1 ? 's' : ''}`}
+        actions={
+          listings.length > 0 && (
+            <Button asChild variant="outline">
+              <a href="#collection-items">
+                {t('marketplace.browseCollection', 'Browse the collection')}
+              </a>
+            </Button>
+          )
+        }
       >
-        {collection.editor_blurb && (
-          <p className="mt-8 max-w-reading text-body-lg leading-relaxed">
-            {collection.editor_blurb}
-          </p>
-        )}
+        {collection.subtitle && collection.editor_blurb?.trim() &&
+          collection.subtitle.trim() !== collection.editor_blurb.trim() && (
+            <p className="mt-4 max-w-reading text-muted-foreground">{collection.subtitle}</p>
+          )}
       </MarketplaceMasthead>
 
-      <PageContainer>
+      <PageContainer id="collection-items">
         {listings.length === 0 ? (
           <p className="text-muted-foreground">
             Nothing in this collection yet.{' '}
