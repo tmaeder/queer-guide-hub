@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { fetchTrendingCities } from '@/hooks/usePersonalizedCities';
+import {
+  fetchCountryCities,
+  fetchTrendingCities,
+  type PersonalizedCityRow,
+} from '@/hooks/usePersonalizedCities';
 import { useAuth } from '@/hooks/useAuth';
 
 /**
@@ -142,7 +146,9 @@ export function useEventsWithFallback(cityId: string | null | undefined, limit =
       const upcoming = () =>
         supabase
           .from('events')
-          .select('id, title, slug, start_date, city, images, timezone, age_restriction, liveness_status')
+          .select(
+            'id, title, slug, start_date, city, images, timezone, age_restriction, liveness_status',
+          )
           .eq('status', 'active')
           .is('duplicate_of_id', null)
           .not('liveness_status', 'in', '(dead,cancelled,dead_link)')
@@ -502,10 +508,28 @@ export function useAllCountriesTransRights() {
  * "cities that have venues" ranking would present cities with three listings as
  * nightlife destinations.
  */
-export function useDestinationCities(limit = 8) {
+export function useDestinationCities(
+  limit = 8,
+  scope: { excludeCityId?: string | null; countryId?: string | null } = {},
+) {
+  const { excludeCityId = null, countryId = null } = scope;
   return useQuery({
-    queryKey: ['intent-destination-cities', limit],
+    queryKey: ['intent-destination-cities', limit, excludeCityId, countryId],
     staleTime: 600_000,
-    queryFn: () => fetchTrendingCities(200_000, limit),
+    queryFn: async () => {
+      // Visitor's own country first, then the global set — never the city the
+      // page is already about.
+      const local = countryId ? await fetchCountryCities(countryId, limit + 1) : [];
+      const global = await fetchTrendingCities(200_000, limit + 1);
+      const seen = new Set<string>(excludeCityId ? [excludeCityId] : []);
+      const out: PersonalizedCityRow[] = [];
+      for (const c of [...local, ...global]) {
+        if (seen.has(c.id)) continue;
+        seen.add(c.id);
+        out.push(c);
+        if (out.length >= limit) break;
+      }
+      return out;
+    },
   });
 }

@@ -1923,8 +1923,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "Explora Zúrich",
-      "browseEvents": "Ver eventos en Zúrich",
+      "exploreCity": "Explora {{city}}",
+      "browseEvents": "Ver eventos en {{city}}",
       "whatsOn": "Qué hay",
       "communitySpace": "Espacio comunitario"
     },
@@ -3925,7 +3925,8 @@
       "membersKicker": "[ES] People you can message directly",
       "safety": "[ES] Before you go",
       "elsewhere": "[ES] Elsewhere",
-      "elsewhereKicker": "[ES] Cities with the deepest scenes"
+      "elsewhereKicker": "[ES] Cities with the deepest scenes",
+      "groupsKickerWorldwide": "Grupos públicos de cualquier lugar. Los grupos aún no están vinculados a una ciudad."
     },
     "spaceKind": {
       "venue": "[ES] Community centre",
@@ -4414,7 +4415,8 @@
     },
     "rail": {
       "title": "[ES] Guides",
-      "seeAll": "[ES] All guides"
+      "seeAll": "[ES] All guides",
+      "titleWorldwide": "Guías de todas partes"
     },
     "filters": {
       "label": "[ES] Filter guides",

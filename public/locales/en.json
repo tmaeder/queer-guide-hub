@@ -2119,8 +2119,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "Zürich city guide",
-      "browseEvents": "Browse Zürich events",
+      "exploreCity": "{{city}} city guide",
+      "browseEvents": "Browse {{city}} events",
       "whatsOn": "What’s on",
       "communitySpace": "Community space"
     },
@@ -3972,6 +3972,7 @@
       "spacesCountryFallback": "Nothing is listed in {{where}} itself, so these are elsewhere in the country. Community centres are recorded for 120 cities and queer villages for 104. A gap here means we have no record, not that there is nowhere to go.",
       "groups": "Groups to join",
       "groupsKicker": "Smaller rooms than a whole city",
+      "groupsKickerWorldwide": "Public groups from anywhere. Groups are not tied to a city yet.",
       "groupsEmpty": "No public groups yet.",
       "whatsOn": "What's on",
       "whatsOnKicker": "Turning up somewhere beats messaging",
@@ -4465,6 +4466,7 @@
     },
     "rail": {
       "title": "Guides",
+      "titleWorldwide": "Guides from everywhere",
       "seeAll": "All guides"
     },
     "filters": {

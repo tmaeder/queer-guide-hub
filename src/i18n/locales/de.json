@@ -3925,7 +3925,8 @@
       "membersKicker": "[DE] People you can message directly",
       "safety": "[DE] Before you go",
       "elsewhere": "[DE] Elsewhere",
-      "elsewhereKicker": "[DE] Cities with the deepest scenes"
+      "elsewhereKicker": "[DE] Cities with the deepest scenes",
+      "groupsKickerWorldwide": "Öffentliche Gruppen von überall. Gruppen sind noch keiner Stadt zugeordnet."
     },
     "spaceKind": {
       "venue": "[DE] Community centre",
@@ -4414,7 +4415,8 @@
     },
     "rail": {
       "title": "[DE] Guides",
-      "seeAll": "[DE] All guides"
+      "seeAll": "[DE] All guides",
+      "titleWorldwide": "Guides von überall"
     },
     "filters": {
       "label": "[DE] Filter guides",

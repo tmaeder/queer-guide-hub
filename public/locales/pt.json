@@ -1923,8 +1923,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "Explore Zurique",
-      "browseEvents": "Ver eventos em Zurique",
+      "exploreCity": "Explore {{city}}",
+      "browseEvents": "Ver eventos em {{city}}",
       "whatsOn": "O que acontece",
       "communitySpace": "Espaço comunitário"
     },
@@ -3925,7 +3925,8 @@
       "membersKicker": "[PT] People you can message directly",
       "safety": "[PT] Before you go",
       "elsewhere": "[PT] Elsewhere",
-      "elsewhereKicker": "[PT] Cities with the deepest scenes"
+      "elsewhereKicker": "[PT] Cities with the deepest scenes",
+      "groupsKickerWorldwide": "Grupos públicos de qualquer lugar. Os grupos ainda não estão ligados a uma cidade."
     },
     "spaceKind": {
       "venue": "[PT] Community centre",
@@ -4414,7 +4415,8 @@
     },
     "rail": {
       "title": "[PT] Guides",
-      "seeAll": "[PT] All guides"
+      "seeAll": "[PT] All guides",
+      "titleWorldwide": "Guias de todo o lado"
     },
     "filters": {
       "label": "[PT] Filter guides",

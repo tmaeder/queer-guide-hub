@@ -1923,8 +1923,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "探索苏黎世",
-      "browseEvents": "浏览苏黎世活动",
+      "exploreCity": "探索{{city}}",
+      "browseEvents": "浏览{{city}}活动",
       "whatsOn": "活动预告",
       "communitySpace": "社区空间"
     },
@@ -3923,7 +3923,8 @@
       "membersKicker": "[ZH] People you can message directly",
       "safety": "[ZH] Before you go",
       "elsewhere": "[ZH] Elsewhere",
-      "elsewhereKicker": "[ZH] Cities with the deepest scenes"
+      "elsewhereKicker": "[ZH] Cities with the deepest scenes",
+      "groupsKickerWorldwide": "来自各地的公开群组。群组尚未关联到城市。"
     },
     "spaceKind": {
       "venue": "[ZH] Community centre",
@@ -4412,7 +4413,8 @@
     },
     "rail": {
       "title": "[ZH] Guides",
-      "seeAll": "[ZH] All guides"
+      "seeAll": "[ZH] All guides",
+      "titleWorldwide": "来自各地的指南"
     },
     "filters": {
       "label": "[ZH] Filter guides",

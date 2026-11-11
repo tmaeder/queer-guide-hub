@@ -3959,7 +3959,8 @@
       "membersKicker": "[RU] People you can message directly",
       "safety": "[RU] Before you go",
       "elsewhere": "[RU] Elsewhere",
-      "elsewhereKicker": "[RU] Cities with the deepest scenes"
+      "elsewhereKicker": "[RU] Cities with the deepest scenes",
+      "groupsKickerWorldwide": "Открытые группы отовсюду. Группы пока не привязаны к городу."
     },
     "spaceKind": {
       "venue": "[RU] Community centre",
@@ -4448,7 +4449,8 @@
     },
     "rail": {
       "title": "[RU] Guides",
-      "seeAll": "[RU] All guides"
+      "seeAll": "[RU] All guides",
+      "titleWorldwide": "Гиды со всего мира"
     },
     "filters": {
       "label": "[RU] Filter guides",

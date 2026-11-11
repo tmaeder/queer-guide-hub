@@ -77,4 +77,16 @@ describe('Venues', () => {
     const keys = Object.keys(requests[0].filters).filter((k) => k !== 'userLocation');
     expect(keys).toEqual([]);
   });
+
+  // Opening /venues must not raise the browser's location prompt; location is
+  // asked for only when the visitor turns on "near me".
+  it('does not request geolocation on load', () => {
+    const getCurrentPosition = vi.fn();
+    Object.defineProperty(navigator, 'geolocation', {
+      value: { getCurrentPosition },
+      configurable: true,
+    });
+    renderWithProviders(<Venues />, { route: '/venues' });
+    expect(getCurrentPosition).not.toHaveBeenCalled();
+  });
 });

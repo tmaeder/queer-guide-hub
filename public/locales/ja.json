@@ -1923,8 +1923,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "チューリッヒを探索",
-      "browseEvents": "チューリッヒのイベントを見る",
+      "exploreCity": "{{city}}を探索",
+      "browseEvents": "{{city}}のイベントを見る",
       "whatsOn": "イベント情報",
       "communitySpace": "コミュニティスペース"
     },
@@ -3923,7 +3923,8 @@
       "membersKicker": "[JA] People you can message directly",
       "safety": "[JA] Before you go",
       "elsewhere": "[JA] Elsewhere",
-      "elsewhereKicker": "[JA] Cities with the deepest scenes"
+      "elsewhereKicker": "[JA] Cities with the deepest scenes",
+      "groupsKickerWorldwide": "世界中の公開グループ。グループはまだ都市に紐づいていません。"
     },
     "spaceKind": {
       "venue": "[JA] Community centre",
@@ -4412,7 +4413,8 @@
     },
     "rail": {
       "title": "[JA] Guides",
-      "seeAll": "[JA] All guides"
+      "seeAll": "[JA] All guides",
+      "titleWorldwide": "世界中のガイド"
     },
     "filters": {
       "label": "[JA] Filter guides",

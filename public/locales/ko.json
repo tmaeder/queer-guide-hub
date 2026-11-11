@@ -1923,8 +1923,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "취리히 둘러보기",
-      "browseEvents": "취리히 이벤트 보기",
+      "exploreCity": "{{city}} 둘러보기",
+      "browseEvents": "{{city}} 이벤트 보기",
       "whatsOn": "이벤트 소식",
       "communitySpace": "커뮤니티 공간"
     },
@@ -3923,7 +3923,8 @@
       "membersKicker": "바로 메시지를 보낼 수 있는 사람들",
       "safety": "가기 전에",
       "elsewhere": "다른 곳",
-      "elsewhereKicker": "씬이 가장 깊은 도시"
+      "elsewhereKicker": "씬이 가장 깊은 도시",
+      "groupsKickerWorldwide": "어디서나 볼 수 있는 공개 그룹. 그룹은 아직 도시와 연결되어 있지 않습니다."
     },
     "spaceKind": {
       "venue": "커뮤니티 센터",
@@ -4412,7 +4413,8 @@
     },
     "rail": {
       "title": "가이드",
-      "seeAll": "모든 가이드"
+      "seeAll": "모든 가이드",
+      "titleWorldwide": "전 세계 가이드"
     },
     "filters": {
       "label": "가이드 필터링",

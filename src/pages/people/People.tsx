@@ -78,6 +78,7 @@ export default function People() {
     cityName,
     citySlug: resolvedSlug,
     countryCode,
+    countryId,
     loading: locLoading,
   } = useIntentLocation(citySlug);
 
@@ -85,7 +86,7 @@ export default function People() {
   const { data: groups } = useLocalGroups(6);
   const { data: eventsResult } = useEventsWithFallback(cityId, 6);
   const { data: venues } = useNightlifeVenues(cityId, 6);
-  const { data: cities } = useDestinationCities(8);
+  const { data: cities } = useDestinationCities(8, { excludeCityId: cityId, countryId });
 
   const showNudge = profile != null && !profile.user_mode;
   const where = cityName ?? t('people.yourArea', 'your area');
@@ -183,7 +184,10 @@ export default function People() {
     {
       id: 'groups',
       label: t('people.sections.groups', 'Groups to join'),
-      kicker: t('people.sections.groupsKicker', 'Smaller rooms than a whole city'),
+      kicker: t(
+        'people.sections.groupsKickerWorldwide',
+        'Public groups from anywhere. Groups are not tied to a city yet.',
+      ),
       content:
         groups && groups.length > 0 ? (
           <ul className="m-0 grid grid-cols-1 list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">

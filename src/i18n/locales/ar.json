@@ -3933,7 +3933,8 @@
       "membersKicker": "[AR] People you can message directly",
       "safety": "[AR] Before you go",
       "elsewhere": "[AR] Elsewhere",
-      "elsewhereKicker": "[AR] Cities with the deepest scenes"
+      "elsewhereKicker": "[AR] Cities with the deepest scenes",
+      "groupsKickerWorldwide": "مجموعات عامة من أي مكان. المجموعات غير مرتبطة بمدينة بعد."
     },
     "spaceKind": {
       "venue": "[AR] Community centre",
@@ -4422,7 +4423,8 @@
     },
     "rail": {
       "title": "[AR] Guides",
-      "seeAll": "[AR] All guides"
+      "seeAll": "[AR] All guides",
+      "titleWorldwide": "أدلة من كل مكان"
     },
     "filters": {
       "label": "[AR] Filter guides",
