@@ -1923,8 +1923,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "취리히 둘러보기",
-      "browseEvents": "취리히 이벤트 보기",
+      "exploreCity": "{{city}} 둘러보기",
+      "browseEvents": "{{city}} 이벤트 보기",
       "whatsOn": "이벤트 소식",
       "communitySpace": "커뮤니티 공간"
     },
