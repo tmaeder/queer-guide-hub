@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
 // Mirrors the page's loose typing for joined country rows (see CountryDetail.parts).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -120,8 +121,13 @@ export function CountryFactSheet({
 
   if (items.length === 0) return null;
 
-  return (
-    <dl className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-container bg-surface-container p-4 sm:grid-cols-3 xl:grid-cols-4">
+  const facts = (
+    <dl
+      className={cn(
+        'grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 xl:grid-cols-4',
+        scope === 'essentials' ? 'mt-2' : 'rounded-container bg-surface-container p-4',
+      )}
+    >
       {items.map((item) => (
         <div key={item.label} className="min-w-0">
           <dt className="text-13 text-muted-foreground">{item.label}</dt>
@@ -129,5 +135,14 @@ export function CountryFactSheet({
         </div>
       ))}
     </dl>
+  );
+
+  return scope === 'essentials' ? (
+    <section className="border-y border-border-hairline py-4">
+      <h2 className="text-title font-bold">{t('guides.detail.atAGlance', 'At a glance')}</h2>
+      {facts}
+    </section>
+  ) : (
+    facts
   );
 }

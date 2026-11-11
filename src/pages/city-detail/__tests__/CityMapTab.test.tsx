@@ -5,6 +5,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (_key: string, fallback: string) => fallback }),
+}));
+
 // CityMapTab renders EntityMap (maplibre), and reads auth + favorites via
 // useVisitedPlaceLookup — stub all three and wrap renders in MemoryRouter.
 vi.mock('@/components/map/EntityMap', () => ({
@@ -42,8 +46,7 @@ describe('CityMapTab', () => {
   it('renders the map inside the module frame when coords are present', () => {
     renderTab({ id: 'c1', name: 'Berlin', latitude: 52, longitude: 13 });
     expect(screen.getByTestId('explore-map')).toBeInTheDocument();
-    // Module 16's own eyebrow — this is the city single's OWNER module.
-    expect(screen.getByText('Around this station')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Map' })).toBeInTheDocument();
   });
 
   it('links out with a real CAMERA, not the dead ?city= param', () => {

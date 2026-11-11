@@ -153,9 +153,10 @@ describe('QueerVillageDetail', () => {
     const walk = document.getElementById('walk')!;
     const about = document.getElementById('about')!;
     expect(walk.compareDocumentPosition(about) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Open map' })).toHaveAttribute('href', '#map');
+    const mapToggle = screen.getByRole('button', { name: 'Open map' });
+    expect(mapToggle).toHaveAttribute('aria-controls', 'map-detail');
     expect(screen.queryByTestId('map')).not.toBeInTheDocument();
-    fireEvent.click(document.getElementById('map')!.querySelector('button')!);
+    fireEvent.click(mapToggle);
     expect(screen.getByTestId('map')).toBeVisible();
     expect(screen.queryByRole('button', { name: /Plan a trip/ })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'More actions' }));

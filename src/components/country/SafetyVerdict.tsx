@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Skull, ShieldAlert, ShieldQuestion, ArrowDown } from '@/components/icons';
 import { useTripSafety } from '@/hooks/useTripSafety';
+import { cn } from '@/lib/utils';
 import { useRiskVisual, type OverallRisk } from '@/hooks/useRiskVisual';
 import { EQUALITY_TIER_I18N_KEY, getScoreLabel } from '@/utils/equalityScore';
 
@@ -9,6 +10,7 @@ interface SafetyVerdictProps {
   equalityScore: number | null;
   /** Anchor id of the full rights section to scroll to. */
   rightsHref?: string;
+  className?: string;
 }
 
 const VERDICT_KEY: Record<OverallRisk, string> = {
@@ -38,6 +40,7 @@ export function SafetyVerdict({
   countryId,
   equalityScore,
   rightsHref = '#rights',
+  className,
 }: SafetyVerdictProps) {
   const { t } = useTranslation();
   const report = useTripSafety(countryId ? [countryId] : []);
@@ -84,10 +87,11 @@ export function SafetyVerdict({
          that waits for the heading and then matches text has nothing to wait
          ON. Measured 1 failure in 6 against prod before this existed. */
       data-testid="country-safety-verdict"
-      className={
-        'flex flex-col gap-4 rounded-container border p-6 sm:flex-row sm:items-center sm:justify-between' +
-        (settled ? '' : ' bg-surface-container border-border')
-      }
+      className={cn(
+        'flex flex-col gap-4 rounded-container border p-6 sm:flex-row sm:items-center sm:justify-between',
+        !settled && 'bg-surface-container border-border',
+        className,
+      )}
       style={settled ? { backgroundColor: visual.bg, borderColor: visual.border } : undefined}
     >
       <div className="flex items-start gap-4">
@@ -157,30 +161,22 @@ export function SafetyVerdict({
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-4 self-stretch sm:self-auto">
-        <div className="text-right">
-          <p
-            className="text-2xs uppercase tracking-[0.12em]"
-            style={settled ? { color: visual.fg } : undefined}
-          >
+      <div className="flex flex-wrap items-center justify-between gap-4 sm:self-auto">
+        <div className="border-s border-border-hairline ps-4">
+          <p className="text-2xs uppercase tracking-[0.12em] text-muted-foreground">
             {t('country.verdict.equality', 'Equality')}
           </p>
           {/* The composite 0-100 figure was retired from the reader-facing
               pages: it read as a precise measurement of a country's safety
               when it is a roll-up of legal flags. The tier is the verdict. */}
-          <p
-            className="text-title font-bold leading-none"
-            style={settled ? { color: visual.fg } : undefined}
-          >
-            {tierLabel}
-          </p>
+          <p className="text-15 font-bold leading-snug text-foreground">{tierLabel}</p>
         </div>
         <a
           href={rightsHref}
           className="inline-flex items-center gap-1 self-center text-13 font-semibold no-underline hover:underline"
           style={settled ? { color: visual.fg } : undefined}
         >
-          {t('country.verdict.fullBreakdown', 'Full breakdown')}
+          {t('country.section.rights', 'Rights & safety')}
           <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
         </a>
       </div>

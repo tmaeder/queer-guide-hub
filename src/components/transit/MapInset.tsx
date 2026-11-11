@@ -16,16 +16,27 @@ export function MapInset({
   caption,
   children,
   className,
+  heading,
+  action,
 }: {
   caption?: string;
   children: React.ReactNode;
   className?: string;
+  heading?: React.ReactNode;
+  action?: React.ReactNode;
 }) {
   return (
     <section className={cn('bg-muted rounded-element p-4', className)}>
-      <div className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-        Around this station
-      </div>
+      {heading || action ? (
+        <div className="flex flex-wrap items-center justify-between gap-x-4">
+          <h2 className="text-title font-bold">{heading ?? 'Around this station'}</h2>
+          {action}
+        </div>
+      ) : (
+        <div className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+          Around this station
+        </div>
+      )}
       <div className="mt-2 bg-muted rounded-element">{children}</div>
       {caption && <p className="mt-2 text-13 leading-relaxed">{caption}</p>}
     </section>

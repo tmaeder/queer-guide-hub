@@ -32,7 +32,7 @@ export function PhotoInset({
 }: {
   src: string | null | undefined;
   alt: string;
-  caption?: string | null;
+  caption?: React.ReactNode;
   /** Stable slug/id — the deterministic fallback texture keys off it. */
   fallbackKey?: string;
   /** Which texture family a missing image falls back to. */

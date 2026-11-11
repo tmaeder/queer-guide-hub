@@ -43,7 +43,7 @@ test.describe('task-first location layout matrix', () => {
 
         const overview = page.locator('article section[aria-label="Overview"]');
         const verdict = overview.locator('[data-testid$="safety-verdict"]').first();
-        const mapLabel = overview.getByText('Around this station', { exact: true });
+        const mapLabel = overview.getByRole('heading', { name: 'Map', exact: true });
         await expect(overview).toBeVisible();
         await expect(verdict).toBeVisible();
         await expect(mapLabel).toBeVisible();

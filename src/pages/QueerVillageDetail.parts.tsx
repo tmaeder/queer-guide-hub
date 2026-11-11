@@ -7,8 +7,6 @@ import { Editable } from '@/components/admin/inline/Editable';
 import { StopList, type Stop } from '@/components/transit/StopList';
 import { OccurrenceList, type Occurrence } from '@/components/transit/OccurrenceList';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
-import { MapInset } from '@/components/transit/MapInset';
-import { GeoPhotoInset } from '@/components/geo/GeoPhotoInset';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { EntityMap } from '@/components/map/EntityMap';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
@@ -32,6 +30,12 @@ export type VillageWithRelations = {
   description: string | null;
   history: string | null;
   image_url: string | null;
+  image_metadata?: {
+    alt?: string;
+    photographer?: string;
+    license?: string;
+    photographer_url?: string;
+  } | null;
   images: string[] | null;
   latitude: number | null;
   longitude: number | null;
@@ -145,19 +149,6 @@ export function VillageAbout({
 }) {
   return (
     <div className="flex flex-col gap-6">
-      <GeoPhotoInset
-        src={village.image_url}
-        alt={village.name}
-        fallbackKey={village.slug}
-        caption={
-          village.cities?.name
-            ? t('village.photo.caption', '{{village}}, {{city}}', {
-                village: village.name,
-                city: village.cities.name,
-              })
-            : null
-        }
-      />
       {village.history && (
         <Editable
           contentType="queer_villages"
@@ -372,47 +363,43 @@ export function VillagePhotos({ village, t }: { village: VillageWithRelations; t
 export function VillageMapInset({
   village,
   venues,
-  caption,
 }: {
   village: VillageWithRelations;
   venues: VillageVenue[];
-  caption?: string;
 }) {
   const visitedLookup = useVisitedPlaceLookup();
   if (typeof village.latitude !== 'number' || typeof village.longitude !== 'number') return null;
   return (
-    <MapInset caption={caption}>
-      <EntityMap
-        center={[Number(village.longitude), Number(village.latitude)]}
-        zoom={15}
-        height={280}
-        visitedLookup={visitedLookup}
-        markers={[
-          {
-            id: village.id,
-            lat: Number(village.latitude),
-            lng: Number(village.longitude),
-            name: village.name ?? 'Village',
-            type: 'neighbourhoods',
-            primary: true,
-            entityType: 'village',
-            entityId: village.id,
-          },
-          ...venues
-            .filter((v) => typeof v.latitude === 'number' && typeof v.longitude === 'number')
-            .map((v) => ({
-              id: v.id,
-              lat: Number(v.latitude),
-              lng: Number(v.longitude),
-              name: v.name ?? 'Venue',
-              subtitle: venueCategoryFallbackLabel(v.category) ?? undefined,
-              type: 'venues' as const,
-              linkTo: `/venues/${v.slug || v.id}`,
-              entityType: 'venue' as const,
-              entityId: v.id,
-            })),
-        ]}
-      />
-    </MapInset>
+    <EntityMap
+      center={[Number(village.longitude), Number(village.latitude)]}
+      zoom={15}
+      height={280}
+      visitedLookup={visitedLookup}
+      markers={[
+        {
+          id: village.id,
+          lat: Number(village.latitude),
+          lng: Number(village.longitude),
+          name: village.name ?? 'Village',
+          type: 'neighbourhoods',
+          primary: true,
+          entityType: 'village',
+          entityId: village.id,
+        },
+        ...venues
+          .filter((v) => typeof v.latitude === 'number' && typeof v.longitude === 'number')
+          .map((v) => ({
+            id: v.id,
+            lat: Number(v.latitude),
+            lng: Number(v.longitude),
+            name: v.name ?? 'Venue',
+            subtitle: venueCategoryFallbackLabel(v.category) ?? undefined,
+            type: 'venues' as const,
+            linkTo: `/venues/${v.slug || v.id}`,
+            entityType: 'venue' as const,
+            entityId: v.id,
+          })),
+      ]}
+    />
   );
 }

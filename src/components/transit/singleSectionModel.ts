@@ -9,6 +9,8 @@ export interface SingleSectionDef {
   variant?: 'default' | 'compact';
   /** Additive presentation hint. Existing singles remain expanded by default. */
   presentation?: 'expanded' | 'disclosure';
+  /** Override the label on the closed disclosure’s button. */
+  disclosureLabel?: string;
   /** Disclosure sections can show a useful summary before the full body is opened. */
   preview?: React.ReactNode;
   /** Safety-critical or otherwise essential disclosures may start open. */
