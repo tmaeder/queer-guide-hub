@@ -1923,8 +1923,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "Explora Zúrich",
-      "browseEvents": "Ver eventos en Zúrich",
+      "exploreCity": "Explora {{city}}",
+      "browseEvents": "Ver eventos en {{city}}",
       "whatsOn": "Qué hay",
       "communitySpace": "Espacio comunitario"
     },

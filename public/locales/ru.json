@@ -1955,8 +1955,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "Откройте для себя Цюрих",
-      "browseEvents": "События в Цюрихе",
+      "exploreCity": "Откройте для себя: {{city}}",
+      "browseEvents": "События: {{city}}",
       "whatsOn": "Что происходит",
       "communitySpace": "Пространство сообщества"
     },

@@ -1923,8 +1923,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "Zürich entdecken",
-      "browseEvents": "Veranstaltungen in Zürich",
+      "exploreCity": "{{city}} entdecken",
+      "browseEvents": "Veranstaltungen in {{city}}",
       "whatsOn": "Was läuft",
       "communitySpace": "Community-Treffpunkt"
     },

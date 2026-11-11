@@ -1933,8 +1933,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "استكشف زيورخ",
-      "browseEvents": "تصفّح فعاليات زيورخ",
+      "exploreCity": "استكشف {{city}}",
+      "browseEvents": "تصفّح فعاليات {{city}}",
       "whatsOn": "الفعاليات",
       "communitySpace": "مساحة مجتمعية"
     },
