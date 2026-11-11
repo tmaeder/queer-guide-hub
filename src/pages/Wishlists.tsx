@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useWishlists, type Wishlist } from '@/hooks/useWishlists';
 import { useAuth } from '@/hooks/useAuth';
 import { useMeta } from '@/hooks/useMeta';
@@ -8,6 +9,8 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Heart, Plus, Lock, Globe, Link2 } from '@/components/icons';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 const VISIBILITY_ICON = {
@@ -17,7 +20,8 @@ const VISIBILITY_ICON = {
 } as const;
 
 const Wishlists = () => {
-  const { user } = useAuth();
+  const { t } = useTranslation();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useLocalizedNavigate();
   const { wishlists, items, loading, createWishlist } = useWishlists();
   const [creating, setCreating] = useState(false);
@@ -31,8 +35,8 @@ const Wishlists = () => {
 
   // Need to be logged in to view this page; bounce anon users to auth.
   useEffect(() => {
-    if (!loading && !user) navigate('/auth');
-  }, [loading, user, navigate]);
+    if (!authLoading && !loading && !user) navigate('/auth?redirect=/wishlists');
+  }, [authLoading, loading, user, navigate]);
 
   const itemCounts = wishlists.reduce<Record<string, number>>((acc, w) => {
     acc[w.id] = items.filter((i) => i.wishlist_id === w.id).length;
@@ -40,10 +44,10 @@ const Wishlists = () => {
   }, {});
 
   const handleCreate = async () => {
-    const t = title.trim();
-    if (!t) return;
+    const listTitle = title.trim();
+    if (!listTitle || creating) return;
     setCreating(true);
-    const list = await createWishlist(t);
+    const list = await createWishlist(listTitle);
     setCreating(false);
     if (list) {
       setTitle('');
@@ -51,32 +55,33 @@ const Wishlists = () => {
     }
   };
 
+  if (authLoading || loading) {
+    return <PageContainer><PageLoadingState count={3} variant="list" /></PageContainer>;
+  }
+  if (!user) return null;
+
   return (
     <div className="min-h-screen">
       <PageContainer>
-        <header className="mb-10">
-          <p className="text-13 uppercase tracking-wide text-muted-foreground mb-2">Saved</p>
-          <h1 className="text-headline md:text-display font-semibold">Your wishlists</h1>
-        </header>
-
-        <div className="flex gap-2 mb-10 max-w-md">
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Name a new list (e.g. Berlin Pride 2026)…"
-            onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-          />
-          <Button onClick={handleCreate} disabled={!title.trim() || creating}>
-            <Plus size={16} />
-            Create
+        <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="break-words font-display text-headline leading-tight md:text-display">
+              {t('wishlists.title', 'Your wishlists')}
+            </h1>
+            <p className="mt-2 max-w-reading text-muted-foreground">
+              {t('wishlists.description', 'Keep the things you love together, ready to revisit or share.')}
+            </p>
+          </div>
+          <Button asChild variant="outline">
+            <a href="#new-wishlist"><Plus size={16} aria-hidden="true" />{t('wishlists.new', 'New wishlist')}</a>
           </Button>
-        </div>
+        </header>
 
         {wishlists.length === 0 ? (
           <EmptyState
             icon={Heart}
             title="No wishlists yet."
-            description="Save items from the marketplace or create a named list above."
+            description="Save items from the marketplace or create a named list below."
             mood="neutral"
             primaryAction={{ label: 'Browse marketplace', onClick: () => navigate('/marketplace') }}
           />
@@ -88,15 +93,16 @@ const Wishlists = () => {
                 <li key={w.id}>
                   <LocalizedLink
                     to={`/wishlists/${w.slug}`}
-                    className="block rounded-container p-6 transition-colors bg-surface-container"
+                    className="block h-full rounded-container bg-surface-container p-6 text-inherit no-underline transition-colors hover:bg-muted"
                   >
+                    <h2 className="mb-2 break-words font-sans text-title font-bold">{w.title}</h2>
+                    {w.description && <p className="mb-2 line-clamp-2 text-15 text-muted-foreground">{w.description}</p>}
                     <div className="flex items-center justify-between mb-2">
                       <Icon size={14} className="text-muted-foreground" aria-hidden="true" />
                       <span className="text-2xs uppercase tracking-wide text-muted-foreground">
                         {w.visibility}
                       </span>
                     </div>
-                    <h2 className="text-title font-semibold mb-2">{w.title}</h2>
                     <p className="text-sm text-muted-foreground">
                       {itemCounts[w.id] ?? 0} item{(itemCounts[w.id] ?? 0) === 1 ? '' : 's'}
                     </p>
@@ -106,6 +112,28 @@ const Wishlists = () => {
             })}
           </ul>
         )}
+
+        <section id="new-wishlist" aria-labelledby="new-wishlist-title" className="mt-8 border-t border-border-hairline pt-6">
+          <h2 id="new-wishlist-title" className="font-sans text-title font-bold">
+            {t('wishlists.new', 'New wishlist')}
+          </h2>
+          <form className="mt-4 max-w-form" onSubmit={(event) => { event.preventDefault(); void handleCreate(); }}>
+            <Label htmlFor="wishlist-title">{t('wishlists.name', 'List name')}</Label>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Input
+                id="wishlist-title"
+                className="min-w-0 flex-1 basis-48"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder={t('wishlists.nameExample', 'For example, Pride weekend')}
+              />
+              <Button type="submit" disabled={!title.trim() || creating}>
+                <Plus size={16} aria-hidden="true" />
+                {creating ? t('wishlists.creating', 'Creating…') : t('common.create', 'Create')}
+              </Button>
+            </div>
+          </form>
+        </section>
       </PageContainer>
     </div>
   );

@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -8,12 +10,13 @@ import { useWishlistBySlug } from '@/hooks/useWishlists';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
-import { Heart, Share2, Lock, Globe } from '@/components/icons';
+import { Heart, Share2, Lock, Globe, Link2 } from '@/components/icons';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 const Wishlist = () => {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -66,21 +69,29 @@ const Wishlist = () => {
   }
 
   const isOwner = !!user && user.id === wishlist.user_id;
-  const VisibilityIcon = wishlist.visibility === 'public' ? Globe : Lock;
+  const VisibilityIcon = { public: Globe, unlisted: Link2, private: Lock }[wishlist.visibility];
 
   return (
     <div className="min-h-screen">
       <PageContainer>
-        <header className="mb-12">
+        <header className="mb-6 border-b border-border-hairline pb-6">
+          <LocalizedLink to={isOwner ? '/wishlists' : '/marketplace'} className="mb-4 inline-block py-2 text-13 font-medium underline underline-offset-4">
+            {isOwner ? t('wishlists.title', 'Your wishlists') : t('breadcrumb.marketplace', 'Marketplace')}
+          </LocalizedLink>
           <div className="flex items-center gap-2 text-13 uppercase tracking-wide text-muted-foreground mb-2">
             <VisibilityIcon size={14} aria-hidden="true" />
             <span>{wishlist.visibility} wishlist</span>
           </div>
-          <h1 className="text-headline md:text-display font-semibold mb-4">{wishlist.title}</h1>
+          <h1 className="mb-4 break-words font-display text-headline leading-tight md:text-display">{wishlist.title}</h1>
           {wishlist.description && (
             <p className="text-body-lg text-muted-foreground max-w-2xl">{wishlist.description}</p>
           )}
-          <div className="flex items-center gap-4 mt-6">
+          <div className="mt-4 flex flex-wrap items-center gap-4">
+            {listings.length > 0 && (
+              <Button asChild>
+                <a href="#wishlist-items">{t('wishlists.browseItems', 'Browse items')}</a>
+              </Button>
+            )}
             <Button variant="outline" onClick={handleShare}>
               <Share2 size={16} />
               Share
@@ -108,7 +119,7 @@ const Wishlist = () => {
             }
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+          <div id="wishlist-items" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             {listings.map((listing, i) => (
               <MarketplaceCard
                 key={listing.id}

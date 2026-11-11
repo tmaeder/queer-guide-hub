@@ -2,7 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Play, Pause } from '@/components/icons';
 import { formatDistanceToNow } from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { cleanTitle } from '@/utils/htmlDecode';
+import { cn } from '@/lib/utils';
+import { boundArticleBody, cleanExcerpt, cleanTitle } from '@/utils/htmlDecode';
 import { useAudioPlayer } from '@/hooks/audioPlayerContext';
 import type { PodcastEpisode } from '@/hooks/usePodcasts';
 
@@ -10,6 +11,7 @@ interface EpisodeRowProps {
   episode: PodcastEpisode;
   showName?: string | null;
   artwork?: string | null;
+  featured?: boolean;
 }
 
 function durationLabel(seconds: number | null): string | null {
@@ -25,7 +27,7 @@ function durationLabel(seconds: number | null): string | null {
  * button inside an anchor is `nested-interactive` (axe, serious, WCAG 4.1.2),
  * which is the same rule the card-overlay pattern exists to satisfy.
  */
-export function EpisodeRow({ episode, showName, artwork }: EpisodeRowProps) {
+export function EpisodeRow({ episode, showName, artwork, featured = false }: EpisodeRowProps) {
   const { t } = useTranslation();
   const { play, playing, isCurrent } = useAudioPlayer();
 
@@ -37,7 +39,10 @@ export function EpisodeRow({ episode, showName, artwork }: EpisodeRowProps) {
     : null;
 
   return (
-    <li className="flex items-center gap-4 rounded-element p-2 transition-colors hover:bg-muted/50">
+    <li className={cn(
+      'gap-4 rounded-element p-2 transition-colors hover:bg-muted/50',
+      featured ? 'grid grid-cols-[auto_minmax(0,1fr)] items-start' : 'flex items-center',
+    )}>
       {episode.audio_url ? (
         <button
           type="button"
@@ -72,7 +77,10 @@ export function EpisodeRow({ episode, showName, artwork }: EpisodeRowProps) {
       <div className="min-w-0 flex-1">
         <LocalizedLink
           to={`/news/${episode.slug}`}
-          className="block truncate text-15 font-bold no-underline text-inherit hover:underline"
+          className={cn(
+            'block font-bold text-inherit no-underline hover:underline',
+            featured ? 'break-words font-sans text-title leading-snug' : 'truncate text-15',
+          )}
         >
           {title}
         </LocalizedLink>
@@ -80,6 +88,11 @@ export function EpisodeRow({ episode, showName, artwork }: EpisodeRowProps) {
           {[when, dur].filter(Boolean).join(' · ')}
         </p>
       </div>
+      {featured && episode.excerpt && (
+        <p className="col-span-2 max-w-reading text-15 leading-relaxed text-muted-foreground">
+          {boundArticleBody(cleanExcerpt(episode.excerpt), 280).text}
+        </p>
+      )}
     </li>
   );
 }

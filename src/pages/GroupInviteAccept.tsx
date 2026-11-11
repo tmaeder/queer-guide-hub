@@ -75,33 +75,39 @@ export default function GroupInviteAccept() {
             />
           ) : (
             <Card>
-              <CardContent className="flex flex-col items-center gap-4 p-6 text-center">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={invite.group.imageUrl || undefined} />
-                  <AvatarFallback>{invite.group.name.charAt(0).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col gap-1">
-                  <h1 className="text-xl font-semibold">{invite.group.name}</h1>
-                  <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                    <Users size={14} />
-                    {t('groups.inviteAccept.members', '{{count}} members', {
-                      count: invite.group.memberCount,
-                    })}
-                  </p>
-                </div>
+              <CardContent className="flex flex-col gap-4 p-6">
+                <header className="flex items-start justify-between gap-4">
+                  <h1 className="min-w-0 break-words font-display text-headline leading-tight">
+                    {invite.group.name}
+                  </h1>
+                  <Avatar className="size-16 shrink-0">
+                    <AvatarImage src={invite.group.imageUrl || undefined} />
+                    <AvatarFallback>{invite.group.name.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </header>
+                {invite.group.description && (
+                  <p className="whitespace-pre-line text-body-lg leading-relaxed">{invite.group.description}</p>
+                )}
+                <p className="flex flex-wrap items-center gap-2 text-13 text-muted-foreground">
+                  <Users size={14} aria-hidden="true" />
+                  {t('groups.inviteAccept.members', '{{count}} members', { count: invite.group.memberCount })}
+                  {invite.group.isPrivate && (
+                    <span className="inline-flex items-center gap-2">
+                      <Lock size={14} aria-hidden="true" />
+                      {t('groups.inviteAccept.private', 'Private group')}
+                    </span>
+                  )}
+                </p>
                 {invite.invitedBy.displayName && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-13 text-muted-foreground">
                     {t('groups.inviteAccept.invitedBy', '{{name}} invited you to join', {
                       name: invite.invitedBy.displayName,
                     })}
                   </p>
                 )}
-                {invite.group.description && (
-                  <p className="text-sm text-muted-foreground">{invite.group.description}</p>
-                )}
 
                 {user ? (
-                  <Button onClick={handleAccept} disabled={isAccepting}>
+                  <Button className="self-start" onClick={handleAccept} disabled={isAccepting}>
                     <UserPlus size={16} className="mr-2" />
                     {isAccepting
                       ? t('groups.inviteAccept.joining', 'Joining...')
@@ -110,6 +116,7 @@ export default function GroupInviteAccept() {
                 ) : (
                   <Button
                     variant="default"
+                    className="self-start"
                     onClick={() => navigate(`/auth?redirect=/hub/groups/invite/${token}`)}
                   >
                     {t('groups.inviteAccept.signIn', 'Sign in to join')}
