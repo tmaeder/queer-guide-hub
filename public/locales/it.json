@@ -1923,8 +1923,8 @@
   },
   "home": {
     "cityFeature": {
-      "exploreCity": "Esplora Zurigo",
-      "browseEvents": "Scopri gli eventi a Zurigo",
+      "exploreCity": "Esplora {{city}}",
+      "browseEvents": "Scopri gli eventi a {{city}}",
       "whatsOn": "Cosa c’è in programma",
       "communitySpace": "Spazio comunitario"
     },
