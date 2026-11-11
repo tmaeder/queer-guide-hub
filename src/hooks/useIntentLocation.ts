@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
+import { useUserTravelPreferences } from '@/hooks/useUserTravelPreferences';
+import { readOverride, useCityIdentity, type RegionValue } from '@/hooks/regionOverride';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface IntentLocation {
@@ -20,8 +22,16 @@ export interface IntentLocation {
 /**
  * Resolve the city an intent page should open on, without ever prompting.
  *
- * Order: explicit `?city=<slug>` → IP city (via the same-origin `/api/geo`
- * Pages Function that `useVisitorLocation` already uses) → nothing.
+ * Order: explicit `?city=<slug>` → the region the visitor picked in the
+ * homepage chip this session (`readOverride`) → their profile home city →
+ * IP city (via the same-origin `/api/geo` Pages Function that
+ * `useVisitorLocation` already uses) → nothing.
+ *
+ * The override and profile rungs are what keep a picked region from being
+ * lost the moment the visitor leaves the homepage. Neither is written here:
+ * a `?city=` is never promoted into the override, and no coordinates are
+ * stored anywhere. `ipOnly` skips both for `useHomeRegion`, which runs its
+ * own ladder (with the trip rung between them) on top of this one.
  *
  * Two deliberate choices:
  *
@@ -38,8 +48,18 @@ export interface IntentLocation {
  * `navigator.geolocation` call sites, `useGeoCountry`).
  * Consolidating those is a separate piece of work and this must not depend on it.
  */
-export function useIntentLocation(citySlugParam?: string | null): IntentLocation {
+export function useIntentLocation(
+  citySlugParam?: string | null,
+  { ipOnly = false }: { ipOnly?: boolean } = {},
+): IntentLocation {
   const { location, loading: geoLoading } = useVisitorLocation();
+  const layered = !ipOnly && !citySlugParam;
+  const [override] = useState<RegionValue | null>(() =>
+    layered && typeof window !== 'undefined' ? readOverride() : null,
+  );
+  const { data: prefs, isLoading: prefsLoading } = useUserTravelPreferences();
+  const profileCityId = layered && !override ? (prefs?.home_city_id ?? null) : null;
+  const { data: profileCity, isLoading: profileCityLoading } = useCityIdentity(profileCityId);
   const [resolved, setResolved] = useState<IntentLocation>({
     cityId: null,
     citySlug: null,
@@ -56,7 +76,8 @@ export function useIntentLocation(citySlugParam?: string | null): IntentLocation
     (async () => {
       // 1. Explicit slug in the URL always wins.
       if (citySlugParam) {
-        const select = 'id, name, slug, country_id, duplicate_of_id, countries:country_id(id, code)';
+        const select =
+          'id, name, slug, country_id, duplicate_of_id, countries:country_id(id, code)';
         let { data } = await supabase
           .from('cities')
           .select(select)
@@ -77,14 +98,15 @@ export function useIntentLocation(citySlugParam?: string | null): IntentLocation
           data = survivor.data ?? data;
         }
         if (data) {
-          const country = (data as { countries?: { id?: string | null; code?: string | null } | null })
-            .countries;
+          const country = (
+            data as { countries?: { id?: string | null; code?: string | null } | null }
+          ).countries;
           setResolved({
             cityId: data.id as string,
             citySlug: data.slug as string,
             cityName: data.name as string,
             countryCode: country?.code ?? null,
-            countryId: country?.id ?? ((data as { country_id?: string | null }).country_id ?? null),
+            countryId: country?.id ?? (data as { country_id?: string | null }).country_id ?? null,
             loading: false,
             inferred: false,
           });
@@ -129,14 +151,15 @@ export function useIntentLocation(citySlugParam?: string | null): IntentLocation
           : { data: null };
         if (cancelled) return;
         if (data) {
-          const country = (data as { countries?: { id?: string | null; code?: string | null } | null })
-            .countries;
+          const country = (
+            data as { countries?: { id?: string | null; code?: string | null } | null }
+          ).countries;
           setResolved({
             cityId: data.id as string,
             citySlug: data.slug as string,
             cityName: data.name as string,
             countryCode: country?.code ?? location?.country ?? null,
-            countryId: country?.id ?? ((countryRow?.id as string | undefined) ?? null),
+            countryId: country?.id ?? (countryRow?.id as string | undefined) ?? null,
             loading: false,
             inferred: true,
           });
@@ -177,5 +200,23 @@ export function useIntentLocation(citySlugParam?: string | null): IntentLocation
     };
   }, [citySlugParam, geoLoading, location?.city, location?.country]);
 
-  return resolved;
+  return useMemo<IntentLocation>(() => {
+    if (!layered) return resolved;
+    const picked = override ?? profileCity ?? null;
+    if (picked) {
+      return {
+        cityId: picked.cityId,
+        citySlug: picked.citySlug,
+        cityName: picked.cityName,
+        countryCode: picked.countryCode,
+        countryId: picked.countryId,
+        loading: false,
+        inferred: false,
+      };
+    }
+    // Hold the IP answer until the profile rung has had its say, or a signed-in
+    // visitor sees their IP city flash before their home city replaces it.
+    const waiting = prefsLoading || profileCityLoading;
+    return waiting ? { ...resolved, loading: true } : resolved;
+  }, [layered, resolved, override, profileCity, prefsLoading, profileCityLoading]);
 }
