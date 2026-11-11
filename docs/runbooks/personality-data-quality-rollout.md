@@ -1,7 +1,7 @@
 # Personality data-quality rollout
 
 This rollout applies the contracts from
-`20260921173615_personality_data_quality_contracts.sql` without bulk-unpublishing
+`99991794376196_personality_data_quality_contracts.sql` without bulk-unpublishing
 the existing catalogue. Run it separately in each environment and keep the
 database migration, Edge Functions, and frontend from the same release.
 

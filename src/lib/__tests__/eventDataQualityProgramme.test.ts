@@ -10,15 +10,15 @@ const repairRescanFix = readFileSync(
   'utf8',
 ).toLowerCase();
 const operationsCompletion = readFileSync(
-  'supabase/migrations/99991790275000_event_quality_operations_completion.sql',
+  'supabase/migrations/99991794376395_event_quality_operations_completion.sql',
   'utf8',
 ).toLowerCase();
 const snapshotTimeoutFix = readFileSync(
-  'supabase/migrations/99991790275100_event_quality_snapshot_timeout_fix.sql',
+  'supabase/migrations/99991794376403_event_quality_snapshot_timeout_fix.sql',
   'utf8',
 ).toLowerCase();
 const freshUnknownFix = readFileSync(
-  'supabase/migrations/20260928134153_event_liveness_fresh_unknown_not_stale.sql',
+  'supabase/migrations/99991794376303_event_liveness_fresh_unknown_not_stale.sql',
   'utf8',
 ).toLowerCase();
 const gates = readFileSync('scripts/check-data-quality-gates.mjs', 'utf8');

@@ -6,7 +6,7 @@ const migrations = join(process.cwd(), 'supabase', 'migrations');
 
 function repairMigration(): string {
   return readFileSync(
-    join(migrations, '20261002080205_personality_review_contract_repair.sql'),
+    join(migrations, '99991794376327_personality_review_contract_repair.sql'),
     'utf8',
   )
     .replace(/\/\*[\s\S]*?\*\//g, ' ')

@@ -5,21 +5,21 @@ import { describe, expect, it } from 'vitest';
 const migration = readFileSync(
   join(
     process.cwd(),
-    'supabase/migrations/20260926164213_canonical_automation_runs_and_backpressure.sql',
+    'supabase/migrations/99991794376221_canonical_automation_runs_and_backpressure.sql',
   ),
   'utf8',
 );
 const crossStatementMigration = readFileSync(
   join(
     process.cwd(),
-    'supabase/migrations/20260926165901_automation_run_context_cross_statement.sql',
+    'supabase/migrations/99991794376243_automation_run_context_cross_statement.sql',
   ),
   'utf8',
 );
 const airportRepairMigration = readFileSync(
   join(
     process.cwd(),
-    'supabase/migrations/20260926171800_restore_airport_refresh_canonical_wrapper.sql',
+    'supabase/migrations/99991794376258_restore_airport_refresh_canonical_wrapper.sql',
   ),
   'utf8',
 );
