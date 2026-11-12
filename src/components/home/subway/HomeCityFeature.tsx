@@ -23,6 +23,13 @@ export function HomeCityFeature() {
   const slug = region.loading ? '' : region.citySlug || FALLBACK_SLUG;
   const { city } = useOptimizedCity(slug);
   const cityName = city?.name ?? '';
+  // The region resolves AFTER first paint, so for ~300-800ms `slug` is '' and there is
+  // no city. Rendering the city half anyway published a dangling `/events?city=` and
+  // `/venues?city=` (empty filter), a 'Browse  events' label with the name missing, a
+  // city-guide link with no accessible name, and a SECOND 'Browse places' inside the
+  // hero -- which is also what made four home-magazine e2e cases fail. Hold the
+  // city-dependent half until there is a city to name.
+  const cityReady = Boolean(city && cityName);
   const isFallback = slug === FALLBACK_SLUG;
   const photo = resolveEntityImage('city', city);
   const metadata = photo.metadata as
@@ -73,71 +80,78 @@ export function HomeCityFeature() {
             <CityNetwork slug={slug} variant="thumb" className="h-full" />
           </div>
         )}
-        <div className="absolute inset-x-2 bottom-2 flex flex-wrap items-end justify-between gap-x-2 gap-y-1 sm:inset-x-4 sm:bottom-4">
-          <h2 id="home-city-feature-title" className="text-headline leading-none">
-            <LocalizedLink
-              to={`/city/${city?.slug ?? slug}`}
-              aria-label={t('home.cityFeature.exploreCity', '{{city}} city guide', {
-                city: cityName,
-              })}
-              className="inline-flex min-h-11 items-center gap-2 rounded-element bg-card px-4 py-2 font-display text-foreground underline-offset-4 hover:underline rtl:font-sans rtl:font-bold"
-            >
-              {cityName}
-              <TransitIcon name="arrow-right" size={20} className="rtl:rotate-180" />
-            </LocalizedLink>
-          </h2>
-          {photo.url && (metadata?.attribution || metadata?.photographer || metadata?.license) && (
-            <ImageCredit
-              attribution={metadata.attribution || metadata.photographer}
-              license={metadata.license}
-              className="rounded-badge bg-card px-2 py-1"
-            />
-          )}
-        </div>
+        {cityReady && (
+          <div className="absolute inset-x-2 bottom-2 flex flex-wrap items-end justify-between gap-x-2 gap-y-1 sm:inset-x-4 sm:bottom-4">
+            <h2 id="home-city-feature-title" className="text-headline leading-none">
+              <LocalizedLink
+                to={`/city/${city?.slug ?? slug}`}
+                aria-label={t('home.cityFeature.exploreCity', '{{city}} city guide', {
+                  city: cityName,
+                })}
+                className="inline-flex min-h-11 items-center gap-2 rounded-element bg-card px-4 py-2 font-display text-foreground underline-offset-4 hover:underline rtl:font-sans rtl:font-bold"
+              >
+                {cityName}
+                <TransitIcon name="arrow-right" size={20} className="rtl:rotate-180" />
+              </LocalizedLink>
+            </h2>
+            {photo.url &&
+              (metadata?.attribution || metadata?.photographer || metadata?.license) && (
+                <ImageCredit
+                  attribution={metadata.attribution || metadata.photographer}
+                  license={metadata.license}
+                  className="rounded-badge bg-card px-2 py-1"
+                />
+              )}
+          </div>
+        )}
       </div>
 
-      <ul className="mt-1 grid divide-y divide-border-hairline sm:grid-cols-2 sm:divide-y-0">
-        <li className="min-w-0 sm:pe-4">
-          <LocalizedLink
-            to={
-              event
-                ? `/events/${event.slug || event.id}`
-                : `/events?city=${encodeURIComponent(cityName)}`
-            }
-            className="flex min-h-14 items-center gap-2 rounded-element px-2 py-2 no-underline underline-offset-4 hover:underline"
-          >
-            <TransitIcon name="events" size={20} className="shrink-0" />
-            <span className="min-w-0">
-              <span className="block text-13 text-muted-foreground">
-                {date && event ? (
-                  <time dateTime={event.start_date}>{date}</time>
-                ) : (
-                  t('home.cityFeature.whatsOn', 'What’s on')
-                )}
+      {cityReady && (
+        <ul className="mt-1 grid divide-y divide-border-hairline sm:grid-cols-2 sm:divide-y-0">
+          <li className="min-w-0 sm:pe-4">
+            <LocalizedLink
+              to={
+                event
+                  ? `/events/${event.slug || event.id}`
+                  : `/events?city=${encodeURIComponent(cityName)}`
+              }
+              className="flex min-h-14 items-center gap-2 rounded-element px-2 py-2 no-underline underline-offset-4 hover:underline"
+            >
+              <TransitIcon name="events" size={20} className="shrink-0" />
+              <span className="min-w-0">
+                <span className="block text-13 text-muted-foreground">
+                  {date && event ? (
+                    <time dateTime={event.start_date}>{date}</time>
+                  ) : (
+                    t('home.cityFeature.whatsOn', 'What’s on')
+                  )}
+                </span>
+                <span className="line-clamp-2 text-15 font-bold">{eventTitle}</span>
               </span>
-              <span className="line-clamp-2 text-15 font-bold">{eventTitle}</span>
-            </span>
-          </LocalizedLink>
-        </li>
-        <li className="min-w-0 sm:border-s sm:border-border-hairline sm:ps-4">
-          <LocalizedLink
-            to={
-              isFallback ? '/venues/regenbogenhaus' : `/venues?city=${encodeURIComponent(cityName)}`
-            }
-            className="flex min-h-14 items-center gap-2 rounded-element px-2 py-2 no-underline underline-offset-4 hover:underline"
-          >
-            <TransitIcon name="map" size={20} className="shrink-0" />
-            <span className="min-w-0">
-              <span className="block text-13 text-muted-foreground">
-                {isFallback ? t('home.cityFeature.communitySpace', 'Community space') : cityName}
+            </LocalizedLink>
+          </li>
+          <li className="min-w-0 sm:border-s sm:border-border-hairline sm:ps-4">
+            <LocalizedLink
+              to={
+                isFallback
+                  ? '/venues/regenbogenhaus'
+                  : `/venues?city=${encodeURIComponent(cityName)}`
+              }
+              className="flex min-h-14 items-center gap-2 rounded-element px-2 py-2 no-underline underline-offset-4 hover:underline"
+            >
+              <TransitIcon name="map" size={20} className="shrink-0" />
+              <span className="min-w-0">
+                <span className="block text-13 text-muted-foreground">
+                  {isFallback ? t('home.cityFeature.communitySpace', 'Community space') : cityName}
+                </span>
+                <span className="block text-15 font-bold">
+                  {isFallback ? 'Regenbogenhaus' : t('home.discovery.places', 'Browse places')}
+                </span>
               </span>
-              <span className="block text-15 font-bold">
-                {isFallback ? 'Regenbogenhaus' : t('home.discovery.places', 'Browse places')}
-              </span>
-            </span>
-          </LocalizedLink>
-        </li>
-      </ul>
+            </LocalizedLink>
+          </li>
+        </ul>
+      )}
     </section>
   );
 }

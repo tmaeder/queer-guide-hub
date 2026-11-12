@@ -25,16 +25,26 @@ for (const width of [390, 1280]) {
       await expect(link).toBeInViewport();
       await expect(link).toHaveAttribute('href', path);
     }
-    const feature = hero.getByRole('region', { name: 'Zürich city guide' });
-    const city = feature.getByRole('link', { name: 'Zürich city guide' });
-    const community = feature.getByRole('link', {
-      name: 'Community space Regenbogenhaus',
-      exact: true,
-    });
+    // The featured city follows the visitor's REGION since 7d5451f4b, so pinning one
+    // name pins a transient: a runner in another region features another city, and
+    // these four cases went red for exactly that. Assert the SHAPE instead.
+    //
+    // This does NOT guard the load-window defect that commit also shipped (an empty
+    // `?city=` and a second 'Browse places' for ~300-800ms). Measured: reverting the
+    // component fix leaves these cases GREEN, because a web-first assertion RETRIES
+    // and the transient is gone before it settles. The guard for that is the unit test
+    // src/components/home/subway/__tests__/HomeCityFeature.test.tsx, which renders the
+    // unresolved state directly. Do not re-pin a city name here believing it covers it.
+    const feature = hero.locator('section:has(#home-city-feature-title)');
+    const city = feature.getByRole('link', { name: /city guide$/ });
     await expect(city).toBeInViewport();
-    await expect(city).toHaveAttribute('href', '/city/zuerich');
-    await expect(community).toBeInViewport();
-    await expect(community).toHaveAttribute('href', '/venues/regenbogenhaus');
+    await expect(city).toHaveAttribute('href', /^\/city\/[a-z0-9-]+$/);
+    // Non-empty name: an unresolved city rendered the label with the name missing.
+    await expect(city).toHaveAccessibleName(/^\S[\s\S]*city guide$/);
+    const places = feature.getByRole('link', { name: /Regenbogenhaus|Browse places/ });
+    await expect(places).toBeInViewport();
+    // Either the fallback's community space, or that city's venues -- never `?city=`.
+    await expect(places).toHaveAttribute('href', /^\/venues(\/[a-z0-9-]+|\?city=.+)$/);
     expect(await page.locator('html').evaluate((el) => el.scrollWidth)).toBeLessThanOrEqual(width);
 
     await hero.getByRole('combobox').click();
@@ -45,9 +55,7 @@ for (const width of [390, 1280]) {
   });
 }
 
-test('homepage prioritizes listings and city guides ', async ({
-  page,
-}) => {
+test('homepage prioritizes listings and city guides ', async ({ page }) => {
   await openHome(page);
   const listings = page.getByRole('heading', { name: /^places and events/i });
   const cities = page.getByRole('region', { name: 'City guides' });
@@ -57,7 +65,8 @@ test('homepage prioritizes listings and city guides ', async ({
   await expect(map.getByRole('link')).toHaveCount(7);
   await expect(map.locator('a[href="/search"]')).toBeVisible();
   expect((await page.locator('main h2').allTextContents()).map((text) => text.trim())).toEqual([
-    'Zürich',
+    // The featured city is region-dependent; only that it is NAMED is invariant.
+    expect.stringMatching(/^\S/),
     expect.stringMatching(/^Places and events/),
     'City guides',
     'What are you here for?',
@@ -67,7 +76,9 @@ test('homepage prioritizes listings and city guides ', async ({
   await expect(page).toHaveURL(/\/search(?:\?|$)/);
 });
 
-test('the city feature links to the directory when there is no upcoming event', async ({ page }) => {
+test('the city feature links to the directory when there is no upcoming event', async ({
+  page,
+}) => {
   await page.route('**/rest/v1/rpc/search_events', (route) => route.fulfill({ json: [] }));
   const eventsRequest = page.waitForResponse((response) =>
     response.url().endsWith('/rest/v1/rpc/search_events'),
@@ -75,10 +86,14 @@ test('the city feature links to the directory when there is no upcoming event', 
   await openHome(page);
   await eventsRequest;
 
-  const feature = page.getByRole('region', { name: 'Zürich city guide' });
-  await expect(feature.getByRole('link', { name: /Browse Zürich events/ })).toHaveAttribute(
+  const feature = page.locator('section:has(#home-city-feature-title)');
+  // Region-dependent city, so match the shape. Unanchored: the tile's accessible name
+  // is both spans ("What's on Browse <city> events"). `\S` right after 'Browse ' is what
+  // rejects the empty city, and `city=.+` is load-bearing -- the empty
+  // `/events?city=` was the defect, and `city=` alone would satisfy a bare prefix check.
+  await expect(feature.getByRole('link', { name: /Browse \S.* events/ })).toHaveAttribute(
     'href',
-    '/events?city=Zurich',
+    /^\/events\?city=.+$/,
   );
   await expect(feature.locator('time')).toHaveCount(0);
 });
