@@ -142,7 +142,7 @@ const CANCELLED_RE = /-\s*(abgesagt|entfällt|verschoben)\s*-|\babgesagt\b/i
 export const decodeLatin1 = (bytes: Uint8Array): string =>
   new TextDecoder('iso-8859-1').decode(bytes)
 
-export const stripTags = (s: unknown): string =>
+const stripTags = (s: unknown): string =>
   String(s ?? '')
     .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')

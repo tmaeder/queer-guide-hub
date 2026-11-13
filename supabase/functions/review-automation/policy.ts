@@ -16,7 +16,7 @@ export const SOURCES = {
   'quality-venue': 'field', 'quality-village': 'field', 'quality-personality': 'field',
   'quality-marketplace': 'field', 'general-review': 'recheck', editorial: 'human',
 } as const
-export type QueueSource = keyof typeof SOURCES
+type QueueSource = keyof typeof SOURCES
 export type Candidate = { id: string; action: 'approve' | 'reject' | 'recheck'; explanation: string; payload: Record<string, unknown> }
 export type Context = {
   item: { queue_type: string; title: string; risk?: string; meta?: Record<string, unknown> }

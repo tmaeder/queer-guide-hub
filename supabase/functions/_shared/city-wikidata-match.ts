@@ -9,7 +9,7 @@ export interface CityCandidateEntity { claims: Claims; enwikiTitle?: string; nam
 export interface CitySearchInput {
   queries: string[]; base: string; originalName?: string; languages?: string[]; countryCode: string | null; latitude: number | null; longitude: number | null
 }
-export interface CandidateProbe {
+interface CandidateProbe {
   qid: string; class: string; country: 'agree' | 'disagree' | 'unknown'; coordinates: string; distanceKm: number | null
   /** The search hit's own label is the name, not merely an alias. */
   countryCorrections?: { countryQid: string; intendedSubjectQid: string; code: string }[]

@@ -20,7 +20,7 @@ export interface WebhookSocket {
   write(buffer: Uint8Array): Promise<number>;
   close(): void;
 }
-export interface WebhookTlsSocket extends WebhookSocket {
+interface WebhookTlsSocket extends WebhookSocket {
   handshake(): Promise<{ alpnProtocol?: string | null }>;
 }
 export interface WebhookNetwork {
@@ -250,7 +250,7 @@ export async function resolveWebhookAddress(
   signal.throwIfAborted();
   return addresses.find((address) => !address.includes(':')) ?? addresses[0];
 }
-export function webhookSecretBytes(secret: string) {
+function webhookSecretBytes(secret: string) {
   if (!/^whsec_[A-Za-z0-9+/]{43}=$/.test(secret)) throw new Error('Invalid webhook signing secret');
   const encoded = secret.slice(6),
     decoded = atob(encoded);

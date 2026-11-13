@@ -33,7 +33,7 @@ function pickMeta(html: string, names: string[]): string | null {
 }
 
 /** Fetch the source HTML and extract og:image / twitter:image. Returns null on failure. */
-export async function scrapeSocialCardImage(
+async function scrapeSocialCardImage(
   articleUrl: string,
   signal?: AbortSignal,
 ): Promise<{ imageUrl: string; source: 'og' | 'twitter' } | null> {
@@ -75,7 +75,7 @@ export async function scrapeSocialCardImage(
 }
 
 /** Search Pexels for an article-relevant photo. Requires PEXELS_API_KEY. */
-export async function searchPexels(
+async function searchPexels(
   query: string,
   signal?: AbortSignal,
 ): Promise<{ imageUrl: string; attribution: string } | null> {

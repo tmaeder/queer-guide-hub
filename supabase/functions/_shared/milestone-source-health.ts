@@ -1,7 +1,7 @@
 import { assertPublicHttpUrl } from './ssrf-guard.ts'
 import { readProbeBody } from './probe-body.ts'
 
-export type MilestoneSourceHealth =
+type MilestoneSourceHealth =
   | 'healthy'
   | 'redirected'
   | 'blocked'
@@ -48,7 +48,7 @@ export function detectMilestoneDateEvidence(
   return dayPattern.test(normalized)
 }
 
-export function classifyMilestoneSourceStatus(status: number): MilestoneSourceHealth {
+function classifyMilestoneSourceStatus(status: number): MilestoneSourceHealth {
   if (status >= 200 && status < 300) return 'healthy'
   if (status >= 300 && status < 400) return 'redirected'
   if (status === 404 || status === 410) return 'missing'

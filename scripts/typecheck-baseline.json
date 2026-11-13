@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 609,
+  "total": 606,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -719,16 +719,12 @@
     "src/pages/ClaimUsername.tsx": {
       "TS2352": 1
     },
-    "src/pages/Events.tsx": {
-      "TS2322": 1
-    },
     "src/pages/GroupDetail.tsx": {
       "TS2322": 4,
-      "TS2345": 1,
       "TS2741": 1
     },
     "src/pages/Groups.tsx": {
-      "TS2322": 9
+      "TS2322": 8
     },
     "src/pages/HotelDetail.tsx": {
       "TS2322": 2

@@ -1,8 +1,8 @@
-export const WIKIDATA_QID_RE = /^Q\d+$/
+const WIKIDATA_QID_RE = /^Q\d+$/
 
 export type WikidataStatus = 'resolved' | 'not_found' | 'not_applicable' | 'needs_review'
 
-export interface NormalizedAffiliation {
+interface NormalizedAffiliation {
   affiliation_type: 'political_party'
   name: string
 }

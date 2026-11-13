@@ -311,7 +311,7 @@ export async function classifyWikidataPersonhood(name: string): Promise<Wikidata
   };
 }
 
-export function readEntityDescription(entity: Record<string, unknown>): string | null {
+function readEntityDescription(entity: Record<string, unknown>): string | null {
   const desc = (entity.descriptions as Record<string, { value: string }>)?.en?.value;
   return desc ?? null;
 }

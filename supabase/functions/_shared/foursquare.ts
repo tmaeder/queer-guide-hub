@@ -2,7 +2,7 @@ import { FOURSQUARE_DISCOVERY_TERM } from './foursquare-discovery-filter.ts'
 import type { NormalizedItem, RawItem } from './source-adapter.ts'
 import { extractDomain, normalizeEmail, normalizeName, normalizePhone } from './venue-pipeline-utils.ts'
 
-export const FOURSQUARE_API_BASE = 'https://places-api.foursquare.com'
+const FOURSQUARE_API_BASE = 'https://places-api.foursquare.com'
 export const FOURSQUARE_API_VERSION = '2025-06-17'
 
 // Pro-only response fields. Premium fields (photos, rating, hours, attributes,
@@ -27,7 +27,7 @@ export const FOURSQUARE_SEARCH_FIELDS = [
 
 export type FoursquareSource = 'foursquare' | 'foursquare_os'
 
-export interface FoursquareCategory {
+interface FoursquareCategory {
   fsq_category_id?: string
   category_id?: string
   name?: string
@@ -125,7 +125,7 @@ export function categoryLabels(place: FoursquarePlace): string[] {
   ])
 }
 
-export function categoryIds(place: FoursquarePlace): string[] {
+function categoryIds(place: FoursquarePlace): string[] {
   return cleanStrings([
     ...(place.fsq_category_ids ?? []),
     ...(place.categories ?? []).map((category) => category.fsq_category_id ?? category.category_id),
@@ -176,7 +176,7 @@ export function classifyFoursquareCategories(place: FoursquarePlace): CategoryDe
   return { venueCategory: 'other', labels }
 }
 
-export function foursquarePhotoUrls(
+function foursquarePhotoUrls(
   photos: Array<Record<string, unknown>> | undefined,
   size = '300x300',
 ): string[] {
@@ -301,7 +301,7 @@ export function normalizeFoursquarePlace(
   } as NormalizedItem
 }
 
-export function foursquareAttributesToAmenities(attributes: Record<string, unknown>): string[] {
+function foursquareAttributesToAmenities(attributes: Record<string, unknown>): string[] {
   const amenities: string[] = []
   if (attributes.restroom === true) amenities.push('restroom')
   if (attributes.outdoor_seating === true) amenities.push('outdoor-seating')
@@ -338,8 +338,8 @@ export function buildFoursquareSearchUrl(input: SearchRequest): string {
   return `${FOURSQUARE_API_BASE}/places/search?${params}`
 }
 
-export const FSQ_DELTA_ORDER = ['add', 'update', 'merge', 'remove'] as const
-export type FoursquareDeltaAction = typeof FSQ_DELTA_ORDER[number]
+const FSQ_DELTA_ORDER = ['add', 'update', 'merge', 'remove'] as const
+type FoursquareDeltaAction = typeof FSQ_DELTA_ORDER[number]
 
 export interface FoursquareDeltaRecord {
   fsq_place_id: string

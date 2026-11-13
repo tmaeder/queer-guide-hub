@@ -3,7 +3,7 @@ import { JEV_MODEL, type JevRequest, type JevResponse } from './jev-client.ts'
 export const PIPELINE_QUESTION_VERSION = 'jev-pipeline-faithfulness-v1'
 // These adapters ingest public publisher/operator records. Private/community
 // sources require a separate authorized projection; never serialize a whole row.
-export const PUBLIC_MARKETPLACE_SOURCES = [
+const PUBLIC_MARKETPLACE_SOURCES = [
   'adamssceptre', 'autostraddle', 'backroomgear', 'beefcakeswimwear',
   'bigbudpress', 'charliebymz', 'effenberger', 'fetchshop', 'gfwclothing',
   'mr-riegillio', 'ohmyfantasy', 'orttu', 'peaudeloup', 'pridesocks',

@@ -12,7 +12,7 @@ import {
   type DisposableTripAccount,
 } from './tripPlannerCleanup';
 
-export const TRIP_SITE = 'https://queer.guide';
+const TRIP_SITE = 'https://queer.guide';
 export const TRIP_TIMEZONE = 'Europe/Zurich';
 
 type Account = { id: string; username: string; session: Session };

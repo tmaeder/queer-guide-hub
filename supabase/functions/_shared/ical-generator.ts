@@ -31,7 +31,7 @@ export const formatICalDate = (dateString: string): string => {
  * Newlines are converted to the literal sequence \n, and bare carriage
  * returns are stripped.
  */
-export const escapeICalText = (text: string): string => {
+const escapeICalText = (text: string): string => {
   return text
     .replace(/\\/g, '\\\\')
     .replace(/,/g, '\\,')

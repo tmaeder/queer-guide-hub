@@ -120,7 +120,7 @@ export function normalizeName(value: string): string {
  * amp/lt/gt/quot, which the shared defaults already cover, plus `&#39;` and
  * `&#124;`, which are numeric forms the shared decoder resolves natively.
  */
-export function decodeEntities(value: string): string {
+function decodeEntities(value: string): string {
   return sharedDecodeEntities(value)
 }
 
@@ -236,7 +236,7 @@ export async function probeProfile(
   }
 }
 
-export type Tier = 'auto' | 'review' | 'miss'
+type Tier = 'auto' | 'review' | 'miss'
 
 export interface TierInput {
   /** Our stored name for the personality. */
@@ -395,7 +395,7 @@ export async function fetchAdultPerformerQids(
  * excludes it, which is what stops the nightly cron re-probing thousands of
  * names that will never resolve. Ported from the countries/cities engines.
  */
-export const MAX_ATTEMPTS = 3
+const MAX_ATTEMPTS = 3
 
 export function nextMissState(prior: unknown): { state: string; attempts: number } {
   const attempts =

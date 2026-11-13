@@ -15,13 +15,13 @@ export type StagedItem = Omit<NormalizedItem, 'location'> &
     location?: NonNullable<NormalizedItem['location']> & Record<string, unknown>
   }
 
-export const CALENDAR_ID = 'rheinfetisch.nrw@gmail.com'
-export const FEED = `https://calendar.google.com/calendar/ical/${encodeURIComponent(CALENDAR_ID)}/public/basic.ics`
+const CALENDAR_ID = 'rheinfetisch.nrw@gmail.com'
+const FEED = `https://calendar.google.com/calendar/ical/${encodeURIComponent(CALENDAR_ID)}/public/basic.ics`
 
 /** Where a reader can see this calendar. Every row cites it as its source URL. */
-export const CALENDAR_PAGE = 'https://www.rheinfetisch.de/kalender'
+const CALENDAR_PAGE = 'https://www.rheinfetisch.de/kalender'
 
-export const UA = 'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide)'
+const UA = 'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide)'
 
 /**
  * Title -> `event_type`, defaulting to 'other'.

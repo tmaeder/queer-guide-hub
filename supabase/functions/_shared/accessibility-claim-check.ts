@@ -29,10 +29,10 @@
 
 import type { EvidenceCitation } from './accessibility-evidence.ts'
 
-export const TYPESAFE_ENDPOINT = 'https://api.typesafe.ai/v1/systemone'
+const TYPESAFE_ENDPOINT = 'https://api.typesafe.ai/v1/systemone'
 
 /** Pinned rather than `jev-latest`, so a comparison is reproducible. */
-export const TYPESAFE_MODEL = 'jev-1.14.0'
+const TYPESAFE_MODEL = 'jev-1.14.0'
 
 /**
  * Starting thresholds from the TypeSafe guidance (0.7 / 0.3). NOT fitted to the
@@ -40,9 +40,9 @@ export const TYPESAFE_MODEL = 'jev-1.14.0'
  * small, and the comparison script reports the raw probabilities so a change
  * here can be argued from the distribution rather than from one case.
  */
-export const SUPPORTS_MIN = 0.7
-export const CONTRADICTS_MIN = 0.7
-export const UNSETTLED_MIN = 0.3
+const SUPPORTS_MIN = 0.7
+const CONTRADICTS_MIN = 0.7
+const UNSETTLED_MIN = 0.3
 
 /**
  * One plain statement per slug — what a yes would assert about the venue.
@@ -88,7 +88,7 @@ const RELATION_CRITERIA = {
     'The text is about something else, or only guesses (for example "seems to be" from someone who says they are not sure)',
 } as const
 
-export type Relation = keyof typeof RELATION_CRITERIA
+type Relation = keyof typeof RELATION_CRITERIA
 export type RelationProbs = Record<Relation, number>
 
 /** Question ids are never sent to the model; they only route answers back. */

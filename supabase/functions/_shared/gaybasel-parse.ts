@@ -126,7 +126,7 @@ export function plausibleCoord(lat: unknown, lng: unknown): { lat: number; lng: 
 }
 
 /** The one `application/ld+json` Event on an event detail page. */
-export function readEventJsonLd(html: unknown): Record<string, unknown> | null {
+function readEventJsonLd(html: unknown): Record<string, unknown> | null {
   for (const m of String(html ?? '').matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
     let blob: unknown
     try { blob = JSON.parse(m[1]) } catch { continue }

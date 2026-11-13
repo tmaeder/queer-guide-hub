@@ -21,7 +21,7 @@
 
 import { COUNTRY_ALIASES } from './geo-normalize.ts'
 
-export type SuspectReason = 'numeric' | 'placeholder' | 'too_short' | 'country_or_region_only'
+type SuspectReason = 'numeric' | 'placeholder' | 'too_short' | 'country_or_region_only'
 
 export interface CityNameCandidates {
   /** Ordered lookup attempts, most-specific first, deduped, never empty. */

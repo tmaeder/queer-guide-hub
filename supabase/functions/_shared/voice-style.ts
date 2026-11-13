@@ -43,7 +43,7 @@ export interface VoicePrompt {
 }
 
 /** How long a fetched prompt is reused inside one isolate. */
-export const VOICE_TTL_MS = 5 * 60 * 1000
+const VOICE_TTL_MS = 5 * 60 * 1000
 
 interface CacheEntry {
   at: number

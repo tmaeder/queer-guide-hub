@@ -23,7 +23,7 @@ import { setInvocationDeadline } from './llm-router.ts'
 
 type ServiceClient = ReturnType<typeof getServiceClient>
 
-export interface EnrichOutcome {
+interface EnrichOutcome {
   /** Did enrichment produce usable data? Drives apply_enrichment status. */
   succeeded: boolean
   /** Payload written via apply_enrichment (p_new_enriched). */

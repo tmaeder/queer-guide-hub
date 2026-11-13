@@ -185,7 +185,7 @@ export function coord(v: unknown): number | null {
  *
  * Only the FALLBACK — see `toIso`.
  */
-export function toIsoFromLocal(local: unknown, tz: unknown): string | null {
+function toIsoFromLocal(local: unknown, tz: unknown): string | null {
   const raw = String(local ?? '').trim()
   if (!raw) return null
   const asUtc = new Date(raw.replace(' ', 'T') + 'Z')

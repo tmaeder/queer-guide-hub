@@ -90,7 +90,7 @@ interface OAuthTokenRow {
  * Refresh an OAuth access token using the refresh token.
  * Stores the new tokens encrypted in the DB.
  */
-export async function refreshOAuthToken(
+async function refreshOAuthToken(
   supabase: SupabaseClient,
   tokenRow: OAuthTokenRow,
 ): Promise<string> {

@@ -1,7 +1,7 @@
 import { JEV_MODEL, type JevRequest, type JevResponse } from './jev-client.ts'
 
 export const PRODUCT_RELEVANCE_VERSION = 'jev-product-relevance-v1'
-export const PRODUCT_RELEVANCE_POLICY_VERSION = 'jev-product-routing-v2'
+const PRODUCT_RELEVANCE_POLICY_VERSION = 'jev-product-routing-v2'
 const SIGNALS = ['pride_design', 'queer_culture', 'gender_affirming_function', 'queer_positioned_intimacy'] as const
 const SENSITIVITY = ['explicit_adult', 'medical_claim', 'legal_claim'] as const
 

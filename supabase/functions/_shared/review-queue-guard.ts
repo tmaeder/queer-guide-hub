@@ -16,7 +16,7 @@ import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5
 // rejection is the case where nothing about the entity changes, so identical evidence
 // regenerates an identical proposal forever.
 
-export type BlockReason = 'open' | 'rejected'
+type BlockReason = 'open' | 'rejected'
 
 export interface ReviewQueueGuard {
   /** null = free to queue. */

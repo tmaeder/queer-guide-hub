@@ -15,7 +15,7 @@ import {
 
 // Source trust weights. Higher = more authoritative. `existing` is the venue's
 // current DB value — trusted enough to resist churn but beatable by consensus.
-export const SOURCE_WEIGHTS: Record<string, number> = {
+const SOURCE_WEIGHTS: Record<string, number> = {
   admin: 1.0,
   google: 0.85,
   foursquare: 0.8,
@@ -32,7 +32,7 @@ export function sourceWeight(source: string): number {
   return SOURCE_WEIGHTS[providerKey(source)] ?? 0.5
 }
 
-export type FieldKind = 'identity' | 'url' | 'phone' | 'email' | 'coords' | 'text' | 'number' | 'array'
+type FieldKind = 'identity' | 'url' | 'phone' | 'email' | 'coords' | 'text' | 'number' | 'array'
 
 export interface FieldSpec {
   field: string

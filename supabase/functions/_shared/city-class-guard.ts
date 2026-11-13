@@ -155,7 +155,7 @@ const MUNICIPALITY_GRADE_PATTERNS: readonly RegExp[] = [
   /\bmegacity\b/i,
 ]
 
-export type CityClassVerdict =
+type CityClassVerdict =
   /** A recognised settlement class. The QID may be adopted. */
   | 'settlement'
   /**
@@ -285,7 +285,7 @@ export function cityClassVerdict(
  */
 export const CITY_COORD_MAX_KM = 100
 
-export type CityCoordVerdict =
+type CityCoordVerdict =
   /** Both sides carry coordinates and they agree. */
   | 'agree'
   /** Both sides carry coordinates and they do not. The candidate is a namesake. */

@@ -39,7 +39,7 @@ export interface SyncResult {
  * Dedup gate. Inserts id into `github_event_ids`. Returns true if this is the
  * first time we've seen the id (= proceed); false if already processed.
  */
-export async function markSeen(
+async function markSeen(
   svc: SupabaseClient,
   id: string,
   kind: string,

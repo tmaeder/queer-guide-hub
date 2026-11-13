@@ -1,6 +1,6 @@
 import { readEmailGatewayReceipt } from "../_shared/email-gateway-receipt.ts";
 
-export interface QueueReading {
+interface QueueReading {
   available: boolean;
   backlog_count: number | null;
   backlog_bytes: number | null;

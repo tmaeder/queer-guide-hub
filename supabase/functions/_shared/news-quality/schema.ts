@@ -4,9 +4,9 @@
 
 import { extractJsonCandidates, parseJsonObject } from '../json-extract.ts'
 
-export type Sentiment = 'positive' | 'neutral' | 'negative' | 'mixed'
+type Sentiment = 'positive' | 'neutral' | 'negative' | 'mixed'
 
-export interface QualityImageAssessment {
+interface QualityImageAssessment {
   isUsable: boolean
   qualityScore: number
   isRelevant: boolean

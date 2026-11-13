@@ -30,14 +30,14 @@ export type ContentType =
   | 'milestone' | 'group' | 'tag' | 'airport'
 
 /** Which pipeline-validate branch handles this type (bodies live there). */
-export type ValidatorKey =
+type ValidatorKey =
   | 'venue' | 'country' | 'marketplace' | 'city' | 'news' | 'personality'
   | 'event' | 'generic'
 
 /** Which pipeline-quality-score rubric scores this type (bodies live there). */
-export type QualityRubricKey = 'personality' | 'marketplace' | 'news' | 'generic'
+type QualityRubricKey = 'personality' | 'marketplace' | 'news' | 'generic'
 
-export type CommitConfig =
+type CommitConfig =
   /** Dedicated SQL batch RPC (was pipeline-commit's SIMPLE_COMMIT_TARGETS). */
   | { kind: 'simple'; rpc: string; idColumn: string; passPipelineRunId?: true }
   /** News commits per job_id via news_commit_staging_batch — structurally

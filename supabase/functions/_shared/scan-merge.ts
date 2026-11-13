@@ -3,7 +3,7 @@ import { fillDataGaps, isDataGap } from './gap-fill.ts'
 // scan-merge — merge extracted items coming from parallel content chunks into a
 // deduped list. Pure (no Deno/network) so it's unit-testable.
 
-export type MergeDetectedType = 'event' | 'venue' | 'hotel' | 'news' | 'marketplace'
+type MergeDetectedType = 'event' | 'venue' | 'hotel' | 'news' | 'marketplace'
 
 export interface MergeItem {
   detected_type: MergeDetectedType

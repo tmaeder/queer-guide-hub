@@ -3,7 +3,7 @@ import { parse, type DefaultTreeAdapterTypes } from 'npm:parse5@8.0.1'
 import { trimTrailingSlashes } from './trim-trailing-slashes.ts'
 
 /** Only this event page's published Plone artwork, after matching its Event. */
-export function gaychEventArtworkEvidence(
+function gaychEventArtworkEvidence(
   html: string,
   event: { title: string; start_date?: unknown },
   pageUrl: string,

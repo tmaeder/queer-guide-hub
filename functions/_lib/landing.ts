@@ -145,8 +145,8 @@ const PRIDE_REGIONS: Record<string, { name: string; countries: string[] }> = {
 // renders (so the URL doesn't 404), but emits noindex so Google doesn't
 // surface thin pages and the sitemap (sitemap-landings.xml.ts) drops
 // them. Auto-promote once the row count crosses the bar.
-export const MIN_LANDING_VENUES = 6;
-export const MIN_LANDING_EVENTS = 3;
+const MIN_LANDING_VENUES = 6;
+const MIN_LANDING_EVENTS = 3;
 
 const layoutHtml = ({
   title,

@@ -159,7 +159,7 @@ export function claimedStateFromMetroSlug(
  * corroboration, so add a name only when the twin is prominent enough that
  * articles about it plausibly reach this corpus.
  */
-export const AMBIGUOUS_US_CITY_NAMES = new Set([
+const AMBIGUOUS_US_CITY_NAMES = new Set([
   'portland', 'charleston', 'springfield', 'columbia', 'columbus', 'wilmington',
   'richmond', 'rochester', 'manchester', 'athens', 'cambridge', 'jackson',
   'franklin', 'aurora', 'glendale', 'lancaster', 'salem', 'newark', 'bristol',

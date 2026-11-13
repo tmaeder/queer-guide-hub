@@ -19,7 +19,7 @@ import { CF_MODEL_DEFAULT, mapToCfModel } from './cf-model-map.ts'
 import { recordLlmUsage } from './llm-usage-log.ts'
 import { tryNvidia } from './llm-router.ts'
 
-export interface LlmMessage {
+interface LlmMessage {
   role: 'system' | 'user' | 'assistant'
   content: string
 }
@@ -58,14 +58,14 @@ export interface LlmCompletionResult {
   usage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number }
 }
 
-export class LlmNotConfiguredError extends Error {
+class LlmNotConfiguredError extends Error {
   constructor() {
     super('Cloudflare Workers AI not configured. Set CF_ACCOUNT_ID + CF_AI_API_TOKEN.')
     this.name = 'LlmNotConfiguredError'
   }
 }
 
-export class LlmRequestError extends Error {
+class LlmRequestError extends Error {
   constructor(public status: number, public body: string) {
     super(`LLM request failed (${status}): ${body.slice(0, 500)}`)
     this.name = 'LlmRequestError'

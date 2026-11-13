@@ -8,7 +8,7 @@ import {
   type QrAssetStorage,
   type qrLogoInput,
 } from './redirect-qr-assets.ts';
-export const QR_IMAGE_TOKEN = /^qg_qr_[a-f0-9]{64}$/;
+const QR_IMAGE_TOKEN = /^qg_qr_[a-f0-9]{64}$/;
 export function createQrImageToken() {
   return (
     'qg_qr_' +

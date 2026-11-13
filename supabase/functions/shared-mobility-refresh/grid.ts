@@ -9,8 +9,8 @@
  * providers whose type is a car or moped are excluded.
  */
 
-export const LAT_STEP = 0.001; // ~111 m
-export const LNG_STEP = 0.0015; // ~113 m at 47°N
+const LAT_STEP = 0.001; // ~111 m
+const LNG_STEP = 0.0015; // ~113 m at 47°N
 // Whole type name only: a substring /car/ matched "CargoBike" and silently dropped
 // all 7,967 Velospot bikes, the largest provider (measured on the live feed).
 const EXCLUDED_TYPES = /^(e-)?(car|moped)$/i;

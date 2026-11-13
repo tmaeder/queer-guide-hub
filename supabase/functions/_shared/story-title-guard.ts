@@ -28,7 +28,7 @@
  */
 
 /** Minimum characters of real source text before we let a model title a cluster. */
-export const MIN_CORPUS_CHARS = 12;
+const MIN_CORPUS_CHARS = 12;
 
 /**
  * Machine-generated infrastructure alerts. These reach `community_submissions`

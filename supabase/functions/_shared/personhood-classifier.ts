@@ -16,7 +16,7 @@ import { classifyEntityType } from './entity-type-classifier.ts'
 import { classifyWikidataPersonhood, type NonPersonType } from './wikidata-resolve.ts'
 import { llmChatCompletion, isLlmConfigured } from './llm-client.ts'
 
-export type PersonhoodVerdict = 'person' | 'non_person' | 'uncertain'
+type PersonhoodVerdict = 'person' | 'non_person' | 'uncertain'
 
 export interface PersonhoodInput {
   name: string

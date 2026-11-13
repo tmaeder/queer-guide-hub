@@ -21,7 +21,7 @@ export const MIN_ACCEPTANCE_SCORE = 30
 
 export type ImageSource = ImageResultSource
 
-export type SubjectType = 'city' | 'country' | 'venue' | 'event' | 'place' | 'marketplace'
+type SubjectType = 'city' | 'country' | 'venue' | 'event' | 'place' | 'marketplace'
 
 /** Roles that get a stricter acceptance bar — a cover/hero is high-visibility. */
 export type ImageRole =
@@ -186,7 +186,7 @@ export const QUEER_PLACE_MIN = 55
  * Matching is whole-word and unicode-aware (see `hasWord`) so `gay` no longer
  * matches `Gaya` nor `Nice` match `Venice`.
  */
-export const QUEER_PLACE_TOKENS = [
+const QUEER_PLACE_TOKENS = [
   'pride', 'gay', 'lgbtq', 'lgbtqia', 'lgbt', 'queer', 'lesbian', 'transgender',
   'csd', 'christopher street', 'gay village', 'gayborhood',
   'chueca', 'castro', 'marais', 'fierté', 'orgullo', 'regenbogenparade',
@@ -233,7 +233,7 @@ export interface QueerPlaceInput {
 }
 
 /** image-search.ts ImageResult sources; wikimedia gets a provenance bonus. */
-export type ImageResultSource = 'pexels' | 'unsplash' | 'wikimedia' | 'wikipedia'
+type ImageResultSource = 'pexels' | 'unsplash' | 'wikimedia' | 'wikipedia'
 
 export function scoreQueerPlaceImage(input: QueerPlaceInput): number {
   const alt = (input.alt || '').toLowerCase()

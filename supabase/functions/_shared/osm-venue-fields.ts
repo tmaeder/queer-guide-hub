@@ -19,7 +19,7 @@
  */
 
 /** Slot shape consumed by `src/utils/openingHours.ts`. Do not change unilaterally. */
-export interface HoursSlot {
+interface HoursSlot {
   day: number // 1 = Monday … 7 = Sunday
   open: string // "HHMM"
   close: string // "HHMM", or "+HHMM" when the slot runs past midnight

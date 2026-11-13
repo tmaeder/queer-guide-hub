@@ -180,7 +180,7 @@ function decodeUrlEntities(url: string): string {
 // gave us its primary key". firstHttpUrl re-checks either way — the attribute
 // alone is not trusted, because some feeds declare `isPermaLink="true"` over
 // a `urn:uuid:` value.
-export function extractPermalinkGuid(block: string): string | null {
+function extractPermalinkGuid(block: string): string | null {
   const m = /<guid\b[^>]*\bisPermaLink="true"[^>]*>([\s\S]*?)<\/guid>/i.exec(block)
   return m ? m[1] : null
 }
@@ -203,7 +203,7 @@ export function firstHttpUrl(...candidates: (string | null | undefined)[]): stri
 
 // Audio enclosure: <enclosure url="..." type="audio/mpeg" .../>. Match the
 // enclosure tag that declares an audio MIME type (url may precede or follow type).
-export function extractAudioEnclosure(block: string): string | null {
+function extractAudioEnclosure(block: string): string | null {
   const re = /<enclosure\b[^>]*>/gi
   let m
   while ((m = re.exec(block)) !== null) {

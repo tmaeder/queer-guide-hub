@@ -11,7 +11,7 @@ const SOURCE_DESCRIPTION_KEYS = [
   'summary',
 ]
 
-export function marketplaceDescriptionPlainText(value: unknown): string {
+function marketplaceDescriptionPlainText(value: unknown): string {
   // Reuse the hardened storefront extractor. Besides keeping entity decoding
   // and raw-element removal in one audited implementation, this avoids a
   // regex-based HTML filter here that could miss malformed closing tags.

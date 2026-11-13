@@ -1,6 +1,6 @@
 /** Shared policy contract for the admin editor and the public resolver. */
 export interface LinkVariant { id: string; url: string; weight: number }
-export interface LinkExperiment { starts_at: string; ends_at: string; variants: LinkVariant[]; completed_target?: string }
+interface LinkExperiment { starts_at: string; ends_at: string; variants: LinkVariant[]; completed_target?: string }
 export interface LinkPolicy {
   preview?: {title?:string;description?:string;image?:string;video?:string};
   cloaked?: boolean;
