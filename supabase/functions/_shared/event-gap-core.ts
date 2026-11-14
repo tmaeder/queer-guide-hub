@@ -28,7 +28,7 @@ export function cleanDescription(value: unknown): string | null {
   return s.slice(0, 20000)
 }
 
-export function eventPageUrl(raw: unknown): string | null {
+function eventPageUrl(raw: unknown): string | null {
   try {
     const u = assertPublicHttpUrl(text(raw).replace(/^"|"$/g, ''))
     if (u.username || u.password || !u.hostname.includes('.')) return null

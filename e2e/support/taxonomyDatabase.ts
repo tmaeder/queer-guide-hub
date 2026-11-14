@@ -27,7 +27,7 @@ export function assertLocalTaxonomyEnvironment(env = process.env) {
   return { frontend, api, database };
 }
 
-export const sqlLiteral = (value: string) => `'${value.replaceAll("'", "''")}'`;
+const sqlLiteral = (value: string) => `'${value.replaceAll("'", "''")}'`;
 
 export class TaxonomyDatabase {
   private readonly database: URL;

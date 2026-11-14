@@ -27,7 +27,7 @@ const DEACCENT_TO =
 export const TAG_DEACCENT_TABLE = { from: DEACCENT_FROM, to: DEACCENT_TO }
 
 /** Mirrors public.tag_deaccent(text). */
-export function tagDeaccent(input: string): string {
+function tagDeaccent(input: string): string {
   const lowered = (input ?? '')
     .toLowerCase()
     .replace(/ß/g, 'ss')

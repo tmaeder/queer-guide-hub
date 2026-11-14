@@ -7,7 +7,7 @@
 // subcategory_slug via get_marketplace_subcategory_counts, so good slugs here
 // populate the UI automatically.
 
-export interface CategoryDef {
+interface CategoryDef {
   slug: string
   label: string
   hint: string
@@ -17,7 +17,7 @@ export interface CategoryDef {
 // `label` is stored in subcategory; subcategory_slug is a generated column
 // (lower + [\s-]+ -> _), so labels avoid '&' to keep slugs clean. `slug` here is
 // the enum the LLM returns (hyphenated) — internal to the prompt/parser only.
-export const MARKETPLACE_TAXONOMY: CategoryDef[] = [
+const MARKETPLACE_TAXONOMY: CategoryDef[] = [
   { slug: 'sex-toys',            label: 'Sex Toys',            hint: 'dildos, vibrators, masturbators, prostate toys, wands' },
   { slug: 'anal-toys',           label: 'Anal Toys',           hint: 'butt plugs, anal beads, anal training kits, tunnel/hole plugs' },
   { slug: 'cock-rings-stretchers', label: 'Cock Rings and Stretchers', hint: 'cock rings, ball stretchers, cock straps, glans rings' },
@@ -34,7 +34,7 @@ export const MARKETPLACE_TAXONOMY: CategoryDef[] = [
 ]
 
 const SLUGS = new Set(MARKETPLACE_TAXONOMY.map((c) => c.slug))
-export function isValidCategorySlug(s: string): boolean {
+function isValidCategorySlug(s: string): boolean {
   return SLUGS.has(s)
 }
 export function labelForSlug(slug: string): string {

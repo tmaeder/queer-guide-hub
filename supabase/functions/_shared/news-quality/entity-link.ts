@@ -7,7 +7,7 @@ import { proseStateContradiction, US_STATE_BY_ABBR } from '../city-collision-gua
 
 export type EntityType = 'country' | 'city' | 'region' | 'venue' | 'event' | 'personality' | 'organisation'
 
-export interface EntityCandidate {
+interface EntityCandidate {
   id: string
   name: string
   score: number

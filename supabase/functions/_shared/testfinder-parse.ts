@@ -293,7 +293,7 @@ export function slugFromHref(href: string | null | undefined): string | null {
  * because `HIV testing is free for` ships without one while its siblings all
  * have it (trap 5).
  */
-export function parseServiceItems(html: string): {
+function parseServiceItems(html: string): {
   labelled: Map<string, string>
   iconFields: { phone: string | null; email: string | null; website: string | null }
 } {

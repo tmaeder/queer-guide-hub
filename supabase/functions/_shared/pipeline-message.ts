@@ -24,7 +24,7 @@ export interface PipelineMessage {
   attempt?: number
 }
 
-export interface PipelineContext {
+interface PipelineContext {
   dry_run: boolean
   triggered_by: string
   batch_size: number

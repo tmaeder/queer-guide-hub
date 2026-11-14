@@ -1,5 +1,5 @@
 /** MAC namespace intentionally differs from visitor-IP and public-report relays. */
-export const DOMAIN_ROUTING_PROTOCOL = 1;
+const DOMAIN_ROUTING_PROTOCOL = 1;
 export const DOMAIN_HEALTH_PATH = '/.well-known/qg-redirect';
 export interface DomainRelay {
   hostname: string;

@@ -161,7 +161,7 @@ export async function fetchWikinewsArticles(
 
 // First (oldest) revision timestamp for a single page. rvlimit/rvdir are only
 // valid in single-page enumeration mode, hence the per-page call.
-export async function fetchFirstRevisionTimestamp(
+async function fetchFirstRevisionTimestamp(
   target: WikinewsTarget,
   pageId: number,
 ): Promise<string | null> {

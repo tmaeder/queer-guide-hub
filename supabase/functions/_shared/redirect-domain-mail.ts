@@ -1,6 +1,6 @@
 import { cloudflareGatewayRequest } from './cloudflare-email-gateway.ts';
 import { UUID, tokenDigest } from './redirect-api.ts';
-export interface DomainInstructionRecord {
+interface DomainInstructionRecord {
   type: 'CNAME' | 'TXT';
   name: string;
   value: string;

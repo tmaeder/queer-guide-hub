@@ -20,7 +20,7 @@
 import { Resvg, initWasm } from 'https://esm.sh/@resvg/resvg-wasm@2.6.2'
 
 /** Longest side of the rendered PNG, in pixels. Plates are 56px; 512 leaves room for retina and the masthead. */
-export const SVG_RASTER_MAX_SIDE = 512
+const SVG_RASTER_MAX_SIDE = 512
 
 let wasmReady: Promise<void> | null = null
 function ensureWasm(): Promise<void> {

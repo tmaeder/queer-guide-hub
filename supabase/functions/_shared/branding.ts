@@ -41,7 +41,7 @@ export const MESSAGE_CLASSES = {
   digest: { accent: '#FFD500', label: 'Digest', unsubscribable: true },
 } as const;
 
-export type MessageClass = keyof typeof MESSAGE_CLASSES;
+type MessageClass = keyof typeof MESSAGE_CLASSES;
 
 /**
  * Anton is the display face on the site and cannot be webfont-loaded in mail

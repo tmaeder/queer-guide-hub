@@ -7,7 +7,7 @@
 // The expectations were written BEFORE the guard existed; see the header of
 // accessibility-evidence.test.ts. Do not edit a `keep`/`why` to make a judge pass.
 
-export type Cite = { field?: string; quote: string }
+type Cite = { field?: string; quote: string }
 
 export interface Row {
   name: string

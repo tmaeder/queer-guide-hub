@@ -125,7 +125,7 @@ export const TRIPSIT_SLUG_MAP: Readonly<Record<string, string>> = Object.freeze(
 })
 
 /** One collapsed, mapped pair, ready for `sync_tripsit_interactions`. */
-export interface TripsitPair {
+interface TripsitPair {
   /** `unified_tags.slug` for the upstream key that sorts first. */
   slug_a: string
   slug_b: string

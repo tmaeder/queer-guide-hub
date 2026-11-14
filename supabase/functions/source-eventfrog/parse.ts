@@ -115,7 +115,7 @@ const COUNTRY_WORDS: Record<string, string> = {
   it: 'IT', italy: 'IT', italien: 'IT', italia: 'IT', italie: 'IT',
 }
 
-export function countryWordToIso2(raw: unknown): string | null {
+function countryWordToIso2(raw: unknown): string | null {
   const w = decodeEntities(raw).toLowerCase()
   return w ? (COUNTRY_WORDS[w] ?? null) : null
 }

@@ -148,7 +148,7 @@ function readNumber(...candidates: unknown[]): number | null {
 }
 
 // ISO 3166-1 alpha-2 / alpha-3: uppercase letters only.
-export function isValidIsoCode(raw: unknown): boolean {
+function isValidIsoCode(raw: unknown): boolean {
   if (!raw) return false
   const s = String(raw).trim().toUpperCase()
   return /^[A-Z]{2,3}$/.test(s)

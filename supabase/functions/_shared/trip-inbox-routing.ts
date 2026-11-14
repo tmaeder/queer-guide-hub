@@ -1,5 +1,5 @@
 /** Exact-recipient rules only: never edit a catch-all or another destination. */
-export const INBOX_DOMAIN = 'inbox.queer.guide'
+const INBOX_DOMAIN = 'inbox.queer.guide'
 export const INBOX_WORKER = 'queer-guide-worker-trip-inbox'
 export interface RoutingRule {
   id?: string
@@ -13,11 +13,11 @@ export function inboxAddress(shortId: string): string {
   if (!/^[a-z0-9]{6,32}$/.test(shortId)) throw new RoutingError('Invalid inbox identifier')
   return `trip-${shortId}@${INBOX_DOMAIN}`
 }
-export function targetsAddress(rule: RoutingRule, address: string): boolean {
+function targetsAddress(rule: RoutingRule, address: string): boolean {
   return rule.matchers?.length === 1 && rule.matchers[0].type === 'literal' &&
     rule.matchers[0].field === 'to' && rule.matchers[0].value?.toLowerCase() === address
 }
-export function targetsWorker(rule: RoutingRule): boolean {
+function targetsWorker(rule: RoutingRule): boolean {
   return rule.actions?.length === 1 && rule.actions[0].type === 'worker' &&
     rule.actions[0].value?.length === 1 && rule.actions[0].value[0] === INBOX_WORKER
 }

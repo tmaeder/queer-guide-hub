@@ -9,7 +9,7 @@ import {
   type WebhookNetwork,
   type WebhookErrorCode,
 } from './redirect-webhook-transport.ts';
-export const WEBHOOK_EVENT_TYPES = [
+const WEBHOOK_EVENT_TYPES = [
   'link.created',
   'link.updated',
   'link.deleted',

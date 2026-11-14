@@ -9,7 +9,7 @@ import { restoreCfEmails } from './cf-email.ts'
 //   2. <article> / [role=main] / largest <p>-dense container
 // Metadata (author, date, image, lang) falls back across JSON-LD → meta tags → DOM.
 
-export type ExtractMethod = 'jsonld' | 'article' | 'main' | 'density' | 'none'
+type ExtractMethod = 'jsonld' | 'article' | 'main' | 'density' | 'none'
 
 export interface ExtractedArticle {
   content: string          // plain-text paragraphs joined by \n\n ('' if nothing found)

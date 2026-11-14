@@ -12,7 +12,7 @@
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { decodeHtmlEntities } from './news-quality/sanitize.ts'
 
-export type SuggestionType =
+type SuggestionType =
   | 'tag'
   | 'synonym'
   | 'alt_text'
@@ -24,7 +24,7 @@ export type SuggestionType =
   | 'translation'
   | 'other'
 
-export type SuggestionStatus =
+type SuggestionStatus =
   | 'pending'
   | 'approved'
   | 'applied'
@@ -32,7 +32,7 @@ export type SuggestionStatus =
   | 'superseded'
   | 'expired'
 
-export type SuggestionSource =
+type SuggestionSource =
   | 'openai'
   | 'anthropic'
   | 'workers-ai'

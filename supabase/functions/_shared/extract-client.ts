@@ -10,7 +10,7 @@ import { trimTrailingSlashes } from './trim-trailing-slashes.ts'
 // trip OR any failure this returns null so callers degrade gracefully (e.g. the
 // extract node falls back to the local readability-lite path). NEVER throws.
 
-export interface ExtractMeta {
+interface ExtractMeta {
   title: string | null
   description: string | null
   lang: string | null

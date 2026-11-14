@@ -19,7 +19,7 @@
 
 export type Json = Record<string, unknown>
 
-export interface Snak {
+interface Snak {
   snaktype?: string
   datavalue?: { value?: unknown; type?: string }
 }
@@ -348,7 +348,7 @@ export function applyLabels(refs: CityQidRefs, labels: Map<string, string>): {
 
 // ---------------------------------------------------------------- group B (SPARQL)
 
-export const WDQS_ENDPOINT = 'https://query.wikidata.org/sparql'
+const WDQS_ENDPOINT = 'https://query.wikidata.org/sparql'
 
 export interface SparqlBinding { [k: string]: { value: string } | undefined }
 

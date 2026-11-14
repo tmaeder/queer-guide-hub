@@ -4,7 +4,7 @@ import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { decodeBytes } from '../_shared/decode-charset.ts'
 
-export const SOURCE_RECOVERY_CONTRACT='news_source_text_recovery.v1'
+const SOURCE_RECOVERY_CONTRACT='news_source_text_recovery.v1'
 const titleKey=(s:string)=>cleanTitle(s).normalize('NFKD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'')
 
 export function recoveryPageTitle(html:string){

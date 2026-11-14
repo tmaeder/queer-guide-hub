@@ -84,7 +84,7 @@ export interface LnEvent {
   country: string | null
 }
 
-export const stripTags = (s: unknown): string =>
+const stripTags = (s: unknown): string =>
   String(s ?? '')
     .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
@@ -119,7 +119,7 @@ export function repairJsonLdDate(raw: unknown): string | null {
   return Number.isFinite(t) ? new Date(t).toISOString() : null
 }
 
-export function readEventJsonLd(html: unknown): Record<string, unknown> | null {
+function readEventJsonLd(html: unknown): Record<string, unknown> | null {
   for (const m of String(html ?? '').matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
     let blob: unknown
     try { blob = JSON.parse(m[1]) } catch { continue }

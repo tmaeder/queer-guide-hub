@@ -72,7 +72,7 @@ The existing public read-only MCP endpoint is https://mcp.queer.guide/mcp (no si
 The authenticated service advertises the OAuth scope \`member\` in its authorization-server and RFC 9728 protected-resource metadata. This single scope describes existing signed-in member access: submit places/events, save and list your favorites, and create and list your trips, subject to the existing account permissions. It is broad member access, not a separately restricted read-only grant. Use the anonymous endpoint when you only need public information. Existing grants and sign-in behavior are retained; no separate read/write scopes are advertised.
 `;
 
-export const PRICING_MARKDOWN = `# Queer Guide pricing and access
+const PRICING_MARKDOWN = `# Queer Guide pricing and access
 
 ## Free public access
 

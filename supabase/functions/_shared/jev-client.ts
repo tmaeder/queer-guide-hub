@@ -1,10 +1,10 @@
 /** Server-only typed decisions. Every actual HTTP attempt needs a durable reservation. */
-export const JEV_ENDPOINT = 'https://api.typesafe.ai/v1/systemone'
+const JEV_ENDPOINT = 'https://api.typesafe.ai/v1/systemone'
 export const JEV_MODEL = 'jev-1.14.0'
 // Normal-context documented ceiling. Long-context/image flags are never sent.
-export const JEV_MAX_INPUT_TOKENS = 65_536
+const JEV_MAX_INPUT_TOKENS = 65_536
 // $42 / billion input tokens. Nano-USD avoids floating-point currency accounting.
-export const JEV_NANO_USD_PER_INPUT_TOKEN = 42
+const JEV_NANO_USD_PER_INPUT_TOKEN = 42
 export const JEV_MAX_RESERVATION = JEV_MAX_INPUT_TOKENS * JEV_NANO_USD_PER_INPUT_TOKEN
 
 export class JevProviderError extends Error {
@@ -17,7 +17,7 @@ export interface JevRequest {
   state: unknown
   questions: Record<string, unknown>
 }
-export interface JevUsage { input_tokens: number; output_tokens: number }
+interface JevUsage { input_tokens: number; output_tokens: number }
 export interface JevResponse {
   model: string
   answers: Record<string, unknown>

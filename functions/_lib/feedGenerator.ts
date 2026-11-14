@@ -6,7 +6,7 @@ import { rpc } from './openWeb';
 
 export const SERVICE_DID = 'did:web:queer.guide';
 /** Record key of the feed under the publishing account. */
-export const FEED_RKEY = 'queer-guide';
+const FEED_RKEY = 'queer-guide';
 
 export type FeedEnv = Env & { FEED_PUBLISHER_DID?: string };
 

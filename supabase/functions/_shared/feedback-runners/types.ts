@@ -13,7 +13,7 @@
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 
-export interface FixDispatchInput {
+interface FixDispatchInput {
   runId: string;
   storyId: string;
   prompt: string;
@@ -22,7 +22,7 @@ export interface FixDispatchInput {
   service: SupabaseClient;
 }
 
-export interface FixDispatchResult {
+interface FixDispatchResult {
   externalRef: string;
   // Optional: if the runner ran the fix synchronously, it returns the final
   // shape so the caller can avoid an extra DB roundtrip.
@@ -41,7 +41,7 @@ export interface FixRunner {
   dispatch(input: FixDispatchInput): Promise<FixDispatchResult>;
 }
 
-export interface RetestDispatchInput {
+interface RetestDispatchInput {
   retestId: string;
   routineRunId: string;
   storyId: string;
@@ -53,7 +53,7 @@ export interface RetestDispatchInput {
   filesChanged?: string[];
 }
 
-export interface RetestDispatchResult {
+interface RetestDispatchResult {
   externalRef: string;
   syncResult?: {
     status: 'passed' | 'failed' | 'error';

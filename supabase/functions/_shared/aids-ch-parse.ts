@@ -60,7 +60,7 @@ export const AIDS_CH_FEED_URL =
   'https://activepieces.do.five-agency.ch/api/v1/webhooks/YutlqfUGSxZ5Rhcn0gtw5/sync'
 
 /** Public page the feed backs — used as `source.url` provenance. */
-export const AIDS_CH_PAGE_URL = 'https://aids.ch/en/addresses/'
+const AIDS_CH_PAGE_URL = 'https://aids.ch/en/addresses/'
 
 /** Provenance tag written to `organizations.tags`, mirroring 'european-test-finder'. */
 export const AIDS_CH_SOURCE = 'aids-ch'

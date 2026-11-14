@@ -206,7 +206,7 @@ export function cleanExcerpt(raw: string): string {
   return cleanShortText(raw || '').slice(0, 600)
 }
 
-export function cleanAuthorField(raw: string): string {
+function cleanAuthorField(raw: string): string {
   return personAuthorCandidate(cleanShortText(raw || '', true).slice(0, 200)) ?? ''
 }
 

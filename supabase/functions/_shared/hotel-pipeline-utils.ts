@@ -12,24 +12,24 @@
 
 import { isValidUrl, isValidCoord, normalizePhone, normalizeEmail, type ValidationOutcome } from './venue-pipeline-utils.ts'
 
-export const ACCOMMODATION_TYPES = [
+const ACCOMMODATION_TYPES = [
   'hotel', 'bnb', 'hostel', 'resort', 'guesthouse', 'apartment', 'villa', 'campground',
 ] as const
 export type AccommodationType = typeof ACCOMMODATION_TYPES[number]
 
-export const PLATFORM_KEYS = [
+const PLATFORM_KEYS = [
   'airbnb', 'booking', 'expedia', 'misterbnb', 'tripadvisor',
   'google', 'foursquare', 'spartacus', 'agoda', 'hotels',
 ] as const
 
-export const CANONICAL_AMENITIES = [
+const CANONICAL_AMENITIES = [
   'wifi', 'parking', 'breakfast', 'pool', 'gym', 'spa', 'sauna', 'hot-tub',
   'air-conditioning', 'heating', 'kitchen', 'pets-allowed', 'wheelchair-accessible',
   'bar', 'restaurant', 'room-service', 'laundry', 'family-friendly', 'adults-only',
   'beach-access', 'airport-shuttle', 'ev-charging', 'smoke-free', 'private-bathroom',
 ] as const
 
-export const LGBTQ_MARKERS = [
+const LGBTQ_MARKERS = [
   'lgbtq-owned', 'gay-owned', 'lesbian-owned', 'trans-owned',
   'gay-friendly', 'lesbian-friendly', 'trans-friendly', 'queer-friendly',
   'lgbtq-staff', 'gay-popular', 'cruising', 'clothing-optional', 'men-only', 'women-only',

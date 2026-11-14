@@ -21,8 +21,8 @@ export type EntityType =
   | 'venue' | 'hotel' | 'event' | 'city' | 'country'
   | 'news' | 'marketplace' | 'personality' | 'organization'
 
-export type Decision = 'unique' | 'duplicate' | 'merge_candidate'
-export type Action = 'no_match' | 'auto_merge' | 'flag_review'
+type Decision = 'unique' | 'duplicate' | 'merge_candidate'
+type Action = 'no_match' | 'auto_merge' | 'flag_review'
 
 /** One raw candidate from any blocker RPC (deterministic or semantic). */
 export interface RawCandidate {
@@ -37,7 +37,7 @@ export interface RawCandidate {
 
 export type SignalFamily = 'exact' | 'strong' | 'fuzzy' | 'semantic'
 
-export interface Signal {
+interface Signal {
   match_type: string
   family: SignalFamily
   score: number
@@ -49,13 +49,13 @@ export interface GuardContext {
   itemBookIdentity?: BookIdentity | null
 }
 
-export interface ConflictGuard {
+interface ConflictGuard {
   /** true => this candidate must NOT match regardless of score. */
   veto: (best: RawCandidate, ctx: GuardContext) => boolean
   reason: string
 }
 
-export interface SemanticConfig {
+interface SemanticConfig {
   enabled: boolean
   /** cosine floor for the KNN blocker to even return a neighbour. */
   minCosine: number
@@ -98,7 +98,7 @@ export function geoGuard(maxMeters: number): ConflictGuard {
 }
 
 /** Events: same title but outside the time window are different occurrences. */
-export function timeGuard(maxHours: number): ConflictGuard {
+function timeGuard(maxHours: number): ConflictGuard {
   return {
     reason: `time>${maxHours}h`,
     veto: (best) => {
@@ -109,7 +109,7 @@ export function timeGuard(maxHours: number): ConflictGuard {
 }
 
 /** Cities / personalities: same name in different countries are distinct. */
-export function countryGuard(): ConflictGuard {
+function countryGuard(): ConflictGuard {
   return {
     reason: 'cross-country',
     veto: (best, ctx) => {
@@ -122,7 +122,7 @@ export function countryGuard(): ConflictGuard {
 
 /** Fuzzy title similarity must not collapse distinct book volumes or editions.
  * Exact source references remain updates of that source product. */
-export function bookEditionGuard(): ConflictGuard {
+function bookEditionGuard(): ConflictGuard {
   return {
     reason: 'book_edition_conflict',
     veto: (best, ctx) => best.match_type !== 'source_entity_id'

@@ -256,7 +256,7 @@ export function normalizeMarketplaceProduct(input: NormalizeInput, vocab: Attrib
 // Attribute tag slugs are namespaced in unified_tags to avoid colliding with the many
 // existing global tags (drag, leather, pride, festival…). The normalizer works in BARE
 // slugs (cotton, pride, minimal); storage adds/strips the per-kind prefix.
-export const ATTRIBUTE_PREFIX: Record<AttributeKind, string> = {
+const ATTRIBUTE_PREFIX: Record<AttributeKind, string> = {
   material: 'mat-',
   occasion: 'occ-',
   vibe: 'vibe-',

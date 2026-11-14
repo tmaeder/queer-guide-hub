@@ -430,7 +430,7 @@ function daysBetween(aKey: string, bKey: string): number {
  *
  * Timed values are untouched: a clock end is already the real finish.
  */
-export function endInclusive(start: IcsMoment, end: IcsMoment | undefined): IcsMoment | undefined {
+function endInclusive(start: IcsMoment, end: IcsMoment | undefined): IcsMoment | undefined {
   if (!end || !end.allDay) return end
   const shifted = shiftDays(end, -1)
   // A zero-length all-day DTEND (same day as DTSTART, which some producers
@@ -459,7 +459,7 @@ export function endInclusive(start: IcsMoment, end: IcsMoment | undefined): IcsM
  * still emitted, because dropping the event entirely would lose a real date
  * while reporting nothing a reader could act on.
  */
-export function resolveEvents(components: IcsComponent[]): IcsParseResult {
+function resolveEvents(components: IcsComponent[]): IcsParseResult {
   const events: IcsEvent[] = []
   const unsupported: IcsParseResult['unsupported'] = []
 

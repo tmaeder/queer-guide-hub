@@ -122,7 +122,7 @@ export function cleanVenueName(raw: unknown, city: string | null): string | null
   return n
 }
 
-export function readEventJsonLd(html: unknown): Record<string, unknown> | null {
+function readEventJsonLd(html: unknown): Record<string, unknown> | null {
   for (const m of String(html ?? '').matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
     let blob: unknown
     try { blob = JSON.parse(m[1]) } catch { continue }

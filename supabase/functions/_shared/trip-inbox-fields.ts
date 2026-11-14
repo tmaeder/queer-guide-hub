@@ -9,7 +9,7 @@
  * the whitelist.
  */
 
-export const ALLOWED_TYPES = new Set([
+const ALLOWED_TYPES = new Set([
   'lodging',
   'flight',
   'rail',

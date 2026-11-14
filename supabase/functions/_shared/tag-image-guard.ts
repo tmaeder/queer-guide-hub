@@ -54,7 +54,7 @@ export const TAG_IMAGE_REJECT =
   /\.svg$|\.gif$|(?<![a-z])maps?(?![a-z])|locator|coat_of_arms|seal_of|\bcoin\b|banknote|\blogo\b/i
 
 /** UI chrome that litters Commons categories and article media lists. */
-export const TAG_IMAGE_JUNK =
+const TAG_IMAGE_JUNK =
   /icon|stub|button|padlock|ambox|crystal|pictogram|commons-logo|wiki(?:media|news|quote|source|books)|\.ogg|\.webm|\.oga|\.pdf|\.tiff?|question_book|edit-|disambig|magnify|loudspeaker|star[_.-]|checkmark|placeholder|no[_-]?image/i
 
 /**
@@ -91,7 +91,7 @@ export function despace(value: string): string {
 }
 
 /** Every word in a string, lowercased and unaccented. No filtering. */
-export function tokenize(value: string): string[] {
+function tokenize(value: string): string[] {
   return value
     .normalize('NFD')
     .replace(COMBINING, '')

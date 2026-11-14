@@ -13,7 +13,7 @@
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { detectLgbtqMarkers } from './hotel-pipeline-utils.ts'
 
-export type AmenityKind = 'amenity' | 'accessibility' | 'queer'
+type AmenityKind = 'amenity' | 'accessibility' | 'queer'
 
 export interface AmenityVocab {
   /** slug -> { kind, scope } for every active vocabulary term. */

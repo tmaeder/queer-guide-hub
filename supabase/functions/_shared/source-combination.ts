@@ -10,7 +10,7 @@ export interface CombinationSource {
   observedAt?: string
   stagingId?: string
 }
-export interface CombinationDecision {
+interface CombinationDecision {
   path: string
   action: 'preserve' | 'fill' | 'review'
   value: unknown
@@ -21,7 +21,7 @@ export interface CombinationDecision {
 }
 // Only descriptive fields. Identity, moderation, safety, ownership and arbitrary
 // metadata never enter the automated combiner.
-export const COMBINATION_PATHS = [
+const COMBINATION_PATHS = [
   'description', 'bio', 'excerpt', 'images', 'image_url', 'website', 'website_url',
   'phone', 'email', 'hours', 'contacts.website', 'contacts.phone', 'contacts.email',
   'location.address', 'location.postal_code', 'metadata.website', 'metadata.phone', 'metadata.email',

@@ -15,7 +15,7 @@ import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
 
 export const HANDLE_PATH_RE = /^\/@([A-Za-z0-9._]{3,20})\/?$/;
 
-export function escapeXml(s: string): string {
+function escapeXml(s: string): string {
   return s
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

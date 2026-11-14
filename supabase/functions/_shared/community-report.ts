@@ -1,4 +1,4 @@
-export const REPORT_CATEGORIES = new Set([
+const REPORT_CATEGORIES = new Set([
   'safety',
   'bug',
   'idea',
@@ -10,7 +10,7 @@ const MAX_SCREENSHOT_BYTES = 3 * 1024 * 1024
 const MAX_BASE64_CHARS = Math.ceil((MAX_SCREENSHOT_BYTES * 4) / 3) + 16
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
-export interface ValidatedCommunityReport {
+interface ValidatedCommunityReport {
   kind: 'feedback' | 'correction'
   data: Record<string, unknown>
   sourceUrl: string | null

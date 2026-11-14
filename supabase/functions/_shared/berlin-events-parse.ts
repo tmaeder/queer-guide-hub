@@ -347,8 +347,8 @@ export function parseBkaSpielplan(html: string): BkaEvent[] {
 // ------------------------------------------------------------ Siegessäule
 
 /** The five listing rails. `sex` is imported but always tagged adult. */
-export const SIEGESSAEULE_CATEGORIES = ['mix', 'kultur', 'bars', 'clubs', 'sex'] as const
-export type SiegessaeuleCategory = (typeof SIEGESSAEULE_CATEGORIES)[number]
+const SIEGESSAEULE_CATEGORIES = ['mix', 'kultur', 'bars', 'clubs', 'sex'] as const
+type SiegessaeuleCategory = (typeof SIEGESSAEULE_CATEGORIES)[number]
 
 export interface SiegessaeuleRef {
   category: SiegessaeuleCategory

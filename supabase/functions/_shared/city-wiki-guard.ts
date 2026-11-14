@@ -37,7 +37,7 @@
 // correctly today are not touched by this code at all.
 
 /** Lowercase and strip diacritics. Not alphanumeric-only: word boundaries matter here. */
-export function foldText(s: string | null | undefined): string {
+function foldText(s: string | null | undefined): string {
   return (s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 }
 
@@ -100,7 +100,7 @@ export interface CityIdentity {
   countryName?: string | null
 }
 
-export type CityWikiRefusal = 'disambiguation' | 'not-place' | 'uncorroborated' | 'no-extract'
+type CityWikiRefusal = 'disambiguation' | 'not-place' | 'uncorroborated' | 'no-extract'
 
 export interface CityWikiVerdict {
   adopt: boolean
