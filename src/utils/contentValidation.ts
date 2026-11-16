@@ -31,76 +31,71 @@ const FIELD_LIMITS: Record<string, number> = {
   category: 100,
 };
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const isBlank = (value: unknown) => value === undefined || value === null || value === '';
+
+/** Splits collected findings into the `ValidationResult` shape. */
+function toResult(findings: ValidationError[]): ValidationResult {
+  const errors = findings.filter((e) => e.severity === 'error');
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings: findings.filter((e) => e.severity === 'warning'),
+  };
+}
+
+/** Messages for one rule applied to a non-blank value, in a fixed order. */
+function ruleMessages(rule: FieldRule, label: string, value: unknown): string[] {
+  const strValue = String(value);
+  const messages: string[] = [];
+
+  if (rule.maxLength && strValue.length > rule.maxLength) {
+    messages.push(
+      `${label} must be ${rule.maxLength} characters or fewer (currently ${strValue.length})`,
+    );
+  }
+  if (rule.minLength && strValue.length < rule.minLength) {
+    messages.push(`${label} must be at least ${rule.minLength} characters`);
+  }
+  if (rule.pattern && !rule.pattern.test(strValue)) {
+    messages.push(rule.patternMessage || `${label} has an invalid format`);
+  }
+
+  if (rule.type === 'url') {
+    const result = normalizeAndValidateUrl(strValue);
+    if (!result.ok) messages.push(result.reason);
+  } else if (rule.type === 'email') {
+    if (!EMAIL_RE.test(strValue)) messages.push(`${label} must be a valid email address`);
+  } else if (rule.type === 'number') {
+    const num = Number(value);
+    if (isNaN(num)) {
+      messages.push(`${label} must be a number`);
+    } else {
+      if (rule.min !== undefined && num < rule.min)
+        messages.push(`${label} must be at least ${rule.min}`);
+      if (rule.max !== undefined && num > rule.max)
+        messages.push(`${label} must be at most ${rule.max}`);
+    }
+  }
+
+  return messages;
+}
+
 /**
  * Validate a single field value against common rules.
  */
-function validateField(
-  field: string,
-  value: unknown,
-  rules: FieldRule[] = []
-): ValidationError[] {
+function validateField(field: string, value: unknown, rules: FieldRule[] = []): ValidationError[] {
   const errors: ValidationError[] = [];
 
   for (const rule of rules) {
-    if (rule.required && (value === undefined || value === null || value === '')) {
-      errors.push({ field, message: `${rule.label || field} is required`, severity: 'error' });
+    const label = rule.label || field;
+    if (isBlank(value)) {
+      if (rule.required) errors.push({ field, message: `${label} is required`, severity: 'error' });
       continue;
     }
-
-    if (value === undefined || value === null || value === '') continue;
-
-    const strValue = String(value);
-
-    if (rule.maxLength && strValue.length > rule.maxLength) {
-      errors.push({
-        field,
-        message: `${rule.label || field} must be ${rule.maxLength} characters or fewer (currently ${strValue.length})`,
-        severity: 'error',
-      });
-    }
-
-    if (rule.minLength && strValue.length < rule.minLength) {
-      errors.push({
-        field,
-        message: `${rule.label || field} must be at least ${rule.minLength} characters`,
-        severity: 'error',
-      });
-    }
-
-    if (rule.pattern && !rule.pattern.test(strValue)) {
-      errors.push({
-        field,
-        message: rule.patternMessage || `${rule.label || field} has an invalid format`,
-        severity: 'error',
-      });
-    }
-
-    if (rule.type === 'url') {
-      const result = normalizeAndValidateUrl(strValue);
-      if (!result.ok) {
-        errors.push({ field, message: result.reason, severity: 'error' });
-      }
-    }
-
-    if (rule.type === 'email') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(strValue)) {
-        errors.push({ field, message: `${rule.label || field} must be a valid email address`, severity: 'error' });
-      }
-    }
-
-    if (rule.type === 'number') {
-      const num = Number(value);
-      if (isNaN(num)) {
-        errors.push({ field, message: `${rule.label || field} must be a number`, severity: 'error' });
-      } else {
-        if (rule.min !== undefined && num < rule.min) {
-          errors.push({ field, message: `${rule.label || field} must be at least ${rule.min}`, severity: 'error' });
-        }
-        if (rule.max !== undefined && num > rule.max) {
-          errors.push({ field, message: `${rule.label || field} must be at most ${rule.max}`, severity: 'error' });
-        }
-      }
+    for (const message of ruleMessages(rule, label, value)) {
+      errors.push({ field, message, severity: 'error' });
     }
   }
 
@@ -127,10 +122,18 @@ export function validateSlug(slug: string): ValidationError[] {
   if (!slug) return errors;
 
   if (slug.length > FIELD_LIMITS.slug) {
-    errors.push({ field: 'slug', message: `Slug must be ${FIELD_LIMITS.slug} characters or fewer`, severity: 'error' });
+    errors.push({
+      field: 'slug',
+      message: `Slug must be ${FIELD_LIMITS.slug} characters or fewer`,
+      severity: 'error',
+    });
   }
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-    errors.push({ field: 'slug', message: 'Slug must contain only lowercase letters, numbers, and hyphens', severity: 'error' });
+    errors.push({
+      field: 'slug',
+      message: 'Slug must contain only lowercase letters, numbers, and hyphens',
+      severity: 'error',
+    });
   }
   return errors;
 }
@@ -158,54 +161,51 @@ export function generateSlug(title: string, maxLength: number = FIELD_LIMITS.slu
 export function validateVenue(data: Record<string, unknown>): ValidationResult {
   const errors: ValidationError[] = [];
 
-  errors.push(...validateField('name', data.name, [
-    { required: true, label: 'Venue name', maxLength: FIELD_LIMITS.name, minLength: 2 },
-  ]));
+  errors.push(
+    ...validateField('name', data.name, [
+      { required: true, label: 'Venue name', maxLength: FIELD_LIMITS.name, minLength: 2 },
+    ]),
+  );
 
-  errors.push(...validateField('address', data.address, [
-    { label: 'Address', maxLength: 500 },
-  ]));
+  errors.push(...validateField('address', data.address, [{ label: 'Address', maxLength: 500 }]));
 
-  errors.push(...validateField('city', data.city, [
-    { label: 'City', maxLength: FIELD_LIMITS.name },
-  ]));
+  errors.push(
+    ...validateField('city', data.city, [{ label: 'City', maxLength: FIELD_LIMITS.name }]),
+  );
 
-  errors.push(...validateField('country', data.country, [
-    { label: 'Country', maxLength: FIELD_LIMITS.name },
-  ]));
+  errors.push(
+    ...validateField('country', data.country, [{ label: 'Country', maxLength: FIELD_LIMITS.name }]),
+  );
 
-  errors.push(...validateField('website', data.website, [
-    { label: 'Website', type: 'url', maxLength: FIELD_LIMITS.url },
-  ]));
+  errors.push(
+    ...validateField('website', data.website, [
+      { label: 'Website', type: 'url', maxLength: FIELD_LIMITS.url },
+    ]),
+  );
 
-  errors.push(...validateField('email', data.email, [
-    { label: 'Email', type: 'email', maxLength: FIELD_LIMITS.email },
-  ]));
+  errors.push(
+    ...validateField('email', data.email, [
+      { label: 'Email', type: 'email', maxLength: FIELD_LIMITS.email },
+    ]),
+  );
 
-  errors.push(...validateField('phone', data.phone, [
-    { label: 'Phone', maxLength: FIELD_LIMITS.phone },
-  ]));
+  errors.push(
+    ...validateField('phone', data.phone, [{ label: 'Phone', maxLength: FIELD_LIMITS.phone }]),
+  );
 
-  // Validate coordinates
-  if (data.latitude !== undefined && data.latitude !== null) {
-    errors.push(...validateField('latitude', data.latitude, [
+  // Blank coordinates are skipped by validateField, so no guard is needed.
+  errors.push(
+    ...validateField('latitude', data.latitude, [
       { label: 'Latitude', type: 'number', min: -90, max: 90 },
-    ]));
-  }
-  if (data.longitude !== undefined && data.longitude !== null) {
-    errors.push(...validateField('longitude', data.longitude, [
+    ]),
+  );
+  errors.push(
+    ...validateField('longitude', data.longitude, [
       { label: 'Longitude', type: 'number', min: -180, max: 180 },
-    ]));
-  }
+    ]),
+  );
 
-  const warnings = errors.filter(e => e.severity === 'warning');
-  const realErrors = errors.filter(e => e.severity === 'error');
-
-  return {
-    isValid: realErrors.length === 0,
-    errors: realErrors,
-    warnings,
-  };
+  return toResult(errors);
 }
 
 /**
@@ -214,31 +214,32 @@ export function validateVenue(data: Record<string, unknown>): ValidationResult {
 export function validateEvent(data: Record<string, unknown>): ValidationResult {
   const errors: ValidationError[] = [];
 
-  errors.push(...validateField('title', data.title, [
-    { required: true, label: 'Event title', maxLength: FIELD_LIMITS.title, minLength: 3 },
-  ]));
+  errors.push(
+    ...validateField('title', data.title, [
+      { required: true, label: 'Event title', maxLength: FIELD_LIMITS.title, minLength: 3 },
+    ]),
+  );
 
-  errors.push(...validateField('description', data.description, [
-    { label: 'Description', maxLength: FIELD_LIMITS.description },
-  ]));
+  errors.push(
+    ...validateField('description', data.description, [
+      { label: 'Description', maxLength: FIELD_LIMITS.description },
+    ]),
+  );
 
   // Validate dates
   if (data.start_date && data.end_date) {
     const start = new Date(data.start_date as string);
     const end = new Date(data.end_date as string);
     if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end < start) {
-      errors.push({ field: 'end_date', message: 'End date must be after start date', severity: 'error' });
+      errors.push({
+        field: 'end_date',
+        message: 'End date must be after start date',
+        severity: 'error',
+      });
     }
   }
 
-  const warnings = errors.filter(e => e.severity === 'warning');
-  const realErrors = errors.filter(e => e.severity === 'error');
-
-  return {
-    isValid: realErrors.length === 0,
-    errors: realErrors,
-    warnings,
-  };
+  return toResult(errors);
 }
 
 /**
@@ -247,30 +248,33 @@ export function validateEvent(data: Record<string, unknown>): ValidationResult {
 export function validatePersonality(data: Record<string, unknown>): ValidationResult {
   const errors: ValidationError[] = [];
 
-  errors.push(...validateField('name', data.name, [
-    { required: true, label: 'Name', maxLength: FIELD_LIMITS.name },
-  ]));
+  errors.push(
+    ...validateField('name', data.name, [
+      { required: true, label: 'Name', maxLength: FIELD_LIMITS.name },
+    ]),
+  );
 
   if (data.birth_date && data.death_date) {
     const birth = new Date(data.birth_date as string);
     const death = new Date(data.death_date as string);
     if (!isNaN(birth.getTime()) && !isNaN(death.getTime()) && death <= birth) {
-      errors.push({ field: 'death_date', message: 'Death date must be after birth date', severity: 'error' });
+      errors.push({
+        field: 'death_date',
+        message: 'Death date must be after birth date',
+        severity: 'error',
+      });
     }
   }
 
   if (data.death_date && data.is_living === true) {
-    errors.push({ field: 'is_living', message: 'Marked as living but has a death date', severity: 'warning' });
+    errors.push({
+      field: 'is_living',
+      message: 'Marked as living but has a death date',
+      severity: 'warning',
+    });
   }
 
-  const warnings = errors.filter(e => e.severity === 'warning');
-  const realErrors = errors.filter(e => e.severity === 'error');
-
-  return {
-    isValid: realErrors.length === 0,
-    errors: realErrors,
-    warnings,
-  };
+  return toResult(errors);
 }
 
 /**
@@ -279,22 +283,19 @@ export function validatePersonality(data: Record<string, unknown>): ValidationRe
 export function validateNewsArticle(data: Record<string, unknown>): ValidationResult {
   const errors: ValidationError[] = [];
 
-  errors.push(...validateField('title', data.title, [
-    { required: true, label: 'Article title', maxLength: FIELD_LIMITS.title, minLength: 5 },
-  ]));
+  errors.push(
+    ...validateField('title', data.title, [
+      { required: true, label: 'Article title', maxLength: FIELD_LIMITS.title, minLength: 5 },
+    ]),
+  );
 
-  errors.push(...validateField('url', data.url, [
-    { label: 'Article URL', type: 'url', maxLength: FIELD_LIMITS.url },
-  ]));
+  errors.push(
+    ...validateField('url', data.url, [
+      { label: 'Article URL', type: 'url', maxLength: FIELD_LIMITS.url },
+    ]),
+  );
 
-  const warnings = errors.filter(e => e.severity === 'warning');
-  const realErrors = errors.filter(e => e.severity === 'error');
-
-  return {
-    isValid: realErrors.length === 0,
-    errors: realErrors,
-    warnings,
-  };
+  return toResult(errors);
 }
 
 /**
@@ -303,30 +304,31 @@ export function validateNewsArticle(data: Record<string, unknown>): ValidationRe
 export function validateNewsSource(data: Record<string, unknown>): ValidationResult {
   const errors: ValidationError[] = [];
 
-  errors.push(...validateField('name', data.name, [
-    { required: true, label: 'Source name', maxLength: FIELD_LIMITS.name, minLength: 2 },
-  ]));
+  errors.push(
+    ...validateField('name', data.name, [
+      { required: true, label: 'Source name', maxLength: FIELD_LIMITS.name, minLength: 2 },
+    ]),
+  );
 
-  errors.push(...validateField('url', data.url, [
-    { required: true, label: 'Source URL', type: 'url', maxLength: FIELD_LIMITS.url },
-  ]));
+  errors.push(
+    ...validateField('url', data.url, [
+      { required: true, label: 'Source URL', type: 'url', maxLength: FIELD_LIMITS.url },
+    ]),
+  );
 
-  errors.push(...validateField('category', data.category, [
-    { required: true, label: 'Category', maxLength: FIELD_LIMITS.category },
-  ]));
+  errors.push(
+    ...validateField('category', data.category, [
+      { required: true, label: 'Category', maxLength: FIELD_LIMITS.category },
+    ]),
+  );
 
-  errors.push(...validateField('fetch_frequency', data.fetch_frequency, [
-    { label: 'Fetch frequency', type: 'number', min: 30, max: 10080 },
-  ]));
+  errors.push(
+    ...validateField('fetch_frequency', data.fetch_frequency, [
+      { label: 'Fetch frequency', type: 'number', min: 30, max: 10080 },
+    ]),
+  );
 
-  const warnings = errors.filter(e => e.severity === 'warning');
-  const realErrors = errors.filter(e => e.severity === 'error');
-
-  return {
-    isValid: realErrors.length === 0,
-    errors: realErrors,
-    warnings,
-  };
+  return toResult(errors);
 }
 
 /**
@@ -346,11 +348,19 @@ export function validateCMSContent(data: Record<string, unknown>): ValidationRes
     }
     Object.entries(titleObj).forEach(([lang, text]) => {
       if (typeof text === 'string' && text.length > FIELD_LIMITS.title) {
-        errors.push({ field: `title.${lang}`, message: `Title (${lang}) must be ${FIELD_LIMITS.title} characters or fewer`, severity: 'error' });
+        errors.push({
+          field: `title.${lang}`,
+          message: `Title (${lang}) must be ${FIELD_LIMITS.title} characters or fewer`,
+          severity: 'error',
+        });
       }
     });
   } else if (typeof title === 'string' && title.length > FIELD_LIMITS.title) {
-    errors.push({ field: 'title', message: `Title must be ${FIELD_LIMITS.title} characters or fewer`, severity: 'error' });
+    errors.push({
+      field: 'title',
+      message: `Title must be ${FIELD_LIMITS.title} characters or fewer`,
+      severity: 'error',
+    });
   }
 
   // Slug validation
@@ -360,25 +370,22 @@ export function validateCMSContent(data: Record<string, unknown>): ValidationRes
 
   // Meta SEO validation
   if (data.meta_title) {
-    errors.push(...validateField('meta_title', data.meta_title, [
-      { label: 'Meta title', maxLength: FIELD_LIMITS.meta_title },
-    ]));
+    errors.push(
+      ...validateField('meta_title', data.meta_title, [
+        { label: 'Meta title', maxLength: FIELD_LIMITS.meta_title },
+      ]),
+    );
   }
 
   if (data.meta_description) {
-    errors.push(...validateField('meta_description', data.meta_description, [
-      { label: 'Meta description', maxLength: FIELD_LIMITS.meta_description },
-    ]));
+    errors.push(
+      ...validateField('meta_description', data.meta_description, [
+        { label: 'Meta description', maxLength: FIELD_LIMITS.meta_description },
+      ]),
+    );
   }
 
-  const warnings = errors.filter(e => e.severity === 'warning');
-  const realErrors = errors.filter(e => e.severity === 'error');
-
-  return {
-    isValid: realErrors.length === 0,
-    errors: realErrors,
-    warnings,
-  };
+  return toResult(errors);
 }
 
 /**
@@ -389,7 +396,7 @@ export function validateImportRow(
   row: Record<string, string>,
   rowIndex: number,
   contentType: string,
-  requiredFields: string[] = []
+  requiredFields: string[] = [],
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
@@ -421,8 +428,7 @@ export function validateImportRow(
 
     // Email fields
     if (key.toLowerCase().includes('email')) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(value)) {
+      if (!EMAIL_RE.test(value)) {
         errors.push({
           field: key,
           message: `Row ${rowIndex + 1}: "${key}" contains an invalid email`,
@@ -472,7 +478,7 @@ export function validateImportRow(
 export function validateImportBatch(
   rows: Record<string, string>[],
   contentType: string,
-  requiredFields: string[] = []
+  requiredFields: string[] = [],
 ): ValidationResult {
   const allErrors: ValidationError[] = [];
 
@@ -505,12 +511,5 @@ export function validateImportBatch(
     }
   }
 
-  const warnings = allErrors.filter(e => e.severity === 'warning');
-  const errors = allErrors.filter(e => e.severity === 'error');
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    warnings,
-  };
+  return toResult(allErrors);
 }
