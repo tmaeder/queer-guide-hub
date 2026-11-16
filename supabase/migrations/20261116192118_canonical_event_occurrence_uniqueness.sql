@@ -1,5 +1,3 @@
--- Recovered from production migration history. Already applied; do not renumber.
--- Recorded statement digest (MD5): 265425bce48455dc71eca98f08ddc298
 -- Merged rows retain source relationships for audit/undo. They cannot reserve a
 -- canonical occurrence's unique venue slot after duplicate_of_id is assigned.
 -- The old index already guarantees uniqueness for the new index's strict subset.
@@ -22,5 +20,3 @@ begin
  end if;
  execute replace(definition,anchor,'and other.start_date=e.start_date and other.status<>''archived'' and other.duplicate_of_id is null) then');
 end $patch$;
-;
-

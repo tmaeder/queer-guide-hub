@@ -1,5 +1,3 @@
--- Recovered from production migration history. Already applied; do not renumber.
--- Recorded statement digest (MD5): 504cf3ec92be8b9d51ba779b2e7495c0
 -- A missing canonical target is a database fact, not a source-research question.
 -- Keep the rejected proposal (and its source mention), with machine-only audit.
 create or replace function api_private.repair_review_proposal_integrity(
@@ -86,5 +84,3 @@ begin
  return jsonb_build_object('dry_run',p_dry_run,'product_counts',v_counts,'neutral_categories',v_neutral,'proposal_integrity',v_integrity);$replacement$);
  execute definition;
 end $migration$;
-;
-
