@@ -46,18 +46,26 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body = await req.json().catch(() => ({}))
+    const countryIds = body.country_ids
+    if (countryIds !== undefined && (!Array.isArray(countryIds) || countryIds.length < 1 || countryIds.length > 20
+      || countryIds.some((id: unknown) => typeof id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)))) {
+      return errorResponse('country_ids must contain 1–20 UUIDs', 400, req)
+    }
     const limit = boundedBatch(body.batch_limit, 40, 100)
     const budget = workBudget()
-    const { data, error } = await supabase.from('image_asset_links')
+    let query = supabase.from('image_asset_links')
       .select('asset_id, entity_id, image_assets!inner(id,url,health_consecutive_failures,health_checked_at,status)')
       .eq('entity_type', 'country').eq('role', 'cover')
       .eq('image_assets.status', 'active')
-      .or('health_checked_at.is.null,health_checked_at.lt.' + new Date(Date.now() - 7 * 86400_000).toISOString(), { referencedTable: 'image_assets' })
-      .limit(limit)
+    query = countryIds === undefined
+      ? query.or('health_checked_at.is.null,health_checked_at.lt.' + new Date(Date.now() - 7 * 86400_000).toISOString(), { referencedTable: 'image_assets' })
+      : query.in('entity_id', countryIds)
+    const { data, error } = await query.limit(limit)
     if (error) return errorResponse(error.message, 500, req)
 
     let healthy = 0
     let failed = 0
+    let deferred = 0
     for (const row of (data ?? []) as unknown as ProbeRow[]) {
       if (!budget.canStart()) break
       const asset = row.image_assets
@@ -66,6 +74,7 @@ Deno.serve(async (req: Request) => {
       let status = 0
       let contentType: string | null = null
       let probeError: string | null = null
+      let sizeLimited = false
       let body: Uint8Array | null = null
       try {
         const response = await fetchImage(asset.url, budget.signal(25_000))
@@ -75,14 +84,36 @@ Deno.serve(async (req: Request) => {
           const declaredBytes = Number(response.headers.get('content-length') ?? 0)
           if (declaredBytes > MAX_IMAGE_BYTES) {
             await response.body?.cancel().catch(() => {})
-            throw new Error(`image exceeds 20 MiB probe limit (${declaredBytes} bytes)`)
+            // A reachable original exceeding our download budget is not a
+            // broken cover. Keep the limit and report an incomplete probe.
+            sizeLimited = true
+            probeError = `probe_size_limit: original exceeds 20 MiB (${declaredBytes} bytes); HTTP image response available, full body not decoded`
+          } else {
+            body = await readProbeBody(response, MAX_IMAGE_BYTES)
           }
-          body = await readProbeBody(response, MAX_IMAGE_BYTES)
         } else {
           await response.body?.cancel().catch(() => {})
         }
       } catch (cause) {
         probeError = cause instanceof Error ? cause.message : 'probe failed'
+        if (status >= 200 && status < 300 && contentType?.toLowerCase().startsWith('image/')
+          && probeError === `Response exceeds ${MAX_IMAGE_BYTES} byte probe limit`) {
+          sizeLimited = true
+          probeError = 'probe_size_limit: image stream exceeds 20 MiB; HTTP image response available, full body not decoded'
+        }
+      }
+
+      if (sizeLimited) {
+        const { error: deferError } = await supabase.from('image_assets').update({
+          health_checked_at: checkedAt,
+          health_http_status: status,
+          health_content_type: contentType,
+          health_consecutive_failures: 0,
+          health_error: probeError,
+        }).eq('id', asset.id)
+        if (deferError) throw deferError
+        deferred++
+        continue
       }
 
       const ok = probeError === null && !!body?.byteLength
@@ -122,7 +153,7 @@ Deno.serve(async (req: Request) => {
       })
     }
 
-    return jsonResponse({ success: true, checked: healthy + failed, healthy, failed }, 200, req)
+    return jsonResponse({ success: true, checked: healthy + failed + deferred, healthy, failed, deferred }, 200, req)
   } catch (cause) {
     return errorResponse(cause instanceof Error ? cause.message : 'country image health failed', 500, req)
   }
