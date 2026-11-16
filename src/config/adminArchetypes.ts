@@ -211,6 +211,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
 
   // ── D · Ops monitor ───────────────────────────────────────────────────
   { path: 'cloudflare', archetype: 'D', title: 'Cloudflare', adopted: true },
+  { path: 'data-sources', archetype: 'H', title: 'Data sources', adopted: true },
   { path: 'security', archetype: 'D', title: 'Security', adopted: true },
   {
     path: 'pipelines',

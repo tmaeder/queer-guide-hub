@@ -104,6 +104,7 @@ const ContentGraph = lazyRetry(() => import('./pages/admin/ContentGraph'));
 const EmailUpdates = lazyRetry(() => import('./pages/EmailUpdates'));
 const EmailPlatform = lazyRetry(() => import('./pages/admin/EmailPlatform'));
 const AdminPipelines = lazyRetry(() => import('./pages/admin/AdminPipelines'));
+const AdminDataSources = lazyRetry(() => import('./pages/admin/AdminDataSources'));
 
 const AdminSearchIntelligence = lazyRetry(() => import('./pages/admin/AdminSearchIntelligence'));
 const AdminDesignSystem = lazyRetry(() => import('./pages/admin/DesignSystem'));
@@ -492,6 +493,7 @@ export const AppRoutes = () => {
                   <Route path="imports" element={<Navigate to="/admin/pipelines" replace />} />
                   <Route path="workflows" element={<Navigate to="/admin/pipelines" replace />} />
                   <Route path="pipelines" element={<AdminPipelines />} />
+                  <Route path="data-sources" element={<AdminDataSources />} />
                   <Route
                     path="ingestion-rules"
                     element={<Navigate to="/admin/pipelines?tab=sources&sub=imports" replace />}

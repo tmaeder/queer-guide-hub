@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState, useMemo } from 'react';
+import { Link } from 'react-router';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -271,6 +272,12 @@ export default function SourcesTab() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-4 text-sm">
+          <p>Search and manage all registered sources in one list.</p>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/admin/data-sources">Open Data sources</Link>
+          </Button>
+        </div>
         <div className="rounded-element bg-muted overflow-hidden">
           <div className="px-4 py-2.5 border-b border-border flex items-center gap-2 flex-wrap">
             <div className="font-semibold text-sm">Ingest Sources</div>

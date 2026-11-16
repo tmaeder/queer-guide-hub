@@ -94,6 +94,19 @@ describe('adminNavSections shape', () => {
 });
 
 describe('getNavItemByRoute', () => {
+  it('exposes the combined data source registry only to admins', () => {
+    expect(getNavItemByRoute('/admin/data-sources')).toMatchObject({
+      id: 'data-sources',
+      label: 'Data sources',
+      adminOnly: true,
+    });
+    expect(getRouteMinRole('/admin/data-sources')).toBe('admin');
+    expect(getBreadcrumbsForRoute('/admin/data-sources').map((crumb) => crumb.label)).toEqual([
+      'Admin Console',
+      'Data & automation',
+      'Data sources',
+    ]);
+  });
   it('finds an item by its exact route', () => {
     const item = getNavItemByRoute('/admin/content/organizations');
     expect(item?.id).toBe('organizations');
