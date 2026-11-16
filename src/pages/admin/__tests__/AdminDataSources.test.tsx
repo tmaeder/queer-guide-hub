@@ -98,6 +98,13 @@ beforeEach(() => {
 });
 
 describe('AdminDataSources', () => {
+  it('keeps the refresh action named while sources are loading', () => {
+    mocks.fetch.mockReturnValue(new Promise(() => {}));
+    renderPage();
+    const refresh = screen.getByRole('button', { name: 'Refresh data sources' });
+    expect(refresh).toBeDisabled();
+    expect(refresh).toHaveAttribute('aria-busy', 'true');
+  });
   it('lists all source families, their health, and supported controls', async () => {
     renderPage();
     const table = await screen.findByRole('table', { name: 'All data sources' });

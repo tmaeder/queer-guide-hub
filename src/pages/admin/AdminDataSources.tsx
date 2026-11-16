@@ -247,7 +247,12 @@ function SourceDialog({
             <Button type="button" variant="outline" disabled={save.isPending} onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" loading={save.isPending} disabled={save.isPending}>
+            <Button
+              type="submit"
+              aria-label="Save changes"
+              loading={save.isPending}
+              disabled={save.isPending}
+            >
               Save changes
             </Button>
           </div>
@@ -455,6 +460,7 @@ export default function AdminDataSources() {
             <Link to="/admin/pipelines?tab=sources">Advanced source tools</Link>
           </Button>
           <Button
+            aria-label="Refresh data sources"
             variant="outline"
             disabled={query.isFetching || rolesLoading}
             onClick={() => void query.refetch()}
