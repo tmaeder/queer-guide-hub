@@ -58,6 +58,7 @@ import {
   Waypoints,
   Network,
   Trash2,
+  Database,
 } from '@/components/icons';
 import type { LucideIcon } from '@/components/icons';
 import { ROLE_RANK, type AdminRole } from '@/config/adminRoles';
@@ -330,6 +331,15 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/pipelines',
         adminOnly: true,
         group: 'Automation',
+      },
+      {
+        id: 'data-sources',
+        label: 'Data sources',
+        icon: Database,
+        route: '/admin/data-sources',
+        adminOnly: true,
+        group: 'Automation',
+        keywords: ['sources', 'scrapers', 'feeds', 'rss', 'api', 'imports'],
       },
       {
         id: 'search-intelligence',
