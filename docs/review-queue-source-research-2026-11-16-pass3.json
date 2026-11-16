@@ -16735,6 +16735,32 @@
     "processed": 12,
     "updated": 0,
     "failed": 0,
-    "ai_attempts": 0
+    "ai_attempts": 0,
+    "subsequent_scheduled_runs": [
+      {
+        "slug": "event_agentic_enrich",
+        "started_at_utc": "2026-11-16T20:22:00Z",
+        "http_status": 200,
+        "processed": 8,
+        "failed": 0,
+        "ai_attempts": 8
+      },
+      {
+        "slug": "event_image_backfill",
+        "started_at_utc": "2026-11-16T20:18:00Z",
+        "http_status": 200,
+        "processed": 12,
+        "failed": 0,
+        "ai_attempts": 0
+      },
+      {
+        "slug": "event_image_backfill",
+        "started_at_utc": "2026-11-16T20:23:00Z",
+        "http_status": 200,
+        "processed": 12,
+        "failed": 0,
+        "ai_attempts": 0
+      }
+    ]
   }
 }
