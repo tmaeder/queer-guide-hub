@@ -47,6 +47,6 @@ The queue is **not cleared**. Source allowlists, publication gates, confidence t
 - Integrity cleanup dry-run now reports zero eligible malformed proposals.
 - Deployment readback matched the intended source files; four targeted production cases completed without the original error.
 - The broader direct Node test command cannot load four existing Deno/JSR-dependent suites (`ERR_UNSUPPORTED_ESM_URL_SCHEME`); these are not counted as passing.
-- One scheduled run reported a database statement timeout in `finish_jev_review_job`, separate from the repaired text overflow. Targeted production runs succeeded afterward; continued scheduled-run health still needs observation.
+- One scheduled run reported a database statement timeout in `finish_jev_review_job`, separate from the repaired text overflow. Targeted production runs succeeded afterward, and the next scheduled run (19:09 UTC, run 939268) successfully processed eight cases with zero retries. Recurrence monitoring remains appropriate.
 
 Counts change as scheduled ingestion and review continue. The 288 deterministic closures and 2,169 artwork findings are supported by exact audit records; unrelated count changes are not attributed to this repair.
