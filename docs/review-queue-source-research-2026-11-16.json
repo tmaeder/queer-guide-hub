@@ -1,0 +1,253 @@
+{
+  "date": "2026-11-16",
+  "venue_links": [
+    {
+      "event": "1b8d9b5d-acda-4373-af6e-5a63c8508185",
+      "venue": "c43ea4e4-7d00-4770-8f00-9e897d15d7f9",
+      "url": "https://www.tbru.org/",
+      "note": "Organizer explicitly confirms March 25–28 2027 at Hyatt Regency Dallas, 300 Reunion Blvd. Canonical venue has matching address and city/country."
+    },
+    {
+      "event": "91c0966b-1525-4c54-90f5-0390f976a69e",
+      "venue": "8c3e389d-e949-40e2-99f1-aeb7709fbbdf",
+      "url": "https://www.himbeer.de/parties",
+      "note": "Organizer confirms 27 JAHRE HIMBEERPARTY, 28 November 2026, Alte Feuerwache Mannheim; catalogue Alte Feuerwache is on Brückenstraße in the same city/country."
+    },
+    {
+      "event": "b598513f-03df-4b34-86b2-da3e14a62c7e",
+      "venue": "8e44757c-6620-4c6b-9f3d-51330ee90320",
+      "url": "https://www.mann-o-meter.de/ueber-uns/jugendbereich-und-ag-jugend",
+      "note": "Organizer explicitly places the recurring Friday Jungschwuppen Late Night at Mann-O-Meter; official site confirms Bülowstr.106, Berlin. Link identifies physical host, not co-located MANEO service; no additional occurrence verification asserted."
+    },
+    {
+      "event": "d7198fa1-44bb-443e-875b-56a7a348a889",
+      "venue": "35e11b61-ac13-430c-ab84-99e77e5a5485",
+      "url": "https://shotgun.live/fr/events/di-x-10-ans-x-mia-mao",
+      "name": "Mia Mao",
+      "address": "2 Rue de la Clôture",
+      "note": "Organizer ticket listing confirms DI.X 10 Ans at Mia Mao, Saturday 20 June at 23h, 2 Rue de la Clôture Paris. Correct misspelling Miao Miao and replace venue-name placeholder address."
+    },
+    {
+      "event": "ca35ce13-dd3d-4e99-bf5c-4dcc37517268",
+      "venue": "6514319e-8f0d-4f09-4f05-bde68f691896",
+      "url": "https://www.agendaq.fr/fr/agenda/exposition-sur-l-histoire-et-les-collections-des-arcl",
+      "address": "26 Rue du Docteur Potain",
+      "note": "Publisher identifies ARCL exhibition at DOC and specifies 26 Rue du Docteur Potain, Paris. Same catalogue venue/address; retain historical dates and other findings."
+    },
+    {
+      "event": "841b37a9-dfe4-470a-a4f2-be636732b35b",
+      "venue": "6b2abc7a-d379-4d37-99bf-1f87a3fe3ee9",
+      "url": "https://www.agendaq.fr/fr/agenda/hairy-night",
+      "address": "Via Pontremoli 36",
+      "note": "Publisher identifies Hairy night at Black Hole/Skyline Club, Via Pontremoli36,Rome. Catalogue Skyline Club (Black Hole Club) matches name/address. Venue relationship only; recurring weekday/date discrepancy is not certified or waived."
+    },
+    {
+      "event": "563da694-a1b4-452d-9c21-f9c840e4422c",
+      "venue": "dee58d99-c970-4c7e-b155-1ff20d45ca77",
+      "url": "https://www.reservationsle9.fr/reservez-ici/",
+      "expected_updated_at": "2026-11-08 03:30:00.411043+00",
+      "note": "Venue organizer confirms Arc En Ciel 25th anniversary 7 November2026 20h–02h at Cabaret Le9 and its RueLejeune9 address. Catalogue address9RueLouis-FrançoisLejeune matches. Qcal RueDesLois address contradicts primary source and is not adopted."
+    },
+    {
+      "event": "b35a28dc-3e08-4f0e-aa45-cf113e734bdf",
+      "venue": "6b2abc7a-d379-4d37-99bf-1f87a3fe3ee9",
+      "url": "https://www.agendaq.fr/fr/agenda/fetish-night-4",
+      "expected_updated_at": "2026-10-07 03:30:00.161527+00",
+      "address": "Via Pontremoli 36",
+      "note": "Exact publisher event page identifies BlackHole/Skyline Club,ViaPontremoli36,Rome. Link physical host only, no historical date certification."
+    },
+    {
+      "event": "8d015655-aafd-4ba9-8200-2ee77b336f67",
+      "expected_updated_at": "2026-11-08 15:23:08.658234+00",
+      "venue": "8e44757c-6620-4c6b-9f3d-51330ee90320",
+      "url": "https://www.mann-o-meter.de/ueber-uns/jugendbereich-und-ag-jugend",
+      "note": "Official recurring programme identifies JungschwuppenLateNight at Mann-O-Meter. Stored explicitBülowstr106 host matches official address and same city/country. Link host only; no additional claim about holiday exceptions or historical occurrence verification."
+    },
+    {
+      "event": "bae9cf7e-1102-4181-adb0-6c4f783979bc",
+      "expected_updated_at": "2026-11-08 15:23:08.658234+00",
+      "venue": "8e44757c-6620-4c6b-9f3d-51330ee90320",
+      "url": "https://www.mann-o-meter.de/ueber-uns/jugendbereich-und-ag-jugend",
+      "note": "Official recurring programme identifies JungschwuppenLateNight at Mann-O-Meter. Stored explicitBülowstr106 host matches official address and same city/country. Link host only; no additional claim about holiday exceptions or historical occurrence verification."
+    },
+    {
+      "event": "e790a110-a11a-4614-aaec-bade56f341f7",
+      "expected_updated_at": "2026-11-14 03:30:00.494065+00",
+      "venue": "8e44757c-6620-4c6b-9f3d-51330ee90320",
+      "url": "https://www.mann-o-meter.de/ueber-uns/jugendbereich-und-ag-jugend",
+      "note": "Official recurring programme identifies JungschwuppenLateNight at Mann-O-Meter. Stored explicitBülowstr106 host matches official address and same city/country. Link host only; no additional claim about holiday exceptions or historical occurrence verification."
+    },
+    {
+      "event": "8fa081c8-9fe1-4942-bed0-df4e4fcef81a",
+      "venue": "6cabf4cb-71db-461d-baca-b0d47c64f3bf",
+      "expected_updated_at": "2026-10-26 03:30:00.39022+00",
+      "address": "217 E Arenas Rd",
+      "url": "https://qcal.app/event/truck-stop-tea-dance-in-the-desert-palm-springs-ca-us",
+      "note": "Publisher/cohost recurring TruckStopTeaDance identifies TheOtherSide as part ofChillBar217EArenasRdPalmSprings. Exact named programme,lastSunday14–19h,matches existing listing. Physical host link/address only; preserve October25 historical occurrence and do not replace it with currently displayedNovember29 date."
+    }
+  ],
+  "additional_venue_links": [
+  {
+    "event": "139931cb-4bc6-4e06-89d2-2171025c6c4e",
+    "venue": "9c400ee5-ff8b-431f-a668-92146740e7c8",
+    "expected_updated_at": "2026-10-25 23:19:39.276956+00",
+    "url": "https://www.agendaq.fr/fr/agenda/jockstraps",
+    "note": "Publisher exact Jockstraps programme identifies AttackMadrid,PlazaDeTirsoDeMolina20. CatalogueAttack has same address and city/country. Physicalhostonly; source currently describesThursday while saveddateTuesday remains a separate unresolved date issue, not certified."
+  },
+  {
+    "event": "16873559-f913-4bc4-8522-b8f582a9b1a6",
+    "venue": "576197b6-0313-4cf4-9b5e-e0ed68ba050f",
+    "expected_updated_at": "2026-10-30 03:30:00.635611+00",
+    "url": "https://queer-kalender.nl/en/page/2346/the-ultimate-scream-music-bingo",
+    "note": "Exact publisher29October2026 20h–23h30 identifiesCafeMontmartreXL,Reguliersdwarsstraat48Amsterdam. CatalogueMontmartre matches same physical address and city/country."
+  }
+],
+  "name_only_dispositions": [
+    {
+      "event": "2150a273-ccfb-4586-93f7-2ac017956b57",
+      "note": "Organizer confirms Boulder Theater EARLY SHOW on 25 October2026 19:00; catalogue comparison found no Boulder Theater record in Boulder/US. Retain named host and source address without substituting unrelated Boulder hotels.",
+      "url": "https://www.rockyhorrordenver.com/upcoming-shows/boulder-theater-rocktober-2026"
+    },
+    {
+      "event": "4ad13b20-18d1-4f94-8006-f67c370be286",
+      "note": "Official HonoluluPride page confirms WaikīkīShell,17October2026 17:00. No matching canonical venue in Honolulu/US. Preserve source venue name; do not link unrelated Waikiki bars.",
+      "url": "https://www.honolulupride.com/events/pride-festival"
+    },
+    {
+      "event": "61aa3152-3422-4963-9d10-5b9deeee7d54",
+      "note": "Exact publisher occurrence26October2026 identifies RittenhouseSquare as run start, then a route ending atUptownBeerGarden. This is a public meeting point, not a single indoor venue. No canonical square matches; retain name-only start and existing route.",
+      "url": "https://qcal.app/event/queer-run-annual-costume-run-philadelphia-pa-us"
+    },
+    {
+      "event": "14814b5b-5cf1-4ede-a392-9d8af8299f4e",
+      "note": "Exact publisher occurrence8November2026 identifies Runner'sBathroomMissionBayPark as meeting point. Organizer confirms variable Sunday routes and MissionBayRunner'sRestroom. No catalogue match; do not substitute an unrelated bathroom/park or assert one fixed venue for every Sunday.",
+      "url": "https://qcal.app/event/sunday-meet-up-mission-bay-san-diego-ca-us"
+    },
+    {
+      "event": "b5f2f2dd-1378-4ab9-99a9-7a2418e6544d",
+      "note": "Exact publisher occurrence14November2026 13:00 identifies HighlandParkLibrary first-floor meeting room,1974FordPkwy,SaintPaul. No canonical library in same city/country; retain explicit public host/address without guessing a catalogue link.",
+      "url": "https://qcal.app/event/queer-20s-and-30s-book-club-copper-script-st-paul-mn-us"
+    },
+    {
+      "event": "3054253e-0250-4c20-8d91-fd22e9e76714",
+      "note": "Publisher lists14and21October2026 Wednesday dances at WarMemorialBuilding auditorium. Dance association and organizer confirm weekly host at3325ZooDr/ParkBlvd. No canonical venue match. Retain name-only host; address3050ZooDr requires correction separately.",
+      "url": "https://qcal.app/event/fcs-club-dance-and-learn-san-diego-ca-us"
+    },
+    {
+      "event": "175b587b-2c1e-4e43-95fc-613780bf68e6",
+      "url": "https://queer-kalender.nl/en/page/2414/lola-film-festival",
+      "note": "Exact publisher confirms28October2026 19–21h atKriterion,Roetersstraat170Amsterdam. No same-city canonicalKriterion; Sarajevo venue is a different institution. Preserve source-named venue."
+    },
+    {
+      "event": "d252322e-f755-407c-beca-63acb01042b8",
+      "url": "https://www.outsavvy.com/event/34496/naked-men-stretching",
+      "note": "Organizer ticketpage confirms8May2026 atStLeonard'sMews251HoxtonStreetLondonN15LG. No matching catalogue venue; retain namedlocation/address. Location review only; age/sensitivity/accessibility findings are independent."
+    },
+    {
+      "event": "a502feaf-6d3e-4c89-8314-4bf6796492b2",
+      "url": "https://www.sandiegomade.org/factoryevents/sapphic-spaces-halloween-party",
+      "note": "Official host confirms23October2026 20–23h SanDiegoMadeFactory2031CommercialStreet. No matching venue in SanDiego/US. Retain exactsource name/address rather than unrelatedPrideorganization or clubs."
+    },
+    {
+      "event": "eee5e409-0870-4915-ad88-6b69db3c4a62",
+      "url": "https://charlestonpride.org/events/charleston-pride-festival-2026/",
+      "note": "Official organizer confirms17October2026 11–18h Building64,2301NoisetteBlvdNorthCharleston29405. No matching canonical building in samecity/country. Retain name-only host."
+    },
+    {
+      "event": "875a5964-fba2-4750-9718-53ef98bd3253",
+      "url": "https://www.equivox.fr/new/2025/11/24/13-14-decembre-2025-concert-symphonique-queer-side-story/",
+      "note": "Organizer confirms13December2025 19h30 EspaceReuilly,entrance1RueRiesenerParis. No canonical EspaceReuilly inParis; PelouseDeReuilly is a different outdoor venue. Retain source venue name and corrected entrance."
+    },
+    {
+      "event": "95c98b6c-d300-4596-ae7a-1d5c0b977438",
+      "url": "https://www.agendaq.fr/fr/agenda/le-choeur-gay-a-10-ans",
+      "note": "Exact publisher identifies2–4RueSanSubraToulouse; no canonicalSalleSanSubra in city/country. Retain historical source name and corrected street address. No historical date verification asserted."
+    },
+    {
+      "event": "affb615d-6112-470d-8c2c-7d27c0dbeaa4",
+      "url": "https://www.agendaq.fr/fr/agenda/permanence-du-girofard",
+      "note": "Exact publisher identifies106AvenueDuCommandantChristianBaylacMarmande. No canonical MaisonDesMarmandais venue inMarmande/FR. OrganizerGirofardBordeaux is a different-city organization, not the eventhostlocation. Retain explicit name-only location; no date certification."
+    }
+  ],
+  "address_repairs": [
+    {
+      "id": "3054253e-0250-4c20-8d91-fd22e9e76714",
+      "previous": "3050 Zoo Dr",
+      "address": "3325 Zoo Drive",
+      "source": "https://sandbox.iagsdc.org/finest-city-squares",
+      "note": "Dance association identifies weekly FinestCitySquares at3325ZooDr; publisher identifies same WarMemorialBuilding at3325ParkBlvd. Replace incorrect3050 number; retain dates and unknown pin."
+    },
+    {
+      "id": "875a5964-fba2-4750-9718-53ef98bd3253",
+      "previous": "Espace Reuilly",
+      "address": "1 Rue Riesener",
+      "source": "https://www.equivox.fr/new/2025/11/24/13-14-decembre-2025-concert-symphonique-queer-side-story/",
+      "note": "Organizer specifies13December2025 19h30 atEspaceReuilly entrance1RueRiesener75012Paris; replace venue-name placeholder with organizer entrance address."
+    },
+    {
+      "id": "affb615d-6112-470d-8c2c-7d27c0dbeaa4",
+      "previous": "Maison des Marmandais",
+      "address": "106 Avenue du Commandant Christian Baylac",
+      "source": "https://www.agendaq.fr/fr/agenda/permanence-du-girofard",
+      "note": "Exact publisher page provides106AvenueDuCommandantChristianBaylac47200Marmande; replace house-name placeholder only. Retain historical date and independent findings."
+    },
+    {
+      "id": "95c98b6c-d300-4596-ae7a-1d5c0b977438",
+      "previous": "Salle San-Subra",
+      "address": "2–4 Rue San-Subra",
+      "source": "https://www.agendaq.fr/fr/agenda/le-choeur-gay-a-10-ans",
+      "note": "Exact publisher page supplies2-4RueSan-Subra31300Toulouse; replace venue-name placeholder. Retain historical dates."
+    }
+  ],
+  "source_url_repairs": [
+    {
+      "id": "a502feaf-6d3e-4c89-8314-4bf6796492b2",
+      "old": "https://qcal.app/event/sapphic-spaces-halloween-party-san-diego-ca",
+      "url": "https://www.sandiegomade.org/factoryevents/sapphic-spaces-halloween-party"
+    },
+    {
+      "id": "eee5e409-0870-4915-ad88-6b69db3c4a62",
+      "old": "https://qcal.app/event/charleston-pride-festival-north-charleston-sc-us",
+      "url": "https://charlestonpride.org/events/charleston-pride-festival-2026/"
+    }
+  ],
+  "business_merges": [
+    {
+      "drop": "021ad6e4-8e47-4477-af33-4ddadb381ab1",
+      "keep": "67bcc626-2353-4e14-9915-8c8637b90e87",
+      "source": "https://doubleside.fr/contact/",
+      "note": "Both unclaimed venue-only profiles identify DoubleSide,8rueConstantineLyon; exact official contact matches names/address/domain. Donor primary venue is already merged into survivor's primary venue. No canonical field gaps; identity deduplication only, no legal ownership certification."
+    }
+  ],
+  "held": [
+    {
+      "case": "Dunes Resort",
+      "reason": "Donor points to Douglas in Illinois (39.7628415,-88.2170516); canonical points to adjacent Saugatuck in Michigan; exact Michigan Douglas city absent. Source confirms333BlueStarHighwayDouglasMI. No geography or profile overwrite applied.",
+      "sources": [
+        "https://dunesresort.com/",
+        "https://saugatuck.com/business/the-dunes-resort/"
+      ]
+    },
+    {
+      "case": "ADAM Folsom 2027",
+      "reason": "Publisher identifies Metropol only as venue of recent editions; 2027 booking not confirmed.",
+      "sources": [
+        "https://www.gaytravel4u.com/event/adam-official-europe-folsom-opening-party/"
+      ]
+    },
+    {
+      "case": "Kobe Rainbow Festa 2027",
+      "reason": "Official website still documents2026edition; no2027booking certified.",
+      "sources": [
+        "https://www.koberainbowfesta.org/"
+      ]
+    },
+    {
+      "case": "Qya Cristal",
+      "reason": "Publisher page combines Provincetown organizer with LasVegas address, and different current date. No unsupported venue assignment.",
+      "sources": [
+        "https://qcal.app/event/qya-cristal-the-bart-weisman-trio-las-vegas-nv"
+      ]
+    }
+  ]
+}

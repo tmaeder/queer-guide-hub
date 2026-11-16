@@ -50,3 +50,13 @@ The queue is **not cleared**. Source allowlists, publication gates, confidence t
 - One scheduled run reported a database statement timeout in `finish_jev_review_job`, separate from the repaired text overflow. Targeted production runs succeeded afterward, and the next scheduled run (19:09 UTC, run 939268) successfully processed eight cases with zero retries. Recurrence monitoring remains appropriate.
 
 Counts change as scheduled ingestion and review continue. The 288 deterministic closures and 2,169 artwork findings are supported by exact audit records; unrelated count changes are not attributed to this repair.
+
+## Continued source research
+
+Applied 14 researched event-to-venue links, nine street-address corrections (five within link repairs and four standalone), two replacements of unavailable aggregator URLs with exact official occurrence pages, and one DoubleSide business-profile identity merge. The native business merge retained the canonical profile byte-for-byte and reconciled two superseded findings. An additional 13 venue-quality findings now carry explicit, source-supported name-only dispositions because the catalogue contains no matching venue. Those dispositions do not create venue records or certify unrelated event details.
+
+The research uncovered a database bug: the event uniqueness index included already-merged rows. A merged Jungschwuppen donor reserved its surviving event's venue slot. Migration `20261116192118_canonical_event_occurrence_uniqueness` excludes merged rows from the unique active set and aligns the admin venue-link collision check. Its integration regression passed in a rolled-back transaction: a retained merged donor no longer blocks its survivor, a second canonical occurrence remains forbidden, and a conflicting unmerge remains forbidden. The real surviving event now links successfully; no donor status or source relationship was erased.
+
+Primary sources prevented a misleading Toulouse correction: Qcal gave Cabaret Le 9 an incorrect Rue des Lois address, while the venue's own reservation page confirmed the existing Rue Lejeune address and the exact anniversary event. The correct catalogue venue was linked. Remaining holds include the Dunes Resort's inconsistent city references, the mixed Provincetown/Las Vegas Qya listing, and unconfirmed future-edition venues. These were not bulk-approved.
+
+The refreshed worklist reported 3,262 cases. Other scheduled changes contributed to the count movement; only the explicit audit rows above are attributed to this pass. Individual decisions and source URLs are in `review-queue-source-research-2026-11-16.json`.
