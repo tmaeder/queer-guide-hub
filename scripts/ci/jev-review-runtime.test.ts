@@ -99,7 +99,7 @@ test('known canonical source reaches the unchanged decision gates with exact req
   for (const call of finished) { assert.equal((call.p_result as { blocker?: string | null }).blocker, null); assert.equal((call.p_evidence as unknown[]).length, 1) }
   finished.forEach((call, i) => {
     const result = call.p_result as Record<string, unknown>
-    assert.equal(result.state_version, 'jev-review-public-state-v2')
+    assert.equal(result.state_version, 'jev-review-public-state-v3')
     assert.equal(result.request_hash, reservations[i].p_request_hash)
   })
 })

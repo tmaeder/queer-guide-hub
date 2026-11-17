@@ -12,7 +12,7 @@ import {
 
 /**
  * Guards `scripts/check-migration-sql.mjs`, which parses every migration with
- * Postgres's own grammar (libpg-query, pinned to 17.x) before it can reach prod.
+ * Postgres's own grammar (production 17.x plus current tooling) before it can reach prod.
  *
  * The gate exists because on 2026-09-14 a `COMMENT ON ... IS 'a' || 'b'` — a
  * 42601, since COMMENT ON takes a LITERAL — aborted `db push` on main and
@@ -43,6 +43,13 @@ async function parses(sql: string): Promise<boolean> {
 }
 
 describe('migrations parse with the Postgres grammar', () => {
+  it('rejects PostgreSQL 18-only syntax while production runs PostgreSQL 17', async () => {
+    const sql = 'create table t (a int, b int generated always as (a + 1) virtual);';
+    const { parse: parseCurrent } = await import('libpg-query');
+    await expect(parseCurrent(sql)).resolves.toBeDefined();
+    expect(await parses(sql)).toBe(false);
+  });
+
   it('rejects the exact defect that took main down — positive control', async () => {
     // Byte-shape of 50500101100300's original comment. Without this control a
     // parser that silently stopped matching would report a clean corpus forever.
@@ -76,6 +83,8 @@ describe('migrations parse with the Postgres grammar', () => {
     expect(files.length).toBeGreaterThanOrEqual(MIN_CORPUS);
   });
 
+  // Two PostgreSQL grammars over thousands of files need more than the
+  // ordinary unit-test budget, especially on a coverage-instrumented runner.
   it('parses every migration in the corpus', async () => {
     const files = readdirSync(MIGRATIONS).filter((f) => f.endsWith('.sql'));
     const broken: string[] = [];
@@ -89,7 +98,7 @@ describe('migrations parse with the Postgres grammar', () => {
       broken,
       'These migrations do not parse. `supabase db push` aborts at the first one and strands every migration queued behind it — the blast radius is the whole repo, not this PR.',
     ).toEqual([]);
-  });
+  }, 60_000);
 
   it('needs no exemptions at all', () => {
     // The six original entries were repaired on 2026-09-14, so the corpus is
@@ -253,7 +262,7 @@ describe('paren balance inside function and DO bodies', () => {
       bad,
       'A body with unbalanced parentheses parses clean at the top level and then fails at `db push`, which aborts and strands every migration queued behind it.',
     ).toEqual([]);
-  });
+  }, 60_000);
 
   it('keeps the repaired existence selectors balanced', async () => {
     // Regression guard for the defect this layer found on its first sweep:

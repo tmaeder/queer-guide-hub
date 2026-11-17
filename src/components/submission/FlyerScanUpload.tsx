@@ -121,7 +121,7 @@ export function FlyerScanUpload({
 
   if (scanState === 'error') {
     const errorCopy = error
-      ? t(error.i18nKey, error.i18nValues as Record<string, unknown> | undefined)
+      ? t(error.i18nKey, error.i18nValues ?? {})
       : t('submission.errors.uploadFailed');
     const showRetry = error ? error.retryable : true;
 

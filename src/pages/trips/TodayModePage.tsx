@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { useEffect, useMemo, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useParams } from 'react-router';
@@ -515,11 +516,7 @@ export default function TodayModePage() {
 
 // ── helpers ─────────────────────────────────────────────────────
 
-function formatCountdown(
-  when: Date,
-  now: Date,
-  t: (key: string, opts?: Record<string, unknown>) => string,
-): string {
+function formatCountdown(when: Date, now: Date, t: TFunction): string {
   const diffMs = when.getTime() - now.getTime();
   if (diffMs <= 0) return t('trips.today.startingNow', { defaultValue: 'Starting now' });
   const minutes = Math.round(diffMs / 60_000);
