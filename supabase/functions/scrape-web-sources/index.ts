@@ -22,6 +22,7 @@ import { robotsSitemaps, sitemapLocations, sitemapPathMatchers, readScrapeBody }
  */
 
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
+import { fetchPublicSourceThroughProxy } from '../_shared/public-source-proxy.ts'
 import { getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { scrapedEventRejectReason } from '../_shared/scraped-event-guard.ts'
@@ -1394,7 +1395,9 @@ export async function processSource(
       }
 
       case 'html_fetch': {
-        const html = await fetchPage(source.url, source.user_agent)
+        const html = source.scrape_config.use_public_proxy === true
+          ? (await fetchPublicSourceThroughProxy(source.url, Deno.env.get('FIRECRAWL_API_KEY') || '', response => readScrapeBody(response, 4_000_000))).slice(0, 1_000_000)
+          : await fetchPage(source.url, source.user_agent)
         pagesCrawled = 1
         allItems = extractFromPage(html, source.url, source)
         break

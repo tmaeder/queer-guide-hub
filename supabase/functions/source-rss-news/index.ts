@@ -9,6 +9,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { parseRssItems, extractChannelMeta, cleanText, excerptOf, stripLoneSurrogates } from './rss-parse.ts'
 import { decodeBytes } from '../_shared/decode-charset.ts'
+import { publicSourceProxyAllowed, fetchPublicSourceThroughProxy } from '../_shared/public-source-proxy.ts'
 import {
   isWikinewsHost,
   parseWikinewsCategoryUrl,
@@ -508,8 +509,16 @@ async function fetchFromRss(
         signal: controller.signal,
       })
     }
+    let proxiedXml: string | null = null
     if (!res.ok) {
-      throw new Error(`HTTP ${res.status} ${res.statusText}`)
+      const status = res.status
+      const statusText = res.statusText
+      await res.body?.cancel()
+      const proxyKey = Deno.env.get('FIRECRAWL_API_KEY')
+      if (status === 403 && !isPodcast && proxyKey && publicSourceProxyAllowed(feedUrl)) {
+        // Retain the existing 20s total per-feed deadline and byte budget.
+        proxiedXml = await fetchPublicSourceThroughProxy(feedUrl, proxyKey, response => readCapped(response, MAX_FEED_BYTES), controller.signal)
+      } else throw new Error(`HTTP ${status} ${statusText}`)
     }
     // Bound the body: parseRssItems parses the whole feed (maxArticles only
     // slices afterwards), so a huge podcast-archive feed OOMs/CPU-limits the
@@ -518,7 +527,7 @@ async function fetchFromRss(
     // prefix holds the newest items, and the regex item parser simply drops
     // the incomplete trailing block. (Hard-failing here auto-paused four
     // legitimate podcast feeds whose full archives exceed 4 MB.)
-    const xml = await readCapped(res, MAX_FEED_BYTES)
+    const xml = proxiedXml ?? await readCapped(res, MAX_FEED_BYTES)
     const items = isIlgaMonitorFeed(feedUrl)
       ? parseIlgaMonitorItems(JSON.parse(xml), maxItems)
       : parseRssItems(xml, isPodcast, maxItems)
