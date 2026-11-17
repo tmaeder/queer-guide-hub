@@ -1,3 +1,4 @@
+import { sitemapLocations } from '../_shared/sitemap-locations.ts'
 import * as cheerio from 'npm:cheerio@1.0.0-rc.12'
 import { brandFromVendor } from '../_shared/marketplace-pipeline-utils.ts'
 
@@ -58,14 +59,9 @@ export function readCrawlCategoryLabels(category?: string, subcategory?: string)
 
 /** Read URL locations from sitemap entries, including XML CDATA text. */
 export function readSitemapLocations(xml: string, requireProductImages = false): string[] {
-  const $ = cheerio.load(xml, { xmlMode: true })
-  if (requireProductImages) {
-    return $('url').filter((_i, node) => $(node).children().toArray().some(child =>
-      child.type === 'tag' && /(^|:)image$/.test(child.name) &&
-      $(child).children().toArray().some(field => field.type === 'tag' && /(^|:)loc$/.test(field.name) && Boolean($(field).text().trim()))
-    )).children('loc').map((_i, node) => $(node).text().trim()).get().filter(Boolean)
-  }
-  return $('loc').map((_i, node) => $(node).text().trim()).get().filter(Boolean)
+  const kind = /<sitemapindex\b/i.test(xml) ? 'sitemap' : 'url'
+  if (requireProductImages && kind === 'sitemap') return []
+  return [...sitemapLocations(xml, kind, Number.POSITIVE_INFINITY, requireProductImages)]
 }
 
 /** Explicitly selected product links from a merchant's public HTML catalog.
