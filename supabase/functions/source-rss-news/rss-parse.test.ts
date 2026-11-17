@@ -477,3 +477,22 @@ Deno.test('parseRssItems unwraps whitespace-padded, multi-section CDATA', () => 
   assertEquals(body.includes(']]'), false)
   assertEquals(body.includes('CDATA'), false)
 })
+
+Deno.test('Atom entries use alternate href, content, author name and publication date', () => {
+  const entry = `<entry xml:lang="en"><title>Queer sports &amp; community</title>
+    <link rel="self" href="https://example.org/api/1"/>
+    <link href='https://example.org/story?a=1&amp;b=2' rel='alternate'/>
+    <author><name>Alex Smith</name></author><published>2026-11-17T00:00:00Z</published>
+    <content type="html">&lt;p&gt;Article body&lt;/p&gt;</content></entry>`
+  const rows = parseRssItems(`<feed xmlns="http://www.w3.org/2005/Atom">${entry.repeat(3)}</feed>`, false, 1)
+  assertEquals(rows.length, 1)
+  assertEquals(rows[0].url, 'https://example.org/story?a=1&b=2')
+  assertEquals(rows[0].content, 'Article body')
+  assertEquals(rows[0].author, 'Alex Smith')
+  assertEquals(rows[0].published_at, '2026-11-17T00:00:00Z')
+})
+
+Deno.test('Atom entries without a public alternate URL are skipped', () => {
+  const xml = `<feed><entry><title>Title</title><link rel="self" href="https://example.org/api"/></entry></feed>`
+  assertEquals(parseRssItems(xml), [])
+})

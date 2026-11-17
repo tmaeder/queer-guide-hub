@@ -1,3 +1,4 @@
+import { isIlgaMonitorFeed, parseIlgaMonitorItems } from './ilga-monitor.ts'
 import { personAuthorCandidate } from '../_shared/news-author.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
@@ -331,7 +332,7 @@ const rssNewsAdapter: SourceAdapter = {
       description: cleanText(d.content as string || d.description as string || ''),
       urls: d.url ? [String(d.url)] : [],
       images: d.image_url ? [String(d.image_url)] : d.image ? [String(d.image)] : [],
-      dates: { start: normalizeDate(d.published_at || d.publishedAt || d.pubDate) },
+      dates: { start: normalizeDate(d.published_at || d.publishedAt || d.pubDate) ?? undefined },
       tags: extractTags(d.title as string || '', d.content as string || ''),
       metadata: {
         author: personAuthorCandidate(typeof d.author === 'string' ? stripLoneSurrogates(d.author) : d.author, [d.source_name as string]),
@@ -526,7 +527,9 @@ async function fetchFromRss(
     // the backfill for already-stored episodes reads, description/website_url
     // are what the public show page renders.
     return {
-      items: parseRssItems(xml, isPodcast, maxItems),
+      items: isIlgaMonitorFeed(feedUrl)
+        ? parseIlgaMonitorItems(JSON.parse(xml), maxItems)
+        : parseRssItems(xml, isPodcast, maxItems),
       bytes: xml.length,
       channelMeta: isPodcast ? extractChannelMeta(xml) : null,
     }
