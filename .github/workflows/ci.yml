@@ -73,6 +73,7 @@ jobs:
           done
           python3 supabase/tests/isolated/run_superseded_business_quality.py
           python3 supabase/tests/isolated/run_review_geographic_indexes.py
+          python3 supabase/tests/isolated/run_location_wake_contention.py
 
   typecheck:
     runs-on: ubuntu-latest
