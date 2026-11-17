@@ -768,7 +768,8 @@ export function extractCityList(html: string, pageUrl: string, source: ScrapeSou
     if (!['https:', 'http:'].includes(url.protocol)) return
     if (source.slug === 'gaycities-places' && (!/^[^.]+[.]gaycities[.]com$/.test(url.hostname) || ['www','events','blog'].includes(url.hostname.split('.')[0]))) return
     seen.add(name.toLowerCase())
-    const country = selectors.country ? card.find(selectors.country).first().text().trim() : ''
+    const countryByHost = (source.scrape_config.country_by_host || {}) as Record<string, string>
+    const country = (selectors.country ? card.find(selectors.country).first().text().trim() : '') || countryByHost[url.hostname]
     items.push({ name, city: name, country: country || undefined, url: url.href,
       raw_data: { city_list: true, source_url: pageUrl } })
   })
@@ -1221,6 +1222,7 @@ function normalizeItem(
       return {
         name: item.city || item.name,
         country_name: item.country || null,
+        location: { country: item.country || null },
         description: item.description || null,
       }
 

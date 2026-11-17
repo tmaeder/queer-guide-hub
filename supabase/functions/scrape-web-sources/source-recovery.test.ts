@@ -49,3 +49,11 @@ Deno.test('scraped product rows satisfy the live marketplace validator and canon
   assertEquals(row.normalized_data.price,12)
   assertEquals(mod.scrapedStagingRow({name:'Melbourne',raw_data:{}},source({target_table:'cities'}),'job').entity_type,'city')
 })
+Deno.test('published city countries reach the canonical validator without guessing unknown destinations', async () => {
+  const { validateCityNormalized } = await import('../_shared/venue-pipeline-utils.ts')
+  const row = mod.scrapedStagingRow({name:'Brunswick',city:'Melbourne',country:'Australia',raw_data:{}},source({target_table:'cities'}),'job')
+  assertEquals(validateCityNormalized(row.normalized_data).errors,[])
+  const registered = source({slug:'gaycities-places',target_table:'cities',scrape_config:{extract:'city_list',country_by_host:{'newyork.gaycities.com':'United States'}}})
+  const items = mod.extractFromPage('<a href="https://newyork.gaycities.com"><h4>New York City</h4></a><a href="https://unknown.gaycities.com"><h4>Unknown destination</h4></a>','https://www.gaycities.com/places',registered)
+  assertEquals(items.map(x=>x.country),['United States',undefined])
+})
