@@ -6,7 +6,7 @@ export function publicSourceProxyAllowed(raw: string): boolean {
     if (url.protocol !== 'https:' || url.port || url.username || url.password || url.search || url.hash) return false
     const host = url.hostname.replace(/^www\./, '')
     if (host === 'travelgay.com') return url.pathname === '/gay-pride-calendar'
-    return ['starobserver.com.au', 'qvoicenews.com', 'lavendermagazine.com', 'losangelesblade.com'].includes(host)
+    return ['qvoicenews.com', 'lavendermagazine.com', 'losangelesblade.com'].includes(host)
       && /^\/feed\/?$/.test(url.pathname)
   } catch { return false }
 }

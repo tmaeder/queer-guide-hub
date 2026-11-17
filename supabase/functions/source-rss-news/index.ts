@@ -1,4 +1,5 @@
 import { fetchPublisherRss, isProxyPublisherFeed, manualFeedSourceIds } from './publisher-feed.ts'
+import { fetchStarObserverSyndication, isStarObserverFeed } from './star-observer.ts'
 import { isIlgaMonitorFeed, parseIlgaMonitorItems } from './ilga-monitor.ts'
 import { isHuffPostQueerFeed, fetchHuffPostQueerSection } from './huffpost.ts'
 import { personAuthorCandidate } from '../_shared/news-author.ts'
@@ -352,6 +353,9 @@ const rssNewsAdapter: SourceAdapter = {
         media_type: (d.media_type as string) || 'article',
         audio_url: d.audio_url,
         duration_seconds: d.duration_seconds,
+        syndication_provider: d.syndication_provider,
+        syndication_url: d.syndication_url,
+        content_scope: d.content_scope,
       },
     }
   },
@@ -499,6 +503,15 @@ export async function fetchFromRss(
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 20_000)
   try {
+    // This publisher blocks feed readers. Use its public syndicated excerpts
+    // with verified original article URLs; never consume paid proxy credits.
+    if (!isPodcast && isStarObserverFeed(feedUrl)) {
+      return await fetchStarObserverSyndication(maxItems, async url => {
+        const response = await fetch(url, { signal: controller.signal, redirect: 'error', headers: { 'User-Agent': 'QueerGuide/1.0 NewsBot', Accept: 'application/rss+xml, application/xml' } })
+        if (!response.ok) { await response.body?.cancel(); throw new Error(`Star Observer syndication HTTP ${response.status}`) }
+        return readCapped(response, 1_000_000)
+      })
+    }
     let res = await fetch(feedUrl, {
       headers: { 'User-Agent': 'QueerGuide/1.0 NewsBot' },
       signal: controller.signal,
