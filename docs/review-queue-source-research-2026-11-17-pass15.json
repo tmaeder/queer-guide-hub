@@ -7,12 +7,32 @@
     "active_cases": 2777
   },
   "latest_snapshot": {
-    "observed_at": "2026-11-17T22:26:24.199776Z",
-    "active_cases": 2737
+    "observed_at": "2026-11-17T22:52Z",
+    "active_cases": 2734,
+    "refresh_ms": 16173.25
   },
-  "audit_entries": 41,
-  "audit_note": "Includes eleven technical retries and fifteen native stale-finding retirements; not case closures.",
+  "audit_entries": 59,
+  "audit_note": "Includes 11 technical retries, 11 native commit audits and 15 stale-finding retirements; not a count of distinct closed cases.",
   "sources": [
+    {
+      "url": "https://iieg.jalisco.gob.mx/mapalab/",
+      "retrieved_at": "2026-11-17T22:52:29.266384+00:00",
+      "error": "<urlopen error [Errno 54] Connection reset by peer>"
+    },
+    {
+      "url": "https://www.alpine.courts.ca.gov/",
+      "retrieved_at": "2026-11-17T22:46:59.369970+00:00",
+      "status": 200,
+      "final_url": "https://www.alpine.courts.ca.gov/",
+      "sha256": "2973122f8280e1f61812f55ab134b1ec36bc078bac2291a21eda4f9a52a02536"
+    },
+    {
+      "url": "https://www.lexingtonma.gov/",
+      "retrieved_at": "2026-11-17T22:56:21.177703+00:00",
+      "status": 200,
+      "final_url": "https://www.lexingtonma.gov/",
+      "sha256": "6db3bc14c3faa6ec9e613eef2797a8a9a0b66b3705a4b8ffb2f44d3309c03e51"
+    },
     {
       "url": "https://www.wikidata.org/wiki/Special:EntityData/Q114.json",
       "retrieved_at": "2026-11-17T21:50:16.050720+00:00",
@@ -31,6 +51,20 @@
       "status": 200,
       "final_url": "https://www.nottinghamshire.gov.uk/",
       "sha256": "d80c23ce8e9c649f52bd1025ea8aea5f55d1aab3de21e19239d8cc3874e4b062"
+    },
+    {
+      "url": "https://www.alpinecountyca.gov/",
+      "retrieved_at": "2026-11-17T22:46:07.069659+00:00",
+      "status": 200,
+      "final_url": "https://www.alpinecountyca.gov/",
+      "sha256": "534349a5490618a7736ee7084b3d8ec219368d986d521252f7bdeeafd6c919df"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q20148497.json",
+      "retrieved_at": "2026-11-17T22:52:39.822651+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q20148497.json",
+      "sha256": "0bcf7793dbd25622429c7fe2c9b147caf9fa2fb5f462f2794fe07e9e09b13a09"
     },
     {
       "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4999750.json",
@@ -75,11 +109,44 @@
       "sha256": "23462f407bd39566c902572babd4466a991fdb7962cad0010c366d7bcad26907"
     },
     {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q929667.json",
+      "retrieved_at": "2026-11-17T22:56:21.176657+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q929667.json",
+      "sha256": "3c7b76445b559d0d38c107e7b7deb6615182ddfb197201afb1ddb9db8077f3e0"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q108077.json",
+      "retrieved_at": "2026-11-17T22:46:07.070487+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q108077.json",
+      "sha256": "6aff306885a5648584ebdac0a8ee5710bc63b8e8d6cb2dec26e3cf759d8bd112"
+    },
+    {
       "url": "https://www.wikidata.org/wiki/Special:EntityData/Q145.json",
       "retrieved_at": "2026-11-17T21:50:16.052062+00:00",
       "status": 200,
       "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q145.json",
       "sha256": "c2362d5af2908c3028a0aa67f201174c351904d8b8e81e9d0f95e3f68c49a52a"
+    },
+    {
+      "url": "https://www.neunkirchen.de/",
+      "retrieved_at": "2026-11-17T22:55:07.515637+00:00",
+      "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://www.lexingtonky.gov/",
+      "retrieved_at": "2026-11-17T22:56:06.267659+00:00",
+      "status": 200,
+      "final_url": "https://www.lexingtonky.gov/",
+      "sha256": "8be13941e06a58ef823005f577dc9ec56370de11d83af1ed146b4035b388b7d2"
+    },
+    {
+      "url": "http://renacerdayspa.com",
+      "retrieved_at": "2026-11-17T22:48:29.801502+00:00",
+      "status": 200,
+      "final_url": "https://saunarenacer.com.mx/",
+      "sha256": "daae8d3333bffa1de11f53939de48a8ec1dc79da608406f853172a2db5469f30"
     },
     {
       "url": "https://www.wikidata.org/wiki/Special:EntityData/Q239421.json",
@@ -89,11 +156,25 @@
       "sha256": "13e41d74405a2d53290ad8bd69053c3d5c3bf590e82bfdba8805e74477f963a8"
     },
     {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q13160.json",
+      "retrieved_at": "2026-11-17T22:46:07.070565+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q13160.json",
+      "sha256": "4c3ce1586638bc00bfe2036a25ad06a392e3f04b76c494352f7acc051a7632ac"
+    },
+    {
       "url": "https://www.wikidata.org/wiki/Special:EntityData/Q100166.json",
       "retrieved_at": "2026-11-17T21:51:36.013895+00:00",
       "status": 200,
       "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q100166.json",
       "sha256": "e1d912a8c736de1a4e0adf34427a1030f1954207ad7c67965a768ace6d196534"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q49241.json",
+      "retrieved_at": "2026-11-17T22:56:21.177337+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q49241.json",
+      "sha256": "52dda68d31a8d9c23fadf5a5bbc724491fd64b8ed92ff130214678cb73f9f1ae"
     },
     {
       "url": "https://www.wikidata.org/wiki/Special:EntityData/Q136490448.json",
@@ -131,6 +212,20 @@
       "sha256": "13fea0db1d6223f8e1b1c77f2c1f79b6721390f634775a46de3b49153563d1c7"
     },
     {
+      "url": "https://spartacus.gayguide.travel/saunas/mexico/guadalajara-jalisco/52905_Renacer+Day+Spa",
+      "retrieved_at": "2026-11-17T22:48:29.803109+00:00",
+      "status": 200,
+      "final_url": "https://spartacus.gayguide.travel/saunas/mexico/guadalajara-jalisco/52905_Renacer+Day+Spa",
+      "sha256": "69593448767d11c34f0e2f0711aa23cbd7da5b91a06a499e8aa587d3dc5f55e7"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q15149663.json",
+      "retrieved_at": "2026-11-17T22:52:29.265438+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q15149663.json",
+      "sha256": "3412fc048fccbd3022112621847f7e0fb0865dc96064777ae736fdbca26adc32"
+    },
+    {
       "url": "https://www.orkney.gov.uk/",
       "retrieved_at": "2026-11-17T22:20:12.151322+00:00",
       "status": 200,
@@ -145,6 +240,13 @@
       "sha256": "dba8d944f862bde6559ac5b8e7e50d7fc1cbf9ee31b88d79eca1834833f56648"
     },
     {
+      "url": "https://www.jalisco.gob.mx/",
+      "retrieved_at": "2026-11-17T22:46:07.070350+00:00",
+      "status": 200,
+      "final_url": "https://www.jalisco.gob.mx/",
+      "sha256": "62e71d0bcb4a01ce0f0c2b977267d6fdba4aea2d207cf0e61b4e8d57bc618f00"
+    },
+    {
       "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2018-9458",
       "retrieved_at": "2026-11-17T22:39:20.327529+00:00",
       "status": 200,
@@ -157,6 +259,11 @@
       "status": 200,
       "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q96.json",
       "sha256": "b060782f56f73b245741b05b3393eef11b758ae8802cdfeffc9be4ed7dd48cef"
+    },
+    {
+      "url": "https://periodicooficial.jalisco.gob.mx/",
+      "retrieved_at": "2026-11-17T22:46:59.370809+00:00",
+      "error": "<urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1082)>"
     },
     {
       "url": "https://city.nakuru.go.ke/",
@@ -344,11 +451,14 @@
     "Ogi lifecycle using unchanged native source-proof operator; old slug redirect",
     "Wales, Scotland and Thebes archived country checks; Pacific remains review",
     "System auto-pause resumed after producer fixes; 15 stale liveness findings retired",
-    "Missing cron restored and registry command persisted; scheduled runs at 22:25 and 22:30 succeeded"
+    "Missing cron restored and registry command persisted; scheduled runs at 22:25 and 22:30 succeeded",
+    "Alpine County explicit non-city archival; historical links preserved",
+    "Renacer: three existing profiles corrected from operator/publisher evidence; duplicate identity and pins retained",
+    "Jalisco explicit non-city archival after correcting its historical duplicate relationship; erroneous distant settlement QID withdrawn into audit",
+    "Lexington Kentucky lifecycle and old slug redirect; Massachusetts namesake byte-preserved"
   ],
   "holds": [
     "Burghausen historical human coordinate review",
-    "Lexington same-country namesake ambiguity",
     "Two visual-evidence cases retain human review",
     "Prior mixed venue-source namesakes remain held",
     "Podcast technical failure under further native curated-show verdict review."
@@ -366,8 +476,8 @@
     "20261117222014"
   ],
   "identity_discovery": {
-    "examined": 50,
-    "positive": 1,
+    "examined": 100,
+    "positive": 2,
     "applied": [
       {
         "id": "72b8c11e-04ea-4448-ac20-b1be68af031e",
@@ -375,14 +485,26 @@
         "qid": "Q1919278",
         "contract": "city_missing_identity.v1",
         "distance_m": 1415.9374349962957
+      },
+      {
+        "id": "4006a387-7664-4f8c-9ca0-a3a93daa74fa",
+        "name": "Neunkirchen (Saar)",
+        "qid": "Q6880",
+        "contract": "city_missing_identity.v1",
+        "distance_m": 726.5592352810119
       }
     ],
-    "note": "Completed bounded batches after a source-busy interruption. Collector now checkpoints evidence and explicitly defers interrupted rows; 49 without a positive proof are not declared non-cities."
+    "note": "Two completed fifty-case cohorts; another 100-case cohort is running. Unproven rows are not declared non-cities. TLS failures were not bypassed."
   },
   "technical_retries": {
     "count": 11,
     "reason": "news_articles_slug_format_chk",
     "native_verdict_preserved": true,
-    "status": "pending native commit at 22:39 UTC"
+    "status": "Eleven articles inserted through bounded native committer with zero errors; full staging/article audits."
+  },
+  "quality_sync": {
+    "resolved": 9,
+    "queued_or_refreshed": 1000,
+    "budget": "Existing scheduled 300-second contract; a 60-second exploratory attempt rolled back. No persistent timeout changed."
   }
 }
