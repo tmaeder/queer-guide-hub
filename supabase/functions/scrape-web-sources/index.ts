@@ -879,6 +879,8 @@ export function extractWikiList(
       const city = link.text().trim()
       if (!city || city.length < 2) return
       const rawText = $(el).text().trim()
+      const currentRide = $(el).clone()
+      currentRide.find('.previous-rides').remove()
 
       if (source.content_type === 'events') {
         items.push({
@@ -887,7 +889,7 @@ export function extractWikiList(
           city,
           country: currentCountry,
           event_type: (config.event_type as string) || 'other',
-          start_date: publishedWikiRideDate(rawText),
+          start_date: publishedWikiRideDate(currentRide.text()),
           description: rawText.slice(0, 500) || undefined,
           url: link.attr('href')
             ? new URL(link.attr('href')!, pageUrl).href
