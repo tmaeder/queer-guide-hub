@@ -29,6 +29,10 @@ export function displayFeedItems(payload: unknown, options: { now: number; daysB
     const start = date(text(event.start_date).slice(0, 10))
     const end = date(text(event.end_date).slice(0, 10)) ?? start
     if (!start || !end || start > until || end < since || end < start) return
+    const venue = event.venue as Record<string, unknown> | null
+    // The feed also contains calendar observances with no published location.
+    // These cannot satisfy the event validator; do not re-stage them daily.
+    if (!venue || ![venue.city, venue.address, venue.country].some(value => text(value))) return
     seen.add(sourceId)
     rows.push({ sourceId, data: { ...event, source_feed: DISPLAY_FEED } })
   }

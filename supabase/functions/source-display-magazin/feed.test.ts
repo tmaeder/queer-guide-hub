@@ -62,3 +62,7 @@ Deno.test('Display preserves an inconsistent publisher end for review without in
   assertEquals(normalized.dates?.end, undefined)
   assertEquals(normalized.metadata.source_date_issue, { code: 'publisher_end_before_start', published_end: '2026-11-17 04:00:00' })
 })
+
+Deno.test('Display excludes locationless calendar observances without inventing a venue', () => {
+  assertEquals(displayFeedItems(feed([event, { ...event, id: 12346, venue: null }]), options).length, 1)
+})

@@ -51,3 +51,10 @@ Display's feed publishes some same-date end clocks earlier than their start.
 Preserve these raw values as source_date_issue provenance and leave the end
 unknown; do not infer a next-day closing date. Repair only this import's affected
 staging rows and let normal validation decide the rest.
+
+The current feed also includes a locationless calendar observance (Transgender
+Day of Remembrance), rejected normally as E_NO_LOCATION. Exclude records with
+no published city, address or country before staging so recurring imports do
+not keep retrying an unpublishable observance. Do not fabricate a venue. Both
+tracked production automation runs now report success with zero consecutive
+failures, and both pg_cron jobs are active.
