@@ -514,7 +514,13 @@ async function fetchFromRss(
     let proxiedXml: string | undefined
     if (res.status === 403 && isProxyPublisherFeed(feedUrl)) {
       await res.body?.cancel()
-      proxiedXml = await fetchPublisherRss(feedUrl, controller.signal, { workerUrl: Deno.env.get('EXTRACT_WORKER_URL'), workerSecret: Deno.env.get('EXTRACT_WORKER_SECRET') ?? Deno.env.get('INTERNAL_INVOKE_SECRET') })
+      try {
+        const { data, error } = await getServiceClient().rpc('fetch_publisher_rss', { p_url: feedUrl })
+        if (error || typeof data !== 'string') throw new Error(error?.message ?? 'Invalid publisher RSS response')
+        proxiedXml = data
+      } catch {
+        proxiedXml = await fetchPublisherRss(feedUrl, controller.signal, { workerUrl: Deno.env.get('EXTRACT_WORKER_URL'), workerSecret: Deno.env.get('EXTRACT_WORKER_SECRET') ?? Deno.env.get('INTERNAL_INVOKE_SECRET') })
+      }
     } else if (!res.ok) {
       await res.body?.cancel()
       throw new Error(`HTTP ${res.status} ${res.statusText}`)
