@@ -1,3 +1,4 @@
+import { robotsSitemaps, sitemapLocations, sitemapPathMatchers, readScrapeBody } from './scrape-bounds.ts'
 /**
  * scrape-web-sources — unified web scraper edge function
  *
@@ -105,9 +106,8 @@ async function fetchPage(url: string, userAgent: string, attempt = 0): Promise<s
       },
       signal: controller.signal,
     })
-    clearTimeout(timeout)
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    return await response.text()
+    return await readScrapeBody(response, /xml/i.test(response.headers.get('content-type') || '') ? 4_000_000 : 1_000_000)
   } catch (err) {
     clearTimeout(timeout)
     if (attempt < 2) {
@@ -115,6 +115,8 @@ async function fetchPage(url: string, userAgent: string, attempt = 0): Promise<s
       return fetchPage(url, userAgent, attempt + 1)
     }
     throw err
+  } finally {
+    clearTimeout(timeout)
   }
 }
 
@@ -276,9 +278,7 @@ async function discoverSitemapUrls(baseUrl: string, userAgent: string): Promise<
   // Also check robots.txt for sitemap directives
   try {
     const robotsTxt = await fetchPage(`${baseUrl}/robots.txt`, userAgent)
-    const sitemapLines = robotsTxt.split('\n')
-      .filter(l => l.toLowerCase().startsWith('sitemap:'))
-      .map(l => l.split(':', 2).slice(1).join(':').trim())
+    const sitemapLines = robotsSitemaps(robotsTxt)
     if (sitemapLines.length > 0) return sitemapLines
   } catch {
     // robots.txt not found — continue with candidates
@@ -304,15 +304,16 @@ async function parseSitemap(
   userAgent: string,
   includePatterns: string[],
   limit: number,
+  visited = new Set<string>(),
 ): Promise<string[]> {
   const urls: string[] = []
+  if (limit <= 0 || visited.has(sitemapUrl) || visited.size >= 8) return urls
+  visited.add(sitemapUrl)
 
   try {
     const xml = await fetchPage(sitemapUrl, userAgent)
-    const $ = cheerio.load(xml, { xmlMode: true })
-
     // Handle sitemap index (contains links to other sitemaps)
-    const childSitemaps = $('sitemap > loc').map((_, el) => $(el).text().trim()).get()
+    const childSitemaps = [...sitemapLocations(xml, 'sitemap', 256)]
     if (childSitemaps.length > 0) {
       // Filter for product-related sitemaps
       const productSitemaps = childSitemaps.filter(url =>
@@ -323,35 +324,23 @@ async function parseSitemap(
 
       for (const childUrl of targetSitemaps) {
         if (urls.length >= limit) break
-        const childUrls = await parseSitemap(childUrl, userAgent, includePatterns, limit - urls.length)
+        const childUrls = await parseSitemap(childUrl, userAgent, includePatterns, limit - urls.length, visited)
         urls.push(...childUrls)
         await delay(500) // polite delay between sitemap fetches
       }
       return urls
     }
 
-    // Regular sitemap — extract URLs
-    $('url > loc').each((_, el) => {
-      if (urls.length >= limit) return
-      const url = $(el).text().trim()
-      if (!url) return
-
-      // Filter by include patterns
-      if (includePatterns.length > 0) {
-        const matches = includePatterns.some(pattern => {
-          // Convert glob-like pattern to regex safely:
-          // 1) escape all regex metacharacters (including backslashes)
-          // 2) convert escaped '*' wildcard back to '.*'
-          const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-          const regexPattern = `^${escaped.replace(/\\\*/g, '.*')}$`
-          const regex = new RegExp(regexPattern, 'i')
-          return regex.test(new URL(url).pathname)
-        })
-        if (!matches) return
-      }
-
+    // Stream locations and stop at the requested count. Building a DOM for
+    // a merchant's entire catalogue exhausted the worker before its first page.
+    const matchers = sitemapPathMatchers(includePatterns)
+    for (const url of sitemapLocations(xml, 'url')) {
+      let path: string
+      try { path = new URL(url).pathname } catch { continue }
+      if (matchers.length && !matchers.some(pattern => pattern.test(path))) continue
       urls.push(url)
-    })
+      if (urls.length >= limit) break
+    }
   } catch (err) {
     console.error(`Failed to parse sitemap ${sitemapUrl}:`, (err as Error).message)
   }
