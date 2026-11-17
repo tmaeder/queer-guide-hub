@@ -108,7 +108,9 @@ Deno.serve(withErrorReporting('source-rheinfetisch', async (req) => {
       items_total: raw.length,
       items_processed: written,
       items_succeeded: written,
-      items_failed: raw.length - written,
+      // writeToStaging throws on real write errors and skips existing source IDs.
+      items_failed: 0,
+      items_skipped: raw.length - written,
     }, 200, req)
   } catch (error) {
     return errorResponse((error as Error).message, 500, req)
