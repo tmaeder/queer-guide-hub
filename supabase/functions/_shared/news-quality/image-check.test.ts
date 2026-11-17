@@ -21,7 +21,7 @@ Deno.test('image probe reads a JPEG frame after 32KB of metadata', async () => {
   globalThis.fetch = async (_input, init) => {
     if (init?.method === 'HEAD') return new Response(null, { headers: { 'content-type': 'image/jpeg', 'content-length': '269550' } })
     range = new Headers(init?.headers).get('Range') ?? ''
-    return new Response(data, { status: 206 })
+    return new Response(new Uint8Array(data).buffer, { status: 206 })
   }
   try {
     const result = await probeImage('https://example.com/original.jpg')

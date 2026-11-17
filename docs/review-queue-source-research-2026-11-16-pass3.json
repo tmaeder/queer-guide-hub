@@ -106,7 +106,7 @@
     "observation": "Owner announcesJune29,2023move fromEisenacherStraße toMotzstraße28. Current homepage confirmsMotzstraße28. Retain weaker machine-assignable presumed_closed; do not assign human-only relocated status."
   },
   "quality_scope_repair": {
-    "migration": "20261116195200_brand_quality_scope_reconciliation.sql",
+    "migration": "20261116195006_brand_quality_scope_reconciliation.sql",
     "brands": 4,
     "findings": 13,
     "reason": "brand_outside_quality_scope",

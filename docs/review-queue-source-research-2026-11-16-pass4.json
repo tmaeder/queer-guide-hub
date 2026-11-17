@@ -1282,7 +1282,7 @@
     "native_result_v18": { "status": 200, "checked": 2, "healthy": 0, "failed": 0, "deferred": 2 }
   },
   "worker_timeout_fix": {
-    "migration": "20261116205344_bounded_event_gap_claim_enrollment.sql",
+    "migration": "20261116210200_bounded_event_gap_claim_enrollment.sql",
     "root_cause": "claim_event_gaps enrolled/rehashed all eligible rows per request; function logs establish statement timeout.",
     "read_only_plan_ms": {
       "helper": 8743,

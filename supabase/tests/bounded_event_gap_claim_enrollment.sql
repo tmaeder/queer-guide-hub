@@ -1,10 +1,23 @@
 -- Internal integration regression. All events, leases and trigger effects roll back.
 begin;
 set local statement_timeout='30s';
+-- Simulate a pooled caller preferring a generic plan. The function must
+-- specialize its lane/IDs without leaking its setting into the caller.
+set local plan_cache_mode='force_generic_plan';
 do $test$
 declare ids uuid[]; selected uuid[]; first_claim uuid[]; token uuid:=gen_random_uuid();
  second_token uuid:=gen_random_uuid(); held uuid; cooldown uuid; old_hash text; before_event jsonb;
 begin
+ if has_function_privilege('anon','public.claim_event_gaps(text,uuid,integer,uuid[],boolean)','EXECUTE')
+  or has_function_privilege('authenticated','public.claim_event_gaps(text,uuid,integer,uuid[],boolean)','EXECUTE')
+  or not has_function_privilege('service_role','public.claim_event_gaps(text,uuid,integer,uuid[],boolean)','EXECUTE') then
+  raise exception 'Claim RPC access changed';end if;
+ if not exists(select from pg_proc p where p.oid='public.claim_event_gaps(text,uuid,integer,uuid[],boolean)'::regprocedure
+  and 'statement_timeout=20s'=any(p.proconfig)) then
+  raise exception 'Claim lacks its bounded function timeout';end if;
+ if not exists(select from pg_proc p where p.oid='public.claim_event_gaps(text,uuid,integer,uuid[],boolean)'::regprocedure
+  and 'plan_cache_mode=force_custom_plan'=any(p.proconfig)) then
+  raise exception 'Claim is not protected from a generic cached plan';end if;
  select array_agg(gen_random_uuid()) into ids from generate_series(1,6);
  insert into public.events(id,title,event_type,start_date,slug,is_public,status,website)
  select id,'Bounded image regression '||id,'social',now()+interval '2 days',
@@ -46,6 +59,12 @@ begin
     case when lane.name='image' then pg_catalog.to_jsonb(e.images) else pg_catalog.jsonb_build_array(
      e.description,e.venue_name,e.address,e.accessibility_attributes,e.target_groups,e.age_restriction) end)::text)) then
   raise exception 'Fingerprint compatibility failed';end if;
+end $test$;
+do $test$ begin
+ if current_setting('plan_cache_mode')<>'force_generic_plan' then
+  raise exception 'Claim leaked its planning configuration';end if;
+ if current_setting('statement_timeout')<>'30s' then
+  raise exception 'Claim leaked its timeout configuration';end if;
 end $test$;
 select 'Bounded enrollment, dry run, zero batch, lease protection, cooldown, input reopening and fingerprint compatibility passed' result;
 rollback;
