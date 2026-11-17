@@ -1,6 +1,15 @@
+import type { TFunction } from 'i18next';
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { Calendar as CalendarIcon, MapPin, Star, Ticket, Users, Plus, Check } from '@/components/icons';
+import {
+  Calendar as CalendarIcon,
+  MapPin,
+  Star,
+  Ticket,
+  Users,
+  Plus,
+  Check,
+} from '@/components/icons';
 import type { Database } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +37,7 @@ interface EventHoverCardProps {
 }
 
 /** Relative date label, e.g. "in 3 days" or "tonight". */
-function relativeLabel(iso: string, t: (k: string, v?: Record<string, unknown>) => string): string {
+function relativeLabel(iso: string, t: TFunction): string {
   const now = Date.now();
   const ms = new Date(iso).getTime() - now;
   const days = Math.round(ms / 86_400_000);

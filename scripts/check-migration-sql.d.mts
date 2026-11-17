@@ -14,7 +14,7 @@ export declare const KNOWN_UNPARSEABLE: Set<string>;
 /** Floor below which a "clean" sweep is treated as a mis-pathed directory. */
 export declare const MIN_CORPUS: number;
 
-/** Resolves Postgres's own parser (libpg-query, pinned to 17.x). */
+/** Checks both the production PostgreSQL 17 grammar and current parser grammar. */
 export declare function loadParser(): Promise<(sql: string) => Promise<unknown>>;
 
 /**
