@@ -364,7 +364,7 @@ export function supportsManualSourceRun(source: DataSource): boolean {
   return (
     source.registry === 'ingestion_sources' &&
     Boolean(source.edgeFunction) &&
-    !source.edgeFunction?.startsWith('get-')
+    !['get-wikipedia-info', 'get-pexels-images'].includes(source.edgeFunction ?? '')
   );
 }
 
@@ -398,6 +398,6 @@ export async function runDataSource(source: DataSource): Promise<void> {
     throw new Error(`Import skipped: ${missing || data.reason || 'source unavailable'}`);
   }
   if (data?.success === false || Number(data?.errors_count) > 0 || Number(data?.items_failed) > 0) {
-    throw new Error('The import reported failures. Check the source run details.');
+    throw new Error('The import reported failures.');
   }
 }

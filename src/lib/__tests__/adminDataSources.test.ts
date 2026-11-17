@@ -313,14 +313,17 @@ describe('source management', () => {
     },
   );
 
-  it('does not offer an entity-specific enrichment endpoint as a manual import', async () => {
-    const source = {
-      ...sources().find((s) => s.registry === 'ingestion_sources')!,
-      enabled: true,
-      edgeFunction: 'get-wikipedia-info',
-    };
-    expect(supportsManualSourceRun(source)).toBe(false);
-    await expect(runDataSource(source)).rejects.toThrow('does not support a manual import');
-    expect(db.invoke).not.toHaveBeenCalled();
-  });
+  it.each(['get-wikipedia-info', 'get-pexels-images'])(
+    'does not offer entity-specific %s as a manual import',
+    async (edgeFunction) => {
+      const source = {
+        ...sources().find((s) => s.registry === 'ingestion_sources')!,
+        enabled: true,
+        edgeFunction,
+      };
+      expect(supportsManualSourceRun(source)).toBe(false);
+      await expect(runDataSource(source)).rejects.toThrow('does not support a manual import');
+      expect(db.invoke).not.toHaveBeenCalled();
+    },
+  );
 });
