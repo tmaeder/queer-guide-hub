@@ -30,6 +30,7 @@ const tomtomAdapter: SourceAdapter = {
     const customTerms = config.filters?.terms as string[] | undefined
     const terms = customTerms?.length ? customTerms : SEARCH_TERMS
     const allItems: RawItem[] = []
+    const failures: string[] = []
 
     for (const city of cities) {
       for (const term of terms) {
@@ -57,9 +58,11 @@ const tomtomAdapter: SourceAdapter = {
           await new Promise(r => setTimeout(r, 300))
         } catch (e) {
           console.error(`TomTom error for "${term}" in ${city}:`, (e as Error).message)
+          failures.push((e as Error).message)
         }
       }
     }
+    if (failures.length) throw new Error(`TomTom fetch failed: ${failures.join('; ').slice(0, 500)}`)
     const seen = new Set<string>()
     return allItems.filter(i => { if (seen.has(i.sourceId)) return false; seen.add(i.sourceId); return true })
   },
@@ -114,8 +117,15 @@ Deno.serve(withErrorReporting('source-tomtom', async (req) => {
     if (config.dryRun) return jsonResponse({ success: true, items: rawItems.length, dry_run: true }, 200, req)
     // sourceType: admin imports tag rows 'import-tomtom' for source_type continuity.
     const written = await writeToStaging(supabase, tomtomAdapter, rawItems, { ...config, targetTable: 'venues', sourceType: body.sourceType })
+    const { error: healthError } = await supabase.from('ingestion_sources').update({
+      last_run_at: new Date().toISOString(), last_success_at: new Date().toISOString(), last_error: null,
+    }).eq('slug', 'tomtom')
+    if (healthError) throw new Error(`Could not record TomTom import health: ${healthError.message}`)
     return jsonResponse({ success: true, items: written, items_total: rawItems.length, items_processed: written, items_succeeded: written, items_failed: 0 }, 200, req)
   } catch (error) {
+    await supabase.from('ingestion_sources').update({
+      last_run_at: new Date().toISOString(), last_error: (error as Error).message.slice(0, 1000),
+    }).eq('slug', 'tomtom')
     if (error instanceof MissingCredentialsError) {
       return jsonResponse(skippedResponse('missing_credentials', error.missing), 200, req)
     }
