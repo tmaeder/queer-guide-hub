@@ -39,8 +39,8 @@ export function parseRssItems(
   const channelMeta = isPodcast ? extractChannelMeta(xml) : null
   const channelImage = channelMeta?.image ?? null
   const channelLink = channelMeta?.link ?? null
-  const channelTitle = extractTag(xml.slice(0, xml.search(/<item>/i)), 'title')
-  const itemRegex = /<item>([\s\S]*?)<\/item>/gi
+  const channelTitle = extractTag(xml.slice(0, xml.search(/<(?:item|entry)\b/i)), 'title')
+  const itemRegex = /<(?:item|entry)\b[^>]*>([\s\S]*?)<\/(?:item|entry)>/gi
   let textBytes = 0
   let match
   while ((match = itemRegex.exec(xml)) !== null) {
@@ -65,16 +65,17 @@ export function parseRssItems(
     // verdict recorded, rather than being silently dropped here with no row to
     // audit. Only the podcast branch, which has a guaranteed better answer,
     // changes.
-    const rawLink = extractTag(block, 'link') || extractTag(block, 'guid')
-    const webLink = firstHttpUrl(extractTag(block, 'link'), extractPermalinkGuid(block))
+    const atomLink = extractAtomLink(block)
+    const rawLink = atomLink || extractTag(block, 'link') || extractTag(block, 'guid')
+    const webLink = firstHttpUrl(atomLink, extractTag(block, 'link'), extractPermalinkGuid(block))
     // Prefer rich show notes for podcasts so the episode satisfies the
     // non-empty-content guard downstream (get_news_front / useNews).
-    const desc = extractTag(block, 'content:encoded') || extractTag(block, 'itunes:summary') || extractTag(block, 'description')
-    const pubDate = extractTag(block, 'pubDate')
+    const desc = extractTag(block, 'content:encoded') || extractTag(block, 'itunes:summary') || extractTag(block, 'description') || extractTag(block, 'content') || extractTag(block, 'summary')
+    const pubDate = extractTag(block, 'pubDate') || extractTag(block, 'published') || extractTag(block, 'updated')
     // Sanitized like the other text fields — `author` never went through
     // cleanText, so it was the one raw string in the payload. Kept null-preserving:
     // extractTag returns string | null and the metadata shape distinguishes them.
-    const authorCandidates = [extractTag(block, 'dc:creator'), extractTag(block, 'itunes:author'), extractTag(block, 'author')]
+    const authorCandidates = [extractTag(block, 'dc:creator'), extractTag(block, 'itunes:author'), extractTag(extractTag(block, 'author') || '', 'name') || extractTag(block, 'author')]
     const original_author = authorCandidates.find(Boolean) ?? null
     const author = authorCandidates
       .map((candidate) => personAuthorCandidate(candidate ? cleanText(stripLoneSurrogates(candidate)) : null, [channelTitle]))
@@ -164,6 +165,18 @@ export function isShowHomepage(itemLink: string | null, channelLink: string | nu
   const norm = (u: string) => trimTrailingSlashes(u.trim().toLowerCase())
   return norm(itemLink) === norm(channelLink)
 }
+
+// Atom links carry the article URL in href; self/enclosure links are not articles.
+function extractAtomLink(block: string): string | null {
+  for (const tag of block.match(/<link\b[^>]*>/gi) || []) {
+    const attrs = Object.fromEntries([...tag.matchAll(/([\w:-]+)\s*=\s*(["'])(.*?)\2/g)].map(m => [m[1].toLowerCase(), m[3]]))
+    if (attrs.rel && attrs.rel !== 'alternate') continue
+    const url = firstHttpUrl(attrs.href)
+    if (url) return url
+  }
+  return null
+}
+
 
 // Decode the XML entities that appear inside URL attributes (feeds encode
 // query-string `&` as `&amp;`). Without this the stored URL is unusable.
