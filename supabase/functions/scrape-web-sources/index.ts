@@ -1,3 +1,4 @@
+import { robotsSitemaps, sitemapLocations, sitemapPathMatchers, readScrapeBody } from './scrape-bounds.ts'
 /**
  * scrape-web-sources — unified web scraper edge function
  *
@@ -105,9 +106,8 @@ async function fetchPage(url: string, userAgent: string, attempt = 0): Promise<s
       },
       signal: controller.signal,
     })
-    clearTimeout(timeout)
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    return await response.text()
+    return await readScrapeBody(response, /xml/i.test(response.headers.get('content-type') || '') ? 4_000_000 : 1_000_000)
   } catch (err) {
     clearTimeout(timeout)
     if (attempt < 2) {
@@ -115,6 +115,8 @@ async function fetchPage(url: string, userAgent: string, attempt = 0): Promise<s
       return fetchPage(url, userAgent, attempt + 1)
     }
     throw err
+  } finally {
+    clearTimeout(timeout)
   }
 }
 
@@ -214,7 +216,7 @@ async function pollFirecrawlJob(
 
 // ─── Sitemap Crawl (native, no external API) ────────────────────────────────
 
-async function crawlViaSitemap(
+export async function crawlViaSitemap(
   source: ScrapeSource,
 ): Promise<{ pages: { url: string; html: string }[]; error?: string }> {
   const config = source.scrape_config
@@ -231,9 +233,11 @@ async function crawlViaSitemap(
 
   // 2. Collect product URLs from sitemaps
   const productUrls: string[] = []
+  // One discovery budget covers every robots.txt root and its descendants.
+  const visited = new Set<string>()
   for (const sitemapUrl of sitemapUrls) {
-    if (productUrls.length >= maxPages) break
-    const urls = await parseSitemap(sitemapUrl, source.user_agent, includePatterns, maxPages - productUrls.length)
+    if (productUrls.length >= maxPages || visited.size >= 8) break
+    const urls = await parseSitemap(sitemapUrl, source.user_agent, includePatterns, maxPages - productUrls.length, visited)
     productUrls.push(...urls)
   }
 
@@ -266,6 +270,9 @@ async function crawlViaSitemap(
 }
 
 async function discoverSitemapUrls(baseUrl: string, userAgent: string): Promise<string[]> {
+  // Storefront registrations may point at a locale or collection; discovery
+  // files belong to the site root, not /collections/example/robots.txt.
+  baseUrl = new URL(baseUrl).origin
   const candidates = [
     `${baseUrl}/sitemap.xml`,
     `${baseUrl}/sitemap_index.xml`,
@@ -276,9 +283,7 @@ async function discoverSitemapUrls(baseUrl: string, userAgent: string): Promise<
   // Also check robots.txt for sitemap directives
   try {
     const robotsTxt = await fetchPage(`${baseUrl}/robots.txt`, userAgent)
-    const sitemapLines = robotsTxt.split('\n')
-      .filter(l => l.toLowerCase().startsWith('sitemap:'))
-      .map(l => l.split(':', 2).slice(1).join(':').trim())
+    const sitemapLines = robotsSitemaps(robotsTxt)
     if (sitemapLines.length > 0) return sitemapLines
   } catch {
     // robots.txt not found — continue with candidates
@@ -304,15 +309,16 @@ async function parseSitemap(
   userAgent: string,
   includePatterns: string[],
   limit: number,
+  visited = new Set<string>(),
 ): Promise<string[]> {
   const urls: string[] = []
+  if (limit <= 0 || visited.has(sitemapUrl) || visited.size >= 8) return urls
+  visited.add(sitemapUrl)
 
   try {
     const xml = await fetchPage(sitemapUrl, userAgent)
-    const $ = cheerio.load(xml, { xmlMode: true })
-
     // Handle sitemap index (contains links to other sitemaps)
-    const childSitemaps = $('sitemap > loc').map((_, el) => $(el).text().trim()).get()
+    const childSitemaps = [...sitemapLocations(xml, 'sitemap', 256)]
     if (childSitemaps.length > 0) {
       // Filter for product-related sitemaps
       const productSitemaps = childSitemaps.filter(url =>
@@ -322,36 +328,24 @@ async function parseSitemap(
       const targetSitemaps = productSitemaps.length > 0 ? productSitemaps : childSitemaps.slice(0, 5)
 
       for (const childUrl of targetSitemaps) {
-        if (urls.length >= limit) break
-        const childUrls = await parseSitemap(childUrl, userAgent, includePatterns, limit - urls.length)
+        if (urls.length >= limit || visited.size >= 8) break
+        const childUrls = await parseSitemap(childUrl, userAgent, includePatterns, limit - urls.length, visited)
         urls.push(...childUrls)
-        await delay(500) // polite delay between sitemap fetches
+        if (urls.length < limit && visited.size < 8) await delay(500) // only wait when another fetch can start
       }
       return urls
     }
 
-    // Regular sitemap — extract URLs
-    $('url > loc').each((_, el) => {
-      if (urls.length >= limit) return
-      const url = $(el).text().trim()
-      if (!url) return
-
-      // Filter by include patterns
-      if (includePatterns.length > 0) {
-        const matches = includePatterns.some(pattern => {
-          // Convert glob-like pattern to regex safely:
-          // 1) escape all regex metacharacters (including backslashes)
-          // 2) convert escaped '*' wildcard back to '.*'
-          const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-          const regexPattern = `^${escaped.replace(/\\\*/g, '.*')}$`
-          const regex = new RegExp(regexPattern, 'i')
-          return regex.test(new URL(url).pathname)
-        })
-        if (!matches) return
-      }
-
+    // Stream locations and stop at the requested count. Building a DOM for
+    // a merchant's entire catalogue exhausted the worker before its first page.
+    const matchers = sitemapPathMatchers(includePatterns)
+    for (const url of sitemapLocations(xml, 'url')) {
+      let path: string
+      try { path = new URL(url).pathname } catch { continue }
+      if (matchers.length && !matchers.some(pattern => pattern.test(path))) continue
       urls.push(url)
-    })
+      if (urls.length >= limit) break
+    }
   } catch (err) {
     console.error(`Failed to parse sitemap ${sitemapUrl}:`, (err as Error).message)
   }
