@@ -83,6 +83,8 @@ describe('migrations parse with the Postgres grammar', () => {
     expect(files.length).toBeGreaterThanOrEqual(MIN_CORPUS);
   });
 
+  // Two PostgreSQL grammars over thousands of files need more than the
+  // ordinary unit-test budget, especially on a coverage-instrumented runner.
   it('parses every migration in the corpus', async () => {
     const files = readdirSync(MIGRATIONS).filter((f) => f.endsWith('.sql'));
     const broken: string[] = [];
@@ -96,7 +98,7 @@ describe('migrations parse with the Postgres grammar', () => {
       broken,
       'These migrations do not parse. `supabase db push` aborts at the first one and strands every migration queued behind it — the blast radius is the whole repo, not this PR.',
     ).toEqual([]);
-  });
+  }, 60_000);
 
   it('needs no exemptions at all', () => {
     // The six original entries were repaired on 2026-09-14, so the corpus is
@@ -260,7 +262,7 @@ describe('paren balance inside function and DO bodies', () => {
       bad,
       'A body with unbalanced parentheses parses clean at the top level and then fails at `db push`, which aborts and strands every migration queued behind it.',
     ).toEqual([]);
-  });
+  }, 60_000);
 
   it('keeps the repaired existence selectors balanced', async () => {
     // Regression guard for the defect this layer found on its first sweep:
