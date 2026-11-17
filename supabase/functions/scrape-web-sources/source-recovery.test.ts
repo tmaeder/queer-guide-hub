@@ -57,3 +57,9 @@ Deno.test('published city countries reach the canonical validator without guessi
   const items = mod.extractFromPage('<a href="https://newyork.gaycities.com"><h4>New York City</h4></a><a href="https://unknown.gaycities.com"><h4>Unknown destination</h4></a>','https://www.gaycities.com/places',registered)
   assertEquals(items.map(x=>x.country),['United States',undefined])
 })
+Deno.test('Travel Gay calendar preserves explicit dates and excludes month placeholders and conflicting editions', () => {
+  const event = (name: string, startDate: string, extra: Record<string,unknown> = {}) => ({'@type':'Event',name,startDate,endDate:startDate,location:{name:'TBA',address:{addressLocality:'Perth',addressCountry:'Australia'}},...extra})
+  const html = `<script type="application/ld+json">${JSON.stringify([event('Perth PrideFest 2026','2026-11-08'),event('Auckland Pride 2027','2026-02-01'),event('Winter Pride 2026','2026-12-01',{month:'December'})])}</script>`
+  const rows = mod.extractEventsFromPage(html,'https://www.travelgay.com/gay-pride-calendar',source({slug:'travelgay-pride',scrape_config:{}}))
+  assertEquals(rows.map(r=>[r.name,r.start_date,r.venue_name]),[['Perth PrideFest 2026','2026-11-08T00:00:00.000Z',undefined]])
+})

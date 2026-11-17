@@ -1,3 +1,4 @@
+import { fetchPublisherRss, isProxyPublisherFeed, manualFeedSourceIds } from './publisher-feed.ts'
 import { isIlgaMonitorFeed, parseIlgaMonitorItems } from './ilga-monitor.ts'
 import { isHuffPostQueerFeed, fetchHuffPostQueerSection } from './huffpost.ts'
 import { personAuthorCandidate } from '../_shared/news-author.ts'
@@ -77,9 +78,11 @@ const rssNewsAdapter: SourceAdapter = {
       MAX_FEEDS_HARD_CAP,
       Math.max(1, Number.isFinite(maxFeedsRaw) ? Math.floor(maxFeedsRaw) : DEFAULT_MAX_FEEDS_PER_RUN),
     )
-    const { data: sources, error } = await supabase.rpc('news_sources_eligible', {
-      p_limit: maxFeeds,
-    })
+    const requestedIds = manualFeedSourceIds(config.filters?.sourceIds)
+    const { data: sources, error } = requestedIds
+      ? await supabase.from('news_sources').select('*').in('id', requestedIds).eq('is_active', true).eq('auto_paused', false).limit(maxFeeds)
+      : await supabase.rpc('news_sources_eligible', { p_limit: maxFeeds })
+    if (error) throw new Error(`News source selection failed: ${error.message}`)
 
     if (error || !sources || sources.length === 0) {
       console.log('No eligible news sources')
@@ -515,9 +518,15 @@ async function fetchFromRss(
       const statusText = res.statusText
       await res.body?.cancel()
       const proxyKey = Deno.env.get('FIRECRAWL_API_KEY')
-      if (status === 403 && !isPodcast && proxyKey && publicSourceProxyAllowed(feedUrl)) {
-        // Retain the existing 20s total per-feed deadline and byte budget.
-        proxiedXml = await fetchPublicSourceThroughProxy(feedUrl, proxyKey, response => readCapped(response, MAX_FEED_BYTES), controller.signal)
+      if (status === 403 && isProxyPublisherFeed(feedUrl)) {
+        try {
+          proxiedXml = await fetchPublisherRss(feedUrl, controller.signal, { workerUrl: Deno.env.get('EXTRACT_WORKER_URL'), workerSecret: Deno.env.get('EXTRACT_WORKER_SECRET') ?? Deno.env.get('INTERNAL_INVOKE_SECRET') })
+        } catch (error) {
+          if (!isPodcast && proxyKey && publicSourceProxyAllowed(feedUrl)) {
+            // All readers share the existing total per-feed deadline.
+            proxiedXml = await fetchPublicSourceThroughProxy(feedUrl, proxyKey, response => readCapped(response, MAX_FEED_BYTES), controller.signal)
+          } else throw error
+        }
       } else throw new Error(`HTTP ${status} ${statusText}`)
     }
     // Bound the body: parseRssItems parses the whole feed (maxArticles only
@@ -684,6 +693,7 @@ Deno.serve(withErrorReporting('source-rss-news', async (req) => {
         maxArticles: body.maxArticles || 40,
         sinceHours: body.sinceHours || 24,
         maxFeedsPerRun: body.max_feeds_per_run,
+        sourceIds: manualFeedSourceIds(body.source_ids),
       },
       dryRun: body.dry_run || false,
       pipelineRunId: body.pipeline_run_id,
