@@ -1,0 +1,588 @@
+{
+  "pass": "2026-11-17-pass10",
+  "user_checkpoint": 2766,
+  "first_snapshot": {
+    "observed_at": "2026-11-17T19:03:33Z",
+    "active_cases": 2850
+  },
+  "scope": "31 staged GayBasel records and 35 duplicate-business candidates triaged; 18 current publisher/official-site captures attempted. Not an individual review of all active cases.",
+  "applied": {
+    "repair_audit_rows": 15,
+    "nonvenue_proposals_rejected": 8,
+    "native_business_merges": 6,
+    "canonical_descriptions": 1
+  },
+  "final_snapshot": {
+    "repairs": [
+      {
+        "count": 6,
+        "reason": "codex_source_pass10_business_merge"
+      },
+      {
+        "count": 1,
+        "reason": "codex_source_pass10_description"
+      },
+      {
+        "count": 8,
+        "reason": "codex_source_pass10_nonvenue_staging"
+      }
+    ],
+    "observed_at": "2026-11-17T19:17:04.177055+00:00",
+    "sample_meta": {
+      "details": {
+        "page": "https://www.outsavvy.com/event/29578/sapphos-circle-book-club",
+        "source": "event-agentic-enrich",
+        "confidence": 0.8,
+        "start_date": "2025-09-03T17:30:00+00:00",
+        "extracted_date": "2026-08-23"
+      },
+      "workflow": "general-review",
+      "review_type": "date_mismatch"
+    },
+    "active_cases": 2838,
+    "merge_audits": 6,
+    "active_refresh": 0,
+    "donor_open_findings": 0,
+    "staging_preservation": 8
+  },
+  "blockers": [
+    {
+      "blocker": "missing_source",
+      "count": 962
+    },
+    {
+      "blocker": "missing_source_url",
+      "count": 606
+    },
+    {
+      "blocker": "missing_action_candidate",
+      "count": 553
+    },
+    {
+      "blocker": "conflicting_identity",
+      "count": 231
+    },
+    {
+      "blocker": "source_not_authorized",
+      "count": 145
+    },
+    {
+      "blocker": "queued",
+      "count": 133
+    },
+    {
+      "blocker": "source_unavailable",
+      "count": 122
+    },
+    {
+      "blocker": "insufficient_confidence",
+      "count": 52
+    },
+    {
+      "blocker": "unclassified",
+      "count": 21
+    },
+    {
+      "blocker": "protected_review",
+      "count": 9
+    },
+    {
+      "blocker": "retry",
+      "count": 4
+    }
+  ],
+  "source_metadata": [
+    {
+      "url": "https://pumpingstationmemphis.com/",
+      "retrieved_at": "2026-11-17T19:07:31.372938+00:00",
+      "status": 200,
+      "final_url": "https://thepumpingstationmemphis.com/",
+      "sha256": "463eb72a000a4225682d523e3feec9df2d20ef98bf0a0bd4ce3cd6e6e5d30617"
+    },
+    {
+      "url": "https://www.gaybasel.org/locations/24/joy4men",
+      "retrieved_at": "2026-11-17T19:07:10.576713+00:00",
+      "status": 200,
+      "final_url": "https://www.gaybasel.org/locations/24/joy4men",
+      "sha256": "e22de78275312400f8fcb418136070159647a282e3ced2afd9647717ab83c3a5"
+    },
+    {
+      "url": "https://nowherebarnyc.com/",
+      "retrieved_at": "2026-11-17T19:07:31.372310+00:00",
+      "status": 200,
+      "final_url": "https://www.nowherebarnyc.com/",
+      "sha256": "b9b7470e9b5e5ba4224477080c68c59c4da7b2013a35e942f56bba8e84f52074"
+    },
+    {
+      "url": "https://www.metropol-sauna.de/",
+      "retrieved_at": "2026-11-17T19:07:31.373061+00:00",
+      "status": 200,
+      "final_url": "https://www.metropol-sauna.de/",
+      "sha256": "112b2d61793bf8954de4513d281af10a43eb9ff9fe13938b734c1662d87a4133"
+    },
+    {
+      "url": "https://www.inderwear.com/",
+      "retrieved_at": "2026-11-17T19:07:31.915161+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "url": "https://www.club-menagerie.com/",
+      "retrieved_at": "2026-11-17T19:07:31.888393+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://petitcafe1962.de/",
+      "retrieved_at": "2026-11-17T19:07:31.709674+00:00",
+      "status": 200,
+      "final_url": "https://petitcafe1962.de/",
+      "sha256": "500eea9e16e35fc26ed7d4e85fadfe6972e4c53e8649cc46c6b2e4b343246b16"
+    },
+    {
+      "url": "https://www.gaybasel.org/locations/6819/noxlov",
+      "retrieved_at": "2026-11-17T19:07:10.818755+00:00",
+      "status": 200,
+      "final_url": "https://www.gaybasel.org/locations/6819/noxlov",
+      "sha256": "ac0fc78473df21f8d1e55556e41f293b2d46dcdc96873454345e93e87247a72b"
+    },
+    {
+      "url": "https://www.mariescrisiscafe.com/",
+      "retrieved_at": "2026-11-17T19:07:31.511862+00:00",
+      "status": 200,
+      "final_url": "https://www.mariescrisiscafe.com/",
+      "sha256": "2548d33d07f3807e12092850147d5c4e1a1869884a7e54b621369264c8044138"
+    },
+    {
+      "url": "https://www.gaybasel.org/locations/6766/briccos-wines",
+      "retrieved_at": "2026-11-17T19:07:10.574536+00:00",
+      "status": 200,
+      "final_url": "https://www.gaybasel.org/locations/6766/briccos-wines",
+      "sha256": "ab97771d9361b4ad75ba9a51ce701e7174727c702f7de9486db539731b2669a9"
+    },
+    {
+      "url": "https://www.gaybasel.org/locations/6718/queer-students-basel",
+      "retrieved_at": "2026-11-17T19:07:10.819242+00:00",
+      "status": 200,
+      "final_url": "https://www.gaybasel.org/locations/6718/queer-students-basel",
+      "sha256": "8c9e16d18415096950e130317553a04f3770441c0df29a79a5dfed46b592540f"
+    },
+    {
+      "url": "https://www.gaybasel.org/locations/6740/lgbtiq-helpline",
+      "retrieved_at": "2026-11-17T19:07:10.577265+00:00",
+      "status": 200,
+      "final_url": "https://www.gaybasel.org/locations/6740/lgbtiq-helpline",
+      "sha256": "b8b434c1f2315d6407748bef86ba4662a46d88a6677becbbbda95dfe8dc65dfd"
+    },
+    {
+      "url": "https://www.gaybasel.org/locations/6837/regenbogen-familien",
+      "retrieved_at": "2026-11-17T19:07:10.842324+00:00",
+      "status": 200,
+      "final_url": "https://www.gaybasel.org/locations/6837/regenbogen-familien",
+      "sha256": "d975b2e2246705b1afda1cf534897dd246390c4ed9a52ee004766f2ea447853f"
+    },
+    {
+      "url": "https://piecesbar.com/",
+      "retrieved_at": "2026-11-17T19:07:31.372794+00:00",
+      "status": 200,
+      "final_url": "https://piecesbar.com/",
+      "sha256": "73033c2e085d90ca7d5c7e1439cd5036ca992f004e5470a2001f68bf38db9d7c"
+    },
+    {
+      "url": "https://campusmtl.com/",
+      "retrieved_at": "2026-11-17T19:07:31.816218+00:00",
+      "status": 200,
+      "final_url": "https://barcampusmtl.com/",
+      "sha256": "640f96bf3f81aaefd0bb198d47f96c189e99cdd63b070bf456dc829b72d8a17c"
+    },
+    {
+      "url": "https://mannsstreet.fi/",
+      "retrieved_at": "2026-11-17T19:07:31.373219+00:00",
+      "status": 200,
+      "final_url": "https://mannsstreet.fi/",
+      "sha256": "4abb2c1129e46aaf7a6795e0c532ce4d8cdbe3f49f633963d472816c87d628f7"
+    },
+    {
+      "url": "https://www.gaybasel.org/locations/6786/denis-clyde",
+      "retrieved_at": "2026-11-17T19:07:10.576187+00:00",
+      "status": 200,
+      "final_url": "https://www.gaybasel.org/locations/6786/denis-clyde",
+      "sha256": "7aeb31a1b004b69d37e17b89a5c979c3aa54f22044db6536372f8bcda802e4dd"
+    },
+    {
+      "url": "https://www.gaybasel.org/locations/6744/gayparship",
+      "retrieved_at": "2026-11-17T19:07:10.576419+00:00",
+      "status": 200,
+      "final_url": "https://www.gaybasel.org/locations/6744/gayparship",
+      "sha256": "03de885e069bf8bbe71986f956a0929b0ba5afcbf140aef5de382fdecfa04501"
+    }
+  ],
+  "staging_decisions": [
+    {
+      "id": "d46a38b7-034b-4d87-bf0e-50d0f288a094",
+      "source_entity_id": "venue-6766",
+      "name": "Briccos Wines",
+      "url": "https://www.gaybasel.org/locations/6766/briccos-wines",
+      "location": {
+        "city": "Basel",
+        "country": "CH"
+      },
+      "review_status": "pending_review",
+      "disposition": "pending",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "dedup_status": "pending",
+      "target_record_id": null,
+      "raw_hash": "5e344e22e4dd04f271e0a08363bbe85d",
+      "normalized_hash": "51627641295430f55f3bb39614a99ebb",
+      "source": {
+        "url": "https://www.gaybasel.org/locations/6766/briccos-wines",
+        "retrieved_at": "2026-11-17T19:07:10.574536+00:00",
+        "status": 200,
+        "final_url": "https://www.gaybasel.org/locations/6766/briccos-wines",
+        "sha256": "ab97771d9361b4ad75ba9a51ce701e7174727c702f7de9486db539731b2669a9"
+      },
+      "note": "Publisher describes an online wine shop; this capture does not establish a visitable physical venue."
+    },
+    {
+      "id": "f471228d-898e-4a34-ae76-73df2164adff",
+      "source_entity_id": "venue-6786",
+      "name": "Denis Clyde",
+      "url": "https://www.gaybasel.org/locations/6786/denis-clyde",
+      "location": {},
+      "review_status": "pending_review",
+      "disposition": "pending",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "dedup_status": "pending",
+      "target_record_id": null,
+      "raw_hash": "f03b8ed58ef9f3b2827ccc5956c6f02a",
+      "normalized_hash": "f95829f00bbe31d08ee5122ce63a7e95",
+      "source": {
+        "url": "https://www.gaybasel.org/locations/6786/denis-clyde",
+        "retrieved_at": "2026-11-17T19:07:10.576187+00:00",
+        "status": 200,
+        "final_url": "https://www.gaybasel.org/locations/6786/denis-clyde",
+        "sha256": "7aeb31a1b004b69d37e17b89a5c979c3aa54f22044db6536372f8bcda802e4dd"
+      },
+      "note": "Publisher describes a webshop rather than a physical venue."
+    },
+    {
+      "id": "bba96177-bc42-4810-8875-5e27d031d158",
+      "source_entity_id": "venue-6744",
+      "name": "gayParship",
+      "url": "https://www.gaybasel.org/locations/6744/gayparship",
+      "location": {},
+      "review_status": "pending_review",
+      "disposition": "pending",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "dedup_status": "pending",
+      "target_record_id": null,
+      "raw_hash": "f559b66d214988e5ea3638e714e0638a",
+      "normalized_hash": "f85c839417c43fcfd78bccab62cc161b",
+      "source": {
+        "url": "https://www.gaybasel.org/locations/6744/gayparship",
+        "retrieved_at": "2026-11-17T19:07:10.576419+00:00",
+        "status": 200,
+        "final_url": "https://www.gaybasel.org/locations/6744/gayparship",
+        "sha256": "03de885e069bf8bbe71986f956a0929b0ba5afcbf140aef5de382fdecfa04501"
+      },
+      "note": "Publisher describes an online matchmaking service rather than a physical venue."
+    },
+    {
+      "id": "418baba1-d45c-45f7-9001-491283596344",
+      "source_entity_id": "venue-24",
+      "name": "Joy4Men",
+      "url": "https://www.gaybasel.org/locations/24/joy4men",
+      "location": {},
+      "review_status": "pending_review",
+      "disposition": "pending",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "dedup_status": "pending",
+      "target_record_id": null,
+      "raw_hash": "dc2f13dd21b8ca4e214da89242319a8e",
+      "normalized_hash": "dcc0dc98f85ed7eabd6bacb30fcdd6dc",
+      "source": {
+        "url": "https://www.gaybasel.org/locations/24/joy4men",
+        "retrieved_at": "2026-11-17T19:07:10.576713+00:00",
+        "status": 200,
+        "final_url": "https://www.gaybasel.org/locations/24/joy4men",
+        "sha256": "e22de78275312400f8fcb418136070159647a282e3ced2afd9647717ab83c3a5"
+      },
+      "note": "Publisher explicitly says the former physical shop closed and sales continue online only."
+    },
+    {
+      "id": "0148753c-ef46-4b86-9c7d-faa182104f27",
+      "source_entity_id": "venue-6740",
+      "name": "LGBTIQ Helpline",
+      "url": "https://www.gaybasel.org/locations/6740/lgbtiq-helpline",
+      "location": {},
+      "review_status": "pending_review",
+      "disposition": "pending",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "dedup_status": "pending",
+      "target_record_id": null,
+      "raw_hash": "abb822c1adaba9f4b2440e0a46e1bb16",
+      "normalized_hash": "3340f577abf773e81b7d13015d4cd6eb",
+      "source": {
+        "url": "https://www.gaybasel.org/locations/6740/lgbtiq-helpline",
+        "retrieved_at": "2026-11-17T19:07:10.577265+00:00",
+        "status": 200,
+        "final_url": "https://www.gaybasel.org/locations/6740/lgbtiq-helpline",
+        "sha256": "b8b434c1f2315d6407748bef86ba4662a46d88a6677becbbbda95dfe8dc65dfd"
+      },
+      "note": "Publisher describes a remote advice and reporting service rather than a visitable physical venue."
+    },
+    {
+      "id": "7c1db534-42d6-443b-8d27-87ecf082de10",
+      "source_entity_id": "venue-6819",
+      "name": "Noxlov",
+      "url": "https://www.gaybasel.org/locations/6819/noxlov",
+      "location": {},
+      "review_status": "pending_review",
+      "disposition": "pending",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "dedup_status": "pending",
+      "target_record_id": null,
+      "raw_hash": "a2cdec9519d16aae218896bd5371a99e",
+      "normalized_hash": "6a7e94cbd66c92941467d7a551fea0ac",
+      "source": {
+        "url": "https://www.gaybasel.org/locations/6819/noxlov",
+        "retrieved_at": "2026-11-17T19:07:10.818755+00:00",
+        "status": 200,
+        "final_url": "https://www.gaybasel.org/locations/6819/noxlov",
+        "sha256": "ac0fc78473df21f8d1e55556e41f293b2d46dcdc96873454345e93e87247a72b"
+      },
+      "note": "Publisher describes an online shop rather than a physical venue."
+    },
+    {
+      "id": "d549396d-56b4-4705-9e95-60518090046f",
+      "source_entity_id": "venue-6718",
+      "name": "Queer Students Basel",
+      "url": "https://www.gaybasel.org/locations/6718/queer-students-basel",
+      "location": {},
+      "review_status": "pending_review",
+      "disposition": "pending",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "dedup_status": "pending",
+      "target_record_id": null,
+      "raw_hash": "83a4116aa54bc02113e03ce27b519c23",
+      "normalized_hash": "ec101d13f484701773ded15380fe4c14",
+      "source": {
+        "url": "https://www.gaybasel.org/locations/6718/queer-students-basel",
+        "retrieved_at": "2026-11-17T19:07:10.819242+00:00",
+        "status": 200,
+        "final_url": "https://www.gaybasel.org/locations/6718/queer-students-basel",
+        "sha256": "8c9e16d18415096950e130317553a04f3770441c0df29a79a5dfed46b592540f"
+      },
+      "note": "Publisher describes a student association meeting at another named venue, not a separate physical venue."
+    },
+    {
+      "id": "27c5b8e3-a5a3-4c1f-8323-9c18b7f27b18",
+      "source_entity_id": "venue-6837",
+      "name": "Regenbogen familien",
+      "url": "https://www.gaybasel.org/locations/6837/regenbogen-familien",
+      "location": {},
+      "review_status": "pending_review",
+      "disposition": "pending",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "dedup_status": "pending",
+      "target_record_id": null,
+      "raw_hash": "8d8b390c76c8878791379bb78cda0fbd",
+      "normalized_hash": "cb8bfdf140f4591a6925e69ad38f92a9",
+      "source": {
+        "url": "https://www.gaybasel.org/locations/6837/regenbogen-familien",
+        "retrieved_at": "2026-11-17T19:07:10.842324+00:00",
+        "status": 200,
+        "final_url": "https://www.gaybasel.org/locations/6837/regenbogen-familien",
+        "sha256": "d975b2e2246705b1afda1cf534897dd246390c4ed9a52ee004766f2ea447853f"
+      },
+      "note": "Publisher describes an umbrella association without evidence of a visitable physical venue."
+    }
+  ],
+  "business_merges": [
+    {
+      "name": "Mann's Street bar",
+      "drop_id": "9468297a-0aef-46da-9946-c82caaa93318",
+      "keep_org": "aad574f7-8989-42ee-8533-e7e26f0913e5",
+      "donor_venue": "afbedf84-c305-4bbc-83f7-c268859797ff",
+      "keep_venue": "5b79ac9f-6fe5-45a1-b4dc-898e70d816de",
+      "source": {
+        "url": "https://mannsstreet.fi/",
+        "retrieved_at": "2026-11-17T19:07:31.373219+00:00",
+        "status": 200,
+        "final_url": "https://mannsstreet.fi/",
+        "sha256": "4abb2c1129e46aaf7a6795e0c532ce4d8cdbe3f49f633963d472816c87d628f7"
+      },
+      "gap_patch": {
+        "email": "mannsstreetbar@gmail.com",
+        "description": "Gay karaoké bar"
+      }
+    },
+    {
+      "name": "Marie's Crisis Café",
+      "drop_id": "bd1b10b8-d2de-4bf4-bacb-a3c22d3314f9",
+      "keep_org": "93770517-683a-4895-bb35-ac0d338180af",
+      "donor_venue": "4599dad4-6b0c-435e-9b09-0b7934035d57",
+      "keep_venue": "bcf66ca7-202c-48f4-92d8-ea359519d688",
+      "source": {
+        "url": "https://www.mariescrisiscafe.com/",
+        "retrieved_at": "2026-11-17T19:07:31.511862+00:00",
+        "status": 200,
+        "final_url": "https://www.mariescrisiscafe.com/",
+        "sha256": "2548d33d07f3807e12092850147d5c4e1a1869884a7e54b621369264c8044138"
+      },
+      "gap_patch": {
+        "website": "http://www.mariescrisiscafe.com/"
+      }
+    },
+    {
+      "name": "Petit Café",
+      "drop_id": "cd0a8175-fb97-47ae-8264-086e605f4c85",
+      "keep_org": "8404f5db-7a01-40b3-928d-7853ab64a0c4",
+      "donor_venue": "7491b6c5-0f4c-4501-aacc-d8be129a3c13",
+      "keep_venue": "696c7258-507e-4995-a0ea-6e5a6b3e5302",
+      "source": {
+        "url": "https://petitcafe1962.de/",
+        "retrieved_at": "2026-11-17T19:07:31.709674+00:00",
+        "status": 200,
+        "final_url": "https://petitcafe1962.de/",
+        "sha256": "500eea9e16e35fc26ed7d4e85fadfe6972e4c53e8649cc46c6b2e4b343246b16"
+      },
+      "gap_patch": {
+        "website": "https://petitcafe1962.de/",
+        "description": "Petit Café is a café and bar in Munich’s old town. Its small menu includes wine and Italian snacks such as Caprese, olives and Parma ham."
+      }
+    },
+    {
+      "name": "Pieces Bar",
+      "drop_id": "f646857f-b27b-48de-8ea0-e8c1c4eae657",
+      "keep_org": "994e30dc-14f5-4fc6-b508-1667d126b945",
+      "donor_venue": "4ee87c47-b8c7-457f-b8ab-34ce33891502",
+      "keep_venue": "80ec316f-1d54-4b91-8445-17e1d4a42806",
+      "source": {
+        "url": "https://piecesbar.com/",
+        "retrieved_at": "2026-11-17T19:07:31.372794+00:00",
+        "status": 200,
+        "final_url": "https://piecesbar.com/",
+        "sha256": "73033c2e085d90ca7d5c7e1439cd5036ca992f004e5470a2001f68bf38db9d7c"
+      },
+      "gap_patch": {}
+    },
+    {
+      "name": "Pumping Station",
+      "drop_id": "6c6520e8-6b77-4d70-8b33-31306ba19ea8",
+      "keep_org": "ee48ceb0-6774-4ff7-8352-96e7ed6cedbc",
+      "donor_venue": "0efc3dd1-8541-4598-a1d8-5c42ae0ddfe0",
+      "keep_venue": "af544c01-23d7-438a-95a8-e2192081a396",
+      "source": {
+        "url": "https://pumpingstationmemphis.com/",
+        "retrieved_at": "2026-11-17T19:07:31.372938+00:00",
+        "status": 200,
+        "final_url": "https://thepumpingstationmemphis.com/",
+        "sha256": "463eb72a000a4225682d523e3feec9df2d20ef98bf0a0bd4ce3cd6e6e5d30617"
+      },
+      "gap_patch": {}
+    },
+    {
+      "name": "Le Campus",
+      "drop_id": "11c54e7c-39d3-4baa-ac5c-29a9b75ceb50",
+      "keep_org": "5d75ef08-4f99-489a-80fb-d6ff9419495a",
+      "donor_venue": "d721fccd-0e05-4c03-b7c5-6008d0eff93a",
+      "keep_venue": "4ad7f670-1541-4ef1-84cf-e4d9de7b8abe",
+      "source": {
+        "url": "https://campusmtl.com/",
+        "retrieved_at": "2026-11-17T19:07:31.816218+00:00",
+        "status": 200,
+        "final_url": "https://barcampusmtl.com/",
+        "sha256": "640f96bf3f81aaefd0bb198d47f96c189e99cdd63b070bf456dc829b72d8a17c"
+      },
+      "gap_patch": {}
+    }
+  ],
+  "description": {
+    "entity_type": "organization",
+    "id": "5d75ef08-4f99-489a-80fb-d6ff9419495a",
+    "previous_value": null,
+    "value": "Campus is a male strip club in Montréal’s Gay Village, at 1111 rue Sainte-Catherine Est.",
+    "source": {
+      "url": "https://campusmtl.com/",
+      "retrieved_at": "2026-11-17T19:07:31.816218+00:00",
+      "status": 200,
+      "final_url": "https://barcampusmtl.com/",
+      "sha256": "640f96bf3f81aaefd0bb198d47f96c189e99cdd63b070bf456dc829b72d8a17c"
+    },
+    "note": "Fill canonical missing description before native merge; unsupported donor superlatives never transferred."
+  },
+  "reconciler_runs": [
+    {
+      "round_trip_ms": 5745,
+      "result": {
+        "dry_run": false,
+        "findings_reconciled": 7,
+        "organizations_examined": 3
+      }
+    },
+    {
+      "round_trip_ms": 9590,
+      "result": {
+        "dry_run": false,
+        "findings_reconciled": 2,
+        "organizations_examined": 1
+      }
+    }
+  ],
+  "worklist_refresh": {
+    "round_trip_ms": 30578,
+    "result": {
+      "cases": 2838,
+      "elapsed_ms": 29669.787
+    }
+  },
+  "queue_top_refresh": "Skipped under native lock because another refresh was running; not claimed as completed.",
+  "validation": [
+    "Every write transaction passed rollback first.",
+    "Exact row snapshots, unclaimed/venue-only roles, native gap patch, relationships and before/after field deltas checked.",
+    "Staging guards preserve source payloads and human stamps; exclude human revisions, notes, manual holds and active leases.",
+    "Eight staging payloads/stamps independently verified after commit.",
+    "Six merge source audits verified; no open non-waived donor findings remain.",
+    "Only nine findings were reconciled by observed manual calls; scheduled jobs may have retired other findings."
+  ],
+  "holds": [
+    {
+      "subject": "Metropol sauna",
+      "reason": "Relationship guard rejected native merge: donor also owns live Frankfurt venue 349aa17b-120f-4b35-99e3-fd94301f38a5. Preserve separate branch/operator review; no merge committed."
+    },
+    {
+      "subject": "Inderwear",
+      "reason": "Current official request returned 403; do not bypass or assume a physical shop from online brand identity."
+    },
+    {
+      "subject": "Menagerie",
+      "reason": "Official hostname did not resolve; proposed phone/description transfer remains unverified."
+    },
+    {
+      "subject": "Nowhere",
+      "reason": "Homepage available but exact canonical address not present in captured text; incomplete corroboration, no merge this pass."
+    },
+    {
+      "subject": "Remaining staged stations, squares and physical-place labels",
+      "reason": "Do not reject merely for missing street. Publisher/visitability identity requires additional research."
+    },
+    {
+      "subject": "Other business candidates",
+      "reason": "Unsupported coordinates, named personal contacts, address conflicts, short links, role-bearing/operator relationships and unresolved sources remain protected."
+    }
+  ],
+  "diagnosis": "Missing source, source URL or action candidate account for 2121/2838 active cases. Source URL availability alone does not establish physical venue identity. Broad operator merges are unsafe when donor owns a distinct branch. Existing timeout patch remains in production; no timeout, source authorization, confidence or publication rules changed.",
+  "prior_pr": {
+    "url": "https://github.com/tmaeder/queer-guide-hub/pull/5325",
+    "state": "MERGED",
+    "integration": "https://github.com/tmaeder/queer-guide-hub/pull/5335"
+  },
+  "human_reviewed": false
+}

@@ -1,0 +1,908 @@
+{
+  "pass": "2026-11-17-pass11",
+  "user_checkpoint": 2838,
+  "first_snapshot": [
+    {
+      "observed_at": "2026-11-17 19:20:43.059248+00",
+      "active_cases": 2838
+    }
+  ],
+  "scope": {
+    "business_candidates_triaged": 20,
+    "source_capture_attempts": 24,
+    "note": "Current official/publisher source research plus narrow performance investigation; not individual research of every active case."
+  },
+  "applied": {
+    "repair_audit_rows": 17,
+    "incorrect_venue_merge_inverses": 2,
+    "native_business_merges": 4,
+    "public_profile_audits": 11,
+    "geographic_expression_indexes": 2
+  },
+  "verification": {
+    "repairs": [
+      {
+        "count": 4,
+        "reason": "codex_source_pass11_business_merge"
+      },
+      {
+        "count": 2,
+        "reason": "codex_source_pass11_incorrect_merge_inverse"
+      },
+      {
+        "count": 11,
+        "reason": "codex_source_pass11_profile"
+      }
+    ],
+    "inverses": 2,
+    "merge_audits": 4,
+    "restored_graph": [
+      {
+        "id": "42e98b87-6050-4f1f-9f1d-e54652149d25",
+        "duplicate_of_id": "93fa026a-9368-4a4e-aa6d-d85c37f4507d"
+      },
+      {
+        "id": "7044742b-e9ee-4518-ac38-95381a71fa0c",
+        "duplicate_of_id": null
+      },
+      {
+        "id": "93fa026a-9368-4a4e-aa6d-d85c37f4507d",
+        "duplicate_of_id": null
+      }
+    ],
+    "withdrawn_pins": 2,
+    "stale_redirects": 0,
+    "restored_sources": 2,
+    "donor_open_findings": 0
+  },
+  "profile_readback": {
+    "total": 11,
+    "matching": 11,
+    "mismatches": []
+  },
+  "source_metadata": [
+    {
+      "url": "https://rexshop.fr/",
+      "retrieved_at": "2026-11-17T19:21:07.602009+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://www.theroyalleichhardt.com.au/",
+      "retrieved_at": "2026-11-17T19:22:25.276184+00:00",
+      "status": 200,
+      "final_url": "https://www.theroyalleichhardt.com.au/",
+      "sha256": "3759ac4674174e141aa039ebe3b4ae440088f52b8898499d9303b42ee15761d9"
+    },
+    {
+      "url": "https://www.woofsatlanta.com/",
+      "retrieved_at": "2026-11-17T19:21:08.977048+00:00",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "url": "https://www.thewoodshedbar.com/about-us",
+      "retrieved_at": "2026-11-17T19:22:46.681824+00:00",
+      "status": 200,
+      "final_url": "https://www.thewoodshedbar.com/about-us",
+      "sha256": "ccb39e8d1f8d611a075604dcb7b8e09ca7dd9aefbf6bde6a79e01d74a8eb6dc1"
+    },
+    {
+      "url": "https://royalhotel.com.au/contact/",
+      "retrieved_at": "2026-11-17T19:22:25.276079+00:00",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "url": "https://www.twist-frankfurt.de/",
+      "retrieved_at": "2026-11-17T19:21:08.344682+00:00",
+      "status": 200,
+      "final_url": "https://linktr.ee/twistffm",
+      "sha256": "042edfbbb329b233ca1bd7992c6d423321141a816c060dd3f83333f42c73509c"
+    },
+    {
+      "url": "https://royalhotel.com.au/",
+      "retrieved_at": "2026-11-17T19:21:07.608192+00:00",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "url": "https://saunastonewall.com/",
+      "retrieved_at": "2026-11-17T19:21:07.714255+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://woodshedlounge.com/",
+      "retrieved_at": "2026-11-17T19:21:08.720397+00:00",
+      "status": 200,
+      "final_url": "https://www.thewoodshedbar.com/",
+      "sha256": "6c52b3947bdd056ea76af4be17b7c641ee1a2ed150a2495007955cc697d444f9"
+    },
+    {
+      "url": "https://www.zodiacbarlondon.com/",
+      "retrieved_at": "2026-11-17T19:21:09.022765+00:00",
+      "status": 200,
+      "final_url": "https://www.google.com/",
+      "sha256": "b4cdd36d107aeb37dfe9a5d410e564a27cd8fb4924cfdc3c9f23c77524d351f0"
+    },
+    {
+      "url": "https://www.royalhotelleichhardt.com/",
+      "retrieved_at": "2026-11-17T19:21:07.608305+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://www.tip-top-bar.ch/",
+      "retrieved_at": "2026-11-17T19:21:08.078775+00:00",
+      "status": 200,
+      "final_url": "https://www.tip-top-bar.ch/",
+      "sha256": "7127f647b1244fea8b78ab3c0221a9da8d5dd593fc55260f11f7c8cd567af3ac"
+    },
+    {
+      "url": "https://whatpub.com/pubs/SEL/10623/king-s-arms-kennington",
+      "retrieved_at": "2026-11-17T19:21:07.851217+00:00",
+      "status": 200,
+      "final_url": "https://camra.org.uk/pubs/kings-arms-kennington-158520",
+      "sha256": "8333a7ca3cd7c584e6de461d64381a7ae844068b0339b856a716ee144f96a9c8"
+    },
+    {
+      "url": "https://www.kingsarms-soho.co.uk/london",
+      "retrieved_at": "2026-11-17T19:21:08.006356+00:00",
+      "status": 200,
+      "final_url": "https://www.kingsarms-soho.co.uk/",
+      "sha256": "0564324ad327ba5205a82d856460da8c8fe86fcd8bfb6a98062313f20307a78c"
+    },
+    {
+      "url": "https://www.cafe-rifugio.at/index.php/kontakt/",
+      "retrieved_at": "2026-11-17T19:22:46.681279+00:00",
+      "status": 200,
+      "final_url": "https://www.cafe-rifugio.at/index.php/kontakt/",
+      "sha256": "2633d6aca9191f4cd2828bee113135efe633611f3177ebfffc4200c6291ca502"
+    },
+    {
+      "url": "https://www.cafe-rifugio.at/",
+      "retrieved_at": "2026-11-17T19:21:07.608032+00:00",
+      "status": 200,
+      "final_url": "https://www.cafe-rifugio.at/",
+      "sha256": "4a23561d506a4246b2889ba8c4c33f1d51e3f2ed9134cea5afd7c3143fb1b9e4"
+    },
+    {
+      "url": "https://www.lesaxobar.ch/",
+      "retrieved_at": "2026-11-17T19:21:07.679170+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://camra.org.uk/pubs/kings-arms-kennington-158520",
+      "retrieved_at": "2026-11-17T19:22:25.276249+00:00",
+      "status": 200,
+      "final_url": "https://camra.org.uk/pubs/kings-arms-kennington-158520",
+      "sha256": "e027f3fade8bb054177d14776b9a5e0fbc63737a9209ad10877f8bc3e4463811"
+    },
+    {
+      "url": "https://phmg.com.au/venues/the-royal/",
+      "retrieved_at": "2026-11-17T19:22:25.275634+00:00",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "url": "https://voyeurnightclub.com/",
+      "retrieved_at": "2026-11-17T19:21:08.389120+00:00",
+      "status": 200,
+      "final_url": "https://voyeurnightclub.com/",
+      "sha256": "64f3145523782dcefea8a6de9e5c2967497abeb6c5e59a0e05d965efd6804ab6"
+    },
+    {
+      "url": "https://www.lesteamer.com/",
+      "retrieved_at": "2026-11-17T19:21:07.688063+00:00",
+      "status": 200,
+      "final_url": "https://www.lesteamer.com/",
+      "sha256": "3a2f2ce071ec4ff8ff2fd4ed8b6fa6ad5679fa441f681666bf6923b6ff0a99c8"
+    },
+    {
+      "url": "https://www.rupert-street.com/london",
+      "retrieved_at": "2026-11-17T19:21:07.608387+00:00",
+      "status": 200,
+      "final_url": "https://www.rupert-street.com/",
+      "sha256": "d1564c1d8e76d208ccd114af4aac5eba746cd1d8ea28bb437992838e1ab7a1a9"
+    },
+    {
+      "url": "https://zodiacbar.co.uk/",
+      "retrieved_at": "2026-11-17T19:21:09.012775+00:00",
+      "status": 200,
+      "final_url": "https://www.google.com/",
+      "sha256": "09a3ecb77a4996ec87e9c2b92e2a2daba5b3a58421d6a75d1607bb4b7a896ab1"
+    },
+    {
+      "url": "https://escapepdx.us/",
+      "retrieved_at": "2026-11-17T19:21:07.831160+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    }
+  ],
+  "incorrect_merge_inverses": [
+    {
+      "audit_id": "0db86425-e44f-4808-bccf-189d7084f008",
+      "created_at": "2026-09-20T12:51:23.559694+00:00",
+      "keep_id": "21992434-1334-45dc-926d-8571e4d33992",
+      "keep_name": "King's Arms",
+      "keep_address": "23 Poland Street \nLondon W1F 8QL",
+      "drop_id": "93fa026a-9368-4a4e-aa6d-d85c37f4507d",
+      "drop_name": "The King's Arms",
+      "drop_address": "98 Kennington Ln\nLondon\nGreater London\nSE11 4XD\nUnited Kingdom",
+      "restored_sources": [
+        "b1f70d71-b610-431d-a566-45ff4ddb31a2"
+      ],
+      "restored_duplicate_children": [
+        {
+          "id": "42e98b87-6050-4f1f-9f1d-e54652149d25",
+          "prior_duplicate_of_id": "21992434-1334-45dc-926d-8571e4d33992",
+          "new_duplicate_of_id": "93fa026a-9368-4a4e-aa6d-d85c37f4507d"
+        }
+      ],
+      "removed_redirect": {
+        "old_slug": "the-king-s-arms-3",
+        "venue_id": "21992434-1334-45dc-926d-8571e4d33992",
+        "created_at": "2026-09-20T12:51:23.559694+00:00"
+      },
+      "evidence": [
+        {
+          "url": "https://camra.org.uk/pubs/kings-arms-kennington-158520",
+          "retrieved_at": "2026-11-17T19:22:25.276249+00:00",
+          "status": 200,
+          "final_url": "https://camra.org.uk/pubs/kings-arms-kennington-158520",
+          "sha256": "e027f3fade8bb054177d14776b9a5e0fbc63737a9209ad10877f8bc3e4463811"
+        },
+        {
+          "url": "https://www.kingsarms-soho.co.uk/london",
+          "retrieved_at": "2026-11-17T19:21:08.006356+00:00",
+          "status": 200,
+          "final_url": "https://www.kingsarms-soho.co.uk/",
+          "sha256": "0564324ad327ba5205a82d856460da8c8fe86fcd8bfb6a98062313f20307a78c"
+        }
+      ],
+      "method": "Scoped inverse of complete schema-1 recorded movements. Original merge audits marked undone with source evidence. No force or user impersonation. Keep venues preserved during inverse; Leichhardt website separately corrected later."
+    },
+    {
+      "audit_id": "2215b82a-2a06-4e3a-9123-3038d52a9346",
+      "created_at": "2026-09-20T12:50:54.079392+00:00",
+      "keep_id": "4feda8a7-9757-422c-846d-c38dfafa300a",
+      "keep_name": "Royal Hotel",
+      "keep_address": "156 Norton St, Sydney NSW 2040",
+      "drop_id": "7044742b-e9ee-4518-ac38-95381a71fa0c",
+      "drop_name": "Royal Hotel Paddington",
+      "drop_address": "237 Glenmore Rd, Paddington NSW 2021",
+      "restored_sources": [
+        "df9811a4-d881-4f8a-a8f7-903e84d362ea"
+      ],
+      "restored_duplicate_children": [],
+      "removed_redirect": {
+        "old_slug": "royal-hotel-paddington",
+        "venue_id": "4feda8a7-9757-422c-846d-c38dfafa300a",
+        "created_at": "2026-09-20T12:50:54.079392+00:00"
+      },
+      "evidence": [
+        {
+          "url": "https://royalhotel.com.au/contact/",
+          "method": "web.open",
+          "observed_date": "2026-11-17",
+          "note": "Official contact page identifies Royal Hotel Paddington at 237 Glenmore Road; direct capture connection closed, web retrieval succeeded."
+        },
+        {
+          "url": "https://www.theroyalleichhardt.com.au/",
+          "retrieved_at": "2026-11-17T19:22:25.276184+00:00",
+          "status": 200,
+          "final_url": "https://www.theroyalleichhardt.com.au/",
+          "sha256": "3759ac4674174e141aa039ebe3b4ae440088f52b8898499d9303b42ee15761d9"
+        }
+      ],
+      "method": "Scoped inverse of complete schema-1 recorded movements. Original merge audits marked undone with source evidence. No force or user impersonation. Keep venues preserved during inverse; Leichhardt website separately corrected later."
+    }
+  ],
+  "inherited_revisions": [
+    {
+      "id": "17ac8e0a-d756-4f8d-862d-b07a2a86ef06",
+      "source_id": "9ab6ed51-9700-4da1-a91b-b6590c8fa980",
+      "actor": "ai:codex-source-review",
+      "actor_kind": "declared",
+      "created_at": "2026-11-17 19:24:19.27748+00",
+      "changed_fields": [
+        "address",
+        "latitude",
+        "longitude",
+        "postal_code"
+      ],
+      "note": "Normal venue-to-business location inheritance after restoration; full before/after in content_revisions. Kennington postcode subsequently corrected in both records."
+    },
+    {
+      "id": "617a18ff-d79d-4840-8c4e-4c3ac4090a36",
+      "source_id": "bb342a7b-6368-4a8c-9055-3899817b8e2e",
+      "actor": "ai:codex-source-review",
+      "actor_kind": "declared",
+      "created_at": "2026-11-17 19:24:19.27748+00",
+      "changed_fields": [
+        "address",
+        "latitude",
+        "longitude",
+        "postal_code"
+      ],
+      "note": "Normal venue-to-business location inheritance after restoration; full before/after in content_revisions. Kennington postcode subsequently corrected in both records."
+    },
+    {
+      "id": "41352a46-4228-46c3-bc87-804cf2faff6a",
+      "source_id": "9ab6ed51-9700-4da1-a91b-b6590c8fa980",
+      "actor": null,
+      "actor_kind": "system",
+      "created_at": "2026-11-17 19:26:00.520227+00",
+      "changed_fields": [
+        "phone",
+        "field_provenance"
+      ],
+      "note": "Scheduled contact inheritance after restored canonical venue became eligible. Not a manual contact verification; no scheduled work attributed to manual repairs."
+    },
+    {
+      "id": "977a1fc8-b039-42b8-abb3-93e0dc2d4136",
+      "source_id": "bb342a7b-6368-4a8c-9055-3899817b8e2e",
+      "actor": null,
+      "actor_kind": "system",
+      "created_at": "2026-11-17 19:26:00.520227+00",
+      "changed_fields": [
+        "email",
+        "phone",
+        "field_provenance"
+      ],
+      "note": "Scheduled contact inheritance after restored canonical venue became eligible. Not a manual contact verification; no scheduled work attributed to manual repairs."
+    }
+  ],
+  "business_merges": [
+    {
+      "name": "Voyeur",
+      "drop_id": "e5a7526a-8533-42f8-ba26-a170f5d87824",
+      "keep_org": "e5d0cab1-8551-4770-a673-2f52713dd19e",
+      "donor_venue": "4f808ec8-657c-4e0a-a231-50268b403e1b",
+      "keep_venue": "e46f3505-8cba-45cb-8726-60a357ae171e",
+      "gap_patch": {},
+      "source": {
+        "url": "https://voyeurnightclub.com/",
+        "retrieved_at": "2026-11-17T19:21:08.389120+00:00",
+        "status": 200,
+        "final_url": "https://voyeurnightclub.com/",
+        "sha256": "64f3145523782dcefea8a6de9e5c2967497abeb6c5e59a0e05d965efd6804ab6"
+      }
+    },
+    {
+      "name": "Woodshed Lounge",
+      "drop_id": "5bd552f2-60b8-4303-8515-60f747f707bc",
+      "keep_org": "6b712673-172c-4763-ac73-0949c984a6b6",
+      "donor_venue": "db2b5d43-a757-4018-8098-e2e9423dcf84",
+      "keep_venue": "eff6c31b-285d-4f5e-9490-c3c12695a645",
+      "gap_patch": {},
+      "source": {
+        "url": "https://woodshedlounge.com/",
+        "retrieved_at": "2026-11-17T19:21:08.720397+00:00",
+        "status": 200,
+        "final_url": "https://www.thewoodshedbar.com/",
+        "sha256": "6c52b3947bdd056ea76af4be17b7c641ee1a2ed150a2495007955cc697d444f9"
+      }
+    },
+    {
+      "name": "Rupert Street Bar",
+      "drop_id": "3b4e63a9-fff3-4f3b-a15c-3b9533a3eb8b",
+      "keep_org": "c32337d1-1d31-493a-a8fc-231d483ff39b",
+      "donor_venue": "6745519d-bfb6-417c-814d-487562a5bb74",
+      "keep_venue": "95ff5bd1-188f-44fb-a7af-7d9ae246215b",
+      "gap_patch": {},
+      "source": {
+        "url": "https://www.rupert-street.com/london",
+        "retrieved_at": "2026-11-17T19:21:07.608387+00:00",
+        "status": 200,
+        "final_url": "https://www.rupert-street.com/",
+        "sha256": "d1564c1d8e76d208ccd114af4aac5eba746cd1d8ea28bb437992838e1ab7a1a9"
+      }
+    },
+    {
+      "name": "TipTop-Bar",
+      "drop_id": "d59d5b70-b2b7-44c3-a5cd-190b12c61304",
+      "keep_org": "8d633965-7564-4150-b87f-307314e05cee",
+      "donor_venue": "151a6cfe-add6-4e5d-8e05-a311d7e5e6b5",
+      "keep_venue": "2be20795-2bf8-459e-917c-1138a244e163",
+      "gap_patch": {
+        "phone": "+41442517820"
+      },
+      "source": {
+        "url": "https://www.tip-top-bar.ch/",
+        "retrieved_at": "2026-11-17T19:21:08.078775+00:00",
+        "status": 200,
+        "final_url": "https://www.tip-top-bar.ch/",
+        "sha256": "7127f647b1244fea8b78ab3c0221a9da8d5dd593fc55260f11f7c8cd567af3ac"
+      }
+    }
+  ],
+  "profile_decisions": [
+    {
+      "entity_type": "organization",
+      "id": "6b712673-172c-4763-ac73-0949c984a6b6",
+      "previous_fields": {
+        "address": "4000 South I-85 Service Road",
+        "website": "http://www.woodshedlounge.com",
+        "latitude": 35.2426392,
+        "longitude": -80.9345574
+      },
+      "next_fields": {
+        "address": "3935 Queen City Dr, Charlotte, NC 28208",
+        "website": "https://www.thewoodshedbar.com/",
+        "latitude": null,
+        "longitude": null
+      },
+      "source": {
+        "url": "https://woodshedlounge.com/",
+        "retrieved_at": "2026-11-17T19:21:08.720397+00:00",
+        "status": 200,
+        "final_url": "https://www.thewoodshedbar.com/",
+        "sha256": "6c52b3947bdd056ea76af4be17b7c641ee1a2ed150a2495007955cc697d444f9"
+      },
+      "note": "Official current address differs from stored 4000 South I-85 Service Road. Withdraw unsupported prior pin; do not infer a replacement."
+    },
+    {
+      "entity_type": "venue",
+      "id": "eff6c31b-285d-4f5e-9490-c3c12695a645",
+      "previous_fields": {
+        "address": "4000 South I-85 Service Road",
+        "website": "http://www.woodshedlounge.com",
+        "latitude": 35.2426392,
+        "longitude": -80.9345574
+      },
+      "next_fields": {
+        "address": "3935 Queen City Dr, Charlotte, NC 28208",
+        "website": "https://www.thewoodshedbar.com/",
+        "latitude": null,
+        "longitude": null
+      },
+      "source": {
+        "url": "https://woodshedlounge.com/",
+        "retrieved_at": "2026-11-17T19:21:08.720397+00:00",
+        "status": 200,
+        "final_url": "https://www.thewoodshedbar.com/",
+        "sha256": "6c52b3947bdd056ea76af4be17b7c641ee1a2ed150a2495007955cc697d444f9"
+      },
+      "note": "Official current address differs from stored 4000 South I-85 Service Road. Withdraw unsupported prior pin; do not infer a replacement."
+    },
+    {
+      "entity_type": "organization",
+      "id": "c32337d1-1d31-493a-a8fc-231d483ff39b",
+      "previous_fields": {
+        "address": null,
+        "phone": "+442072927141",
+        "website": "http://www.rupert-street.com",
+        "description": "Rupert Street Bar & Cafe is a cafe in London, GB."
+      },
+      "next_fields": {
+        "address": "50 Rupert Street, London W1D 6DR",
+        "phone": "+442074943059",
+        "website": "https://www.rupert-street.com/",
+        "description": "Rupert Street is a bar at 50 Rupert Street in Soho, London."
+      },
+      "source": {
+        "url": "https://www.rupert-street.com/london",
+        "retrieved_at": "2026-11-17T19:21:07.608387+00:00",
+        "status": 200,
+        "final_url": "https://www.rupert-street.com/",
+        "sha256": "d1564c1d8e76d208ccd114af4aac5eba746cd1d8ea28bb437992838e1ab7a1a9"
+      },
+      "note": "Official exact street and shared phone; replace synthetic cafe description. Coordinates remain outside this repair."
+    },
+    {
+      "entity_type": "venue",
+      "id": "95ff5bd1-188f-44fb-a7af-7d9ae246215b",
+      "previous_fields": {
+        "address": "",
+        "phone": "+442072927141",
+        "website": "http://www.rupert-street.com"
+      },
+      "next_fields": {
+        "address": "50 Rupert Street, London W1D 6DR",
+        "phone": "+442074943059",
+        "website": "https://www.rupert-street.com/"
+      },
+      "source": {
+        "url": "https://www.rupert-street.com/london",
+        "retrieved_at": "2026-11-17T19:21:07.608387+00:00",
+        "status": 200,
+        "final_url": "https://www.rupert-street.com/",
+        "sha256": "d1564c1d8e76d208ccd114af4aac5eba746cd1d8ea28bb437992838e1ab7a1a9"
+      },
+      "note": "Fill missing address and correct official shared phone/website; no inferred coordinates."
+    },
+    {
+      "entity_type": "organization",
+      "id": "8d633965-7564-4150-b87f-307314e05cee",
+      "previous_fields": {
+        "website": "https://www.facebook.com/Petras-Tip-Top-Bar-561171313915199",
+        "description": null
+      },
+      "next_fields": {
+        "website": "https://www.tip-top-bar.ch/",
+        "description": "Petra’s Tip Top Bar is a bar at Seilergraben 13 in Zürich."
+      },
+      "source": {
+        "url": "https://www.tip-top-bar.ch/",
+        "retrieved_at": "2026-11-17T19:21:08.078775+00:00",
+        "status": 200,
+        "final_url": "https://www.tip-top-bar.ch/",
+        "sha256": "7127f647b1244fea8b78ab3c0221a9da8d5dd593fc55260f11f7c8cd567af3ac"
+      },
+      "note": "Current official website and factual missing description; avoid unsupported dance-bar donor wording."
+    },
+    {
+      "entity_type": "venue",
+      "id": "2be20795-2bf8-459e-917c-1138a244e163",
+      "previous_fields": {
+        "website": "https://www.facebook.com/Petras-Tip-Top-Bar-561171313915199"
+      },
+      "next_fields": {
+        "website": "https://www.tip-top-bar.ch/"
+      },
+      "source": {
+        "url": "https://www.tip-top-bar.ch/",
+        "retrieved_at": "2026-11-17T19:21:08.078775+00:00",
+        "status": 200,
+        "final_url": "https://www.tip-top-bar.ch/",
+        "sha256": "7127f647b1244fea8b78ab3c0221a9da8d5dd593fc55260f11f7c8cd567af3ac"
+      },
+      "note": "Replace legacy Facebook destination with exact official venue website."
+    },
+    {
+      "entity_type": "venue",
+      "id": "c9886939-18d4-4b8b-9003-ac3a78e61526",
+      "previous_fields": {
+        "website": null
+      },
+      "next_fields": {
+        "website": "https://www.cafe-rifugio.at/"
+      },
+      "source": {
+        "url": "https://www.cafe-rifugio.at/",
+        "retrieved_at": "2026-11-17T19:21:07.608032+00:00",
+        "status": 200,
+        "final_url": "https://www.cafe-rifugio.at/",
+        "sha256": "4a23561d506a4246b2889ba8c4c33f1d51e3f2ed9134cea5afd7c3143fb1b9e4"
+      },
+      "note": "Fill missing official website matching exact street; donor phone remains unverified and business merge remains held."
+    },
+    {
+      "entity_type": "organization",
+      "id": "1c35e254-44b0-4316-99ac-dbebf3adf191",
+      "previous_fields": {
+        "website": "https://www.royalhotelleichhardt.com"
+      },
+      "next_fields": {
+        "website": "https://www.theroyalleichhardt.com.au/"
+      },
+      "source": {
+        "url": "https://www.theroyalleichhardt.com.au/",
+        "retrieved_at": "2026-11-17T19:22:25.276184+00:00",
+        "status": 200,
+        "final_url": "https://www.theroyalleichhardt.com.au/",
+        "sha256": "3759ac4674174e141aa039ebe3b4ae440088f52b8898499d9303b42ee15761d9"
+      },
+      "note": "Official current operator site matches 156 Norton Street; replace unresolved legacy hostname."
+    },
+    {
+      "entity_type": "venue",
+      "id": "4feda8a7-9757-422c-846d-c38dfafa300a",
+      "previous_fields": {
+        "website": "https://www.royalhotelleichhardt.com"
+      },
+      "next_fields": {
+        "website": "https://www.theroyalleichhardt.com.au/"
+      },
+      "source": {
+        "url": "https://www.theroyalleichhardt.com.au/",
+        "retrieved_at": "2026-11-17T19:22:25.276184+00:00",
+        "status": 200,
+        "final_url": "https://www.theroyalleichhardt.com.au/",
+        "sha256": "3759ac4674174e141aa039ebe3b4ae440088f52b8898499d9303b42ee15761d9"
+      },
+      "note": "Official current operator site matches 156 Norton Street; preserve all other venue fields."
+    },
+    {
+      "entity_type": "venue",
+      "id": "93fa026a-9368-4a4e-aa6d-d85c37f4507d",
+      "previous_fields": {
+        "postal_code": "SE11 4XA"
+      },
+      "next_fields": {
+        "postal_code": "SE11 4XD"
+      },
+      "source": {
+        "url": "https://camra.org.uk/pubs/kings-arms-kennington-158520",
+        "retrieved_at": "2026-11-17T19:22:25.276249+00:00",
+        "status": 200,
+        "final_url": "https://camra.org.uk/pubs/kings-arms-kennington-158520",
+        "sha256": "e027f3fade8bb054177d14776b9a5e0fbc63737a9209ad10877f8bc3e4463811"
+      },
+      "note": "Correct postcode for exact 98 Kennington Lane identity; old SE11 4XA conflicts with current publisher and the stored full address."
+    },
+    {
+      "entity_type": "organization",
+      "id": "9ab6ed51-9700-4da1-a91b-b6590c8fa980",
+      "previous_fields": {
+        "postal_code": "SE11 4XA"
+      },
+      "next_fields": {
+        "postal_code": "SE11 4XD"
+      },
+      "source": {
+        "url": "https://camra.org.uk/pubs/kings-arms-kennington-158520",
+        "retrieved_at": "2026-11-17T19:22:25.276249+00:00",
+        "status": 200,
+        "final_url": "https://camra.org.uk/pubs/kings-arms-kennington-158520",
+        "sha256": "e027f3fade8bb054177d14776b9a5e0fbc63737a9209ad10877f8bc3e4463811"
+      },
+      "note": "Correct postcode for exact 98 Kennington Lane identity; old SE11 4XA conflicts with current publisher and the stored full address."
+    }
+  ],
+  "reconciler": {
+    "round_trip_ms": 3995,
+    "result": {
+      "dry_run": false,
+      "findings_reconciled": 3,
+      "organizations_examined": 1
+    },
+    "note": "Manual call retired three findings on one donor; scheduled reconciliation may have handled others. Final donor open findings=0."
+  },
+  "index_repair": {
+    "migration_file": "supabase/migrations/20261117193506_index_review_geographic_name_checks.sql",
+    "production": {
+      "indexes": [
+        {
+          "name": "cities_review_geographic_name_idx",
+          "size": 581632,
+          "ready": true,
+          "valid": true,
+          "definition": "CREATE INDEX cities_review_geographic_name_idx ON public.cities USING btree (normalize_name(name)) WHERE (duplicate_of_id IS NULL)"
+        },
+        {
+          "name": "queer_villages_review_geographic_name_idx",
+          "size": 16384,
+          "ready": true,
+          "valid": true,
+          "definition": "CREATE INDEX queer_villages_review_geographic_name_idx ON public.queer_villages USING btree (normalize_name(name))"
+        }
+      ],
+      "migration": [
+        {
+          "name": "index_review_geographic_name_checks",
+          "version": "20261117193506"
+        }
+      ],
+      "function_hash": "3dc353fe947bf2b59eda0e04e072faa9"
+    },
+    "baseline": {
+      "execution_ms": 830.14,
+      "cities_scan_rows": 19630,
+      "villages_scan_rows": 181,
+      "plan": "Sequential scans",
+      "target": "review-pass11-non-geographic-venue"
+    },
+    "after_plan": [
+      {
+        "Plan": {
+          "Node Type": "Result",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 3.78,
+          "Total Cost": 3.79,
+          "Plan Rows": 1,
+          "Plan Width": 1,
+          "Actual Startup Time": 0.057,
+          "Actual Total Time": 0.057,
+          "Actual Rows": 1,
+          "Actual Loops": 1,
+          "Shared Hit Blocks": 0,
+          "Shared Read Blocks": 3,
+          "Shared Dirtied Blocks": 0,
+          "Shared Written Blocks": 0,
+          "Local Hit Blocks": 0,
+          "Local Read Blocks": 0,
+          "Local Dirtied Blocks": 0,
+          "Local Written Blocks": 0,
+          "Temp Read Blocks": 0,
+          "Temp Written Blocks": 0,
+          "Plans": [
+            {
+              "Node Type": "Index Scan",
+              "Parent Relationship": "InitPlan",
+              "Subplan Name": "InitPlan 1",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Scan Direction": "Forward",
+              "Index Name": "cities_review_geographic_name_idx",
+              "Relation Name": "cities",
+              "Alias": "p",
+              "Startup Cost": 0.29,
+              "Total Cost": 107.55,
+              "Plan Rows": 95,
+              "Plan Width": 0,
+              "Actual Startup Time": 0.035,
+              "Actual Total Time": 0.035,
+              "Actual Rows": 0,
+              "Actual Loops": 1,
+              "Index Cond": "(normalize_name(name) = 'review pass11 non geographic venue'::text)",
+              "Rows Removed by Index Recheck": 0,
+              "Shared Hit Blocks": 0,
+              "Shared Read Blocks": 2,
+              "Shared Dirtied Blocks": 0,
+              "Shared Written Blocks": 0,
+              "Local Hit Blocks": 0,
+              "Local Read Blocks": 0,
+              "Local Dirtied Blocks": 0,
+              "Local Written Blocks": 0,
+              "Temp Read Blocks": 0,
+              "Temp Written Blocks": 0
+            },
+            {
+              "Node Type": "Index Scan",
+              "Parent Relationship": "InitPlan",
+              "Subplan Name": "InitPlan 2",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Scan Direction": "Forward",
+              "Index Name": "queer_villages_review_geographic_name_idx",
+              "Relation Name": "queer_villages",
+              "Alias": "p_1",
+              "Startup Cost": 0.14,
+              "Total Cost": 2.36,
+              "Plan Rows": 1,
+              "Plan Width": 0,
+              "Actual Startup Time": 0.02,
+              "Actual Total Time": 0.02,
+              "Actual Rows": 0,
+              "Actual Loops": 1,
+              "Index Cond": "(normalize_name(name) = 'review pass11 non geographic venue'::text)",
+              "Rows Removed by Index Recheck": 0,
+              "Shared Hit Blocks": 0,
+              "Shared Read Blocks": 1,
+              "Shared Dirtied Blocks": 0,
+              "Shared Written Blocks": 0,
+              "Local Hit Blocks": 0,
+              "Local Read Blocks": 0,
+              "Local Dirtied Blocks": 0,
+              "Local Written Blocks": 0,
+              "Temp Read Blocks": 0,
+              "Temp Written Blocks": 0
+            }
+          ]
+        },
+        "Planning": {
+          "Shared Hit Blocks": 729,
+          "Shared Read Blocks": 1,
+          "Shared Dirtied Blocks": 0,
+          "Shared Written Blocks": 0,
+          "Local Hit Blocks": 0,
+          "Local Read Blocks": 0,
+          "Local Dirtied Blocks": 0,
+          "Local Written Blocks": 0,
+          "Temp Read Blocks": 0,
+          "Temp Written Blocks": 0
+        },
+        "Planning Time": 54.599,
+        "Triggers": [],
+        "Execution Time": 0.087
+      }
+    ],
+    "local_validation": "Disposable PostgreSQL 17: actual migration and production-equivalent normalizer; 20,003 cities, 181 villages; 1,000 force-generic misses within five-second statement limit. Before/after row and lookup preservation; accents, null, punctuation, canonical/merged-city exclusion and existing merged-village inclusion. Both index plans verified.",
+    "parsers": [
+      "libpg-query current",
+      "libpg-query PostgreSQL 17"
+    ],
+    "security_advisors": {
+      "before": 3,
+      "after": 3,
+      "unchanged": true
+    },
+    "settings": "No persistent timeout, planner, function, normalization, predicate, lease, publication, source authorization or access control change."
+  },
+  "worklist": {
+    "before_index": {
+      "round_trip_ms": 31964,
+      "error": "ERROR:  57014: canceling statement due to statement timeout\\nCONTEXT:  SQL expression \\\"exists(select 1 from public.cities p where p.duplicate_of_id is null and public.normaliz"
+    },
+    "after_index_initial": {
+      "round_trip_ms": 31076,
+      "error": "30-second local limit reached in aggregate admin_review_queue_json after the geographic guard bottleneck was removed."
+    },
+    "one_off_retry": {
+      "round_trip_ms": 25060,
+      "result": {
+        "cases": 2775,
+        "elapsed_ms": 24191.354
+      },
+      "local_limit_seconds": 45
+    },
+    "queue_top": {
+      "ok": true,
+      "rows": 3750,
+      "depth": 250,
+      "elapsed_ms": 18104
+    },
+    "note": "Timings are individual observations, not a controlled benchmark or proof that all refresh timeouts are eliminated."
+  },
+  "final_snapshot": {
+    "blockers": [
+      {
+        "count": 930,
+        "blocker": "missing_source"
+      },
+      {
+        "count": 591,
+        "blocker": "missing_source_url"
+      },
+      {
+        "count": 532,
+        "blocker": "missing_action_candidate"
+      },
+      {
+        "count": 234,
+        "blocker": "conflicting_identity"
+      },
+      {
+        "count": 153,
+        "blocker": "source_not_authorized"
+      },
+      {
+        "count": 152,
+        "blocker": "queued"
+      },
+      {
+        "count": 110,
+        "blocker": "source_unavailable"
+      },
+      {
+        "count": 56,
+        "blocker": "insufficient_confidence"
+      },
+      {
+        "count": 9,
+        "blocker": "protected_review"
+      },
+      {
+        "count": 5,
+        "blocker": "retry"
+      },
+      {
+        "count": 2,
+        "blocker": "blocked"
+      },
+      {
+        "count": 1,
+        "blocker": "unclassified"
+      }
+    ],
+    "observed_at": "2026-11-17T19:37:09.034625+00:00",
+    "active_cases": 2775,
+    "active_refresh": 0
+  },
+  "holds": [
+    {
+      "subject": "Rifugio business merge",
+      "reason": "Official page confirms address/happy hour but proposed phone remains unverified on official source; only the missing venue website filled."
+    },
+    {
+      "subject": "Zodiac",
+      "reason": "Legacy domains redirect to Google; CAMRA reports closure on 9 October 2026 while another apparent operator karaoke page advertises the same address. No operating-state assertion or merge. Sources:https://camra.org.uk/pubs/zodiac-london-125177 and https://www.zodiackaraoke.com/ (web research 17 November)."
+    },
+    {
+      "subject": "Rex / Saxo / Stonewall / Escape",
+      "reason": "Official hostnames unresolved; no inferred closure or bypass."
+    },
+    {
+      "subject": "Twist",
+      "reason": "Official destination confirms street but proposed phone not published in captured official text; no phone transfer."
+    },
+    {
+      "subject": "Steamer",
+      "reason": "Captured homepage does not corroborate proposed shared inbox; venue branch relationship requires specific source."
+    },
+    {
+      "subject": "Rupert Street coordinates",
+      "reason": "Address/contact corrected; coordinates were not independently re-established and remain outside this repair."
+    },
+    {
+      "subject": "Other source authorizations, geographic classifications, contacts and pins",
+      "reason": "Native source, confidence, ownership and human gates preserved. Unverified data not batch-approved."
+    }
+  ]
+}
