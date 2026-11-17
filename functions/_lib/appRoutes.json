@@ -36,6 +36,7 @@
     "/admin/content/venue-quality",
     "/admin/content/village-quality",
     "/admin/countries",
+    "/admin/data-sources",
     "/admin/design",
     "/admin/diagnostics",
     "/admin/duplicates",
