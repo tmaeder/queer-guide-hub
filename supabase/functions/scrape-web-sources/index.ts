@@ -216,7 +216,7 @@ async function pollFirecrawlJob(
 
 // ─── Sitemap Crawl (native, no external API) ────────────────────────────────
 
-async function crawlViaSitemap(
+export async function crawlViaSitemap(
   source: ScrapeSource,
 ): Promise<{ pages: { url: string; html: string }[]; error?: string }> {
   const config = source.scrape_config
@@ -233,9 +233,11 @@ async function crawlViaSitemap(
 
   // 2. Collect product URLs from sitemaps
   const productUrls: string[] = []
+  // One discovery budget covers every robots.txt root and its descendants.
+  const visited = new Set<string>()
   for (const sitemapUrl of sitemapUrls) {
-    if (productUrls.length >= maxPages) break
-    const urls = await parseSitemap(sitemapUrl, source.user_agent, includePatterns, maxPages - productUrls.length)
+    if (productUrls.length >= maxPages || visited.size >= 8) break
+    const urls = await parseSitemap(sitemapUrl, source.user_agent, includePatterns, maxPages - productUrls.length, visited)
     productUrls.push(...urls)
   }
 
@@ -326,10 +328,10 @@ async function parseSitemap(
       const targetSitemaps = productSitemaps.length > 0 ? productSitemaps : childSitemaps.slice(0, 5)
 
       for (const childUrl of targetSitemaps) {
-        if (urls.length >= limit) break
+        if (urls.length >= limit || visited.size >= 8) break
         const childUrls = await parseSitemap(childUrl, userAgent, includePatterns, limit - urls.length, visited)
         urls.push(...childUrls)
-        await delay(500) // polite delay between sitemap fetches
+        if (urls.length < limit && visited.size < 8) await delay(500) // only wait when another fetch can start
       }
       return urls
     }
