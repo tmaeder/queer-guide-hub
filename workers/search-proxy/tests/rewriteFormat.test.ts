@@ -42,7 +42,7 @@ describe('rewrite model response formats', () => {
     expect((await rewriteQuery(h.env, 'schwule bars in Zürich', 'de'))?.q_en).toBe(value.q_en);
     expect(h.run).toHaveBeenCalledOnce();
     expect(h.put).toHaveBeenCalledWith(
-      'rw:v2:@cf/meta/llama-3.3-70b-instruct-fp8-fast:de:schwule bars in zürich',
+      'rw:v3:@cf/meta/llama-3.3-70b-instruct-fp8-fast:de:schwule bars in zürich',
       expect.any(String),
       { expirationTtl: 86400 * 30 },
     );

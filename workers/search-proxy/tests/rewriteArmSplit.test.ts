@@ -130,7 +130,7 @@ async function runSearch(
 	const vec = (hybridArgs as Record<string, unknown> | null)?.p_query_vec;
 	const idx = typeof vec === "string" ? Number(vec.slice(1).split(",")[0]) : NaN;
 	const usedEmbedText = Number.isInteger(idx) && idx >= 1 ? embedTexts[idx - 1] : null;
-	const cachedRewrite = await env.EMBED_CACHE.get(`rw:v2:${LLAMA}:${opts.lang ?? "en"}:${query.trim().toLowerCase()}`, { type: "json" });
+	const cachedRewrite = await env.EMBED_CACHE.get(`rw:v3:${LLAMA}:${opts.lang ?? "en"}:${query.trim().toLowerCase()}`, { type: "json" });
 	return { res, body, hybridArgs, embedTexts, llamaCalls, usedEmbedText, cachedRewrite };
 }
 
