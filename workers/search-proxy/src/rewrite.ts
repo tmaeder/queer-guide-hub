@@ -19,6 +19,7 @@ Given a user query in any language, output ONE compact JSON object (no prose) wi
   type_hint  : one of "venue","event","city","personality","news",null
 Preserve proper names exactly (for example, Heldenbar stays heldenbar, never hero bar).
 Only extract a city explicitly present in the query. Never guess a venue's location.
+Keep any explicitly mentioned city in q_en as well as the city field.
 For a community search without a specific venue or event, type_hint is null.
 Return ONLY the JSON. No markdown. No explanation.`;
 
@@ -36,7 +37,7 @@ export async function rewriteQuery(
 ): Promise<RewrittenQuery | null> {
 	if (!query || query.length > 120) return null;
 	// Isolate model/prompt changes from the previous model's 30-day entries.
-	const cacheKey = `rw:v2:${MODEL}:${lang}:${query.trim().toLowerCase()}`;
+	const cacheKey = `rw:v3:${MODEL}:${lang}:${query.trim().toLowerCase()}`;
 
 	const cached = await env.EMBED_CACHE.get(cacheKey, { type: "json" });
 	if (cached) return cached as RewrittenQuery;

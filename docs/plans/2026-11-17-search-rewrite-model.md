@@ -17,24 +17,30 @@ client/network overhead.
 
 | Model | Median | Mean | Sample p95 | Maximum | Over 5s |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Llama 3.3 Fast | 890.5ms | 1198.8ms | 2821.6ms | 3760.8ms | 0/30 |
-| Gemma 4 | 1108.8ms | 1532.0ms | 3088.2ms | 10370.5ms | 1/30 |
+| Llama 3.3 Fast | 946.5ms | 1203.6ms | 2514.1ms | 4187.1ms | 0/30 |
+| Gemma 4 | 1041.7ms | ≥3094.1ms | ≥16704.8ms | ≥30026.9ms | 3/30 |
 
-Llama's aggregate median was 19.7% lower; it won 18/30 individual pairs and
+Llama's aggregate median was 9.1% lower; it won 17/30 individual pairs and
 five of six per-query medians. This is a bounded inference benchmark, not a
 claim that every request or total search latency improves by that amount.
-Both models passed 30/30 schema and semantic checks with the final prompt:
+Llama passed 30/30 schema and semantic checks with the final prompt; Gemma
+passed 29/30, with one request timing out after 30 seconds. All attempts were
+retained; Gemma tail/mean values include the censored timeout lower bound. Checks:
 English translation, query intent, explicit city extraction (accent-insensitive),
-unchanged `heldenbar` with no guessed city, and null community type hint.
+unchanged `heldenbar` with no guessed city, city retained in q_en, and null community type hint.
 Synonyms were reviewed for relevance. Six native Workers AI binding checks
-through the actual `rewriteQuery` function also passed, taking 677–1007ms.
+through the actual `rewriteQuery` function also passed, taking 701–2144ms.
 
 Screening rejected Qwen 3.8, Granite Micro and Scout for latency, and Mistral 7B
 for incompatible output types; Mistral Small also inferred an unmentioned city.
 Llama initially guessed a city for Heldenbar, so the final prompt explicitly
-preserves names, forbids inferred locations and avoids classifying general
+preserves names, forbids inferred locations, retains explicit cities in q_en, and avoids classifying general
 community searches as venues. Both finalists used those instructions in the
 matched evaluation.
+
+Production validation caught a geography omission in the first prompt: a city
+field alone was insufficient to preserve Madrid vector recall. The final prompt
+keeps it in q_en too, and the full matched benchmark was rerun with that prompt.
 
 ## Implementation and validation
 
