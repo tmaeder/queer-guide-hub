@@ -23,9 +23,10 @@ const WALL_CLOCK_LIMIT_MS = 90_000
  * queer venues". The bboxes here are whole metros against a 20s query timeout,
  * so that is the expected failure for London or New York, not an edge case.
  */
-async function fetchOverpassWithRetry(query: string, city: string): Promise<unknown[] | null> {
+async function fetchOverpassCity(query: string, city: string, remainingMs: number): Promise<unknown[] | null> {
   const { elements } = await fetchOverpassElements(OVERPASS_URL, query, {
-    perCallMs: OVERPASS_PER_CALL_MS,
+    perCallMs: Math.min(OVERPASS_PER_CALL_MS, remainingMs),
+    attempts: 1,
     userAgent: UA,
     label: `${city}:`,
   })
@@ -162,14 +163,15 @@ Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
 
     for (const city of cityOrder) {
       if (allItems.length >= limit) break
-      if (Date.now() > deadline) {
+      const remainingMs = deadline - Date.now()
+      if (remainingMs <= 0) {
         console.warn(`OSM wall-clock reached after ${citiesQueried} cities`)
         break
       }
       const bbox = city.bbox.join(',')
       const query = LGBT_OVERPASS_QUERY.replace(/\{\{bbox\}\}/g, bbox)
 
-      const elements = await fetchOverpassWithRetry(query, city.name)
+      const elements = await fetchOverpassCity(query, city.name, remainingMs)
       citiesQueried++
       if (!elements) { citiesUnknown++; continue }
 
@@ -182,8 +184,17 @@ Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
       }
     }
 
+    if (citiesQueried === 0 || citiesUnknown === citiesQueried) {
+      return jsonResponse({
+        success: false, error: 'overpass_unavailable',
+        items: 0, items_total: 0, items_processed: 0, items_succeeded: 0,
+        cities_queried: citiesQueried,
+        cities_unknown: citiesUnknown, dry_run: dryRun,
+      }, 503, req)
+    }
+
     if (dryRun) {
-      return jsonResponse({ success: true, items: allItems.length, dry_run: true }, 200, req)
+      return jsonResponse({ success: true, items: allItems.length, cities_queried: citiesQueried, cities_unknown: citiesUnknown, dry_run: true }, 200, req)
     }
 
     // Stage through the shared adapter contract. The hand-rolled bulk upsert
