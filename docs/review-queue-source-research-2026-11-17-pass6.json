@@ -1,0 +1,1834 @@
+{
+  "pass": "2026-11-17-pass6",
+  "user_checkpoint": 2807,
+  "first_read_active": 2800,
+  "scope": "Bounded source research of business duplicate and geographic/linkage candidates, followed by guarded native production repairs. This is not a claim to have individually reviewed or resolved every remaining case.",
+  "repairs": {
+    "audit_rows": 43,
+    "business_merges": 21,
+    "superseded_business_findings_reconciled": 54,
+    "municipality_venue_business_pairs": 5,
+    "business_country_repairs": 1,
+    "website_brand_record_pairs": 3,
+    "relationship_records": 2,
+    "independent_missing_profile_fills": 3
+  },
+  "merge_decisions": [
+    {
+      "city": "Marseille",
+      "name": "Les Thermes",
+      "address": "22 Rue Mazagran",
+      "city_id": "2b2f1c9b-91c7-45ad-a7a3-cb06bcf4e63e",
+      "country": "France",
+      "drop_id": "8b36a167-2182-4187-85a9-3470dc337d22",
+      "website": "https://les-thermes-marseille.com",
+      "keep_org": "f608dfa2-f5e3-41d9-8ce7-f53d6a512d39",
+      "gap_patch": {},
+      "keep_name": "Les Thermes - Sauna Gay n°1 à Marseille",
+      "country_id": "4a9c8fef-e5c3-4405-99d3-374d645e905a",
+      "keep_venue": "bd1a1776-c92a-41a4-a151-5d6dcf247ed7",
+      "donor_venue": "8ef32ae5-5a24-4f99-9b8e-dde7321837d5",
+      "keep_address": "22 Rue Mazagran",
+      "keep_website": "https://les-thermes-marseille.com",
+      "keep_org_name": "Les Thermes - Sauna Gay n°1 à Marseille",
+      "sources": [
+        {
+          "url": "https://les-thermes-marseille.com/",
+          "retrieved_at": "2026-11-17T05:23:49.266960+00:00",
+          "status": 200,
+          "final_url": "https://les-thermes-marseille.com/",
+          "sha256": "bd7efc80e95ad4f907d793228c8ae1e4501fbe4122da86e00783085da77dbea8"
+        }
+      ],
+      "allowed_patch": {},
+      "scope": "Source-confirmed physical identity only. Native gap fill limited to the exact independently corroborated values in allowed_patch. No legal ownership, human review or publication verification asserted."
+    },
+    {
+      "city": "Paris",
+      "name": "Riad sauna",
+      "address": "184 rue des Pyrènées,Paris,75020",
+      "city_id": "b46a28a1-5c7a-41ac-a2cc-5b03448f6f69",
+      "country": "France",
+      "drop_id": "d9d61be4-4ec3-4870-b66b-81053520cdbf",
+      "website": "https://www.leriadparis20.fr/",
+      "keep_org": "a4acba58-04ac-4f98-993e-235237722760",
+      "gap_patch": {},
+      "keep_name": "Le Riad",
+      "country_id": "4a9c8fef-e5c3-4405-99d3-374d645e905a",
+      "keep_venue": "b23e4c01-871b-4374-89c6-0c63da63484d",
+      "donor_venue": "ea61a69e-f1a0-4395-b705-7659315bb998",
+      "keep_address": "184, Rue des pyrénées",
+      "keep_website": "http://le-riad.com",
+      "keep_org_name": "Le Riad",
+      "sources": [
+        {
+          "url": "https://www.leriadparis20.fr/",
+          "retrieved_at": "2026-11-17T05:23:49.978537+00:00",
+          "status": 200,
+          "final_url": "https://www.leriadparis20.fr/",
+          "sha256": "6fc8133d37ddcccb95f2f63a50580586f74cd15a4d66dce78f3726685f3d7f33"
+        }
+      ],
+      "allowed_patch": {},
+      "scope": "Source-confirmed physical identity only. Native gap fill limited to the exact independently corroborated values in allowed_patch. No legal ownership, human review or publication verification asserted."
+    },
+    {
+      "city": "Lille",
+      "name": "Les Bains sauna",
+      "address": "52 rue de Cambrai,Lille,59000",
+      "city_id": "4e0d885a-845d-4ecf-8cd7-f08be4e6c582",
+      "country": "France",
+      "drop_id": "862e3c49-b643-4f06-9d8c-bbb3d14a0774",
+      "website": "http://www.lesbains.fr/",
+      "keep_org": "0fd39725-e9f4-49f8-969d-8ad3cfe76571",
+      "gap_patch": {
+        "email": "bains@lesbains.fr"
+      },
+      "keep_name": "Sauna Les Bains",
+      "country_id": "4a9c8fef-e5c3-4405-99d3-374d645e905a",
+      "keep_venue": "00ee3783-adbd-496e-afb9-d3fb4f37ff09",
+      "donor_venue": "328072ae-048b-46ee-901e-4c68bd38fd92",
+      "keep_address": "52 Rue de Cambrai",
+      "keep_website": "http://lesbains.fr",
+      "keep_org_name": "Sauna Les Bains",
+      "sources": [
+        {
+          "url": "https://www.lesbains.fr/",
+          "retrieved_at": "2026-11-17T05:23:49.083518+00:00",
+          "status": 200,
+          "final_url": "https://www.lesbains.fr/",
+          "sha256": "d36c975b00415a5072bb800cf6108bb0a6e5fda3c61d498600033432e66518c0"
+        }
+      ],
+      "allowed_patch": {
+        "email": "bains@lesbains.fr"
+      },
+      "scope": "Source-confirmed physical identity only. Native gap fill limited to the exact independently corroborated values in allowed_patch. No legal ownership, human review or publication verification asserted."
+    },
+    {
+      "city": "Zurich",
+      "name": "Paragonya sauna",
+      "address": "11, Mühlegasse, Zurich, 8001",
+      "city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+      "country": "Switzerland",
+      "drop_id": "0724bb8e-55e3-4e46-ab10-24bc3bbfa09b",
+      "website": "https://www.paragonya.ch/",
+      "keep_org": "7d6304bc-c980-4acc-ab62-6c42dc8498ad",
+      "gap_patch": {
+        "email": "info@paragonya.ch"
+      },
+      "keep_name": "Paragonya",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "keep_venue": "fe9c4afd-4409-43b8-9482-682891a65002",
+      "donor_venue": "7f17c101-c9ce-48e6-b9a3-b7c8b6ea12a0",
+      "keep_address": "Mühlegasse 11",
+      "keep_website": "https://paragonya.ch",
+      "keep_org_name": "Paragonya",
+      "sources": [
+        {
+          "url": "https://www.paragonya.ch/kontakt",
+          "retrieved_at": "2026-11-17T05:24:49.488566+00:00",
+          "status": 200,
+          "final_url": "https://www.paragonya.ch/kontakt/",
+          "sha256": "5e9a3bad3fe6f498515df39a3527a20521b640c7765556bdb6de7c31fadb70f8"
+        }
+      ],
+      "allowed_patch": {
+        "email": "info@paragonya.ch"
+      },
+      "scope": "Source-confirmed physical identity only. Native gap fill limited to the exact independently corroborated values in allowed_patch. No legal ownership, human review or publication verification asserted."
+    },
+    {
+      "city": "London",
+      "name": "Halfway 2 Heaven",
+      "address": "7 Duncannon St\nCharing Cross\nGreater London\nWC2N 4JF\nUnited Kingdom",
+      "city_id": "bfa0a65c-b8c0-4665-8908-19e2553ae262",
+      "country": "United Kingdom",
+      "drop_id": "bd46487a-14d7-4b8f-9cfa-b17be724305b",
+      "website": "https://halfway2heaven.net/london",
+      "keep_org": "e7c97702-ac3b-4070-a15e-71fc674fda07",
+      "gap_patch": {
+        "phone": "+442074840736",
+        "description": "Halfway to Heaven is a cabaret pub at 7 Duncannon Street near Charing Cross in London. The operator describes an upstairs bar and a downstairs cabaret room, with live cabaret throughout the week."
+      },
+      "keep_name": "Halfway to Heaven",
+      "country_id": "58581332-7745-430b-8b51-dd1537e85cf0",
+      "keep_venue": "57c5ab34-2fca-44f8-a115-3536a2413488",
+      "donor_venue": "b5e5c068-dcfa-4d78-afe0-acdd9f87223a",
+      "keep_address": "7 Duncannon Street \nLondon WC2N 4JF",
+      "keep_website": "https://www.halfway2heaven.net/london",
+      "keep_org_name": "Halfway to Heaven",
+      "sources": [
+        {
+          "url": "https://www.halfway2heaven.net/london",
+          "retrieved_at": "2026-11-17T05:23:48.936396+00:00",
+          "status": 200,
+          "final_url": "https://www.halfway2heaven.net/",
+          "sha256": "bdeb6c9d87a9debd84a77c1aad7d43d036aed577545e959decbdb4069875128b"
+        }
+      ],
+      "allowed_patch": {
+        "phone": "+442074840736",
+        "description": "Halfway to Heaven is a cabaret pub at 7 Duncannon Street near Charing Cross in London. The operator describes an upstairs bar and a downstairs cabaret room, with live cabaret throughout the week."
+      },
+      "scope": "Source-confirmed physical identity only. Native gap fill limited to the exact independently corroborated values in allowed_patch. No legal ownership, human review or publication verification asserted."
+    },
+    {
+      "city": "Brussels",
+      "name": "Fuse",
+      "address": "Rue Blaes Bruxelles - Brussels (1000)",
+      "city_id": "0a2afd47-93f2-424c-b616-63d2567900cf",
+      "country": "Belgium",
+      "drop_id": "101fb365-3824-4bad-b83e-ebb45d0445cc",
+      "website": "https://www.fuse.be/",
+      "keep_org": "c5cfae19-fc20-4a62-9343-5ac481442df9",
+      "gap_patch": {
+        "email": "info@fuse.be"
+      },
+      "keep_name": "Fuse Club",
+      "country_id": "3c0f090b-0a46-4578-b7a9-d75e186dc449",
+      "keep_venue": "67b409a9-b414-4fdf-aa7e-53c4cc9c04d1",
+      "donor_venue": "e482a51c-afb3-449e-8872-73bd3db9b787",
+      "keep_address": "208 Rue Blaes, Brussel",
+      "keep_website": null,
+      "keep_org_name": "Fuse Club",
+      "sources": [
+        {
+          "url": "https://www.fuse.be/",
+          "retrieved_at": "2026-11-17T05:23:48.933085+00:00",
+          "status": 200,
+          "final_url": "https://www.fuse.be/",
+          "sha256": "46a922bd696f0bdbe746b28d460a6a9a20e092ec9102f5f0bf06fb504aca3053"
+        },
+        {
+          "url": "https://www.fuse.be/faq",
+          "retrieved_at": "2026-11-17T05:25:59.243064+00:00",
+          "status": 200,
+          "final_url": "https://www.fuse.be/faq",
+          "sha256": "40a07a158fdd208f8b86b45f2de30e9f9648f3c0ccbe967c03f37c72d9406e8c"
+        }
+      ],
+      "allowed_patch": {
+        "email": "info@fuse.be"
+      },
+      "scope": "Source-confirmed physical identity only. Native gap fill limited to the exact independently corroborated values in allowed_patch. No legal ownership, human review or publication verification asserted."
+    },
+    {
+      "city": "Dublin",
+      "name": "Mother Club",
+      "address": "Lost Lane, Adams Court, Grafton Street, Dublin, Ireland",
+      "city_id": "11eb1638-dc2a-4089-a3ee-4997b97c4633",
+      "country": "Ireland",
+      "drop_id": "4f3b3632-5c0a-4d9e-94b7-867584b935e9",
+      "website": "https://motherclub.ie/",
+      "keep_org": "af27b246-4e31-40a2-b34d-0c01b1dd5cee",
+      "gap_patch": {
+        "email": "clubmother@gmail.com"
+      },
+      "keep_name": "Mother",
+      "country_id": "bc7c6694-1a1e-40c3-9b4c-b0f330d8d5ac",
+      "keep_venue": "d1a63fbe-3e54-49e7-85e8-d484645dbf6e",
+      "donor_venue": "20659bb4-823b-4405-a89a-8fa7b7b7d2ea",
+      "keep_address": "Lost Lane, Adams Court, Grafton Street, Dublin, Ireland",
+      "keep_website": "https://motherclub.ie/",
+      "keep_org_name": "Mother",
+      "sources": [
+        {
+          "url": "https://motherclub.ie/",
+          "retrieved_at": "2026-11-17T05:23:49.631633+00:00",
+          "status": 200,
+          "final_url": "https://motherclub.ie/",
+          "sha256": "005bb2132bc6c1f3f264562fc728f7290107e6bde0d650403214603d1a12dc43"
+        },
+        {
+          "url": "https://motherclub.ie/termsandconditions",
+          "retrieved_at": "2026-11-17T05:25:59.243571+00:00",
+          "status": 200,
+          "final_url": "https://motherclub.ie/termsandconditions",
+          "sha256": "e6267242cf37e60bf71e9fd2415d3b21f39bd2fae1d1b6b706d08c5ccd74bd60"
+        }
+      ],
+      "allowed_patch": {
+        "email": "clubmother@gmail.com"
+      },
+      "scope": "Source-confirmed physical identity only. Native gap fill limited to the exact independently corroborated values in allowed_patch. No legal ownership, human review or publication verification asserted."
+    },
+    {
+      "city": "London",
+      "name": "Queer Britain Museum",
+      "address": "2 Granary Square",
+      "city_id": "bfa0a65c-b8c0-4665-8908-19e2553ae262",
+      "country": "United Kingdom",
+      "drop_id": "ef97cdbb-2f63-4cf4-b0bf-9fe6d7fc5432",
+      "website": "https://queerbritain.org.uk",
+      "keep_org": "5048f536-0e36-4572-9cd9-abef75516f7c",
+      "gap_patch": {
+        "description": "Queer Britain is a museum of LGBTQ+ history and culture at Granary Square in King’s Cross, London. Its main gallery presents changing displays about queer lives, communities and heritage, alongside temporary exhibitions and installations."
+      },
+      "keep_name": "Queer Britain",
+      "country_id": "58581332-7745-430b-8b51-dd1537e85cf0",
+      "keep_venue": "ac3deab6-cfbe-4d51-889c-0eae5632e75b",
+      "donor_venue": "c25519c6-1a6f-4309-9f89-5e6046005f1d",
+      "keep_address": "2 Granary Sq, Kings Cross",
+      "keep_website": "https://queerbritain.org.uk",
+      "keep_org_name": "Queer Britain",
+      "sources": [
+        {
+          "url": "https://queerbritain.org.uk/",
+          "retrieved_at": "2026-11-17T05:23:49.944848+00:00",
+          "status": 200,
+          "final_url": "https://queerbritain.org.uk/",
+          "sha256": "9df943e791d8791381b95c97eefd17e787058272d7b1189e2b7aad28f1432271"
+        },
+        {
+          "url": "https://queerbritain.org.uk/visit",
+          "retrieved_at": "2026-11-17T05:26:47.946122+00:00",
+          "status": 200,
+          "final_url": "https://queerbritain.org.uk/visit",
+          "sha256": "34345927527d182b46d66c8089cefd301e0569e1f1f628a273f27959c9e6d383"
+        }
+      ],
+      "allowed_patch": {
+        "description": "Queer Britain is a museum of LGBTQ+ history and culture at Granary Square in King’s Cross, London. Its main gallery presents changing displays about queer lives, communities and heritage, alongside temporary exhibitions and installations."
+      },
+      "scope": "Source-confirmed physical identity only. Native gap fill limited to the exact independently corroborated values in allowed_patch. No legal ownership, human review or publication verification asserted."
+    },
+    {
+      "city": "Dijon",
+      "name": "Sauna le Bossuet",
+      "address": "3 bis, rue du Jardin des plantes,Dijon,21000",
+      "city_id": "6e665afa-7cf0-4b63-a701-e78b627b158b",
+      "country": "France",
+      "drop_id": "7bce74fe-fd52-4ea7-88b4-18c128c11583",
+      "website": "https://www.saunabossuet.com/",
+      "keep_org": "63f79629-1a4d-4c75-97db-451987e0d31e",
+      "gap_patch": {
+        "email": "sauna.bossuet@gmail.com"
+      },
+      "keep_name": "Le Bossuet",
+      "country_id": "4a9c8fef-e5c3-4405-99d3-374d645e905a",
+      "keep_venue": "7d1a54f6-531d-4833-9320-0a58cfa9ee8c",
+      "donor_venue": "3de59614-457b-4aef-8fcd-d8fce6a6074e",
+      "keep_address": "3bis, rue du Jardin des Plantes",
+      "keep_website": "http://www.sauna-bossuet.com",
+      "keep_org_name": "Le Bossuet",
+      "allowed_patch": {
+        "email": "sauna.bossuet@gmail.com"
+      },
+      "sources": [
+        {
+          "url": "https://www.saunabossuet.com/",
+          "retrieved_at": "2026-11-17T05:29:45.078057+00:00",
+          "status": 200,
+          "final_url": "https://www.saunabossuet.com/",
+          "sha256": "4b83ce7b042e5439f61702deb20323ac42ffe0f66e8c2c804b19726186d49237"
+        }
+      ],
+      "scope": "Source-confirmed duplicate physical business profile with already-merged venues. Transfer only exact corroborated values in allowed_patch. Gear/Strong canonical facts and Toulouse public rebrand were separately audited first. No human, legal ownership or publication verification asserted."
+    },
+    {
+      "city": "Stockholm",
+      "name": "SLM Stockholm",
+      "address": "18, Wollmar Yxkullsgatan, Stockholm, 11850",
+      "city_id": "4258021c-2a84-41f4-bd0f-74e0c7c98251",
+      "country": "Sweden",
+      "drop_id": "034910fa-33d9-48d7-9153-790a997d263b",
+      "website": "https://slmstockholm.se/",
+      "keep_org": "f2644ece-216d-4a04-973a-4a22d209b68d",
+      "gap_patch": {
+        "email": "info@slmstockholm.se"
+      },
+      "keep_name": "SLM",
+      "country_id": "70ff31b3-b918-4258-a98e-d892691c9d52",
+      "keep_venue": "e652429e-dc7f-4f1c-8962-3e49b7e63876",
+      "donor_venue": "0cbedca1-2875-47dc-aa90-70ac37cb0dd7",
+      "keep_address": "Wollmar Yxkullsgatan 18",
+      "keep_website": "https://slmstockholm.se/en/",
+      "keep_org_name": "SLM",
+      "allowed_patch": {
+        "email": "info@slmstockholm.se"
+      },
+      "sources": [
+        {
+          "url": "https://slmstockholm.se/en/contact/",
+          "retrieved_at": "2026-11-17T05:31:46.712440+00:00",
+          "status": 200,
+          "final_url": "https://slmstockholm.se/en/contact/",
+          "sha256": "1c250d7a033d70791126fb3fa9820b7ee6de7eaf39b8a5238e3c41dc39165196"
+        }
+      ],
+      "scope": "Source-confirmed duplicate physical business profile with already-merged venues. Transfer only exact corroborated values in allowed_patch. Gear/Strong canonical facts and Toulouse public rebrand were separately audited first. No human, legal ownership or publication verification asserted."
+    },
+    {
+      "city": "Hamburg",
+      "name": "Slut club",
+      "address": "Rostocker Straße Hambourg (20099)",
+      "city_id": "a22dc107-45cc-491e-af45-d91ebc1eda3c",
+      "country": "Germany",
+      "drop_id": "ac80ec7b-618b-4a14-9be0-f0eb6fa75110",
+      "website": "http://www.slutclub.de/",
+      "keep_org": "ba62b897-c332-4e7d-aea5-5107949d6a1b",
+      "gap_patch": {},
+      "keep_name": "Slut Club Hamburg",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "keep_venue": "7297b4f5-7099-47a1-b339-3e4cf282c6d1",
+      "donor_venue": "d6feb992-ac8a-4860-a66c-afc51cc61b29",
+      "keep_address": "Rostocker Straße 20, 20099 Hamburg, Germany",
+      "keep_website": "https://www.slutclubhamburg.de/",
+      "keep_org_name": "Slut Club Hamburg",
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.slutclubhamburg.de/",
+          "retrieved_at": "2026-11-17T05:29:45.078949+00:00",
+          "status": 200,
+          "final_url": "https://www.slutclubhamburg.de/",
+          "sha256": "2e7c8b3093e7023c02ab39d432c59c8e9a48d0e07276be4986e7763d1e3c5ecd"
+        }
+      ],
+      "scope": "Source-confirmed duplicate physical business profile with already-merged venues. Transfer only exact corroborated values in allowed_patch. Gear/Strong canonical facts and Toulouse public rebrand were separately audited first. No human, legal ownership or publication verification asserted."
+    },
+    {
+      "city": "Basel",
+      "name": "Sunnyday sauna",
+      "address": "62, Grenzacherstrasse, Bâle, 4058",
+      "city_id": "a0c1349b-da8a-43c4-9a64-39b6f0193fbf",
+      "country": "Switzerland",
+      "drop_id": "f6d9125d-1349-4ad0-ba24-666226a3597d",
+      "website": "https://www.sunnyday.ch/",
+      "keep_org": "307d396b-bb72-49c2-b018-df07a2164f47",
+      "gap_patch": {},
+      "keep_name": "Gay Sauna Sunnyday",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "keep_venue": "86c50c8e-f2cd-452e-a10b-0cdbb63bf356",
+      "donor_venue": "22ad540b-fed7-402b-8d51-ace56ed5500e",
+      "keep_address": "Grenzacherstrasse 62, 4058 Basel, Switzerland",
+      "keep_website": null,
+      "keep_org_name": "Gay Sauna Sunnyday",
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.sunnyday.ch/",
+          "retrieved_at": "2026-11-17T05:29:45.322436+00:00",
+          "status": 200,
+          "final_url": "https://sunnyday.ch/",
+          "sha256": "e5acbbc4133238cf0016b412a62abed048a54e4738dd70b571542deb161b98be"
+        }
+      ],
+      "scope": "Source-confirmed duplicate physical business profile with already-merged venues. Transfer only exact corroborated values in allowed_patch. Gear/Strong canonical facts and Toulouse public rebrand were separately audited first. No human, legal ownership or publication verification asserted."
+    },
+    {
+      "city": "Vancouver",
+      "name": "The PumpJack Pub",
+      "address": "1167 Davie Street",
+      "city_id": "e5d823da-60c6-49c8-8465-a55804783cb0",
+      "country": "Canada",
+      "drop_id": "579196b7-5856-496c-ae89-c17778a645c2",
+      "website": "http://www.pumpjackpub.com",
+      "keep_org": "7d657e44-3ea2-4b0e-b296-9f6fb6936dee",
+      "gap_patch": {},
+      "keep_name": "The Pumpjack",
+      "country_id": "47dda834-6566-4d95-887f-b46d1536589b",
+      "keep_venue": "3b3d06a9-c476-499f-aa57-cee1caf366d1",
+      "donor_venue": "4ea498c7-056a-4705-9c13-829fad5a9e64",
+      "keep_address": "1167 Davie St",
+      "keep_website": "http://www.pumpjackpub.com/",
+      "keep_org_name": "The Pumpjack",
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.pumpjackpub.com/",
+          "retrieved_at": "2026-11-17T05:29:45.403586+00:00",
+          "status": 200,
+          "final_url": "https://www.pumpjackpub.com/",
+          "sha256": "8f8d46dde2b4e912e90a26a1129c61df483744fb3e759a96fbc3cace5be6a03c"
+        }
+      ],
+      "scope": "Source-confirmed duplicate physical business profile with already-merged venues. Transfer only exact corroborated values in allowed_patch. Gear/Strong canonical facts and Toulouse public rebrand were separately audited first. No human, legal ownership or publication verification asserted."
+    },
+    {
+      "city": "Cologne",
+      "name": "To the pitter Cologne",
+      "address": "Alter Markt 58-60, 50667 Cologne",
+      "city_id": "c7198e4f-01d5-4b07-adb0-df41041c2f41",
+      "country": "Germany",
+      "drop_id": "0e578fd2-fd21-41e8-83cc-8ad1192e4ad1",
+      "website": "http://pitter.cologne/",
+      "keep_org": "b1e98f06-28ea-4614-ab98-6143ee67b10c",
+      "gap_patch": {},
+      "keep_name": "Zum Pitter",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "keep_venue": "51430700-3c09-43c2-9700-b2626881a77e",
+      "donor_venue": "cec601db-be1c-492e-8cb2-792999d7f8dc",
+      "keep_address": "Alter Markt 58-60 \nCologne 50667",
+      "keep_website": "https://pitter.cologne/",
+      "keep_org_name": "Zum Pitter",
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://pitter.cologne/",
+          "retrieved_at": "2026-11-17T05:29:45.618392+00:00",
+          "status": 200,
+          "final_url": "https://pitter.cologne/",
+          "sha256": "6190c0602cdc9883a2e70028436a7ef8bcf291ca25dc78dd75189faf49e06d9a"
+        }
+      ],
+      "scope": "Source-confirmed duplicate physical business profile with already-merged venues. Transfer only exact corroborated values in allowed_patch. Gear/Strong canonical facts and Toulouse public rebrand were separately audited first. No human, legal ownership or publication verification asserted."
+    },
+    {
+      "city": "Berlin",
+      "name": "Gear shop",
+      "address": "13 Kalckreuthstraße Berlin (10777)",
+      "city_id": "5761c6c4-3ed6-4429-832b-025e508db544",
+      "country": "Germany",
+      "drop_id": "3794cfeb-cab6-48a6-8234-28265e0332bb",
+      "website": "https://gearberlin.com/",
+      "keep_org": "00788ff7-c5c5-40bb-b48b-1b7cb370a906",
+      "gap_patch": {
+        "email": "store@gearberlin.com"
+      },
+      "keep_name": "Gear Berlin",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "keep_venue": "2cc8a9f4-9ea3-4630-b702-f59df7704732",
+      "donor_venue": "7fe9bd68-51cb-4abf-9198-2d10100782c9",
+      "keep_address": "Leather & Fetish Shops",
+      "keep_website": "http://www.gearberlin.com",
+      "keep_org_name": "Gear Berlin",
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://gearberlin.com/pages/imprint",
+          "retrieved_at": "2026-11-17T05:26:47.945983+00:00",
+          "status": 200,
+          "final_url": "https://gearberlin.com/pages/imprint",
+          "sha256": "c3e26a499abd12dd9ab6d39fcf4f612f626800422d9aa8891bef71eb1687ca25"
+        }
+      ],
+      "scope": "Source-confirmed duplicate physical business profile with already-merged venues. Transfer only exact corroborated values in allowed_patch. Gear/Strong canonical facts and Toulouse public rebrand were separately audited first. No human, legal ownership or publication verification asserted."
+    },
+    {
+      "city": "Madrid",
+      "name": "Strong the club",
+      "address": "Calle Trujillos 7,Madrid,28013",
+      "city_id": "772d642b-33be-4e98-b59a-451cf3a73890",
+      "country": "Spain",
+      "drop_id": "0d6529f5-9d08-4a17-b05c-3aaff7a8f30f",
+      "website": "http://www.strong.madrid/",
+      "keep_org": "dc416005-4dd8-402d-aac3-58cbbee13d93",
+      "gap_patch": {
+        "description": "Strong the Club is a gay nightclub at Trujillos 7 in Madrid. Its published programme includes DJ-led dance nights featuring electronic music, including house, techno, indie dance and disco, with individual events carrying their own audience and dress-code conditions."
+      },
+      "keep_name": "Strong Disco",
+      "country_id": "4020d296-538c-4d6d-a728-33db16460181",
+      "keep_venue": "488f0c03-d21a-41d9-a470-d74884c97e32",
+      "donor_venue": "a7afb2ff-36c2-47d3-b9ad-5edac75beb20",
+      "keep_address": "c/ Trujillos 7\n28013 Madrid Community of Madrid\nSpain",
+      "keep_website": "https://strong.madrid",
+      "keep_org_name": "Strong Disco",
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://strong.madrid/",
+          "retrieved_at": "2026-11-17T05:29:45.322170+00:00",
+          "status": 200,
+          "final_url": "https://strong.madrid/",
+          "sha256": "85d710644dd427720e6195a155e901d4deaf8c010094d720ff17d0b8a1e78dcb"
+        }
+      ],
+      "scope": "Source-confirmed duplicate physical business profile with already-merged venues. Transfer only exact corroborated values in allowed_patch. Gear/Strong canonical facts and Toulouse public rebrand were separately audited first. No human, legal ownership or publication verification asserted."
+    },
+    {
+      "city": "Toulouse",
+      "name": "Sauna les Thermes Toulouse",
+      "address": "8 Place de Belfort Toulouse (31000)",
+      "city_id": "a399b92d-9fb9-4168-8af7-e84979de1bcc",
+      "country": "France",
+      "drop_id": "99046e18-5dcb-4ab9-95c3-eaec8d47ca17",
+      "website": "https://les-thermes-toulouse.com/",
+      "keep_org": "93869d8e-7a4c-4fed-8290-3905e9372432",
+      "gap_patch": {
+        "phone": "+33561206538"
+      },
+      "keep_name": "Les Thermes",
+      "country_id": "4a9c8fef-e5c3-4405-99d3-374d645e905a",
+      "keep_venue": "da8d16cf-ac33-45f0-a85a-8c9d89b53d45",
+      "donor_venue": "ced4f619-8ae2-48b8-9447-dbf83e03ae95",
+      "keep_address": "8 Place de Belfort, 31000 Toulouse, France",
+      "keep_website": null,
+      "keep_org_name": "Les Thermes",
+      "allowed_patch": {
+        "phone": "+33561206538"
+      },
+      "sources": [
+        {
+          "url": "https://les-thermes-toulouse.com/",
+          "retrieved_at": "2026-11-17T05:29:45.078552+00:00",
+          "status": 200,
+          "final_url": "https://eclipse-toulouse.com/",
+          "sha256": "86b4ee5c8525153ca23654e0fdd09c9dab308150d7523b975960764864df7669"
+        }
+      ],
+      "scope": "Source-confirmed duplicate physical business profile with already-merged venues. Transfer only exact corroborated values in allowed_patch. Gear/Strong canonical facts and Toulouse public rebrand were separately audited first. No human, legal ownership or publication verification asserted."
+    },
+    {
+      "drop_id": "1409072c-5566-4346-aef2-5876dab8d21e",
+      "name": "Bar any sight",
+      "website": "https://translate.google.com/website?sl=auto&tl=en&hl=en&u=https://barjedersicht.de/",
+      "address": "Hintere Bleiche 29, 55116 Mainz",
+      "city_id": "d90496c5-104e-44d2-b5b6-24fd191882cd",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "c5366c99-07d5-4ee0-a975-3d28ca0f1516",
+      "keep_venue": "68c56c20-f4d6-45a8-977b-9be3ff20e8da",
+      "keep_org": "30fed267-a5fa-42b9-932b-10f15527ea02",
+      "keep_name": "Bar jeder Sicht",
+      "keep_address": "Hintere Bleiche 29",
+      "keep_website": "http://www.sichtbar-mainz.de",
+      "keep_org_name": "Bar jeder Sicht",
+      "keep_city": "d90496c5-104e-44d2-b5b6-24fd191882cd",
+      "keep_country": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://barjedersicht.de/",
+          "retrieved_at": "2026-11-17T05:38:21.150340+00:00",
+          "status": 200,
+          "final_url": "https://barjedersicht.de/",
+          "sha256": "f8d93102aeb8322f3d1b936b7cd58eae0f54b0b2c7485e3ec22df56cc1d1d605"
+        }
+      ],
+      "scope": "Exact source-confirmed duplicate business after separately audited canonical municipality correction. Canonical business profile unchanged by this merge. No legal ownership or human verification asserted."
+    },
+    {
+      "drop_id": "164d28fe-3887-41d2-9ec0-910b15675bbc",
+      "name": "APART BAR",
+      "website": null,
+      "address": "Reichsstraße 16, 04109 Leipzig, Germany",
+      "city_id": "f0d632de-b126-498a-94b4-888e4f954392",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "f66ee26d-3187-42dd-842c-238e9964260a",
+      "keep_venue": "64e870c4-eff9-462b-bef3-99cafcbdf26b",
+      "keep_org": "c9a2da5b-09dd-47ab-9d50-981e95430fd8",
+      "keep_name": "Apart",
+      "keep_address": "Reichsstraße 16",
+      "keep_website": "http://www.cafe-apart.de",
+      "keep_org_name": "Apart",
+      "keep_city": "f0d632de-b126-498a-94b4-888e4f954392",
+      "keep_country": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://apart.bar/",
+          "retrieved_at": "2026-11-17T05:38:37.373210+00:00",
+          "status": 200,
+          "final_url": "https://apart.bar/",
+          "sha256": "fb5d317e89ec7b561d04201f34c70b89d5834b7c11c74dd40623da40930ddc89"
+        }
+      ],
+      "scope": "Exact source-confirmed duplicate business after separately audited canonical municipality correction. Canonical business profile unchanged by this merge. No legal ownership or human verification asserted."
+    },
+    {
+      "drop_id": "9a231406-263c-445a-9297-0f577682ac7e",
+      "name": "Cafe de Plak",
+      "website": "http://www.cafe-de-plak.nl/",
+      "address": "Bloemerstraat 90",
+      "city_id": "119d1bb7-5ba5-49c0-ae99-9d57eec1f376",
+      "country_id": "7fc92804-fe85-4827-8d7f-6e561e292552",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "fe8771a1-786b-4865-9d32-647729da8baa",
+      "keep_venue": "ec35bacf-19ad-4662-b009-73f03e49b8a6",
+      "keep_org": "ddd190a4-778d-435d-9d7c-dbcbe58d1d9f",
+      "keep_name": "De Plak",
+      "keep_address": "Bloemerstraat 90",
+      "keep_website": "http://www.cafedeplak.nl",
+      "keep_org_name": "De Plak",
+      "keep_city": "119d1bb7-5ba5-49c0-ae99-9d57eec1f376",
+      "keep_country": "7fc92804-fe85-4827-8d7f-6e561e292552",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.cafedeplak.nl/contact",
+          "retrieved_at": "2026-11-17T05:38:37.373831+00:00",
+          "status": 200,
+          "final_url": "https://www.cafedeplak.nl/contact",
+          "sha256": "efa1e46449b688ef656fdcf8738ac81991684d6371a2be4eeefe067459ac8deb"
+        }
+      ],
+      "scope": "Exact source-confirmed duplicate business after separately audited canonical municipality correction. Canonical business profile unchanged by this merge. No legal ownership or human verification asserted."
+    },
+    {
+      "drop_id": "0aae7d83-83f9-4e07-89d9-c8a5e37a81e3",
+      "name": "El Brasi",
+      "website": "http://www.elbrasi.de/",
+      "address": "Hattinger Str. 746, 44879 Bochum",
+      "city_id": "088a5b43-1770-4601-a02a-8eb62a8276fd",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "091d769a-635a-432e-8664-1045e06960ba",
+      "keep_venue": "a4570551-8c49-46ea-be11-64440eee5d7d",
+      "keep_org": "28a86be4-810a-4ae2-b71e-77b9bde4fa5e",
+      "keep_name": "El Brasi Filmclub",
+      "allowed_patch": {
+        "phone": "+49234491553"
+      },
+      "sources": [
+        {
+          "url": "https://www.elbrasi.de/",
+          "retrieved_at": "2026-11-17T05:47:14.740779+00:00",
+          "status": 200,
+          "final_url": "https://www.elbrasi.de/",
+          "sha256": "f6fb012e29fa00a7417444a04ff6ca81113570498b76ef0fef3ce63873244432"
+        }
+      ],
+      "scope": "Exact official address and published shared telephone match, already-merged donor venue, same canonical city/country. Missing phone only; no human verification or legal ownership assertion."
+    }
+  ],
+  "profile_fills": [
+    {
+      "id": "00788ff7-c5c5-40bb-b48b-1b7cb370a906",
+      "name": "Gear Berlin",
+      "patch": {
+        "email": "support@gearberlin.com"
+      },
+      "source": {
+        "url": "https://gearberlin.com/pages/imprint",
+        "retrieved_at": "2026-11-17T05:26:47.945983+00:00",
+        "status": 200,
+        "final_url": "https://gearberlin.com/pages/imprint",
+        "sha256": "c3e26a499abd12dd9ab6d39fcf4f612f626800422d9aa8891bef71eb1687ca25"
+      },
+      "note": "Current published shared support inbox; avoid transferring the older store inbox. No private director contact used. Postal/legal address and retail opening status are not changed."
+    },
+    {
+      "id": "dc416005-4dd8-402d-aac3-58cbbee13d93",
+      "name": "Strong Disco",
+      "patch": {
+        "description": "Strong the Club is a gay nightclub at Trujillos 7 in Madrid, hosting DJ-led electronic music events. Individual events have their own entry and dress-code conditions."
+      },
+      "source": {
+        "url": "https://strong.madrid/",
+        "retrieved_at": "2026-11-17T05:29:45.322170+00:00",
+        "status": 200,
+        "final_url": "https://strong.madrid/",
+        "sha256": "85d710644dd427720e6195a155e901d4deaf8c010094d720ff17d0b8a1e78dcb"
+      },
+      "note": "Factual summary of named venue/address and actual published programme; omits unsupported genre/superlative claims and does not infer any visitor's identity."
+    },
+    {
+      "id": "4a412c46-5a57-453d-a67a-d86d600772cc",
+      "name": "Discus Sauna",
+      "patch": {
+        "description": "Discus Sauna is a 500 m² sauna at Industriesstrasse 10 in Kriens. Founded in 1993, it moved to its current Kriens location in 2012."
+      },
+      "source": {
+        "url": "https://discus-sauna.ch/",
+        "retrieved_at": "2026-11-17T05:47:14.740666+00:00",
+        "status": 200,
+        "final_url": "https://discus-sauna.ch/",
+        "sha256": "b7d26d94eaf56ccb4c26aeef47b2fdc1311ceea1d9d27653d201e22e6564fe72"
+      },
+      "note": "Neutral facts from the current official site. Omits the donor's uncorroborated cleanliness and staff-quality claims."
+    }
+  ],
+  "website_brand_decisions": [
+    {
+      "venue_id": "b23e4c01-871b-4374-89c6-0c63da63484d",
+      "organization_id": "a4acba58-04ac-4f98-993e-235237722760",
+      "expected_venue": {
+        "name": "Le Riad",
+        "website": "http://le-riad.com"
+      },
+      "expected_org": {
+        "name": "Le Riad",
+        "website": "http://le-riad.com"
+      },
+      "venue_patch": {
+        "website": "https://www.leriadparis20.fr/"
+      },
+      "org_patch": {
+        "website": "https://www.leriadparis20.fr/"
+      },
+      "source": {
+        "url": "https://www.leriadparis20.fr/",
+        "retrieved_at": "2026-11-17T05:23:49.978537+00:00",
+        "status": 200,
+        "final_url": "https://www.leriadparis20.fr/",
+        "sha256": "6fc8133d37ddcccb95f2f63a50580586f74cd15a4d66dce78f3726685f3d7f33"
+      },
+      "retired_source": {
+        "url": "http://le-riad.com",
+        "retrieved_at": "2026-11-17T05:27:16.039105+00:00",
+        "status": 200,
+        "final_url": "http://www.le-riad.com/",
+        "sha256": "6800bc41e2ef0678595e2f6553111b670b7975c0cd4b49f285e924e17926e421"
+      },
+      "note": "Exact Le Riad at184 rue des Pyrénées Paris20. Retained URL only displays a default WordPress placeholder; current official site explicitly names venue/address. Website repair only; no opening, licence or legal ownership certification."
+    },
+    {
+      "venue_id": "da8d16cf-ac33-45f0-a85a-8c9d89b53d45",
+      "organization_id": "93869d8e-7a4c-4fed-8290-3905e9372432",
+      "expected_venue": {
+        "name": "Les Thermes",
+        "website": null
+      },
+      "expected_org": {
+        "name": "Les Thermes",
+        "website": "https://les-thermes-toulouse.com/"
+      },
+      "venue_patch": {
+        "name": "L’éclipse",
+        "website": "https://eclipse-toulouse.com/"
+      },
+      "org_patch": {
+        "name": "L’éclipse",
+        "website": "https://eclipse-toulouse.com/"
+      },
+      "source": {
+        "url": "https://les-thermes-toulouse.com/",
+        "retrieved_at": "2026-11-17T05:29:45.078552+00:00",
+        "status": 200,
+        "final_url": "https://eclipse-toulouse.com/",
+        "sha256": "86b4ee5c8525153ca23654e0fdd09c9dab308150d7523b975960764864df7669"
+      },
+      "redirect": {
+        "url": "https://les-thermes-toulouse.com/",
+        "status": 200,
+        "final_url": "https://eclipse-toulouse.com/",
+        "redirects": [
+          {
+            "from_url": "https://les-thermes-toulouse.com/",
+            "status": 301,
+            "to_url": "https://eclipse-toulouse.com/"
+          }
+        ],
+        "sha256": "86b4ee5c8525153ca23654e0fdd09c9dab308150d7523b975960764864df7669",
+        "retrieved_at": "2026-11-17T05:32:26.364104+00:00"
+      },
+      "note": "Old official domain permanently301 redirects to L’éclipse. Exact8 placeBelfort Toulouse and same shared phone0561206538 confirm current public branding at the existing venue. Update display name/site only; no legal ownership continuity, relocation, schedule, coordinates or publication certification. Old slugs remain."
+    },
+    {
+      "venue_id": "64e870c4-eff9-462b-bef3-99cafcbdf26b",
+      "organization_id": "c9a2da5b-09dd-47ab-9d50-981e95430fd8",
+      "expected_venue": {
+        "name": "Apart",
+        "website": "http://www.cafe-apart.de"
+      },
+      "expected_org": {
+        "name": "Apart",
+        "website": "http://www.cafe-apart.de"
+      },
+      "venue_patch": {
+        "website": "https://apart.bar/"
+      },
+      "org_patch": {
+        "website": "https://apart.bar/"
+      },
+      "source": {
+        "url": "https://apart.bar/",
+        "retrieved_at": "2026-11-17T05:38:37.373210+00:00",
+        "status": 200,
+        "final_url": "https://apart.bar/",
+        "sha256": "fb5d317e89ec7b561d04201f34c70b89d5834b7c11c74dd40623da40930ddc89"
+      },
+      "retired_source": {
+        "url": "https://www.cafe-apart.de/",
+        "retrieved_at": "2026-11-17T05:38:21.149747+00:00",
+        "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+      },
+      "note": "Exact Apart Bar atReichsstraße16,04109Leipzig. Former www.cafe-apart.de host no longer resolves; current own site explicitly identifies same bar and address. Website/domain only; geography was separately corrected. No opening/licence/ownership approval."
+    }
+  ],
+  "municipality_decisions": [
+    {
+      "venue_id": "64e870c4-eff9-462b-bef3-99cafcbdf26b",
+      "organization_id": "c9a2da5b-09dd-47ab-9d50-981e95430fd8",
+      "new_city_id": "f0d632de-b126-498a-94b4-888e4f954392",
+      "new_city": "Leipzig",
+      "state": "Saxony",
+      "expected_venue": {
+        "id": "64e870c4-eff9-462b-bef3-99cafcbdf26b",
+        "city": "Ferropolis",
+        "name": "Apart",
+        "state": "Saxony-Anhalt",
+        "address": "Reichsstraße 16",
+        "city_id": "e9331c08-8a48-4426-bdbb-65166feef4d1",
+        "country": "DE",
+        "latitude": 51.34158,
+        "longitude": 12.37721,
+        "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+        "created_by": null,
+        "duplicate_of_id": null,
+        "organization_id": "c9a2da5b-09dd-47ab-9d50-981e95430fd8"
+      },
+      "expected_org": {
+        "id": "c9a2da5b-09dd-47ab-9d50-981e95430fd8",
+        "name": "Apart",
+        "state": "Saxony-Anhalt",
+        "address": "Reichsstraße 16",
+        "city_id": "e9331c08-8a48-4426-bdbb-65166feef4d1",
+        "latitude": 51.34158,
+        "longitude": 12.37721,
+        "claimed_by": null,
+        "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+        "claim_status": "unclaimed",
+        "field_provenance": {
+          "identity": {
+            "at": "2026-10-11T13:59:47.858468+00:00",
+            "source": "unified_location",
+            "venue_id": "64e870c4-eff9-462b-bef3-99cafcbdf26b",
+            "ambiguous_candidates": []
+          },
+          "location_inheritance": {
+            "at": "2026-10-12T13:00:37.492962+00:00",
+            "source_id": "64e870c4-eff9-462b-bef3-99cafcbdf26b",
+            "source_table": "venues"
+          }
+        },
+        "primary_venue_id": "64e870c4-eff9-462b-bef3-99cafcbdf26b"
+      },
+      "source": {
+        "url": "https://apart.bar/",
+        "retrieved_at": "2026-11-17T05:38:37.373210+00:00",
+        "status": 200,
+        "final_url": "https://apart.bar/",
+        "sha256": "fb5d317e89ec7b561d04201f34c70b89d5834b7c11c74dd40623da40930ddc89"
+      },
+      "scope": "Correct municipality and region using the exact official business street address. Preserve coordinates byte-for-byte; no exact-pin, current licence, ownership or publication certification. Keep all other profile fields and source history."
+    },
+    {
+      "venue_id": "68c56c20-f4d6-45a8-977b-9be3ff20e8da",
+      "organization_id": "30fed267-a5fa-42b9-932b-10f15527ea02",
+      "new_city_id": "d90496c5-104e-44d2-b5b6-24fd191882cd",
+      "new_city": "Mainz",
+      "state": "Rhineland-Palatinate",
+      "expected_venue": {
+        "id": "68c56c20-f4d6-45a8-977b-9be3ff20e8da",
+        "city": "Frankfurt",
+        "name": "Bar jeder Sicht",
+        "state": "Rhineland-Palatinate",
+        "address": "Hintere Bleiche 29",
+        "city_id": "e2238b71-ce45-43c8-b271-6bb7994faf42",
+        "country": "DE",
+        "latitude": 50.0024007,
+        "longitude": 8.26411,
+        "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+        "created_by": null,
+        "duplicate_of_id": null,
+        "organization_id": "30fed267-a5fa-42b9-932b-10f15527ea02"
+      },
+      "expected_org": {
+        "id": "30fed267-a5fa-42b9-932b-10f15527ea02",
+        "name": "Bar jeder Sicht",
+        "state": "Hesse",
+        "address": "Hintere Bleiche 29",
+        "city_id": "e2238b71-ce45-43c8-b271-6bb7994faf42",
+        "latitude": 50.0024007,
+        "longitude": 8.26411,
+        "claimed_by": null,
+        "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+        "claim_status": "unclaimed",
+        "field_provenance": {
+          "identity": {
+            "at": "2026-10-11T14:00:02.404116+00:00",
+            "source": "unified_location",
+            "venue_id": "68c56c20-f4d6-45a8-977b-9be3ff20e8da",
+            "ambiguous_candidates": []
+          },
+          "location_inheritance": {
+            "at": "2026-10-12T13:10:48.572969+00:00",
+            "source_id": "68c56c20-f4d6-45a8-977b-9be3ff20e8da",
+            "source_table": "venues"
+          }
+        },
+        "primary_venue_id": "68c56c20-f4d6-45a8-977b-9be3ff20e8da"
+      },
+      "source": {
+        "url": "https://barjedersicht.de/",
+        "retrieved_at": "2026-11-17T05:38:21.150340+00:00",
+        "status": 200,
+        "final_url": "https://barjedersicht.de/",
+        "sha256": "f8d93102aeb8322f3d1b936b7cd58eae0f54b0b2c7485e3ec22df56cc1d1d605"
+      },
+      "scope": "Correct municipality and region using the exact official business street address. Preserve coordinates byte-for-byte; no exact-pin, current licence, ownership or publication certification. Keep all other profile fields and source history."
+    },
+    {
+      "venue_id": "ec35bacf-19ad-4662-b009-73f03e49b8a6",
+      "organization_id": "ddd190a4-778d-435d-9d7c-dbcbe58d1d9f",
+      "new_city_id": "119d1bb7-5ba5-49c0-ae99-9d57eec1f376",
+      "new_city": "Nijmegen",
+      "state": "Gelderland",
+      "expected_venue": {
+        "id": "ec35bacf-19ad-4662-b009-73f03e49b8a6",
+        "city": "Duiven",
+        "name": "De Plak",
+        "state": "Gelderland",
+        "address": "Bloemerstraat 90",
+        "city_id": "4c4d99c8-5db2-4670-ae52-8674fa47efc6",
+        "country": "NL",
+        "latitude": 51.8454713,
+        "longitude": 5.8613692,
+        "country_id": "7fc92804-fe85-4827-8d7f-6e561e292552",
+        "created_by": null,
+        "duplicate_of_id": null,
+        "organization_id": "ddd190a4-778d-435d-9d7c-dbcbe58d1d9f"
+      },
+      "expected_org": {
+        "id": "ddd190a4-778d-435d-9d7c-dbcbe58d1d9f",
+        "name": "De Plak",
+        "state": "Gelderland",
+        "address": "Bloemerstraat 90",
+        "city_id": "4c4d99c8-5db2-4670-ae52-8674fa47efc6",
+        "latitude": 51.8454713,
+        "longitude": 5.8613692,
+        "claimed_by": null,
+        "country_id": "7fc92804-fe85-4827-8d7f-6e561e292552",
+        "claim_status": "unclaimed",
+        "field_provenance": {
+          "identity": {
+            "at": "2026-10-11T14:09:04.820173+00:00",
+            "source": "unified_location",
+            "venue_id": "ec35bacf-19ad-4662-b009-73f03e49b8a6",
+            "ambiguous_candidates": []
+          },
+          "location_inheritance": {
+            "at": "2026-10-12T13:27:09.983254+00:00",
+            "source_id": "ec35bacf-19ad-4662-b009-73f03e49b8a6",
+            "source_table": "venues"
+          }
+        },
+        "primary_venue_id": "ec35bacf-19ad-4662-b009-73f03e49b8a6"
+      },
+      "source": {
+        "url": "https://www.cafedeplak.nl/contact",
+        "retrieved_at": "2026-11-17T05:38:37.373831+00:00",
+        "status": 200,
+        "final_url": "https://www.cafedeplak.nl/contact",
+        "sha256": "efa1e46449b688ef656fdcf8738ac81991684d6371a2be4eeefe067459ac8deb"
+      },
+      "scope": "Correct municipality and region using the exact official business street address. Preserve coordinates byte-for-byte; no exact-pin, current licence, ownership or publication certification. Keep all other profile fields and source history."
+    },
+    {
+      "venue_id": "ee69cf2e-84db-4a95-82ed-ea70fd34fd24",
+      "organization_id": "4f606914-192a-46ac-8d66-39aed36d3120",
+      "new_city_id": "dbc58f6a-c839-44f3-8739-d3300075a984",
+      "new_city": "Bologna",
+      "state": "Emilia-Romagna",
+      "expected_venue": {
+        "id": "ee69cf2e-84db-4a95-82ed-ea70fd34fd24",
+        "city": "Pistoia",
+        "name": "Il Cassero",
+        "state": "Emilia-Romagna",
+        "address": "Via Don Minzoni 18",
+        "city_id": "277b54ab-a504-49bd-8262-9e05f3cdb58e",
+        "country": "IT",
+        "latitude": 44.50279942,
+        "longitude": 11.33518159,
+        "country_id": "515cf5a4-80de-43c7-9c4c-7b97abcfc9b1",
+        "created_by": null,
+        "duplicate_of_id": null,
+        "organization_id": "4f606914-192a-46ac-8d66-39aed36d3120"
+      },
+      "expected_org": {
+        "id": "4f606914-192a-46ac-8d66-39aed36d3120",
+        "name": "Il Cassero",
+        "state": "Tuscany",
+        "address": "Via Don Minzoni 18",
+        "city_id": "277b54ab-a504-49bd-8262-9e05f3cdb58e",
+        "latitude": 44.50279942,
+        "longitude": 11.33518159,
+        "claimed_by": null,
+        "country_id": "515cf5a4-80de-43c7-9c4c-7b97abcfc9b1",
+        "claim_status": "unclaimed",
+        "field_provenance": {
+          "identity": {
+            "at": "2026-10-11T14:09:15.055626+00:00",
+            "source": "unified_location",
+            "venue_id": "ee69cf2e-84db-4a95-82ed-ea70fd34fd24",
+            "ambiguous_candidates": []
+          },
+          "location_inheritance": {
+            "at": "2026-10-12T13:27:26.471724+00:00",
+            "source_id": "ee69cf2e-84db-4a95-82ed-ea70fd34fd24",
+            "source_table": "venues"
+          }
+        },
+        "primary_venue_id": "ee69cf2e-84db-4a95-82ed-ea70fd34fd24"
+      },
+      "source": {
+        "url": "https://cassero.it/",
+        "retrieved_at": "2026-11-17T05:47:14.739885+00:00",
+        "status": 200,
+        "final_url": "https://cassero.it/",
+        "sha256": "305cab1dea2038591d6f18ea6b709386465a3c7f9f23ead8321cfd29f039816b"
+      },
+      "scope": "Correct municipality/region using exact first-party street address; preserve all coordinates and unrelated fields. No ownership, human or exact-pin verification asserted."
+    },
+    {
+      "venue_id": "a4570551-8c49-46ea-be11-64440eee5d7d",
+      "organization_id": "28a86be4-810a-4ae2-b71e-77b9bde4fa5e",
+      "new_city_id": "088a5b43-1770-4601-a02a-8eb62a8276fd",
+      "new_city": "Bochum",
+      "state": "North Rhine-Westphalia",
+      "expected_venue": {
+        "id": "a4570551-8c49-46ea-be11-64440eee5d7d",
+        "city": "Essen",
+        "name": "El Brasi Filmclub",
+        "state": "North Rhine-Westphalia",
+        "address": "Hattinger Str. 746",
+        "city_id": "ad1f17ac-c22e-4cb7-aeb8-b3ec2c47ce68",
+        "country": "DE",
+        "latitude": 51.4309555,
+        "longitude": 7.1680424,
+        "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+        "created_by": null,
+        "duplicate_of_id": null,
+        "organization_id": "28a86be4-810a-4ae2-b71e-77b9bde4fa5e"
+      },
+      "expected_org": {
+        "id": "28a86be4-810a-4ae2-b71e-77b9bde4fa5e",
+        "name": "El Brasi Filmclub",
+        "state": "North Rhine-Westphalia",
+        "address": "Hattinger Str. 746",
+        "city_id": "ad1f17ac-c22e-4cb7-aeb8-b3ec2c47ce68",
+        "latitude": 51.4309555,
+        "longitude": 7.1680424,
+        "claimed_by": null,
+        "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+        "claim_status": "unclaimed",
+        "field_provenance": {
+          "website": {
+            "source": "primary_venue_source_website",
+            "source_id": "d7bfd630-cda2-4237-80c9-75704b6271fd",
+            "source_url": "https://planet-randy.com/blog/en/eintrag/el-brasi/",
+            "source_path": "normalized.contacts.website",
+            "source_slug": "planet-randy",
+            "inherited_at": "2026-11-03T01:41:00.371096+00:00",
+            "payload_hash": "a34b8d11d08d58279a27e5a4fa174c1b8c2656cff8acec043e756b3630b199fa",
+            "source_table": "venue_sources",
+            "human_reviewed": false,
+            "source_last_seen_at": "2026-10-06T15:49:00.075702+00:00"
+          },
+          "identity": {
+            "at": "2026-10-11T14:04:20.200157+00:00",
+            "source": "unified_location",
+            "venue_id": "a4570551-8c49-46ea-be11-64440eee5d7d",
+            "ambiguous_candidates": []
+          },
+          "location_inheritance": {
+            "at": "2026-10-12T13:19:22.174709+00:00",
+            "source_id": "a4570551-8c49-46ea-be11-64440eee5d7d",
+            "source_table": "venues"
+          }
+        },
+        "primary_venue_id": "a4570551-8c49-46ea-be11-64440eee5d7d"
+      },
+      "source": {
+        "url": "https://www.elbrasi.de/",
+        "retrieved_at": "2026-11-17T05:47:14.740779+00:00",
+        "status": 200,
+        "final_url": "https://www.elbrasi.de/",
+        "sha256": "f6fb012e29fa00a7417444a04ff6ca81113570498b76ef0fef3ce63873244432"
+      },
+      "scope": "Correct municipality/region using exact first-party street address; preserve all coordinates and unrelated fields. No ownership, human or exact-pin verification asserted."
+    }
+  ],
+  "business_country_decision": {
+    "organization_id": "4a412c46-5a57-453d-a67a-d86d600772cc",
+    "primary_venue_id": "2753bab6-611a-425c-9722-f1c1f65cdf3d",
+    "old_city_id": "65f4e961-8c63-4fa5-a236-ed53f56edb96",
+    "old_country_id": "0f2db027-3c03-44fc-a2fc-c0903635e784",
+    "old_state": "Dakar Region",
+    "new_city_id": "910a92a5-96ce-4434-a5bd-f315dbebaa7e",
+    "new_country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+    "new_state": "Lucerne",
+    "source": {
+      "url": "https://discus-sauna.ch/",
+      "retrieved_at": "2026-11-17T05:47:14.740666+00:00",
+      "status": 200,
+      "final_url": "https://discus-sauna.ch/",
+      "sha256": "b7d26d94eaf56ccb4c26aeef47b2fdc1311ceea1d9d27653d201e22e6564fe72"
+    },
+    "note": "Official Discus Sauna confirms Industriesstrasse10,6010Kriens and its2012 move toKriens. Existing canonical Swiss venue is already correct. Its unclaimed business profile incorrectly referenced Dakar/Senegal. Correct business city/country/region only, preserve NULL coordinates and all other profile fields; no human or legal ownership certification. Native safety_gated is automatically derived from country risk and the linked venue by existing triggers; its expected true-to-false recomputation is asserted. No policy, country risk profile, human review or publication field is changed."
+  },
+  "relationship_decision": {
+    "venue_id": "38813556-dde1-4bb5-b7e2-5c6f42458407",
+    "correct_organization_id": "bd1283eb-ac32-4108-a8e0-e225de4a8743",
+    "incorrect_organization_id": "b50cc1b9-5f61-4ae8-89cd-557e6b03df96",
+    "old_primary_venue_id": "9db20a04-d8e2-4bc2-b38a-aa0a7dcf3b44",
+    "source": {
+      "url": "https://visitapuertovallarta.com.mx/directorio/bares-y-clubs",
+      "retrieved_at": "2026-11-17T05:41:43.383494+00:00",
+      "status": 200,
+      "final_url": "https://visitapuertovallarta.com.mx/directorio/bares-y-clubs",
+      "sha256": "a22c51c18a0e2cfbd08e881e9ac0936088114a6d8c962f216f585b4fc3edcca0"
+    },
+    "note": "Official Puerto Vallarta tourism directory identifies Anónimo atC.RodolfoGómez157. The existing unclaimed AnonimoVideoBarPV profile already points to a venue merged into this canonical venue. Correct physical catalog association; unrelated CityBarVienna profile remains byte-for-byte unchanged. No legal ownership or human verification asserted."
+  },
+  "validation": {
+    "audit_counts": [
+      {
+        "jsonb_build_object": {
+          "columns": [
+            "active",
+            "updated_at"
+          ],
+          "audit_counts": [
+            {
+              "count": 2,
+              "reason": "codex_source_pass6_Anonimo_relationship"
+            },
+            {
+              "count": 21,
+              "reason": "codex_source_pass6_business_identity"
+            },
+            {
+              "count": 1,
+              "reason": "codex_source_pass6_Discus_country"
+            },
+            {
+              "count": 10,
+              "reason": "codex_source_pass6_municipality"
+            },
+            {
+              "count": 3,
+              "reason": "codex_source_pass6_profile_facts"
+            },
+            {
+              "count": 6,
+              "reason": "codex_source_pass6_website_brand"
+            }
+          ],
+          "discus_changes": [
+            {
+              "fields": [
+                "state",
+                "city_id",
+                "country_id",
+                "updated_at",
+                "safety_gated",
+                "field_provenance"
+              ],
+              "reason": "codex_source_pass6_Discus_country"
+            },
+            {
+              "fields": [
+                "updated_at",
+                "description",
+                "field_provenance"
+              ],
+              "reason": "codex_source_pass6_profile_facts"
+            }
+          ]
+        }
+      }
+    ],
+    "native_merge_cohort": [
+      {
+        "expected": 21,
+        "verified": 21,
+        "source_audits": 21
+      }
+    ],
+    "worklist_refresh": [
+      {
+        "refresh_admin_review_worklist": {
+          "cases": 2767,
+          "elapsed_ms": 19311.745
+        }
+      }
+    ],
+    "queue_top_refresh": {
+      "unavailable": true,
+      "error": "tool call error: tool call failed for `codex_apps/supabase.execute_sql`\n\nCaused by:\n    Transport send error: Transport [codex_rmcp_client::tool_list_changes::ToolListChanges<codex_rmcp_client::event_notification_transport::EventNotificationTransport<rmcp::transport::worker::WorkerTransport<rmcp::transport::streamable_http_client::StreamableHttpClientWorker<codex_rmcp_client::http_client_adapter::StreamableHttpClientAdapter>>>>] error: Client error: HTTP request failed: http/request failed: error sending request for url (https://chatgpt.com/backend-api/ps/mcp)"
+    },
+    "method": "Every committed transaction first passed a rolled-back execution with row locks, expected-state and human/claim guards, exact automatic gap-fill assertions and before/after preservation checks. Full before/after values and source details are in admin_review_repairs; merges use native entity_merge_audit. No new code/runtime changes in this pass."
+  },
+  "snapshot": [
+    {
+      "jsonb_build_object": {
+        "blockers": [
+          {
+            "count": 994,
+            "blocker": "missing_source"
+          },
+          {
+            "count": 631,
+            "blocker": "missing_source_url"
+          },
+          {
+            "count": 556,
+            "blocker": "missing_action_candidate"
+          },
+          {
+            "count": 249,
+            "blocker": "conflicting_identity"
+          },
+          {
+            "count": 139,
+            "blocker": "source_unavailable"
+          },
+          {
+            "count": 107,
+            "blocker": "source_not_authorized"
+          },
+          {
+            "count": 61,
+            "blocker": "insufficient_confidence"
+          },
+          {
+            "count": 15,
+            "blocker": "visual_evidence_requires_human_review"
+          },
+          {
+            "count": 11,
+            "blocker": "protected_review"
+          },
+          {
+            "count": 4,
+            "blocker": "retry"
+          },
+          {
+            "count": 1,
+            "blocker": null
+          },
+          {
+            "count": 1,
+            "blocker": "queued"
+          }
+        ],
+        "families": [
+          {
+            "count": 1018,
+            "family": "city_identity"
+          },
+          {
+            "count": 841,
+            "family": "record"
+          },
+          {
+            "count": 585,
+            "family": "venue"
+          },
+          {
+            "count": 310,
+            "family": "business_link"
+          },
+          {
+            "count": 15,
+            "family": "artwork"
+          }
+        ],
+        "observed_at": "2026-11-17T07:30:17.876874+00:00",
+        "active_cases": 2769,
+        "image_requests": null
+      }
+    }
+  ],
+  "worker_monitoring": {
+    "first_read_recent_runs": [
+      {
+        "result": {
+          "lane": "image",
+          "failed": 0,
+          "success": true,
+          "updated": 0,
+          "no_change": 12,
+          "processed": 12,
+          "ai_attempts": 0,
+          "fields_filled": 0,
+          "network_requests": 17
+        },
+        "started_at": "2026-11-17T05:23:01.293627+00:00",
+        "status_code": 200
+      },
+      {
+        "result": {
+          "lane": "image",
+          "failed": 0,
+          "success": true,
+          "updated": 0,
+          "no_change": 12,
+          "processed": 12,
+          "ai_attempts": 0,
+          "fields_filled": 0,
+          "network_requests": 13
+        },
+        "started_at": "2026-11-17T05:18:00.317333+00:00",
+        "status_code": 200
+      },
+      {
+        "result": {
+          "lane": "image",
+          "failed": 0,
+          "success": true,
+          "updated": 0,
+          "no_change": 12,
+          "processed": 12,
+          "ai_attempts": 0,
+          "fields_filled": 0,
+          "network_requests": 15
+        },
+        "started_at": "2026-11-17T05:13:00.316974+00:00",
+        "status_code": 200
+      }
+    ],
+    "earlier_observation": "At pass start, 24 completed scheduled image requests since the previous timeout repair were HTTP200 with no failures. These three most recent results each processed12, failed0, ai_attempts0.",
+    "latest_read": {
+      "unavailable": true,
+      "error": "tool call error: tool call failed for `codex_apps/supabase.execute_sql`\n\nCaused by:\n    Transport send error: Transport [codex_rmcp_client::tool_list_changes::ToolListChanges<codex_rmcp_client::event_notification_transport::EventNotificationTransport<rmcp::transport::worker::WorkerTransport<rmcp::transport::streamable_http_client::StreamableHttpClientWorker<codex_rmcp_client::http_client_adapter::StreamableHttpClientAdapter>>>>] error: Client error: HTTP request failed: http/request failed: error sending request for url (https://chatgpt.com/backend-api/ps/mcp)"
+    },
+    "note": "Latest follow-up query encountered a connector transport failure; no claim is made about unobserved newer runs."
+  },
+  "holds": [
+    {
+      "name": "Discus duplicate",
+      "reason": "After the canonical description was supplied, native gap filling exposed address plus donor coordinates. The official street address does not independently establish that exact pin, so the duplicate merge was not applied. The country repair and factual description remain applied."
+    },
+    {
+      "name": "Cassero duplicate",
+      "reason": "The donor also has a support role; a venue-only merge would not be justified. Bologna geography is corrected separately."
+    },
+    {
+      "name": "Gear Berlin retail address",
+      "reason": "Current official imprint confirms shared support inbox and registered office, but does not establish current walk-in retail address. Business merge/email applied; generic venue address remains held."
+    },
+    {
+      "name": "Les Salins",
+      "reason": "Official current address5avenueMarxDormoy differs from donor1rueMontpelaBujadoux. Exact identity across this address change not established."
+    },
+    {
+      "name": "Heat, Pullermanns, Twist",
+      "reason": "Current fetched pages did not corroborate all contacts that native gap filling would transfer."
+    },
+    {
+      "name": "Campus, Noiz and further profile transfers",
+      "reason": "Uncorroborated descriptions, contact details or current physical venue identity remain; no unsupported superlatives copied."
+    },
+    {
+      "name": "Extratour, Metro Milano, Rex, Saxo, Stonewall, Woofs, Le Steamer",
+      "reason": "TLS/DNS/connection failures or insufficient readable current page content. No TLS bypass."
+    },
+    {
+      "name": "Kobalt",
+      "reason": "Previously exceeded bounded capture size; not retried in this pass."
+    },
+    {
+      "name": "L'Entre Deux Eaux/Nude Bar",
+      "reason": "Current rebrand/identity not established from accessible first-party evidence."
+    },
+    {
+      "name": "Montmartre and Wikidata sources",
+      "reason": "Earlier429responses respected; not retried in this pass. Montmartre also has conflicting street addresses."
+    },
+    {
+      "name": "Bears, Centuryon, Chango, Code Store, Colibri",
+      "reason": "Suspicious cross-business venue links need current first-party evidence and exact canonical identity before reassignment."
+    },
+    {
+      "name": "Steamworks Chicago and Axis",
+      "reason": "Shared brand/differently named linked business may reflect a branch/operator relationship; no legal ownership inference."
+    },
+    {
+      "name": "Bluepoint and Bobas",
+      "reason": "Current exact street-city evidence unavailable from accessible official source."
+    },
+    {
+      "name": "Other cross-city/country cases",
+      "reason": "Metro-area municipality ambiguities and conflicting Eagle/Baliza identities are not resolved by simply changing country or merging."
+    }
+  ],
+  "controls": "Machine-source review only; human_reviewed:false. No change to confidence thresholds, source authorization, human publication/ownership gates or worker budgets. Location coordinates for the five venue/business municipality pairs and the Discus country repair were preserved. Discus safety_gated recomputed automatically under unchanged native country-risk policy, separately asserted.",
+  "sources": [
+    {
+      "url": "https://www.fuse.be/faq",
+      "retrieved_at": "2026-11-17T05:25:59.243064+00:00",
+      "status": 200,
+      "final_url": "https://www.fuse.be/faq",
+      "sha256": "40a07a158fdd208f8b86b45f2de30e9f9648f3c0ccbe967c03f37c72d9406e8c"
+    },
+    {
+      "url": "https://rexshop.fr/",
+      "retrieved_at": "2026-11-17T05:23:49.954505+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://www.heatsa.com/contact-us",
+      "retrieved_at": "2026-11-17T05:26:47.945458+00:00",
+      "status": 200,
+      "final_url": "https://www.heatsa.com/contact-us",
+      "sha256": "b95840fcd132ea5db9528e865c6a2bee9061951d46543f09b72241b4d752a76e"
+    },
+    {
+      "url": "https://strong.madrid/",
+      "retrieved_at": "2026-11-17T05:29:45.322170+00:00",
+      "status": 200,
+      "final_url": "https://strong.madrid/",
+      "sha256": "85d710644dd427720e6195a155e901d4deaf8c010094d720ff17d0b8a1e78dcb"
+    },
+    {
+      "url": "https://www.pumpjackpub.com/",
+      "retrieved_at": "2026-11-17T05:29:45.403586+00:00",
+      "status": 200,
+      "final_url": "https://www.pumpjackpub.com/",
+      "sha256": "8f8d46dde2b4e912e90a26a1129c61df483744fb3e759a96fbc3cace5be6a03c"
+    },
+    {
+      "url": "https://heatsa.com/",
+      "retrieved_at": "2026-11-17T05:23:48.936487+00:00",
+      "status": 200,
+      "final_url": "https://www.heatsa.com/",
+      "sha256": "166e10181a041e028022765fa61cb429eaae4177de6c6299f661bdf690bc900f"
+    },
+    {
+      "url": "https://gearberlin.com/pages/imprint",
+      "retrieved_at": "2026-11-17T05:26:47.945983+00:00",
+      "status": 200,
+      "final_url": "https://gearberlin.com/pages/imprint",
+      "sha256": "c3e26a499abd12dd9ab6d39fcf4f612f626800422d9aa8891bef71eb1687ca25"
+    },
+    {
+      "url": "https://www.paragonya.ch/",
+      "retrieved_at": "2026-11-17T05:23:49.769334+00:00",
+      "status": 200,
+      "final_url": "https://www.paragonya.ch/",
+      "sha256": "ff19120fee621814dc6c010a2619ef100634d13ad4dc04a0f7ad196766409e98"
+    },
+    {
+      "url": "https://pullermanns.de/impressum/",
+      "retrieved_at": "2026-11-17T05:24:49.488824+00:00",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://www.woofsatlanta.com/",
+      "retrieved_at": "2026-11-17T05:29:45.722707+00:00",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "url": "https://slmstockholm.se/en/contact/",
+      "retrieved_at": "2026-11-17T05:31:46.712440+00:00",
+      "status": 200,
+      "final_url": "https://slmstockholm.se/en/contact/",
+      "sha256": "1c250d7a033d70791126fb3fa9820b7ee6de7eaf39b8a5238e3c41dc39165196"
+    },
+    {
+      "url": "https://gearberlin.com/",
+      "retrieved_at": "2026-11-17T05:23:48.936313+00:00",
+      "status": 200,
+      "final_url": "https://gearberlin.com/",
+      "sha256": "61e662b3e0a310b84c94794bdc5a67c8112ffd677a4a139ae7b1b2b72c75ee20"
+    },
+    {
+      "url": "https://www.leriadparis20.fr/",
+      "retrieved_at": "2026-11-17T05:23:49.978537+00:00",
+      "status": 200,
+      "final_url": "https://www.leriadparis20.fr/",
+      "sha256": "6fc8133d37ddcccb95f2f63a50580586f74cd15a4d66dce78f3726685f3d7f33"
+    },
+    {
+      "url": "https://www.twist-frankfurt.de/",
+      "retrieved_at": "2026-11-17T05:29:45.722208+00:00",
+      "status": 200,
+      "final_url": "https://linktr.ee/twistffm",
+      "sha256": "042edfbbb329b233ca1bd7992c6d423321141a816c060dd3f83333f42c73509c"
+    },
+    {
+      "url": "http://www.barentredeuxeaux.com",
+      "retrieved_at": "2026-11-17T05:27:16.039546+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://les-thermes-marseille.com/",
+      "retrieved_at": "2026-11-17T05:23:49.266960+00:00",
+      "status": 200,
+      "final_url": "https://les-thermes-marseille.com/",
+      "sha256": "bd7efc80e95ad4f907d793228c8ae1e4501fbe4122da86e00783085da77dbea8"
+    },
+    {
+      "url": "https://saunastonewall.com/",
+      "retrieved_at": "2026-11-17T05:29:45.293636+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://les-thermes-toulouse.com/",
+      "retrieved_at": "2026-11-17T05:29:45.078552+00:00",
+      "status": 200,
+      "final_url": "https://eclipse-toulouse.com/",
+      "sha256": "86b4ee5c8525153ca23654e0fdd09c9dab308150d7523b975960764864df7669"
+    },
+    {
+      "url": "https://slmstockholm.se/en/",
+      "retrieved_at": "2026-11-17T05:29:45.078851+00:00",
+      "status": 200,
+      "final_url": "https://slmstockholm.se/en/",
+      "sha256": "ba3950bff17bab5eb396dbb79d3d47e510ec73232c8ef3b7ad4c0c0364686ecd"
+    },
+    {
+      "url": "https://pitter.cologne/",
+      "retrieved_at": "2026-11-17T05:29:45.618392+00:00",
+      "status": 200,
+      "final_url": "https://pitter.cologne/",
+      "sha256": "6190c0602cdc9883a2e70028436a7ef8bcf291ca25dc78dd75189faf49e06d9a"
+    },
+    {
+      "url": "https://www.saunabossuet.com/",
+      "retrieved_at": "2026-11-17T05:29:45.078057+00:00",
+      "status": 200,
+      "final_url": "https://www.saunabossuet.com/",
+      "sha256": "4b83ce7b042e5439f61702deb20323ac42ffe0f66e8c2c804b19726186d49237"
+    },
+    {
+      "url": "https://heatsa.com/contact",
+      "retrieved_at": "2026-11-17T05:24:49.701582+00:00",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://www.sauna-les-salins.fr/",
+      "retrieved_at": "2026-11-17T05:23:49.263884+00:00",
+      "status": 200,
+      "final_url": "https://www.sauna-les-salins.fr/",
+      "sha256": "36bd3313bea382230c0c414613138505457b0e61e03ea3dd98ef8a788732be56"
+    },
+    {
+      "url": "https://www.gaybar-extratour.de/",
+      "retrieved_at": "2026-11-17T05:23:48.936155+00:00",
+      "error": "<urlopen error [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://pullermanns.de/",
+      "retrieved_at": "2026-11-17T05:23:49.809067+00:00",
+      "status": 200,
+      "final_url": "https://pullermanns.de/",
+      "sha256": "c021859764c53d9958828e2553ed1d61efbd107df963fbf343c29e724b498e08"
+    },
+    {
+      "url": "https://motherclub.ie/termsandconditions",
+      "retrieved_at": "2026-11-17T05:25:59.243571+00:00",
+      "status": 200,
+      "final_url": "https://motherclub.ie/termsandconditions",
+      "sha256": "e6267242cf37e60bf71e9fd2415d3b21f39bd2fae1d1b6b706d08c5ccd74bd60"
+    },
+    {
+      "url": "https://www.lesaxobar.ch/",
+      "retrieved_at": "2026-11-17T05:29:45.078680+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://gearberlin.com/pages/contact",
+      "retrieved_at": "2026-11-17T05:24:49.488735+00:00",
+      "status": 200,
+      "final_url": "https://gearberlin.com/pages/contact",
+      "sha256": "4047e8a107fc4da2dd18659a1d923cb858cc50a43eef5236ea28a2d1b2974c07"
+    },
+    {
+      "url": "https://www.halfway2heaven.net/london",
+      "retrieved_at": "2026-11-17T05:23:48.936396+00:00",
+      "status": 200,
+      "final_url": "https://www.halfway2heaven.net/",
+      "sha256": "bdeb6c9d87a9debd84a77c1aad7d43d036aed577545e959decbdb4069875128b"
+    },
+    {
+      "url": "https://www.paragonya.ch/kontakt",
+      "retrieved_at": "2026-11-17T05:24:49.488566+00:00",
+      "status": 200,
+      "final_url": "https://www.paragonya.ch/kontakt/",
+      "sha256": "5e9a3bad3fe6f498515df39a3527a20521b640c7765556bdb6de7c31fadb70f8"
+    },
+    {
+      "url": "https://www.fuse.be/",
+      "retrieved_at": "2026-11-17T05:23:48.933085+00:00",
+      "status": 200,
+      "final_url": "https://www.fuse.be/",
+      "sha256": "46a922bd696f0bdbe746b28d460a6a9a20e092ec9102f5f0bf06fb504aca3053"
+    },
+    {
+      "url": "https://queerbritain.org.uk/",
+      "retrieved_at": "2026-11-17T05:23:49.944848+00:00",
+      "status": 200,
+      "final_url": "https://queerbritain.org.uk/",
+      "sha256": "9df943e791d8791381b95c97eefd17e787058272d7b1189e2b7aad28f1432271"
+    },
+    {
+      "url": "https://www.lesteamer.com/",
+      "retrieved_at": "2026-11-17T05:29:45.202939+00:00",
+      "status": 200,
+      "final_url": "https://www.lesteamer.com/",
+      "sha256": "3a2f2ce071ec4ff8ff2fd4ed8b6fa6ad5679fa441f681666bf6923b6ff0a99c8"
+    },
+    {
+      "url": "https://www.metroclubmilano.it/",
+      "retrieved_at": "2026-11-17T05:23:49.525579+00:00",
+      "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'www.metroclubmilano.it'. (_ssl.c:1082)>"
+    },
+    {
+      "url": "http://le-riad.com",
+      "retrieved_at": "2026-11-17T05:27:16.039105+00:00",
+      "status": 200,
+      "final_url": "http://www.le-riad.com/",
+      "sha256": "6800bc41e2ef0678595e2f6553111b670b7975c0cd4b49f285e924e17926e421"
+    },
+    {
+      "url": "https://motherclub.ie/contact",
+      "retrieved_at": "2026-11-17T05:24:49.488897+00:00",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://motherclub.ie/",
+      "retrieved_at": "2026-11-17T05:23:49.631633+00:00",
+      "status": 200,
+      "final_url": "https://motherclub.ie/",
+      "sha256": "005bb2132bc6c1f3f264562fc728f7290107e6bde0d650403214603d1a12dc43"
+    },
+    {
+      "url": "https://gearberlin.com/pages/private-shopping",
+      "retrieved_at": "2026-11-17T05:31:46.713046+00:00",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://www.lesbains.fr/",
+      "retrieved_at": "2026-11-17T05:23:49.083518+00:00",
+      "status": 200,
+      "final_url": "https://www.lesbains.fr/",
+      "sha256": "d36c975b00415a5072bb800cf6108bb0a6e5fda3c61d498600033432e66518c0"
+    },
+    {
+      "url": "https://www.slutclubhamburg.de/",
+      "retrieved_at": "2026-11-17T05:29:45.078949+00:00",
+      "status": 200,
+      "final_url": "https://www.slutclubhamburg.de/",
+      "sha256": "2e7c8b3093e7023c02ab39d432c59c8e9a48d0e07276be4986e7763d1e3c5ecd"
+    },
+    {
+      "url": "https://queerbritain.org.uk/visit",
+      "retrieved_at": "2026-11-17T05:26:47.946122+00:00",
+      "status": 200,
+      "final_url": "https://queerbritain.org.uk/visit",
+      "sha256": "34345927527d182b46d66c8089cefd301e0569e1f1f628a273f27959c9e6d383"
+    },
+    {
+      "url": "https://www.fuse.be/contact",
+      "retrieved_at": "2026-11-17T05:24:49.487921+00:00",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://www.sunnyday.ch/",
+      "retrieved_at": "2026-11-17T05:29:45.322436+00:00",
+      "status": 200,
+      "final_url": "https://sunnyday.ch/",
+      "sha256": "e5acbbc4133238cf0016b412a62abed048a54e4738dd70b571542deb161b98be"
+    },
+    {
+      "url": "https://www.cafe-apart.de/",
+      "retrieved_at": "2026-11-17T05:38:21.149747+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://www.cafedeplak.nl/",
+      "retrieved_at": "2026-11-17T05:38:21.150609+00:00",
+      "status": 200,
+      "final_url": "https://www.cafedeplak.nl/",
+      "sha256": "b640f525789015a19c1a22fa42a7b15e8ecfcfa89a8f38a503c1352d06881e9c"
+    },
+    {
+      "url": "https://mail.visitapuertovallarta.com.mx/directorio/bares-y-clubs",
+      "retrieved_at": "2026-11-17T05:41:43.384135+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://www.elbrasi.de/",
+      "retrieved_at": "2026-11-17T05:47:14.740779+00:00",
+      "status": 200,
+      "final_url": "https://www.elbrasi.de/",
+      "sha256": "f6fb012e29fa00a7417444a04ff6ca81113570498b76ef0fef3ce63873244432"
+    },
+    {
+      "url": "https://apart.bar/",
+      "retrieved_at": "2026-11-17T05:38:37.373210+00:00",
+      "status": 200,
+      "final_url": "https://apart.bar/",
+      "sha256": "fb5d317e89ec7b561d04201f34c70b89d5834b7c11c74dd40623da40930ddc89"
+    },
+    {
+      "url": "https://www.cafedeplak.nl/contact",
+      "retrieved_at": "2026-11-17T05:38:37.373831+00:00",
+      "status": 200,
+      "final_url": "https://www.cafedeplak.nl/contact",
+      "sha256": "efa1e46449b688ef656fdcf8738ac81991684d6371a2be4eeefe067459ac8deb"
+    },
+    {
+      "url": "https://barjedersicht.de/",
+      "retrieved_at": "2026-11-17T05:38:21.150340+00:00",
+      "status": 200,
+      "final_url": "https://barjedersicht.de/",
+      "sha256": "f8d93102aeb8322f3d1b936b7cd58eae0f54b0b2c7485e3ec22df56cc1d1d605"
+    },
+    {
+      "url": "https://www.bobasbar.de/",
+      "retrieved_at": "2026-11-17T05:38:21.150529+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://discus-sauna.ch/",
+      "retrieved_at": "2026-11-17T05:47:14.740666+00:00",
+      "status": 200,
+      "final_url": "https://discus-sauna.ch/",
+      "sha256": "b7d26d94eaf56ccb4c26aeef47b2fdc1311ceea1d9d27653d201e22e6564fe72"
+    },
+    {
+      "url": "https://www.anonimopv.com/",
+      "retrieved_at": "2026-11-17T05:38:21.211109+00:00",
+      "error": "Remote end closed connection without response"
+    },
+    {
+      "url": "https://www.bluepointsauna.de/",
+      "retrieved_at": "2026-11-17T05:38:21.150448+00:00",
+      "status": 200,
+      "final_url": "https://bluepointsauna.de/",
+      "sha256": "3ffd3e29fed5f07996941d36f05bb66541c2e1b5f86dc6b35772edb0d1860bc8"
+    },
+    {
+      "url": "https://visitapuertovallarta.com.mx/directorio/bares-y-clubs",
+      "retrieved_at": "2026-11-17T05:41:43.383494+00:00",
+      "status": 200,
+      "final_url": "https://visitapuertovallarta.com.mx/directorio/bares-y-clubs",
+      "sha256": "a22c51c18a0e2cfbd08e881e9ac0936088114a6d8c962f216f585b4fc3edcca0"
+    },
+    {
+      "url": "https://anonimovideobar.com/menu/",
+      "retrieved_at": "2026-11-17T05:39:12.854897+00:00",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://cassero.it/",
+      "retrieved_at": "2026-11-17T05:47:14.739885+00:00",
+      "status": 200,
+      "final_url": "https://cassero.it/",
+      "sha256": "305cab1dea2038591d6f18ea6b709386465a3c7f9f23ead8321cfd29f039816b"
+    }
+  ],
+  "toulouse_redirect": {
+    "url": "https://les-thermes-toulouse.com/",
+    "status": 200,
+    "final_url": "https://eclipse-toulouse.com/",
+    "redirects": [
+      {
+        "from_url": "https://les-thermes-toulouse.com/",
+        "status": 301,
+        "to_url": "https://eclipse-toulouse.com/"
+      }
+    ],
+    "sha256": "86b4ee5c8525153ca23654e0fdd09c9dab308150d7523b975960764864df7669",
+    "retrieved_at": "2026-11-17T05:32:26.364104+00:00"
+  }
+}
