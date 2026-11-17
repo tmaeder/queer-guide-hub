@@ -1,4 +1,5 @@
 import { isIlgaMonitorFeed, parseIlgaMonitorItems } from './ilga-monitor.ts'
+import { isHuffPostQueerFeed, fetchHuffPostQueerSection } from './huffpost.ts'
 import { personAuthorCandidate } from '../_shared/news-author.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
@@ -518,6 +519,17 @@ async function fetchFromRss(
     // the incomplete trailing block. (Hard-failing here auto-paused four
     // legitimate podcast feeds whose full archives exceed 4 MB.)
     const xml = await readCapped(res, MAX_FEED_BYTES)
+    const items = isIlgaMonitorFeed(feedUrl)
+      ? parseIlgaMonitorItems(JSON.parse(xml), maxItems)
+      : parseRssItems(xml, isPodcast, maxItems)
+    if (!isPodcast && items.length === 0 && isHuffPostQueerFeed(feedUrl)) {
+      const fallback = await fetchHuffPostQueerSection(maxItems, async url => {
+        const page = await fetch(url, { headers: { 'User-Agent': 'QueerGuide/1.0 NewsBot' }, signal: controller.signal })
+        if (!page.ok) { await page.body?.cancel(); throw new Error(`HuffPost section ${page.status}`) }
+        return readCapped(page, 1_000_000)
+      })
+      return { items: fallback.items, bytes: xml.length + fallback.bytes, channelMeta: null }
+    }
     // Report the parsed size so the caller can enforce a per-RUN byte budget.
     // The per-feed cap alone cannot bound a run: 30 feeds each just under the
     // cap is still ~120 MB of parsing.
@@ -527,9 +539,7 @@ async function fetchFromRss(
     // the backfill for already-stored episodes reads, description/website_url
     // are what the public show page renders.
     return {
-      items: isIlgaMonitorFeed(feedUrl)
-        ? parseIlgaMonitorItems(JSON.parse(xml), maxItems)
-        : parseRssItems(xml, isPodcast, maxItems),
+      items,
       bytes: xml.length,
       channelMeta: isPodcast ? extractChannelMeta(xml) : null,
     }
