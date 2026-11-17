@@ -1,3 +1,5 @@
+-- Recovered from production migration history. Already applied; do not renumber.
+-- Recorded statement digest (MD5): e57184f37017befaea2a8fb700f6e5df
 -- Revalidation must fail closed when source/status fields become NULL after a
 -- claim. SQL WHERE already excludes UNKNOWN; a PL/pgSQL IF needs COALESCE.
 do $migration$
@@ -9,3 +11,5 @@ begin
  if guard is null then raise exception 'Historical finish guard changed; inspect before patching';end if;
  execute replace(src,guard,replace(replace(guard,'or not (','or not coalesce('),') then',',false) then'));
 end $migration$;
+;
+

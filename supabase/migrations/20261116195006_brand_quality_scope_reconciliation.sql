@@ -1,3 +1,5 @@
+-- Recovered from production migration history. Already applied; do not renumber.
+-- Recorded statement digest (MD5): 55c3db7b73dddeb4498ecd0a3768d755
 -- A draft brand with neither stored nor actual active products is outside the
 -- existing quality producer's scope. Retire stale findings without waiving them
 -- or changing ownership/publication decisions. The producer rechecks on reentry.
@@ -75,3 +77,5 @@ begin
  src:=replace(src,scope,scope||' or a.n>0');
  execute src;
 end $migration$;
+;
+

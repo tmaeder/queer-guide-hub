@@ -1,3 +1,5 @@
+-- Recovered from production migration history. Already applied; do not renumber.
+-- Recorded statement digest (MD5): 8eb83841c4155093b5d954383642b566
 -- The source-owned original extractor already verifies the dated Event and
 -- cover dimensions. Its queue excluded completed events, stranding thumbnails.
 -- Expand only the image lane for untouched, publisher-owned gay.ch thumbnails.
@@ -39,3 +41,5 @@ begin
   from position(metrics_guard in metrics_src) for length(metrics_guard));
  execute metrics_src;
 end $migration$;
+;
+

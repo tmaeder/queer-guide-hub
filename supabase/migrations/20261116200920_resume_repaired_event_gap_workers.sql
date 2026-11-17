@@ -1,3 +1,5 @@
+-- Recovered from production migration history. Already applied; do not renumber.
+-- Recorded statement digest (MD5): 538590d37ee5b411e3e35bddd8618721
 -- Both workers auto-paused on 2026-11-07 after HTTP 500 responses. The newer
 -- deployed worker has now completed authenticated dry and real requests, including
 -- a historical original-artwork repair. Restore only auto-pauses, never manual,
@@ -31,3 +33,5 @@ begin
     else description end where id=a.id;
  end loop;
 end $migration$;
+;
+

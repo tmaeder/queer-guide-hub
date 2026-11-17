@@ -6,6 +6,7 @@ import { render } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import type { ReactNode } from 'react';
+import { MemoryRouter } from 'react-router';
 
 vi.mock('sonner', () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 vi.mock('@/integrations/supabase/untyped', () => ({
@@ -28,9 +29,11 @@ import SourcesTab from '../SourcesTab';
 function wrapper({ children }: { children: ReactNode }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return (
-    <QueryClientProvider client={qc}>
-      <TooltipProvider>{children}</TooltipProvider>
-    </QueryClientProvider>
+    <MemoryRouter>
+      <QueryClientProvider client={qc}>
+        <TooltipProvider>{children}</TooltipProvider>
+      </QueryClientProvider>
+    </MemoryRouter>
   );
 }
 
