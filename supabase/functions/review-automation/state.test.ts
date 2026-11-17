@@ -27,7 +27,7 @@ test('actual Review question builder forwards explicit public facts and qualific
   assert.equal(request.state.fetched_sources[0].text, evidence[0].text)
   assert.equal(request.state.issue.meta?.issue_code, 'DESCRIPTION')
   assert.deepEqual(request.state.proposal?.citations, [{ url: 'https://example.org/access', quote: 'Upper floors require stairs.' }])
-  assert.equal(request.state.state_version, 'jev-review-public-state-v2')
+  assert.equal(request.state.state_version, 'jev-review-public-state-v3')
 })
 
 test('structural integrity evidence is rebuilt from the sanitized proposal instead of forwarding a raw JSON text escape hatch', () => {
@@ -48,4 +48,25 @@ test('projection omits credential/private destinations and refuses excessive kno
   assert.deepEqual(request.state.current_record, { description: 'Public qualification' })
   assert.throws(() => buildQuestions({ ...context, proposal: { issues: Array(129).fill('qualification') } }, evidence), /exceeds bounds/)
   assert.throws(() => buildQuestions({ ...context, proposal: { field: 'website', proposed_value: { value: 'https://example.org/private?access_token=PRIVATE_CREDENTIAL' } } }, evidence), /unsupported URL/)
+})
+
+test('long nested source captures are bounded, visibly incomplete, and retain concluding qualifications', () => {
+  const request = buildQuestions({ ...context, proposal: {
+    source_content: { normalized: { content: 'ARTICLE START ' + 'public text '.repeat(3000) + ' END: venue remains unconfirmed', account_id: 'PRIVATE_ACCOUNT' } },
+  } }, evidence)
+  const source = request.state.proposal?.source_content as { normalized: { content: string } }
+  assert.equal(source.normalized.content.length, 18000)
+  assert.match(source.normalized.content, /^ARTICLE START/)
+  assert.match(source.normalized.content, /Source text omitted/)
+  assert.match(source.normalized.content, /END: venue remains unconfirmed$/)
+  assert.doesNotMatch(JSON.stringify(request), /PRIVATE_ACCOUNT/)
+  assert.match(request.questions.support.instructions, /absence from an excerpt is not evidence of absence/)
+})
+
+test('proposed replacements and values are never excerpted as source captures', () => {
+  for (const key of ['value', 'replacement']) {
+    assert.throws(() => buildQuestions({ ...context, proposal: {
+      proposed_value: { [key]: 'x'.repeat(18001) },
+    } }, evidence), /Review public text exceeds bounds/)
+  }
 })

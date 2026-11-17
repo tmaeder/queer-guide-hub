@@ -71,6 +71,7 @@ jobs:
             run_snapshot_backend_grants.py; do
             python3 "supabase/tests/isolated/$fixture"
           done
+          python3 supabase/tests/isolated/run_superseded_business_quality.py
 
   typecheck:
     runs-on: ubuntu-latest

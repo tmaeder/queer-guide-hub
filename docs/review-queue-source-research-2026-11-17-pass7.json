@@ -1,0 +1,945 @@
+{
+  "pass": "2026-11-17-pass7",
+  "user_checkpoint": 2769,
+  "first_count": 2946,
+  "first_grouped_snapshot": [
+    {
+      "observed_at": "2026-11-17 17:07:20.90574+00",
+      "blocker": "missing_source",
+      "count": 1022
+    },
+    {
+      "observed_at": "2026-11-17 17:07:20.90574+00",
+      "blocker": "missing_source_url",
+      "count": 631
+    },
+    {
+      "observed_at": "2026-11-17 17:07:20.90574+00",
+      "blocker": "missing_action_candidate",
+      "count": 555
+    },
+    {
+      "observed_at": "2026-11-17 17:07:20.90574+00",
+      "blocker": "conflicting_identity",
+      "count": 234
+    },
+    {
+      "observed_at": "2026-11-17 17:07:20.90574+00",
+      "blocker": "source_unavailable",
+      "count": 144
+    },
+    {
+      "observed_at": "2026-11-17 17:07:20.90574+00",
+      "blocker": "queued",
+      "count": 143
+    },
+    {
+      "observed_at": "2026-11-17 17:07:20.90574+00",
+      "blocker": "source_not_authorized",
+      "count": 116
+    },
+    {
+      "observed_at": "2026-11-17 17:07:20.90574+00",
+      "blocker": "insufficient_confidence",
+      "count": 59
+    },
+    {
+      "observed_at": "2026-11-17 17:07:20.90574+00",
+      "blocker": null,
+      "count": 33
+    },
+    {
+      "observed_at": "2026-11-17 17:07:20.90574+00",
+      "blocker": "visual_evidence_requires_human_review",
+      "count": 20
+    },
+    {
+      "observed_at": "2026-11-17 17:07:20.90574+00",
+      "blocker": "protected_review",
+      "count": 15
+    },
+    {
+      "observed_at": "2026-11-17 17:07:20.90574+00",
+      "blocker": "retry",
+      "count": 4
+    }
+  ],
+  "final_snapshot": [
+    {
+      "jsonb_build_object": {
+        "audits": [
+          {
+            "count": 9,
+            "reason": "codex_source_pass7_business_identity"
+          },
+          {
+            "count": 2,
+            "reason": "codex_source_pass7_contacts"
+          },
+          {
+            "count": 2,
+            "reason": "codex_source_pass7_current_description"
+          },
+          {
+            "count": 4,
+            "reason": "codex_source_pass7_profile_facts"
+          },
+          {
+            "count": 4,
+            "reason": "codex_source_pass7_website"
+          }
+        ],
+        "blockers": [
+          {
+            "count": 1019,
+            "blocker": "missing_source"
+          },
+          {
+            "count": 625,
+            "blocker": "missing_source_url"
+          },
+          {
+            "count": 535,
+            "blocker": "missing_action_candidate"
+          },
+          {
+            "count": 234,
+            "blocker": "conflicting_identity"
+          },
+          {
+            "count": 143,
+            "blocker": "source_unavailable"
+          },
+          {
+            "count": 120,
+            "blocker": "source_not_authorized"
+          },
+          {
+            "count": 116,
+            "blocker": "queued"
+          },
+          {
+            "count": 59,
+            "blocker": "insufficient_confidence"
+          },
+          {
+            "count": 47,
+            "blocker": null
+          },
+          {
+            "count": 19,
+            "blocker": "visual_evidence_requires_human_review"
+          },
+          {
+            "count": 15,
+            "blocker": "protected_review"
+          },
+          {
+            "count": 5,
+            "blocker": "retry"
+          },
+          {
+            "count": 3,
+            "blocker": "blocked"
+          }
+        ],
+        "observed_at": "2026-11-17T17:18:57.030093+00:00",
+        "active_cases": 2940,
+        "merge_verification": {
+          "expected": 9,
+          "verified": 9,
+          "native_source_audits": 9
+        },
+        "open_donor_findings": 0,
+        "retired_donor_findings": 24
+      }
+    }
+  ],
+  "scope": {
+    "candidate_count": 48,
+    "description": "Bounded research of remaining business-identity candidates and source holds. No claim to have individually researched every remaining case."
+  },
+  "applied": {
+    "repair_audit_rows": 21,
+    "native_business_merges": 9,
+    "retired_superseded_findings": 24,
+    "independent_missing_profile_fills": 4,
+    "website_record_pairs": 2,
+    "shared_contact_record_pairs": 1,
+    "current_description_record_pairs": 1
+  },
+  "merges": [
+    {
+      "drop_id": "37cadd19-6f2f-42c1-8703-fe1291a00e94",
+      "name": "Alibi Club",
+      "website": "https://alibiclubroma.com/",
+      "address": "Via di Monte Testaccio, Rome, 00153",
+      "city_id": "4086a29d-3bf8-42ff-8f00-f5873f021ded",
+      "country_id": "515cf5a4-80de-43c7-9c4c-7b97abcfc9b1",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "7908214a-b104-4cbf-93b4-0129a1ac1b78",
+      "keep_venue": "1e2309ce-33a9-4f55-ae06-c6c870d300fe",
+      "keep_org": "1215ff5d-0550-4fa5-83b6-0f7ce4504c80",
+      "keep_name": "Alibi",
+      "keep_address": "Via di Monte Testaccio, 44",
+      "keep_website": null,
+      "city": "Rome",
+      "country": "Italy",
+      "gap_patch": {
+        "website": "https://alibiclubroma.com/"
+      },
+      "allowed_patch": {
+        "website": "https://alibiclubroma.com/"
+      },
+      "sources": [
+        {
+          "url": "https://alibiclubroma.com/",
+          "retrieved_at": "2026-11-17T17:07:20.967885+00:00",
+          "status": 200,
+          "final_url": "https://alibiclubroma.com/",
+          "sha256": "2af5076a04fbc10f0e5f10b0ce5c55706b4f2887eb6336d0aaacc757495e1b5b"
+        }
+      ],
+      "scope": "Native duplicate business merge supported by current official identity and address or exact shared phone/domain plus already-merged venue. Unclaimed venue-only profiles and same city/country required; no legal ownership/human verification asserted."
+    },
+    {
+      "drop_id": "f153f3f4-d18f-431e-bed6-8b50937b572b",
+      "name": "Bee kok & bar Goteborg",
+      "website": null,
+      "address": "Kungstorget 13-15, Gothenburg, Vastra Gotaland County, West Coast, Sweden",
+      "city_id": "7e464a6c-37b3-42ad-9858-893bf87dd412",
+      "country_id": "70ff31b3-b918-4258-a98e-d892691c9d52",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "987e3979-7c1d-4fef-bd07-a91399688e4d",
+      "keep_venue": "1d5969a8-e5f1-4580-918f-115ec42f74fa",
+      "keep_org": "66ecca13-90de-4bf4-97bb-64b3e6948dbf",
+      "keep_name": "Bee Kök & Bar",
+      "keep_address": "Kungstorget 13-15\n411 10 Gothenburg\nSweden",
+      "keep_website": "https://beebar.se",
+      "city": "Gothenburg",
+      "country": "Sweden",
+      "gap_patch": {
+        "description": "Bee kok & bar Goteborg is a bar in Gothenburg, Sweden."
+      },
+      "allowed_patch": {
+        "description": "Bee kok & bar Goteborg is a bar in Gothenburg, Sweden."
+      },
+      "sources": [
+        {
+          "url": "https://beebar.se",
+          "retrieved_at": "2026-11-17T17:07:20.968171+00:00",
+          "status": 200,
+          "final_url": "https://beebar.se",
+          "sha256": "e863615ba0e059f94392eb609cbd2784e7e324cd506e193351e4204b7dbb67ef"
+        }
+      ],
+      "scope": "Native duplicate business merge supported by current official identity and address or exact shared phone/domain plus already-merged venue. Unclaimed venue-only profiles and same city/country required; no legal ownership/human verification asserted."
+    },
+    {
+      "drop_id": "a717d637-0d34-46f9-a9e4-7e65fb1de1e9",
+      "name": "Believe Club",
+      "website": null,
+      "address": "56 Carrer de Balmes Barcelone (08001)",
+      "city_id": "cc0c20ac-fbae-4a85-a234-66ea0363e87a",
+      "country_id": "4020d296-538c-4d6d-a728-33db16460181",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "17ab2605-7117-4be7-adac-5904e0ec27ab",
+      "keep_venue": "f468a369-8684-488b-85a8-d3893ce27c54",
+      "keep_org": "f449a995-a6b5-4606-83cb-577bdff71309",
+      "keep_name": "Believe",
+      "keep_address": "56 Calle de Balmes\n08007 Barcelona Catalonia\nSpain",
+      "keep_website": "https://believeclubbcn.com",
+      "city": "Barcelona",
+      "country": "Spain",
+      "gap_patch": {
+        "email": "hola@believegroup.cat"
+      },
+      "allowed_patch": {
+        "email": "hola@believegroup.cat"
+      },
+      "sources": [
+        {
+          "url": "https://thebelieve.club/contacto/",
+          "retrieved_at": "2026-11-17T17:07:51.665721+00:00",
+          "status": 200,
+          "final_url": "https://thebelieve.club/contacto/",
+          "sha256": "a378dcb8bb2a8a46d1062fc1b9e5cb033d93c6a9037bdc74007fe7d5a4dcdb38"
+        }
+      ],
+      "scope": "Native duplicate business merge supported by current official identity and address or exact shared phone/domain plus already-merged venue. Unclaimed venue-only profiles and same city/country required; no legal ownership/human verification asserted."
+    },
+    {
+      "drop_id": "597112a4-d02b-4b98-8e25-064259c063b5",
+      "name": "BJ's White Swan",
+      "website": "http://www.bjswhiteswan.com",
+      "address": "556 Commercial Road",
+      "city_id": "bfa0a65c-b8c0-4665-8908-19e2553ae262",
+      "country_id": "58581332-7745-430b-8b51-dd1537e85cf0",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "9ef22014-1d3c-4a95-bab6-e217dafb07bd",
+      "keep_venue": "5d1178e2-d073-4c45-80eb-138ec95d4c53",
+      "keep_org": "7180ccc1-3b67-4c86-8097-b2c36ad1e079",
+      "keep_name": "The White Swan",
+      "keep_address": "556 Commercial Road \nLondon E14 7JD",
+      "keep_website": "https://www.thewhiteswan.bar/",
+      "city": "London",
+      "country": "United Kingdom",
+      "gap_patch": {
+        "description": "Regular cabaret acts. Free entrance before 22h. Somewhat rough area. Take a cab home."
+      },
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.thewhiteswan.bar/",
+          "retrieved_at": "2026-11-17T17:07:21.279755+00:00",
+          "status": 200,
+          "final_url": "https://www.thewhiteswan.bar/",
+          "sha256": "e923e4de87f9c32b4754756f59b489253e90bf28e5a8b2f53b796db9dbba7a53"
+        }
+      ],
+      "scope": "Native duplicate business merge supported by current official identity and address or exact shared phone/domain plus already-merged venue. Unclaimed venue-only profiles and same city/country required; no legal ownership/human verification asserted."
+    },
+    {
+      "drop_id": "010f5c00-f921-4f0a-a457-a8ce57737696",
+      "name": "Blue Club sauna",
+      "website": "https://www.saunablueclub.fr/",
+      "address": "8, rue Sébastien Leclerc,Metz,57000",
+      "city_id": "ac8e6602-6493-4125-a341-7b5f3ebd3e29",
+      "country_id": "4a9c8fef-e5c3-4405-99d3-374d645e905a",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "a2e3b12d-cc69-4ff1-a9b1-d98295fadd7c",
+      "keep_venue": "906386e0-a766-4626-bcc9-5518177399eb",
+      "keep_org": "2e5984e6-1af4-4926-975a-d60fba8dc94a",
+      "keep_name": "Sauna Blue Club",
+      "keep_address": "8 Rue Sébastien Leclerc",
+      "keep_website": "http://www.saunablueclub.fr",
+      "city": "Metz",
+      "country": "France",
+      "gap_patch": {
+        "email": "saunablueclub@orange.fr"
+      },
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.saunablueclub.fr/",
+          "retrieved_at": "2026-11-17T17:07:21.360323+00:00",
+          "status": 200,
+          "final_url": "https://www.saunablueclub.fr/",
+          "sha256": "0efa372195a5e37400393b0ac37520f3435eefbe21e4fb869990f1d050a5bd5d"
+        }
+      ],
+      "scope": "Native duplicate business merge supported by current official identity and address or exact shared phone/domain plus already-merged venue. Unclaimed venue-only profiles and same city/country required; no legal ownership/human verification asserted."
+    },
+    {
+      "drop_id": "5090a49e-4bb4-4f7e-8ec0-ef5a7451128e",
+      "name": "Boys Bar",
+      "website": "https://www.instagram.com/boysbar.bcn/",
+      "address": "Bars",
+      "city_id": "cc0c20ac-fbae-4a85-a234-66ea0363e87a",
+      "country_id": "4020d296-538c-4d6d-a728-33db16460181",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "892306b3-b1d8-4545-a729-ce13b1a32ae1",
+      "keep_venue": "a328fbde-9ede-4177-9ea4-c4b68c8f7c1e",
+      "keep_org": "dc605dfc-3fa9-4105-a982-d79884dcc55c",
+      "keep_name": "BoysBar BCN",
+      "keep_address": "Carrer de la Diputació, 174\n08011 Barcelona Catalonia\nSpain",
+      "keep_website": "https://boysbarbcn.com",
+      "city": "Barcelona",
+      "country": "Spain",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://boysbarbcn.com",
+          "retrieved_at": "2026-11-17T17:07:21.679949+00:00",
+          "status": 200,
+          "final_url": "https://www.boysbarbcn.com/",
+          "sha256": "436641eb8ba35168953f95f82f0681f3e59b465cbd6e8b4d4a72eab4ccd3d422"
+        }
+      ],
+      "scope": "Native duplicate business merge supported by current official identity and address or exact shared phone/domain plus already-merged venue. Unclaimed venue-only profiles and same city/country required; no legal ownership/human verification asserted."
+    },
+    {
+      "drop_id": "adb75641-046c-404f-895c-3be96b8b32c4",
+      "name": "Celebrities",
+      "website": "http://www.celebritiesnightclub.com",
+      "address": "1022 Davie Street",
+      "city_id": "e5d823da-60c6-49c8-8465-a55804783cb0",
+      "country_id": "47dda834-6566-4d95-887f-b46d1536589b",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "d4b3c3cb-6b66-4c2a-9f28-0df9b6a76e36",
+      "keep_venue": "939d1729-1a6a-4732-a0fe-f9e3615b56b9",
+      "keep_org": "e1ebe6d3-f5f5-4d08-b54c-01bf957c7c04",
+      "keep_name": "Celebrities Nightclub",
+      "keep_address": "1022 Davie St",
+      "keep_website": "http://www.celebritiesnightclub.com/",
+      "city": "Vancouver",
+      "country": "Canada",
+      "gap_patch": {
+        "description": "The city's largest danceclub on various levels with special themed nights."
+      },
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://celebritiesnightclub.com/",
+          "retrieved_at": "2026-11-17T17:07:21.862355+00:00",
+          "status": 200,
+          "final_url": "https://www.celebritiesnightclub.com/",
+          "sha256": "e28f03ed9c0474d1f2dcb2edcfd3f0534a129efa44fadd9dc612b4b549c197fb"
+        }
+      ],
+      "scope": "Native duplicate business merge supported by current official identity and address or exact shared phone/domain plus already-merged venue. Unclaimed venue-only profiles and same city/country required; no legal ownership/human verification asserted."
+    },
+    {
+      "drop_id": "9b0e9ea3-d3ca-4b10-be1e-353d8d35d968",
+      "name": "City sauna",
+      "website": "http://www.thecitysaunaclub.com/",
+      "address": "8, Via della Clementina, Bergame, 24125",
+      "city_id": "d3c38871-28b6-4796-aab0-6899a27fc179",
+      "country_id": "515cf5a4-80de-43c7-9c4c-7b97abcfc9b1",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "fe805269-cf90-4a51-b5c3-f0659d510171",
+      "keep_venue": "f0339970-354d-41ba-91f7-90a7e10bd762",
+      "keep_org": "a349e4f3-5a2b-4bae-8b97-d5def826c1c1",
+      "keep_name": "The City Sauna Club",
+      "keep_address": "Via della Clementina 8 / Via Borgo Palazzo",
+      "keep_website": "https://thecitysaunaclub.com",
+      "city": "Bergamo",
+      "country": "Italy",
+      "gap_patch": {
+        "email": "info@thecitysaunaclub.com"
+      },
+      "allowed_patch": {
+        "email": "info@thecitysaunaclub.com"
+      },
+      "sources": [
+        {
+          "url": "https://www.thecitysaunaclub.com/contatti.html",
+          "retrieved_at": "2026-11-17T17:08:15.151450+00:00",
+          "status": 200,
+          "final_url": "https://www.thecitysaunaclub.com/contatti.html",
+          "sha256": "16bc2ec2815e8840403e0272dc8aca59ea957439383c1af0aa9c4f9028f7919e"
+        },
+        {
+          "url": "https://thecitysaunaclub.com",
+          "retrieved_at": "2026-11-17T17:07:22.111491+00:00",
+          "status": 200,
+          "final_url": "https://www.thecitysaunaclub.com/",
+          "sha256": "0c58f58cc23443d7716dd6787680811c933901411b0c41e5420dfc3fca4ab246"
+        }
+      ],
+      "scope": "Native duplicate business merge supported by current official identity and address or exact shared phone/domain plus already-merged venue. Unclaimed venue-only profiles and same city/country required; no legal ownership/human verification asserted."
+    },
+    {
+      "drop_id": "a00a4cea-8098-46c1-80ac-dd6b79369e2d",
+      "name": "Den Draak",
+      "website": "http://tinyurl.com/nh5gzc6",
+      "address": "Draakplaats 1",
+      "city_id": "30d15c18-5b9e-498a-8b76-08cb78b4647f",
+      "country_id": "3c0f090b-0a46-4578-b7a9-d75e186dc449",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "351bc563-8be8-49b2-a936-f5096c9ebb4c",
+      "keep_venue": "97e850d2-53c0-4a62-9c35-70aff3d4b8dc",
+      "keep_org": "620eaa38-53df-4590-a3c7-df25f9ec59d6",
+      "keep_name": "Café Den Draak",
+      "keep_address": "Draakplaats 1, 2018 Antwerpen",
+      "keep_website": null,
+      "city": "Antwerp",
+      "country": "Belgium",
+      "gap_patch": {
+        "website": "http://tinyurl.com/nh5gzc6"
+      },
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.dendraak.be/",
+          "retrieved_at": "2026-11-17T17:14:28.496553+00:00",
+          "status": 200,
+          "final_url": "https://www.dendraak.be/",
+          "sha256": "a61f4632aa2b39dcbe1106a36a67285fe1866379f00504c2073c1eca02c9747a"
+        }
+      ],
+      "scope": "Current official exact street/address identity and existing merged venue; unclaimed venue-only same-city/country profiles. Canonical fields preserved except independently verified missing description, if present."
+    }
+  ],
+  "profile_fills": [
+    {
+      "id": "2e5984e6-1af4-4926-975a-d60fba8dc94a",
+      "name": "Sauna Blue Club",
+      "patch": {
+        "email": "contact@saunablueclub.fr"
+      },
+      "source": {
+        "url": "https://www.saunablueclub.fr/",
+        "retrieved_at": "2026-11-17T17:07:21.360323+00:00",
+        "status": 200,
+        "final_url": "https://www.saunablueclub.fr/",
+        "sha256": "0efa372195a5e37400393b0ac37520f3435eefbe21e4fb869990f1d050a5bd5d"
+      },
+      "note": "Current official shared business/publication contact; donor orange.fr inbox not corroborated."
+    },
+    {
+      "id": "7180ccc1-3b67-4c86-8097-b2c36ad1e079",
+      "name": "The White Swan",
+      "patch": {
+        "description": "The White Swan is an entertainment venue at 556 Commercial Road in Limehouse, London. It hosts club nights and events and offers three spaces for private hire."
+      },
+      "source": {
+        "url": "https://www.thewhiteswan.bar/",
+        "retrieved_at": "2026-11-17T17:07:21.279755+00:00",
+        "status": 200,
+        "final_url": "https://www.thewhiteswan.bar/",
+        "sha256": "e923e4de87f9c32b4754756f59b489253e90bf28e5a8b2f53b796db9dbba7a53"
+      },
+      "note": "Factual current description; omits unsupported free-admission and neighbourhood-danger claims in donor."
+    },
+    {
+      "id": "e1ebe6d3-f5f5-4d08-b54c-01bf957c7c04",
+      "name": "Celebrities Nightclub",
+      "patch": {
+        "description": "Celebrities Nightclub at 1022 Davie Street in Vancouver hosts electronic music, live performances and weekly club nights."
+      },
+      "source": {
+        "url": "https://celebritiesnightclub.com/",
+        "retrieved_at": "2026-11-17T17:07:21.862355+00:00",
+        "status": 200,
+        "final_url": "https://www.celebritiesnightclub.com/",
+        "sha256": "e28f03ed9c0474d1f2dcb2edcfd3f0534a129efa44fadd9dc612b4b549c197fb"
+      },
+      "note": "Factual current description; omits unsupported largest-club and multiple-level claims."
+    },
+    {
+      "id": "7ba71cfe-cb06-4a7e-837e-f5bbd8fd2b9d",
+      "name": "FLEX Spas Los Angeles",
+      "patch": {
+        "description": "The Los Angeles location of FLEXSpas is at 4424 Melrose Avenue. Its official site provides pricing, events and directions."
+      },
+      "source": {
+        "url": "https://www.flexspas.com/los-angeles",
+        "retrieved_at": "2026-11-17T17:14:49.025039+00:00",
+        "status": 200,
+        "final_url": "https://www.flexspas.com/los-angeles",
+        "sha256": "2663459879728a0f913747973906bc90ecf81d861b771ae0998c7b85c0ae970e"
+      },
+      "note": "Current branch-specific facts only. Duplicate business merge held because the donor has additional venue relationships."
+    }
+  ],
+  "websites": [
+    {
+      "venue_id": "f468a369-8684-488b-85a8-d3893ce27c54",
+      "organization_id": "f449a995-a6b5-4606-83cb-577bdff71309",
+      "name": "Believe",
+      "old_website": "https://believeclubbcn.com",
+      "new_website": "https://thebelieve.club/",
+      "new_domain": "thebelieve.club",
+      "source": {
+        "url": "https://thebelieve.club/contacto/",
+        "retrieved_at": "2026-11-17T17:07:51.665721+00:00",
+        "status": 200,
+        "final_url": "https://thebelieve.club/contacto/",
+        "sha256": "a378dcb8bb2a8a46d1062fc1b9e5cb033d93c6a9037bdc74007fe7d5a4dcdb38"
+      },
+      "old_source": {
+        "url": "https://believeclubbcn.com",
+        "retrieved_at": "2026-11-17T17:07:20.968360+00:00",
+        "status": 200,
+        "final_url": "https://thaicyclopedia.com/about/",
+        "sha256": "78ee3dd98cb028395ec8a4563233848dcff27941fd4d740eab4f9930ee5b4a8c"
+      },
+      "note": "Old website redirects to unrelated gambling site. Current official site confirms exact Balmes56 address, shared telephone and shared business inbox. Website only; ownership, name, contacts, coordinates and publication unchanged."
+    },
+    {
+      "venue_id": "97e850d2-53c0-4a62-9c35-70aff3d4b8dc",
+      "organization_id": "620eaa38-53df-4590-a3c7-df25f9ec59d6",
+      "name": "Café Den Draak",
+      "old_website": null,
+      "new_website": "https://www.dendraak.be/",
+      "new_domain": "dendraak.be",
+      "source": {
+        "url": "https://www.dendraak.be/",
+        "retrieved_at": "2026-11-17T17:14:28.496553+00:00",
+        "status": 200,
+        "final_url": "https://www.dendraak.be/",
+        "sha256": "a61f4632aa2b39dcbe1106a36a67285fe1866379f00504c2073c1eca02c9747a"
+      },
+      "note": "Fill missing websites from exact current official identity/address at Draakplaats1Antwerpen; avoid transferring unresolved shortened URL during duplicate merge. No geography or ownership/publication change."
+    }
+  ],
+  "contacts": {
+    "venue_id": "5d1178e2-d073-4c45-80eb-138ec95d4c53",
+    "organization_id": "7180ccc1-3b67-4c86-8097-b2c36ad1e079",
+    "name": "The White Swan",
+    "old_phone": "+442077809870",
+    "new_phone": "+447969441732",
+    "email": "hello@thewhiteswan.bar",
+    "source": {
+      "url": "https://www.thewhiteswan.bar/",
+      "retrieved_at": "2026-11-17T17:07:21.279755+00:00",
+      "status": 200,
+      "final_url": "https://www.thewhiteswan.bar/",
+      "sha256": "e923e4de87f9c32b4754756f59b489253e90bf28e5a8b2f53b796db9dbba7a53"
+    },
+    "note": "Current official venue footer publishes this shared telephone and venue-hire/general inbox at exact556CommercialRoad. Replaces machine-inherited old phone, fills missing email. No named private contact or human-provenance overwrite."
+  },
+  "current_description": {
+    "organization_id": "2e5984e6-1af4-4926-975a-d60fba8dc94a",
+    "venue_id": "906386e0-a766-4626-bcc9-5518177399eb",
+    "old_description": "Exclusively gay and cruisy sauna with a friendly and easy-going clientele. As the drinks are free on Sundays it is always packed with men.",
+    "new_description": "Sauna Blue Club is a sauna at 8 rue Sébastien Leclerc in Metz. It has a sauna, hammam, bar, showers and private cabins. Admission includes three soft drinks and unlimited still or sparkling water.",
+    "old_provenance_id": "eaa0e79b-56be-4e53-ab4f-3bd72f32d4bd",
+    "source": {
+      "url": "https://www.saunablueclub.fr/",
+      "retrieved_at": "2026-11-17T17:07:21.360323+00:00",
+      "status": 200,
+      "final_url": "https://www.saunablueclub.fr/",
+      "sha256": "0efa372195a5e37400393b0ac37520f3435eefbe21e4fb869990f1d050a5bd5d"
+    },
+    "note": "Replace unqualified crowd/popularity and old Sunday-drinks copy with factual facilities and inclusion explicitly published on current first-party site. Existing venue provenance is Spartacus, not human; no prices, hours, ownership or publication change."
+  },
+  "sources": [
+    {
+      "url": "https://thecitysaunaclub.com",
+      "retrieved_at": "2026-11-17T17:07:22.111491+00:00",
+      "status": 200,
+      "final_url": "https://www.thecitysaunaclub.com/",
+      "sha256": "0c58f58cc23443d7716dd6787680811c933901411b0c41e5420dfc3fca4ab246"
+    },
+    {
+      "url": "https://chakransauna.net/contact-us/",
+      "retrieved_at": "2026-11-17T17:07:51.666776+00:00",
+      "status": 200,
+      "final_url": "https://chakransauna.net/contact-us/",
+      "sha256": "f70af7a3bb2d2d430cbe054870a88c11b60c7ba5c45c1f57097a19b14899b043"
+    },
+    {
+      "url": "https://1181.ca",
+      "retrieved_at": "2026-11-17T17:07:20.967157+00:00",
+      "error": "<urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://www.eaglemanchester.com/contact",
+      "retrieved_at": "2026-11-17T17:14:49.024092+00:00",
+      "status": 200,
+      "final_url": "https://www.eaglemanchester.com/contact",
+      "sha256": "ee9181c71da0012d7c7913d9074be05e61aa22491f360508afc2db490023cb80"
+    },
+    {
+      "url": "https://deltasaunaclub.fr/",
+      "retrieved_at": "2026-11-17T17:07:22.558510+00:00",
+      "error": "<urlopen error [Errno 54] Connection reset by peer>"
+    },
+    {
+      "url": "https://believeclubbcn.com",
+      "retrieved_at": "2026-11-17T17:07:20.968360+00:00",
+      "status": 200,
+      "final_url": "https://thaicyclopedia.com/about/",
+      "sha256": "78ee3dd98cb028395ec8a4563233848dcff27941fd4d740eab4f9930ee5b4a8c"
+    },
+    {
+      "url": "https://flexspas.com/",
+      "retrieved_at": "2026-11-17T17:14:03.731425+00:00",
+      "status": 200,
+      "final_url": "https://www.flexspas.com/",
+      "sha256": "ec7c5e4e2d43d68e2a021752d45466c753c2ee5327189f8e8e94fb4ddd0a1034"
+    },
+    {
+      "url": "https://bootrack.com",
+      "retrieved_at": "2026-11-17T17:07:21.528856+00:00",
+      "status": 200,
+      "final_url": "https://bootrack.com",
+      "sha256": "6dc9c7fc93bb488bb0520a6c780a8d3c0fb5486a4711aca49b4c53fac7393023"
+    },
+    {
+      "url": "https://chakransauna.net",
+      "retrieved_at": "2026-11-17T17:07:21.982947+00:00",
+      "status": 200,
+      "final_url": "https://chakransauna.net",
+      "sha256": "29aecdd06e997e1326e1f38179ce7b93cf7185d1e5f1f4df051f6418072c4936"
+    },
+    {
+      "url": "https://www.eagletorremolinos.com/",
+      "retrieved_at": "2026-11-17T17:14:03.731291+00:00",
+      "status": 200,
+      "final_url": "https://www.eagletorremolinos.com/",
+      "sha256": "80c9a7c60d7c19c9a47f7caf6964e36c7055d1c738ab3d91a8e0e4d484aaaffb"
+    },
+    {
+      "url": "https://boysbarbcn.com",
+      "retrieved_at": "2026-11-17T17:07:21.679949+00:00",
+      "status": 200,
+      "final_url": "https://www.boysbarbcn.com/",
+      "sha256": "436641eb8ba35168953f95f82f0681f3e59b465cbd6e8b4d4a72eab4ccd3d422"
+    },
+    {
+      "url": "https://alibiclubroma.com/",
+      "retrieved_at": "2026-11-17T17:07:20.967885+00:00",
+      "status": 200,
+      "final_url": "https://alibiclubroma.com/",
+      "sha256": "2af5076a04fbc10f0e5f10b0ce5c55706b4f2887eb6336d0aaacc757495e1b5b"
+    },
+    {
+      "url": "https://www.thecitysaunaclub.com/dove-siamo.html",
+      "retrieved_at": "2026-11-17T17:08:15.152245+00:00",
+      "status": 200,
+      "final_url": "https://www.thecitysaunaclub.com/dove-siamo.html",
+      "sha256": "0434f5def5861f30b47a2f682e7517745fdf69482adf9bb6629e5f20b55672fa"
+    },
+    {
+      "url": "https://connection-berlin.de/",
+      "retrieved_at": "2026-11-17T17:07:22.468255+00:00",
+      "status": 200,
+      "final_url": "https://connection-berlin.de/",
+      "sha256": "5438c26c68bc7f499a9a0d2beb5c78db6b4987c481ba194e3005fdd0e535bbac"
+    },
+    {
+      "url": "https://www.firelondon.net/",
+      "retrieved_at": "2026-11-17T17:14:03.731365+00:00",
+      "status": 200,
+      "final_url": "https://www.firelondon.net/",
+      "sha256": "3b95cfb3164fbbbbf4d13cdf213993601e5cdd0bf11be7c4e4fe2f8534eeddf1"
+    },
+    {
+      "url": "https://brunos.de/",
+      "retrieved_at": "2026-11-17T17:07:21.706285+00:00",
+      "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'brunos.de'. (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://www.eagleamsterdam.com/",
+      "retrieved_at": "2026-11-17T17:14:03.731191+00:00",
+      "status": 200,
+      "final_url": "https://www.eagleamsterdam.com/",
+      "sha256": "1adf2d664e33078263edf50c4c19401cdfd084fb69ae73323fa9711418317dc9"
+    },
+    {
+      "url": "https://artbridge.am",
+      "retrieved_at": "2026-11-17T17:07:20.968068+00:00",
+      "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'artbridge.am'. (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://saunacarrerouge.com/",
+      "retrieved_at": "2026-11-17T17:07:21.805564+00:00",
+      "status": 200,
+      "final_url": "https://www.saunacarrerouge.com/",
+      "sha256": "8679d95e336f4234c82109395237ad6a3317082e6976d081aa910f8f89171f25"
+    },
+    {
+      "url": "https://www.dendraak.be/",
+      "retrieved_at": "2026-11-17T17:14:28.496553+00:00",
+      "status": 200,
+      "final_url": "https://www.dendraak.be/",
+      "sha256": "a61f4632aa2b39dcbe1106a36a67285fe1866379f00504c2073c1eca02c9747a"
+    },
+    {
+      "url": "https://beebar.se",
+      "retrieved_at": "2026-11-17T17:07:20.968171+00:00",
+      "status": 200,
+      "final_url": "https://beebar.se",
+      "sha256": "e863615ba0e059f94392eb609cbd2784e7e324cd506e193351e4204b7dbb67ef"
+    },
+    {
+      "url": "https://www.connection-berlin.de/shop/index.html",
+      "retrieved_at": "2026-11-17T17:07:51.666660+00:00",
+      "status": 200,
+      "final_url": "https://www.connection-berlin.de/shop/index.html",
+      "sha256": "fcad82bc43458370f55d9685828265e326cea763c71c65520d57e7341a106b2b"
+    },
+    {
+      "url": "https://boilerroomnyc.com",
+      "retrieved_at": "2026-11-17T17:07:21.485208+00:00",
+      "status": 200,
+      "final_url": "https://boilerroomnyc.com",
+      "sha256": "7f33715b84ef5c3a8b40764373f555b0ea66ab520219db0f984494db751ccec1"
+    },
+    {
+      "url": "https://www.thewhiteswan.bar/",
+      "retrieved_at": "2026-11-17T17:07:21.279755+00:00",
+      "status": 200,
+      "final_url": "https://www.thewhiteswan.bar/",
+      "sha256": "e923e4de87f9c32b4754756f59b489253e90bf28e5a8b2f53b796db9dbba7a53"
+    },
+    {
+      "url": "https://www.firelondon.net/contact-us/",
+      "retrieved_at": "2026-11-17T17:14:49.024858+00:00",
+      "status": 200,
+      "final_url": "https://www.firelondon.net/contact-us/",
+      "sha256": "f504e9f5b0415f44a83894ef6a349b2c3a1754fa684071750fc9c97dd199ecec"
+    },
+    {
+      "url": "https://www.thecitysaunaclub.com/contatti.html",
+      "retrieved_at": "2026-11-17T17:08:15.151450+00:00",
+      "status": 200,
+      "final_url": "https://www.thecitysaunaclub.com/contatti.html",
+      "sha256": "16bc2ec2815e8840403e0272dc8aca59ea957439383c1af0aa9c4f9028f7919e"
+    },
+    {
+      "url": "https://www.eaglemanchester.com/",
+      "retrieved_at": "2026-11-17T17:14:03.730638+00:00",
+      "status": 200,
+      "final_url": "https://www.eaglemanchester.com/",
+      "sha256": "652d62c131b4589cfcde5fc3ad7ec98825a132b0204604936b43429f648632d7"
+    },
+    {
+      "url": "https://www.saunablueclub.fr/",
+      "retrieved_at": "2026-11-17T17:07:21.360323+00:00",
+      "status": 200,
+      "final_url": "https://www.saunablueclub.fr/",
+      "sha256": "0efa372195a5e37400393b0ac37520f3435eefbe21e4fb869990f1d050a5bd5d"
+    },
+    {
+      "url": "https://www.flexspas.com/los-angeles",
+      "retrieved_at": "2026-11-17T17:14:49.025039+00:00",
+      "status": 200,
+      "final_url": "https://www.flexspas.com/los-angeles",
+      "sha256": "2663459879728a0f913747973906bc90ecf81d861b771ae0998c7b85c0ae970e"
+    },
+    {
+      "url": "https://thebelieve.club/contacto/",
+      "retrieved_at": "2026-11-17T17:07:51.665721+00:00",
+      "status": 200,
+      "final_url": "https://thebelieve.club/contacto/",
+      "sha256": "a378dcb8bb2a8a46d1062fc1b9e5cb033d93c6a9037bdc74007fe7d5a4dcdb38"
+    },
+    {
+      "url": "https://www.eagleamsterdam.com/about-eagle-amsterdam-gay-club/",
+      "retrieved_at": "2026-11-17T17:14:49.024692+00:00",
+      "status": 200,
+      "final_url": "https://www.eagleamsterdam.com/about-eagle-amsterdam-gay-club/",
+      "sha256": "f5f8ce651b493d1aabd36d30ad92b60f469feb658a0b04a388a097b551763a3a"
+    },
+    {
+      "url": "https://celebritiesnightclub.com/",
+      "retrieved_at": "2026-11-17T17:07:21.862355+00:00",
+      "status": 200,
+      "final_url": "https://www.celebritiesnightclub.com/",
+      "sha256": "e28f03ed9c0474d1f2dcb2edcfd3f0534a129efa44fadd9dc612b4b549c197fb"
+    }
+  ],
+  "validation": {
+    "method": "All committed record repairs first passed rolled-back SQL with expected-state, unclaimed/profile, provenance and exact native-gap-fill guards. Full before/after records in admin_review_repairs. Native entity merges and their source audits independently checked,9/9correct. No human verification or legal ownership assertion. No publication/confidence/source-authorization changes.",
+    "native_reconciler_attempts": [
+      {
+        "batch": 2000,
+        "timeout_seconds": 30,
+        "result": "statement timeout selecting candidate organizations; enclosing merge transaction rolled back"
+      },
+      {
+        "batch": 8,
+        "result": [
+          {
+            "reconcile_superseded_business_findings": {
+              "reason": "already_running",
+              "skipped": true
+            }
+          }
+        ]
+      },
+      {
+        "batch": 20,
+        "timeout_seconds": 20,
+        "result": {
+          "error": "{\"error\":{\"name\":\"HttpException\",\"message\":\"Failed to run sql query: ERROR:  57014: canceling statement due to statement timeout\\nCONTEXT:  PL/pgSQL function reconcile_superseded_business_findings(integer,boolean) line 7 at FOR over SELECT rows\\n\"}}"
+        }
+      }
+    ],
+    "targeted_reconciliation": {
+      "result": [
+        {
+          "findings_reconciled": 24
+        }
+      ],
+      "method": "Same existing lifecycle bookkeeping as native reconciler, restricted to nine already-verified donor/survivor UUID pairs. Asserted advisory lock, canonical merge links, unclaimed status, non-waived fail/pending scope, full finding-field preservation. Audited through business_brand_quality_events; updated donor summaries. Rollback-tested before commit. No persistent function or timeout change."
+    },
+    "worklist_refresh": [
+      {
+        "refresh_admin_review_worklist": {
+          "cases": 2940,
+          "elapsed_ms": 26591.92
+        }
+      }
+    ],
+    "queue_top_refresh": "Skipped because another refresh held its native lock; worklist refresh completed independently.",
+    "code_changes": "None: production data plus audit/source documentation only."
+  },
+  "holds": [
+    {
+      "name": "Chakran Sauna",
+      "reason": "Current official address confirmed, but donor also has an active venue in addition to its already-merged venue. Native merge preservation guard rejected it; no merge or website change applied."
+    },
+    {
+      "name": "FLEXspas",
+      "reason": "Branch-specific current address established and missing branch description supplied independently. Donor has additional venue relationships; guarded merge rejected and remains held."
+    },
+    {
+      "name": "Discus",
+      "reason": "Automatic gap fill still includes unverified donor coordinates; merge not applied."
+    },
+    {
+      "name": "Eagle Manchester",
+      "reason": "Current official homepage/contact confirm address and shared email, but do not publish proposed venue telephone. Taxi number on contact page is not the venue phone. No transfer."
+    },
+    {
+      "name": "Eagle Amsterdam",
+      "reason": "Official source confirms address and current inclusive event programme, but proposed phone and donor's old blanket description/2020 renovation claim not fully corroborated. No merge."
+    },
+    {
+      "name": "Eagle Torremolinos",
+      "reason": "Current official site confirms address, but donor inbox not published on retrieved page."
+    },
+    {
+      "name": "Fire London",
+      "reason": "Official contact page confirms address and contact forms but not proposed bookings inbox."
+    },
+    {
+      "name": "Sauna Carré Rouge",
+      "reason": "Current address confirmed, proposed Gmail not published in retrieved official text. A later links-only source read returned403; no access bypass."
+    },
+    {
+      "name": "Boiler Room",
+      "reason": "Supplied .com domain now serves unrelated merchandise/culture content; separate reopening/relocation reports require current first-party corroboration. No stale-address merge or .com website transfer."
+    },
+    {
+      "name": "Brunos",
+      "reason": "Official domain has certificate mismatch; current search finds closure reporting. Retained as evidence hold rather than certifying a currently operating shop."
+    },
+    {
+      "name": "1181, Artbridge, Delta",
+      "reason": "TLS or connection errors; no insecure TLS bypass."
+    },
+    {
+      "name": "Boot Rack",
+      "reason": "Website returns no readable text and licensing evidence is historical. Current operation/identity not certified."
+    },
+    {
+      "name": "Connection Shop",
+      "reason": "Official shop identity/address found at shared Connection site, but the broader canonical business/venue relationship needs scope confirmation before merge."
+    },
+    {
+      "name": "1851, Baliza, Axis, Fairy, Flash and further social-only matches",
+      "reason": "Unverified exact pins, conflicting addresses, branch/operator identities, relocation or insufficient accessible current first-party evidence prevent native merge."
+    },
+    {
+      "name": "Amphibi and remaining unsupported contacts/descriptions",
+      "reason": "Not advanced solely to unblock a merge; no stale prices, speculative contact or superlative descriptions copied."
+    }
+  ],
+  "worker_monitoring": "No new worker-runtime claim or live Jev experiment in this pass. Earlier observations remain in earlier manifests.",
+  "limitations": "Queue is live and increased above the user's prior checkpoint before this pass. Count movement includes ingestion and scheduled research. General reconciler candidate selection still timed out; this pass's verified cohort was reconciled with bounded equivalent lifecycle SQL, without claiming the global performance problem fixed."
+}

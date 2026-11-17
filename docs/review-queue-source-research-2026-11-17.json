@@ -1,0 +1,925 @@
+{
+  "pass": 5,
+  "date": "2026-11-17",
+  "authorization": "Continue researching and repairing remaining review cases. Machine source review only; no human verification, legal ownership or publication approvals inferred.",
+  "start_active_cases": 2833,
+  "user_checkpoint": 2985,
+  "business_merges": [
+    {
+      "name": "Alexander Sauna Mens Club",
+      "address": "Meg. Alexandrou 134",
+      "city_id": "4a69a323-e310-429f-a357-369149b060a3",
+      "drop_id": "6f0821a9-0da8-48d8-99b7-e224766d219e",
+      "website": "http://alexandersauna.com",
+      "keep_org": "aea50217-83aa-4a61-a77d-a13d3324ed21",
+      "keep_name": "Alexander Sauna",
+      "country_id": "c07c4798-0284-44f3-966f-b5b612a103fe",
+      "keep_venue": "53892321-6b2f-4c1a-a675-936420504d68",
+      "donor_venue": "ae15fa18-596a-4ce2-a051-dbf40f7fe64b",
+      "keep_address": "134 Megalou Alexandrou, Athina",
+      "keep_website": "http://alexandersauna.com",
+      "keep_org_name": "Alexander Sauna",
+      "source": {
+        "url": "https://www.alexandersauna.com/book-online",
+        "retrieved_at": "2026-11-17T03:07:18.470363+00:00",
+        "status": 200,
+        "final_url": "https://www.alexandersauna.com/book-online",
+        "sha256": "c26ab9bec4886fac8c1d44608e63bccdc57aa52f40129e731d5fe9a6b711719b"
+      },
+      "allowed_patch": {},
+      "scope": "Exact source-confirmed physical identity and already-merged venue relationship only. Canonical profile unchanged; no legal ownership or human verification asserted."
+    },
+    {
+      "name": "XL Sauna & Lounge",
+      "patch": {},
+      "roles": [
+        "venue"
+      ],
+      "address": "Brebacher Landstraße 15",
+      "city_id": "b6e68544-389a-44be-a671-84af08ffa63e",
+      "drop_id": "9ad6bbc0-8851-47eb-ab6f-481cc2ab5c0b",
+      "website": "https://www.xl-sauna.de",
+      "keep_org": "206e5cc0-8add-4326-a6cc-2a535d13606a",
+      "keep_city": "b6e68544-389a-44be-a671-84af08ffa63e",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "keep_roles": [
+        "venue"
+      ],
+      "keep_venue": "19bee8b2-4963-4e02-b7e3-107a98ee9438",
+      "donor_venue": "82aa37f3-465f-4e9d-b4ee-8493e603fb27",
+      "claim_status": "unclaimed",
+      "keep_address": "XL Sauna, Saarbrücken",
+      "keep_country": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "keep_primary": "19bee8b2-4963-4e02-b7e3-107a98ee9438",
+      "keep_website": null,
+      "keep_org_name": "XL Sauna",
+      "keep_venue_name": "XL Sauna",
+      "keep_claim_status": "unclaimed",
+      "source": {
+        "url": "https://xl-sauna.de/",
+        "retrieved_at": "2026-11-17T03:07:18.470667+00:00",
+        "status": 200,
+        "final_url": "https://xl-sauna.de/",
+        "sha256": "db0f8eb6df7fa82472a453e92d733e013a49c6cb31fd9f03f948744614af9b5d"
+      },
+      "allowed_patch": {},
+      "scope": "Exact source-confirmed physical identity and already-merged venue relationship only. Canonical profile unchanged; no legal ownership or human verification asserted."
+    },
+    {
+      "name": "Aqualis Gay Sauna",
+      "address": "Brunnmattstrasse 21, 3007 Bern, Switzerland",
+      "city_id": "cbd7c40b-2cc5-418e-bb71-9efe0e1a697c",
+      "drop_id": "e32c20e2-05fb-46f5-a0ee-c93d20544bcb",
+      "website": "http://www.aqualisclub.ch/",
+      "keep_org": "44ea85b6-e1c0-4f33-a519-51bacef6f74f",
+      "keep_name": "Aqualis Sauna Club",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "keep_venue": "69a4a14c-9c7e-4b3b-aed3-2d5605bc21e3",
+      "donor_venue": "ec73a15a-c842-42c7-aaba-db46d8c610cb",
+      "keep_address": "Aqualis Sauna Club, Bern",
+      "keep_website": null,
+      "keep_org_name": "Aqualis Sauna Club",
+      "source": {
+        "url": "https://www.aqualisclub.ch/",
+        "retrieved_at": "2026-11-17T03:08:49.619190+00:00",
+        "status": 200,
+        "final_url": "https://www.aqualisclub.ch/",
+        "sha256": "d7b7d75412f8d2e3bbc3d8db63106d3dca5b10e7123ff56c0b1d0660b1f44980"
+      },
+      "allowed_patch": {},
+      "scope": "Exact source-confirmed physical identity and already-merged venue relationship only. Canonical profile unchanged; no legal ownership or human verification asserted."
+    },
+    {
+      "name": "Centre LGBTQIA+ de Marseille",
+      "address": "17, Rue du Chevalier Roze, Marseille, 13002",
+      "city_id": "2b2f1c9b-91c7-45ad-a7a3-cb06bcf4e63e",
+      "drop_id": "15a529ef-278e-42cb-bf6d-2aee593f9afa",
+      "website": "https://centrelgbtqiamarseille.org/",
+      "keep_org": "065971c5-0794-4adf-9c8f-0ac451627dde",
+      "keep_name": "Centre LGBTQIA+ Marseille",
+      "country_id": "4a9c8fef-e5c3-4405-99d3-374d645e905a",
+      "keep_venue": "790ac326-825d-4525-b4fa-3e6f3c3b4786",
+      "donor_venue": "9b3f5ca9-a002-4e52-a34e-b80c820f49d7",
+      "keep_address": "17-21 Rue du Chevalier Roze",
+      "keep_website": "https://centrelgbtqiamarseille.org",
+      "keep_org_name": "Centre LGBTQIA+ Marseille",
+      "source": {
+        "url": "https://centrelgbtqiamarseille.org/",
+        "retrieved_at": "2026-11-17T03:08:49.746441+00:00",
+        "status": 200,
+        "final_url": "https://centrelgbtqiamarseille.org/",
+        "sha256": "ecc57d98d735d204ed4b8d62aa9c3373f3871a27282f7880b4e3a5d7f917a346"
+      },
+      "allowed_patch": {},
+      "scope": "Exact source-confirmed physical identity and already-merged venue relationship only. Canonical profile unchanged; no legal ownership or human verification asserted."
+    },
+    {
+      "name": "Eisenherz",
+      "address": "Buchladen Eisenherz, Motzstraße 23, 10777 Berlin",
+      "city_id": "5761c6c4-3ed6-4429-832b-025e508db544",
+      "drop_id": "b0387d15-ccca-4571-801d-846207f75d49",
+      "website": "https://prinz-eisenherz.buchkatalog.de/",
+      "keep_org": "287b93b3-dd40-4257-aaf5-233edafe07e6",
+      "keep_name": "Prinz Eisenherz Buchladen",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "keep_venue": "c4739f33-fb12-4283-94f4-da98d6175d11",
+      "donor_venue": "aa4b1982-ecfa-4e98-94fa-abad32faf00d",
+      "keep_address": "Motzstraße 23, 10777 Berlin",
+      "keep_website": "https://prinz-eisenherz.buchkatalog.de/",
+      "keep_org_name": "Prinz Eisenherz Buchladen",
+      "source": {
+        "url": "https://prinz-eisenherz.buchkatalog.de/",
+        "retrieved_at": "2026-11-17T03:08:50.267908+00:00",
+        "status": 200,
+        "final_url": "https://prinz-eisenherz.buchkatalog.de/",
+        "sha256": "56c8a957d0ce5a5e0ceb475ffac2facd120712146d280838db86ce918ca16c15"
+      },
+      "allowed_patch": {},
+      "scope": "Exact source-confirmed physical identity and already-merged venue relationship only. Canonical profile unchanged; no legal ownership or human verification asserted."
+    },
+    {
+      "name": "Calipolis",
+      "address": "Avinguda Sofía Sitges (08870)",
+      "city_id": "bdbeb5bc-d2de-462a-a906-aed8e3b9f968",
+      "drop_id": "b7624e6f-2813-4b51-8271-2f5d25b4ca2c",
+      "website": "https://www.hotelcalipolis.com/",
+      "keep_org": "1638f3d6-422f-4f8d-898c-abe35b71d244",
+      "keep_name": "Hotel Calipolis",
+      "country_id": "4020d296-538c-4d6d-a728-33db16460181",
+      "keep_venue": "950696c4-56bd-41a6-9bb9-c81466db565f",
+      "donor_venue": "03aaf20d-2ea1-4d2f-9734-5e4864a1ee33",
+      "keep_address": "2 Avinguda Sofia, Sitges",
+      "keep_website": null,
+      "keep_org_name": "Hotel Calipolis",
+      "source": {
+        "url": "https://www.hotelcalipolis.com/",
+        "retrieved_at": "2026-11-17T03:08:49.619359+00:00",
+        "status": 200,
+        "final_url": "https://www.hotelcalipolis.com/",
+        "sha256": "f847d2253e235a855fbe51f78db871f052a90d3f0b99d8b7bcbc83a09d810f22"
+      },
+      "allowed_patch": {},
+      "scope": "Exact source-confirmed physical identity and already-merged venue relationship only. Canonical profile unchanged; no legal ownership or human verification asserted."
+    },
+    {
+      "name": "Elvira café",
+      "address": "275, Carrer del Consell de Cent, Barcelone, 08001",
+      "city_id": "cc0c20ac-fbae-4a85-a234-66ea0363e87a",
+      "drop_id": "b50f9169-6f23-4946-ae31-b0ed846e2b85",
+      "website": "https://elviracafebcn.com/",
+      "keep_org": "25835540-16a1-493e-ab88-9ebf20368da9",
+      "keep_name": "Elvira",
+      "country_id": "4020d296-538c-4d6d-a728-33db16460181",
+      "keep_venue": "e1c5b2c1-61d7-42fc-8b90-881550639915",
+      "donor_venue": "9c1bfa40-ed6f-4dce-bdaa-5cf2a805c434",
+      "keep_address": "C. del Consell de Cent 275 \nBarcelona 08011",
+      "keep_website": "https://elviracafebcn.com/",
+      "keep_org_name": "Elvira",
+      "source": {
+        "url": "https://elviracafebcn.com/",
+        "retrieved_at": "2026-11-17T03:08:50.578362+00:00",
+        "status": 200,
+        "final_url": "https://elviracafebcn.com/",
+        "sha256": "599109bd465879f6804e6c4bf4c481f889b55037ca5baba9100f1598d61db0c1"
+      },
+      "allowed_patch": {},
+      "scope": "Exact source-confirmed physical identity and already-merged venue relationship only. Canonical profile unchanged; no legal ownership or human verification asserted."
+    },
+    {
+      "name": "Sauna La Détente",
+      "patch": {},
+      "roles": [
+        "venue"
+      ],
+      "address": "5 rue Alfred Mézières",
+      "city_id": "2929ae63-3ea4-4e71-bd19-05b20553f280",
+      "drop_id": "5f417514-0ae4-40ac-9cb0-307f57000c88",
+      "website": "https://www.sauna-ladetente.fr",
+      "keep_org": "bc2308c6-3818-4ba3-81b9-ed29c4007f88",
+      "keep_city": "2929ae63-3ea4-4e71-bd19-05b20553f280",
+      "country_id": "4a9c8fef-e5c3-4405-99d3-374d645e905a",
+      "keep_roles": [
+        "venue"
+      ],
+      "keep_venue": "b5351891-7890-448b-b615-e685c350d7fa",
+      "donor_venue": "525185b8-237d-48c4-8a86-0883377bca20",
+      "claim_status": "unclaimed",
+      "keep_address": "5, rue Alfred Mézières,Nancy,54000",
+      "keep_country": "4a9c8fef-e5c3-4405-99d3-374d645e905a",
+      "keep_primary": "b5351891-7890-448b-b615-e685c350d7fa",
+      "keep_website": "http://www.sauna-ladetente.fr/",
+      "keep_org_name": "La Détente sauna",
+      "keep_venue_name": "La Détente sauna",
+      "keep_claim_status": "unclaimed",
+      "source": {
+        "url": "https://www.sauna-ladetente.fr/",
+        "retrieved_at": "2026-11-17T03:07:18.471036+00:00",
+        "status": 200,
+        "final_url": "https://www.sauna-ladetente.fr/",
+        "sha256": "ea560e9ede8f0332dee58a7dd05a746143759a64d4d16fedbfa0db6452656e3c"
+      },
+      "allowed_patch": {},
+      "scope": "Exact official Nancy identity after separately audited city correction and wrong-pin withdrawal. Canonical profile unchanged; no ownership verification asserted."
+    }
+  ],
+  "official_contacts": [
+    {
+      "id": "1638f3d6-422f-4f8d-898c-abe35b71d244",
+      "source": {
+        "url": "https://www.hotelcalipolis.com/",
+        "retrieved_at": "2026-11-17T03:08:49.619359+00:00",
+        "status": 200,
+        "final_url": "https://www.hotelcalipolis.com/",
+        "sha256": "f847d2253e235a855fbe51f78db871f052a90d3f0b99d8b7bcbc83a09d810f22"
+      },
+      "patch": {
+        "email": "calipolis@hotelcalipolis.com",
+        "phone": "+34938941500"
+      }
+    },
+    {
+      "id": "25835540-16a1-493e-ab88-9ebf20368da9",
+      "source": {
+        "url": "https://elviracafebcn.com/",
+        "retrieved_at": "2026-11-17T03:08:50.578362+00:00",
+        "status": 200,
+        "final_url": "https://elviracafebcn.com/",
+        "sha256": "599109bd465879f6804e6c4bf4c481f889b55037ca5baba9100f1598d61db0c1"
+      },
+      "patch": {
+        "email": "hola@believegroup.cat"
+      }
+    }
+  ],
+  "nancy_location_correction": {
+    "source": {
+      "url": "https://www.sauna-ladetente.fr/",
+      "retrieved_at": "2026-11-17T03:07:18.471036+00:00",
+      "status": 200,
+      "final_url": "https://www.sauna-ladetente.fr/",
+      "sha256": "ea560e9ede8f0332dee58a7dd05a746143759a64d4d16fedbfa0db6452656e3c"
+    },
+    "old_city_id": "ac8e6602-6493-4125-a341-7b5f3ebd3e29",
+    "new_city_id": "2929ae63-3ea4-4e71-bd19-05b20553f280",
+    "old_latitude": 49.1386037,
+    "old_longitude": 6.1459276,
+    "disposition": "Official site confirms 5 rue Alfred Mézières, 54000 Nancy; the donor venue/profile were incorrectly assigned to Metz. Correct city link and withdraw the known wrong Metz pin; no replacement coordinate inferred. Canonical Nancy venue/profile unchanged."
+  },
+  "florence_event_correction": {
+    "event": "f8db5546-2eb6-4d8c-95e3-930db4c14c67",
+    "previous_title": "Florence Queer Festival 2025",
+    "title": "Florence Queer Festival 2026",
+    "previous_images": [
+      "https://www.gayout.com/uploads/cities/florence/cover.jpg"
+    ],
+    "artwork": {
+      "url": "https://www.florencequeerfestival.it/wp-content/uploads/8000x4500_LOGHI.jpg",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "byte_size": 582561,
+      "width": 1200,
+      "height": 675,
+      "sha256": "4bf242a8f8713034dfb852f551c0b886114147ccea86fdcd50254b4c9303a90a",
+      "retrieved_at": "2026-11-17T03:20:45.043604+00:00"
+    },
+    "programme": {
+      "url": "https://www.florencequeerfestival.it/programma-24edizione/",
+      "retrieved_at": "2026-11-17T03:17:56.457083+00:00",
+      "status": 200,
+      "final_url": "https://www.florencequeerfestival.it/programma-24edizione/",
+      "sha256": "7e47beba2f50f7fe8aacbafe5ba4090f65105f5431b9031f0b6e434e995f854f"
+    },
+    "homepage": {
+      "url": "https://www.florencequeerfestival.it/",
+      "retrieved_at": "2026-11-17T03:20:45.403499+00:00",
+      "status": 200,
+      "final_url": "https://www.florencequeerfestival.it/",
+      "sha256": "a0dad4fddd602a77c226ed56817466f346949b0c93501cb0449e7fc594763f6e"
+    },
+    "visual_review": "Publisher homepage's 1200x675 poster explicitly displays Florence Queer Festival, 24th edition, 18–22 November 2026, Cinema La Compagnia Firenze. Fully decoded JPEG; no upscaling, real-person identity or image ownership beyond publisher source inferred."
+  },
+  "source_metadata": {
+    "business_sources": [
+      {
+        "url": "https://www.eaglemanchester.com/contact",
+        "retrieved_at": "2026-11-17T03:13:17.814416+00:00",
+        "status": 200,
+        "final_url": "https://www.eaglemanchester.com/contact",
+        "sha256": "3d9eb7d7bd4a46f51ac589957ce905cea0181f8fdc0c8ec65e99d7fabbbe7bab"
+      },
+      {
+        "url": "https://www.hotelcalipolis.com/",
+        "retrieved_at": "2026-11-17T03:08:49.619359+00:00",
+        "status": 200,
+        "final_url": "https://www.hotelcalipolis.com/",
+        "sha256": "f847d2253e235a855fbe51f78db871f052a90d3f0b99d8b7bcbc83a09d810f22"
+      },
+      {
+        "url": "https://www.aqualisclub.ch/",
+        "retrieved_at": "2026-11-17T03:08:49.619190+00:00",
+        "status": 200,
+        "final_url": "https://www.aqualisclub.ch/",
+        "sha256": "d7b7d75412f8d2e3bbc3d8db63106d3dca5b10e7123ff56c0b1d0660b1f44980"
+      },
+      {
+        "url": "https://axisonhigh.com/",
+        "retrieved_at": "2026-11-17T03:07:18.659083+00:00",
+        "status": 200,
+        "final_url": "https://www.axisonhigh.com/",
+        "sha256": "cec7612152c7caab25d1e521eddb36f98f600b0a5071c177926863a87677c830"
+      },
+      {
+        "url": "https://dallaseagle.com/",
+        "retrieved_at": "2026-11-17T03:07:18.855569+00:00",
+        "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'dallaseagle.com'. (_ssl.c:1082)>"
+      },
+      {
+        "url": "https://elviracafebcn.com/",
+        "retrieved_at": "2026-11-17T03:08:50.578362+00:00",
+        "status": 200,
+        "final_url": "https://elviracafebcn.com/",
+        "sha256": "599109bd465879f6804e6c4bf4c481f889b55037ca5baba9100f1598d61db0c1"
+      },
+      {
+        "url": "https://crystalhouston.com/",
+        "retrieved_at": "2026-11-17T03:08:38.293117+00:00",
+        "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'crystalhouston.com'. (_ssl.c:1082)>"
+      },
+      {
+        "url": "https://www.firelondon.net/",
+        "retrieved_at": "2026-11-17T03:08:50.631849+00:00",
+        "status": 200,
+        "final_url": "https://www.firelondon.net/",
+        "sha256": "3b95cfb3164fbbbbf4d13cdf213993601e5cdd0bf11be7c4e4fe2f8534eeddf1"
+      },
+      {
+        "url": "https://www.eagleamsterdam.com/",
+        "retrieved_at": "2026-11-17T03:08:50.159616+00:00",
+        "status": 200,
+        "final_url": "https://www.eagleamsterdam.com/",
+        "sha256": "4b6358483cf78968ae115a65b881840312495f6746094879478fe70766587427"
+      },
+      {
+        "url": "https://thecitysaunaclub.com/",
+        "retrieved_at": "2026-11-17T03:08:49.813938+00:00",
+        "status": 200,
+        "final_url": "https://www.thecitysaunaclub.com/",
+        "sha256": "0c58f58cc23443d7716dd6787680811c933901411b0c41e5420dfc3fca4ab246"
+      },
+      {
+        "url": "https://www.lecavernclub.com/",
+        "retrieved_at": "2026-11-17T03:08:49.674054+00:00",
+        "error": "<urlopen error [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1082)>"
+      },
+      {
+        "url": "https://www.alexandersauna.com/book-online",
+        "retrieved_at": "2026-11-17T03:07:18.470363+00:00",
+        "status": 200,
+        "final_url": "https://www.alexandersauna.com/book-online",
+        "sha256": "c26ab9bec4886fac8c1d44608e63bccdc57aa52f40129e731d5fe9a6b711719b"
+      },
+      {
+        "url": "https://www.dallaseagle.com/",
+        "retrieved_at": "2026-11-17T03:08:38.293206+00:00",
+        "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'www.dallaseagle.com'. (_ssl.c:1082)>"
+      },
+      {
+        "url": "https://kobaltbarphoenix.com/",
+        "retrieved_at": "2026-11-17T03:08:38.290209+00:00",
+        "error": "Source exceeds capture limit"
+      },
+      {
+        "url": "https://prinz-eisenherz.buchkatalog.de/",
+        "retrieved_at": "2026-11-17T03:08:50.267908+00:00",
+        "status": 200,
+        "final_url": "https://prinz-eisenherz.buchkatalog.de/",
+        "sha256": "56c8a957d0ce5a5e0ceb475ffac2facd120712146d280838db86ce918ca16c15"
+      },
+      {
+        "url": "https://www.amphibi.fr/infos-pratiques/",
+        "retrieved_at": "2026-11-17T03:13:17.813679+00:00",
+        "status": 200,
+        "final_url": "https://www.amphibi.fr/infos-pratiques/",
+        "sha256": "04644b4fef152c693faba686b24d85e6651a225b73bd5762b626081dcc3fba71"
+      },
+      {
+        "url": "https://www.sauna-ladetente.fr/",
+        "retrieved_at": "2026-11-17T03:07:18.471036+00:00",
+        "status": 200,
+        "final_url": "https://www.sauna-ladetente.fr/",
+        "sha256": "ea560e9ede8f0332dee58a7dd05a746143759a64d4d16fedbfa0db6452656e3c"
+      },
+      {
+        "url": "https://xl-sauna.de/",
+        "retrieved_at": "2026-11-17T03:07:18.470667+00:00",
+        "status": 200,
+        "final_url": "https://xl-sauna.de/",
+        "sha256": "db0f8eb6df7fa82472a453e92d733e013a49c6cb31fd9f03f948744614af9b5d"
+      },
+      {
+        "url": "https://www.eaglemanchester.com/",
+        "retrieved_at": "2026-11-17T03:08:50.120111+00:00",
+        "status": 200,
+        "final_url": "https://www.eaglemanchester.com/",
+        "sha256": "5a6703b38612e5d82fa04b9a49919eae36239e8039e0678c825d755b5d7d7ae1"
+      },
+      {
+        "url": "https://amphibi.fr/",
+        "retrieved_at": "2026-11-17T03:08:49.618557+00:00",
+        "status": 200,
+        "final_url": "https://www.amphibi.fr/",
+        "sha256": "bfaae77493d32456a2bd0cddc2040a2cbc4446590404d46a79dca3de2a1b1dae"
+      },
+      {
+        "url": "https://www.crystaltheclub.com/",
+        "retrieved_at": "2026-11-17T03:07:18.470856+00:00",
+        "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+      },
+      {
+        "url": "https://www.buddy-muenchen.com/",
+        "retrieved_at": "2026-11-17T03:08:49.619289+00:00",
+        "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+      },
+      {
+        "url": "https://www.kobaltbarphoenix.com/about-us",
+        "retrieved_at": "2026-11-17T03:07:18.468219+00:00",
+        "error": "HTTP Error 404: Not Found"
+      },
+      {
+        "url": "https://centrelgbtqiamarseille.org/",
+        "retrieved_at": "2026-11-17T03:08:49.746441+00:00",
+        "status": 200,
+        "final_url": "https://centrelgbtqiamarseille.org/",
+        "sha256": "ecc57d98d735d204ed4b8d62aa9c3373f3871a27282f7880b4e3a5d7f917a346"
+      },
+      {
+        "url": "https://www.saunacarrerouge.com/",
+        "retrieved_at": "2026-11-17T03:08:49.619423+00:00",
+        "status": 200,
+        "final_url": "https://www.saunacarrerouge.com/",
+        "sha256": "acdd755f585925d2d18ddf88027e3ec47e63e982363ff8c675ca1fe3d28df874"
+      },
+      {
+        "url": "https://steamworksbaths.com/chicago-home",
+        "retrieved_at": "2026-11-17T03:07:18.595234+00:00",
+        "status": 200,
+        "final_url": "https://www.steamworksbaths.com/chicago",
+        "sha256": "82a8682e68444d181450f07b1e8474628eeef54b0a9bd2d4f082e7a7e31e013b"
+      }
+    ],
+    "contact_links": [
+      {
+        "url": "https://amphibi.fr/",
+        "status": 200,
+        "sha256": "bfaae77493d32456a2bd0cddc2040a2cbc4446590404d46a79dca3de2a1b1dae",
+        "retrieved_at": "2026-11-17T03:12:45.423889+00:00",
+        "links": [
+          "https://www.amphibi.fr/infos-pratiques/",
+          "https://www.amphibi.fr/infos-pratiques/",
+          "https://www.amphibi.fr/infos-pratiques/#TARIFS",
+          "https://www.amphibi.fr/infos-pratiques/"
+        ]
+      },
+      {
+        "url": "https://www.saunacarrerouge.com/",
+        "status": 200,
+        "sha256": "f24317ecdd90ccbab5d4b8e820c64ce30e2a72e885afe77525eb7cb90ec4227a",
+        "retrieved_at": "2026-11-17T03:12:46.253775+00:00",
+        "links": [
+          "tel:+33299366829",
+          "tel:+33299366829",
+          "#infos",
+          "#infos",
+          "tel:+33299366829"
+        ]
+      },
+      {
+        "url": "https://www.eagleamsterdam.com/",
+        "status": 200,
+        "sha256": "b26e6ea8ed6a9c2a8d6c2842f48df4af599a4ffce429f8f949bd0de972cbec4f",
+        "retrieved_at": "2026-11-17T03:12:47.089786+00:00",
+        "links": []
+      },
+      {
+        "url": "https://www.eaglemanchester.com/",
+        "status": 200,
+        "sha256": "5a6703b38612e5d82fa04b9a49919eae36239e8039e0678c825d755b5d7d7ae1",
+        "retrieved_at": "2026-11-17T03:12:49.204145+00:00",
+        "links": [
+          "https://www.eaglemanchester.com/contact",
+          "mailto:info@eaglemanchester.com?subject=Email from website",
+          "https://www.eaglemanchester.com/contact-1"
+        ]
+      }
+    ],
+    "nancy_map": {
+      "url": "https://www.sauna-ladetente.fr/carte/",
+      "status": 200,
+      "sha256": "c5a352cf4fc6edf1e9c0b8e557ab62b4ddcc6ec34a192b9ed26114ba6e10af8f",
+      "retrieved_at": "2026-11-17T03:14:37.600725+00:00",
+      "iframes": [],
+      "map_coordinates": [
+        "://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2633.2307105972886!2d6.167438915936889!3d48.70107111972431!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4794a2a745ce48"
+      ],
+      "published_map_urls": [
+        "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2633.2307105972886!2d6.167438915936889!3d48.70107111972431!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4794a2a745ce483b%3A0x9b2b09f5a46fe024!2sSauna+La+D%C3%A9tente!5e0!3m2!1sfr!2sfr!4v1447420605835"
+      ]
+    }
+  },
+  "event_sources": [
+    {
+      "url": "https://www.florencequeerfestival.it/",
+      "retrieved_at": "2026-11-17T03:20:45.403499+00:00",
+      "status": 200,
+      "final_url": "https://www.florencequeerfestival.it/",
+      "sha256": "a0dad4fddd602a77c226ed56817466f346949b0c93501cb0449e7fc594763f6e"
+    },
+    {
+      "url": "https://www.florencequeerfestival.it/programma-24edizione/",
+      "retrieved_at": "2026-11-17T03:17:56.457083+00:00",
+      "status": 200,
+      "final_url": "https://www.florencequeerfestival.it/programma-24edizione/",
+      "sha256": "7e47beba2f50f7fe8aacbafe5ba4090f65105f5431b9031f0b6e434e995f854f"
+    },
+    {
+      "url": "https://www.christkindlesmarkt.de/en/",
+      "retrieved_at": "2026-11-17T03:17:56.457742+00:00",
+      "status": 200,
+      "final_url": "https://www.christkindlesmarkt.de/en/",
+      "sha256": "46432b0d60113276ebf4b078808db9ea3628ec66358f0946fff8ecf0cf5d28f8"
+    },
+    {
+      "url": "https://uomo.pittimmagine.com/en",
+      "retrieved_at": "2026-11-17T03:17:56.457826+00:00",
+      "status": 200,
+      "final_url": "https://uomo.pittimmagine.com/en",
+      "sha256": "59102661c1b7860e35887e996caac702a2678ac0066618eb8cb069b6c5d8033e"
+    },
+    {
+      "url": "https://www.christkindlesmarkt.de/en/your-visit/getting-there",
+      "retrieved_at": "2026-11-17T03:17:56.457604+00:00",
+      "status": 200,
+      "final_url": "https://www.christkindlesmarkt.de/en/your-visit/getting-there",
+      "sha256": "79865d39959fa3a98c72b649a890932da57d69b74ace6770f1c55c171b97ce4b"
+    },
+    {
+      "url": "https://www.christkindlesmarkt.de/der-markt/die-eroeffnung",
+      "retrieved_at": "2026-11-17T03:18:56.601412+00:00",
+      "status": 200,
+      "final_url": "https://www.christkindlesmarkt.de/der-markt/die-eroeffnung",
+      "sha256": "830df83a55a8f78def4cae63fb25dca3da668e722aea8c496199a58ee2ba724e"
+    }
+  ],
+  "worker_repairs": {
+    "failure_evidence": "Function and PostgreSQL logs at 02:58,03:08 and03:18 UTC identify claim_event_gaps enrollment statement timeout, through authenticator's inherited 8s REST timeout.",
+    "plan_migration": "20261117030759_specialize_event_gap_claim_plans.sql",
+    "generic_enrollment": {
+      "planning_ms": 2943.69,
+      "execution_ms": 8813.655
+    },
+    "custom_enrollment": {
+      "planning_ms": 31.395,
+      "execution_ms": 828.4
+    },
+    "full_claim": {
+      "planning_ms": 0.018,
+      "execution_ms": 3005.192
+    },
+    "measurement_limit": "Single observed plans with different cache warmth, not a controlled performance benchmark. Custom planning alone did not eliminate REST timeouts;03:18 still failed.",
+    "timeout_migration": "20261117032448_bound_event_gap_claim_timeout.sql",
+    "timeout_scope": "20s only for the existing service-role-only claim RPC; PostgREST schema reload. Authenticator/role/global defaults unchanged. Existing max batch40, leases, cooldowns, source/content gates and priorities unchanged.",
+    "docs": [
+      "https://www.postgresql.org/docs/17/runtime-config-query.html#GUC-PLAN-CACHE-MODE",
+      "https://supabase.com/docs/guides/database/postgres/timeouts",
+      "https://docs.postgrest.org/en/v12/references/transactions.html#function-settings"
+    ],
+    "real_requests": [
+      {
+        "id": 575317,
+        "status": 200,
+        "processed": 12,
+        "failed": 0,
+        "ai_attempts": 0
+      },
+      {
+        "id": 575607,
+        "status": 200,
+        "processed": 12,
+        "failed": 0,
+        "ai_attempts": 0
+      }
+    ],
+    "latest_scheduled": "03:28 UTC HTTP200,12 processed,zero failed/AI attempts after bounded timeout; continued monitoring remains appropriate."
+  },
+  "validation": {
+    "deno_version": "2.9.6 (CI pins2.9.8, unavailable in the local npm registry)",
+    "deno_tests": 17,
+    "deno_command": "deno test --allow-net --allow-env --allow-read --node-modules-dir=none supabase/functions/_tests/country-image-health.test.ts supabase/functions/_shared/news-quality/image-check.test.ts",
+    "fixture_type_fix": "Response receives copied ArrayBuffer, preserving bytes and avoiding Deno Uint8Array<ArrayBufferLike>/BodyInit type mismatch.",
+    "sql_regressions": [
+      "bounded_event_gap_claim_enrollment: passes caller generic-plan simulation, scoped settings restored, service-role-only execute, finite timeout, bounds/dry run/leases/cooldowns/fingerprints/event preservation",
+      "historical_event_artwork_recovery: passes again with final function settings"
+    ],
+    "data_guards": "Every data repair rollback-tested before commit. Native merge; canonical profile byte-for-byte preservation after separately audited contact updates. Nancy canonical records unchanged. Florence only title/derived title_normalized/images/provenance/update time changed; old slug retained.",
+    "superseded_business_findings_reconciled": 14,
+    "repair_audit_rows": 13,
+    "image_auditor_request": 575545,
+    "no_live_jev_experiments": true
+  },
+  "migration_history_alignment": [
+    {
+      "old": "20261116195200",
+      "production": "20261116195006",
+      "name": "brand_quality_scope_reconciliation"
+    },
+    {
+      "old": "20261116200600",
+      "production": "20261116200633",
+      "name": "historical_event_artwork_recovery"
+    },
+    {
+      "old": "20261116201200",
+      "production": "20261116200920",
+      "name": "resume_repaired_event_gap_workers"
+    },
+    {
+      "old": "20261116201400",
+      "production": "20261116201149",
+      "name": "historical_artwork_null_eligibility_guard"
+    },
+    {
+      "old": "20261116205344",
+      "production": "20261116210200",
+      "name": "bounded_event_gap_claim_enrollment"
+    }
+  ],
+  "holds": [
+    {
+      "names": [
+        "Amphibi sauna",
+        "Eagle Amsterdam",
+        "Eagle Manchester",
+        "Carré rouge sauna"
+      ],
+      "reason": "Identity evidence retrieved, but native merge would also transfer contact/description fields not fully corroborated by captured sources. No merge applied for these cases."
+    },
+    {
+      "names": [
+        "Kobalt",
+        "Crystal NightClub",
+        "Dallas Eagle",
+        "Buddy",
+        "Le Cavern"
+      ],
+      "reason": "Unavailable/certificate-invalid sources or capture-size limit. No TLS verification bypass or unbounded capture used."
+    },
+    {
+      "names": [
+        "Steamworks Chicago",
+        "Axis Nightclub"
+      ],
+      "reason": "Surviving venue business links involve another branch or named business. Shared brand/location labels are insufficient to certify physical-profile merge or legal ownership."
+    },
+    {
+      "names": [
+        "Pitti Immagine Uomo",
+        "Nuremberg Christkindlesmarkt",
+        "Florence Queer Festival venue link"
+      ],
+      "reason": "Official source confirms named location, but no corresponding canonical venue was found. Venue links remain held; no unrelated venue substituted."
+    }
+  ],
+  "snapshot": {
+    "audits": [
+      {
+        "reason": "codex_source_pass5_official_contacts",
+        "entity_id": "1638f3d6-422f-4f8d-898c-abe35b71d244",
+        "entity_type": "organization"
+      },
+      {
+        "reason": "codex_source_pass5_official_contacts",
+        "entity_id": "25835540-16a1-493e-ab88-9ebf20368da9",
+        "entity_type": "organization"
+      },
+      {
+        "reason": "codex_source_pass5_Nancy_location",
+        "entity_id": "525185b8-237d-48c4-8a86-0883377bca20",
+        "entity_type": "venue"
+      },
+      {
+        "reason": "codex_source_pass5_Nancy_location",
+        "entity_id": "5f417514-0ae4-40ac-9cb0-307f57000c88",
+        "entity_type": "organization"
+      },
+      {
+        "reason": "codex_source_pass5_business_identity",
+        "entity_id": "5f417514-0ae4-40ac-9cb0-307f57000c88",
+        "entity_type": "organization"
+      },
+      {
+        "reason": "codex_source_pass5_Florence_2026",
+        "entity_id": "f8db5546-2eb6-4d8c-95e3-930db4c14c67",
+        "entity_type": "event"
+      },
+      {
+        "reason": "codex_source_pass5_business_identity",
+        "entity_id": "6f0821a9-0da8-48d8-99b7-e224766d219e",
+        "entity_type": "organization"
+      },
+      {
+        "reason": "codex_source_pass5_business_identity",
+        "entity_id": "9ad6bbc0-8851-47eb-ab6f-481cc2ab5c0b",
+        "entity_type": "organization"
+      },
+      {
+        "reason": "codex_source_pass5_business_identity",
+        "entity_id": "e32c20e2-05fb-46f5-a0ee-c93d20544bcb",
+        "entity_type": "organization"
+      },
+      {
+        "reason": "codex_source_pass5_business_identity",
+        "entity_id": "15a529ef-278e-42cb-bf6d-2aee593f9afa",
+        "entity_type": "organization"
+      },
+      {
+        "reason": "codex_source_pass5_business_identity",
+        "entity_id": "b0387d15-ccca-4571-801d-846207f75d49",
+        "entity_type": "organization"
+      },
+      {
+        "reason": "codex_source_pass5_business_identity",
+        "entity_id": "b7624e6f-2813-4b51-8271-2f5d25b4ca2c",
+        "entity_type": "organization"
+      },
+      {
+        "reason": "codex_source_pass5_business_identity",
+        "entity_id": "b50f9169-6f23-4946-ae31-b0ed846e2b85",
+        "entity_type": "organization"
+      }
+    ],
+    "queues": [
+      {
+        "count": 975,
+        "queue": "geography"
+      },
+      {
+        "count": 682,
+        "queue": "general-review"
+      },
+      {
+        "count": 405,
+        "queue": "staging"
+      },
+      {
+        "count": 336,
+        "queue": "event-quality"
+      },
+      {
+        "count": 335,
+        "queue": "business-quality"
+      },
+      {
+        "count": 33,
+        "queue": "liveness"
+      },
+      {
+        "count": 19,
+        "queue": "org-link-review"
+      },
+      {
+        "count": 18,
+        "queue": "quality-venue"
+      },
+      {
+        "count": 4,
+        "queue": "tag-enrichment"
+      }
+    ],
+    "blockers": [
+      {
+        "count": 1012,
+        "blocker": "missing_source"
+      },
+      {
+        "count": 636,
+        "blocker": "missing_source_url"
+      },
+      {
+        "count": 569,
+        "blocker": "missing_action_candidate"
+      },
+      {
+        "count": 249,
+        "blocker": "conflicting_identity"
+      },
+      {
+        "count": 135,
+        "blocker": "source_unavailable"
+      },
+      {
+        "count": 106,
+        "blocker": "source_not_authorized"
+      },
+      {
+        "count": 58,
+        "blocker": "insufficient_confidence"
+      },
+      {
+        "count": 30,
+        "blocker": "queued"
+      },
+      {
+        "count": 6,
+        "blocker": "visual_evidence_requires_human_review"
+      },
+      {
+        "count": 4,
+        "blocker": "retry"
+      },
+      {
+        "count": 2,
+        "blocker": "protected_review"
+      }
+    ],
+    "observed_at": "2026-11-17T03:29:48.836455+00:00",
+    "active_cases": 2807,
+    "recent_image_runs": [
+      {
+        "result": {
+          "lane": "image",
+          "failed": 0,
+          "success": true,
+          "updated": 0,
+          "no_change": 12,
+          "processed": 12,
+          "ai_attempts": 0,
+          "fields_filled": 0,
+          "network_requests": 17
+        },
+        "started_at": "2026-11-17T03:28:00.486077+00:00",
+        "status_code": 200
+      },
+      {
+        "result": {
+          "lane": "image",
+          "failed": 0,
+          "success": true,
+          "updated": 0,
+          "no_change": 12,
+          "processed": 12,
+          "ai_attempts": 0,
+          "fields_filled": 0,
+          "network_requests": 17
+        },
+        "started_at": "2026-11-17T03:23:00.523974+00:00",
+        "status_code": 200
+      },
+      {
+        "result": {
+          "error": "Internal server error",
+          "success": false
+        },
+        "started_at": "2026-11-17T03:18:00.462304+00:00",
+        "status_code": 500
+      },
+      {
+        "result": {
+          "lane": "image",
+          "failed": 0,
+          "success": true,
+          "updated": 1,
+          "no_change": 11,
+          "processed": 12,
+          "ai_attempts": 0,
+          "fields_filled": 1,
+          "network_requests": 22
+        },
+        "started_at": "2026-11-17T03:13:00.195194+00:00",
+        "status_code": 200
+      },
+      {
+        "result": {
+          "error": "Internal server error",
+          "success": false
+        },
+        "started_at": "2026-11-17T03:08:00.937592+00:00",
+        "status_code": 500
+      }
+    ],
+    "claim_configuration": [
+      "search_path=public, pg_temp",
+      "plan_cache_mode=force_custom_plan",
+      "statement_timeout=20s"
+    ],
+    "florence_observation": [
+      {
+        "width": 1200,
+        "height": 675,
+        "checked_at": "2026-11-17T03:21:51.373+00:00",
+        "content_hash": "4bf242a8f8713034dfb852f551c0b886114147ccea86fdcd50254b4c9303a90a",
+        "probe_status": "pass"
+      }
+    ],
+    "open_florence_image_issues": 0
+  }
+}

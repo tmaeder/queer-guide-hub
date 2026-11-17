@@ -37,7 +37,7 @@ async function run(body: unknown, options: { denied?: boolean; budgetDenied?: bo
       assert.equal(url, 'https://api.typesafe.ai/v1/systemone')
       const payload = JSON.parse(String(init.body))
       requests.push(payload)
-      const review = payload.state?.state_version === 'jev-review-public-state-v2'
+      const review = payload.state?.state_version === 'jev-review-public-state-v3'
       const historical = Object.values(payload.questions).some((question: unknown) => (question as { type: string }).type === 'choice')
       return options.providerStatus ? new Response('PRIVATE_PROVIDER_ERROR', { status: options.providerStatus }) : Response.json({
         model: 'jev-1.14.0', usage: { input_tokens: 100, output_tokens: 10 }, answers: review
@@ -67,7 +67,7 @@ test('fixed Review canaries use the actual minimized production state without wi
   assert.equal(preview.status, 200); assert.equal(preview.calls.length, 0)
   assert.equal(preview.body.fixtures.length, 4)
   for (const fixture of preview.body.fixtures) {
-    assert.equal(fixture.request.state.state_version, 'jev-review-public-state-v2')
+    assert.equal(fixture.request.state.state_version, 'jev-review-public-state-v3')
     assert.equal(fixture.kind, 'synthetic_review')
     assert.doesNotMatch(JSON.stringify(fixture.request), /prior_research|expected|input_hash|lease_token/)
   }
