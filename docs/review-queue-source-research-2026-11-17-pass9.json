@@ -1,0 +1,956 @@
+{
+  "pass": "2026-11-17-pass9",
+  "user_checkpoint": 2820,
+  "first_snapshot": [
+    {
+      "observed_at": "2026-11-17 17:52:20.379556+00",
+      "active_cases": 2804
+    }
+  ],
+  "final_snapshot": [
+    {
+      "jsonb_build_object": {
+        "blockers": [
+          {
+            "count": 969,
+            "blocker": "missing_source"
+          },
+          {
+            "count": 617,
+            "blocker": "missing_source_url"
+          },
+          {
+            "count": 553,
+            "blocker": "missing_action_candidate"
+          },
+          {
+            "count": 224,
+            "blocker": "conflicting_identity"
+          },
+          {
+            "count": 125,
+            "blocker": "source_unavailable"
+          },
+          {
+            "count": 117,
+            "blocker": "source_not_authorized"
+          },
+          {
+            "count": 92,
+            "blocker": "queued"
+          },
+          {
+            "count": 52,
+            "blocker": "insufficient_confidence"
+          },
+          {
+            "count": 8,
+            "blocker": "protected_review"
+          },
+          {
+            "count": 5,
+            "blocker": "visual_evidence_requires_human_review"
+          },
+          {
+            "count": 4,
+            "blocker": "retry"
+          }
+        ],
+        "observed_at": "2026-11-17T18:05:11.72042+00:00",
+        "active_cases": 2766,
+        "active_refresh": 0
+      }
+    }
+  ],
+  "scope": "14 cross-city business/venue candidate rows researched plus city identity corroboration. This is not an individual review of all remaining cases.",
+  "applied": {
+    "repair_audit_rows": 32,
+    "municipality_records": 18,
+    "native_business_merges": 8,
+    "profile_records": 6,
+    "superseded_findings_retired": 34
+  },
+  "municipality_decisions": [
+    {
+      "type": "organization",
+      "id": "acdb91b2-812b-49ab-9e97-cfc4a0b754ec",
+      "name": "River Hostel",
+      "old_city_id": "58745f20-136f-4aa3-a1b7-68601631d741",
+      "country_id": "4020d296-538c-4d6d-a728-33db16460181",
+      "old_latitude": 39.476139,
+      "old_longitude": -0.3708192,
+      "new_city_id": "ca628485-f5a4-419d-a0e7-af730483e078",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://www.riverhostelvalencia.com/",
+        "retrieved_at": "2026-11-17T17:52:35.299687+00:00",
+        "status": 200,
+        "final_url": "https://www.riverhostelvalencia.com/",
+        "sha256": "5e1b8882ee2906f0859fed926eb8ec91c632763dc75dfb3293594f73d9793959"
+      },
+      "note": "Exact published street/municipality identity. Preserve coordinates and all other profile/publication fields."
+    },
+    {
+      "type": "organization",
+      "id": "19a8724a-0e5e-4aee-98cf-c3bfe9a2485d",
+      "name": "Schnürsenkel",
+      "old_city_id": "33ca951c-fdea-4cb3-bea0-689d3a691ff1",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "old_latitude": 50.32016,
+      "old_longitude": 11.92253,
+      "new_city_id": "0624213e-e9ba-403d-9876-6586b18c1076",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://www.hofer-land.de/detail/id%3D696758730c8948ad05454a6f/",
+        "retrieved_at": "2026-11-17T17:52:35.329659+00:00",
+        "status": 200,
+        "final_url": "https://www.hofer-land.de/detail/id%3D696758730c8948ad05454a6f/",
+        "sha256": "5bfc7f3ccd0cd74b2016c9c539683d77cb390c6c053a6cf30d2e7dd5e623f780"
+      },
+      "note": "Exact published street/municipality identity. Preserve coordinates and all other profile/publication fields."
+    },
+    {
+      "type": "organization",
+      "id": "c95276dd-d07b-4156-8d21-23b80b6f89f2",
+      "name": "Portugal",
+      "old_city_id": "9e63e474-a72a-4924-87d7-e6a92a95aec0",
+      "country_id": "4020d296-538c-4d6d-a728-33db16460181",
+      "old_latitude": 37.2489743,
+      "old_longitude": -1.8769052,
+      "new_city_id": "71fd8cf6-f8c8-4da4-84b9-2fca712ab69f",
+      "withdraw_pin": true,
+      "source": {
+        "url": "https://www.saunaportugal.com/",
+        "retrieved_at": "2026-11-17T17:52:35.323729+00:00",
+        "status": 200,
+        "final_url": "https://www.saunaportugal.com/",
+        "sha256": "450d2aac15d1a774e41b16d88bf10ec2d1206364261e3dc2ce5d353d5c554cba"
+      },
+      "note": "Official sauna site confirms Las Palmas; independent resort source corroborates CallePortugal27. Donor Vera/Andalusia and mainland coordinate are wrong for this venue. Withdraw donor pin toNULL; canonical island venue/pin unchanged."
+    },
+    {
+      "type": "organization",
+      "id": "d947b89e-61ba-4e82-b8fa-a372b062ab4c",
+      "name": "Rosie's Tavern",
+      "old_city_id": "69e0d029-a287-4f77-836a-c74f5d75fd6e",
+      "country_id": "0ba25df5-82cd-4edc-bf03-e10d737eab68",
+      "old_latitude": 39.0938,
+      "old_longitude": -84.5215,
+      "new_city_id": "ba5943d1-fe06-4fb4-b100-f492ad2ae34c",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://rosiestavernky.com/",
+        "retrieved_at": "2026-11-17T17:53:02.622674+00:00",
+        "status": 200,
+        "final_url": "https://rosiestavernky.com/",
+        "sha256": "7e92af0f167a3ace1650d07c2b71d75099de1d3032e9761b71514c679e456fa6"
+      },
+      "note": "Exact published street/municipality identity. Preserve coordinates and all other profile/publication fields."
+    },
+    {
+      "type": "organization",
+      "id": "374b3ef3-f7a3-4558-a395-28a08ce05c5e",
+      "name": "The Masquerade Bar",
+      "old_city_id": "a95c00a1-64ea-4923-82de-54e61f8b0176",
+      "country_id": "58581332-7745-430b-8b51-dd1537e85cf0",
+      "old_latitude": 53.4080808,
+      "old_longitude": -2.9872457,
+      "new_city_id": "e0642a46-64df-4d03-bfa8-2e1fdd135fdd",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://licensing.liverpool.gov.uk/PAforLalpacLIVE/1/LicensingActPremises/Search/1970/Detail?LIC_ID=18364",
+        "retrieved_at": "2026-11-17T17:52:35.332146+00:00",
+        "status": 200,
+        "final_url": "https://licensing.liverpool.gov.uk/PAforLalpacLIVE/1/LicensingActPremises/Search/1970/Detail?LIC_ID=18364",
+        "sha256": "98ce6c59102dac54f2ce13871ff61d6d0689783cddee0af0021513b6c597f9c6"
+      },
+      "note": "Exact published street/municipality identity. Preserve coordinates and all other profile/publication fields."
+    },
+    {
+      "type": "organization",
+      "id": "7e41bfaa-cf60-4011-85e6-8c4a8a2b69af",
+      "name": "The Vauxhall Tavern",
+      "old_city_id": null,
+      "country_id": "58581332-7745-430b-8b51-dd1537e85cf0",
+      "old_latitude": 53.7381247,
+      "old_longitude": -0.3510512,
+      "new_city_id": "dce875be-5ebd-44e2-83eb-d318fec71816",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://find-and-update.company-information.service.gov.uk/company/14368390",
+        "retrieved_at": "2026-11-17T17:53:02.628273+00:00",
+        "status": 200,
+        "final_url": "https://find-and-update.company-information.service.gov.uk/company/14368390",
+        "sha256": "efc9d5915173eb0e561b3c447377c2f8f7ec35007b4438c6782bd74a7da05100"
+      },
+      "note": "Exact1HessleRoadHull address corroborated by CompaniesHouse and HistoricEngland public-house listing1197745. Use existing canonical KingstonuponHull/Q128147, rather than the unrelated London-coordinate Hull row. No legal-operator or current-trading certification; pins/publication preserved."
+    },
+    {
+      "type": "organization",
+      "id": "85e7a983-0a93-4885-8013-a412c24e3aee",
+      "name": "Vauxhall Tavern",
+      "old_city_id": "65e7ca7a-994c-444b-80bd-db3469f210ad",
+      "country_id": "58581332-7745-430b-8b51-dd1537e85cf0",
+      "old_latitude": 53.7407,
+      "old_longitude": -0.356,
+      "new_city_id": "dce875be-5ebd-44e2-83eb-d318fec71816",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://find-and-update.company-information.service.gov.uk/company/14368390",
+        "retrieved_at": "2026-11-17T17:53:02.628273+00:00",
+        "status": 200,
+        "final_url": "https://find-and-update.company-information.service.gov.uk/company/14368390",
+        "sha256": "efc9d5915173eb0e561b3c447377c2f8f7ec35007b4438c6782bd74a7da05100"
+      },
+      "note": "Exact1HessleRoadHull address corroborated by CompaniesHouse and HistoricEngland public-house listing1197745. Use existing canonical KingstonuponHull/Q128147, rather than the unrelated London-coordinate Hull row. No legal-operator or current-trading certification; pins/publication preserved."
+    },
+    {
+      "type": "organization",
+      "id": "db477789-cabb-42e5-8386-b361e50be983",
+      "name": "Spades4Gents",
+      "old_city_id": "2a3dfdb2-060f-493a-aac2-86c07922c626",
+      "country_id": "3c0f090b-0a46-4578-b7a9-d75e186dc449",
+      "old_latitude": 51.0347,
+      "old_longitude": 3.7098,
+      "new_city_id": "dcec9685-16f8-469a-b9e0-a01d7fe9b8db",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://spades4gents.be/",
+        "retrieved_at": "2026-11-17T17:55:54.067147+00:00",
+        "status": 200,
+        "final_url": "https://spades4gents.be/",
+        "sha256": "97f72ed1dacbfda1cbfce0d0f2f0d443dc0a47c2b9aedd5c5f5b84f43b2577c7"
+      },
+      "note": "Current official exact street/city matches existing canonical Q1296Gent. Replace wrong Brussels-region Ghent link; preserve all coordinates and publication/ownership."
+    },
+    {
+      "type": "organization",
+      "id": "bee16774-b8d4-4b6d-a6a3-616db7aafd6c",
+      "name": "Spades 4ours",
+      "old_city_id": "2a3dfdb2-060f-493a-aac2-86c07922c626",
+      "country_id": "3c0f090b-0a46-4578-b7a9-d75e186dc449",
+      "old_latitude": 50.8935105,
+      "old_longitude": 4.3764474,
+      "new_city_id": "dcec9685-16f8-469a-b9e0-a01d7fe9b8db",
+      "withdraw_pin": true,
+      "source": {
+        "url": "https://spades4gents.be/",
+        "retrieved_at": "2026-11-17T17:55:54.067147+00:00",
+        "status": 200,
+        "final_url": "https://spades4gents.be/",
+        "sha256": "97f72ed1dacbfda1cbfce0d0f2f0d443dc0a47c2b9aedd5c5f5b84f43b2577c7"
+      },
+      "note": "Current official site confirms KoningAlbertlaan172,9000Gent. Replace wrong Brussels-region Ghent city link with existing Q1296Gent. Withdraw the donor's known-wrong Brussels-area city coordinate toNULL; no replacement pin inferred."
+    },
+    {
+      "type": "venue",
+      "id": "cbe558a0-1bc9-4831-bd43-436ff3873338",
+      "name": "River Hostel",
+      "old_city_id": "58745f20-136f-4aa3-a1b7-68601631d741",
+      "country_id": "4020d296-538c-4d6d-a728-33db16460181",
+      "old_latitude": 39.476139,
+      "old_longitude": -0.3708192,
+      "new_city_id": "ca628485-f5a4-419d-a0e7-af730483e078",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://www.riverhostelvalencia.com/",
+        "retrieved_at": "2026-11-17T17:52:35.299687+00:00",
+        "status": 200,
+        "final_url": "https://www.riverhostelvalencia.com/",
+        "sha256": "5e1b8882ee2906f0859fed926eb8ec91c632763dc75dfb3293594f73d9793959"
+      },
+      "note": "Exact published street/municipality identity. Preserve coordinates and all other profile/publication fields."
+    },
+    {
+      "type": "venue",
+      "id": "d0b77e46-78d6-48c0-a244-b1cbf926c061",
+      "name": "Schnürsenkel",
+      "old_city_id": "33ca951c-fdea-4cb3-bea0-689d3a691ff1",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "old_latitude": 50.32016,
+      "old_longitude": 11.92253,
+      "new_city_id": "0624213e-e9ba-403d-9876-6586b18c1076",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://www.hofer-land.de/detail/id%3D696758730c8948ad05454a6f/",
+        "retrieved_at": "2026-11-17T17:52:35.329659+00:00",
+        "status": 200,
+        "final_url": "https://www.hofer-land.de/detail/id%3D696758730c8948ad05454a6f/",
+        "sha256": "5bfc7f3ccd0cd74b2016c9c539683d77cb390c6c053a6cf30d2e7dd5e623f780"
+      },
+      "note": "Exact published street/municipality identity. Preserve coordinates and all other profile/publication fields."
+    },
+    {
+      "type": "venue",
+      "id": "98e20bcb-2f2f-448a-a32f-b4a4d0cdd76e",
+      "name": "Portugal",
+      "old_city_id": "9e63e474-a72a-4924-87d7-e6a92a95aec0",
+      "country_id": "4020d296-538c-4d6d-a728-33db16460181",
+      "old_latitude": 37.2489743,
+      "old_longitude": -1.8769052,
+      "new_city_id": "71fd8cf6-f8c8-4da4-84b9-2fca712ab69f",
+      "withdraw_pin": true,
+      "source": {
+        "url": "https://www.saunaportugal.com/",
+        "retrieved_at": "2026-11-17T17:52:35.323729+00:00",
+        "status": 200,
+        "final_url": "https://www.saunaportugal.com/",
+        "sha256": "450d2aac15d1a774e41b16d88bf10ec2d1206364261e3dc2ce5d353d5c554cba"
+      },
+      "note": "Official sauna site confirms Las Palmas; independent resort source corroborates CallePortugal27. Donor Vera/Andalusia and mainland coordinate are wrong for this venue. Withdraw donor pin toNULL; canonical island venue/pin unchanged."
+    },
+    {
+      "type": "venue",
+      "id": "21ae50e2-76e5-4144-8974-949b3b8248fe",
+      "name": "Rosie's Tavern",
+      "old_city_id": "69e0d029-a287-4f77-836a-c74f5d75fd6e",
+      "country_id": "0ba25df5-82cd-4edc-bf03-e10d737eab68",
+      "old_latitude": 39.0938,
+      "old_longitude": -84.5215,
+      "new_city_id": "ba5943d1-fe06-4fb4-b100-f492ad2ae34c",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://rosiestavernky.com/",
+        "retrieved_at": "2026-11-17T17:53:02.622674+00:00",
+        "status": 200,
+        "final_url": "https://rosiestavernky.com/",
+        "sha256": "7e92af0f167a3ace1650d07c2b71d75099de1d3032e9761b71514c679e456fa6"
+      },
+      "note": "Exact published street/municipality identity. Preserve coordinates and all other profile/publication fields."
+    },
+    {
+      "type": "venue",
+      "id": "3521d8f3-1048-41a7-acef-8810e2b5fbc2",
+      "name": "The Masquerade Bar",
+      "old_city_id": "a95c00a1-64ea-4923-82de-54e61f8b0176",
+      "country_id": "58581332-7745-430b-8b51-dd1537e85cf0",
+      "old_latitude": 53.4080808,
+      "old_longitude": -2.9872457,
+      "new_city_id": "e0642a46-64df-4d03-bfa8-2e1fdd135fdd",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://licensing.liverpool.gov.uk/PAforLalpacLIVE/1/LicensingActPremises/Search/1970/Detail?LIC_ID=18364",
+        "retrieved_at": "2026-11-17T17:52:35.332146+00:00",
+        "status": 200,
+        "final_url": "https://licensing.liverpool.gov.uk/PAforLalpacLIVE/1/LicensingActPremises/Search/1970/Detail?LIC_ID=18364",
+        "sha256": "98ce6c59102dac54f2ce13871ff61d6d0689783cddee0af0021513b6c597f9c6"
+      },
+      "note": "Exact published street/municipality identity. Preserve coordinates and all other profile/publication fields."
+    },
+    {
+      "type": "venue",
+      "id": "915cae21-d639-4500-be94-b89036cd06ce",
+      "name": "The Vauxhall Tavern",
+      "old_city_id": null,
+      "country_id": "58581332-7745-430b-8b51-dd1537e85cf0",
+      "old_latitude": 53.7381247,
+      "old_longitude": -0.3510512,
+      "new_city_id": "dce875be-5ebd-44e2-83eb-d318fec71816",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://find-and-update.company-information.service.gov.uk/company/14368390",
+        "retrieved_at": "2026-11-17T17:53:02.628273+00:00",
+        "status": 200,
+        "final_url": "https://find-and-update.company-information.service.gov.uk/company/14368390",
+        "sha256": "efc9d5915173eb0e561b3c447377c2f8f7ec35007b4438c6782bd74a7da05100"
+      },
+      "note": "Exact1HessleRoadHull address corroborated by CompaniesHouse and HistoricEngland public-house listing1197745. Use existing canonical KingstonuponHull/Q128147, rather than the unrelated London-coordinate Hull row. No legal-operator or current-trading certification; pins/publication preserved."
+    },
+    {
+      "type": "venue",
+      "id": "14af885e-1a2e-4308-a27d-0db8850acb5c",
+      "name": "Vauxhall Tavern",
+      "old_city_id": "65e7ca7a-994c-444b-80bd-db3469f210ad",
+      "country_id": "58581332-7745-430b-8b51-dd1537e85cf0",
+      "old_latitude": 53.7407,
+      "old_longitude": -0.356,
+      "new_city_id": "dce875be-5ebd-44e2-83eb-d318fec71816",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://find-and-update.company-information.service.gov.uk/company/14368390",
+        "retrieved_at": "2026-11-17T17:53:02.628273+00:00",
+        "status": 200,
+        "final_url": "https://find-and-update.company-information.service.gov.uk/company/14368390",
+        "sha256": "efc9d5915173eb0e561b3c447377c2f8f7ec35007b4438c6782bd74a7da05100"
+      },
+      "note": "Exact1HessleRoadHull address corroborated by CompaniesHouse and HistoricEngland public-house listing1197745. Use existing canonical KingstonuponHull/Q128147, rather than the unrelated London-coordinate Hull row. No legal-operator or current-trading certification; pins/publication preserved."
+    },
+    {
+      "type": "venue",
+      "id": "128cc410-7f90-495e-9dea-3b1b85f880ca",
+      "name": "Spades4Gents",
+      "old_city_id": "2a3dfdb2-060f-493a-aac2-86c07922c626",
+      "country_id": "3c0f090b-0a46-4578-b7a9-d75e186dc449",
+      "old_latitude": 51.0347,
+      "old_longitude": 3.7098,
+      "new_city_id": "dcec9685-16f8-469a-b9e0-a01d7fe9b8db",
+      "withdraw_pin": false,
+      "source": {
+        "url": "https://spades4gents.be/",
+        "retrieved_at": "2026-11-17T17:55:54.067147+00:00",
+        "status": 200,
+        "final_url": "https://spades4gents.be/",
+        "sha256": "97f72ed1dacbfda1cbfce0d0f2f0d443dc0a47c2b9aedd5c5f5b84f43b2577c7"
+      },
+      "note": "Current official exact street/city matches existing canonical Q1296Gent. Replace wrong Brussels-region Ghent link; preserve all coordinates and publication/ownership."
+    },
+    {
+      "type": "venue",
+      "id": "97550ad0-5875-423f-9238-f3dcb5a17a06",
+      "name": "Spades 4ours",
+      "old_city_id": "2a3dfdb2-060f-493a-aac2-86c07922c626",
+      "country_id": "3c0f090b-0a46-4578-b7a9-d75e186dc449",
+      "old_latitude": 50.8935105,
+      "old_longitude": 4.3764474,
+      "new_city_id": "dcec9685-16f8-469a-b9e0-a01d7fe9b8db",
+      "withdraw_pin": true,
+      "source": {
+        "url": "https://spades4gents.be/",
+        "retrieved_at": "2026-11-17T17:55:54.067147+00:00",
+        "status": 200,
+        "final_url": "https://spades4gents.be/",
+        "sha256": "97f72ed1dacbfda1cbfce0d0f2f0d443dc0a47c2b9aedd5c5f5b84f43b2577c7"
+      },
+      "note": "Current official site confirms KoningAlbertlaan172,9000Gent. Replace wrong Brussels-region Ghent city link with existing Q1296Gent. Withdraw the donor's known-wrong Brussels-area city coordinate toNULL; no replacement pin inferred."
+    }
+  ],
+  "merges": [
+    {
+      "drop_id": "374b3ef3-f7a3-4558-a395-28a08ce05c5e",
+      "name": "The Masquerade Bar",
+      "website": null,
+      "address": "10 Cumberland St, Liverpool L1 6BU, UK",
+      "city_id": "e0642a46-64df-4d03-bfa8-2e1fdd135fdd",
+      "country_id": "58581332-7745-430b-8b51-dd1537e85cf0",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "3521d8f3-1048-41a7-acef-8810e2b5fbc2",
+      "keep_venue": "55cfc4f0-5d90-4aaf-8cc8-92adb1aafefd",
+      "keep_org": "08ebd9ff-24c7-4c90-b97f-9903d228e9aa",
+      "keep_name": "The Masquerade",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://licensing.liverpool.gov.uk/PAforLalpacLIVE/1/LicensingActPremises/Search/1970/Detail?LIC_ID=18364",
+          "retrieved_at": "2026-11-17T17:52:35.332146+00:00",
+          "status": 200,
+          "final_url": "https://licensing.liverpool.gov.uk/PAforLalpacLIVE/1/LicensingActPremises/Search/1970/Detail?LIC_ID=18364",
+          "sha256": "98ce6c59102dac54f2ce13871ff61d6d0689783cddee0af0021513b6c597f9c6"
+        }
+      ],
+      "scope": "Native duplicate business merge after independently audited exact-address municipality correction. Unclaimed venue-only profiles, same canonical city/country, already-merged donor venues and empty field transfer required. No current-operation/legal ownership or human verification assertion."
+    },
+    {
+      "drop_id": "60d5979e-3bad-4ebf-9ad1-c275d57d3a44",
+      "name": "Restaurant laces",
+      "website": "https://translate.google.com/website?sl=auto&tl=en&hl=en&u=https://gaststatte-schnursenkel.business.site/",
+      "address": "Fabrikzeile 1, 95028 Hof",
+      "city_id": "0624213e-e9ba-403d-9876-6586b18c1076",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "fe37e772-55f3-4c7c-94a0-608e09baf40c",
+      "keep_venue": "d0b77e46-78d6-48c0-a244-b1cbf926c061",
+      "keep_org": "19a8724a-0e5e-4aee-98cf-c3bfe9a2485d",
+      "keep_name": "Schnürsenkel",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.hofer-land.de/detail/id%3D696758730c8948ad05454a6f/",
+          "retrieved_at": "2026-11-17T17:52:35.329659+00:00",
+          "status": 200,
+          "final_url": "https://www.hofer-land.de/detail/id%3D696758730c8948ad05454a6f/",
+          "sha256": "5bfc7f3ccd0cd74b2016c9c539683d77cb390c6c053a6cf30d2e7dd5e623f780"
+        }
+      ],
+      "scope": "Native duplicate business merge after independently audited exact-address municipality correction. Unclaimed venue-only profiles, same canonical city/country, already-merged donor venues and empty field transfer required. No current-operation/legal ownership or human verification assertion."
+    },
+    {
+      "drop_id": "85e7a983-0a93-4885-8013-a412c24e3aee",
+      "name": "Vauxhall Tavern",
+      "website": null,
+      "address": "1 Hessle Road, Hull",
+      "city_id": "dce875be-5ebd-44e2-83eb-d318fec71816",
+      "country_id": "58581332-7745-430b-8b51-dd1537e85cf0",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "14af885e-1a2e-4308-a27d-0db8850acb5c",
+      "keep_venue": "915cae21-d639-4500-be94-b89036cd06ce",
+      "keep_org": "7e41bfaa-cf60-4011-85e6-8c4a8a2b69af",
+      "keep_name": "The Vauxhall Tavern",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://find-and-update.company-information.service.gov.uk/company/14368390",
+          "retrieved_at": "2026-11-17T17:53:02.628273+00:00",
+          "status": 200,
+          "final_url": "https://find-and-update.company-information.service.gov.uk/company/14368390",
+          "sha256": "efc9d5915173eb0e561b3c447377c2f8f7ec35007b4438c6782bd74a7da05100"
+        }
+      ],
+      "scope": "Native duplicate business merge after independently audited exact-address municipality correction. Unclaimed venue-only profiles, same canonical city/country, already-merged donor venues and empty field transfer required. No current-operation/legal ownership or human verification assertion."
+    },
+    {
+      "drop_id": "93dd75ce-6cac-4ef2-95f2-678cec6ba2fb",
+      "name": "The River Hostel",
+      "website": null,
+      "address": "6 Plaça del Temple, València",
+      "city_id": "ca628485-f5a4-419d-a0e7-af730483e078",
+      "country_id": "4020d296-538c-4d6d-a728-33db16460181",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "23ef4726-255b-42a9-9533-594053095f30",
+      "keep_venue": "cbe558a0-1bc9-4831-bd43-436ff3873338",
+      "keep_org": "acdb91b2-812b-49ab-9e97-cfc4a0b754ec",
+      "keep_name": "River Hostel",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.riverhostelvalencia.com/",
+          "retrieved_at": "2026-11-17T17:52:35.299687+00:00",
+          "status": 200,
+          "final_url": "https://www.riverhostelvalencia.com/",
+          "sha256": "5e1b8882ee2906f0859fed926eb8ec91c632763dc75dfb3293594f73d9793959"
+        }
+      ],
+      "scope": "Native duplicate business merge after independently audited exact-address municipality correction. Unclaimed venue-only profiles, same canonical city/country, already-merged donor venues and empty field transfer required. No current-operation/legal ownership or human verification assertion."
+    },
+    {
+      "drop_id": "bee16774-b8d4-4b6d-a6a3-616db7aafd6c",
+      "name": "Spades 4ours",
+      "website": "http://spades4our.be",
+      "address": "Koning Albertlaan 172",
+      "city_id": "dcec9685-16f8-469a-b9e0-a01d7fe9b8db",
+      "country_id": "3c0f090b-0a46-4578-b7a9-d75e186dc449",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "97550ad0-5875-423f-9238-f3dcb5a17a06",
+      "keep_venue": "97b8289c-918a-4086-8711-1c4bf0a8a8bf",
+      "keep_org": "6a11b9eb-ee6f-4a0b-9f71-90643d8edea0",
+      "keep_name": "Spades 4",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://spades4gents.be/",
+          "retrieved_at": "2026-11-17T17:55:54.067147+00:00",
+          "status": 200,
+          "final_url": "https://spades4gents.be/",
+          "sha256": "97f72ed1dacbfda1cbfce0d0f2f0d443dc0a47c2b9aedd5c5f5b84f43b2577c7"
+        }
+      ],
+      "scope": "Native duplicate business merge after independently audited exact-address municipality correction. Unclaimed venue-only profiles, same canonical city/country, already-merged donor venues and empty field transfer required. No current-operation/legal ownership or human verification assertion."
+    },
+    {
+      "drop_id": "c95276dd-d07b-4156-8d21-23b80b6f89f2",
+      "name": "Portugal",
+      "website": "https://www.saunaportugal.com",
+      "address": "C/. Portugal, 27",
+      "city_id": "71fd8cf6-f8c8-4da4-84b9-2fca712ab69f",
+      "country_id": "4020d296-538c-4d6d-a728-33db16460181",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "98e20bcb-2f2f-448a-a32f-b4a4d0cdd76e",
+      "keep_venue": "e2c6be52-a811-47f0-b098-a7bc997033e9",
+      "keep_org": "e79c1752-f8df-41af-999e-e51f763a4ca9",
+      "keep_name": "Sauna Portugal ",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.saunaportugal.com/",
+          "retrieved_at": "2026-11-17T17:52:35.323729+00:00",
+          "status": 200,
+          "final_url": "https://www.saunaportugal.com/",
+          "sha256": "450d2aac15d1a774e41b16d88bf10ec2d1206364261e3dc2ce5d353d5c554cba"
+        }
+      ],
+      "scope": "Native duplicate business merge after independently audited exact-address municipality correction. Unclaimed venue-only profiles, same canonical city/country, already-merged donor venues and empty field transfer required. No current-operation/legal ownership or human verification assertion."
+    },
+    {
+      "drop_id": "d947b89e-61ba-4e82-b8fa-a372b062ab4c",
+      "name": "Rosie's Tavern",
+      "website": null,
+      "address": "643 Bakewell St, Covington, KY 41011, USA",
+      "city_id": "ba5943d1-fe06-4fb4-b100-f492ad2ae34c",
+      "country_id": "0ba25df5-82cd-4edc-bf03-e10d737eab68",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "21ae50e2-76e5-4144-8974-949b3b8248fe",
+      "keep_venue": "bd535997-f4bc-42c7-a3cd-7435c4e0d769",
+      "keep_org": "06bb5fbd-0445-4ba3-ba34-473c59bf05f6",
+      "keep_name": "Rosie's Tavern",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://rosiestavernky.com/",
+          "retrieved_at": "2026-11-17T17:53:02.622674+00:00",
+          "status": 200,
+          "final_url": "https://rosiestavernky.com/",
+          "sha256": "7e92af0f167a3ace1650d07c2b71d75099de1d3032e9761b71514c679e456fa6"
+        }
+      ],
+      "scope": "Native duplicate business merge after independently audited exact-address municipality correction. Unclaimed venue-only profiles, same canonical city/country, already-merged donor venues and empty field transfer required. No current-operation/legal ownership or human verification assertion."
+    },
+    {
+      "drop_id": "db477789-cabb-42e5-8386-b361e50be983",
+      "name": "Spades4Gents",
+      "website": null,
+      "address": "Koning Albertlaan 172, 9000 Gent, Belgium",
+      "city_id": "dcec9685-16f8-469a-b9e0-a01d7fe9b8db",
+      "country_id": "3c0f090b-0a46-4578-b7a9-d75e186dc449",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "128cc410-7f90-495e-9dea-3b1b85f880ca",
+      "keep_venue": "97b8289c-918a-4086-8711-1c4bf0a8a8bf",
+      "keep_org": "6a11b9eb-ee6f-4a0b-9f71-90643d8edea0",
+      "keep_name": "Spades 4",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://spades4gents.be/",
+          "retrieved_at": "2026-11-17T17:55:54.067147+00:00",
+          "status": 200,
+          "final_url": "https://spades4gents.be/",
+          "sha256": "97f72ed1dacbfda1cbfce0d0f2f0d443dc0a47c2b9aedd5c5f5b84f43b2577c7"
+        }
+      ],
+      "scope": "Native duplicate business merge after independently audited exact-address municipality correction. Unclaimed venue-only profiles, same canonical city/country, already-merged donor venues and empty field transfer required. No current-operation/legal ownership or human verification assertion."
+    }
+  ],
+  "profiles": [
+    {
+      "organization_id": "acdb91b2-812b-49ab-9e97-cfc4a0b754ec",
+      "venue_id": "cbe558a0-1bc9-4831-bd43-436ff3873338",
+      "old_name": "River Hostel",
+      "expected_org": {
+        "website": null,
+        "email": null
+      },
+      "expected_venue": {
+        "website": null,
+        "email": null
+      },
+      "patch": {
+        "website": "https://www.riverhostelvalencia.com/",
+        "email": "hello@riverhostelvalencia.com"
+      },
+      "new_domain": "riverhostelvalencia.com",
+      "source": {
+        "url": "https://www.riverhostelvalencia.com/",
+        "retrieved_at": "2026-11-17T17:52:35.299687+00:00",
+        "status": 200,
+        "final_url": "https://www.riverhostelvalencia.com/",
+        "sha256": "5e1b8882ee2906f0859fed926eb8ec91c632763dc75dfb3293594f73d9793959"
+      },
+      "scope": "Fill missing website/shared business inbox from current official exact-address source only. No private named contact used."
+    },
+    {
+      "organization_id": "06bb5fbd-0445-4ba3-ba34-473c59bf05f6",
+      "venue_id": "bd535997-f4bc-42c7-a3cd-7435c4e0d769",
+      "old_name": "Rosie's Tavern",
+      "expected_org": {
+        "website": null
+      },
+      "expected_venue": {
+        "website": null
+      },
+      "patch": {
+        "website": "https://rosiestavernky.com/"
+      },
+      "new_domain": "rosiestavernky.com",
+      "source": {
+        "url": "https://rosiestavernky.com/",
+        "retrieved_at": "2026-11-17T17:53:02.622674+00:00",
+        "status": 200,
+        "final_url": "https://rosiestavernky.com/",
+        "sha256": "7e92af0f167a3ace1650d07c2b71d75099de1d3032e9761b71514c679e456fa6"
+      },
+      "scope": "Fill missing website/shared business inbox from current official exact-address source only. No private named contact used."
+    },
+    {
+      "organization_id": "6a11b9eb-ee6f-4a0b-9f71-90643d8edea0",
+      "venue_id": "97b8289c-918a-4086-8711-1c4bf0a8a8bf",
+      "old_name": "Spades 4",
+      "expected_org": {
+        "name": "Spades 4",
+        "website": "http://www.spades4our.be",
+        "email": "info@spades4our.bemailto"
+      },
+      "expected_venue": {
+        "name": "Spades 4",
+        "website": "http://www.spades4our.be",
+        "email": "info@spades4our.bemailto"
+      },
+      "patch": {
+        "name": "Spades4Gents",
+        "website": "https://spades4gents.be/",
+        "email": "info@spades4gents.be"
+      },
+      "new_domain": "spades4gents.be",
+      "source": {
+        "url": "https://spades4gents.be/",
+        "retrieved_at": "2026-11-17T17:55:54.067147+00:00",
+        "status": 200,
+        "final_url": "https://spades4gents.be/",
+        "sha256": "97f72ed1dacbfda1cbfce0d0f2f0d443dc0a47c2b9aedd5c5f5b84f43b2577c7"
+      },
+      "scope": "Official current public brand and same exact address; correct malformed machine-inherited email and obsolete website. Preserve slug, geography, pins, hours, legal ownership and publication status."
+    }
+  ],
+  "source_metadata": [
+    {
+      "url": "https://licensing.liverpool.gov.uk/PAforLalpacLIVE/1/LicensingActPremises/Search/1970/Detail?LIC_ID=18364",
+      "retrieved_at": "2026-11-17T17:52:35.332146+00:00",
+      "status": 200,
+      "final_url": "https://licensing.liverpool.gov.uk/PAforLalpacLIVE/1/LicensingActPremises/Search/1970/Detail?LIC_ID=18364",
+      "sha256": "98ce6c59102dac54f2ce13871ff61d6d0689783cddee0af0021513b6c597f9c6"
+    },
+    {
+      "url": "https://find-and-update.company-information.service.gov.uk/company/14368390",
+      "retrieved_at": "2026-11-17T17:53:02.628273+00:00",
+      "status": 200,
+      "final_url": "https://find-and-update.company-information.service.gov.uk/company/14368390",
+      "sha256": "efc9d5915173eb0e561b3c447377c2f8f7ec35007b4438c6782bd74a7da05100"
+    },
+    {
+      "url": "https://www.hofer-land.de/detail/id%3D696758730c8948ad05454a6f/",
+      "retrieved_at": "2026-11-17T17:52:35.329659+00:00",
+      "status": 200,
+      "final_url": "https://www.hofer-land.de/detail/id%3D696758730c8948ad05454a6f/",
+      "sha256": "5bfc7f3ccd0cd74b2016c9c539683d77cb390c6c053a6cf30d2e7dd5e623f780"
+    },
+    {
+      "url": "https://rosiestavernky.com/",
+      "retrieved_at": "2026-11-17T17:53:02.622674+00:00",
+      "status": 200,
+      "final_url": "https://rosiestavernky.com/",
+      "sha256": "7e92af0f167a3ace1650d07c2b71d75099de1d3032e9761b71514c679e456fa6"
+    },
+    {
+      "url": "https://www.hullcc.gov.uk/padcbc/publicaccess-live/propertyDetails.do?activeTab=summary&keyVal=002ENA00LI000&previousCaseNumber=86%2F00530%2FAI&previousCaseType=Application&previousKeyVal=8600530AI",
+      "retrieved_at": "2026-11-17T17:53:02.628559+00:00",
+      "error": "The read operation timed out"
+    },
+    {
+      "url": "https://historicengland.org.uk/listing/the-list/list-entry/1197745",
+      "retrieved_at": "2026-11-17T17:56:15.271335+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "url": "https://business.nkychamber.com/directory/Details/rosie-s-tavern-3313148",
+      "retrieved_at": "2026-11-17T17:53:02.627794+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "url": "https://www.saunaportugal.com/",
+      "retrieved_at": "2026-11-17T17:52:35.323729+00:00",
+      "status": 200,
+      "final_url": "https://www.saunaportugal.com/",
+      "sha256": "450d2aac15d1a774e41b16d88bf10ec2d1206364261e3dc2ce5d353d5c554cba"
+    },
+    {
+      "url": "https://spades4gents.be/",
+      "retrieved_at": "2026-11-17T17:55:54.067147+00:00",
+      "status": 200,
+      "final_url": "https://spades4gents.be/",
+      "sha256": "97f72ed1dacbfda1cbfce0d0f2f0d443dc0a47c2b9aedd5c5f5b84f43b2577c7"
+    },
+    {
+      "url": "https://www.clubtorso.com/en/resort/gym-sauna/",
+      "retrieved_at": "2026-11-17T17:55:30.491879+00:00",
+      "status": 200,
+      "final_url": "https://www.clubtorso.com/en/resort/gym-sauna/",
+      "sha256": "4c1eb06ec836fcc1c86a2379acf222e2c3062ae40cc4543bc217f63ea6e3688a"
+    },
+    {
+      "url": "https://www.riverhostelvalencia.com/",
+      "retrieved_at": "2026-11-17T17:52:35.299687+00:00",
+      "status": 200,
+      "final_url": "https://www.riverhostelvalencia.com/",
+      "sha256": "5e1b8882ee2906f0859fed926eb8ec91c632763dc75dfb3293594f73d9793959"
+    },
+    {
+      "url": "https://www.spades4our.be/",
+      "retrieved_at": "2026-11-17T17:52:35.782895+00:00",
+      "error": "HTTP Error 401: Unauthorized"
+    },
+    {
+      "url": "https://www.masqueradebar.co.uk/",
+      "retrieved_at": "2026-11-17T17:52:35.331113+00:00",
+      "status": 200,
+      "final_url": "https://www.masqueradebar.co.uk/",
+      "sha256": "7cefd991cf4e645e1ad2d82e7cce849a25db9c44a76a4b45fc4b7da79d71dcec"
+    }
+  ],
+  "supplemental_sources": {
+    "sauna_portugal_address": {
+      "url": "https://www.clubtorso.com/en/resort/gym-sauna/",
+      "retrieved_at": "2026-11-17T17:55:30.491879+00:00",
+      "status": 200,
+      "final_url": "https://www.clubtorso.com/en/resort/gym-sauna/",
+      "sha256": "4c1eb06ec836fcc1c86a2379acf222e2c3062ae40cc4543bc217f63ea6e3688a"
+    },
+    "vauxhall_building": {
+      "url": "https://historicengland.org.uk/listing/the-list/list-entry/1197745",
+      "retrieval_method": "Web search tool returned primary-source entry text",
+      "retrieved_date": "2026-11-17",
+      "sha256": null,
+      "identity": "Vauxhall Tavern Public House, Hessle Road, Kingston upon Hull; list entry1197745",
+      "limit": "Separate bounded direct capture returned403. No access bypass and no new legal ownership/current trading assertion."
+    }
+  },
+  "validation": {
+    "method": "Every committed repair first passed a rolled-back transaction with expected-state, row-lock, claim/provenance and exact before/after guards. Eight native merges require unclaimed venue-only profiles, same corrected city/country, existing merged-venue relationship, no distinct venues/merchant/news relationships and empty automatic field-transfer patches. Full repair audits and native source merge audits recorded.",
+    "native_reconciler": [
+      {
+        "result": {
+          "dry_run": false,
+          "findings_reconciled": 34,
+          "organizations_examined": 8
+        },
+        "elapsed_ms": "263.720000"
+      }
+    ],
+    "independent_verification": [
+      {
+        "jsonb_build_object": {
+          "audits": [
+            {
+              "count": 8,
+              "reason": "codex_source_pass9_business_identity"
+            },
+            {
+              "count": 18,
+              "reason": "codex_source_pass9_municipality"
+            },
+            {
+              "count": 6,
+              "reason": "codex_source_pass9_profile_facts"
+            }
+          ],
+          "merges": {
+            "correct": 8,
+            "expected": 8,
+            "source_audits": 8
+          },
+          "profiles": [
+            {
+              "id": "06bb5fbd-0445-4ba3-ba34-473c59bf05f6",
+              "name": "Rosie's Tavern",
+              "email": null,
+              "website": "https://rosiestavernky.com/"
+            },
+            {
+              "id": "6a11b9eb-ee6f-4a0b-9f71-90643d8edea0",
+              "name": "Spades4Gents",
+              "email": "info@spades4gents.be",
+              "website": "https://spades4gents.be/"
+            },
+            {
+              "id": "acdb91b2-812b-49ab-9e97-cfc4a0b754ec",
+              "name": "River Hostel",
+              "email": "hello@riverhostelvalencia.com",
+              "website": "https://www.riverhostelvalencia.com/"
+            }
+          ],
+          "open_donor_findings": 0,
+          "withdrawn_venue_pins": [
+            {
+              "id": "97550ad0-5875-423f-9238-f3dcb5a17a06",
+              "lat": null,
+              "lon": null
+            },
+            {
+              "id": "98e20bcb-2f2f-448a-a32f-b4a4d0cdd76e",
+              "lat": null,
+              "lon": null
+            }
+          ],
+          "retired_donor_findings": 34
+        }
+      }
+    ],
+    "transaction_order": "The first full geography test rolled back because updating a venue with a previously missing city automatically inherited that city into its business before the expected-state check. Final transaction updates business rows first; both rollback test and commit pass without weakening preservation guards.",
+    "publication": "No human verification, legal-operator identity, source-authorization, confidence or publication gate changed. Current public Spades4Gents branding does not assert legal ownership continuity.",
+    "tests": "Data/documentation only in this pass. Native SQL rollback preservation checks and independent production reads verify data. Previous87450d1e8 merge-policy CI job134243453794 completed successfully, including PostgreSQL16 reconciler fixtures. No new runtime test/CI success claimed for this documentation commit."
+  },
+  "city_identity_holds": [
+    {
+      "city_id": "2a3dfdb2-060f-493a-aac2-86c07922c626",
+      "name": "Ghent",
+      "problem": "Nominatim-geocoded pin50.893511,4.376447 and Brussels-Capital region conflict with Gent identity; source candidates already name Q1296. Existing canonical Gent/Q1296 is dcec9685-16f8-469a-b9e0-a01d7fe9b8db. The verified Spades records were repointed individually; no broad city merge applied."
+    },
+    {
+      "city_id": "65e7ca7a-994c-444b-80bd-db3469f210ad",
+      "name": "Hull",
+      "problem": "Stored51.522798,-0.061902 is in London; existing field provenance records ONS TowerHamlets mismatch and Q128147 distance conflict. Existing canonical KingstonuponHull/Q128147 is dce875be-5ebd-44e2-83eb-d318fec71816. Verified Vauxhall records were repointed individually; no global merge or new city pin inferred."
+    }
+  ],
+  "remaining_holds": [
+    {
+      "name": "Hong Kong Time/Zoo records",
+      "reason": "Country-record conventions differ between HongKong and China records; no country/municipality reassignment or operator merge inferred."
+    },
+    {
+      "name": "Seven Hotel and Vista Bonita",
+      "reason": "Maspalomas/SanBartolomé municipality versus locality hierarchy needs a consistent catalogue decision, not an automatic rename."
+    },
+    {
+      "name": "Tom's Leather",
+      "reason": "Cuauhtémoc district versus MexicoCity hierarchy and conflicting approximate pins need stronger evidence before exact reassignment."
+    },
+    {
+      "name": "Clubhouse II",
+      "reason": "WiltonManors versus FortLauderdale exact municipal boundary remains unverified; metro labels alone insufficient."
+    },
+    {
+      "name": "Broad Hull/Ghent city merges",
+      "reason": "Other linked records need individual inspection before any global city merge. This pass fixes only corroborated venue/business relationships."
+    },
+    {
+      "name": "Masquerade website",
+      "reason": "Current .co.uk site is a maintenance page; municipality uses the current city licensing register. No website operation or opening-hours certification."
+    }
+  ],
+  "refresh": {
+    "queue_top": [
+      {
+        "refresh_admin_review_queue_top_if_changed": {
+          "ok": true,
+          "rows": 3750,
+          "depth": 250,
+          "elapsed_ms": 3012,
+          "sources_reused": 30,
+          "sources_refreshed": 11
+        }
+      }
+    ],
+    "first_worklist": {
+      "error": "{\"error\":{\"name\":\"HttpException\",\"message\":\"Failed to run sql query: ERROR:  57014: canceling statement due to statement timeout\\nCONTEXT:  SQL function \\\"review_case_source_keys\\\" statement 1\\nSQL statement \\\"\\n with raw as (select to_jsonb(u)||jsonb_build_object('source_label','Enrichment suggestions','risk',coalesce(u.risk_flags->>'risk','integrity'),'public_impact','t'::boolean,'sla_hours','168'::integer,'can_reopen','f'::boolean) item,'admin'::text min_role from public.admin_review_src_ai_suggestions u where not exists(select 1 from public.admin_review_finding_codes f where f.queue_key='a"
+    },
+    "retry": [
+      {
+        "refresh_admin_review_worklist": {
+          "skipped": "already_running"
+        }
+      }
+    ],
+    "note": "First refresh hit this session's30s check budget. One-off45s retry skipped because a scheduled refresh was already running. Subsequent live snapshot reports2766 active and zero active refreshes; no claim that the manual retry completed a refresh. No persistent timeout/function change."
+  },
+  "limitations": "Queue movement includes scheduled ingestion/research;32 repairs and34 findings do not imply54 individually verified case closures. Existing coordinate values preserved except explicit donor withdrawals for Portugal/Vera and Spades4ours/Brussels. No replacement exact pins inferred. No global city or country convention changes."
+}
