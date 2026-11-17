@@ -41,3 +41,13 @@ Verified Display production import: 300 occurrences staged, repeat skipped 300
 with zero errors; daily ev_fill_display_magazin automation resumed. Migration
 CI remains owned by the separate Review chat (three production-only records at
 22:58 UTC); no history repairs or required-check bypass belong to this change.
+
+Full OSM production verification: 272 live-refreshed venues in 14 cities, 251
+new staging rows and 21 already-seen IDs. Repeat skipped all 272. Standard
+validation rejected none: 167 approved, 84 need review. Cape Town has no
+snapshot candidates and remains UNKNOWN rather than an asserted empty city.
+
+Display's feed publishes some same-date end clocks earlier than their start.
+Preserve these raw values as source_date_issue provenance and leave the end
+unknown; do not infer a next-day closing date. Repair only this import's affected
+staging rows and let normal validation decide the rest.

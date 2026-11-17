@@ -53,3 +53,12 @@ Deno.test('Display feed reader uses the exact static endpoint, rejects redirects
   await assertRejects(() => fetchDisplayFeed(AbortSignal.timeout(1000), (() => Promise.resolve(new Response('limited', { status: 429 }))) as typeof fetch))
   await assertRejects(() => fetchDisplayFeed(AbortSignal.timeout(1000), (() => Promise.resolve(new Response('x'.repeat(2_000_001)))) as typeof fetch))
 })
+
+Deno.test('Display preserves an inconsistent publisher end for review without inventing a date', () => {
+  const raw = { sourceId: '12345', data: { ...event, start_date: '2026-11-17 23:00:00', end_date: '2026-11-17 04:00:00' } }
+  const normalized = eventAdapter.normalize(raw) as import('./index.ts').StagedItem
+  assertEquals(normalized.start_date, '2026-11-17T22:00:00.000Z')
+  assertEquals(normalized.end_date, null)
+  assertEquals(normalized.dates?.end, undefined)
+  assertEquals(normalized.metadata.source_date_issue, { code: 'publisher_end_before_start', published_end: '2026-11-17 04:00:00' })
+})

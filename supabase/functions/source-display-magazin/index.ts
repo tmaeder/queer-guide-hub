@@ -169,6 +169,13 @@ export const eventAdapter: SourceAdapter = {
     const city = rawCity.city || fromAddr.city
     const cats = (e.categories as { slug?: string }[]) ?? []
     const image = (e.image as { url?: string } | null)?.url ?? null
+    const start = toIso(e.start_date, e.timezone)
+    const publishedEnd = toIso(e.end_date, e.timezone)
+    // Some publisher rows put an overnight closing time on the opening date.
+    // Keep the published start; leave the contradictory end unknown instead
+    // of inventing a next-day date. Preserve the publisher value for review.
+    const invalidEnd = Boolean(start && publishedEnd && Date.parse(publishedEnd) < Date.parse(start))
+    const end = invalidEnd ? null : publishedEnd
 
     const item: StagedItem = {
       entityType: 'event',
@@ -178,9 +185,9 @@ export const eventAdapter: SourceAdapter = {
       title: stripTags(e.title),
       description: stripTags(e.description) || stripTags(e.excerpt) || undefined,
       event_type: e.kultur_art === 'kino' ? 'film' : TYPE_MAP[cats[0]?.slug ?? ''] ?? 'other',
-      start_date: toIso(e.start_date, e.timezone),
-      end_date: toIso(e.end_date, e.timezone),
-      dates: { start: toIso(e.start_date, e.timezone) ?? undefined, end: toIso(e.end_date, e.timezone) ?? undefined },
+      start_date: start,
+      end_date: end,
+      dates: { start: start ?? undefined, end: end ?? undefined },
       venue_name: v ? stripTags(v.venue) : undefined,
       website: (e.website as string) || (e.url as string) || null,
       ticket_url: (e.tickets as string) || (e.website as string) || (e.url as string) || null,
@@ -200,6 +207,7 @@ export const eventAdapter: SourceAdapter = {
         source: 'display-magazin',
         wp_id: e.id,
         source_feed: e.source_feed,
+        ...(invalidEnd ? { source_date_issue: { code: 'publisher_end_before_start', published_end: e.end_date } } : {}),
         source_session: e.source_session,
         all_day: e.all_day,
         cost: e.cost === '' ? null : e.cost ?? null,
