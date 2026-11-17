@@ -1,3 +1,4 @@
+import { fetchPublisherDocument } from '../source-rss-news/publisher-feed.ts'
 import { robotsSitemaps, sitemapLocations, sitemapPathMatchers, readScrapeBody } from './scrape-bounds.ts'
 /**
  * scrape-web-sources — unified web scraper edge function
@@ -106,6 +107,10 @@ async function fetchPage(url: string, userAgent: string, attempt = 0): Promise<s
       },
       signal: controller.signal,
     })
+    if (response.status === 403 && url === 'https://www.travelgay.com/gay-pride-calendar') {
+      await response.body?.cancel()
+      return await fetchPublisherDocument(url, controller.signal, { workerUrl: Deno.env.get('EXTRACT_WORKER_URL'), workerSecret: Deno.env.get('EXTRACT_WORKER_SECRET') ?? Deno.env.get('INTERNAL_INVOKE_SECRET') })
+    }
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
     return await readScrapeBody(response, /xml/i.test(response.headers.get('content-type') || '') ? 4_000_000 : 1_000_000)
   } catch (err) {
@@ -664,6 +669,10 @@ export function extractEventsFromPage(
         const types = Array.isArray(node['@type']) ? node['@type'] : [node['@type']]
         if (!types.some((t: string) => typeof t === 'string' && t.toLowerCase().includes('event'))) continue
 
+        if (source.slug === 'travelgay-pride') {
+          const titleYear = /\b(20\d{2})\b/.exec(node.name || '')?.[1]
+          if (node.month || titleYear && ![String(node.startDate).slice(0,4), String(node.endDate).slice(0,4)].includes(titleYear)) continue
+        }
         const loc = node.location || {}
         const addr = typeof loc === 'string' ? null : (loc.address || {})
         const image = typeof node.image === 'string' ? node.image
@@ -676,7 +685,7 @@ export function extractEventsFromPage(
           description: (node.description || '').slice(0, 1000),
           start_date: node.startDate ? new Date(node.startDate).toISOString() : undefined,
           end_date: node.endDate ? new Date(node.endDate).toISOString() : undefined,
-          venue_name: typeof loc === 'string' ? loc : loc.name || undefined,
+          venue_name: source.slug === 'travelgay-pride' && loc.name === 'TBA' ? undefined : typeof loc === 'string' ? loc : loc.name || undefined,
           city: addr?.addressLocality || undefined,
           country: addr?.addressCountry || undefined,
           event_type: (config.event_type as string) || 'other',

@@ -56,7 +56,7 @@ async function fetchHtml(
     });
     if (!res.ok) throw new Error(`upstream ${res.status}`);
     const ct = res.headers.get('content-type') ?? '';
-    if (!/text\/html|application\/xhtml|application\/xml|text\/plain/i.test(ct)) {
+    if (!/text\/html|application\/xhtml|application\/(?:xml|rss\+xml|atom\+xml)|text\/plain/i.test(ct)) {
       throw new Error(`unsupported content-type: ${ct}`);
     }
     // Re-validate the post-redirect host against the SSRF guard.
@@ -87,7 +87,7 @@ export default {
       return json({ error: 'unauthorized' }, 401);
     }
 
-    let body: { url?: string; render?: boolean; crawl?: boolean };
+    let body: { url?: string; render?: boolean; crawl?: boolean; raw?: boolean };
     try {
       body = await req.json();
     } catch {
@@ -121,6 +121,12 @@ export default {
         : await fetchHtml(target, maxBytes, timeoutMs);
       // Re-validate the post-redirect/navigation host against the SSRF guard.
       assertPublicHttpUrl(finalUrl);
+      // Internal feed consumers need the original XML, including publication
+      // dates and enclosures. Converting it to markdown destroys that contract.
+      if (body.raw === true) {
+        if (new TextEncoder().encode(html).byteLength > maxBytes) throw new Error('raw document exceeds byte budget');
+        return json({ url: body.url, finalUrl, rawHtml: html, method });
+      }
       const result = cleanHtml(html, finalUrl, { crawl: body.crawl === true });
       return json({
         url: body.url,

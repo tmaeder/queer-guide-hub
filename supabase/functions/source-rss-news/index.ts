@@ -512,9 +512,9 @@ async function fetchFromRss(
       })
     }
     let proxiedXml: string | undefined
-    if (res.status === 403 && !isPodcast && isProxyPublisherFeed(feedUrl)) {
+    if (res.status === 403 && isProxyPublisherFeed(feedUrl)) {
       await res.body?.cancel()
-      proxiedXml = await fetchPublisherRss(feedUrl, Deno.env.get('FIRECRAWL_API_KEY') || '', controller.signal)
+      proxiedXml = await fetchPublisherRss(feedUrl, controller.signal, { workerUrl: Deno.env.get('EXTRACT_WORKER_URL'), workerSecret: Deno.env.get('EXTRACT_WORKER_SECRET') ?? Deno.env.get('INTERNAL_INVOKE_SECRET') })
     } else if (!res.ok) {
       await res.body?.cancel()
       throw new Error(`HTTP ${res.status} ${res.statusText}`)
