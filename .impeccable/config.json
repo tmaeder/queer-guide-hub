@@ -26,6 +26,15 @@
         ],
         "createdAt": "2026-10-25T19:47:46.677Z",
         "reason": "Codex: these matches are HTML parsing regex literals and parser documentation; this source file renders no image elements."
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "supabase/functions/scrape-web-sources/legacy-markup.test.ts"
+        ],
+        "createdAt": "2026-11-17T19:27:54.517Z",
+        "reason": "Codex: parser regression fixture intentionally models a flag image with no text; this HTML is never rendered in product UI."
       }
     ]
   }

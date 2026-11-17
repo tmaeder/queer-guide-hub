@@ -1,5 +1,5 @@
 /**
- * Query rewriter using Workers AI llama-3.2-3b.
+ * Query rewriter using Workers AI Gemma 4.
  * - Expands synonyms (schwul → gay/queer)
  * - Translates non-EN to EN for better embed lookup (until bge-m3 migration)
  * - Extracts intent filters (city, type) the user typed naturally
@@ -9,7 +9,7 @@
 
 import type { Env } from "./index";
 
-const MODEL = "@cf/meta/llama-3.2-3b-instruct";
+const MODEL = "@cf/google/gemma-4-26b-a4b-it";
 
 const SYS = `You are a search query rewriter for queer.guide (LGBTQ+ travel + venues + events).
 Given a user query in any language, output ONE compact JSON object (no prose) with fields:
@@ -38,12 +38,12 @@ export async function rewriteQuery(
 	if (cached) return cached as RewrittenQuery;
 
 	const gateway = env.AI_GATEWAY_NAME ? { id: env.AI_GATEWAY_NAME, cacheTtl: 86400 * 7 } : undefined;
-	let res: { response?: string } | undefined;
+	let res: unknown;
 	try {
 		// 5s hard timeout — the rewrite is a nice-to-have, never hold up search
 		// for it. Bug observed 2026-05-03 when AI Gateway stalled.
 		const REWRITE_TIMEOUT_MS = 5000;
-		res = (await Promise.race([
+		res = await Promise.race([
 			env.AI.run(
 				MODEL as Parameters<typeof env.AI.run>[0],
 				{
@@ -53,13 +53,14 @@ export async function rewriteQuery(
 					],
 					max_tokens: 120,
 					temperature: 0.1,
+					chat_template_kwargs: { enable_thinking: false },
 				} as Parameters<typeof env.AI.run>[1],
 				gateway ? { gateway } : undefined,
 			) as Promise<unknown>,
 			new Promise<never>((_, reject) =>
 				setTimeout(() => reject(new Error(`rewrite timeout after ${REWRITE_TIMEOUT_MS}ms`)), REWRITE_TIMEOUT_MS),
 			),
-		])) as { response?: string };
+		]);
 	} catch (e) {
 		console.warn("rewrite failed", (e as Error).message);
 		return null;
@@ -70,7 +71,15 @@ export async function rewriteQuery(
 		// when the model emits a tool call instead of text). `text.match` then
 		// throws "text.match is not a function" and the whole /search request
 		// 500s. Coerce defensively.
-		const text: string = typeof res?.response === "string" ? res.response : "";
+		// Gemma 4 returns a chat completion; older models used `response`.
+		const result = res as {
+			response?: unknown;
+			choices?: Array<{ message?: { content?: unknown }; finish_reason?: string }>;
+		} | null;
+		const choice = result?.choices?.[0];
+		if (choice && choice.finish_reason !== "stop") return null;
+		const content = choice ? choice.message?.content : result?.response;
+		const text = typeof content === "string" ? content : "";
 		const match = text.match(/\{[\s\S]*\}/);
 		if (!match) return null;
 		let parsed: Record<string, unknown>;

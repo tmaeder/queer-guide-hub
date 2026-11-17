@@ -22,7 +22,7 @@ import { robotsSitemaps, sitemapLocations, sitemapPathMatchers, readScrapeBody }
  */
 
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
-import { getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, requireInternalOrAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { scrapedEventRejectReason } from '../_shared/scraped-event-guard.ts'
 import { scrapedNewsStagingSkipReason } from '../_shared/scraped-news-staging-guard.ts'
@@ -226,7 +226,11 @@ export async function crawlViaSitemap(
   const pages: { url: string; html: string }[] = []
 
   // 1. Try to find and parse sitemap(s)
-  const sitemapUrls = await discoverSitemapUrls(baseUrl, source.user_agent)
+  const configuredSitemap = typeof config.sitemap_url === 'string' ? config.sitemap_url : null
+  if (configuredSitemap && new URL(configuredSitemap).origin !== new URL(baseUrl).origin) {
+    return { pages: [], error: 'Configured sitemap must belong to the source origin' }
+  }
+  const sitemapUrls = configuredSitemap ? [configuredSitemap] : await discoverSitemapUrls(baseUrl, source.user_agent)
   if (sitemapUrls.length === 0) {
     return { pages: [], error: `No sitemap found at ${baseUrl}` }
   }
@@ -237,7 +241,7 @@ export async function crawlViaSitemap(
   const visited = new Set<string>()
   for (const sitemapUrl of sitemapUrls) {
     if (productUrls.length >= maxPages || visited.size >= 8) break
-    const urls = await parseSitemap(sitemapUrl, source.user_agent, includePatterns, maxPages - productUrls.length, visited)
+    const urls = await parseSitemap(sitemapUrl, source.user_agent, includePatterns, maxPages - productUrls.length, visited, config.sitemap_require_images === true)
     productUrls.push(...urls)
   }
 
@@ -310,6 +314,7 @@ async function parseSitemap(
   includePatterns: string[],
   limit: number,
   visited = new Set<string>(),
+  requireImages = false,
 ): Promise<string[]> {
   const urls: string[] = []
   if (limit <= 0 || visited.has(sitemapUrl) || visited.size >= 8) return urls
@@ -329,7 +334,7 @@ async function parseSitemap(
 
       for (const childUrl of targetSitemaps) {
         if (urls.length >= limit || visited.size >= 8) break
-        const childUrls = await parseSitemap(childUrl, userAgent, includePatterns, limit - urls.length, visited)
+        const childUrls = await parseSitemap(childUrl, userAgent, includePatterns, limit - urls.length, visited, requireImages)
         urls.push(...childUrls)
         if (urls.length < limit && visited.size < 8) await delay(500) // only wait when another fetch can start
       }
@@ -339,7 +344,7 @@ async function parseSitemap(
     // Stream locations and stop at the requested count. Building a DOM for
     // a merchant's entire catalogue exhausted the worker before its first page.
     const matchers = sitemapPathMatchers(includePatterns)
-    for (const url of sitemapLocations(xml, 'url')) {
+    for (const url of sitemapLocations(xml, 'url', Number.POSITIVE_INFINITY, requireImages)) {
       let path: string
       try { path = new URL(url).pathname } catch { continue }
       if (matchers.length && !matchers.some(pattern => pattern.test(path))) continue
@@ -355,7 +360,7 @@ async function parseSitemap(
 
 // ─── Native Crawl (BFS link-following, no external API) ─────────────────────
 
-async function crawlNative(
+export async function crawlNative(
   source: ScrapeSource,
 ): Promise<{ pages: { url: string; html: string }[]; error?: string }> {
   const config = source.scrape_config
@@ -422,23 +427,32 @@ async function crawlNative(
       // Discover links for further crawling (up to maxDepth)
       if (depth < maxDepth) {
         const $ = cheerio.load(html)
-        $('a[href]').each((_, el) => {
-          const href = $(el).attr('href')
-          if (!href) return
+        const preferred: { url: string; depth: number }[] = []
+        const other: { url: string; depth: number }[] = []
+        const hrefs = config.structured_product_links === true
+          ? structuredProductLinks(html, normalizedUrl)
+          : $(typeof config.link_selector === 'string' ? config.link_selector : 'a[href]').map((_, el) => $(el).attr('href')).get()
+        for (const href of hrefs) {
+          if (!href) continue
 
           let absoluteUrl: string
           try {
             absoluteUrl = new URL(href, normalizedUrl).href
-          } catch { return }
+          } catch { continue }
 
           // Only follow links on same origin
-          if (new URL(absoluteUrl).origin !== baseOrigin) return
+          if (new URL(absoluteUrl).origin !== baseOrigin) continue
 
           const nextNorm = normalizeUrl(absoluteUrl)
-          if (!visited.has(nextNorm) && queue.length < maxPages * 3) {
-            queue.push({ url: nextNorm, depth: depth + 1 })
-          }
-        })
+          if (visited.has(nextNorm)) continue
+          const matches = includePatterns.length === 0 || includePatterns.some(p => globToRegex(p).test(new URL(nextNorm).pathname))
+          ;(matches ? preferred : other).push({ url: nextNorm, depth: depth + 1 })
+        }
+        // Navigation links must not fill the entire bounded queue before the
+        // product/event links later in a catalogue page have been considered.
+        queue.unshift(...preferred.slice(0, maxPages * 3))
+        for (const next of other) if (queue.length < maxPages * 3) queue.push(next)
+        queue.splice(maxPages * 3)
       }
 
       // Rate limit
@@ -473,6 +487,35 @@ function normalizeUrl(url: string): string {
   } catch {
     return url
   }
+}
+
+// A published ItemList can expose real product links even when the visible
+// catalogue is rendered by JavaScript. List metadata is never itself a product.
+export function structuredProductLinks(html: string, pageUrl: string): string[] {
+  const $ = cheerio.load(html)
+  const links = new Set<string>()
+  const pending: unknown[] = []
+  $('script[type="application/ld+json"]').each((_, el) => {
+    try { pending.push(JSON.parse($(el).text())) } catch { /* malformed schema */ }
+  })
+  for (let visited = 0; pending.length && visited < 500 && links.size < 100; visited++) {
+    const node = pending.shift()
+    if (Array.isArray(node)) { pending.push(...node.slice(0, 100)); continue }
+    if (!node || typeof node !== 'object') continue
+    const value = node as Record<string, unknown>
+    if (value['@type'] === 'ItemList' && Array.isArray(value.itemListElement)) {
+      for (const item of value.itemListElement.slice(0, 100)) {
+        if (!item || typeof item !== 'object' || typeof item.url !== 'string') continue
+        try {
+          const url = new URL(item.url, pageUrl)
+          if (url.origin === new URL(pageUrl).origin) links.add(url.href)
+        } catch { /* invalid item */ }
+      }
+    }
+    if (value['@graph']) pending.push(value['@graph'])
+    if (value.mainEntity) pending.push(value.mainEntity)
+  }
+  return [...links].slice(0, 100)
 }
 
 // ─── Product Extraction ─────────────────────────────────────────────────────
@@ -565,18 +608,24 @@ export function extractProductsFromPage(
   // 3. Microdata Product itemscope
   $('[itemscope][itemtype*="Product"]').each((_, el) => {
     const $el = $(el)
-    const name = $el.find('[itemprop="name"]').first().text().trim()
+    // Related-product scopes must retain their own names, prices and URLs.
+    const property = (key: string) => $el.find(`[itemprop="${key}"]`).filter((_, node) =>
+      $(node).closest('[itemscope][itemtype*="Product"]')[0] === el).first()
+    const nameEl = property('name')
+    const name = (nameEl.attr('content') || nameEl.text()).trim()
     if (!name) return
 
     // Skip if already found via JSON-LD
     if (items.some(i => i.name.toLowerCase() === name.toLowerCase())) return
 
-    const desc = $el.find('[itemprop="description"]').first().text().trim()
-    const priceEl = $el.find('[itemprop="price"]').first()
+    const desc = property('description').text().trim()
+    const priceEl = property('price')
     const priceVal = priceEl.attr('content') || priceEl.text().trim()
-    const currency = $el.find('[itemprop="priceCurrency"]').first().attr('content') || 'USD'
-    const imageEl = $el.find('[itemprop="image"]').first()
+    const currency = property('priceCurrency').attr('content') || 'USD'
+    const imageEl = property('image')
     const image = imageEl.attr('src') || imageEl.attr('content') || undefined
+    const urlEl = property('url')
+    const itemUrl = urlEl.attr('content') || urlEl.attr('href') || $el.attr('itemid') || nameEl.closest('a').attr('href')
 
     items.push({
       name,
@@ -586,7 +635,7 @@ export function extractProductsFromPage(
       currency,
       image_url: image,
       images: image ? [image] : [],
-      url: pageUrl,
+      url: itemUrl ? new URL(itemUrl, pageUrl).href : pageUrl,
       brand: source.name,
       raw_data: { microdata: true },
     })
@@ -597,7 +646,7 @@ export function extractProductsFromPage(
 
 // ─── Event Extraction ───────────────────────────────────────────────────────
 
-function extractEventsFromPage(
+export function extractEventsFromPage(
   html: string,
   pageUrl: string,
   source: ScrapeSource,
@@ -657,9 +706,8 @@ function extractEventsFromPage(
       if (!title || title.length < 3 || seenTitles.has(title.toLowerCase())) return
       seenTitles.add(title.toLowerCase())
 
-      const dateText = selectors.date
-        ? $el.find(selectors.date).first().text().trim()
-        : ''
+      const $date = selectors.date ? $el.find(selectors.date).first() : $el.find('time[datetime]').first()
+      const dateText = $date.attr('datetime') || $date.attr('content') || $date.text().trim()
       const location = selectors.location
         ? $el.find(selectors.location).first().text().trim()
         : ''
@@ -667,23 +715,16 @@ function extractEventsFromPage(
         ? $el.find(selectors.description).first().text().trim()
         : $el.find('p, .description, .excerpt').first().text().trim()
       const image = $el.find('img').first().attr('src') || undefined
-      const link = $el.find('a').first().attr('href') || undefined
+      const link = ($el.is('a') ? $el.attr('href') : $el.find('a').first().attr('href')) || undefined
 
-      let parsedDate: string | undefined
-      if (dateText) {
-        try {
-          const d = new Date(dateText)
-          if (!isNaN(d.getTime()) && d.getFullYear() >= 2024) {
-            parsedDate = d.toISOString()
-          }
-        } catch { /* ignore */ }
-      }
+      const dates = publishedEventDates(dateText)
 
       items.push({
         title,
         name: title,
         description: desc.slice(0, 1000) || undefined,
-        start_date: parsedDate,
+        start_date: dates.start,
+        end_date: dates.end,
         city: location || undefined,
         event_type: (config.event_type as string) || 'other',
         url: link && link.startsWith('http') ? link : link ? new URL(link, source.url).href : pageUrl,
@@ -694,6 +735,44 @@ function extractEventsFromPage(
     })
   }
 
+  return items
+}
+
+export function publishedEventDates(text: string): { start?: string; end?: string } {
+  // Fully specified dates only: never inherit a year or turn 0026 into 2026.
+  const month = '(?:January|February|March|April|May|June|July|August|September|October|November|December)'
+  const english = `${month}\\s+\\d{1,2},?\\s+20\\d{2}`
+  const iso = '20\\d{2}-\\d{2}-\\d{2}(?:T\\d{2}:\\d{2}(?::\\d{2}(?:[.]\\d+)?)?(?:Z|[+-]\\d{2}:\\d{2}))?'
+  const match = new RegExp(`^\\s*(${english})(?:\\s*[-–]\\s*(${english}))?\\s*$`, 'i').exec(text)
+    || new RegExp(`^\\s*(${iso})(?:\\s+[-–]\\s+(${iso}))?\\s*$`, 'i').exec(text)
+  if (!match) return {}
+  const parse = (value: string) => new Date(/^20\d{2}-/.test(value) ? value : `${value} UTC`)
+  const start = parse(match[1])
+  const end = match[2] ? parse(match[2]) : null
+  if (!Number.isFinite(start.getTime()) || end && (!Number.isFinite(end.getTime()) || end < start)) return {}
+  return { start: start.toISOString(), ...(end ? { end: end.toISOString() } : {}) }
+}
+
+export function extractCityList(html: string, pageUrl: string, source: ScrapeSource): ExtractedItem[] {
+  const $ = cheerio.load(html)
+  const selectors = (source.scrape_config.selectors || {}) as Record<string, string>
+  const items: ExtractedItem[] = []
+  const seen = new Set<string>()
+  $(selectors.card || 'a:has(h4)').each((_, el) => {
+    if (items.length >= MAX_ITEMS_PER_SOURCE) return false
+    const card = $(el)
+    const name = (card.attr('aria-label') || card.find(selectors.name || 'h2,h3,h4').first().text()).trim()
+    const href = card.is('a') ? card.attr('href') : card.find('a[href]').first().attr('href')
+    if (!name || !href || seen.has(name.toLowerCase())) return
+    const url = new URL(href, pageUrl)
+    if (!['https:', 'http:'].includes(url.protocol)) return
+    if (source.slug === 'gaycities-places' && (!/^[^.]+[.]gaycities[.]com$/.test(url.hostname) || ['www','events','blog'].includes(url.hostname.split('.')[0]))) return
+    seen.add(name.toLowerCase())
+    const countryByHost = (source.scrape_config.country_by_host || {}) as Record<string, string>
+    const country = (selectors.country ? card.find(selectors.country).first().text().trim() : '') || countryByHost[url.hostname]
+    items.push({ name, city: name, country: country || undefined, url: url.href,
+      raw_data: { city_list: true, source_url: pageUrl } })
+  })
   return items
 }
 
@@ -776,7 +855,7 @@ function extractWikiTable(
 
 // ─── Wiki List Extraction (heading + ul/li structure, e.g. WNBR) ──────────
 
-function extractWikiList(
+export function extractWikiList(
   html: string,
   pageUrl: string,
   source: ScrapeSource,
@@ -787,20 +866,22 @@ function extractWikiList(
   const skipHeadings = new Set(['contents', 'references', 'see also', 'notes', 'external links', 'further reading'])
 
   let currentCountry = ''
-  $('h2, h3, ul > li').each((_, el) => {
+  const $nodes = $('.mw-parser-output').first().length ? $('.mw-parser-output').first().find('h2, h3, ul > li') : $('h2, h3, ul > li')
+  $nodes.each((_, el) => {
     const tag = el.tagName.toLowerCase()
     if (tag === 'h2' || tag === 'h3') {
       const text = $(el).find('.mw-headline').text().trim() || $(el).text().replace(/\[edit\]/gi, '').trim()
-      if (text && !skipHeadings.has(text.toLowerCase())) {
-        currentCountry = text
-      }
+      currentCountry = text && !skipHeadings.has(text.toLowerCase()) ? text : ''
       return
     }
     if (tag === 'li' && currentCountry) {
-      const link = $(el).find('a').first()
+      if ($(el).find('li').length) return
+      const link = $(el).find('a[href]').filter((_, a) => $(a).text().trim().length >= 2 && !/^(?:File|Image):/i.test(($(a).attr('title') || ''))).first()
       const city = link.text().trim()
       if (!city || city.length < 2) return
       const rawText = $(el).text().trim()
+      const currentRide = $(el).clone()
+      currentRide.find('.previous-rides').remove()
 
       if (source.content_type === 'events') {
         items.push({
@@ -809,6 +890,7 @@ function extractWikiList(
           city,
           country: currentCountry,
           event_type: (config.event_type as string) || 'other',
+          start_date: publishedWikiRideDate(currentRide.text()),
           description: rawText.slice(0, 500) || undefined,
           url: link.attr('href')
             ? new URL(link.attr('href')!, pageUrl).href
@@ -835,7 +917,7 @@ function extractWikiList(
 
 // ─── Wiki Country Tables (per-country wikitables, country from heading) ────
 
-function extractWikiCountryTables(
+export function extractWikiCountryTables(
   html: string,
   pageUrl: string,
   source: ScrapeSource,
@@ -854,8 +936,9 @@ function extractWikiCountryTables(
     let prev = $(table).prev()
     while (prev.length) {
       const tag = prev[0]?.tagName.toLowerCase()
-      if (tag === 'h2' || tag === 'h3') {
-        country = prev.find('.mw-headline').text().trim() || prev.text().replace(/\[edit\]/gi, '').trim()
+      if (tag === 'h2' || tag === 'h3' || prev.is('.mw-heading')) {
+        const heading = prev.is('.mw-heading') ? prev.find('h2,h3').first() : prev
+        country = heading.find('.mw-headline').text().trim() || heading.text().replace(/\[edit\]/gi, '').trim()
         break
       }
       prev = prev.prev()
@@ -890,6 +973,17 @@ function extractWikiCountryTables(
   })
 
   return items
+}
+
+// Only dates explicitly published before the previous-rides archive qualify.
+// Unknown/cancelled/unconfirmed dates remain unknown rather than being invented.
+export function publishedWikiRideDate(text: string): string | undefined {
+  const current = text.split(/\(\s*Previous rides|Previous rides:/i)[0]
+  if (/\b(cancelled|canceled|unconfirmed|proposed|TBC|TBA)\b/i.test(current)) return
+  const date = /\b(\d{1,2})\s+(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(20\d{2})\b/i.exec(current)
+  if (!date) return
+  const value = new Date(`${date[1]} ${date[2]} ${date[3]} 00:00:00 UTC`)
+  if (Number.isFinite(value.getTime()) && value.getUTCDate() === Number(date[1])) return value.toISOString()
 }
 
 // ─── Timeline Extraction ────────────────────────────────────────────────────
@@ -1065,10 +1159,12 @@ function normalizeItem(
       return {
         name: item.name,
         description: item.description || null,
-        price: item.price || null,
-        price_amount: item.price_amount || null,
+        price: item.price_amount ?? null,
+        price_amount: item.price_amount ?? null,
         currency: item.currency || 'USD',
         external_url: item.url || null,
+        urls: item.url ? [item.url] : [],
+        metadata: { product_url: item.url, merchant_deep_link: item.url, price: item.price_amount, currency: item.currency, brand: item.brand || source.name, business_name: source.name, category: item.category },
         image_url: item.image_url || null,
         images: item.images || [],
         brand: item.brand || source.name,
@@ -1126,6 +1222,7 @@ function normalizeItem(
       return {
         name: item.city || item.name,
         country_name: item.country || null,
+        location: { country: item.country || null },
         description: item.description || null,
       }
 
@@ -1146,7 +1243,7 @@ function normalizeItem(
 
 // ─── Unified page extraction router ─────────────────────────────────────────
 
-function extractFromPage(html: string, pageUrl: string, source: ScrapeSource): ExtractedItem[] {
+export function extractFromPage(html: string, pageUrl: string, source: ScrapeSource): ExtractedItem[] {
   const config = source.scrape_config
   if (config.extract === 'products' || source.content_type === 'products') {
     return extractProductsFromPage(html, pageUrl, source)
@@ -1158,12 +1255,28 @@ function extractFromPage(html: string, pageUrl: string, source: ScrapeSource): E
     return extractWikiList(html, pageUrl, source)
   } else if (config.extract === 'wiki_country_tables') {
     return extractWikiCountryTables(html, pageUrl, source)
+  } else if (config.extract === 'city_list') {
+    return extractCityList(html, pageUrl, source)
   } else if (config.extract === 'equaldex_timeline') {
     return extractEqualdexTimeline(html, pageUrl)
   } else if (config.extract === 'timeline_items') {
     return extractTimelineItems(html, pageUrl, source)
   } else {
     return extractEventsFromPage(html, pageUrl, source)
+  }
+}
+
+// Canonical staging is consumed by the registered per-table pg_cron drains.
+// Legacy scraper registrations still call the product target marketplace_products.
+export function scrapedStagingRow(item: ExtractedItem, source: ScrapeSource, jobId: string) {
+  const target = source.target_table === 'marketplace_products' ? 'marketplace_listings' : source.target_table
+  const entityTypes: Record<string, string> = { marketplace_listings: 'marketplace', events: 'event', venues: 'venue', cities: 'city', countries: 'country', news_articles: 'news_article' }
+  if (!entityTypes[target]) throw new Error(`Unsupported staging target: ${target}`)
+  return {
+    job_id: jobId, source_type: source.slug, source_name: source.slug,
+    source_entity_id: item.url || item.name, entity_type: entityTypes[target], target_table: target,
+    raw_data: { ...item.raw_data, name: item.name, url: item.url },
+    normalized_data: normalizeItem(item, source),
   }
 }
 
@@ -1181,7 +1294,7 @@ function dedupeItems(items: ExtractedItem[]): ExtractedItem[] {
 
 // ─── Process a Single Source ────────────────────────────────────────────────
 
-async function processSource(
+export async function processSource(
   supabase: ReturnType<typeof getServiceClient>,
   source: ScrapeSource,
   dryRun: boolean,
@@ -1192,6 +1305,7 @@ async function processSource(
   pages_crawled: number
   error?: string
   skipped_reason?: string
+  items_skipped?: number
   preview?: ExtractedItem[]
 }> {
   const skipReason = scrapedNewsStagingSkipReason(source, dryRun)
@@ -1321,7 +1435,7 @@ async function processSource(
         consecutive_failures: (source.consecutive_failures || 0) + 1,
         total_runs: (source.total_runs || 0) + 1,
       }).eq('id', source.id)
-      return { source_slug: source.slug, items_found: 0, items_staged: 0, pages_crawled: pagesCrawled }
+      return { source_slug: source.slug, items_found: 0, items_staged: 0, pages_crawled: pagesCrawled, error: 'No items extracted' }
     }
 
     // Cap items
@@ -1393,31 +1507,35 @@ async function processSource(
       console.log(`[${source.slug}] Skipped non-events:`, JSON.stringify(rejected))
     }
 
-    const stagingRows = stageable.map(item => ({
-      job_id: job.id,
-      source_type: source.slug,
-      target_table: source.target_table,
-      raw_data: item.raw_data || item,
-      normalized_data: normalizeItem(item, source),
-    }))
+    const stagingRows = stageable.map(item => scrapedStagingRow(item, source, job.id))
 
     // Insert in chunks of 100
     let itemsStaged = 0
+    let itemsSkipped = 0
+    let itemsFailed = 0
     for (let i = 0; i < stagingRows.length; i += 100) {
       const chunk = stagingRows.slice(i, i + 100)
       const { error: insertError } = await supabase.from('ingestion_staging').insert(chunk)
       if (insertError) {
-        console.error(`[${source.slug}] Staging insert error:`, insertError.message)
+        // A known item must not reject a whole batch or overwrite a reviewed row.
+        for (const row of chunk) {
+          const { error } = await supabase.from('ingestion_staging').insert(row)
+          if (!error) itemsStaged++
+          else if (error.code === '23505') itemsSkipped++
+          else { itemsFailed++; console.error(`[${source.slug}] Staging insert error:`, error.message) }
+        }
       } else {
         itemsStaged += chunk.length
       }
     }
 
     // ── Update scrape_run ────────────────────────────────────
+    const successful = itemsStaged + itemsSkipped > 0 && itemsFailed === 0
+    const stagingError = itemsFailed > 0 ? `${itemsFailed} staging writes failed` : 'No items staged'
     const duration = Date.now() - startTime
     if (run) {
       await supabase.from('scrape_runs').update({
-        status: itemsStaged > 0 ? 'completed' : 'failed',
+        status: successful ? 'completed' : 'failed',
         items_staged: itemsStaged,
         completed_at: new Date().toISOString(),
         duration_ms: duration,
@@ -1427,11 +1545,11 @@ async function processSource(
     // ── Update scrape_source ─────────────────────────────────
     await supabase.from('scrape_sources').update({
       last_run_at: new Date().toISOString(),
-      last_success_at: itemsStaged > 0 ? new Date().toISOString() : source.last_success_at,
-      last_error: itemsStaged === 0 ? 'No items staged' : null,
+      last_success_at: successful ? new Date().toISOString() : source.last_success_at,
+      last_error: successful ? null : stagingError,
       total_runs: (source.total_runs || 0) + 1,
       total_items_fetched: (source.total_items_fetched || 0) + itemsStaged,
-      consecutive_failures: itemsStaged > 0 ? 0 : (source.consecutive_failures || 0) + 1,
+      consecutive_failures: successful ? 0 : (source.consecutive_failures || 0) + 1,
     }).eq('id', source.id)
 
     // ── Update import job ────────────────────────────────────
@@ -1441,25 +1559,16 @@ async function processSource(
       status: itemsStaged > 0 ? 'processing' : 'completed',
     }).eq('id', job.id)
 
-    // ── Trigger ingestion pipeline ───────────────────────────
-    if (itemsStaged > 0) {
-      const pipelineName = source.target_table === 'events'
-        ? 'events-ingestion-bulletproof'
-        : 'venue-ingestion-unified'
-      supabase.functions.invoke('pipeline-executor', {
-        body: {
-          action: 'start',
-          pipeline_name: pipelineName,
-          context: { triggered_by: `scrape-web-sources:${source.slug}`, job_id: job.id, target_table: source.target_table },
-        },
-      }).catch(err => console.error(`[${source.slug}] Pipeline trigger failed:`, err))
-    }
+    // The canonical pg_cron drains validate, deduplicate and review these rows.
+    // Starting the venue DAG here refetched unrelated sources and stranded products.
 
     return {
       source_slug: source.slug,
       items_found: itemsFound,
       items_staged: itemsStaged,
       pages_crawled: pagesCrawled,
+      items_skipped: itemsSkipped,
+      ...(!successful ? { error: stagingError } : {}),
     }
   } catch (err) {
     const errorMsg = (err as Error).message
@@ -1489,16 +1598,8 @@ Deno.serve(async (req) => {
   try {
     const supabase = getServiceClient()
 
-    // Require admin for manual invocations (cron/workflow-dispatcher passes service role)
-    const authHeader = req.headers.get('Authorization')
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '___none___'
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') || '___none___'
-    const isServiceRole = authHeader?.includes(serviceRoleKey)
-    const isAnon = authHeader?.includes(anonKey)
-    if (authHeader && !isServiceRole && !isAnon) {
-      const authResult = await requireAdmin(req, supabase)
-      if (authResult instanceof Response) return authResult
-    }
+    const auth = await requireInternalOrAdmin(req, supabase)
+    if (auth instanceof Response) return auth
 
     const body = await req.json().catch(() => ({}))
     const {
