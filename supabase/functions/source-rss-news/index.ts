@@ -520,7 +520,7 @@ async function fetchFromRss(
       const proxyKey = Deno.env.get('FIRECRAWL_API_KEY')
       if (status === 403 && isProxyPublisherFeed(feedUrl)) {
         try {
-          const { data, error } = await getServiceClient().rpc('fetch_publisher_rss', { p_url: feedUrl })
+          const { data, error } = await getServiceClient().rpc('fetch_publisher_rss', { p_url: feedUrl }).abortSignal(controller.signal)
           if (error || typeof data !== 'string') throw new Error(error?.message ?? 'Invalid publisher RSS response')
           proxiedXml = data
         } catch {
