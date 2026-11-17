@@ -70,11 +70,13 @@ Deno.serve(withErrorReporting('source-shopify', async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const shopDomain = body.shopDomain || body.shop_domain || Deno.env.get('SHOPIFY_SHOP_DOMAIN')
-    if (!shopDomain) return jsonResponse(skippedResponse('missing_credentials', ['SHOPIFY_SHOP_DOMAIN']), 200, req)
+    const accessToken = body.accessToken || Deno.env.get('SHOPIFY_ADMIN_TOKEN')
+    const missing = [!shopDomain && 'SHOPIFY_SHOP_DOMAIN', !accessToken && 'SHOPIFY_ADMIN_TOKEN'].filter(Boolean) as string[]
+    if (missing.length) return jsonResponse(skippedResponse('missing_credentials', missing), 200, req)
     const adapter = makeAdapter(shopDomain)
     const config: AdapterConfig = {
       batchSize: body.limit || body.batch_size || 50,
-      filters: { accessToken: body.accessToken, updatedAtMin: body.updated_at_min },
+      filters: { accessToken, updatedAtMin: body.updated_at_min },
       dryRun: body.dry_run || false, pipelineRunId: body.pipeline_run_id, nodeId: body.node_id,
     }
     const rawItems = await adapter.fetch(config)
