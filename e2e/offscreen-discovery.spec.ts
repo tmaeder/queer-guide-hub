@@ -18,13 +18,25 @@ for (const width of [390, 1365]) {
     expect(railRequests).toEqual([]);
     // A placeholder heading is insufficient: approaching must actually fetch
     // and render linked venue cards, without also starting the later rail.
+    const editors = page.locator('[data-venue-rail="featured"]').last();
+    // Loading the first rail can move its neighbors during scroll anchoring.
+    // Remember whether the later rail entered the viewport at any point;
+    // its position after the request is not its position when loading began.
+    await editors.evaluate((element) => {
+      const observer = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          element.setAttribute('data-entered-viewport', 'true');
+          observer.disconnect();
+        }
+      });
+      observer.observe(element);
+    });
     await recent.scrollIntoViewIfNeeded();
     await expect.poll(() => railRequests.includes('created_at')).toBe(true);
     await expect(recent.locator('a[href^="/venues/"]').first()).toBeVisible();
-    const editors = page.locator('[data-venue-rail="featured"]').last();
     // A tall viewport can approach both neighboring rails at once.
     if (railRequests.includes('featured')) {
-      expect((await editors.boundingBox())!.y).toBeLessThanOrEqual(844);
+      await expect(editors).toHaveAttribute('data-entered-viewport', 'true');
     }
     await editors.scrollIntoViewIfNeeded();
     await expect.poll(() => railRequests.includes('featured')).toBe(true);
