@@ -483,7 +483,7 @@ async function fetchRecentWikinews(url: string, maxArticles: number): Promise<Re
   return fetchWikinewsArticles(target, pageIds)
 }
 
-async function fetchFromRss(
+export async function fetchFromRss(
   feedUrl: string,
   isPodcast = false,
   maxItems = Number.POSITIVE_INFINITY,
@@ -524,12 +524,20 @@ async function fetchFromRss(
           if (error || typeof data !== 'string') throw new Error(error?.message ?? 'Invalid publisher RSS response')
           proxiedXml = data
         } catch {
-          try {
-            proxiedXml = await fetchPublisherRss(feedUrl, controller.signal, { workerUrl: Deno.env.get('EXTRACT_WORKER_URL'), workerSecret: Deno.env.get('EXTRACT_WORKER_SECRET') ?? Deno.env.get('INTERNAL_INVOKE_SECRET') })
-          } catch (error) {
-            if (!isPodcast && proxyKey && publicSourceProxyAllowed(feedUrl)) {
+          let proxyFailure: unknown
+          if (!isPodcast && proxyKey && publicSourceProxyAllowed(feedUrl)) {
+            try {
+              // Leave time for this verified route before browser extraction.
               proxiedXml = await fetchPublicSourceThroughProxy(feedUrl, proxyKey, response => readCapped(response, MAX_FEED_BYTES), controller.signal)
-            } else throw error
+            } catch (error) { proxyFailure = error }
+          }
+          if (proxiedXml === null) {
+            try {
+              proxiedXml = await fetchPublisherRss(feedUrl, controller.signal, { workerUrl: Deno.env.get('EXTRACT_WORKER_URL'), workerSecret: Deno.env.get('EXTRACT_WORKER_SECRET') ?? Deno.env.get('INTERNAL_INVOKE_SECRET') })
+            } catch (error) {
+              if (proxyFailure) throw new Error(`${(error as Error).message}; ${(proxyFailure as Error).message}`, { cause: error })
+              throw error
+            }
           }
         }
       } else throw new Error(`HTTP ${status} ${statusText}`)
