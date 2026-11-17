@@ -355,7 +355,7 @@ async function parseSitemap(
 
 // ─── Native Crawl (BFS link-following, no external API) ─────────────────────
 
-async function crawlNative(
+export async function crawlNative(
   source: ScrapeSource,
 ): Promise<{ pages: { url: string; html: string }[]; error?: string }> {
   const config = source.scrape_config
@@ -422,7 +422,9 @@ async function crawlNative(
       // Discover links for further crawling (up to maxDepth)
       if (depth < maxDepth) {
         const $ = cheerio.load(html)
-        $('a[href]').each((_, el) => {
+        // Merchant navigation can fill the entire bounded queue before the first
+        // product. A registration may select its actual product-card links.
+        $(typeof config.link_selector === 'string' ? config.link_selector : 'a[href]').each((_, el) => {
           const href = $(el).attr('href')
           if (!href) return
 
@@ -565,18 +567,24 @@ export function extractProductsFromPage(
   // 3. Microdata Product itemscope
   $('[itemscope][itemtype*="Product"]').each((_, el) => {
     const $el = $(el)
-    const name = $el.find('[itemprop="name"]').first().text().trim()
+    // Related-product scopes must retain their own names, prices and URLs.
+    const property = (key: string) => $el.find(`[itemprop="${key}"]`).filter((_, node) =>
+      $(node).closest('[itemscope][itemtype*="Product"]')[0] === el).first()
+    const nameEl = property('name')
+    const name = (nameEl.attr('content') || nameEl.text()).trim()
     if (!name) return
 
     // Skip if already found via JSON-LD
     if (items.some(i => i.name.toLowerCase() === name.toLowerCase())) return
 
-    const desc = $el.find('[itemprop="description"]').first().text().trim()
-    const priceEl = $el.find('[itemprop="price"]').first()
+    const desc = property('description').text().trim()
+    const priceEl = property('price')
     const priceVal = priceEl.attr('content') || priceEl.text().trim()
-    const currency = $el.find('[itemprop="priceCurrency"]').first().attr('content') || 'USD'
-    const imageEl = $el.find('[itemprop="image"]').first()
+    const currency = property('priceCurrency').attr('content') || 'USD'
+    const imageEl = property('image')
     const image = imageEl.attr('src') || imageEl.attr('content') || undefined
+    const urlEl = property('url')
+    const itemUrl = urlEl.attr('content') || urlEl.attr('href') || $el.attr('itemid') || nameEl.closest('a').attr('href')
 
     items.push({
       name,
@@ -586,7 +594,7 @@ export function extractProductsFromPage(
       currency,
       image_url: image,
       images: image ? [image] : [],
-      url: pageUrl,
+      url: itemUrl ? new URL(itemUrl, pageUrl).href : pageUrl,
       brand: source.name,
       raw_data: { microdata: true },
     })
@@ -776,7 +784,7 @@ function extractWikiTable(
 
 // ─── Wiki List Extraction (heading + ul/li structure, e.g. WNBR) ──────────
 
-function extractWikiList(
+export function extractWikiList(
   html: string,
   pageUrl: string,
   source: ScrapeSource,
@@ -797,17 +805,26 @@ function extractWikiList(
       return
     }
     if (tag === 'li' && currentCountry) {
-      const link = $(el).find('a').first()
+      const link = $(el).find('a[href*="/wiki/"]').filter((_, a) =>
+        !/\/(?:File|Image|Category|Help|Special|Talk):/i.test($(a).attr('href') || '')
+        && !$(a).find('img').length).first()
       const city = link.text().trim()
       if (!city || city.length < 2) return
       const rawText = $(el).text().trim()
 
       if (source.content_type === 'events') {
+        // Historical dates in the parenthetical archive are not this ride's
+        // advertised date. Never synthesize a date for a '?' / undated ride.
+        const current = $(el).clone()
+        current.find('.previous-rides').remove()
+        const date = current.text().match(/\b\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+20\d{2}\b/i)?.[0]
+        const parsed = date ? new Date(`${date} UTC`) : undefined
         items.push({
           title: `${(config.event_type as string) || 'Event'} - ${city}`,
           name: `${(config.event_type as string) || 'Event'} - ${city}`,
           city,
           country: currentCountry,
+          start_date: parsed && Number.isFinite(parsed.getTime()) ? parsed.toISOString() : undefined,
           event_type: (config.event_type as string) || 'other',
           description: rawText.slice(0, 500) || undefined,
           url: link.attr('href')
@@ -835,7 +852,7 @@ function extractWikiList(
 
 // ─── Wiki Country Tables (per-country wikitables, country from heading) ────
 
-function extractWikiCountryTables(
+export function extractWikiCountryTables(
   html: string,
   pageUrl: string,
   source: ScrapeSource,
@@ -854,8 +871,9 @@ function extractWikiCountryTables(
     let prev = $(table).prev()
     while (prev.length) {
       const tag = prev[0]?.tagName.toLowerCase()
-      if (tag === 'h2' || tag === 'h3') {
-        country = prev.find('.mw-headline').text().trim() || prev.text().replace(/\[edit\]/gi, '').trim()
+      const heading = tag === 'h2' || tag === 'h3' ? prev : prev.children('h2,h3').first()
+      if (heading.length) {
+        country = heading.find('.mw-headline').text().trim() || heading.text().replace(/\[edit\]/gi, '').trim()
         break
       }
       prev = prev.prev()
@@ -1146,7 +1164,7 @@ function normalizeItem(
 
 // ─── Unified page extraction router ─────────────────────────────────────────
 
-function extractFromPage(html: string, pageUrl: string, source: ScrapeSource): ExtractedItem[] {
+export function extractFromPage(html: string, pageUrl: string, source: ScrapeSource): ExtractedItem[] {
   const config = source.scrape_config
   if (config.extract === 'products' || source.content_type === 'products') {
     return extractProductsFromPage(html, pageUrl, source)
@@ -1158,6 +1176,22 @@ function extractFromPage(html: string, pageUrl: string, source: ScrapeSource): E
     return extractWikiList(html, pageUrl, source)
   } else if (config.extract === 'wiki_country_tables') {
     return extractWikiCountryTables(html, pageUrl, source)
+  } else if (config.extract === 'city_list') {
+    const $ = cheerio.load(html)
+    const selectors = (config.selectors || {}) as Record<string, string>
+    const seen = new Set<string>()
+    return $(selectors.card || 'a.city-card').toArray().flatMap(el => {
+      const card = $(el)
+      const name = (card.attr('aria-label') || card.find(selectors.name || 'h2,h3').first().text()).trim()
+      const href = card.attr('href') || card.find('a[href]').first().attr('href')
+      if (!name || !href || seen.has(name.toLowerCase())) return []
+      const url = new URL(href, pageUrl)
+      // GayCities city hosts are subdomains; reject utility / off-site links.
+      if (source.slug === 'gaycities-places' && (!/^[^.]+\.gaycities\.com$/.test(url.hostname) || ['www','events','blog'].includes(url.hostname.split('.')[0]))) return []
+      seen.add(name.toLowerCase())
+      return [{ name, city: name, url: url.href, country: card.find(selectors.country || '.country').text().trim() || undefined,
+        raw_data: { city_list: true, source_url: url.href } }]
+    })
   } else if (config.extract === 'equaldex_timeline') {
     return extractEqualdexTimeline(html, pageUrl)
   } else if (config.extract === 'timeline_items') {
