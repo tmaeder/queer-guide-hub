@@ -10,6 +10,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { parseRssItems, extractChannelMeta, cleanText, excerptOf, stripLoneSurrogates } from './rss-parse.ts'
 import { decodeBytes } from '../_shared/decode-charset.ts'
+import { publicSourceProxyAllowed, fetchPublicSourceThroughProxy } from '../_shared/public-source-proxy.ts'
 import {
   isWikinewsHost,
   parseWikinewsCategoryUrl,
@@ -511,19 +512,27 @@ async function fetchFromRss(
         signal: controller.signal,
       })
     }
-    let proxiedXml: string | undefined
-    if (res.status === 403 && isProxyPublisherFeed(feedUrl)) {
+    let proxiedXml: string | null = null
+    if (!res.ok) {
+      const status = res.status
+      const statusText = res.statusText
       await res.body?.cancel()
-      try {
-        const { data, error } = await getServiceClient().rpc('fetch_publisher_rss', { p_url: feedUrl })
-        if (error || typeof data !== 'string') throw new Error(error?.message ?? 'Invalid publisher RSS response')
-        proxiedXml = data
-      } catch {
-        proxiedXml = await fetchPublisherRss(feedUrl, controller.signal, { workerUrl: Deno.env.get('EXTRACT_WORKER_URL'), workerSecret: Deno.env.get('EXTRACT_WORKER_SECRET') ?? Deno.env.get('INTERNAL_INVOKE_SECRET') })
-      }
-    } else if (!res.ok) {
-      await res.body?.cancel()
-      throw new Error(`HTTP ${res.status} ${res.statusText}`)
+      const proxyKey = Deno.env.get('FIRECRAWL_API_KEY')
+      if (status === 403 && isProxyPublisherFeed(feedUrl)) {
+        try {
+          const { data, error } = await getServiceClient().rpc('fetch_publisher_rss', { p_url: feedUrl })
+          if (error || typeof data !== 'string') throw new Error(error?.message ?? 'Invalid publisher RSS response')
+          proxiedXml = data
+        } catch {
+          try {
+            proxiedXml = await fetchPublisherRss(feedUrl, controller.signal, { workerUrl: Deno.env.get('EXTRACT_WORKER_URL'), workerSecret: Deno.env.get('EXTRACT_WORKER_SECRET') ?? Deno.env.get('INTERNAL_INVOKE_SECRET') })
+          } catch (error) {
+            if (!isPodcast && proxyKey && publicSourceProxyAllowed(feedUrl)) {
+              proxiedXml = await fetchPublicSourceThroughProxy(feedUrl, proxyKey, response => readCapped(response, MAX_FEED_BYTES), controller.signal)
+            } else throw error
+          }
+        }
+      } else throw new Error(`HTTP ${status} ${statusText}`)
     }
     // Bound the body: parseRssItems parses the whole feed (maxArticles only
     // slices afterwards), so a huge podcast-archive feed OOMs/CPU-limits the

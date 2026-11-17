@@ -23,6 +23,7 @@ import { robotsSitemaps, sitemapLocations, sitemapPathMatchers, readScrapeBody }
  */
 
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
+import { fetchPublicSourceThroughProxy } from '../_shared/public-source-proxy.ts'
 import { getServiceClient, requireInternalOrAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { scrapedEventRejectReason } from '../_shared/scraped-event-guard.ts'
@@ -378,7 +379,7 @@ export async function crawlNative(
     '*.pdf', '*.jpg', '*.png', '*.gif', '*.css', '*.js',
   ]
 
-  const baseOrigin = new URL(source.url).origin
+  const allowSubdomains = config.allow_subdomains === true
   const visited = new Set<string>()
   const pages: { url: string; html: string }[] = []
   const queue: { url: string; depth: number }[] = [{ url: source.url, depth: 0 }]
@@ -400,7 +401,7 @@ export async function crawlNative(
 
     // Check URL is on same origin
     try {
-      if (new URL(normalizedUrl).origin !== baseOrigin) continue
+      if (!allowedCrawlUrl(normalizedUrl, source.url, allowSubdomains)) continue
     } catch { continue }
 
     // Check exclude patterns
@@ -446,7 +447,7 @@ export async function crawlNative(
           } catch { continue }
 
           // Only follow links on same origin
-          if (new URL(absoluteUrl).origin !== baseOrigin) continue
+          if (!allowedCrawlUrl(absoluteUrl, source.url, allowSubdomains)) continue
 
           const nextNorm = normalizeUrl(absoluteUrl)
           if (visited.has(nextNorm)) continue
@@ -492,6 +493,18 @@ function normalizeUrl(url: string): string {
   } catch {
     return url
   }
+}
+
+export function allowedCrawlUrl(raw: string, sourceUrl: string, allowSubdomains = false): boolean {
+  try {
+    const url = new URL(raw)
+    const source = new URL(sourceUrl)
+    if (url.username || url.password) return false
+    if (url.origin === source.origin) return true
+    const host = source.hostname.replace(/^www\./, '')
+    return allowSubdomains && url.protocol === source.protocol && url.port === source.port
+      && (url.hostname === host || url.hostname.endsWith(`.${host}`))
+  } catch { return false }
 }
 
 // A published ItemList can expose real product links even when the visible
@@ -630,7 +643,12 @@ export function extractProductsFromPage(
     const imageEl = property('image')
     const image = imageEl.attr('src') || imageEl.attr('content') || undefined
     const urlEl = property('url')
-    const itemUrl = urlEl.attr('content') || urlEl.attr('href') || $el.attr('itemid') || nameEl.closest('a').attr('href')
+    let productUrl: string
+    try {
+      const url = new URL(urlEl.attr('href') || urlEl.attr('content') || $el.attr('itemid') || nameEl.closest('a').attr('href') || pageUrl, pageUrl)
+      if (!['https:', 'http:'].includes(url.protocol)) return
+      productUrl = url.href
+    } catch { return }
 
     items.push({
       name,
@@ -640,9 +658,9 @@ export function extractProductsFromPage(
       currency,
       image_url: image,
       images: image ? [image] : [],
-      url: itemUrl ? new URL(itemUrl, pageUrl).href : pageUrl,
+      url: productUrl,
       brand: source.name,
-      raw_data: { microdata: true },
+      raw_data: { microdata: true, url: productUrl },
     })
   })
 
@@ -1414,7 +1432,9 @@ export async function processSource(
       }
 
       case 'html_fetch': {
-        const html = await fetchPage(source.url, source.user_agent)
+        const html = source.scrape_config.use_public_proxy === true
+          ? (await fetchPublicSourceThroughProxy(source.url, Deno.env.get('FIRECRAWL_API_KEY') || '', response => readScrapeBody(response, 4_000_000))).slice(0, 1_000_000)
+          : await fetchPage(source.url, source.user_agent)
         pagesCrawled = 1
         allItems = extractFromPage(html, source.url, source)
         break

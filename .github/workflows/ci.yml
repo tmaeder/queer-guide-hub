@@ -72,6 +72,7 @@ jobs:
             python3 "supabase/tests/isolated/$fixture"
           done
           python3 supabase/tests/isolated/run_superseded_business_quality.py
+          python3 supabase/tests/isolated/run_review_geographic_indexes.py
 
   typecheck:
     runs-on: ubuntu-latest
