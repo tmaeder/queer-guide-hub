@@ -268,6 +268,9 @@ async function crawlViaSitemap(
 }
 
 async function discoverSitemapUrls(baseUrl: string, userAgent: string): Promise<string[]> {
+  // Storefront registrations may point at a locale or collection; discovery
+  // files belong to the site root, not /collections/example/robots.txt.
+  baseUrl = new URL(baseUrl).origin
   const candidates = [
     `${baseUrl}/sitemap.xml`,
     `${baseUrl}/sitemap_index.xml`,
