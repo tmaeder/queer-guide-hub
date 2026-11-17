@@ -27,7 +27,7 @@ import type { Env } from "../src/index";
  * green on a Worker that had lost the feature entirely.
  */
 
-const LLAMA = "@cf/meta/llama-3.2-3b-instruct";
+const LLAMA = "@cf/google/gemma-4-26b-a4b-it";
 const EMBED = "@cf/baai/bge-m3";
 
 function kv() {
