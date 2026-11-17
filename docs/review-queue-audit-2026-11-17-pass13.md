@@ -41,4 +41,3 @@ Colgay Pride's owner confirms Columbus, Georgia and a current street address, bu
 Oz Phoenix/Wausau, Partners Oklahoma City/New Haven and Scandals Portland/Asheville/Florida still need safe historical source separation. Portland's operator confirms a new Alberta Street address, but changing the mixed canonical alone would leave foreign source identities attached. Phoenix returned HTTP 401, Partners failed DNS, and no unambiguous separate existing destinations were found for every namesake. Do not delete source rows: presence-history children cascade on deletion. The deployed guard prevents this specific missing-distance name decision for new candidates; it does not automatically undo existing source identity mappings or make unresolved historical profiles correct.
 
 The prior PR was merged during this pass. This continuation is based on the refreshed main branch and carries its own implementation, audit and source manifest.
-
