@@ -24,3 +24,20 @@ Add meaningful occurrence/transport regressions, run related checks, merge and
 deploy the production repair, and run bounded real imports to confirm canonical
 staging and repeat-import idempotency. Leave unrelated ongoing Review migrations
 with their owning chat as previously directed.
+
+OSM recovery uses QLever's global index only to discover a bounded set of node
+IDs. Its currently advertised snapshot is 2026-09-21; this is NOT current venue
+data. After one failed Overpass call, discover candidates once per run, restrict
+them to the existing city boxes, then fetch at most 100 known nodes per city
+from the authoritative OSM multi-node JSON API. Recheck current coordinates and
+explicit relevance tags before staging. Preserve source IDs, version, timestamp,
+live-fetch time and discovery snapshot provenance. Empty snapshot coverage stays
+UNKNOWN. The response labels this limited coverage; newly created nodes can wait
+for the discovery index to update. Reject malformed/truncated or >180-day-old
+indexes, cap response bytes and keep the 90-second total budget. No new key,
+paid account or proxy is needed. Optional OVERPASS_API_URL remains available.
+
+Verified Display production import: 300 occurrences staged, repeat skipped 300
+with zero errors; daily ev_fill_display_magazin automation resumed. Migration
+CI remains owned by the separate Review chat (three production-only records at
+22:58 UTC); no history repairs or required-check bypass belong to this change.
