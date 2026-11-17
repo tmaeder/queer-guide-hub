@@ -1,0 +1,1303 @@
+{
+  "pass": "2026-11-17-pass12",
+  "user_checkpoint": 2775,
+  "first_snapshot": [
+    {
+      "observed_at": "2026-11-17 19:45:20.6913+00",
+      "active_cases": 2763
+    }
+  ],
+  "scope": {
+    "business_candidates_triaged": 24,
+    "publisher_capture_attempts": 47,
+    "additional_research": "Arlington city-merge history and eight affected articles; explicit NYC/Hove source contamination; source/provenance and closure-policy inspection.",
+    "limit": "Not an individual review of every active case."
+  },
+  "applied": {
+    "audit_entries": 30,
+    "profile_audits": 24,
+    "native_business_merges": 3,
+    "city_split_audit_bundles": 1,
+    "source_association_repairs": 2,
+    "note": "The city split audit bundles one native inverse, its three historical venue repoints and adjudicated news joins. Audit-entry count is not a case-closure count."
+  },
+  "source_metadata": [
+    {
+      "url": "https://api3.geo.admin.ch/rest/services/ech/MapServer/ch.swisstopo.amtliches-gebaeudeadressverzeichnis/100215793",
+      "retrieved_at": "2026-11-17T19:53:52.697782+00:00",
+      "status": 200,
+      "final_url": "https://api3.geo.admin.ch/rest/services/ech/MapServer/ch.swisstopo.amtliches-gebaeudeadressverzeichnis/100215793",
+      "sha256": "c81b3b9b9fcaa243721ca4d23bd4f1528039ee11a6af5a4471603818b2538a4a"
+    },
+    {
+      "url": "https://www.heatsa.com/contact-us",
+      "retrieved_at": "2026-11-17T19:52:31.472316+00:00",
+      "status": 200,
+      "final_url": "https://www.heatsa.com/contact-us",
+      "sha256": "bbac90b09e2f308e0b8e6baa91925d449cbf7cac6fd69808dc17a47a6f78c623"
+    },
+    {
+      "url": "https://1181.ca/",
+      "retrieved_at": "2026-11-17T19:45:47.729297+00:00",
+      "error": "<urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://www.eaglemanchester.com/contact",
+      "retrieved_at": "2026-11-17T19:47:59.052295+00:00",
+      "status": 200,
+      "final_url": "https://www.eaglemanchester.com/contact",
+      "sha256": "ee9181c71da0012d7c7913d9074be05e61aa22491f360508afc2db490023cb80"
+    },
+    {
+      "url": "https://heatsa.com/",
+      "retrieved_at": "2026-11-17T19:45:49.554763+00:00",
+      "status": 200,
+      "final_url": "https://www.heatsa.com/",
+      "sha256": "95d7bfa8c986daa01e09985317b69c2123940f52a891cf5db3861240a587007d"
+    },
+    {
+      "url": "https://www.theboilerroomsauna.com/",
+      "retrieved_at": "2026-11-17T20:10:09.260508+00:00",
+      "status": 200,
+      "final_url": "https://www.theboilerroomsauna.com/",
+      "sha256": "f3b6310b2d7eb2d2cc61904dfa8be04c54b11dd4584a24e4f60c063341df6cd7"
+    },
+    {
+      "url": "https://www.unioncafe.com/contactus",
+      "retrieved_at": "2026-11-17T19:47:11.403752+00:00",
+      "status": 200,
+      "final_url": "https://www.unioncafe.com/contactus",
+      "sha256": "bd26776d56130d26771a0bdf2d52e40081d6931d9868a668ce9dc23178ce6e0e"
+    },
+    {
+      "url": "https://dallasvoice.com/spring-time-2/",
+      "retrieved_at": "2026-11-17T19:57:14.791635+00:00",
+      "status": 200,
+      "final_url": "https://dallasvoice.com/spring-time-2/",
+      "sha256": "ff9befb1384fa5a9531fbf5aaf9e08d41caf1dbc91afde16205a1b3e380b1783"
+    },
+    {
+      "url": "https://www.gaysaunaherenhuis.be/",
+      "retrieved_at": "2026-11-17T19:45:49.586698+00:00",
+      "status": 200,
+      "final_url": "https://www.gaysaunaherenhuis.be/",
+      "sha256": "23d82354f1493b995a928f185f00f0a50a98e6d36e10d3a9928d8d5db59080c1"
+    },
+    {
+      "url": "https://axisonhigh.com/",
+      "retrieved_at": "2026-11-17T19:45:47.730318+00:00",
+      "status": 200,
+      "final_url": "https://www.axisonhigh.com/",
+      "sha256": "3e3785f7a52cb7353cc2ea470369bf76d4ac46219f2a3cbe5565cc2631909039"
+    },
+    {
+      "url": "https://www.gaysaunaherenhuis.be/contact-1",
+      "retrieved_at": "2026-11-17T19:47:59.051847+00:00",
+      "status": 200,
+      "final_url": "https://www.gaysaunaherenhuis.be/contact-1",
+      "sha256": "2e744c0c03da21e6a2fa92564050fe12c657c667786be00a4e066ecc1042b4ff"
+    },
+    {
+      "url": "https://www.eagletorremolinos.com/",
+      "retrieved_at": "2026-11-17T19:45:49.338762+00:00",
+      "status": 200,
+      "final_url": "https://www.eagletorremolinos.com/",
+      "sha256": "45c0fd3236b899c0008655acaaf7d6dbde7be9cc66a0ae84a444a28e83678909"
+    },
+    {
+      "url": "https://columbusnightlife.com/",
+      "retrieved_at": "2026-11-17T19:45:48.190777+00:00",
+      "status": 200,
+      "final_url": "https://www.columbusnightlife.com/",
+      "sha256": "45941b774e340bac468668163c6dbaf863c7d7d023efed8b03c4a9a427de0838"
+    },
+    {
+      "url": "https://crystalhouston.com/",
+      "retrieved_at": "2026-11-17T19:45:48.656865+00:00",
+      "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'crystalhouston.com'. (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://artbridge.am/",
+      "retrieved_at": "2026-11-17T19:45:47.730193+00:00",
+      "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'artbridge.am'. (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://www.firelondon.net/",
+      "retrieved_at": "2026-11-17T19:45:49.524404+00:00",
+      "status": 200,
+      "final_url": "https://www.firelondon.net/",
+      "sha256": "3b95cfb3164fbbbbf4d13cdf213993601e5cdd0bf11be7c4e4fe2f8534eeddf1"
+    },
+    {
+      "url": "https://dallasvoice.com/stage-notes-review-of-second-thoughts-dance-nation-upright-announces-new-season/",
+      "retrieved_at": "2026-11-17T19:57:15.102434+00:00",
+      "status": 200,
+      "final_url": "https://dallasvoice.com/stage-notes-review-of-second-thoughts-dance-nation-upright-announces-new-season/",
+      "sha256": "7bd95f1baf7df9356f9c96e7f68fef8285e1bc1d5381c54818bf8d4b9fbd097f"
+    },
+    {
+      "url": "https://api3.geo.admin.ch/rest/services/ech/SearchServer?searchText=Industriestrasse%2010%206010%20Kriens&type=locations&origins=address&limit=5",
+      "retrieved_at": "2026-11-17T19:52:58.713405+00:00",
+      "status": 200,
+      "final_url": "https://api3.geo.admin.ch/rest/services/ech/SearchServer?searchText=Industriestrasse%2010%206010%20Kriens&type=locations&origins=address&limit=5",
+      "sha256": "e33096c969f7ec36160931ac8d03c3b38496a703949c8f91eb2e0e7bb7501f98"
+    },
+    {
+      "url": "https://www.lecavernclub.com/",
+      "retrieved_at": "2026-11-17T19:45:48.580169+00:00",
+      "error": "<urlopen error [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://saunacarrerouge.com/",
+      "retrieved_at": "2026-11-17T19:45:48.499866+00:00",
+      "status": 200,
+      "final_url": "https://www.saunacarrerouge.com/",
+      "sha256": "f61bc24c1ccf6d6170e69824ff8f2c29a5bf1970316df481670eaa3048fbecec"
+    },
+    {
+      "url": "https://www.washingtonblade.com/2026/10/08/campaign-urges-virginia-high-school-league-to-reverse-stance-on-trans-athletes/?utm_source=rss&utm_medium=rss&utm_campaign=campaign-urges-virginia-high-school-league-to-reverse-stance-on-trans-athletes",
+      "retrieved_at": "2026-11-17T19:57:13.506986+00:00",
+      "status": 200,
+      "final_url": "https://www.washingtonblade.com/2026/10/08/campaign-urges-virginia-high-school-league-to-reverse-stance-on-trans-athletes/",
+      "sha256": "f6ee75c87124b85b56e7ebd03176dcb7b01785c6daf351ef29b683f2eb745e2e"
+    },
+    {
+      "url": "https://www.advocate.com/news/people/eugene-daniels-viewers-msnow",
+      "retrieved_at": "2026-11-17T19:57:13.298647+00:00",
+      "status": 200,
+      "final_url": "https://www.advocate.com/news/people/eugene-daniels-viewers-msnow",
+      "sha256": "545bc8544227ed6b97f3abf82497785772fffea5772ff65ca31dc099b2f3ff90"
+    },
+    {
+      "url": "https://discus-sauna.ch/",
+      "retrieved_at": "2026-11-17T19:45:48.989320+00:00",
+      "status": 200,
+      "final_url": "https://discus-sauna.ch/",
+      "sha256": "7fe1cddda1370dcd6f66c9e5f9417cd6ed69af9c8b9c50e27f56ccf2318a9928"
+    },
+    {
+      "url": "https://kobaltbarphoenix.com/",
+      "retrieved_at": "2026-11-17T19:45:49.785409+00:00",
+      "error": "Source exceeds capture limit"
+    },
+    {
+      "url": "https://1851club.com/",
+      "retrieved_at": "2026-11-17T19:45:47.729988+00:00",
+      "status": 200,
+      "final_url": "https://www.1851club.com/",
+      "sha256": "46d6543337ebddd9b51c522b514c02165c815c28e116ec45804fccc44fcd26fa"
+    },
+    {
+      "url": "https://www.thepinknews.com/2026/10/01/virginia-question-2-2026/",
+      "retrieved_at": "2026-11-17T19:57:13.298394+00:00",
+      "status": 200,
+      "final_url": "https://www.thepinknews.com/2026/10/01/virginia-question-2-2026/",
+      "sha256": "788e9a4fd1bf696fd4e9bdc8f46eaaead908f59e2814d88ac049b622f98f5529"
+    },
+    {
+      "url": "https://boilerroomnyc.net/",
+      "retrieved_at": "2026-11-17T19:47:11.403893+00:00",
+      "status": 200,
+      "final_url": "https://boilerroomnyc.net/",
+      "sha256": "6dc9c7fc93bb488bb0520a6c780a8d3c0fb5486a4711aca49b4c53fac7393023"
+    },
+    {
+      "url": "https://www.firelondon.net/contact-us/",
+      "retrieved_at": "2026-11-17T19:52:31.472476+00:00",
+      "status": 200,
+      "final_url": "https://www.firelondon.net/contact-us/",
+      "sha256": "f504e9f5b0415f44a83894ef6a349b2c3a1754fa684071750fc9c97dd199ecec"
+    },
+    {
+      "url": "https://www.deltasaunaclub.fr/",
+      "retrieved_at": "2026-11-17T19:45:48.734700+00:00",
+      "error": "<urlopen error [Errno 54] Connection reset by peer>"
+    },
+    {
+      "url": "https://www.uta.edu/texashall/location.php",
+      "retrieved_at": "2026-11-17T19:57:15.791532+00:00",
+      "status": 200,
+      "final_url": "https://www.uta.edu/texashall/location.php",
+      "sha256": "c4386ed566ff1bae381464de944674cec7a159ace601516ddee35d8db03e2907"
+    },
+    {
+      "url": "https://boilerroomnyc.com/",
+      "retrieved_at": "2026-11-17T19:45:48.260836+00:00",
+      "status": 200,
+      "final_url": "https://boilerroomnyc.com/",
+      "sha256": "7f33715b84ef5c3a8b40764373f555b0ea66ab520219db0f984494db751ccec1"
+    },
+    {
+      "url": "https://www.theeagleamsterdam.com/",
+      "retrieved_at": "2026-11-17T19:45:49.246794+00:00",
+      "error": "<urlopen error [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://www.amphibi.fr/infos-pratiques/",
+      "retrieved_at": "2026-11-17T19:52:31.471724+00:00",
+      "status": 200,
+      "final_url": "https://www.amphibi.fr/infos-pratiques/",
+      "sha256": "fb3889823fa03f0e6b8f3d1abeb451f9443cc73f48655f9e4a01143187c0bc7c"
+    },
+    {
+      "url": "https://www.washingtonblade.com/2026/10/01/gay-va-couple-hopeful-voters-will-enshrine-marriage-equality-in-state-constitution/?utm_source=rss&utm_medium=rss&utm_campaign=gay-va-couple-hopeful-voters-will-enshrine-marriage-equality-in-state-constitution",
+      "retrieved_at": "2026-11-17T19:57:13.298714+00:00",
+      "status": 200,
+      "final_url": "https://www.washingtonblade.com/2026/10/01/gay-va-couple-hopeful-voters-will-enshrine-marriage-equality-in-state-constitution/",
+      "sha256": "c918258589ad4a5eb0e0b36a3f840724e28eb034c2c41b7bf5937826598872a5"
+    },
+    {
+      "url": "https://www.unioncafe.com/",
+      "retrieved_at": "2026-11-17T19:47:11.402741+00:00",
+      "status": 200,
+      "final_url": "https://www.unioncafe.com/",
+      "sha256": "cf34c4a0a3c078ba11a792e25a88b2b0c0fb3a4df19a3d44c5410db8d1fad9a9"
+    },
+    {
+      "url": "https://grupohot.com/",
+      "retrieved_at": "2026-11-17T19:45:49.708379+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "url": "https://www.eaglemanchester.com/",
+      "retrieved_at": "2026-11-17T19:45:49.161313+00:00",
+      "status": 200,
+      "final_url": "https://www.eaglemanchester.com/",
+      "sha256": "e8f063b80d207fb96206c31bb148402ba115b289a1bab34087aecf53f6e484c0"
+    },
+    {
+      "url": "https://amphibi.fr/",
+      "retrieved_at": "2026-11-17T19:45:47.730101+00:00",
+      "status": 200,
+      "final_url": "https://www.amphibi.fr/",
+      "sha256": "4d785f2620d4a4edf67ff965c45bf8c547df6f76078ff10015d036f8a1933a47"
+    },
+    {
+      "url": "https://www.washingtonblade.com/2026/10/04/jason-gotay-merrily-we-roll-along/?utm_source=rss&utm_medium=rss&utm_campaign=jason-gotay-merrily-we-roll-along",
+      "retrieved_at": "2026-11-17T19:57:13.297792+00:00",
+      "status": 200,
+      "final_url": "https://www.washingtonblade.com/2026/10/04/jason-gotay-merrily-we-roll-along/",
+      "sha256": "0a69882d1d21c64c3bbeeccfc8ba2d856bb5a2117e36d1afad0c501a1bf4d7e9"
+    },
+    {
+      "url": "https://gaycitynews.com/the-boiler-room-east-village-queer-bar-reopens-new-location/",
+      "retrieved_at": "2026-11-17T20:02:33.921947+00:00",
+      "status": 200,
+      "final_url": "https://gaycitynews.com/the-boiler-room-east-village-queer-bar-reopens-new-location/",
+      "sha256": "73925951026545b5a5d9adb8b601f35789cd73c3f094c5296c36cdc5d55998ce"
+    },
+    {
+      "url": "https://www.1851club.com/contact",
+      "retrieved_at": "2026-11-17T19:47:11.404016+00:00",
+      "status": 200,
+      "final_url": "https://www.1851club.com/contact",
+      "sha256": "17ac8ebdaaf6ed0fc7a6add60f44c867673e9d2468624bc3f746e0480a1414f8"
+    },
+    {
+      "url": "https://bootrack.com/",
+      "retrieved_at": "2026-11-17T19:45:48.302891+00:00",
+      "status": 200,
+      "final_url": "https://bootrack.com/",
+      "sha256": "6dc9c7fc93bb488bb0520a6c780a8d3c0fb5486a4711aca49b4c53fac7393023"
+    },
+    {
+      "url": "https://www.eaglemanchester.com/contact-1",
+      "retrieved_at": "2026-11-17T19:47:59.052423+00:00",
+      "status": 200,
+      "final_url": "https://www.eaglemanchester.com/contact-1",
+      "sha256": "6d72a8fcc3217a7514d6614cb183002d59cbc299767e4ad843320598d2a64af3"
+    },
+    {
+      "url": "https://www.washingtonblade.com/2026/09/16/fall-arts-2026-dc-theater/?utm_source=rss&utm_medium=rss&utm_campaign=fall-arts-2026-dc-theater",
+      "retrieved_at": "2026-11-17T19:57:13.298556+00:00",
+      "status": 200,
+      "final_url": "https://www.washingtonblade.com/2026/09/16/fall-arts-2026-dc-theater/",
+      "sha256": "e5ccd61350943e8d5fa285220bff7813be46e8be4d650b6556603fd1a3f1d6f2"
+    },
+    {
+      "url": "https://www.buddy-muenchen.com/",
+      "retrieved_at": "2026-11-17T19:45:48.474355+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://evgrieve.com/2024/09/a-look-at-new-home-of-boiler-room-on.html",
+      "retrieved_at": "2026-11-17T20:02:33.923307+00:00",
+      "status": 200,
+      "final_url": "https://evgrieve.com/2024/09/a-look-at-new-home-of-boiler-room-on.html",
+      "sha256": "97ec7752c9765052ec514e0a1f2f7b8d8013913b75caccffca1e2f27a4eeed61"
+    },
+    {
+      "url": "https://www.arlingtontx.gov/Parks-Places/Parks-Trails/Park-Finder/Randol-Mill-Park",
+      "retrieved_at": "2026-11-17T19:57:15.634062+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    }
+  ],
+  "profile_decisions": [
+    {
+      "entity_type": "organization",
+      "id": "a5f5e52b-9287-4a3c-84f2-9a937085d6ef",
+      "previous_fields": {
+        "primary_venue_id": "17aabe0a-8b20-4eef-8f13-08ca9b7435f8"
+      },
+      "next_fields": {
+        "primary_venue_id": "17b6f334-20c8-41e6-b09c-7bd09c44c2a8"
+      },
+      "source": {
+        "url": "https://axisonhigh.com/",
+        "retrieved_at": "2026-11-17T19:45:47.730318+00:00",
+        "status": 200,
+        "final_url": "https://www.axisonhigh.com/",
+        "sha256": "3e3785f7a52cb7353cc2ea470369bf76d4ac46219f2a3cbe5565cc2631909039"
+      },
+      "note": "Existing Axis venue-profile business points to a merged duplicate. Link its exact canonical Axis venue at 775 North High Street; not a legal ownership assertion."
+    },
+    {
+      "entity_type": "venue",
+      "id": "17b6f334-20c8-41e6-b09c-7bd09c44c2a8",
+      "previous_fields": {
+        "organization_id": "5956949f-599e-4d1f-9804-dbf707d6fc0f",
+        "website": "http://www.columbusnightlife.com"
+      },
+      "next_fields": {
+        "organization_id": "a5f5e52b-9287-4a3c-84f2-9a937085d6ef",
+        "website": "https://www.axisonhigh.com/"
+      },
+      "source": {
+        "url": "https://axisonhigh.com/",
+        "retrieved_at": "2026-11-17T19:45:47.730318+00:00",
+        "status": 200,
+        "final_url": "https://www.axisonhigh.com/",
+        "sha256": "3e3785f7a52cb7353cc2ea470369bf76d4ac46219f2a3cbe5565cc2631909039"
+      },
+      "note": "Canonical Axis identity is 775 North High Street; correct cross-link to the Union Station 630 North High Street profile. Keep venue merge graph unchanged."
+    },
+    {
+      "entity_type": "venue",
+      "id": "c79bf978-8ce8-4c33-a446-ce049fd28a01",
+      "previous_fields": {
+        "organization_id": "5956949f-599e-4d1f-9804-dbf707d6fc0f"
+      },
+      "next_fields": {
+        "organization_id": "a5f5e52b-9287-4a3c-84f2-9a937085d6ef"
+      },
+      "source": {
+        "url": "https://axisonhigh.com/",
+        "retrieved_at": "2026-11-17T19:45:47.730318+00:00",
+        "status": 200,
+        "final_url": "https://www.axisonhigh.com/",
+        "sha256": "3e3785f7a52cb7353cc2ea470369bf76d4ac46219f2a3cbe5565cc2631909039"
+      },
+      "note": "Already-merged Axis duplicate belongs with the exact Axis venue-profile business; preserve its duplicate pointer."
+    },
+    {
+      "entity_type": "venue",
+      "id": "6cd8bad7-14ef-4cfe-8dc3-44d4eb7bc688",
+      "previous_fields": {
+        "website": "https://columbusnightlife.com"
+      },
+      "next_fields": {
+        "website": null
+      },
+      "source": {
+        "url": "https://columbusnightlife.com/",
+        "retrieved_at": "2026-11-17T19:45:48.190777+00:00",
+        "status": 200,
+        "final_url": "https://www.columbusnightlife.com/",
+        "sha256": "45941b774e340bac468668163c6dbaf863c7d7d023efed8b03c4a9a427de0838"
+      },
+      "note": "Stored legacy domain now serves unrelated casino marketing. Withdraw the website; do not infer closure, relocation or a replacement URL for historical Union Station at 630 North High Street."
+    },
+    {
+      "entity_type": "venue",
+      "id": "d16e51ce-2ede-4287-9f65-22759576aa80",
+      "previous_fields": {
+        "website": "https://columbusnightlife.com"
+      },
+      "next_fields": {
+        "website": null
+      },
+      "source": {
+        "url": "https://columbusnightlife.com/",
+        "retrieved_at": "2026-11-17T19:45:48.190777+00:00",
+        "status": 200,
+        "final_url": "https://www.columbusnightlife.com/",
+        "sha256": "45941b774e340bac468668163c6dbaf863c7d7d023efed8b03c4a9a427de0838"
+      },
+      "note": "Stored legacy domain now serves unrelated casino marketing. Withdraw the website; do not infer closure, relocation or a replacement URL for historical Union Station at 630 North High Street."
+    },
+    {
+      "entity_type": "organization",
+      "id": "5956949f-599e-4d1f-9804-dbf707d6fc0f",
+      "previous_fields": {
+        "website": "https://columbusnightlife.com"
+      },
+      "next_fields": {
+        "website": null
+      },
+      "source": {
+        "url": "https://columbusnightlife.com/",
+        "retrieved_at": "2026-11-17T19:45:48.190777+00:00",
+        "status": 200,
+        "final_url": "https://www.columbusnightlife.com/",
+        "sha256": "45941b774e340bac468668163c6dbaf863c7d7d023efed8b03c4a9a427de0838"
+      },
+      "note": "Stored legacy domain now serves unrelated casino marketing. Withdraw the website; do not infer closure, relocation or a replacement URL for historical Union Station at 630 North High Street."
+    },
+    {
+      "entity_type": "organization",
+      "id": "659307c0-4bff-420f-ba75-ab7aedd566ad",
+      "previous_fields": {
+        "city_id": "9c4c13e8-8858-4496-92f1-66f1262e1b0c",
+        "state": "Virginia",
+        "postal_code": "22203",
+        "timezone": "America/New_York"
+      },
+      "next_fields": {
+        "city_id": "3c38e073-deb5-47ee-9616-2259220ea440",
+        "state": "Texas",
+        "postal_code": "76012",
+        "timezone": "America/Chicago"
+      },
+      "source": {
+        "url": "https://www.1851club.com/contact",
+        "retrieved_at": "2026-11-17T19:47:11.404016+00:00",
+        "status": 200,
+        "final_url": "https://www.1851club.com/contact",
+        "sha256": "17ac8ebdaaf6ed0fc7a6add60f44c867673e9d2468624bc3f746e0480a1414f8"
+      },
+      "note": "Current operator address is 931 W Division Street, Arlington, Texas 76012. Correct Virginia city/state/postcode/timezone; withdraw donor pin associated with its wrong 1851 Division address, without inferring a new pin. Shared phone is explicitly published."
+    },
+    {
+      "entity_type": "organization",
+      "id": "dbe1c348-25a1-4694-aac6-b1fec4b85d8e",
+      "previous_fields": {
+        "city_id": "9c4c13e8-8858-4496-92f1-66f1262e1b0c",
+        "state": "Virginia",
+        "postal_code": "76011",
+        "address": "1851 Division Street",
+        "latitude": 32.7420812,
+        "longitude": -97.0809368,
+        "phone": "+18178019303"
+      },
+      "next_fields": {
+        "city_id": "3c38e073-deb5-47ee-9616-2259220ea440",
+        "state": "Texas",
+        "postal_code": "76012",
+        "address": "931 W Division Street, Arlington, TX 76012",
+        "latitude": null,
+        "longitude": null,
+        "phone": "+18176425554"
+      },
+      "source": {
+        "url": "https://www.1851club.com/contact",
+        "retrieved_at": "2026-11-17T19:47:11.404016+00:00",
+        "status": 200,
+        "final_url": "https://www.1851club.com/contact",
+        "sha256": "17ac8ebdaaf6ed0fc7a6add60f44c867673e9d2468624bc3f746e0480a1414f8"
+      },
+      "note": "Current operator address is 931 W Division Street, Arlington, Texas 76012. Correct Virginia city/state/postcode/timezone; withdraw donor pin associated with its wrong 1851 Division address, without inferring a new pin. Shared phone is explicitly published."
+    },
+    {
+      "entity_type": "venue",
+      "id": "8442437f-a7f3-40b7-a0b2-779ff36c9c8c",
+      "previous_fields": {
+        "city_id": "9c4c13e8-8858-4496-92f1-66f1262e1b0c",
+        "state": "Virginia",
+        "postal_code": "22203",
+        "timezone": "America/New_York"
+      },
+      "next_fields": {
+        "city_id": "3c38e073-deb5-47ee-9616-2259220ea440",
+        "state": "Texas",
+        "postal_code": "76012",
+        "timezone": "America/Chicago"
+      },
+      "source": {
+        "url": "https://www.1851club.com/contact",
+        "retrieved_at": "2026-11-17T19:47:11.404016+00:00",
+        "status": 200,
+        "final_url": "https://www.1851club.com/contact",
+        "sha256": "17ac8ebdaaf6ed0fc7a6add60f44c867673e9d2468624bc3f746e0480a1414f8"
+      },
+      "note": "Current operator address is 931 W Division Street, Arlington, Texas 76012. Correct Virginia city/state/postcode/timezone; withdraw donor pin associated with its wrong 1851 Division address, without inferring a new pin. Shared phone is explicitly published."
+    },
+    {
+      "entity_type": "venue",
+      "id": "a7645779-07f4-49e4-ac84-25aa7f4009bd",
+      "previous_fields": {
+        "postal_code": "76011",
+        "address": "1851 Division Street",
+        "latitude": 32.7420812,
+        "longitude": -97.0809368,
+        "phone": "+18178019303"
+      },
+      "next_fields": {
+        "postal_code": "76012",
+        "address": "931 W Division Street, Arlington, TX 76012",
+        "latitude": null,
+        "longitude": null,
+        "phone": "+18176425554"
+      },
+      "source": {
+        "url": "https://www.1851club.com/contact",
+        "retrieved_at": "2026-11-17T19:47:11.404016+00:00",
+        "status": 200,
+        "final_url": "https://www.1851club.com/contact",
+        "sha256": "17ac8ebdaaf6ed0fc7a6add60f44c867673e9d2468624bc3f746e0480a1414f8"
+      },
+      "note": "Current operator address is 931 W Division Street, Arlington, Texas 76012. Correct Virginia city/state/postcode/timezone; withdraw donor pin associated with its wrong 1851 Division address, without inferring a new pin. Shared phone is explicitly published."
+    },
+    {
+      "entity_type": "organization",
+      "id": "3b76436d-fc7a-4d30-b054-f24b1f704901",
+      "previous_fields": {
+        "city_id": "9c4c13e8-8858-4496-92f1-66f1262e1b0c",
+        "state": "Virginia"
+      },
+      "next_fields": {
+        "city_id": "3c38e073-deb5-47ee-9616-2259220ea440",
+        "state": "Texas"
+      },
+      "source": {
+        "url": "https://www.arlingtontx.gov/Parks-Places/Parks-Trails/Park-Finder/Randol-Mill-Park",
+        "method": "web.search",
+        "retrieved_at": "2026-11-17",
+        "note": "Official city listing explicitly confirms Randol Mill Park in Arlington, Texas; direct GET returned 403."
+      },
+      "note": "Match the source-confirmed existing Texas venue and restored Texas city. Keep existing street, coordinates, publication and contacts."
+    },
+    {
+      "entity_type": "organization",
+      "id": "ad81b5a3-25e2-4838-9b93-e49a3e6c9bc5",
+      "previous_fields": {
+        "city_id": "9c4c13e8-8858-4496-92f1-66f1262e1b0c",
+        "state": "Virginia"
+      },
+      "next_fields": {
+        "city_id": "3c38e073-deb5-47ee-9616-2259220ea440",
+        "state": "Texas"
+      },
+      "source": {
+        "url": "https://www.uta.edu/texashall/location.php",
+        "retrieved_at": "2026-11-17T19:57:15.791532+00:00",
+        "status": 200,
+        "final_url": "https://www.uta.edu/texashall/location.php",
+        "sha256": "c4386ed566ff1bae381464de944674cec7a159ace601516ddee35d8db03e2907"
+      },
+      "note": "Match the source-confirmed existing Texas venue and restored Texas city. Keep existing street, coordinates, publication and contacts."
+    },
+    {
+      "entity_type": "organization",
+      "id": "4a412c46-5a57-453d-a67a-d86d600772cc",
+      "previous_fields": {
+        "address": null,
+        "postal_code": "10200",
+        "latitude": null,
+        "longitude": null
+      },
+      "next_fields": {
+        "address": "Industriestrasse 10, 6010 Kriens, Switzerland",
+        "postal_code": "6010",
+        "latitude": 47.0244192,
+        "longitude": 8.2991135
+      },
+      "source": {
+        "url": "https://discus-sauna.ch/",
+        "retrieved_at": "2026-11-17T19:45:48.989320+00:00",
+        "status": 200,
+        "final_url": "https://discus-sauna.ch/",
+        "sha256": "7fe1cddda1370dcd6f66c9e5f9417cd6ed69af9c8b9c50e27f56ccf2318a9928",
+        "supporting": [
+          {
+            "url": "https://api3.geo.admin.ch/rest/services/ech/SearchServer?searchText=Industriestrasse%2010%206010%20Kriens&type=locations&origins=address&limit=5",
+            "retrieved_at": "2026-11-17T19:52:58.713405+00:00",
+            "status": 200,
+            "final_url": "https://api3.geo.admin.ch/rest/services/ech/SearchServer?searchText=Industriestrasse%2010%206010%20Kriens&type=locations&origins=address&limit=5",
+            "sha256": "e33096c969f7ec36160931ac8d03c3b38496a703949c8f91eb2e0e7bb7501f98"
+          },
+          {
+            "url": "https://api3.geo.admin.ch/rest/services/ech/MapServer/ch.swisstopo.amtliches-gebaeudeadressverzeichnis/100215793",
+            "retrieved_at": "2026-11-17T19:53:52.697782+00:00",
+            "status": 200,
+            "final_url": "https://api3.geo.admin.ch/rest/services/ech/MapServer/ch.swisstopo.amtliches-gebaeudeadressverzeichnis/100215793",
+            "sha256": "c81b3b9b9fcaa243721ca4d23bd4f1528039ee11a6af5a4471603818b2538a4a"
+          }
+        ]
+      },
+      "note": "Owner confirms Industriestrasse 10, 6010 Kriens; exact official Swiss address record 100215793 corroborates the existing canonical venue pin within 8 metres. Reuse that existing venue pin for its business profile; correct 10200 postcode. This is building-address corroboration, not an asserted entrance pin."
+    },
+    {
+      "entity_type": "organization",
+      "id": "614bdb49-0cee-432e-a59c-40c7594724d1",
+      "previous_fields": {
+        "address": null,
+        "postal_code": "2000",
+        "latitude": 51.22047,
+        "longitude": 4.40026
+      },
+      "next_fields": {
+        "address": "63 De Lescluzestraat, Antwerpen",
+        "postal_code": "2600",
+        "latitude": 51.19441223,
+        "longitude": 4.41412783
+      },
+      "source": {
+        "url": "https://www.gaysaunaherenhuis.be/",
+        "retrieved_at": "2026-11-17T19:45:49.586698+00:00",
+        "status": 200,
+        "final_url": "https://www.gaysaunaherenhuis.be/",
+        "sha256": "23d82354f1493b995a928f185f00f0a50a98e6d36e10d3a9928d8d5db59080c1"
+      },
+      "note": "Owner confirms De Lescluzestraat 63, 2600 Berchem (Antwerpen). Align the venue-profile business with its existing canonical venue address and coordinates instead of the old 2000 postcode/central-Antwerp pin. No independent new venue pin or inbox assertion."
+    },
+    {
+      "entity_type": "organization",
+      "id": "4efa7cae-622d-44ea-ac57-c93c3001ef6a",
+      "previous_fields": {
+        "address": "rue de la doneliere",
+        "website": "https://carrérouge.com"
+      },
+      "next_fields": {
+        "address": "15 Rue de la Donelière, 35000 Rennes",
+        "website": "https://www.saunacarrerouge.com/"
+      },
+      "source": {
+        "url": "https://saunacarrerouge.com/",
+        "retrieved_at": "2026-11-17T19:45:48.499866+00:00",
+        "status": 200,
+        "final_url": "https://www.saunacarrerouge.com/",
+        "sha256": "f61bc24c1ccf6d6170e69824ff8f2c29a5bf1970316df481670eaa3048fbecec"
+      },
+      "note": "Current operator site matches exact street and existing shared phone. Correct the business website and omitted house number; retain all other profile fields."
+    },
+    {
+      "entity_type": "organization",
+      "id": "26b8a512-e32d-4ec4-91f8-d3dc66420e98",
+      "previous_fields": {
+        "address": "Bloom Street Manchester (M1 6JX)",
+        "postal_code": "M1 6JX"
+      },
+      "next_fields": {
+        "address": "15 Bloom Street, Manchester M1 3HZ, United Kingdom",
+        "postal_code": "M1 3HZ"
+      },
+      "source": {
+        "url": "https://www.eaglemanchester.com/contact",
+        "retrieved_at": "2026-11-17T19:47:59.052295+00:00",
+        "status": 200,
+        "final_url": "https://www.eaglemanchester.com/contact",
+        "sha256": "ee9181c71da0012d7c7913d9074be05e61aa22491f360508afc2db490023cb80"
+      },
+      "note": "Current official contact page and existing canonical venue confirm exact street/postcode. Do not transfer the unverified donor phone or alter coordinates."
+    },
+    {
+      "entity_type": "organization",
+      "id": "92368dac-a8df-44c8-ad66-64cb5cf2ea5e",
+      "previous_fields": {
+        "description": null
+      },
+      "next_fields": {
+        "description": "Amphibi is a private sauna and club at 15 rue Lacroix in Paris."
+      },
+      "source": {
+        "url": "https://amphibi.fr/",
+        "retrieved_at": "2026-11-17T19:45:47.730101+00:00",
+        "status": 200,
+        "final_url": "https://www.amphibi.fr/",
+        "sha256": "4d785f2620d4a4edf67ff965c45bf8c547df6f76078ff10015d036f8a1933a47"
+      },
+      "note": "Fill missing factual description from the operator; no schedule or price claims added."
+    },
+    {
+      "entity_type": "venue",
+      "id": "704d3bf9-5cc8-453f-a03b-1d740924db16",
+      "previous_fields": {
+        "website": null
+      },
+      "next_fields": {
+        "website": "https://www.amphibi.fr/"
+      },
+      "source": {
+        "url": "https://amphibi.fr/",
+        "retrieved_at": "2026-11-17T19:45:47.730101+00:00",
+        "status": 200,
+        "final_url": "https://www.amphibi.fr/",
+        "sha256": "4d785f2620d4a4edf67ff965c45bf8c547df6f76078ff10015d036f8a1933a47"
+      },
+      "note": "Fill missing official website matching exact street."
+    },
+    {
+      "entity_type": "organization",
+      "id": "e356b65d-5776-4e3a-ac9b-7e1d4a15fd6d",
+      "previous_fields": {
+        "address": "86 E 4th St, New York, NY 10003",
+        "latitude": 40.725952,
+        "longitude": -73.989165
+      },
+      "next_fields": {
+        "address": "45 Second Avenue, New York, NY 10003",
+        "latitude": null,
+        "longitude": null
+      },
+      "source": {
+        "url": "https://gaycitynews.com/the-boiler-room-east-village-queer-bar-reopens-new-location/",
+        "retrieved_at": "2026-11-17T20:02:33.921947+00:00",
+        "status": 200,
+        "final_url": "https://gaycitynews.com/the-boiler-room-east-village-queer-bar-reopens-new-location/",
+        "sha256": "73925951026545b5a5d9adb8b601f35789cd73c3f094c5296c36cdc5d55998ce",
+        "supporting": [
+          {
+            "url": "https://evgrieve.com/2024/09/a-look-at-new-home-of-boiler-room-on.html",
+            "retrieved_at": "2026-11-17T20:02:33.923307+00:00",
+            "status": 200,
+            "final_url": "https://evgrieve.com/2024/09/a-look-at-new-home-of-boiler-room-on.html",
+            "sha256": "97ec7752c9765052ec514e0a1f2f7b8d8013913b75caccffca1e2f27a4eeed61"
+          }
+        ]
+      },
+      "note": "Firsthand reporting documents the 2024 move from 86 East Fourth Street to 45 Second Avenue. Correct the current address and withdraw former-location pins. No present opening-hours/status or replacement pin assertion."
+    },
+    {
+      "entity_type": "venue",
+      "id": "4d13da85-9f7b-445d-8bff-e3e27b308497",
+      "previous_fields": {
+        "address": "86 E 4th St, New York, NY 10003",
+        "latitude": 40.725952,
+        "longitude": -73.989165
+      },
+      "next_fields": {
+        "address": "45 Second Avenue, New York, NY 10003",
+        "latitude": null,
+        "longitude": null
+      },
+      "source": {
+        "url": "https://gaycitynews.com/the-boiler-room-east-village-queer-bar-reopens-new-location/",
+        "retrieved_at": "2026-11-17T20:02:33.921947+00:00",
+        "status": 200,
+        "final_url": "https://gaycitynews.com/the-boiler-room-east-village-queer-bar-reopens-new-location/",
+        "sha256": "73925951026545b5a5d9adb8b601f35789cd73c3f094c5296c36cdc5d55998ce",
+        "supporting": [
+          {
+            "url": "https://evgrieve.com/2024/09/a-look-at-new-home-of-boiler-room-on.html",
+            "retrieved_at": "2026-11-17T20:02:33.923307+00:00",
+            "status": 200,
+            "final_url": "https://evgrieve.com/2024/09/a-look-at-new-home-of-boiler-room-on.html",
+            "sha256": "97ec7752c9765052ec514e0a1f2f7b8d8013913b75caccffca1e2f27a4eeed61"
+          }
+        ]
+      },
+      "note": "Firsthand reporting documents the 2024 move from 86 East Fourth Street to 45 Second Avenue. Correct the current address and withdraw former-location pins. No present opening-hours/status or replacement pin assertion."
+    },
+    {
+      "entity_type": "organization",
+      "id": "95dafa6a-115b-4fe9-9e54-ecc1111521bd",
+      "previous_fields": {
+        "website": "https://boilerroomnyc.com"
+      },
+      "next_fields": {
+        "website": null
+      },
+      "source": {
+        "url": "https://boilerroomnyc.com/",
+        "retrieved_at": "2026-11-17T19:45:48.260836+00:00",
+        "status": 200,
+        "final_url": "https://boilerroomnyc.com/",
+        "sha256": "7f33715b84ef5c3a8b40764373f555b0ea66ab520219db0f984494db751ccec1"
+      },
+      "note": "Legacy .com host now publishes unrelated merchandise/culture articles; withdraw this website reference without inferring closure."
+    },
+    {
+      "entity_type": "venue",
+      "id": "135b42ae-8266-470a-af00-03f7599c3a03",
+      "previous_fields": {
+        "website": "https://boilerroomnyc.com",
+        "latitude": 40.7318504,
+        "longitude": -73.9905257
+      },
+      "next_fields": {
+        "website": null,
+        "latitude": null,
+        "longitude": null
+      },
+      "source": {
+        "url": "https://gaycitynews.com/the-boiler-room-east-village-queer-bar-reopens-new-location/",
+        "retrieved_at": "2026-11-17T20:02:33.921947+00:00",
+        "status": 200,
+        "final_url": "https://gaycitynews.com/the-boiler-room-east-village-queer-bar-reopens-new-location/",
+        "sha256": "73925951026545b5a5d9adb8b601f35789cd73c3f094c5296c36cdc5d55998ce",
+        "supporting": [
+          {
+            "url": "https://evgrieve.com/2024/09/a-look-at-new-home-of-boiler-room-on.html",
+            "retrieved_at": "2026-11-17T20:02:33.923307+00:00",
+            "status": 200,
+            "final_url": "https://evgrieve.com/2024/09/a-look-at-new-home-of-boiler-room-on.html",
+            "sha256": "97ec7752c9765052ec514e0a1f2f7b8d8013913b75caccffca1e2f27a4eeed61"
+          },
+          {
+            "url": "https://boilerroomnyc.com/",
+            "retrieved_at": "2026-11-17T19:45:48.260836+00:00",
+            "status": 200,
+            "final_url": "https://boilerroomnyc.com/",
+            "sha256": "7f33715b84ef5c3a8b40764373f555b0ea66ab520219db0f984494db751ccec1"
+          }
+        ]
+      },
+      "note": "Withdraw unrelated .com website and superseded former-location pin; preserve historical source payload and duplicate pointer."
+    },
+    {
+      "entity_type": "venue",
+      "id": "3a3bb0e7-deea-4299-b2c6-21eeeca3329b",
+      "previous_fields": {
+        "website": "http://boilerroomnyc.com/",
+        "duplicate_of_id": "fb875b74-e391-4156-8739-dac502f69c33"
+      },
+      "next_fields": {
+        "website": null,
+        "duplicate_of_id": "4d13da85-9f7b-445d-8bff-e3e27b308497"
+      },
+      "source": {
+        "url": "https://boilerroomnyc.com/",
+        "retrieved_at": "2026-11-17T19:45:48.260836+00:00",
+        "status": 200,
+        "final_url": "https://boilerroomnyc.com/",
+        "sha256": "7f33715b84ef5c3a8b40764373f555b0ea66ab520219db0f984494db751ccec1",
+        "supporting": [
+          {
+            "url": "https://gaycitynews.com/the-boiler-room-east-village-queer-bar-reopens-new-location/",
+            "retrieved_at": "2026-11-17T20:02:33.921947+00:00",
+            "status": 200,
+            "final_url": "https://gaycitynews.com/the-boiler-room-east-village-queer-bar-reopens-new-location/",
+            "sha256": "73925951026545b5a5d9adb8b601f35789cd73c3f094c5296c36cdc5d55998ce"
+          },
+          {
+            "url": "https://www.theboilerroomsauna.com/",
+            "retrieved_at": "2026-11-17T20:10:09.260508+00:00",
+            "status": 200,
+            "final_url": "https://www.theboilerroomsauna.com/",
+            "sha256": "f3b6310b2d7eb2d2cc61904dfa8be04c54b11dd4584a24e4f60c063341df6cd7"
+          }
+        ]
+      },
+      "note": "Legacy NYC record explicitly says 86 E 4th Street, New York. Correct its mistaken duplicate pointer to the Hove UK sauna by routing it to the existing NYC canonical venue. Withdraw unrelated .com URL. No unknown historical children or ambiguous sources moved."
+    },
+    {
+      "entity_type": "venue",
+      "id": "0dfcb654-bc77-44c0-9b57-4973cbd4ba68",
+      "previous_fields": {
+        "website": "https://boilerroomnyc.com"
+      },
+      "next_fields": {
+        "website": null
+      },
+      "source": {
+        "url": "https://boilerroomnyc.com/",
+        "retrieved_at": "2026-11-17T19:45:48.260836+00:00",
+        "status": 200,
+        "final_url": "https://boilerroomnyc.com/",
+        "sha256": "7f33715b84ef5c3a8b40764373f555b0ea66ab520219db0f984494db751ccec1"
+      },
+      "note": "Withdraw unrelated .com URL from an already-merged NYC duplicate; preserve the prior human-reviewed duplicate pointer."
+    }
+  ],
+  "arlington_split": {
+    "audit_id": "e269061e-4908-45a2-bfcc-198c61960f76",
+    "texas_city_id": "3c38e073-deb5-47ee-9616-2259220ea440",
+    "virginia_city_id": "9c4c13e8-8858-4496-92f1-66f1262e1b0c",
+    "texas_qid": "Q17943",
+    "method": "public.unmerge_cities(audit_id,false) with row locks, full snapshots and postconditions; source-disambiguate restored article joins inside the same transaction. No force or impersonation.",
+    "seo_indexable": false,
+    "historical_venue_ids": [
+      "a7645779-07f4-49e4-ac84-25aa7f4009bd",
+      "620acbe5-9bcd-4c7c-8aeb-b7f25a95a2bb",
+      "7d5e91fc-8af2-452b-b367-50e017cdf1bf"
+    ],
+    "historical_event_id": "77bcbdab-b20d-4f7d-a87e-de14f05bd18a",
+    "historical_event_preserved": "Event city_id was already NULL and remained NULL. No old event date or venue was inferred.",
+    "news_decisions": [
+      {
+        "id": "0555ddf0-31ad-465c-98cf-fb8df3080c78",
+        "title": "‘Merrily’ is for Sondheim super fans, the uninitiated, and anyone in between",
+        "source": {
+          "url": "https://www.washingtonblade.com/2026/10/04/jason-gotay-merrily-we-roll-along/?utm_source=rss&utm_medium=rss&utm_campaign=jason-gotay-merrily-we-roll-along",
+          "retrieved_at": "2026-11-17T19:57:13.297792+00:00",
+          "status": 200,
+          "final_url": "https://www.washingtonblade.com/2026/10/04/jason-gotay-merrily-we-roll-along/",
+          "sha256": "0a69882d1d21c64c3bbeeccfc8ba2d856bb5a2117e36d1afad0c501a1bf4d7e9"
+        },
+        "target_city_id": "9c4c13e8-8858-4496-92f1-66f1262e1b0c",
+        "note": "Virginia/DMV reporting remains Virginia-only; do not reinstate the erroneous historical Texas join."
+      },
+      {
+        "id": "0f128b39-8011-4a90-b2da-8a26b94217e8",
+        "title": "Virginia voters face marriage equality referendum to rewrite equality into the state constitution",
+        "source": {
+          "url": "https://www.thepinknews.com/2026/10/01/virginia-question-2-2026/",
+          "retrieved_at": "2026-11-17T19:57:13.298394+00:00",
+          "status": 200,
+          "final_url": "https://www.thepinknews.com/2026/10/01/virginia-question-2-2026/",
+          "sha256": "788e9a4fd1bf696fd4e9bdc8f46eaaead908f59e2814d88ac049b622f98f5529"
+        },
+        "target_city_id": "9c4c13e8-8858-4496-92f1-66f1262e1b0c",
+        "note": "Virginia/DMV reporting remains Virginia-only; do not reinstate the erroneous historical Texas join."
+      },
+      {
+        "id": "5409e742-7765-4ce8-85d2-9d1ae4d852cf",
+        "title": "D.C.’s fall theater season is already well underway",
+        "source": {
+          "url": "https://www.washingtonblade.com/2026/09/16/fall-arts-2026-dc-theater/?utm_source=rss&utm_medium=rss&utm_campaign=fall-arts-2026-dc-theater",
+          "retrieved_at": "2026-11-17T19:57:13.298556+00:00",
+          "status": 200,
+          "final_url": "https://www.washingtonblade.com/2026/09/16/fall-arts-2026-dc-theater/",
+          "sha256": "e5ccd61350943e8d5fa285220bff7813be46e8be4d650b6556603fd1a3f1d6f2"
+        },
+        "target_city_id": "9c4c13e8-8858-4496-92f1-66f1262e1b0c",
+        "note": "Virginia/DMV reporting remains Virginia-only; do not reinstate the erroneous historical Texas join."
+      },
+      {
+        "id": "57cc9d21-9b2b-42eb-ba62-cc9e16480a85",
+        "title": "MS NOW viewers keep asking Eugene Daniels, ‘Are we going to be okay?’ He’s taking that seriously & listening",
+        "source": {
+          "url": "https://www.advocate.com/news/people/eugene-daniels-viewers-msnow",
+          "retrieved_at": "2026-11-17T19:57:13.298647+00:00",
+          "status": 200,
+          "final_url": "https://www.advocate.com/news/people/eugene-daniels-viewers-msnow",
+          "sha256": "545bc8544227ed6b97f3abf82497785772fffea5772ff65ca31dc099b2f3ff90"
+        },
+        "target_city_id": "3c38e073-deb5-47ee-9616-2259220ea440",
+        "note": "Publisher explicitly identifies UT Arlington/University of Texas at Arlington; restore Texas join and remove false Virginia join."
+      },
+      {
+        "id": "9da0a128-d0d5-4336-bebf-59beb0e2d7dc",
+        "title": "Gay Va. couple hopeful voters will enshrine marriage equality in state constitution",
+        "source": {
+          "url": "https://www.washingtonblade.com/2026/10/01/gay-va-couple-hopeful-voters-will-enshrine-marriage-equality-in-state-constitution/?utm_source=rss&utm_medium=rss&utm_campaign=gay-va-couple-hopeful-voters-will-enshrine-marriage-equality-in-state-constitution",
+          "retrieved_at": "2026-11-17T19:57:13.298714+00:00",
+          "status": 200,
+          "final_url": "https://www.washingtonblade.com/2026/10/01/gay-va-couple-hopeful-voters-will-enshrine-marriage-equality-in-state-constitution/",
+          "sha256": "c918258589ad4a5eb0e0b36a3f840724e28eb034c2c41b7bf5937826598872a5"
+        },
+        "target_city_id": "9c4c13e8-8858-4496-92f1-66f1262e1b0c",
+        "note": "Virginia/DMV reporting remains Virginia-only; do not reinstate the erroneous historical Texas join."
+      },
+      {
+        "id": "a7fa7c1f-5083-4c04-b4eb-718ca86d3d61",
+        "title": "Campaign urges Virginia High School League to reverse stance on trans athletes",
+        "source": {
+          "url": "https://www.washingtonblade.com/2026/10/08/campaign-urges-virginia-high-school-league-to-reverse-stance-on-trans-athletes/?utm_source=rss&utm_medium=rss&utm_campaign=campaign-urges-virginia-high-school-league-to-reverse-stance-on-trans-athletes",
+          "retrieved_at": "2026-11-17T19:57:13.506986+00:00",
+          "status": 200,
+          "final_url": "https://www.washingtonblade.com/2026/10/08/campaign-urges-virginia-high-school-league-to-reverse-stance-on-trans-athletes/",
+          "sha256": "f6ee75c87124b85b56e7ebd03176dcb7b01785c6daf351ef29b683f2eb745e2e"
+        },
+        "target_city_id": "9c4c13e8-8858-4496-92f1-66f1262e1b0c",
+        "note": "Virginia/DMV reporting remains Virginia-only; do not reinstate the erroneous historical Texas join."
+      },
+      {
+        "id": "b84edc77-32f0-454d-b593-a79dc44a804b",
+        "title": "Choreographer brings a fresh eye to T3’s ‘Spring Awakening’ through movement and dance",
+        "source": {
+          "url": "https://dallasvoice.com/spring-time-2/",
+          "retrieved_at": "2026-11-17T19:57:14.791635+00:00",
+          "status": 200,
+          "final_url": "https://dallasvoice.com/spring-time-2/",
+          "sha256": "ff9befb1384fa5a9531fbf5aaf9e08d41caf1dbc91afde16205a1b3e380b1783"
+        },
+        "target_city_id": "3c38e073-deb5-47ee-9616-2259220ea440",
+        "note": "Publisher explicitly identifies UT Arlington/University of Texas at Arlington; restore Texas join and remove false Virginia join."
+      },
+      {
+        "id": "cd61da7f-e494-479e-8300-c91c7f342018",
+        "title": "Stage Notes: Review of Second Thought’s ‘Dance Nation;’ Upright announces new season",
+        "source": {
+          "url": "https://dallasvoice.com/stage-notes-review-of-second-thoughts-dance-nation-upright-announces-new-season/",
+          "retrieved_at": "2026-11-17T19:57:15.102434+00:00",
+          "status": 200,
+          "final_url": "https://dallasvoice.com/stage-notes-review-of-second-thoughts-dance-nation-upright-announces-new-season/",
+          "sha256": "7bd95f1baf7df9356f9c96e7f68fef8285e1bc1d5381c54818bf8d4b9fbd097f"
+        },
+        "target_city_id": "3c38e073-deb5-47ee-9616-2259220ea440",
+        "note": "Publisher explicitly identifies UT Arlington/University of Texas at Arlington; restore Texas join and remove false Virginia join."
+      }
+    ],
+    "article_body_preservation": "All eight full article rows were byte-preserved during repair; every other city-join row preserved. Five historical false Texas joins were not reinstated; three genuine Texas links restored and false Virginia tags removed.",
+    "virginia_city_preserved": true,
+    "publication": "Existing city text and editorial material were not revalidated or rewritten. Restored distinct geographic identity with SEO disabled; no legal/safety claims added."
+  },
+  "discus_corrob": {
+    "publisher_address": "Industriestrasse 10, 6010 Kriens",
+    "official_feature_id": 100215793,
+    "official_address": "Industriestrasse 10, 6010 Kriens",
+    "official_flag": true,
+    "municipality_fosnr": 1059,
+    "geocoder_point": {
+      "latitude": 47.024356842041016,
+      "longitude": 8.299088478088379
+    },
+    "existing_canonical_venue_point": {
+      "latitude": 47.0244192,
+      "longitude": 8.2991135
+    },
+    "distance_m": 7.19,
+    "method": "Select exact number 10/6010 Kriens match, excluding fuzzy 10.1/2h/2d/2f matches; confirm official address-directory feature. Reuse existing canonical venue point in the business profile; no new entrance pin or venue-coordinate refinement."
+  },
+  "business_merges": [
+    {
+      "name": "1851 Club",
+      "drop_id": "dbe1c348-25a1-4694-aac6-b1fec4b85d8e",
+      "keep_org": "659307c0-4bff-420f-ba75-ab7aedd566ad",
+      "donor_venue": "a7645779-07f4-49e4-ac84-25aa7f4009bd",
+      "keep_venue": "8442437f-a7f3-40b7-a0b2-779ff36c9c8c",
+      "source": {
+        "url": "https://www.1851club.com/contact",
+        "retrieved_at": "2026-11-17T19:47:11.404016+00:00",
+        "status": 200,
+        "final_url": "https://www.1851club.com/contact",
+        "sha256": "17ac8ebdaaf6ed0fc7a6add60f44c867673e9d2468624bc3f746e0480a1414f8"
+      },
+      "gap_patch": {}
+    },
+    {
+      "name": "Boiler Room",
+      "drop_id": "95dafa6a-115b-4fe9-9e54-ecc1111521bd",
+      "keep_org": "e356b65d-5776-4e3a-ac9b-7e1d4a15fd6d",
+      "donor_venue": "135b42ae-8266-470a-af00-03f7599c3a03",
+      "keep_venue": "4d13da85-9f7b-445d-8bff-e3e27b308497",
+      "source": {
+        "url": "https://gaycitynews.com/the-boiler-room-east-village-queer-bar-reopens-new-location/",
+        "retrieved_at": "2026-11-17T20:02:33.921947+00:00",
+        "status": 200,
+        "final_url": "https://gaycitynews.com/the-boiler-room-east-village-queer-bar-reopens-new-location/",
+        "sha256": "73925951026545b5a5d9adb8b601f35789cd73c3f094c5296c36cdc5d55998ce"
+      },
+      "gap_patch": {}
+    },
+    {
+      "name": "Discus",
+      "drop_id": "9e439a3a-56bf-4af3-8dbb-2aa0d65f1e3c",
+      "keep_org": "4a412c46-5a57-453d-a67a-d86d600772cc",
+      "donor_venue": "da8d2d50-f477-44ef-8c41-54ef1d175d76",
+      "keep_venue": "2753bab6-611a-425c-9722-f1c1f65cdf3d",
+      "source": {
+        "url": "https://discus-sauna.ch/",
+        "retrieved_at": "2026-11-17T19:45:48.989320+00:00",
+        "status": 200,
+        "final_url": "https://discus-sauna.ch/",
+        "sha256": "7fe1cddda1370dcd6f66c9e5f9417cd6ed69af9c8b9c50e27f56ccf2318a9928"
+      },
+      "gap_patch": {}
+    }
+  ],
+  "nyc_source_moves": [
+    {
+      "id": "043bb5a9-4958-48dc-bf34-d7825cd9cb5f",
+      "source_slug": "gaypinkspots",
+      "source_entity_id": "gaypinkspots:the-boiler-room",
+      "from_venue_id": "fb875b74-e391-4156-8739-dac502f69c33",
+      "to_venue_id": "4d13da85-9f7b-445d-8bff-e3e27b308497",
+      "source_address": "86 E 4th St, East Village, New York City, New York, 10003",
+      "note": "Exact historical source address is NYC. Only association changed; payload/confidence/source identity/timestamps preserved. No unrecorded historical child moves guessed."
+    },
+    {
+      "id": "f286b38a-6766-4f28-a1e9-b8a33af93b71",
+      "source_slug": "unknown",
+      "source_entity_id": "unknown:the-boiler-room:",
+      "from_venue_id": "3a3bb0e7-deea-4299-b2c6-21eeeca3329b",
+      "to_venue_id": "4d13da85-9f7b-445d-8bff-e3e27b308497",
+      "source_address": "86 E 4th St\nNew York, NY 10003",
+      "note": "Exact historical source address is NYC. Only association changed; payload/confidence/source identity/timestamps preserved. No unrecorded historical child moves guessed."
+    }
+  ],
+  "verification_before_legacy_cleanup": {
+    "repairs": [
+      {
+        "count": 1,
+        "reason": "codex_source_pass12_arlington_split"
+      },
+      {
+        "count": 3,
+        "reason": "codex_source_pass12_business_merge"
+      },
+      {
+        "count": 22,
+        "reason": "codex_source_pass12_profile"
+      }
+    ],
+    "profiles": {
+      "total": 22,
+      "matching": 22,
+      "mismatches": []
+    },
+    "merge_audits": 3,
+    "arlington_texas": {
+      "id": "3c38e073-deb5-47ee-9616-2259220ea440",
+      "qid": "Q17943",
+      "shell_status": "real",
+      "seo_indexable": false,
+      "duplicate_of_id": null
+    },
+    "texas_news_correct": 3,
+    "donor_open_findings": 0,
+    "virginia_news_correct": 5,
+    "texas_news_false_virginia": 0,
+    "virginia_news_false_texas": 0,
+    "obsolete_columbus_or_com_urls": 2,
+    "canonical_merge_profiles_preserved": 3
+  },
+  "final_verification": {
+    "repairs": [
+      {
+        "count": 1,
+        "reason": "codex_source_pass12_arlington_split"
+      },
+      {
+        "count": 3,
+        "reason": "codex_source_pass12_business_merge"
+      },
+      {
+        "count": 2,
+        "reason": "codex_source_pass12_nyc_source_association"
+      },
+      {
+        "count": 24,
+        "reason": "codex_source_pass12_profile"
+      }
+    ],
+    "profiles": {
+      "total": 24,
+      "matching": 24,
+      "mismatches": []
+    },
+    "source_moves": 2,
+    "obsolete_domains": 0,
+    "source_payloads_preserved": 2
+  },
+  "reconciler": {
+    "round_trip_ms": 5489,
+    "result": {
+      "dry_run": false,
+      "findings_reconciled": 7,
+      "organizations_examined": 2
+    },
+    "note": "Seven findings manually reconciled on two donors; scheduled processing may have handled the third. All three donors have zero open non-waived findings in the independent read."
+  },
+  "refreshes": {
+    "worklist": {
+      "round_trip_ms": 25876,
+      "result": {
+        "refresh_admin_review_worklist": {
+          "cases": 2760,
+          "elapsed_ms": 24874.938
+        }
+      }
+    },
+    "later_worklist": {
+      "round_trip_ms": 975,
+      "result": {
+        "refresh_admin_review_worklist": {
+          "skipped": "already_running"
+        }
+      }
+    },
+    "queue_top": {
+      "refresh_admin_review_queue_top": {
+        "ok": true,
+        "skipped": "another refresh holds the lock"
+      }
+    }
+  },
+  "final_snapshot": {
+    "blockers": [
+      {
+        "count": 927,
+        "blocker": "missing_source"
+      },
+      {
+        "count": 584,
+        "blocker": "missing_source_url"
+      },
+      {
+        "count": 502,
+        "blocker": "missing_action_candidate"
+      },
+      {
+        "count": 240,
+        "blocker": "conflicting_identity"
+      },
+      {
+        "count": 167,
+        "blocker": "source_not_authorized"
+      },
+      {
+        "count": 158,
+        "blocker": "queued"
+      },
+      {
+        "count": 112,
+        "blocker": "source_unavailable"
+      },
+      {
+        "count": 64,
+        "blocker": "insufficient_confidence"
+      },
+      {
+        "count": 4,
+        "blocker": "retry"
+      },
+      {
+        "count": 2,
+        "blocker": "protected_review"
+      }
+    ],
+    "observed_at": "2026-11-17T20:14:21.331392+00:00",
+    "active_cases": 2760,
+    "active_refresh": 1
+  },
+  "holds": [
+    {
+      "subject": "Hove Boiler Room closure",
+      "entity_id": "fb875b74-e391-4156-8739-dac502f69c33",
+      "source": {
+        "url": "https://www.theboilerroomsauna.com/",
+        "retrieved_at": "2026-11-17T20:10:09.260508+00:00",
+        "status": 200,
+        "final_url": "https://www.theboilerroomsauna.com/",
+        "sha256": "f3b6310b2d7eb2d2cc61904dfa8be04c54b11dd4584a24e4f60c063341df6cd7"
+      },
+      "proposed_status": "permanently_closed",
+      "actual_closure_date": null,
+      "note": "Current operator says its Hove and Sheffield saunas no longer exist. The app's location_closure_statuses table makes confirmed permanent closure human-only (machine_assignable=false). Preserve current closure fields and retain this concrete evidence for human review; do not substitute a presumed-closure label to bypass the gate."
+    },
+    {
+      "subject": "Addressless Hove Yelp source",
+      "source_id": "5af9e22a-aa50-485a-b50a-6047424f1b11",
+      "note": "No unambiguous location in payload; leave association untouched instead of guessing NYC or Hove."
+    },
+    {
+      "subject": "Unpublished shared inboxes/phones",
+      "note": "Amphibi, Herenhuis, Carré Rouge, Fire, Heat and Eagle Manchester donor gaps are not transferred from unsupported contacts. Matching street/name alone is insufficient for a contact-bearing native merge."
+    },
+    {
+      "subject": "Failed or over-budget sources",
+      "note": "1181, Artbridge, Crystal, Buddy, Eagle Amsterdam, Cavern and Delta failures are retained as failures. Kobalt exceeded the unchanged 3 MB capture budget; Grupo Hot returned 403. No TLS/access/budget bypass or inferred closure."
+    },
+    {
+      "subject": "Boiler Room canonical .net website",
+      "note": "Unusable/blank during direct capture and timed out via web retrieval. It was not declared verified or replaced with an inferred URL. Only conclusively unrelated .com references were withdrawn."
+    },
+    {
+      "subject": "Unverified pins and operating dates",
+      "note": "No new pins for 1851 or the moved NYC bar; old donor/former-location pins withdrawn. Current hours, legal ownership and actual closure dates were not invented."
+    }
+  ],
+  "validation": {
+    "rollback_before_commit": true,
+    "guard_notes": "Exact snapshots, unclaimed ownership and field provenance; historic native city edit already undone was removed from a redundant no-op profile patch rather than weakening human-field protection. Scoped legacy duplicate updates preserve existing reviewed pointers except the source-proven unreviewed NYC→Hove error. Full-delta and final trigger-footprint assertions pass.",
+    "runtime_changes": "None. Prior geographic-index migration remains unchanged.",
+    "prior_ci": {
+      "commit": "83615638b4559536710911ec53671f8d1b2d35ca",
+      "job": "https://github.com/tmaeder/queer-guide-hub/actions/runs/44161426407/job/134315970058",
+      "merge_policy": "SUCCESS",
+      "includes": "PostgreSQL 16 geographic-index regression. Not an observed result for this documentation continuation."
+    }
+  }
+}
