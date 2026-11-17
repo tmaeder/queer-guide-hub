@@ -632,6 +632,13 @@ export function extractProductsFromPage(
     const currency = $el.find('[itemprop="priceCurrency"]').first().attr('content') || 'USD'
     const imageEl = $el.find('[itemprop="image"]').first()
     const image = imageEl.attr('src') || imageEl.attr('content') || undefined
+    const urlEl = $el.find('[itemprop="url"]').first()
+    let productUrl: string
+    try {
+      const url = new URL(urlEl.attr('href') || urlEl.attr('content') || $el.attr('itemid') || pageUrl, pageUrl)
+      if (!['https:', 'http:'].includes(url.protocol)) return
+      productUrl = url.href
+    } catch { return }
 
     items.push({
       name,
@@ -641,9 +648,9 @@ export function extractProductsFromPage(
       currency,
       image_url: image,
       images: image ? [image] : [],
-      url: pageUrl,
+      url: productUrl,
       brand: source.name,
-      raw_data: { microdata: true },
+      raw_data: { microdata: true, url: productUrl },
     })
   })
 
