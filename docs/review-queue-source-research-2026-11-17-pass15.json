@@ -1,0 +1,355 @@
+{
+  "pass": "2026-11-17-pass15",
+  "status": "in progress",
+  "user_checkpoint": 2780,
+  "first_snapshot": {
+    "observed_at": "2026-11-17T21:40:44.833507Z",
+    "active_cases": 2777
+  },
+  "latest_snapshot": {
+    "observed_at": "2026-11-17T22:26:24.199776Z",
+    "active_cases": 2737
+  },
+  "audit_entries": 29,
+  "audit_note": "Includes 15 native stale-finding retirements, not 29 case closures.",
+  "sources": [
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q114.json",
+      "retrieved_at": "2026-11-17T21:50:16.050720+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q114.json",
+      "sha256": "f9fa3d1bdac58a76f8f21155ac6ec51055dedc11b8671e7b89620fd8bd2169bf"
+    },
+    {
+      "url": "https://www.orkney.gov.uk/about-us/",
+      "retrieved_at": "2026-11-17T21:54:16.027290+00:00",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://www.nottinghamshire.gov.uk/",
+      "retrieved_at": "2026-11-17T21:51:36.014510+00:00",
+      "status": 200,
+      "final_url": "https://www.nottinghamshire.gov.uk/",
+      "sha256": "d80c23ce8e9c649f52bd1025ea8aea5f55d1aab3de21e19239d8cc3874e4b062"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4999750.json",
+      "retrieved_at": "2026-11-17T21:45:06.087235+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q4999750.json",
+      "sha256": "0bae0f46adb05db96b92f40d88cb964ea39ab73797584bec0a9255b21f837047"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q23092.json",
+      "retrieved_at": "2026-11-17T21:51:36.011559+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q23092.json",
+      "sha256": "83670bd3c3bb5a66ef63022c8ab31a831c8901d51a685f99198eb990421ebefd"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q23064.json",
+      "retrieved_at": "2026-11-17T21:51:36.013442+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q23064.json",
+      "sha256": "0e4b2e09ee161b2545333ad32646b05444be41083c337cbe46f9c72386d065d4"
+    },
+    {
+      "url": "https://www.orkney.gov.uk/documents/orkney-welcome-pack-english/html",
+      "retrieved_at": "2026-11-17T21:51:36.015107+00:00",
+      "status": 200,
+      "final_url": "https://www.orkney.gov.uk/documents/orkney-welcome-pack-english/html",
+      "sha256": "017806ca3917414c7515913376e696c33212c3e849afc2ee52ffad0223120882"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q207935.json",
+      "retrieved_at": "2026-11-17T21:45:06.087464+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q207935.json",
+      "sha256": "23462f407bd39566c902572babd4466a991fdb7962cad0010c366d7bcad26907"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q145.json",
+      "retrieved_at": "2026-11-17T21:50:16.052062+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q145.json",
+      "sha256": "c2362d5af2908c3028a0aa67f201174c351904d8b8e81e9d0f95e3f68c49a52a"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q239421.json",
+      "retrieved_at": "2026-11-17T21:45:06.537652+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q239421.json",
+      "sha256": "13e41d74405a2d53290ad8bd69053c3d5c3bf590e82bfdba8805e74477f963a8"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q100166.json",
+      "retrieved_at": "2026-11-17T21:51:36.013895+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q100166.json",
+      "sha256": "e1d912a8c736de1a4e0adf34427a1030f1954207ad7c67965a768ace6d196534"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q136490448.json",
+      "retrieved_at": "2026-11-17T21:45:06.086600+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q136490448.json",
+      "sha256": "638efc5d3fb914ddd57be5994fa8c2024f24049a424ea33b3c0b96af43985a28"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q122460788.json",
+      "retrieved_at": "2026-11-17T21:45:06.080333+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q122460788.json",
+      "sha256": "4a79acc8a182dcc6a58940e01d377e032f1c0d68c1d94a34b75b1b5b0db2e265"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q2372759.json",
+      "retrieved_at": "2026-11-17T21:45:06.087017+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q2372759.json",
+      "sha256": "2eb231162a50922291b1a08146dd8f5aa18e7dac36e3a2abf5324766c737c08c"
+    },
+    {
+      "url": "https://www.cheshirelieutenancy.org.uk/",
+      "retrieved_at": "2026-11-17T21:54:16.031831+00:00",
+      "status": 200,
+      "final_url": "https://cheshirelieutenancy.org.uk/",
+      "sha256": "283bbadc7653e06497157679831fcd828721d66197bb6dbeab0bac17b4038c67"
+    },
+    {
+      "url": "https://www.chilpancingo.gob.mx/",
+      "retrieved_at": "2026-11-17T21:45:49.823161+00:00",
+      "status": 200,
+      "final_url": "https://chilpancingo.gob.mx/portal/",
+      "sha256": "13fea0db1d6223f8e1b1c77f2c1f79b6721390f634775a46de3b49153563d1c7"
+    },
+    {
+      "url": "https://www.orkney.gov.uk/",
+      "retrieved_at": "2026-11-17T22:20:12.151322+00:00",
+      "status": 200,
+      "final_url": "https://www.orkney.gov.uk/",
+      "sha256": "7da776a5549c88ec858b89a4a2b98ba75d26267ea50a1e15d328ae93c32c2c4f"
+    },
+    {
+      "url": "https://www.nakuru.go.ke/ova_sev/nakuru-city-board/",
+      "retrieved_at": "2026-11-17T21:45:49.822087+00:00",
+      "status": 200,
+      "final_url": "https://www.nakuru.go.ke/ova_sev/nakuru-city-board/",
+      "sha256": "dba8d944f862bde6559ac5b8e7e50d7fc1cbf9ee31b88d79eca1834833f56648"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q96.json",
+      "retrieved_at": "2026-11-17T21:50:16.051751+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q96.json",
+      "sha256": "b060782f56f73b245741b05b3393eef11b758ae8802cdfeffc9be4ed7dd48cef"
+    },
+    {
+      "url": "https://city.nakuru.go.ke/",
+      "retrieved_at": "2026-11-17T21:45:49.819813+00:00",
+      "status": 200,
+      "final_url": "https://city.nakuru.go.ke/",
+      "sha256": "de65e14edc220a6cc4c4c749c5560a1937c4d68fa9950182dcd5fb9f37ca8da4"
+    },
+    {
+      "url": "https://burnhamdeepdale.co.uk/",
+      "retrieved_at": "2026-11-17T21:45:49.822915+00:00",
+      "status": 200,
+      "final_url": "https://burnhamdeepdale.co.uk/",
+      "sha256": "265e37a1a80090748c7259ef12715cd4f352fc5bb5e3ab5b4d176ae473e7b8c7"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q2057625.json",
+      "retrieved_at": "2026-11-17T21:45:06.418129+00:00",
+      "status": 200,
+      "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q2057625.json",
+      "sha256": "31b453baeebd5e128ef791cb68e90ce726f1280a8a7cf731179f12b2170fcd67"
+    }
+  ],
+  "lifecycle": [
+    {
+      "id": "d2decd9a-aa78-4461-9cba-bc8903376d6c",
+      "name": "Nakuru",
+      "previous_slug": "tmp-4c3c8dad-bed4-4307-85a2-ce2ae878a6ac",
+      "qid": "Q239421",
+      "slug": "nakuru",
+      "sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q239421.json",
+          "retrieved_at": "2026-11-17T21:45:06.537652+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q239421.json",
+          "sha256": "13e41d74405a2d53290ad8bd69053c3d5c3bf590e82bfdba8805e74477f963a8"
+        },
+        {
+          "url": "https://city.nakuru.go.ke/",
+          "retrieved_at": "2026-11-17T21:45:49.819813+00:00",
+          "status": 200,
+          "final_url": "https://city.nakuru.go.ke/",
+          "sha256": "de65e14edc220a6cc4c4c749c5560a1937c4d68fa9950182dcd5fb9f37ca8da4"
+        },
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q114.json",
+          "retrieved_at": "2026-11-17T21:50:16.050720+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q114.json",
+          "sha256": "f9fa3d1bdac58a76f8f21155ac6ec51055dedc11b8671e7b89620fd8bd2169bf"
+        }
+      ]
+    },
+    {
+      "id": "e759f4d2-436c-4508-b606-1a91f8de08c6",
+      "name": "Chilpancingo",
+      "previous_slug": "tmp-7ae8e869-8f85-4621-a324-67840b6d065c",
+      "qid": "Q207935",
+      "slug": "chilpancingo",
+      "sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q207935.json",
+          "retrieved_at": "2026-11-17T21:45:06.087464+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q207935.json",
+          "sha256": "23462f407bd39566c902572babd4466a991fdb7962cad0010c366d7bcad26907"
+        },
+        {
+          "url": "https://www.chilpancingo.gob.mx/",
+          "retrieved_at": "2026-11-17T21:45:49.823161+00:00",
+          "status": 200,
+          "final_url": "https://chilpancingo.gob.mx/portal/",
+          "sha256": "13fea0db1d6223f8e1b1c77f2c1f79b6721390f634775a46de3b49153563d1c7"
+        },
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q96.json",
+          "retrieved_at": "2026-11-17T21:50:16.051751+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q96.json",
+          "sha256": "b060782f56f73b245741b05b3393eef11b758ae8802cdfeffc9be4ed7dd48cef"
+        }
+      ]
+    },
+    {
+      "id": "4f8aaed9-5495-4f81-a28a-a2ab06ecf7a9",
+      "name": "Burnham Deepdale",
+      "previous_slug": "tmp-2b907e12-72ad-4b1b-ace2-0e60dfc81132",
+      "qid": "Q4999750",
+      "slug": "burnham-deepdale",
+      "sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4999750.json",
+          "retrieved_at": "2026-11-17T21:45:06.087235+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q4999750.json",
+          "sha256": "0bae0f46adb05db96b92f40d88cb964ea39ab73797584bec0a9255b21f837047"
+        },
+        {
+          "url": "https://burnhamdeepdale.co.uk/",
+          "retrieved_at": "2026-11-17T21:45:49.822915+00:00",
+          "status": 200,
+          "final_url": "https://burnhamdeepdale.co.uk/",
+          "sha256": "265e37a1a80090748c7259ef12715cd4f352fc5bb5e3ab5b4d176ae473e7b8c7"
+        },
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q145.json",
+          "retrieved_at": "2026-11-17T21:50:16.052062+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q145.json",
+          "sha256": "c2362d5af2908c3028a0aa67f201174c351904d8b8e81e9d0f95e3f68c49a52a"
+        }
+      ]
+    }
+  ],
+  "archives": [
+    {
+      "id": "0f53be96-354e-4650-9885-97c4f7b694ef",
+      "name": "Nottinghamshire",
+      "source_identity": "Q23092",
+      "classification": "ceremonial county of England",
+      "sources": [
+        {
+          "url": "https://www.nottinghamshire.gov.uk/",
+          "retrieved_at": "2026-11-17T21:51:36.014510+00:00",
+          "status": 200,
+          "final_url": "https://www.nottinghamshire.gov.uk/",
+          "sha256": "d80c23ce8e9c649f52bd1025ea8aea5f55d1aab3de21e19239d8cc3874e4b062"
+        },
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q23092.json",
+          "retrieved_at": "2026-11-17T21:51:36.011559+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q23092.json",
+          "sha256": "83670bd3c3bb5a66ef63022c8ab31a831c8901d51a685f99198eb990421ebefd"
+        }
+      ]
+    },
+    {
+      "id": "67a38e05-6eb2-41e4-a0c6-82099fefb7fb",
+      "name": "Cheshire",
+      "source_identity": "Q23064",
+      "classification": "ceremonial county of England",
+      "sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q23064.json",
+          "retrieved_at": "2026-11-17T21:51:36.013442+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q23064.json",
+          "sha256": "0e4b2e09ee161b2545333ad32646b05444be41083c337cbe46f9c72386d065d4"
+        },
+        {
+          "url": "https://www.cheshirelieutenancy.org.uk/",
+          "retrieved_at": "2026-11-17T21:54:16.031831+00:00",
+          "status": 200,
+          "final_url": "https://cheshirelieutenancy.org.uk/",
+          "sha256": "283bbadc7653e06497157679831fcd828721d66197bb6dbeab0bac17b4038c67"
+        }
+      ]
+    },
+    {
+      "id": "d0633d3e-ad68-4525-aff7-50a95eaa103f",
+      "name": "Orkney",
+      "source_identity": "Q100166",
+      "classification": "archipelago and council area",
+      "sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Special:EntityData/Q100166.json",
+          "retrieved_at": "2026-11-17T21:51:36.013895+00:00",
+          "status": 200,
+          "final_url": "https://www.wikidata.org/wiki/Special:EntityData/Q100166.json",
+          "sha256": "e1d912a8c736de1a4e0adf34427a1030f1954207ad7c67965a768ace6d196534"
+        },
+        {
+          "url": "https://www.orkney.gov.uk/",
+          "retrieved_at": "2026-11-17T22:20:12.151322+00:00",
+          "status": 200,
+          "final_url": "https://www.orkney.gov.uk/",
+          "sha256": "7da776a5549c88ec858b89a4a2b98ba75d26267ea50a1e15d328ae93c32c2c4f"
+        }
+      ]
+    }
+  ],
+  "other_repairs": [
+    "Ogi lifecycle using unchanged native source-proof operator; old slug redirect",
+    "Wales, Scotland and Thebes archived country checks; Pacific remains review",
+    "System auto-pause resumed after producer fixes; 15 stale liveness findings retired",
+    "Missing cron restored and registry command persisted; scheduled runs at 22:25 and 22:30 succeeded"
+  ],
+  "holds": [
+    "Burghausen historical human coordinate review",
+    "Lexington same-country namesake ambiguity",
+    "Missing-identity research interrupted by Wikidata search-too-busy; not negative identity evidence",
+    "One podcast staging row lacks a publish verdict; eleven technical slug failures remain pending guarded retry",
+    "Two visual-evidence cases retain human review",
+    "Prior mixed venue-source namesakes remain held"
+  ],
+  "fixtures": [
+    "run_archived_city_classification.py",
+    "run_news_commit_slugs.py",
+    "run_review_news_commit_isolation.py",
+    "run_review_cron_recovery.py"
+  ],
+  "migrations": [
+    "20261117215935",
+    "20261117221234",
+    "20261117221235",
+    "20261117222014"
+  ]
+}
