@@ -1,7 +1,7 @@
 import type { Context, Evidence } from './policy.ts'
 import { sourceUrl } from './evidence.ts'
 
-export const STATE_VERSION = 'jev-review-public-state-v2'
+export const STATE_VERSION = 'jev-review-public-state-v3'
 // Public record/proposal fields, plus explicit structures needed to assess the
 // supplied proposal. Unknown nested metadata is never forwarded by default.
 const PUBLIC_FIELDS = new Set([
@@ -20,10 +20,21 @@ const PUBLIC_FIELDS = new Set([
 const RELATED = new Set(['canonical', 'duplicate', 'organization', 'first', 'second', 'location', 'venue_candidates', 'publisher_sources'])
 const META = new Set(['issue_code', 'review_type', 'field', 'entity_type', 'severity', 'reason'])
 const URL_FIELDS = new Set(['website', 'source_url', 'url', 'image_url'])
+const SOURCE_TEXT_FIELDS = new Set(['description', 'short_description', 'long_description', 'body', 'content', 'text'])
+const TEXT_LIMIT = 18000
+
+// Source captures can contain a complete article inside enriched/normalized
+// objects, beyond the SQL projector's top-level limit. Keep both ends and make
+// the missing middle explicit. Proposed replacement/value fields stay exact.
+function sourceExcerpt(value: string): string {
+  const marker = '\n[Source text omitted to fit review bounds; this is not the complete source.]\n'
+  const head = Math.floor((TEXT_LIMIT - marker.length) * 0.7)
+  return value.slice(0, head) + marker + value.slice(-(TEXT_LIMIT - marker.length - head))
+}
 
 function projector() {
   let nodes = 0
-  const visit = (value: unknown, depth = 0, fields = PUBLIC_FIELDS, key?: string): unknown => {
+  const visit = (value: unknown, depth = 0, fields = PUBLIC_FIELDS, key?: string, sourceCapture = false): unknown => {
     if (++nodes > 4000 || depth > 10) throw new Error('Review public state exceeds bounds')
     if (value === null || typeof value === 'boolean') return value
     if (typeof value === 'number') {
@@ -31,7 +42,10 @@ function projector() {
       return value
     }
     if (typeof value === 'string') {
-      if (value.length > 18000) throw new Error('Review public text exceeds bounds')
+      if (value.length > TEXT_LIMIT) {
+        if (sourceCapture && key && SOURCE_TEXT_FIELDS.has(key)) return sourceExcerpt(value)
+        throw new Error('Review public text exceeds bounds')
+      }
       if (key && URL_FIELDS.has(key)) {
         try { return sourceUrl(value).href } catch { return undefined }
       }
@@ -42,13 +56,14 @@ function projector() {
     }
     if (Array.isArray(value)) {
       if (value.length > 128) throw new Error('Review public array exceeds bounds')
-      return value.map(v => visit(v, depth + 1, PUBLIC_FIELDS, key === 'urls' ? 'url' : key)).filter(v => v !== undefined)
+      return value.map(v => visit(v, depth + 1, PUBLIC_FIELDS, key === 'urls' ? 'url' : key, sourceCapture)).filter(v => v !== undefined)
     }
     if (!value || typeof value !== 'object') return undefined
     const result: Record<string, unknown> = {}
     for (const [name, child] of Object.entries(value)) {
       if (!fields.has(name)) continue
-      const projected = visit(child, depth + 1, PUBLIC_FIELDS, name)
+      const projected = visit(child, depth + 1, PUBLIC_FIELDS, name,
+        sourceCapture || ['source_content', 'captured', 'normalized_data', 'enriched_data'].includes(name))
       if (projected !== undefined) result[name] = projected
     }
     return result

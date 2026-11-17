@@ -134,3 +134,13 @@ Deno.test('HTML catalog discovery rejects off-host and unsafe links and ignores 
   try { readCatalogProductLinks(html, 'https://shop.example/catalog', '') } catch (e) { error = (e as Error).message }
   equal(error, 'HTML catalog requires a product link selector')
 })
+
+Deno.test('image-bearing sitemap filtering rejects empty decoded image locations', () => {
+  const xml = '<urlset>' + [
+    ['empty-cdata', '<![CDATA[   ]]>'],
+    ['empty-entity', '&#32;'],
+    ['real', 'https://shop.example/photo.jpg'],
+  ].map(([slug, image]) => `<url><loc>https://shop.example/${slug}</loc><image:image><image:loc>${image}</image:loc></image:image></url>`).join('') + '</urlset>'
+  equal(readSitemapLocations(xml, true), ['https://shop.example/real'])
+  equal(readSitemapLocations('<urlset><url><loc><![CDATA[  https://shop.example/trimmed  ]]></loc></url></urlset>'), ['https://shop.example/trimmed'])
+})

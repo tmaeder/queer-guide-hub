@@ -1,5 +1,52 @@
 import { assertEquals, assert } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
-import { resolveStagedImageUrl } from './image-check.ts'
+import { probeImage, resolveStagedImageUrl } from './image-check.ts'
+
+function jpegWithMetadata(segmentLengths: number[]): Uint8Array {
+  const frame = 2 + segmentLengths.reduce((n, length) => n + 2 + length, 0)
+  const data = new Uint8Array(frame + 19)
+  data.set([0xff, 0xd8])
+  let i = 2
+  for (const length of segmentLengths) {
+    data.set([0xff, 0xe1, length >> 8, length & 255], i)
+    i += length + 2
+  }
+  data.set([0xff, 0xc2, 0, 17, 8, 5, 0, 5, 0], frame) // 1280 × 1280
+  return data
+}
+
+Deno.test('image probe reads a JPEG frame after 32KB of metadata', async () => {
+  const original = globalThis.fetch
+  const data = jpegWithMetadata([36_029]) // SOF at byte 36,033
+  let range = ''
+  globalThis.fetch = async (_input, init) => {
+    if (init?.method === 'HEAD') return new Response(null, { headers: { 'content-type': 'image/jpeg', 'content-length': '269550' } })
+    range = new Headers(init?.headers).get('Range') ?? ''
+    return new Response(new Uint8Array(data).buffer, { status: 206 })
+  }
+  try {
+    const result = await probeImage('https://example.com/original.jpg')
+    assertEquals(range, 'bytes=0-65535')
+    assertEquals([result.ok, result.width, result.height, result.bytes], [true, 1280, 1280, 269550])
+  } finally { globalThis.fetch = original }
+})
+
+Deno.test('image probe bounds and cancels a response that ignores Range', async () => {
+  const original = globalThis.fetch
+  const data = jpegWithMetadata([40_000, 40_000])
+  let cancelled = false
+  globalThis.fetch = async (_input, init) => {
+    if (init?.method === 'HEAD') return new Response(null, { headers: { 'content-type': 'image/jpeg', 'content-length': String(data.length) } })
+    return new Response(new ReadableStream<Uint8Array>({
+      start(controller) { controller.enqueue(data) },
+      cancel() { cancelled = true },
+    }))
+  }
+  try {
+    const result = await probeImage('https://example.com/large-metadata.jpg')
+    assertEquals([result.width, result.height], [undefined, undefined])
+    assert(cancelled)
+  } finally { globalThis.fetch = original }
+})
 
 // --- resolution chain ------------------------------------------------------
 // pipeline-normalize only sets a top-level image_url on the PERSONALITY branch.

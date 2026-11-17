@@ -123,14 +123,30 @@ export async function probeImage(url: string, signal?: AbortSignal): Promise<Ima
       return { url, ok: false, status: head.status, contentType, bytes, reason: 'too_small_bytes' }
     }
 
-    // Read first 32KB to extract dimensions for the common formats.
+    // JPEG metadata can put the frame header beyond 32KB (one real event
+    // original has its SOF at byte 36,033). Bound the actual stream too: a
+    // publisher may ignore Range and return the entire image.
+    const maxProbeBytes = 65_536
     const probe = await fetch(url, {
       method: 'GET',
       signal,
-      headers: { Range: 'bytes=0-32767' },
+      headers: { Range: `bytes=0-${maxProbeBytes - 1}` },
       redirect: 'follow',
     })
-    const buf = new Uint8Array(await probe.arrayBuffer())
+    const reader = probe.body?.getReader()
+    const chunks: Uint8Array[] = []
+    let size = 0
+    try {
+      while (reader && size < maxProbeBytes) {
+        const { value, done } = await reader.read()
+        if (done) break
+        const part = value.subarray(0, maxProbeBytes - size)
+        chunks.push(part); size += part.length
+      }
+    } finally { await reader?.cancel().catch(() => {}) }
+    const buf = new Uint8Array(size)
+    let offset = 0
+    for (const part of chunks) { buf.set(part, offset); offset += part.length }
     const dims = await readDimensions(buf, contentType)
     const reason =
       dims && (dims.w < MIN_DIM || dims.h < MIN_DIM) ? 'low_resolution' : undefined

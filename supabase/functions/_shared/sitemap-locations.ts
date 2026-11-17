@@ -8,9 +8,7 @@ export function* sitemapLocations(xml: string, kind: 'url' | 'sitemap', limit = 
     const loc = /<loc\b[^>]*>([\s\S]*?)<\/loc>/i.exec(match[1])
     if (!loc) continue
     if (requireImages && !hasImageLocation(match[1])) continue
-    const raw = loc[1].trim()
-    const cdata = /^<!\[CDATA\[([\s\S]*)\]\]>$/.exec(raw)
-    const value = cdata ? cdata[1] : decodeEntities(raw)
+    const value = locationText(loc[1])
     if (value) {
       yield value
       if (++yielded >= limit) return
@@ -22,7 +20,13 @@ export function* sitemapLocations(xml: string, kind: 'url' | 'sitemap', limit = 
 function hasImageLocation(block: string): boolean {
   for (const image of block.matchAll(/<((?:[\w.-]+:)?image)\b[^>]*>([\s\S]*?)<\/\1>/gi)) {
     const location = /<(?:[\w.-]+:)?loc\b[^>]*>([\s\S]*?)<\/(?:[\w.-]+:)?loc>/i.exec(image[2])
-    if (location?.[1].trim()) return true
+    if (location && locationText(location[1])) return true
   }
   return false
+}
+
+function locationText(raw: string): string {
+  const text = raw.trim()
+  const cdata = /^<!\[CDATA\[([\s\S]*)\]\]>$/.exec(text)
+  return (cdata ? cdata[1] : decodeEntities(text)).trim()
 }
