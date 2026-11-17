@@ -360,11 +360,44 @@ export async function saveSource(source: DataSource, edits: SourceEdits): Promis
   }
 }
 
+export function supportsManualSourceRun(source: DataSource): boolean {
+  return (
+    source.registry === 'ingestion_sources' &&
+    Boolean(source.edgeFunction) &&
+    !source.edgeFunction?.startsWith('get-')
+  );
+}
+
 export async function runDataSource(source: DataSource): Promise<void> {
-  if (source.registry !== 'ingestion_sources' || !source.edgeFunction || !source.enabled) {
+  if (!supportsManualSourceRun(source) || !source.edgeFunction || !source.enabled) {
     throw new Error('This source does not support a manual import.');
   }
-  const { data, error } = await supabase.functions.invoke(source.edgeFunction, { body: {} });
+  const body: Record<string, string> = {};
+  if (source.edgeFunction === 'scrape-web-sources') {
+    const { data: registration, error: lookupError } = await supabase
+      .from('scrape_sources')
+      .select('is_enabled,last_error')
+      .eq('slug', source.identifier)
+      .maybeSingle();
+    if (lookupError) throw new Error(lookupError.message);
+    if (!registration) throw new Error('Scraper registration not found.');
+    if (!registration.is_enabled) {
+      throw new Error(
+        registration.last_error || 'This scraper is disabled in the scraper registry.',
+      );
+    }
+    body.source_slug = source.identifier;
+  }
+  const { data, error } = await supabase.functions.invoke(source.edgeFunction, { body });
   if (error) throw new Error(error.message);
   if (data?.error) throw new Error(String(data.error));
+  if (data?.skipped === true) {
+    const missing = Array.isArray(data.missing_credentials)
+      ? data.missing_credentials.join(', ')
+      : '';
+    throw new Error(`Import skipped: ${missing || data.reason || 'source unavailable'}`);
+  }
+  if (data?.success === false || Number(data?.errors_count) > 0 || Number(data?.items_failed) > 0) {
+    throw new Error('The import reported failures. Check the source run details.');
+  }
 }

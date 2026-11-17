@@ -1,0 +1,962 @@
+{
+  "pass": "2026-11-17-pass8",
+  "user_checkpoint": 2940,
+  "first_active_count": 2849,
+  "final_snapshot": [
+    {
+      "jsonb_build_object": {
+        "blockers": [
+          {
+            "count": 992,
+            "blocker": "missing_source"
+          },
+          {
+            "count": 623,
+            "blocker": "missing_source_url"
+          },
+          {
+            "count": 544,
+            "blocker": "missing_action_candidate"
+          },
+          {
+            "count": 225,
+            "blocker": "conflicting_identity"
+          },
+          {
+            "count": 141,
+            "blocker": "source_unavailable"
+          },
+          {
+            "count": 107,
+            "blocker": "source_not_authorized"
+          },
+          {
+            "count": 100,
+            "blocker": "queued"
+          },
+          {
+            "count": 52,
+            "blocker": "insufficient_confidence"
+          },
+          {
+            "count": 19,
+            "blocker": "visual_evidence_requires_human_review"
+          },
+          {
+            "count": 8,
+            "blocker": "protected_review"
+          },
+          {
+            "count": 5,
+            "blocker": "retry"
+          },
+          {
+            "count": 3,
+            "blocker": "blocked"
+          },
+          {
+            "count": 1,
+            "blocker": null
+          }
+        ],
+        "migration": {
+          "name": "bound_superseded_business_candidates",
+          "version": "20261117173045"
+        },
+        "observed_at": "2026-11-17T17:43:59.65565+00:00",
+        "active_cases": 2820
+      }
+    }
+  ],
+  "reconciler": {
+    "migration": {
+      "file": "supabase/migrations/20261117173045_bound_superseded_business_candidates.sql",
+      "version": "20261117173045",
+      "name": "bound_superseded_business_candidates",
+      "applied": {
+        "success": true
+      }
+    },
+    "diagnosis": "Old ordered-LIMIT plan starts from organizations_pkey, probes open findings, then joins canonical survivor. Estimates ~117k organizations/~107k candidates although no eligible rows remain. Recorded SQLSTATE57014 points to FOR candidate selection. Existing duplicate index was not driving the query.",
+    "logs": {
+      "result": [
+        {
+          "context": "PL/pgSQL function reconcile_superseded_business_findings(integer,boolean) line 7 at FOR over SELECT rows",
+          "sqlstate": "57014",
+          "timestamp": "2026-11-17T17:16:19.675000"
+        },
+        {
+          "context": "PL/pgSQL function reconcile_superseded_business_findings(integer,boolean) line 7 at FOR over SELECT rows",
+          "sqlstate": "57014",
+          "timestamp": "2026-11-17T17:10:23.135000"
+        }
+      ]
+    },
+    "alternatives": {
+      "explicit_duplicate_predicate": {
+        "planning_ms": 20.207,
+        "execution_ms": 4566.295,
+        "actual_rows": 0,
+        "root": "Limit",
+        "shared_read_blocks": 6857
+      },
+      "materialized_duplicate_cohort": {
+        "planning_ms": 26.949,
+        "execution_ms": 400.317,
+        "actual_rows": 0,
+        "root": "Limit",
+        "shared_read_blocks": 581
+      },
+      "new_partial_finding_index": "Not implemented: existing indexes plus query rewrite sufficed, avoiding another write-maintained index."
+    },
+    "measurement_limit": "Individual observations have different cache warmth and concurrent load; not a controlled speedup benchmark.",
+    "change": "Explicit non-NULL duplicate predicate plus MATERIALIZED valid donor/survivor cohort before finding lookup. Only candidate SELECT replaced, fail-fast if old source anchor changes. All lifecycle writes, locking, waiver/eligibility/order rules, cap2000/default500, dry-run semantics, owner/security/search_path and grants preserved. No timeout raised.",
+    "production_smoke": {
+      "results": [
+        {
+          "batch": 500,
+          "result": {
+            "dry_run": true,
+            "findings_reconciled": 0,
+            "organizations_examined": 0
+          },
+          "dry_run": true,
+          "elapsed_ms": 329.428
+        },
+        {
+          "batch": 2000,
+          "result": {
+            "dry_run": false,
+            "findings_reconciled": 0,
+            "organizations_examined": 0
+          },
+          "dry_run": false,
+          "elapsed_ms": 134.907
+        }
+      ],
+      "grants": {
+        "anon": false,
+        "service_role": true,
+        "authenticated": false
+      },
+      "definition_matches_expected": true,
+      "caller_plan": "force_generic_plan",
+      "caller_statement_timeout": "8s"
+    },
+    "production_positive_write": [
+      {
+        "result": {
+          "dry_run": false,
+          "findings_reconciled": 18,
+          "organizations_examined": 6
+        },
+        "elapsed_ms": "291.288000"
+      }
+    ],
+    "security_advisors": {
+      "unchanged_normalized": true,
+      "before": [
+        {
+          "name": "rls_enabled_no_policy",
+          "level": "INFO",
+          "count": 11
+        },
+        {
+          "name": "function_search_path_mutable",
+          "level": "WARN",
+          "count": 1
+        },
+        {
+          "name": "authenticated_security_definer_function_executable",
+          "level": "WARN",
+          "count": 2
+        }
+      ],
+      "after": [
+        {
+          "name": "rls_enabled_no_policy",
+          "level": "INFO",
+          "count": 11
+        },
+        {
+          "name": "function_search_path_mutable",
+          "level": "WARN",
+          "count": 1
+        },
+        {
+          "name": "authenticated_security_definer_function_executable",
+          "level": "WARN",
+          "count": 2
+        }
+      ]
+    },
+    "validation": {
+      "native_postgres": "PostgreSQL17 disposable cluster: actual original migration, actual patch, original lifecycle regression and new bounded/scale regression pass. Authorization helper is stubbed locally; production ACL and complete function readback separately checked.",
+      "coverage": [
+        "60000 live profiles/120000 open findings produce no candidates",
+        "2105 eligible duplicates exercise default500/cap2000 and zero/negative bounds",
+        "forced generic plan",
+        "deterministic UUID ordering",
+        "dry-run non-mutation",
+        "audited write",
+        "canonical/live profile and finding preservation",
+        "waivers",
+        "self-cycle exclusion",
+        "idempotency",
+        "unmerged identity exclusion",
+        "producer hook",
+        "unchanged ACL/owner/settings",
+        "internal guard"
+      ],
+      "test_budget_fix": "A repeated test timed out during full-catalogue JSON preservation comparisons rather than the reconciler. Those comparisons now run separately from the five-second RPC checks; final fixture passes.",
+      "parser": "New migration passes pinned PostgreSQL17(17.8.2) and current(18.2.4) parsers plus repository body-balance check. Packages installed in a temporary directory; application dependencies unchanged.",
+      "ci": "New native fixture added to existing merge-policy CI job. No unobserved CI success claimed."
+    }
+  },
+  "repairs": {
+    "audit_rows": 23,
+    "municipality_rows": 15,
+    "independent_profile_fills": 2,
+    "native_business_merges": 6,
+    "superseded_findings_reconciled": 18
+  },
+  "municipality_decisions": [
+    {
+      "type": "venue",
+      "id": "ab5aacae-c83c-46aa-b4cb-180db9796350",
+      "name": "K1 Club",
+      "old_city_id": "c7198e4f-01d5-4b07-adb0-df41041c2f41",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "old_state": "North Rhine-Westphalia",
+      "old_latitude": 51.22068,
+      "old_longitude": 6.78932,
+      "new_city_id": "af082d6a-800b-4cfc-96df-ca1e55c93115",
+      "source": {
+        "url": "https://www.k1-duesseldorf.de/impressum-datenschutz.html",
+        "retrieved_at": "2026-11-17T17:36:12.065082+00:00",
+        "status": 200,
+        "final_url": "https://www.k1-duesseldorf.de/impressum-datenschutz.html",
+        "sha256": "f13a64536b3660c57e43a279e7bf0dabbc2b2a5fe19a4327fa0c7f739c486631"
+      },
+      "withdraw_pin": false,
+      "note": "Exact street/municipality match from current official venue source or official city tourism directory. Preserve coordinates and all other profile/publication/ownership fields."
+    },
+    {
+      "type": "organization",
+      "id": "88b8ed81-e535-4de2-803a-d6abea47a93d",
+      "name": "K1 Club",
+      "old_city_id": "c7198e4f-01d5-4b07-adb0-df41041c2f41",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "old_state": "North Rhine-Westphalia",
+      "old_latitude": 51.22068,
+      "old_longitude": 6.78932,
+      "new_city_id": "af082d6a-800b-4cfc-96df-ca1e55c93115",
+      "source": {
+        "url": "https://www.k1-duesseldorf.de/impressum-datenschutz.html",
+        "retrieved_at": "2026-11-17T17:36:12.065082+00:00",
+        "status": 200,
+        "final_url": "https://www.k1-duesseldorf.de/impressum-datenschutz.html",
+        "sha256": "f13a64536b3660c57e43a279e7bf0dabbc2b2a5fe19a4327fa0c7f739c486631"
+      },
+      "withdraw_pin": false,
+      "note": "Exact street/municipality match from current official venue source or official city tourism directory. Preserve coordinates and all other profile/publication/ownership fields."
+    },
+    {
+      "type": "venue",
+      "id": "73c9b87d-a8d3-4c62-9ecd-8c935d9320cf",
+      "name": "Nähkörbchen",
+      "old_city_id": "c7198e4f-01d5-4b07-adb0-df41041c2f41",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "old_state": "North Rhine-Westphalia",
+      "old_latitude": 51.2239,
+      "old_longitude": 6.77234,
+      "new_city_id": "af082d6a-800b-4cfc-96df-ca1e55c93115",
+      "source": {
+        "url": "https://www.duesseldorf-altstadt.de/de/35%2Ckneipen/285%2Cnaehkoerbchen.html",
+        "retrieved_at": "2026-11-17T17:35:43.070213+00:00",
+        "status": 200,
+        "final_url": "https://www.duesseldorf-altstadt.de/de/35%2Ckneipen/285%2Cnaehkoerbchen.html",
+        "sha256": "6ac7d1cd734bd3012faba86f3688595cba13063e661c43db510757a76ff80717"
+      },
+      "withdraw_pin": false,
+      "note": "Historical municipality correction corroborated by local Altstadt directory. Closure reporting remains an evidence hold; no operation/opening/publication change asserted."
+    },
+    {
+      "type": "organization",
+      "id": "8d53ffbf-ddfb-4106-bf4b-6f423b7d0d9e",
+      "name": "Nähkörbchen",
+      "old_city_id": "c7198e4f-01d5-4b07-adb0-df41041c2f41",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "old_state": "North Rhine-Westphalia",
+      "old_latitude": 51.2239,
+      "old_longitude": 6.77234,
+      "new_city_id": "af082d6a-800b-4cfc-96df-ca1e55c93115",
+      "source": {
+        "url": "https://www.duesseldorf-altstadt.de/de/35%2Ckneipen/285%2Cnaehkoerbchen.html",
+        "retrieved_at": "2026-11-17T17:35:43.070213+00:00",
+        "status": 200,
+        "final_url": "https://www.duesseldorf-altstadt.de/de/35%2Ckneipen/285%2Cnaehkoerbchen.html",
+        "sha256": "6ac7d1cd734bd3012faba86f3688595cba13063e661c43db510757a76ff80717"
+      },
+      "withdraw_pin": false,
+      "note": "Historical municipality correction corroborated by local Altstadt directory. Closure reporting remains an evidence hold; no operation/opening/publication change asserted."
+    },
+    {
+      "type": "venue",
+      "id": "fc33519b-b624-4a94-a0ef-ff7679ee5b01",
+      "name": "sauna mylord",
+      "old_city_id": "7087199e-abc2-45fa-8e7d-c4c06c0c4e44",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "old_state": "Zug",
+      "old_latitude": 47.3737063,
+      "old_longitude": 8.5193094,
+      "new_city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+      "source": {
+        "url": "https://web.saunamylord.ch/?page_id=35",
+        "retrieved_at": "2026-11-17T17:35:43.065457+00:00",
+        "status": 200,
+        "final_url": "https://web.saunamylord.ch/?page_id=35",
+        "sha256": "0e76a6641f4e9e34f3f731134d5023d4e060d54d6b8943fe0c750e2c327e70df"
+      },
+      "withdraw_pin": false,
+      "note": "Exact street/municipality match from current official venue source or official city tourism directory. Preserve coordinates and all other profile/publication/ownership fields."
+    },
+    {
+      "type": "organization",
+      "id": "3f9cc6aa-517a-42d8-9911-d2de17e6f2dc",
+      "name": "sauna mylord",
+      "old_city_id": "7087199e-abc2-45fa-8e7d-c4c06c0c4e44",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "old_state": "Zug",
+      "old_latitude": 47.3737063,
+      "old_longitude": 8.5193094,
+      "new_city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+      "source": {
+        "url": "https://web.saunamylord.ch/?page_id=35",
+        "retrieved_at": "2026-11-17T17:35:43.065457+00:00",
+        "status": 200,
+        "final_url": "https://web.saunamylord.ch/?page_id=35",
+        "sha256": "0e76a6641f4e9e34f3f731134d5023d4e060d54d6b8943fe0c750e2c327e70df"
+      },
+      "withdraw_pin": false,
+      "note": "Exact street/municipality match from current official venue source or official city tourism directory. Preserve coordinates and all other profile/publication/ownership fields."
+    },
+    {
+      "type": "venue",
+      "id": "2a982ce0-c926-4431-b9b1-846a5e0c74f9",
+      "name": "Predigerhof Bistro Bar",
+      "old_city_id": "05599810-ae82-4f75-95e5-8f31f1ecc6fe",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "old_state": "Zurich",
+      "old_latitude": 47.3743085,
+      "old_longitude": 8.5444316,
+      "new_city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+      "source": {
+        "url": "https://www.zuerich.com/en/visit/bars-lounges/predigerhof",
+        "retrieved_at": "2026-11-17T17:35:54.330686+00:00",
+        "status": 200,
+        "final_url": "https://www.zuerich.com/en/visit/bars-lounges/predigerhof",
+        "sha256": "852c8dcebc372f75b97d7878e2f5310046491c940d5a69e7d23d168cddb257b0"
+      },
+      "withdraw_pin": false,
+      "note": "Exact street/municipality match from current official venue source or official city tourism directory. Preserve coordinates and all other profile/publication/ownership fields."
+    },
+    {
+      "type": "organization",
+      "id": "edf2bb71-6be2-4f48-bf65-37b9c55a4b2f",
+      "name": "Predigerhof Bistro Bar",
+      "old_city_id": "05599810-ae82-4f75-95e5-8f31f1ecc6fe",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "old_state": "Zurich",
+      "old_latitude": 47.3743085,
+      "old_longitude": 8.5444316,
+      "new_city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+      "source": {
+        "url": "https://www.zuerich.com/en/visit/bars-lounges/predigerhof",
+        "retrieved_at": "2026-11-17T17:35:54.330686+00:00",
+        "status": 200,
+        "final_url": "https://www.zuerich.com/en/visit/bars-lounges/predigerhof",
+        "sha256": "852c8dcebc372f75b97d7878e2f5310046491c940d5a69e7d23d168cddb257b0"
+      },
+      "withdraw_pin": false,
+      "note": "Exact street/municipality match from current official venue source or official city tourism directory. Preserve coordinates and all other profile/publication/ownership fields."
+    },
+    {
+      "type": "venue",
+      "id": "b808958d-626d-4cc8-8f04-8117ccc76cad",
+      "name": "Gay Sauna Renos Relax",
+      "old_city_id": "05599810-ae82-4f75-95e5-8f31f1ecc6fe",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "old_state": "Zurich",
+      "old_latitude": 47.3773258,
+      "old_longitude": 8.5283976,
+      "new_city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+      "source": {
+        "url": "https://www.renos-relax.ch",
+        "retrieved_at": "2026-11-17T17:33:41.351402+00:00",
+        "status": 200,
+        "final_url": "https://www.renos-relax.ch",
+        "sha256": "3c444937c780fb98dda14b07b6e8f81b8d4faf2a6fabd5a773a8cfa775898275"
+      },
+      "withdraw_pin": false,
+      "note": "Exact street/municipality match from current official venue source or official city tourism directory. Preserve coordinates and all other profile/publication/ownership fields."
+    },
+    {
+      "type": "organization",
+      "id": "3ae1dc68-bda8-496e-a7c0-0f3bda720cfe",
+      "name": "Gay Sauna Renos Relax",
+      "old_city_id": "05599810-ae82-4f75-95e5-8f31f1ecc6fe",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "old_state": "Zurich",
+      "old_latitude": 47.3773258,
+      "old_longitude": 8.5283976,
+      "new_city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+      "source": {
+        "url": "https://www.renos-relax.ch",
+        "retrieved_at": "2026-11-17T17:33:41.351402+00:00",
+        "status": 200,
+        "final_url": "https://www.renos-relax.ch",
+        "sha256": "3c444937c780fb98dda14b07b6e8f81b8d4faf2a6fabd5a773a8cfa775898275"
+      },
+      "withdraw_pin": false,
+      "note": "Exact street/municipality match from current official venue source or official city tourism directory. Preserve coordinates and all other profile/publication/ownership fields."
+    },
+    {
+      "type": "venue",
+      "id": "83b6bfe8-6576-4cde-8655-9e92e8276d1d",
+      "name": "Club Feathers",
+      "old_city_id": "2a13fd8c-175c-4a34-bacc-7bb5afaa4506",
+      "country_id": "0ba25df5-82cd-4edc-bf03-e10d737eab68",
+      "old_state": "New Jersey",
+      "old_latitude": 40.9115001,
+      "old_longitude": -74.0360919,
+      "new_city_id": "3d1db101-6b60-4e50-b4b8-e410004b8421",
+      "source": {
+        "url": "https://www.clubfeathersnj.com/",
+        "retrieved_at": "2026-11-17T17:33:41.651920+00:00",
+        "status": 200,
+        "final_url": "https://clubfeathersnj.com/",
+        "sha256": "a56713e78807502ea68ee5728efb1db7b58807efbecd18283fc6edf19d751189"
+      },
+      "withdraw_pin": false,
+      "note": "Exact street/municipality match from current official venue source or official city tourism directory. Preserve coordinates and all other profile/publication/ownership fields."
+    },
+    {
+      "type": "organization",
+      "id": "57671e11-fe16-4d4d-8609-232b10c58015",
+      "name": "Club Feathers",
+      "old_city_id": "2a13fd8c-175c-4a34-bacc-7bb5afaa4506",
+      "country_id": "0ba25df5-82cd-4edc-bf03-e10d737eab68",
+      "old_state": "New York",
+      "old_latitude": 40.9115001,
+      "old_longitude": -74.0360919,
+      "new_city_id": "3d1db101-6b60-4e50-b4b8-e410004b8421",
+      "source": {
+        "url": "https://www.clubfeathersnj.com/",
+        "retrieved_at": "2026-11-17T17:33:41.651920+00:00",
+        "status": 200,
+        "final_url": "https://clubfeathersnj.com/",
+        "sha256": "a56713e78807502ea68ee5728efb1db7b58807efbecd18283fc6edf19d751189"
+      },
+      "withdraw_pin": false,
+      "note": "Exact street/municipality match from current official venue source or official city tourism directory. Preserve coordinates and all other profile/publication/ownership fields."
+    },
+    {
+      "type": "venue",
+      "id": "31273a6f-d0b3-4733-a27e-4ac54afa54b3",
+      "name": "Circolo Fabrik Firenze",
+      "old_city_id": "277b54ab-a504-49bd-8262-9e05f3cdb58e",
+      "country_id": "515cf5a4-80de-43c7-9c4c-7b97abcfc9b1",
+      "old_state": "Tuscany",
+      "old_latitude": 43.8552388,
+      "old_longitude": 11.1466482,
+      "new_city_id": "5b36337c-08e5-44cc-b537-471a63c729e4",
+      "source": {
+        "url": "https://www.fabrikfirenze.it/",
+        "retrieved_at": "2026-11-17T17:33:41.656005+00:00",
+        "status": 200,
+        "final_url": "https://www.fabrikfirenze.it/",
+        "sha256": "436ea7752958f4d2f68d62143494d98b050674f4817ed5e8640cd72c37399062"
+      },
+      "withdraw_pin": false,
+      "note": "Exact street/municipality match from current official venue source or official city tourism directory. Preserve coordinates and all other profile/publication/ownership fields."
+    },
+    {
+      "type": "organization",
+      "id": "a64d08a7-cd30-4ec7-a5b7-97a0f1da749c",
+      "name": "Circolo Fabrik Firenze",
+      "old_city_id": "277b54ab-a504-49bd-8262-9e05f3cdb58e",
+      "country_id": "515cf5a4-80de-43c7-9c4c-7b97abcfc9b1",
+      "old_state": "Tuscany",
+      "old_latitude": 43.8552388,
+      "old_longitude": 11.1466482,
+      "new_city_id": "5b36337c-08e5-44cc-b537-471a63c729e4",
+      "source": {
+        "url": "https://www.fabrikfirenze.it/",
+        "retrieved_at": "2026-11-17T17:33:41.656005+00:00",
+        "status": 200,
+        "final_url": "https://www.fabrikfirenze.it/",
+        "sha256": "436ea7752958f4d2f68d62143494d98b050674f4817ed5e8640cd72c37399062"
+      },
+      "withdraw_pin": false,
+      "note": "Exact street/municipality match from current official venue source or official city tourism directory. Preserve coordinates and all other profile/publication/ownership fields."
+    },
+    {
+      "type": "organization",
+      "id": "2af6e75f-1e4b-4606-bf62-6b016a5b3807",
+      "name": "Fabrik",
+      "old_city_id": "277b54ab-a504-49bd-8262-9e05f3cdb58e",
+      "country_id": "515cf5a4-80de-43c7-9c4c-7b97abcfc9b1",
+      "old_state": "Tuscany",
+      "old_latitude": 43.7698712,
+      "old_longitude": 11.2555757,
+      "new_city_id": "5b36337c-08e5-44cc-b537-471a63c729e4",
+      "source": {
+        "url": "https://www.fabrikfirenze.it/",
+        "retrieved_at": "2026-11-17T17:33:41.656005+00:00",
+        "status": 200,
+        "final_url": "https://www.fabrikfirenze.it/",
+        "sha256": "436ea7752958f4d2f68d62143494d98b050674f4817ed5e8640cd72c37399062"
+      },
+      "withdraw_pin": true,
+      "note": "Official venue is Via del Lavoro19Calenzano, outside Florence. Correct canonical business municipality and withdraw its known-wrong central-Florence pin toNULL. Existing canonical venue and its pin unchanged; no replacement exact pin inferred."
+    }
+  ],
+  "profile_fills": [
+    {
+      "id": "fcdca343-3fb8-4404-9245-c0d5252f2db6",
+      "name": "Predigerhof",
+      "patch": {
+        "description": "Predigerhof is a bistro bar at Mühlegasse 15 in Zurich's Old Town, opposite the Central Library and Predigerkirche."
+      },
+      "source": {
+        "url": "https://www.zuerich.com/en/visit/bars-lounges/predigerhof",
+        "retrieved_at": "2026-11-17T17:35:54.330686+00:00",
+        "status": 200,
+        "final_url": "https://www.zuerich.com/en/visit/bars-lounges/predigerhof",
+        "sha256": "852c8dcebc372f75b97d7878e2f5310046491c940d5a69e7d23d168cddb257b0"
+      },
+      "note": "Official Zurich Tourism venue listing; replaces proposed donor summary naming the wrong city. No ownership or customer-identity assertion."
+    },
+    {
+      "id": "864b8de6-2237-4d1e-85a9-b0f8cf1612eb",
+      "name": "Feathers",
+      "patch": {
+        "description": "Club Feathers is an LGBTQ+ nightclub at 77 Kinderkamack Road in River Edge, New Jersey. Its official site publishes upcoming events and a photo gallery."
+      },
+      "source": {
+        "url": "https://www.clubfeathersnj.com/",
+        "retrieved_at": "2026-11-17T17:33:41.651920+00:00",
+        "status": 200,
+        "final_url": "https://clubfeathersnj.com/",
+        "sha256": "a56713e78807502ea68ee5728efb1db7b58807efbecd18283fc6edf19d751189"
+      },
+      "note": "Neutral current venue facts; omit uncorroborated two-floor and food claims in donor description."
+    }
+  ],
+  "merges": [
+    {
+      "drop_id": "2cdbd7f4-af5f-4da9-90b3-522f159c62da",
+      "name": "Sewing basket",
+      "website": "https://translate.google.com/website?sl=auto&tl=en&hl=en&u=http://www.karins-naehkoerbchen.de/",
+      "address": "Hafenstrasse 11, 40213 Düsseldorf",
+      "city_id": "af082d6a-800b-4cfc-96df-ca1e55c93115",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "2bbdb60f-b864-421f-ad46-31a53c049916",
+      "keep_venue": "73c9b87d-a8d3-4c62-9ecd-8c935d9320cf",
+      "keep_org": "8d53ffbf-ddfb-4106-bf4b-6f423b7d0d9e",
+      "keep_name": "Nähkörbchen",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.duesseldorf-altstadt.de/de/35%2Ckneipen/285%2Cnaehkoerbchen.html",
+          "retrieved_at": "2026-11-17T17:35:43.070213+00:00",
+          "status": 200,
+          "final_url": "https://www.duesseldorf-altstadt.de/de/35%2Ckneipen/285%2Cnaehkoerbchen.html",
+          "sha256": "6ac7d1cd734bd3012faba86f3688595cba13063e661c43db510757a76ff80717"
+        }
+      ],
+      "scope": "Exact address/identity after separate audited municipality repair. Current official venue or city tourism/Altstadt evidence; unclaimed venue-only native merge. No canonical field fills. No legal ownership, current operating status or human verification asserted."
+    },
+    {
+      "drop_id": "3ae1dc68-bda8-496e-a7c0-0f3bda720cfe",
+      "name": "Gay Sauna Renos Relax",
+      "website": "https://www.renosrelax.ch",
+      "address": "Brauerstrasse 16",
+      "city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "b808958d-626d-4cc8-8f04-8117ccc76cad",
+      "keep_venue": "789d95e9-857c-4cb2-8750-8302b3f4f426",
+      "keep_org": "ca973207-468c-4703-9bd7-542e19a2393b",
+      "keep_name": "Reno's Relax",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.renos-relax.ch",
+          "retrieved_at": "2026-11-17T17:33:41.351402+00:00",
+          "status": 200,
+          "final_url": "https://www.renos-relax.ch",
+          "sha256": "3c444937c780fb98dda14b07b6e8f81b8d4faf2a6fabd5a773a8cfa775898275"
+        }
+      ],
+      "scope": "Exact address/identity after separate audited municipality repair. Current official venue or city tourism/Altstadt evidence; unclaimed venue-only native merge. No canonical field fills. No legal ownership, current operating status or human verification asserted."
+    },
+    {
+      "drop_id": "3f9cc6aa-517a-42d8-9911-d2de17e6f2dc",
+      "name": "sauna mylord",
+      "website": "https://web.saunamylord.ch/",
+      "address": "Seebahnstrasse 139",
+      "city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "fc33519b-b624-4a94-a0ef-ff7679ee5b01",
+      "keep_venue": "b3e0672e-5277-4b1c-b620-e0ba54aeb5b8",
+      "keep_org": "ee5dcd0f-53e2-44ec-988b-bccec955273d",
+      "keep_name": "Mylord",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://web.saunamylord.ch/?page_id=35",
+          "retrieved_at": "2026-11-17T17:35:43.065457+00:00",
+          "status": 200,
+          "final_url": "https://web.saunamylord.ch/?page_id=35",
+          "sha256": "0e76a6641f4e9e34f3f731134d5023d4e060d54d6b8943fe0c750e2c327e70df"
+        }
+      ],
+      "scope": "Exact address/identity after separate audited municipality repair. Current official venue or city tourism/Altstadt evidence; unclaimed venue-only native merge. No canonical field fills. No legal ownership, current operating status or human verification asserted."
+    },
+    {
+      "drop_id": "57671e11-fe16-4d4d-8609-232b10c58015",
+      "name": "Club Feathers",
+      "website": "http://www.clubfeathersnj.com/",
+      "address": "77 Kinderkamack Rd, River Edge, NJ 07661",
+      "city_id": "3d1db101-6b60-4e50-b4b8-e410004b8421",
+      "country_id": "0ba25df5-82cd-4edc-bf03-e10d737eab68",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "83b6bfe8-6576-4cde-8655-9e92e8276d1d",
+      "keep_venue": "d495517f-839e-4ba8-9260-02539af3efb9",
+      "keep_org": "864b8de6-2237-4d1e-85a9-b0f8cf1612eb",
+      "keep_name": "Feathers",
+      "gap_patch": {
+        "description": "Long-standing gay nightclub on 2 floors featuring DJs, dancing & drag shows, plus basic bar food."
+      },
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.clubfeathersnj.com/",
+          "retrieved_at": "2026-11-17T17:33:41.651920+00:00",
+          "status": 200,
+          "final_url": "https://clubfeathersnj.com/",
+          "sha256": "a56713e78807502ea68ee5728efb1db7b58807efbecd18283fc6edf19d751189"
+        }
+      ],
+      "scope": "Exact address/identity after separate audited municipality repair. Current official venue or city tourism/Altstadt evidence; unclaimed venue-only native merge. No canonical field fills. No legal ownership, current operating status or human verification asserted."
+    },
+    {
+      "drop_id": "7e4cf177-2aed-46c8-ad11-b0961350fa43",
+      "name": "K1 Club and Bar",
+      "website": "https://translate.google.com/website?sl=auto&tl=en&hl=en&u=https://www.k1-duesseldorf.de/impressum.html",
+      "address": "Bismarckstrasse 93, 40210 Düsseldorf, Germany",
+      "city_id": "af082d6a-800b-4cfc-96df-ca1e55c93115",
+      "country_id": "fd9997de-bf8f-49a5-a641-9240a39541ff",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "9a6b7601-ffe5-4275-baa1-4483c6b19e89",
+      "keep_venue": "ab5aacae-c83c-46aa-b4cb-180db9796350",
+      "keep_org": "88b8ed81-e535-4de2-803a-d6abea47a93d",
+      "keep_name": "K1 Club",
+      "gap_patch": {},
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.k1-duesseldorf.de/impressum-datenschutz.html",
+          "retrieved_at": "2026-11-17T17:36:12.065082+00:00",
+          "status": 200,
+          "final_url": "https://www.k1-duesseldorf.de/impressum-datenschutz.html",
+          "sha256": "f13a64536b3660c57e43a279e7bf0dabbc2b2a5fe19a4327fa0c7f739c486631"
+        }
+      ],
+      "scope": "Exact address/identity after separate audited municipality repair. Current official venue or city tourism/Altstadt evidence; unclaimed venue-only native merge. No canonical field fills. No legal ownership, current operating status or human verification asserted."
+    },
+    {
+      "drop_id": "edf2bb71-6be2-4f48-bf65-37b9c55a4b2f",
+      "name": "Predigerhof Bistro Bar",
+      "website": null,
+      "address": "Mühlegasse 15",
+      "city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "roles": [
+        "venue"
+      ],
+      "donor_venue": "2a982ce0-c926-4431-b9b1-846a5e0c74f9",
+      "keep_venue": "acd3f038-bd8a-452a-a01a-fb818ceb687b",
+      "keep_org": "fcdca343-3fb8-4404-9245-c0d5252f2db6",
+      "keep_name": "Predigerhof",
+      "gap_patch": {
+        "description": "Predigerhof Bistro Bar is a cafe in Winterthur, CH."
+      },
+      "allowed_patch": {},
+      "sources": [
+        {
+          "url": "https://www.zuerich.com/en/visit/bars-lounges/predigerhof",
+          "retrieved_at": "2026-11-17T17:35:54.330686+00:00",
+          "status": 200,
+          "final_url": "https://www.zuerich.com/en/visit/bars-lounges/predigerhof",
+          "sha256": "852c8dcebc372f75b97d7878e2f5310046491c940d5a69e7d23d168cddb257b0"
+        }
+      ],
+      "scope": "Exact address/identity after separate audited municipality repair. Current official venue or city tourism/Altstadt evidence; unclaimed venue-only native merge. No canonical field fills. No legal ownership, current operating status or human verification asserted."
+    }
+  ],
+  "verification": [
+    {
+      "jsonb_build_object": {
+        "merges": {
+          "correct": 6,
+          "expected": 6,
+          "source_audits": 6
+        },
+        "audit_counts": [
+          {
+            "count": 6,
+            "reason": "codex_source_pass8_business_identity"
+          },
+          {
+            "count": 15,
+            "reason": "codex_source_pass8_municipality"
+          },
+          {
+            "count": 2,
+            "reason": "codex_source_pass8_profile_facts"
+          }
+        ],
+        "fabrik_business": {
+          "city_id": "5b36337c-08e5-44cc-b537-471a63c729e4",
+          "latitude": null,
+          "longitude": null
+        },
+        "open_donor_findings": 0,
+        "retired_donor_findings": 18
+      }
+    }
+  ],
+  "source_metadata": [
+    {
+      "url": "https://www.duesseldorf-queer.de/abschied-vom-naehkoerbchen",
+      "retrieved_at": "2026-11-17T17:35:43.072123+00:00",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "url": "https://web.saunamylord.ch/?page_id=35",
+      "retrieved_at": "2026-11-17T17:35:43.065457+00:00",
+      "status": 200,
+      "final_url": "https://web.saunamylord.ch/?page_id=35",
+      "sha256": "0e76a6641f4e9e34f3f731134d5023d4e060d54d6b8943fe0c750e2c327e70df"
+    },
+    {
+      "url": "https://www.predigerhof.ch/en",
+      "retrieved_at": "2026-11-17T17:33:41.351122+00:00",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://www.k1-duesseldorf.de/impressum-datenschutz.html",
+      "retrieved_at": "2026-11-17T17:36:12.065082+00:00",
+      "status": 200,
+      "final_url": "https://www.k1-duesseldorf.de/impressum-datenschutz.html",
+      "sha256": "f13a64536b3660c57e43a279e7bf0dabbc2b2a5fe19a4327fa0c7f739c486631"
+    },
+    {
+      "url": "https://www.predigerhof.ch/impressum",
+      "retrieved_at": "2026-11-17T17:35:54.315040+00:00",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://zodiacbar.co.uk",
+      "retrieved_at": "2026-11-17T17:32:11.241301+00:00",
+      "status": 200,
+      "final_url": "https://www.google.com/",
+      "sha256": "e4d19083859cdf93941633c00aa4a2daf452192da11885988b4b262acda08da8"
+    },
+    {
+      "url": "https://www.zodiacbarlondon.com/",
+      "retrieved_at": "2026-11-17T17:32:11.227835+00:00",
+      "status": 200,
+      "final_url": "https://www.google.com/",
+      "sha256": "b7670451b3d65a2b10cfee5dff7b60c86069f664f931341a8e31dee428e4300d"
+    },
+    {
+      "url": "https://www.duesseldorf-altstadt.de/de/35%2Ckneipen/285%2Cnaehkoerbchen.html",
+      "retrieved_at": "2026-11-17T17:35:43.070213+00:00",
+      "status": 200,
+      "final_url": "https://www.duesseldorf-altstadt.de/de/35%2Ckneipen/285%2Cnaehkoerbchen.html",
+      "sha256": "6ac7d1cd734bd3012faba86f3688595cba13063e661c43db510757a76ff80717"
+    },
+    {
+      "url": "https://motherlodewesthollywood.com",
+      "retrieved_at": "2026-11-17T17:33:41.927235+00:00",
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    },
+    {
+      "url": "https://www.k1-duesseldorf.de/impressum.html",
+      "retrieved_at": "2026-11-17T17:33:41.349104+00:00",
+      "status": 200,
+      "final_url": "https://www.k1-duesseldorf.de/impressum.html",
+      "sha256": "cd2f3ad3a6c9be9a3d5d3a348aecf5d24d0dbf7e6a66b3918b3a321452b1ec42"
+    },
+    {
+      "url": "https://www.renos-relax.ch",
+      "retrieved_at": "2026-11-17T17:33:41.351402+00:00",
+      "status": 200,
+      "final_url": "https://www.renos-relax.ch",
+      "sha256": "3c444937c780fb98dda14b07b6e8f81b8d4faf2a6fabd5a773a8cfa775898275"
+    },
+    {
+      "url": "https://www.hot-box.fr/acces/",
+      "retrieved_at": "2026-11-17T17:35:43.055286+00:00",
+      "status": 200,
+      "final_url": "https://www.hot-box.fr/acces/",
+      "sha256": "38ced423eff0bc2c1b8bbe098c3221e20c055f961b74638ff7688872f43f2921"
+    },
+    {
+      "url": "https://www.karins-naehkoerbchen.de/",
+      "retrieved_at": "2026-11-17T17:33:41.350533+00:00",
+      "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'www.karins-naehkoerbchen.de'. (_ssl.c:1082)>"
+    },
+    {
+      "url": "https://www.duesseldorf-queer.de/szene/bars-clubs/",
+      "retrieved_at": "2026-11-17T17:35:54.349498+00:00",
+      "status": 200,
+      "final_url": "https://www.duesseldorf-queer.de/szene/bars-clubs/",
+      "sha256": "42c616202d5748e5fa935c9dc49155ea4065324171d5d9201be32cdd75d29df0"
+    },
+    {
+      "url": "https://www.hot-box.fr/",
+      "retrieved_at": "2026-11-17T17:33:41.593766+00:00",
+      "status": 200,
+      "final_url": "https://www.hot-box.fr/",
+      "sha256": "0f826a42b00e0f286d1a35235caf52bcc57d8dff2414a029acd37fb6c8e56efc"
+    },
+    {
+      "url": "https://www.clubfeathersnj.com/",
+      "retrieved_at": "2026-11-17T17:33:41.651920+00:00",
+      "status": 200,
+      "final_url": "https://clubfeathersnj.com/",
+      "sha256": "a56713e78807502ea68ee5728efb1db7b58807efbecd18283fc6edf19d751189"
+    },
+    {
+      "url": "https://web.saunamylord.ch/",
+      "retrieved_at": "2026-11-17T17:33:41.350780+00:00",
+      "status": 200,
+      "final_url": "https://web.saunamylord.ch/",
+      "sha256": "8516a71f719519e2498cf7544326bc0bfd5e6270be90b5705df0b397106ce516"
+    },
+    {
+      "url": "https://bluepointsauna.de/",
+      "retrieved_at": "2026-11-17T17:32:11.241523+00:00",
+      "status": 200,
+      "final_url": "https://bluepointsauna.de/",
+      "sha256": "e852e1c9ab0a857e4c9a499ca80646ae7d30e971481f89d9395960d4445a5c65"
+    },
+    {
+      "url": "https://www.fabrikfirenze.it/",
+      "retrieved_at": "2026-11-17T17:33:41.656005+00:00",
+      "status": 200,
+      "final_url": "https://www.fabrikfirenze.it/",
+      "sha256": "436ea7752958f4d2f68d62143494d98b050674f4817ed5e8640cd72c37399062"
+    },
+    {
+      "url": "https://sexshop-oberhausen.de/gay.html",
+      "retrieved_at": "2026-11-17T17:33:41.742979+00:00",
+      "status": 200,
+      "final_url": "https://fdtvo.com/?di=ee5acf3e-e212-41e5-ae3a-271ccd537ae8",
+      "sha256": "f18df8d36d18050fc8146f656bdd85bc4d23b2b49c09d2fe4c3b94fb53001e2e"
+    },
+    {
+      "url": "https://www.predigerhof.ch/",
+      "retrieved_at": "2026-11-17T17:35:09.658610+00:00",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://www.zuerich.com/en/visit/bars-lounges/predigerhof",
+      "retrieved_at": "2026-11-17T17:35:54.330686+00:00",
+      "status": 200,
+      "final_url": "https://www.zuerich.com/en/visit/bars-lounges/predigerhof",
+      "sha256": "852c8dcebc372f75b97d7878e2f5310046491c940d5a69e7d23d168cddb257b0"
+    }
+  ],
+  "holds": [
+    {
+      "name": "Fabrik business duplicate",
+      "reason": "Municipalities corrected to Calenzano; canonical business's wrong central-Florence pin withdrawn toNULL. Existing canonical venue/pin unchanged. Native duplicate merge would now copy unverified donor coordinates, so it remains held."
+    },
+    {
+      "name": "Hot Box",
+      "reason": "Current official source confirms Trégueux, while donor references Caen and a Caen coordinate. Further history/identity research needed before changing donor identity or claiming relocation."
+    },
+    {
+      "name": "Gaykino Höhepunkt/Highlight Oberhausen",
+      "reason": "Old official domain redirects elsewhere with no readable venue evidence. Municipal/identity repair held."
+    },
+    {
+      "name": "Mother Lode, Fubar and US metro ambiguities",
+      "reason": "Current first-party address/operator or municipality evidence inadequate for exact changes; generic addresses, metro labels and centroid-like pins not silently certified."
+    },
+    {
+      "name": "Nähkörbchen operating status",
+      "reason": "Municipality historically established by Altstadt directory and current closure reporting noted. Venue's official HTTPS certificate is invalid; closure publication not newly asserted and no hours/contacts copied."
+    },
+    {
+      "name": "Predigerhof own website",
+      "reason": "Direct root, /en and discovered /impressum returned404. Municipality and factual description use official Zurich Tourism directory; no own-domain availability claim."
+    },
+    {
+      "name": "Zodiac London",
+      "reason": "Both catalogue domains redirect to Google; current karaoke website conflicts with recent closure reporting. No current-operation or ownership/identity merge asserted."
+    },
+    {
+      "name": "Bluepoint/Bobas",
+      "reason": "Bluepoint source now parked/for sale and closure reporting exists; Bobas lacks adequate current official evidence. No domain-sale page treated as venue confirmation."
+    }
+  ],
+  "queue_refresh": {
+    "top": [
+      {
+        "refresh_admin_review_queue_top_if_changed": {
+          "ok": true,
+          "rows": 3750,
+          "depth": 250,
+          "elapsed_ms": 13746,
+          "sources_reused": 19,
+          "sources_refreshed": 22
+        }
+      }
+    ],
+    "first_worklist_attempt": {
+      "error": "{\"error\":{\"name\":\"HttpException\",\"message\":\"Failed to run sql query: ERROR:  57014: canceling statement due to statement timeout\\nCONTEXT:  SQL statement \\\"insert into public.admin_review_research_jobs(case_id,fingerprint)\\n select c.id,c.fingerprint from public.admin_review_cases c\\n where c.active and c.stage='research' and not exists (\\n   select 1 from public.admin_review_research_jobs j\\n   where j.case_id=c.id and j.fingerprint=c.fingerprint\\n )\\n on conflict(case_id) do update set fingerprint=excluded.fingerprint,status='queued',attempts=0,\\n   next_attempt_at=now(),lease_token=null,lease_expires_at=null,outcome='{}',updated_at=now()\\n where admin_review_research_jobs.fingerprint<>excluded.fingerprint\\\"\\nPL/pgSQL function refresh_admin_review_worklist() line 49 at SQL statement\\n\"}}"
+    },
+    "completed_worklist": [
+      {
+        "refresh_admin_review_worklist": {
+          "cases": 2820,
+          "elapsed_ms": 17859.314
+        }
+      }
+    ],
+    "note": "One worklist refresh hit its local30s limit while enrolling research jobs. One-off45s session budget retried successfully in17.9s; no persistent timeout or worklist function change."
+  },
+  "limits": "Bounded candidate research (one business tail candidate plus16 cross-city candidates and targeted evidence holds); not individual examination of all2940 cases. Queue movement includes ingestion/scheduled processing. No human verification/legal ownership assertion, confidence/source-authorization/publication changes or live Jev experiment."
+}

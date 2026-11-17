@@ -477,7 +477,7 @@ function normalizeUrl(url: string): string {
 
 // ─── Product Extraction ─────────────────────────────────────────────────────
 
-function extractProductsFromPage(
+export function extractProductsFromPage(
   html: string,
   pageUrl: string,
   source: ScrapeSource,
@@ -491,8 +491,24 @@ function extractProductsFromPage(
       const parsed = JSON.parse($(el).html() || '{}')
       const nodes = Array.isArray(parsed) ? parsed : parsed['@graph'] ? parsed['@graph'] : [parsed]
       for (const node of nodes) {
-        if (!node['@type']) continue
+        if (items.length >= MAX_ITEMS_PER_SOURCE) break
+        if (!node || typeof node !== 'object' || !node['@type']) continue
         const types = Array.isArray(node['@type']) ? node['@type'] : [node['@type']]
+        // Modern Shopify themes publish a ProductGroup whose explicit variants
+        // carry the actual prices and offer URLs. The group is not another item.
+        if (types.includes('ProductGroup')) {
+          if (Array.isArray(node.hasVariant)) {
+            for (const variant of node.hasVariant.slice(0, MAX_ITEMS_PER_SOURCE - items.length)) {
+              if (!variant || typeof variant !== 'object') continue
+              const variantTypes = Array.isArray(variant['@type']) ? variant['@type'] : [variant['@type']]
+              if (!variantTypes.some((t: string) => t === 'Product' || t === 'IndividualProduct')) continue
+              const variantOffer = Array.isArray(variant.offers) ? variant.offers[0] : variant.offers
+              nodes.push({ ...node, ...variant, hasVariant: undefined, offers: variant.offers,
+                url: variant.url || variantOffer?.url || node.url || pageUrl })
+            }
+          }
+          continue
+        }
         if (!types.some((t: string) => t === 'Product' || t === 'IndividualProduct')) continue
 
         const offers = Array.isArray(node.offers) ? node.offers[0] : node.offers

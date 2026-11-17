@@ -32,6 +32,7 @@ import {
   setSourceEnabled,
   sourceHealth,
   sourceKey,
+  supportsManualSourceRun,
   type DataSource,
   type SourceEdits,
   type SourceFilters,
@@ -419,7 +420,7 @@ export default function AdminDataSources() {
           >
             Manage
           </Button>
-          {source.registry === 'ingestion_sources' && source.edgeFunction && (
+          {supportsManualSourceRun(source) && (
             <Button
               size="sm"
               variant="outline"
