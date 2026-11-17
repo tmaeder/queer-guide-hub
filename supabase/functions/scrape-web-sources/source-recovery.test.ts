@@ -41,3 +41,11 @@ Deno.test('nested product microdata retains each product URL and does not borrow
   const rows = mod.extractProductsFromPage(html,'https://shop.example/main',source())
   assertEquals(rows.map(r=>[r.name,r.url,r.price_amount]),[['Main','https://shop.example/main',undefined],['Related','https://shop.example/related',12]])
 })
+Deno.test('scraped product rows satisfy the live marketplace validator and canonical drain contract', async () => {
+  const { validateMarketplaceNormalized } = await import('../_shared/marketplace-pipeline-utils.ts')
+  const row = mod.scrapedStagingRow({name:'Verified product',url:'https://shop.example/product',price_amount:12,currency:'EUR',raw_data:{'@type':'Product'}},source({target_table:'marketplace_products'}),'job-id')
+  assertEquals([row.target_table,row.entity_type,row.source_name,row.source_entity_id],['marketplace_listings','marketplace','example','https://shop.example/product'])
+  assertEquals(validateMarketplaceNormalized(row.normalized_data).errors,[])
+  assertEquals(row.normalized_data.price,12)
+  assertEquals(mod.scrapedStagingRow({name:'Melbourne',raw_data:{}},source({target_table:'cities'}),'job').entity_type,'city')
+})

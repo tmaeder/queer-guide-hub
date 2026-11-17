@@ -22,7 +22,7 @@ import { robotsSitemaps, sitemapLocations, sitemapPathMatchers, readScrapeBody }
  */
 
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
-import { getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, requireInternalOrAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { scrapedEventRejectReason } from '../_shared/scraped-event-guard.ts'
 import { scrapedNewsStagingSkipReason } from '../_shared/scraped-news-staging-guard.ts'
@@ -1158,10 +1158,12 @@ function normalizeItem(
       return {
         name: item.name,
         description: item.description || null,
-        price: item.price || null,
-        price_amount: item.price_amount || null,
+        price: item.price_amount ?? null,
+        price_amount: item.price_amount ?? null,
         currency: item.currency || 'USD',
         external_url: item.url || null,
+        urls: item.url ? [item.url] : [],
+        metadata: { product_url: item.url, merchant_deep_link: item.url, price: item.price_amount, currency: item.currency, brand: item.brand || source.name, business_name: source.name, category: item.category },
         image_url: item.image_url || null,
         images: item.images || [],
         brand: item.brand || source.name,
@@ -1262,6 +1264,20 @@ export function extractFromPage(html: string, pageUrl: string, source: ScrapeSou
   }
 }
 
+// Canonical staging is consumed by the registered per-table pg_cron drains.
+// Legacy scraper registrations still call the product target marketplace_products.
+export function scrapedStagingRow(item: ExtractedItem, source: ScrapeSource, jobId: string) {
+  const target = source.target_table === 'marketplace_products' ? 'marketplace_listings' : source.target_table
+  const entityTypes: Record<string, string> = { marketplace_listings: 'marketplace', events: 'event', venues: 'venue', cities: 'city', countries: 'country', news_articles: 'news_article' }
+  if (!entityTypes[target]) throw new Error(`Unsupported staging target: ${target}`)
+  return {
+    job_id: jobId, source_type: source.slug, source_name: source.slug,
+    source_entity_id: item.url || item.name, entity_type: entityTypes[target], target_table: target,
+    raw_data: { ...item.raw_data, name: item.name, url: item.url },
+    normalized_data: normalizeItem(item, source),
+  }
+}
+
 // ─── Deduplicate within batch ───────────────────────────────────────────────
 
 function dedupeItems(items: ExtractedItem[]): ExtractedItem[] {
@@ -1287,6 +1303,7 @@ export async function processSource(
   pages_crawled: number
   error?: string
   skipped_reason?: string
+  items_skipped?: number
   preview?: ExtractedItem[]
 }> {
   const skipReason = scrapedNewsStagingSkipReason(source, dryRun)
@@ -1488,31 +1505,35 @@ export async function processSource(
       console.log(`[${source.slug}] Skipped non-events:`, JSON.stringify(rejected))
     }
 
-    const stagingRows = stageable.map(item => ({
-      job_id: job.id,
-      source_type: source.slug,
-      target_table: source.target_table,
-      raw_data: item.raw_data || item,
-      normalized_data: normalizeItem(item, source),
-    }))
+    const stagingRows = stageable.map(item => scrapedStagingRow(item, source, job.id))
 
     // Insert in chunks of 100
     let itemsStaged = 0
+    let itemsSkipped = 0
+    let itemsFailed = 0
     for (let i = 0; i < stagingRows.length; i += 100) {
       const chunk = stagingRows.slice(i, i + 100)
       const { error: insertError } = await supabase.from('ingestion_staging').insert(chunk)
       if (insertError) {
-        console.error(`[${source.slug}] Staging insert error:`, insertError.message)
+        // A known item must not reject a whole batch or overwrite a reviewed row.
+        for (const row of chunk) {
+          const { error } = await supabase.from('ingestion_staging').insert(row)
+          if (!error) itemsStaged++
+          else if (error.code === '23505') itemsSkipped++
+          else { itemsFailed++; console.error(`[${source.slug}] Staging insert error:`, error.message) }
+        }
       } else {
         itemsStaged += chunk.length
       }
     }
 
     // ── Update scrape_run ────────────────────────────────────
+    const successful = itemsStaged + itemsSkipped > 0 && itemsFailed === 0
+    const stagingError = itemsFailed > 0 ? `${itemsFailed} staging writes failed` : 'No items staged'
     const duration = Date.now() - startTime
     if (run) {
       await supabase.from('scrape_runs').update({
-        status: itemsStaged > 0 ? 'completed' : 'failed',
+        status: successful ? 'completed' : 'failed',
         items_staged: itemsStaged,
         completed_at: new Date().toISOString(),
         duration_ms: duration,
@@ -1522,11 +1543,11 @@ export async function processSource(
     // ── Update scrape_source ─────────────────────────────────
     await supabase.from('scrape_sources').update({
       last_run_at: new Date().toISOString(),
-      last_success_at: itemsStaged > 0 ? new Date().toISOString() : source.last_success_at,
-      last_error: itemsStaged === 0 ? 'No items staged' : null,
+      last_success_at: successful ? new Date().toISOString() : source.last_success_at,
+      last_error: successful ? null : stagingError,
       total_runs: (source.total_runs || 0) + 1,
       total_items_fetched: (source.total_items_fetched || 0) + itemsStaged,
-      consecutive_failures: itemsStaged > 0 ? 0 : (source.consecutive_failures || 0) + 1,
+      consecutive_failures: successful ? 0 : (source.consecutive_failures || 0) + 1,
     }).eq('id', source.id)
 
     // ── Update import job ────────────────────────────────────
@@ -1536,26 +1557,16 @@ export async function processSource(
       status: itemsStaged > 0 ? 'processing' : 'completed',
     }).eq('id', job.id)
 
-    // ── Trigger ingestion pipeline ───────────────────────────
-    if (itemsStaged > 0) {
-      const pipelineName = source.target_table === 'events'
-        ? 'events-ingestion-bulletproof'
-        : 'venue-ingestion-unified'
-      supabase.functions.invoke('pipeline-executor', {
-        body: {
-          action: 'start',
-          pipeline_name: pipelineName,
-          context: { triggered_by: `scrape-web-sources:${source.slug}`, job_id: job.id, target_table: source.target_table },
-        },
-      }).catch(err => console.error(`[${source.slug}] Pipeline trigger failed:`, err))
-    }
+    // The canonical pg_cron drains validate, deduplicate and review these rows.
+    // Starting the venue DAG here refetched unrelated sources and stranded products.
 
     return {
       source_slug: source.slug,
       items_found: itemsFound,
       items_staged: itemsStaged,
       pages_crawled: pagesCrawled,
-      ...(itemsStaged === 0 ? { error: 'No items staged' } : {}),
+      items_skipped: itemsSkipped,
+      ...(!successful ? { error: stagingError } : {}),
     }
   } catch (err) {
     const errorMsg = (err as Error).message
@@ -1585,16 +1596,8 @@ Deno.serve(async (req) => {
   try {
     const supabase = getServiceClient()
 
-    // Require admin for manual invocations (cron/workflow-dispatcher passes service role)
-    const authHeader = req.headers.get('Authorization')
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '___none___'
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') || '___none___'
-    const isServiceRole = authHeader?.includes(serviceRoleKey)
-    const isAnon = authHeader?.includes(anonKey)
-    if (authHeader && !isServiceRole && !isAnon) {
-      const authResult = await requireAdmin(req, supabase)
-      if (authResult instanceof Response) return authResult
-    }
+    const auth = await requireInternalOrAdmin(req, supabase)
+    if (auth instanceof Response) return auth
 
     const body = await req.json().catch(() => ({}))
     const {
