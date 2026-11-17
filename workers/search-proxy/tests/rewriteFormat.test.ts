@@ -26,11 +26,25 @@ describe('rewrite model response formats', () => {
     });
     expect(h.put).toHaveBeenCalledOnce();
     expect(h.run).toHaveBeenCalledWith(
-      '@cf/google/gemma-4-26b-a4b-it',
+      '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
       expect.objectContaining({
-        chat_template_kwargs: { enable_thinking: false },
+        max_tokens: 120,
+        temperature: 0.1,
       }),
       undefined,
+    );
+  });
+  it('ignores previous model and prompt cache entries', async () => {
+    const h = harness({ response: JSON.stringify(value) });
+    h.env.EMBED_CACHE.get = vi.fn(async (key: string) =>
+      key === 'rw:de:schwule bars in zürich' ? { ...value, q_en: 'old rewrite' } : null,
+    ) as typeof h.env.EMBED_CACHE.get;
+    expect((await rewriteQuery(h.env, 'schwule bars in Zürich', 'de'))?.q_en).toBe(value.q_en);
+    expect(h.run).toHaveBeenCalledOnce();
+    expect(h.put).toHaveBeenCalledWith(
+      'rw:v2:@cf/meta/llama-3.3-70b-instruct-fp8-fast:de:schwule bars in zürich',
+      expect.any(String),
+      { expirationTtl: 86400 * 30 },
     );
   });
   it.each([

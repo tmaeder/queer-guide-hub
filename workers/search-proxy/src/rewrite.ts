@@ -1,5 +1,5 @@
 /**
- * Query rewriter using Workers AI Gemma 4.
+ * Query rewriter using Workers AI Llama 3.3 Fast.
  * - Expands synonyms (schwul → gay/queer)
  * - Translates non-EN to EN for better embed lookup (until bge-m3 migration)
  * - Extracts intent filters (city, type) the user typed naturally
@@ -9,7 +9,7 @@
 
 import type { Env } from "./index";
 
-const MODEL = "@cf/google/gemma-4-26b-a4b-it";
+const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
 const SYS = `You are a search query rewriter for queer.guide (LGBTQ+ travel + venues + events).
 Given a user query in any language, output ONE compact JSON object (no prose) with fields:
@@ -17,6 +17,9 @@ Given a user query in any language, output ONE compact JSON object (no prose) wi
   synonyms   : array of up to 4 closely-related EN terms (e.g. "bar","club","pub")
   city       : city name if mentioned, else null
   type_hint  : one of "venue","event","city","personality","news",null
+Preserve proper names exactly (for example, Heldenbar stays heldenbar, never hero bar).
+Only extract a city explicitly present in the query. Never guess a venue's location.
+For a community search without a specific venue or event, type_hint is null.
 Return ONLY the JSON. No markdown. No explanation.`;
 
 export interface RewrittenQuery {
@@ -32,7 +35,8 @@ export async function rewriteQuery(
 	lang: string,
 ): Promise<RewrittenQuery | null> {
 	if (!query || query.length > 120) return null;
-	const cacheKey = `rw:${lang}:${query.trim().toLowerCase()}`;
+	// Isolate model/prompt changes from the previous model's 30-day entries.
+	const cacheKey = `rw:v2:${MODEL}:${lang}:${query.trim().toLowerCase()}`;
 
 	const cached = await env.EMBED_CACHE.get(cacheKey, { type: "json" });
 	if (cached) return cached as RewrittenQuery;
@@ -53,7 +57,6 @@ export async function rewriteQuery(
 					],
 					max_tokens: 120,
 					temperature: 0.1,
-					chat_template_kwargs: { enable_thinking: false },
 				} as Parameters<typeof env.AI.run>[1],
 				gateway ? { gateway } : undefined,
 			) as Promise<unknown>,
@@ -71,7 +74,7 @@ export async function rewriteQuery(
 		// when the model emits a tool call instead of text). `text.match` then
 		// throws "text.match is not a function" and the whole /search request
 		// 500s. Coerce defensively.
-		// Gemma 4 returns a chat completion; older models used `response`.
+		// Support both chat completions and the selected model's `response` format.
 		const result = res as {
 			response?: unknown;
 			choices?: Array<{ message?: { content?: unknown }; finish_reason?: string }>;

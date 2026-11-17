@@ -27,7 +27,7 @@ import type { Env } from "../src/index";
  * green on a Worker that had lost the feature entirely.
  */
 
-const LLAMA = "@cf/google/gemma-4-26b-a4b-it";
+const LLAMA = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const EMBED = "@cf/baai/bge-m3";
 
 function kv() {
@@ -130,7 +130,7 @@ async function runSearch(
 	const vec = (hybridArgs as Record<string, unknown> | null)?.p_query_vec;
 	const idx = typeof vec === "string" ? Number(vec.slice(1).split(",")[0]) : NaN;
 	const usedEmbedText = Number.isInteger(idx) && idx >= 1 ? embedTexts[idx - 1] : null;
-	const cachedRewrite = await env.EMBED_CACHE.get(`rw:${opts.lang ?? "en"}:${query.trim().toLowerCase()}`, { type: "json" });
+	const cachedRewrite = await env.EMBED_CACHE.get(`rw:v2:${LLAMA}:${opts.lang ?? "en"}:${query.trim().toLowerCase()}`, { type: "json" });
 	return { res, body, hybridArgs, embedTexts, llamaCalls, usedEmbedText, cachedRewrite };
 }
 
