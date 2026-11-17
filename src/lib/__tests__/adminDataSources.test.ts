@@ -9,6 +9,7 @@ import {
   setSourceEnabled,
   sourceHealth,
   sourceKey,
+  supportsManualSourceRun,
   type SourceEdits,
 } from '../adminDataSources';
 
@@ -249,6 +250,77 @@ describe('source management', () => {
 
   it('rejects unsupported or disabled manual runs', async () => {
     for (const source of sources()) await expect(runDataSource(source)).rejects.toThrow();
+    expect(db.invoke).not.toHaveBeenCalled();
+  });
+
+  it('targets only the selected enabled scraper registration', async () => {
+    const lookup = vi
+      .fn()
+      .mockResolvedValue({ data: { is_enabled: true, last_error: null }, error: null });
+    const where = vi.fn().mockReturnValue({ maybeSingle: lookup });
+    db.from.mockReturnValueOnce({ select: () => ({ eq: where }) });
+    db.invoke.mockResolvedValueOnce({ data: { success: true }, error: null });
+    const source = {
+      ...sources().find((s) => s.registry === 'ingestion_sources')!,
+      enabled: true,
+      identifier: 'selected-scraper',
+      edgeFunction: 'scrape-web-sources',
+    };
+    await runDataSource(source);
+    expect(db.from).toHaveBeenCalledWith('scrape_sources');
+    expect(where).toHaveBeenCalledWith('slug', 'selected-scraper');
+    expect(db.invoke).toHaveBeenCalledExactlyOnceWith('scrape-web-sources', {
+      body: { source_slug: 'selected-scraper' },
+    });
+  });
+
+  it.each([
+    { data: { is_enabled: false, last_error: 'Retired: licence required' }, error: null },
+    { data: null, error: null },
+    { data: null, error: { message: 'Permission denied' } },
+  ])(
+    'does not bypass disabled, missing, or inaccessible scraper registrations: %s',
+    async (result) => {
+      db.from.mockReturnValueOnce({
+        select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve(result) }) }),
+      });
+      await expect(
+        runDataSource({
+          ...sources().find((s) => s.registry === 'ingestion_sources')!,
+          enabled: true,
+          edgeFunction: 'scrape-web-sources',
+        }),
+      ).rejects.toThrow();
+      expect(db.invoke).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    { skipped: true, missing_credentials: ['SHOPIFY_SHOP_DOMAIN'] },
+    { success: false },
+    { success: true, errors_count: 1 },
+    { success: true, items_failed: 1 },
+  ])(
+    'surfaces skipped or failed import outcomes instead of reporting success: %s',
+    async (data) => {
+      db.invoke.mockResolvedValueOnce({ data, error: null });
+      await expect(
+        runDataSource({
+          ...sources().find((s) => s.registry === 'ingestion_sources')!,
+          enabled: true,
+        }),
+      ).rejects.toThrow();
+    },
+  );
+
+  it('does not offer an entity-specific enrichment endpoint as a manual import', async () => {
+    const source = {
+      ...sources().find((s) => s.registry === 'ingestion_sources')!,
+      enabled: true,
+      edgeFunction: 'get-wikipedia-info',
+    };
+    expect(supportsManualSourceRun(source)).toBe(false);
+    await expect(runDataSource(source)).rejects.toThrow('does not support a manual import');
     expect(db.invoke).not.toHaveBeenCalled();
   });
 });
