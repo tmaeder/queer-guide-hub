@@ -2,7 +2,7 @@ import { assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
 
 const descriptor = Object.getOwnPropertyDescriptor(Deno, 'serve')!
 Object.defineProperty(Deno, 'serve', { configurable: true, value: () => ({}) })
-const { extractWikiCountryTables, extractWikiList, publishedWikiRideDate, publishedEventDates, extractEventsFromPage, extractCityList, crawlNative, crawlViaSitemap, structuredProductLinks } = await import('./index.ts')
+const { extractWikiCountryTables, extractWikiList, publishedWikiRideDate, publishedEventDates, extractEventsFromPage, extractCityList, crawlNative, crawlViaSitemap, structuredProductLinks, allowedCrawlUrl } = await import('./index.ts')
 Object.defineProperty(Deno, 'serve', descriptor)
 const source = { name: 'Published rides', content_type: 'events', scrape_config: { event_type: 'World Naked Bike Ride' } } as unknown as Parameters<typeof extractWikiList>[2]
 
@@ -69,4 +69,11 @@ Deno.test('configured sitemap selects image-bearing products and refuses another
 Deno.test('structured catalogues expose same-origin ItemList URLs without fabricating products', () => {
   const html = '<script type="application/ld+json">{"@graph":[{"@type":"CollectionPage","mainEntity":{"@type":"ItemList","itemListElement":[{"url":"https://shop.example/real"},{"url":"https://unrelated.example/other"},{"name":"No URL"}]}}]}</script>'
   assertEquals(structuredProductLinks(html, 'https://shop.example/catalogue'), ['https://shop.example/real'])
+})
+
+Deno.test('publisher subdomain discovery is opt-in and cannot leave the registered domain', () => {
+  const source = 'https://www.gaycities.com/events'
+  assertEquals(allowedCrawlUrl('https://newyork.gaycities.com/events/1', source), false)
+  assertEquals(allowedCrawlUrl('https://newyork.gaycities.com/events/1', source, true), true)
+  for (const url of ['https://evilgaycities.com/events/1', 'https://gaycities.com.evil.example/events/1', 'http://newyork.gaycities.com/events/1', 'https://newyork.gaycities.com:444/events/1', 'https://user:password@newyork.gaycities.com/events/1']) assertEquals(allowedCrawlUrl(url, source, true), false)
 })
