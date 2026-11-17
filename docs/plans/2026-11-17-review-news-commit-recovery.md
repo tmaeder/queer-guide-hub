@@ -1,0 +1,7 @@
+# Recover native news commits without losing Review work
+
+The Review reconciler auto-paused after three native news-commit failures. Current staging diagnostics identify `news_articles_slug_format_chk`: a headline without ASCII letters produces an empty stem followed by `-fingerprint`, which violates the existing URL contract. The wrapper then raises on the native per-row error count and rolls back other repairs and the failed row's diagnostic.
+
+First fix the producer expression: retain valid supplied slugs and existing ASCII behavior, otherwise use a valid deterministic `article` stem with the existing identity suffix. Preserve all quality, review, source and publication gates. Test the actual native committer against the real slug constraint using English, Cyrillic, Greek, Sinhala, Chinese, punctuation and invalid/supplied slug fixtures, alongside held/unjudged rows.
+
+Then isolate declared native row failures in the reconciler: preserve their error state and diagnostics, report failed jobs/counts and partial status, count successful detail records, and continue other work. Unexpected thrown failures still fail the run. Test a poisoned job alongside healthy work, dry run, pause and repeat behavior. After tests and production definition/security readback, recover the system auto-pause under exact snapshots and a bounded successful run; do not override a user pause, budget or review hold.

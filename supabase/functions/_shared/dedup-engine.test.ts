@@ -33,6 +33,56 @@ Deno.test('semantic CONFIRMS a near-threshold deterministic match (lift into aut
   assertEquals(v.score >= venue.thresholds.autoMerge, true)
 })
 
+Deno.test('same-name venues without a measured location remain review candidates', () => {
+  for (const match_type of ['name_proximity', 'address_name_proximity', 'despaced_exact', 'core_token', 'despaced_city_text', 'core_token_city_text']) {
+    for (const distance_m of [null, undefined, Number.NaN, -1]) {
+      const v = decideCandidate(venue, [
+        { entity_id: 'same-name-elsewhere', match_type, score: 1, distance_m },
+        { entity_id: 'same-name-elsewhere', match_type: 'semantic', score: 1 },
+      ])
+      assertEquals(v.decision, 'merge_candidate')
+      assertEquals(v.action, 'flag_review')
+      assertEquals(v.matchId, 'same-name-elsewhere')
+      assertEquals(v.score < venue.thresholds.autoMerge, true)
+      assertEquals(v.guardsFired.includes('name_without_location'), true)
+      assertEquals(v.signals[0].score, 1)
+    }
+  }
+})
+
+Deno.test('a weaker contact signal cannot bless an unlocated name match', () => {
+  const v = decideCandidate(venue, [
+    { entity_id: 'a', match_type: 'name_proximity', score: 1 },
+    { entity_id: 'a', match_type: 'phone_exact', score: 0.8 },
+  ])
+  assertEquals(v.decision, 'merge_candidate')
+})
+
+Deno.test('independent exact identity still corroborates an unlocated venue name', () => {
+  for (const match_type of ['phone_exact', 'email_exact', 'address_exact', 'source_entity_id', 'external_url']) {
+    const v = decideCandidate(venue, [
+      { entity_id: 'a', match_type: 'name_proximity', score: 1 },
+      { entity_id: 'a', match_type, score: 0.99 },
+    ])
+    assertEquals(v.decision, 'duplicate')
+    assertEquals(v.guardsFired.includes('name_without_location'), false)
+  }
+})
+
+Deno.test('cap unlocated names before ranking so a supported candidate wins', () => {
+  const v = decideCandidate(venue, [
+    { entity_id: 'unlocated-name', match_type: 'name_proximity', score: 1 },
+    { entity_id: 'located', match_type: 'name_proximity', score: 0.95, distance_m: 20 },
+  ])
+  assertEquals(v.decision, 'duplicate')
+  assertEquals(v.matchId, 'located')
+})
+
+Deno.test('low-scoring name candidates keep their existing review or unique result', () => {
+  assertEquals(decideCandidate(venue, [{ entity_id: 'a', match_type: 'name_proximity', score: 0.8 }]).score, 0.8)
+  assertEquals(decideCandidate(venue, [{ entity_id: 'a', match_type: 'name_proximity', score: 0.7 }]).decision, 'unique')
+})
+
 Deno.test('semantic ALONE can only reach merge_candidate, never auto-merge', () => {
   const raws: RawCandidate[] = [{ entity_id: 'a', match_type: 'semantic', score: 0.999, distance_m: 30 }]
   const v = decideCandidate(venue, raws, {})

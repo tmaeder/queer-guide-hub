@@ -136,6 +136,16 @@ function norm(v: string | null | undefined): string {
   return (v ?? '').trim().toLowerCase()
 }
 
+// A perfect name score is still only a name match. Missing coordinates made
+// same-country Oz/Scandals/Partners imports overwrite venues in other cities.
+const VENUE_NAME_MATCHES = new Set([
+  'name_proximity', 'address_name_proximity', 'despaced_exact', 'core_token',
+  'despaced_city_text', 'core_token_city_text',
+])
+const VENUE_IDENTITY_ANCHORS = new Set([
+  'phone_exact', 'email_exact', 'address_exact', 'source_entity_id', 'external_url',
+])
+
 // ── Signal classification ───────────────────────────────────────────────────
 
 /** Map a deterministic match_type to a family (semantic is detected by name). */
@@ -214,6 +224,19 @@ export function decideCandidate(
       } else {
         fused = detMax
       }
+    }
+
+    // Keep an unlocated name candidate for review, rather than discarding it
+    // (which would create a new duplicate). Apply the cap AFTER semantic lift
+    // and BEFORE ranking so a corroborated alternative can still win.
+    const distance = detBest?.distance_m
+    const located = typeof distance === 'number' && Number.isFinite(distance) && distance >= 0
+    const identified = det.some(d => VENUE_IDENTITY_ANCHORS.has(d.match_type)
+      && Number(d.score) >= cfg.thresholds.autoMerge)
+    if (cfg.entityType === 'venue' && detBest && VENUE_NAME_MATCHES.has(detBest.match_type)
+      && !located && !identified && fused >= cfg.thresholds.autoMerge) {
+      fused = cfg.thresholds.autoMerge - 0.001
+      if (!guardsFired.includes('name_without_location')) guardsFired.push('name_without_location')
     }
 
     const signals: Signal[] = []
