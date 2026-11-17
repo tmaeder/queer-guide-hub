@@ -204,6 +204,13 @@ jobs:
             psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-city-refresh-dependencies.sql
           fi
 
+          # The private Review registry row is absent from anonymous snapshots.
+          # A paused local fixture exercises recovery without scheduling work.
+          if [ -f /tmp/migrations/20261117222014_register_review_cron_recovery.sql ] && ! grep -qx '20261117222014' snapshot/versions.txt; then
+            DB_URL="$DB_URL" node scripts/ci/seed-review-cron-migration.mjs > /tmp/ci-review-cron-dependency.sql
+            psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-review-cron-dependency.sql
+          fi
+
           # Only the PR's NEW migrations: versions production has not applied.
           for f in $(ls /tmp/migrations/*.sql | sort); do
             v=$(basename "$f" | cut -d_ -f1)

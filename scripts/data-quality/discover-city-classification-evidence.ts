@@ -13,18 +13,22 @@ export function unambiguousDiscovery<T extends {id:string;wikidata_qid:string;di
  return [...groups.values()].filter(group=>group.length===1&&Number.isFinite(group[0].distance_m)&&group[0].distance_m>=0&&group[0].distance_m<=2000).map(group=>group[0])
 }
 
-if(import.meta.main){
- const[input,output]=Deno.args
- if(!input||!output)throw Error('Usage: discover-city-classification-evidence candidates.json evidence.json')
- const rows=JSON.parse(await Deno.readTextFile(input))as MissingIdentity[]
+type Collection = Awaited<ReturnType<typeof collectClassificationEvidence>>
+type DiscoveryProof = Collection['proofs'][number] & {discovery_contract:string;previous_wikidata_qid:null;identity_search:Record<string,unknown>|undefined}
+export type DiscoveryCheckpoint = {proofs:DiscoveryProof[];captures:Collection['captures'];searchCaptures:Record<string,unknown>[];processed_rows:number;unresolved:number;deferred:Array<{id:string;name:string;country_code:string}>;interruption:string|null}
+
+export async function discoverCityIdentities(rows:MissingIdentity[],options:{fetch?:typeof fetch;collect?:typeof collectClassificationEvidence;checkpoint?:(state:DiscoveryCheckpoint)=>Promise<void>}={}){
  if(!Array.isArray(rows)||rows.length>250||rows.some(row=>row.wikidata_qid!==null))throw Error('Bounded missing-identity export required')
- const proofs:unknown[]=[],captures:unknown[]=[],searchCaptures:unknown[]=[]
+ const proofs:DiscoveryProof[]=[],captures:Collection['captures']=[],searchCaptures:Record<string,unknown>[]=[]
+ let processed=0
+ const snapshot=(interruption:string|null):DiscoveryCheckpoint=>structuredClone({proofs,captures,searchCaptures,processed_rows:processed,unresolved:rows.length-proofs.length,deferred:rows.slice(processed).map(({id,name,country_code})=>({id,name,country_code})),interruption})
+ try{
  for(let offset=0;offset<rows.length;offset+=5){
   const candidates:Candidate[]=[],searches=new Map<string,Record<string,unknown>>()
   for(const row of rows.slice(offset,offset+5)){
    const url=new URL('https://www.wikidata.org/w/api.php')
    url.search=new URLSearchParams({action:'wbsearchentities',format:'json',language:'en',type:'item',limit:'50',search:row.name}).toString()
-   const response=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(15000),headers:{'User-Agent':'QueerGuide-ClassificationEvidence/1.0 (https://queer.guide)'}})
+   const response=await (options.fetch??fetch)(url,{redirect:'error',signal:AbortSignal.timeout(15000),headers:{'User-Agent':'QueerGuide-ClassificationEvidence/1.0 (https://queer.guide)'}})
    if(!response.ok)throw Error(`Identity source unavailable: HTTP ${response.status}`)
    const raw=await response.text()
    if(raw.length>200000)throw Error('Oversized identity search')
@@ -39,12 +43,33 @@ if(import.meta.main){
    searches.set(row.id,capture)
    for(const wikidata_qid of ids)candidates.push({...row,wikidata_qid})
   }
-  const result=await collectClassificationEvidence(candidates)
+  const result=await (options.collect??collectClassificationEvidence)(candidates)
   captures.push(...result.captures)
   for(const proof of unambiguousDiscovery(result.proofs)){
    proofs.push({...proof,discovery_contract:'city_missing_identity.v1',previous_wikidata_qid:null,identity_search:searches.get(proof.id)})
   }
+  processed=Math.min(offset+5,rows.length)
+  await options.checkpoint?.(snapshot(null))
  }
- await Deno.writeTextFile(output,JSON.stringify({proofs,captures,searchCaptures,unresolved:rows.length-proofs.length}))
- console.log(JSON.stringify({examined:rows.length,unambiguous_proofs:proofs.length,unresolved:rows.length-proofs.length}))
+ }catch(error){
+  // A source failure is not an identity verdict. Retain only completed proof
+  // batches and explicitly defer the current batch and all later input rows.
+  await options.checkpoint?.(snapshot(String(error instanceof Error?error.message:error).slice(0,300)))
+  throw error
+ }
+ return snapshot(null)
+}
+
+if(import.meta.main){
+ const[input,output]=Deno.args
+ if(!input||!output)throw Error('Usage: discover-city-classification-evidence candidates.json evidence.json')
+ const rows=JSON.parse(await Deno.readTextFile(input))as MissingIdentity[]
+ const checkpoint=async(state:DiscoveryCheckpoint)=>{
+  // Atomic replacement prevents a partial JSON file if the process stops.
+  await Deno.writeTextFile(`${output}.tmp`,JSON.stringify(state))
+  await Deno.rename(`${output}.tmp`,output)
+ }
+ const result=await discoverCityIdentities(rows,{checkpoint})
+ await checkpoint(result)
+ console.log(JSON.stringify({examined:result.processed_rows,unambiguous_proofs:result.proofs.length,unresolved:result.unresolved,deferred:result.deferred.length}))
 }

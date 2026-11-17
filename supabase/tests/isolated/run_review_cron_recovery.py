@@ -9,6 +9,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[3]
 PG = Path(os.environ['PG_BINDIR']) if os.environ.get('PG_BINDIR') else Path(shutil.which('pg_ctl') or '/missing').parent
 patch = next((ROOT/'supabase/migrations').glob('*_register_review_cron_recovery.sql')).read_text()
+seed = subprocess.run(['node', str(ROOT/'scripts/ci/seed-review-cron-migration.mjs')], env={**os.environ, 'DB_URL':'postgresql://127.0.0.1/postgres'}, text=True, check=True, capture_output=True).stdout
 schema = r"""
 create schema cron;
 create table cron.job(jobid bigint generated always as identity,jobname text primary key,schedule text,command text,active boolean default true);
@@ -18,13 +19,13 @@ create function cron.schedule(p_name text,p_schedule text,p_command text)returns
 end$$;
 insert into cron.job(jobname,schedule,command)values('unrelated','* * * * *','select 42');
 create table other_jobs_before as select *from cron.job;
-create table admin_automations(id uuid primary key,slug text,action jsonb,enabled boolean,schedule text,updated_at timestamptz default now(),lifecycle_state text,consecutive_failures integer);
-insert into admin_automations values(md5('review')::uuid,'review_automatic_resolution',
- '{"type":"rpc","fn":"run_review_automatic_resolution","args":{"p_batch":200,"p_dry_run":false}}',false,'0-59/5 * * * *',now(),'auto_paused',3);
+create table admin_automations(id uuid primary key default md5('review')::uuid,slug text unique,name text,managed_by text,trigger jsonb,action jsonb,enabled boolean,schedule text,updated_at timestamptz default now(),lifecycle_state text,consecutive_failures integer default 3);
+-- SYNTHETIC_CI_SEED
 create table controls_before as select id,to_jsonb(a)-array['action','updated_at']value from admin_automations a;
 create table admin_review_repairs(entity_type text,entity_id uuid,reason text,previous_value jsonb,next_value jsonb);
 create function admin_automation_effective_command(text,text)returns text language sql as 'select $2';
 """
+schema = schema.replace('-- SYNTHETIC_CI_SEED', seed + seed)
 paused = r"""
 do $$begin
  if exists(select 1 from cron.job where jobname='review_automatic_resolution')then raise exception 'Paused job recreated';end if;

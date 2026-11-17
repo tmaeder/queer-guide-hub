@@ -10,8 +10,8 @@
     "observed_at": "2026-11-17T22:26:24.199776Z",
     "active_cases": 2737
   },
-  "audit_entries": 29,
-  "audit_note": "Includes 15 native stale-finding retirements, not 29 case closures.",
+  "audit_entries": 41,
+  "audit_note": "Includes eleven technical retries and fifteen native stale-finding retirements; not case closures.",
   "sources": [
     {
       "url": "https://www.wikidata.org/wiki/Special:EntityData/Q114.json",
@@ -59,6 +59,13 @@
       "status": 200,
       "final_url": "https://www.orkney.gov.uk/documents/orkney-welcome-pack-english/html",
       "sha256": "017806ca3917414c7515913376e696c33212c3e849afc2ee52ffad0223120882"
+    },
+    {
+      "url": "https://algimiadealfara.sede.dival.es/",
+      "retrieved_at": "2026-11-17T22:39:20.321776+00:00",
+      "status": 200,
+      "final_url": "https://algimiadealfara.sede.dival.es/",
+      "sha256": "908911d271b14cc898936b7447f3590bdc3f0f11c8b6bd4712d3cca1f27dd22a"
     },
     {
       "url": "https://www.wikidata.org/wiki/Special:EntityData/Q207935.json",
@@ -136,6 +143,13 @@
       "status": 200,
       "final_url": "https://www.nakuru.go.ke/ova_sev/nakuru-city-board/",
       "sha256": "dba8d944f862bde6559ac5b8e7e50d7fc1cbf9ee31b88d79eca1834833f56648"
+    },
+    {
+      "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2018-9458",
+      "retrieved_at": "2026-11-17T22:39:20.327529+00:00",
+      "status": 200,
+      "final_url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2018-9458",
+      "sha256": "63e9a479980c9a255cdc5e03442fc67b04151f2352d616e180ebb4257eeb429c"
     },
     {
       "url": "https://www.wikidata.org/wiki/Special:EntityData/Q96.json",
@@ -335,10 +349,9 @@
   "holds": [
     "Burghausen historical human coordinate review",
     "Lexington same-country namesake ambiguity",
-    "Missing-identity research interrupted by Wikidata search-too-busy; not negative identity evidence",
-    "One podcast staging row lacks a publish verdict; eleven technical slug failures remain pending guarded retry",
     "Two visual-evidence cases retain human review",
-    "Prior mixed venue-source namesakes remain held"
+    "Prior mixed venue-source namesakes remain held",
+    "Podcast technical failure under further native curated-show verdict review."
   ],
   "fixtures": [
     "run_archived_city_classification.py",
@@ -351,5 +364,25 @@
     "20261117221234",
     "20261117221235",
     "20261117222014"
-  ]
+  ],
+  "identity_discovery": {
+    "examined": 50,
+    "positive": 1,
+    "applied": [
+      {
+        "id": "72b8c11e-04ea-4448-ac20-b1be68af031e",
+        "name": "Algímia d'Alfara",
+        "qid": "Q1919278",
+        "contract": "city_missing_identity.v1",
+        "distance_m": 1415.9374349962957
+      }
+    ],
+    "note": "Completed bounded batches after a source-busy interruption. Collector now checkpoints evidence and explicitly defers interrupted rows; 49 without a positive proof are not declared non-cities."
+  },
+  "technical_retries": {
+    "count": 11,
+    "reason": "news_articles_slug_format_chk",
+    "native_verdict_preserved": true,
+    "status": "pending native commit at 22:39 UTC"
+  }
 }
