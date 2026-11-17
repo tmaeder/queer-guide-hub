@@ -1,3 +1,4 @@
+import { fetchPublisherRss, isProxyPublisherFeed, manualFeedSourceIds } from './publisher-feed.ts'
 import { isIlgaMonitorFeed, parseIlgaMonitorItems } from './ilga-monitor.ts'
 import { isHuffPostQueerFeed, fetchHuffPostQueerSection } from './huffpost.ts'
 import { personAuthorCandidate } from '../_shared/news-author.ts'
@@ -76,9 +77,11 @@ const rssNewsAdapter: SourceAdapter = {
       MAX_FEEDS_HARD_CAP,
       Math.max(1, Number.isFinite(maxFeedsRaw) ? Math.floor(maxFeedsRaw) : DEFAULT_MAX_FEEDS_PER_RUN),
     )
-    const { data: sources, error } = await supabase.rpc('news_sources_eligible', {
-      p_limit: maxFeeds,
-    })
+    const requestedIds = manualFeedSourceIds(config.filters?.sourceIds)
+    const { data: sources, error } = requestedIds
+      ? await supabase.from('news_sources').select('*').in('id', requestedIds).eq('is_active', true).eq('auto_paused', false).limit(maxFeeds)
+      : await supabase.rpc('news_sources_eligible', { p_limit: maxFeeds })
+    if (error) throw new Error(`News source selection failed: ${error.message}`)
 
     if (error || !sources || sources.length === 0) {
       console.log('No eligible news sources')
@@ -508,7 +511,12 @@ async function fetchFromRss(
         signal: controller.signal,
       })
     }
-    if (!res.ok) {
+    let proxiedXml: string | undefined
+    if (res.status === 403 && !isPodcast && isProxyPublisherFeed(feedUrl)) {
+      await res.body?.cancel()
+      proxiedXml = await fetchPublisherRss(feedUrl, Deno.env.get('FIRECRAWL_API_KEY') || '', controller.signal)
+    } else if (!res.ok) {
+      await res.body?.cancel()
       throw new Error(`HTTP ${res.status} ${res.statusText}`)
     }
     // Bound the body: parseRssItems parses the whole feed (maxArticles only
@@ -518,7 +526,7 @@ async function fetchFromRss(
     // prefix holds the newest items, and the regex item parser simply drops
     // the incomplete trailing block. (Hard-failing here auto-paused four
     // legitimate podcast feeds whose full archives exceed 4 MB.)
-    const xml = await readCapped(res, MAX_FEED_BYTES)
+    const xml = proxiedXml ?? await readCapped(res, MAX_FEED_BYTES)
     const items = isIlgaMonitorFeed(feedUrl)
       ? parseIlgaMonitorItems(JSON.parse(xml), maxItems)
       : parseRssItems(xml, isPodcast, maxItems)
@@ -675,6 +683,7 @@ Deno.serve(withErrorReporting('source-rss-news', async (req) => {
         maxArticles: body.maxArticles || 40,
         sinceHours: body.sinceHours || 24,
         maxFeedsPerRun: body.max_feeds_per_run,
+        sourceIds: manualFeedSourceIds(body.source_ids),
       },
       dryRun: body.dry_run || false,
       pipelineRunId: body.pipeline_run_id,
