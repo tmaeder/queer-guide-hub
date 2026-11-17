@@ -63,11 +63,13 @@ Deno.serve(withErrorReporting('source-etsy', async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const shopId = body.shopId || body.shop_id || Deno.env.get('ETSY_SHOP_ID')
-    if (!shopId) return jsonResponse(skippedResponse('missing_credentials', ['ETSY_SHOP_ID']), 200, req)
+    const apiKey = body.apiKey || Deno.env.get('ETSY_API_KEY')
+    const missing = [!shopId && 'ETSY_SHOP_ID', !apiKey && 'ETSY_API_KEY'].filter(Boolean) as string[]
+    if (missing.length) return jsonResponse(skippedResponse('missing_credentials', missing), 200, req)
     const adapter = makeAdapter(String(shopId))
     const config: AdapterConfig = {
       batchSize: body.limit || body.batch_size || 50,
-      filters: { apiKey: body.apiKey },
+      filters: { apiKey },
       dryRun: body.dry_run || false, pipelineRunId: body.pipeline_run_id, nodeId: body.node_id,
     }
     const rawItems = await adapter.fetch(config)
