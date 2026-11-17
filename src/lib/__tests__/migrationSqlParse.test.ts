@@ -12,7 +12,7 @@ import {
 
 /**
  * Guards `scripts/check-migration-sql.mjs`, which parses every migration with
- * Postgres's own grammar (libpg-query, pinned to 17.x) before it can reach prod.
+ * Postgres's own grammar (production 17.x plus current tooling) before it can reach prod.
  *
  * The gate exists because on 2026-09-14 a `COMMENT ON ... IS 'a' || 'b'` — a
  * 42601, since COMMENT ON takes a LITERAL — aborted `db push` on main and
@@ -43,6 +43,13 @@ async function parses(sql: string): Promise<boolean> {
 }
 
 describe('migrations parse with the Postgres grammar', () => {
+  it('rejects PostgreSQL 18-only syntax while production runs PostgreSQL 17', async () => {
+    const sql = 'create table t (a int, b int generated always as (a + 1) virtual);';
+    const { parse: parseCurrent } = await import('libpg-query');
+    await expect(parseCurrent(sql)).resolves.toBeDefined();
+    expect(await parses(sql)).toBe(false);
+  });
+
   it('rejects the exact defect that took main down — positive control', async () => {
     // Byte-shape of 50500101100300's original comment. Without this control a
     // parser that silently stopped matching would report a clean corpus forever.

@@ -194,6 +194,7 @@
     "jsdom": "31.0.0",
     "knip": "^6.45.1",
     "libpg-query": "^18.2.2",
+    "libpg-query-pg17": "npm:libpg-query@17.8.2",
     "lint-staged": "^17.6.0",
     "parse5": "8.1.1",
     "playwright": "^1.62.1",
@@ -202,14 +203,14 @@
     "sharp": "0.35.5",
     "stripe": "23.1.0",
     "tailwindcss": "^4.3.0",
+    "tldts": "^7.4.26",
     "tsx": "^4.23.15",
     "typescript": "~5.9.0",
     "typescript-eslint": "^8.72.2",
     "tz-lookup": "^6.1.25",
     "vite": "^8.3.8",
     "vitest": "^5.1.0",
-    "wrangler": "4.161.0",
-    "tldts": "^7.4.26"
+    "wrangler": "4.161.0"
   },
   "overrides": {
     "picomatch@<2.3.2": "^2.3.2",

@@ -22,8 +22,8 @@
  * and read like ordinary English.
  *
  * This closes that hole with the real thing: libpg-query is Postgres's actual
- * parser (pinned to 17.x, the server version this project runs), so the grammar
- * cannot drift from the grammar `db push` will meet.
+ * parser, with the server's 17.x grammar checked alongside the current tooling
+ * grammar so a tooling upgrade cannot admit SQL the production server rejects.
  *
  * ── WHAT THIS CATCHES, AND WHAT IT DOES NOT ────────────────────────────────
  * Stating the limit precisely matters more than the feature, because a gate
@@ -336,10 +336,18 @@ export function bodyBalanceFindings(sql, ast) {
 }
 
 export async function loadParser() {
-  const pg = await import('libpg-query');
-  const mod = pg.default ?? pg;
-  if (typeof mod.loadModule === 'function') await mod.loadModule();
-  return (sql) => mod.parse(sql);
+  const [pg, pg17] = await Promise.all([import('libpg-query'), import('libpg-query-pg17')]);
+  const current = pg.default ?? pg;
+  const production = pg17.default ?? pg17;
+  for (const parser of [current, production]) {
+    if (typeof parser.loadModule === 'function') await parser.loadModule();
+  }
+  return async (sql) => {
+    // Production remains on PostgreSQL 17. New tooling must not silently allow
+    // PostgreSQL 18-only syntax through the migration gate.
+    await production.parse(sql);
+    return current.parse(sql);
+  };
 }
 
 function changedMigrations(baseRef) {
