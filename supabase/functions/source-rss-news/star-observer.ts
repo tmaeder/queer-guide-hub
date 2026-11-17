@@ -2,10 +2,14 @@ import { parseRssItems } from './rss-parse.ts'
 
 export const STAR_OBSERVER_SYNDICATION = 'https://www.bing.com/news/search?q=site%3Astarobserver.com.au&format=rss&setlang=en-AU&cc=au'
 
+function hasCredentialsOrPort(url: URL): boolean {
+  return [url.username, url.password, url.port].some(value => value.length > 0)
+}
+
 export function isStarObserverFeed(raw: string): boolean {
   try {
     const url = new URL(raw)
-    return url.protocol === 'https:' && !url.username && !url.password && !url.port && !url.search && !url.hash
+    return url.protocol === 'https:' && !hasCredentialsOrPort(url) && !url.search && !url.hash
       && ['starobserver.com.au', 'www.starobserver.com.au'].includes(url.hostname) && /^\/feed\/?$/.test(url.pathname)
   } catch { return false }
 }
@@ -14,10 +18,10 @@ function publisherArticle(raw: unknown): string | null {
   if (typeof raw !== 'string') return null
   try {
     let url = new URL(raw)
-    if (['http:', 'https:'].includes(url.protocol) && ['www.bing.com', 'bing.com'].includes(url.hostname) && url.pathname === '/news/apiclick.aspx' && !url.username && !url.password && !url.port) {
+    if (['http:', 'https:'].includes(url.protocol) && ['www.bing.com', 'bing.com'].includes(url.hostname) && url.pathname === '/news/apiclick.aspx' && !hasCredentialsOrPort(url)) {
       url = new URL(url.searchParams.get('url') || '')
     }
-    if (url.protocol !== 'https:' || url.username || url.password || url.port
+    if (url.protocol !== 'https:' || hasCredentialsOrPort(url)
       || !['starobserver.com.au', 'www.starobserver.com.au'].includes(url.hostname)
       || !/^\/(?:[^/]+\/)+\d{4,}\/?$/.test(url.pathname)) return null
     url.hostname = 'www.starobserver.com.au'
