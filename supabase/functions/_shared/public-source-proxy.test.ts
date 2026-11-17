@@ -2,7 +2,7 @@ import { assertEquals, assertRejects } from 'https://deno.land/std@0.168.0/testi
 import { publicSourceProxyAllowed, fetchPublicSourceThroughProxy } from './public-source-proxy.ts'
 
 Deno.test('public-source proxy permits only verified public publisher endpoints', () => {
-  assertEquals(publicSourceProxyAllowed('https://www.starobserver.com.au/feed/'), true)
+  assertEquals(publicSourceProxyAllowed('https://www.starobserver.com.au/feed/'), false)
   assertEquals(publicSourceProxyAllowed('https://www.travelgay.com/gay-pride-calendar'), true)
   for (const url of ['https://www.reddit.com/r/lgbt/.rss', 'http://qvoicenews.com/feed/', 'https://qvoicenews.com/feed/?token=secret', 'https://user:password@qvoicenews.com/feed/', 'https://qvoicenews.com:444/feed/', 'https://qvoicenews.com.evil.example/feed/', 'https://qvoicenews.com/private']) assertEquals(publicSourceProxyAllowed(url), false)
 })
