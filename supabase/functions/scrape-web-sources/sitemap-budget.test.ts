@@ -1,9 +1,9 @@
 import { assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
 
-const savedServe = Deno.serve
-Deno.serve = (() => ({})) as unknown as typeof Deno.serve
+const serveDescriptor = Object.getOwnPropertyDescriptor(Deno, 'serve')!
+Object.defineProperty(Deno, 'serve', { configurable: true, value: () => ({}) })
 let crawl: typeof import('./index.ts').crawlViaSitemap
-try { ({ crawlViaSitemap: crawl } = await import('./index.ts')) } finally { Deno.serve = savedServe }
+try { ({ crawlViaSitemap: crawl } = await import('./index.ts')) } finally { Object.defineProperty(Deno, 'serve', serveDescriptor) }
 
 const source = {
   url: 'https://shop.example/collections/all', slug: 'fixture', user_agent: 'test',

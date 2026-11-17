@@ -61,6 +61,9 @@ Deno.test('sitemap locations preserve CDATA URLs and decode ordinary XML entitie
   equal(readSitemapLocations(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc><![CDATA[https://shop.example/en/socks/11-socks.html?a=1&b=2]]></loc></url><url><loc> https://shop.example/product?a=1&amp;b=2 </loc></url><url><loc> </loc></url></urlset>`), ['https://shop.example/en/socks/11-socks.html?a=1&b=2', 'https://shop.example/product?a=1&b=2'])
   equal(readSitemapLocations('<sitemapindex><sitemap><loc><![CDATA[https://shop.example/products.xml]]></loc></sitemap></sitemapindex>'), ['https://shop.example/products.xml'])
 })
+Deno.test('sitemap CDATA remains literal while XML entities are decoded', () => {
+  equal(readSitemapLocations('<urlset><url><loc><![CDATA[https://shop.example/product?q=&amp;literal]]></loc></url></urlset>'), ['https://shop.example/product?q=&amp;literal'])
+})
 Deno.test('sitemap decoding handles raw gzip and bounds expanded data', async () => {
   const xml = '<urlset><url><loc>https://shop.example/café</loc></url></urlset>'
   const plain = new TextEncoder().encode(xml)
@@ -130,4 +133,14 @@ Deno.test('HTML catalog discovery rejects off-host and unsafe links and ignores 
   let error = ''
   try { readCatalogProductLinks(html, 'https://shop.example/catalog', '') } catch (e) { error = (e as Error).message }
   equal(error, 'HTML catalog requires a product link selector')
+})
+
+Deno.test('image-bearing sitemap filtering rejects empty decoded image locations', () => {
+  const xml = '<urlset>' + [
+    ['empty-cdata', '<![CDATA[   ]]>'],
+    ['empty-entity', '&#32;'],
+    ['real', 'https://shop.example/photo.jpg'],
+  ].map(([slug, image]) => `<url><loc>https://shop.example/${slug}</loc><image:image><image:loc>${image}</image:loc></image:image></url>`).join('') + '</urlset>'
+  equal(readSitemapLocations(xml, true), ['https://shop.example/real'])
+  equal(readSitemapLocations('<urlset><url><loc><![CDATA[  https://shop.example/trimmed  ]]></loc></url></urlset>'), ['https://shop.example/trimmed'])
 })

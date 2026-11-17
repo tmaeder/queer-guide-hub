@@ -1,4 +1,4 @@
-import { decodeEntities } from '../_shared/html-entities.ts'
+export { sitemapLocations } from '../_shared/sitemap-locations.ts'
 
 export function robotsSitemaps(robots: string): string[] {
   // Splitting with split(':', 2) truncates https://host/path to just "https".
@@ -10,21 +10,6 @@ export function robotsSitemaps(robots: string): string[] {
       return ['http:', 'https:'].includes(url.protocol) ? [url.href] : []
     } catch { return [] }
   })
-}
-
-export function* sitemapLocations(xml: string, kind: 'url' | 'sitemap', limit = Number.POSITIVE_INFINITY): Generator<string> {
-  if (limit <= 0) return
-  let yielded = 0
-  const blocks = new RegExp(`<${kind}\\b[^>]*>([\\s\\S]*?)</${kind}>`, 'gi')
-  for (const match of xml.matchAll(blocks)) {
-    const loc = /<loc\b[^>]*>([\s\S]*?)<\/loc>/i.exec(match[1])
-    if (!loc) continue
-    const value = decodeEntities(loc[1].trim().replace(/^<!\[CDATA\[([\s\S]*)\]\]>$/, '$1'))
-    if (value) {
-      yield value
-      if (++yielded >= limit) return
-    }
-  }
 }
 
 export function sitemapPathMatchers(patterns: string[]): RegExp[] {
