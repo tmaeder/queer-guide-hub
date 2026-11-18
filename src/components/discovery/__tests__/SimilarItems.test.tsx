@@ -10,6 +10,10 @@ vi.mock('@/lib/searchClient', () => ({
   fetchSimilar: (...args: unknown[]) => fetchSimilarMock(...args),
 }));
 
+vi.mock('@/hooks/useNews', () => ({
+  useNewsCategories: () => [{ id: 'c1', slug: 'rights-legal', name: 'Rights & Legal' }],
+}));
+
 import { SimilarItems } from '../SimilarItems';
 
 describe('SimilarItems', () => {
@@ -35,6 +39,20 @@ describe('SimilarItems', () => {
     await waitFor(() => expect(screen.getByText('Berlin')).toBeTruthy());
     expect(screen.getByText('Germany')).toBeTruthy();
     expect(screen.queryByText('berlin')).toBeNull();
+  });
+
+  it('shows a news category as its display name, never the raw slug', async () => {
+    fetchSimilarMock.mockResolvedValueOnce([
+      {
+        content_type: 'news',
+        content_id: '55555555-5555-5555-5555-555555555555',
+        score: 0.8,
+        metadata: { title: 'A story', slug: 'a-story', category: 'rights-legal' },
+      },
+    ]);
+    render(<SimilarItems entity={{ type: 'news', id: 'src' } as never} contentTypes={['news']} />);
+    await waitFor(() => expect(screen.getByText('Rights & Legal')).toBeTruthy());
+    expect(screen.queryByText('rights-legal')).toBeNull();
   });
 
   it('falls back to slug-kebab if title missing', async () => {

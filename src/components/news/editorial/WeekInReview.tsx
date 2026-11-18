@@ -31,9 +31,6 @@ export function WeekInReview({ articles, sourceCount }: WeekInReviewProps) {
 
   return (
     <section aria-labelledby="week-review-heading" className="mb-16">
-      <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
-        This week
-      </p>
       <h2
         id="week-review-heading"
         className="m-0 text-display font-bold leading-none tracking-tight"
@@ -43,8 +40,7 @@ export function WeekInReview({ articles, sourceCount }: WeekInReviewProps) {
 
       <div className="mt-8 grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-10 md:gap-16">
         <div className="border-r-0 md:border-r border-border md:pr-8">
-          <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground">By the numbers</p>
-          <dl className="mt-6 flex flex-col gap-6">
+          <dl className=" flex flex-col gap-6">
             <div>
               <dt className="text-2xs uppercase tracking-wider text-muted-foreground">Stories</dt>
               <dd className="m-0 text-hero font-bold leading-none tracking-tight">
