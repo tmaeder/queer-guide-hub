@@ -1,4 +1,4 @@
-import { assertEquals, assert } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
+import { assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
 import { adapterName, adapterResult, allowedAdapter, requiredSetting, safeError, secretValues } from './contracts.ts'
 
 Deno.test('registered adapter routing preserves free fallbacks and refuses arbitrary endpoints', () => {
@@ -32,11 +32,7 @@ Deno.test('setting names are distinguished from legacy boolean flags', () => {
 Deno.test('stored errors omit source and transport credentials, URLs and control characters', () => {
   const values = secretValues({ nested: { api_key: 'private-value' }, ordinary: 'kept' })
   const text = safeError('private-value failed at https://example.com/?key=other with Bearer abc123\n token=abcdef', values)
-  assert(!text.includes('private-value'))
-  assert(!text.includes('abc123'))
-  assert(!text.includes('abcdef'))
-  assert(!text.includes('example.com'))
-  assert(!text.includes('\n'))
+  assertEquals(text, '[redacted] failed at [provider URL] with Bearer [redacted]  token=[redacted]')
   assertEquals(safeError('valid message '.repeat(60)).length, 500)
   assertEquals(safeError('abcdefghijklmnopqrstuvwxyzABCDEF0123'), '[redacted]')
 })
