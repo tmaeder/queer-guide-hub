@@ -81,6 +81,7 @@ jobs:
           python3 supabase/tests/isolated/run_managed_event_categories.py
           python3 supabase/tests/isolated/run_review_liveness_cleanup.py
           python3 supabase/tests/isolated/run_review_replay_worklist.py
+          python3 supabase/tests/isolated/run_review_case_expressions.py
 
   typecheck:
     runs-on: ubuntu-latest
