@@ -368,6 +368,19 @@ export function isLoginWallUrl(rawUrl: string): boolean {
   return LOGIN_WALL_RE.test(ensureHttp(rawUrl.trim()));
 }
 
+/** Facebook's numeric and legacy profiles use more than a single handle segment. */
+function facebookProfileIdentifier(url: URL): string | null {
+  if (!/^(?:(?:www|m|web)\.)?facebook\.com$/i.test(url.hostname)) return null;
+  const path = url.pathname.replace(/^\/+|\/+$/g, '');
+  if (/^profile\.php$/i.test(path)) {
+    const id = url.searchParams.get('id');
+    // Keep IDs as strings: some published IDs exceed JavaScript's safe integer range.
+    return id && /^\d+$/.test(id) ? `profile.php?id=${id}` : null;
+  }
+  if (/^(?:people|pages|groups)\/[^/]+(?:\/[^/]+)*$/i.test(path)) return path;
+  return null;
+}
+
 /**
  * The profile URL a login wall was guarding, recovered from its own `next=`
  * parameter, or null when the URL is not a login wall or carries no usable
@@ -385,7 +398,8 @@ export function unwrapLoginWall(rawUrl: string): string | null {
     const sameHost = target.hostname.replace(/^(?:www|m|web)\./, '') ===
       login.hostname.replace(/^(?:www|m|web)\./, '');
     if (!sameHost || !/^https?:$/.test(target.protocol)) return null;
-    const url = `https://${target.hostname}${target.pathname}`;
+    const identity = facebookProfileIdentifier(target);
+    const url = `https://${target.hostname}${identity ? `/${identity}` : target.pathname}`;
     if (LOGIN_WALL_RE.test(url) || isShareOrWidgetUrl(url)) return null;
     return target.pathname.split('/').filter(Boolean).length ? url : null;
   } catch {
@@ -435,6 +449,12 @@ export function normalizeHandle(platform: SocialPlatformKey, urlOrHandle: string
   if (isShareOrWidgetUrl(value)) return null;
   const m = ensureHttp(value).match(def.detect);
   if (!m) return null;
+  if (platform === 'facebook') {
+    const url = new URL(ensureHttp(value));
+    if (/^\/(?:profile\.php|people|pages|groups)(?:\/|$)/i.test(url.pathname)) {
+      return facebookProfileIdentifier(url);
+    }
+  }
   // Mastodon captures host in g1 and user in g2; rebuild as user@host.
   if (platform === 'mastodon' && m[2]) return `${m[2]}@${m[1]}`;
   const handle = (m[2] ?? m[1] ?? '').replace(/^@/, '');
@@ -460,7 +480,7 @@ export function platformLabel(platform: string): string {
  * `in/`, `company/`, `c/`, `user/`, `profile/` so cards don't show
  * "@company/acme" or "@channel/UC-3gHl…".
  */
-export function displayHandle(platform: SocialPlatformKey, handle: string): string | null {
+export function displayHandle(_platform: SocialPlatformKey, handle: string): string | null {
   if (!handle) return null;
   let h = handle.replace(/^@/, '');
   // Strip a leading namespace segment. The adult video hosts keep the

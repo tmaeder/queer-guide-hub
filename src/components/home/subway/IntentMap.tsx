@@ -186,7 +186,7 @@ function StationNode({
           // `li a:not(.no-underline)` rule in index.css sets `display: inline`,
           // which collapses the plate and silently kills every `lg:` position
           // below it. Asserted in the unit test.
-          'intent-station-link flex min-w-0 flex-1 flex-col gap-1 bg-background/95 p-4 no-underline rounded-container',
+          'intent-station-link flex min-w-0 flex-1 flex-col gap-1 bg-background p-4 no-underline rounded-container',
           'lg:absolute lg:left-1/2 lg:w-36 lg:flex-none lg:-translate-x-1/2 xl:w-44',
           station.lane === 'above' ? 'lg:bottom-full lg:mb-4' : 'lg:top-full lg:mt-4',
           edge === 'left' && 'lg:left-0 lg:translate-x-0',

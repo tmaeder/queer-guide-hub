@@ -1,6 +1,8 @@
+import { localizedRedirectTarget } from '@/lib/localizedRedirectTarget';
 import { GovernanceRedirect } from '@/components/admin/GovernanceRedirect';
 import React, { Suspense } from 'react';
-import { Routes, Route, Navigate, useLocation, useParams } from 'react-router';
+import { Route, Navigate, useLocation, useParams } from 'react-router';
+import { RoutesWithLeafSuspense as Routes } from '@/components/routing/RoutesWithLeafSuspense';
 import { useTranslation } from 'react-i18next';
 import { useSearchTelemetry } from '@/providers/SearchTelemetryProvider';
 import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
@@ -44,6 +46,7 @@ const Wishlists = lazyRetry(() => import('./pages/Wishlists'));
 const GoingOut = lazyRetry(() => import('./pages/intent/GoingOut'));
 const RightsIntent = lazyRetry(() => import('./pages/intent/Rights'));
 const RightsSources = lazyRetry(() => import('./pages/rights/RightsSources'));
+const RightsMethodology = lazyRetry(() => import('./pages/rights/RightsMethodology'));
 const TransRights = lazyRetry(() => import('./pages/rights/TransRights'));
 const Styleguide = lazyRetry(() => import('./pages/Styleguide'));
 const TagsIndex = lazyRetry(() => import('./pages/TagsIndex'));
@@ -277,11 +280,9 @@ function LocalizedRedirect({ to }: { to: string }) {
   const location = useLocation();
   const prefix =
     locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
-  const search = to.includes('?') ? '' : location.search;
   // Carry the fragment too: /rights#marriage is how the glossary and inbound
   // links address a single right, and dropping it lands the reader at the top.
-  const hash = to.includes('#') ? '' : location.hash;
-  return <Navigate to={`${prefix}${to}${search}${hash}`} replace />;
+  return <Navigate to={localizedRedirectTarget(to, prefix, location)} replace />;
 }
 
 /** Locale-preserving redirect for a dynamic legacy route segment. */
@@ -365,6 +366,746 @@ export const AppRoutes = () => {
     });
   }, [location.pathname, t]);
 
+  // Route declarations are static. Translation/announcement updates must not
+  // rebuild the table and recompile every route matcher. Context consumers
+  // inside the selected route still update normally.
+  const routeTable = React.useMemo(
+    () => (
+      <Routes>
+        {/* Auth routes — no locale prefix */}
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        {/* Under /auth/ deliberately: that prefix already carries the
+            no-locale-prefix rule, the compact footer, and the noindex
+            in functions/_lib/routeMeta.ts. */}
+        <Route path="/auth/reset-password" element={<ResetPassword />} />
+        {/* Unprefixed aliases. These existed ONLY under /:locale?, so a
+            bare /signin parsed as locale "signin" and 404'd — which is
+            where PlanTripFromHereButton had been sending people. */}
+        <Route path="/signin" element={<AuthAliasRedirect />} />
+        <Route path="/login" element={<AuthAliasRedirect />} />
+        <Route path="/claim-username" element={<ClaimUsername />} />
+        <Route path="/share/redirect-report/:reportId" element={<SharedRedirectReport />} />
+        <Route path="/links-workspace" element={<RedirectMemberWorkspace />} />
+        <Route path="/extension" element={<ExtensionInstall />} />
+        {import.meta.env.DEV && <Route path="/pattern-library" element={<PatternLibrary />} />}
+        <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
+        <Route path="/onboarding/search" element={<SearchPersonalization />} />
+        <Route path="/onboarding/venues" element={<VenuePersonalization />} />
+        <Route path="/brand" element={<BrandGuidelines />} />
+        {/* ── Unified Admin Console ── */}
+        {/* All /admin/* routes wrapped in AdminShell layout with sidebar */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRouteGuard>
+              <AdminShell />
+            </AdminRouteGuard>
+          }
+        >
+          {/* Dashboard section */}
+          <Route index element={<AdminDashboard />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="affiliate" element={<AdminAffiliate />} />
+          {/* Vendors and brands were absorbed by the Business console. */}
+          <Route
+            path="vendors"
+            element={<Navigate to="/admin/content/organizations?tab=merchants" replace />}
+          />
+          <Route
+            path="brands"
+            element={<Navigate to="/admin/content/organizations?tab=brands" replace />}
+          />
+          <Route path="business" element={<AdminBusiness />} />
+          <Route path="business/:id" element={<AdminBusiness />} />
+          <Route path="maps" element={<Navigate to="/admin" replace />} />
+          <Route path="security" element={<SecurityMonitoringDashboard />} />
+          <Route path="cloudflare" element={<CloudflareDashboard />} />
+
+          {/* Content section -- unified list + per-type views */}
+          <Route path="content" element={<ContentListPanel />} />
+          <Route path="content/organizations" element={<OrganisationsWorkspace />} />
+          {/* Personalities gets a Personencheck dashboard header above the
+            generic list; static path wins over content/:type. */}
+          <Route path="content/personalities" element={<PersonalitiesAdmin />} />
+          {/* Milestones reuse the generic list but add an "AI suggestions"
+            action above it; static path wins over content/:type. */}
+          <Route path="content/milestones" element={<MilestonesAdmin />} />
+          <Route path="content/unified_tags" element={<AdminTags />} />
+          <Route path="taxonomies" element={<AdminTaxonomies />} />
+          <Route path="content/redirects" element={<AdminRedirects />} />
+          <Route
+            path="content/redirects/manual"
+            element={<ContentListPanel contentTypeId="redirects" />}
+          />
+          <Route path="content/:type" element={<ContentListPanel />} />
+          {/* /admin/pages duplicated /admin/content/cms_pages (what nav points at);
+            kept as a redirect for old bookmarks. */}
+          <Route path="pages" element={<Navigate to="/admin/content/cms_pages" replace />} />
+          <Route path="media" element={<MediaLibrary />} />
+          <Route path="media/:id" element={<MediaDetailPage />} />
+
+          {/* Legacy import URLs retain bookmarks while Sources owns the tools. */}
+          <Route
+            path="imports/email-ingestions"
+            element={<Navigate to="/admin/pipelines?tab=sources&sub=email" replace />}
+          />
+          <Route
+            path="imports/data"
+            element={<Navigate to="/admin/pipelines?tab=sources&sub=imports" replace />}
+          />
+          <Route path="imports/*" element={<Navigate to="/admin/pipelines" replace />} />
+          <Route path="imports" element={<Navigate to="/admin/pipelines" replace />} />
+          <Route path="workflows" element={<Navigate to="/admin/pipelines" replace />} />
+          <Route path="pipelines" element={<AdminPipelines />} />
+          <Route path="data-sources" element={<AdminDataSources />} />
+          <Route
+            path="ingestion-rules"
+            element={<Navigate to="/admin/pipelines?tab=sources&sub=imports" replace />}
+          />
+          <Route path="pipelines/dashboard" element={<Navigate to="/admin/pipelines" replace />} />
+          <Route path="scraping" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
+
+          {/* Review & Workflow section -- unified dashboard */}
+          <Route path="review" element={<ReviewRedirect />} />
+          <Route path="governance" element={<AdminGovernance />} />
+          <Route path="diagnostics" element={<AdminDiagnostics />} />
+          <Route path="editorial-tools" element={<AdminPlacesEditorial />} />
+          <Route path="inbox" element={<GovernanceRedirect mode="triage" />} />
+          <Route path="automation" element={<AdminAutomation />} />
+          <Route path="feedback" element={<AdminFeedback />} />
+          <Route
+            path="moderation"
+            element={<Navigate to="/admin/inbox?tab=moderation" replace />}
+          />
+          <Route path="audit" element={<AuditLog />} />
+          <Route path="search-intelligence" element={<AdminSearchIntelligence />} />
+          <Route path="design" element={<AdminDesignSystem />} />
+          <Route path="styleguide" element={<AdminStyleguide />} />
+          <Route path="links" element={<Navigate to="/admin/automation" replace />} />
+          <Route
+            path="affiliates"
+            element={<Navigate to="/admin/affiliate?tab=partners" replace />}
+          />
+          <Route
+            path="submissions"
+            element={<Navigate to="/admin/inbox?tab=submissions" replace />}
+          />
+
+          {/* Content type admin pages */}
+          {/* Standalone quality pages folded into the hub (P5) — review lives in the inbox. */}
+          <Route path="content/venue-quality" element={<Navigate to="/admin/quality" replace />} />
+          <Route path="quality" element={<GovernanceRedirect mode="engines" />} />
+          <Route path="trash" element={<AdminTrash />} />
+          <Route path="graph" element={<ContentGraph />} />
+          <Route
+            path="content/liveness"
+            element={<Navigate to="/admin?queue=liveness" replace />}
+          />
+          <Route
+            path="content/event-quality"
+            element={<Navigate to="/admin?queue=event-quality" replace />}
+          />
+          <Route path="content/city-quality" element={<Navigate to="/admin/quality" replace />} />
+          <Route
+            path="content/personality-quality"
+            element={<Navigate to="/admin/quality" replace />}
+          />
+          <Route path="content/personalities/:id/datasheet" element={<PersonalityDataSheet />} />
+          {/* Legacy — milestone curation moved to the generic CMS. Keep one release. */}
+          <Route
+            path="personalities/milestones"
+            element={<Navigate to="/admin/content/milestones" replace />}
+          />
+          <Route path="postfach" element={<AdminMailbox />} />
+          <Route
+            path="content/marketplace-quality"
+            element={<Navigate to="/admin/quality" replace />}
+          />
+          <Route
+            path="content/village-quality"
+            element={<Navigate to="/admin/quality" replace />}
+          />
+          <Route
+            path="content/community_groups/requests"
+            element={<Navigate to="/admin?queue=group-requests" replace />}
+          />
+          <Route
+            path="content/group-requests"
+            element={<Navigate to="/admin/content/community_groups/requests" replace />}
+          />
+          {/* Hotel CRUD now lives in the Business console's Hotels tab. */}
+          <Route
+            path="hotels"
+            element={<Navigate to="/admin/content/organizations?tab=hotels" replace />}
+          />
+          <Route
+            path="villages"
+            element={<Navigate to="/admin/content/queer_villages" replace />}
+          />
+          <Route path="geography" element={<AdminGeography />} />
+
+          {/* System section */}
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="redirects" element={<Navigate to="/admin/content/redirects" replace />} />
+          <Route path="email" element={<EmailPlatform />} />
+          <Route
+            path="email-templates"
+            element={<Navigate to="/admin/email?tab=templates" replace />}
+          />
+
+          {/* Settings -- taxonomy management pages */}
+          <Route path="settings" element={<Navigate to="/admin/content/unified_tags" replace />} />
+          <Route
+            path="settings/venue-services"
+            element={<Navigate to="/admin/content/venue_services" replace />}
+          />
+          <Route
+            path="settings/event-types"
+            element={<Navigate to="/admin/content/event_types" replace />}
+          />
+          <Route
+            path="settings/event-amenities"
+            element={<Navigate to="/admin/content/event_amenities" replace />}
+          />
+          <Route
+            path="settings/event-services"
+            element={<Navigate to="/admin/content/event_services" replace />}
+          />
+          <Route
+            path="settings/accessibility"
+            element={<Navigate to="/admin/content/accessibility_attributes" replace />}
+          />
+          <Route
+            path="settings/target-groups"
+            element={<Navigate to="/admin/content/target_groups" replace />}
+          />
+          <Route
+            path="settings/professions"
+            element={<Navigate to="/admin/content/professions" replace />}
+          />
+
+          {/* Legacy routes -- redirect to new paths */}
+          <Route path="venues" element={<Navigate to="/admin/content/organizations" replace />} />
+          <Route path="duplicates" element={<GovernanceRedirect mode="merge" />} />
+          <Route path="events" element={<Navigate to="/admin/content/events" replace />} />
+          <Route path="tags" element={<Navigate to="/admin/content/unified_tags" replace />} />
+          <Route path="cities" element={<Navigate to="/admin/quality" replace />} />
+          <Route path="countries" element={<Navigate to="/admin/content/countries" replace />} />
+          <Route
+            path="personalities"
+            element={<Navigate to="/admin/content/personalities" replace />}
+          />
+          <Route path="quests" element={<Navigate to="/admin/content/guides" replace />} />
+          <Route path="places-editorial" element={<GovernanceRedirect mode="editorial" />} />
+          <Route
+            path="marketplace"
+            element={<Navigate to="/admin/content/marketplace_listings" replace />}
+          />
+          <Route
+            path="marketplace/guides"
+            element={<Navigate to="/admin/content/guides" replace />}
+          />
+          <Route path="venue-guides" element={<Navigate to="/admin/content/guides" replace />} />
+          <Route
+            path="groups"
+            element={<Navigate to="/admin/content/community_groups" replace />}
+          />
+          <Route path="news-authors" element={<AdminNewsAuthors />} />
+          <Route path="news-authors/articles" element={<AdminNewsAuthorArticles />} />
+          <Route path="news-sources" element={<AdminNewsSources />} />
+          <Route path="cms" element={<Navigate to="/admin/content" replace />} />
+          <Route path="import-hub" element={<Navigate to="/admin/pipelines" replace />} />
+          <Route path="festivals" element={<Navigate to="/admin/events" replace />} />
+          <Route
+            path="venue-services"
+            element={<Navigate to="/admin/settings/venue-services" replace />}
+          />
+          <Route
+            path="event-types"
+            element={<Navigate to="/admin/settings/event-types" replace />}
+          />
+          <Route
+            path="event-amenities"
+            element={<Navigate to="/admin/settings/event-amenities" replace />}
+          />
+          <Route
+            path="event-services"
+            element={<Navigate to="/admin/settings/event-services" replace />}
+          />
+          <Route
+            path="accessibility-attributes"
+            element={<Navigate to="/admin/settings/accessibility" replace />}
+          />
+          <Route
+            path="target-groups"
+            element={<Navigate to="/admin/settings/target-groups" replace />}
+          />
+
+          {/* Unknown /admin/* — React Router ranks "*" lowest, so this can
+            never shadow content/:type. Without it the shell renders an
+            empty content area, which reads as a broken page. */}
+          <Route path="*" element={<AdminNotFound />} />
+        </Route>
+
+        {/* ── Locale-aware public routes ── */}
+        {/* /:locale? makes the locale segment optional — /venues and /de/venues both work */}
+        <Route path="/:locale?" element={<LocaleRouter />}>
+          <Route index element={<Index />} />
+          {/* Declared FIRST among the locale parent's children on purpose.
+          React Router expands the optional `:locale?`, so /p/about
+          scores `/:locale/about` (locale="p" → About) and `/p/:slug`
+          (slug="about" → CMSPage) identically (17). The tie breaks
+          toward the earlier-declared sibling, so every CMS slug that
+          also names a top-level route (about, contact, help, blog,
+          press, …) rendered NotFound via LocaleRouter's unknown-locale
+          branch. Unlike the `submit/<slug>` fix below, CMS slugs are DB
+          rows and can't be enumerated into static paths, so ordering is
+          the lever: from here `p/:slug` wins every /p/* tie, and its
+          static first segment means it can steal nothing else.
+          Guarded by src/__tests__/cmsPageRouting.test.tsx. */}
+          <Route path="p/:slug" element={<CMSPage />} />
+          <Route path="venues" element={<Venues />} />
+          {/* Section-name slugs collide with /venues/:slug — redirect to top-level pages */}
+          <Route path="venues/hotels" element={<Navigate to="/hotels" replace />} />
+          <Route path="venues/events" element={<Navigate to="/events" replace />} />
+          <Route path="venues/news" element={<Navigate to="/news" replace />} />
+          <Route path="venues/marketplace" element={<Navigate to="/marketplace" replace />} />
+          <Route path="venues/travel" element={<Navigate to="/travel" replace />} />
+          <Route path="venues/groups" element={<Navigate to="/hub/groups" replace />} />
+          <Route path="venues/resources" element={<Navigate to="/tags" replace />} />
+          {/* Legacy routes — canonical lives under /me/*. Keep one release. */}
+          <Route path="venues/leaderboard" element={<Navigate to="/me/progress" replace />} />
+          <Route path="venues/passport" element={<Navigate to="/me/progress" replace />} />
+          <Route path="guides" element={<Guides />} />
+          <Route path="guides/:slug" element={<GuideDetail />} />
+          <Route path="venues/guides" element={<LocalizedRedirect to="/guides?entity=venue" />} />
+          <Route path="venues/guides/:slug" element={<SlugAliasRedirect toBase="guides" />} />
+          <Route path="venues/:slug" element={<EntityDetail source="venue" />} />
+          <Route path="organizations" element={<Organizations />} />
+          <Route path="organizations/:slug" element={<EntityDetail source="organization" />} />
+          <Route path="history" element={<HistoryTimeline />} />
+          <Route path="history/:slug" element={<EntityDetail source="milestone" />} />
+          <Route path="milestones" element={<Navigate to="/history" replace />} />
+          <Route path="events" element={<Events />} />
+          <Route path="events/guides" element={<LocalizedRedirect to="/guides?entity=event" />} />
+          <Route path="events/guides/:slug" element={<SlugAliasRedirect toBase="guides" />} />
+          <Route path="events/:slug" element={<EventDetail />} />
+          <Route path="pride" element={<PridePage />} />
+          <Route path="pride/:year" element={<PridePage />} />
+          <Route path="marketplace" element={<Marketplace />} />
+          <Route path="marketplace/share" element={<MarketplaceShare />} />
+          <Route path="marketplace/missions" element={<Navigate to="/me/progress" replace />} />
+          <Route path="marketplace/categories" element={<MarketplaceCategories />} />
+          <Route path="marketplace/category/:slug" element={<MarketplaceCategory />} />
+          <Route path="marketplace/collection/:slug" element={<MarketplaceCollection />} />
+          <Route
+            path="marketplace/guides"
+            element={<LocalizedRedirect to="/guides?entity=marketplace" />}
+          />
+          <Route path="marketplace/guides/:slug" element={<SlugAliasRedirect toBase="guides" />} />
+          <Route path="marketplace/merchants/:domain" element={<MarketplaceMerchant />} />
+          {/* The index MUST stay above `marketplace/:slug` — the
+              catch-all would otherwise swallow `/marketplace/brands`
+              and render "item not found", which is what it did for as
+              long as this route was missing. */}
+          <Route path="marketplace/brands" element={<MarketplaceBrands />} />
+          <Route path="marketplace/brands/:slug" element={<MarketplaceBrand />} />
+          <Route path="marketplace/:slug" element={<MarketplaceItemDetail />} />
+          <Route path="wishlists" element={<Wishlists />} />
+          <Route path="wishlists/:slug" element={<Wishlist />} />
+          <Route path="hotels" element={<Hotels />} />
+          <Route path="hotels/:slug" element={<HotelDetail />} />
+          <Route path="villages" element={<Navigate to="/places" replace />} />
+          <Route path="villages/:slug" element={<QueerVillageDetail />} />
+          <Route path="place/:slug" element={<PlaceDetail />} />
+          <Route path="festivals" element={<Navigate to="/events" replace />} />
+          <Route path="festivals/:id" element={<Navigate to="/events" replace />} />
+          {/* Intent Router. Top-level nav names the JOB, not the table.
+            Slug rules, both load-bearing and asserted by
+            src/config/__tests__/navigation.test.ts and
+            src/__tests__/intentNavRouting.test.tsx:
+              1. Never a 2-letter first segment — stripLocale() in
+                 src/lib/locale.ts strips ANY [a-z]{2} leading segment,
+                 so `/go` would be silently rewritten to `/` by the
+                 header, the bottom nav, RouteFade and getSubmitCta.
+              2. Any future child must be a STATIC two-segment path
+                 (`rights/compare`), never `:tab?` — otherwise `/X/Y`
+                 ties with the `/:locale/Y` branch and LocaleRouter
+                 renders NotFound for an unknown "locale". */}
+          <Route path="going-out" element={<GoingOut />} />
+          <Route path="styleguide" element={<Styleguide />} />
+          {/* /rights folded into the Knowledge hub as
+              /tags/rights-by-country (2026-11-01). NOT /tags/rights —
+              that slug is a live glossary term. The old URLs stay as
+              redirects so inbound links (and #topic fragments) work. */}
+          <Route path="rights" element={<LocalizedRedirect to="/tags/rights-by-country" />} />
+          <Route
+            path="rights/sources"
+            element={<LocalizedRedirect to="/tags/rights-by-country/sources" />}
+          />
+          <Route
+            path="rights/trans"
+            element={<LocalizedRedirect to="/tags/rights-by-country/trans" />}
+          />
+          <Route
+            path="methodology"
+            element={<LocalizedRedirect to="/tags/rights-by-country/methodology" />}
+          />
+          <Route
+            path="equality-score"
+            element={<LocalizedRedirect to="/tags/rights-by-country/methodology" />}
+          />
+          {/* /support was the org-directory slice of /help wrapped in
+            intent chrome: same hook, same `role: 'support'` filter, and its
+            own crisis band was just a link to /help. Its two unique pieces
+            (coverage note, "know the law") now live on /help. The URL stays
+            so the Support track keeps its identity and inbound links work. */}
+          <Route path="support" element={<LocalizedRedirect to="/help" />} />
+          {/* /shop was /marketplace twice. Two of its three sections were
+            duplicates — an occasions grid pointing at the same ?tags=occ-*
+            filters the marketplace control bar exposes, and the very same
+            <DepartmentBento /> instance — while /marketplace's unfiltered
+            landing was already the editorial front door. /marketplace is the
+            superset: it owns all ten deep routes, marketplace_slug_redirects,
+            the `marketplace` search entity and the M-yellow bullet. Same shape
+            as /support → /help above. The nav still says "Shop"; labels are
+            decoupled from paths.
+
+            public/_redirects 301s this at the edge, but that is a Cloudflare
+            Pages feature and is inert in local dev, `vite preview` and the PR
+            e2e run — and it is unprefixed-only, so this route is also the ONLY
+            layer that carries /de/shop → /de/marketplace. `shop` stays declared
+            before `shop/*` so the static sibling wins the /shop tie. */}
+          <Route path="shop" element={<LocalizedRedirect to="/marketplace" />} />
+          {/* /places retired: it duplicated /cities and the Travelling
+            intent, kept client-side viewMode state instead of routes
+            (no deep links, broken Back), and shipped dead filters. The
+            edge rule `/places/* → /city/:splat` in public/_redirects is
+            untouched and still handles legacy sub-paths. */}
+          <Route path="places" element={<LocalizedRedirect to="/travel" />} />
+          <Route path="travel" element={<Travel />} />
+          <Route path="travel/book" element={<TravelBook />} />
+          {/* /trips list folded into the /hub office (Plans module). The
+          /trips/:id workspace + discover/shared stay top-level. */}
+          <Route path="trips" element={<LocalizedRedirect to="/hub/plans" />} />
+          <Route path="trips/invitations" element={<TripInvitationsPage />} />
+          <Route path="trips/inbox" element={<LocalizedRedirect to="/hub/plans" />} />
+          <Route path="trips/discover" element={<TripsDiscoverPage />} />
+          <Route path="trips/shared/:token" element={<SharedTripPage />} />
+          <Route path="trips/:tripId/today" element={<TripSubrouteRedirect view="today" />} />
+          <Route path="trips/:tripId/booklet" element={<TripSubrouteRedirect view="booklet" />} />
+          <Route path="trips/:tripId" element={<TripWorkspace />} />
+          {/* Legacy trip sub-tabs (e.g. /trips/:id/packing from old
+            notification links) fold into the workspace. */}
+          <Route path="trips/:tripId/*" element={<TripSubrouteRedirect view="plan" />} />
+          <Route path="bookings" element={<LocalizedRedirect to="/hub/plans" />} />
+          <Route path="map" element={<MapPage />} />
+          <Route path="explore/connections" element={<ConnectionsExplorer />} />
+          <Route path="flights" element={<Navigate to="/travel" replace />} />
+          <Route path="cities" element={<Cities />} />
+          {/* The compare tool lives under the SINGULAR segment because
+          public/_redirects 301s every `/cities/:slug` to `/city/:slug`
+          before React ever runs — a plural-namespaced page there is
+          unreachable in production (it 301'd into /city/compare, which
+          the edge then hard-404'd as a missing city row). The plural
+          route below only exists for the localized paths
+          (/de/cities/compare), which the _redirects rule never sees. */}
+          <Route path="city/compare" element={<CitiesCompare />} />
+          <Route path="cities/compare" element={<LocalizedRedirect to="/city/compare" />} />
+          <Route path="city/:slug" element={<CityDetail />} />
+          <Route path="country/:slug" element={<CountryDetail />} />
+          {/* /users folded into the /community hub (Members tab). */}
+          <Route path="users" element={<LocalizedRedirect to="/hub/members" />} />
+          <Route path="personalities" element={<Personalities />} />
+          <Route path="personalities/:slug" element={<PersonalityDetail />} />
+          {/* /competitions is a HUB; each comparable type has its own
+              page. The six sub-routes below are STATIC two-segment
+              paths, never `competitions/:category` — a param in the
+              second position ties with `/:locale/<X>` at rank 17 and
+              resolves into LocaleRouter's unknown-locale → NotFound
+              branch. Views within a page stay a `?view=` query param
+              for the same reason. Slugs mirror
+              src/lib/competitionCategories.ts and are asserted against
+              it by competitionRoutes.test.ts. */}
+          <Route path="competitions" element={<Competitions />} />
+          <Route
+            path="competitions/types/:categorySlug"
+            element={<ManagedCompetitionCategoryPage />}
+          />
+          <Route
+            path="competitions/drag-series"
+            element={<CompetitionCategoryPage category="drag_series" />}
+          />
+          <Route
+            path="competitions/drag-kings"
+            element={<CompetitionCategoryPage category="drag_king" />}
+          />
+          <Route
+            path="competitions/drag-pageants"
+            element={<CompetitionCategoryPage category="drag_pageant" />}
+          />
+          <Route
+            path="competitions/trans-pageants"
+            element={<CompetitionCategoryPage category="trans_pageant" />}
+          />
+          <Route
+            path="competitions/gay-titles"
+            element={<CompetitionCategoryPage category="gay_title" />}
+          />
+          <Route
+            path="competitions/leather-titles"
+            element={<CompetitionCategoryPage category="leather_title" />}
+          />
+          {/* Legacy URL schemes still crawled — alias to canonical routes. */}
+          <Route path="personality/:slug" element={<SlugAliasRedirect toBase="personalities" />} />
+          <Route path="geography/:slug" element={<SlugAliasRedirect toBase="city" />} />
+          <Route path="organizer/:slug" element={<SlugAliasRedirect toBase="organizations" />} />
+          <Route path="tag/:slug" element={<SlugAliasRedirect toBase="tags" />} />
+          <Route path="profession/:slug" element={<ProfessionRedirect />} />
+          <Route path="shop/*" element={<LocalizedRedirect to="/marketplace" />} />
+          <Route path="produkt/:slug" element={<LocalizedRedirect to="/marketplace" />} />
+          <Route path="home" element={<LocalizedRedirect to="/" />} />
+          {/* Bare <Navigate> here dropped location.search, discarding
+              the ?redirect= these aliases exist to carry. */}
+          <Route path="login" element={<AuthAliasRedirect />} />
+          <Route path="signin" element={<AuthAliasRedirect />} />
+          <Route path="dashboard" element={<LocalizedRedirect to="/hub" />} />
+          <Route path="directory" element={<LocalizedRedirect to="/hub/people" />} />
+          <Route path="users/:slug" element={<SlugAliasRedirect toBase="user" />} />
+          <Route path="wiki/:slug" element={<SlugAliasRedirect toBase="tags" />} />
+          <Route path="europe" element={<LocalizedRedirect to="/cities" />} />
+          <Route path="africa" element={<LocalizedRedirect to="/cities" />} />
+          <Route path="quests" element={<LocalizedRedirect to="/guides?format=quest" />} />
+          <Route path="quests/:slug" element={<SlugAliasRedirect toBase="guides" />} />
+          <Route path="tags" element={<TagsIndex />} />
+          {/* Same component: the category comes from the PATH. Three
+              spellings of that filter used to coexist (?cat=, ?category=
+              and this route); the query forms are now legacy inputs
+              that resolve to a redirect. */}
+          <Route path="tags/c/:categorySlug" element={<TagsIndex />} />
+          {/* Static segment, declared before the :tagName catch-all.
+              React Router ranks static over dynamic regardless of
+              order, but relying on that silently would break the
+              day someone creates a tag slugged "interactions" —
+              none exists today and this route is what reserves it. */}
+          {/* Static, so it beats tags/:tagName below. */}
+          <Route path="tags/rights-by-country" element={<RightsIntent />} />
+          <Route path="tags/rights-by-country/sources" element={<RightsSources />} />
+          <Route path="tags/rights-by-country/methodology" element={<RightsMethodology />} />
+          <Route path="tags/rights-by-country/trans" element={<TransRights />} />
+          <Route path="tags/interactions" element={<SubstanceInteractionsPage />} />
+          <Route path="tags/sti-guide" element={<StiGuidePage />} />
+          <Route path="tags/:tagName" element={<TagDetail />} />
+          {/* The topic hubs are gone — 8 curated tag clusters that
+              duplicated what the taxonomy already expresses. 301'd in
+              public/_redirects; this SPA route is the fallback. */}
+          <Route path="tags/topic/:slug" element={<Navigate to="/tags" replace />} />
+          <Route path="professions/:professionName" element={<ProfessionDetail />} />
+          {/* Legacy redirects → /tags */}
+          <Route path="resources" element={<Navigate to="/tags" replace />} />
+          <Route path="resources/topic/:slug" element={<Navigate to="/tags" replace />} />
+          <Route path="resources/c/:categorySlug" element={<Navigate to="/tags" replace />} />
+          <Route path="resources/:tagName" element={<ResourcesTagRedirect />} />
+          <Route path="ressources" element={<Navigate to="/tags" replace />} />
+          <Route path="ressources/:tagName" element={<Navigate to="/tags" replace />} />
+          <Route path="donate" element={<Donate />} />
+          <Route path="about-hub" element={<CMSRoutePage slug="about-hub" />} />
+          <Route path="about" element={<About />} />
+          <Route path="contact" element={<Contact />} />
+          <Route path="email-updates" element={<EmailUpdates />} />
+          <Route path="vision" element={<CMSRoutePage slug="vision" />} />
+          <Route path="values" element={<CMSRoutePage slug="values" />} />
+          <Route path="press" element={<CMSRoutePage slug="press" />} />
+          <Route path="blog" element={<CMSRoutePage slug="blog" />} />
+          <Route path="sustainability" element={<CMSRoutePage slug="sustainability" />} />
+          <Route path="legal" element={<CMSRoutePage slug="legal" />} />
+          <Route path="terms" element={<CMSRoutePage slug="terms" />} />
+          <Route path="privacy" element={<CMSRoutePage slug="privacy" />} />
+          <Route path="cookies" element={<CMSRoutePage slug="cookies" />} />
+          <Route path="dmca" element={<CMSRoutePage slug="dmca" />} />
+          <Route path="news" element={<News />} />
+          {/* Shows and episodes. An EPISODE keeps its /news/:slug
+              page — 8,000+ of those URLs are already indexed, so a
+              second episode space would only fight them for the
+              canonical. */}
+          <Route path="podcasts" element={<Podcasts />} />
+          <Route path="podcasts/:slug" element={<PodcastShow />} />
+          <Route path="news/all" element={<NewsArchive />} />
+          <Route path="news/me" element={<Navigate to="/me/progress" replace />} />
+          <Route path="news/story/:slug" element={<NewsStoryDetail />} />
+          <Route path="news/:slug" element={<NewsDetail />} />
+          <Route path="search" element={<SearchResults />} />
+          {/* Legacy group URLs resolve into the unified People area. */}
+          <Route path="groups" element={<LocalizedRedirect to="/hub/groups" />} />
+          <Route
+            path="groups/invite/:token"
+            element={<LocalizedParamRedirect toBase="/hub/groups/invite" param="token" />}
+          />
+          <Route
+            path="groups/:groupId"
+            element={<LocalizedParamRedirect toBase="/hub/groups" param="groupId" />}
+          />
+          <Route path="my-groups" element={<LocalizedRedirect to="/hub/groups?tab=mine" />} />
+          <Route path="accessibility" element={<CMSRoutePage slug="accessibility" />} />
+          {/* "Inbox" was email + notifications, never messages. Notifications now
+          live in the header menu; the @queer.guide mailbox moved to /mailbox.
+          /inbox now resolves to the hub Messages surface (Chats sub-view). */}
+          <Route path="inbox" element={<LocalizedRedirect to="/hub/messages" />} />
+          <Route path="mailbox" element={<LocalizedRedirect to="/hub/messages" />} />
+          {/* /messages folded into the hub Messages module. LocalizedRedirect
+          carries the query string, so DB-stored open_target strings
+          ('/messages?conversation=…') and ?tripmail= deep links keep
+          resolving without any data rewrite. */}
+          <Route path="messages" element={<LocalizedRedirect to="/hub/messages" />} />
+          {/* /favorites folded into /hub (Saved module). */}
+          <Route path="favorites" element={<LocalizedRedirect to="/hub/saved" />} />
+          <Route path="feed" element={<LocalizedRedirect to="/hub/feed" />} />
+          <Route path="posts/:postId" element={<PostDetail />} />
+          {/* atproto OAuth redirect_uri — must match public/oauth/client-metadata.json. */}
+          <Route path="oauth/callback" element={<BlueskyCallback />} />
+          <Route path="friends" element={<LocalizedRedirect to="/hub/friends" />} />
+          <Route path="community" element={<LocalizedRedirect to="/hub/feed" />} />
+          <Route path="community/feed" element={<LocalizedRedirect to="/hub/feed" />} />
+          <Route path="community/members" element={<LocalizedRedirect to="/hub/members" />} />
+          <Route path="community/friends" element={<LocalizedRedirect to="/hub/friends" />} />
+          <Route path="community/groups" element={<LocalizedRedirect to="/hub/groups" />} />
+          {/* /hub — one home for community, connection, and the personal
+          workspace. Static routes prevent the optional /:locale? parent
+          from capturing "hub" as an unknown locale. */}
+          <Route path="hub" element={<HubPage module="overview" />} />
+          <Route path="hub/feed" element={<HubPage module="feed" />} />
+          <Route path="hub/members" element={<Community tab="members" />} />
+          <Route path="hub/friends" element={<Community tab="friends" />} />
+          <Route path="hub/groups" element={<Community tab="groups" />} />
+          <Route path="hub/groups/invite/:token" element={<GroupInviteAccept />} />
+          <Route path="hub/groups/:groupId" element={<GroupDetail />} />
+          <Route path="hub/people" element={<People />} />
+          <Route path="hub/dating" element={<Cruising />} />
+          <Route path="hub/dating/onboarding" element={<IntimateOnboard />} />
+          <Route path="hub/dating/:userId" element={<IntimateUserDetail />} />
+          <Route path="hub/travel" element={<PeopleMode tab="travel" />} />
+          <Route path="hub/nearby" element={<PeopleMode tab="nearby" />} />
+          <Route path="hub/messages" element={<HubPage module="messages" />} />
+          <Route path="hub/plans" element={<HubPage module="plans" />} />
+          <Route path="hub/saved" element={<HubPage module="saved" />} />
+          <Route path="hub/settings" element={<SettingsRedirect />} />
+          {/* Retired module paths → their consolidated home. LocalizedRedirect
+          preserves the query string (e.g. ?conversation=). */}
+          <Route path="hub/calendar" element={<LocalizedRedirect to="/hub/plans" />} />
+          <Route path="hub/trips" element={<LocalizedRedirect to="/hub/plans" />} />
+          <Route path="hub/contacts" element={<LocalizedRedirect to="/hub/messages" />} />
+          <Route path="hub/news" element={<LocalizedRedirect to="/hub/saved" />} />
+          {/* /me folded into /hub; identity tabs live on the unified
+          public profile (/user/:id/:tab) via MeRedirect. */}
+          <Route path="me" element={<LocalizedRedirect to="/hub" />} />
+          <Route path="me/saved" element={<LocalizedRedirect to="/hub/saved" />} />
+          <Route path="me/trips" element={<LocalizedRedirect to="/hub/plans" />} />
+          {/* #1974's /me/calendar folds into the hub Plans module. */}
+          <Route path="me/calendar" element={<LocalizedRedirect to="/hub/plans" />} />
+          <Route path="me/travel" element={<MeRedirect tab="travel" />} />
+          <Route path="me/groups" element={<LocalizedRedirect to="/hub/messages" />} />
+          <Route path="me/contributions" element={<MeRedirect tab="contributions" />} />
+          <Route path="me/progress" element={<MeRedirect tab="progress" />} />
+          <Route path="me/passport" element={<MeRedirect tab="progress" />} />
+          <Route path="me/missions" element={<MeRedirect tab="progress" />} />
+          <Route path="me/leaderboard" element={<MeRedirect tab="progress" />} />
+          <Route path="me/settings" element={<SettingsRedirect />} />
+          <Route path="me/account" element={<MeRedirect tab="account" />} />
+          <Route path="me/tiers" element={<MeRedirect tab="progress" />} />
+          <Route path="settings" element={<SettingsRedirect />} />
+          <Route path="settings/privacy" element={<SettingsRedirect privacy />} />
+          <Route path="profile/settings" element={<SettingsRedirect />} />
+          {/* Legacy People routes preserve inbound links while Hub remains
+          the single canonical shell. */}
+          <Route path="people" element={<LocalizedRedirect to="/hub/people" />} />
+          <Route path="people/feed" element={<LocalizedRedirect to="/hub/feed" />} />
+          <Route path="people/members" element={<LocalizedRedirect to="/hub/members" />} />
+          <Route path="people/friends" element={<LocalizedRedirect to="/hub/friends" />} />
+          <Route path="people/groups" element={<LocalizedRedirect to="/hub/groups" />} />
+          <Route
+            path="people/groups/invite/:token"
+            element={<LocalizedParamRedirect toBase="/hub/groups/invite" param="token" />}
+          />
+          <Route
+            path="people/groups/:groupId"
+            element={<LocalizedParamRedirect toBase="/hub/groups" param="groupId" />}
+          />
+          <Route path="people/dating" element={<LocalizedRedirect to="/hub/dating" />} />
+          <Route
+            path="people/dating/onboarding"
+            element={<LocalizedRedirect to="/hub/dating/onboarding" />}
+          />
+          <Route
+            path="people/dating/:userId"
+            element={<LocalizedParamRedirect toBase="/hub/dating" param="userId" />}
+          />
+          <Route path="people/travel" element={<LocalizedRedirect to="/hub/travel" />} />
+          <Route path="people/nearby" element={<LocalizedRedirect to="/hub/nearby" />} />
+          <Route path="intimate" element={<LocalizedRedirect to="/hub/dating?panel=people" />} />
+          <Route path="discover" element={<LocalizedRedirect to="/hub/dating?panel=people" />} />
+          <Route path="cruising" element={<LocalizedRedirect to="/hub/dating" />} />
+          <Route
+            path="intimate/onboard"
+            element={<LocalizedRedirect to="/hub/dating/onboarding" />}
+          />
+          <Route
+            path="intimate/u/:userId"
+            element={<LocalizedParamRedirect toBase="/hub/dating" param="userId" />}
+          />
+          {/* Kink checklist tool — static paths (see people/* locale note). */}
+          <Route path="tools/checklist" element={<KinkChecklist />} />
+          <Route path="tools/checklist/s/:code" element={<KinkShareView />} />
+          {/* Workbook runner. Lives beside the checklist so it inherits
+              the same posture: sign-in + intimate opt-in gated, absent
+              from every sitemap, no search_documents row. Discovery is
+              the TagWorkbooks band on /tags/:slug. */}
+          <Route path="tools/workbook/:slug" element={<WorkbookRunner />} />
+          {/* Hand-typed shortcut (404 reports) → the checklist tool. */}
+          <Route path="kink" element={<LocalizedRedirect to="/tools/checklist" />} />
+          <Route path="profile/tiers" element={<Navigate to="/me/progress" replace />} />
+          <Route path="profile/footprint" element={<Navigate to="/me/travel" replace />} />
+          <Route path="profile/footprint/:userId/public" element={<FootprintRedirect />} />
+          <Route path="user/:userId/:tab?" element={<ProfilePage />} />
+          <Route path="sitemap" element={<Sitemap />} />
+          <Route path="feedback" element={<FeedbackBoard />} />
+          <Route path="help" element={<HelpHotlines />} />
+          <Route path="help/:country" element={<HelpHotlines />} />
+          {/* Legacy crisis URL. public/_redirects 301s it, but that is a
+          Cloudflare Pages feature and is inert anywhere else (local
+          dev, `vite preview`, the PR e2e run) — so the route exists
+          too. A dead crisis link must not depend on the host layer. */}
+          <Route path="help-hotlines" element={<LocalizedRedirect to="/help" />} />
+          <Route path="submit" element={<ContributePage />} />
+          {/* Explicit static route per submission type. The locale
+          layout parent is `/:locale?`; React Router expands the
+          optional segment, so /submit/news scores `/:locale/news`
+          (locale="submit") identically to `/submit/:contentType` and
+          the earlier sibling (news / feedback) wins the tie — making
+          LocaleRouter treat "submit" as an unknown locale and render
+          NotFound. A fully-static two-segment path outranks the locale
+          branch deterministically, so every submit slug resolves to
+          the form. Generated from the registry so future colliding
+          slugs stay covered. The `:contentType` route below still
+          handles unknown types ("Unknown submission type"). */}
+          {[...Object.keys(submissionRegistry), 'feedback'].map((slug) => (
+            <Route key={slug} path={`submit/${slug}`} element={<ContributePage type={slug} />} />
+          ))}
+          <Route path="submit/:contentType" element={<ContributePage />} />
+          {/* `p/:slug` moved to the top of this list — see note there. */}
+          <Route path="share-target" element={<ShareTarget />} />
+          {/* Inner catch-all: paths like /de/unknown or /en/typo
+          fall through to NotFound instead of rendering nothing
+          inside the locale layout. */}
+          <Route path="*" element={<HandleOrNotFound />} />
+        </Route>
+
+        <Route path="*" element={<HandleOrNotFound />} />
+      </Routes>
+    ),
+    [],
+  );
+
   return (
     <>
       {/* Screen reader route change announcements (a11y: WCAG 4.1.3) */}
@@ -401,833 +1142,7 @@ export const AppRoutes = () => {
                 </PageContainer>
               }
             >
-              <Routes>
-                {/* Auth routes — no locale prefix */}
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
-                {/* Under /auth/ deliberately: that prefix already carries the
-                    no-locale-prefix rule, the compact footer, and the noindex
-                    in functions/_lib/routeMeta.ts. */}
-                <Route path="/auth/reset-password" element={<ResetPassword />} />
-                {/* Unprefixed aliases. These existed ONLY under /:locale?, so a
-                    bare /signin parsed as locale "signin" and 404'd — which is
-                    where PlanTripFromHereButton had been sending people. */}
-                <Route path="/signin" element={<AuthAliasRedirect />} />
-                <Route path="/login" element={<AuthAliasRedirect />} />
-                <Route path="/claim-username" element={<ClaimUsername />} />
-                <Route path="/share/redirect-report/:reportId" element={<SharedRedirectReport />} />
-                <Route path="/links-workspace" element={<RedirectMemberWorkspace />} />
-                <Route path="/extension" element={<ExtensionInstall />} />
-                {import.meta.env.DEV && (
-                  <Route path="/pattern-library" element={<PatternLibrary />} />
-                )}
-                <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
-                <Route path="/onboarding/search" element={<SearchPersonalization />} />
-                <Route path="/onboarding/venues" element={<VenuePersonalization />} />
-                <Route path="/brand" element={<BrandGuidelines />} />
-                {/* ── Unified Admin Console ── */}
-                {/* All /admin/* routes wrapped in AdminShell layout with sidebar */}
-                <Route
-                  path="/admin"
-                  element={
-                    <AdminRouteGuard>
-                      <AdminShell />
-                    </AdminRouteGuard>
-                  }
-                >
-                  {/* Dashboard section */}
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="analytics" element={<AdminAnalytics />} />
-                  <Route path="affiliate" element={<AdminAffiliate />} />
-                  {/* Vendors and brands were absorbed by the Business console. */}
-                  <Route
-                    path="vendors"
-                    element={<Navigate to="/admin/content/organizations?tab=merchants" replace />}
-                  />
-                  <Route
-                    path="brands"
-                    element={<Navigate to="/admin/content/organizations?tab=brands" replace />}
-                  />
-                  <Route path="business" element={<AdminBusiness />} />
-                  <Route path="business/:id" element={<AdminBusiness />} />
-                  <Route path="maps" element={<Navigate to="/admin" replace />} />
-                  <Route path="security" element={<SecurityMonitoringDashboard />} />
-                  <Route path="cloudflare" element={<CloudflareDashboard />} />
-
-                  {/* Content section -- unified list + per-type views */}
-                  <Route path="content" element={<ContentListPanel />} />
-                  <Route path="content/organizations" element={<OrganisationsWorkspace />} />
-                  {/* Personalities gets a Personencheck dashboard header above the
-                    generic list; static path wins over content/:type. */}
-                  <Route path="content/personalities" element={<PersonalitiesAdmin />} />
-                  {/* Milestones reuse the generic list but add an "AI suggestions"
-                    action above it; static path wins over content/:type. */}
-                  <Route path="content/milestones" element={<MilestonesAdmin />} />
-                  <Route path="content/unified_tags" element={<AdminTags />} />
-                  <Route path="taxonomies" element={<AdminTaxonomies />} />
-                  <Route path="content/redirects" element={<AdminRedirects />} />
-                  <Route
-                    path="content/redirects/manual"
-                    element={<ContentListPanel contentTypeId="redirects" />}
-                  />
-                  <Route path="content/:type" element={<ContentListPanel />} />
-                  {/* /admin/pages duplicated /admin/content/cms_pages (what nav points at);
-                    kept as a redirect for old bookmarks. */}
-                  <Route
-                    path="pages"
-                    element={<Navigate to="/admin/content/cms_pages" replace />}
-                  />
-                  <Route path="media" element={<MediaLibrary />} />
-                  <Route path="media/:id" element={<MediaDetailPage />} />
-
-                  {/* Legacy import URLs retain bookmarks while Sources owns the tools. */}
-                  <Route
-                    path="imports/email-ingestions"
-                    element={<Navigate to="/admin/pipelines?tab=sources&sub=email" replace />}
-                  />
-                  <Route
-                    path="imports/data"
-                    element={<Navigate to="/admin/pipelines?tab=sources&sub=imports" replace />}
-                  />
-                  <Route path="imports/*" element={<Navigate to="/admin/pipelines" replace />} />
-                  <Route path="imports" element={<Navigate to="/admin/pipelines" replace />} />
-                  <Route path="workflows" element={<Navigate to="/admin/pipelines" replace />} />
-                  <Route path="pipelines" element={<AdminPipelines />} />
-                  <Route path="data-sources" element={<AdminDataSources />} />
-                  <Route
-                    path="ingestion-rules"
-                    element={<Navigate to="/admin/pipelines?tab=sources&sub=imports" replace />}
-                  />
-                  <Route
-                    path="pipelines/dashboard"
-                    element={<Navigate to="/admin/pipelines" replace />}
-                  />
-                  <Route
-                    path="scraping"
-                    element={<Navigate to="/admin/pipelines?tab=sources" replace />}
-                  />
-
-                  {/* Review & Workflow section -- unified dashboard */}
-                  <Route path="review" element={<ReviewRedirect />} />
-                  <Route path="governance" element={<AdminGovernance />} />
-                  <Route path="diagnostics" element={<AdminDiagnostics />} />
-                  <Route path="editorial-tools" element={<AdminPlacesEditorial />} />
-                  <Route path="inbox" element={<GovernanceRedirect mode="triage" />} />
-                  <Route path="automation" element={<AdminAutomation />} />
-                  <Route path="feedback" element={<AdminFeedback />} />
-                  <Route
-                    path="moderation"
-                    element={<Navigate to="/admin/inbox?tab=moderation" replace />}
-                  />
-                  <Route path="audit" element={<AuditLog />} />
-                  <Route path="search-intelligence" element={<AdminSearchIntelligence />} />
-                  <Route path="design" element={<AdminDesignSystem />} />
-                  <Route path="styleguide" element={<AdminStyleguide />} />
-                  <Route path="links" element={<Navigate to="/admin/automation" replace />} />
-                  <Route
-                    path="affiliates"
-                    element={<Navigate to="/admin/affiliate?tab=partners" replace />}
-                  />
-                  <Route
-                    path="submissions"
-                    element={<Navigate to="/admin/inbox?tab=submissions" replace />}
-                  />
-
-                  {/* Content type admin pages */}
-                  {/* Standalone quality pages folded into the hub (P5) — review lives in the inbox. */}
-                  <Route
-                    path="content/venue-quality"
-                    element={<Navigate to="/admin/quality" replace />}
-                  />
-                  <Route path="quality" element={<GovernanceRedirect mode="engines" />} />
-                  <Route path="trash" element={<AdminTrash />} />
-                  <Route path="graph" element={<ContentGraph />} />
-                  <Route
-                    path="content/liveness"
-                    element={<Navigate to="/admin?queue=liveness" replace />}
-                  />
-                  <Route
-                    path="content/event-quality"
-                    element={<Navigate to="/admin?queue=event-quality" replace />}
-                  />
-                  <Route
-                    path="content/city-quality"
-                    element={<Navigate to="/admin/quality" replace />}
-                  />
-                  <Route
-                    path="content/personality-quality"
-                    element={<Navigate to="/admin/quality" replace />}
-                  />
-                  <Route
-                    path="content/personalities/:id/datasheet"
-                    element={<PersonalityDataSheet />}
-                  />
-                  {/* Legacy — milestone curation moved to the generic CMS. Keep one release. */}
-                  <Route
-                    path="personalities/milestones"
-                    element={<Navigate to="/admin/content/milestones" replace />}
-                  />
-                  <Route path="postfach" element={<AdminMailbox />} />
-                  <Route
-                    path="content/marketplace-quality"
-                    element={<Navigate to="/admin/quality" replace />}
-                  />
-                  <Route
-                    path="content/village-quality"
-                    element={<Navigate to="/admin/quality" replace />}
-                  />
-                  <Route
-                    path="content/community_groups/requests"
-                    element={<Navigate to="/admin?queue=group-requests" replace />}
-                  />
-                  <Route
-                    path="content/group-requests"
-                    element={<Navigate to="/admin/content/community_groups/requests" replace />}
-                  />
-                  {/* Hotel CRUD now lives in the Business console's Hotels tab. */}
-                  <Route
-                    path="hotels"
-                    element={<Navigate to="/admin/content/organizations?tab=hotels" replace />}
-                  />
-                  <Route
-                    path="villages"
-                    element={<Navigate to="/admin/content/queer_villages" replace />}
-                  />
-                  <Route path="geography" element={<AdminGeography />} />
-
-                  {/* System section */}
-                  <Route path="users" element={<AdminUsers />} />
-                  <Route
-                    path="redirects"
-                    element={<Navigate to="/admin/content/redirects" replace />}
-                  />
-                  <Route path="email" element={<EmailPlatform />} />
-                  <Route
-                    path="email-templates"
-                    element={<Navigate to="/admin/email?tab=templates" replace />}
-                  />
-
-                  {/* Settings -- taxonomy management pages */}
-                  <Route
-                    path="settings"
-                    element={<Navigate to="/admin/content/unified_tags" replace />}
-                  />
-                  <Route
-                    path="settings/venue-services"
-                    element={<Navigate to="/admin/content/venue_services" replace />}
-                  />
-                  <Route
-                    path="settings/event-types"
-                    element={<Navigate to="/admin/content/event_types" replace />}
-                  />
-                  <Route
-                    path="settings/event-amenities"
-                    element={<Navigate to="/admin/content/event_amenities" replace />}
-                  />
-                  <Route
-                    path="settings/event-services"
-                    element={<Navigate to="/admin/content/event_services" replace />}
-                  />
-                  <Route
-                    path="settings/accessibility"
-                    element={<Navigate to="/admin/content/accessibility_attributes" replace />}
-                  />
-                  <Route
-                    path="settings/target-groups"
-                    element={<Navigate to="/admin/content/target_groups" replace />}
-                  />
-                  <Route
-                    path="settings/professions"
-                    element={<Navigate to="/admin/content/professions" replace />}
-                  />
-
-                  {/* Legacy routes -- redirect to new paths */}
-                  <Route
-                    path="venues"
-                    element={<Navigate to="/admin/content/organizations" replace />}
-                  />
-                  <Route path="duplicates" element={<GovernanceRedirect mode="merge" />} />
-                  <Route path="events" element={<Navigate to="/admin/content/events" replace />} />
-                  <Route
-                    path="tags"
-                    element={<Navigate to="/admin/content/unified_tags" replace />}
-                  />
-                  <Route path="cities" element={<Navigate to="/admin/quality" replace />} />
-                  <Route
-                    path="countries"
-                    element={<Navigate to="/admin/content/countries" replace />}
-                  />
-                  <Route
-                    path="personalities"
-                    element={<Navigate to="/admin/content/personalities" replace />}
-                  />
-                  <Route path="quests" element={<Navigate to="/admin/content/guides" replace />} />
-                  <Route
-                    path="places-editorial"
-                    element={<GovernanceRedirect mode="editorial" />}
-                  />
-                  <Route
-                    path="marketplace"
-                    element={<Navigate to="/admin/content/marketplace_listings" replace />}
-                  />
-                  <Route
-                    path="marketplace/guides"
-                    element={<Navigate to="/admin/content/guides" replace />}
-                  />
-                  <Route
-                    path="venue-guides"
-                    element={<Navigate to="/admin/content/guides" replace />}
-                  />
-                  <Route
-                    path="groups"
-                    element={<Navigate to="/admin/content/community_groups" replace />}
-                  />
-                  <Route path="news-authors" element={<AdminNewsAuthors />} />
-                  <Route path="news-authors/articles" element={<AdminNewsAuthorArticles />} />
-                  <Route path="news-sources" element={<AdminNewsSources />} />
-                  <Route path="cms" element={<Navigate to="/admin/content" replace />} />
-                  <Route path="import-hub" element={<Navigate to="/admin/pipelines" replace />} />
-                  <Route path="festivals" element={<Navigate to="/admin/events" replace />} />
-                  <Route
-                    path="venue-services"
-                    element={<Navigate to="/admin/settings/venue-services" replace />}
-                  />
-                  <Route
-                    path="event-types"
-                    element={<Navigate to="/admin/settings/event-types" replace />}
-                  />
-                  <Route
-                    path="event-amenities"
-                    element={<Navigate to="/admin/settings/event-amenities" replace />}
-                  />
-                  <Route
-                    path="event-services"
-                    element={<Navigate to="/admin/settings/event-services" replace />}
-                  />
-                  <Route
-                    path="accessibility-attributes"
-                    element={<Navigate to="/admin/settings/accessibility" replace />}
-                  />
-                  <Route
-                    path="target-groups"
-                    element={<Navigate to="/admin/settings/target-groups" replace />}
-                  />
-
-                  {/* Unknown /admin/* — React Router ranks "*" lowest, so this can
-                    never shadow content/:type. Without it the shell renders an
-                    empty content area, which reads as a broken page. */}
-                  <Route path="*" element={<AdminNotFound />} />
-                </Route>
-
-                {/* ── Locale-aware public routes ── */}
-                {/* /:locale? makes the locale segment optional — /venues and /de/venues both work */}
-                <Route path="/:locale?" element={<LocaleRouter />}>
-                  <Route index element={<Index />} />
-                  {/* Declared FIRST among the locale parent's children on purpose.
-                  React Router expands the optional `:locale?`, so /p/about
-                  scores `/:locale/about` (locale="p" → About) and `/p/:slug`
-                  (slug="about" → CMSPage) identically (17). The tie breaks
-                  toward the earlier-declared sibling, so every CMS slug that
-                  also names a top-level route (about, contact, help, blog,
-                  press, …) rendered NotFound via LocaleRouter's unknown-locale
-                  branch. Unlike the `submit/<slug>` fix below, CMS slugs are DB
-                  rows and can't be enumerated into static paths, so ordering is
-                  the lever: from here `p/:slug` wins every /p/* tie, and its
-                  static first segment means it can steal nothing else.
-                  Guarded by src/__tests__/cmsPageRouting.test.tsx. */}
-                  <Route path="p/:slug" element={<CMSPage />} />
-                  <Route path="venues" element={<Venues />} />
-                  {/* Section-name slugs collide with /venues/:slug — redirect to top-level pages */}
-                  <Route path="venues/hotels" element={<Navigate to="/hotels" replace />} />
-                  <Route path="venues/events" element={<Navigate to="/events" replace />} />
-                  <Route path="venues/news" element={<Navigate to="/news" replace />} />
-                  <Route
-                    path="venues/marketplace"
-                    element={<Navigate to="/marketplace" replace />}
-                  />
-                  <Route path="venues/travel" element={<Navigate to="/travel" replace />} />
-                  <Route path="venues/groups" element={<Navigate to="/hub/groups" replace />} />
-                  <Route path="venues/resources" element={<Navigate to="/tags" replace />} />
-                  {/* Legacy routes — canonical lives under /me/*. Keep one release. */}
-                  <Route
-                    path="venues/leaderboard"
-                    element={<Navigate to="/me/progress" replace />}
-                  />
-                  <Route path="venues/passport" element={<Navigate to="/me/progress" replace />} />
-                  <Route path="guides" element={<Guides />} />
-                  <Route path="guides/:slug" element={<GuideDetail />} />
-                  <Route
-                    path="venues/guides"
-                    element={<LocalizedRedirect to="/guides?entity=venue" />}
-                  />
-                  <Route
-                    path="venues/guides/:slug"
-                    element={<SlugAliasRedirect toBase="guides" />}
-                  />
-                  <Route path="venues/:slug" element={<EntityDetail source="venue" />} />
-                  <Route path="organizations" element={<Organizations />} />
-                  <Route
-                    path="organizations/:slug"
-                    element={<EntityDetail source="organization" />}
-                  />
-                  <Route path="history" element={<HistoryTimeline />} />
-                  <Route path="history/:slug" element={<EntityDetail source="milestone" />} />
-                  <Route path="milestones" element={<Navigate to="/history" replace />} />
-                  <Route path="events" element={<Events />} />
-                  <Route
-                    path="events/guides"
-                    element={<LocalizedRedirect to="/guides?entity=event" />}
-                  />
-                  <Route
-                    path="events/guides/:slug"
-                    element={<SlugAliasRedirect toBase="guides" />}
-                  />
-                  <Route path="events/:slug" element={<EventDetail />} />
-                  <Route path="pride" element={<PridePage />} />
-                  <Route path="pride/:year" element={<PridePage />} />
-                  <Route path="marketplace" element={<Marketplace />} />
-                  <Route path="marketplace/share" element={<MarketplaceShare />} />
-                  <Route
-                    path="marketplace/missions"
-                    element={<Navigate to="/me/progress" replace />}
-                  />
-                  <Route path="marketplace/categories" element={<MarketplaceCategories />} />
-                  <Route path="marketplace/category/:slug" element={<MarketplaceCategory />} />
-                  <Route path="marketplace/collection/:slug" element={<MarketplaceCollection />} />
-                  <Route
-                    path="marketplace/guides"
-                    element={<LocalizedRedirect to="/guides?entity=marketplace" />}
-                  />
-                  <Route
-                    path="marketplace/guides/:slug"
-                    element={<SlugAliasRedirect toBase="guides" />}
-                  />
-                  <Route path="marketplace/merchants/:domain" element={<MarketplaceMerchant />} />
-                  {/* The index MUST stay above `marketplace/:slug` — the
-                      catch-all would otherwise swallow `/marketplace/brands`
-                      and render "item not found", which is what it did for as
-                      long as this route was missing. */}
-                  <Route path="marketplace/brands" element={<MarketplaceBrands />} />
-                  <Route path="marketplace/brands/:slug" element={<MarketplaceBrand />} />
-                  <Route path="marketplace/:slug" element={<MarketplaceItemDetail />} />
-                  <Route path="wishlists" element={<Wishlists />} />
-                  <Route path="wishlists/:slug" element={<Wishlist />} />
-                  <Route path="hotels" element={<Hotels />} />
-                  <Route path="hotels/:slug" element={<HotelDetail />} />
-                  <Route path="villages" element={<Navigate to="/places" replace />} />
-                  <Route path="villages/:slug" element={<QueerVillageDetail />} />
-                  <Route path="place/:slug" element={<PlaceDetail />} />
-                  <Route path="festivals" element={<Navigate to="/events" replace />} />
-                  <Route path="festivals/:id" element={<Navigate to="/events" replace />} />
-                  {/* Intent Router. Top-level nav names the JOB, not the table.
-                    Slug rules, both load-bearing and asserted by
-                    src/config/__tests__/navigation.test.ts and
-                    src/__tests__/intentNavRouting.test.tsx:
-                      1. Never a 2-letter first segment — stripLocale() in
-                         src/lib/locale.ts strips ANY [a-z]{2} leading segment,
-                         so `/go` would be silently rewritten to `/` by the
-                         header, the bottom nav, RouteFade and getSubmitCta.
-                      2. Any future child must be a STATIC two-segment path
-                         (`rights/compare`), never `:tab?` — otherwise `/X/Y`
-                         ties with the `/:locale/Y` branch and LocaleRouter
-                         renders NotFound for an unknown "locale". */}
-                  <Route path="going-out" element={<GoingOut />} />
-                  <Route path="styleguide" element={<Styleguide />} />
-                  {/* /rights folded into the Knowledge hub as
-                      /tags/rights-by-country (2026-11-01). NOT /tags/rights —
-                      that slug is a live glossary term. The old URLs stay as
-                      redirects so inbound links (and #topic fragments) work. */}
-                  <Route
-                    path="rights"
-                    element={<LocalizedRedirect to="/tags/rights-by-country" />}
-                  />
-                  <Route
-                    path="rights/sources"
-                    element={<LocalizedRedirect to="/tags/rights-by-country/sources" />}
-                  />
-                  <Route
-                    path="rights/trans"
-                    element={<LocalizedRedirect to="/tags/rights-by-country/trans" />}
-                  />
-                  {/* /support was the org-directory slice of /help wrapped in
-                    intent chrome: same hook, same `role: 'support'` filter, and its
-                    own crisis band was just a link to /help. Its two unique pieces
-                    (coverage note, "know the law") now live on /help. The URL stays
-                    so the Support track keeps its identity and inbound links work. */}
-                  <Route path="support" element={<LocalizedRedirect to="/help" />} />
-                  {/* /shop was /marketplace twice. Two of its three sections were
-                    duplicates — an occasions grid pointing at the same ?tags=occ-*
-                    filters the marketplace control bar exposes, and the very same
-                    <DepartmentBento /> instance — while /marketplace's unfiltered
-                    landing was already the editorial front door. /marketplace is the
-                    superset: it owns all ten deep routes, marketplace_slug_redirects,
-                    the `marketplace` search entity and the M-yellow bullet. Same shape
-                    as /support → /help above. The nav still says "Shop"; labels are
-                    decoupled from paths.
-
-                    public/_redirects 301s this at the edge, but that is a Cloudflare
-                    Pages feature and is inert in local dev, `vite preview` and the PR
-                    e2e run — and it is unprefixed-only, so this route is also the ONLY
-                    layer that carries /de/shop → /de/marketplace. `shop` stays declared
-                    before `shop/*` so the static sibling wins the /shop tie. */}
-                  <Route path="shop" element={<LocalizedRedirect to="/marketplace" />} />
-                  {/* /places retired: it duplicated /cities and the Travelling
-                    intent, kept client-side viewMode state instead of routes
-                    (no deep links, broken Back), and shipped dead filters. The
-                    edge rule `/places/* → /city/:splat` in public/_redirects is
-                    untouched and still handles legacy sub-paths. */}
-                  <Route path="places" element={<LocalizedRedirect to="/travel" />} />
-                  <Route path="travel" element={<Travel />} />
-                  <Route path="travel/book" element={<TravelBook />} />
-                  {/* /trips list folded into the /hub office (Plans module). The
-                  /trips/:id workspace + discover/shared stay top-level. */}
-                  <Route path="trips" element={<LocalizedRedirect to="/hub/plans" />} />
-                  <Route path="trips/invitations" element={<TripInvitationsPage />} />
-                  <Route path="trips/inbox" element={<LocalizedRedirect to="/hub/plans" />} />
-                  <Route path="trips/discover" element={<TripsDiscoverPage />} />
-                  <Route path="trips/shared/:token" element={<SharedTripPage />} />
-                  <Route
-                    path="trips/:tripId/today"
-                    element={<TripSubrouteRedirect view="today" />}
-                  />
-                  <Route
-                    path="trips/:tripId/booklet"
-                    element={<TripSubrouteRedirect view="booklet" />}
-                  />
-                  <Route path="trips/:tripId" element={<TripWorkspace />} />
-                  {/* Legacy trip sub-tabs (e.g. /trips/:id/packing from old
-                    notification links) fold into the workspace. */}
-                  <Route path="trips/:tripId/*" element={<TripSubrouteRedirect view="plan" />} />
-                  <Route path="bookings" element={<LocalizedRedirect to="/hub/plans" />} />
-                  <Route path="map" element={<MapPage />} />
-                  <Route path="explore/connections" element={<ConnectionsExplorer />} />
-                  <Route path="flights" element={<Navigate to="/travel" replace />} />
-                  <Route path="cities" element={<Cities />} />
-                  {/* The compare tool lives under the SINGULAR segment because
-                  public/_redirects 301s every `/cities/:slug` to `/city/:slug`
-                  before React ever runs — a plural-namespaced page there is
-                  unreachable in production (it 301'd into /city/compare, which
-                  the edge then hard-404'd as a missing city row). The plural
-                  route below only exists for the localized paths
-                  (/de/cities/compare), which the _redirects rule never sees. */}
-                  <Route path="city/compare" element={<CitiesCompare />} />
-                  <Route path="cities/compare" element={<LocalizedRedirect to="/city/compare" />} />
-                  <Route path="city/:slug" element={<CityDetail />} />
-                  <Route path="country/:slug" element={<CountryDetail />} />
-                  {/* /users folded into the /community hub (Members tab). */}
-                  <Route path="users" element={<LocalizedRedirect to="/hub/members" />} />
-                  <Route path="personalities" element={<Personalities />} />
-                  <Route path="personalities/:slug" element={<PersonalityDetail />} />
-                  {/* /competitions is a HUB; each comparable type has its own
-                      page. The six sub-routes below are STATIC two-segment
-                      paths, never `competitions/:category` — a param in the
-                      second position ties with `/:locale/<X>` at rank 17 and
-                      resolves into LocaleRouter's unknown-locale → NotFound
-                      branch. Views within a page stay a `?view=` query param
-                      for the same reason. Slugs mirror
-                      src/lib/competitionCategories.ts and are asserted against
-                      it by competitionRoutes.test.ts. */}
-                  <Route path="competitions" element={<Competitions />} />
-                  <Route
-                    path="competitions/types/:categorySlug"
-                    element={<ManagedCompetitionCategoryPage />}
-                  />
-                  <Route
-                    path="competitions/drag-series"
-                    element={<CompetitionCategoryPage category="drag_series" />}
-                  />
-                  <Route
-                    path="competitions/drag-kings"
-                    element={<CompetitionCategoryPage category="drag_king" />}
-                  />
-                  <Route
-                    path="competitions/drag-pageants"
-                    element={<CompetitionCategoryPage category="drag_pageant" />}
-                  />
-                  <Route
-                    path="competitions/trans-pageants"
-                    element={<CompetitionCategoryPage category="trans_pageant" />}
-                  />
-                  <Route
-                    path="competitions/gay-titles"
-                    element={<CompetitionCategoryPage category="gay_title" />}
-                  />
-                  <Route
-                    path="competitions/leather-titles"
-                    element={<CompetitionCategoryPage category="leather_title" />}
-                  />
-                  {/* Legacy URL schemes still crawled — alias to canonical routes. */}
-                  <Route
-                    path="personality/:slug"
-                    element={<SlugAliasRedirect toBase="personalities" />}
-                  />
-                  <Route path="geography/:slug" element={<SlugAliasRedirect toBase="city" />} />
-                  <Route
-                    path="organizer/:slug"
-                    element={<SlugAliasRedirect toBase="organizations" />}
-                  />
-                  <Route path="tag/:slug" element={<SlugAliasRedirect toBase="tags" />} />
-                  <Route path="profession/:slug" element={<ProfessionRedirect />} />
-                  <Route path="shop/*" element={<LocalizedRedirect to="/marketplace" />} />
-                  <Route path="produkt/:slug" element={<LocalizedRedirect to="/marketplace" />} />
-                  <Route path="home" element={<LocalizedRedirect to="/" />} />
-                  {/* Bare <Navigate> here dropped location.search, discarding
-                      the ?redirect= these aliases exist to carry. */}
-                  <Route path="login" element={<AuthAliasRedirect />} />
-                  <Route path="signin" element={<AuthAliasRedirect />} />
-                  <Route path="dashboard" element={<LocalizedRedirect to="/hub" />} />
-                  <Route path="directory" element={<LocalizedRedirect to="/hub/people" />} />
-                  <Route path="users/:slug" element={<SlugAliasRedirect toBase="user" />} />
-                  <Route path="wiki/:slug" element={<SlugAliasRedirect toBase="tags" />} />
-                  <Route path="europe" element={<LocalizedRedirect to="/cities" />} />
-                  <Route path="africa" element={<LocalizedRedirect to="/cities" />} />
-                  <Route path="quests" element={<LocalizedRedirect to="/guides?format=quest" />} />
-                  <Route path="quests/:slug" element={<SlugAliasRedirect toBase="guides" />} />
-                  <Route path="tags" element={<TagsIndex />} />
-                  {/* Same component: the category comes from the PATH. Three
-                      spellings of that filter used to coexist (?cat=, ?category=
-                      and this route); the query forms are now legacy inputs
-                      that resolve to a redirect. */}
-                  <Route path="tags/c/:categorySlug" element={<TagsIndex />} />
-                  {/* Static segment, declared before the :tagName catch-all.
-                      React Router ranks static over dynamic regardless of
-                      order, but relying on that silently would break the
-                      day someone creates a tag slugged "interactions" —
-                      none exists today and this route is what reserves it. */}
-                  {/* Static, so it beats tags/:tagName below. */}
-                  <Route path="tags/rights-by-country" element={<RightsIntent />} />
-                  <Route path="tags/rights-by-country/sources" element={<RightsSources />} />
-                  <Route path="tags/rights-by-country/trans" element={<TransRights />} />
-                  <Route path="tags/interactions" element={<SubstanceInteractionsPage />} />
-                  <Route path="tags/sti-guide" element={<StiGuidePage />} />
-                  <Route path="tags/:tagName" element={<TagDetail />} />
-                  {/* The topic hubs are gone — 8 curated tag clusters that
-                      duplicated what the taxonomy already expresses. 301'd in
-                      public/_redirects; this SPA route is the fallback. */}
-                  <Route path="tags/topic/:slug" element={<Navigate to="/tags" replace />} />
-                  <Route path="professions/:professionName" element={<ProfessionDetail />} />
-                  {/* Legacy redirects → /tags */}
-                  <Route path="resources" element={<Navigate to="/tags" replace />} />
-                  <Route path="resources/topic/:slug" element={<Navigate to="/tags" replace />} />
-                  <Route
-                    path="resources/c/:categorySlug"
-                    element={<Navigate to="/tags" replace />}
-                  />
-                  <Route path="resources/:tagName" element={<ResourcesTagRedirect />} />
-                  <Route path="ressources" element={<Navigate to="/tags" replace />} />
-                  <Route path="ressources/:tagName" element={<Navigate to="/tags" replace />} />
-                  <Route path="donate" element={<Donate />} />
-                  <Route path="about-hub" element={<CMSRoutePage slug="about-hub" />} />
-                  <Route path="about" element={<About />} />
-                  <Route path="contact" element={<Contact />} />
-                  <Route path="email-updates" element={<EmailUpdates />} />
-                  <Route path="vision" element={<CMSRoutePage slug="vision" />} />
-                  <Route path="values" element={<CMSRoutePage slug="values" />} />
-                  <Route path="press" element={<CMSRoutePage slug="press" />} />
-                  <Route path="blog" element={<CMSRoutePage slug="blog" />} />
-                  <Route path="sustainability" element={<CMSRoutePage slug="sustainability" />} />
-                  <Route path="legal" element={<CMSRoutePage slug="legal" />} />
-                  <Route path="terms" element={<CMSRoutePage slug="terms" />} />
-                  <Route path="privacy" element={<CMSRoutePage slug="privacy" />} />
-                  <Route path="cookies" element={<CMSRoutePage slug="cookies" />} />
-                  <Route path="dmca" element={<CMSRoutePage slug="dmca" />} />
-                  <Route path="news" element={<News />} />
-                  {/* Shows and episodes. An EPISODE keeps its /news/:slug
-                      page — 8,000+ of those URLs are already indexed, so a
-                      second episode space would only fight them for the
-                      canonical. */}
-                  <Route path="podcasts" element={<Podcasts />} />
-                  <Route path="podcasts/:slug" element={<PodcastShow />} />
-                  <Route path="news/all" element={<NewsArchive />} />
-                  <Route path="news/me" element={<Navigate to="/me/progress" replace />} />
-                  <Route path="news/story/:slug" element={<NewsStoryDetail />} />
-                  <Route path="news/:slug" element={<NewsDetail />} />
-                  <Route path="search" element={<SearchResults />} />
-                  {/* Legacy group URLs resolve into the unified People area. */}
-                  <Route path="groups" element={<LocalizedRedirect to="/hub/groups" />} />
-                  <Route
-                    path="groups/invite/:token"
-                    element={<LocalizedParamRedirect toBase="/hub/groups/invite" param="token" />}
-                  />
-                  <Route
-                    path="groups/:groupId"
-                    element={<LocalizedParamRedirect toBase="/hub/groups" param="groupId" />}
-                  />
-                  <Route
-                    path="my-groups"
-                    element={<LocalizedRedirect to="/hub/groups?tab=mine" />}
-                  />
-                  <Route path="accessibility" element={<CMSRoutePage slug="accessibility" />} />
-                  {/* "Inbox" was email + notifications, never messages. Notifications now
-                  live in the header menu; the @queer.guide mailbox moved to /mailbox.
-                  /inbox now resolves to the hub Messages surface (Chats sub-view). */}
-                  <Route path="inbox" element={<LocalizedRedirect to="/hub/messages" />} />
-                  <Route path="mailbox" element={<LocalizedRedirect to="/hub/messages" />} />
-                  {/* /messages folded into the hub Messages module. LocalizedRedirect
-                  carries the query string, so DB-stored open_target strings
-                  ('/messages?conversation=…') and ?tripmail= deep links keep
-                  resolving without any data rewrite. */}
-                  <Route path="messages" element={<LocalizedRedirect to="/hub/messages" />} />
-                  {/* /favorites folded into /hub (Saved module). */}
-                  <Route path="favorites" element={<LocalizedRedirect to="/hub/saved" />} />
-                  <Route path="feed" element={<LocalizedRedirect to="/hub/feed" />} />
-                  <Route path="posts/:postId" element={<PostDetail />} />
-                  {/* atproto OAuth redirect_uri — must match public/oauth/client-metadata.json. */}
-                  <Route path="oauth/callback" element={<BlueskyCallback />} />
-                  <Route path="friends" element={<LocalizedRedirect to="/hub/friends" />} />
-                  <Route path="community" element={<LocalizedRedirect to="/hub/feed" />} />
-                  <Route path="community/feed" element={<LocalizedRedirect to="/hub/feed" />} />
-                  <Route
-                    path="community/members"
-                    element={<LocalizedRedirect to="/hub/members" />}
-                  />
-                  <Route
-                    path="community/friends"
-                    element={<LocalizedRedirect to="/hub/friends" />}
-                  />
-                  <Route path="community/groups" element={<LocalizedRedirect to="/hub/groups" />} />
-                  {/* /hub — one home for community, connection, and the personal
-                  workspace. Static routes prevent the optional /:locale? parent
-                  from capturing "hub" as an unknown locale. */}
-                  <Route path="hub" element={<HubPage module="overview" />} />
-                  <Route path="hub/feed" element={<HubPage module="feed" />} />
-                  <Route path="hub/members" element={<Community tab="members" />} />
-                  <Route path="hub/friends" element={<Community tab="friends" />} />
-                  <Route path="hub/groups" element={<Community tab="groups" />} />
-                  <Route path="hub/groups/invite/:token" element={<GroupInviteAccept />} />
-                  <Route path="hub/groups/:groupId" element={<GroupDetail />} />
-                  <Route path="hub/people" element={<People />} />
-                  <Route path="hub/dating" element={<Cruising />} />
-                  <Route path="hub/dating/onboarding" element={<IntimateOnboard />} />
-                  <Route path="hub/dating/:userId" element={<IntimateUserDetail />} />
-                  <Route path="hub/travel" element={<PeopleMode tab="travel" />} />
-                  <Route path="hub/nearby" element={<PeopleMode tab="nearby" />} />
-                  <Route path="hub/messages" element={<HubPage module="messages" />} />
-                  <Route path="hub/plans" element={<HubPage module="plans" />} />
-                  <Route path="hub/saved" element={<HubPage module="saved" />} />
-                  <Route path="hub/settings" element={<SettingsRedirect />} />
-                  {/* Retired module paths → their consolidated home. LocalizedRedirect
-                  preserves the query string (e.g. ?conversation=). */}
-                  <Route path="hub/calendar" element={<LocalizedRedirect to="/hub/plans" />} />
-                  <Route path="hub/trips" element={<LocalizedRedirect to="/hub/plans" />} />
-                  <Route path="hub/contacts" element={<LocalizedRedirect to="/hub/messages" />} />
-                  <Route path="hub/news" element={<LocalizedRedirect to="/hub/saved" />} />
-                  {/* /me folded into /hub; identity tabs live on the unified
-                  public profile (/user/:id/:tab) via MeRedirect. */}
-                  <Route path="me" element={<LocalizedRedirect to="/hub" />} />
-                  <Route path="me/saved" element={<LocalizedRedirect to="/hub/saved" />} />
-                  <Route path="me/trips" element={<LocalizedRedirect to="/hub/plans" />} />
-                  {/* #1974's /me/calendar folds into the hub Plans module. */}
-                  <Route path="me/calendar" element={<LocalizedRedirect to="/hub/plans" />} />
-                  <Route path="me/travel" element={<MeRedirect tab="travel" />} />
-                  <Route path="me/groups" element={<LocalizedRedirect to="/hub/messages" />} />
-                  <Route path="me/contributions" element={<MeRedirect tab="contributions" />} />
-                  <Route path="me/progress" element={<MeRedirect tab="progress" />} />
-                  <Route path="me/passport" element={<MeRedirect tab="progress" />} />
-                  <Route path="me/missions" element={<MeRedirect tab="progress" />} />
-                  <Route path="me/leaderboard" element={<MeRedirect tab="progress" />} />
-                  <Route path="me/settings" element={<SettingsRedirect />} />
-                  <Route path="me/account" element={<MeRedirect tab="account" />} />
-                  <Route path="me/tiers" element={<MeRedirect tab="progress" />} />
-                  <Route path="settings" element={<SettingsRedirect />} />
-                  <Route path="settings/privacy" element={<SettingsRedirect privacy />} />
-                  <Route path="profile/settings" element={<SettingsRedirect />} />
-                  {/* Legacy People routes preserve inbound links while Hub remains
-                  the single canonical shell. */}
-                  <Route path="people" element={<LocalizedRedirect to="/hub/people" />} />
-                  <Route path="people/feed" element={<LocalizedRedirect to="/hub/feed" />} />
-                  <Route path="people/members" element={<LocalizedRedirect to="/hub/members" />} />
-                  <Route path="people/friends" element={<LocalizedRedirect to="/hub/friends" />} />
-                  <Route path="people/groups" element={<LocalizedRedirect to="/hub/groups" />} />
-                  <Route
-                    path="people/groups/invite/:token"
-                    element={<LocalizedParamRedirect toBase="/hub/groups/invite" param="token" />}
-                  />
-                  <Route
-                    path="people/groups/:groupId"
-                    element={<LocalizedParamRedirect toBase="/hub/groups" param="groupId" />}
-                  />
-                  <Route path="people/dating" element={<LocalizedRedirect to="/hub/dating" />} />
-                  <Route
-                    path="people/dating/onboarding"
-                    element={<LocalizedRedirect to="/hub/dating/onboarding" />}
-                  />
-                  <Route
-                    path="people/dating/:userId"
-                    element={<LocalizedParamRedirect toBase="/hub/dating" param="userId" />}
-                  />
-                  <Route path="people/travel" element={<LocalizedRedirect to="/hub/travel" />} />
-                  <Route path="people/nearby" element={<LocalizedRedirect to="/hub/nearby" />} />
-                  <Route
-                    path="intimate"
-                    element={<LocalizedRedirect to="/hub/dating?panel=people" />}
-                  />
-                  <Route
-                    path="discover"
-                    element={<LocalizedRedirect to="/hub/dating?panel=people" />}
-                  />
-                  <Route path="cruising" element={<LocalizedRedirect to="/hub/dating" />} />
-                  <Route
-                    path="intimate/onboard"
-                    element={<LocalizedRedirect to="/hub/dating/onboarding" />}
-                  />
-                  <Route
-                    path="intimate/u/:userId"
-                    element={<LocalizedParamRedirect toBase="/hub/dating" param="userId" />}
-                  />
-                  {/* Kink checklist tool — static paths (see people/* locale note). */}
-                  <Route path="tools/checklist" element={<KinkChecklist />} />
-                  <Route path="tools/checklist/s/:code" element={<KinkShareView />} />
-                  {/* Workbook runner. Lives beside the checklist so it inherits
-                      the same posture: sign-in + intimate opt-in gated, absent
-                      from every sitemap, no search_documents row. Discovery is
-                      the TagWorkbooks band on /tags/:slug. */}
-                  <Route path="tools/workbook/:slug" element={<WorkbookRunner />} />
-                  {/* Hand-typed shortcut (404 reports) → the checklist tool. */}
-                  <Route path="kink" element={<LocalizedRedirect to="/tools/checklist" />} />
-                  <Route path="profile/tiers" element={<Navigate to="/me/progress" replace />} />
-                  <Route path="profile/footprint" element={<Navigate to="/me/travel" replace />} />
-                  <Route path="profile/footprint/:userId/public" element={<FootprintRedirect />} />
-                  <Route path="user/:userId/:tab?" element={<ProfilePage />} />
-                  <Route path="sitemap" element={<Sitemap />} />
-                  <Route path="feedback" element={<FeedbackBoard />} />
-                  <Route path="help" element={<HelpHotlines />} />
-                  <Route path="help/:country" element={<HelpHotlines />} />
-                  {/* Legacy crisis URL. public/_redirects 301s it, but that is a
-                  Cloudflare Pages feature and is inert anywhere else (local
-                  dev, `vite preview`, the PR e2e run) — so the route exists
-                  too. A dead crisis link must not depend on the host layer. */}
-                  <Route path="help-hotlines" element={<LocalizedRedirect to="/help" />} />
-                  <Route path="submit" element={<ContributePage />} />
-                  {/* Explicit static route per submission type. The locale
-                  layout parent is `/:locale?`; React Router expands the
-                  optional segment, so /submit/news scores `/:locale/news`
-                  (locale="submit") identically to `/submit/:contentType` and
-                  the earlier sibling (news / feedback) wins the tie — making
-                  LocaleRouter treat "submit" as an unknown locale and render
-                  NotFound. A fully-static two-segment path outranks the locale
-                  branch deterministically, so every submit slug resolves to
-                  the form. Generated from the registry so future colliding
-                  slugs stay covered. The `:contentType` route below still
-                  handles unknown types ("Unknown submission type"). */}
-                  {[...Object.keys(submissionRegistry), 'feedback'].map((slug) => (
-                    <Route
-                      key={slug}
-                      path={`submit/${slug}`}
-                      element={<ContributePage type={slug} />}
-                    />
-                  ))}
-                  <Route path="submit/:contentType" element={<ContributePage />} />
-                  {/* `p/:slug` moved to the top of this list — see note there. */}
-                  <Route path="share-target" element={<ShareTarget />} />
-                  {/* Inner catch-all: paths like /de/unknown or /en/typo
-                  fall through to NotFound instead of rendering nothing
-                  inside the locale layout. */}
-                  <Route path="*" element={<HandleOrNotFound />} />
-                </Route>
-
-                <Route path="*" element={<HandleOrNotFound />} />
-              </Routes>
+              {routeTable}
             </Suspense>
           </ErrorBoundary>
         </RouteFade>
