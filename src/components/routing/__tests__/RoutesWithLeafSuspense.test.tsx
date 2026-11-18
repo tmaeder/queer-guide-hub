@@ -1,8 +1,12 @@
 import { lazy, Suspense } from 'react';
 import { MemoryRouter, Route, Outlet, useParams } from 'react-router';
 import { act, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { RoutesWithLeafSuspense } from '../RoutesWithLeafSuspense';
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (_key: string, fallback: string) => fallback }),
+}));
 
 describe('lazy page route boundaries', () => {
   it('keeps routing and layouts mounted while the selected page loads, then preserves its params', async () => {
