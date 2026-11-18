@@ -104,7 +104,8 @@ function osmToNormalized(el: Record<string, unknown>, city: string): NormalizedI
   // the claim never reached a venue at all. Hence 0 venues carrying it.
   const accessibility = osmAccessibility(tags)
 
-  const website = tags.website ?? tags['contact:website'] ?? tags.url ?? ''
+  const relevanceEvidence = el.relevance_evidence as { source_url?: string } | undefined
+  const website = tags.website ?? tags['contact:website'] ?? tags.url ?? relevanceEvidence?.source_url ?? ''
   const phone   = tags.phone ?? tags['contact:phone'] ?? ''
   const address = [tags['addr:housenumber'], tags['addr:street']].filter(Boolean).join(' ')
 
@@ -136,6 +137,7 @@ function osmToNormalized(el: Record<string, unknown>, city: string): NormalizedI
       osm_tags:    tags,
       data_source: 'osm',
       import_provenance: el.import_provenance,
+      relevance_evidence: el.relevance_evidence,
       osm_version: el.version,
       osm_timestamp: el.timestamp,
     },
@@ -167,7 +169,10 @@ Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
     let fallbackUnavailable = false
 
     // Shuffle so that we don't always time out on the same trailing cities
-    const cityOrder = [...CITIES].sort(() => Math.random() - 0.5)
+    const requestedCity = typeof body.city === 'string' ? body.city.trim().toLowerCase() : undefined
+    const selectedCities = requestedCity ? CITIES.filter(city => city.name.toLowerCase() === requestedCity) : CITIES
+    if (!selectedCities.length) return jsonResponse({ success: false, error: 'unsupported_city' }, 400, req)
+    const cityOrder = [...selectedCities].sort(() => Math.random() - 0.5)
 
     for (const city of cityOrder) {
       if (allItems.length >= limit) break
@@ -212,12 +217,12 @@ Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
         success: false, error: 'overpass_unavailable',
         items: 0, items_total: 0, items_processed: 0, items_succeeded: 0,
         cities_queried: citiesQueried,
-        cities_unknown: citiesUnknown, fallback_cities: fallbackCities, coverage: discovery ? 'snapshot_candidates_live_refreshed' : 'overpass', dry_run: dryRun,
+        cities_unknown: citiesUnknown, verified_seed_items: allItems.filter(item => (item.data.el as Record<string, unknown>)?.relevance_evidence).length, fallback_cities: fallbackCities, coverage: discovery ? 'discovery_candidates_live_refreshed' : 'overpass', dry_run: dryRun,
       }, 503, req)
     }
 
     if (dryRun) {
-      return jsonResponse({ success: true, items: allItems.length, cities_queried: citiesQueried, cities_unknown: citiesUnknown, fallback_cities: fallbackCities, coverage: discovery ? 'snapshot_candidates_live_refreshed' : 'overpass', dry_run: true }, 200, req)
+      return jsonResponse({ success: true, items: allItems.length, cities_queried: citiesQueried, cities_unknown: citiesUnknown, verified_seed_items: allItems.filter(item => (item.data.el as Record<string, unknown>)?.relevance_evidence).length, fallback_cities: fallbackCities, coverage: discovery ? 'discovery_candidates_live_refreshed' : 'overpass', dry_run: true }, 200, req)
     }
 
     // Stage through the shared adapter contract. The hand-rolled bulk upsert
@@ -260,7 +265,8 @@ Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
       cities_queried: citiesQueried,
       cities_unknown: citiesUnknown,
       fallback_cities: fallbackCities,
-      coverage: discovery ? 'snapshot_candidates_live_refreshed' : 'overpass',
+      verified_seed_items: allItems.filter(item => (item.data.el as Record<string, unknown>)?.relevance_evidence).length,
+      coverage: discovery ? 'discovery_candidates_live_refreshed' : 'overpass',
       discovery_snapshot: discovery?.snapshot,
       dry_run: dryRun,
     }, 200, req)

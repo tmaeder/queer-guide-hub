@@ -152,6 +152,9 @@ jobs:
       - name: Run merchant and server-script regressions
         if: matrix.shard == 1
         run: npm run test:merchant-sync
+      - name: Run public document wire-encoding regression
+        if: matrix.shard == 1
+        run: node scripts/test-public-document-delivery.mjs
       - name: Run Jev provider backpressure regressions
         if: matrix.shard == 1
         run: |
