@@ -9,28 +9,43 @@ interface ReportButtonProps {
   contentId: string;
   contentName?: string;
   size?: 'sm' | 'default';
+  /** Render "Report issue" as text — for overflow menus, where a bare flag is unclear. */
+  showLabel?: boolean;
 }
 
-export function ReportButton({ contentType, contentId, contentName, size = 'sm' }: ReportButtonProps) {
+export function ReportButton({
+  contentType,
+  contentId,
+  contentName,
+  size = 'sm',
+  showLabel = false,
+}: ReportButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size={size}
-              onClick={() => setOpen(true)}
-              aria-label="Report issue"
-            >
-              <Flag size={16} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Report issue</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      {showLabel ? (
+        <Button variant="ghost" size={size} onClick={() => setOpen(true)}>
+          <Flag size={16} className="mr-2" aria-hidden="true" />
+          Report issue
+        </Button>
+      ) : (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size={size}
+                onClick={() => setOpen(true)}
+                aria-label="Report issue"
+              >
+                <Flag size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Report issue</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
       <ReportDialog
         open={open}
         onOpenChange={setOpen}
