@@ -28,7 +28,7 @@ beforeEach(() => {
 describe('homepage listings', () => {
   it('does not report an empty board while the region is resolving', () => {
     state.regionLoading = true;
-    const { container } = renderWithProviders(<DeparturesBoard showRegionPicker={false} />);
+    const { container } = renderWithProviders(<DeparturesBoard />);
     expect(container.querySelector('[aria-busy="true"]')).toBeInTheDocument();
     expect(screen.queryByText(/no listings found/i)).not.toBeInTheDocument();
   });
@@ -52,12 +52,41 @@ describe('homepage listings', () => {
       ],
     };
 
-    renderWithProviders(<DeparturesBoard showRegionPicker={false} />);
+    renderWithProviders(<DeparturesBoard />);
     expect(screen.getByRole('heading', { name: 'Places and events' })).toBeInTheDocument();
     expect(screen.getByText('Worldwide')).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Pride Berlin' })).toHaveAttribute('href', '/events/pride');
+    expect(screen.getByRole('link', { name: 'Pride Berlin' })).toHaveAttribute(
+      'href',
+      '/events/pride',
+    );
     expect(screen.getByRole('status')).toHaveTextContent('Couldn’t refresh these results.');
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
     expect(refetch).toHaveBeenCalledOnce();
+  });
+
+  it('puts the event date in the bullet instead of the letter E, without repeating it below', () => {
+    state.data = {
+      scope: 'city',
+      localCount: 1,
+      tripCount: 0,
+      rows: [
+        {
+          kind: 'event',
+          id: '2',
+          slug: 'party',
+          title: 'Party',
+          via: 'Paris',
+          rung: 'local',
+          // Local time, so the assertions do not depend on the runner's zone.
+          startDate: new Date(2026, new Date().getMonth(), 18, 17, 0).toISOString(),
+        },
+      ],
+    };
+    const { container } = renderWithProviders(<DeparturesBoard />);
+    const link = screen.getByRole('link', { name: /Party/ });
+    expect(container.querySelector('[data-letter="E"]')).toBeNull();
+    expect(link).toHaveTextContent('18');
+    expect(link.textContent?.match(/17:00/g)).toHaveLength(1);
+    expect(link).toHaveTextContent('17:00 · Paris');
   });
 });

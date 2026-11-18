@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TransitIcon } from '@/components/transit/TransitIcon';
@@ -10,10 +10,23 @@ import { useOptimizedCity } from '@/hooks/usePlaces';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 import { useHomeRegionContext } from '@/components/home/homeRegionContext';
+import { RegionChip } from '@/components/home/RegionChip';
+import { useCityPhotos } from '@/hooks/useCityPhotos';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { ChevronLeft, ChevronRight, Pause, Play } from '@/components/icons';
 import { CityNetwork } from './CityNetwork';
 
 /** Featured when the visitor's region has no city (no geo, no profile). */
 const FALLBACK_SLUG = 'zuerich';
+/** Long enough to read the plate; WCAG 2.2.2 is met by the pause control. */
+const SLIDE_MS = 7000;
+
+interface Slide {
+  url: string;
+  alt: string;
+  attribution?: string | null;
+  license?: string | null;
+}
 
 export function HomeCityFeature() {
   const { t, i18n } = useTranslation();
@@ -34,6 +47,48 @@ export function HomeCityFeature() {
   const photo = resolveEntityImage('city', city);
   const metadata = photo.metadata as
     { attribution?: string; photographer?: string; license?: string } | null | undefined;
+  const { data: gallery = [] } = useCityPhotos(city?.id);
+  // The gallery only replaces the city's own photo when it holds several distinct
+  // ones; a single linked asset is usually the same photo the city row already has.
+  const slides: Slide[] =
+    gallery.length > 1
+      ? gallery.map((g) => ({
+          url: g.url,
+          alt: g.alt ?? '',
+          attribution: g.attribution,
+          license: g.license,
+        }))
+      : photo.url
+        ? [
+            {
+              url: photo.url,
+              alt: '',
+              attribution: metadata?.attribution || metadata?.photographer,
+              license: metadata?.license,
+            },
+          ]
+        : [];
+  const reducedMotion = useReducedMotion();
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [hovering, setHovering] = useState(false);
+  // A new city starts on its first photo.
+  const [slideCity, setSlideCity] = useState(city?.id);
+  if (slideCity !== city?.id) {
+    setSlideCity(city?.id);
+    setSlideIndex(0);
+  }
+  const current = slides[slideIndex % Math.max(slides.length, 1)];
+  const autoplay = slides.length > 1 && !reducedMotion && !paused && !hovering;
+  useEffect(() => {
+    if (!autoplay) return;
+    const id = window.setInterval(() => setSlideIndex((i) => i + 1), SLIDE_MS);
+    return () => window.clearInterval(id);
+  }, [autoplay]);
+  const step = (delta: number) =>
+    setSlideIndex(
+      (i) => ((((i % slides.length) + delta) % slides.length) + slides.length) % slides.length,
+    );
   const [now] = useState(Date.now);
   // A day-stable window keeps the query cached and distant featured events out.
   const start = new Date(now).setUTCHours(0, 0, 0, 0);
@@ -65,11 +120,20 @@ export function HomeCityFeature() {
 
   return (
     <section aria-labelledby="home-city-feature-title" className="min-w-0">
-      <div className="relative overflow-hidden rounded-panel bg-surface-container">
-        {photo.url ? (
+      <div
+        role="group"
+        aria-label={t('home.cityFeature.photos', 'Photos')}
+        className="relative overflow-hidden rounded-panel bg-surface-container"
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
+        onFocus={() => setHovering(true)}
+        onBlur={() => setHovering(false)}
+      >
+        {current ? (
           <Image
-            src={photo.url}
-            alt=""
+            key={current.url}
+            src={current.url}
+            alt={current.alt}
             aspect="card"
             rounded="none"
             priority
@@ -80,6 +144,46 @@ export function HomeCityFeature() {
             <CityNetwork slug={slug} variant="thumb" className="h-full" />
           </div>
         )}
+        <div className="absolute inset-x-2 top-2 flex items-start justify-between gap-2 sm:inset-x-4 sm:top-4">
+          <RegionChip region={region} align="start" />
+          {slides.length > 1 && (
+            <div className="flex items-center gap-0.5 rounded-element bg-card p-0.5">
+              <button
+                type="button"
+                onClick={() => step(-1)}
+                aria-label={t('home.cityFeature.previousPhoto', 'Previous photo')}
+                className="grid size-11 place-items-center rounded-element hover:bg-foreground hover:text-background"
+              >
+                <ChevronLeft size={18} className="rtl:rotate-180" />
+              </button>
+              <span
+                className="min-w-8 text-center text-13 font-bold tabular-nums"
+                aria-live="polite"
+              >
+                {(slideIndex % slides.length) + 1}/{slides.length}
+              </span>
+              <button
+                type="button"
+                onClick={() => step(1)}
+                aria-label={t('home.cityFeature.nextPhoto', 'Next photo')}
+                className="grid size-11 place-items-center rounded-element hover:bg-foreground hover:text-background"
+              >
+                <ChevronRight size={18} className="rtl:rotate-180" />
+              </button>
+              {!reducedMotion && (
+                <button
+                  type="button"
+                  onClick={() => setPaused((p) => !p)}
+                  aria-pressed={paused}
+                  aria-label={t('home.cityFeature.pausePhotos', 'Pause slideshow')}
+                  className="grid size-11 place-items-center rounded-element hover:bg-foreground hover:text-background"
+                >
+                  {paused ? <Play size={16} /> : <Pause size={16} />}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
         {cityReady && (
           <div className="absolute inset-x-2 bottom-2 flex flex-wrap items-end justify-between gap-x-2 gap-y-1 sm:inset-x-4 sm:bottom-4">
             <h2 id="home-city-feature-title" className="text-headline leading-none">
@@ -94,14 +198,13 @@ export function HomeCityFeature() {
                 <TransitIcon name="arrow-right" size={20} className="rtl:rotate-180" />
               </LocalizedLink>
             </h2>
-            {photo.url &&
-              (metadata?.attribution || metadata?.photographer || metadata?.license) && (
-                <ImageCredit
-                  attribution={metadata.attribution || metadata.photographer}
-                  license={metadata.license}
-                  className="rounded-badge bg-card px-2 py-1"
-                />
-              )}
+            {current && (current.attribution || current.license) && (
+              <ImageCredit
+                attribution={current.attribution ?? undefined}
+                license={current.license ?? undefined}
+                className="rounded-badge bg-card px-2 py-1"
+              />
+            )}
           </div>
         )}
       </div>
@@ -139,7 +242,7 @@ export function HomeCityFeature() {
               }
               className="flex min-h-14 items-center gap-2 rounded-element px-2 py-2 no-underline underline-offset-4 hover:underline"
             >
-              <TransitIcon name="map" size={20} className="shrink-0" />
+              <TransitIcon name="near-you" size={20} className="shrink-0" />
               <span className="min-w-0">
                 <span className="block text-13 text-muted-foreground">
                   {isFallback ? t('home.cityFeature.communitySpace', 'Community space') : cityName}

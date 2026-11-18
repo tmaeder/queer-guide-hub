@@ -2122,7 +2122,11 @@
       "exploreCity": "{{city}} city guide",
       "browseEvents": "Browse {{city}} events",
       "whatsOn": "What’s on",
-      "communitySpace": "Community space"
+      "communitySpace": "Community space",
+      "photos": "Photos",
+      "previousPhoto": "Previous photo",
+      "nextPhoto": "Next photo",
+      "pausePhotos": "Pause slideshow"
     },
     "discovery": {
       "openMap": "Open the map",
@@ -2155,7 +2159,8 @@
       "interchange": {
         "label": "Search everything",
         "subtitle": "Every line meets here"
-      }
+      },
+      "title": "Map"
     },
     "heroLine1": "Queer venues,",
     "heroLine2": "events, and people.",
