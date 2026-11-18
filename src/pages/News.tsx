@@ -27,6 +27,7 @@ import { SectionBand } from '@/components/news/editorial/SectionBand';
 import { StoryCollectionsBand } from '@/components/news/editorial/StoryCollectionsBand';
 import { WeekInReview } from '@/components/news/editorial/WeekInReview';
 import { ReaderRail } from '@/components/news/editorial/ReaderRail';
+import { useAuth } from '@/hooks/useAuth';
 import { NewStoriesPill } from '@/components/news/editorial/NewStoriesPill';
 import { PageContainer, STICKY_RAIL_UNDER_HEADER } from '@/components/layout/PageContainer';
 
@@ -36,6 +37,7 @@ type Article = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'>
 const ALL_ARTICLES = {};
 
 export default function News() {
+  const { user } = useAuth();
   const { t } = useTranslation();
   const { articles, refetch: refetchArticles } = useNewsArticles(ALL_ARTICLES);
   const sources = useNewsSources();
@@ -157,7 +159,9 @@ export default function News() {
           sourceCount={sources.length}
         />
 
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-12 xl:gap-16">
+        <div
+          className={`grid grid-cols-1 gap-12 xl:gap-16 ${user ? 'xl:grid-cols-[1fr_320px]' : ''}`}
+        >
           <div className="min-w-0">
             <NewStoriesPill count={newCount} onRefresh={handleRefreshNew} />
             <LeadStory
@@ -230,9 +234,11 @@ export default function News() {
             </div>
           </div>
 
-          <aside className={`hidden xl:block sticky ${STICKY_RAIL_UNDER_HEADER} self-start`}>
-            <ReaderRail />
-          </aside>
+          {user && (
+            <aside className={`hidden xl:block sticky ${STICKY_RAIL_UNDER_HEADER} self-start`}>
+              <ReaderRail />
+            </aside>
+          )}
         </div>
       </PageContainer>
     </div>

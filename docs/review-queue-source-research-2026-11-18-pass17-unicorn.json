@@ -1,0 +1,526 @@
+{
+  "capture": {
+    "url": "https://www.unicornseattle.com/events/",
+    "status": 200,
+    "final_url": "https://www.unicornseattle.com/events/",
+    "sha256": "43d329ac8030be4cab1cb767fc7a8a5d412627ec784c5e42eac459379d7f7f80",
+    "retrieved_at": "2026-11-18T15:59:04.434156+00:00"
+  },
+  "repairs": [
+    {
+      "event_id": "0bcb9b5c-63b9-4c3a-81e2-260d2e97f232",
+      "title": "Trivia - Geeks Who Drink",
+      "action": "category",
+      "target": "social",
+      "owner_occurrence": {
+        "title": "Trivia - Geeks Who Drink",
+        "times": [
+          "2026-12-17",
+          "2026-12-17",
+          "2026-12-17",
+          "2026-12-17",
+          "2026-12-17"
+        ],
+        "url": "/events/2j67rrmk7sxa9bw-bcn3d-4xwn2-2lzs5-9l7pr-mw374",
+        "utc_dates": "20261218T033000Z/20261218T053000Z"
+      }
+    },
+    {
+      "event_id": "0d2c6cd0-6337-4b03-84f7-6b4863ee7a2c",
+      "title": "Karaoke Every Monday",
+      "action": "category",
+      "target": "social",
+      "owner_occurrence": {
+        "title": "Karaoke Every Monday!!!",
+        "times": [
+          "2026-12-07",
+          "2026-12-07",
+          "2026-12-07",
+          "2026-12-08",
+          "2026-12-08",
+          "2026-12-08"
+        ],
+        "url": "/events/95gtzxky956bfxx-hyzsc-zfpaz-jtxaz-y2fap-blc7p-7c6fs-p5pbp-a5afa-zgrdj-22hfh-x8ktd-f5lcz-97hhc-k7n2w-8tjye-blwkj-sbl36-wgp3f",
+        "utc_dates": "20261208T040000Z/20261208T080000Z"
+      }
+    },
+    {
+      "event_id": "125ce23d-9781-4bbe-8a3b-ec280c7544bd",
+      "title": "Lashes Cabaret",
+      "action": "cancel",
+      "target": "cancelled",
+      "owner_occurrence": {
+        "title": "We're Closed December 24th & 25th!",
+        "times": [
+          "2026-12-24",
+          "2026-12-24",
+          "2026-12-24",
+          "2026-12-26",
+          "2026-12-26",
+          "2026-12-26"
+        ],
+        "url": "/events/2025/11/27/were-closed-on-thanksgiving-wbd3z",
+        "utc_dates": "20261225T010000Z/20261226T220000Z"
+      }
+    },
+    {
+      "event_id": "1ac49571-afb1-43aa-bb4f-7a8c2413cf25",
+      "title": "Trivia - Geeks Who Drink",
+      "action": "category",
+      "target": "social",
+      "owner_occurrence": {
+        "title": "Trivia - Geeks Who Drink",
+        "times": [
+          "2026-12-03",
+          "2026-12-03",
+          "2026-12-03",
+          "2026-12-03",
+          "2026-12-03"
+        ],
+        "url": "/events/2j67rrmk7sxa9bw-bcn3d-4xwn2-2lzs5-d5cdc-dx3w4-blenw",
+        "utc_dates": "20261204T033000Z/20261204T053000Z"
+      }
+    },
+    {
+      "event_id": "23dd9529-6126-40a2-b5f9-90d0e6b5244b",
+      "title": "Trivia - Geeks Who Drink",
+      "action": "category",
+      "target": "social",
+      "owner_occurrence": {
+        "title": "Trivia - Geeks Who Drink",
+        "times": [
+          "2026-11-19",
+          "2026-11-19",
+          "2026-11-19",
+          "2026-11-19",
+          "2026-11-19"
+        ],
+        "url": "/events/2j67rrmk7sxa9bw-bcn3d-4xwn2-2lzs5-d5cdc",
+        "utc_dates": "20261120T033000Z/20261120T053000Z"
+      }
+    },
+    {
+      "event_id": "2ed9084f-c542-46b8-b139-850ee7f63a1c",
+      "title": "Drag Queen Bingo",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Drag Queen Bingo! NOW w/ Miss Texas 1988!",
+        "times": [
+          "2026-11-24",
+          "2026-11-24",
+          "2026-11-24",
+          "2026-11-24",
+          "2026-11-24"
+        ],
+        "url": "/events/5xg2c24glz567hr",
+        "utc_dates": "20261125T040000Z/20261125T070000Z"
+      }
+    },
+    {
+      "event_id": "3010031b-a868-4c51-b092-56d40a9bb553",
+      "title": "Karaoke Every Monday",
+      "action": "category",
+      "target": "social",
+      "owner_occurrence": {
+        "title": "Karaoke Every Monday!!!",
+        "times": [
+          "2026-12-14",
+          "2026-12-14",
+          "2026-12-14",
+          "2026-12-15",
+          "2026-12-15",
+          "2026-12-15"
+        ],
+        "url": "/events/95gtzxky956bfxx-hyzsc-zfpaz-jtxaz-y2fap-blc7p-7c6fs-p5pbp-a5afa-zgrdj-22hfh-x8ktd-f5lcz-97hhc-k7n2w-8tjye-blwkj-sbl36-wgp3f-7ddhl",
+        "utc_dates": "20261215T040000Z/20261215T080000Z"
+      }
+    },
+    {
+      "event_id": "3f006578-175a-4d19-bf7b-5344ea218148",
+      "title": "Leché",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Leché! - Every 3rd Wednesday!",
+        "times": [
+          "2026-11-18",
+          "2026-11-18",
+          "2026-11-18",
+          "2026-11-18",
+          "2026-11-18"
+        ],
+        "url": "/events/5x7rmw84yhgtsmw-39ng5-be49c-xayye-m56a7-t3att-sf2bw-2c947",
+        "utc_dates": "20261119T040000Z/20261119T070000Z"
+      }
+    },
+    {
+      "event_id": "4011abb7-5bd1-42ef-8899-6d31873f7db8",
+      "title": "Karaoke Every Monday",
+      "action": "category",
+      "target": "social",
+      "owner_occurrence": {
+        "title": "Karaoke Every Monday!!!",
+        "times": [
+          "2026-11-30",
+          "2026-11-30",
+          "2026-11-30",
+          "2026-12-01",
+          "2026-12-01",
+          "2026-12-01"
+        ],
+        "url": "/events/95gtzxky956bfxx-hyzsc-zfpaz-jtxaz-y2fap-blc7p-7c6fs-p5pbp-a5afa-zgrdj-22hfh-x8ktd-f5lcz-97hhc-k7n2w-8tjye-blwkj-sbl36",
+        "utc_dates": "20261201T040000Z/20261201T080000Z"
+      }
+    },
+    {
+      "event_id": "4edff4b9-d0b7-43f7-a97b-776272af9b94",
+      "title": "Karaoke Every Monday",
+      "action": "category",
+      "target": "social",
+      "owner_occurrence": {
+        "title": "Karaoke Every Monday!!!",
+        "times": [
+          "2026-12-28",
+          "2026-12-28",
+          "2026-12-28",
+          "2026-12-29",
+          "2026-12-29",
+          "2026-12-29"
+        ],
+        "url": "/events/95gtzxky956bfxx-hyzsc-zfpaz-jtxaz-y2fap-blc7p-7c6fs-p5pbp-a5afa-zgrdj-22hfh-x8ktd-f5lcz-97hhc-k7n2w-8tjye-blwkj-sbl36-wgp3f-7ddhl-h8rdp",
+        "utc_dates": "20261229T040000Z/20261229T080000Z"
+      }
+    },
+    {
+      "event_id": "518774ce-daa5-449b-ae7c-bca1482e43fa",
+      "title": "Karaoke Every Monday",
+      "action": "category",
+      "target": "social",
+      "owner_occurrence": {
+        "title": "Karaoke Every Monday!!!",
+        "times": [
+          "2026-11-23",
+          "2026-11-23",
+          "2026-11-23",
+          "2026-11-24",
+          "2026-11-24",
+          "2026-11-24"
+        ],
+        "url": "/events/95gtzxky956bfxx-hyzsc-zfpaz-jtxaz-y2fap-blc7p-7c6fs-p5pbp-a5afa-zgrdj-22hfh-x8ktd-f5lcz-97hhc-k7n2w-8tjye-blwkj-69sdt-dkdxy-wkxlx-ygtay-365rf",
+        "utc_dates": "20261124T040000Z/20261124T080000Z"
+      }
+    },
+    {
+      "event_id": "5ec3ac1a-d323-4157-b870-6e7e4c866dc1",
+      "title": "Trivia - Geeks Who Drink",
+      "action": "cancel",
+      "target": "cancelled",
+      "owner_occurrence": {
+        "title": "We're Closed December 24th & 25th!",
+        "times": [
+          "2026-12-24",
+          "2026-12-24",
+          "2026-12-24",
+          "2026-12-26",
+          "2026-12-26",
+          "2026-12-26"
+        ],
+        "url": "/events/2025/11/27/were-closed-on-thanksgiving-wbd3z",
+        "utc_dates": "20261225T010000Z/20261226T220000Z"
+      }
+    },
+    {
+      "event_id": "691f8d57-3961-4695-91a8-79be4d6a380a",
+      "title": "Leché",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Leché! - Every 3rd Wednesday!",
+        "times": [
+          "2026-12-16",
+          "2026-12-16",
+          "2026-12-16",
+          "2026-12-16",
+          "2026-12-16"
+        ],
+        "url": "/events/5x7rmw84yhgtsmw-39ng5-be49c-xayye-m56a7-t3att-sf2bw-2c947-zr8px",
+        "utc_dates": "20261217T040000Z/20261217T070000Z"
+      }
+    },
+    {
+      "event_id": "705d3906-c477-451c-8ad6-a14d468ed0c0",
+      "title": "Lashes Cabaret",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Lashes Cabaret! a Free Drag Show!",
+        "times": [
+          "2026-12-18",
+          "2026-12-18",
+          "2026-12-18",
+          "2026-12-18",
+          "2026-12-18"
+        ],
+        "url": "/events/wb8bgfhhrbex73k-snfjn-4kdp2-fabew-6x9b8-wsydf-rt5tp-h7ryb-j9g3f-9sna6-8sgad-2zmeh-9sg94-6jpdw-6plsg-gk3j2-wewkw-aswgl-fdb32-ty3fk-bwmra-mg35t-d9dny-j8xpz-epc37",
+        "utc_dates": "20261219T033000Z/20261219T050000Z"
+      }
+    },
+    {
+      "event_id": "726ce932-56d6-482a-a76a-592a368e205e",
+      "title": "Jawbreaker",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "🍭 Jawbreaker 🍭 2nd Wednesdays each Month!",
+        "times": [
+          "2026-12-09",
+          "2026-12-09",
+          "2026-12-09",
+          "2026-12-09",
+          "2026-12-09"
+        ],
+        "url": "/events/zj5s9ytaz2jaj6g-gst69-n98h8-h94wk-k2sdb-k3b6m-7dd48-warzt-e9deb-tf6pt-7rp9d",
+        "utc_dates": "20261210T043000Z/20261210T073000Z"
+      }
+    },
+    {
+      "event_id": "8e8156a3-b76f-4afb-b0f8-2d180a39d0b6",
+      "title": "Drag Queen Bingo",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Drag Queen Bingo! NOW w/ Miss Texas 1988!",
+        "times": [
+          "2026-12-08",
+          "2026-12-08",
+          "2026-12-08",
+          "2026-12-08",
+          "2026-12-08"
+        ],
+        "url": "/events/5xg2c24glz567hr-lh6ad-x697a",
+        "utc_dates": "20261209T040000Z/20261209T070000Z"
+      }
+    },
+    {
+      "event_id": "8f67f58b-d425-4218-8816-c6ecd96f4817",
+      "title": "Karaoke Every Monday",
+      "action": "category",
+      "target": "social",
+      "owner_occurrence": {
+        "title": "Karaoke Every Monday!!!",
+        "times": [
+          "2026-11-16",
+          "2026-11-16",
+          "2026-11-16",
+          "2026-11-17",
+          "2026-11-17",
+          "2026-11-17"
+        ],
+        "url": "/events/95gtzxky956bfxx-hyzsc-zfpaz-jtxaz-y2fap-blc7p-7c6fs-p5pbp-a5afa-zgrdj-22hfh-x8ktd-f5lcz-97hhc-k7n2w-8tjye-blwkj-69sdt-dkdxy-wkxlx-ygtay",
+        "utc_dates": "20261117T040000Z/20261117T080000Z"
+      }
+    },
+    {
+      "event_id": "9e0e55ff-22da-4718-857c-213891b7c2d1",
+      "title": "Drag Queen Bingo",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Drag Queen Bingo! NOW w/ Miss Texas 1988!",
+        "times": [
+          "2026-12-22",
+          "2026-12-22",
+          "2026-12-22",
+          "2026-12-22",
+          "2026-12-22"
+        ],
+        "url": "/events/5xg2c24glz567hr-lh6ad-x697a-8bz5m-ae8b2",
+        "utc_dates": "20261223T040000Z/20261223T070000Z"
+      }
+    },
+    {
+      "event_id": "a9a083b0-5738-431d-9bcc-b831962aae71",
+      "title": "Drag Queen Bingo",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Drag Queen Bingo! NOW w/ Miss Texas 1988!",
+        "times": [
+          "2026-12-29",
+          "2026-12-29",
+          "2026-12-29",
+          "2026-12-29",
+          "2026-12-29"
+        ],
+        "url": "/events/5xg2c24glz567hr-lh6ad-x697a-8bz5m-ae8b2-fhace",
+        "utc_dates": "20261230T040000Z/20261230T070000Z"
+      }
+    },
+    {
+      "event_id": "b362d5ba-f821-45e0-8f6c-1f99fecff911",
+      "title": "Drag Queen Bingo",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Drag Queen Bingo! NOW w/ Miss Texas 1988!",
+        "times": [
+          "2026-12-15",
+          "2026-12-15",
+          "2026-12-15",
+          "2026-12-15",
+          "2026-12-15"
+        ],
+        "url": "/events/5xg2c24glz567hr-lh6ad-x697a-8bz5m",
+        "utc_dates": "20261216T040000Z/20261216T070000Z"
+      }
+    },
+    {
+      "event_id": "b461cafc-c709-4b88-8f07-d9fe8efec484",
+      "title": "Trivia - Geeks Who Drink",
+      "action": "cancel",
+      "target": "cancelled",
+      "owner_occurrence": {
+        "title": "We're Closed on Thanksgiving!",
+        "times": [
+          "2026-11-26",
+          "2026-11-26",
+          "2026-11-26",
+          "2026-11-27",
+          "2026-11-27",
+          "2026-11-27"
+        ],
+        "url": "/events/2025/11/27/were-closed-on-thanksgiving",
+        "utc_dates": "20261127T010000Z/20261127T100000Z"
+      }
+    },
+    {
+      "event_id": "caa9b3ff-ecdd-46c2-8397-4ecc89f63669",
+      "title": "Lashes Cabaret",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Lashes Cabaret! a Free Drag Show!",
+        "times": [
+          "2026-11-27",
+          "2026-11-27",
+          "2026-11-27",
+          "2026-11-27",
+          "2026-11-27"
+        ],
+        "url": "/events/wb8bgfhhrbex73k-snfjn-4kdp2-fabew-6x9b8-wsydf-rt5tp-h7ryb-j9g3f-9sna6-8sgad-2zmeh-9sg94-6jpdw-6plsg-gk3j2-wewkw-aswgl-fdb32-ty3fk-bwmra-mg35t-d9dny",
+        "utc_dates": "20261128T033000Z/20261128T050000Z"
+      }
+    },
+    {
+      "event_id": "cee4fdc6-1930-4fcc-8d2b-291907131c9b",
+      "title": "Lashes Cabaret",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Lashes Cabaret! a Free Drag Show!",
+        "times": [
+          "2026-12-04",
+          "2026-12-04",
+          "2026-12-04",
+          "2026-12-04",
+          "2026-12-04"
+        ],
+        "url": "/events/wb8bgfhhrbex73k-snfjn-4kdp2-fabew-6x9b8-wsydf-rt5tp-h7ryb-j9g3f-9sna6-8sgad-2zmeh-9sg94-6jpdw-6plsg-gk3j2-wewkw-aswgl-fdb32-ty3fk-bwmra-mg35t-3fz9p-s8a33",
+        "utc_dates": "20261205T033000Z/20261205T050000Z"
+      }
+    },
+    {
+      "event_id": "ebd2c5bf-a8db-4465-a1cd-08c16c7f9e14",
+      "title": "Drag Queen Bingo",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Drag Queen Bingo! NOW w/ Miss Texas 1988!",
+        "times": [
+          "2026-12-01",
+          "2026-12-01",
+          "2026-12-01",
+          "2026-12-01",
+          "2026-12-01"
+        ],
+        "url": "/events/5xg2c24glz567hr-lh6ad",
+        "utc_dates": "20261202T040000Z/20261202T070000Z"
+      }
+    },
+    {
+      "event_id": "ee67a5cf-214c-4747-a06b-b6feef1e20b6",
+      "title": "Karaoke Every Monday",
+      "action": "category",
+      "target": "social",
+      "owner_occurrence": {
+        "title": "Karaoke Every Monday!!!",
+        "times": [
+          "2026-12-21",
+          "2026-12-21",
+          "2026-12-21",
+          "2026-12-22",
+          "2026-12-22",
+          "2026-12-22"
+        ],
+        "url": "/events/95gtzxky956bfxx-hyzsc-zfpaz-jtxaz-y2fap-blc7p-7c6fs-p5pbp-a5afa-zgrdj-22hfh-x8ktd-f5lcz-97hhc-k7n2w-8tjye-blwkj-sbl36-wgp3f-7ddhl-xfgbk",
+        "utc_dates": "20261222T040000Z/20261222T080000Z"
+      }
+    },
+    {
+      "event_id": "f0e4c02c-dc67-4349-8db4-4963b8ef5413",
+      "title": "Lashes Cabaret",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Lashes Cabaret! a Free Drag Show!",
+        "times": [
+          "2026-12-11",
+          "2026-12-11",
+          "2026-12-11",
+          "2026-12-11",
+          "2026-12-11"
+        ],
+        "url": "/events/wb8bgfhhrbex73k-snfjn-4kdp2-fabew-6x9b8-wsydf-rt5tp-h7ryb-j9g3f-9sna6-8sgad-2zmeh-9sg94-6jpdw-6plsg-gk3j2-wewkw-aswgl-fdb32-ty3fk-bwmra-mg35t-d9dny-j8xpz",
+        "utc_dates": "20261212T033000Z/20261212T050000Z"
+      }
+    },
+    {
+      "event_id": "f4a86af9-40be-43b8-a76f-9da4887d4edc",
+      "title": "Drag Queen Bingo",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Drag Queen Bingo! NOW w/ Miss Texas 1988!",
+        "times": [
+          "2026-11-17",
+          "2026-11-17",
+          "2026-11-17",
+          "2026-11-17",
+          "2026-11-17"
+        ],
+        "url": "/events/e4k368lpck2jgrb-hadey-dkhra-x6gkj-a4w8y-5gt7g-xjwzl-nrdy6-k2wzp-25649-zeg6c-84zwl-g963p-sx4lm-64zxl-wj57h-dg7ty-d5gyl-msp6z-j8cw4-kla79-dsw6w-jzn25-mw8ef-8k3wb-yzjrw-rphws-jdzcm-ybwcx-jcedf-x5lg7",
+        "utc_dates": "20261118T040000Z/20261118T070000Z"
+      }
+    },
+    {
+      "event_id": "feaeefde-296a-4e93-af54-92d92fb71466",
+      "title": "Lashes Cabaret",
+      "action": "category",
+      "target": "drag",
+      "owner_occurrence": {
+        "title": "Lashes Cabaret! a Free Drag Show!",
+        "times": [
+          "2026-11-20",
+          "2026-11-20",
+          "2026-11-20",
+          "2026-11-20",
+          "2026-11-20"
+        ],
+        "url": "/events/wb8bgfhhrbex73k-snfjn-4kdp2-fabew-6x9b8-wsydf-rt5tp-h7ryb-j9g3f-9sna6-8sgad-2zmeh-9sg94-6jpdw-6plsg-gk3j2-wewkw-aswgl-fdb32-ty3fk-bwmra-mg35t",
+        "utc_dates": "20261121T033000Z/20261121T050000Z"
+      }
+    }
+  ],
+  "unmatched_occurrences": 10
+}

@@ -264,7 +264,7 @@ export function RouteStrip({
           return (
             <li key={s.id} className="relative">
               {/* The line, one segment per gap: from this ring's centre (the
-                  ring sits under pt-1.5 and is 16px tall, so its centre is
+                  ring sits under pt-0.5 and is 24px tall, so its centre is
                   14px down) to the next ring's centre (this row plus the
                   gap-1 below it). It used to be one span from top-3 to
                   bottom-3 of the whole list, which ran ~18px past the last
@@ -274,7 +274,7 @@ export function RouteStrip({
               {i < stations.length - 1 && (
                 <span
                   aria-hidden
-                  className="absolute left-0 top-3.5 flex h-[calc(100%+0.25rem)] w-4 justify-center"
+                  className="absolute left-0 top-3.5 flex h-[calc(100%+0.25rem)] w-6 justify-center"
                 >
                   <span className={cn('h-full w-[3px]', lineColor)} />
                 </span>
@@ -288,15 +288,16 @@ export function RouteStrip({
                 // segment, which would otherwise paint over it.
                 className="group relative flex items-start gap-2 no-underline"
               >
-                <span className="flex w-4 shrink-0 justify-center pt-1.5">
+                <span className="flex w-6 shrink-0 justify-center pt-0.5">
                   {(s.depth ?? 1) === 1 ? (
                     <StationRing
+                      number={numbers[i] ?? undefined}
                       state={isActive ? 'typed' : isPast ? 'done' : 'open'}
                       track={track ?? 'pink'}
                       // Without a track the whole line is ink, so an active
                       // "typed" ring would be a pink dot on an ink line. Fill
                       // it with ink instead and let the plate carry the state.
-                      className={cn(isActive && !track && 'bg-foreground')}
+                      className={cn(isActive && !track && 'bg-foreground text-background')}
                     />
                   ) : (
                     // Sub-stations take a smaller marker so the eye reads the
@@ -334,16 +335,6 @@ export function RouteStrip({
                       : 'text-muted-foreground group-hover:bg-surface-container group-hover:text-foreground',
                   )}
                 >
-                  {numbers[i] !== null && (
-                    <span
-                      className={cn(
-                        'mr-2 tabular-nums',
-                        isActive ? 'text-background/70' : 'text-muted-foreground',
-                      )}
-                    >
-                      {numbers[i]}
-                    </span>
-                  )}
                   {s.title}
                 </span>
               </a>

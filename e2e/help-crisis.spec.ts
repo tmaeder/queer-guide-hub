@@ -107,9 +107,7 @@ test('a line with unstructured hours is never labelled closed', async ({ page })
   await expect(qlife).not.toContainText(/closed right now/i);
 });
 
-test('help carries the ordinary site chrome and keeps the safety actions clear', async ({
-  page,
-}) => {
+test('help carries ordinary site chrome and keeps the crisis strip clear', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openHelp(page, '/help/ch');
 
@@ -123,16 +121,14 @@ test('help carries the ordinary site chrome and keeps the safety actions clear',
   await expect(page.locator('footer')).not.toHaveCount(0);
   await expect(page.getByRole('navigation', { name: /^navigation$/i })).toHaveCount(1);
 
-  // The safety actions survived the restoration, in the content column rather
-  // than in a fixed overlay — a floating control is the one thing that can
-  // cover crisis content.
+  // The page-level privacy buttons were removed; drawer actions remain.
   await expect(
     page.locator('main').getByRole('button', { name: /leave this page immediately/i }),
-  ).toBeVisible();
-  await expect(page.locator('main').getByRole('button', { name: /hide screen/i })).toBeVisible();
+  ).toHaveCount(0);
+  await expect(page.locator('main').getByRole('button', { name: /hide screen/i })).toHaveCount(0);
+  await expect(page.locator('main a[href="tel:112"]').first()).toBeVisible();
 
-  // ...and the sticky site header must not sit on top of them, nor on the
-  // acute-danger strip, at first paint.
+  // The sticky site header must leave the acute-danger strip unobscured.
   const covered = await page.evaluate(() => {
     const header = document.querySelector('header');
     if (!header) return -1;
@@ -156,16 +152,13 @@ test('Australian help shows the local emergency number', async ({ page }) => {
   await expect(page.locator('main a[href="tel:000"]').first()).toBeVisible();
 });
 
-test('the hide-screen cover hides everything, chrome included', async ({ page }) => {
-  // Restoring the ordinary page chrome put three new fixed layers on /help —
-  // the site header, the bottom nav and the cookie consent banner. The banner
-  // sits at --z-sticky (100), which is exactly where this cover used to sit,
-  // and it renders after the route content, so at equal z-index it painted
-  // over the cover: "Queer Guide uses cookies", still on screen, after someone
-  // pressed the button whose whole job is leaving nothing on screen.
+test('the self-help hide-screen cover hides everything, chrome included', async ({ page }) => {
+  // The retained drawer action must cover the dialog, header, dock and
+  // cookie banner as well as the underlying page content.
   await openHelp(page, '/help/ch');
+  await page.getByRole('button', { name: /not ready to talk/i }).click();
   await page
-    .locator('main')
+    .getByRole('dialog')
     .getByRole('button', { name: /hide screen/i })
     .click();
 

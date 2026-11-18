@@ -1,0 +1,16 @@
+[
+  {
+    "url": "https://www.stadtkinobasel.ch/de",
+    "retrieved_at": "2026-11-18T14:52:57.580421+00:00",
+    "status": 200,
+    "final_url": "https://www.stadtkinobasel.ch/de",
+    "sha256": "46ad3700d783f42aeafa0625c570acfd03b196457b8228c909172cfb453ca42c"
+  },
+  {
+    "url": "https://www.stadtkinobasel.ch/de/kontakt",
+    "retrieved_at": "2026-11-18T14:53:28.614681+00:00",
+    "status": 200,
+    "final_url": "https://www.stadtkinobasel.ch/de/kontakt",
+    "sha256": "b825db458c03cbb83114b6401efb3f8f5a37660481b6d54a3c78937985734d45"
+  }
+]
