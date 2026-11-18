@@ -33,17 +33,19 @@ export function GeoSafetyBanner({
   countryName,
   cityId,
   countryId,
+  compactNotice = false,
 }: {
   criminalization: Record<string, unknown> | null | undefined;
   countryName: string | null | undefined;
   /** Pass exactly one — the gated count is per city OR per country. */
   cityId?: string;
   countryId?: string;
+  compactNotice?: boolean;
 }) {
   return (
     <>
       <SafetyAlertBanner criminalization={criminalization} countryName={countryName ?? ''} />
-      <GatedContentNotice cityId={cityId} countryId={countryId} />
+      <GatedContentNotice cityId={cityId} countryId={countryId} compact={compactNotice} />
     </>
   );
 }
