@@ -87,6 +87,15 @@ async function handleStart(
   }
 
 
+  // This worker owns its durable run/checkpoint lifecycle.
+  if (pipeline.name === 'outxout-official-date-review') {
+    const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/outxout-official-dates`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` },
+      body: JSON.stringify({ mode: 'manual', dry_run: body.dry_run === true || (body.context as Record<string, unknown> | undefined)?.dry_run === true }),
+    })
+    return new Response(await response.text(), { status: response.status, headers: { 'Content-Type': 'application/json' } })
+  }
+
   const nodes = pipeline.nodes as PipelineNode[]
   const edges = pipeline.edges as PipelineEdge[]
 
