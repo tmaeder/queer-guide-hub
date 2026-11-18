@@ -19,6 +19,19 @@ import { CITY_REFRESH_SCOPES, isCityRefreshScope } from './city-class-guard.ts'
  */
 const MIGRATIONS = new URL('../../migrations/', import.meta.url)
 const SCOPE_RE = /"scope"\s*:\s*"([a-z_]+)"/g
+const ENDPOINT_RE = /functions\/v1\/([a-z0-9-]+)/g
+
+// Other functions take a `scope` body field too (source-prideplaces posts
+// `all_businesses_and_events`), so a scope only counts when the nearest
+// endpoint URL before it in the same file is city-factual-backfill's.
+function targetOf(sql: string, at: number): string | null {
+  let target: string | null = null
+  for (const m of sql.matchAll(ENDPOINT_RE)) {
+    if (m.index! > at) break
+    target = m[1]
+  }
+  return target
+}
 
 function scopesInMigrations(): Map<string, string[]> {
   const found = new Map<string, string[]>()
@@ -26,6 +39,7 @@ function scopesInMigrations(): Map<string, string[]> {
     if (!entry.isFile || !entry.name.endsWith('.sql')) continue
     const sql = Deno.readTextFileSync(new URL(entry.name, MIGRATIONS))
     for (const m of sql.matchAll(SCOPE_RE)) {
+      if (targetOf(sql, m.index!) !== 'city-factual-backfill') continue
       const list = found.get(m[1]) ?? []
       list.push(entry.name)
       found.set(m[1], list)
