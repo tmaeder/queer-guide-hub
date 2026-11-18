@@ -1,0 +1,25 @@
+{
+  "captures": [
+    {
+      "url": "https://www.refuge-neuchatel.ch/accompagnement/",
+      "status": 200,
+      "final_url": "https://www.refuge-neuchatel.ch/accompagnement/",
+      "retrieved_at": "2026-11-18T17:24:20.376084+00:00",
+      "sha256": "557760c0bab46a38277abce49fa4078eb8484bd7a2998e5778b4e65ad788c931",
+      "bytes": 122723
+    },
+    {
+      "url": "https://terminal.digital/events/invitation-to-the-trans-day-of-remembrance/",
+      "error": "HTTP Error 404: Not Found"
+    }
+  ],
+  "event_id": "d1ed5ff2-74cd-4f70-8b2b-26ed52728ed3",
+  "removed_venue": "Martin-Luther-Platz Martin-Luther-Platz, Dresden, 01099",
+  "source_description_location": "Devant la Coll\u00e9giale",
+  "website": "https://www.refuge-neuchatel.ch/accompagnement/",
+  "unrelated_ticket_url_removed": true,
+  "times_changed": false,
+  "needs_attention": true,
+  "unresolved": "Organizer commemoration 19:30\u201321:00 differs from publisher structured 17:00\u201319:30; exact assembly schedule needs corroboration.",
+  "human_reviewed": false
+}
