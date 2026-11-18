@@ -27,6 +27,9 @@ Both are installed disabled. `ingestion_sources.slug=prideplaces` exposes the ad
 to the shared weekly registry scheduler; a later parent dispatch reuses the completed
 source scan from the same weekly period. The returned `source_run_id` is the source
 coverage authority. A parent acknowledgement of a running scan is not completion.
+The shared parent must use `prideplaces_start_scan(false)` as the transactional
+starter and wait on its returned run UUID. Starting a generic one-node graph would
+only acknowledge the first batch, so that wrapper is not the scan completion signal.
 
 The separate `prideplaces-weekly-sync` pipeline run shows collection status, expected
 and distinct business counts, event count, unchanged records, staged/review revisions,
@@ -41,7 +44,7 @@ records are deleted or archived when a source listing disappears.
   factual normalization, Facebook identifiers, incomplete profiles, visible event dates,
   missing times, DST gaps/folds, overnight events, hashes and bounded HTTP reads.
 - Actual migration executed in isolated PostgreSQL 17: service-only privileges/RLS,
-  disabled release switches, overlapping starts/claims, replay, lease expiry, retries,
+  disabled release switches, overlapping starts/claims, replay, lease expiry, scan deadlines, retries,
   legacy cache adoption, source reversions, organizer preservation, recurring-series
   conflicts, fresh validation gates and failed coverage.
 - Full captured-corpus replay through the actual PostgreSQL queue: all 68 business

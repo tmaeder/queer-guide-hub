@@ -5,5 +5,5 @@ Supabase or production.
 
 Assertions cover role privileges and RLS, disabled release controls, the approved
 Sunday schedule, overlapping starts and claims, acknowledgement replay, expired
-leases, fresh validation gates, organizer mappings, historical payload preservation,
+leases and scan deadlines, fresh validation gates, organizer mappings, historical payload preservation,
 unchanged observations, source reversions and incomplete coverage failures.

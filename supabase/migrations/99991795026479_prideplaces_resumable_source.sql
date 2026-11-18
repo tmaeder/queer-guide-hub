@@ -80,6 +80,8 @@ create function public.prideplaces_claim_scan(p_run uuid,p_batch integer default
 returns jsonb language plpgsql security invoker set search_path='' as $$
 declare r public.prideplaces_scan_runs; token uuid:=gen_random_uuid(); items jsonb;
 begin
+  -- Refresh terminal state and enforce the deadline before granting a lease.
+  perform public.prideplaces_scan_progress(p_run);
   select * into r from public.prideplaces_scan_runs where id=p_run for update;
   if not found then raise exception 'Unknown Pride Places scan';end if;
   if r.status<>'running' or r.lease_until>now() then return jsonb_build_object('run_id',p_run,'status',r.status,'items','[]'::jsonb);end if;
@@ -106,7 +108,7 @@ declare r public.prideplaces_scan_runs; w public.prideplaces_scan_work;
   staged uuid; v_outcome text; needs_review boolean; reason text; link text; next_kind text;
 begin
   select * into r from public.prideplaces_scan_runs where id=p_run for update;
-  if r.status<>'running' or r.lease_token is distinct from p_lease or r.lease_until<=now() then raise exception 'Stale Pride Places worker lease';end if;
+  if r.status<>'running' or r.created_at<now()-interval '6 hours' or r.lease_token is distinct from p_lease or r.lease_until<=now() then raise exception 'Stale Pride Places worker lease';end if;
   select * into w from public.prideplaces_scan_work where id=p_work and run_id=p_run for update;
   if not found then raise exception 'Unknown Pride Places work item';end if;
   if w.status<>'pending' then return w.outcome;end if;
@@ -202,9 +204,10 @@ begin
   select coalesce(jsonb_object_agg(outcome,n),'{}') into counts from (
     select outcome,count(*) n from public.prideplaces_scan_work where run_id=p_run and outcome is not null group by outcome) x;
   final_status:=r.status;
-  if r.status='running' and remaining=0 then
-    final_status:=case when failed>0 or r.expected_businesses is null or businesses<>r.expected_businesses then 'failed' else 'completed' end;
-    if final_status='failed' then message:='Incomplete source coverage: failed pages or distinct business count differs from published total';end if;
+  if r.status='running' and (remaining=0 or r.created_at<now()-interval '6 hours') then
+    final_status:=case when r.created_at<now()-interval '6 hours' or failed>0 or r.expected_businesses is null or businesses<>r.expected_businesses then 'failed' else 'completed' end;
+    if r.created_at<now()-interval '6 hours' then message:='Pride Places scan exceeded six hours; coverage incomplete';
+    elsif final_status='failed' then message:='Incomplete source coverage: failed pages or distinct business count differs from published total';end if;
     update public.prideplaces_scan_runs set status=final_status,completed_at=now(),lease_token=null,lease_until=null where id=p_run;
   end if;
   counts:=counts||jsonb_build_object('source_run_id',p_run,'collection_status',final_status,'expected_businesses',r.expected_businesses,
