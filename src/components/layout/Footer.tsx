@@ -176,7 +176,8 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               <CurrencySelector />
               <ThemeToggle />
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-x-6 md:gap-x-8">
+            {/* Wordmark with the copyright tucked under it, as one signature block. */}
+            <div className="flex flex-col items-start md:items-end">
               <LocalizedLink
                 to="/"
                 className={cn(footerLink, 'text-background hover:no-underline')}
@@ -184,7 +185,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               >
                 <Wordmark className="text-title text-background" />
               </LocalizedLink>
-              <p className="text-2xs text-background/70">&copy; {currentYear} Queer Guide</p>
+              <p className="-mt-2 text-2xs text-background/70">&copy; {currentYear} Queer Guide</p>
             </div>
           </div>
         </div>

@@ -472,26 +472,6 @@ export function VenueBodyLead({
           />
         )}
         {children}
-        {(hasLocation || hasHours) && (
-          <div className="flex flex-wrap gap-x-4">
-            {hasLocation && (
-              <a
-                href="#location"
-                className="inline-flex min-h-11 items-center font-bold underline underline-offset-4"
-              >
-                {t('venues.detail.section.location', 'Location & contact')}
-              </a>
-            )}
-            {hasHours && (
-              <a
-                href="#hours"
-                className="inline-flex min-h-11 items-center font-bold underline underline-offset-4"
-              >
-                {t('venues.detail.section.hours', 'Opening hours')}
-              </a>
-            )}
-          </div>
-        )}
         {nextEvent && (
           <LocalizedLink
             to={`/events/${nextEvent.slug || nextEvent.id}`}
