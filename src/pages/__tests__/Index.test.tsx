@@ -1,11 +1,13 @@
 /** @vitest-environment jsdom */
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { act, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { act, screen } from '@testing-library/react';
+import { renderWithProviders } from '@/test/test-utils';
 
 vi.mock('@/hooks/usePlaces', () => ({ useOptimizedCity: () => ({ city: null }) }));
 vi.mock('@/hooks/useHomeRegion', () => ({ useHomeRegion: () => ({ loading: false }) }));
 vi.mock('@/hooks/useEvents', () => ({ useEventsQuery: () => ({ events: [] }) }));
+vi.mock('@/hooks/useCityPhotos', () => ({ useCityPhotos: () => ({ data: [] }) }));
+vi.mock('@/components/home/RegionChip', () => ({ RegionChip: () => null }));
 vi.mock('@/components/home/subway/HeroSearch', () => ({ HeroSearch: () => null }));
 vi.mock('@/components/home/HomeContent', () => ({
   default: () => <section data-testid="home-content">Content bands</section>,
@@ -32,11 +34,7 @@ describe('Index startup', () => {
       takeRecords = () => [];
     } as unknown as typeof IntersectionObserver;
 
-    render(
-      <MemoryRouter>
-        <Index />
-      </MemoryRouter>,
-    );
+    renderWithProviders(<Index />);
     const title = screen.getByRole('heading', { level: 1 });
     expect(title).toHaveTextContent('Find queer places and events');
     expect(title.className).not.toContain('sr-only');

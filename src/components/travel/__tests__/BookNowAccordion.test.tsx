@@ -8,7 +8,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { vi } from 'vitest';
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
-vi.mock('@/hooks/useRecommendations', () => ({ useRecommendations: () => ({ data: [], isLoading: false }) }));
+vi.mock('@/hooks/useRecommendations', () => ({
+  useRecommendations: () => ({ data: [], isLoading: false }),
+}));
 
 import { fireEvent } from '@testing-library/react';
 import { BookNowAccordion } from '../BookNowAccordion';
@@ -36,19 +38,44 @@ function renderAt(path: string, tripContext: TripBookingContext | null = null) {
 }
 
 describe('BookNowAccordion', () => {
-  it('renders closed by default (no booking tabs visible)', () => {
-    const { queryByRole } = renderAt('/travel');
-    expect(queryByRole('button', { name: 'Flights' })).toBeNull();
+  it('shows the three booking tiles closed by default', () => {
+    const { getByRole } = renderAt('/travel');
+    for (const name of ['Flights', 'Hotels', 'Activities']) {
+      expect(getByRole('button', { name: new RegExp(`^${name}\\b`) })).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      );
+    }
+  });
+
+  it('includes each visible hint in the booking tile accessible name', () => {
+    const { getByRole } = renderAt('/travel');
+    expect(getByRole('button', { name: /^Flights\b/ })).toHaveAccessibleName(
+      'Flights Live fares and deals',
+    );
+    expect(getByRole('button', { name: /^Hotels\b/ })).toHaveAccessibleName(
+      'Hotels Stays with queer-friendly filter',
+    );
+    expect(getByRole('button', { name: /^Activities\b/ })).toHaveAccessibleName(
+      'Activities Tours and tickets by city',
+    );
+  });
+
+  it('opens the matching search when a tile is clicked', () => {
+    const { getByRole } = renderAt('/travel');
+    fireEvent.click(getByRole('button', { name: /^Activities\b/ }));
+    expect(getByRole('button', { name: /^Activities\b/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(getByRole('button', { name: /Search Activities/ })).toBeTruthy();
   });
 
   it('opens when a ?tab= deep link is present', () => {
     const { getByRole } = renderAt('/travel?tab=hotels');
-    expect(getByRole('button', { name: 'Hotels' })).toBeTruthy();
+    expect(getByRole('button', { name: /^Hotels\b/ })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('opens when a ?city= deep link is present', () => {
     const { getByRole } = renderAt('/travel?city=Berlin');
-    expect(getByRole('button', { name: 'Flights' })).toBeTruthy();
+    expect(getByRole('button', { name: /^Flights\b/ })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('shows the trip-context banner when the trip seeds the search', () => {

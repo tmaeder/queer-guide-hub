@@ -11,12 +11,12 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { format } from 'date-fns';
 import {
   Calendar,
-  ChevronDown,
   ArrowLeftRight,
   MapPin,
   Clock,
   Phone,
   Globe,
+  ImageIcon,
   Download,
   Ticket,
   Luggage,
@@ -31,6 +31,7 @@ import {
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { buildProfileUrl } from '@/lib/social/registry';
 import { ShareMenu } from '@/components/share/ShareMenu';
+import { DetailActionBar } from '@/components/transit/DetailActionBar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
@@ -369,82 +370,93 @@ function eventShareEntity(event: EventWithRelations) {
 }
 
 /**
- * The masthead action row (spine S5). Ticket link is the one concrete verb
- * where it exists; the rest are the report / admin / share affordances the
- * photo hero used to hide in its top-right corner.
+ * The masthead action row (spine S5), on the shared `DetailActionBar`: one
+ * primary verb (passed in by the decision card), save + share, and every rare
+ * action behind the overflow menu.
  */
 export function EventActions({
   event,
   onExportToCalendar,
+  primary,
+  more = [],
 }: {
   event: EventWithRelations;
   onExportToCalendar?: () => void;
+  primary?: ReactNode;
+  /** Extra overflow items, listed before the generic ones. */
+  more?: ReactNode[];
 }) {
   const { t } = useTranslation();
+  const imageUrl = resolveEntityImage('event', event).url;
   return (
-    <div className="relative flex flex-wrap items-center gap-1">
-      <FavoriteButton itemId={event.id} type="event" size="tap" />
-      {/* ONE share control. `entity` is what makes that possible: with it set,
-          ShareMenu's own first item is "Send to member…", opening the very
-          dialog the separate "Send to someone" button below used to open. The
-          prop was never passed, so that item was dead and the panel carried
-          two share affordances for one dialog. */}
-      <ShareMenu
-        url={
-          typeof window !== 'undefined'
-            ? window.location.href
-            : `https://queer.guide/events/${event.slug ?? event.id}`
-        }
-        title={event.title}
-        label={t('events.share', 'Share')}
-        variant="ghost"
-        entity={eventShareEntity(event)}
-      />
-      <details className="max-w-full">
-        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-element px-4 text-13 font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
-          {t('events.detail.moreOptions', 'More options')}
-          <ChevronDown size={14} aria-hidden="true" />
-        </summary>
-        <div className="absolute right-0 top-full z-20 mt-1 flex w-72 max-w-full flex-wrap items-center gap-2 rounded-container border border-border-hairline bg-background p-4 shadow-soft">
-          {onExportToCalendar && (
-            <Button variant="ghost" size="sm" onClick={onExportToCalendar}>
-              <Download size={14} className="mr-1.5" aria-hidden="true" />
-              {t('events.detail.calendar', 'Calendar')}
-            </Button>
-          )}
-          {resolveEntityImage('event', event).url && (
-            <a
-              href={resolveEntityImage('event', event).url!}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="py-2 text-13 font-semibold hover:underline"
-            >
-              {t('events.detail.viewImage', 'View image')}
-            </a>
-          )}
-          {event.website && (
-            <a
-              href={event.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 py-2 text-13 font-semibold hover:underline"
-            >
-              <Globe size={14} aria-hidden="true" />
-              {t('common.website', 'Website')}
-            </a>
-          )}
-          <MarkVisitedButton entityType="event" entityId={event.id} kind="visited" />
-          <ReportButton contentType="events" contentId={event.id} contentName={event.title} />
-          <AdminEditButton
-            contentType="events"
-            contentId={event.id}
-            contentName={event.title}
-            currentData={event as unknown as Record<string, unknown>}
-            exportable
-          />
-        </div>
-      </details>
-    </div>
+    <DetailActionBar
+      primary={primary}
+      save={<FavoriteButton itemId={event.id} type="event" size="tap" />}
+      share={
+        <ShareMenu
+          url={
+            typeof window !== 'undefined'
+              ? window.location.href
+              : `https://queer.guide/events/${event.slug ?? event.id}`
+          }
+          title={event.title}
+          label={t('events.share', 'Share')}
+          variant="ghost"
+          size="default"
+          entity={eventShareEntity(event)}
+        />
+      }
+      more={[
+        ...more,
+        onExportToCalendar && (
+          <Button key="calendar" variant="ghost" onClick={onExportToCalendar}>
+            <Download size={16} className="mr-2" aria-hidden="true" />
+            {t('events.detail.calendar', 'Calendar')}
+          </Button>
+        ),
+        event.website && (
+          <a
+            key="website"
+            href={event.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-element px-4 text-15 font-medium no-underline hover:bg-muted"
+          >
+            <Globe size={16} aria-hidden="true" />
+            {t('common.website', 'Website')}
+          </a>
+        ),
+        imageUrl && (
+          <a
+            key="image"
+            href={imageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center rounded-element px-4 text-15 font-medium no-underline hover:bg-muted"
+          >
+            <ImageIcon size={16} aria-hidden="true" />
+            {t('events.detail.viewImage', 'View image')}
+          </a>
+        ),
+        <MarkVisitedButton key="visited" entityType="event" entityId={event.id} kind="visited" />,
+        <ReportButton
+          key="report"
+          showLabel
+          contentType="events"
+          contentId={event.id}
+          contentName={event.title}
+        />,
+      ]}
+      admin={
+        <AdminEditButton
+          contentType="events"
+          contentId={event.id}
+          contentName={event.title}
+          currentData={event as unknown as Record<string, unknown>}
+          exportable
+        />
+      }
+    />
   );
 }
 
@@ -806,58 +818,52 @@ export function EventDecisionCard({
   onExportToCalendar,
 }: DecisionCardProps) {
   const { t } = useTranslation();
-  const ticketHref = event.ticket_url;
+  const ticketHref = !isPast ? event.ticket_url : null;
+  const trip = !isPast && (
+    <TripAction
+      key="trip"
+      intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
+      source="event-detail-decision"
+      className="max-w-full"
+    />
+  );
+  const attendance =
+    !isPast && user
+      ? (['going', 'interested'] as const).map((status) => (
+          <Button
+            key={status}
+            variant="ghost"
+            onClick={() => onAttendanceUpdate(userAttendance === status ? 'not_going' : status)}
+            aria-pressed={userAttendance === status}
+          >
+            {userAttendance === status && (
+              <CircleCheck size={16} className="mr-2" aria-hidden="true" />
+            )}
+            {status === 'going'
+              ? t('events.detail.going', 'Going')
+              : t('events.interested', 'Interested')}
+          </Button>
+        ))
+      : [];
   return (
-    <div data-testid="event-actions" className="flex flex-wrap items-center gap-2">
-      {!isPast && (
-        <div className="flex flex-wrap items-center gap-2">
-          {ticketHref && (
+    <div data-testid="event-actions">
+      <EventActions
+        event={event}
+        onExportToCalendar={onExportToCalendar}
+        primary={
+          ticketHref ? (
             <Button asChild>
               <a href={ticketHref} target="_blank" rel="noopener noreferrer">
                 <Ticket size={16} className="mr-2" aria-hidden="true" />
                 {t('events.detail.getTickets', 'Get tickets')}
               </a>
             </Button>
-          )}
-          <TripAction
-            intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
-            source="event-detail-decision"
-            variant={ticketHref ? 'card' : undefined}
-            className="max-w-full"
-          />
-          {user && (
-            <div className="flex gap-2">
-              <Button
-                variant={userAttendance === 'going' ? 'default' : 'outline'}
-                onClick={() =>
-                  onAttendanceUpdate(userAttendance === 'going' ? 'not_going' : 'going')
-                }
-                aria-pressed={userAttendance === 'going'}
-                className="flex-1"
-              >
-                {userAttendance === 'going' && (
-                  <CircleCheck size={16} className="mr-1.5" aria-hidden="true" />
-                )}
-                {t('events.detail.going', 'Going')}
-              </Button>
-              <Button
-                variant={userAttendance === 'interested' ? 'default' : 'outline'}
-                onClick={() =>
-                  onAttendanceUpdate(userAttendance === 'interested' ? 'not_going' : 'interested')
-                }
-                aria-pressed={userAttendance === 'interested'}
-                className="flex-1"
-              >
-                {userAttendance === 'interested' && (
-                  <CircleCheck size={16} className="mr-1.5" aria-hidden="true" />
-                )}
-                {t('events.interested', 'Interested')}
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
-      <EventActions event={event} onExportToCalendar={onExportToCalendar} />
+          ) : (
+            trip || undefined
+          )
+        }
+        more={[ticketHref ? trip : null, ...attendance]}
+      />
     </div>
   );
 }

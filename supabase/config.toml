@@ -1,5 +1,9 @@
 project_id = "xqeacpakadqfxjxjcewc"
 
+[functions.source-outxout]
+# The handler requires the internal secret, service-role bearer or an admin.
+verify_jwt = false
+
 [api]
 enabled = true
 port = 54321
@@ -383,6 +387,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.source-gaybasel]
+verify_jwt = false
+
+[functions.source-prideplaces]
 verify_jwt = false
 
 [functions.source-haz-ch]

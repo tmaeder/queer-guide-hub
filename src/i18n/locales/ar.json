@@ -6,7 +6,11 @@
     "personalities": "الشخصيات",
     "history": "التاريخ",
     "lede": "الكلمات التي نستخدمها، والأشخاص الذين شكّلوا حياة الكوير، والتاريخ الذي يقف وراءهما.",
-    "navigation": "أقسام المعرفة"
+    "navigation": "أقسام المعرفة",
+    "termsHint": "كلماتنا ومعانيها",
+    "personalitiesHint": "أشخاص شكّلوا حياة الكوير",
+    "historyHint": "محطات، سنة بعد سنة",
+    "rightsHint": "ماذا يقول القانون في كل بلد"
   },
   "eventTypes": {
     "party": "حفلة",
@@ -957,12 +961,6 @@
         "title": "تعذّر إنشاء الرحلة",
         "poolTitle": "لم يتم تحميل قائمة المحطات.",
         "retry": "أعد المحاولة"
-      },
-      "cta": {
-        "heading": "اسلك هذا الخط.",
-        "body": "يتحول إلى رحلة تملكها، وكل المحطات فيها بالفعل. يمكنك تغيير ما تشاء بعد ذلك.",
-        "primary": "حوّلها إلى رحلة",
-        "secondary": "ارسم خطاً آخر"
       },
       "buildRoute": "إنشاء مسار"
     },
@@ -1936,7 +1934,11 @@
       "exploreCity": "استكشف {{city}}",
       "browseEvents": "تصفّح فعاليات {{city}}",
       "whatsOn": "الفعاليات",
-      "communitySpace": "مساحة مجتمعية"
+      "communitySpace": "مساحة مجتمعية",
+      "photos": "الصور",
+      "previousPhoto": "الصورة السابقة",
+      "nextPhoto": "الصورة التالية",
+      "pausePhotos": "إيقاف عرض الشرائح مؤقتًا"
     },
     "discovery": {
       "openMap": "افتح الخريطة",
@@ -2107,7 +2109,8 @@
       "interchange": {
         "label": "ابحث في كل شيء",
         "subtitle": "كل الخطوط تلتقي هنا"
-      }
+      },
+      "title": "الخريطة"
     },
     "glossary": {
       "eyebrow": "المسرد",
@@ -2265,6 +2268,7 @@
       "you": "حسابي",
       "menuTitle": "كل الأقسام",
       "menuDescription": "انتقل إلى أي قسم، وبدّل اللغة أو المظهر.",
+      "hubDescription": "رسائلك وخططك وأشخاصك وعناصرك المحفوظة.",
       "trips": "رحلاتي",
       "settingsSection": "العرض",
       "browseAll": "تصفّح كل الأقسام",
@@ -2597,7 +2601,8 @@
       "pride": {
         "title": "فعاليات الفخر هذا الموسم",
         "window": "الأشهر الأربعة القادمة",
-        "empty": "لا توجد فعاليات فخر قادمة."
+        "empty": "لا توجد فعاليات فخر قادمة.",
+        "cta": "عرض الفعالية"
       },
       "inspiration": {
         "villages": "قرى الكوير",
@@ -2755,7 +2760,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} شخص",
+        "fieldCount_other": "{{formatted}} شخص"
       },
       "detail": {
         "inTheNews": "In the news",
@@ -3993,11 +4000,15 @@
       "title": "[AR] What are you into?",
       "blurb": "[AR] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[AR] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[AR] {{count}} selected"
+      "count": "[AR] {{count}} selected",
+      "signIn": "سجّل الدخول لاختيار الاهتمامات",
+      "limit": "تم اختيار {{count}} من {{max}}",
+      "atLimit": "لقد وصلت إلى الحد الأقصى. أزل أحدها لاختيار غيره."
     },
     "friends": {
       "discover": "ابحث عن أشخاص"
-    }
+    },
+    "safetyTitle": "تحقّق من القانون قبل اللقاء"
   },
   "hub": {
     "title": "مركزك",
@@ -4512,12 +4523,14 @@
         "source": "[AR] The source",
         "coverage": "[AR] Coverage",
         "score": "[AR] The equality score",
-        "limits": "[AR] What this data cannot tell you"
+        "limits": "[AR] What this data cannot tell you",
+        "download": "تنزيل البيانات"
       },
       "kicker": {
         "source": "[AR] ILGA World",
         "coverage": "[AR] What we actually hold",
-        "score": "[AR] How it is built, and what it hides"
+        "score": "[AR] How it is built, and what it hides",
+        "download": "CSV أو JSON، جميع البلدان"
       },
       "coverage": {
         "status": "[AR] Countries with a recorded legal status",
@@ -4541,7 +4554,13 @@
         "personal": "[AR] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[AR] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
       },
-      "methodologyLink": "كل وزن، وحدود الفئات، وطريقة الاستشهاد"
+      "methodologyLink": "كل وزن، وحدود الفئات، وطريقة الاستشهاد",
+      "download": {
+        "body": "الوضع القانوني ومؤشر المساواة لكل بلد وإقليم، صف لكل منها، يُحدَّث كل ليلة.",
+        "csv": "تنزيل CSV",
+        "json": "تنزيل JSON",
+        "licence": "أعمدة الوضع القانوني مأخوذة من ILGA World Database وتظل © ILGA World، ولا يشملها ترخيصنا. مؤشر المساواة والفئة من إعدادنا، بترخيص CC BY-SA 4.0. اذكر المصدرين عند استخدام الملف."
+      }
     },
     "lens": {
       "title": "[AR] Who the law protects",
@@ -4564,7 +4583,8 @@
         "copied": "تم النسخ",
         "copy": "نسخ",
         "apa": "APA",
-        "plain": "نص عادي"
+        "plain": "نص عادي",
+        "copyFailed": "تعذّر النسخ تلقائيًا. تم تحديد الاقتباس؛ انسخه باستخدام لوحة المفاتيح."
       },
       "metaTitle": "كيف تُحسب درجة المساواة لمجتمع الميم-عين",
       "metaDescription": "كل وزن في درجة المساواة من Queer Guide، والنطاق 0–100، وحدود الفئات، وحدودها المعروفة، وطريقة الاستشهاد بها.",
@@ -5658,5 +5678,27 @@
   "i18n": {
     "selectLanguage": "اختر اللغة",
     "selectCurrency": "اختر العملة"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "ضع رابطًا إلينا",
+      "intro": "يمكنك وضع رابط إلى أي صفحة على Queer Guide. هذه هي الصفحات الأكثر استشهادًا بها. انسخ مقتطفًا إلى صفحتك، أو اكتب نص الرابط بنفسك.",
+      "badgeTitle": "شارة البيانات",
+      "badgeBody": "للصفحات التي تستخدم بياناتنا عن الحقوق. تقود الشارة إلى صفحة الحقوق حسب البلد.",
+      "badgeSnippet": "HTML للشارة",
+      "listingTitle": "إذا كانت منظمتك مدرجة",
+      "listingBody": "استبدل YOUR-LISTING بالجزء الأخير من عنوان صفحتك على Queer Guide.",
+      "listingSnippet": "HTML لرابط الإدراج",
+      "attribution": "عند استخدام بياناتنا عن الحقوق، اذكر Queer Guide وILGA World Database التي تحافظ على السجل القانوني الأساسي.",
+      "copied": "تم النسخ",
+      "copy": "نسخ",
+      "copyFailed": "تعذّر النسخ تلقائيًا. النص محدد؛ انسخه باستخدام لوحة المفاتيح.",
+      "page": {
+        "rights": "حقوق مجتمع الميم+ حسب البلد (Queer Guide)",
+        "methodology": "كيف تُحسب درجة المساواة في Queer Guide",
+        "help": "خطوط الأزمات لمجتمع الميم+ حسب البلد (Queer Guide)",
+        "interactions": "مخاطر الجمع بين المواد المخدرة (Queer Guide)"
+      }
+    }
   }
 }

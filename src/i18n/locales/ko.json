@@ -6,7 +6,11 @@
     "personalities": "인물",
     "history": "역사",
     "lede": "우리가 쓰는 말, 퀴어의 삶을 만들어 온 사람들, 그리고 그 뒤의 역사.",
-    "navigation": "지식 섹션"
+    "navigation": "지식 섹션",
+    "termsHint": "우리가 쓰는 말과 뜻",
+    "personalitiesHint": "퀴어의 삶을 만든 사람들",
+    "historyHint": "연도별 주요 사건",
+    "rightsHint": "국가별 법률 현황"
   },
   "eventTypes": {
     "party": "파티",
@@ -957,12 +961,6 @@
         "title": "여행을 만들지 못했어요",
         "poolTitle": "역 목록을 불러오지 못했어요.",
         "retry": "다시 시도"
-      },
-      "cta": {
-        "heading": "이 노선으로 떠나기.",
-        "body": "모든 정거장이 담긴, 당신의 여행이 돼요. 이후에 무엇이든 바꿀 수 있어요.",
-        "primary": "여행으로 만들기",
-        "secondary": "다시 그리기"
       },
       "buildRoute": "경로 만들기"
     },
@@ -1926,7 +1924,11 @@
       "exploreCity": "{{city}} 둘러보기",
       "browseEvents": "{{city}} 이벤트 보기",
       "whatsOn": "이벤트 소식",
-      "communitySpace": "커뮤니티 공간"
+      "communitySpace": "커뮤니티 공간",
+      "photos": "사진",
+      "previousPhoto": "이전 사진",
+      "nextPhoto": "다음 사진",
+      "pausePhotos": "슬라이드쇼 일시 정지"
     },
     "discovery": {
       "openMap": "지도 열기",
@@ -2097,7 +2099,8 @@
       "interchange": {
         "label": "전체 검색",
         "subtitle": "모든 노선이 만나는 곳"
-      }
+      },
+      "title": "지도"
     },
     "glossary": {
       "eyebrow": "용어집",
@@ -2255,6 +2258,7 @@
       "you": "내 정보",
       "menuTitle": "전체 섹션",
       "menuDescription": "원하는 섹션으로 이동하고 언어나 테마를 변경하세요.",
+      "hubDescription": "메시지, 계획, 사람들, 저장한 항목.",
       "trips": "내 여행",
       "settingsSection": "디스플레이",
       "browseAll": "모든 섹션 보기",
@@ -2587,7 +2591,8 @@
       "pride": {
         "title": "이번 시즌의 프라이드",
         "window": "향후 4개월",
-        "empty": "예정된 프라이드 이벤트가 없어요."
+        "empty": "예정된 프라이드 이벤트가 없어요.",
+        "cta": "이벤트 보기"
       },
       "inspiration": {
         "villages": "퀴어 빌리지",
@@ -2745,7 +2750,9 @@
         "bornThisWeek": "이번 주에 태어난 인물",
         "diedThisWeek": "이번 주에 기억하는 인물",
         "browseByEra": "시대별로 보기",
-        "browseByField": "분야별로 보기"
+        "browseByField": "분야별로 보기",
+        "fieldCount_one": "{{formatted}}명",
+        "fieldCount_other": "{{formatted}}명"
       },
       "detail": {
         "inTheNews": "뉴스에서",
@@ -3983,11 +3990,15 @@
       "title": "무엇에 관심이 있나요?",
       "blurb": "몇 개 골라 보세요. 고른 관심사가 추천을 결정하고, 다른 멤버가 공통점을 찾아 서로를 발견하는 통로가 돼요.",
       "blurbSignedOut": "로그인하고 몇 개 골라 보세요. 고른 관심사가 추천을 결정하고, 다른 멤버가 공통점을 찾아 서로를 발견하는 통로가 돼요.",
-      "count": "{{count}} 개 선택됨"
+      "count": "{{count}} 개 선택됨",
+      "signIn": "로그인하여 관심사 선택",
+      "limit": "{{max}}개 중 {{count}}개 선택",
+      "atLimit": "선택 한도에 도달했습니다. 다른 항목을 선택하려면 하나를 해제하세요."
     },
     "friends": {
       "discover": "사람 찾기"
-    }
+    },
+    "safetyTitle": "만나기 전에 법률 확인"
   },
   "hub": {
     "title": "내 허브",
@@ -4502,12 +4513,14 @@
         "source": "출처",
         "coverage": "범위",
         "score": "평등 점수",
-        "limits": "이 데이터가 알려 주지 못하는 것"
+        "limits": "이 데이터가 알려 주지 못하는 것",
+        "download": "데이터 다운로드"
       },
       "kicker": {
         "source": "ILGA World",
         "coverage": "실제로 보유한 데이터",
-        "score": "점수가 만들어지는 방식과 한계"
+        "score": "점수가 만들어지는 방식과 한계",
+        "download": "CSV 또는 JSON, 모든 국가"
       },
       "coverage": {
         "status": "법적 지위가 기록된 국가",
@@ -4531,7 +4544,13 @@
         "personal": "이 데이터는 여러분에 대해 아무것도 몰라요. 국적, 거주지, 성별 표기, 관계 상태에 따라 적용되는 법이 달라지는데, 저희는 그중 무엇도 갖고 있지 않아요.",
         "corrections": "여기 틀린 것이 있으면 알려 주세요. 원본 기록의 수정은 기록을 관리하는 ILGA에도 보내 주세요."
       },
-      "methodologyLink": "모든 가중치, 등급 기준점, 인용 방법"
+      "methodologyLink": "모든 가중치, 등급 기준점, 인용 방법",
+      "download": {
+        "body": "모든 국가와 지역의 법적 지위와 평등 점수. 국가별 한 행, 매일 밤 갱신.",
+        "csv": "CSV 다운로드",
+        "json": "JSON 다운로드",
+        "licence": "법적 지위 열은 ILGA World Database에서 가져왔으며 © ILGA World에 귀속되고, 우리 라이선스의 적용을 받지 않습니다. 평등 점수와 등급은 우리 데이터이며 CC BY-SA 4.0으로 제공됩니다. 파일을 사용할 때 두 출처를 모두 밝혀 주세요."
+      }
     },
     "lens": {
       "title": "법이 보호하는 사람",
@@ -4554,7 +4573,8 @@
         "copied": "복사됨",
         "copy": "복사",
         "apa": "APA",
-        "plain": "일반 텍스트"
+        "plain": "일반 텍스트",
+        "copyFailed": "자동으로 복사하지 못했습니다. 인용문이 선택되어 있으니 키보드로 복사하세요."
       },
       "metaTitle": "LGBTQ+ 평등 점수 산출 방법",
       "metaDescription": "Queer Guide 평등 점수의 모든 가중치, 0–100 범위, 등급 기준점, 알려진 한계, 인용 방법.",
@@ -5648,5 +5668,27 @@
   "i18n": {
     "selectLanguage": "언어 선택",
     "selectCurrency": "통화 선택"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "링크하기",
+      "intro": "Queer Guide의 어떤 페이지에도 링크하실 수 있습니다. 가장 자주 인용되는 페이지는 다음과 같습니다. 스니펫을 복사해 페이지에 넣거나 링크 텍스트를 직접 작성하세요.",
+      "badgeTitle": "데이터 배지",
+      "badgeBody": "권리 데이터를 사용하는 페이지용입니다. 배지는 국가별 권리 페이지로 연결됩니다.",
+      "badgeSnippet": "배지 HTML",
+      "listingTitle": "단체가 등록되어 있다면",
+      "listingBody": "YOUR-LISTING을 Queer Guide에 있는 등록 페이지 주소의 마지막 부분으로 바꾸세요.",
+      "listingSnippet": "등록 페이지 링크 HTML",
+      "attribution": "권리 데이터를 사용할 때는 Queer Guide와 기반 법률 기록을 관리하는 ILGA World Database를 출처로 표기하세요.",
+      "copied": "복사됨",
+      "copy": "복사",
+      "copyFailed": "자동으로 복사하지 못했습니다. 텍스트가 선택되어 있으니 키보드로 복사하세요.",
+      "page": {
+        "rights": "국가별 LGBTQ+ 권리 (Queer Guide)",
+        "methodology": "Queer Guide 평등 점수 산정 방법",
+        "help": "국가별 LGBTQ+ 위기 상담 전화 (Queer Guide)",
+        "interactions": "약물 병용 위험 (Queer Guide)"
+      }
+    }
   }
 }

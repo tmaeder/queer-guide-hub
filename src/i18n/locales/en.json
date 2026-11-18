@@ -6,7 +6,11 @@
     "personalities": "Personalities",
     "history": "History",
     "lede": "The words we use, the people who shaped queer life, and the history behind both.",
-    "navigation": "Knowledge sections"
+    "navigation": "Knowledge sections",
+    "termsHint": "The words we use, defined",
+    "personalitiesHint": "People who shaped queer life",
+    "historyHint": "Milestones, year by year",
+    "rightsHint": "What the law says, by country"
   },
   "breadcrumb": {
     "home": "Home",
@@ -1700,12 +1704,6 @@
         "poolTitle": "The station list did not load.",
         "retry": "Try again"
       },
-      "cta": {
-        "heading": "Ride this line.",
-        "body": "Turns into a trip you own, with every stop already on it. Change anything you like afterwards.",
-        "primary": "Make it a trip",
-        "secondary": "Draw another"
-      },
       "buildRoute": "Build a route"
     },
     "polls": {
@@ -2122,7 +2120,11 @@
       "exploreCity": "{{city}} city guide",
       "browseEvents": "Browse {{city}} events",
       "whatsOn": "What’s on",
-      "communitySpace": "Community space"
+      "communitySpace": "Community space",
+      "photos": "Photos",
+      "previousPhoto": "Previous photo",
+      "nextPhoto": "Next photo",
+      "pausePhotos": "Pause slideshow"
     },
     "discovery": {
       "openMap": "Open the map",
@@ -2155,7 +2157,8 @@
       "interchange": {
         "label": "Search everything",
         "subtitle": "Every line meets here"
-      }
+      },
+      "title": "Map"
     },
     "heroLine1": "Queer venues,",
     "heroLine2": "events, and people.",
@@ -2452,6 +2455,7 @@
       "you": "You",
       "menuTitle": "All sections",
       "menuDescription": "Jump to any section, switch language or theme.",
+      "hubDescription": "Your messages, plans, people and saved things.",
       "trips": "My Trips",
       "settingsSection": "Display",
       "browseAll": "Browse all sections",
@@ -2800,7 +2804,8 @@
       "pride": {
         "title": "Pride this season",
         "window": "Next 4 months",
-        "empty": "No upcoming Pride events."
+        "empty": "No upcoming Pride events.",
+        "cta": "View event"
       },
       "inspiration": {
         "villages": "Queer villages",
@@ -2941,7 +2946,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} person",
+        "fieldCount_other": "{{formatted}} people"
       },
       "detail": {
         "inTheNews": "In the news",
@@ -4041,11 +4048,15 @@
       "title": "What are you into?",
       "blurb": "Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "{{count}} selected"
+      "count": "{{count}} selected",
+      "signIn": "Sign in to pick interests",
+      "limit": "{{count}} of {{max}} picked",
+      "atLimit": "That is the limit. Remove one to pick another."
     },
     "friends": {
       "discover": "Find people"
-    }
+    },
+    "safetyTitle": "Check the law before you meet"
   },
   "hub": {
     "title": "Your hub",
@@ -4555,12 +4566,14 @@
         "source": "The source",
         "coverage": "Coverage",
         "score": "The equality score",
-        "limits": "What this data cannot tell you"
+        "limits": "What this data cannot tell you",
+        "download": "Download the data"
       },
       "kicker": {
         "source": "ILGA World",
         "coverage": "What we actually hold",
-        "score": "How it is built, and what it hides"
+        "score": "How it is built, and what it hides",
+        "download": "CSV or JSON, every country"
       },
       "coverage": {
         "status": "Countries with a recorded legal status",
@@ -4584,7 +4597,13 @@
         "personal": "It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "If something here is wrong, tell us. Corrections to the underlying record should also go to ILGA, who maintain it."
       },
-      "methodologyLink": "Every weight, the tier cutoffs and how to cite it"
+      "methodologyLink": "Every weight, the tier cutoffs and how to cite it",
+      "download": {
+        "body": "The legal status and equality score for every country and territory, one row each, refreshed nightly.",
+        "csv": "Download CSV",
+        "json": "Download JSON",
+        "licence": "The legal-status columns come from the ILGA World Database and remain © ILGA World; they are not covered by our licence. The equality score and tier are ours, under CC BY-SA 4.0. Credit both when you use the file."
+      }
     },
     "lens": {
       "title": "Who the law protects",
@@ -4607,7 +4626,8 @@
         "copied": "Copied",
         "copy": "Copy",
         "apa": "APA",
-        "plain": "Plain text"
+        "plain": "Plain text",
+        "copyFailed": "Could not copy automatically. The citation is selected; copy it with your keyboard."
       },
       "metaTitle": "How the LGBTQ+ equality score is calculated",
       "metaDescription": "Every weight in the Queer Guide equality score, the 0–100 range, the tier cutoffs, its known limits, and how to cite it.",
@@ -5613,5 +5633,27 @@
   "i18n": {
     "selectLanguage": "Select language",
     "selectCurrency": "Select currency"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "Link to us",
+      "intro": "You are welcome to link to any page on Queer Guide. These are the ones most often cited. Copy a snippet into your page, or write your own link text.",
+      "badgeTitle": "Data badge",
+      "badgeBody": "For pages that use our rights data. The badge links to the rights-by-country page.",
+      "badgeSnippet": "Badge HTML",
+      "listingTitle": "If your organization is listed",
+      "listingBody": "Replace YOUR-LISTING with the last part of your listing’s address on Queer Guide.",
+      "listingSnippet": "Listing link HTML",
+      "attribution": "When you use our rights data, credit Queer Guide and the ILGA World Database, which maintains the underlying legal record.",
+      "copied": "Copied",
+      "copy": "Copy",
+      "copyFailed": "Could not copy automatically. The text is selected; copy it with your keyboard.",
+      "page": {
+        "rights": "LGBTQ+ rights by country (Queer Guide)",
+        "methodology": "How the Queer Guide equality score is calculated",
+        "help": "LGBTQ+ crisis lines by country (Queer Guide)",
+        "interactions": "Drug combination risks (Queer Guide)"
+      }
+    }
   }
 }

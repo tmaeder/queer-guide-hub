@@ -1,0 +1,35 @@
+{
+  "event_id": "fb19f0d2-6d29-4a56-8318-796653e3fde7",
+  "proof": {
+    "contract": "organizer_venue_scope.v1",
+    "scope": "multi_site",
+    "title": "European Gay Ski Week",
+    "venue_label": "Val Thorens, Les 3 Vallees",
+    "city_id": "439f1a40-05c6-4e88-9115-7281145ceeba",
+    "country_id": "4a9c8fef-e5c3-4405-99d3-374d645e905a",
+    "start_date": "2027-03-13T00:00:00+00:00",
+    "end_date": "2027-03-20T00:00:00+00:00",
+    "source_id": "5c54e872-a529-414f-89f3-854f3580b696",
+    "payload_hash": "6bbc9979bcfd6f74ee42f828781d820e57a9e7c8171e294a071f08b6e8c7db25",
+    "capture_sha256": "ef1a802cf7e571b43f053b33d0c2d7f29a2aca02b0a486bf69b95d2ed2405725",
+    "url": "https://www.europeangayskiweek.com/frequently-asked-questions/",
+    "source_urls": [
+      "https://www.europeangayskiweek.com/",
+      "https://www.europeangayskiweek.com/frequently-asked-questions/"
+    ],
+    "capture_method": "web_primary_text_extract",
+    "capture_bytes": 671,
+    "observed_at": "2026-11-18T18:26:05Z",
+    "direct_http_403_not_used_as_content": true,
+    "human_reviewed": false,
+    "note": "Owner programme confirms Val Thorens/Les 3 Vallées and 13–20 March 2027. FAQ expressly describes daily mountain outings and different lunch restaurants; the week also includes evening events. The saved label identifies a resort-wide programme rather than one stationary venue."
+  },
+  "capture_file": "egsw-web-extract.json",
+  "capture_hash_scope": "Bounded primary text-extract artifact; not an HTTP200 body claim.",
+  "native_contract": "api_private.event_has_verified_nonfixed_location",
+  "native_contract_verified": true,
+  "venue_created": false,
+  "public_event_fields_changed": false,
+  "original_source_payloads_changed": false,
+  "human_reviewed": false
+}

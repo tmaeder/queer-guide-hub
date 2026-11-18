@@ -41,9 +41,8 @@ import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import { useMeta } from '@/hooks/useMeta';
 import { PageContainer, STICKY_RAIL_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
-import { RouteBullet } from '@/components/transit/RouteBullet';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { getCategoryShortName, parentOrder } from '@/components/resources/categoryMeta';
+import { getCategoryShortName } from '@/components/resources/categoryMeta';
 import { CATEGORY_LINE_ORDER } from '@/lib/tags/categoryIdentity';
 import { resolveTagGlyph } from '@/lib/tags/tagIconography';
 import { redirectedCategorySlug } from '@/lib/tags/categorySlugRedirects';
@@ -68,7 +67,6 @@ import { TagsFilterSpine } from '@/components/tags/index/TagsFilterSpine';
 import { CategoryTreeRail } from '@/components/tags/index/CategoryTreeRail';
 import { TagAlphabetRail } from '@/components/tags/index/TagAlphabetRail';
 import { TagResults } from '@/components/tags/index/TagResults';
-import { TagsEndOfLine } from '@/components/tags/index/TagsEndOfLine';
 import { FlagWall } from '@/components/tags/FlagWall';
 import { KnowledgeHeader } from '@/components/knowledge/KnowledgeHeader';
 
@@ -420,13 +418,6 @@ export default function TagsIndex() {
     );
   }
 
-  // Count only the lines the page actually renders (parentOrder), not every
-  // root in tag_categories — during the taxonomy-swap coexistence window the
-  // table holds two trees and an unfiltered count inflates the hero stat.
-  const stopCount = categoriesTree.reduce(
-    (n, c) => n + (parentOrder.includes(c.name) ? (c.children?.length ?? 0) : 0),
-    0,
-  );
   const filtered = hasActiveFilters(state);
   const starterTerms =
     !scope && !filtered && state.view !== 'graph'
@@ -439,25 +430,10 @@ export default function TagsIndex() {
   return (
     <>
       <KnowledgeHeader section="terms">
-        <h2 className="text-title font-bold">{title}</h2>
-        <p className="mt-4 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
-          {scope
-            ? t('tags.category.lede', 'Every term filed under {{name}}.', { name: scope.name })
-            : t(
-                'tags.hero.lede',
-                'Every word the guide uses, defined — and everything tagged with it.',
-              )}
-        </p>
-        {!scope && (
-          <p className="mt-4 flex items-center gap-2 text-13 tabular-nums text-muted-foreground">
-            <RouteBullet type="tag" size={30} />
-            {t('tags.hero.legend', '{{terms}} terms · {{lines}} lines · {{stops}} stops', {
-              terms: termCount,
-              lines: parentOrder.length,
-              stops: stopCount,
-            })}
-          </p>
-        )}
+        {/* No glossary intro block: the Knowledge header above already says
+            what this is, and the "N terms · N lines · N stops" legend only
+            restated the rail. A category stop keeps its name as the heading. */}
+        {scope && <h2 className="text-title font-bold">{title}</h2>}
         {starterTerms.length > 0 && (
           <ul
             aria-label={t('tags.opening.terms', 'A few terms to start with')}
@@ -470,7 +446,9 @@ export default function TagsIndex() {
                   className="group block rounded-element bg-surface-container p-4 text-foreground no-underline"
                 >
                   <span className="block font-semibold group-hover:underline">{term.name}</span>
-                  <span className="mt-1 line-clamp-2 text-sm text-muted-foreground">{term.description}</span>
+                  <span className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                    {term.description}
+                  </span>
                 </LocalizedLink>
               </li>
             ))}
@@ -528,9 +506,10 @@ export default function TagsIndex() {
             )}
 
             <div className="mt-4 flex flex-wrap items-center gap-4">
-              {/* A count, never the grid — announcing a whole list of cards on
-                  every keystroke is what makes a live region hostile. */}
-              <p role="status" className="text-13 tabular-nums text-muted-foreground">
+              {/* The visible "N terms" line is gone; the count survives for
+                  screen readers only, as the live region it always was — a
+                  count, never the grid. */}
+              <p role="status" className="sr-only">
                 {searching
                   ? t('tags.searching', 'Searching…')
                   : t('tags.count', '{{count}} terms', { count: primaryResults.length })}
@@ -579,7 +558,6 @@ export default function TagsIndex() {
                 <TagResults
                   view={state.view}
                   tags={primaryResults.map((e) => e.tag)}
-                  usageCounts={usageCounts}
                   glyphFor={glyphFor}
                   categoryLabelFor={categoryLabelFor}
                   aliasIds={aliasIds}
@@ -604,7 +582,6 @@ export default function TagsIndex() {
                   <TagResults
                     view={state.view}
                     tags={aliasResults.map((e) => e.tag)}
-                    usageCounts={usageCounts}
                     glyphFor={glyphFor}
                     categoryLabelFor={categoryLabelFor}
                     aliasIds={aliasIds}
@@ -627,8 +604,6 @@ export default function TagsIndex() {
             )}
           </div>
         </div>
-
-        <TagsEndOfLine />
       </PageContainer>
     </>
   );

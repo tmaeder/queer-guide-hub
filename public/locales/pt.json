@@ -6,7 +6,11 @@
     "personalities": "Personalidades",
     "history": "História",
     "lede": "As palavras que usamos, as pessoas que moldaram a vida queer e a história por trás de ambas.",
-    "navigation": "Seções de conhecimento"
+    "navigation": "Seções de conhecimento",
+    "termsHint": "As nossas palavras, definidas",
+    "personalitiesHint": "Pessoas que marcaram a vida queer",
+    "historyHint": "Marcos, ano a ano",
+    "rightsHint": "O que diz a lei, por país"
   },
   "eventTypes": {
     "party": "Festa",
@@ -957,12 +961,6 @@
         "title": "Não foi possível criar a viagem",
         "poolTitle": "A lista de estações não carregou.",
         "retry": "Tentar de novo"
-      },
-      "cta": {
-        "heading": "Segue esta linha.",
-        "body": "Torna-se uma viagem tua, com todas as paragens já lá. Depois podes mudar o que quiseres.",
-        "primary": "Transformar em viagem",
-        "secondary": "Traçar outra"
       },
       "buildRoute": "Criar uma rota"
     },
@@ -1926,7 +1924,11 @@
       "exploreCity": "Explore {{city}}",
       "browseEvents": "Ver eventos em {{city}}",
       "whatsOn": "O que acontece",
-      "communitySpace": "Espaço comunitário"
+      "communitySpace": "Espaço comunitário",
+      "photos": "Fotos",
+      "previousPhoto": "Foto anterior",
+      "nextPhoto": "Próxima foto",
+      "pausePhotos": "Pausar apresentação"
     },
     "discovery": {
       "openMap": "Abrir o mapa",
@@ -2097,7 +2099,8 @@
       "interchange": {
         "label": "Pesquisar tudo",
         "subtitle": "Todas as linhas se encontram aqui"
-      }
+      },
+      "title": "Mapa"
     },
     "glossary": {
       "eyebrow": "Glossário",
@@ -2255,6 +2258,7 @@
       "you": "Perfil",
       "menuTitle": "Todas as seções",
       "menuDescription": "Vá para qualquer seção, mude o idioma ou o tema.",
+      "hubDescription": "Suas mensagens, planos, pessoas e itens salvos.",
       "trips": "Minhas Viagens",
       "settingsSection": "Exibição",
       "browseAll": "Ver todas as seções",
@@ -2589,7 +2593,8 @@
       "pride": {
         "title": "Pride nesta temporada",
         "window": "Próximos 4 meses",
-        "empty": "Sem eventos Pride próximos."
+        "empty": "Sem eventos Pride próximos.",
+        "cta": "Ver evento"
       },
       "inspiration": {
         "villages": "Queer Villages",
@@ -2747,7 +2752,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} pessoa",
+        "fieldCount_other": "{{formatted}} pessoas"
       },
       "detail": {
         "inTheNews": "In the news",
@@ -3985,11 +3992,15 @@
       "title": "[PT] What are you into?",
       "blurb": "[PT] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[PT] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[PT] {{count}} selected"
+      "count": "[PT] {{count}} selected",
+      "signIn": "Entre para escolher interesses",
+      "limit": "{{count}} de {{max}} selecionados",
+      "atLimit": "Você atingiu o limite. Remova um para escolher outro."
     },
     "friends": {
       "discover": "Encontrar pessoas"
-    }
+    },
+    "safetyTitle": "Confira a legislação antes de se encontrar"
   },
   "hub": {
     "title": "Seu hub",
@@ -4504,12 +4515,14 @@
         "source": "[PT] The source",
         "coverage": "[PT] Coverage",
         "score": "[PT] The equality score",
-        "limits": "[PT] What this data cannot tell you"
+        "limits": "[PT] What this data cannot tell you",
+        "download": "Baixar os dados"
       },
       "kicker": {
         "source": "[PT] ILGA World",
         "coverage": "[PT] What we actually hold",
-        "score": "[PT] How it is built, and what it hides"
+        "score": "[PT] How it is built, and what it hides",
+        "download": "CSV ou JSON, todos os países"
       },
       "coverage": {
         "status": "[PT] Countries with a recorded legal status",
@@ -4533,7 +4546,13 @@
         "personal": "[PT] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[PT] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
       },
-      "methodologyLink": "Cada peso, os limiares dos níveis e como citar"
+      "methodologyLink": "Cada peso, os limiares dos níveis e como citar",
+      "download": {
+        "body": "A situação legal e a pontuação de igualdade de cada país e território, uma linha cada, atualizadas toda noite.",
+        "csv": "Baixar CSV",
+        "json": "Baixar JSON",
+        "licence": "As colunas de situação legal vêm da ILGA World Database e continuam © ILGA World; não são cobertas pela nossa licença. A pontuação de igualdade e o nível são nossos, sob CC BY-SA 4.0. Cite as duas fontes ao usar o arquivo."
+      }
     },
     "lens": {
       "title": "[PT] Who the law protects",
@@ -4556,7 +4575,8 @@
         "copied": "Copiado",
         "copy": "Copiar",
         "apa": "APA",
-        "plain": "Texto simples"
+        "plain": "Texto simples",
+        "copyFailed": "Não foi possível copiar automaticamente. A citação está selecionada; copie-a com o teclado."
       },
       "metaTitle": "Como é calculada a pontuação de igualdade LGBTQ+",
       "metaDescription": "Cada peso da pontuação de igualdade do Queer Guide, o intervalo 0–100, os limiares dos níveis, os limites conhecidos e como citá-la.",
@@ -5650,5 +5670,27 @@
   "i18n": {
     "selectLanguage": "Selecionar idioma",
     "selectCurrency": "Selecionar moeda"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "Crie um link para nós",
+      "intro": "Você pode criar um link para qualquer página do Queer Guide. Estas são as mais citadas. Copie um trecho para a sua página ou escreva o seu próprio texto de link.",
+      "badgeTitle": "Selo de dados",
+      "badgeBody": "Para páginas que usam nossos dados sobre direitos. O selo leva à página de direitos por país.",
+      "badgeSnippet": "HTML do selo",
+      "listingTitle": "Se a sua organização está listada",
+      "listingBody": "Substitua YOUR-LISTING pela última parte do endereço da sua página no Queer Guide.",
+      "listingSnippet": "HTML do link da listagem",
+      "attribution": "Ao usar nossos dados sobre direitos, credite o Queer Guide e a ILGA World Database, que mantém o registro jurídico de base.",
+      "copied": "Copiado",
+      "copy": "Copiar",
+      "copyFailed": "Não foi possível copiar automaticamente. O texto está selecionado; copie-o pelo teclado.",
+      "page": {
+        "rights": "Direitos LGBTQ+ por país (Queer Guide)",
+        "methodology": "Como a pontuação de igualdade do Queer Guide é calculada",
+        "help": "Linhas de apoio em crise LGBTQ+ por país (Queer Guide)",
+        "interactions": "Riscos de combinar drogas (Queer Guide)"
+      }
+    }
   }
 }

@@ -53,7 +53,13 @@ describe('datasetJsonLd', () => {
     expect(await datasetJsonLd(env, '/')).toBe('');
   });
 
-  it.each(['/tags/rights-by-country', '/tags/rights-by-country/', '/tags/rights-by-country/trans'])(
+  it.each([
+    '/tags/rights-by-country',
+    '/tags/rights-by-country/',
+    '/tags/rights-by-country/trans',
+    '/tags/rights-by-country/methodology',
+    '/tags/rights-by-country/sources',
+  ])(
     '%s is a Dataset built on ILGA, with a valid description and no invented licence',
     async (path) => {
       const ld = parse(await datasetJsonLd(env, path));
@@ -159,6 +165,36 @@ describe('datasetJsonLd', () => {
     expect(await datasetJsonLd(env, '/tags/interactions')).not.toBe('');
     await datasetJsonLd(env, '/tags/interactions');
     expect(ok).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('one Dataset per page', () => {
+  it('describes /sources and /methodology with the same data, each at its own URL', async () => {
+    const a = parse(await datasetJsonLd(env, '/tags/rights-by-country/sources'));
+    const b = parse(await datasetJsonLd(env, '/tags/rights-by-country/methodology'));
+    expect(a.name).toBe(b.name);
+    expect(a.url).toBe('https://queer.guide/tags/rights-by-country/sources');
+    expect(b.url).toBe('https://queer.guide/tags/rights-by-country/methodology');
+  });
+});
+
+describe('rights download', () => {
+  it.each([
+    '/tags/rights-by-country',
+    '/tags/rights-by-country/sources',
+    '/tags/rights-by-country/methodology',
+  ])('%s lists the CSV and JSON downloads', async (path) => {
+    const ld = parse(await datasetJsonLd(env, path));
+    const urls = (ld.distribution as { contentUrl: string }[]).map((d) => d.contentUrl);
+    expect(urls).toEqual([
+      'https://queer.guide/data/rights-by-country.csv',
+      'https://queer.guide/data/rights-by-country.json',
+    ]);
+  });
+
+  it('the trans Dataset does not claim the rights download', async () => {
+    const ld = parse(await datasetJsonLd(env, '/tags/rights-by-country/trans'));
+    expect(ld).not.toHaveProperty('distribution');
   });
 });
 

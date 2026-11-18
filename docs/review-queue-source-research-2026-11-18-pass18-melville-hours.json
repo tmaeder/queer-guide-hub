@@ -1,0 +1,22 @@
+{
+  "event_id": "dc4b71cf-e358-4d9d-ba50-c310afeba314",
+  "proof": {
+    "url": "https://lgbtnetwork.org/bowling-night/",
+    "method": "web_primary_read",
+    "observed_at": "2026-11-18T17:48:34Z",
+    "bounded_excerpt": "Wednesday, November 18, from 6\u20138 PM. Lucky Strike, 895 Walt Whitman Road, Melville, NY 11747.",
+    "registration_url": "https://lgbtnetwork.regfox.com/bowling-night",
+    "direct_http_capture_status": 202,
+    "direct_http_capture_used_as_content": false
+  },
+  "local_start": "2026-11-18T18:00:00",
+  "local_end": "2026-11-18T20:00:00",
+  "timezone": "America/New_York",
+  "corrected_start_utc": "2026-11-18T23:00:00Z",
+  "corrected_end_utc": "2026-11-19T01:00:00Z",
+  "original_source_id": "lgbtnetwork:36051",
+  "human_reviewed": false,
+  "source_payloads_changed": false,
+  "canonical_city_missing_at_hours_repair": true,
+  "subsequent_identity_repair": "review-queue-source-research-2026-11-18-pass18-melville-identity.json"
+}

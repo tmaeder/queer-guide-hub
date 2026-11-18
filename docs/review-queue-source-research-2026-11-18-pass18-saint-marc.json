@@ -1,0 +1,130 @@
+{
+  "checked_at": "2026-11-18T18:43:04Z",
+  "city": {
+    "id": "f18336f7-4fdc-4279-b56a-334ca3a05023",
+    "proof": {
+      "method": "web_primary_identity_research",
+      "observed_at": "2026-11-18T18:38:10.350511Z",
+      "name": "Le Châble",
+      "wikidata_qid": "Q3221357",
+      "country": "CH",
+      "region": "Valais",
+      "place_kind": "village in Val de Bagnes",
+      "sources": [
+        {
+          "url": "https://www.wikidata.org/wiki/Q3221357",
+          "scope": "Rendered exact entity identifies Le Châble village in Val de Bagnes, Valais, Switzerland, distinct from Verbier Q688517."
+        },
+        {
+          "url": "https://espacesaintmarc.ch/",
+          "scope": "Municipal venue operator publishes Route de Mauvoisin 45, 1934 Le Châble VS."
+        },
+        {
+          "url": "https://www.verbier.ch/decouvrir/vibe/dragon-o-x-organismo-x-polaris-festival-le-chable-fr-6879062/",
+          "scope": "Official local tourism independently identifies Espace Saint-Marc in Le Châble."
+        }
+      ],
+      "coordinates_added": false,
+      "human_reviewed": false
+    },
+    "native_region_code": "CH-VS",
+    "timezone": "Europe/Zurich",
+    "coordinates_added": false,
+    "manual_evidence_clock_corrected_with_separate_audit": true
+  },
+  "venue": {
+    "name": "Espace Saint-Marc",
+    "venue_id": "d2a38aa8-61a2-45e9-869b-6b36ff6db05a",
+    "organization_id": "7d34c4ad-6bb0-4650-9a49-e84c2fbec104",
+    "proof": {
+      "name": "Espace Saint-Marc",
+      "slug": "espace-saint-marc-le-chable",
+      "address": "Route de Mauvoisin 45",
+      "postal_code": "1934",
+      "category": "event-venue",
+      "website": "https://espacesaintmarc.ch/",
+      "evidence": [
+        {
+          "url": "https://espacesaintmarc.ch/",
+          "final_url": "https://espacesaintmarc.ch/",
+          "status": 200,
+          "bytes": 138811,
+          "sha256": "0b565c99f411b205549391a708b3b3899de02727280ea9f297b618c76679e7ba",
+          "retrieved_at": "2026-11-18T18:38:10.350511Z"
+        },
+        {
+          "url": "https://espacesaintmarc.ch/polaris-festival/",
+          "final_url": "https://espacesaintmarc.ch/polaris-festival/",
+          "status": 200,
+          "bytes": 76236,
+          "sha256": "66cb9248349a3b053de6a129a6fe860da9ab104aac795cea2f9c3789dfae74fb",
+          "retrieved_at": "2026-11-18T18:38:11.217148Z"
+        }
+      ],
+      "guard_pattern": "%espace%saint%marc%",
+      "excerpt": "Espace Saint-Marc, Route de Mauvoisin 45, 1934 Le Châble VS.",
+      "description": "Public event and performance venue at Route de Mauvoisin 45 in Le Châble."
+    },
+    "native_profile_unclaimed": true,
+    "verified": false,
+    "seo_indexable": false,
+    "coordinates_added": false
+  },
+  "event": {
+    "id": "d9c400ad-306a-4315-a30d-bb3e29b71903",
+    "proof": {
+      "method": "direct_primary_http_200",
+      "observed_at": "2026-11-18T18:38:11.404271Z",
+      "location": {
+        "name": "Espace Saint-Marc",
+        "slug": "espace-saint-marc-le-chable",
+        "address": "Route de Mauvoisin 45",
+        "postal_code": "1934",
+        "category": "event-venue",
+        "website": "https://espacesaintmarc.ch/",
+        "evidence": [
+          {
+            "url": "https://espacesaintmarc.ch/",
+            "final_url": "https://espacesaintmarc.ch/",
+            "status": 200,
+            "bytes": 138811,
+            "sha256": "0b565c99f411b205549391a708b3b3899de02727280ea9f297b618c76679e7ba",
+            "retrieved_at": "2026-11-18T18:38:10.350511Z"
+          },
+          {
+            "url": "https://espacesaintmarc.ch/polaris-festival/",
+            "final_url": "https://espacesaintmarc.ch/polaris-festival/",
+            "status": 200,
+            "bytes": 76236,
+            "sha256": "66cb9248349a3b053de6a129a6fe860da9ab104aac795cea2f9c3789dfae74fb",
+            "retrieved_at": "2026-11-18T18:38:11.217148Z"
+          }
+        ],
+        "guard_pattern": "%espace%saint%marc%",
+        "excerpt": "Espace Saint-Marc, Route de Mauvoisin 45, 1934 Le Châble VS.",
+        "description": "Public event and performance venue at Route de Mauvoisin 45 in Le Châble."
+      },
+      "organizer": {
+        "url": "https://polarisfestival.ch/",
+        "sha256": "473615a217b8e8bc65d28897ceadb88d3349ed0e0e54fa3d87c16a7dc3cc8b5f",
+        "bytes": 672207,
+        "scope": "Exact Day 1 November 20 Glitterbox programme; FAQ explicitly 18+ and ID checks."
+      },
+      "local_start": "2026-11-20 16:00 Europe/Zurich",
+      "local_end": "2026-11-21 02:00 Europe/Zurich",
+      "human_reviewed": false
+    },
+    "start_unchanged": "2026-11-20T15:00:00Z",
+    "corrected_end": "2026-11-21T01:00:00Z",
+    "corrected_age_restriction": "18+",
+    "native_geo_provenance_inspected": true,
+    "original_source_payload_unchanged": true
+  },
+  "stale_multisite_queue": {
+    "resolved": 3,
+    "source_bound_native_contract_verified": true,
+    "human_verification_claimed": false,
+    "root_fix_prepared_not_applied": "docs/review-queue-pending-nonfixed-reconciliation.sql",
+    "production_ddl_hold_observed": true
+  }
+}

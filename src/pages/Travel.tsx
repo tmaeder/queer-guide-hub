@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { PageIntro } from '@/components/layout/PageIntro';
+import { Button } from '@/components/ui/button';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { PrideScroller } from '@/components/travel/PrideScroller';
@@ -84,7 +85,10 @@ export default function Travel() {
   useEffect(() => {
     // No entityType: 'intent' is not a member of EntityType, and inventing one
     // would feed a synthetic type into the personalization bias vector.
-    track({ eventType: 'page_view', metadata: { intent: 'travelling', layout: 'destination-led' } });
+    track({
+      eventType: 'page_view',
+      metadata: { intent: 'travelling', layout: 'destination-led' },
+    });
   }, [track]);
 
   // Booking deep links scroll to the book section. EditorialDetailLayout's own
@@ -115,7 +119,6 @@ export default function Travel() {
     {
       id: 'plan',
       label: t('pages.travel.packages.section', 'Find your escape'),
-      kicker: t('pages.travel.packages.sectionKicker', 'Made for you'),
       content: (
         <div>
           <PersonalisedTripPackages />
@@ -129,7 +132,6 @@ export default function Travel() {
     {
       id: 'inspiration',
       label: t('pages.travel.sections.inspiration', 'Where to go'),
-      kicker: t('pages.travel.sections.inspirationKicker', 'Destinations'),
       content: (
         <div>
           <GoNowRail />
@@ -154,7 +156,6 @@ export default function Travel() {
     {
       id: 'map',
       label: t('pages.travel.sections.map', 'See the map'),
-      kicker: t('pages.travel.sections.mapKicker', 'Destinations at a glance'),
       // Moved out from between 'plan' and 'inspiration'. The map is a tool, and
       // sitting second it split the two things this page is for — the planner
       // and the reasons to use it — with a full-width utility surface. It now
@@ -165,7 +166,6 @@ export default function Travel() {
     {
       id: 'villages',
       label: t('pages.travel.sections.villages', 'Neighborhoods'),
-      kicker: t('pages.travel.sections.villagesKicker', 'Queer villages worldwide'),
       content: <VillagesRail visitedFilter={visitedFilter} />,
     },
     {
@@ -176,13 +176,11 @@ export default function Travel() {
     {
       id: 'book',
       label: t('pages.travel.sections.book', 'Getting there'),
-      kicker: t('pages.travel.sections.bookKicker', 'Flights and stays'),
       content: <BookNowAccordion defaultOpen={bookIntent} tripContext={tripBookingContext} />,
     },
     {
       id: 'safety',
       label: t('pages.travel.sections.safety', 'Know before you go'),
-      kicker: t('pages.travel.sections.safetyKicker', 'The legal picture'),
       content: (
         <div>
           <CoverageNote>
@@ -243,23 +241,13 @@ export default function Travel() {
       header={
         <header className="grid items-center gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12">
           <PageIntro title={title} lede={lede}>
-            <div className="mt-4 flex flex-wrap items-center gap-x-4">
-              {activeTrip && !bookIntent ? (
-                <LocalizedLink
-                  to={`/trips/${activeTrip.id}`}
-                  className="inline-flex min-h-11 items-center font-bold underline underline-offset-4"
-                >
+            {activeTrip && !bookIntent ? (
+              <Button asChild className="mt-6">
+                <LocalizedLink to={`/trips/${activeTrip.id}`} className="no-underline">
                   {t('pages.travel.resume.title', 'Continue planning')}
                 </LocalizedLink>
-              ) : (
-                <a href="#plan" className="inline-flex min-h-11 items-center font-bold underline underline-offset-4">
-                  {t('pages.travel.packages.section', 'Find your escape')}
-                </a>
-              )}
-              <a href="#safety" className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">
-                {t('pages.travel.sections.safety', 'Know before you go')}
-              </a>
-            </div>
+              </Button>
+            ) : null}
           </PageIntro>
           {showCover && <TravelCoverStory />}
         </header>

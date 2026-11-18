@@ -6,7 +6,11 @@
     "personalities": "人物",
     "history": "历史",
     "lede": "我们使用的词语、塑造酷儿生活的人们，以及背后的历史。",
-    "navigation": "知识栏目"
+    "navigation": "知识栏目",
+    "termsHint": "我们使用的词语及其含义",
+    "personalitiesHint": "塑造酷儿生活的人们",
+    "historyHint": "逐年的重要事件",
+    "rightsHint": "各国法律现状"
   },
   "eventTypes": {
     "party": "派对",
@@ -957,12 +961,6 @@
         "title": "无法创建行程",
         "poolTitle": "站点列表未能加载。",
         "retry": "重试"
-      },
-      "cta": {
-        "heading": "就走这条线。",
-        "body": "会变成属于你的行程，所有站点都已加入。之后你可以随意修改。",
-        "primary": "生成行程",
-        "secondary": "再画一条"
       },
       "buildRoute": "创建路线"
     },
@@ -1926,7 +1924,11 @@
       "exploreCity": "探索{{city}}",
       "browseEvents": "浏览{{city}}活动",
       "whatsOn": "活动预告",
-      "communitySpace": "社区空间"
+      "communitySpace": "社区空间",
+      "photos": "照片",
+      "previousPhoto": "上一张照片",
+      "nextPhoto": "下一张照片",
+      "pausePhotos": "暂停幻灯片"
     },
     "discovery": {
       "openMap": "打开地图",
@@ -2097,7 +2099,8 @@
       "interchange": {
         "label": "全站搜索",
         "subtitle": "所有线路在此交会"
-      }
+      },
+      "title": "地图"
     },
     "glossary": {
       "eyebrow": "术语库",
@@ -2255,6 +2258,7 @@
       "you": "我的",
       "menuTitle": "全部板块",
       "menuDescription": "跳转到任意板块，切换语言或主题。",
+      "hubDescription": "你的消息、计划、联系人和收藏。",
       "trips": "我的行程",
       "settingsSection": "显示",
       "browseAll": "浏览所有板块",
@@ -2587,7 +2591,8 @@
       "pride": {
         "title": "本季骄傲活动",
         "window": "未来 4 个月",
-        "empty": "没有即将到来的骄傲活动。"
+        "empty": "没有即将到来的骄傲活动。",
+        "cta": "查看活动"
       },
       "inspiration": {
         "villages": "酷儿村",
@@ -2745,7 +2750,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} 人",
+        "fieldCount_other": "{{formatted}} 人"
       },
       "detail": {
         "inTheNews": "In the news",
@@ -3983,11 +3990,15 @@
       "title": "[ZH] What are you into?",
       "blurb": "[ZH] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[ZH] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[ZH] {{count}} selected"
+      "count": "[ZH] {{count}} selected",
+      "signIn": "登录以选择兴趣",
+      "limit": "已选择 {{count}} / {{max}} 项",
+      "atLimit": "已达到上限。取消一项后即可选择其他兴趣。"
     },
     "friends": {
       "discover": "寻找用户"
-    }
+    },
+    "safetyTitle": "见面前先了解法律"
   },
   "hub": {
     "title": "我的中心",
@@ -4502,12 +4513,14 @@
         "source": "[ZH] The source",
         "coverage": "[ZH] Coverage",
         "score": "[ZH] The equality score",
-        "limits": "[ZH] What this data cannot tell you"
+        "limits": "[ZH] What this data cannot tell you",
+        "download": "下载数据"
       },
       "kicker": {
         "source": "[ZH] ILGA World",
         "coverage": "[ZH] What we actually hold",
-        "score": "[ZH] How it is built, and what it hides"
+        "score": "[ZH] How it is built, and what it hides",
+        "download": "CSV 或 JSON，涵盖所有国家"
       },
       "coverage": {
         "status": "[ZH] Countries with a recorded legal status",
@@ -4531,7 +4544,13 @@
         "personal": "[ZH] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[ZH] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
       },
-      "methodologyLink": "每项权重、等级分界线及引用方式"
+      "methodologyLink": "每项权重、等级分界线及引用方式",
+      "download": {
+        "body": "每个国家和地区的法律状况与平等评分，每个一行，每晚更新。",
+        "csv": "下载 CSV",
+        "json": "下载 JSON",
+        "licence": "法律状况各列来自 ILGA World Database，版权仍归 ILGA World 所有，不在我们的许可范围内。平等评分和等级由我们提供，采用 CC BY-SA 4.0 许可。使用该文件时请注明两个来源。"
+      }
     },
     "lens": {
       "title": "[ZH] Who the law protects",
@@ -4554,7 +4573,8 @@
         "copied": "已复制",
         "copy": "复制",
         "apa": "APA",
-        "plain": "纯文本"
+        "plain": "纯文本",
+        "copyFailed": "无法自动复制。引用文本已选中，请用键盘复制。"
       },
       "metaTitle": "LGBTQ+平等分数如何计算",
       "metaDescription": "Queer Guide平等分数的每项权重、0–100的范围、等级分界线、已知局限及引用方式。",
@@ -5648,5 +5668,27 @@
   "i18n": {
     "selectLanguage": "选择语言",
     "selectCurrency": "选择货币"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "链接到我们",
+      "intro": "欢迎链接到 Queer Guide 的任何页面。以下是最常被引用的页面。将代码片段复制到你的页面，或自行撰写链接文字。",
+      "badgeTitle": "数据徽章",
+      "badgeBody": "适用于使用我们权利数据的页面。徽章链接到各国权利页面。",
+      "badgeSnippet": "徽章 HTML",
+      "listingTitle": "如果你的组织已被收录",
+      "listingBody": "将 YOUR-LISTING 替换为你在 Queer Guide 上的条目地址的最后一部分。",
+      "listingSnippet": "条目链接 HTML",
+      "attribution": "使用我们的权利数据时，请注明 Queer Guide 和维护基础法律记录的 ILGA World Database。",
+      "copied": "已复制",
+      "copy": "复制",
+      "copyFailed": "无法自动复制。文字已选中，请用键盘复制。",
+      "page": {
+        "rights": "各国 LGBTQ+ 权利（Queer Guide）",
+        "methodology": "Queer Guide 平等评分的计算方法",
+        "help": "各国 LGBTQ+ 危机热线（Queer Guide）",
+        "interactions": "药物混用风险（Queer Guide）"
+      }
+    }
   }
 }

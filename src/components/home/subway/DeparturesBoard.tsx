@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
+import { EventDateBadge } from '@/components/transit/EventDateBadge';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Band } from '@/components/home/Band';
@@ -11,33 +12,24 @@ import { useHomeNearYou, type NearYouRow } from '@/hooks/useHomeNearYou';
 
 const ROWS = 4;
 
-const formatBoardTime = (iso: string | null, locale: string) => {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  const day = d.toLocaleDateString(locale, { weekday: 'short' }).toUpperCase();
-  const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false });
-  // All-day rows (midnight timestamps) read as a date, not a fake 00:00.
-  const date = d.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
-  return time === '00:00' ? `${day} ${date}` : `${day} ${time}`;
-};
-
 function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
   const href =
     row.kind === 'event' ? `/events/${row.slug || row.id}` : `/venues/${row.slug || row.id}`;
-  const date =
-    row.kind === 'event' && row.startDate ? formatBoardTime(row.startDate, locale) : null;
-
   return (
     <LocalizedLink
       to={href}
       className="grid min-h-[74px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-2 no-underline hover:bg-surface-container focus-visible:-outline-offset-2 md:px-6"
     >
-      <RouteBullet type={row.kind} size={36} decorative />
+      {row.kind === 'event' && row.startDate ? (
+        <EventDateBadge startDate={row.startDate} locale={locale} timeZone={row.timezone} />
+      ) : (
+        <span className="grid size-14 place-items-center">
+          <RouteBullet type={row.kind} size={36} decorative />
+        </span>
+      )}
       <span className="min-w-0">
         <span className="block truncate text-title font-bold">{row.title}</span>{' '}
-        <span className="block truncate text-13 text-muted-foreground">
-          {[date, row.via].filter(Boolean).join(' · ')}
-        </span>
+        {row.via && <span className="block truncate text-13 text-muted-foreground">{row.via}</span>}
       </span>
       <TransitIcon name="arrow-right" size={20} className="rtl:rotate-180" />
     </LocalizedLink>
@@ -45,7 +37,7 @@ function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
 }
 
 /** Regional listings name their actual scope and group worldwide additions separately. */
-export function DeparturesBoard({ showRegionPicker = true }: { showRegionPicker?: boolean }) {
+export function DeparturesBoard({ showRegionPicker = false }: { showRegionPicker?: boolean }) {
   const { t, i18n } = useTranslation();
   const region = useHomeRegionContext();
   const { data, isLoading, isError, isFetching, refetch } = useHomeNearYou(region, ROWS);

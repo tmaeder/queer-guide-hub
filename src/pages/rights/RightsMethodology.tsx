@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
@@ -24,9 +24,29 @@ function formatPoints(points: number): string {
   return points > 0 ? `+${points}` : `−${Math.abs(points)}`;
 }
 
-function CiteBlock({ label, text }: { label: string; text: string }) {
+export function CiteBlock({ label, text }: { label: string; text: string }) {
   const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const textRef = useRef<HTMLPreElement>(null);
+  const copy = async () => {
+    try {
+      if (!navigator.clipboard) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(text);
+      setStatus('copied');
+    } catch {
+      // Some browsers and embedded views refuse clipboard writes. Select the
+      // text instead so the reader can copy it with one keystroke.
+      const node = textRef.current;
+      const selection = window.getSelection();
+      if (node && selection) {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+      setStatus('failed');
+    }
+  };
   return (
     <div className="rounded-element bg-background p-4 shadow-soft">
       <div className="mb-2 flex items-center justify-between gap-4">
@@ -36,19 +56,24 @@ function CiteBlock({ label, text }: { label: string; text: string }) {
         <button
           type="button"
           className="rounded-badge px-2 py-1 text-2xs font-bold underline"
-          onClick={() => {
-            navigator.clipboard?.writeText(text).then(
-              () => setCopied(true),
-              () => setCopied(false),
-            );
-          }}
+          onClick={() => void copy()}
         >
-          {copied
+          {status === 'copied'
             ? t('rights.methodology.cite.copied', 'Copied')
             : t('rights.methodology.cite.copy', 'Copy')}
         </button>
       </div>
-      <pre className="m-0 whitespace-pre-wrap break-words font-mono text-13">{text}</pre>
+      <pre ref={textRef} className="m-0 whitespace-pre-wrap break-words font-mono text-13">
+        {text}
+      </pre>
+      {status === 'failed' && (
+        <p role="alert" className="mt-2 text-13 text-muted-foreground">
+          {t(
+            'rights.methodology.cite.copyFailed',
+            'Could not copy automatically. The citation is selected; copy it with your keyboard.',
+          )}
+        </p>
+      )}
     </div>
   );
 }

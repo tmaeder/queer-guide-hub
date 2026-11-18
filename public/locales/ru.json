@@ -6,7 +6,11 @@
     "personalities": "Личности",
     "history": "История",
     "lede": "Слова, которые мы используем, люди, которые сформировали квир-жизнь, и история, стоящая за ними.",
-    "navigation": "Разделы знаний"
+    "navigation": "Разделы знаний",
+    "termsHint": "Наши слова и их значения",
+    "personalitiesHint": "Люди, повлиявшие на квир-жизнь",
+    "historyHint": "Вехи, год за годом",
+    "rightsHint": "Что говорит закон, по странам"
   },
   "eventTypes": {
     "party": "Вечеринка",
@@ -986,12 +990,6 @@
         "poolTitle": "Список станций не загрузился.",
         "retry": "Попробовать снова"
       },
-      "cta": {
-        "heading": "Поехали по этой линии.",
-        "body": "Превратится в вашу поездку со всеми остановками. Потом можно изменить что угодно.",
-        "primary": "Сделать поездкой",
-        "secondary": "Построить другую"
-      },
       "buildRoute": "Создать маршрут"
     },
     "polls": {
@@ -1958,7 +1956,11 @@
       "exploreCity": "Откройте для себя: {{city}}",
       "browseEvents": "События: {{city}}",
       "whatsOn": "Что происходит",
-      "communitySpace": "Пространство сообщества"
+      "communitySpace": "Пространство сообщества",
+      "photos": "Фотографии",
+      "previousPhoto": "Предыдущее фото",
+      "nextPhoto": "Следующее фото",
+      "pausePhotos": "Приостановить слайд-шоу"
     },
     "discovery": {
       "openMap": "Открыть карту",
@@ -2129,7 +2131,8 @@
       "interchange": {
         "label": "Искать везде",
         "subtitle": "Здесь пересекаются все линии"
-      }
+      },
+      "title": "Карта"
     },
     "glossary": {
       "eyebrow": "Глоссарий",
@@ -2287,6 +2290,7 @@
       "you": "Профиль",
       "menuTitle": "Все разделы",
       "menuDescription": "Перейдите в любой раздел, смените язык или тему.",
+      "hubDescription": "Ваши сообщения, планы, люди и сохранённое.",
       "trips": "Мои поездки",
       "settingsSection": "Отображение",
       "browseAll": "Просмотреть все разделы",
@@ -2623,7 +2627,8 @@
       "pride": {
         "title": "Прайды этого сезона",
         "window": "Следующие 4 месяца",
-        "empty": "Нет предстоящих прайд-событий."
+        "empty": "Нет предстоящих прайд-событий.",
+        "cta": "Посмотреть событие"
       },
       "inspiration": {
         "villages": "Квир-вилладжи",
@@ -2781,7 +2786,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} человек",
+        "fieldCount_other": "{{formatted}} человек"
       },
       "detail": {
         "inTheNews": "In the news",
@@ -4019,11 +4026,15 @@
       "title": "[RU] What are you into?",
       "blurb": "[RU] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[RU] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[RU] {{count}} selected"
+      "count": "[RU] {{count}} selected",
+      "signIn": "Войдите, чтобы выбрать интересы",
+      "limit": "Выбрано {{count}} из {{max}}",
+      "atLimit": "Достигнут предел. Уберите один интерес, чтобы выбрать другой."
     },
     "friends": {
       "discover": "Найти людей"
-    }
+    },
+    "safetyTitle": "Проверьте законы перед встречей"
   },
   "hub": {
     "title": "Ваш хаб",
@@ -4538,12 +4549,14 @@
         "source": "[RU] The source",
         "coverage": "[RU] Coverage",
         "score": "[RU] The equality score",
-        "limits": "[RU] What this data cannot tell you"
+        "limits": "[RU] What this data cannot tell you",
+        "download": "Скачать данные"
       },
       "kicker": {
         "source": "[RU] ILGA World",
         "coverage": "[RU] What we actually hold",
-        "score": "[RU] How it is built, and what it hides"
+        "score": "[RU] How it is built, and what it hides",
+        "download": "CSV или JSON, все страны"
       },
       "coverage": {
         "status": "[RU] Countries with a recorded legal status",
@@ -4567,7 +4580,13 @@
         "personal": "[RU] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[RU] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
       },
-      "methodologyLink": "Все веса, границы уровней и как ссылаться"
+      "methodologyLink": "Все веса, границы уровней и как ссылаться",
+      "download": {
+        "body": "Правовой статус и индекс равенства для каждой страны и территории, по одной строке, обновляются каждую ночь.",
+        "csv": "Скачать CSV",
+        "json": "Скачать JSON",
+        "licence": "Столбцы о правовом статусе взяты из ILGA World Database и остаются © ILGA World; наша лицензия на них не распространяется. Индекс равенства и уровень — наши, по лицензии CC BY-SA 4.0. Указывайте оба источника при использовании файла."
+      }
     },
     "lens": {
       "title": "[RU] Who the law protects",
@@ -4590,7 +4609,8 @@
         "copied": "Скопировано",
         "copy": "Копировать",
         "apa": "APA",
-        "plain": "Обычный текст"
+        "plain": "Обычный текст",
+        "copyFailed": "Не удалось скопировать автоматически. Цитата выделена — скопируйте её с клавиатуры."
       },
       "metaTitle": "Как рассчитывается оценка равенства для ЛГБТК+",
       "metaDescription": "Все веса оценки равенства Queer Guide, диапазон 0–100, границы уровней, известные ограничения и как на неё ссылаться.",
@@ -5684,5 +5704,27 @@
   "i18n": {
     "selectLanguage": "Выбрать язык",
     "selectCurrency": "Выбрать валюту"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "Ссылка на нас",
+      "intro": "Вы можете ссылаться на любую страницу Queer Guide. Чаще всего цитируют эти. Скопируйте фрагмент кода на свою страницу или напишите свой текст ссылки.",
+      "badgeTitle": "Значок данных",
+      "badgeBody": "Для страниц, использующих наши данные о правах. Значок ведёт на страницу прав по странам.",
+      "badgeSnippet": "HTML значка",
+      "listingTitle": "Если ваша организация есть на сайте",
+      "listingBody": "Замените YOUR-LISTING последней частью адреса вашей страницы на Queer Guide.",
+      "listingSnippet": "HTML ссылки на страницу",
+      "attribution": "Используя наши данные о правах, указывайте Queer Guide и ILGA World Database, которая ведёт исходные правовые данные.",
+      "copied": "Скопировано",
+      "copy": "Копировать",
+      "copyFailed": "Не удалось скопировать автоматически. Текст выделен — скопируйте его с клавиатуры.",
+      "page": {
+        "rights": "Права ЛГБТК+ по странам (Queer Guide)",
+        "methodology": "Как рассчитывается индекс равенства Queer Guide",
+        "help": "Кризисные линии для ЛГБТК+ по странам (Queer Guide)",
+        "interactions": "Риски сочетания веществ (Queer Guide)"
+      }
+    }
   }
 }

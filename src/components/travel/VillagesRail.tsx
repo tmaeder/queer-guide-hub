@@ -39,16 +39,8 @@ export function VillagesRail({ visitedFilter = 'all', limit = 8 }: Props) {
   if (filtered.length === 0) return null;
 
   return (
-    <section aria-labelledby="travel-villages-rail-heading" className="mb-12">
-      <header className="mb-4 flex items-end justify-between gap-4">
-        <div>
-          <p className="mb-1 text-2xs uppercase tracking-[0.18em] text-muted-foreground">
-            {t('travel.villagesRail.kicker', 'Neighborhoods')}
-          </p>
-          <h2 id="travel-villages-rail-heading" className="text-headline font-bold tracking-tight">
-            {t('travel.villagesRail.heading', 'Queer villages')}
-          </h2>
-        </div>
+    <section aria-label={t('travel.villagesRail.heading', 'Queer villages')} className="mb-12">
+      <header className="mb-4 flex justify-end">
         {/* /villages itself redirects via /places back to /travel — the page
             this rail is rendered on — so "see all" goes to the map with the
             neighbourhoods layer on. */}
@@ -81,7 +73,12 @@ function RailSkeleton() {
       <div className="mb-4 h-6 w-40 bg-muted" />
       <div className="flex gap-4 overflow-hidden">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} variant="rectangular" height={240} className="w-72 shrink-0 rounded-container" />
+          <Skeleton
+            key={i}
+            variant="rectangular"
+            height={240}
+            className="w-72 shrink-0 rounded-container"
+          />
         ))}
       </div>
     </section>
