@@ -138,6 +138,7 @@ export function HomeCityFeature() {
             src={current.url}
             alt={current.alt}
             aspect="card"
+            frameClassName={slides.length > 1 ? 'min-h-72' : undefined}
             rounded="none"
             priority
             sizes="(min-width: 1600px) 800px, (min-width: 1024px) 51vw, 92vw"
