@@ -21,7 +21,12 @@ function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
       className="grid min-h-[74px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-2 no-underline hover:bg-surface-container focus-visible:-outline-offset-2 md:px-6"
     >
       {row.kind === 'event' && row.startDate ? (
-        <EventDateBadge startDate={row.startDate} locale={locale} timeZone={row.timezone} />
+        <EventDateBadge
+          startDate={row.startDate}
+          locale={locale}
+          timeZone={row.timezone}
+          datePrecision={row.datePrecision}
+        />
       ) : (
         <span className="grid size-16 place-items-center">
           <RouteBullet type={row.kind} size={36} decorative />

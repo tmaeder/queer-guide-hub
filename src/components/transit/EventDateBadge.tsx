@@ -19,10 +19,12 @@ export function eventDateParts(
   locale: string | undefined,
   timeZone?: string | null,
   now = Date.now(),
+  datePrecision?: string | null,
 ): EventDateParts {
-  const d = new Date(iso);
+  const dateOnly = datePrecision === 'day';
+  const d = new Date(dateOnly ? `${iso.slice(0, 10)}T00:00:00Z` : iso);
   // Older rows carry no or an invalid zone; fall back to the viewer's.
-  const zone = timeZone && isValidTimezone(timeZone) ? timeZone : undefined;
+  const zone = dateOnly ? 'UTC' : timeZone && isValidTimezone(timeZone) ? timeZone : undefined;
   const fmt = (o: Intl.DateTimeFormatOptions) => d.toLocaleString(locale, { ...o, timeZone: zone });
   const time = fmt({ hour: '2-digit', minute: '2-digit', hour12: false });
   const soon = d.getTime() - now < WEEK_MS;
@@ -31,7 +33,7 @@ export function eventDateParts(
       .replace('.', '')
       .toUpperCase(),
     day: fmt({ day: 'numeric' }),
-    time: time === '00:00' || time === '24:00' ? null : time,
+    time: dateOnly || time === '00:00' || time === '24:00' ? null : time,
     full: fmt({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
   };
 }
@@ -48,17 +50,19 @@ export function EventDateBadge({
   startDate,
   locale,
   timeZone,
+  datePrecision,
   className,
 }: {
   startDate: string;
   locale?: string;
   timeZone?: string | null;
+  datePrecision?: string | null;
   className?: string;
 }) {
-  const p = eventDateParts(startDate, locale, timeZone);
+  const p = eventDateParts(startDate, locale, timeZone, undefined, datePrecision);
   return (
     <time
-      dateTime={startDate}
+      dateTime={datePrecision === 'day' ? startDate.slice(0, 10) : startDate}
       title={p.time ? `${p.full}, ${p.time}` : p.full}
       className={cn(
         'transit-marker grid size-16 shrink-0 place-content-center rounded-full border-2 border-track-ring text-center leading-none',
