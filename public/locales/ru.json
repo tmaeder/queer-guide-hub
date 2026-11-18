@@ -4549,12 +4549,14 @@
         "source": "[RU] The source",
         "coverage": "[RU] Coverage",
         "score": "[RU] The equality score",
-        "limits": "[RU] What this data cannot tell you"
+        "limits": "[RU] What this data cannot tell you",
+        "download": "Скачать данные"
       },
       "kicker": {
         "source": "[RU] ILGA World",
         "coverage": "[RU] What we actually hold",
-        "score": "[RU] How it is built, and what it hides"
+        "score": "[RU] How it is built, and what it hides",
+        "download": "CSV или JSON, все страны"
       },
       "coverage": {
         "status": "[RU] Countries with a recorded legal status",
@@ -4578,7 +4580,13 @@
         "personal": "[RU] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[RU] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
       },
-      "methodologyLink": "Все веса, границы уровней и как ссылаться"
+      "methodologyLink": "Все веса, границы уровней и как ссылаться",
+      "download": {
+        "body": "Правовой статус и индекс равенства для каждой страны и территории, по одной строке, обновляются каждую ночь.",
+        "csv": "Скачать CSV",
+        "json": "Скачать JSON",
+        "licence": "Столбцы о правовом статусе взяты из ILGA World Database и остаются © ILGA World; наша лицензия на них не распространяется. Индекс равенства и уровень — наши, по лицензии CC BY-SA 4.0. Указывайте оба источника при использовании файла."
+      }
     },
     "lens": {
       "title": "[RU] Who the law protects",
