@@ -291,7 +291,7 @@ export const Image = ({
   const photo = (
     <img
       ref={imgRef}
-      crossOrigin={effectiveSrc ? imageCrossOrigin(effectiveSrc) : undefined}
+      crossOrigin={!cfSrcSet && effectiveSrc ? imageCrossOrigin(effectiveSrc) : undefined}
       src={effectiveSrc ?? undefined}
       srcSet={srcSet}
       sizes={srcSet ? (sizes ?? DEFAULT_SIZES[imageRole]) : undefined}
