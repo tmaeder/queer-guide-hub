@@ -163,6 +163,23 @@ begin
  perform public.fixture_assert((select status='failed' and completed_at is not null from public.pipeline_runs where id=rid),'parent timeout terminates honestly');
 end $$;
 
+-- Worker-level suspension recovers when enabled, while human pauses remain off.
+do $$
+declare d uuid;rid uuid;
+begin
+ select id into d from public.pipeline_definitions where name='weekly-data-source-sync';
+ update public.workflow_definitions set is_enabled=false where name='weekly-source-sync-worker';
+ rid:=(public.start_weekly_source_sync(d,'{}')->>'run_id')::uuid;
+ perform public.fixture_assert((select status='paused' from public.pipeline_runs where id=rid),'disabled worker suspends parent');
+ update public.workflow_definitions set is_enabled=true where name='weekly-source-sync-worker';
+ perform public.start_weekly_source_sync(d,'{}');
+ perform public.fixture_assert((select status='running' from public.pipeline_runs where id=rid),'manual start resumes system suspension after worker enable');
+ update public.pipeline_runs set status='paused',error_message='Manually paused' where id=rid;
+ perform public.recover_weekly_source_sync_jobs();
+ perform public.fixture_assert((select status='paused' from public.pipeline_runs where id=rid),'human pause is preserved');
+ update public.pipeline_runs set status='cancelled' where id=rid;
+end $$;
+
 do $$
 begin
  perform public.fixture_assert((select action->>'jobname'='pipeline-weekly-data-source-sync' and schedule='0 6 * * 0'

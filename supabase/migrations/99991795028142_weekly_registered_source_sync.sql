@@ -233,6 +233,7 @@ begin
     or coalesce(d.nodes->0->'data'->'config','{}'::jsonb)<>'{}'::jsonb then
     raise exception 'Weekly sync graph is managed; configure its sources in the source registry';
   end if;
+  perform api_private.recover_weekly_source_sync_jobs();
   select id into v_run from public.pipeline_runs where pipeline_id=d.id
     and status in ('queued','running','paused') order by created_at desc limit 1;
   if found then return jsonb_build_object('run_id',v_run,'reused',true,'job_ids','[]'::jsonb,
@@ -359,6 +360,10 @@ create function api_private.recover_weekly_source_sync_jobs()
 returns integer language plpgsql security definer set search_path='' as $$
 declare r record;n integer:=0;
 begin
+  update public.pipeline_runs set status='running',error_message=null
+  where pipeline_name='weekly-data-source-sync' and status='paused'
+    and error_message='Weekly source worker is disabled'
+    and exists(select 1 from public.workflow_definitions where name='weekly-source-sync-worker' and is_enabled);
   update public.pipeline_runs p set status='failed',completed_at=clock_timestamp(),
     error_message='Weekly source sync exceeded its configured timeout'
   where pipeline_name='weekly-data-source-sync' and status='running'
