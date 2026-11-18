@@ -6,7 +6,7 @@ import {COHORT} from './cohort.ts'
 const page=(text:string)=>({url:'https://belfastpride.com/',retrieved_at:'2026-11-18T00:00:00Z',sha256:'fixture',text})
 test('fixed pending cohort contains exactly 21 distinct event IDs',()=>{assert.equal(COHORT.length,21);assert.equal(new Set(COHORT.map(x=>x.id)).size,21)})
 test('extracts explicit days and ranges without deriving times or duration',()=>{
- for(const [text,start,end] of [['24th July 2027','2027-07-24',null],['July 24, 2027','2027-07-24',null],['6–8 August 2027','2027-08-06','2027-08-08'],['August 6 & 7, 2027','2027-08-06','2027-08-07'],['2027-07-24T14:00:00','2027-07-24',null]]){const dates=candidates([page(text)],2027);assert.equal(dates.length,1,text);assert.equal(dates[0].start,start);assert.equal(dates[0].end,end)}
+ for(const [text,start,end] of [['24th July 2027','2027-07-24',null],['July 24, 2027','2027-07-24',null],['6–8 August 2027','2027-08-06','2027-08-08'],['August 6 & 7, 2027','2027-08-06','2027-08-07'],['2027-07-24T14:00:00','2027-07-24',null]] as const){const dates=candidates([page(text)],2027);assert.equal(dates.length,1,text);assert.equal(dates[0].start,start);assert.equal(dates[0].end,end)}
 })
 test('old years, copyright years, unannounced days and invalid dates supply no candidate',()=>{
  for(const text of ['24 July 2026','Returning in 2027','Copyright 2027','31 February 2027','32 July 2027','24 July'])assert.deepEqual(candidates([page(text)],2027),[],text)

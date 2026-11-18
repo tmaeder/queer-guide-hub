@@ -109,7 +109,7 @@ export async function save(db:Db,runId:string,token:string,id:string,result:Reco
   return await db.begin(async tx=>{
     const ctx=await lockRun(tx,runId,token)
     if(ctx.results[id])return ctx.results[id]
-    let applied=change?await applyDate(tx,id,change.fingerprint,change.candidate,change.page,runId):null
+    const applied=change?await applyDate(tx,id,change.fingerprint,change.candidate,change.page,runId):null
     // Evidence/provenance plus checkpoint commit atomically; retries reconcile here.
     const final:RecordData={...result,...applied,checked_at:new Date().toISOString()}
     if(final.state==='unconfirmed'){
