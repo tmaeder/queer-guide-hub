@@ -6,7 +6,11 @@
     "personalities": "人物",
     "history": "歴史",
     "lede": "私たちが使う言葉、クィアの暮らしを形づくった人々、そしてその背後にある歴史。",
-    "navigation": "知識のセクション"
+    "navigation": "知識のセクション",
+    "termsHint": "私たちの言葉とその意味",
+    "personalitiesHint": "クィアの暮らしを形づくった人々",
+    "historyHint": "年ごとの出来事",
+    "rightsHint": "国ごとの法律"
   },
   "eventTypes": {
     "party": "パーティー",
@@ -2745,7 +2749,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}}人",
+        "fieldCount_other": "{{formatted}}人"
       },
       "detail": {
         "inTheNews": "In the news",

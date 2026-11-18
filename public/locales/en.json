@@ -6,7 +6,11 @@
     "personalities": "Personalities",
     "history": "History",
     "lede": "The words we use, the people who shaped queer life, and the history behind both.",
-    "navigation": "Knowledge sections"
+    "navigation": "Knowledge sections",
+    "termsHint": "The words we use, defined",
+    "personalitiesHint": "People who shaped queer life",
+    "historyHint": "Milestones, year by year",
+    "rightsHint": "What the law says, by country"
   },
   "breadcrumb": {
     "home": "Home",
@@ -2941,7 +2945,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} person",
+        "fieldCount_other": "{{formatted}} people"
       },
       "detail": {
         "inTheNews": "In the news",

@@ -6,7 +6,11 @@
     "personalities": "الشخصيات",
     "history": "التاريخ",
     "lede": "الكلمات التي نستخدمها، والأشخاص الذين شكّلوا حياة الكوير، والتاريخ الذي يقف وراءهما.",
-    "navigation": "أقسام المعرفة"
+    "navigation": "أقسام المعرفة",
+    "termsHint": "كلماتنا ومعانيها",
+    "personalitiesHint": "أشخاص شكّلوا حياة الكوير",
+    "historyHint": "محطات، سنة بعد سنة",
+    "rightsHint": "ماذا يقول القانون في كل بلد"
   },
   "eventTypes": {
     "party": "حفلة",
@@ -2755,7 +2759,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} شخص",
+        "fieldCount_other": "{{formatted}} شخص"
       },
       "detail": {
         "inTheNews": "In the news",

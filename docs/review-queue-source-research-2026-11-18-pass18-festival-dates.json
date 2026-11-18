@@ -1,0 +1,152 @@
+{
+  "captures": [
+    {
+      "url": "https://www.everybodysperfect.ch/events/bearcave/",
+      "status": 200,
+      "final_url": "https://www.everybodysperfect.ch/events/bearcave/",
+      "retrieved_at": "2026-11-18T17:32:08.159025+00:00",
+      "sha256": "ea8d911823f17dbcbd49f8dd558b854724a954c0a80aa257e7d23ccbe9ffc8ca",
+      "bytes": 167935
+    },
+    {
+      "url": "https://www.everybodysperfect.ch/wp-content/uploads/grille-horaire-2026-PDF.pdf",
+      "status": 200,
+      "final_url": "https://www.everybodysperfect.ch/wp-content/uploads/grille-horaire-2026-PDF-1.pdf",
+      "retrieved_at": "2026-11-18T17:32:09.336578+00:00",
+      "sha256": "c2f1744ff32c9988026f46e7eb8faa4c7739ee7b572664aa8a197aadcbc41c8c",
+      "bytes": 141468
+    }
+  ],
+  "timezone": "Europe/Zurich",
+  "programme_pdf_visually_inspected": true,
+  "dates": [
+    {
+      "event_id": "b13451cc-9d6e-457c-837f-3a47decc6bde",
+      "title": "Fantasy",
+      "publisher_session_id": "session:[27869,\"2026-11-17\",\"14:45\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-17",
+      "local_time": "14:45",
+      "programme_room": "L",
+      "human_reviewed": false
+    },
+    {
+      "event_id": "fc77d0ac-e011-4ebd-bf8b-bfa194093c1c",
+      "title": "Pioneras – Solo querían jugar (Everybody’s Perfect)",
+      "publisher_session_id": "session:[27802,\"2026-11-17\",\"15:45\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-17",
+      "local_time": "15:45",
+      "programme_room": "S",
+      "human_reviewed": false
+    },
+    {
+      "event_id": "abb16bbd-65c7-49af-9c09-ba0a151f197e",
+      "title": "Hunky Jesus",
+      "publisher_session_id": "session:[27796,\"2026-11-17\",\"16:45\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-17",
+      "local_time": "16:45",
+      "programme_room": "L",
+      "human_reviewed": false
+    },
+    {
+      "event_id": "76dfa372-2b12-4ef5-8c6b-73c64a5953f7",
+      "title": "Out Laws",
+      "publisher_session_id": "session:[26880,\"2026-11-17\",\"19:15\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-17",
+      "local_time": "19:15",
+      "programme_room": "FC",
+      "human_reviewed": false
+    },
+    {
+      "event_id": "af39b519-b1f9-4434-be55-d0749ad81ee9",
+      "title": "A Paixão segundo G.H.",
+      "publisher_session_id": "session:[27844,\"2026-11-17\",\"21:45\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-17",
+      "local_time": "21:45",
+      "programme_room": "S",
+      "human_reviewed": false
+    },
+    {
+      "event_id": "6cdab6ef-9d73-4996-b644-c45e14494c22",
+      "title": "Nagi Notes",
+      "publisher_session_id": "session:[28002,\"2026-11-18\",\"13:00\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-18",
+      "local_time": "13:00",
+      "programme_room": "S",
+      "human_reviewed": false
+    },
+    {
+      "event_id": "cfe6505b-2eb7-49ed-bcbe-cddd2e828a94",
+      "title": "Blue Boy Trial",
+      "publisher_session_id": "session:[27850,\"2026-11-18\",\"13:30\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-18",
+      "local_time": "13:30",
+      "programme_room": "FC",
+      "human_reviewed": false
+    },
+    {
+      "event_id": "ec578272-c9f8-45d2-b2a0-ef730a4bd606",
+      "title": "À voix basse",
+      "publisher_session_id": "session:[27960,\"2026-11-18\",\"13:30\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-18",
+      "local_time": "13:30",
+      "programme_room": "L",
+      "human_reviewed": false
+    },
+    {
+      "event_id": "50295850-4ee0-41a8-846c-bcbb22a97825",
+      "title": "Downtown",
+      "publisher_session_id": "session:[27856,\"2026-11-18\",\"15:15\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-18",
+      "local_time": "15:15",
+      "programme_room": "S",
+      "human_reviewed": false
+    },
+    {
+      "event_id": "2e518dd8-e561-4b5a-b8f7-d5e580f3b84a",
+      "title": "Pioneras – Solo querían jugar (Everybody’s Perfect)",
+      "publisher_session_id": "session:[27802,\"2026-11-18\",\"15:30\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-18",
+      "local_time": "15:30",
+      "programme_room": "FC",
+      "human_reviewed": false
+    },
+    {
+      "event_id": "7996b0ee-76ec-4e09-9158-da67e679cb0e",
+      "title": "The Chronology of Water",
+      "publisher_session_id": "session:[27840,\"2026-11-18\",\"15:45\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-18",
+      "local_time": "15:45",
+      "programme_room": "L",
+      "human_reviewed": false
+    },
+    {
+      "event_id": "c7110f4e-79f9-4b3d-ab29-2e6743bc2a9b",
+      "title": "Mineshaft: The Cruising Murders (Everybody’s Perfect)",
+      "publisher_session_id": "session:[27790,\"2026-11-18\",\"18:15\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-18",
+      "local_time": "18:15",
+      "programme_room": "L",
+      "human_reviewed": false
+    },
+    {
+      "event_id": "02856dc9-7d79-45e3-91fa-98da2a160284",
+      "title": "Bearcave",
+      "publisher_session_id": "session:[27846,\"2026-11-18\",\"19:00\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-18",
+      "local_time": "19:00",
+      "programme_room": "S",
+      "human_reviewed": false
+    },
+    {
+      "event_id": "88499bb3-446f-4684-86e1-6456fb037f0e",
+      "title": "Strange Journey: The Story of Rocky Horror (Everybody’s Perfect)",
+      "publisher_session_id": "session:[27794,\"2026-11-18\",\"20:00\",\"Genf\",\"Everybody's Perfect\",\"\"]",
+      "corrected_local_date": "2026-10-18",
+      "local_time": "20:00",
+      "programme_room": "L",
+      "human_reviewed": false
+    }
+  ],
+  "source_payloads_changed": false,
+  "end_dates_invented": false
+}

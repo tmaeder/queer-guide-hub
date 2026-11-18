@@ -37,6 +37,20 @@ Deno.test('Display ordinary events preserve the publisher post identity and obey
   assertEquals(eventAdapter.normalize(rows[0]).sourceId, '12345')
 })
 
+Deno.test('Display only treats explicit ticket fields as booking links', () => {
+  for (const tickets of [undefined, null, '', '   ', { url: 'https://tickets.example/' }]) {
+    const normalized = eventAdapter.normalize({ sourceId: '12345', data: {
+      ...event, website: 'https://organizer.example/programme', tickets,
+    } }) as import('./index.ts').StagedItem
+    assertEquals(normalized.ticket_url, null)
+    assertEquals(normalized.website, 'https://organizer.example/programme')
+  }
+  const normalized = eventAdapter.normalize({ sourceId: '12345', data: {
+    ...event, tickets: '  https://tickets.example/exact-show  ',
+  } }) as import('./index.ts').StagedItem
+  assertEquals(normalized.ticket_url, 'https://tickets.example/exact-show')
+})
+
 Deno.test('Display rejects stale/challenge feeds, foreign publisher links and impossible session dates', () => {
   for (const invalid of ['<html>challenge</html>', { events: [] }, { generated: 0, events: [event] }, { ...feed([event]), generated: now / 1000 + 86400 }]) assertThrows(() => displayFeedItems(invalid, options))
   for (const bad of [{ ...event, url: 'https://foreign.example/events/12345' }, { ...event, sessions: [{ date: '2026-02-30', start: '19:00' }] }, { ...event, sessions: [{ date: '2026-11-18', start: '29:00' }] }]) assertThrows(() => displayFeedItems(feed([bad]), options))
