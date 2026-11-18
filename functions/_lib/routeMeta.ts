@@ -120,7 +120,9 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   '/tags/interactions': {
     title: 'Drug Interaction Chart | Queer Guide',
     description:
-      'Which substances are dangerous to combine — 421 combinations across 31 drugs, with harm-reduction data researched by TripSit.',
+      // No counts and no single source: both drift. The table has several
+      // sources (see datasetJsonLd.ts), and this line once credited TripSit alone.
+      'Which substances are dangerous to combine: a risk rating for each pair, credited to the harm-reduction or regulatory source that assessed it.',
   },
   // Same reason as /tags/interactions above: without an exact entry the
   // generic tag matcher would title this "Sti-guide — Tag".
