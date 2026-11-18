@@ -761,3 +761,7 @@ verify_jwt = false
 # Cron dispatcher authenticates with the shared internal secret.
 [functions.milestone-source-health]
 verify_jwt = false
+
+[functions.outxout-official-dates]
+# Own internal/service/admin authentication; no public mutations.
+verify_jwt = false
