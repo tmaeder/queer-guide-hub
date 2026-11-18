@@ -122,7 +122,10 @@ describe('rightsExportResponse', () => {
   it('serves a CSV attachment with open CORS', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => new Response(JSON.stringify([DE, NG]))),
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify([DE, NG]), { headers: { 'Content-Range': '0-1/2' } }),
+      ),
     );
     const res = await rightsExportResponse(env, 'csv');
     expect(res.status).toBe(200);
@@ -130,5 +133,72 @@ describe('rightsExportResponse', () => {
     expect(res.headers.get('Content-Disposition')).toContain('attachment');
     expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
     expect((await res.text()).split('\r\n').filter(Boolean)).toHaveLength(3);
+  });
+  it.each([null, '0-1/*', '0-1/3', '1-2/3', '0-2/2'])(
+    'refuses unverified or partial exports (%s)',
+    async (range) => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(
+          async () =>
+            new Response(JSON.stringify([DE, NG]), {
+              headers: range ? { 'Content-Range': range } : {},
+            }),
+        ),
+      );
+      const res = await rightsExportResponse(env, 'json');
+      expect(res.status).toBe(503);
+      expect(res.headers.get('Cache-Control')).toBe('no-store');
+    },
+  );
+
+  it('uses only anonymous credentials even when an admin key is available', async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(
+      async () => new Response(JSON.stringify([DE, NG]), { headers: { 'Content-Range': '0-1/2' } }),
+    );
+    vi.stubGlobal('fetch', fetch);
+    expect(
+      (await rightsExportResponse({ ...env, SUPABASE_SERVICE_ROLE_KEY: 'admin-fixture' }, 'json'))
+        .status,
+    ).toBe(200);
+    expect(fetch.mock.calls[0]?.[1]?.headers).toMatchObject({
+      apikey: 'k',
+      Authorization: 'Bearer k',
+      Prefer: 'count=exact',
+    });
+  });
+
+  it('returns retryable unavailable data when the upstream request fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('network unavailable');
+      }),
+    );
+    const res = await rightsExportResponse(env, 'csv');
+    expect(res.status).toBe(503);
+    expect(res.headers.get('Retry-After')).toBe('300');
+  });
+
+  it('bounds a stalled upstream request', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn<typeof globalThis.fetch>(
+          (_url, options) =>
+            new Promise<Response>((_resolve, reject) => {
+              options?.signal?.addEventListener('abort', () => reject(new Error('aborted')), {
+                once: true,
+              });
+            }),
+        ),
+      );
+      const pending = rightsExportResponse(env, 'csv');
+      await vi.advanceTimersByTimeAsync(3000);
+      expect((await pending).status).toBe(503);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

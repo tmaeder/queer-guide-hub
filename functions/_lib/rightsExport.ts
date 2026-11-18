@@ -12,7 +12,6 @@
  * false statement about ILGA's columns.
  */
 import type { Env } from './sitemap';
-import { fetchRows } from './sitemap';
 import { SITE_ORIGIN } from './routeMeta';
 import { tierForScore } from '../../src/utils/equalityScore';
 
@@ -164,13 +163,55 @@ export function toJson(records: RightsRecord[], generatedAt: string): string {
 
 export type ExportFormat = 'csv' | 'json';
 
+/** Public exports must contain the complete public result, never a sitemap's partial read. */
+async function fetchCountries(env: Env): Promise<CountryRow[]> {
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return [];
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000);
+  try {
+    const query = new URLSearchParams({ select: SELECT, order: 'name.asc', limit: '1000' });
+    const response = await fetch(
+      `${env.SUPABASE_URL.replace(/\/+$/, '')}/rest/v1/countries?${query}`,
+      {
+        headers: {
+          apikey: env.SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${env.SUPABASE_ANON_KEY}`,
+          Accept: 'application/json',
+          Prefer: 'count=exact',
+        },
+        signal: controller.signal,
+      },
+    );
+    if (!response.ok) return [];
+    const rows: unknown = await response.json();
+    const range = response.headers.get('Content-Range')?.match(/^0-(\d+)\/(\d+)$/);
+    if (
+      !Array.isArray(rows) ||
+      !range ||
+      rows.length === 0 ||
+      Number(range[1]) + 1 !== rows.length ||
+      Number(range[2]) !== rows.length
+    )
+      return [];
+    return rows as CountryRow[];
+  } catch {
+    return [];
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function rightsExportResponse(env: Env, format: ExportFormat): Promise<Response> {
-  const rows = await fetchRows(env, 'countries', SELECT, '', 1000, 'name.asc');
+  const rows = await fetchCountries(env);
   if (rows.length === 0) {
     // Never serve an empty file as if it were the dataset.
     return new Response('Rights data is temporarily unavailable.', {
       status: 503,
-      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Retry-After': '300' },
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Retry-After': '300',
+        'Cache-Control': 'no-store',
+      },
     });
   }
   const records = rows.map((r) => toRecord(r as CountryRow));
