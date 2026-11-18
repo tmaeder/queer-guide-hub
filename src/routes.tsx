@@ -1,6 +1,7 @@
 import { GovernanceRedirect } from '@/components/admin/GovernanceRedirect';
 import React, { Suspense } from 'react';
-import { Routes, Route, Navigate, useLocation, useParams } from 'react-router';
+import { Route, Navigate, useLocation, useParams } from 'react-router';
+import { RoutesWithLeafSuspense as Routes } from '@/components/routing/RoutesWithLeafSuspense';
 import { useTranslation } from 'react-i18next';
 import { useSearchTelemetry } from '@/providers/SearchTelemetryProvider';
 import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
