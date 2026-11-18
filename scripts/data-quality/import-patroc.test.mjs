@@ -23,6 +23,7 @@ for (const TZ of ['UTC', 'Pacific/Honolulu']) {
         { ...base, id: 'valid-winter' },
         { ...base, id: 'ambiguous', city_slug: 'cologne', startDate: '2026-10-25', startTime: '02:30', endDate: null, endTime: null },
         { ...base, id: 'date-only', startTime: null, endTime: null },
+        { ...base, id: 'mixed-reversed', startTime: '00:30', endDate: '2027-01-11', endTime: null },
       ];
       writeFileSync(join(out, 'venues.ndjson'), '');
       writeFileSync(join(out, 'events.ndjson'), rows.map(JSON.stringify).join('\n') + '\n');
@@ -38,10 +39,12 @@ for (const TZ of ['UTC', 'Pacific/Honolulu']) {
       assert.equal(preview.events[1].start_date, '2027-01-12');
       assert.equal(preview.events[1].end_date, '2027-01-15');
       const errors = readFileSync(join(out, 'event-date-errors.ndjson'), 'utf8').trim().split('\n').map(JSON.parse);
-      assert.equal(errors.length, 1);
+      assert.equal(errors.length, 2);
       assert.equal(errors[0].source_id, 'ambiguous');
       assert.equal(errors[0].start_time, '02:30');
       assert.match(errors[0].error, /Ambiguous Patroc local time/);
+      assert.equal(errors[1].source_id, 'mixed-reversed');
+      assert.match(errors[1].error, /precedes/);
     } finally {
       rmSync(cwd, { recursive: true, force: true });
     }

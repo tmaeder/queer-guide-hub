@@ -42,6 +42,19 @@ Deno.test('Patroc repeated and nonexistent DST wall clocks require review', () =
   assertThrows(() => normalizePatrocEventDates({ startDate: '2026-03-29', startTime: '02:30', endDate: null, endTime: null }, 'Europe/Berlin'), Error, 'Nonexistent')
 })
 
+Deno.test('Patroc mixed date precision compares days in the publisher timezone', () => {
+  const rec = { startDate: '2027-01-12', startTime: '00:30', endDate: '2027-01-11', endTime: null }
+  assertThrows(() => normalizePatrocEventDates(rec, 'Europe/Rome'), Error, 'precedes')
+  assertThrows(() => normalizePatrocEventDates({ ...rec, startDate: '2027-01-11', startTime: '24:30' }, 'Europe/Rome'), Error, 'precedes')
+  assertThrows(() => normalizePatrocEventDates({ ...rec, startTime: null, endTime: '23:30' }, 'Europe/Rome'), Error, 'precedes')
+  assertEquals(normalizePatrocEventDates({ ...rec, endDate: '2027-01-12' }, 'Europe/Rome'), {
+    start: '2027-01-11T23:30:00.000Z', end: '2027-01-12',
+  })
+  assertEquals(normalizePatrocEventDates({ ...rec, startTime: null, endDate: '2027-01-12', endTime: '00:30' }, 'Europe/Rome'), {
+    start: '2027-01-12', end: '2027-01-11T23:30:00.000Z',
+  })
+})
+
 Deno.test('Patroc rejects malformed dates, clocks, zones and reverse ranges', () => {
   const rec = { startDate: '2027-01-12', startTime: '09:00', endDate: null, endTime: null }
   for (const date of ['2026-02-30', 'not-a-date', null]) {
