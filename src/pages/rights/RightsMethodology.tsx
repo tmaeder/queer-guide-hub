@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CopyableSnippet } from '@/components/ui/copyable-snippet';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { useAllCountriesRights } from '@/hooks/useIntentData';
@@ -22,60 +22,6 @@ const CANONICAL = 'https://queer.guide/tags/rights-by-country/methodology';
 
 function formatPoints(points: number): string {
   return points > 0 ? `+${points}` : `−${Math.abs(points)}`;
-}
-
-export function CiteBlock({ label, text }: { label: string; text: string }) {
-  const { t } = useTranslation();
-  const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
-  const textRef = useRef<HTMLPreElement>(null);
-  const copy = async () => {
-    try {
-      if (!navigator.clipboard) throw new Error('Clipboard unavailable');
-      await navigator.clipboard.writeText(text);
-      setStatus('copied');
-    } catch {
-      // Some browsers and embedded views refuse clipboard writes. Select the
-      // text instead so the reader can copy it with one keystroke.
-      const node = textRef.current;
-      const selection = window.getSelection();
-      if (node && selection) {
-        const range = document.createRange();
-        range.selectNodeContents(node);
-        selection.removeAllRanges();
-        selection.addRange(range);
-      }
-      setStatus('failed');
-    }
-  };
-  return (
-    <div className="rounded-element bg-background p-4 shadow-soft">
-      <div className="mb-2 flex items-center justify-between gap-4">
-        <span className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-          {label}
-        </span>
-        <button
-          type="button"
-          className="rounded-badge px-2 py-1 text-2xs font-bold underline"
-          onClick={() => void copy()}
-        >
-          {status === 'copied'
-            ? t('rights.methodology.cite.copied', 'Copied')
-            : t('rights.methodology.cite.copy', 'Copy')}
-        </button>
-      </div>
-      <pre ref={textRef} className="m-0 whitespace-pre-wrap break-words font-mono text-13">
-        {text}
-      </pre>
-      {status === 'failed' && (
-        <p role="alert" className="mt-2 text-13 text-muted-foreground">
-          {t(
-            'rights.methodology.cite.copyFailed',
-            'Could not copy automatically. The citation is selected; copy it with your keyboard.',
-          )}
-        </p>
-      )}
-    </div>
-  );
 }
 
 /**
@@ -284,7 +230,17 @@ export default function RightsMethodology() {
           </p>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {cites.map((c) => (
-              <CiteBlock key={c.label} label={c.label} text={c.text} />
+              <CopyableSnippet
+                key={c.label}
+                label={c.label}
+                text={c.text}
+                copyLabel={t('rights.methodology.cite.copy', 'Copy')}
+                copiedLabel={t('rights.methodology.cite.copied', 'Copied')}
+                failedMessage={t(
+                  'rights.methodology.cite.copyFailed',
+                  'Could not copy automatically. The citation is selected; copy it with your keyboard.',
+                )}
+              />
             ))}
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { CopyableSnippet } from './CopyableSnippet';
+import { CopyableSnippet } from '@/components/ui/copyable-snippet';
 import {
   BADGE_PATH,
   BADGE_SNIPPET,
@@ -10,6 +10,14 @@ import {
 
 export function LinkToUs() {
   const { t } = useTranslation();
+  const copyStrings = {
+    copyLabel: t('press.linkToUs.copy', 'Copy'),
+    copiedLabel: t('press.linkToUs.copied', 'Copied'),
+    failedMessage: t(
+      'press.linkToUs.copyFailed',
+      'Could not copy automatically. The text is selected; copy it with your keyboard.',
+    ),
+  };
   return (
     <section aria-labelledby="link-to-us" className="mt-12 flex flex-col gap-8">
       <div className="max-w-prose">
@@ -27,6 +35,7 @@ export function LinkToUs() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {LINKABLE_PAGES.map((page) => (
           <CopyableSnippet
+            {...copyStrings}
             key={page.id}
             label={t(`press.linkToUs.page.${page.id}`, page.text)}
             text={`<a href="${ORIGIN}${page.path}">${page.text}</a>`}
@@ -44,6 +53,7 @@ export function LinkToUs() {
         </p>
         <img src={BADGE_PATH} alt="LGBTQ+ data from queer.guide" width={200} height={56} />
         <CopyableSnippet
+          {...copyStrings}
           label={t('press.linkToUs.badgeSnippet', 'Badge HTML')}
           text={BADGE_SNIPPET}
         />
@@ -60,6 +70,7 @@ export function LinkToUs() {
           )}
         </p>
         <CopyableSnippet
+          {...copyStrings}
           label={t('press.linkToUs.listingSnippet', 'Listing link HTML')}
           text={LISTING_SNIPPET}
         />
