@@ -86,6 +86,8 @@ jobs:
           python3 supabase/tests/isolated/run_review_case_expressions.py
           python3 supabase/tests/isolated/run_neutral_category_evidence.py
           python3 supabase/tests/isolated/run_review_quality_cache_locks.py
+          python3 supabase/tests/isolated/run_weekly_source_sync.py
+          python3 scripts/test-supabase-function-config-changes.py
 
   typecheck:
     runs-on: ubuntu-latest

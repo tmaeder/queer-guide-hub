@@ -196,14 +196,22 @@ jobs:
           # If a shared file changed in this push, also redeploy every function
           # (each bundles shared code at deploy time).
           if [ "$REDEPLOY_ALL" = "true" ] \
-             || git diff --name-only HEAD~1 HEAD | grep -q "^supabase/functions/_shared/" \
-             || git diff --name-only HEAD~1 HEAD | grep -q "^supabase/config.toml$"; then
-            echo "Redeploying every function (manual trigger, shared code, or config.toml changed)."
+             || git diff --name-only HEAD~1 HEAD | grep -q "^supabase/functions/_shared/"; then
+            echo "Redeploying every function (manual trigger or shared code changed)."
             CHANGED=$(ls -1 supabase/functions | grep -v '^_')
           else
             # Skip every underscore-prefixed dir (_shared, _tests, …) — they are
             # not deployable functions and `functions deploy _tests` hard-fails.
             CHANGED=$(git diff --name-only HEAD~1 HEAD | awk -F/ '/^supabase\/functions\// && $3 !~ /^_/ {print $3}' | sort -u)
+          fi
+
+          # Function-specific config edits deploy only those functions. A new
+          # JWT declaration must not roll back independently deployed importers.
+          CONFIG_CHANGED=$(python3 scripts/supabase-function-config-changes.py HEAD~1)
+          if [ "$CONFIG_CHANGED" = "*" ]; then
+            CHANGED=$(ls -1 supabase/functions | grep -v '^_')
+          else
+            CHANGED=$(printf '%s\n%s\n' "$CHANGED" "$CONFIG_CHANGED" | sort -u)
           fi
 
           if [ -z "$CHANGED" ]; then
