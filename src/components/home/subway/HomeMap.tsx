@@ -20,7 +20,6 @@ export default function HomeMap() {
   return (
     <Band
       title={t('home.map.title', 'Map')}
-      description={region.cityName ?? t('home.discovery.listingsGlobal', 'Worldwide')}
       seeAllHref={mapHref}
       seeAllLabel={t('home.discovery.openMap', 'Open the map')}
     >

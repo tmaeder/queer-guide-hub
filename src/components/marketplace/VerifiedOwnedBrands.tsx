@@ -16,8 +16,8 @@ import { BrandMark } from './BrandMark';
  * that promise first. The count is rendered from the data, never hardcoded, so
  * it stops being embarrassing the moment the number grows.
  *
- * Cards are NestedEntityCard: a brand is reached through the marketplace, so
- * it carries the M-yellow bullet and the block reads as part of the same line.
+ * Cards are NestedEntityCard led by the brand's own mark instead of the
+ * marketplace bullet.
  * A brand with no slug renders without an href — NestedEntityCard then drops
  * the lift rather than promising a click that does nothing.
  */
@@ -53,21 +53,17 @@ export function VerifiedOwnedBrands() {
                     : null
                 }
                 href={b.slug ? `/marketplace/brands/${b.slug}` : undefined}
-                /* Logo only, never the monogram fallback: the card already leads
-                   with the marketplace bullet and states the name, so a monogram
-                   on the trailing edge would repeat the name as a second graphic
-                   and give a logo-less brand a heavier card than one with a real
-                   mark. Absent stays absent. */
-                media={
-                  b.logo_url ? (
-                    <BrandMark
-                      name={b.display_name ?? b.brand_key}
-                      logoUrl={b.logo_url}
-                      onInk={b.logo_on_ink ?? false}
-                      className="ml-auto h-12 w-12 rounded-element"
-                      padding="p-1"
-                    />
-                  ) : undefined
+                /* The brand's own mark leads in place of the marketplace bullet.
+                   BrandMark draws the monogram underneath, so a logo-less brand
+                   keeps the same shape. */
+                leading={
+                  <BrandMark
+                    name={b.display_name ?? b.brand_key}
+                    logoUrl={b.logo_url}
+                    onInk={b.logo_on_ink ?? false}
+                    className="h-12 w-12 shrink-0 rounded-element"
+                    padding="p-1"
+                  />
                 }
               />
             </li>
