@@ -1,3 +1,4 @@
+import { DestinationPhoto } from '@/components/geo/DestinationPhoto';
 import { useEffect, useMemo, useState } from 'react';
 import { selectDiscoveryEvent } from '@/lib/discoveryEvent';
 import { GeoOpeningLinks, type GeoOpeningLink } from '@/components/geo/GeoOpeningLinks';
@@ -232,7 +233,7 @@ export default function QueerVillageDetail() {
           title: t('village.section.about', 'About {{name}}', { name: village.name }),
           presentation: 'disclosure',
           content:
-            village.image_url || village.history || village.notable_landmarks?.length ? (
+            village.history || village.notable_landmarks?.length ? (
               <VillageAbout village={village} onContentUpdated={refetch} t={t} />
             ) : null,
         },
@@ -368,6 +369,15 @@ export default function QueerVillageDetail() {
       eyebrow={t('village.eyebrow', 'District · Green line')}
       title={village.name}
       status={village.featured ? t('village.facts.editorsPick', 'Editor’s pick') : undefined}
+      headerMedia={
+        village.image_url ? (
+          <DestinationPhoto
+            src={village.image_url}
+            name={village.name}
+            metadata={village.image_metadata}
+          />
+        ) : undefined
+      }
       lead={<GlossaryLinkedText text={village.description} />}
       tags={
         <div className="flex flex-col gap-4">

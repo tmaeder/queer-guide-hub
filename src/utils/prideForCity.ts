@@ -40,7 +40,34 @@ export function buildPrideByCity(
   return out;
 }
 
-/** Short "Jul 26" formatter, locale-aware via Intl. */
+const ENGLISH_MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+const prideFormatters = new Map<string, Intl.DateTimeFormat>();
+
+/** Short month/day label; reuse locale data across every visible city card. */
 export function formatPrideDate(date: Date, locale = 'en-US'): string {
-  return new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }).format(date);
+  if (!Number.isFinite(date.getTime())) throw new RangeError('Invalid time value');
+  // This is exactly Intl's en-US short month/day output, in the same local
+  // timezone. Avoid initializing ICU in the first city-card render.
+  if (locale === 'en-US' || locale === 'en')
+    return `${ENGLISH_MONTHS[date.getMonth()]} ${date.getDate()}`;
+  let formatter = prideFormatters.get(locale);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' });
+    if (prideFormatters.size >= 16) prideFormatters.clear();
+    prideFormatters.set(locale, formatter);
+  }
+  return formatter.format(date);
 }
