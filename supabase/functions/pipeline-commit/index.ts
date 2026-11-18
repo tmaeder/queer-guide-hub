@@ -108,7 +108,8 @@ Deno.serve(async (req) => {
     const targetTable   = body.targetTable as string | undefined
     const strategy      = (body.strategy as string) || 'upsert'
     const conflictKey   = body.conflictKey as string | undefined
-    const batchSize     = body.batch_size || 50
+    const batchSize     = body.source_scope === 'gayout'
+      ? Math.max(1, Math.min(2, Number(body.batch_size) || 2)) : body.batch_size || 50
     const dryRun        = body.dry_run || false
 
     // Decide fast path: if all work is for venues, use the SQL batch fn.
@@ -132,7 +133,7 @@ Deno.serve(async (req) => {
     if (body.source_scope === 'gayout' && !dryRun) {
       if (!pipelineRunId || !['venues', 'organizations', 'events'].includes(resolvedTarget)) return errorResponse('GayOut run and target required', 400, req)
       const { data, error } = await supabase.rpc('commit_gayout_staging_batch', {
-        p_run: pipelineRunId, p_target: resolvedTarget, p_limit: Math.max(1, Math.min(10, Number(batchSize) || 10)),
+        p_run: pipelineRunId, p_target: resolvedTarget, p_limit: batchSize,
       })
       if (error) return errorResponse(error.message, 500, req)
       const rows = data || []
