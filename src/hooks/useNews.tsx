@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { hashKey, useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useLoadingTimedOut } from '@/hooks/useLoadingTimedOut';
 import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
@@ -427,15 +428,19 @@ export function useNewsArticleTags(articleIds: string[]) {
  * ago), so the slot is picked per UTC day instead: the best article with an
  * image published in the 48h before today's midnight. The window is anchored
  * to midnight, so the pick holds all day and changes once a day. A
- * hand-featured article in that window still wins.
+ * hand-featured article in that window still wins. Only articles in the
+ * reader's language, English, or untagged (mostly English) qualify, so the
+ * lead is not a story the reader cannot read.
  */
 export function useFeaturedNewsArticles() {
+  const { i18n } = useTranslation();
+  const lang = (i18n.language || 'en').slice(0, 2);
   const until = new Date();
   until.setUTCHours(0, 0, 0, 0);
   const day = until.toISOString().slice(0, 10);
   const since = new Date(until.getTime() - 48 * 3600 * 1000);
   const { data } = useQuery({
-    queryKey: ['news-featured-articles', day],
+    queryKey: ['news-featured-articles', day, lang],
     queryFn: async () => {
       const { data, error: fetchError } = await supabase
         .from('news_articles')
@@ -451,6 +456,7 @@ export function useFeaturedNewsArticles() {
         .gte('published_at', since.toISOString())
         .lt('published_at', until.toISOString())
         .not('image_url', 'is', null)
+        .or(`content_language.is.null,content_language.in.(en,${lang})`)
         .not('content', 'is', null)
         .neq('content', '')
         .or(
