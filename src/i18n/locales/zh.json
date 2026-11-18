@@ -6,7 +6,11 @@
     "personalities": "人物",
     "history": "历史",
     "lede": "我们使用的词语、塑造酷儿生活的人们，以及背后的历史。",
-    "navigation": "知识栏目"
+    "navigation": "知识栏目",
+    "termsHint": "我们使用的词语及其含义",
+    "personalitiesHint": "塑造酷儿生活的人们",
+    "historyHint": "逐年的重要事件",
+    "rightsHint": "各国法律现状"
   },
   "eventTypes": {
     "party": "派对",
@@ -2745,7 +2749,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} 人",
+        "fieldCount_other": "{{formatted}} 人"
       },
       "detail": {
         "inTheNews": "In the news",

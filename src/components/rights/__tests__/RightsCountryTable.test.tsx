@@ -93,7 +93,7 @@ describe('RightsCountryTable', () => {
     const table = screen.getByRole('table');
     expect(within(table).getByText('Deathland')).toBeInTheDocument();
     expect(within(table).queryByText('Midland')).toBeNull();
-    expect(within(table).getByText(/death penalty/)).toBeInTheDocument();
+    expect(within(table).getByText(/death penalty/i)).toBeInTheDocument();
   });
 
   it('chips carry counts', () => {
