@@ -1926,7 +1926,11 @@
       "exploreCity": "Esplora {{city}}",
       "browseEvents": "Scopri gli eventi a {{city}}",
       "whatsOn": "Cosa c’è in programma",
-      "communitySpace": "Spazio comunitario"
+      "communitySpace": "Spazio comunitario",
+      "photos": "Foto",
+      "previousPhoto": "Foto precedente",
+      "nextPhoto": "Foto successiva",
+      "pausePhotos": "Metti in pausa la presentazione"
     },
     "discovery": {
       "openMap": "Apri la mappa",
@@ -2097,7 +2101,8 @@
       "interchange": {
         "label": "Cerca in tutto",
         "subtitle": "Qui si incontrano tutte le linee"
-      }
+      },
+      "title": "Mappa"
     },
     "glossary": {
       "eyebrow": "Glossario",

@@ -1926,7 +1926,11 @@
       "exploreCity": "{{city}} 둘러보기",
       "browseEvents": "{{city}} 이벤트 보기",
       "whatsOn": "이벤트 소식",
-      "communitySpace": "커뮤니티 공간"
+      "communitySpace": "커뮤니티 공간",
+      "photos": "사진",
+      "previousPhoto": "이전 사진",
+      "nextPhoto": "다음 사진",
+      "pausePhotos": "슬라이드쇼 일시 정지"
     },
     "discovery": {
       "openMap": "지도 열기",
@@ -2097,7 +2101,8 @@
       "interchange": {
         "label": "전체 검색",
         "subtitle": "모든 노선이 만나는 곳"
-      }
+      },
+      "title": "지도"
     },
     "glossary": {
       "eyebrow": "용어집",

@@ -1926,7 +1926,11 @@
       "exploreCity": "探索{{city}}",
       "browseEvents": "浏览{{city}}活动",
       "whatsOn": "活动预告",
-      "communitySpace": "社区空间"
+      "communitySpace": "社区空间",
+      "photos": "照片",
+      "previousPhoto": "上一张照片",
+      "nextPhoto": "下一张照片",
+      "pausePhotos": "暂停幻灯片"
     },
     "discovery": {
       "openMap": "打开地图",
@@ -2097,7 +2101,8 @@
       "interchange": {
         "label": "全站搜索",
         "subtitle": "所有线路在此交会"
-      }
+      },
+      "title": "地图"
     },
     "glossary": {
       "eyebrow": "术语库",

@@ -10,20 +10,24 @@ import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { useHomeRegionContext } from '@/components/home/homeRegionContext';
 import { useHomeNearYou, type NearYouRow } from '@/hooks/useHomeNearYou';
 
+import { isValidTimezone } from '@/utils/timezone';
+
 const ROWS = 4;
 
-/** Weekday + day number for the event bullet, and the clock time for the line
- *  under the title. All-day rows (midnight timestamps) carry no time, rather
- *  than a fake 00:00. */
-const boardDate = (iso: string, locale: string) => {
+/** Format the selected event in its own zone, falling back for older rows. */
+const boardDate = (iso: string, locale: string, timezone?: string | null) => {
   const d = new Date(iso);
-  const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false });
+  const timeZone = timezone && isValidTimezone(timezone) ? timezone : undefined;
+  const format = (options: Intl.DateTimeFormatOptions, date = d) =>
+    new Intl.DateTimeFormat(locale, { ...options, timeZone }).format(date);
+  const time = format({ hour: '2-digit', minute: '2-digit', hour12: false });
+  const monthKey = { year: 'numeric', month: 'numeric' } as const;
   return {
-    weekday: d.toLocaleDateString(locale, { weekday: 'short' }).replace('.', '').toUpperCase(),
-    day: d.toLocaleDateString(locale, { day: 'numeric' }),
-    month: d.toLocaleDateString(locale, { month: 'short' }),
-    // The bullet shows no month; name it only when it is not this month.
-    otherMonth: d.getMonth() !== new Date().getMonth(),
+    weekday: format({ weekday: 'short' }).replace('.', '').toUpperCase(),
+    day: format({ day: 'numeric' }),
+    month: format({ month: 'short' }),
+    fullDate: format({ year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }),
+    otherMonth: format(monthKey) !== format(monthKey, new Date()),
     time: time === '00:00' ? null : time,
   };
 };
@@ -47,7 +51,8 @@ function DateBullet({ weekday, day }: { weekday: string; day: string }) {
 function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
   const href =
     row.kind === 'event' ? `/events/${row.slug || row.id}` : `/venues/${row.slug || row.id}`;
-  const date = row.kind === 'event' && row.startDate ? boardDate(row.startDate, locale) : null;
+  const date =
+    row.kind === 'event' && row.startDate ? boardDate(row.startDate, locale, row.timezone) : null;
 
   return (
     <LocalizedLink
@@ -66,7 +71,7 @@ function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
         <span className="block truncate text-13 text-muted-foreground">
           {date && (
             // The bullet is decorative; the full date stays readable here.
-            <span className="sr-only">{`${date.weekday} ${date.day} ${date.month}, `}</span>
+            <span className="sr-only">{`${date.fullDate}, `}</span>
           )}
           {[date?.otherMonth && date.month, date?.time, row.via].filter(Boolean).join(' · ')}
         </span>

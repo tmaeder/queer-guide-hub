@@ -1936,7 +1936,11 @@
       "exploreCity": "استكشف {{city}}",
       "browseEvents": "تصفّح فعاليات {{city}}",
       "whatsOn": "الفعاليات",
-      "communitySpace": "مساحة مجتمعية"
+      "communitySpace": "مساحة مجتمعية",
+      "photos": "الصور",
+      "previousPhoto": "الصورة السابقة",
+      "nextPhoto": "الصورة التالية",
+      "pausePhotos": "إيقاف عرض الشرائح مؤقتًا"
     },
     "discovery": {
       "openMap": "افتح الخريطة",
@@ -2107,7 +2111,8 @@
       "interchange": {
         "label": "ابحث في كل شيء",
         "subtitle": "كل الخطوط تلتقي هنا"
-      }
+      },
+      "title": "الخريطة"
     },
     "glossary": {
       "eyebrow": "المسرد",

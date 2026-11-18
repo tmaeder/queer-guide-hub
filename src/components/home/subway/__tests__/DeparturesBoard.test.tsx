@@ -89,4 +89,30 @@ describe('homepage listings', () => {
     expect(link.textContent?.match(/17:00/g)).toHaveLength(1);
     expect(link).toHaveTextContent('17:00 · Paris');
   });
+  it('uses the event timezone across a UTC date boundary', () => {
+    state.data = {
+      scope: 'city',
+      localCount: 1,
+      tripCount: 0,
+      rows: [
+        {
+          kind: 'event',
+          id: 'zone',
+          slug: 'zone',
+          title: 'Late party',
+          via: 'Los Angeles',
+          rung: 'local',
+          startDate: '2027-01-19T01:30:00Z',
+          timezone: 'America/Los_Angeles',
+        },
+      ],
+    };
+    const { container } = renderWithProviders(<DeparturesBoard />);
+    const bullet = container.querySelector('.transit-marker');
+    expect(bullet).toHaveTextContent('MON18');
+    expect(screen.getByRole('link', { name: /Late party/ })).toHaveTextContent(
+      '17:30 · Los Angeles',
+    );
+    expect(screen.getByRole('link', { name: /Late party/ })).toHaveTextContent('2027');
+  });
 });
