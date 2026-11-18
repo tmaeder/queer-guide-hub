@@ -91,12 +91,13 @@ test.describe('Header mobile a11y', () => {
     await expect(search).toBeFocused();
     await expect(search).toHaveAttribute('aria-expanded', 'true');
 
-    // The full-screen hub exposes the prominent mode switcher.
-    const modes = page.getByRole('radiogroup', { name: /mode/i });
-    await expect(modes).toBeVisible();
-    expect(await modes.getByRole('radio').count()).toBe(6);
+    // The hub now offers direct intent shortcuts in place of a mode selector.
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('button', { name: 'Going out', exact: true })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Travelling', exact: true })).toBeVisible();
+    await expect(dialog.getByRole('radiogroup', { name: /mode/i })).toHaveCount(0);
 
     await page.getByRole('button', { name: /close search/i }).click();
-    await expect(modes).toBeHidden();
+    await expect(dialog).toBeHidden();
   });
 });
