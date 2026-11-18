@@ -136,7 +136,7 @@ describe('QueerVillageDetail', () => {
     expect(screen.queryByText('85/100')).not.toBeInTheDocument();
   });
 
-  it('leads with the walk, discloses the map, and keeps planning under More actions', () => {
+  it('shows the map with the walk and keeps planning under More actions', () => {
     venueState.venues = [{ id: 'venue1', name: 'Local cafe', slug: 'local-cafe' }];
     village.data = {
       id: 'v1',
@@ -153,11 +153,10 @@ describe('QueerVillageDetail', () => {
     const walk = document.getElementById('walk')!;
     const about = document.getElementById('about')!;
     expect(walk.compareDocumentPosition(about) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    const mapToggle = screen.getByRole('button', { name: 'Open map' });
-    expect(mapToggle).toHaveAttribute('aria-controls', 'map-detail');
-    expect(screen.queryByTestId('map')).not.toBeInTheDocument();
-    fireEvent.click(mapToggle);
     expect(screen.getByTestId('map')).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Open the full map' }).getAttribute('href')).toContain(
+      'lat=40.4230',
+    );
     expect(screen.queryByRole('button', { name: /Plan a trip/ })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'More actions' }));
     expect(screen.getByRole('button', { name: /Plan a trip/ })).toBeVisible();
