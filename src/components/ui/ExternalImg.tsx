@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { buildCfImageUrl } from '@/utils/cloudflareOptimizations';
-import { imageReferrerPolicy } from '@/utils/imageHost';
+import { imageCrossOrigin, imageReferrerPolicy } from '@/utils/imageHost';
 
 /**
  * Drop-in `<img>` for the hand-rolled card/rail images that hotlink external
@@ -52,6 +52,7 @@ export const ExternalImg = ({
 
   return (
     <img
+      crossOrigin={imageCrossOrigin(resolved)}
       src={resolved}
       alt={alt}
       referrerPolicy={imageReferrerPolicy(resolved)}
