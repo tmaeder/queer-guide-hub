@@ -121,16 +121,29 @@ async function interactionSources(env: Env): Promise<SourceSummary | null> {
   const key = env.SUPABASE_ANON_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY;
   if (!env.SUPABASE_URL || !key) return null;
   try {
-    // ~500 rows of three short columns. No pagination: the table is far under
-    // the 1000-row cap, and if it ever passes it, a truncated read still names
-    // the large sources; the summary is a credit, not a count.
+    // Keep one bounded read. Exact range/count verification prevents crediting
+    // only a prefix of the table if it grows beyond the API's row limit.
     const url = `${trimTrailingSlashes(env.SUPABASE_URL)}/rest/v1/substance_interactions?select=source,source_url,fetched_at&limit=1000`;
     const res = await fetch(url, {
-      headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' },
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        Accept: 'application/json',
+        Prefer: 'count=exact',
+      },
       signal: AbortSignal.timeout(2000),
     });
     if (!res.ok) return null;
-    const value = summariseSources((await res.json()) as SourceRow[]);
+    const rows = (await res.json()) as SourceRow[];
+    const range = res.headers.get('Content-Range')?.match(/^0-(\d+)\/(\d+)$/);
+    if (
+      !Array.isArray(rows) ||
+      !range ||
+      Number(range[1]) + 1 !== rows.length ||
+      Number(range[2]) !== rows.length
+    )
+      return null;
+    const value = summariseSources(rows);
     if (value.sources.length === 0) return null;
     cache = { at: Date.now(), value };
     return value;

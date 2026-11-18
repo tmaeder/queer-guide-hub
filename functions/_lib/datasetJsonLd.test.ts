@@ -38,6 +38,12 @@ const ROWS = [
   { source: 'rave it safe', source_url: null, fetched_at: '2026-09-08T17:28:01Z' },
 ];
 
+function sourceResponse(rows: unknown[]) {
+  return new Response(JSON.stringify(rows), {
+    headers: { 'Content-Range': `0-${rows.length - 1}/${rows.length}` },
+  });
+}
+
 beforeEach(() => _resetDatasetCache());
 afterEach(() => vi.unstubAllGlobals());
 
@@ -75,13 +81,49 @@ describe('datasetJsonLd', () => {
   it('credits the interaction chart to exactly the sources in the table, one entry per name', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => new Response(JSON.stringify(ROWS))),
+      vi.fn(async () => sourceResponse(ROWS)),
     );
     const ld = parse(await datasetJsonLd(env, '/tags/interactions'));
     const based = ld.isBasedOn as { name: string; url?: string }[];
     expect(based.map((s) => s.name)).toEqual(['FDA label', 'rave it safe', 'tripsit']);
     expect(based.find((s) => s.name === 'rave it safe')).not.toHaveProperty('url');
     expect(ld.dateModified).toBe('2026-11-17T04:40:03Z');
+  });
+
+  it.each(['0-4/6', '0-4/*', '1-5/6', null])(
+    'omits unverifiable or partial source credits (%s)',
+    async (range) => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(
+          async () =>
+            new Response(JSON.stringify(ROWS), {
+              headers: range ? { 'Content-Range': range } : {},
+            }),
+        ),
+      );
+      expect(await datasetJsonLd(env, '/tags/interactions')).toBe('');
+    },
+  );
+
+  it('omits credits when a source can be hidden beyond the API row limit', async () => {
+    const firstPage = Array.from({ length: 1000 }, () => ROWS[0]);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify(firstPage), {
+            headers: { 'Content-Range': '0-999/1001' },
+          }),
+      ),
+    );
+    expect(await datasetJsonLd(env, '/tags/interactions')).toBe('');
+    expect(fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({ Prefer: 'count=exact' }),
+      }),
+    );
   });
 
   it('emits nothing for the chart when the sources cannot be read', async () => {
@@ -108,7 +150,7 @@ describe('datasetJsonLd', () => {
     const fail = vi.fn(async () => new Response('nope', { status: 500 }));
     vi.stubGlobal('fetch', fail);
     await datasetJsonLd(env, '/tags/interactions');
-    const ok = vi.fn(async () => new Response(JSON.stringify(ROWS)));
+    const ok = vi.fn(async () => sourceResponse(ROWS));
     vi.stubGlobal('fetch', ok);
     expect(await datasetJsonLd(env, '/tags/interactions')).not.toBe('');
     await datasetJsonLd(env, '/tags/interactions');
