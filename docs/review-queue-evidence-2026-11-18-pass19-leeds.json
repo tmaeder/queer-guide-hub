@@ -1,0 +1,21 @@
+{
+  "event_id": "f94047cc-deda-4481-80c1-164255eac87e",
+  "proof": {
+    "capture_method": "direct_primary_http_200",
+    "observed_at": "2026-11-18T19:55:26.413423Z",
+    "url": "https://leedspride.com/leeds-bursts-with-pride-at-landmark-20th-anniversary-as-2027-dates-are-announced/",
+    "capture_sha256": "370347031af96a4f74a9c19ecdb1a992e063cd11ba87cb435b77c4ba8c78a22b",
+    "capture_bytes": 365226,
+    "note": "Dated organiser announcement explicitly confirms July17–18,2027. Registered publisher source/raw title also say2027; saved dates are already2027. Old automatic enrichment copied2026 into title from stale homepage text. Correct only title/year and its factual provenance; original enrichment result/history preserved. No2026lineup copied or2027physical venue/parade route claimed; venue case remains open.",
+    "human_reviewed": false
+  },
+  "committed": [
+    {
+      "result": {
+        "id": "f94047cc-deda-4481-80c1-164255eac87e",
+        "venue_created": false
+      }
+    }
+  ],
+  "scope": "title_only; venue review remains open"
+}
