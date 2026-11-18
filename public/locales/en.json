@@ -1704,12 +1704,6 @@
         "poolTitle": "The station list did not load.",
         "retry": "Try again"
       },
-      "cta": {
-        "heading": "Ride this line.",
-        "body": "Turns into a trip you own, with every stop already on it. Change anything you like afterwards.",
-        "primary": "Make it a trip",
-        "secondary": "Draw another"
-      },
       "buildRoute": "Build a route"
     },
     "polls": {

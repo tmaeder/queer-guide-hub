@@ -962,12 +962,6 @@
         "poolTitle": "A lista de estações não carregou.",
         "retry": "Tentar de novo"
       },
-      "cta": {
-        "heading": "Segue esta linha.",
-        "body": "Torna-se uma viagem tua, com todas as paragens já lá. Depois podes mudar o que quiseres.",
-        "primary": "Transformar em viagem",
-        "secondary": "Traçar outra"
-      },
       "buildRoute": "Criar uma rota"
     },
     "polls": {
