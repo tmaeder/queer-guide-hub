@@ -33,9 +33,6 @@ export function GoNowRail() {
   return (
     <section aria-labelledby="travel-go-now-heading" className="mb-12">
       <header className="mb-4">
-        <p className="mb-1 text-2xs uppercase tracking-[0.18em] text-muted-foreground">
-          {t('pages.travel.goNow.kicker', 'This month')}
-        </p>
         <h3 id="travel-go-now-heading" className="text-headline font-bold tracking-tight">
           {t('pages.travel.goNow.heading', 'Go now — {{month}}', { month: monthName })}
         </h3>

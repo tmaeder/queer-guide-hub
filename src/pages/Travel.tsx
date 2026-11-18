@@ -119,7 +119,6 @@ export default function Travel() {
     {
       id: 'plan',
       label: t('pages.travel.packages.section', 'Find your escape'),
-      kicker: t('pages.travel.packages.sectionKicker', 'Made for you'),
       content: (
         <div>
           <PersonalisedTripPackages />
@@ -133,7 +132,6 @@ export default function Travel() {
     {
       id: 'inspiration',
       label: t('pages.travel.sections.inspiration', 'Where to go'),
-      kicker: t('pages.travel.sections.inspirationKicker', 'Destinations'),
       content: (
         <div>
           <GoNowRail />
@@ -158,7 +156,6 @@ export default function Travel() {
     {
       id: 'map',
       label: t('pages.travel.sections.map', 'See the map'),
-      kicker: t('pages.travel.sections.mapKicker', 'Destinations at a glance'),
       // Moved out from between 'plan' and 'inspiration'. The map is a tool, and
       // sitting second it split the two things this page is for — the planner
       // and the reasons to use it — with a full-width utility surface. It now
@@ -169,7 +166,6 @@ export default function Travel() {
     {
       id: 'villages',
       label: t('pages.travel.sections.villages', 'Neighborhoods'),
-      kicker: t('pages.travel.sections.villagesKicker', 'Queer villages worldwide'),
       content: <VillagesRail visitedFilter={visitedFilter} />,
     },
     {
@@ -180,13 +176,11 @@ export default function Travel() {
     {
       id: 'book',
       label: t('pages.travel.sections.book', 'Getting there'),
-      kicker: t('pages.travel.sections.bookKicker', 'Flights and stays'),
       content: <BookNowAccordion defaultOpen={bookIntent} tripContext={tripBookingContext} />,
     },
     {
       id: 'safety',
       label: t('pages.travel.sections.safety', 'Know before you go'),
-      kicker: t('pages.travel.sections.safetyKicker', 'The legal picture'),
       content: (
         <div>
           <CoverageNote>
@@ -247,26 +241,13 @@ export default function Travel() {
       header={
         <header className="grid items-center gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12">
           <PageIntro title={title} lede={lede}>
-            <div className="mt-6 flex flex-wrap items-center gap-4">
-              {activeTrip && !bookIntent ? (
-                <Button asChild>
-                  <LocalizedLink to={`/trips/${activeTrip.id}`} className="no-underline">
-                    {t('pages.travel.resume.title', 'Continue planning')}
-                  </LocalizedLink>
-                </Button>
-              ) : (
-                <Button asChild>
-                  <a href="#plan" className="no-underline">
-                    {t('pages.travel.packages.section', 'Find your escape')}
-                  </a>
-                </Button>
-              )}
-              <Button asChild variant="outline">
-                <a href="#safety" className="no-underline">
-                  {t('pages.travel.sections.safety', 'Know before you go')}
-                </a>
+            {activeTrip && !bookIntent ? (
+              <Button asChild className="mt-6">
+                <LocalizedLink to={`/trips/${activeTrip.id}`} className="no-underline">
+                  {t('pages.travel.resume.title', 'Continue planning')}
+                </LocalizedLink>
               </Button>
-            </div>
+            ) : null}
           </PageIntro>
           {showCover && <TravelCoverStory />}
         </header>
