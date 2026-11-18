@@ -56,7 +56,7 @@ export function CityMapTab({ city, venues = [], caption, openLabel }: CityMapTab
       <EntityMap
         center={[Number(city.longitude), Number(city.latitude)]}
         zoom={11}
-        height={280}
+        height={340}
         visitedLookup={visitedLookup}
         markers={[
           {
