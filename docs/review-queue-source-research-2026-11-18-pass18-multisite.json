@@ -1,0 +1,85 @@
+{
+  "checked_at": "2026-11-18T18:37:00Z",
+  "repairs": [
+    {
+      "entity_id": "5c2ea69d-dea0-47f6-8493-cf8cf461a8fd",
+      "proof": {
+        "contract": "organizer_venue_scope.v1",
+        "scope": "multi_site",
+        "title": "Gay Ski Week Hakuba 2027",
+        "venue_label": "Hakuba Valley",
+        "city_id": "74fce8b9-04ed-4ade-ab51-088dac37109f",
+        "country_id": "5d132b3a-cc41-4691-956a-340f37ffda9b",
+        "start_date": "2027-03-05T00:00:00+00:00",
+        "end_date": "2027-03-14T00:00:00+00:00",
+        "source_id": "43f04b73-6a1b-4dd6-ae71-9e8622d1fc7b",
+        "payload_hash": "6e6534a5f50671dfdaadf04c36e8cbc1587298bcece866a4f3b186454383767a",
+        "capture_sha256": "3336611c067a85756fdc16d84f2e7e6e30843a1c6f0293a85b0021da10ee23e2",
+        "url": "https://www.gayskiweekhakuba.com/schedule",
+        "source_urls": [
+          "https://www.gayskiweekhakuba.com/",
+          "https://www.gayskiweekhakuba.com/schedule"
+        ],
+        "capture_method": "web_primary_text_extract",
+        "capture_bytes": 705,
+        "observed_at": "2026-11-18T18:34:00Z",
+        "direct_http_202_challenge_not_used_as_content": true,
+        "human_reviewed": false,
+        "note": "Owner confirms March 5–14, 2027 hosted Hakuba Rainbow Festival programme across multiple ski resorts, meal and party properties; schedule is provisional and weather dependent. Accommodation host is not a single venue for the whole event."
+      },
+      "native_contract_verified": true,
+      "public_fields_unchanged": true
+    },
+    {
+      "entity_id": "cad150f9-d65c-4841-a1db-2652a98a7e97",
+      "proof": {
+        "contract": "organizer_venue_scope.v1",
+        "scope": "multi_site",
+        "title": "Journée des vies trans et non binaires – Genf",
+        "venue_label": "L’ESPACE tiers-lieu et Cinéma Spoutnik",
+        "city_id": "4a0387c6-8b78-495a-9b75-723b2718935c",
+        "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+        "start_date": "2026-11-21T08:00:00+00:00",
+        "end_date": "2026-11-21T23:00:00+00:00",
+        "source_id": "b9b39885-2bb0-4b1d-8a9a-d2231136ef8b",
+        "payload_hash": "25a1d2ac2dfcd2f6f5da89b63bd2bfc9261748d44c71f65d01861681f73502aa",
+        "capture_sha256": "9eef9c20460ad6819f309ff00e080fba94c499194f464a91ae998869625f5471",
+        "url": "https://federationlgbt-geneve.ch/2026/10/28/journee-des-vies-trans-et-non-binaires-21-11-2026/",
+        "capture_method": "direct_primary_http_200",
+        "capture_bytes": 143606,
+        "observed_at": "2026-11-18T18:35:27.612973Z",
+        "human_reviewed": false,
+        "locations": [
+          {
+            "name": "L’ESPACE tiers-lieu d’APRÈS",
+            "address": "chemin du 23-Août 1",
+            "postal_code": "1205"
+          },
+          {
+            "name": "Cinéma Spoutnik",
+            "address": "place des Volontaires 4",
+            "postal_code": "1204"
+          }
+        ],
+        "note": "Exact organiser 2026 edition explicitly publishes November 21, 09:00 to midnight, across both public sites. Publisher incorrectly combines Spoutnik name with L’ESPACE address. No single venue is assigned to the whole-day programme. Workshop subslot end conflicts remain outside this bounded repair."
+      },
+      "native_contract_verified": true,
+      "corrected_fields": [
+        "venue_name",
+        "address",
+        "start_date",
+        "end_date",
+        "city_id",
+        "country_id",
+        "city",
+        "country",
+        "state (native geography)",
+        "currency",
+        "ticket_url",
+        "description (published times sentence)"
+      ],
+      "original_publisher_payload_unchanged": true
+    }
+  ],
+  "human_reviewed": false
+}

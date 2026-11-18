@@ -4523,12 +4523,14 @@
         "source": "[AR] The source",
         "coverage": "[AR] Coverage",
         "score": "[AR] The equality score",
-        "limits": "[AR] What this data cannot tell you"
+        "limits": "[AR] What this data cannot tell you",
+        "download": "تنزيل البيانات"
       },
       "kicker": {
         "source": "[AR] ILGA World",
         "coverage": "[AR] What we actually hold",
-        "score": "[AR] How it is built, and what it hides"
+        "score": "[AR] How it is built, and what it hides",
+        "download": "CSV أو JSON، جميع البلدان"
       },
       "coverage": {
         "status": "[AR] Countries with a recorded legal status",
@@ -4552,7 +4554,13 @@
         "personal": "[AR] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[AR] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
       },
-      "methodologyLink": "كل وزن، وحدود الفئات، وطريقة الاستشهاد"
+      "methodologyLink": "كل وزن، وحدود الفئات، وطريقة الاستشهاد",
+      "download": {
+        "body": "الوضع القانوني ومؤشر المساواة لكل بلد وإقليم، صف لكل منها، يُحدَّث كل ليلة.",
+        "csv": "تنزيل CSV",
+        "json": "تنزيل JSON",
+        "licence": "أعمدة الوضع القانوني مأخوذة من ILGA World Database وتظل © ILGA World، ولا يشملها ترخيصنا. مؤشر المساواة والفئة من إعدادنا، بترخيص CC BY-SA 4.0. اذكر المصدرين عند استخدام الملف."
+      }
     },
     "lens": {
       "title": "[AR] Who the law protects",

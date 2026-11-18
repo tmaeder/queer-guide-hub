@@ -4515,12 +4515,14 @@
         "source": "[PT] The source",
         "coverage": "[PT] Coverage",
         "score": "[PT] The equality score",
-        "limits": "[PT] What this data cannot tell you"
+        "limits": "[PT] What this data cannot tell you",
+        "download": "Baixar os dados"
       },
       "kicker": {
         "source": "[PT] ILGA World",
         "coverage": "[PT] What we actually hold",
-        "score": "[PT] How it is built, and what it hides"
+        "score": "[PT] How it is built, and what it hides",
+        "download": "CSV ou JSON, todos os países"
       },
       "coverage": {
         "status": "[PT] Countries with a recorded legal status",
@@ -4544,7 +4546,13 @@
         "personal": "[PT] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[PT] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
       },
-      "methodologyLink": "Cada peso, os limiares dos níveis e como citar"
+      "methodologyLink": "Cada peso, os limiares dos níveis e como citar",
+      "download": {
+        "body": "A situação legal e a pontuação de igualdade de cada país e território, uma linha cada, atualizadas toda noite.",
+        "csv": "Baixar CSV",
+        "json": "Baixar JSON",
+        "licence": "As colunas de situação legal vêm da ILGA World Database e continuam © ILGA World; não são cobertas pela nossa licença. A pontuação de igualdade e o nível são nossos, sob CC BY-SA 4.0. Cite as duas fontes ao usar o arquivo."
+      }
     },
     "lens": {
       "title": "[PT] Who the law protects",

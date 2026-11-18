@@ -41,25 +41,41 @@ describe('BookNowAccordion', () => {
   it('shows the three booking tiles closed by default', () => {
     const { getByRole } = renderAt('/travel');
     for (const name of ['Flights', 'Hotels', 'Activities']) {
-      expect(getByRole('button', { name })).toHaveAttribute('aria-pressed', 'false');
+      expect(getByRole('button', { name: new RegExp(`^${name}\\b`) })).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      );
     }
+  });
+
+  it('includes each visible hint in the booking tile accessible name', () => {
+    const { getByRole } = renderAt('/travel');
+    expect(getByRole('button', { name: /^Flights\b/ })).toHaveAccessibleName(
+      'Flights Live fares and deals',
+    );
+    expect(getByRole('button', { name: /^Hotels\b/ })).toHaveAccessibleName(
+      'Hotels Stays with queer-friendly filter',
+    );
+    expect(getByRole('button', { name: /^Activities\b/ })).toHaveAccessibleName(
+      'Activities Tours and tickets by city',
+    );
   });
 
   it('opens the matching search when a tile is clicked', () => {
     const { getByRole } = renderAt('/travel');
-    fireEvent.click(getByRole('button', { name: 'Activities' }));
-    expect(getByRole('button', { name: 'Activities' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(getByRole('button', { name: /^Activities\b/ }));
+    expect(getByRole('button', { name: /^Activities\b/ })).toHaveAttribute('aria-pressed', 'true');
     expect(getByRole('button', { name: /Search Activities/ })).toBeTruthy();
   });
 
   it('opens when a ?tab= deep link is present', () => {
     const { getByRole } = renderAt('/travel?tab=hotels');
-    expect(getByRole('button', { name: 'Hotels' })).toHaveAttribute('aria-pressed', 'true');
+    expect(getByRole('button', { name: /^Hotels\b/ })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('opens when a ?city= deep link is present', () => {
     const { getByRole } = renderAt('/travel?city=Berlin');
-    expect(getByRole('button', { name: 'Flights' })).toHaveAttribute('aria-pressed', 'true');
+    expect(getByRole('button', { name: /^Flights\b/ })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('shows the trip-context banner when the trip seeds the search', () => {
