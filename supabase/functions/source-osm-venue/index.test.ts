@@ -22,6 +22,7 @@ async function run(responses: Array<{ status: number; body: unknown }>, advanceM
     globalThis.fetch = ((input: string | URL | Request) => {
       const url = String(input)
       if (url === 'https://database.example/rest/v1/rpc/upsert_api_error') return Promise.resolve(Response.json({}))
+      if (url.startsWith('https://qlever.dev/')) return Promise.resolve(Response.json({}, { status: 503 }))
       assertEquals(url, 'https://overpass-api.de/api/interpreter')
       const response = responses[Math.min(calls, responses.length - 1)]
       calls++
@@ -49,7 +50,7 @@ Deno.test('OSM dry run reports unavailable when every city is unknown', async ()
   assertEquals(result.body.success, false)
   assertEquals(result.body.error, 'overpass_unavailable')
   assertEquals(result.body.cities_unknown, 15)
-  assertEquals(result.calls, 15)
+  assertEquals(result.calls, 1)
 })
 
 Deno.test('an actual empty city answer stays valid while partial failures remain visible', async () => {
@@ -69,9 +70,9 @@ Deno.test('a real named venue is returned by the bounded dry run', async () => {
   assertEquals(result.calls, 1)
 })
 
-Deno.test('unavailable queries stop at the run deadline instead of walking all cities', async () => {
+Deno.test('unavailable public provider is called once per run instead of hammered per city', async () => {
   const result = await run([{ status: 406, body: {} }], 30_000)
   assertEquals(result.status, 503)
-  assertEquals(result.body.cities_queried, 3)
-  assertEquals(result.calls, 3)
+  assertEquals(result.body.cities_queried, 15)
+  assertEquals(result.calls, 1)
 })
