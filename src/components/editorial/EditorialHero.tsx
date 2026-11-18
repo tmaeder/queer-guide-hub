@@ -1,3 +1,4 @@
+import { imageCrossOrigin } from '@/utils/imageHost';
 import { useState, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { ImageCredit } from '@/components/ui/ImageCredit';
@@ -87,8 +88,9 @@ export function EditorialHero({
             {children && <div className="mt-2">{children}</div>}
           </div>
           <div className="relative bg-muted min-h-[240px] md:min-h-[400px] order-1 md:order-2">
-            { }
+            {}
             <img
+              crossOrigin={imageCrossOrigin(src)}
               src={src}
               alt={image.alt}
               loading="eager"
@@ -110,8 +112,9 @@ export function EditorialHero({
     <section
       className={cn('relative rounded-container overflow-hidden bg-muted', sizeClass, className)}
     >
-      { }
+      {}
       <img
+        crossOrigin={imageCrossOrigin(src)}
         src={src}
         alt={image.alt}
         loading="eager"
