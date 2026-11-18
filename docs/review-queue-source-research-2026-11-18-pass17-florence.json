@@ -1,0 +1,60 @@
+{
+  "captures": [
+    {
+      "url": "https://www.cinemalacompagnia.it/il-progetto/la-sala/",
+      "status": 200,
+      "final_url": "https://www.cinemalacompagnia.it/il-progetto/la-sala/",
+      "retrieved_at": "2026-11-18T16:45:46.063290+00:00",
+      "sha256": "91e4e8087ad0010703855280e4cf3e24210735609fe625f17435b0143071503a",
+      "bytes": 136268
+    },
+    {
+      "url": "https://uomo.pittimmagine.com/en/infovisitors",
+      "status": 200,
+      "final_url": "https://uomo.pittimmagine.com/en/infovisitors",
+      "retrieved_at": "2026-11-18T16:45:45.433239+00:00",
+      "sha256": "d1a7efb9974147e06c102bbb708be719846182f5b6003f7be9cea2481e35ed05",
+      "bytes": 83054
+    },
+    {
+      "url": "https://www.florencequeerfestival.it/wp-content/uploads/programma_FQF26_DIGITALE.pdf",
+      "status": 200,
+      "final_url": "https://www.florencequeerfestival.it/wp-content/uploads/programma_FQF26_DIGITALE.pdf",
+      "retrieved_at": "2026-11-18T16:45:45.499007+00:00",
+      "sha256": "a2204f819f2fba9e58a3d470cd391ffa48ff6633b877af06155a1bb2a8fafba6",
+      "bytes": 3146636
+    }
+  ],
+  "locations": [
+    {
+      "name": "Cinema La Compagnia",
+      "address": "Via Cavour 50/r",
+      "postal_code": null,
+      "category": "theater",
+      "website": "https://www.cinemalacompagnia.it/il-progetto/la-sala/"
+    },
+    {
+      "name": "Fortezza da Basso",
+      "address": "Viale Filippo Strozzi 1",
+      "postal_code": "50129",
+      "category": "event-venue",
+      "website": "https://uomo.pittimmagine.com/en/infovisitors"
+    }
+  ],
+  "native_linked_events": [
+    "21b7ddc3-043f-49e7-a33d-d71f885eca2a",
+    "f8db5546-2eb6-4d8c-95e3-930db4c14c67"
+  ],
+  "pitti_hours": {
+    "edition": 111,
+    "first_day": "2027-01-12",
+    "opening_local": "09:00",
+    "last_day": "2027-01-15",
+    "last_closing_local": "16:00",
+    "timezone": "Europe/Rome",
+    "corrected_start_utc": "2027-01-12T08:00:00Z",
+    "corrected_end_utc": "2027-01-15T15:00:00Z"
+  },
+  "human_reviewed": false,
+  "coordinates_added": false
+}
