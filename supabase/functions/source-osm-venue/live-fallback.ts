@@ -1,3 +1,5 @@
+import { verifiedSeeds, matchesVerifiedSeed } from './verified-seeds.ts'
+
 // QLever is discovery only. Never stage its snapshot's tags or coordinates.
 export type City = { name: string; bbox: [number, number, number, number] }
 type Candidate = { id: number; lat: number; lon: number }
@@ -69,7 +71,9 @@ export async function discoverCandidates(deadline: number, fetcher: typeof fetch
 }
 
 export async function refreshCity(discovery: Awaited<ReturnType<typeof discoverCandidates>>, city: City, deadline: number, fetcher: typeof fetch = fetch): Promise<Record<string, unknown>[] | null> {
-  const candidates = discovery.candidates.filter(node => inside(node.lat, node.lon, city))
+  const indexed = discovery.candidates.filter(node => inside(node.lat, node.lon, city))
+  const seeds = verifiedSeeds(city.name)
+  const candidates = indexed.length ? indexed : seeds
   // No candidates is not proof of current absence in an older discovery index.
   if (!candidates.length) return null
   const selected = candidates.slice(0, 100)
@@ -84,9 +88,11 @@ export async function refreshCity(discovery: Awaited<ReturnType<typeof discoverC
     const lat = el.lat as number, lon = el.lon as number
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) throw new Error('Invalid live OSM coordinates')
     const tags = el.tags as Record<string, string> | undefined
-    if (el.visible === false || !tags || !tags.name || !inside(lat, lon, city) || !isRelevant(tags)) continue
-    result.push({ type: 'node', id: el.id, lat, lon, tags, timestamp: el.timestamp, version: el.version,
-      import_provenance: { discovery_provider: 'qlever', discovery_snapshot: discovery.snapshot, live_provider: 'openstreetmap-api', coverage: 'snapshot_candidates', fetched_at: new Date().toISOString(), candidates_truncated: candidates.length > selected.length } })
+    const seed = seeds.find(seed => seed.id === el.id)
+    const evidence = seed && tags && matchesVerifiedSeed(tags, seed.evidence) ? seed.evidence : undefined
+    if (el.visible === false || !tags || !tags.name || !inside(lat, lon, city) || (!isRelevant(tags) && !evidence)) continue
+    result.push({ type: 'node', id: el.id, lat, lon, tags, timestamp: el.timestamp, version: el.version, ...(evidence ? { relevance_evidence: evidence } : {}),
+      import_provenance: { discovery_provider: indexed.length ? 'qlever' : 'first-party-verified-osm-seed', discovery_snapshot: indexed.length ? discovery.snapshot : undefined, live_provider: 'openstreetmap-api', coverage: indexed.length ? 'snapshot_candidates' : 'verified_seed_candidates', fetched_at: new Date().toISOString(), candidates_truncated: candidates.length > selected.length } })
   }
   return result.length ? result : null
 }

@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { act, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import { Image } from '../Image';
 
 /**
@@ -53,6 +53,19 @@ describe('Image', () => {
     Object.defineProperty(HTMLImageElement.prototype, 'src', originalSrc);
     Reflect.deleteProperty(HTMLImageElement.prototype, 'complete');
     Reflect.deleteProperty(HTMLImageElement.prototype, 'naturalWidth');
+  });
+
+  it('keeps resized Wikimedia requests normal and omits cookies on the raw retry', () => {
+    stubLoadState({ complete: false, naturalWidth: 0 });
+    const wiki = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/photo.jpg/1280px-photo.jpg';
+    const { container } = render(<Image src={wiki} alt="Pride" priority />);
+    const img = container.querySelector('img')!;
+    expect(img.srcset).toContain('img.queer.guide');
+    expect(img).not.toHaveAttribute('crossorigin');
+    fireEvent.error(img);
+    expect(img).not.toHaveAttribute('srcset');
+    expect(img).toHaveAttribute('crossorigin', 'anonymous');
+    expect(img).toHaveAttribute('src', wiki);
   });
 
   it('shows a cached image whose onLoad never fires, instead of covering it with the fallback', () => {
