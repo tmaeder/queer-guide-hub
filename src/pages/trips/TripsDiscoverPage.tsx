@@ -1,9 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Button } from '@/components/ui/button';
@@ -18,17 +16,14 @@ import { TripTemplates } from '@/components/trips/TripTemplates';
 import { RoutePicker } from '@/components/trips/discover/RoutePicker';
 import { RouteLineStage } from '@/components/trips/discover/RouteLineStage';
 import { useLineStationPool } from '@/hooks/useLineStationPool';
-import { useTripMutations } from '@/hooks/useTrips';
 import {
   generateLine,
-  lineDates,
   swapStation,
   type LineResult,
   type PaceId,
   type VibeId,
 } from '@/lib/lines/generateLine';
 import { seasonWindows, type SeasonId } from '@/lib/lines/seasons';
-import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 import { TravelJourneyNav } from '@/components/travel/TravelJourneyNav';
 
 /**
@@ -60,11 +55,7 @@ const DEFAULT_PACE: PaceId = 'steady';
 
 export default function TripsDiscoverPage() {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useLocalizedNavigate();
-  const { createTripWithStops } = useTripMutations();
-  const activeTripContext = useOptionalActiveTrip();
 
   useMeta({
     title: t('trips.discover.meta.title', 'Build a route | Queer Guide'),
@@ -83,7 +74,6 @@ export default function TripsDiscoverPage() {
   const [seed, setSeed] = useState(1);
   const [generation, setGeneration] = useState(0);
   const [announcement, setAnnouncement] = useState('');
-  const [creating, setCreating] = useState(false);
   // A single-stop swap replaces one station and leaves the rest of the line
   // alone, so it is an OVERRIDE of the generated result rather than a new
   // generation. Keyed by generation so changing a pick or rerolling discards it
@@ -167,85 +157,6 @@ export default function TripsDiscoverPage() {
       }),
     );
   }, [result, generation, t]);
-
-  const rideThisLine = useCallback(async () => {
-    if (!result?.stations.length) return;
-    if (!user) {
-      // Park the picks in the URL so signing in regenerates the identical line.
-      const q = new URLSearchParams({ seed: String(seed), pace, ...(vibe ? { vibe } : {}) });
-      navigate(`/auth?redirect=${encodeURIComponent(`/trips/discover?${q}`)}`);
-      return;
-    }
-    const head = result.stations[0];
-    const dates = lineDates(result, activeWindow?.start ?? null, now);
-    setCreating(true);
-    try {
-      const trip = await createTripWithStops.mutateAsync({
-        trip: {
-          title: t('trips.discover.route.tripTitle', '{{cities}} line', {
-            cities: result.stations.map((s) => s.name).join(' – '),
-          }),
-          start_date: dates?.start,
-          end_date: dates?.end,
-          currency: head.currency ?? 'USD',
-          cover_image_url: head.imageUrl ?? undefined,
-          // NOT NULL in the DB. The old TripTemplates path omitted both and
-          // raised 23502 on every click.
-          primary_city_id: head.id,
-          primary_country_id: head.countryId,
-          primary_city_name: head.name,
-          primary_country_code: head.countryCode ?? undefined,
-          timezone: head.timezone ?? undefined,
-          vibe_tags: [vibe ? `vibe:${vibe}` : 'vibe:any', `pace:${pace}`, `seed:${seed}`],
-        },
-        stops: result.stations.map((s, i) => ({
-          day_id: null,
-          venue_id: null,
-          event_id: null,
-          hotel_id: null,
-          custom_name: s.name,
-          custom_address: null,
-          latitude: s.latitude,
-          longitude: s.longitude,
-          // Required: the trip_places backfill trigger derives geo only from
-          // venue/event/hotel ids, never from a bare city row.
-          city_id: s.id,
-          country_id: s.countryId,
-          start_time: null,
-          end_time: null,
-          duration_minutes: null,
-          notes: s.editorialHook ?? null,
-          category: 'city',
-          sort_order: i,
-          icon: null,
-          arrive_mode: null,
-        })),
-      });
-      activeTripContext?.setActiveTripId(trip.id);
-      navigate(`/trips/${trip.id}`);
-    } catch (err) {
-      toast({
-        title: t('trips.discover.error.title', 'Could not build the trip'),
-        description: err instanceof Error ? err.message : undefined,
-        variant: 'destructive',
-      });
-    } finally {
-      setCreating(false);
-    }
-  }, [
-    result,
-    user,
-    seed,
-    pace,
-    vibe,
-    navigate,
-    activeWindow,
-    now,
-    createTripWithStops,
-    activeTripContext,
-    t,
-    toast,
-  ]);
 
   const { visible: loaderVisible, slow } = useLoaderDelay(isLoading);
   // Memoised because `?? []` mints a new array every render, which would make
@@ -494,44 +405,6 @@ export default function TripsDiscoverPage() {
         </PageContainer>
       </section>
 
-      {/* 4 — CTA */}
-      {drawable && (
-        <section className="overflow-hidden rounded-container border-b border-border-hairline bg-foreground text-background">
-          <PageContainer flush className="py-8 md:py-12">
-            <h2 className="font-display text-headline md:text-display">
-              {t('trips.discover.cta.heading', 'Ride this line.')}
-            </h2>
-            <p className="mt-4 max-w-reading text-body-lg text-background/80">
-              {t(
-                'trips.discover.cta.body',
-                'Turns into a trip you own, with every stop already on it. Change anything you like afterwards.',
-              )}
-            </p>
-            <div className="mt-6 flex flex-wrap gap-4">
-              <Button
-                variant="accent"
-                size="lg"
-                onClick={() => void rideThisLine()}
-                loading={creating}
-              >
-                {t('trips.discover.cta.primary', 'Make it a trip')}
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                // `bg-transparent` is load-bearing on an ink band: the outline
-                // variant carries `bg-background`, so paper fill plus the paper
-                // text this override sets rendered a white box with white text —
-                // measured 1:1 contrast, completely invisible.
-                className="bg-background/15 text-background hover:bg-background hover:text-foreground"
-                onClick={bump}
-              >
-                {t('trips.discover.cta.secondary', 'Draw another')}
-              </Button>
-            </div>
-          </PageContainer>
-        </section>
-      )}
     </>
   );
 }
