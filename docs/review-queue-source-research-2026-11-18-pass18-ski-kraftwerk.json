@@ -1,0 +1,78 @@
+{
+  "checked_at": "2026-11-18T18:49:05.553120Z",
+  "ski_programmes": [
+    {
+      "entity_id": "0d510d1f-29d4-4f41-a339-be1bbb19de32",
+      "proof": {
+        "contract": "organizer_venue_scope.v1",
+        "scope": "multi_site",
+        "title": "Arosa Gay Ski Week",
+        "venue_label": "Arosa ski resort, Graubünden",
+        "city_id": "d6d20d8a-d9df-4bfa-92e5-b61fb04eeacd",
+        "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+        "start_date": "2027-01-16T00:00:00+00:00",
+        "end_date": "2027-01-23T00:00:00+00:00",
+        "source_id": "fa29c388-1483-424a-990b-837ee1a09a05",
+        "payload_hash": "fc1840cf7c2a9370fc9b74da034af7b7d69595fcf4fbfac3b53a9c42c0e376b5",
+        "capture_sha256": "bd28c97d2cb80f08c398d6125d586a0e812070cad2f82384647c2921dde4dd13",
+        "url": "https://arosagayskiweek.com/program2027/",
+        "capture_method": "direct_primary_http_200",
+        "capture_bytes": 272904,
+        "observed_at": "2026-11-18T18:46:26.534623Z",
+        "human_reviewed": false,
+        "note": "Owner 2027 programme names different public locations for welcome reception, ice hockey, restaurant dinners, mountain activities and parties. Owner homepage confirms January 16–23, 2027. Poststrasse 142 is its footer contact, not a single location for the entire resort-wide programme."
+      },
+      "contact_footer_address_cleared_for_whole_week": true,
+      "native_contract_verified": true
+    },
+    {
+      "entity_id": "b2ecc9dc-0729-462e-81d8-5fb1645e07a3",
+      "proof": {
+        "contract": "organizer_venue_scope.v1",
+        "scope": "multi_site",
+        "title": "Winter Pride Sölden 2027",
+        "venue_label": "Solden, Otztal",
+        "city_id": "ee6df9ad-0d16-4254-99c7-a6c9f9415d33",
+        "country_id": "9ca5d43b-e976-4669-a180-178dfcc7c20f",
+        "start_date": "2027-03-13T00:00:00+00:00",
+        "end_date": "2027-03-20T00:00:00+00:00",
+        "source_id": "dcac6614-9d0a-41f5-9a6e-bba20552739d",
+        "payload_hash": "a5496e3179fc0dd6a5a6198a5c76910cd7db2d9b6182f1edd86402fd507027a5",
+        "capture_sha256": "e06c59b93ffdc297b457cb9bf15f32e1d8af59ee69541633a59ecfa5f89eb412",
+        "url": "https://www.winterpride-soelden.com/en/",
+        "capture_method": "direct_primary_http_200",
+        "capture_bytes": 53066,
+        "observed_at": "2026-11-18T18:46:26.777266Z",
+        "human_reviewed": false,
+        "note": "Owner confirms March 13–20, 2027 and a programme across Sölden and Gurgl ski areas, sunny lunch terraces, evening events and separate Freizeit Arena welcome desk. The resort label denotes the whole programme."
+      },
+      "native_contract_verified": true
+    }
+  ],
+  "stale_machine_candidates_resolved": 2,
+  "kraftwerk": {
+    "entity_id": "5ad2fa98-700c-4568-abca-a9c7557a1af1",
+    "venue_id": "4a090634-273a-49e8-a12e-2f79fbd7c687",
+    "proof": {
+      "capture_method": "direct_primary_http_200",
+      "observed_at": "2026-11-18T18:49:05.553120Z",
+      "url": "https://www.cpzh.ch/fest/",
+      "capture_sha256": "ec0ae2074a67f5d6377ffe819a6ce83d53bf33a579edbee9b3495faf81365da4",
+      "capture_bytes": 285338,
+      "venue_owner": {
+        "url": "https://kraftwerk.zuerich/",
+        "capture_sha256": "d347f013edb7e20e0ad66d976e4b34cc178e84296fed3a58cb7c58ccfe75ef47",
+        "capture_bytes": 326556,
+        "observed_at": "2026-11-18T18:48:36.735019Z"
+      },
+      "note": "Owner homepage advertises exact November 21 Checkpoint anniversary at Kraftwerk; organiser exact festival programme covers symposium, workshops and party within building. Existing exact Kraftwerk label/address is linked; separately catalogued Kraftwerk Selnau profile is unchanged. Venue calendar closing 08:00 conflicts with publisher 05:00; saved end remains unknown.",
+      "human_reviewed": false
+    },
+    "dates_unchanged": true,
+    "separate_profile_unchanged": true,
+    "website": "https://www.cpzh.ch/fest/",
+    "currency": "CHF"
+  },
+  "human_verification_claimed": false,
+  "source_payloads_unchanged": true
+}
