@@ -11,6 +11,11 @@ test('extracts explicit days and ranges without deriving times or duration',()=>
 test('old years, copyright years, unannounced days and invalid dates supply no candidate',()=>{
  for(const text of ['24 July 2026','Returning in 2027','Copyright 2027','31 February 2027','32 July 2027','24 July'])assert.deepEqual(candidates([page(text)],2027),[],text)
 })
+test('invalid ranges cannot become single-day candidates',()=>{
+ for(const text of ['28–31 February 2027','April 30–31, 2027','20–19 July 2027','0–5 August 2027','32–4 July 2027'])
+  assert.deepEqual(candidates([page(text)],2027),[],text)
+ assert.equal(candidates([page('28–31 February 2027. Confirmed instead for 6 August 2027.')],2027)[0]?.start,'2027-08-06')
+})
 test('low-confidence choice, unknown candidate and none cannot approve',()=>{
  const ds=candidates([page('24 July 2027')],2027)
  for(const date of [{choice:'none',confidence:1,probabilities:{none:1}},{choice:'d0',confidence:.94,probabilities:{d0:1}},{choice:'d1',confidence:1,probabilities:{d1:1}}])assert.equal(choose({answers:{date}},ds),null)

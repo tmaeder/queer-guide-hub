@@ -16,18 +16,20 @@ export function candidates(pages: Page[], year: number): Candidate[] {
   const result: Candidate[] = []
   for (const [page, p] of pages.entries()) {
     const spans: [number, number][] = []
-    const add = (m: RegExpMatchArray, a: string | null, b: string | null = null) => {
-      if (!a || (b && b < a) || spans.some(([s,e]) => m.index! >= s && m.index! < e)) return
+    const add = (m: RegExpMatchArray, a: string | null, b: string | null = null, range = false) => {
+      if (spans.some(([s,e]) => m.index! >= s && m.index! < e)) return
+      // Reserve malformed ranges too: their last day is not a standalone date.
       spans.push([m.index!,m.index!+m[0].length])
+      if (!a || (range && !b) || (b && b < a)) return
       const quote = p.text.slice(Math.max(0,m.index!-300),m.index!+m[0].length+350)
       if (!result.some(c => c.page===page && c.start===a && c.end===b && c.quote===quote))
         result.push({ id: `d${result.length}`, start:a, end:b, quote, page })
     }
     const day = '(\\d{1,2})(?:st|nd|rd|th)?', join = '(?:\\s*[-–—&]\\s*|\\s+(?:and|to)\\s+)'
     for (const m of p.text.matchAll(new RegExp(`\\b${day}${join}${day}\\s+(${monthPattern})[,.]?\\s+(${year})\\b`,'gi')))
-      add(m,iso(m[1],m[3],m[4]),iso(m[2],m[3],m[4]))
+      add(m,iso(m[1],m[3],m[4]),iso(m[2],m[3],m[4]),true)
     for (const m of p.text.matchAll(new RegExp(`\\b(${monthPattern})\\s+${day}${join}${day}[,.]?\\s+(${year})\\b`,'gi')))
-      add(m,iso(m[2],m[1],m[4]),iso(m[3],m[1],m[4]))
+      add(m,iso(m[2],m[1],m[4]),iso(m[3],m[1],m[4]),true)
     for (const m of p.text.matchAll(new RegExp(`\\b${day}\\s+(${monthPattern})[,.]?\\s+(${year})\\b`,'gi'))) add(m,iso(m[1],m[2],m[3]))
     for (const m of p.text.matchAll(new RegExp(`\\b(${monthPattern})\\s+${day}[,.]?\\s+(${year})\\b`,'gi'))) add(m,iso(m[2],m[1],m[3]))
     for (const m of p.text.matchAll(new RegExp(`\\b(${year})-(\\d{2})-(\\d{2})(?=T|\\b)`,'g'))) add(m,iso(m[3],m[2],m[1]))
