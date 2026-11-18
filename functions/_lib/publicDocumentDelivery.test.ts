@@ -34,7 +34,9 @@ describe('public document delivery', () => {
     const spaced = new Request('https://queer.guide/', {
       headers: { 'Accept-Encoding': 'gzip ; q=0, *;q=1' },
     });
-    expect(publicDocumentDelivery(spaced, '/', response()).headers.has('Content-Encoding')).toBe(false);
+    expect(publicDocumentDelivery(spaced, '/', response()).headers.has('Content-Encoding')).toBe(
+      false,
+    );
     for (const route of ['/admin', '/login', '/api/private', '/venues/somewhere']) {
       const original = response();
       expect(publicDocumentDelivery(request, route, original)).toBe(original);
