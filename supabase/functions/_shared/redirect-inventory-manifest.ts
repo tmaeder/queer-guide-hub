@@ -82,9 +82,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fmethodology:%2Ftags%2Frights-by-country%2Fsources%23points:301:0",
+    "id": "static:%2Fmethodology:%2Ftags%2Frights-by-country%2Fmethodology:301:0",
     "source": "/methodology",
-    "target": "/tags/rights-by-country/sources#points",
+    "target": "/tags/rights-by-country/methodology",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -92,9 +92,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "static:%2Fequality-score:%2Ftags%2Frights-by-country%2Fsources%23points:301:0",
+    "id": "static:%2Fequality-score:%2Ftags%2Frights-by-country%2Fmethodology:301:0",
     "source": "/equality-score",
-    "target": "/tags/rights-by-country/sources#points",
+    "target": "/tags/rights-by-country/methodology",
     "origin": "public/_redirects",
     "kind": "Static",
     "statusCode": 301,
@@ -3102,9 +3102,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fmethodology:%2Ftags%2Frights-by-country%2Fsources%23points:LocalizedRedirect:0",
+    "id": "client:locale:%2Fmethodology:%2Ftags%2Frights-by-country%2Fmethodology:LocalizedRedirect:0",
     "source": "/methodology",
-    "target": "/tags/rights-by-country/sources#points",
+    "target": "/tags/rights-by-country/methodology",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3112,9 +3112,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fequality-score:%2Ftags%2Frights-by-country%2Fsources%23points:LocalizedRedirect:0",
+    "id": "client:locale:%2Fequality-score:%2Ftags%2Frights-by-country%2Fmethodology:LocalizedRedirect:0",
     "source": "/equality-score",
-    "target": "/tags/rights-by-country/sources#points",
+    "target": "/tags/rights-by-country/methodology",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,

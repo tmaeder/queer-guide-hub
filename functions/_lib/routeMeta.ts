@@ -329,6 +329,13 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'The source, refresh cadence, coverage and known limits behind the legal status we publish for every country and territory.',
   },
+  // Registered here and in STATIC_ROUTE_BODY: the body carries the weights as
+  // text so a link-checker or citation reviewer sees them without running JS.
+  '/tags/rights-by-country/methodology': {
+    title: 'How the LGBTQ+ Equality Score Is Calculated',
+    description:
+      'Every weight in the Queer Guide equality score, the 0–100 range, the tier cutoffs, its known limits, and how to cite it.',
+  },
   // Registered here, not only in src/routes.tsx: this map is both the crawler's
   // <head> source and what sitemap-static.xml enumerates.
   '/styleguide': {

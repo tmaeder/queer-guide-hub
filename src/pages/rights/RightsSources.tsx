@@ -298,6 +298,15 @@ export default function RightsSources() {
                   'Because it opens at 50 and adds from there, a country we hold almost nothing about lands mid-scale rather than reading as unknown. A middling score can mean middling rights or thin data, and the number cannot tell you which.',
                 )}
               </p>
+              <p className="mt-4">
+                <LocalizedLink to="/tags/rights-by-country/methodology" className="font-bold">
+                  {t(
+                    'rights.sources.methodologyLink',
+                    'Every weight, the tier cutoffs and how to cite it',
+                  )}{' '}
+                  →
+                </LocalizedLink>
+              </p>
             </div>
           </StationPanel>
           <div className="flex flex-col overflow-hidden rounded-container bg-foreground p-6 text-background shadow-soft-lg md:p-8">
@@ -502,6 +511,10 @@ export default function RightsSources() {
           <KnowledgeReadingLinks
             links={[
               { href: '#source', label: t('rights.sources.section.source', 'The source') },
+              {
+                href: '/tags/rights-by-country/methodology',
+                label: t('rights.methodology.breadcrumb', 'Methodology'),
+              },
               {
                 href: '/tags/rights-by-country',
                 label: t('header.nav.rightsByCountry', 'Rights by country'),

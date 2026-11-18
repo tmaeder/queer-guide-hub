@@ -308,6 +308,7 @@
     "/tags/c/:categorySlug",
     "/tags/interactions",
     "/tags/rights-by-country",
+    "/tags/rights-by-country/methodology",
     "/tags/rights-by-country/sources",
     "/tags/rights-by-country/trans",
     "/tags/sti-guide",
@@ -448,12 +449,12 @@
       "preserveQuery": true
     },
     "/methodology": {
-      "to": "/tags/rights-by-country/sources#points",
+      "to": "/tags/rights-by-country/methodology",
       "localized": true,
       "preserveQuery": true
     },
     "/equality-score": {
-      "to": "/tags/rights-by-country/sources#points",
+      "to": "/tags/rights-by-country/methodology",
       "localized": true,
       "preserveQuery": true
     },

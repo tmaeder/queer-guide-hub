@@ -19,6 +19,25 @@ import {
   EQUALITY_SCORE_BASE,
   EQUALITY_SCORE_RULES,
 } from '../../supabase/functions/_shared/equality-score';
+import {
+  EQUALITY_SCORE_METHOD,
+  EQUALITY_SCORE_RAW_MAX,
+  EQUALITY_SCORE_START,
+} from '../../src/lib/rights/equalityScoreMethod';
+import { EQUALITY_TIER_CUTOFFS, EQUALITY_TIER_LABEL } from '../../src/utils/equalityScore';
+
+// One paragraph per group, built from the table the method page renders, so a
+// crawler reads the same weights a person does.
+const methodParagraphs = EQUALITY_SCORE_METHOD.map(
+  (g) =>
+    `${g.label}: ` +
+    g.rows.map((r) => `${r.label} ${r.points > 0 ? '+' : '−'}${Math.abs(r.points)}`).join('; ') +
+    '.',
+);
+const tierSummary = EQUALITY_TIER_CUTOFFS.map(
+  ({ tier, min }, i) =>
+    `${EQUALITY_TIER_LABEL[tier].toLowerCase()} ${min}–${i === 0 ? 100 : EQUALITY_TIER_CUTOFFS[i - 1].min - 1}`,
+).join(', ');
 
 export type RouteBody = {
   h1: string;
@@ -361,8 +380,27 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
     links: [
       { href: '/tags/rights-by-country', label: 'Rights by country' },
+      {
+        href: '/tags/rights-by-country/methodology',
+        label: 'How the equality score is calculated',
+      },
       { href: '/travel', label: 'Plan safer queer travel' },
       { href: '/help', label: 'Crisis hotlines' },
+    ],
+  },
+
+  // Paired with '/tags/rights-by-country/methodology' in STATIC_ROUTE_META.
+  '/tags/rights-by-country/methodology': {
+    h1: 'How the equality score is calculated',
+    paragraphs: [
+      `The equality score is a 0–100 number computed nightly from the ILGA World Database. Each country starts at ${EQUALITY_SCORE_START}; points are added or subtracted for each recorded fact, then the total is held between 0 and 100. The highest possible total is ${EQUALITY_SCORE_RAW_MAX}, so 100 means "at least 100".`,
+      ...methodParagraphs,
+      `Tiers: ${tierSummary}. Cite the score as Queer Guide and the legal facts as the ILGA World Database, with the date accessed.`,
+    ],
+    links: [
+      { href: '/tags/rights-by-country', label: 'Rights by country' },
+      { href: '/tags/rights-by-country/sources', label: 'Where this data comes from' },
+      { href: '/tags/rights-by-country/trans', label: 'Trans rights and safety' },
     ],
   },
 
