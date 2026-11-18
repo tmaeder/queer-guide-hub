@@ -24,7 +24,7 @@ export async function handleGayOutStep(supabase: SupabaseClient, supabaseUrl: st
         ...(node.type === 'source-gayout' ? { gayout_weekly_sync: true } : {}),
         // Matching can perform several database/provider calls per record.
         // Keep even older run snapshots within the invocation budget.
-        ...(node.type === 'pipeline-deduplicate' ? { batch_size: Math.max(1, Math.min(5, Number(config.batch_size) || 5)) } : {}),
+        ...(node.type === 'pipeline-deduplicate' ? { batch_size: Math.max(1, Math.min(config.targetTable === 'organizations' ? 2 : 5, Number(config.batch_size) || 5)) } : {}),
         ...(node.type === 'pipeline-commit' ? { batch_size: Math.max(1, Math.min(10, Number(config.batch_size) || 10)) } : {}),
         dry_run: context.dry_run === true, pipeline_run_id: runId, node_id: nodeId }),
       signal: AbortSignal.timeout(Math.max(10, Math.min(110, Number(config.invocation_timeout_seconds) || 100)) * 1000),

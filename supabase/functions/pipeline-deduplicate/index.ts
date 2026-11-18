@@ -1,3 +1,4 @@
+import { findGayOutOrganizationCandidates } from './gayout-organizations.ts'
 import { requireGayOutCandidateSearch } from './gayout.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import {
@@ -408,9 +409,12 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
         if (cfg.candidateRpc) {
           const args = baseType === 'city' ? await buildCityArgs(supabase, n) : buildDetArgs(effType, n, isHotel)
           if (args) {
-            const r = await rpcWithBatchBreaker<Array<Record<string, unknown>>>(
-              supabase, breakerFor(`rpc.${cfg.candidateRpc}`), cfg.candidateRpc, args,
-            )
+            const connection = Deno.env.get('SUPABASE_DB_URL')
+            const r = item.source_name === 'gayout' && effType === 'organization' && connection
+              ? { data: await findGayOutOrganizationCandidates(connection, args), error: null, circuitOpen: false }
+              : await rpcWithBatchBreaker<Array<Record<string, unknown>>>(
+                supabase, breakerFor(`rpc.${cfg.candidateRpc}`), cfg.candidateRpc, args,
+              )
             requireGayOutCandidateSearch(item.source_name, r.error, r.circuitOpen, 'deterministic')
             if (r.circuitOpen) { circuitOpenForThisItem = true; circuitTripped++ }
             else if (r.error) console.error(`dedup-${effType} ${item.id}:`, r.error.message)
