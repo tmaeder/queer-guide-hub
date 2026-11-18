@@ -68,7 +68,7 @@ export function safeError(message: unknown, secrets: string[] = []): string {
     .replace(/Bearer\s+[^\s,"']+/gi, 'Bearer [redacted]')
     .replace(/((?:api[_-]?key|token|password|secret|authorization)\s*[:=]\s*)[^\s,;]+/gi, '$1[redacted]')
     .replace(/\b[A-Za-z0-9+/_=-]{32,}\b/g, '[redacted]')
-    .replace(/[\x00-\x1f\x7f]/g, ' ')
+    .split('').map(char => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127 ? ' ' : char).join('')
     .slice(0, 500)
 }
 
