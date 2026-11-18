@@ -5,6 +5,7 @@ import * as ingestion from '../../../../supabase/functions/_shared/social';
 for (const [name, social] of Object.entries({ frontend, ingestion })) {
   describe(`${name}: Facebook profile identities`, () => {
     const cases = [
+      ['https://facebook.com/groups/123456789012345/?ref=share', 'groups/123456789012345'],
       ['https://m.facebook.com/profile.php/?id=100083802717576', 'profile.php?id=100083802717576'],
       [
         'https://www.facebook.com/profile.php?id=100063547843654&fref=ts#',

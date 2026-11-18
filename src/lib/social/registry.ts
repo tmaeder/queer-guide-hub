@@ -399,7 +399,7 @@ function facebookProfileIdentifier(url: URL): string | null {
     // Keep IDs as strings: some published IDs exceed JavaScript's safe integer range.
     return id && /^\d+$/.test(id) ? `profile.php?id=${id}` : null;
   }
-  if (/^(?:people|pages)\/[^/]+(?:\/[^/]+)*$/i.test(path)) return path;
+  if (/^(?:people|pages|groups)\/[^/]+(?:\/[^/]+)*$/i.test(path)) return path;
   return null;
 }
 
@@ -474,7 +474,7 @@ export function normalizeHandle(platform: SocialPlatformKey, urlOrHandle: string
   if (!m) return null;
   if (platform === 'facebook') {
     const url = new URL(ensureHttp(value));
-    if (/^\/(?:profile\.php|people|pages)(?:\/|$)/i.test(url.pathname)) {
+    if (/^\/(?:profile\.php|people|pages|groups)(?:\/|$)/i.test(url.pathname)) {
       return facebookProfileIdentifier(url);
     }
   }
