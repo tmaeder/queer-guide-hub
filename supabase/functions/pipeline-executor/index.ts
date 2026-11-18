@@ -77,7 +77,7 @@ async function handleStart(
   if (pipeline.name === 'outxout-catalogue-sync') {
     const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/source-outxout`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` },
-      body: JSON.stringify({ triggered_by: 'pipeline-executor', dry_run: (body.context as Record<string, unknown> | undefined)?.dry_run === true }),
+      body: JSON.stringify({ triggered_by: 'pipeline-executor', dry_run: body.dry_run === true || (body.context as Record<string, unknown> | undefined)?.dry_run === true }),
     })
     return new Response(await response.text(), { status: response.status, headers: { 'Content-Type': 'application/json' } })
   }
