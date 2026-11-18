@@ -105,7 +105,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
                 aria-current={isIntentActive(intent, localePath) ? 'page' : undefined}
                 className={cn(
                   footerLink,
-                  'footer-destination gap-1 text-15 font-bold leading-snug text-background md:gap-2 md:text-title aria-[current=page]:underline',
+                  'footer-destination gap-2.5 text-15 font-bold leading-snug text-background md:gap-4 md:text-title aria-[current=page]:underline',
                 )}
               >
                 <span
@@ -176,19 +176,19 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               <CurrencySelector />
               <ThemeToggle />
             </div>
-            {/* Wordmark with the copyright tucked under it, as one signature block. */}
-            <div className="flex flex-col items-start md:items-end">
-              <LocalizedLink
-                to="/"
-                className={cn(footerLink, 'text-background hover:no-underline')}
-                aria-label={siteName}
-              >
-                <Wordmark className="text-title text-background" />
-              </LocalizedLink>
-              <p className="-mt-2 text-2xs text-background/70">&copy; {currentYear} Queer Guide</p>
-            </div>
+            <LocalizedLink
+              to="/"
+              className={cn(footerLink, 'text-background hover:no-underline')}
+              aria-label={siteName}
+            >
+              <Wordmark className="text-title text-background" />
+            </LocalizedLink>
           </div>
         </div>
+        {/* Copyright sits on the page ground, below the ink island. */}
+        <p className={cn('py-4 text-2xs text-muted-foreground', PAGE_GUTTER)}>
+          &copy; {currentYear} Queer Guide
+        </p>
       </DeferredSection>
     </footer>
   );
