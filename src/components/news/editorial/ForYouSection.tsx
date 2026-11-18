@@ -40,7 +40,6 @@ export function ForYouSection({ sourcesMap, categoriesMap, excludeIds = [] }: Fo
     <section aria-labelledby="for-you-heading" className="mb-16">
       <div className="flex items-end justify-between gap-4 mb-8">
         <div>
-          <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground mb-2">For you</p>
           <h2
             id="for-you-heading"
             className="m-0 text-display font-bold leading-none tracking-tight"
