@@ -210,6 +210,15 @@ for (const route of ROUTES) {
             .evaluateAll((els) => els.map((el) => el.id).slice(0, 3)),
         ).toEqual(['cities', 'travel', 'photos']);
         await expect(page.locator('#rights')).toHaveCount(1);
+      } else if (/^\/(?:venues|organizations)\//.test(route.path)) {
+        await expect(page.getByTestId('single-rail')).toHaveCount(0);
+        if ((await page.locator('article section[id]').count()) > 1) {
+          await expect(
+            page.getByRole('navigation', { name: 'Sections', exact: true }),
+          ).toBeVisible();
+        }
+        const location = page.locator('article #location');
+        if (await location.count()) await expect(location).toBeVisible();
       } else {
         // The rail must never be cut by a breakpoint class. Its venue cards were
         // removed (2026-11-18), so on a phone it can legitimately render empty
@@ -223,6 +232,16 @@ for (const route of ROUTES) {
       );
       expect(overflow).toBeLessThanOrEqual(1);
     });
+  });
+}
+
+for (const path of ['/venues/scum-and-villainy-cantina', '/organizations/demask']) {
+  test(`${path} keeps desktop section navigation without sidebar cards`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await open(page, path);
+    await expect(page.getByTestId('single-rail')).toHaveCount(0);
+    expect(await page.locator('article section[id]').count()).toBeGreaterThan(1);
+    await expect(page.getByRole('navigation', { name: 'Sections', exact: true })).toBeVisible();
   });
 }
 

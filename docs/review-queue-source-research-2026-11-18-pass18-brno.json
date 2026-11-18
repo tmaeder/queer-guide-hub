@@ -1,0 +1,38 @@
+{
+  "captures": [
+    {
+      "url": "https://www.fulldomefestivalbrno.com/",
+      "status": 200,
+      "final_url": "https://www.fulldomefestivalbrno.com/",
+      "retrieved_at": "2026-11-18T17:08:21.280814+00:00",
+      "sha256": "6b3b7898bd7c054a79c0a76d648cb1f900f9d1b6ce6939626783b96b90bc3c8a",
+      "bytes": 32013
+    },
+    {
+      "url": "https://www.fulldomefestivalbrno.com/contacts/",
+      "status": 200,
+      "final_url": "https://www.fulldomefestivalbrno.com/contacts/",
+      "retrieved_at": "2026-11-18T17:08:21.486433+00:00",
+      "sha256": "f0666be11aa5d56530de2094e0d57ddd96b4a07d6c168588b2356e108427f053",
+      "bytes": 29919
+    },
+    {
+      "url": "https://www.hvezdarna.cz/",
+      "status": 200,
+      "final_url": "https://www.hvezdarna.cz/",
+      "retrieved_at": "2026-11-18T17:08:21.805071+00:00",
+      "sha256": "59d8ff684e686945dd3b66e92cc4f4b79eee4a5ee737b212be07ad73c3737d17",
+      "bytes": 65360
+    }
+  ],
+  "venue_id": "a1926f99-1793-4c48-b2d2-e52af4f0e2fd",
+  "organization_id": "fa08ad68-7417-4acb-906e-928200a9602a",
+  "event_id": "b3f08f46-e093-4995-93eb-b636c639f4d8",
+  "address": "Krav\u00ed hora 2",
+  "postal_code": "616 00",
+  "event_website": "https://www.fulldomefestivalbrno.com/",
+  "human_reviewed": false,
+  "coordinates_added": false,
+  "ticket_url_changed": false,
+  "dates_changed": false
+}

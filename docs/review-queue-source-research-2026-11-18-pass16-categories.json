@@ -1,0 +1,58 @@
+[
+  {
+    "url": "https://qcal.app/event/trans-about-town-paint-night-ottawa-on-ca",
+    "retrieved_at": "2026-11-18T14:16:03.032549+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/trans-about-town-paint-night-ottawa-on-ca",
+    "sha256": "cb7d400c71388560e146b884d2fc08c6c5778b67695d94be8a1919cfa8fe6cdc"
+  },
+  {
+    "url": "https://qcal.app/event/ties-like-me-lgbtq-networking-event-detroit-mi-us",
+    "retrieved_at": "2026-11-18T14:16:03.033462+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/ties-like-me-lgbtq-networking-event-detroit-mi-us",
+    "sha256": "43b2c4f6abec3d0aaa32a24ad3ac79e7b7e6182af0e99b8be43190ddc66a4611"
+  },
+  {
+    "url": "https://qcal.app/event/connect-with-quorum-monthly-networking-zoom-call",
+    "retrieved_at": "2026-11-18T14:16:04.020724+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/connect-with-quorum-monthly-networking-zoom-call",
+    "sha256": "7c64f5f32e6f0c421b67293f28c0fb3f659c52f7ecde9faec0bf8b712a2d5d47"
+  },
+  {
+    "url": "https://qcal.app/event/laglcc-november-2026-networking-luncheon-los-angeles-ca-us",
+    "retrieved_at": "2026-11-18T14:16:03.945853+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/laglcc-november-2026-networking-luncheon-los-angeles-ca-us",
+    "sha256": "e8eac7daff1ef59952936b945bf327efb77ed91197ca02036c6b8619c05089ae"
+  },
+  {
+    "url": "https://qcal.app/event/ch-ries-ch-ris-tell-me-everything-paris-le-de-france-fr",
+    "retrieved_at": "2026-11-18T14:16:03.031994+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/ch-ries-ch-ris-tell-me-everything-paris-le-de-france-fr",
+    "sha256": "40f28c7cc34e882d8d281b65aa1e0ba4ab19675174639bf0a6026377fe7f370f"
+  },
+  {
+    "url": "https://qcal.app/event/queer-animation-competition-screenings-firenze-toscana-it",
+    "retrieved_at": "2026-11-18T14:16:03.965148+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/queer-animation-competition-screenings-firenze-toscana-it",
+    "sha256": "1091041c411c0c658ea93ad897718644ebe97cbced4b83be39a7b338ec18dbda"
+  },
+  {
+    "url": "https://qcal.app/event/annual-harvest-dinner-providence-ri-us",
+    "retrieved_at": "2026-11-18T14:16:03.030217+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/annual-harvest-dinner-providence-ri-us",
+    "sha256": "5c1cf5e9c446955febffcbe74aafb687d07ad07b46cfaaa18bfca29aacac0b18"
+  },
+  {
+    "url": "https://qcal.app/event/rainbow-youth-club-trans-awareness-week-whitehorse-yt-ca",
+    "retrieved_at": "2026-11-18T14:16:03.032280+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/rainbow-youth-club-trans-awareness-week-whitehorse-yt-ca",
+    "sha256": "6971b22cfcfc4a2a5e10101cc4437989659e91200f6e9b57d4b863e618c663f9"
+  }
+]

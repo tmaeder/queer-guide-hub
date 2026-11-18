@@ -48,7 +48,8 @@ import {
   SUPPORTED_LOCALES,
   DEFAULT_LOCALE,
 } from './_lib/routeMeta';
-import { homepageJsonLd, breadcrumbJsonLd } from './_lib/jsonLd';
+import { homepageJsonLd, breadcrumbJsonLd, rightsDatasetJsonLd } from './_lib/jsonLd';
+import { datasetJsonLd } from './_lib/datasetJsonLd';
 import { getBranding, brandStyleTag, brandingMeta, brandFontPreloads } from './_lib/branding';
 import { isBotUserAgent } from './_lib/botUa';
 import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
@@ -671,6 +672,19 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
   if (detail?.jsonLd) {
     headInjections.push(detail.jsonLd);
+  }
+  if (
+    indexable &&
+    (cleanPath === '/tags/rights-by-country/sources' ||
+      cleanPath === '/tags/rights-by-country/methodology')
+  ) {
+    headInjections.push(rightsDatasetJsonLd());
+  }
+  // Dataset for the hub pages that publish citable data. '' everywhere else.
+  // Gated on indexable for the same reason as the breadcrumb below.
+  if (indexable && !detail) {
+    const dataset = await datasetJsonLd(env, basePath);
+    if (dataset) headInjections.push(dataset);
   }
   // oEmbed discovery (https://oembed.com §4) for shareable detail pages.
   if (detail && indexable) {

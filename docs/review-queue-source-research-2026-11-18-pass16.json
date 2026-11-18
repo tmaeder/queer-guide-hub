@@ -1,0 +1,86 @@
+[
+  {
+    "url": "https://www.sneakersexitaly.it/international-sneaker-foot-weekend/",
+    "retrieved_at": "2026-11-18T05:29:17.636052+00:00",
+    "status": 200,
+    "final_url": "https://www.sneakersexitaly.it/international-sneaker-foot-weekend/",
+    "sha256": "1a85eb7c274c4415a1946280b1afdecdcd4e0751a5b742817a898ba02c65ee92"
+  },
+  {
+    "url": "https://www.hotdogclubmilano.it",
+    "retrieved_at": "2026-11-18T05:29:17.645266+00:00",
+    "status": 200,
+    "final_url": "https://www.hotdogclubmilano.it",
+    "sha256": "17ed2c9900c4da056c9cba8c37318fbd1304306b1b3391504ad319b63af5a0f2"
+  },
+  {
+    "url": "https://queenshead.nl/route",
+    "retrieved_at": "2026-11-18T13:45:42.454228+00:00",
+    "status": 200,
+    "final_url": "https://queenshead.nl/route",
+    "sha256": "409fcb35e8e39d7a8d811c1af1631201f450469b66b9a2e0e9c074686c561856"
+  },
+  {
+    "url": "https://www.ons.gov.uk/explore-local-statistics/areas/E07000135-oadby-and-wigston",
+    "retrieved_at": "2026-11-18T00:39:38.225769+00:00",
+    "status": 200,
+    "final_url": "https://www.ons.gov.uk/explore-local-statistics/areas/E07000135-oadby-and-wigston",
+    "sha256": "151aee25f9c49556df944ce128a154a53f78c7c9ca1a6c09549bbcd4229d7944"
+  },
+  {
+    "url": "https://www.ons.gov.uk/explore-local-statistics/areas/E07000115-tonbridge-and-malling",
+    "retrieved_at": "2026-11-18T00:34:47.974872+00:00",
+    "status": 200,
+    "final_url": "https://www.ons.gov.uk/explore-local-statistics/areas/E07000115-tonbridge-and-malling",
+    "sha256": "f451fb203d4d3a1023ba2f9ae78a368c063d78978915db3dde7d7baad3b417e5"
+  },
+  {
+    "url": "https://kingandqueeneastmalling.co.uk/",
+    "retrieved_at": "2026-11-18T00:31:25.929012+00:00",
+    "status": 200,
+    "final_url": "https://kingandqueeneastmalling.co.uk/",
+    "sha256": "8d5ecc2fbf8bc2051284cf399445cecf9dd0dea2ddffa02c0dfeb7c570fce0b0"
+  },
+  {
+    "url": "https://www.ons.gov.uk/explore-local-statistics/areas/E07000126-south-ribble",
+    "retrieved_at": "2026-11-18T13:58:53.754184+00:00",
+    "status": 200,
+    "final_url": "https://www.ons.gov.uk/explore-local-statistics/areas/E07000126-south-ribble",
+    "sha256": "de816a8ae9c458bacea101e2903847fb7c549105c2ff70d592a94268c9700cc6"
+  },
+  {
+    "url": "https://cafesaarein.nl/",
+    "retrieved_at": "2026-11-18T13:45:42.453659+00:00",
+    "status": 200,
+    "final_url": "https://cafesaarein.nl/",
+    "sha256": "1e3fda84760e139080371a641851bdda478a57272ec9afd48debc946cb25be4e"
+  },
+  {
+    "url": "https://queer-kalender.nl/en/page/1123/trivia-wednesday",
+    "retrieved_at": "2026-11-18T14:08:30.861974+00:00",
+    "status": 200,
+    "final_url": "https://queer-kalender.nl/en/page/1123/trivia-wednesday",
+    "sha256": "fce66c2c59c145ab58ea5fe0b3ccd89f65332cde71767371251e96d6ed179178"
+  },
+  {
+    "url": "https://www.livenation.com/event/G5vYZ_1he3H24/bertha-grateful-drag-the-world-s-first-all-drag-grateful-dead-tribute",
+    "retrieved_at": "2026-11-18T14:11:12.508241+00:00",
+    "status": 200,
+    "final_url": "https://www.livenation.com/event/G5vYZ_1he3H24/bertha-grateful-drag-the-world-s-first-all-drag-grateful-dead-tribute",
+    "sha256": "85f1201c47f516d2c5b7addb314510f1c747e89d8adb652bc167fd2592da6c6f"
+  },
+  {
+    "url": "https://thecastro.com/events/bertha-grateful-drag-261121",
+    "retrieved_at": "2026-11-18T14:11:12.507398+00:00",
+    "status": 200,
+    "final_url": "https://thecastro.com/events/bertha-grateful-drag-261121",
+    "sha256": "691cfc2261e931b0354ca6a5f9578750aef97cf93fa83f0fe97c9196edea347f"
+  },
+  {
+    "url": "https://getfruity.io/events/508e5ae9-c4c5-4606-ae02-9d9e49ba84ee",
+    "retrieved_at": "2026-11-18T14:08:30.859478+00:00",
+    "status": 200,
+    "final_url": "https://getfruity.io/events/trivia-wednesday-54",
+    "sha256": "6d7c279acb96e6c03f5b3ad11f18cb44c59b88fd1a3e79999b2efda4d3edd7b3"
+  }
+]
