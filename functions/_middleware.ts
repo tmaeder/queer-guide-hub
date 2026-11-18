@@ -672,7 +672,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (detail?.jsonLd) {
     headInjections.push(detail.jsonLd);
   }
-  if (indexable && cleanPath === '/tags/rights-by-country/sources') {
+  if (
+    indexable &&
+    (cleanPath === '/tags/rights-by-country/sources' ||
+      cleanPath === '/tags/rights-by-country/methodology')
+  ) {
     headInjections.push(rightsDatasetJsonLd());
   }
   // oEmbed discovery (https://oembed.com §4) for shareable detail pages.
