@@ -126,7 +126,7 @@ beforeEach(() => {
 describe('PersonalisedTripPackages', () => {
   it('shows inspiration first and reranks a real event for Pride energy', () => {
     render(<PersonalisedTripPackages />);
-    expect(screen.getByRole('heading', { name: /what kind of escape/i })).toBeInTheDocument();
+    expect(screen.getByText(/pick a mood, then check the package/i)).toBeInTheDocument();
     expect(screen.getByText('Nightlife in Berlin')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Pride energy/i }));
