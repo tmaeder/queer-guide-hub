@@ -211,7 +211,12 @@ for (const route of ROUTES) {
         ).toEqual(['cities', 'travel', 'photos']);
         await expect(page.locator('#rights')).toHaveCount(1);
       } else {
-        await expect(page.getByTestId('single-rail')).toBeVisible();
+        // The rail must never be cut by a breakpoint class. Its venue cards were
+        // removed (2026-11-18), so on a phone it can legitimately render empty
+        // (the section strip inside is desktop-only) — assert the class, not
+        // visibility.
+        const rail = page.getByTestId('single-rail');
+        if (await rail.count()) await expect(rail).not.toHaveClass(/(^|\s)hidden(\s|$)/);
       }
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

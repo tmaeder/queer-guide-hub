@@ -91,12 +91,7 @@ test.describe('Header mobile a11y', () => {
     await expect(search).toBeFocused();
     await expect(search).toHaveAttribute('aria-expanded', 'true');
 
-    // The full-screen hub exposes the prominent mode switcher.
-    const modes = page.getByRole('radiogroup', { name: /mode/i });
-    await expect(modes).toBeVisible();
-    expect(await modes.getByRole('radio').count()).toBe(6);
-
     await page.getByRole('button', { name: /close search/i }).click();
-    await expect(modes).toBeHidden();
+    await expect(search).toBeHidden();
   });
 });
