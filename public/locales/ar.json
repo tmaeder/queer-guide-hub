@@ -257,7 +257,8 @@
     "siteInformation": "معلومات الموقع",
     "crisisSupport": "دعم الأزمات",
     "cookiePreferences": "تفضيلات ملفات تعريف الارتباط",
-    "navigation": "تنقل التذييل"
+    "navigation": "تنقل التذييل",
+    "legalNav": "حول الموقع والمعلومات القانونية"
   },
   "trips": {
     "title": "رحلاتي",
@@ -2275,7 +2276,8 @@
       "browseAll": "تصفّح كل الأقسام",
       "unreadCount": "{{count}} غير مقروء",
       "tripsBadge": "{{count}} عناصر رحلة تحتاج إلى انتباه",
-      "hub": "المركز"
+      "hub": "المركز",
+      "openHub": "فتح المركز"
     },
     "primaryNavigation": "[AR] Primary",
     "signInToContribute": "سجّل الدخول للمساهمة"

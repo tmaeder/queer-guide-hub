@@ -257,7 +257,8 @@
     "siteInformation": "사이트 정보",
     "crisisSupport": "위기 지원",
     "cookiePreferences": "쿠키 설정",
-    "navigation": "푸터 내비게이션"
+    "navigation": "푸터 내비게이션",
+    "legalNav": "소개 및 법적 고지"
   },
   "trips": {
     "title": "내 여행",
@@ -2265,7 +2266,8 @@
       "browseAll": "모든 섹션 보기",
       "unreadCount": "읽지 않음 {{count}} 개",
       "tripsBadge": "확인이 필요한 여행 항목 {{count}} 개",
-      "hub": "허브"
+      "hub": "허브",
+      "openHub": "허브 열기"
     },
     "primaryNavigation": "주요 내비게이션",
     "signInToContribute": "로그인하고 참여하기"

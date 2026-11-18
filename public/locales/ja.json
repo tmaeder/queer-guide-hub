@@ -257,7 +257,8 @@
     "siteInformation": "サイト情報",
     "crisisSupport": "危機相談",
     "cookiePreferences": "Cookie の設定",
-    "navigation": "フッターナビゲーション"
+    "navigation": "フッターナビゲーション",
+    "legalNav": "概要と法的情報"
   },
   "trips": {
     "title": "マイトリップ",
@@ -2265,7 +2266,8 @@
       "browseAll": "すべてのセクションを見る",
       "unreadCount": "未読 {{count}} 件",
       "tripsBadge": "確認が必要な旅行項目が {{count}} 件",
-      "hub": "ハブ"
+      "hub": "ハブ",
+      "openHub": "ハブを開く"
     },
     "primaryNavigation": "[JA] Primary",
     "signInToContribute": "ログインして参加する"
