@@ -3,7 +3,7 @@ import { callJev, createJevBudget, type JevRequest } from '../_shared/jev-client
 import { COHORT, type Target } from './cohort.ts'
 import { candidates, choose, verified, cleanTitle, selectionRequest, verificationRequest, POLICY } from './policy.ts'
 import { collect } from './sources.ts'
-import { connect, snapshot, claim, cache, save, failure, finish, NAME, SLUG, CONTINUE, type RecordData } from './store.ts'
+import { connect, snapshot, claim, cache, save, failure, finish, NAME, SLUG, CONTINUE, jsonValue, type RecordData } from './store.ts'
 import { contractTest, runModelProbes } from './test-contract.ts'
 
 Deno.serve(async req=>{
@@ -15,10 +15,10 @@ Deno.serve(async req=>{
   if(!body||typeof body!=='object'||Array.isArray(body))return errorResponse('Invalid request body',400,req)
   if(body.mode&&!['weekly','resume','manual'].includes(body.mode))return errorResponse('Invalid mode',400,req)
   const db=connect(),started=Date.now()
-  const send=async(data:RecordData,status=200)=>{
+  const send=async(data:Record<string,unknown>,status=200)=>{
     const tracked=req.headers.get('x-automation-run-id')
     if(tracked&&/^\d{1,15}$/.test(tracked)){
-      await db`select public.admin_automation_finalize_run(automation_slug,${status>=400?'error':'success'},id,started_at,${Number(data.examined??0)},${Number(data.approved??0)},${db.json(data)},${status>=400?'official_date_worker_failed':null}) from public.admin_automation_runs where id=${tracked}::bigint and automation_slug in(${SLUG},${CONTINUE}) and status='running' and not coalesce(summary,'{}'::jsonb)?'pipeline_run_id'`
+      await db`select public.admin_automation_finalize_run(automation_slug,${status>=400?'error':'success'},id,started_at,${Number(data.examined??0)},${Number(data.approved??0)},${db.json(jsonValue(data))},${status>=400?'official_date_worker_failed':null}) from public.admin_automation_runs where id=${tracked}::bigint and automation_slug in(${SLUG},${CONTINUE}) and status='running' and not coalesce(summary,'{}'::jsonb)?'pipeline_run_id'`
     }
     return jsonResponse(data,status,req)
   }
@@ -64,10 +64,10 @@ Deno.serve(async req=>{
           if(dates.length>24)result.reason='too_many_date_candidates_for_safe_decision'
           else{
             const request=selectionRequest(target,source.pages,dates),selection=await evaluate(request),selected=choose(selection,dates)
-            result={...result,selection:{request,response:selection},reason:selected?'confirmation_not_sufficient':'no_high_confidence_specific_event_date'}
+            result={...result,selection:jsonValue({request,response:selection}),reason:selected?'confirmation_not_sufficient':'no_high_confidence_specific_event_date'}
             if(selected){
               const request=verificationRequest(target,source.pages,selected),verification=await evaluate(request)
-              result.verification={request,response:verification}
+              result.verification=jsonValue({request,response:verification})
               if(verified(verification))change={fingerprint:current.fingerprint,candidate:selected,page:source.pages[selected.page]}
             }
           }

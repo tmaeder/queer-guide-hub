@@ -5,11 +5,33 @@ export const NAME='outxout-official-date-review', SLUG='outxout_official_dates_w
 export type Db=ReturnType<typeof postgres>
 type Tx=postgres.TransactionSql
 // Private durable JSON ledgers; source text is never executable SQL.
-// deno-lint-ignore no-explicit-any
-export type RecordData=Record<string,any>
+export type RecordData=Record<string,postgres.JSONValue|undefined>
+/** Validate external response objects at the durable JSON boundary. */
+export function jsonValue(value:unknown):postgres.JSONValue { return JSON.parse(JSON.stringify(value)) as postgres.JSONValue }
+interface Ledger extends RecordData {
+  results: Record<string,RecordData>
+  source_cache: RecordData
+  attempts: Record<string,number>
+  ledger_id: string|number
+  lease_token?: string
+  lease_until?: string
+  retry_at?: string
+  dry_run?: boolean
+}
+interface RunRecord { id:string; context?:RecordData & {review_ledger_id?:string|number} }
+interface EventRecord extends RecordData {
+  title:string
+  description:string|null
+  start_date:string|null
+  end_date:string|null
+  review_status:string
+  city_id:string
+  enrichment_status:RecordData & {date_confirmation?:RecordData & {state?:string}}
+  field_provenance?:Record<string,RecordData & {source:string}>
+}
 export function connect():Db { return postgres(Deno.env.get('SUPABASE_DB_URL')!,{max:1,prepare:false,idle_timeout:5,connect_timeout:10,connection:{application_name:'outxout-official-dates',statement_timeout:15000}}) }
-export async function snapshot(db:Db,id:string){const [r]=await db`select to_jsonb(e) event,md5(to_jsonb(e)::text) fingerprint from public.events e where id=${id}::uuid`;return r as {event:RecordData;fingerprint:string}|undefined}
-async function ledger(tx:Tx,run:RecordData):Promise<RecordData> {
+export async function snapshot(db:Db,id:string){const [r]=await db`select to_jsonb(e) event,md5(to_jsonb(e)::text) fingerprint from public.events e where id=${id}::uuid`;return r as {event:EventRecord;fingerprint:string}|undefined}
+async function ledger(tx:Tx,run:RunRecord):Promise<Ledger> {
   if(run.context?.review_ledger_id){
     const [r]=await tx`select id,summary from public.admin_automation_runs where id=${run.context.review_ledger_id}::bigint and automation_slug=${SLUG} for update`
     if(!r||r.summary.pipeline_run_id!==run.id)throw Error('private_review_ledger_missing')
@@ -20,7 +42,7 @@ async function ledger(tx:Tx,run:RecordData):Promise<RecordData> {
   if(!r)throw Error('private_review_ledger_creation_failed')
   return {results:{},source_cache:{},attempts:{},...run.context,pipeline_run_id:run.id,ledger_id:r.id}
 }
-async function persist(tx:Tx,id:string,ctx:RecordData){
+async function persist(tx:Tx,id:string,ctx:Ledger){
   const results=Object.values(ctx.results??{}) as RecordData[]
   await tx`update public.admin_automation_runs set summary=${tx.json(ctx)},items_examined=${results.length},items_changed=${results.filter(r=>r.state==='approved'||r.state==='date_confirmed_pending_other_review').length} where id=${ctx.ledger_id}::bigint and automation_slug=${SLUG}`
   const publicContext={policy:POLICY,dry_run:ctx.dry_run===true,review_ledger_id:ctx.ledger_id,examined:results.length,approved:results.filter(r=>r.state==='approved').length,errors:results.filter(r=>r.state==='error').length}
@@ -31,7 +53,7 @@ export async function claimWithin(tx:Tx,mode:string){
   await tx`select pg_advisory_xact_lock(hashtextextended(${NAME},0))`
   const [enabled]=await tx`select enabled from public.admin_automations where slug=${SLUG}`
   if(!enabled?.enabled)return {idle:true,reason:'disabled'}
-  let [run]=await tx`select * from public.pipeline_runs where pipeline_name=${NAME} and context->>'policy'=${POLICY} and status in('running','queued') and coalesce(context->>'dry_run','false')<>'true' order by created_at desc limit 1 for update`
+  let [run]=await tx<RunRecord[]>`select * from public.pipeline_runs where pipeline_name=${NAME} and context->>'policy'=${POLICY} and status in('running','queued') and coalesce(context->>'dry_run','false')<>'true' order by created_at desc limit 1 for update`
   if(!run){
     if(mode==='resume')return {idle:true}
     const [due]=await tx`select (date_trunc('week',now() at time zone 'Europe/Zurich')+interval '2 days 9 hours') at time zone 'Europe/Zurich' due`
@@ -41,7 +63,7 @@ export async function claimWithin(tx:Tx,mode:string){
     const [definition]=await tx`select id,is_enabled from public.pipeline_definitions where name=${NAME}`
     if(!definition?.is_enabled)return {idle:true,reason:'pipeline_disabled'}
     const context={policy:POLICY,results:{},source_cache:{},attempts:{}}
-    ;[run]=await tx`insert into public.pipeline_runs(pipeline_id,pipeline_name,status,started_at,triggered_by,context,items_total) values(${definition.id},${NAME},'running',now(),${mode},${tx.json(context)},21) returning *`
+    ;[run]=await tx<RunRecord[]>`insert into public.pipeline_runs(pipeline_id,pipeline_name,status,started_at,triggered_by,context,items_total) values(${definition.id},${NAME},'running',now(),${mode},${tx.json(context)},21) returning *`
   }
   const ctx=await ledger(tx,run)
   if(ctx.lease_until&&Date.parse(ctx.lease_until)>Date.now())return {busy:true,run_id:run.id}
@@ -51,7 +73,7 @@ export async function claimWithin(tx:Tx,mode:string){
   return {run_id:run.id as string,token,context:ctx}
 }
 async function lockRun(tx:Tx,id:string,token:string){
-  const [r]=await tx`select id,context from public.pipeline_runs where id=${id}::uuid and pipeline_name=${NAME} and status='running' for update`
+  const [r]=await tx<RunRecord[]>`select id,context from public.pipeline_runs where id=${id}::uuid and pipeline_name=${NAME} and status='running' for update`
   if(!r)throw Error('lease_or_run_no_longer_active')
   const ctx=await ledger(tx,r)
   if(ctx.lease_token!==token||!Number.isFinite(Date.parse(ctx.lease_until??''))||Date.parse(ctx.lease_until??'')<=Date.now())throw Error('lease_or_run_no_longer_active')
@@ -59,14 +81,14 @@ async function lockRun(tx:Tx,id:string,token:string){
   if(!a?.enabled)throw Error('automation_disabled')
   return ctx
 }
-export async function cache(db:Db,id:string,token:string,key:string,value:unknown){await db.begin(async tx=>{const ctx=await lockRun(tx,id,token);ctx.source_cache[key]=value;await persist(tx,id,ctx)})}
+export async function cache(db:Db,id:string,token:string,key:string,value:unknown){await db.begin(async tx=>{const ctx=await lockRun(tx,id,token);ctx.source_cache[key]=jsonValue(value);await persist(tx,id,ctx)})}
 
 /** Called within one transaction: row locks, case locks and all approval writes. */
 export async function applyDate(tx:Tx,id:string,fingerprint:string,c:Candidate,page:Page,runId:string,allowFixture=false) {
   if(!allowFixture&&!COHORT.some(t=>t.id===id))throw Error('outside_fixed_cohort')
   const [row]=await tx`select to_jsonb(e) event,md5(to_jsonb(e)::text) fingerprint from public.events e where id=${id}::uuid for update`
   if(!row||row.fingerprint!==fingerprint)return {state:'stale',reason:'event_changed_during_research'}
-  const e=row.event as RecordData
+  const e=row.event as EventRecord
   if(e.enrichment_status?.date_confirmation?.state!=='needs_review'||e.review_status!=='pending')return {state:'skipped',reason:'no_longer_pending'}
   const protectedFields=['title','description','start_date','end_date'].filter(k=>e.field_provenance?.[k] && !['outxout','pipeline-commit'].includes(e.field_provenance[k].source))
   if(protectedFields.length)return {state:'blocked',reason:'protected_fields',fields:protectedFields}
