@@ -962,12 +962,6 @@
         "poolTitle": "站点列表未能加载。",
         "retry": "重试"
       },
-      "cta": {
-        "heading": "就走这条线。",
-        "body": "会变成属于你的行程，所有站点都已加入。之后你可以随意修改。",
-        "primary": "生成行程",
-        "secondary": "再画一条"
-      },
       "buildRoute": "创建路线"
     },
     "polls": {

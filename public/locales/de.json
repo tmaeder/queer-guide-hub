@@ -962,12 +962,6 @@
         "poolTitle": "Die Stationsliste wurde nicht geladen.",
         "retry": "Erneut versuchen"
       },
-      "cta": {
-        "heading": "Fahr diese Linie.",
-        "body": "Wird zu einer Reise, die dir gehört, mit allen Stopps darauf. Danach kannst du alles ändern.",
-        "primary": "Reise daraus machen",
-        "secondary": "Neu zeichnen"
-      },
       "buildRoute": "Route erstellen"
     },
     "polls": {

@@ -966,12 +966,6 @@
         "poolTitle": "La liste des stations n’a pas pu être chargée.",
         "retry": "Réessayer"
       },
-      "cta": {
-        "heading": "Prends cette ligne.",
-        "body": "Devient un voyage qui t’appartient, avec tous les arrêts déjà dedans. Tu peux tout modifier ensuite.",
-        "primary": "En faire un voyage",
-        "secondary": "En tracer une autre"
-      },
       "buildRoute": "Créer un itinéraire"
     },
     "polls": {

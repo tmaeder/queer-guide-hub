@@ -962,12 +962,6 @@
         "poolTitle": "L’elenco delle stazioni non è stato caricato.",
         "retry": "Riprova"
       },
-      "cta": {
-        "heading": "Percorri questa linea.",
-        "body": "Diventa un viaggio tuo, con tutte le fermate già dentro. Dopo puoi cambiare quello che vuoi.",
-        "primary": "Trasformalo in viaggio",
-        "secondary": "Disegnane un’altra"
-      },
       "buildRoute": "Crea un percorso"
     },
     "polls": {
