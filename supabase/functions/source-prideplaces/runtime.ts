@@ -133,7 +133,13 @@ export const handler = withErrorReporting('source-prideplaces', async (req: Requ
       const rejected = outcomes.find(o => o.status === 'rejected')
       if (rejected?.status === 'rejected') throw rejected.reason
       const progress = await rpc<Json>(client, 'prideplaces_scan_progress', { p_run: runId, p_lease: claim.lease ?? null })
-      return jsonResponse({ success: progress.collection_status !== 'failed', ...progress, items_total: progress.businesses_discovered, items_staged: progress.staged_total }, 200, req)
+      const processed = Number(progress.unchanged ?? 0) + Number(progress.review ?? 0) + Number(progress.staged ?? 0)
+      return jsonResponse({
+        success: progress.collection_status !== 'failed', ...progress,
+        items_total: processed, items_staged: progress.staged_total,
+        has_more: progress.collection_status === 'running',
+        continuation: progress.collection_status === 'running' ? { action: 'continue', run_id: runId } : null,
+      }, 200, req)
     }
     return jsonResponse({ success: true, ...await rpc<Json>(client, 'prideplaces_scan_progress', { p_run: runId }) }, 200, req)
   } catch (error) {

@@ -70,9 +70,14 @@ Deno.test('missing clocks, missing zones and ambiguous DST times stay unknown', 
   assertEquals(localInstant('2026-11-18', '13:00 PM', 'America/New_York'), undefined)
   assertEquals(localInstant('2026-11-18', '10:00 PM', 'invalid/zone'), undefined)
 })
-Deno.test('invalid dates and missing visible dates cannot fall back to stale schema', () => {
-  assertThrows(() => parseEvent(event('02/30/2026'), eventUrl))
-  assertThrows(() => parseEvent(schema({ '@type': 'Event', name: 'x', startDate: '2025-01-01' }), eventUrl))
+Deno.test('invalid and unpublished dates produce incomplete Review identities without using stale schema', () => {
+  for (const html of [event('02/30/2026'), schema({ '@type': 'Event', name: 'Example', startDate: '2025-01-01' })]) {
+    const item = parseEvent(html, eventUrl)
+    assertEquals(item.sourceId, eventUrl)
+    assertEquals(item.start_date, undefined)
+    assertEquals((item.metadata as Record<string, unknown>).date_unknown, true)
+    assertEquals((item.metadata as Record<string, unknown>).requires_review, true)
+  }
 })
 Deno.test('fact hashing ignores operational timestamps/prose and detects changed facts and reversions', async () => {
   const a = parseBusiness(business(), url)
