@@ -1,3 +1,4 @@
+import { isValidTimezone } from '@/utils/timezone';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, MapPin } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -5,19 +6,19 @@ import { CardImage } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUpcomingPrideEvents } from '@/hooks/useUpcomingPrideEvents';
 
-function formatRange(start: string | null, end: string | null) {
+function formatRange(start: string | null, end: string | null, locale?: string, timeZone?: string) {
   if (!start) return null;
-  const s = new Date(start);
-  const e = end ? new Date(end) : null;
-  const sStr = s.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  if (!e || e.toDateString() === s.toDateString())
+  const format = (iso: string, options: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat(locale, { ...options, timeZone }).format(new Date(iso));
+  const sStr = format(start, { month: 'short', day: 'numeric' });
+  const key = { year: 'numeric', month: 'numeric', day: 'numeric' } as const;
+  if (!end || format(end, key) === format(start, key))
     return { label: sStr, end: null as string | null };
-  const eStr = e.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  return { label: `${sStr} – ${eStr}`, end: end };
+  return { label: `${sStr} – ${format(end, { month: 'short', day: 'numeric' })}`, end };
 }
 
 export function PrideScroller() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data, isLoading } = useUpcomingPrideEvents({ months: 4, limit: 12 });
   const listLabel = t('pages.travel.pride.title', 'Pride this season');
 
@@ -44,7 +45,9 @@ export function PrideScroller() {
           className="flex snap-x gap-4 overflow-x-auto pb-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {data.map((event) => {
-            const range = formatRange(event.start_date, event.end_date);
+            const timeZone =
+              event.timezone && isValidTimezone(event.timezone) ? event.timezone : undefined;
+            const range = formatRange(event.start_date, event.end_date, i18n?.language, timeZone);
             const start = event.start_date ? new Date(event.start_date) : null;
             return (
               <li
@@ -55,9 +58,11 @@ export function PrideScroller() {
                   {start && (
                     <span className="absolute left-4 top-4 grid min-w-12 place-items-center rounded-element bg-card px-2 py-1 text-center leading-none shadow-soft">
                       <span className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
-                        {start.toLocaleDateString(undefined, { month: 'short' })}
+                        {start.toLocaleDateString(i18n?.language, { month: 'short', timeZone })}
                       </span>
-                      <span className="text-title font-bold">{start.getDate()}</span>
+                      <span className="text-title font-bold">
+                        {start.toLocaleDateString(i18n?.language, { day: 'numeric', timeZone })}
+                      </span>
                     </span>
                   )}
                 </CardImage>

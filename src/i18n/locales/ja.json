@@ -2264,7 +2264,7 @@
       "you": "マイページ",
       "menuTitle": "すべてのセクション",
       "menuDescription": "任意のセクションに移動し、言語やテーマを切り替えます。",
-      "hubDescription": "メッセージ、プラン、人、保存したもの。",
+      "hubDescription": "メッセージ、予定、つながり、保存したもの。",
       "trips": "マイトリップ",
       "settingsSection": "表示",
       "browseAll": "すべてのセクションを見る",
@@ -2597,7 +2597,8 @@
       "pride": {
         "title": "今シーズンのプライド",
         "window": "今後4ヶ月",
-        "empty": "今後のプライドイベントはありません。"
+        "empty": "今後のプライドイベントはありません。",
+        "cta": "イベントを見る"
       },
       "inspiration": {
         "villages": "クィア・ヴィレッジ",
@@ -3995,11 +3996,15 @@
       "title": "[JA] What are you into?",
       "blurb": "[JA] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[JA] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[JA] {{count}} selected"
+      "count": "[JA] {{count}} selected",
+      "signIn": "ログインして興味を選ぶ",
+      "limit": "{{max}}件中{{count}}件を選択",
+      "atLimit": "上限に達しました。別のものを選ぶには一つ削除してください。"
     },
     "friends": {
       "discover": "人を探す"
-    }
+    },
+    "safetyTitle": "会う前に法律を確認"
   },
   "hub": {
     "title": "マイハブ",

@@ -2264,7 +2264,7 @@
       "you": "Profilo",
       "menuTitle": "Tutte le sezioni",
       "menuDescription": "Vai a qualsiasi sezione, cambia lingua o tema.",
-      "hubDescription": "I tuoi messaggi, piani, persone e salvati.",
+      "hubDescription": "I tuoi messaggi, programmi, contatti ed elementi salvati.",
       "trips": "I miei viaggi",
       "settingsSection": "Visualizzazione",
       "browseAll": "Sfoglia tutte le sezioni",
@@ -2599,7 +2599,8 @@
       "pride": {
         "title": "Pride questa stagione",
         "window": "Prossimi 4 mesi",
-        "empty": "Nessun evento Pride in arrivo."
+        "empty": "Nessun evento Pride in arrivo.",
+        "cta": "Vedi evento"
       },
       "inspiration": {
         "villages": "Queer Villages",
@@ -3997,11 +3998,15 @@
       "title": "[IT] What are you into?",
       "blurb": "[IT] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[IT] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[IT] {{count}} selected"
+      "count": "[IT] {{count}} selected",
+      "signIn": "Accedi per scegliere gli interessi",
+      "limit": "{{count}} di {{max}} selezionati",
+      "atLimit": "Hai raggiunto il limite. Rimuovine uno per sceglierne un altro."
     },
     "friends": {
       "discover": "Trova persone"
-    }
+    },
+    "safetyTitle": "Controlla la legge prima di incontrarvi"
   },
   "hub": {
     "title": "Il tuo hub",

@@ -2599,7 +2599,8 @@
       "pride": {
         "title": "Pride diese Saison",
         "window": "Nächste 4 Monate",
-        "empty": "Keine bevorstehenden Pride-Events."
+        "empty": "Keine bevorstehenden Pride-Events.",
+        "cta": "Veranstaltung ansehen"
       },
       "inspiration": {
         "villages": "Queer Villages",
@@ -3997,11 +3998,15 @@
       "title": "[DE] What are you into?",
       "blurb": "[DE] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[DE] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[DE] {{count}} selected"
+      "count": "[DE] {{count}} selected",
+      "signIn": "Anmelden, um Interessen auszuwählen",
+      "limit": "{{count}} von {{max}} ausgewählt",
+      "atLimit": "Das Limit ist erreicht. Entferne eines, um ein anderes auszuwählen."
     },
     "friends": {
       "discover": "Leute finden"
-    }
+    },
+    "safetyTitle": "Prüfe die Rechtslage, bevor ihr euch trefft"
   },
   "hub": {
     "title": "Dein Hub",

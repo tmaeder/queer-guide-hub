@@ -57,7 +57,7 @@ export function SubwayHero() {
                 <li key={to} className="min-w-0">
                   <LocalizedLink
                     to={to}
-                    className="flex min-h-11 items-center gap-2 rounded-element bg-card px-2 py-1.5 text-13 font-bold no-underline shadow-soft transition-colors hover:bg-foreground hover:text-background sm:px-4"
+                    className="flex h-full min-h-11 flex-col items-center justify-center gap-2 rounded-element bg-card px-2 py-1.5 text-center text-13 font-bold no-underline shadow-soft transition-colors hover:bg-foreground hover:text-background sm:flex-row sm:justify-start sm:px-4 sm:text-left"
                   >
                     <TransitIcon name={icon} size={20} className="shrink-0" />
                     <span className="min-w-0 break-words leading-tight">{t(label, fallback)}</span>

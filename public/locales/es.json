@@ -2599,7 +2599,8 @@
       "pride": {
         "title": "Pride esta temporada",
         "window": "Próximos 4 meses",
-        "empty": "No hay eventos Pride próximos."
+        "empty": "No hay eventos Pride próximos.",
+        "cta": "Ver evento"
       },
       "inspiration": {
         "villages": "Queer Villages",
@@ -3997,11 +3998,15 @@
       "title": "[ES] What are you into?",
       "blurb": "[ES] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[ES] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[ES] {{count}} selected"
+      "count": "[ES] {{count}} selected",
+      "signIn": "Inicia sesión para elegir intereses",
+      "limit": "{{count}} de {{max}} elegidos",
+      "atLimit": "Has llegado al límite. Quita uno para elegir otro."
     },
     "friends": {
       "discover": "Encontrar gente"
-    }
+    },
+    "safetyTitle": "Consulta la ley antes de quedar"
   },
   "hub": {
     "title": "Tu hub",

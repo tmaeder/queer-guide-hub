@@ -2633,7 +2633,8 @@
       "pride": {
         "title": "Прайды этого сезона",
         "window": "Следующие 4 месяца",
-        "empty": "Нет предстоящих прайд-событий."
+        "empty": "Нет предстоящих прайд-событий.",
+        "cta": "Посмотреть событие"
       },
       "inspiration": {
         "villages": "Квир-вилладжи",
@@ -4031,11 +4032,15 @@
       "title": "[RU] What are you into?",
       "blurb": "[RU] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[RU] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[RU] {{count}} selected"
+      "count": "[RU] {{count}} selected",
+      "signIn": "Войдите, чтобы выбрать интересы",
+      "limit": "Выбрано {{count}} из {{max}}",
+      "atLimit": "Достигнут предел. Уберите один интерес, чтобы выбрать другой."
     },
     "friends": {
       "discover": "Найти людей"
-    }
+    },
+    "safetyTitle": "Проверьте законы перед встречей"
   },
   "hub": {
     "title": "Ваш хаб",

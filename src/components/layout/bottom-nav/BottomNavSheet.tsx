@@ -38,6 +38,7 @@ export function BottomNavSheet({
   children: ReactNode;
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -46,19 +47,20 @@ export function BottomNavSheet({
         overlayClassName="bg-black/20 backdrop-blur-none"
         className="mobile-hub-sheet inset-x-0 bottom-0 top-auto mx-auto max-h-[85dvh] grid-cols-1 translate-x-0 translate-y-0 gap-6 overflow-y-auto rounded-b-none pb-[max(1.5rem,env(safe-area-inset-bottom))] data-[state=open]:animate-none data-[state=closed]:animate-none"
         onOpenAutoFocus={(event) => {
+          returnFocus.current =
+            document.activeElement instanceof HTMLElement ? document.activeElement : null;
           if (openedByPointer) {
             event.preventDefault();
             contentRef.current?.focus({ preventScroll: true });
           }
         }}
-        onCloseAutoFocus={
-          onDismissFocus
-            ? (event) => {
-                event.preventDefault();
-                onDismissFocus();
-              }
-            : undefined
-        }
+        onCloseAutoFocus={(event) => {
+          // These sheets are controlled from dock links, not DialogTrigger.
+          event.preventDefault();
+          if (onDismissFocus) onDismissFocus();
+          else if (returnFocus.current?.isConnected)
+            returnFocus.current.focus({ preventScroll: true });
+        }}
       >
         <DialogHeader className="pe-8 text-left">
           <DialogTitle className="font-display text-headline">{title}</DialogTitle>
