@@ -124,8 +124,17 @@ export default function RightsSources() {
     (c) => (c.lgbti_criminalization as Record<string, unknown> | null)?.legal != null,
   ).length;
   const scored = (countries ?? []).filter((c) => c.equality_score != null).length;
-  const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
   const citation = buildRightsCitation(new Date());
+  const copyCitation = async () => {
+    try {
+      if (!navigator.clipboard) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(citation);
+      setCopyStatus('copied');
+    } catch {
+      setCopyStatus('failed');
+    }
+  };
 
   useMeta({
     title: t('rights.sources.metaTitle', 'Where our LGBTQ+ rights data comes from'),
@@ -427,7 +436,7 @@ export default function RightsSources() {
           <p className="mb-4 max-w-prose">
             {t(
               'rights.sources.cite.intro',
-              'Free to cite and reuse with attribution. Please credit both Queer Guide and ILGA World, who maintain the underlying record.',
+              'Use this citation to reference the page. Credit Queer Guide and ILGA World, and check the applicable ILGA terms before redistributing the underlying data.',
             )}
           </p>
           <p
@@ -436,17 +445,19 @@ export default function RightsSources() {
           >
             {citation}
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              void navigator.clipboard?.writeText(citation).then(() => setCopied(true));
-            }}
-          >
-            {copied
+          <Button variant="outline" size="sm" onClick={() => void copyCitation()}>
+            {copyStatus === 'copied'
               ? t('rights.sources.cite.copied', 'Copied')
               : t('rights.sources.cite.copy', 'Copy citation')}
           </Button>
+          {copyStatus === 'failed' && (
+            <p role="alert" className="mt-2 text-13 text-muted-foreground">
+              {t(
+                'rights.sources.cite.copyFailed',
+                'Unable to copy automatically. Select and copy the citation above.',
+              )}
+            </p>
+          )}
         </StationPanel>
       ),
     },
