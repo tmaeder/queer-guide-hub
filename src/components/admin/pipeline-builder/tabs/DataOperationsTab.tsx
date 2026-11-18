@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import OutxoutPipelineStatus from '../OutxoutPipelineStatus';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistance, format } from 'date-fns';
 import { Link } from 'react-router';
@@ -217,6 +218,7 @@ export default function DataOperationsTab() {
 
   return (
     <section aria-labelledby="data-operations-heading" className="space-y-6">
+      <OutxoutPipelineStatus />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 id="data-operations-heading" className="text-title font-semibold">
