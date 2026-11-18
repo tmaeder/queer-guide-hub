@@ -1,3 +1,4 @@
+import { publicDocumentDelivery } from './_lib/publicDocumentDelivery';
 import { proxyAppAssociation } from '../supabase/functions/_shared/redirect-app-association-proxy';
 /**
  * Pages middleware: rewrites the SPA shell <head> per route so every URL
@@ -787,7 +788,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (basePath.startsWith('/share/redirect-report/')) {
     setRedirectReportHeaders(rewritten.headers, indexable);
   }
-  return rewritten;
+  return publicDocumentDelivery(request, basePath, rewritten);
 };
 
 type NotFoundKind = {

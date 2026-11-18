@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useDeferredValue, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import {
@@ -331,8 +331,12 @@ export function useCitiesDirectory(filterParams: CitiesFilterParams): UseCitiesD
     retry: 2,
   });
 
-  const cities = useMemo(() => citiesQ.data?.cities ?? [], [citiesQ.data?.cities]);
-  const venueCounts = citiesQ.data?.venueCounts ?? EMPTY_COUNTS;
+  // The complete directory contains thousands of rows. Query notifications are
+  // synchronous; prepare sorting, facets and their consumers in interruptible
+  // React work while the previous directory remains usable.
+  const data = useDeferredValue(citiesQ.data);
+  const cities = useMemo(() => data?.cities ?? [], [data?.cities]);
+  const venueCounts = data?.venueCounts ?? EMPTY_COUNTS;
 
   const filtered = useMemo(
     () => filterAndSortCities(cities, venueCounts, filterParams),
@@ -347,10 +351,10 @@ export function useCitiesDirectory(filterParams: CitiesFilterParams): UseCitiesD
   return {
     cities,
     filtered,
-    continents: citiesQ.data?.continents ?? [],
+    continents: data?.continents ?? [],
     venueCounts,
     continentFacets,
-    loading: citiesQ.isLoading,
+    loading: citiesQ.isLoading || Boolean(citiesQ.data && !data),
     error: citiesQ.error ? (citiesQ.error as Error).message : null,
   };
 }

@@ -10,11 +10,7 @@
  *   - Everything else (publisher CDNs — Guardian etc.) → `no-referrer`. These 401 when
  *     Referer is set to a non-allowed origin, so stripping it is what makes them load.
  */
-const TRUSTED_HOSTS = new Set([
-  'queer.guide',
-  'www.queer.guide',
-  'img.queer.guide',
-]);
+const TRUSTED_HOSTS = new Set(['queer.guide', 'www.queer.guide', 'img.queer.guide']);
 
 /**
  * Marketplace merchant image hosts that need the origin sent (hotlink protection).
@@ -25,11 +21,7 @@ const TRUSTED_HOSTS = new Set([
  * `cdn.shopify.com` CDN and generic CMS hosts (e.g. cms.terminuscash.com) serve
  * cross-origin freely and do NOT belong here — they load under the default policy.
  */
-const MERCHANT_HOSTS = [
-  'misterb.com',
-  'supergayunderwear.com',
-  'ohmyfantasy.com',
-];
+const MERCHANT_HOSTS = ['misterb.com', 'supergayunderwear.com', 'ohmyfantasy.com'];
 
 function hostOf(src: string): string | null {
   try {
@@ -42,11 +34,7 @@ function hostOf(src: string): string | null {
 export function isTrustedSrc(src: string): boolean {
   const host = hostOf(src);
   if (host === null) return true;
-  return (
-    TRUSTED_HOSTS.has(host) ||
-    host.endsWith('.supabase.co') ||
-    host.endsWith('.supabase.in')
-  );
+  return TRUSTED_HOSTS.has(host) || host.endsWith('.supabase.co') || host.endsWith('.supabase.in');
 }
 
 export function isMerchantSrc(src: string): boolean {
@@ -65,4 +53,9 @@ export function imageReferrerPolicy(
   if (isTrustedSrc(src)) return undefined;
   if (isMerchantSrc(src)) return 'strict-origin-when-cross-origin';
   return 'no-referrer';
+}
+
+/** Wikimedia thumbnails support CORS; omit third-party credentials/cookies. */
+export function imageCrossOrigin(src: string): 'anonymous' | undefined {
+  return hostOf(src) === 'upload.wikimedia.org' ? 'anonymous' : undefined;
 }
