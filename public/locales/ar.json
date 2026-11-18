@@ -6,7 +6,11 @@
     "personalities": "الشخصيات",
     "history": "التاريخ",
     "lede": "الكلمات التي نستخدمها، والأشخاص الذين شكّلوا حياة الكوير، والتاريخ الذي يقف وراءهما.",
-    "navigation": "أقسام المعرفة"
+    "navigation": "أقسام المعرفة",
+    "termsHint": "كلماتنا ومعانيها",
+    "personalitiesHint": "أشخاص شكّلوا حياة الكوير",
+    "historyHint": "محطات، سنة بعد سنة",
+    "rightsHint": "ماذا يقول القانون في كل بلد"
   },
   "eventTypes": {
     "party": "حفلة",
@@ -1936,7 +1940,11 @@
       "exploreCity": "استكشف {{city}}",
       "browseEvents": "تصفّح فعاليات {{city}}",
       "whatsOn": "الفعاليات",
-      "communitySpace": "مساحة مجتمعية"
+      "communitySpace": "مساحة مجتمعية",
+      "photos": "الصور",
+      "previousPhoto": "الصورة السابقة",
+      "nextPhoto": "الصورة التالية",
+      "pausePhotos": "إيقاف عرض الشرائح مؤقتًا"
     },
     "discovery": {
       "openMap": "افتح الخريطة",
@@ -2107,7 +2115,8 @@
       "interchange": {
         "label": "ابحث في كل شيء",
         "subtitle": "كل الخطوط تلتقي هنا"
-      }
+      },
+      "title": "الخريطة"
     },
     "glossary": {
       "eyebrow": "المسرد",
@@ -2265,6 +2274,7 @@
       "you": "حسابي",
       "menuTitle": "كل الأقسام",
       "menuDescription": "انتقل إلى أي قسم، وبدّل اللغة أو المظهر.",
+      "hubDescription": "رسائلك وخططك والأشخاص والعناصر المحفوظة.",
       "trips": "رحلاتي",
       "settingsSection": "العرض",
       "browseAll": "تصفّح كل الأقسام",
@@ -2755,7 +2765,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} شخص",
+        "fieldCount_other": "{{formatted}} شخص"
       },
       "detail": {
         "inTheNews": "In the news",
@@ -4540,7 +4552,8 @@
         "trans": "[AR] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "[AR] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[AR] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
-      }
+      },
+      "methodologyLink": "كل وزن، وحدود الفئات، وطريقة الاستشهاد"
     },
     "lens": {
       "title": "[AR] Who the law protects",
@@ -4557,6 +4570,93 @@
       "partial": "[AR] Some protections",
       "protected": "[AR] Broad protections",
       "unknown": "[AR] Not enough data"
+    },
+    "methodology": {
+      "cite": {
+        "copied": "تم النسخ",
+        "copy": "نسخ",
+        "apa": "APA",
+        "plain": "نص عادي"
+      },
+      "metaTitle": "كيف تُحسب درجة المساواة لمجتمع الميم-عين",
+      "metaDescription": "كل وزن في درجة المساواة من Queer Guide، والنطاق 0–100، وحدود الفئات، وحدودها المعروفة، وطريقة الاستشهاد بها.",
+      "section": {
+        "formula": "المعادلة",
+        "range": "النطاق والفئات",
+        "limits": "حدود معروفة",
+        "cite": "الاستشهاد"
+      },
+      "kicker": {
+        "formula": "كل وزن"
+      },
+      "body": {
+        "formula": "تبدأ كل دولة بـ {{start}}. تُضاف نقاط أو تُخصم عن كل واقعة تسجّلها ILGA، ثم يُحصر المجموع بين 0 و100. بعض الصفوف بدائل: تحصل الدولة على الزواج أو الاتحاد المدني لا كليهما، وعلى خصم عقوبة واحد على الأكثر.",
+        "range": "قبل الحصر في النطاق 0–100، أدنى مجموع ممكن هو {{min}} وأعلاه {{max}}. يُبلغ الحد الأعلى مع فائض في النقاط، لذا فإن 100 تعني «100 على الأقل» لا «كل الحقوق مسجّلة».",
+        "ceiling": "{{atCeiling}} من أصل {{scored}} دولة وإقليمًا مُقيَّمًا تقف حاليًا عند 100 تمامًا. لا يمكن للدرجة ترتيبها فيما بينها.",
+        "cite": "استشهد بالدرجة باسم Queer Guide وبالوقائع القانونية التي تستند إليها باسم ILGA World Database. يُعاد حساب الدرجات كل ليلة، لذا اذكر تاريخ اطّلاعك عليها."
+      },
+      "col": {
+        "fact": "الواقعة المسجّلة",
+        "points": "النقاط",
+        "field": "حقل ILGA"
+      },
+      "tiers": "حدود الفئات",
+      "tierUnknown": "لا يوجد سجل لدى ILGA",
+      "limits": {
+        "start": "البدء من 50 يعني أن دولة لم يُسجَّل لها شيء تقريبًا تقع في منتصف المقياس. قد تعني الدرجة المتوسطة حقوقًا متوسطة أو بيانات شحيحة.",
+        "penaltyText": "يعتمد خصم العقوبة على وصف ILGA للعقوبة، لا على حقلها المنفصل الخاص بعقوبة الإعدام. حين تصف ILGA العقوبة بالسجن لكنها تسجّل أيضًا عقوبة الإعدام في جزء من الدولة (نيجيريا، بموجب الشريعة في الولايات الشمالية)، تخصم الدرجة عن السجن المؤبد لا عن الإعدام.",
+        "uneven": "يُحتسب التوجه الجنسي أكثر من الهوية الجندرية في كل مجالات الحماية (نقطتان مقابل نقطة)، ولا تُحتسب قوانين جرائم الكراهية والتحريض إلا للتوجه الجنسي. لذلك تقول الدرجة عن المثليات والمثليين ومزدوجي الميل الجنسي أكثر مما تقوله عن العابرين جندريًا.",
+        "law": "إنها وطنية، وتسجّل التشريعات لا تطبيقها، وليست تقييمًا للسلامة.",
+        "sourcesLink": "المزيد عن البيانات وحدودها",
+        "transLink": "حقوق العابرين حسب الدولة"
+      },
+      "breadcrumb": "المنهجية",
+      "heroLine": "خط الحقوق · المنهجية",
+      "title": "كيف تُحسب درجة المساواة",
+      "lede": "درجة المساواة رقم من 0–100 نحسبه كل ليلة من ILGA World Database. تسرد هذه الصفحة كل وزن، والنطاق، وحدود الفئات، والحالات التي تخطئ فيها الدرجة.",
+      "group": {
+        "criminalisation": "التجريم",
+        "partnership": "الشراكة",
+        "protection": "الحماية من التمييز",
+        "hate": "جرائم الكراهية والتحريض",
+        "civic": "التعبير وتكوين الجمعيات",
+        "family": "الأسرة والسلامة الجسدية"
+      },
+      "row": {
+        "legal": "العلاقات الجنسية المثلية قانونية",
+        "criminalised": "العلاقات الجنسية المثلية مُجرَّمة",
+        "death": "العقوبة موصوفة بالإعدام، بما في ذلك «محتملة»",
+        "life": "العقوبة تصل إلى السجن المؤبد",
+        "eight": "العقوبة تصل إلى السجن 8 سنوات",
+        "marriage": "الزواج المثلي",
+        "civil-union": "اتحاد مدني فقط",
+        "constitutional-so": "الدستور: يشمل التوجه الجنسي",
+        "constitutional-gi": "الدستور: يشمل الهوية الجندرية",
+        "employment-so": "العمل: يشمل التوجه الجنسي",
+        "employment-gi": "العمل: يشمل الهوية الجندرية",
+        "housing-so": "السكن: يشمل التوجه الجنسي",
+        "housing-gi": "السكن: يشمل الهوية الجندرية",
+        "education-so": "التعليم: يشمل التوجه الجنسي",
+        "education-gi": "التعليم: يشمل الهوية الجندرية",
+        "health-so": "الصحة: يشمل التوجه الجنسي",
+        "health-gi": "الصحة: يشمل الهوية الجندرية",
+        "goods_services-so": "السلع والخدمات: يشمل التوجه الجنسي",
+        "goods_services-gi": "السلع والخدمات: يشمل الهوية الجندرية",
+        "bullying-so": "التنمر: يشمل التوجه الجنسي",
+        "bullying-gi": "التنمر: يشمل الهوية الجندرية",
+        "hate-crime": "قانون جرائم الكراهية يشمل التوجه الجنسي",
+        "incitement": "حظر التحريض على الكراهية، بما يشمل التوجه الجنسي",
+        "expression-free": "لا عوائق قانونية معروفة أمام التعبير",
+        "expression-restricted": "قيود قانونية على التعبير (صريحة أو غير صريحة)",
+        "association-free": "لا عوائق قانونية معروفة أمام تكوين الجمعيات",
+        "association-restricted": "قيود قانونية صريحة على تكوين الجمعيات",
+        "joint-adoption": "التبني المشترك",
+        "second-parent": "تبني الوالد الثاني فقط",
+        "conversion": "حظر ممارسات التحويل",
+        "self-id": "الاعتراف القانوني بالجندر بتقرير الذات",
+        "marker": "تغيير مؤشر الجندر ممكن، دون تقرير الذات",
+        "intersex": "حماية الأشخاص ثنائيي الجنس"
+      }
     }
   },
   "about": {

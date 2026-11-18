@@ -1,11 +1,12 @@
-import { useRef } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Dialog, DialogClose, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import {
+  BottomNavSheet,
+  NAV_SHEET_HEADING,
+  NavSheetTile,
+} from '@/components/layout/bottom-nav/BottomNavSheet';
 import { getActiveHubModule, HUB_MODULES, HUB_SECTIONS } from '@/config/hubModules';
-import { cn } from '@/lib/utils';
 
 interface MobileHubSheetProps {
   open: boolean;
@@ -25,78 +26,59 @@ export function MobileHubSheet({
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const activeModule = getActiveHubModule(pathname);
-  const title = t('header.mobileNav.hub', 'Hub');
-  const contentRef = useRef<HTMLDivElement>(null);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        ref={contentRef}
-        aria-describedby={undefined}
-        overlayClassName="bg-black/20 backdrop-blur-none"
-        className="mobile-hub-sheet inset-x-0 bottom-0 top-auto mx-auto max-h-[85dvh] grid-cols-1 translate-x-0 translate-y-0 overflow-y-auto rounded-b-none pb-[max(1.5rem,env(safe-area-inset-bottom))] data-[state=open]:animate-none data-[state=closed]:animate-none"
-        onOpenAutoFocus={(event) => {
-          if (openedByPointer) {
-            event.preventDefault();
-            contentRef.current?.focus({ preventScroll: true });
-          }
-        }}
-        onCloseAutoFocus={(event) => {
-          event.preventDefault();
-          onDismissFocus();
-        }}
-      >
-        <DialogTitle className="font-display text-headline">{title}</DialogTitle>
-        <nav aria-label={t('hub.nav', 'Hub sections')} className="min-w-0 columns-2 gap-4">
-          {HUB_SECTIONS.map((section) => (
-            <div key={section.id} className="mb-4 break-inside-avoid">
+    <BottomNavSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('header.mobileNav.hub', 'Hub')}
+      description={t(
+        'header.mobileNav.hubDescription',
+        'Your messages, plans, people and saved things.',
+      )}
+      openedByPointer={openedByPointer}
+      onDismissFocus={onDismissFocus}
+    >
+      <nav aria-label={t('hub.nav', 'Hub sections')} className="flex min-w-0 flex-col gap-6">
+        {HUB_SECTIONS.map((section) => {
+          const modules = HUB_MODULES.filter((module) => module.section === section.id);
+          if (!modules.length) return null;
+          return (
+            <div key={section.id} className="flex flex-col gap-2">
               {section.defaultLabel && (
-                <p className="px-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                <h3 className={NAV_SHEET_HEADING}>
                   {section.labelKey
                     ? t(section.labelKey, section.defaultLabel)
                     : section.defaultLabel}
-                </p>
+                </h3>
               )}
-              <ul>
-                {HUB_MODULES.filter((module) => module.section === section.id).map((module) => {
-                  const Icon = module.icon;
-                  const active = module === activeModule;
-                  return (
-                    <li key={module.id}>
-                      <DialogClose asChild>
-                        <LocalizedLink
-                          to={module.path}
-                          aria-current={active ? 'page' : undefined}
-                          className={cn(
-                            'flex min-h-11 items-center gap-2 rounded-element px-2 py-1 text-sm no-underline',
-                            active
-                              ? 'bg-foreground font-semibold text-background'
-                              : 'hover:bg-muted',
-                          )}
-                        >
-                          <Icon className="h-4 w-4 shrink-0" aria-hidden />
-                          <span className="min-w-0 break-words">
-                            {t(module.labelKey, module.defaultLabel)}
-                          </span>
-                          {module.badge === 'unread' && (
-                            <NavBadge
-                              inline
-                              count={unreadCount}
-                              label={t('header.mobileNav.unreadCount', '{{count}} unread', {
-                                count: unreadCount,
-                              })}
-                            />
-                          )}
-                        </LocalizedLink>
-                      </DialogClose>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="grid grid-cols-3 gap-2">
+                {modules.map((module) => (
+                  <NavSheetTile
+                    key={module.id}
+                    to={module.path}
+                    icon={module.icon}
+                    label={t(module.labelKey, module.defaultLabel)}
+                    active={module === activeModule}
+                    onClick={() => onOpenChange(false)}
+                    badge={
+                      module.badge === 'unread' && unreadCount > 0 ? (
+                        <NavBadge
+                          inline
+                          count={unreadCount}
+                          label={t('header.mobileNav.unreadCount', '{{count}} unread', {
+                            count: unreadCount,
+                          })}
+                        />
+                      ) : undefined
+                    }
+                  />
+                ))}
+              </div>
             </div>
-          ))}
-        </nav>
-      </DialogContent>
-    </Dialog>
+          );
+        })}
+      </nav>
+    </BottomNavSheet>
   );
 }

@@ -17,7 +17,6 @@ import { Wordmark } from '@/components/brand/Wordmark';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { DeferredSection } from '@/components/home/DeferredSection';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
-import { ink, paper } from '@/components/transit/iconDefs';
 import './Footer.css';
 
 const legalLinks = [
@@ -106,13 +105,12 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
                 aria-current={isIntentActive(intent, localePath) ? 'page' : undefined}
                 className={cn(
                   footerLink,
-                  'footer-destination gap-1 text-15 font-bold leading-snug text-background md:gap-2 md:text-title aria-[current=page]:underline',
+                  'footer-destination gap-2.5 text-15 font-bold leading-snug text-background md:gap-4 md:text-title aria-[current=page]:underline',
                 )}
               >
                 <span
                   aria-hidden="true"
-                  className="footer-destination-icon inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-badge"
-                  style={{ backgroundColor: paper, color: ink }}
+                  className="footer-destination-icon inline-flex h-7 w-7 shrink-0 items-center justify-center"
                 >
                   <intent.icon size={24} />
                 </span>
@@ -178,18 +176,19 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               <CurrencySelector />
               <ThemeToggle />
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-x-6 md:gap-x-8">
-              <LocalizedLink
-                to="/"
-                className={cn(footerLink, 'text-background hover:no-underline')}
-                aria-label={siteName}
-              >
-                <Wordmark className="text-title text-background" />
-              </LocalizedLink>
-              <p className="text-2xs text-background/70">&copy; {currentYear} Queer Guide</p>
-            </div>
+            <LocalizedLink
+              to="/"
+              className={cn(footerLink, 'text-background hover:no-underline')}
+              aria-label={siteName}
+            >
+              <Wordmark className="text-title text-background" />
+            </LocalizedLink>
           </div>
         </div>
+        {/* Copyright sits on the page ground, below the ink island. */}
+        <p className={cn('py-4 text-2xs text-muted-foreground', PAGE_GUTTER)}>
+          &copy; {currentYear} Queer Guide
+        </p>
       </DeferredSection>
     </footer>
   );

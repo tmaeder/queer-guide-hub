@@ -6,7 +6,11 @@
     "personalities": "Personalities",
     "history": "History",
     "lede": "The words we use, the people who shaped queer life, and the history behind both.",
-    "navigation": "Knowledge sections"
+    "navigation": "Knowledge sections",
+    "termsHint": "The words we use, defined",
+    "personalitiesHint": "People who shaped queer life",
+    "historyHint": "Milestones, year by year",
+    "rightsHint": "What the law says, by country"
   },
   "breadcrumb": {
     "home": "Home",
@@ -2122,7 +2126,11 @@
       "exploreCity": "{{city}} city guide",
       "browseEvents": "Browse {{city}} events",
       "whatsOn": "What’s on",
-      "communitySpace": "Community space"
+      "communitySpace": "Community space",
+      "photos": "Photos",
+      "previousPhoto": "Previous photo",
+      "nextPhoto": "Next photo",
+      "pausePhotos": "Pause slideshow"
     },
     "discovery": {
       "openMap": "Open the map",
@@ -2155,7 +2163,8 @@
       "interchange": {
         "label": "Search everything",
         "subtitle": "Every line meets here"
-      }
+      },
+      "title": "Map"
     },
     "heroLine1": "Queer venues,",
     "heroLine2": "events, and people.",
@@ -2452,6 +2461,7 @@
       "you": "You",
       "menuTitle": "All sections",
       "menuDescription": "Jump to any section, switch language or theme.",
+      "hubDescription": "Your messages, plans, people and saved things.",
       "trips": "My Trips",
       "settingsSection": "Display",
       "browseAll": "Browse all sections",
@@ -2941,7 +2951,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} person",
+        "fieldCount_other": "{{formatted}} people"
       },
       "detail": {
         "inTheNews": "In the news",
@@ -4583,7 +4595,8 @@
         "trans": "Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "If something here is wrong, tell us. Corrections to the underlying record should also go to ILGA, who maintain it."
-      }
+      },
+      "methodologyLink": "Every weight, the tier cutoffs and how to cite it"
     },
     "lens": {
       "title": "Who the law protects",
@@ -4600,6 +4613,93 @@
       "partial": "Some protections",
       "protected": "Broad protections",
       "unknown": "Not enough data"
+    },
+    "methodology": {
+      "cite": {
+        "copied": "Copied",
+        "copy": "Copy",
+        "apa": "APA",
+        "plain": "Plain text"
+      },
+      "metaTitle": "How the LGBTQ+ equality score is calculated",
+      "metaDescription": "Every weight in the Queer Guide equality score, the 0–100 range, the tier cutoffs, its known limits, and how to cite it.",
+      "section": {
+        "formula": "The formula",
+        "range": "Range and tiers",
+        "limits": "Known limits",
+        "cite": "Cite this"
+      },
+      "kicker": {
+        "formula": "Every weight"
+      },
+      "body": {
+        "formula": "Each country starts at {{start}}. Points are added or subtracted for each fact ILGA records, then the total is held between 0 and 100. Some rows are alternatives: a country gets marriage or civil union, not both, and at most one penalty deduction.",
+        "range": "Before the 0–100 limit, the lowest possible total is {{min}} and the highest is {{max}}. The top is reached with points to spare, so 100 means \"at least 100\", not \"every right recorded\".",
+        "ceiling": "{{atCeiling}} of {{scored}} scored countries and territories currently sit at exactly 100. The score cannot rank them against each other.",
+        "cite": "Cite the score as Queer Guide and the legal facts behind it as the ILGA World Database. Scores are recomputed nightly, so include the date you accessed them."
+      },
+      "col": {
+        "fact": "Recorded fact",
+        "points": "Points",
+        "field": "ILGA field"
+      },
+      "tiers": "Tier cutoffs",
+      "tierUnknown": "No ILGA record",
+      "limits": {
+        "start": "Starting at 50 means a country with almost nothing recorded lands mid-scale. A middling score can mean middling rights or thin data.",
+        "penaltyText": "The penalty deduction reads ILGA's description of the penalty, not its separate death-penalty field. Where ILGA describes the penalty as imprisonment but also records the death penalty in part of the country (Nigeria, under Sharia law in northern states), the score deducts for life imprisonment, not death.",
+        "transLink": "Trans rights by country",
+        "uneven": "Sexual orientation counts for more than gender identity in every protection area (2 points against 1), and hate-crime and incitement laws count only for sexual orientation. The score therefore says more about lesbian, gay and bisexual people than about trans people.",
+        "law": "It is national, it records statutes rather than enforcement, and it is not a safety rating.",
+        "sourcesLink": "More on the data and its limits"
+      },
+      "breadcrumb": "Methodology",
+      "heroLine": "Rights line · Methodology",
+      "title": "How the equality score is calculated",
+      "lede": "The equality score is a 0–100 number we compute every night from the ILGA World Database. This page lists every weight, the range, the tier cutoffs and the cases the score gets wrong.",
+      "group": {
+        "criminalisation": "Criminalisation",
+        "partnership": "Partnership",
+        "protection": "Anti-discrimination protection",
+        "hate": "Hate crime and incitement",
+        "civic": "Expression and association",
+        "family": "Family and bodily integrity"
+      },
+      "row": {
+        "legal": "Same-sex sexual acts are legal",
+        "criminalised": "Same-sex sexual acts are criminalised",
+        "death": "Penalty described as the death penalty, including \"possible\"",
+        "life": "Penalty up to life imprisonment",
+        "eight": "Penalty up to 8 years imprisonment",
+        "marriage": "Same-sex marriage",
+        "civil-union": "Civil union only",
+        "constitutional-so": "Constitution: covers sexual orientation",
+        "constitutional-gi": "Constitution: covers gender identity",
+        "employment-so": "Employment: covers sexual orientation",
+        "employment-gi": "Employment: covers gender identity",
+        "housing-so": "Housing: covers sexual orientation",
+        "housing-gi": "Housing: covers gender identity",
+        "education-so": "Education: covers sexual orientation",
+        "education-gi": "Education: covers gender identity",
+        "health-so": "Health: covers sexual orientation",
+        "health-gi": "Health: covers gender identity",
+        "goods_services-so": "Goods and services: covers sexual orientation",
+        "goods_services-gi": "Goods and services: covers gender identity",
+        "bullying-so": "Bullying: covers sexual orientation",
+        "bullying-gi": "Bullying: covers gender identity",
+        "hate-crime": "Hate-crime law covers sexual orientation",
+        "incitement": "Incitement to hatred prohibited, covering sexual orientation",
+        "expression-free": "No known legal barriers to expression",
+        "expression-restricted": "Legal restrictions on expression (explicit or not)",
+        "association-free": "No known legal barriers to association",
+        "association-restricted": "Explicit legal restrictions on association",
+        "joint-adoption": "Joint adoption",
+        "second-parent": "Second-parent adoption only",
+        "conversion": "Conversion practices banned",
+        "self-id": "Legal gender recognition by self-determination",
+        "marker": "Gender marker change possible, without self-determination",
+        "intersex": "Protection for intersex people"
+      }
     }
   },
   "about": {

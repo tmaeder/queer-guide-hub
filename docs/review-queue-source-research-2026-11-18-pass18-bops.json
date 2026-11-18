@@ -1,0 +1,20 @@
+{
+  "capture": {
+    "url": "https://the-other-side.nl/",
+    "status": 200,
+    "final_url": "https://the-other-side.nl/",
+    "retrieved_at": "2026-11-18T17:12:38.110175+00:00",
+    "sha256": "683c38c04743cb756d3a381a9f3bf9116de8953fc41d86d30f46bd20646b44cf",
+    "bytes": 745105
+  },
+  "event_id": "a9d76c50-cedb-4db8-b772-81af996feecd",
+  "venue_id": "ff41c954-ba1e-453d-ab88-0fd70f1d72f8",
+  "organizer_date_confirmation": "https://linktr.ee/bops.ams",
+  "start_local": "2026-11-27T23:00:00",
+  "end_local": "2026-11-28T05:00:00",
+  "timezone": "Europe/Amsterdam",
+  "corrected_start_utc": "2026-11-27T22:00:00Z",
+  "corrected_end_utc": "2026-11-28T04:00:00Z",
+  "independent_existing_offset_binding": "queer-kalender:1314",
+  "human_reviewed": false
+}

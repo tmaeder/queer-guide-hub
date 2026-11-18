@@ -1,0 +1,67 @@
+{
+  "xenix": {
+    "title": "All of Us Strangers",
+    "director": "Andrew Haigh",
+    "year": "2023",
+    "minutes": "105",
+    "image": "/upload/media/movie/2702/7582B.jpg",
+    "source_url": "https://www.xenix.ch/static/json/2026-10-29-2026-12-02.json",
+    "sha256": "bf9d3ca84687415aa98df41a862d5591275718989fac44dd376acb287ea1e244",
+    "screenings": [
+      {
+        "url": "/programm/november-2026/paul-mescal/all-of-us-strangers/2026-11-25T18:00:00",
+        "past": false,
+        "final_show": false,
+        "event_type": "FILM",
+        "date": "2026-11-25",
+        "time": "18:00:00",
+        "title_prepend": null,
+        "title": "All of Us Strangers",
+        "title_alphabet": "All of Us Strangers",
+        "title_append": null,
+        "original_title": null,
+        "sub_line": "Andrew Haigh, GB/USA 2023; 105' E/d (4K DCP, Farbe, Scope)",
+        "free_seats": null,
+        "image": "",
+        "text": "All of Us Strangers",
+        "booking_link": "https://www.advance-ticket.ch/omniticket/xenix/296905"
+      },
+      {
+        "url": "/programm/november-2026/paul-mescal/all-of-us-strangers/2026-11-27T22:15:00",
+        "past": false,
+        "final_show": true,
+        "event_type": "FILM",
+        "date": "2026-11-27",
+        "time": "22:15:00",
+        "title_prepend": null,
+        "title": "All of Us Strangers",
+        "title_alphabet": "All of Us Strangers",
+        "title_append": null,
+        "original_title": null,
+        "sub_line": "Andrew Haigh, GB/USA 2023; 105' E/d (4K DCP, Farbe, Scope)",
+        "free_seats": null,
+        "image": "",
+        "text": "All of Us Strangers",
+        "booking_link": "https://www.advance-ticket.ch/omniticket/xenix/813477"
+      }
+    ],
+    "image_sha256": "7582bbe8aa23c0bf470ac47d043ff0f58bea8d55445de947c2fe215a15f6d96b",
+    "image_width": 1400,
+    "image_height": 940
+  },
+  "houdini": [
+    {
+      "url": "https://www.riffraff-houdini.ch/de-ch/services/kontakt.html",
+      "status": 200,
+      "retrieved_at": "2026-11-18T15:29:50.306927+00:00",
+      "sha256": "e41fe08c151e42d9f7c22e6a2b8c125a2cf40aed58034afafe4078db71a7864d",
+      "excerpt": "Houdini Kino/Bar / Badenerstrasse 173 / 8003 Zürich"
+    },
+    {
+      "url": "https://www.riffraff-houdini.ch/de-ch/dein-anlass.html",
+      "status": 200,
+      "retrieved_at": "2026-11-18T15:29:50.701222+00:00",
+      "sha256": "e89c7d8be664360de000f22d1eb40566488a13a37ba1062d4b2e3ad902544421"
+    }
+  ]
+}

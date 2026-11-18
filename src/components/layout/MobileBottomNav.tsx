@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { MobileNavSheet } from '@/components/layout/MobileNavSheet';
 import { MobileHubSheet } from '@/components/hub/MobileHubSheet';
-import { ChevronUp } from '@/components/icons';
 import { NavTab } from '@/components/layout/bottom-nav/NavTab';
 import { NavContributeButton } from '@/components/layout/bottom-nav/NavContributeButton';
 import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
@@ -59,6 +58,7 @@ export function MobileBottomNav() {
   const isMobile = useIsMobile();
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetByPointer, setSheetByPointer] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [hubOpening, setHubOpening] = useState<{ path: string; byPointer: boolean } | null>(null);
   const hubTrigger = useRef<HTMLAnchorElement>(null);
@@ -171,7 +171,10 @@ export function MobileBottomNav() {
                 onIntercept={
                   isExplore
                     ? // onTap already fired the haptic — openExplore would double it.
-                      () => setSheetOpen(true)
+                      (event: MouseEvent<HTMLAnchorElement>) => {
+                        setSheetByPointer(event.detail > 0);
+                        setSheetOpen(true);
+                      }
                     : isHub
                       ? openHub
                       : anonGated
@@ -180,7 +183,6 @@ export function MobileBottomNav() {
                 }
                 hasPopup={isExplore || isHub}
                 expanded={isExplore ? sheetOpen : hubSheetOpen}
-                labelAccessory={isHub && <ChevronUp className="h-3 w-3 shrink-0" aria-hidden />}
                 badgeCount={showUnread ? unreadCount : undefined}
                 badgeLabel={
                   showUnread
@@ -211,7 +213,11 @@ export function MobileBottomNav() {
         </ul>
       </nav>
 
-      <MobileNavSheet open={sheetOpen} onOpenChange={setSheetOpen} />
+      <MobileNavSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        openedByPointer={sheetByPointer}
+      />
       <MobileHubSheet
         open={hubSheetOpen}
         openedByPointer={hubOpening?.byPointer ?? false}

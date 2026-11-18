@@ -880,7 +880,7 @@ function dmEventPayload(e, geo) {
     dates: { start: toIso(e.start_date), end: toIso(e.end_date) },
     venue_name: v ? stripTags(v.venue) : null,
     website: e.website || e.url || null,
-    ticket_url: e.website || e.url || null,
+    ticket_url: typeof e.tickets === 'string' ? e.tickets.trim() || null : null,
     location: {
       address: v ? stripTags(v.address) || null : null,
       city,

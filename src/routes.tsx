@@ -1,3 +1,4 @@
+import { localizedRedirectTarget } from '@/lib/localizedRedirectTarget';
 import { GovernanceRedirect } from '@/components/admin/GovernanceRedirect';
 import React, { Suspense } from 'react';
 import { Route, Navigate, useLocation, useParams } from 'react-router';
@@ -45,6 +46,7 @@ const Wishlists = lazyRetry(() => import('./pages/Wishlists'));
 const GoingOut = lazyRetry(() => import('./pages/intent/GoingOut'));
 const RightsIntent = lazyRetry(() => import('./pages/intent/Rights'));
 const RightsSources = lazyRetry(() => import('./pages/rights/RightsSources'));
+const RightsMethodology = lazyRetry(() => import('./pages/rights/RightsMethodology'));
 const TransRights = lazyRetry(() => import('./pages/rights/TransRights'));
 const Styleguide = lazyRetry(() => import('./pages/Styleguide'));
 const TagsIndex = lazyRetry(() => import('./pages/TagsIndex'));
@@ -278,11 +280,9 @@ function LocalizedRedirect({ to }: { to: string }) {
   const location = useLocation();
   const prefix =
     locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
-  const search = to.includes('?') ? '' : location.search;
   // Carry the fragment too: /rights#marriage is how the glossary and inbound
   // links address a single right, and dropping it lands the reader at the top.
-  const hash = to.includes('#') ? '' : location.hash;
-  return <Navigate to={`${prefix}${to}${search}${hash}`} replace />;
+  return <Navigate to={localizedRedirectTarget(to, prefix, location)} replace />;
 }
 
 /** Locale-preserving redirect for a dynamic legacy route segment. */
@@ -388,9 +388,7 @@ export const AppRoutes = () => {
         <Route path="/share/redirect-report/:reportId" element={<SharedRedirectReport />} />
         <Route path="/links-workspace" element={<RedirectMemberWorkspace />} />
         <Route path="/extension" element={<ExtensionInstall />} />
-        {import.meta.env.DEV && (
-          <Route path="/pattern-library" element={<PatternLibrary />} />
-        )}
+        {import.meta.env.DEV && <Route path="/pattern-library" element={<PatternLibrary />} />}
         <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
         <Route path="/onboarding/search" element={<SearchPersonalization />} />
         <Route path="/onboarding/venues" element={<VenuePersonalization />} />
@@ -443,10 +441,7 @@ export const AppRoutes = () => {
           <Route path="content/:type" element={<ContentListPanel />} />
           {/* /admin/pages duplicated /admin/content/cms_pages (what nav points at);
             kept as a redirect for old bookmarks. */}
-          <Route
-            path="pages"
-            element={<Navigate to="/admin/content/cms_pages" replace />}
-          />
+          <Route path="pages" element={<Navigate to="/admin/content/cms_pages" replace />} />
           <Route path="media" element={<MediaLibrary />} />
           <Route path="media/:id" element={<MediaDetailPage />} />
 
@@ -468,14 +463,8 @@ export const AppRoutes = () => {
             path="ingestion-rules"
             element={<Navigate to="/admin/pipelines?tab=sources&sub=imports" replace />}
           />
-          <Route
-            path="pipelines/dashboard"
-            element={<Navigate to="/admin/pipelines" replace />}
-          />
-          <Route
-            path="scraping"
-            element={<Navigate to="/admin/pipelines?tab=sources" replace />}
-          />
+          <Route path="pipelines/dashboard" element={<Navigate to="/admin/pipelines" replace />} />
+          <Route path="scraping" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
 
           {/* Review & Workflow section -- unified dashboard */}
           <Route path="review" element={<ReviewRedirect />} />
@@ -505,10 +494,7 @@ export const AppRoutes = () => {
 
           {/* Content type admin pages */}
           {/* Standalone quality pages folded into the hub (P5) — review lives in the inbox. */}
-          <Route
-            path="content/venue-quality"
-            element={<Navigate to="/admin/quality" replace />}
-          />
+          <Route path="content/venue-quality" element={<Navigate to="/admin/quality" replace />} />
           <Route path="quality" element={<GovernanceRedirect mode="engines" />} />
           <Route path="trash" element={<AdminTrash />} />
           <Route path="graph" element={<ContentGraph />} />
@@ -520,18 +506,12 @@ export const AppRoutes = () => {
             path="content/event-quality"
             element={<Navigate to="/admin?queue=event-quality" replace />}
           />
-          <Route
-            path="content/city-quality"
-            element={<Navigate to="/admin/quality" replace />}
-          />
+          <Route path="content/city-quality" element={<Navigate to="/admin/quality" replace />} />
           <Route
             path="content/personality-quality"
             element={<Navigate to="/admin/quality" replace />}
           />
-          <Route
-            path="content/personalities/:id/datasheet"
-            element={<PersonalityDataSheet />}
-          />
+          <Route path="content/personalities/:id/datasheet" element={<PersonalityDataSheet />} />
           {/* Legacy — milestone curation moved to the generic CMS. Keep one release. */}
           <Route
             path="personalities/milestones"
@@ -567,10 +547,7 @@ export const AppRoutes = () => {
 
           {/* System section */}
           <Route path="users" element={<AdminUsers />} />
-          <Route
-            path="redirects"
-            element={<Navigate to="/admin/content/redirects" replace />}
-          />
+          <Route path="redirects" element={<Navigate to="/admin/content/redirects" replace />} />
           <Route path="email" element={<EmailPlatform />} />
           <Route
             path="email-templates"
@@ -578,10 +555,7 @@ export const AppRoutes = () => {
           />
 
           {/* Settings -- taxonomy management pages */}
-          <Route
-            path="settings"
-            element={<Navigate to="/admin/content/unified_tags" replace />}
-          />
+          <Route path="settings" element={<Navigate to="/admin/content/unified_tags" replace />} />
           <Route
             path="settings/venue-services"
             element={<Navigate to="/admin/content/venue_services" replace />}
@@ -612,30 +586,18 @@ export const AppRoutes = () => {
           />
 
           {/* Legacy routes -- redirect to new paths */}
-          <Route
-            path="venues"
-            element={<Navigate to="/admin/content/organizations" replace />}
-          />
+          <Route path="venues" element={<Navigate to="/admin/content/organizations" replace />} />
           <Route path="duplicates" element={<GovernanceRedirect mode="merge" />} />
           <Route path="events" element={<Navigate to="/admin/content/events" replace />} />
-          <Route
-            path="tags"
-            element={<Navigate to="/admin/content/unified_tags" replace />}
-          />
+          <Route path="tags" element={<Navigate to="/admin/content/unified_tags" replace />} />
           <Route path="cities" element={<Navigate to="/admin/quality" replace />} />
-          <Route
-            path="countries"
-            element={<Navigate to="/admin/content/countries" replace />}
-          />
+          <Route path="countries" element={<Navigate to="/admin/content/countries" replace />} />
           <Route
             path="personalities"
             element={<Navigate to="/admin/content/personalities" replace />}
           />
           <Route path="quests" element={<Navigate to="/admin/content/guides" replace />} />
-          <Route
-            path="places-editorial"
-            element={<GovernanceRedirect mode="editorial" />}
-          />
+          <Route path="places-editorial" element={<GovernanceRedirect mode="editorial" />} />
           <Route
             path="marketplace"
             element={<Navigate to="/admin/content/marketplace_listings" replace />}
@@ -644,10 +606,7 @@ export const AppRoutes = () => {
             path="marketplace/guides"
             element={<Navigate to="/admin/content/guides" replace />}
           />
-          <Route
-            path="venue-guides"
-            element={<Navigate to="/admin/content/guides" replace />}
-          />
+          <Route path="venue-guides" element={<Navigate to="/admin/content/guides" replace />} />
           <Route
             path="groups"
             element={<Navigate to="/admin/content/community_groups" replace />}
@@ -711,56 +670,32 @@ export const AppRoutes = () => {
           <Route path="venues/hotels" element={<Navigate to="/hotels" replace />} />
           <Route path="venues/events" element={<Navigate to="/events" replace />} />
           <Route path="venues/news" element={<Navigate to="/news" replace />} />
-          <Route
-            path="venues/marketplace"
-            element={<Navigate to="/marketplace" replace />}
-          />
+          <Route path="venues/marketplace" element={<Navigate to="/marketplace" replace />} />
           <Route path="venues/travel" element={<Navigate to="/travel" replace />} />
           <Route path="venues/groups" element={<Navigate to="/hub/groups" replace />} />
           <Route path="venues/resources" element={<Navigate to="/tags" replace />} />
           {/* Legacy routes — canonical lives under /me/*. Keep one release. */}
-          <Route
-            path="venues/leaderboard"
-            element={<Navigate to="/me/progress" replace />}
-          />
+          <Route path="venues/leaderboard" element={<Navigate to="/me/progress" replace />} />
           <Route path="venues/passport" element={<Navigate to="/me/progress" replace />} />
           <Route path="guides" element={<Guides />} />
           <Route path="guides/:slug" element={<GuideDetail />} />
-          <Route
-            path="venues/guides"
-            element={<LocalizedRedirect to="/guides?entity=venue" />}
-          />
-          <Route
-            path="venues/guides/:slug"
-            element={<SlugAliasRedirect toBase="guides" />}
-          />
+          <Route path="venues/guides" element={<LocalizedRedirect to="/guides?entity=venue" />} />
+          <Route path="venues/guides/:slug" element={<SlugAliasRedirect toBase="guides" />} />
           <Route path="venues/:slug" element={<EntityDetail source="venue" />} />
           <Route path="organizations" element={<Organizations />} />
-          <Route
-            path="organizations/:slug"
-            element={<EntityDetail source="organization" />}
-          />
+          <Route path="organizations/:slug" element={<EntityDetail source="organization" />} />
           <Route path="history" element={<HistoryTimeline />} />
           <Route path="history/:slug" element={<EntityDetail source="milestone" />} />
           <Route path="milestones" element={<Navigate to="/history" replace />} />
           <Route path="events" element={<Events />} />
-          <Route
-            path="events/guides"
-            element={<LocalizedRedirect to="/guides?entity=event" />}
-          />
-          <Route
-            path="events/guides/:slug"
-            element={<SlugAliasRedirect toBase="guides" />}
-          />
+          <Route path="events/guides" element={<LocalizedRedirect to="/guides?entity=event" />} />
+          <Route path="events/guides/:slug" element={<SlugAliasRedirect toBase="guides" />} />
           <Route path="events/:slug" element={<EventDetail />} />
           <Route path="pride" element={<PridePage />} />
           <Route path="pride/:year" element={<PridePage />} />
           <Route path="marketplace" element={<Marketplace />} />
           <Route path="marketplace/share" element={<MarketplaceShare />} />
-          <Route
-            path="marketplace/missions"
-            element={<Navigate to="/me/progress" replace />}
-          />
+          <Route path="marketplace/missions" element={<Navigate to="/me/progress" replace />} />
           <Route path="marketplace/categories" element={<MarketplaceCategories />} />
           <Route path="marketplace/category/:slug" element={<MarketplaceCategory />} />
           <Route path="marketplace/collection/:slug" element={<MarketplaceCollection />} />
@@ -768,10 +703,7 @@ export const AppRoutes = () => {
             path="marketplace/guides"
             element={<LocalizedRedirect to="/guides?entity=marketplace" />}
           />
-          <Route
-            path="marketplace/guides/:slug"
-            element={<SlugAliasRedirect toBase="guides" />}
-          />
+          <Route path="marketplace/guides/:slug" element={<SlugAliasRedirect toBase="guides" />} />
           <Route path="marketplace/merchants/:domain" element={<MarketplaceMerchant />} />
           {/* The index MUST stay above `marketplace/:slug` — the
               catch-all would otherwise swallow `/marketplace/brands`
@@ -807,10 +739,7 @@ export const AppRoutes = () => {
               /tags/rights-by-country (2026-11-01). NOT /tags/rights —
               that slug is a live glossary term. The old URLs stay as
               redirects so inbound links (and #topic fragments) work. */}
-          <Route
-            path="rights"
-            element={<LocalizedRedirect to="/tags/rights-by-country" />}
-          />
+          <Route path="rights" element={<LocalizedRedirect to="/tags/rights-by-country" />} />
           <Route
             path="rights/sources"
             element={<LocalizedRedirect to="/tags/rights-by-country/sources" />}
@@ -818,6 +747,14 @@ export const AppRoutes = () => {
           <Route
             path="rights/trans"
             element={<LocalizedRedirect to="/tags/rights-by-country/trans" />}
+          />
+          <Route
+            path="methodology"
+            element={<LocalizedRedirect to="/tags/rights-by-country/methodology" />}
+          />
+          <Route
+            path="equality-score"
+            element={<LocalizedRedirect to="/tags/rights-by-country/methodology" />}
           />
           {/* /support was the org-directory slice of /help wrapped in
             intent chrome: same hook, same `role: 'support'` filter, and its
@@ -856,14 +793,8 @@ export const AppRoutes = () => {
           <Route path="trips/inbox" element={<LocalizedRedirect to="/hub/plans" />} />
           <Route path="trips/discover" element={<TripsDiscoverPage />} />
           <Route path="trips/shared/:token" element={<SharedTripPage />} />
-          <Route
-            path="trips/:tripId/today"
-            element={<TripSubrouteRedirect view="today" />}
-          />
-          <Route
-            path="trips/:tripId/booklet"
-            element={<TripSubrouteRedirect view="booklet" />}
-          />
+          <Route path="trips/:tripId/today" element={<TripSubrouteRedirect view="today" />} />
+          <Route path="trips/:tripId/booklet" element={<TripSubrouteRedirect view="booklet" />} />
           <Route path="trips/:tripId" element={<TripWorkspace />} />
           {/* Legacy trip sub-tabs (e.g. /trips/:id/packing from old
             notification links) fold into the workspace. */}
@@ -927,15 +858,9 @@ export const AppRoutes = () => {
             element={<CompetitionCategoryPage category="leather_title" />}
           />
           {/* Legacy URL schemes still crawled — alias to canonical routes. */}
-          <Route
-            path="personality/:slug"
-            element={<SlugAliasRedirect toBase="personalities" />}
-          />
+          <Route path="personality/:slug" element={<SlugAliasRedirect toBase="personalities" />} />
           <Route path="geography/:slug" element={<SlugAliasRedirect toBase="city" />} />
-          <Route
-            path="organizer/:slug"
-            element={<SlugAliasRedirect toBase="organizations" />}
-          />
+          <Route path="organizer/:slug" element={<SlugAliasRedirect toBase="organizations" />} />
           <Route path="tag/:slug" element={<SlugAliasRedirect toBase="tags" />} />
           <Route path="profession/:slug" element={<ProfessionRedirect />} />
           <Route path="shop/*" element={<LocalizedRedirect to="/marketplace" />} />
@@ -967,6 +892,7 @@ export const AppRoutes = () => {
           {/* Static, so it beats tags/:tagName below. */}
           <Route path="tags/rights-by-country" element={<RightsIntent />} />
           <Route path="tags/rights-by-country/sources" element={<RightsSources />} />
+          <Route path="tags/rights-by-country/methodology" element={<RightsMethodology />} />
           <Route path="tags/rights-by-country/trans" element={<TransRights />} />
           <Route path="tags/interactions" element={<SubstanceInteractionsPage />} />
           <Route path="tags/sti-guide" element={<StiGuidePage />} />
@@ -979,10 +905,7 @@ export const AppRoutes = () => {
           {/* Legacy redirects → /tags */}
           <Route path="resources" element={<Navigate to="/tags" replace />} />
           <Route path="resources/topic/:slug" element={<Navigate to="/tags" replace />} />
-          <Route
-            path="resources/c/:categorySlug"
-            element={<Navigate to="/tags" replace />}
-          />
+          <Route path="resources/c/:categorySlug" element={<Navigate to="/tags" replace />} />
           <Route path="resources/:tagName" element={<ResourcesTagRedirect />} />
           <Route path="ressources" element={<Navigate to="/tags" replace />} />
           <Route path="ressources/:tagName" element={<Navigate to="/tags" replace />} />
@@ -1023,10 +946,7 @@ export const AppRoutes = () => {
             path="groups/:groupId"
             element={<LocalizedParamRedirect toBase="/hub/groups" param="groupId" />}
           />
-          <Route
-            path="my-groups"
-            element={<LocalizedRedirect to="/hub/groups?tab=mine" />}
-          />
+          <Route path="my-groups" element={<LocalizedRedirect to="/hub/groups?tab=mine" />} />
           <Route path="accessibility" element={<CMSRoutePage slug="accessibility" />} />
           {/* "Inbox" was email + notifications, never messages. Notifications now
           live in the header menu; the @queer.guide mailbox moved to /mailbox.
@@ -1047,14 +967,8 @@ export const AppRoutes = () => {
           <Route path="friends" element={<LocalizedRedirect to="/hub/friends" />} />
           <Route path="community" element={<LocalizedRedirect to="/hub/feed" />} />
           <Route path="community/feed" element={<LocalizedRedirect to="/hub/feed" />} />
-          <Route
-            path="community/members"
-            element={<LocalizedRedirect to="/hub/members" />}
-          />
-          <Route
-            path="community/friends"
-            element={<LocalizedRedirect to="/hub/friends" />}
-          />
+          <Route path="community/members" element={<LocalizedRedirect to="/hub/members" />} />
+          <Route path="community/friends" element={<LocalizedRedirect to="/hub/friends" />} />
           <Route path="community/groups" element={<LocalizedRedirect to="/hub/groups" />} />
           {/* /hub — one home for community, connection, and the personal
           workspace. Static routes prevent the optional /:locale? parent
@@ -1128,14 +1042,8 @@ export const AppRoutes = () => {
           />
           <Route path="people/travel" element={<LocalizedRedirect to="/hub/travel" />} />
           <Route path="people/nearby" element={<LocalizedRedirect to="/hub/nearby" />} />
-          <Route
-            path="intimate"
-            element={<LocalizedRedirect to="/hub/dating?panel=people" />}
-          />
-          <Route
-            path="discover"
-            element={<LocalizedRedirect to="/hub/dating?panel=people" />}
-          />
+          <Route path="intimate" element={<LocalizedRedirect to="/hub/dating?panel=people" />} />
+          <Route path="discover" element={<LocalizedRedirect to="/hub/dating?panel=people" />} />
           <Route path="cruising" element={<LocalizedRedirect to="/hub/dating" />} />
           <Route
             path="intimate/onboard"
@@ -1181,11 +1089,7 @@ export const AppRoutes = () => {
           slugs stay covered. The `:contentType` route below still
           handles unknown types ("Unknown submission type"). */}
           {[...Object.keys(submissionRegistry), 'feedback'].map((slug) => (
-            <Route
-              key={slug}
-              path={`submit/${slug}`}
-              element={<ContributePage type={slug} />}
-            />
+            <Route key={slug} path={`submit/${slug}`} element={<ContributePage type={slug} />} />
           ))}
           <Route path="submit/:contentType" element={<ContributePage />} />
           {/* `p/:slug` moved to the top of this list — see note there. */}
