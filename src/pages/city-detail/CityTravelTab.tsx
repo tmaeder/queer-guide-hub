@@ -27,11 +27,6 @@ function formatKm(km: number | string | null | undefined): string | null {
  * criminal penalties. That branch keeps `--destructive`, which is the only
  * token allowed to mean danger.
  *
- * The network diagram sits HERE rather than in the masthead or the rail. It is
- * the sanctioned four-track surface, and the design system forbids the four
- * wayfinding hues sharing a viewport with a risk badge — the safety verdict
- * lives at the top of the rail, so the diagram lives well below the fold, in
- * the one section where a transit map is information rather than ornament.
  */
 export function CityTravelTab({ city, effectiveIata }: CityTravelTabProps) {
   const { t } = useTranslation();
