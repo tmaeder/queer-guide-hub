@@ -139,36 +139,6 @@ function MainGridSection({
   );
 }
 
-/**
- * End of line: the hub's one ink block, and the makers directory's entry point.
- *
- * `/marketplace/brands` did not exist until now, and the brand pages it indexes
- * were reachable only from links inside cards and spotlight blocks. A hub that
- * lists 2,500 makers and offers no way to see them as a set was the gap.
- */
-function MakersEntry() {
-  return (
-    <section
-      aria-labelledby="makers-entry"
-      className="overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
-    >
-      <p className="text-2xs font-bold uppercase tracking-label text-background/70">End of line</p>
-      <h2 id="makers-entry" className="mt-1 font-display text-headline leading-tight">
-        Every maker on this line
-      </h2>
-      <p className="mt-2 max-w-reading text-15 text-background/85">
-        Browse brands by name, or filter to the ones whose ownership we have recorded.
-      </p>
-      <LocalizedLink
-        to="/marketplace/brands"
-        className="mt-4 inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
-      >
-        All makers →
-      </LocalizedLink>
-    </section>
-  );
-}
-
 const VALID_SORTS = [
   'boutique',
   'most_loved',
@@ -465,11 +435,7 @@ const Marketplace = () => {
               </Button>
             </>
           }
-        >
-          {/* Disclosure BEFORE the monetised links, not after an infinite
-              grid — which is where the full statement used to sit alone. */}
-          <AffiliateDisclosure variant="strip" className="mt-6" />
-        </MarketplaceMasthead>
+        />
 
         {/* Band wrappers are `div`, not `section`: each already contains a
             component that renders its own labelled <section>, and an outer
@@ -622,10 +588,6 @@ const Marketplace = () => {
               filters={{ entityType: 'marketplace', department: false, limit: 3 }}
               alwaysRender
             />
-            {/* LAST, because it says "End of line". It used to sit after the
-                spotlight, so the collection chips and the buying guides ran on
-                past a block announcing the end of the page. */}
-            <MakersEntry />
             <AffiliateDisclosure />
           </PageContainer>
         </div>

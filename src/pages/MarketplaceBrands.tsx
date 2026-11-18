@@ -536,29 +536,6 @@ export default function MarketplaceBrands() {
           </>
         )}
       </PageContainer>
-
-      {/* ── 4. End of line ───────────────────────────────────────────────── */}
-      <div className="border-t border-border-hairline">
-        <PageContainer flush className="py-12 md:py-16">
-          <section
-            aria-labelledby="makers-end-of-line"
-            className="overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
-          >
-            <p className="text-2xs font-bold uppercase tracking-label text-background/70">
-              {t('marketplace.endOfLine', 'End of line')}
-            </p>
-            <h2 id="makers-end-of-line" className="mt-1 font-display text-headline leading-tight">
-              {t('marketplace.everythingOnTheLine', 'Everything on the line')}
-            </h2>
-            <LocalizedLink
-              to="/marketplace"
-              className="mt-4 inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
-            >
-              {t('marketplace.browseAll', 'Browse the marketplace')} →
-            </LocalizedLink>
-          </section>
-        </PageContainer>
-      </div>
     </div>
   );
 }

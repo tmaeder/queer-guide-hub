@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Sparkles } from '@/components/icons';
+import { ArrowRight } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
 import { MilestoneRow } from '@/components/milestones/MilestoneRow';
-import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import { EntityKindChips } from '@/components/entity/EntityKindChips';
 import { useOrganization } from '@/hooks/useOrganization';
 import { useMilestonesForEntity } from '@/hooks/useMilestones';
@@ -118,7 +117,8 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
           .join(' · '),
         track: 'green',
         density: 'compact',
-        lead: org.editorial_hook ||
+        lead:
+          org.editorial_hook ||
           (org.description ? <span className="line-clamp-2">{org.description}</span> : undefined),
         bodyLead: <OrgBodyLead org={org} />,
         tags: (
@@ -153,19 +153,6 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
             )}
             <OrgActions org={org} />
           </>
-        ),
-        // Same rail as the venue page, so the two-column frame matches.
-        rail: (
-          <div className="flex flex-col gap-6">
-            <DestinationSafetyCard countryIds={[org.country_id]} />
-            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Sparkles size={13} aria-hidden="true" />
-              {t(
-                'pages.entityDetail.reportHint',
-                'Spotted something off? Use the flag in the header to let us know.',
-              )}
-            </p>
-          </div>
         ),
       },
       sidebar: null,

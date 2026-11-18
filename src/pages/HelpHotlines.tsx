@@ -11,12 +11,8 @@
  *   - CrisisBar and CrisisTriage render OUTSIDE the loading/error branch,
  *     so first paint always carries life-safety info even before i18n resolves
  *     or the CMS returns.
- *   - QuickExit and HideScreen sit in the content column directly beneath
- *     CrisisBar, above the fold at every breakpoint, and never float over the
- *     crisis content. They were briefly housed in a bespoke `HelpSafetyHeader`
- *     that replaced the site header; that made /help the only page in the
- *     product with no way back to anything, which is its own cost to a visitor
- *     who arrived cold. The page now carries the ordinary chrome.
+ *   - The on-page QuickExit / HideScreen buttons were removed (2026-11-18,
+ *     owner decision). The page carries the ordinary site chrome.
  *   - Call-now lines and referral directories are rendered in different shapes,
  *     not just different sections (audit H-1).
  *   - The page is animation-free: no PageHeader (`.content-enter`), no
@@ -46,8 +42,6 @@ import { HelpFilterSpine } from '@/components/help/HelpFilterSpine';
 import { HotlineRow } from '@/components/help/HotlineRow';
 import { DirectoryList } from '@/components/help/DirectoryList';
 import { MoreSupportBand } from '@/components/help/MoreSupportBand';
-import { HideScreen } from '@/components/safety/HideScreen';
-import { QuickExit } from '@/components/safety/QuickExit';
 import {
   channelHref,
   COUNTRY_NAMES,
@@ -203,17 +197,6 @@ export default function HelpHotlines() {
       {/* Synchronous life-safety strip — no CMS or locale request can leave a
           dead row above the acute-danger action. */}
       <CrisisBar country={countryFilter} />
-
-      {/* Privacy and exit actions, in the content column directly under the
-          strip. They are deliberately NOT a fixed overlay: a floating control
-          is the one thing that can cover crisis content, and it is also the
-          thing that would make this page stop looking like the rest of the
-          site. Immediately after CrisisBar they are above the fold at every
-          breakpoint without pinning anything. */}
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <HideScreen />
-        <QuickExit />
-      </div>
 
       <div className="mt-6">
         <CrisisTriage
