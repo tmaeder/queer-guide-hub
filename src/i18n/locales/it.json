@@ -4556,7 +4556,8 @@
         "copied": "Copiato",
         "copy": "Copia",
         "apa": "APA",
-        "plain": "Testo semplice"
+        "plain": "Testo semplice",
+        "copyFailed": "Impossibile copiare automaticamente. La citazione è selezionata; copiala con la tastiera."
       },
       "metaTitle": "Come viene calcolato il punteggio di uguaglianza LGBTQ+",
       "metaDescription": "Ogni peso del punteggio di uguaglianza di Queer Guide, l'intervallo 0–100, le soglie delle fasce, i limiti noti e come citarlo.",
