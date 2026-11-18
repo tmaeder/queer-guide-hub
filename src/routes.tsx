@@ -44,6 +44,7 @@ const Wishlists = lazyRetry(() => import('./pages/Wishlists'));
 const GoingOut = lazyRetry(() => import('./pages/intent/GoingOut'));
 const RightsIntent = lazyRetry(() => import('./pages/intent/Rights'));
 const RightsSources = lazyRetry(() => import('./pages/rights/RightsSources'));
+const RightsMethodology = lazyRetry(() => import('./pages/rights/RightsMethodology'));
 const TransRights = lazyRetry(() => import('./pages/rights/TransRights'));
 const Styleguide = lazyRetry(() => import('./pages/Styleguide'));
 const TagsIndex = lazyRetry(() => import('./pages/TagsIndex'));
@@ -997,6 +998,10 @@ export const AppRoutes = () => {
                   {/* Static, so it beats tags/:tagName below. */}
                   <Route path="tags/rights-by-country" element={<RightsIntent />} />
                   <Route path="tags/rights-by-country/sources" element={<RightsSources />} />
+                  <Route
+                    path="tags/rights-by-country/methodology"
+                    element={<RightsMethodology />}
+                  />
                   <Route path="tags/rights-by-country/trans" element={<TransRights />} />
                   <Route path="tags/interactions" element={<SubstanceInteractionsPage />} />
                   <Route path="tags/sti-guide" element={<StiGuidePage />} />
