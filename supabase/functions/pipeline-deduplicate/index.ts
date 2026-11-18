@@ -1,3 +1,4 @@
+import { requireGayOutCandidateSearch } from './gayout.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import {
   rpcWithBatchBreaker,
@@ -284,7 +285,7 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
 
     let query = supabase
       .from('ingestion_staging')
-      .select('id, normalized_data, entity_type, target_table, dedup_details')
+      .select('id, source_name, normalized_data, entity_type, target_table, dedup_details')
       .eq('ai_validation_status', 'approved')
       .eq('dedup_status', 'pending')
       .eq('disposition', 'pending')
@@ -410,6 +411,7 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
             const r = await rpcWithBatchBreaker<Array<Record<string, unknown>>>(
               supabase, breakerFor(`rpc.${cfg.candidateRpc}`), cfg.candidateRpc, args,
             )
+            requireGayOutCandidateSearch(item.source_name, r.error, r.circuitOpen, 'deterministic')
             if (r.circuitOpen) { circuitOpenForThisItem = true; circuitTripped++ }
             else if (r.error) console.error(`dedup-${effType} ${item.id}:`, r.error.message)
             else if (r.data) {
@@ -446,6 +448,7 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
                 p_lat: lat, p_lng: lng, p_exclude_id: null,
               },
             )
+            requireGayOutCandidateSearch(item.source_name, r.error, r.circuitOpen, 'semantic')
             if (r.circuitOpen) circuitTripped++
             else if (r.error) console.error(`dedup-semantic ${item.id}:`, r.error.message)
             else if (r.data) {
@@ -466,6 +469,8 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
           }
         }
       } catch (e) {
+        // A failed search cannot establish uniqueness for a GayOut item.
+        if (item.source_name === 'gayout') throw e
         if (e instanceof CircuitOpenError) { circuitOpenForThisItem = true; circuitTripped++ }
         else { console.error(`dedup unexpected ${item.id}:`, (e as Error).message); hardFailures++ }
       }
