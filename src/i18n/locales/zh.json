@@ -2597,7 +2597,8 @@
       "pride": {
         "title": "本季骄傲活动",
         "window": "未来 4 个月",
-        "empty": "没有即将到来的骄傲活动。"
+        "empty": "没有即将到来的骄傲活动。",
+        "cta": "查看活动"
       },
       "inspiration": {
         "villages": "酷儿村",
@@ -3995,11 +3996,15 @@
       "title": "[ZH] What are you into?",
       "blurb": "[ZH] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[ZH] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[ZH] {{count}} selected"
+      "count": "[ZH] {{count}} selected",
+      "signIn": "登录以选择兴趣",
+      "limit": "已选择 {{count}} / {{max}} 项",
+      "atLimit": "已达到上限。取消一项后即可选择其他兴趣。"
     },
     "friends": {
       "discover": "寻找用户"
-    }
+    },
+    "safetyTitle": "见面前先了解法律"
   },
   "hub": {
     "title": "我的中心",

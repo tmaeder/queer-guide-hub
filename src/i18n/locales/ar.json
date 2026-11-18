@@ -2607,7 +2607,8 @@
       "pride": {
         "title": "فعاليات الفخر هذا الموسم",
         "window": "الأشهر الأربعة القادمة",
-        "empty": "لا توجد فعاليات فخر قادمة."
+        "empty": "لا توجد فعاليات فخر قادمة.",
+        "cta": "عرض الفعالية"
       },
       "inspiration": {
         "villages": "قرى الكوير",
@@ -4005,11 +4006,15 @@
       "title": "[AR] What are you into?",
       "blurb": "[AR] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[AR] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[AR] {{count}} selected"
+      "count": "[AR] {{count}} selected",
+      "signIn": "سجّل الدخول لاختيار الاهتمامات",
+      "limit": "تم اختيار {{count}} من {{max}}",
+      "atLimit": "لقد وصلت إلى الحد الأقصى. أزل أحدها لاختيار غيره."
     },
     "friends": {
       "discover": "ابحث عن أشخاص"
-    }
+    },
+    "safetyTitle": "تحقّق من القانون قبل اللقاء"
   },
   "hub": {
     "title": "مركزك",

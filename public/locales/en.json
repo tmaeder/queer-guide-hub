@@ -2810,7 +2810,8 @@
       "pride": {
         "title": "Pride this season",
         "window": "Next 4 months",
-        "empty": "No upcoming Pride events."
+        "empty": "No upcoming Pride events.",
+        "cta": "View event"
       },
       "inspiration": {
         "villages": "Queer villages",
@@ -4053,11 +4054,15 @@
       "title": "What are you into?",
       "blurb": "Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "{{count}} selected"
+      "count": "{{count}} selected",
+      "signIn": "Sign in to pick interests",
+      "limit": "{{count}} of {{max}} picked",
+      "atLimit": "That is the limit. Remove one to pick another."
     },
     "friends": {
       "discover": "Find people"
-    }
+    },
+    "safetyTitle": "Check the law before you meet"
   },
   "hub": {
     "title": "Your hub",
