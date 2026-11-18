@@ -1,6 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { reportApiError } from '../_shared/report-api-error.ts'
 import { evaluateCondition } from '../_shared/condition-evaluator.ts'
+import { handleGayOutStep } from '../_shared/gayout-executor.ts'
 import type { PipelineMessage, PipelineNode, PipelineEdge, NodeState } from '../_shared/pipeline-message.ts'
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
@@ -104,6 +105,12 @@ async function handleStart(
     ...(body.context || {}),
   }
 
+  if (pipeline.name === 'gayout-weekly-sync') {
+    const { data, error } = await supabase.rpc('start_gayout_weekly_sync', { p_context: context })
+    if (error) return errorResponse(error.message, 500, req)
+    return jsonResponse({ success: true, ...data, pipeline_name: pipeline.name, total_steps: nodes.length }, 200, req)
+  }
+
   if (pipeline.name === 'tags-ingestion' && context.reliability_pilot === true) {
     const { data: runId, error } = await supabase.rpc('start_reliable_tags_pipeline', {
       p_pipeline: pipeline.id,
@@ -205,6 +212,10 @@ async function handleContinue(
 
   if (run.status === 'cancelled' || run.status === 'paused' || run.status === 'failed' || run.status === 'completed') {
     return jsonResponse({ success: true, message: `Run is ${run.status}, skipping` }, 200, req)
+  }
+
+  if (run.pipeline_name === 'gayout-weekly-sync') {
+    return handleGayOutStep(supabase, supabaseUrl, serviceKey, run, currentNodeId, req)
   }
 
   if (run.reliable_steps) {
