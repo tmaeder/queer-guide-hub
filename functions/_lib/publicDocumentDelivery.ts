@@ -13,7 +13,7 @@ function acceptsGzip(header: string): boolean {
   const entries = header
     .toLowerCase()
     .split(',')
-    .map((value) => value.trim().split(';'));
+    .map((value) => value.split(';').map((part) => part.trim()));
   const entry = entries.find(([name]) => name === 'gzip') ?? entries.find(([name]) => name === '*');
   if (!entry) return false;
   const quality = entry.slice(1).find((value) => value.trim().startsWith('q='));
