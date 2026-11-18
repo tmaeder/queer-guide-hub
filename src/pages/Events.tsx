@@ -1,4 +1,3 @@
-import { EventTypeLegend } from '@/components/events/EventTypeMark';
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { dedupeCitiesByNormalized } from '@/utils/dateRange';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -163,7 +162,7 @@ const Events = () => {
           STICKY_UNDER_HEADER,
         )}
       >
-        <PageContainer flush className="py-0 md:py-4">
+        <PageContainer flush className="py-2 md:py-4">
           <EventsControlBar
             search={f.search}
             onSearchChange={f.setSearch}
@@ -413,7 +412,6 @@ const Events = () => {
         )}
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
-          <EventTypeLegend />
           <LocalizedLink
             to="/submit/event"
             className="inline-flex min-h-11 items-center rounded-element text-sm font-bold underline underline-offset-4"

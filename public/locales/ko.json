@@ -257,7 +257,8 @@
     "siteInformation": "사이트 정보",
     "crisisSupport": "위기 지원",
     "cookiePreferences": "쿠키 설정",
-    "navigation": "푸터 내비게이션"
+    "navigation": "푸터 내비게이션",
+    "legalNav": "소개 및 법적 고지"
   },
   "trips": {
     "title": "내 여행",
@@ -1954,7 +1955,8 @@
       "cityGuides": "도시 가이드",
       "recent": "최근 본 항목",
       "more": "더 둘러보기",
-      "refreshFailed": "결과를 새로고침하지 못했습니다."
+      "refreshFailed": "결과를 새로고침하지 못했습니다.",
+      "destinations": "도시, 국가, 동네"
     },
     "heroLine1": "퀴어 장소,",
     "heroLine2": "이벤트, 그리고 사람들.",
@@ -2264,7 +2266,8 @@
       "browseAll": "모든 섹션 보기",
       "unreadCount": "읽지 않음 {{count}} 개",
       "tripsBadge": "확인이 필요한 여행 항목 {{count}} 개",
-      "hub": "허브"
+      "hub": "허브",
+      "openHub": "허브 열기"
     },
     "primaryNavigation": "주요 내비게이션",
     "signInToContribute": "로그인하고 참여하기"
@@ -3217,8 +3220,6 @@
         "sisterCities": "자매 도시"
       },
       "travel": {
-        "lines": "노선",
-        "networkCaption": "OpenStreetMap에서 그린 도시철도 노선이에요. 개념도이며 실제 비율과 달라요.",
         "gettingAround": "돌아다니기",
         "noDealsTitle": "LGBTQ+ 사람이 형사적 처벌 대상인 목적지의 여행 상품은 홍보하지 않아요.",
         "noDealsBody": "{{city}}에 꼭 가야 한다면 먼저 안전·권리 섹션을 읽고 여행 플래너를 써 보세요. 고위험 목적지를 위한 안전 브리핑이 포함되어 있어요.",

@@ -23,7 +23,7 @@ function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
       {row.kind === 'event' && row.startDate ? (
         <EventDateBadge startDate={row.startDate} locale={locale} timeZone={row.timezone} />
       ) : (
-        <span className="grid size-14 place-items-center">
+        <span className="grid size-16 place-items-center">
           <RouteBullet type={row.kind} size={36} decorative />
         </span>
       )}

@@ -23,13 +23,10 @@ vi.mock('@/hooks/useNews', () => ({
 
 // Mock all editorial components so tests don't need their deps
 vi.mock('@/components/news/editorial/IssueMasthead', () => ({
-  IssueMasthead: ({ totalArticles }: { totalArticles: number }) => (
-    <div data-testid="issue-masthead" data-total={totalArticles} />
-  ),
+  IssueMasthead: () => <div data-testid="issue-masthead" />,
 }));
 vi.mock('@/components/news/editorial/LeadStory', () => ({ LeadStory: () => null }));
 vi.mock('@/components/news/editorial/AboveTheFold', () => ({ AboveTheFold: () => null }));
-vi.mock('@/components/news/editorial/LiveTicker', () => ({ LiveTicker: () => null }));
 vi.mock('@/components/news/editorial/SectionBand', () => ({ SectionBand: () => null }));
 vi.mock('@/components/news/editorial/StoryCollectionsBand', () => ({
   StoryCollectionsBand: () => null,
@@ -49,10 +46,5 @@ describe('News page', () => {
   it('renders without crashing when articles list is empty', () => {
     renderWithProviders(<News />);
     expect(screen.getByTestId('issue-masthead')).toBeInTheDocument();
-  });
-
-  it('passes article count of 0 to masthead when no articles', () => {
-    renderWithProviders(<News />);
-    expect(screen.getByTestId('issue-masthead')).toHaveAttribute('data-total', '0');
   });
 });

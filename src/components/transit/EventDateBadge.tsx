@@ -61,17 +61,17 @@ export function EventDateBadge({
       dateTime={startDate}
       title={p.time ? `${p.full}, ${p.time}` : p.full}
       className={cn(
-        'transit-marker grid size-14 shrink-0 place-content-center rounded-full border-2 border-track-ring text-center leading-none',
+        'transit-marker grid size-16 shrink-0 place-content-center rounded-full border-2 border-track-ring text-center leading-none',
         TRACK_BG[TRACK],
         TRACK_TEXT[TRACK],
         className,
       )}
     >
       <span className="sr-only">{p.time ? `${p.full}, ${p.time}` : p.full}</span>
-      <span aria-hidden="true" className="text-3xs font-bold">
+      <span aria-hidden="true" className="text-3xs font-bold tracking-wide">
         {p.top}
       </span>
-      <span aria-hidden="true" className="text-15 font-bold tabular-nums">
+      <span aria-hidden="true" className="font-display text-headline leading-none my-0.5">
         {p.day}
       </span>
       {p.time && (
