@@ -88,6 +88,7 @@ jobs:
           python3 supabase/tests/isolated/run_review_quality_cache_locks.py
           python3 supabase/tests/isolated/run_weekly_source_sync.py
           python3 scripts/test-supabase-function-config-changes.py
+          node --test scripts/lib/person-provenance-gate.test.mjs
 
   typecheck:
     runs-on: ubuntu-latest
