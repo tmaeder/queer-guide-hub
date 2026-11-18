@@ -1,8 +1,9 @@
 # Pride Places backend pipeline release
 
 The user approved every business category and all events, Sundays at 03:00 UTC.
-Implementation is prepared in `source-prideplaces`; production activation remains
-subject to the coordinated migration hold announced by the source-management chat.
+The source function and schema are deployed. The coordinated migration hold was
+released at main commit `bb65f03985f8bd088874b1546b1412e37561e4d2` after production
+migration reconciliation. Scheduling remains paused until live collection passes.
 
 ## Operation
 
@@ -20,6 +21,12 @@ to service_role. Maximum batch size is eight pages, default four; fetches have a
 JSON-LD and their fallback heading. Leases expire after three minutes, work has at
 most three attempts, and overlapping starts reuse the active scan. A six-hour limit
 fails an incomplete scan rather than leaving it permanently active.
+
+Source HTTP requests explicitly close their connection after use. The origin
+advertises a five-second keep-alive window, and the first production scan showed
+intermittent timeouts in the Edge worker despite fast independent page reads.
+This scoped mitigation retains the same fetch deadline, retries and coverage gates;
+its effect must be checked in the live scan rather than inferred from local tests.
 
 The native automation registry contains `prideplaces_weekly_sync` (`0 3 * * 0`)
 and `prideplaces_scan_continue` (once per minute, conditional on an active scan).
@@ -77,6 +84,9 @@ deno check --node-modules-dir=none supabase/functions/source-prideplaces/index.t
 5. Enable the Pride Places source registration, pipeline definition and both automation
    registry rows. Use native cron reconciliation / `admin_automation_effective_command`
    so the persisted commands retain their pause and recovery controls.
+   `scripts/data-quality/install-prideplaces-weekly-schedule.sql` performs this in
+   one transaction, rejecting active, failed, stale or incomplete scans and verifying
+   weekly run reuse and exact cron readback. It reconciles only the two owned jobs.
 6. Read back `cron.job`: the starter is active at `0 3 * * 0`, the continuation is
    active at `* * * * *`, and each uses its registry command. Confirm no overlapping
    source scan can be created by the shared weekly parent.
