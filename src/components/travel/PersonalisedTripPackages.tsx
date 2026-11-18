@@ -18,7 +18,6 @@ import {
   TramFront,
 } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardImage } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -318,19 +317,11 @@ export function PersonalisedTripPackages() {
   };
 
   return (
-    <section aria-labelledby="personalised-packages-title" className="space-y-8">
-      <div className="max-w-3xl">
-        <Badge variant="outline" className="mb-4">
-          <Sparkles className="mr-1 h-3.5 w-3.5" /> Personalised escapes
-        </Badge>
-        <h2 id="personalised-packages-title" className="text-display-sm font-bold tracking-tight">
-          What kind of escape do you need?
-        </h2>
-        <p className="mt-4 text-body-lg text-muted-foreground">
-          Pick a mood, then check the package: one destination with its event, places, stay and way
-          to get there. Build it into a trip in one step.
-        </p>
-      </div>
+    <section aria-label="Trip packages" className="space-y-8">
+      <p className="max-w-3xl text-body-lg text-muted-foreground">
+        Pick a mood, then check the package: one destination with its event, places, stay and way to
+        get there. Build it into a trip in one step.
+      </p>
 
       <Card className="p-6 sm:p-8">
         <StepHeading

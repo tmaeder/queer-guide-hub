@@ -260,10 +260,7 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
   return (
     <section className=" bg-surface-container mb-8 rounded-element" data-testid="book-now-section">
       <div className="p-6">
-        <h3 className="text-title font-bold tracking-tight">
-          {t('pages.travel.bookNow.title', 'Book now')}
-        </h3>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           {t(
             'pages.travel.bookNow.subtitle',
             'Search flights, hotels, and activities directly — no trip required.',
