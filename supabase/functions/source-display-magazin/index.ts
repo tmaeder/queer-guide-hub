@@ -73,7 +73,8 @@ const COUNTRY_WORDS: Record<string, string> = {
   schweiz: 'CH', switzerland: 'CH', suisse: 'CH', svizzera: 'CH', ch: 'CH',
   deutschland: 'DE', germany: 'DE', de: 'DE',
   'österreich': 'AT', austria: 'AT', at: 'AT',
-  france: 'FR', frankreich: 'FR', italia: 'IT', italien: 'IT', liechtenstein: 'LI',
+  france: 'FR', frankreich: 'FR', fr: 'FR',
+  italia: 'IT', italien: 'IT', it: 'IT', liechtenstein: 'LI', li: 'LI',
 }
 
 /**
@@ -84,12 +85,11 @@ const COUNTRY_WORDS: Record<string, string> = {
  * 183 of the 381 venue records carry no country at all, so this path is the
  * common one, not the exception.
  */
-function resolveCountry(country?: unknown, address?: unknown, city?: unknown): string | null {
+function resolveCountry(country?: unknown): string | null {
   const w = String(country ?? '').trim().toLowerCase()
   if (w && COUNTRY_WORDS[w]) return COUNTRY_WORDS[w]
-  const blob = `${address ?? ''} ${city ?? ''}`
-  if (/\b[1-9]\d{3}\s+[A-Za-zÀ-ÿ]/.test(blob)) return 'CH' // CH postal codes are 4 digits
-  if (/\b\d{5}\s+[A-Za-zÀ-ÿ]/.test(blob)) return 'DE'
+  // Postcode lengths are shared across countries; retain unknown identity
+  // until the existing city/source verification can establish it.
   return null
 }
 
@@ -196,7 +196,7 @@ export const eventAdapter: SourceAdapter = {
         city: city ?? undefined,
         postal_code: (fromAddr.postal ?? rawCity.postal) ?? undefined,
         state: v ? stripTags(v.stateprovince ?? v.province) || undefined : undefined,
-        country: (v ? resolveCountry(v.country, v.address, city) : null) ?? undefined,
+        country: (v ? resolveCountry(v.country) : null) ?? undefined,
         timezone: (e.timezone as string) || 'Europe/Zurich',
       },
       images: image ? [image] : [],
@@ -246,7 +246,7 @@ const venueAdapter: SourceAdapter = {
         city: city ?? undefined,
         postal_code: (fromAddr.postal ?? rawCity.postal) ?? undefined,
         state: stripTags(v.stateprovince ?? v.province) || undefined,
-        country: resolveCountry(v.country, v.address, city) ?? undefined,
+        country: resolveCountry(v.country) ?? undefined,
       },
       contacts: { website: (v.website as string) || (v.url as string) || undefined },
       tags: ['lgbtq'],

@@ -183,21 +183,20 @@ const COUNTRY_WORDS = {
   at: 'AT',
   france: 'FR',
   frankreich: 'FR',
+  fr: 'FR',
   italia: 'IT',
   italien: 'IT',
+  it: 'IT',
   liechtenstein: 'LI',
+  li: 'LI',
 };
-function resolveCountry({ country, address, city }) {
+function resolveCountry({ country }) {
   const w = String(country || '')
     .trim()
     .toLowerCase();
   if (w && COUNTRY_WORDS[w]) return COUNTRY_WORDS[w];
 
-  const blob = `${address || ''} ${city || ''}`;
-  // Swiss postal codes are 4 digits, 1000-9999. German are 5 digits. Both
-  // sources write them immediately before the town name.
-  if (/\b[1-9]\d{3}\s+[A-Za-zÀ-ÿ]/.test(blob)) return 'CH';
-  if (/\b\d{5}\s+[A-Za-zÀ-ÿ]/.test(blob)) return 'DE';
+  // Postcode lengths are shared across countries, so they do not prove one.
   return null;
 }
 
