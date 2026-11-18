@@ -177,6 +177,23 @@
     },
     "attention_preserved": true
   },
+  "basie": {
+    "venue_id": "ee784ba0-c4fd-45df-9826-3a8d3d118a47",
+    "organization_id": "c86fb977-d6bf-4c1e-8943-29f14f7c2dec",
+    "event_id": "8ef05141-2354-418c-bae4-3c0a64fe731f",
+    "proof": {
+      "source": "primary_owner_public_theatre_identity",
+      "url": "https://thebasie.org/venue/hackensack-meridian-health-theatre/",
+      "capture_sha256": "7d461e46732a155e51fe8f7f9b706b0dd03658392fc13d58b6cfd54b17a03782",
+      "observed_at": "2026-11-18T21:10:50.226278Z",
+      "method": "direct_primary_http_200",
+      "event_url": "https://thebasie.org/events/a-drag-queen-christmas/",
+      "event_read": "Rendered/search-cached owner occurrence confirms November17 7:30PM, exact theatre and18+admission. Ordinary current GET is404 after performance date; no cancellation inference and no raw200eventcapture claimed.",
+      "note": "Current owner venue page independently establishes named public theatre and99MonmouthStreet,RedBankNJ07701. Exact registeredTicketmasterevent1D0064B3C6407E25 names same theatre withvenueIDKovZ917A8C7,Nov17,2026 19:30America/NewYork. Link physical theatre to canonical NewJersey RedBank,not SouthCarolina. Preserve existingUTCstart,unknownfinish,bookingandallsourcebodies. Add owner-stated18+admission. Parentcity timezone isnull and remains untouched; theatre/eventtimezone independentlyAmericaNewYork. No private information,pin,accessibilityorownership inferred.",
+      "human_reviewed": false
+    },
+    "city_timezone_untouched": true
+  },
   "ddl_applied": false,
   "original_source_payloads_preserved": true,
   "human_verification_fabricated": false
