@@ -73,7 +73,7 @@ export async function handleGayOutWeeklySource(req: Request, body: Record<string
           const parsed = parseGayOutPage({ seed, country, ...document })
           const records = parsed.records.length ? parsed.records : [{
             entityType: seed.targetTable === 'organizations' ? 'organization' : seed.targetTable === 'events' ? 'event' : 'venue',
-            sourceName: 'gayout', sourceId: seed.sourceId + (inventory === 'events' ? '#date-unconfirmed' : ''),
+            sourceName: 'gayout', sourceId: inventory === 'events' ? seed.sourceId.replace(/^\/+/, '') + '#date-unconfirmed' : seed.sourceId,
             name: parsed.name || '', location: { country }, tags: [], urls: [seed.url],
             metadata: { url: seed.url, review_reason: parsed.reviewReason || 'E_SOURCE_FACTS_UNAVAILABLE', source_unverified: true },
           }]

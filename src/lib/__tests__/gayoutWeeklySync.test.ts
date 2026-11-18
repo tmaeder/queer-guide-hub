@@ -34,6 +34,7 @@ describe('GayOut weekly sync boundaries', () => {
     expect(parseGayOutPage({ seed: eventSeed, country: 'CH', sourceText: '# Test Night\nDate TBA', jsonLd: [event] }).records).toEqual([])
     const r = parseGayOutPage({ seed: eventSeed, country: 'CH', jsonLd: [event, { ...event, startDate: '2027-01-03T20:00:00+01:00' }] }).records
     expect(r).toHaveLength(2)
+    expect(r[0].sourceId).toBe('en/switzerland/zurich/events/test-bar#start=2027-01-02T19:00:00.000Z')
     expect(r[0].sourceId).not.toBe(r[1].sourceId)
     expect(r[0].dates?.end).toBeUndefined()
   })

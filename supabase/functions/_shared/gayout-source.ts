@@ -187,7 +187,7 @@ export function parseGayOutPage(input: { seed: GayOutSeed; country: string; html
       const dates: { start: string; end?: string } = { start }
       if (end && Date.parse(end) > Date.parse(start)) dates.end = end
       const record: GayOutRecord = {
-        entityType: 'event', sourceName: 'gayout', sourceId: seed.sourceId + '#start=' + new Date(start).toISOString(), name,
+        entityType: 'event', sourceName: 'gayout', sourceId: seed.sourceId.replace(/^\/+/, '') + '#start=' + new Date(start).toISOString(), name,
         description: `${name}${venue ? ` at ${venue}` : ''}${location.city ? ` in ${location.city}` : ''}, ${start.slice(0, 10)}.`,
         location, dates, ...(venue ? { venue_name: venue } : {}), tags: ['lgbtq'], urls: [seed.url],
         metadata: { ...meta, event_type: 'other', description_source: 'generated_from_verified_facts',
