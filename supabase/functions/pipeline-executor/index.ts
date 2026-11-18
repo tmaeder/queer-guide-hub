@@ -72,6 +72,16 @@ async function handleStart(
     return errorResponse(`Pipeline not found: ${pipelineId || pipelineName}`, 404, req)
   }
 
+  // This source owns a durable multi-request run. Its HTTP acknowledgement is
+  // a checkpoint, not a finished ordinary DAG node or reliable step.
+  if (pipeline.name === 'outxout-catalogue-sync') {
+    const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/source-outxout`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` },
+      body: JSON.stringify({ triggered_by: 'pipeline-executor', dry_run: (body.context as Record<string, unknown> | undefined)?.dry_run === true }),
+    })
+    return new Response(await response.text(), { status: response.status, headers: { 'Content-Type': 'application/json' } })
+  }
+
   const nodes = pipeline.nodes as PipelineNode[]
   const edges = pipeline.edges as PipelineEdge[]
 

@@ -758,6 +758,8 @@
     "/api/v1/styleguide/prompt",
     "/brand/tokens.css",
     "/brand/tokens.json",
+    "/data/rights-by-country.csv",
+    "/data/rights-by-country.json",
     "/feeds/tags/:slug",
     "/feeds/u/:handle",
     "/go/:slug",

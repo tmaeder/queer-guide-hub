@@ -47,6 +47,14 @@ const TGEU_TRI = {
 
 type DatasetDef = Record<string, unknown>;
 
+// The bulk download (functions/data/rights-by-country.*). Its licence is split
+// by column, so no `license` is declared here: see rightsExport.ts.
+const RIGHTS_DISTRIBUTION = ['csv', 'json'].map((ext) => ({
+  '@type': 'DataDownload',
+  encodingFormat: ext === 'csv' ? 'text/csv' : 'application/json',
+  contentUrl: `${SITE_ORIGIN}/data/rights-by-country.${ext}`,
+}));
+
 const RIGHTS_WITH_SCORE: DatasetDef = {
   name: 'LGBTQ+ rights by country, with equality score',
   description:
@@ -54,6 +62,7 @@ const RIGHTS_WITH_SCORE: DatasetDef = {
   isBasedOn: ILGA,
   spatialCoverage: { '@type': 'Place', name: 'Worldwide' },
   measurementTechnique: `${SITE_ORIGIN}/tags/rights-by-country/methodology`,
+  distribution: RIGHTS_DISTRIBUTION,
   keywords: ['LGBTQ+ rights', 'equality score', 'methodology', 'ILGA'],
 };
 
@@ -61,6 +70,7 @@ const STATIC_DATASETS: Record<string, DatasetDef> = {
   '/tags/rights-by-country': {
     name: 'LGBTQ+ legal status by country',
     measurementTechnique: `${SITE_ORIGIN}/tags/rights-by-country/methodology`,
+    distribution: RIGHTS_DISTRIBUTION,
     description:
       'The legal position of LGBTQ+ people in 250 countries and territories: criminalisation of same-sex acts and its penalty, partnership recognition, anti-discrimination protection, legal gender recognition, conversion-practice regulation, and a 0–100 equality score computed from these facts. Re-imported nightly from the ILGA World Database.',
     isBasedOn: ILGA,

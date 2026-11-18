@@ -293,7 +293,6 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                 key={value}
                 type="button"
                 aria-pressed={active}
-                aria-label={label}
                 onClick={() => {
                   if (active) {
                     setOpen(false);
@@ -315,7 +314,7 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                   <Icon size={20} />
                 </span>
                 <span className="min-w-0">
-                  <span className="block font-bold">{label}</span>
+                  <span className="block font-bold">{label}</span>{' '}
                   <span
                     className={`block text-xs ${active ? 'text-background/70' : 'text-muted-foreground'}`}
                   >
