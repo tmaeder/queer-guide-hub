@@ -5662,5 +5662,27 @@
   "i18n": {
     "selectLanguage": "Sprache wählen",
     "selectCurrency": "Währung wählen"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "Auf uns verlinken",
+      "intro": "Du kannst gern auf jede Seite von Queer Guide verlinken. Diese hier werden am häufigsten zitiert. Kopiere ein Snippet in deine Seite oder schreib deinen eigenen Linktext.",
+      "badgeTitle": "Daten-Badge",
+      "badgeBody": "Für Seiten, die unsere Rechtsdaten verwenden. Das Badge verlinkt auf die Seite mit den Rechten nach Land.",
+      "badgeSnippet": "Badge-HTML",
+      "listingTitle": "Wenn deine Organisation aufgeführt ist",
+      "listingBody": "Ersetze YOUR-LISTING durch den letzten Teil der Adresse deines Eintrags auf Queer Guide.",
+      "listingSnippet": "Eintragslink-HTML",
+      "attribution": "Wenn du unsere Rechtsdaten verwendest, nenne Queer Guide und die ILGA World Database, die die zugrunde liegenden Rechtsangaben pflegt.",
+      "copied": "Kopiert",
+      "copy": "Kopieren",
+      "copyFailed": "Automatisches Kopieren nicht möglich. Der Text ist markiert; kopiere ihn mit der Tastatur.",
+      "page": {
+        "rights": "LGBTQ+-Rechte nach Land (Queer Guide)",
+        "methodology": "So wird der Gleichstellungswert von Queer Guide berechnet",
+        "help": "LGBTQ+-Krisentelefone nach Land (Queer Guide)",
+        "interactions": "Risiken von Drogenkombinationen (Queer Guide)"
+      }
+    }
   }
 }

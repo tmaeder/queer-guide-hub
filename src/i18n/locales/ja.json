@@ -5660,5 +5660,27 @@
   "i18n": {
     "selectLanguage": "言語を選択",
     "selectCurrency": "通貨を選択"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "リンクについて",
+      "intro": "Queer Guide のどのページにもリンクしていただけます。よく引用されるページは以下のとおりです。スニペットをコピーしてページに貼るか、リンクテキストを自由に書いてください。",
+      "badgeTitle": "データバッジ",
+      "badgeBody": "権利データを利用するページ向け。バッジは国別の権利ページにリンクします。",
+      "badgeSnippet": "バッジの HTML",
+      "listingTitle": "掲載されている団体の方へ",
+      "listingBody": "YOUR-LISTING を、Queer Guide 上の掲載ページのアドレスの末尾部分に置き換えてください。",
+      "listingSnippet": "掲載ページへのリンクの HTML",
+      "attribution": "権利データを利用する場合は、Queer Guide と、基になる法的記録を管理する ILGA World Database をクレジットしてください。",
+      "copied": "コピーしました",
+      "copy": "コピー",
+      "copyFailed": "自動でコピーできませんでした。テキストは選択済みです。キーボードでコピーしてください。",
+      "page": {
+        "rights": "国別の LGBTQ+ の権利（Queer Guide）",
+        "methodology": "Queer Guide の平等スコアの算出方法",
+        "help": "国別の LGBTQ+ 向け相談窓口（Queer Guide）",
+        "interactions": "薬物の組み合わせのリスク（Queer Guide）"
+      }
+    }
   }
 }

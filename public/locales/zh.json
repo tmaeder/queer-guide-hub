@@ -5660,5 +5660,27 @@
   "i18n": {
     "selectLanguage": "选择语言",
     "selectCurrency": "选择货币"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "链接到我们",
+      "intro": "欢迎链接到 Queer Guide 的任何页面。以下是最常被引用的页面。将代码片段复制到你的页面，或自行撰写链接文字。",
+      "badgeTitle": "数据徽章",
+      "badgeBody": "适用于使用我们权利数据的页面。徽章链接到各国权利页面。",
+      "badgeSnippet": "徽章 HTML",
+      "listingTitle": "如果你的组织已被收录",
+      "listingBody": "将 YOUR-LISTING 替换为你在 Queer Guide 上的条目地址的最后一部分。",
+      "listingSnippet": "条目链接 HTML",
+      "attribution": "使用我们的权利数据时，请注明 Queer Guide 和维护基础法律记录的 ILGA World Database。",
+      "copied": "已复制",
+      "copy": "复制",
+      "copyFailed": "无法自动复制。文字已选中，请用键盘复制。",
+      "page": {
+        "rights": "各国 LGBTQ+ 权利（Queer Guide）",
+        "methodology": "Queer Guide 平等评分的计算方法",
+        "help": "各国 LGBTQ+ 危机热线（Queer Guide）",
+        "interactions": "药物混用风险（Queer Guide）"
+      }
+    }
   }
 }

@@ -5662,5 +5662,27 @@
   "i18n": {
     "selectLanguage": "Selecionar idioma",
     "selectCurrency": "Selecionar moeda"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "Crie um link para nós",
+      "intro": "Você pode criar um link para qualquer página do Queer Guide. Estas são as mais citadas. Copie um trecho para a sua página ou escreva o seu próprio texto de link.",
+      "badgeTitle": "Selo de dados",
+      "badgeBody": "Para páginas que usam nossos dados sobre direitos. O selo leva à página de direitos por país.",
+      "badgeSnippet": "HTML do selo",
+      "listingTitle": "Se a sua organização está listada",
+      "listingBody": "Substitua YOUR-LISTING pela última parte do endereço da sua página no Queer Guide.",
+      "listingSnippet": "HTML do link da listagem",
+      "attribution": "Ao usar nossos dados sobre direitos, credite o Queer Guide e a ILGA World Database, que mantém o registro jurídico de base.",
+      "copied": "Copiado",
+      "copy": "Copiar",
+      "copyFailed": "Não foi possível copiar automaticamente. O texto está selecionado; copie-o pelo teclado.",
+      "page": {
+        "rights": "Direitos LGBTQ+ por país (Queer Guide)",
+        "methodology": "Como a pontuação de igualdade do Queer Guide é calculada",
+        "help": "Linhas de apoio em crise LGBTQ+ por país (Queer Guide)",
+        "interactions": "Riscos de combinar drogas (Queer Guide)"
+      }
+    }
   }
 }

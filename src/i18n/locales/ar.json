@@ -5670,5 +5670,27 @@
   "i18n": {
     "selectLanguage": "اختر اللغة",
     "selectCurrency": "اختر العملة"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "ضع رابطًا إلينا",
+      "intro": "يمكنك وضع رابط إلى أي صفحة على Queer Guide. هذه هي الصفحات الأكثر استشهادًا بها. انسخ مقتطفًا إلى صفحتك، أو اكتب نص الرابط بنفسك.",
+      "badgeTitle": "شارة البيانات",
+      "badgeBody": "للصفحات التي تستخدم بياناتنا عن الحقوق. تقود الشارة إلى صفحة الحقوق حسب البلد.",
+      "badgeSnippet": "HTML للشارة",
+      "listingTitle": "إذا كانت منظمتك مدرجة",
+      "listingBody": "استبدل YOUR-LISTING بالجزء الأخير من عنوان صفحتك على Queer Guide.",
+      "listingSnippet": "HTML لرابط الإدراج",
+      "attribution": "عند استخدام بياناتنا عن الحقوق، اذكر Queer Guide وILGA World Database التي تحافظ على السجل القانوني الأساسي.",
+      "copied": "تم النسخ",
+      "copy": "نسخ",
+      "copyFailed": "تعذّر النسخ تلقائيًا. النص محدد؛ انسخه باستخدام لوحة المفاتيح.",
+      "page": {
+        "rights": "حقوق مجتمع الميم+ حسب البلد (Queer Guide)",
+        "methodology": "كيف تُحسب درجة المساواة في Queer Guide",
+        "help": "خطوط الأزمات لمجتمع الميم+ حسب البلد (Queer Guide)",
+        "interactions": "مخاطر الجمع بين المواد المخدرة (Queer Guide)"
+      }
+    }
   }
 }
