@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -10,6 +10,11 @@ export function CopyableSnippet({ label, text }: { label: string; text: string }
   const { t } = useTranslation();
   const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
   const textRef = useRef<HTMLPreElement>(null);
+  // Name = button text + this snippet's label ("Copy LGBTQ+ rights by country"),
+  // so six "Copy" buttons are distinguishable and the name still starts with
+  // the visible text (WCAG 2.5.3).
+  const actionId = useId();
+  const labelId = useId();
   const copy = async () => {
     try {
       if (!navigator.clipboard) throw new Error('Clipboard unavailable');
@@ -30,17 +35,23 @@ export function CopyableSnippet({ label, text }: { label: string; text: string }
   return (
     <div className="rounded-element bg-background p-4 shadow-soft">
       <div className="mb-2 flex items-center justify-between gap-4">
-        <span className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+        <span
+          id={labelId}
+          className="text-2xs font-bold uppercase tracking-label text-muted-foreground"
+        >
           {label}
         </span>
         <button
           type="button"
           className="rounded-badge px-2 py-1 text-2xs font-bold underline"
+          aria-labelledby={`${actionId} ${labelId}`}
           onClick={() => void copy()}
         >
-          {status === 'copied'
-            ? t('press.linkToUs.copied', 'Copied')
-            : t('press.linkToUs.copy', 'Copy')}
+          <span id={actionId}>
+            {status === 'copied'
+              ? t('press.linkToUs.copied', 'Copied')
+              : t('press.linkToUs.copy', 'Copy')}
+          </span>
         </button>
       </div>
       <pre

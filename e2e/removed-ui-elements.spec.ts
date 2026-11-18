@@ -51,7 +51,7 @@ test.describe('removed: the CONCEPT chip on a glossary entry', () => {
 test.describe('removed: the equality score on the Pride scroller', () => {
   test('/travel lists Pride events with no score', async ({ page }) => {
     await open(page, '/travel');
-    const scroller = page.getByRole('group', { name: 'Pride this season' });
+    const scroller = page.getByRole('list', { name: 'Pride this season' });
     await expect(scroller).toBeVisible({ timeout: BOOT });
     // Positive: the scroller is populated, not an empty state that would make
     // the absence below vacuous.

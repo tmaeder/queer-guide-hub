@@ -30,4 +30,20 @@ describe('LinkToUs', () => {
     }
     expect(screen.getByText(BADGE_SNIPPET)).toBeTruthy();
   });
+
+  it('names every copy button after its snippet, starting with the visible text', () => {
+    renderWithProviders(<LinkToUs />);
+    const names = screen.getAllByRole('button').map((b) => b.getAttribute('aria-labelledby') && b);
+    const copyButtons = screen.getAllByRole('button', { name: /^Copy \S/ });
+    // 4 pages + badge + listing, and no two share a name.
+    expect(copyButtons).toHaveLength(LINKABLE_PAGES.length + 2);
+    const accessibleNames = copyButtons.map((b) =>
+      (b.getAttribute('aria-labelledby') ?? '')
+        .split(' ')
+        .map((id) => document.getElementById(id)?.textContent)
+        .join(' '),
+    );
+    expect(new Set(accessibleNames).size).toBe(copyButtons.length);
+    expect(names.filter(Boolean)).toHaveLength(copyButtons.length);
+  });
 });
