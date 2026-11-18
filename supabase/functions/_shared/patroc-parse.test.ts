@@ -1,4 +1,4 @@
-import { assertEquals } from 'https://deno.land/std@0.208.0/assert/mod.ts'
+import { assertEquals, assertThrows } from 'https://deno.land/std@0.208.0/assert/mod.ts'
 import {
   inferEventType,
   mapPageCategory,
@@ -6,8 +6,66 @@ import {
   parseCityIndexEvents,
   parseListingPage,
   PATROC_CITIES,
+  normalizePatrocEventDates,
   splitCityLine,
 } from './patroc-parse.ts'
+
+Deno.test('Patroc timed events use their actual city timezone in winter and summer', () => {
+  const rec = { startDate: '2027-01-12', startTime: '09:00', endDate: '2027-01-15', endTime: '16:00' }
+  assertEquals(normalizePatrocEventDates(rec, PATROC_CITIES.florence.timezone), {
+    start: '2027-01-12T08:00:00.000Z', end: '2027-01-15T15:00:00.000Z',
+  })
+  const summer = { startDate: '2026-08-22', startTime: '19:00', endDate: null, endTime: null }
+  assertEquals(normalizePatrocEventDates(summer, 'Europe/Rome').start, '2026-08-22T17:00:00.000Z')
+  assertEquals(normalizePatrocEventDates(summer, PATROC_CITIES.grancanaria.timezone).start, '2026-08-22T18:00:00.000Z')
+  assertEquals(normalizePatrocEventDates(summer, 'Europe/London').start, '2026-08-22T18:00:00.000Z')
+  assertEquals(normalizePatrocEventDates(summer, 'Europe/Athens').start, '2026-08-22T16:00:00.000Z')
+})
+
+Deno.test('Patroc date-only events retain their source precision', () => {
+  assertEquals(normalizePatrocEventDates({ startDate: '2026-11-18', endDate: '2026-11-22', startTime: null, endTime: null }, 'Europe/Rome'), {
+    start: '2026-11-18', end: '2026-11-22',
+  })
+})
+
+Deno.test('Patroc midnight rollover and overnight ends use the offset of each instant', () => {
+  assertEquals(normalizePatrocEventDates({ startDate: '2026-03-28', startTime: '24:30', endDate: null, endTime: '03:30' }, 'Europe/Berlin'), {
+    start: '2026-03-28T23:30:00.000Z', end: '2026-03-29T01:30:00.000Z',
+  })
+  assertEquals(normalizePatrocEventDates({ startDate: '2026-08-22', startTime: '20:00', endDate: null, endTime: '10:00' }, 'Europe/Berlin'), {
+    start: '2026-08-22T18:00:00.000Z', end: '2026-08-23T08:00:00.000Z',
+  })
+})
+
+Deno.test('Patroc repeated and nonexistent DST wall clocks require review', () => {
+  assertThrows(() => normalizePatrocEventDates({ startDate: '2026-10-25', startTime: '02:30', endDate: null, endTime: null }, 'Europe/Berlin'), Error, 'Ambiguous')
+  assertThrows(() => normalizePatrocEventDates({ startDate: '2026-03-29', startTime: '02:30', endDate: null, endTime: null }, 'Europe/Berlin'), Error, 'Nonexistent')
+})
+
+Deno.test('Patroc mixed date precision compares days in the publisher timezone', () => {
+  const rec = { startDate: '2027-01-12', startTime: '00:30', endDate: '2027-01-11', endTime: null }
+  assertThrows(() => normalizePatrocEventDates(rec, 'Europe/Rome'), Error, 'precedes')
+  assertThrows(() => normalizePatrocEventDates({ ...rec, startDate: '2027-01-11', startTime: '24:30' }, 'Europe/Rome'), Error, 'precedes')
+  assertThrows(() => normalizePatrocEventDates({ ...rec, startTime: null, endTime: '23:30' }, 'Europe/Rome'), Error, 'precedes')
+  assertEquals(normalizePatrocEventDates({ ...rec, endDate: '2027-01-12' }, 'Europe/Rome'), {
+    start: '2027-01-11T23:30:00.000Z', end: '2027-01-12',
+  })
+  assertEquals(normalizePatrocEventDates({ ...rec, startTime: null, endDate: '2027-01-12', endTime: '00:30' }, 'Europe/Rome'), {
+    start: '2027-01-12', end: '2027-01-11T23:30:00.000Z',
+  })
+})
+
+Deno.test('Patroc rejects malformed dates, clocks, zones and reverse ranges', () => {
+  const rec = { startDate: '2027-01-12', startTime: '09:00', endDate: null, endTime: null }
+  for (const date of ['2026-02-30', 'not-a-date', null]) {
+    assertThrows(() => normalizePatrocEventDates({ ...rec, startDate: date }, 'Europe/Rome'))
+  }
+  for (const clock of ['09:60', '48:00', 'noon']) {
+    assertThrows(() => normalizePatrocEventDates({ ...rec, startTime: clock }, 'Europe/Rome'))
+  }
+  assertThrows(() => normalizePatrocEventDates(rec, 'Invalid/Zone'))
+  assertThrows(() => normalizePatrocEventDates({ ...rec, endDate: '2027-01-11', endTime: '09:00' }, 'Europe/Rome'), Error, 'precedes')
+})
 
 // Trimmed verbatim from https://www.patroc.com/gay/berlin/bars.html (2026-08-22).
 const BARS_HTML = `

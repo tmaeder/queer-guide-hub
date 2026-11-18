@@ -240,7 +240,7 @@ export const INTENT_NAV: IntentDestination[] = [
   {
     id: 'going-out',
     to: '/going-out',
-    icon: transitIcon('after-dark'),
+    icon: transitIcon('musical-note'),
     labelKey: 'header.intents.goingOut.label',
     fallback: 'Going out',
     subtitleKey: 'header.intents.goingOut.subtitle',

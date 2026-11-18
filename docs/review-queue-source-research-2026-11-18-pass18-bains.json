@@ -1,0 +1,19 @@
+{
+  "capture": {
+    "url": "https://bainsdelest.ch/",
+    "status": 200,
+    "final_url": "https://bainsdelest.ch/",
+    "retrieved_at": "2026-11-18T17:20:08.676867+00:00",
+    "sha256": "8dcdad73f47cc0f7f745448d8a50aefa62911d4cf58731f626dfb46f92e5607c",
+    "bytes": 92536
+  },
+  "keep_id": "76911fea-e01e-4b1b-9865-260606e232ba",
+  "drop_id": "7f1d744e-e376-4cc4-9e08-ca2591708236",
+  "shared_profile_id": "ea596411-dffe-4bcb-a926-a664ba51a9f6",
+  "owner_address": "3 rue de l\u2019Est, 1207 Gen\u00e8ve Suisse",
+  "wrong_pin_removed": true,
+  "canonical_pin_changed": false,
+  "organization_changed": false,
+  "source_payloads_changed": false,
+  "human_reviewed": false
+}

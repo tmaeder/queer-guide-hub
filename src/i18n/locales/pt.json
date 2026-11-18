@@ -4533,7 +4533,8 @@
         "trans": "[PT] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "[PT] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[PT] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
-      }
+      },
+      "methodologyLink": "Cada peso, os limiares dos níveis e como citar"
     },
     "lens": {
       "title": "[PT] Who the law protects",
@@ -4550,6 +4551,93 @@
       "partial": "[PT] Some protections",
       "protected": "[PT] Broad protections",
       "unknown": "[PT] Not enough data"
+    },
+    "methodology": {
+      "cite": {
+        "copied": "Copiado",
+        "copy": "Copiar",
+        "apa": "APA",
+        "plain": "Texto simples"
+      },
+      "metaTitle": "Como é calculada a pontuação de igualdade LGBTQ+",
+      "metaDescription": "Cada peso da pontuação de igualdade do Queer Guide, o intervalo 0–100, os limiares dos níveis, os limites conhecidos e como citá-la.",
+      "section": {
+        "formula": "A fórmula",
+        "range": "Intervalo e níveis",
+        "limits": "Limites conhecidos",
+        "cite": "Como citar"
+      },
+      "kicker": {
+        "formula": "Cada peso"
+      },
+      "body": {
+        "formula": "Cada país começa em {{start}}. Pontos são somados ou subtraídos para cada fato registrado pela ILGA e, em seguida, o total é mantido entre 0 e 100. Algumas linhas são alternativas: um país recebe casamento ou união civil, não ambos, e no máximo uma dedução por pena.",
+        "range": "Antes do limite de 0–100, o menor total possível é {{min}} e o maior é {{max}}. O topo é alcançado com pontos de sobra, então 100 significa “pelo menos 100”, não “todos os direitos registrados”.",
+        "ceiling": "{{atCeiling}} de {{scored}} países e territórios pontuados estão atualmente em exatamente 100. A pontuação não consegue ordená-los entre si.",
+        "cite": "Cite a pontuação como Queer Guide e os fatos jurídicos por trás dela como ILGA World Database. As pontuações são recalculadas todas as noites, então inclua a data de acesso."
+      },
+      "col": {
+        "fact": "Fato registrado",
+        "points": "Pontos",
+        "field": "Campo da ILGA"
+      },
+      "tiers": "Limiares dos níveis",
+      "tierUnknown": "Sem registro da ILGA",
+      "limits": {
+        "start": "Começar em 50 significa que um país com quase nada registrado fica no meio da escala. Uma pontuação mediana pode significar direitos medianos ou poucos dados.",
+        "penaltyText": "A dedução por pena se baseia na descrição da pena feita pela ILGA, não no seu campo separado sobre pena de morte. Quando a ILGA descreve a pena como prisão, mas também registra a pena de morte em parte do país (Nigéria, sob a lei Sharia nos estados do norte), a pontuação deduz por prisão perpétua, não por pena de morte.",
+        "uneven": "A orientação sexual conta mais do que a identidade de gênero em todas as áreas de proteção (2 pontos contra 1), e as leis sobre crimes de ódio e incitação contam apenas para a orientação sexual. Por isso, a pontuação diz mais sobre pessoas lésbicas, gays e bissexuais do que sobre pessoas trans.",
+        "law": "É nacional, registra leis e não sua aplicação, e não é uma classificação de segurança.",
+        "sourcesLink": "Mais sobre os dados e seus limites",
+        "transLink": "Direitos trans por país"
+      },
+      "breadcrumb": "Metodologia",
+      "heroLine": "Linha de direitos · Metodologia",
+      "title": "Como é calculada a pontuação de igualdade",
+      "lede": "A pontuação de igualdade é um número de 0–100 que calculamos todas as noites a partir da ILGA World Database. Esta página lista cada peso, o intervalo, os limiares dos níveis e os casos em que a pontuação erra.",
+      "group": {
+        "criminalisation": "Criminalização",
+        "partnership": "Parceria",
+        "protection": "Proteção contra discriminação",
+        "hate": "Crimes de ódio e incitação",
+        "civic": "Expressão e associação",
+        "family": "Família e integridade corporal"
+      },
+      "row": {
+        "legal": "Atos sexuais entre pessoas do mesmo sexo são legais",
+        "criminalised": "Atos sexuais entre pessoas do mesmo sexo são criminalizados",
+        "death": "Pena descrita como pena de morte, incluindo “possível”",
+        "life": "Pena de até prisão perpétua",
+        "eight": "Pena de até 8 anos de prisão",
+        "marriage": "Casamento entre pessoas do mesmo sexo",
+        "civil-union": "Apenas união civil",
+        "constitutional-so": "Constituição: abrange orientação sexual",
+        "constitutional-gi": "Constituição: abrange identidade de gênero",
+        "employment-so": "Emprego: abrange orientação sexual",
+        "employment-gi": "Emprego: abrange identidade de gênero",
+        "housing-so": "Moradia: abrange orientação sexual",
+        "housing-gi": "Moradia: abrange identidade de gênero",
+        "education-so": "Educação: abrange orientação sexual",
+        "education-gi": "Educação: abrange identidade de gênero",
+        "health-so": "Saúde: abrange orientação sexual",
+        "health-gi": "Saúde: abrange identidade de gênero",
+        "goods_services-so": "Bens e serviços: abrange orientação sexual",
+        "goods_services-gi": "Bens e serviços: abrange identidade de gênero",
+        "bullying-so": "Bullying: abrange orientação sexual",
+        "bullying-gi": "Bullying: abrange identidade de gênero",
+        "hate-crime": "A lei de crimes de ódio abrange orientação sexual",
+        "incitement": "Incitação ao ódio proibida, abrangendo orientação sexual",
+        "expression-free": "Sem barreiras legais conhecidas à expressão",
+        "expression-restricted": "Restrições legais à expressão (explícitas ou não)",
+        "association-free": "Sem barreiras legais conhecidas à associação",
+        "association-restricted": "Restrições legais explícitas à associação",
+        "joint-adoption": "Adoção conjunta",
+        "second-parent": "Apenas adoção do filho do parceiro",
+        "conversion": "Práticas de conversão proibidas",
+        "self-id": "Reconhecimento legal de gênero por autodeterminação",
+        "marker": "Alteração do marcador de gênero possível, sem autodeterminação",
+        "intersex": "Proteção para pessoas intersexo"
+      }
     }
   },
   "about": {

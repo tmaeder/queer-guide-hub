@@ -33,7 +33,6 @@ import {
   VenueReviews,
   hasUsableHours,
   formatHours,
-  VenueSidebar,
   VenueLocationContact,
   buildVenueBreadcrumbs,
   type VenueReview,
@@ -154,7 +153,12 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
     const hasHours = !isClosed && hasUsableHours(venue.hours);
     const nextEvent = isClosed ? undefined : selectDiscoveryEvent(venueEvents, openedAt);
     const opening = (
-      <VenueBodyLead venue={venue} hasLocation={hasLocation} hasHours={hasHours} nextEvent={nextEvent}>
+      <VenueBodyLead
+        venue={venue}
+        hasLocation={hasLocation}
+        hasHours={hasHours}
+        nextEvent={nextEvent}
+      >
         {venue.description && <VenueAbout venue={venue} onContentUpdated={refetch} />}
       </VenueBodyLead>
     );
@@ -304,11 +308,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
           </div>
         ),
         action: <VenueActions venue={venue} onShare={handleShare} t={t} />,
-        // The rail keeps what is genuinely rail-shaped — safety card, the
-        // correction footnote — now that location/contact/map has moved to the
-        // body as a section. Keeping the two-column frame matters: it is what
-        // stops the page becoming one long column.
-        rail: <VenueSidebar venue={venue} />,
+        rail: null,
       },
       sidebar: null,
       related: {
