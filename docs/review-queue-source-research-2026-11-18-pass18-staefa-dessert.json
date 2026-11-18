@@ -1,0 +1,64 @@
+{
+  "captures": [
+    {
+      "url": "https://www.everybodysperfect.ch/events/le-dessert-fete-de-soutien/",
+      "status": 200,
+      "final_url": "https://www.everybodysperfect.ch/events/le-dessert-fete-de-soutien/",
+      "retrieved_at": "2026-11-18T17:32:06.709945+00:00",
+      "sha256": "b7c755cc6e52d9535d6e8ec33fbfc161e960f9382178ff980e9386a2efa06821",
+      "bytes": 158633
+    },
+    {
+      "url": "https://www.everybodysperfect.ch/events/bearcave/",
+      "status": 200,
+      "final_url": "https://www.everybodysperfect.ch/events/bearcave/",
+      "retrieved_at": "2026-11-18T17:32:08.159025+00:00",
+      "sha256": "ea8d911823f17dbcbd49f8dd558b854724a954c0a80aa257e7d23ccbe9ffc8ca",
+      "bytes": 167935
+    },
+    {
+      "url": "https://www.everybodysperfect.ch/wp-content/uploads/grille-horaire-2026-PDF.pdf",
+      "status": 200,
+      "final_url": "https://www.everybodysperfect.ch/wp-content/uploads/grille-horaire-2026-PDF-1.pdf",
+      "retrieved_at": "2026-11-18T17:32:09.336578+00:00",
+      "sha256": "c2f1744ff32c9988026f46e7eb8faa4c7739ee7b572664aa8a197aadcbc41c8c",
+      "bytes": 141468
+    },
+    {
+      "url": "https://kulturkarussell.ch/kontakt",
+      "status": 200,
+      "final_url": "https://kulturkarussell.ch/kontakt",
+      "retrieved_at": "2026-11-18T17:32:10.117278+00:00",
+      "sha256": "4200d9e11c0897686a312bd9b5254895834c20a8d5478e00372393b006be5ba0",
+      "bytes": 11107
+    },
+    {
+      "url": "https://kulturkarussell.ch/",
+      "status": 200,
+      "final_url": "https://kulturkarussell.ch/",
+      "retrieved_at": "2026-11-18T17:32:10.929011+00:00",
+      "sha256": "4f77aa358852da41f504046afc0cafe64d3e7a5ff305d10811998894305bc179",
+      "bytes": 294632
+    }
+  ],
+  "staefa": {
+    "venue_id": "02cb2f9f-d472-4a4b-b10b-35710b6349d7",
+    "organization_id": "98347af3-a4b7-46db-b139-29ab7c4eeb9c",
+    "address": "Bahnhofstrasse 1",
+    "postal_code": "8712",
+    "name": "Kulturkarussell R\u00f6ssli",
+    "category": "theater",
+    "timezone": "Europe/Zurich",
+    "human_reviewed": false,
+    "coordinates_added": false
+  },
+  "dessert": {
+    "event_id": "16a57f1d-cca5-4ee3-a1ae-27f04ffc1b32",
+    "venue_id": "7adbf457-4d7f-4b5f-9ecf-bcc5f087d648",
+    "address": "Rue Kl\u00e9berg 12",
+    "start_date_unchanged": "2026-11-20T18:00:00Z",
+    "corrected_end": "2026-11-21T03:00:00Z",
+    "timezone": "Europe/Zurich",
+    "human_reviewed": false
+  }
+}

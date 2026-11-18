@@ -18,7 +18,6 @@ import {
   TramFront,
 } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardImage } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -156,6 +155,51 @@ function ChipGroup<T extends string>({
   );
 }
 
+function StepHeading({ n, title, hint }: { n: number; title: string; hint?: string }) {
+  return (
+    <div className="flex items-start gap-4">
+      <span
+        className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-foreground text-sm font-bold text-background"
+        aria-hidden
+      >
+        {n}
+      </span>
+      <div>
+        <h3 className="text-title font-bold">
+          <span className="sr-only">Step {n}: </span>
+          {title}
+        </h3>
+        {hint ? <p className="mt-1 text-sm text-muted-foreground">{hint}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+function PackagePart({
+  icon: Icon,
+  kicker,
+  title,
+}: {
+  icon: typeof Plane;
+  kicker: string;
+  title: string;
+}) {
+  return (
+    <div className="flex items-center gap-4">
+      <span
+        className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-muted"
+        aria-hidden
+      >
+        <Icon size={20} />
+      </span>
+      <div>
+        <p className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">{kicker}</p>
+        <h4 className="text-lg font-bold">{title}</h4>
+      </div>
+    </div>
+  );
+}
+
 export function PersonalisedTripPackages() {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
@@ -273,369 +317,336 @@ export function PersonalisedTripPackages() {
   };
 
   return (
-    <section aria-labelledby="personalised-packages-title" className="space-y-8">
-      <div className="max-w-3xl">
-        <Badge variant="outline" className="mb-4">
-          <Sparkles className="mr-1 h-3.5 w-3.5" /> Personalised escapes
-        </Badge>
-        <h2 id="personalised-packages-title" className="text-display-sm font-bold tracking-tight">
-          What kind of escape do you need?
-        </h2>
-        <p className="mt-4 text-body-lg text-muted-foreground">
-          Start with a complete idea—not a blank form. These verified picks already connect the
-          destination, events, queer places, stays and transport.
-        </p>
-      </div>
+    <section aria-label="Trip packages" className="space-y-8">
+      <p className="max-w-3xl text-body-lg text-muted-foreground">
+        Pick a mood, then check the package: one destination with its event, places, stay and way to
+        get there. Build it into a trip in one step.
+      </p>
+
+      <Card className="p-6 sm:p-8">
+        <StepHeading
+          n={1}
+          title="Tell us the mood"
+          hint="Three quick choices reshuffle the pick."
+        />
+        <div className="mt-6 grid gap-6 lg:grid-cols-3">
+          <ChipGroup label="Mood" value={mood} options={MOODS} onChange={setMood} />
+          <ChipGroup label="When?" value={timing} options={TIMINGS} onChange={setTiming} />
+          <ChipGroup label="Budget" value={budget} options={BUDGETS} onChange={setBudget} />
+        </div>
+      </Card>
 
       {isLoading && !best ? (
-        <div className="grid gap-6 lg:grid-cols-[1.45fr_0.8fr]">
-          <Skeleton variant="rectangular" className="h-[460px] rounded-container" />
-          <div className="grid gap-6">
-            <Skeleton variant="rectangular" className="h-[220px] rounded-container" />
-            <Skeleton variant="rectangular" className="h-[220px] rounded-container" />
-          </div>
-        </div>
+        <Skeleton variant="rectangular" className="h-[640px] rounded-container" />
       ) : best ? (
         <>
-          <div className="grid gap-6 lg:grid-cols-[1.45fr_0.8fr]">
-            <Card className="overflow-hidden">
-              <div className="relative">
-                <CardImage
-                  src={best.coverImageUrl}
-                  alt={`${best.cities} travel inspiration`}
-                  height={420}
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
-                  <Badge variant="outline" className="mb-4">
-                    Your best match
-                  </Badge>
-                  <h3 className="max-w-2xl text-headline font-bold">{best.title}</h3>
-                  <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/85">
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin size={15} /> {best.cities}
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <CalendarDays size={15} /> {best.days} days
-                    </span>
-                    {best.event ? <span>{best.event.title}</span> : null}
-                    {best.venueCount ? <span>{best.venueCount} matched places</span> : null}
-                  </p>
-                  <Button
-                    className="mt-6"
-                    onClick={() => handleCreate(best)}
-                    disabled={createTrip.isPending}
-                  >
-                    {createTrip.isPending ? <TrackLoader size={16} /> : null}
-                    Build this escape <ArrowRight />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
-              {ranked.slice(1, 3).map((template) => (
-                <Card key={template.id} className="overflow-hidden">
-                  <CardImage
-                    src={template.coverImageUrl}
-                    alt={`${template.cities} travel inspiration`}
-                    height={150}
-                  />
-                  <div className="p-6">
-                    <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                      {template.source === 'event' ? 'Event-led escape' : 'Another match'}
-                    </p>
-                    <h3 className="mt-1 text-lg font-bold">{template.title}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {template.cities} · {template.days} days
-                    </p>
-                    <Button
-                      variant="ghost"
-                      className="mt-4 px-0"
-                      onClick={() => handleCreate(template)}
-                    >
-                      Choose this one <ArrowRight />
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          <Card className="p-6 sm:p-8">
-            <div className="mb-6">
-              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                Make it yours
-              </p>
-              <h3 className="mt-1 text-title font-bold">Three quick choices reshuffle the picks</h3>
-            </div>
-            <div className="grid gap-6 lg:grid-cols-3">
-              <ChipGroup label="1. Pick a mood" value={mood} options={MOODS} onChange={setMood} />
-              <ChipGroup label="2. When?" value={timing} options={TIMINGS} onChange={setTiming} />
-              <ChipGroup
-                label="3. What feels right?"
-                value={budget}
-                options={BUDGETS}
-                onChange={setBudget}
+          <Card className="overflow-hidden">
+            <div className="relative">
+              <CardImage
+                src={best.coverImageUrl}
+                alt={`${best.cities} travel inspiration`}
+                height={320}
+                priority
               />
-            </div>
-          </Card>
-
-          <div className="grid gap-6 xl:grid-cols-2">
-            <Card className="p-6 sm:p-8">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                    Events & places
-                  </p>
-                  <h3 className="mt-1 text-title font-bold">
-                    A trip with something to look forward to
-                  </h3>
-                </div>
-                <Sparkles className="text-primary" />
-              </div>
-              <div className="mt-6 space-y-4">
-                {best.event ? (
-                  <LocalizedLink
-                    to={`/events/${best.event.slug}`}
-                    className="block rounded-element bg-surface-container p-4 no-underline hover:bg-muted"
-                  >
-                    <span className="block text-xs font-bold uppercase text-muted-foreground">
-                      Anchor event
-                    </span>
-                    <span className="mt-1 block font-bold">{best.event.title}</span>
-                    <span className="mt-1 block text-sm text-muted-foreground">
-                      {best.event.startDate}
-                    </span>
-                  </LocalizedLink>
-                ) : best.reason ? (
-                  <div className="rounded-element bg-surface-container p-4">
-                    <span className="block text-xs font-bold uppercase text-muted-foreground">
-                      Why it fits
-                    </span>
-                    <span className="mt-1 block font-bold">{best.reason}</span>
-                  </div>
-                ) : null}
-                <LocalizedLink
-                  to={`/venues?city=${encodeURIComponent(best.cities)}`}
-                  className="flex min-h-12 items-center justify-between rounded-element bg-surface-container p-4 font-semibold no-underline hover:bg-muted"
-                >
-                  Browse queer venues in {best.cities} <ArrowRight />
-                </LocalizedLink>
-                <LocalizedLink
-                  to={`/events?city=${encodeURIComponent(best.cities)}`}
-                  className="flex min-h-12 items-center justify-between rounded-element bg-surface-container p-4 font-semibold no-underline hover:bg-muted"
-                >
-                  See more events <ArrowRight />
-                </LocalizedLink>
-              </div>
-            </Card>
-
-            <Card className="p-6 sm:p-8">
-              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                Hotels, B&Bs & more
-              </p>
-              <h3 className="mt-1 text-title font-bold">Stay your way</h3>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {STAY_TYPES.map((type) => (
-                  <button
-                    key={type.value}
-                    type="button"
-                    aria-pressed={stayType === type.value}
-                    onClick={() => setStayType(type.value)}
-                    className={`rounded-element border px-4 py-2 text-sm font-semibold ${
-                      stayType === type.value
-                        ? 'border-foreground bg-foreground text-background'
-                        : 'border-border'
-                    }`}
-                  >
-                    {type.label}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-6 grid gap-4">
-                {staysLoading ? (
-                  <Skeleton variant="rectangular" className="h-24 rounded-element" />
-                ) : bookableStays.length ? (
-                  bookableStays.map((stay) => (
-                    <a
-                      key={stay.id}
-                      href={stay.bookingUrl}
-                      target="_blank"
-                      rel="noopener noreferrer sponsored"
-                      className="grid grid-cols-[72px_1fr_auto] items-center gap-4 rounded-element bg-surface-container p-4 no-underline hover:bg-muted"
-                    >
-                      {stay.imageUrl ? (
-                        <img
-                          src={stay.imageUrl}
-                          alt=""
-                          className="h-16 w-[72px] rounded-element object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="grid h-16 w-[72px] place-items-center rounded-element bg-muted">
-                          <BedDouble />
-                        </div>
-                      )}
-                      <span className="min-w-0">
-                        <span className="block truncate font-bold">{stay.title}</span>
-                        <span className="block text-xs text-muted-foreground">Live result</span>
-                      </span>
-                      <span className="text-sm font-bold">
-                        {stay.currency} {Math.round(stay.price)}
-                      </span>
-                    </a>
-                  ))
-                ) : (
-                  <p className="rounded-element bg-surface-container p-4 text-sm text-muted-foreground">
-                    No verified live result yet. Open the full search to compare availability.
-                  </p>
-                )}
-              </div>
-              <Button
-                variant="outline"
-                className="mt-4 w-full"
-                onClick={() => navigate(bookingUrl('hotels', stayType))}
-              >
-                <Hotel /> Compare all {STAY_TYPES.find((type) => type.value === stayType)?.label}
-              </Button>
-            </Card>
-          </div>
-
-          <Card className="p-6 sm:p-8">
-            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-              Door to door
-            </p>
-            <h3 className="mt-1 text-title font-bold">Choose how you want to move</h3>
-            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-              We only show live provider links when the route inputs exist. Your chosen arrival mode
-              is saved with the trip; local modes stay available for every itinerary leg.
-            </p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {ARRIVAL_MODES.map(({ value, label, icon: Icon, note }) => (
-                <button
-                  key={value}
-                  type="button"
-                  aria-pressed={arrivalMode === value}
-                  onClick={() => setArrivalMode(value)}
-                  className={`rounded-element border p-4 text-left ${arrivalMode === value ? 'border-foreground bg-foreground text-background' : 'border-border bg-background'}`}
-                >
-                  <Icon />
-                  <span className="mt-4 block font-bold">{label}</span>
-                  <span
-                    className={`mt-1 block text-xs ${arrivalMode === value ? 'text-background/70' : 'text-muted-foreground'}`}
-                  >
-                    {note}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
+                <p className="text-2xs font-bold uppercase tracking-wide text-white/80">
+                  Step 2 · Your package
+                </p>
+                <h3 className="mt-2 max-w-2xl text-headline font-bold">{best.title}</h3>
+                <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/85">
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin size={15} /> {best.cities}
                   </span>
-                </button>
-              ))}
+                  <span className="inline-flex items-center gap-1">
+                    <CalendarDays size={15} /> {best.days} days
+                  </span>
+                  {best.venueCount ? <span>{best.venueCount} matched places</span> : null}
+                </p>
+              </div>
             </div>
 
-            <div className="mt-6 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-              <div>
-                <label htmlFor="package-origin" className="text-sm font-bold">
-                  Starting from
-                </label>
-                <Input
-                  id="package-origin"
-                  className="mt-2"
-                  value={origin}
-                  onChange={(event) => setOrigin(event.target.value)}
-                  placeholder="Your city"
-                />
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Button size="sm" onClick={() => navigate(bookingUrl('flights'))}>
-                    <Plane /> Flights
-                  </Button>
-                  {origin ? (
-                    <Button size="sm" variant="outline" asChild>
-                      <a
-                        href={buildTrainlineUrl({
-                          origin,
-                          destination: best.cities,
-                          departDate: dates?.start,
-                          returnDate: dates?.end,
-                        })}
-                        target="_blank"
-                        rel="noopener noreferrer sponsored"
-                      >
-                        <Train /> Trains
-                      </a>
-                    </Button>
-                  ) : (
-                    <Button size="sm" variant="outline" disabled>
-                      <Train /> Trains
-                    </Button>
-                  )}
-                  {origin ? (
-                    <Button size="sm" variant="outline" asChild>
-                      <a
-                        href={buildOmioUrl({
-                          origin,
-                          destination: best.cities,
-                          departDate: dates?.start,
-                          returnDate: dates?.end,
-                        })}
-                        target="_blank"
-                        rel="noopener noreferrer sponsored"
-                      >
-                        <Bus /> Rail + coach
-                      </a>
-                    </Button>
-                  ) : (
-                    <Button size="sm" variant="outline" disabled>
-                      <Bus /> Rail + coach
-                    </Button>
-                  )}
-                  {origin ? (
-                    <Button size="sm" variant="outline" asChild>
-                      <a
-                        href={buildFlixbusUrl({
-                          origin,
-                          destination: best.cities,
-                          departDate: dates?.start,
-                        })}
-                        target="_blank"
-                        rel="noopener noreferrer sponsored"
-                      >
-                        <Bus /> Coaches
-                      </a>
-                    </Button>
-                  ) : (
-                    <Button size="sm" variant="outline" disabled>
-                      <Bus /> Coaches
-                    </Button>
-                  )}
-                </div>
-                {!origin ? (
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    Add an origin to unlock route-specific rail and coach searches.
-                  </p>
-                ) : null}
-              </div>
-              <div>
-                <p className="text-sm font-bold">Around {best.cities}</p>
-                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {LOCAL_MODES.map(({ label, icon: Icon }) => (
-                    <div key={label} className="rounded-element bg-surface-container p-4">
-                      <Icon size={18} />
-                      <span className="mt-2 block text-sm font-semibold">{label}</span>
+            <ol className="divide-y divide-border">
+              <li className="p-6 sm:p-8">
+                <PackagePart icon={Sparkles} kicker="What you go for" title="Event & places" />
+                <div className="mt-4 grid gap-4 md:grid-cols-3">
+                  {best.event ? (
+                    <LocalizedLink
+                      to={`/events/${best.event.slug}`}
+                      className="block rounded-element bg-surface-container p-4 no-underline hover:bg-muted"
+                    >
+                      <span className="block text-xs font-bold uppercase text-muted-foreground">
+                        Anchor event
+                      </span>
+                      <span className="mt-1 block font-bold">{best.event.title}</span>
+                      <span className="mt-1 block text-sm text-muted-foreground">
+                        {best.event.startDate}
+                      </span>
+                    </LocalizedLink>
+                  ) : best.reason ? (
+                    <div className="rounded-element bg-surface-container p-4">
+                      <span className="block text-xs font-bold uppercase text-muted-foreground">
+                        Why it fits
+                      </span>
+                      <span className="mt-1 block font-bold">{best.reason}</span>
                     </div>
+                  ) : null}
+                  <LocalizedLink
+                    to={`/venues?city=${encodeURIComponent(best.cities)}`}
+                    className="flex min-h-12 items-center justify-between rounded-element bg-surface-container p-4 font-semibold no-underline hover:bg-muted"
+                  >
+                    Browse queer venues in {best.cities} <ArrowRight />
+                  </LocalizedLink>
+                  <LocalizedLink
+                    to={`/events?city=${encodeURIComponent(best.cities)}`}
+                    className="flex min-h-12 items-center justify-between rounded-element bg-surface-container p-4 font-semibold no-underline hover:bg-muted"
+                  >
+                    See more events <ArrowRight />
+                  </LocalizedLink>
+                </div>
+              </li>
+              <li className="p-6 sm:p-8">
+                <PackagePart icon={BedDouble} kicker="Where you sleep" title="Stay your way" />
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {STAY_TYPES.map((type) => (
+                    <button
+                      key={type.value}
+                      type="button"
+                      aria-pressed={stayType === type.value}
+                      onClick={() => setStayType(type.value)}
+                      className={`rounded-element border px-4 py-2 text-sm font-semibold ${
+                        stayType === type.value
+                          ? 'border-foreground bg-foreground text-background'
+                          : 'border-border'
+                      }`}
+                    >
+                      {type.label}
+                    </button>
                   ))}
                 </div>
+                <div className="mt-6 grid gap-4">
+                  {staysLoading ? (
+                    <Skeleton variant="rectangular" className="h-24 rounded-element" />
+                  ) : bookableStays.length ? (
+                    bookableStays.map((stay) => (
+                      <a
+                        key={stay.id}
+                        href={stay.bookingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer sponsored"
+                        className="grid grid-cols-[72px_1fr_auto] items-center gap-4 rounded-element bg-surface-container p-4 no-underline hover:bg-muted"
+                      >
+                        {stay.imageUrl ? (
+                          <img
+                            src={stay.imageUrl}
+                            alt=""
+                            className="h-16 w-[72px] rounded-element object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="grid h-16 w-[72px] place-items-center rounded-element bg-muted">
+                            <BedDouble />
+                          </div>
+                        )}
+                        <span className="min-w-0">
+                          <span className="block truncate font-bold">{stay.title}</span>
+                          <span className="block text-xs text-muted-foreground">Live result</span>
+                        </span>
+                        <span className="text-sm font-bold">
+                          {stay.currency} {Math.round(stay.price)}
+                        </span>
+                      </a>
+                    ))
+                  ) : (
+                    <p className="rounded-element bg-surface-container p-4 text-sm text-muted-foreground">
+                      No verified live result yet. Open the full search to compare availability.
+                    </p>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  className="mt-4 w-full"
+                  onClick={() => navigate(bookingUrl('hotels', stayType))}
+                >
+                  <Hotel /> Compare all {STAY_TYPES.find((type) => type.value === stayType)?.label}
+                </Button>
+              </li>
+              <li className="p-6 sm:p-8">
+                <PackagePart icon={Plane} kicker="Door to door" title="How you get there" />
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                  {ARRIVAL_MODES.map(({ value, label, icon: Icon, note }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={arrivalMode === value}
+                      onClick={() => setArrivalMode(value)}
+                      className={`rounded-element border p-4 text-left ${arrivalMode === value ? 'border-foreground bg-foreground text-background' : 'border-border bg-background'}`}
+                    >
+                      <Icon />
+                      <span className="mt-4 block font-bold">{label}</span>
+                      <span
+                        className={`mt-1 block text-xs ${arrivalMode === value ? 'text-background/70' : 'text-muted-foreground'}`}
+                      >
+                        {note}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-6 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+                  <div>
+                    <label htmlFor="package-origin" className="text-sm font-bold">
+                      Starting from
+                    </label>
+                    <Input
+                      id="package-origin"
+                      className="mt-2"
+                      value={origin}
+                      onChange={(event) => setOrigin(event.target.value)}
+                      placeholder="Your city"
+                    />
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Button size="sm" onClick={() => navigate(bookingUrl('flights'))}>
+                        <Plane /> Flights
+                      </Button>
+                      {origin ? (
+                        <Button size="sm" variant="outline" asChild>
+                          <a
+                            href={buildTrainlineUrl({
+                              origin,
+                              destination: best.cities,
+                              departDate: dates?.start,
+                              returnDate: dates?.end,
+                            })}
+                            target="_blank"
+                            rel="noopener noreferrer sponsored"
+                          >
+                            <Train /> Trains
+                          </a>
+                        </Button>
+                      ) : (
+                        <Button size="sm" variant="outline" disabled>
+                          <Train /> Trains
+                        </Button>
+                      )}
+                      {origin ? (
+                        <Button size="sm" variant="outline" asChild>
+                          <a
+                            href={buildOmioUrl({
+                              origin,
+                              destination: best.cities,
+                              departDate: dates?.start,
+                              returnDate: dates?.end,
+                            })}
+                            target="_blank"
+                            rel="noopener noreferrer sponsored"
+                          >
+                            <Bus /> Rail + coach
+                          </a>
+                        </Button>
+                      ) : (
+                        <Button size="sm" variant="outline" disabled>
+                          <Bus /> Rail + coach
+                        </Button>
+                      )}
+                      {origin ? (
+                        <Button size="sm" variant="outline" asChild>
+                          <a
+                            href={buildFlixbusUrl({
+                              origin,
+                              destination: best.cities,
+                              departDate: dates?.start,
+                            })}
+                            target="_blank"
+                            rel="noopener noreferrer sponsored"
+                          >
+                            <Bus /> Coaches
+                          </a>
+                        </Button>
+                      ) : (
+                        <Button size="sm" variant="outline" disabled>
+                          <Bus /> Coaches
+                        </Button>
+                      )}
+                    </div>
+                    {!origin ? (
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Add an origin to unlock route-specific rail and coach searches.
+                      </p>
+                    ) : null}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">Around {best.cities}</p>
+                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {LOCAL_MODES.map(({ label, icon: Icon }) => (
+                        <div key={label} className="rounded-element bg-surface-container p-4">
+                          <Icon size={18} />
+                          <span className="mt-2 block text-sm font-semibold">{label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-6 grid gap-4 lg:grid-cols-2">
+                  <CarRentalSection
+                    city={best.cities}
+                    checkIn={dates?.start}
+                    checkOut={dates?.end}
+                    compact
+                  />
+                  <TransferSection city={best.cities} compact />
+                </div>
+              </li>
+            </ol>
+
+            <div className="flex flex-col gap-4 border-t border-border bg-muted/40 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+              <div>
+                <StepHeading n={3} title="Make it a trip" />
+                <p className="mt-1 text-sm text-muted-foreground">
+                  We add the destination, event and arrival mode. You shape the days after.
+                </p>
               </div>
-            </div>
-            <div className="mt-6 grid gap-4 lg:grid-cols-2">
-              <CarRentalSection
-                city={best.cities}
-                checkIn={dates?.start}
-                checkOut={dates?.end}
-                compact
-              />
-              <TransferSection city={best.cities} compact />
+              <Button size="lg" onClick={() => handleCreate(best)} disabled={createTrip.isPending}>
+                {createTrip.isPending ? <TrackLoader size={16} /> : null}
+                Build this escape <ArrowRight />
+              </Button>
             </div>
           </Card>
+
+          {ranked.length > 1 ? (
+            <div>
+              <h3 className="text-title font-bold">Other matches</h3>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                {ranked.slice(1, 3).map((template) => (
+                  <Card key={template.id} className="grid grid-cols-[96px_1fr] overflow-hidden">
+                    <CardImage
+                      src={template.coverImageUrl}
+                      alt={`${template.cities} travel inspiration`}
+                      height={128}
+                      className="h-full"
+                    />
+                    <div className="p-4">
+                      <p className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+                        {template.source === 'event' ? 'Event-led escape' : 'Another match'}
+                      </p>
+                      <p className="mt-1 font-bold">{template.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {template.cities} · {template.days} days
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="mt-2 px-0"
+                        onClick={() => handleCreate(template)}
+                      >
+                        Choose this one <ArrowRight />
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </>
       ) : (
         <Card className="p-8 text-center">

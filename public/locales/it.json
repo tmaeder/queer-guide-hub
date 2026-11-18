@@ -6,7 +6,11 @@
     "personalities": "Personalità",
     "history": "Storia",
     "lede": "Le parole che usiamo, le persone che hanno plasmato la vita queer e la storia dietro a entrambe.",
-    "navigation": "Sezioni della conoscenza"
+    "navigation": "Sezioni della conoscenza",
+    "termsHint": "Le nostre parole, spiegate",
+    "personalitiesHint": "Persone che hanno segnato la vita queer",
+    "historyHint": "Tappe, anno per anno",
+    "rightsHint": "Cosa dice la legge, paese per paese"
   },
   "eventTypes": {
     "party": "Festa",
@@ -957,12 +961,6 @@
         "title": "Impossibile creare il viaggio",
         "poolTitle": "L’elenco delle stazioni non è stato caricato.",
         "retry": "Riprova"
-      },
-      "cta": {
-        "heading": "Percorri questa linea.",
-        "body": "Diventa un viaggio tuo, con tutte le fermate già dentro. Dopo puoi cambiare quello che vuoi.",
-        "primary": "Trasformalo in viaggio",
-        "secondary": "Disegnane un’altra"
       },
       "buildRoute": "Crea un percorso"
     },
@@ -1926,7 +1924,11 @@
       "exploreCity": "Esplora {{city}}",
       "browseEvents": "Scopri gli eventi a {{city}}",
       "whatsOn": "Cosa c’è in programma",
-      "communitySpace": "Spazio comunitario"
+      "communitySpace": "Spazio comunitario",
+      "photos": "Foto",
+      "previousPhoto": "Foto precedente",
+      "nextPhoto": "Foto successiva",
+      "pausePhotos": "Metti in pausa la presentazione"
     },
     "discovery": {
       "openMap": "Apri la mappa",
@@ -2097,7 +2099,8 @@
       "interchange": {
         "label": "Cerca in tutto",
         "subtitle": "Qui si incontrano tutte le linee"
-      }
+      },
+      "title": "Mappa"
     },
     "glossary": {
       "eyebrow": "Glossario",
@@ -2255,6 +2258,7 @@
       "you": "Profilo",
       "menuTitle": "Tutte le sezioni",
       "menuDescription": "Vai a qualsiasi sezione, cambia lingua o tema.",
+      "hubDescription": "I tuoi messaggi, programmi, contatti ed elementi salvati.",
       "trips": "I miei viaggi",
       "settingsSection": "Visualizzazione",
       "browseAll": "Sfoglia tutte le sezioni",
@@ -2589,7 +2593,8 @@
       "pride": {
         "title": "Pride questa stagione",
         "window": "Prossimi 4 mesi",
-        "empty": "Nessun evento Pride in arrivo."
+        "empty": "Nessun evento Pride in arrivo.",
+        "cta": "Vedi evento"
       },
       "inspiration": {
         "villages": "Queer Villages",
@@ -2747,7 +2752,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} persona",
+        "fieldCount_other": "{{formatted}} persone"
       },
       "detail": {
         "inTheNews": "In the news",
@@ -3985,11 +3992,15 @@
       "title": "[IT] What are you into?",
       "blurb": "[IT] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[IT] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[IT] {{count}} selected"
+      "count": "[IT] {{count}} selected",
+      "signIn": "Accedi per scegliere gli interessi",
+      "limit": "{{count}} di {{max}} selezionati",
+      "atLimit": "Hai raggiunto il limite. Rimuovine uno per sceglierne un altro."
     },
     "friends": {
       "discover": "Trova persone"
-    }
+    },
+    "safetyTitle": "Controlla la legge prima di incontrarvi"
   },
   "hub": {
     "title": "Il tuo hub",
@@ -4532,7 +4543,8 @@
         "trans": "[IT] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "[IT] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[IT] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
-      }
+      },
+      "methodologyLink": "Ogni peso, le soglie delle fasce e come citarlo"
     },
     "lens": {
       "title": "[IT] Who the law protects",
@@ -4549,6 +4561,94 @@
       "partial": "[IT] Some protections",
       "protected": "[IT] Broad protections",
       "unknown": "[IT] Not enough data"
+    },
+    "methodology": {
+      "cite": {
+        "copied": "Copiato",
+        "copy": "Copia",
+        "apa": "APA",
+        "plain": "Testo semplice",
+        "copyFailed": "Impossibile copiare automaticamente. La citazione è selezionata; copiala con la tastiera."
+      },
+      "metaTitle": "Come viene calcolato il punteggio di uguaglianza LGBTQ+",
+      "metaDescription": "Ogni peso del punteggio di uguaglianza di Queer Guide, l'intervallo 0–100, le soglie delle fasce, i limiti noti e come citarlo.",
+      "section": {
+        "formula": "La formula",
+        "range": "Intervallo e fasce",
+        "limits": "Limiti noti",
+        "cite": "Come citare"
+      },
+      "kicker": {
+        "formula": "Ogni peso"
+      },
+      "body": {
+        "formula": "Ogni paese parte da {{start}}. Si aggiungono o sottraggono punti per ogni fatto registrato da ILGA, poi il totale viene mantenuto tra 0 e 100. Alcune righe sono alternative: un paese ottiene il matrimonio o l'unione civile, non entrambi, e al massimo una detrazione per pena.",
+        "range": "Prima del limite 0–100, il totale minimo possibile è {{min}} e il massimo {{max}}. Il massimo si raggiunge con punti in eccesso, quindi 100 significa «almeno 100», non «ogni diritto registrato».",
+        "ceiling": "{{atCeiling}} su {{scored}} paesi e territori valutati sono attualmente esattamente a 100. Il punteggio non può ordinarli tra loro.",
+        "cite": "Cita il punteggio come Queer Guide e i fatti giuridici su cui si basa come ILGA World Database. I punteggi vengono ricalcolati ogni notte, quindi indica la data di consultazione."
+      },
+      "col": {
+        "fact": "Fatto registrato",
+        "points": "Punti",
+        "field": "Campo ILGA"
+      },
+      "tiers": "Soglie delle fasce",
+      "tierUnknown": "Nessun dato ILGA",
+      "limits": {
+        "start": "Partire da 50 significa che un paese con quasi nulla di registrato finisce a metà scala. Un punteggio intermedio può indicare diritti intermedi o dati scarsi.",
+        "penaltyText": "La detrazione per pena si basa sulla descrizione della pena di ILGA, non sul suo campo separato sulla pena di morte. Dove ILGA descrive la pena come detenzione ma registra anche la pena di morte in parte del paese (Nigeria, secondo la Sharia negli stati settentrionali), il punteggio detrae per l'ergastolo, non per la pena di morte.",
+        "uneven": "L'orientamento sessuale conta più dell'identità di genere in ogni ambito di tutela (2 punti contro 1), e le leggi su crimini d'odio e istigazione contano solo per l'orientamento sessuale. Il punteggio dice quindi di più sulle persone lesbiche, gay e bisessuali che sulle persone trans.",
+        "law": "È nazionale, registra le leggi e non la loro applicazione, e non è una valutazione di sicurezza.",
+        "sourcesLink": "Altro sui dati e i loro limiti",
+        "transLink": "Diritti trans per paese"
+      },
+      "breadcrumb": "Metodologia",
+      "heroLine": "Linea dei diritti · Metodologia",
+      "title": "Come viene calcolato il punteggio di uguaglianza",
+      "lede": "Il punteggio di uguaglianza è un numero da 0–100 che calcoliamo ogni notte dalla ILGA World Database. Questa pagina elenca ogni peso, l'intervallo, le soglie delle fasce e i casi in cui il punteggio sbaglia.",
+      "group": {
+        "criminalisation": "Criminalizzazione",
+        "partnership": "Unioni",
+        "protection": "Tutela contro la discriminazione",
+        "hate": "Crimini d'odio e istigazione",
+        "civic": "Espressione e associazione",
+        "family": "Famiglia e integrità fisica"
+      },
+      "row": {
+        "legal": "Gli atti sessuali tra persone dello stesso sesso sono legali",
+        "criminalised": "Gli atti sessuali tra persone dello stesso sesso sono criminalizzati",
+        "death": "Pena descritta come pena di morte, incluso «possibile»",
+        "life": "Pena fino all'ergastolo",
+        "eight": "Pena fino a 8 anni di reclusione",
+        "marriage": "Matrimonio tra persone dello stesso sesso",
+        "civil-union": "Solo unione civile",
+        "constitutional-so": "Costituzione: include l'orientamento sessuale",
+        "constitutional-gi": "Costituzione: include l'identità di genere",
+        "employment-so": "Lavoro: include l'orientamento sessuale",
+        "employment-gi": "Lavoro: include l'identità di genere",
+        "housing-so": "Alloggio: include l'orientamento sessuale",
+        "housing-gi": "Alloggio: include l'identità di genere",
+        "education-so": "Istruzione: include l'orientamento sessuale",
+        "education-gi": "Istruzione: include l'identità di genere",
+        "health-so": "Salute: include l'orientamento sessuale",
+        "health-gi": "Salute: include l'identità di genere",
+        "goods_services-so": "Beni e servizi: include l'orientamento sessuale",
+        "goods_services-gi": "Beni e servizi: include l'identità di genere",
+        "bullying-so": "Bullismo: include l'orientamento sessuale",
+        "bullying-gi": "Bullismo: include l'identità di genere",
+        "hate-crime": "La legge sui crimini d'odio include l'orientamento sessuale",
+        "incitement": "Istigazione all'odio vietata, incluso l'orientamento sessuale",
+        "expression-free": "Nessun ostacolo legale noto all'espressione",
+        "expression-restricted": "Restrizioni legali all'espressione (esplicite o meno)",
+        "association-free": "Nessun ostacolo legale noto all'associazione",
+        "association-restricted": "Restrizioni legali esplicite all'associazione",
+        "joint-adoption": "Adozione congiunta",
+        "second-parent": "Solo adozione del figlio del partner",
+        "conversion": "Pratiche di conversione vietate",
+        "self-id": "Riconoscimento legale del genere per autodeterminazione",
+        "marker": "Cambio del marcatore di genere possibile, senza autodeterminazione",
+        "intersex": "Tutela per le persone intersex"
+      }
     }
   },
   "about": {
@@ -5562,5 +5662,27 @@
   "i18n": {
     "selectLanguage": "Seleziona la lingua",
     "selectCurrency": "Seleziona la valuta"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "Collegati a noi",
+      "intro": "Puoi inserire un link a qualsiasi pagina di Queer Guide. Queste sono le più citate. Copia uno snippet nella tua pagina o scrivi il tuo testo del link.",
+      "badgeTitle": "Badge dei dati",
+      "badgeBody": "Per le pagine che usano i nostri dati sui diritti. Il badge rimanda alla pagina dei diritti per paese.",
+      "badgeSnippet": "HTML del badge",
+      "listingTitle": "Se la tua organizzazione è presente",
+      "listingBody": "Sostituisci YOUR-LISTING con l’ultima parte dell’indirizzo della tua scheda su Queer Guide.",
+      "listingSnippet": "HTML del link alla scheda",
+      "attribution": "Se usi i nostri dati sui diritti, cita Queer Guide e l’ILGA World Database, che cura i dati giuridici di base.",
+      "copied": "Copiato",
+      "copy": "Copia",
+      "copyFailed": "Impossibile copiare automaticamente. Il testo è selezionato; copialo con la tastiera.",
+      "page": {
+        "rights": "Diritti LGBTQ+ per paese (Queer Guide)",
+        "methodology": "Come viene calcolato il punteggio di uguaglianza di Queer Guide",
+        "help": "Linee di aiuto LGBTQ+ per paese (Queer Guide)",
+        "interactions": "Rischi delle combinazioni di droghe (Queer Guide)"
+      }
+    }
   }
 }

@@ -22,6 +22,9 @@ import { CityPicture } from '@/components/places/CityPicture';
 import { cityPictureHasBadge } from '@/components/places/cityPictureHasBadge';
 import { StationBadge } from '@/components/ui/StationBadge';
 import { contentTypeGlyph } from '@/lib/cardGlyphs';
+import { Badge } from '@/components/ui/badge';
+import { useNewsCategories } from '@/hooks/useNews';
+import { venueCategoryFallbackLabel } from '@/lib/venueCategories';
 
 interface Props {
   entity: Entity;
@@ -89,6 +92,10 @@ export function SimilarItems({
   onItemsChange,
 }: Props) {
   const { t } = useTranslation();
+  const newsCategories = useNewsCategories();
+  // `metadata.category` is a slug ("rights-legal"); show its display name.
+  const categoryLabel = (slug?: string) =>
+    newsCategories.find((c) => c.slug === slug)?.name ?? venueCategoryFallbackLabel(slug);
   const trackClick = useTrackClick();
   const { data, isError: error } = useSimilarQuery(entity, limit, contentTypes, (hits, types) => {
     let next = hits as unknown as SimItem[];
@@ -209,13 +216,25 @@ export function SimilarItems({
                           <div className="text-title font-bold leading-tight truncate">
                             {it.metadata?.title || it.metadata?.slug?.replace(/-/g, ' ')}
                           </div>
-                          <div className="mt-1 text-13 text-muted-foreground truncate">
-                            {[it.metadata?.city, it.metadata?.country]
+                          {(() => {
+                            const place = [it.metadata?.city, it.metadata?.country]
                               // A country's own `country` is its name; repeating
                               // the title as a subtitle says nothing.
                               .filter((v) => v && v !== it.metadata?.title)
-                              .join(', ') || it.metadata?.category}
-                          </div>
+                              .join(', ');
+                            if (place)
+                              return (
+                                <div className="mt-1 text-13 text-muted-foreground truncate">
+                                  {place}
+                                </div>
+                              );
+                            const label = categoryLabel(it.metadata?.category);
+                            return label ? (
+                              <Badge variant="secondary" className="mt-2 max-w-full truncate">
+                                {label}
+                              </Badge>
+                            ) : null;
+                          })()}
                         </div>
                       </Card>
                     </LocalizedLink>

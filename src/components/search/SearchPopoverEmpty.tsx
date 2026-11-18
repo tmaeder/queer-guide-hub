@@ -1,10 +1,8 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type SearchHit } from '@/lib/searchClient';
-import { DESTINATIONS, INTENT_NAV, INTENT_TRACK, NAV_CLUSTERS } from '@/config/navigation';
+import { DESTINATIONS, INTENT_NAV, NAV_CLUSTERS } from '@/config/navigation';
 import { RouteBullet } from '@/components/transit/RouteBullet';
-import { StationRing } from '@/components/transit/StationRing';
-import { ModeSwitcher } from './ModeSwitcher';
 
 export interface SearchPopoverEmptyProps {
   trending: SearchHit[];
@@ -84,8 +82,8 @@ export function SearchPopoverEmpty({
           content-type index. This block used to be absent entirely, so the
           site's highest-frequency discovery surface (⌘K on desktop, the whole
           header row on mobile) taught only the model the Intent Router
-          replaced. Each chip carries its own line's station ring, so the same
-          colour that names the job in the topbar names it here. */}
+          replaced. Each chip carries the intent's own icon, the same one the
+          footer and nav sheet use. */}
       <Eyebrow>{t('search.jumpTo', 'Jump to')}</Eyebrow>
       <div className="flex flex-wrap gap-2 px-6 pb-2">
         {INTENT_NAV.map((intent) => (
@@ -96,11 +94,7 @@ export function SearchPopoverEmpty({
             className={CHIP}
             title={t(intent.subtitleKey, intent.subtitleFallback)}
           >
-            <StationRing
-              state="typed"
-              track={INTENT_TRACK[intent.id] ?? 'pink'}
-              className="h-3 w-3"
-            />
+            <intent.icon size={20} />
             {t(intent.labelKey, intent.fallback)}
           </button>
         ))}
@@ -135,9 +129,6 @@ export function SearchPopoverEmpty({
           </ul>
         </>
       )}
-
-      {/* The mode row sits right under the tiles it re-biases. */}
-      <ModeSwitcher />
 
       <button
         type="button"

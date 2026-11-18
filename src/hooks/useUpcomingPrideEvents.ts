@@ -7,6 +7,7 @@ export interface UpcomingPrideEvent {
   slug: string | null;
   event_type: string | null;
   start_date: string | null;
+  timezone?: string | null;
   end_date: string | null;
   images: string[] | null;
   city: { id: string; name: string } | null;
@@ -34,7 +35,7 @@ export function useUpcomingPrideEvents({
       const { data, error } = await supabase
         .from('events')
         .select(
-          `id, title, slug, event_type, start_date, end_date, images,
+          `id, title, slug, event_type, start_date, end_date, timezone, images,
            city:cities(id, name),
            country:countries(id, name, code, equality_score)`,
         )

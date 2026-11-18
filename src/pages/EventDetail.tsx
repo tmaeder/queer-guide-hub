@@ -56,7 +56,6 @@ import {
   type SingleSectionDef,
 } from '@/components/transit/singleSectionModel';
 import { TagChipRow } from '@/components/tags/TagChipRow';
-import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
@@ -440,7 +439,6 @@ export default function EventDetail() {
                 countryName={effectiveCountry.name}
               />
             )}
-            <DestinationSafetyCard countryIds={[effectiveCountry?.id ?? event.country_id]} />
             <div className="flex flex-wrap items-start gap-x-8 gap-y-4 border-b border-border-hairline pb-4">
               <div className="min-w-0 flex-[1_1_36rem]">
                 <ErrorBoundary section="event-fact-strip" fallback={null}>
@@ -456,14 +454,27 @@ export default function EventDetail() {
               </ErrorBoundary>
             </div>
             {eventOgImage && (
-              <div className="max-w-reading overflow-hidden rounded-container bg-surface-container">
+              /* A poster is rarely the box's shape. The same image, blurred and
+                 cropped to fill, is the ground the contained poster sits on —
+                 no small poster floating in an empty grey box. */
+              <div
+                data-testid="event-cover"
+                className="relative isolate max-w-reading overflow-hidden rounded-container bg-surface-container"
+              >
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 -z-10 scale-125 bg-cover bg-center opacity-90 blur-2xl"
+                  style={{ backgroundImage: `url(${JSON.stringify(eventOgImage)})` }}
+                />
                 <Image
                   src={eventOgImage}
                   alt=""
-                  heightPx={224}
+                  heightPx={360}
                   imageRole="cover"
                   fit="contain"
                   rounded="none"
+                  frameClassName="bg-transparent"
+                  className="p-0"
                 />
               </div>
             )}

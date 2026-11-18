@@ -1,9 +1,57 @@
 import { useProfessionFacets } from '@/hooks/usePersonalities';
 import { useBornThisWeek } from '@/hooks/useBornThisWeek';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Cake, Flower2 } from '@/components/icons';
+import {
+  BookOpen,
+  Briefcase,
+  Cake,
+  Camera,
+  Film,
+  FlaskConical,
+  Flower2,
+  GraduationCap,
+  Landmark,
+  Laugh,
+  Megaphone,
+  Mic,
+  Music,
+  Newspaper,
+  Palette,
+  Scale,
+  Sparkles,
+  Trophy,
+  type LucideIcon,
+} from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+
+/**
+ * Field → glyph, matched on the profession's own words. Professions are free
+ * data (top N by count), so this is a keyword table with a neutral fallback,
+ * never an exhaustive map. lucide, not TransitIcon: this page's chrome is
+ * lucide (the birthday and remembrance headings beside these tiles).
+ */
+const FIELD_ICONS: readonly [RegExp, LucideIcon][] = [
+  [/drag|perform|entertain/i, Sparkles],
+  [/actor|actress|film|director|screen/i, Film],
+  [/sing|music|rapper|composer|dj\b/i, Music],
+  [/comedian|comic/i, Laugh],
+  [/host|presenter|broadcast|podcast/i, Mic],
+  [/writer|author|poet|novel|playwright/i, BookOpen],
+  [/journalist|editor|reporter/i, Newspaper],
+  [/politic|diplomat|mayor|senator/i, Landmark],
+  [/activist|advocate|organi[sz]er/i, Megaphone],
+  [/lawyer|judge|jurist/i, Scale],
+  [/artist|painter|designer|illustrat|sculpt/i, Palette],
+  [/model|photograph|adult/i, Camera],
+  [/athlet|sport|player|olymp/i, Trophy],
+  [/scien|research|physic|chemist|biolog|doctor|physician/i, FlaskConical],
+  [/academ|professor|teacher|historian|scholar/i, GraduationCap],
+];
+
+function fieldIcon(profession: string): LucideIcon {
+  return FIELD_ICONS.find(([re]) => re.test(profession))?.[1] ?? Briefcase;
+}
 
 interface EditorialEntriesProps {
   /** Currently applied profession, so we can highlight the active tile. */
@@ -99,36 +147,51 @@ export function EditorialEntries({ activeProfession, onProfessionSelect }: Edito
           <h2 className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
             {t('pages.personalities.editorial.browseByField', 'Browse by field')}
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
             {facets.slice(0, 8).map((f) => {
               const active = activeProfession === f.profession;
+              const Icon = fieldIcon(f.profession);
               return (
-                // Interchanges off the era line. This tile carried a
-                // three-part defect until 2026-08-11: the concatenation had no
-                // space before the ternary, so it emitted the class
-                // `hover:bg-accentborder-foreground`; there was no `border`
-                // width utility, so both `border-*` colours were inert anyway;
-                // and the active state was a tint the hover state also used.
+                // Interchanges off the era line: a tile with the field's glyph
+                // in a round well, the field as the title and the count as a
+                // quiet second line. Active fills ink (never ink AND lift).
                 <button
                   key={f.profession}
                   type="button"
                   onClick={() => onProfessionSelect(active ? undefined : f.profession)}
                   aria-pressed={active}
                   className={cn(
-                    'flex items-center justify-between gap-2 bg-muted rounded-element px-4 py-2 text-left transition-colors',
+                    'group flex min-h-11 items-center gap-2 rounded-container p-2 pr-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     active
                       ? 'bg-foreground text-background'
-                      : 'bg-background hover:bg-surface-container',
+                      : 'bg-card shadow-soft hover:bg-surface-container',
                   )}
                 >
-                  <span className="truncate text-13 font-bold">{f.profession}</span>
                   <span
+                    aria-hidden="true"
                     className={cn(
-                      'shrink-0 text-2xs tabular-nums',
-                      active ? 'text-background/70' : 'text-muted-foreground',
+                      'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+                      active ? 'bg-background text-foreground' : 'bg-surface-container',
                     )}
                   >
-                    {f.count.toLocaleString()}
+                    <Icon size={18} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-13 font-bold leading-tight">
+                      {f.profession}
+                    </span>
+                    <span
+                      className={cn(
+                        'block text-2xs tabular-nums',
+                        active ? 'text-background/70' : 'text-muted-foreground',
+                      )}
+                    >
+                      {t('pages.personalities.editorial.fieldCount', {
+                        defaultValue: '{{formatted}} people',
+                        count: f.count,
+                        formatted: f.count.toLocaleString(),
+                      })}
+                    </span>
                   </span>
                 </button>
               );

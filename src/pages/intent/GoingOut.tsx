@@ -209,22 +209,7 @@ export default function GoingOut() {
       lede={lede}
       header={
         <header className="going-out-hero grid items-center gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12">
-          <PageIntro title={title} lede={lede}>
-            <div className="mt-4 flex flex-wrap gap-x-4">
-              <a
-                className="inline-flex min-h-11 items-center font-bold underline underline-offset-4"
-                href="#whats-on"
-              >
-                {t('pages.goingOut.seeEvents', 'See what’s on')}
-              </a>
-              <a
-                className="inline-flex min-h-11 items-center font-bold underline underline-offset-4"
-                href="#plan"
-              >
-                {t('pages.goingOut.findStop', 'Find your next stop')}
-              </a>
-            </div>
-          </PageIntro>
+          <PageIntro title={title} lede={lede} />
           <GoingOutHighlights
             venues={venues}
             eventsResult={locLoading ? undefined : eventsResult}

@@ -24,7 +24,13 @@ import { resolveRegionBySlug, type HomeRegionApi } from '@/hooks/useHomeRegion';
  * criminalising country for their position to sort a homepage is not a trade
  * this product makes. Recents plus search covers the correction case.
  */
-export function RegionChip({ region }: { region: HomeRegionApi }) {
+export function RegionChip({
+  region,
+  align = 'end',
+}: {
+  region: HomeRegionApi;
+  align?: 'start' | 'end';
+}) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -100,7 +106,7 @@ export function RegionChip({ region }: { region: HomeRegionApi }) {
           aria-label={`${label} — ${t('home.discovery.cityChange', 'Change city')}`}
         />
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 bg-muted rounded-element p-0">
+      <PopoverContent align={align} className="w-72 bg-muted rounded-element p-0">
         <div className="border-b border-border-hairline p-2">
           <Input
             value={query}

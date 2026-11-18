@@ -265,32 +265,7 @@ function eventToNormalized(rec) {
       ? rec.venueName
       : undefined;
 
-  // Patroc writes after-midnight starts as "24:30" (half past midnight the
-  // NEXT day) — a raw `T24:30:00` is an invalid timestamp and got four real
-  // parties rejected with E_INVALID_START_DATE. Roll hours ≥24 into the next
-  // calendar day.
-  const composeTs = (date, time) => {
-    if (!time) return date;
-    let [h, m] = time.split(':').map(Number);
-    const d = new Date(`${date}T00:00:00Z`);
-    if (h >= 24) {
-      d.setUTCDate(d.getUTCDate() + Math.floor(h / 24));
-      h = h % 24;
-    }
-    return `${d.toISOString().slice(0, 10)}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
-  };
-
-  const start = composeTs(rec.startDate, rec.startTime);
-  let end;
-  if (rec.endDate) {
-    end = composeTs(rec.endDate, rec.endTime);
-  } else if (rec.endTime && rec.startTime) {
-    // Overnight party: 20:00 – 10:00 with a single dtstart date.
-    const overnight = rec.endTime < rec.startTime;
-    const d = new Date(`${rec.startDate}T00:00:00Z`);
-    if (overnight) d.setUTCDate(d.getUTCDate() + 1);
-    end = composeTs(d.toISOString().slice(0, 10), rec.endTime);
-  }
+  const { start, end } = parse.normalizePatrocEventDates(rec, cityInfo.timezone);
 
   return {
     entityType: 'event',
@@ -319,6 +294,10 @@ function eventToNormalized(rec) {
       id: rec.id,
       city_slug: rec.city_slug,
       recurring: !!rec.recurring,
+      source_local_dates: {
+        start_date: rec.startDate, start_time: rec.startTime,
+        end_date: rec.endDate, end_time: rec.endTime, timezone: cityInfo.timezone,
+      },
       hours_text: rec.hoursText || null,
       google_place_id: rec.googlePlaceId || null,
       websites: rec.websites || [],
@@ -441,9 +420,25 @@ async function phaseStage() {
     .filter((r) => r.name && r.name.trim() && !eventIds.has(r.id))
     .map(venueToNormalized);
   const dateless = eventsRaw.filter((r) => !r.startDate);
-  const events = eventsRaw
-    .filter((r) => r.title && r.startDate)
-    .map(eventToNormalized);
+  const events = [];
+  const dateErrors = [];
+  for (const rec of eventsRaw.filter((r) => r.title && r.startDate)) {
+    try {
+      events.push(eventToNormalized(rec));
+    } catch (error) {
+      dateErrors.push({
+        source_id: rec.id, city_slug: rec.city_slug,
+        start_date: rec.startDate, start_time: rec.startTime,
+        end_date: rec.endDate, end_time: rec.endTime,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+  const dateErrorsPath = join(OUT, 'event-date-errors.ndjson');
+  writeFileSync(dateErrorsPath, dateErrors.map((r) => JSON.stringify(r)).join('\n') + (dateErrors.length ? '\n' : ''));
+  if (dateErrors.length) {
+    console.warn(`[stage] ${dateErrors.length} event date records require review: ${dateErrorsPath}`);
+  }
 
   console.log(`[stage] ${venues.length} venues, ${events.length} events (${dateless.length} dateless events skipped)`);
   console.log('[stage] venue categories:', tally(venues, (r) => r.category));

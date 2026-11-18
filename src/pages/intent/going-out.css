@@ -81,7 +81,7 @@
 .going-out-departure {
   display: grid;
   min-height: 5.5rem;
-  grid-template-columns: 2.25rem 5.5rem minmax(0, 1fr) minmax(7rem, 0.2fr);
+  grid-template-columns: 3.5rem minmax(0, 1fr) minmax(7rem, 0.2fr);
   align-items: center;
   gap: 1.5rem;
   padding: 1rem 1.5rem;
@@ -95,24 +95,6 @@
   background: hsl(var(--muted));
 }
 
-.going-out-departure-bullet {
-  display: flex;
-  align-items: center;
-}
-
-.going-out-departure-date {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-}
-
-.going-out-departure-date strong {
-  font-family: var(--font-display);
-  font-size: var(--text-headline);
-  font-weight: 400;
-}
-
-.going-out-departure-date span,
 .going-out-departure-city {
   color: hsl(var(--muted-foreground));
   font-size: var(--text-13);
@@ -234,18 +216,16 @@
   }
 
   .going-out-departure {
-    grid-template-columns: 2.25rem minmax(0, 1fr);
+    grid-template-columns: 3.5rem minmax(0, 1fr);
     gap: 0.5rem 1rem;
     padding: 1rem;
   }
 
-  .going-out-departure-bullet {
+  .going-out-departure-date {
     grid-column: 1;
-    grid-row: 1 / span 3;
-    align-self: start;
+    grid-row: 1 / span 2;
   }
 
-  .going-out-departure-date,
   .going-out-departure-title,
   .going-out-departure-city {
     grid-column: 2;

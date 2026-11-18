@@ -30,7 +30,6 @@ interface NavTabProps {
   longPress?: LongPressHandlers;
   /** Secondary affordance rendered inside the slot (e.g. the trip-count dot). */
   accessory?: ReactNode;
-  labelAccessory?: ReactNode;
   /** Set when onIntercept opens a dialog rather than navigating. */
   hasPopup?: boolean;
   /** Companion to hasPopup — the dialog's open state. */
@@ -67,7 +66,6 @@ export function NavTab({
   avatar,
   longPress,
   accessory,
-  labelAccessory,
   hasPopup,
   expanded,
 }: NavTabProps) {
@@ -147,7 +145,6 @@ export function NavTab({
             string stays available as the link's accessible name. */}
         <span className="flex w-full items-center justify-center gap-0.5 px-0.5">
           <span className="truncate">{label}</span>
-          {labelAccessory}
         </span>
       </LocalizedLink>
       {/* The accessory is a SIBLING of the link, not a child — it is

@@ -141,6 +141,7 @@
     "/dmca",
     "/donate",
     "/email-updates",
+    "/equality-score",
     "/europe",
     "/events",
     "/events/:slug",
@@ -228,6 +229,7 @@
     "/me/travel",
     "/me/trips",
     "/messages",
+    "/methodology",
     "/milestones",
     "/my-groups",
     "/news",
@@ -306,6 +308,7 @@
     "/tags/c/:categorySlug",
     "/tags/interactions",
     "/tags/rights-by-country",
+    "/tags/rights-by-country/methodology",
     "/tags/rights-by-country/sources",
     "/tags/rights-by-country/trans",
     "/tags/sti-guide",
@@ -442,6 +445,16 @@
     },
     "/rights/trans": {
       "to": "/tags/rights-by-country/trans",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/methodology": {
+      "to": "/tags/rights-by-country/methodology",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/equality-score": {
+      "to": "/tags/rights-by-country/methodology",
       "localized": true,
       "preserveQuery": true
     },

@@ -136,6 +136,13 @@ export function getScoreLabel(score: number | null | undefined): EqualityScoreBr
   };
 }
 
+/** The functional-scale colour for a tier, for callers that hold a TIER rather
+ *  than a score (e.g. the rights table's verdict buckets). Same palette as
+ *  getScoreRingColor, so a dot and a bar on one row cannot disagree. */
+export function getTierRingColor(tier: EqualityTier): string {
+  return TIER_RING_COLOR[tier];
+}
+
 export function getScoreRingColor(score: number | null | undefined): string {
   return TIER_RING_COLOR[tierForScore(score)];
 }

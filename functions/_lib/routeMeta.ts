@@ -120,7 +120,9 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   '/tags/interactions': {
     title: 'Drug Interaction Chart | Queer Guide',
     description:
-      'Which substances are dangerous to combine — 421 combinations across 31 drugs, with harm-reduction data researched by TripSit.',
+      // No counts and no single source: both drift. The table has several
+      // sources (see datasetJsonLd.ts), and this line once credited TripSit alone.
+      'Which substances are dangerous to combine: a risk rating for each pair, credited to the harm-reduction or regulatory source that assessed it.',
   },
   // Same reason as /tags/interactions above: without an exact entry the
   // generic tag matcher would title this "Sti-guide — Tag".
@@ -252,7 +254,8 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   },
   '/press': {
     title: 'Press & Media | Queer Guide',
-    description: 'Press releases, brand assets, and media inquiries for Queer Guide.',
+    description:
+      'Press contact, usage guidelines, link snippets and a data badge for anyone writing about or linking to Queer Guide.',
   },
   '/blog': {
     title: 'Queer Guide Blog — Stories from the Community',
@@ -328,6 +331,13 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     title: 'Where Our LGBTQ+ Rights Data Comes From',
     description:
       'The source, refresh cadence, coverage and known limits behind the legal status we publish for every country and territory.',
+  },
+  // Registered here and in STATIC_ROUTE_BODY: the body carries the weights as
+  // text so a link-checker or citation reviewer sees them without running JS.
+  '/tags/rights-by-country/methodology': {
+    title: 'How the LGBTQ+ Equality Score Is Calculated',
+    description:
+      'Every weight in the Queer Guide equality score, the 0–100 range, the tier cutoffs, its known limits, and how to cite it.',
   },
   // Registered here, not only in src/routes.tsx: this map is both the crawler's
   // <head> source and what sitemap-static.xml enumerates.

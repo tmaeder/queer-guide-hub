@@ -37,6 +37,40 @@ Deno.test('Display ordinary events preserve the publisher post identity and obey
   assertEquals(eventAdapter.normalize(rows[0]).sourceId, '12345')
 })
 
+Deno.test('Display only treats explicit ticket fields as booking links', () => {
+  for (const tickets of [undefined, null, '', '   ', { url: 'https://tickets.example/' }]) {
+    const normalized = eventAdapter.normalize({ sourceId: '12345', data: {
+      ...event, website: 'https://organizer.example/programme', tickets,
+    } }) as import('./index.ts').StagedItem
+    assertEquals(normalized.ticket_url, null)
+    assertEquals(normalized.website, 'https://organizer.example/programme')
+  }
+  const normalized = eventAdapter.normalize({ sourceId: '12345', data: {
+    ...event, tickets: '  https://tickets.example/exact-show  ',
+  } }) as import('./index.ts').StagedItem
+  assertEquals(normalized.ticket_url, 'https://tickets.example/exact-show')
+})
+
+Deno.test('Display country identity uses explicit countries rather than shared postcode lengths', () => {
+  for (const [country, city, address, expected] of [
+    ['FR', 'Paris', 'Rue exemple, 75001 Paris', 'FR'],
+    ['IT', 'Milano', 'Via esempio, 20121 Milano', 'IT'],
+    ['LI', 'Vaduz', 'Beispielstrasse, 9490 Vaduz', 'LI'],
+    ['Austria', 'Wien', 'Beispielgasse, 1010 Wien', 'AT'],
+    ['Switzerland', 'Basel', 'Beispielgasse, 4058 Basel', 'CH'],
+    ['Germany', 'Lindau', 'Beispielstrasse, 88131 Lindau', 'DE'],
+    [undefined, 'Paris', 'Rue exemple, 75001 Paris', undefined],
+    [undefined, 'Wien', 'Beispielgasse, 1010 Wien', undefined],
+    [undefined, 'Vaduz', 'Beispielstrasse, 9490 Vaduz', undefined],
+  ]) {
+    const normalized = eventAdapter.normalize({ sourceId: '12345', data: {
+      ...event, venue: { venue: 'Published venue', country, city, address },
+    } }) as import('./index.ts').StagedItem
+    assertEquals(normalized.location?.country, expected)
+    assertEquals(normalized.location?.city, city)
+  }
+})
+
 Deno.test('Display rejects stale/challenge feeds, foreign publisher links and impossible session dates', () => {
   for (const invalid of ['<html>challenge</html>', { events: [] }, { generated: 0, events: [event] }, { ...feed([event]), generated: now / 1000 + 86400 }]) assertThrows(() => displayFeedItems(invalid, options))
   for (const bad of [{ ...event, url: 'https://foreign.example/events/12345' }, { ...event, sessions: [{ date: '2026-02-30', start: '19:00' }] }, { ...event, sessions: [{ date: '2026-11-18', start: '29:00' }] }]) assertThrows(() => displayFeedItems(feed([bad]), options))

@@ -116,6 +116,22 @@ begin
 end $test$;
 """
 
+PATCH = next((ROOT / 'supabase/migrations').glob('*_bound_calendar_sibling_sources.sql')).read_text()
+BEFORE_PATCH = """
+create temp table original_candidates as select api_private.reconcile_calendar_sibling_dates(100,true) result;
+create temp table original_security as select oid,proowner,proacl,proconfig,prosecdef from pg_proc
+ where oid='api_private.reconcile_calendar_sibling_dates(integer,boolean)'::regprocedure;
+"""
+AFTER_PATCH = """
+do $$begin
+ if api_private.reconcile_calendar_sibling_dates(100,true) is distinct from(select result from original_candidates)
+ then raise exception 'Source filter changed candidates';end if;
+ if exists(select 1 from original_security b join pg_proc p on p.oid=b.oid where
+ row(p.proowner,p.proacl,p.proconfig,p.prosecdef)is distinct from row(b.proowner,b.proacl,b.proconfig,b.prosecdef))
+ then raise exception 'Source filter changed security';end if;
+end$$;
+"""
+
 with tempfile.TemporaryDirectory(prefix="qg-calendar-siblings-") as temp:
     data = Path(temp) / "data"
     subprocess.run([str(PG / "initdb"), "-D", str(data), "-A", "trust", "--no-locale"], check=True,
@@ -125,7 +141,7 @@ with tempfile.TemporaryDirectory(prefix="qg-calendar-siblings-") as temp:
                    stdout=subprocess.DEVNULL)
     try:
         subprocess.run([str(PG / "psql"), "-h", temp, "-p", "55499", "-d", "postgres", "-v", "ON_ERROR_STOP=1"],
-                       input=SCHEMA + MIGRATION.read_text() + CHECKS, text=True, check=True,
+                       input=SCHEMA + MIGRATION.read_text() + BEFORE_PATCH + PATCH + PATCH + AFTER_PATCH + CHECKS, text=True, check=True,
                        stdout=subprocess.DEVNULL)
     finally:
         subprocess.run([str(PG / "pg_ctl"), "-D", str(data), "-m", "fast", "-w", "stop"], check=True,
