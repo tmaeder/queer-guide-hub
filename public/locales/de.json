@@ -4521,12 +4521,14 @@
         "source": "[DE] The source",
         "coverage": "[DE] Coverage",
         "score": "[DE] The equality score",
-        "limits": "[DE] What this data cannot tell you"
+        "limits": "[DE] What this data cannot tell you",
+        "download": "Daten herunterladen"
       },
       "kicker": {
         "source": "[DE] ILGA World",
         "coverage": "[DE] What we actually hold",
-        "score": "[DE] How it is built, and what it hides"
+        "score": "[DE] How it is built, and what it hides",
+        "download": "CSV oder JSON, alle Länder"
       },
       "coverage": {
         "status": "[DE] Countries with a recorded legal status",
@@ -4550,7 +4552,13 @@
         "personal": "[DE] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[DE] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
       },
-      "methodologyLink": "Alle Gewichtungen, die Stufengrenzen und wie man zitiert"
+      "methodologyLink": "Alle Gewichtungen, die Stufengrenzen und wie man zitiert",
+      "download": {
+        "body": "Rechtslage und Gleichstellungswert für jedes Land und Gebiet, je eine Zeile, jede Nacht aktualisiert.",
+        "csv": "CSV herunterladen",
+        "json": "JSON herunterladen",
+        "licence": "Die Spalten zur Rechtslage stammen aus der ILGA World Database und bleiben © ILGA World; sie fallen nicht unter unsere Lizenz. Gleichstellungswert und Stufe sind von uns, unter CC BY-SA 4.0. Nenne beide Quellen, wenn du die Datei verwendest."
+      }
     },
     "lens": {
       "title": "[DE] Who the law protects",

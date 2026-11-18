@@ -4519,12 +4519,14 @@
         "source": "[ZH] The source",
         "coverage": "[ZH] Coverage",
         "score": "[ZH] The equality score",
-        "limits": "[ZH] What this data cannot tell you"
+        "limits": "[ZH] What this data cannot tell you",
+        "download": "下载数据"
       },
       "kicker": {
         "source": "[ZH] ILGA World",
         "coverage": "[ZH] What we actually hold",
-        "score": "[ZH] How it is built, and what it hides"
+        "score": "[ZH] How it is built, and what it hides",
+        "download": "CSV 或 JSON，涵盖所有国家"
       },
       "coverage": {
         "status": "[ZH] Countries with a recorded legal status",
@@ -4548,7 +4550,13 @@
         "personal": "[ZH] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[ZH] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
       },
-      "methodologyLink": "每项权重、等级分界线及引用方式"
+      "methodologyLink": "每项权重、等级分界线及引用方式",
+      "download": {
+        "body": "每个国家和地区的法律状况与平等评分，每个一行，每晚更新。",
+        "csv": "下载 CSV",
+        "json": "下载 JSON",
+        "licence": "法律状况各列来自 ILGA World Database，版权仍归 ILGA World 所有，不在我们的许可范围内。平等评分和等级由我们提供，采用 CC BY-SA 4.0 许可。使用该文件时请注明两个来源。"
+      }
     },
     "lens": {
       "title": "[ZH] Who the law protects",

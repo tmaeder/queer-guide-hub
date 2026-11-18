@@ -4519,12 +4519,14 @@
         "source": "[JA] The source",
         "coverage": "[JA] Coverage",
         "score": "[JA] The equality score",
-        "limits": "[JA] What this data cannot tell you"
+        "limits": "[JA] What this data cannot tell you",
+        "download": "データをダウンロード"
       },
       "kicker": {
         "source": "[JA] ILGA World",
         "coverage": "[JA] What we actually hold",
-        "score": "[JA] How it is built, and what it hides"
+        "score": "[JA] How it is built, and what it hides",
+        "download": "CSVまたはJSON、全ての国"
       },
       "coverage": {
         "status": "[JA] Countries with a recorded legal status",
@@ -4548,7 +4550,13 @@
         "personal": "[JA] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[JA] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
       },
-      "methodologyLink": "すべての重み、ランクの境界値、引用方法"
+      "methodologyLink": "すべての重み、ランクの境界値、引用方法",
+      "download": {
+        "body": "すべての国と地域の法的状況と平等スコア。1行に1か国、毎晩更新。",
+        "csv": "CSVをダウンロード",
+        "json": "JSONをダウンロード",
+        "licence": "法的状況の列はILGA World Databaseに由来し、© ILGA Worldに帰属します。当サイトのライセンスの対象外です。平等スコアと区分は当サイトのもので、CC BY-SA 4.0で提供します。ファイルを使う際は両方の出典を明記してください。"
+      }
     },
     "lens": {
       "title": "[JA] Who the law protects",

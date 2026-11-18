@@ -178,6 +178,26 @@ describe('one Dataset per page', () => {
   });
 });
 
+describe('rights download', () => {
+  it.each([
+    '/tags/rights-by-country',
+    '/tags/rights-by-country/sources',
+    '/tags/rights-by-country/methodology',
+  ])('%s lists the CSV and JSON downloads', async (path) => {
+    const ld = parse(await datasetJsonLd(env, path));
+    const urls = (ld.distribution as { contentUrl: string }[]).map((d) => d.contentUrl);
+    expect(urls).toEqual([
+      'https://queer.guide/data/rights-by-country.csv',
+      'https://queer.guide/data/rights-by-country.json',
+    ]);
+  });
+
+  it('the trans Dataset does not claim the rights download', async () => {
+    const ld = parse(await datasetJsonLd(env, '/tags/rights-by-country/trans'));
+    expect(ld).not.toHaveProperty('distribution');
+  });
+});
+
 describe('summariseSources', () => {
   it('ignores blank source names', () => {
     expect(summariseSources([{ source: '  ', source_url: 'x', fetched_at: null }]).sources).toEqual(

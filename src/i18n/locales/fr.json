@@ -4525,12 +4525,14 @@
         "source": "[FR] The source",
         "coverage": "[FR] Coverage",
         "score": "[FR] The equality score",
-        "limits": "[FR] What this data cannot tell you"
+        "limits": "[FR] What this data cannot tell you",
+        "download": "Télécharger les données"
       },
       "kicker": {
         "source": "[FR] ILGA World",
         "coverage": "[FR] What we actually hold",
-        "score": "[FR] How it is built, and what it hides"
+        "score": "[FR] How it is built, and what it hides",
+        "download": "CSV ou JSON, tous les pays"
       },
       "coverage": {
         "status": "[FR] Countries with a recorded legal status",
@@ -4554,7 +4556,13 @@
         "personal": "[FR] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[FR] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
       },
-      "methodologyLink": "Chaque pondération, les seuils des niveaux et comment citer"
+      "methodologyLink": "Chaque pondération, les seuils des niveaux et comment citer",
+      "download": {
+        "body": "La situation juridique et le score d’égalité de chaque pays et territoire, une ligne chacun, mis à jour chaque nuit.",
+        "csv": "Télécharger le CSV",
+        "json": "Télécharger le JSON",
+        "licence": "Les colonnes sur la situation juridique proviennent de l’ILGA World Database et restent © ILGA World ; elles ne sont pas couvertes par notre licence. Le score d’égalité et le niveau sont les nôtres, sous CC BY-SA 4.0. Citez les deux sources lorsque vous utilisez le fichier."
+      }
     },
     "lens": {
       "title": "[FR] Who the law protects",
