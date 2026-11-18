@@ -1,0 +1,39 @@
+{
+  "evidence_gap": {
+    "blocked_city_cases": 993,
+    "explicit_https_official_urls_omitted": 104,
+    "legacy_http_urls_requiring_individual_verification": 128,
+    "root_cause": "Official city website omitted by public record projection and URL-key collector.",
+    "fixed_collector_tests": 7,
+    "projection_test": "supabase/tests/isolated/run_city_official_website_projection.py",
+    "database_patch_prepared_not_applied": "docs/review-queue-pending-city-official-website.sql",
+    "ddl_hold_observed": true,
+    "blocked_cases_not_auto_approved": true
+  },
+  "edge_deployment": {
+    "name": "review-automation",
+    "before_version": 40,
+    "after_version": 41,
+    "changed_module": "functions/review-automation/research.ts",
+    "untouched_dependencies": 18,
+    "all_returned_files_verified": true,
+    "existing_auth_and_limits_preserved": true
+  },
+  "zollikon_locator": {
+    "entity_id": "4d1774c3-60a9-4c5a-9a36-a4a0a389d473",
+    "proof": {
+      "source": "primary_public_locator_research:v1",
+      "url": "https://www.zollikon.ch/",
+      "status": 200,
+      "capture_sha256": "3428d6d435fa5b80a2c84c955af40fc841f92d520a92b336b9abea50afb0bee2",
+      "capture_bytes": 133907,
+      "observed_at": "2026-11-18T19:11:59.068500Z",
+      "scope": "Current municipality website is reachable at this explicit HTTPS locator. This corrects only the legacy HTTP URL and supplies primary public evidence. It does not select between municipality/settlement QIDs, certify coordinates, promote lifecycle, publish the city or resolve review.",
+      "human_reviewed": false
+    },
+    "identity_unresolved": true,
+    "shell_publication_coordinates_and_qid_unchanged": true,
+    "native_review_left_open": true
+  },
+  "human_verification_claimed": false
+}
