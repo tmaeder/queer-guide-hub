@@ -66,12 +66,23 @@ export async function delegateToSourcePipeline(
   if (recentError) throw Error('Could not verify the source pipeline refresh interval')
   if (recent) return { ...result('skipped', 'Source pipeline already completed within the weekly interval'),
     child_run_id: recent.id, child_pipeline: pipeline.name }
+  if (pipeline.name === 'prideplaces-weekly-sync') {
+    const { data: pump, error: pumpError } = await client.from('admin_automations')
+      .select('enabled,lifecycle_state').eq('slug', 'prideplaces_scan_continue').maybeSingle()
+    if (pumpError) throw Error('Could not verify source continuation scheduling')
+    if (!pump?.enabled || pump.lifecycle_state !== 'active') return {
+      ...result('blocked', 'Enable the source continuation automation before starting its full scan'),
+      required_settings: ['admin_automations.prideplaces_scan_continue.enabled'],
+    }
+  }
   const childContext = { dry_run: false, triggered_by: 'weekly-parent', weekly_parent_run_id: job.run_id, weekly_parent_job_id: job.id }
   // These importers own transactional starters and their own durable recovery.
   const starter = pipeline.name === 'outxout-catalogue-sync'
     ? { name: 'outxout_open_run', args: { p_trigger: 'weekly-parent', p_run_id: null, p_scope: 'catalogue' } }
     : pipeline.name === 'lavenderatlas-weekly-sync'
     ? { name: 'start_lavenderatlas_pipeline', args: { p_pipeline: pipeline.id, p_context: childContext } }
+    : pipeline.name === 'prideplaces-weekly-sync'
+    ? { name: 'prideplaces_start_scan', args: { p_force: false } }
     : pipeline.name === 'gayout-weekly-sync'
     ? { name: 'start_gayout_weekly_sync', args: { p_context: childContext } } : null
   if (starter) {
