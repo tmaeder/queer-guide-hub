@@ -1,3 +1,4 @@
+import { useOutxoutPipelines } from './useOutxoutPipelines';
 import { useQuery } from '@tanstack/react-query';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import type { NodeRunStatus, AppEdge } from '../types';
@@ -235,6 +236,8 @@ export interface UnifiedPipelineRow {
   name: string;
   display_name: string | null;
   schedule: string | null;
+  schedule_label?: string;
+  last_run_error?: string | null;
   is_enabled: boolean;
   is_template: boolean;
   last_run_at: string | null;
@@ -248,7 +251,8 @@ export interface UnifiedPipelineRow {
 }
 
 export function useUnifiedPipelineOverview() {
-  return useQuery({
+  const outxout = useOutxoutPipelines();
+  const query = useQuery({
     queryKey: ['unified-pipeline-overview'],
     queryFn: async (): Promise<UnifiedPipelineRow[]> => {
       const [pipeDefs, wfDefs, pipeRuns, wfRuns] = await Promise.all([
@@ -336,6 +340,36 @@ export function useUnifiedPipelineOverview() {
     },
     refetchInterval: 15_000,
   });
+  return {
+    ...query,
+    data: query.data?.map((row) => {
+      const managed = outxout.data?.find((p) => p.name === row.name);
+      if (!managed)
+        return row.name === 'outxout-catalogue-sync' || row.name === 'outxout-official-date-review'
+          ? {
+              ...row,
+              schedule_label: outxout.isError ? 'Schedule unavailable' : 'Loading schedule…',
+              last_run_error: outxout.isError ? 'Could not load managed pipeline status.' : null,
+            }
+          : row;
+      const run = managed.run;
+      return {
+        ...row,
+        schedule: managed.schedule,
+        schedule_label: managed.scheduleLabel,
+        is_enabled: managed.enabled,
+        last_run_error: managed.error,
+        last_run_at: run?.completed_at ?? run?.started_at ?? run?.created_at ?? null,
+        last_run_status: run?.status ?? null,
+        last_run_duration_ms: run?.duration_ms ?? null,
+        last_items_succeeded: run?.items_succeeded ?? null,
+        last_items_total: run?.items_total ?? null,
+        recent_statuses: managed.recentRuns.map((r) => r.status),
+        recent_success_count: managed.recentRuns.filter((r) => r.status === 'completed').length,
+        recent_total_count: managed.recentRuns.length,
+      };
+    }),
+  };
 }
 
 export function usePipelineRunCounts24h() {
