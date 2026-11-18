@@ -14,7 +14,7 @@ export async function handleGayOutStep(supabase: SupabaseClient, supabaseUrl: st
   if (!claim) return jsonResponse({ success: true, node: nodeId, status: 'ignored' }, 200, req)
   const previous = claim.state as Record<string, unknown>
   const context = (run.context || {}) as Record<string, unknown>, config = node.data?.config || {}
-  let status = 500, result: unknown = { success: false, error: 'GayOut stage was not invoked' }
+  let status = 500, result: unknown
   try {
     const { data: nodeType, error } = await supabase.from('pipeline_node_types').select('edge_function,is_enabled').eq('slug', node.type).single()
     if (error || !nodeType?.edge_function || !nodeType.is_enabled) throw new Error(error?.message || `GayOut stage ${node.type} is unavailable`)
@@ -25,7 +25,7 @@ export async function handleGayOutStep(supabase: SupabaseClient, supabaseUrl: st
         // Matching can perform several database/provider calls per record.
         // Keep even older run snapshots within the invocation budget.
         ...(node.type === 'pipeline-deduplicate' ? { batch_size: Math.max(1, Math.min(5, Number(config.batch_size) || 5)) } : {}),
-        ...(node.type === 'pipeline-commit' ? { batch_size: Math.max(1, Math.min(2, Number(config.batch_size) || 2)) } : {}),
+        ...(node.type === 'pipeline-commit' ? { batch_size: Math.max(1, Math.min(10, Number(config.batch_size) || 10)) } : {}),
         dry_run: context.dry_run === true, pipeline_run_id: runId, node_id: nodeId }),
       signal: AbortSignal.timeout(Math.max(10, Math.min(110, Number(config.invocation_timeout_seconds) || 100)) * 1000),
     })

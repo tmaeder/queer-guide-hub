@@ -6,7 +6,7 @@ begin;
 update public.pipeline_definitions p set nodes=(
   select jsonb_agg(case when n->>'type'='pipeline-deduplicate'
     then jsonb_set(n,'{data,config,batch_size}','5'::jsonb)
-    when n->>'type'='pipeline-commit' then jsonb_set(n,'{data,config,batch_size}','2'::jsonb) else n end order by i)
+    when n->>'type'='pipeline-commit' then jsonb_set(n,'{data,config,batch_size}','10'::jsonb) else n end order by i)
   from jsonb_array_elements(p.nodes) with ordinality a(n,i)
 ) where p.name='gayout-weekly-sync';
 update public.pipeline_definitions set is_enabled=true

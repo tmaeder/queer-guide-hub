@@ -1,5 +1,8 @@
 -- Integration fixtures are rolled back, including queue deliveries and canonical writes.
 begin;
+set local role service_role;
+select set_config('request.jwt.claim.role','service_role',true),
+       set_config('request.jwt.claims','{"role":"service_role"}',true);
 do $$
 declare r uuid; again jsonb; q record; claim jsonb; accepted boolean; staged jsonb;
   item uuid; org uuid; result record; normalized jsonb;
@@ -33,6 +36,9 @@ begin
   item:=(staged->>'staging_id')::uuid;
   if (public.gayout_stage_item(r,'source-places','organizations',q.url,q.lease_token,normalized,'{}')->>'changed')::boolean then raise exception 'Unchanged facts restaged';end if;
   update public.ingestion_staging set ai_validation_status='approved',dedup_status='unique' where id=item;
+  -- The direct backend transport must retain the service identity checks used
+  -- by source combination as well as the canonical commit functions.
+  perform public.load_source_combination_batch('organizations',r,1);
   if exists(select 1 from public.commit_gayout_staging_batch(r,'venues',10)) then raise exception 'Commit crossed entity target';end if;
   select * into strict result from public.commit_gayout_staging_batch(r,'organizations',10);
   if result.action<>'inserted' then raise exception 'Organization commit failed: % / %',result.action,(select error_message from public.ingestion_staging where id=item);end if;
