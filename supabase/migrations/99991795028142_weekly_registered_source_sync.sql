@@ -32,6 +32,7 @@ create table public.weekly_source_sync_jobs (
   unique (run_id,registry,source_id),
   check (child_run_id is null or child_run_id<>run_id)
 );
+create index weekly_source_sync_jobs_child on public.weekly_source_sync_jobs(child_run_id) where child_run_id is not null;
 create index weekly_source_sync_jobs_ready on public.weekly_source_sync_jobs(run_id,status,next_attempt_at,id);
 alter table public.weekly_source_sync_jobs enable row level security;
 revoke all on public.weekly_source_sync_jobs from public,anon,authenticated;

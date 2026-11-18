@@ -107,6 +107,7 @@ export async function dispatchSource(
       signal: AbortSignal.timeout(115_000),
     })
     const outcome = adapterResult(response.status, await boundedJson(response), secrets)
+    if (context.dry_run === true) outcome.staged = 0
     // The feed adapter records individual feed failures but can return an empty
     // aggregate HTTP 200. Resolve the selected identity's actual result too.
     if (isFeed && outcome.outcome === 'succeeded') {

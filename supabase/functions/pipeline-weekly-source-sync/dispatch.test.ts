@@ -36,7 +36,7 @@ Deno.test('a feed request selects exactly the claimed identity with protected ru
       assertEquals(body.dry_run, true)
       return Promise.resolve(Response.json({ success: true, items_total: 3, items: 2, items_skipped: 1 }))
     }) as typeof fetch)
-  assertEquals([outcome.outcome, outcome.fetched, outcome.staged], ['succeeded', 3, 2])
+  assertEquals([outcome.outcome, outcome.fetched, outcome.staged], ['succeeded', 3, 0])
 })
 
 Deno.test('a per-feed transport error recorded behind aggregate HTTP 200 is a failed job', async () => {

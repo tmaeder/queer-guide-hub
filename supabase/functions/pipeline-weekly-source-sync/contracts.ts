@@ -93,7 +93,7 @@ export function adapterResult(status: number, value: unknown, secrets: string[] 
   const fetched = count(body.items_total, body.total_items_found, body.items_found, body.fetched,
     rows.length ? rows.reduce((sum, row) => sum + count(row.items_found), 0) : undefined,
     body.items, body.imported, body.countries_imported)
-  const staged = count(body.items_succeeded, body.items_processed, body.total_items_staged, body.items_staged,
+  const staged = body.dry_run === true ? 0 : count(body.items_succeeded, body.items_processed, body.total_items_staged, body.items_staged,
     body.items, body.imported, body.countries_imported)
   const skipped = count(body.items_skipped)
   const failed = count(body.items_failed, body.total_items_failed,

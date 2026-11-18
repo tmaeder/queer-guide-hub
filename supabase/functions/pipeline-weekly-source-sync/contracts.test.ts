@@ -48,3 +48,8 @@ Deno.test('HTTP 200 credential skips remain actionable blocked outcomes, not gre
   assertEquals(outcome.required_settings, ['PROVIDER_API_KEY'])
   assertEquals(adapterResult(200, { success: true, skipped: true, reason: 'Source paused' }).outcome, 'skipped')
 })
+
+Deno.test('dry-run previews report fetched records without inventing staging writes', () => {
+  const outcome = adapterResult(200, { success: true, dry_run: true, items: 12, items_succeeded: 12 })
+  assertEquals([outcome.fetched, outcome.staged], [12, 0])
+})
