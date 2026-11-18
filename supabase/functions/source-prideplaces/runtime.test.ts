@@ -9,6 +9,7 @@ async function withFetch(mock: typeof fetch, fn: () => Promise<void>) {
 }
 Deno.test('source fetch pins its host and refuses redirects and non-HTML responses', async () => {
   await withFetch((_url, init) => {
+    assertEquals(new Headers((init as { headers?: HeadersInit })?.headers).get('connection'), 'close')
     assertEquals((init as { redirect?: string })?.redirect, 'error')
     assertEquals((init as { signal?: AbortSignal })?.signal instanceof AbortSignal, true)
     return Promise.resolve(new Response('html', { headers: { 'Content-Type': 'text/html' } }))
