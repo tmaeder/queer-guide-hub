@@ -13,7 +13,13 @@ import { lazyRetry } from '@/utils/lazyRetry';
 
 const YourLines = lazyRetry(() => import('@/components/home/YourLines'));
 const CityCards = lazyRetry(() => import('@/components/home/subway/CityCards'));
+const HomeMap = lazyRetry(() => import('@/components/home/subway/HomeMap'));
 const cityCardsLoading = <CityCardsSkeleton />;
+const mapLoading = (
+  <PageContainer aria-hidden="true">
+    <div className="h-[420px] rounded-panel bg-muted" />
+  </PageContainer>
+);
 const recommendationsLoading = (
   <div className="h-72 w-56 rounded-container bg-muted" aria-hidden="true" />
 );
@@ -33,14 +39,21 @@ function HomeSection({ section, children }: { section: string; children: ReactNo
   );
 }
 
-function RegionalContent({ showRegionPicker = true }: { showRegionPicker?: boolean }) {
+function RegionalContent() {
   const { t } = useTranslation();
   const recent = useRecentlyViewed();
 
   return (
     <>
       <HomeSection section="departures">
-        <DeparturesBoard showRegionPicker={showRegionPicker} />
+        <DeparturesBoard />
+      </HomeSection>
+      <HomeSection section="home-map">
+        <DeferredSection rootMargin="200px 0px" fallback={mapLoading}>
+          <Suspense fallback={mapLoading}>
+            <HomeMap />
+          </Suspense>
+        </DeferredSection>
       </HomeSection>
       <HomeSection section="cities">
         <Band
@@ -80,10 +93,7 @@ function RegionalContent({ showRegionPicker = true }: { showRegionPicker?: boole
 export default function HomeContent() {
   return (
     <>
-      <ErrorBoundary
-        section="home-region"
-        fallback={() => <RegionalContent showRegionPicker={false} />}
-      >
+      <ErrorBoundary section="home-region" fallback={() => <RegionalContent />}>
         <RegionalContent />
       </ErrorBoundary>
       <HomeSection section="intent-map">

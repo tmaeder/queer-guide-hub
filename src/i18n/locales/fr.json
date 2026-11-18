@@ -1934,7 +1934,11 @@
       "exploreCity": "Explorer {{city}}",
       "browseEvents": "Voir les événements à {{city}}",
       "whatsOn": "À l’affiche",
-      "communitySpace": "Espace communautaire"
+      "communitySpace": "Espace communautaire",
+      "photos": "Photos",
+      "previousPhoto": "Photo précédente",
+      "nextPhoto": "Photo suivante",
+      "pausePhotos": "Mettre le diaporama en pause"
     },
     "discovery": {
       "openMap": "Ouvrir la carte",
@@ -2105,7 +2109,8 @@
       "interchange": {
         "label": "Tout rechercher",
         "subtitle": "Toutes les lignes se croisent ici"
-      }
+      },
+      "title": "Carte"
     },
     "glossary": {
       "eyebrow": "Glossaire",
@@ -2263,6 +2268,7 @@
       "you": "Profil",
       "menuTitle": "Toutes les sections",
       "menuDescription": "Accédez à n’importe quelle section, changez de langue ou de thème.",
+      "hubDescription": "Tes messages, projets, personnes et favoris.",
       "trips": "Mes voyages",
       "settingsSection": "Affichage",
       "browseAll": "Parcourir toutes les sections",

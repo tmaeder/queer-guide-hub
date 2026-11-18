@@ -1930,7 +1930,11 @@
       "exploreCity": "{{city}} entdecken",
       "browseEvents": "Veranstaltungen in {{city}}",
       "whatsOn": "Was läuft",
-      "communitySpace": "Community-Treffpunkt"
+      "communitySpace": "Community-Treffpunkt",
+      "photos": "Fotos",
+      "previousPhoto": "Vorheriges Foto",
+      "nextPhoto": "Nächstes Foto",
+      "pausePhotos": "Diashow pausieren"
     },
     "discovery": {
       "openMap": "Karte öffnen",
@@ -2101,7 +2105,8 @@
       "interchange": {
         "label": "Alles durchsuchen",
         "subtitle": "Hier treffen sich alle Linien"
-      }
+      },
+      "title": "Karte"
     },
     "glossary": {
       "eyebrow": "Glossar",

@@ -12,6 +12,7 @@ export interface NearYouRow {
   slug: string | null;
   /** Events only. */
   startDate: string | null;
+  timezone?: string | null;
   /** "SchwuZ · Berlin" — whatever geography we can honestly print. */
   via: string;
   rung: NearYouRung;
@@ -52,7 +53,7 @@ const DEAD_LIVENESS = ['dead', 'cancelled', 'dead_link'];
  */
 const NOT_A_DESTINATION = ['hotel', 'toilet'];
 
-const EVENT_SELECT = 'id, title, slug, start_date, venue_name, city:cities(id, name)';
+const EVENT_SELECT = 'id, title, slug, start_date, timezone, venue_name, city:cities(id, name)';
 const VENUE_SELECT = 'id, name, slug, category, city, quality_score';
 
 type EventRow = {
@@ -60,6 +61,7 @@ type EventRow = {
   title: string;
   slug: string | null;
   start_date: string | null;
+  timezone: string | null;
   venue_name: string | null;
   city: { id: string; name: string } | null;
 };
@@ -78,6 +80,7 @@ const toEventRow = (e: EventRow, rung: NearYouRung): NearYouRow => ({
   title: e.title,
   slug: e.slug,
   startDate: e.start_date,
+  timezone: e.timezone,
   via: [e.venue_name, e.city?.name].filter(Boolean).join(' · '),
   rung,
 });

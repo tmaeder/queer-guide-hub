@@ -1930,7 +1930,11 @@
       "exploreCity": "{{city}}を探索",
       "browseEvents": "{{city}}のイベントを見る",
       "whatsOn": "イベント情報",
-      "communitySpace": "コミュニティスペース"
+      "communitySpace": "コミュニティスペース",
+      "photos": "写真",
+      "previousPhoto": "前の写真",
+      "nextPhoto": "次の写真",
+      "pausePhotos": "スライドショーを一時停止"
     },
     "discovery": {
       "openMap": "地図を開く",
@@ -2101,7 +2105,8 @@
       "interchange": {
         "label": "すべてを検索",
         "subtitle": "すべての路線がここで交わる"
-      }
+      },
+      "title": "地図"
     },
     "glossary": {
       "eyebrow": "用語集",
@@ -2259,6 +2264,7 @@
       "you": "マイページ",
       "menuTitle": "すべてのセクション",
       "menuDescription": "任意のセクションに移動し、言語やテーマを切り替えます。",
+      "hubDescription": "メッセージ、プラン、人、保存したもの。",
       "trips": "マイトリップ",
       "settingsSection": "表示",
       "browseAll": "すべてのセクションを見る",
