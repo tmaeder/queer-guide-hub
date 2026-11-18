@@ -17,7 +17,6 @@ import { Wordmark } from '@/components/brand/Wordmark';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { DeferredSection } from '@/components/home/DeferredSection';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
-import { ink, paper } from '@/components/transit/iconDefs';
 import './Footer.css';
 
 const legalLinks = [
@@ -111,8 +110,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               >
                 <span
                   aria-hidden="true"
-                  className="footer-destination-icon inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-badge"
-                  style={{ backgroundColor: paper, color: ink }}
+                  className="footer-destination-icon inline-flex h-7 w-7 shrink-0 items-center justify-center"
                 >
                   <intent.icon size={24} />
                 </span>

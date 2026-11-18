@@ -47,7 +47,11 @@ for (const width of [1440, 390, 320]) {
               });
             return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
           };
-          const ground = luminance(getComputedStyle(badge).backgroundColor);
+          let surface: Element | null = badge;
+          while (surface && /rgba\(.*,\s*0\)|transparent/.test(getComputedStyle(surface).backgroundColor)) {
+            surface = surface.parentElement;
+          }
+          const ground = luminance(getComputedStyle(surface ?? document.body).backgroundColor);
           return [...badge.querySelectorAll('path[stroke="currentColor"]')].map((path) => {
             const outline = luminance(getComputedStyle(path).color);
             return (Math.max(outline, ground) + 0.05) / (Math.min(outline, ground) + 0.05);
