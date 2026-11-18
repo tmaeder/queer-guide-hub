@@ -1,6 +1,5 @@
--- Prepared during the coordinated production DDL hold; NOT applied.
--- The field is already public city data. Only expose its explicit locator;
--- existing HTTPS/SSRF/credential guards and fetch limits still apply in research.ts.
+-- Reference copy promoted after the coordinated migration hold was released.
+-- Authoritative migration: supabase/migrations/99991795038043_review_city_official_website_projection.sql
 do $patch$
 declare definition text;
   anchor text := '''body'',''content'',''website'',''source_url''';

@@ -11,7 +11,16 @@ function fixture(search: Record<string, unknown>[], entities: Record<string, unk
     calls.push(url); const u = new URL(url)
     if (u.searchParams.get('action') === 'wbsearchentities') return { ok: true, data: { search } }
     const qs = u.searchParams.get('ids')!.split('|')
-    return { ok: true, data: { entities: Object.fromEntries(qs.map(q => [q, entities[q] ?? { missing: '' }])) } }
+    return { ok: true, data: { entities: Object.fromEntries(qs.map(q => {
+      const entity = entities[q] as { labels?: unknown } | undefined
+      const hit = search.find(hit => hit.id === q) as { label?: string; match?: { text?: string } } | undefined
+      // Ordinary fixtures return the same names from search and entity reads.
+      // Explicit entity labels model incomplete or contradictory responses.
+      return [q, entity && !('labels' in entity) && hit ? {
+        ...entity, labels: { en: { value: hit.label } },
+        aliases: hit.match?.text ? { en: [{ value: hit.match.text }] } : {},
+      } : entity ?? { missing: '' }]
+    })) } }
   }
   return { request, calls }
 }
@@ -58,6 +67,27 @@ Deno.test('a source outage cannot exhaust or choose among exact namesakes', asyn
 Deno.test('localized alias evidence works without broad substring name matching', async () => {
   const f = fixture([{ id: 'Q1', label: 'Cape Town', match: { text: 'Kapstadt' } }], { ...common, Q1: { claims: claims() } })
   assertEquals((await createCitySearchResolver(f.request, [])({ ...input, base: 'Kapstadt', queries: ['Kapstadt'] })).qid, 'Q1')
+})
+
+Deno.test('a search alias cannot bind Langnau to the returned Affeltrangen entity', async () => {
+  const f = fixture([{ id: 'Q65800', label: 'Affeltrangen', match: { text: 'Langnau' } }], {
+    ...common, Q39: { claims: { P297: [statement('CH')] } },
+    Q65800: { labels: { en: { value: 'Affeltrangen' } }, aliases: {}, claims: claims(47.5164, 9.0333, 'Q515', 'Q39') },
+  })
+  const r = await createCitySearchResolver(f.request, [])({ ...input, base: 'Langnau', queries: ['Langnau'], countryCode: 'CH', latitude: 47.29008102, longitude: 8.52852917 })
+  assertEquals(r.kind, 'no_match'); assertEquals(r.qid, null)
+  assertEquals(r.probes[0].coordinates, 'agree')
+  assertEquals(r.probes[0].name, 'disagree')
+})
+
+Deno.test('even a search label needs corroboration from the returned entity names', async () => {
+  const f = fixture([{ id: 'Q1', label: input.base }], { ...common, Q1: { claims: claims(), labels: { en: { value: 'Different place' } } } })
+  assertEquals((await createCitySearchResolver(f.request, [])(input)).kind, 'no_match')
+})
+
+Deno.test('missing entity names stay unresolved instead of adopting search metadata', async () => {
+  const f = fixture([{ id: 'Q1', label: input.base }], { ...common, Q1: { claims: claims(), labels: {} } })
+  assertEquals((await createCitySearchResolver(f.request, [])(input)).kind, 'unresolved')
 })
 Deno.test('verified locality candidates retain the parent-registration path, without city adoption', async () => {
   const f = fixture([{ id: 'Q1', label: 'Oklahoma City' }], { ...common, Q1: { claims: claims(35.47, -97.52, 'Q3') }, Q3: { labels: { en: { value: 'quarter of a city' } } } })

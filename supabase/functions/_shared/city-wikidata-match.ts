@@ -11,6 +11,7 @@ export interface CitySearchInput {
 }
 interface CandidateProbe {
   qid: string; class: string; country: 'agree' | 'disagree' | 'unknown'; coordinates: string; distanceKm: number | null
+  name: 'agree' | 'disagree' | 'unknown'
   /** The search hit's own label is the name, not merely an alias. */
   countryCorrections?: { countryQid: string; intendedSubjectQid: string; code: string }[]
   exactLabel: boolean
@@ -134,19 +135,32 @@ export function createCitySearchResolver(request: Request, parents: ReadonlyArra
       const country = countryCorrections.length && expected
         ? codes.some(code => !equivalent(expected, code)) ? 'disagree' : codes.length !== countryIds.length ? 'unknown' : 'agree'
         : !expected || !codes.length ? 'unknown' : codes.some(code => equivalent(expected, code)) ? 'agree' : 'disagree'
-      probes.push({ ...(countryCorrections.length ? { countryCorrections } : {}), qid, class: cls.verdict, country, coordinates: geo.verdict, distanceKm: geo.distanceKm, exactLabel: exactLabels.has(qid) })
+      // Search metadata may be stale or disagree with the returned entity.
+      // Validate identity against that entity's own names before its facts
+      // can be adopted. Country and broad coordinate agreement are not names.
+      const entityNames = [
+        ...Object.values(ent.labels ?? {}).map(label => label.value),
+        ...Object.values(ent.aliases ?? {}).flatMap(aliases => aliases.map(alias => alias.value)),
+        ...parseCityNames(claims, undefined, undefined, ent.sitelinks).map(alias => alias.alias),
+      ].filter((value): value is string => typeof value === 'string' && Boolean(value.trim()))
+      const name = !entityNames.length ? 'unknown' : entityNames.some(value => {
+        const normalized = key(value)
+        return normalized === original || normalized === key(input.base) ||
+          value.includes(',') && [original, key(input.base)].includes(key(value.split(',')[0]))
+      }) ? 'agree' : 'disagree'
+      probes.push({ ...(countryCorrections.length ? { countryCorrections } : {}), qid, name, class: cls.verdict, country, coordinates: geo.verdict, distanceKm: geo.distanceKm, exactLabel: exactLabels.has(qid) })
       // A nearby island/country/region with the literal name can also be an
       // alias of a city inside it. Proximity does not establish equal scope.
-      if (exactLabels.has(qid) && cls.verdict === 'refused' && country !== 'disagree' && geo.verdict === 'agree' &&
+      if (name === 'agree' && exactLabels.has(qid) && cls.verdict === 'refused' && country !== 'disagree' && geo.verdict === 'agree' &&
         p31.some(q => /\b(island|archipelago|sovereign state|country|region|province|state of the united states)\b/i.test(classes.get(q) ?? ''))) geographicScopeConflict = true
-      if ((cls.verdict === 'settlement' || cls.verdict === 'locality') && country !== 'disagree' && geo.verdict !== 'disagree' && (country === 'unknown' || geo.verdict === 'unchecked')) incomplete = true
+      if ((cls.verdict === 'settlement' || cls.verdict === 'locality') && name !== 'disagree' && country !== 'disagree' && geo.verdict !== 'disagree' && (name === 'unknown' || country === 'unknown' || geo.verdict === 'unchecked')) incomplete = true
     }
     const adopt = (kind: 'selected' | 'locality', qid: string): CitySearchMatch => {
       const ent = loaded[qid]
       const claims = ent.claims ?? {}
       return { kind, qid, probes, entity: { claims, enwikiTitle: ent.sitelinks?.enwiki?.title, names: parseCityNames(claims, ent.labels, ent.aliases, ent.sitelinks), labels: ent.labels } }
     }
-    const viable = probes.filter(p => p.class === 'settlement' && p.country === 'agree' && p.coordinates === 'agree')
+    const viable = probes.filter(p => p.name === 'agree' && p.class === 'settlement' && p.country === 'agree' && p.coordinates === 'agree')
     if (viable.length > 1) return { kind: 'ambiguous', qid: null, probes }
     // Missing corroboration on another exact namesake cannot silently favor
     // whichever candidate happened to have complete metadata.
@@ -156,7 +170,7 @@ export function createCitySearchResolver(request: Request, parents: ReadonlyArra
     if (incomplete) return { kind: 'unresolved', qid: null, probes, blockedBy: 'incomplete' }
     if (geographicScopeConflict && viable.some(p => !exactLabels.has(p.qid))) return { kind: 'unresolved', qid: null, probes, blockedBy: 'scope' }
     if (viable.length === 1) return adopt('selected', viable[0].qid)
-    const localities = probes.filter(p => p.class === 'locality' && p.country === 'agree' && p.coordinates === 'agree')
+    const localities = probes.filter(p => p.name === 'agree' && p.class === 'locality' && p.country === 'agree' && p.coordinates === 'agree')
     if (localities.length === 1) return adopt('locality', localities[0].qid)
     return { kind: localities.length > 1 ? 'ambiguous' : 'no_match', qid: null, probes }
   }

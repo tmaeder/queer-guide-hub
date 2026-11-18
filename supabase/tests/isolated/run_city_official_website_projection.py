@@ -8,7 +8,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[3]
 PG = Path(os.environ.get("PG_BINDIR", "/opt/homebrew/opt/postgresql@17/bin"))
 baseline = (ROOT / "supabase/tests/fixtures/jev-public-record-city-website-baseline.sql").read_text()
-patch = (ROOT / "docs/review-queue-pending-city-official-website.sql").read_text()
+patch = (ROOT / "supabase/migrations/99991795038043_review_city_official_website_projection.sql").read_text()
 schema = r"""
 create schema api_private;
 create function api_private.jev_source_urls(j jsonb)returns jsonb language sql as $$select j$$;

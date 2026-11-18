@@ -1,6 +1,5 @@
--- Prepared during the coordinated production migration hold.
--- Not applied. Copy to a newly numbered migration only after the hold is released.
--- Existing native proof gates remain authoritative, including human-review holds.
+-- Reference copy promoted after the coordinated migration hold was released.
+-- Authoritative migration: supabase/migrations/99991795038004_review_pending_nonfixed_manual_holds.sql
 do $patch$
 declare definition text; patched text;
   anchor text := E'      or nullif(btrim(e.venue_name), '''') is null\n    );';

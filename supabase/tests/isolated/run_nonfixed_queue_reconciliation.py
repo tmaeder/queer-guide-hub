@@ -11,7 +11,7 @@ PG = Path(os.environ.get("PG_BINDIR", "/opt/homebrew/opt/postgresql@17/bin"))
 helper_source = (ROOT / "supabase/migrations/99991794072220_review_verified_nonfixed_event_locations.sql").read_text()
 helper = re.search(r"create or replace function api_private.event_has_verified_nonfixed_location[\s\S]*?\$fn\$;", helper_source).group()
 baseline = (ROOT / "supabase/tests/fixtures/nonfixed-queue-reconciliation-baseline.sql").read_text()
-patch = (ROOT / "docs/review-queue-pending-nonfixed-reconciliation.sql").read_text()
+patch = (ROOT / "supabase/migrations/99991795038004_review_pending_nonfixed_manual_holds.sql").read_text()
 schema = r"""
 create schema api_private;
 create table events(id uuid primary key,title text,venue_name text,city_id uuid,country_id uuid,
