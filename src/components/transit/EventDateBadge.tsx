@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { isValidTimezone } from '@/utils/timezone';
 import { ROUTE_BULLET_MAP, TRACK_BG, TRACK_TEXT } from './routeBulletMap';
 
 const WEEK_MS = 6 * 24 * 60 * 60 * 1000;
@@ -16,11 +17,13 @@ export interface EventDateParts {
 export function eventDateParts(
   iso: string,
   locale: string | undefined,
-  timeZone?: string,
+  timeZone?: string | null,
   now = Date.now(),
 ): EventDateParts {
   const d = new Date(iso);
-  const fmt = (o: Intl.DateTimeFormatOptions) => d.toLocaleString(locale, { ...o, timeZone });
+  // Older rows carry no or an invalid zone; fall back to the viewer's.
+  const zone = timeZone && isValidTimezone(timeZone) ? timeZone : undefined;
+  const fmt = (o: Intl.DateTimeFormatOptions) => d.toLocaleString(locale, { ...o, timeZone: zone });
   const time = fmt({ hour: '2-digit', minute: '2-digit', hour12: false });
   const soon = d.getTime() - now < WEEK_MS;
   return {
@@ -29,7 +32,7 @@ export function eventDateParts(
       .toUpperCase(),
     day: fmt({ day: 'numeric' }),
     time: time === '00:00' || time === '24:00' ? null : time,
-    full: fmt({ weekday: 'long', day: 'numeric', month: 'long' }),
+    full: fmt({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
   };
 }
 
@@ -49,7 +52,7 @@ export function EventDateBadge({
 }: {
   startDate: string;
   locale?: string;
-  timeZone?: string;
+  timeZone?: string | null;
   className?: string;
 }) {
   const p = eventDateParts(startDate, locale, timeZone);

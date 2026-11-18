@@ -51,7 +51,7 @@ export function HomeCityFeature() {
   // The gallery only replaces the city's own photo when it holds several distinct
   // ones; a single linked asset is usually the same photo the city row already has.
   const slides: Slide[] =
-    gallery.length > 1
+    gallery.length > 1 || (!photo.url && gallery.length > 0)
       ? gallery.map((g) => ({
           url: g.url,
           alt: g.alt ?? '',
@@ -72,6 +72,7 @@ export function HomeCityFeature() {
   const [slideIndex, setSlideIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [hovering, setHovering] = useState(false);
+  const [focused, setFocused] = useState(false);
   // A new city starts on its first photo.
   const [slideCity, setSlideCity] = useState(city?.id);
   if (slideCity !== city?.id) {
@@ -79,12 +80,12 @@ export function HomeCityFeature() {
     setSlideIndex(0);
   }
   const current = slides[slideIndex % Math.max(slides.length, 1)];
-  const autoplay = slides.length > 1 && !reducedMotion && !paused && !hovering;
+  const autoplay = slides.length > 1 && !reducedMotion && !paused && !hovering && !focused;
   useEffect(() => {
     if (!autoplay) return;
     const id = window.setInterval(() => setSlideIndex((i) => i + 1), SLIDE_MS);
     return () => window.clearInterval(id);
-  }, [autoplay]);
+  }, [autoplay, city?.id]);
   const step = (delta: number) =>
     setSlideIndex(
       (i) => ((((i % slides.length) + delta) % slides.length) + slides.length) % slides.length,
@@ -126,8 +127,10 @@ export function HomeCityFeature() {
         className="relative overflow-hidden rounded-panel bg-surface-container"
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
-        onFocus={() => setHovering(true)}
-        onBlur={() => setHovering(false)}
+        onFocus={() => setFocused(true)}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(false);
+        }}
       >
         {current ? (
           <Image
@@ -144,10 +147,10 @@ export function HomeCityFeature() {
             <CityNetwork slug={slug} variant="thumb" className="h-full" />
           </div>
         )}
-        <div className="absolute inset-x-2 top-2 flex items-start justify-between gap-2 sm:inset-x-4 sm:top-4">
+        <div className="absolute inset-x-2 top-2 flex flex-wrap items-start justify-between gap-2 sm:inset-x-4 sm:top-4">
           <RegionChip region={region} align="start" />
           {slides.length > 1 && (
-            <div className="flex items-center gap-0.5 rounded-element bg-card p-0.5">
+            <div className="flex shrink-0 items-center gap-0.5 rounded-element bg-card p-0.5">
               <button
                 type="button"
                 onClick={() => step(-1)}
@@ -158,7 +161,7 @@ export function HomeCityFeature() {
               </button>
               <span
                 className="min-w-8 text-center text-13 font-bold tabular-nums"
-                aria-live="polite"
+                aria-live={autoplay ? 'off' : 'polite'}
               >
                 {(slideIndex % slides.length) + 1}/{slides.length}
               </span>

@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/test-utils';
 
 // The region resolves AFTER first paint. 7d5451f4b replaced a hardcoded Zürich with
@@ -143,11 +143,39 @@ describe('HomeCityFeature: city picker and photo slider', () => {
     state.photos = [photos[0]];
     const { unmount } = renderWithProviders(<HomeCityFeature />);
     expect(screen.queryByRole('button', { name: 'Next photo' })).toBeNull();
+    expect(screen.getByText(/Photographer A/)).toBeInTheDocument();
     unmount();
     state.photos = photos;
     state.reduced = true;
     renderWithProviders(<HomeCityFeature />);
     expect(screen.getByRole('button', { name: 'Next photo' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Pause slideshow' })).toBeNull();
+  });
+  it('keeps autoplay paused while either keyboard focus or hover remains', () => {
+    vi.useFakeTimers();
+    state.loading = false;
+    state.citySlug = 'zuerich';
+    state.city = resolved;
+    state.photos = photos;
+    const { unmount } = renderWithProviders(<HomeCityFeature />);
+    try {
+      const group = screen.getByRole('group', { name: 'Photos' });
+      const next = screen.getByRole('button', { name: 'Next photo' });
+      fireEvent.focus(next);
+      fireEvent.mouseEnter(group);
+      fireEvent.mouseLeave(group);
+      act(() => vi.advanceTimersByTime(7000));
+      expect(screen.getByText('1/3')).toBeInTheDocument();
+      fireEvent.mouseEnter(group);
+      fireEvent.blur(next, { relatedTarget: document.body });
+      act(() => vi.advanceTimersByTime(7000));
+      expect(screen.getByText('1/3')).toBeInTheDocument();
+      fireEvent.mouseLeave(group);
+      act(() => vi.advanceTimersByTime(7000));
+      expect(screen.getByText('2/3')).toBeInTheDocument();
+    } finally {
+      unmount();
+      vi.useRealTimers();
+    }
   });
 });
