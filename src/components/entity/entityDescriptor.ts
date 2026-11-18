@@ -77,7 +77,7 @@ export interface EntityRelatedSource {
  */
 export interface EntitySingleShape {
   /** Uppercase line above the title, e.g. "Venue · Berlin". */
-  eyebrow?: string;
+  eyebrow?: ReactNode;
   /** Bordered ink chip — a STATE ("Open now", "Permanently closed"). */
   status?: string;
   lead?: ReactNode;

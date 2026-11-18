@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ExternalLink, Clock, Eye, Calendar, User, BookOpen } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { ShareMenu } from '@/components/share/ShareMenu';
+import { DetailActionBar } from '@/components/transit/DetailActionBar';
 import { Badge } from '@/components/ui/badge';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Image } from '@/components/ui/Image';
@@ -432,7 +433,8 @@ export default function NewsDetail() {
           </div>
         </div>
 
-        {/* Action row — one accent CTA, the rest monochrome */}
+        {/* Action row — the shared single action bar: one primary verb (the
+            source), save + share, and report behind the overflow menu. */}
         <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
           {isAdmin && (
             <EditorsPickToggle
@@ -441,39 +443,54 @@ export default function NewsDetail() {
               onChange={(next) => patchArticle({ is_editors_pick: next })}
             />
           )}
-          <FavoriteButton itemId={article.id} type="news" />
-          <ReportButton contentType="news_article" contentId={article.id} />
-          {/* `news_articles` — the registry key (the table), not the singular
-              `news_article` the ReportButton above uses for its own taxonomy. */}
-          <AdminEditButton
-            contentType="news_articles"
-            contentId={article.id}
-            contentName={articleTitle}
-            currentData={article as unknown as Record<string, unknown>}
-            onSaved={() => window.location.reload()}
-            exportable
+          <DetailActionBar
+            primary={
+              <Button asChild>
+                <a href={article.url} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink size={16} className="mr-2" aria-hidden="true" />
+                  {t('newsDetail.readAtSource', 'Read at source')}
+                </a>
+              </Button>
+            }
+            save={<FavoriteButton itemId={article.id} type="news" size="tap" />}
+            share={
+              <ShareMenu
+                url={window.location.href}
+                title={articleTitle}
+                label={t('newsDetail.share', 'Share')}
+                variant="ghost"
+                size="default"
+                entity={{
+                  entity_table: 'news_articles',
+                  entity_id: article.id,
+                  title: articleTitle ?? article.title,
+                  subtitle: sourceName ?? null,
+                  image_url: article.image_url ?? null,
+                  path: `/news/${slug ?? article.id}`,
+                }}
+              />
+            }
+            more={[
+              <ReportButton
+                key="report"
+                showLabel
+                contentType="news_article"
+                contentId={article.id}
+              />,
+            ]}
+            admin={
+              /* `news_articles` — the registry key (the table), not the singular
+                 `news_article` the ReportButton uses for its own taxonomy. */
+              <AdminEditButton
+                contentType="news_articles"
+                contentId={article.id}
+                contentName={articleTitle}
+                currentData={article as unknown as Record<string, unknown>}
+                onSaved={() => window.location.reload()}
+                exportable
+              />
+            }
           />
-          <ShareMenu
-            url={window.location.href}
-            title={articleTitle}
-            label={t('newsDetail.share', 'Share')}
-            entity={{
-              entity_table: 'news_articles',
-              entity_id: article.id,
-              title: articleTitle ?? article.title,
-              subtitle: sourceName ?? null,
-              image_url: article.image_url ?? null,
-              path: `/news/${slug ?? article.id}`,
-            }}
-          />
-          <Button
-            variant="accent"
-            size="sm"
-            onClick={() => window.open(article.url, '_blank', 'noopener')}
-          >
-            <ExternalLink size={16} className="mr-1.5" />
-            {t('newsDetail.readAtSource', 'Read at source')}
-          </Button>
         </div>
       </header>
 

@@ -40,7 +40,7 @@ export function SinglePage({
   density = 'default',
 }: {
   type: string;
-  eyebrow?: string;
+  eyebrow?: React.ReactNode;
   letter?: string;
   /** Subject glyph for the eyebrow — see `DetailMasthead`. */
   glyph?: TransitIconName;
