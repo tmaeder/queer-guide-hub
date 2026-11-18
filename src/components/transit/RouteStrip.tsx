@@ -328,7 +328,7 @@ export function RouteStrip({
                     // same pair, so the guard is not reliable here. A hard
                     // state has no mid-state to sample, and hard states are
                     // what the subway system does everywhere else anyway.
-                    'min-w-0 flex-1 px-2 py-1 text-left text-13 leading-snug',
+                    'min-w-0 flex-1 rounded-element px-2 py-1 text-left text-13 leading-snug',
                     s.depth === 2 && 'ml-4 text-2xs',
                     isActive
                       ? 'bg-foreground font-bold text-background'
