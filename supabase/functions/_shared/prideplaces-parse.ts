@@ -151,13 +151,13 @@ export function parseEvent(html: string, url: string, context: EventContext = {}
   let box = ''
   walk(doc, n => { if (hasClass(n, 'event-date-info')) box = text(n).replace(/\s+/g, ' ').trim() })
   const date = /Next Start Date\s*(\d{2})\/(\d{2})\/(\d{4})/.exec(box)
-  if (!date) throw Error('Visible next event date missing')
-  const day = `${date[3]}-${date[1]}-${date[2]}`
-  if (new Date(`${day}T12:00:00Z`).toISOString().slice(0, 10) !== day) throw Error('Invalid event date')
+  const candidate = date ? `${date[3]}-${date[1]}-${date[2]}` : undefined
+  const dateMs = candidate ? Date.parse(`${candidate}T12:00:00Z`) : Number.NaN
+  const day = Number.isFinite(dateMs) && new Date(dateMs).toISOString().slice(0, 10) === candidate ? candidate : undefined
   const startClock = /Start Time\s*(\d{1,2}:\d{2}\s*[AP]M)/i.exec(box)?.[1]
   const endClock = /End Time\s*(\d{1,2}:\d{2}\s*[AP]M)/i.exec(box)?.[1]
-  const start = startClock && context.timezone ? localInstant(day, startClock, context.timezone) : undefined
-  let end = endClock && context.timezone ? localInstant(day, endClock, context.timezone) : undefined
+  const start = day && startClock && context.timezone ? localInstant(day, startClock, context.timezone) : undefined
+  let end = day && endClock && context.timezone ? localInstant(day, endClock, context.timezone) : undefined
   if (start && end && end < start) {
     const next = new Date(Date.parse(`${day}T12:00:00Z`) + 86400000).toISOString().slice(0, 10)
     end = localInstant(next, endClock!, context.timezone!)
@@ -168,14 +168,16 @@ export function parseEvent(html: string, url: string, context: EventContext = {}
   if (context.timezone) loc.timezone = context.timezone
   const weekly = /recurs\s+every week/i.test(box)
   return {
-    sourceId: `${url}:${day}`, sourceName: 'prideplaces', entityType: 'event', name: e.name, title: e.name,
+    // A URL-only identity is reserved for an incomplete Review record. It is
+    // never an invented occurrence; published occurrences retain date keys.
+    sourceId: day ? `${url}:${day}` : url, sourceName: 'prideplaces', entityType: 'event', name: e.name, title: e.name,
     description: `${e.name}${place.name ? ` at ${place.name}` : ''}${loc.city ? ` in ${loc.city}` : ''}, listed by Pride Places${weekly ? ' as a weekly event' : ''}.`,
     event_type: /angels/i.test(String(e.name)) ? 'drag' : /trivia/i.test(String(e.name)) ? 'social' : 'party',
     start_date: start, end_date: end, dates: start ? { start, end } : undefined,
     venue_id: context.venueId, venue_name: place.name, website: url, urls: [url], images: [], location: loc,
     is_recurring: weekly, recurrence_pattern: weekly ? 'weekly' : undefined,
-    recurrence_rule: weekly ? { freq: 'WEEKLY', interval: 1, byDay: [['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][new Date(`${day}T12:00:00Z`).getUTCDay()]] } : undefined,
-    metadata: { url, source: 'prideplaces', source_next_date: day, source_start_time: startClock, time_unknown: !start, stale_jsonld_start: e.startDate, content_scope: 'factual_event_listing', requires_review: !start || !context.venueId, timezone_source: context.timezone ? 'matched_canonical_venue' : undefined },
+    recurrence_rule: weekly && day ? { freq: 'WEEKLY', interval: 1, byDay: [['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][new Date(`${day}T12:00:00Z`).getUTCDay()]] } : undefined,
+    metadata: { url, source: 'prideplaces', source_next_date: day, source_date_raw: candidate, date_unknown: !day, source_start_time: startClock, source_end_time: endClock, time_unknown: !start, stale_jsonld_start: e.startDate, content_scope: 'factual_event_listing', requires_review: !start || !context.venueId || Boolean(endClock && !end), timezone_source: context.timezone ? 'matched_canonical_venue' : undefined },
   }
 }
 
@@ -186,7 +188,7 @@ export function facts(item: Json): Json {
     start_date: item.start_date, end_date: item.end_date, venue_id: item.venue_id, venue_name: item.venue_name,
     is_recurring: item.is_recurring, recurrence_rule: item.recurrence_rule,
     source_category: m.source_category, source_subcategories: m.source_subcategories, social_links: m.social_links,
-    incomplete_business_profile: m.incomplete_business_profile === true, source_next_date: m.source_next_date, source_start_time: m.source_start_time }
+    incomplete_business_profile: m.incomplete_business_profile === true, source_next_date: m.source_next_date, source_date_raw: m.date_unknown === true ? m.source_date_raw : undefined, source_start_time: m.source_start_time, source_end_time: m.source_end_time }
 }
 export function stable(value: unknown): string {
   if (value == null) return 'null'

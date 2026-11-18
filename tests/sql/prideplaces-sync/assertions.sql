@@ -125,6 +125,18 @@ begin
  perform public.test_assert((select source_entity_id=event_json->>'sourceId' and dedup_status='pending' and dedup_details->>'existing_entity_id' is not null from public.ingestion_staging where pipeline_run_id=rid),'Occurrence identity or conflict evidence missing');
  perform public.prideplaces_scan_progress(rid,token);
 
+ -- An unpublished date is a Review record keyed by its listing URL, never a
+ -- fabricated date occurrence that could be published by the normal commit gate.
+ rid:=public.prideplaces_start_scan(true);delete from public.prideplaces_scan_work where run_id=rid;
+ update public.prideplaces_scan_runs set expected_businesses=0 where id=rid;
+ insert into public.prideplaces_scan_work(run_id,kind,url) values(rid,'event','https://www.prideplaces.org/events/unpublished');
+ claim:=public.prideplaces_claim_scan(rid,1);token:=(claim->>'lease')::uuid;wid:=(claim->'items'->0->>'id')::bigint;
+ result:=public.prideplaces_finish_work(rid,token,wid,jsonb_build_object('normalized',
+   '{"sourceId":"https://www.prideplaces.org/events/unpublished","sourceName":"prideplaces","name":"Unpublished date","metadata":{"date_unknown":true,"requires_review":true}}'::jsonb,
+   'fact_hash',repeat('f',64)));
+ perform public.test_assert(result='review','Unknown event date did not enter Review');
+ perform public.prideplaces_scan_progress(rid,token);
+
  -- A source error is retried three times with durable accounting, then fails.
  rid:=public.prideplaces_start_scan(true);delete from public.prideplaces_scan_work where run_id=rid;
  update public.prideplaces_scan_runs set expected_businesses=1 where id=rid;
