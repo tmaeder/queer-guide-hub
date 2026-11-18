@@ -2,11 +2,16 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { build } from 'esbuild'
 import { runInNewContext } from 'node:vm'
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
 
 // Exercise the real request handler with only the database/auth and network boundaries replaced.
 const compiled = build({
   entryPoints: ['supabase/functions/review-automation/index.ts'], bundle: true, write: false, format: 'iife', platform: 'node',
   plugins: [{ name: 'synthetic-service-boundary', setup(builder) {
+    // Bundle the same pinned parser as the Deno worker, rather than mocking extraction.
+    builder.onResolve({ filter: /^https:\/\/esm\.sh\/cheerio@1\.0\.0-rc\.12$/ }, () => ({ path: require.resolve('cheerio') }))
     builder.onLoad({ filter: /_shared\/supabase-client\.ts$/ }, () => ({ contents: `
       export const getServiceClient = () => globalThis.testDb;
       export const requireInternalOrAdmin = async () => globalThis.testAuth;
