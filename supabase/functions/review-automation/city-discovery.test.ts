@@ -55,9 +55,10 @@ Deno.test('ambiguous, distant and wrong-country namesakes cannot supply evidence
   assertEquals(await discoverCityEvidence(input, 'US', fixture({ Q1: entity(35.7) })), null)
   assertEquals(await discoverCityEvidence(input, 'US', fixture({ Q1: entity(35.47, 'Q16') })), null)
 })
-Deno.test('a matching search label cannot override a different fetched entity name', async () => {
-  const different = { ...entity(), labels: { en: { value: 'Different City' } } }
-  assertEquals(await discoverCityEvidence(cityDiscoveryInput(ctx)!, 'US', fixture({ Q1: different })), null)
+Deno.test('search metadata without matching entity names cannot supply identity evidence', async () => {
+  for (const labels of [{ en: { value: 'Different place' } }, {}]) {
+    assertEquals(await discoverCityEvidence(cityDiscoveryInput(ctx)!, 'US', fixture({ Q1: { ...entity(), labels } })), null)
+  }
 })
 Deno.test('provider failure cannot create evidence or fall back to a guessed URL', async () => {
   const fetcher = (() => Promise.resolve(new Response(null, { status: 503 }))) as typeof fetch
