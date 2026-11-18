@@ -6,7 +6,11 @@
     "personalities": "الشخصيات",
     "history": "التاريخ",
     "lede": "الكلمات التي نستخدمها، والأشخاص الذين شكّلوا حياة الكوير، والتاريخ الذي يقف وراءهما.",
-    "navigation": "أقسام المعرفة"
+    "navigation": "أقسام المعرفة",
+    "termsHint": "كلماتنا ومعانيها",
+    "personalitiesHint": "أشخاص شكّلوا حياة الكوير",
+    "historyHint": "محطات، سنة بعد سنة",
+    "rightsHint": "ماذا يقول القانون في كل بلد"
   },
   "eventTypes": {
     "party": "حفلة",
@@ -1936,7 +1940,11 @@
       "exploreCity": "استكشف {{city}}",
       "browseEvents": "تصفّح فعاليات {{city}}",
       "whatsOn": "الفعاليات",
-      "communitySpace": "مساحة مجتمعية"
+      "communitySpace": "مساحة مجتمعية",
+      "photos": "الصور",
+      "previousPhoto": "الصورة السابقة",
+      "nextPhoto": "الصورة التالية",
+      "pausePhotos": "إيقاف عرض الشرائح مؤقتًا"
     },
     "discovery": {
       "openMap": "افتح الخريطة",
@@ -2107,7 +2115,8 @@
       "interchange": {
         "label": "ابحث في كل شيء",
         "subtitle": "كل الخطوط تلتقي هنا"
-      }
+      },
+      "title": "الخريطة"
     },
     "glossary": {
       "eyebrow": "المسرد",
@@ -2265,6 +2274,7 @@
       "you": "حسابي",
       "menuTitle": "كل الأقسام",
       "menuDescription": "انتقل إلى أي قسم، وبدّل اللغة أو المظهر.",
+      "hubDescription": "رسائلك وخططك والأشخاص والعناصر المحفوظة.",
       "trips": "رحلاتي",
       "settingsSection": "العرض",
       "browseAll": "تصفّح كل الأقسام",
@@ -2755,7 +2765,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} شخص",
+        "fieldCount_other": "{{formatted}} شخص"
       },
       "detail": {
         "inTheNews": "In the news",

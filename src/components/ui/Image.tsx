@@ -76,6 +76,8 @@ interface ImageProps {
    * light mode. Ignored for `cover`, which fills its own tile.
    */
   plate?: 'paper' | 'ink';
+  /** Classes for the frame <div> (e.g. `bg-transparent` over a custom ground). */
+  frameClassName?: string;
   /** Fixed pixel height escape hatch; overrides `aspect` when set. */
   heightPx?: number;
   /** Named `imageRole` (not `role`) to avoid the ARIA `role` attribute. */
@@ -157,6 +159,7 @@ export const Image = ({
   widths,
   className,
   plate,
+  frameClassName,
   children,
 }: ImageProps) => {
   // Source ladder, best first. `resolveImageUrl` prefers the R2 mirror, so when
@@ -330,6 +333,7 @@ export const Image = ({
             : 'bg-muted',
         heightPx == null && ASPECT_CLASS[aspect],
         ROUNDED_CLASS[rounded],
+        frameClassName,
       )}
       style={heightPx != null ? { height: heightPx } : undefined}
     >
