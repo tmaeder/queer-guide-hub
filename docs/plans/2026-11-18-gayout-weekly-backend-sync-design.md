@@ -64,3 +64,13 @@ Recovery retry `acd1f72d-2881-44a6-90ab-ae22587a9544` reused all 1,337 completed
 
 
 The existing GayOut mega-event adapter remains available under its original request contract. The dedicated DAG sends `gayout_weekly_sync: true` to the source endpoint, which dispatches to `source-gayout/weekly.ts`; other requests continue through the existing adapter. Source and executor deployment bundles were rebuilt without removing the original parser, ordering logic or legacy dependencies.
+
+### Organisation query repair and account constraint
+
+The follow-up request asks for working duplicate checks and an acquisition alternative using existing accounts. Production has roughly 110,000 organisations. The legacy candidate RPC repeatedly evaluates normalization wrappers with a function-local search path; every attempted organisation search in the recovery cohort exceeded PostgREST's eight-second limit. Those 108 uncommitted `unique` verdicts were audited and reset before resuming.
+
+The GayOut organisation path now uses a parameterised direct read with materialised input and inline expressions equivalent to the existing immutable normalizers. All four candidate arms, score values, minimum-name lengths and result limits are retained. It runs as `service_role` with a 25-second statement limit, five-second lock limit and a closed single-connection pool. GayOut organisation batches are capped at two even for older run snapshots. Any query error still fails the stage and leaves the item pending. Other source policies are unchanged. No production DDL or new migration version is required.
+
+Nine PostgreSQL fixture comparisons against the installed legacy query passed, covering domain corroboration, accents, spacing, absent matches, non-Latin names, empty input and result limits. The representative live query returned its expected two candidates in approximately 5.5 seconds. The backend recovery is processing the captured organisation facts through the standard matching and review gates.
+
+The user does not want a new scraper account. Live probes found that Jina Reader returns a GayOut security challenge, the existing Cloudflare extraction worker returns HTTP403 or a challenge, and a dedicated Browser Run probe still returns a challenge after waiting for page completion. The temporary probe function and worker were deleted. These are failed acquisition probes, not completed imports. Firecrawl remains the last configured fallback; no unverified replacement or additional paid account was enabled. Completing acquisition needs usable source access or a source-provided feed/export within the user's existing-account constraint.
