@@ -173,6 +173,6 @@ export function rightsDatasetJsonLd(): string {
       name: 'ILGA World Database',
       url: 'https://database.ilga.org',
     },
-    measurementTechnique: `${SITE_ORIGIN}/tags/rights-by-country/sources#points`,
+    measurementTechnique: `${SITE_ORIGIN}/tags/rights-by-country/methodology`,
   });
 }

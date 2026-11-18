@@ -1,11 +1,5 @@
 import { KnowledgeReadingLinks } from '@/components/knowledge/KnowledgeReadingLinks';
-import { useState, type ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  EQUALITY_SCORE_BASE,
-  EQUALITY_SCORE_RULES,
-} from '../../../supabase/functions/_shared/equality-score';
-import { buildRightsCitation } from '@/lib/rights/rightsCitation';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
@@ -124,17 +118,6 @@ export default function RightsSources() {
     (c) => (c.lgbti_criminalization as Record<string, unknown> | null)?.legal != null,
   ).length;
   const scored = (countries ?? []).filter((c) => c.equality_score != null).length;
-  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
-  const citation = buildRightsCitation(new Date());
-  const copyCitation = async () => {
-    try {
-      if (!navigator.clipboard) throw new Error('Clipboard unavailable');
-      await navigator.clipboard.writeText(citation);
-      setCopyStatus('copied');
-    } catch {
-      setCopyStatus('failed');
-    }
-  };
 
   useMeta({
     title: t('rights.sources.metaTitle', 'Where our LGBTQ+ rights data comes from'),
@@ -333,59 +316,11 @@ export default function RightsSources() {
       ),
     },
     {
-      id: 'points',
-      label: t('rights.sources.section.points', 'Points per recorded right'),
-      kicker: t(
-        'rights.sources.kicker.points',
-        'The exact formula, as the nightly import computes it',
-      ),
-      content: (
-        <StationPanel
-          code="S4"
-          label={t('rights.sources.station.points', 'Formula station · Start at 50')}
-        >
-          <p className="mb-6 max-w-prose">
-            {t(
-              'rights.sources.points.intro',
-              'Every country starts at {{base}}. Each fact ILGA records adds or removes the points below, and the total is capped to 0–100.',
-            ).replace('{{base}}', String(EQUALITY_SCORE_BASE))}
-          </p>
-          <table className="w-full text-15">
-            <caption className="sr-only">
-              {t('rights.sources.points.caption', 'Equality score points per recorded right')}
-            </caption>
-            <thead>
-              <tr className="border-b border-border text-left text-2xs uppercase tracking-label text-muted-foreground">
-                <th scope="col" className="py-2 pr-4 font-bold">
-                  {t('rights.sources.points.factor', 'Recorded by ILGA')}
-                </th>
-                <th scope="col" className="py-2 text-right font-bold">
-                  {t('rights.sources.points.points', 'Points')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {EQUALITY_SCORE_RULES.map((rule) => (
-                <tr key={rule.id} className="border-b border-border">
-                  <td className="py-2 pr-4">
-                    {t(`rights.sources.points.rule.${rule.id}`, rule.factor)}
-                  </td>
-                  <td className="py-2 text-right font-bold tabular-nums">
-                    {rule.points > 0 ? `+${rule.points}` : `\u2212${Math.abs(rule.points)}`}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </StationPanel>
-      ),
-    },
-    {
       id: 'limits',
       label: t('rights.sources.section.limits', 'What this data cannot tell you'),
       content: (
         <StationPanel
-          code="S5"
+          code="S4"
           label={t('rights.sources.station.limits', 'Terminal · Off the map')}
           tone="ink"
         >
@@ -434,39 +369,6 @@ export default function RightsSources() {
               {t('rights.sources.backToRights', 'Back to rights')} →
             </LocalizedLink>
           </div>
-        </StationPanel>
-      ),
-    },
-    {
-      id: 'cite',
-      label: t('rights.sources.section.cite', 'Cite this data'),
-      content: (
-        <StationPanel code="S6" label={t('rights.sources.station.cite', 'Citation')}>
-          <p className="mb-4 max-w-prose">
-            {t(
-              'rights.sources.cite.intro',
-              'Use this citation to reference the page. Credit Queer Guide and ILGA World, and check the applicable ILGA terms before redistributing the underlying data.',
-            )}
-          </p>
-          <p
-            className="mb-4 rounded-element bg-background p-4 font-mono text-13 leading-relaxed"
-            data-testid="rights-citation"
-          >
-            {citation}
-          </p>
-          <Button variant="outline" size="sm" onClick={() => void copyCitation()}>
-            {copyStatus === 'copied'
-              ? t('rights.sources.cite.copied', 'Copied')
-              : t('rights.sources.cite.copy', 'Copy citation')}
-          </Button>
-          {copyStatus === 'failed' && (
-            <p role="alert" className="mt-2 text-13 text-muted-foreground">
-              {t(
-                'rights.sources.cite.copyFailed',
-                'Unable to copy automatically. Select and copy the citation above.',
-              )}
-            </p>
-          )}
         </StationPanel>
       ),
     },
@@ -529,10 +431,7 @@ export default function RightsSources() {
             stops={methodStops}
             ariaLabel={t('rights.sources.route.aria', 'Method route')}
             lineLabel={t('rights.sources.heroLine', 'Rights line · Method')}
-            stationCountLabel={t('rights.sources.route.stationCount', '{{count}} stations').replace(
-              '{{count}}',
-              String(sections.length),
-            )}
+            stationCountLabel={t('rights.sources.route.stationCount', '4 stations')}
           />
         </PageHero>
       }

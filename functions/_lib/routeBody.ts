@@ -14,11 +14,6 @@
  */
 
 import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
-import { buildRightsCitation } from '../../src/lib/rights/rightsCitation';
-import {
-  EQUALITY_SCORE_BASE,
-  EQUALITY_SCORE_RULES,
-} from '../../supabase/functions/_shared/equality-score';
 import {
   EQUALITY_SCORE_METHOD,
   EQUALITY_SCORE_RAW_MAX,
@@ -375,8 +370,6 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       'Every legal status on Queer Guide — criminalisation, partnership recognition, anti-discrimination protection, gender recognition, conversion therapy and intersex bodily integrity — comes from the ILGA World Database, re-imported nightly.',
       'The equality score is a 0–100 composite we compute from that record. It opens at 50 and adds points per recorded right, which means a country we hold almost nothing about lands mid-scale rather than reading as unknown. A middling score can mean middling rights or thin data, and the number cannot tell you which.',
       'It is national, so where rights vary by state or province a single figure averages that away. It records statutes, not enforcement. And several facts that matter most to trans travellers — facility access, how identity documents are treated at borders, access to gender-affirming healthcare — are not in this dataset at all. It is not a safety rating.',
-      `Points per recorded right (start at ${EQUALITY_SCORE_BASE}, capped to 0–100): ${EQUALITY_SCORE_RULES.map((r) => `${r.factor} ${r.points > 0 ? '+' : '−'}${Math.abs(r.points)}`).join('; ')}.`,
-      `Cite as: ${buildRightsCitation(new Date())}`,
     ],
     links: [
       { href: '/tags/rights-by-country', label: 'Rights by country' },
