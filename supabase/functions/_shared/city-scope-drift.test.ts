@@ -25,6 +25,9 @@ function scopesInMigrations(): Map<string, string[]> {
   for (const entry of Deno.readDirSync(MIGRATIONS)) {
     if (!entry.isFile || !entry.name.endsWith('.sql')) continue
     const sql = Deno.readTextFileSync(new URL(entry.name, MIGRATIONS))
+    // Other sources post their own "scope" (prideplaces: all_businesses_and_events);
+    // only migrations that call this function can drift against its scopes.
+    if (!sql.includes('city-factual-backfill')) continue
     for (const m of sql.matchAll(SCOPE_RE)) {
       const list = found.get(m[1]) ?? []
       list.push(entry.name)

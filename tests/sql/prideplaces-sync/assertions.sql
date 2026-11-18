@@ -151,5 +151,13 @@ begin
  perform public.test_assert(progress->>'collection_status'='failed','Exhausted retries did not fail coverage');
  perform public.test_assert((select attempts=3 and status='failed' from public.prideplaces_scan_work where run_id=rid),'Retry accounting incorrect');
  perform public.test_assert(progress->'source_errors'->0->>'error'='Source HTTP 503','Backend monitoring lost the source error');
+ -- Continuations enforce the run deadline themselves, even without a new start.
+ rid:=public.prideplaces_start_scan(true);
+ update public.prideplaces_scan_runs set created_at=now()-interval '7 hours' where id=rid;
+ claim:=public.prideplaces_claim_scan(rid,4);
+ perform public.test_assert(claim->>'status'='failed' and jsonb_array_length(claim->'items')=0,'Expired run received another worker lease');
+ progress:=public.prideplaces_scan_progress(rid);
+ perform public.test_assert(progress->>'complete'='false' and progress->>'collection_status'='failed','Expired scan reported complete coverage');
+ perform public.test_assert((select status='failed' and error_message like '%six hours%' from public.pipeline_runs where id=rid),'Pipeline did not retain the scan deadline failure');
 end$$;
 reset role;
