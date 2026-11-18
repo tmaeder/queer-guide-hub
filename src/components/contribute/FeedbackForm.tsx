@@ -106,7 +106,7 @@ export default function FeedbackForm({
         <legend className="text-sm font-semibold">
           {t('contribute.feedback.category', 'What type of feedback?')}
         </legend>
-        <div className="mt-4 grid grid-cols-2 gap-4">
+        <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-5">
           {feedbackCategories.map((category) => {
             const Icon = category.icon;
             const selected = form.category === category.value;

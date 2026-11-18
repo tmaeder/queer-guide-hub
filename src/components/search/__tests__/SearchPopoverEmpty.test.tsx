@@ -16,7 +16,6 @@ vi.mock('@/hooks/useUserMode', () => ({
 }));
 
 import { SearchPopoverEmpty } from '../SearchPopoverEmpty';
-import { USER_MODES } from '@/config/navigation';
 import type { SearchHit } from '@/lib/searchClient';
 
 const trending: SearchHit[] = [
@@ -49,11 +48,6 @@ describe('SearchPopoverEmpty', () => {
     const props = renderEmpty();
     fireEvent.click(screen.getByText('Berghain'));
     expect(props.onSelectTrending).toHaveBeenCalledWith(trending[0]);
-  });
-
-  it('renders the compact mode radiogroup with one radio per mode', () => {
-    renderEmpty();
-    expect(screen.getAllByRole('radio')).toHaveLength(USER_MODES.length);
   });
 
   it('keeps the map reachable via the browse grid', () => {

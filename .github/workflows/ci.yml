@@ -47,6 +47,8 @@ jobs:
       - run: npm run test:merge-policy
       - name: Snapshot fixture locality and anonymous-data contracts
         run: node --test scripts/ci/snapshot-fixtures.test.mjs
+      - name: Patroc local-time staging and invalid-record isolation
+        run: node --test scripts/data-quality/import-patroc.test.mjs
       - name: Review resolution source, ownership and composition fixtures
         run: |
           set -euo pipefail
@@ -78,6 +80,12 @@ jobs:
           python3 supabase/tests/isolated/run_news_commit_slugs.py
           python3 supabase/tests/isolated/run_review_news_commit_isolation.py
           python3 supabase/tests/isolated/run_review_cron_recovery.py
+          python3 supabase/tests/isolated/run_managed_event_categories.py
+          python3 supabase/tests/isolated/run_review_liveness_cleanup.py
+          python3 supabase/tests/isolated/run_review_replay_worklist.py
+          python3 supabase/tests/isolated/run_review_case_expressions.py
+          python3 supabase/tests/isolated/run_neutral_category_evidence.py
+          python3 supabase/tests/isolated/run_review_quality_cache_locks.py
 
   typecheck:
     runs-on: ubuntu-latest

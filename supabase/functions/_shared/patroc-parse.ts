@@ -62,6 +62,79 @@ export interface PatrocEvent {
   googlePlaceId: string | null
 }
 
+const patrocClockFormatters = new Map<string, Intl.DateTimeFormat>()
+
+/** Preserve date-only precision; timed values must identify one real instant. */
+function patrocTimestamp(date: string | null, time: string | null, timezone: string): string {
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('Invalid Patroc date')
+  const day = new Date(`${date}T00:00:00Z`)
+  if (!Number.isFinite(day.valueOf()) || day.toISOString().slice(0, 10) !== date) {
+    throw new Error('Invalid Patroc calendar date')
+  }
+  if (!time) return date
+  const clock = /^(\d{1,2}):(\d{2})$/.exec(time)
+  if (!clock || Number(clock[1]) > 47 || Number(clock[2]) > 59) {
+    throw new Error('Invalid Patroc clock time')
+  }
+  const hour = Number(clock[1])
+  day.setUTCDate(day.getUTCDate() + Math.floor(hour / 24))
+  const local = `${day.toISOString().slice(0, 10)}T${String(hour % 24).padStart(2, '0')}:${clock[2]}:00`
+  let formatter = patrocClockFormatters.get(timezone)
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone, calendar: 'iso8601', numberingSystem: 'latn', hourCycle: 'h23',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+    })
+    patrocClockFormatters.set(timezone, formatter)
+  }
+  const atLocal = (instant: number): string => {
+    const parts = Object.fromEntries(formatter.formatToParts(new Date(instant)).map(p => [p.type, p.value]))
+    return `${parts.year.padStart(4, '0')}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`
+  }
+  const wall = Date.parse(`${local}Z`)
+  // Neighbouring days expose both offsets around European DST transitions.
+  // Round-trip each candidate instead of choosing an offset for a missing or
+  // repeated wall clock. Those records require source/editorial clarification.
+  const offsets = new Set([-36, 0, 36].map(hours => {
+    const instant = wall + hours * 3_600_000
+    return Date.parse(`${atLocal(instant)}Z`) - instant
+  }))
+  const matches = [...offsets].map(offset => wall - offset).filter(instant => atLocal(instant) === local)
+  if (matches.length === 0) throw new Error('Nonexistent Patroc local time')
+  if (matches.length !== 1) throw new Error('Ambiguous Patroc local time')
+  return new Date(matches[0]).toISOString()
+}
+
+export function normalizePatrocEventDates(
+  rec: Pick<PatrocEvent, 'startDate' | 'endDate' | 'startTime' | 'endTime'>,
+  timezone: string,
+): { start: string; end?: string } {
+  const start = patrocTimestamp(rec.startDate, rec.startTime, timezone)
+  let end: string | undefined
+  if (rec.endDate) {
+    end = patrocTimestamp(rec.endDate, rec.endTime, timezone)
+  } else if (rec.endTime && rec.startTime) {
+    const day = new Date(`${rec.startDate}T00:00:00Z`)
+    const minutes = (time: string) => time.split(':').reduce((h, m) => h * 60 + Number(m), 0)
+    if (minutes(rec.endTime) < minutes(rec.startTime)) day.setUTCDate(day.getUTCDate() + 1)
+    end = patrocTimestamp(day.toISOString().slice(0, 10), rec.endTime, timezone)
+  }
+  const localDay = (value: string): string => {
+    if (!value.includes('T')) return value
+    // Timed values validate their zone and populate this formatter above.
+    const formatter = patrocClockFormatters.get(timezone)!
+    const parts = Object.fromEntries(formatter.formatToParts(new Date(value)).map(p => [p.type, p.value]))
+    return `${parts.year.padStart(4, '0')}-${parts.month}-${parts.day}`
+  }
+  if (end && (start.includes('T') === end.includes('T')
+    ? end < start
+    : localDay(end) < localDay(start))) {
+    throw new Error('Patroc end precedes start')
+  }
+  return { start, end }
+}
+
 /** The fixed city catalogue: slug -> country ISO2 + IANA timezone.
  * Gran Canaria is the one non-obvious pair: Canary Islands are Atlantic/Canary,
  * an hour off Europe/Madrid. */

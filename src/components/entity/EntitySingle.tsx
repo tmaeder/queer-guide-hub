@@ -90,7 +90,7 @@ export function EntitySingle({
               orientation="horizontal"
               track={single.track}
               label="Sections"
-              className="lg:hidden"
+              className={single.rail ? 'lg:hidden' : undefined}
             />
             <SingleSectionList sections={sections.filter((section) => section !== opening)} />
             {single.bodyTail}

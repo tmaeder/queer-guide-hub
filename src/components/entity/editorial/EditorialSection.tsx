@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils';
 export interface EditorialSectionProps {
   id: string;
   label: ReactNode;
+  /** Accepted for call-site compatibility but NOT rendered: the owner removed
+   *  every section eyebrow (2026-11-18) as redundant with the heading. */
   kicker?: string;
   /** One-line deck under the heading. */
   description?: ReactNode;
@@ -16,7 +18,6 @@ export interface EditorialSectionProps {
 export function EditorialSection({
   id,
   label,
-  kicker,
   description,
   action,
   children,
@@ -30,11 +31,6 @@ export function EditorialSection({
     >
       <header className="mb-8 flex items-end justify-between gap-4">
         <div className="min-w-0">
-          {kicker ? (
-            <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
-              {kicker}
-            </p>
-          ) : null}
           <h2 id={`${id}-heading`} className="text-display font-bold tracking-tight">
             {label}
           </h2>
