@@ -1,5 +1,5 @@
 import { applyDate, claimWithin, NAME, type Db } from './store.ts'
-import { candidates, selectionRequest, verificationRequest, choose, verified, type Page } from './policy.ts'
+import { candidates, selectionRequest, verificationRequest, choose, verified, POLICY, type Page } from './policy.ts'
 import { hash } from './sources.ts'
 import type { JevRequest, JevResponse } from '../_shared/jev-client.ts'
 
@@ -12,7 +12,7 @@ export async function contractTest(db:Db){
     const [active]=await tx`select count(*) n from public.pipeline_runs where pipeline_name=${NAME} and status in('running','queued')`
     if(Number(active.n)!==0)throw Error('run_contract_only_when_real_worker_idle')
     const fixtureRun=crypto.randomUUID()
-    await tx`insert into public.pipeline_runs(id,pipeline_name,status,context) values(${fixtureRun}::uuid,${NAME},'running','{"policy":"contract","results":{},"source_cache":{},"attempts":{}}')`
+    await tx`insert into public.pipeline_runs(id,pipeline_name,status,context) values(${fixtureRun}::uuid,${NAME},'running',${tx.json({policy:POLICY,results:{},source_cache:{},attempts:{}})})`
     const first=await claimWithin(tx,'resume'),second=await claimWithin(tx,'resume')
     if(!first.token||second.busy!==true)throw Error('contract_durable_lease_failed')
     const [privateCheck]=await tx`select context ? 'source_cache' or context ? 'lease_token' leaked from public.pipeline_runs where id=${fixtureRun}::uuid`

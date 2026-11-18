@@ -23,7 +23,7 @@ async function ledger(tx:Tx,run:RecordData):Promise<RecordData> {
 async function persist(tx:Tx,id:string,ctx:RecordData){
   const results=Object.values(ctx.results??{}) as RecordData[]
   await tx`update public.admin_automation_runs set summary=${tx.json(ctx)},items_examined=${results.length},items_changed=${results.filter(r=>r.state==='approved'||r.state==='date_confirmed_pending_other_review').length} where id=${ctx.ledger_id}::bigint and automation_slug=${SLUG}`
-  const publicContext={policy:POLICY,review_ledger_id:ctx.ledger_id,examined:results.length,approved:results.filter(r=>r.state==='approved').length,errors:results.filter(r=>r.state==='error').length}
+  const publicContext={policy:POLICY,dry_run:ctx.dry_run===true,review_ledger_id:ctx.ledger_id,examined:results.length,approved:results.filter(r=>r.state==='approved').length,errors:results.filter(r=>r.state==='error').length}
   await tx`update public.pipeline_runs set context=${tx.json(publicContext)},updated_at=now() where id=${id}::uuid`
 }
 export async function claim(db:Db,mode:string){return await db.begin(tx=>claimWithin(tx,mode))}
@@ -31,12 +31,12 @@ export async function claimWithin(tx:Tx,mode:string){
   await tx`select pg_advisory_xact_lock(hashtextextended(${NAME},0))`
   const [enabled]=await tx`select enabled from public.admin_automations where slug=${SLUG}`
   if(!enabled?.enabled)return {idle:true,reason:'disabled'}
-  let [run]=await tx`select * from public.pipeline_runs where pipeline_name=${NAME} and status in('running','queued') and coalesce(context->>'dry_run','false')<>'true' order by created_at desc limit 1 for update`
+  let [run]=await tx`select * from public.pipeline_runs where pipeline_name=${NAME} and context->>'policy'=${POLICY} and status in('running','queued') and coalesce(context->>'dry_run','false')<>'true' order by created_at desc limit 1 for update`
   if(!run){
     if(mode==='resume')return {idle:true}
     const [due]=await tx`select (date_trunc('week',now() at time zone 'Europe/Zurich')+interval '2 days 9 hours') at time zone 'Europe/Zurich' due`
     if(mode==='weekly'&&Date.now()<new Date(due.due).getTime())return {idle:true,reason:'not_due'}
-    const [prior]=await tx`select id,status from public.pipeline_runs where pipeline_name=${NAME} and created_at>=${due.due}::timestamptz order by created_at desc limit 1`
+    const [prior]=await tx`select id,status from public.pipeline_runs where pipeline_name=${NAME} and context->>'policy'=${POLICY} and created_at>=${due.due}::timestamptz order by created_at desc limit 1`
     if(prior)return {idle:true,reason:'already_checked_this_week',run_id:prior.id}
     const [definition]=await tx`select id,is_enabled from public.pipeline_definitions where name=${NAME}`
     if(!definition?.is_enabled)return {idle:true,reason:'pipeline_disabled'}
