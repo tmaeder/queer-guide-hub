@@ -9,7 +9,7 @@ Deno.test('Review defers a 529 batch, recovers on the next run, and still fails 
     JEV_MODEL: 'jev-1.14.0',
   }
   const previous = Object.entries(env).map(([key]) => [key, Deno.env.get(key)] as const)
-  const originalServe = Deno.serve
+  const originalServe = Object.getOwnPropertyDescriptor(Deno, 'serve')!
   const originalFetch = globalThis.fetch
   let handler: ((request: Request) => Promise<Response>) | undefined
   let modelStatus = 529
@@ -19,11 +19,11 @@ Deno.test('Review defers a 529 batch, recovers on the next run, and still fails 
   const jobs = ['first', 'second'].map(case_id => ({ case_id, lease_token: 'lease', queue_type: 'milestone-review' }))
   try {
     for (const [key, value] of Object.entries(env)) Deno.env.set(key, value)
-    Deno.serve = ((fn: typeof handler) => { handler = fn }) as typeof Deno.serve
+    Object.defineProperty(Deno, 'serve', { configurable: true, value: (fn: typeof handler) => { handler = fn } })
     globalThis.fetch = (async (input, init) => {
       const url = new URL(String(input instanceof Request ? input.url : input))
       const path = url.pathname.split('/').pop()
-      const body = init?.body ? JSON.parse(String(init.body)) : {}
+      const body = init && 'body' in init && init.body ? JSON.parse(String(init.body)) : {}
       if (url.hostname === 'api.typesafe.ai') {
         modelCalls++
         if (modelStatus !== 200) return new Response(null, { status: modelStatus })
@@ -80,7 +80,7 @@ Deno.test('Review defers a 529 batch, recovers on the next run, and still fails 
     assertEquals((await invalidKey.json()).error, 'Jev HTTP 401')
     assertEquals(runLogs.at(-1)?.status, 'error')
   } finally {
-    Deno.serve = originalServe
+    Object.defineProperty(Deno, 'serve', originalServe)
     globalThis.fetch = originalFetch
     for (const [key, value] of previous) {
       if (value === undefined) Deno.env.delete(key)
