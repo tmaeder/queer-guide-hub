@@ -385,6 +385,9 @@ verify_jwt = false
 [functions.source-gaybasel]
 verify_jwt = false
 
+[functions.source-prideplaces]
+verify_jwt = false
+
 [functions.source-haz-ch]
 verify_jwt = false
 
