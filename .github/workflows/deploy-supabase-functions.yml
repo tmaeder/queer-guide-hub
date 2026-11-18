@@ -193,10 +193,10 @@ jobs:
           REDEPLOY_ALL: ${{ inputs.redeploy_all }}
         run: |
           # Manual trigger with redeploy_all=true forces a full redeploy.
-          # If a shared file changed in this push, also redeploy every function
+          # If shared runtime code changed, also redeploy every function
           # (each bundles shared code at deploy time).
           if [ "$REDEPLOY_ALL" = "true" ] \
-             || git diff --name-only HEAD~1 HEAD | grep -q "^supabase/functions/_shared/"; then
+             || git diff --name-only HEAD~1 HEAD | grep '^supabase/functions/_shared/' | grep -Ev '\.(test|spec)\.ts$'; then
             echo "Redeploying every function (manual trigger or shared code changed)."
             CHANGED=$(ls -1 supabase/functions | grep -v '^_')
           else
