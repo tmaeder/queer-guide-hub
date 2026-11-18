@@ -53,6 +53,7 @@ export interface PipelineDefinition {
 export interface RunResult {
   pipeline_run_id?: string;
   dry_run?: boolean;
+  reused_run?: boolean;
 }
 
 /** Minimal shape loadPipeline needs — full definitions and version-revert rows both satisfy it. */
@@ -259,11 +260,14 @@ export function usePipelineBuilder(pipelineId?: string) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30_000);
       try {
-        const { data, error } = await supabase.functions.invoke('pipeline-executor', {
+        const slug = pipelineSlug || (pipelineName ? slugify(pipelineName) : undefined);
+        const endpoint =
+          slug === 'weekly-data-source-sync' ? 'pipeline-weekly-source-sync' : 'pipeline-executor';
+        const { data, error } = await supabase.functions.invoke(endpoint, {
           body: {
             action: 'start',
             pipeline_id: currentPipelineId || pipelineId,
-            pipeline_name: pipelineSlug || (pipelineName ? slugify(pipelineName) : undefined),
+            pipeline_name: slug,
             dry_run: options?.dryRun || false,
             triggered_by: 'admin',
           },
@@ -279,9 +283,16 @@ export function usePipelineBuilder(pipelineId?: string) {
       }
     },
     onSuccess: (data) => {
-      toast.success(data?.dry_run ? 'Dry run started' : 'Pipeline started', {
-        description: `Run ID: ${data?.pipeline_run_id}`,
-      });
+      toast.success(
+        data?.reused_run
+          ? 'Existing run opened'
+          : data?.dry_run
+            ? 'Dry run started'
+            : 'Pipeline started',
+        {
+          description: `Run ID: ${data?.pipeline_run_id}`,
+        },
+      );
     },
     onError: (error: Error) => {
       toast.error(`Run failed: ${error.message}`);
