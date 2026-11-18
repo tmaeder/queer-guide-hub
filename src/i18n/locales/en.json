@@ -4624,7 +4624,8 @@
         "copied": "Copied",
         "copy": "Copy",
         "apa": "APA",
-        "plain": "Plain text"
+        "plain": "Plain text",
+        "copyFailed": "Could not copy automatically. The citation is selected; copy it with your keyboard."
       },
       "metaTitle": "How the LGBTQ+ equality score is calculated",
       "metaDescription": "Every weight in the Queer Guide equality score, the 0–100 range, the tier cutoffs, its known limits, and how to cite it.",
