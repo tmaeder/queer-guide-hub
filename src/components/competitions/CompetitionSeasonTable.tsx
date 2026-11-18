@@ -2,6 +2,9 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { FilterChip } from '@/components/transit/FilterChip';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useCompetitionWinnerPortraits, type WinnerPortrait } from '@/hooks/useCompetitions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -101,6 +104,42 @@ function SortHeader({
   );
 }
 
+/** Winner with a small portrait (initial when there is no photo). */
+function WinnerCell({ names, portraits }: { names: string[]; portraits?: WinnerPortrait[] }) {
+  if (!portraits?.length) return <>{formatList(names)}</>;
+  return (
+    <ul className="m-0 flex list-none flex-col gap-2 p-0">
+      {portraits.map((p) => {
+        const face = (
+          <>
+            <Avatar className="h-10 w-10 shrink-0">
+              {p.imageUrl && <AvatarImage src={p.imageUrl} alt="" className="object-cover" />}
+              <AvatarFallback className="text-13 font-bold">
+                {p.name.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span>{p.name}</span>
+          </>
+        );
+        return (
+          <li key={p.name}>
+            {p.slug ? (
+              <LocalizedLink
+                to={`/personalities/${p.slug}`}
+                className="inline-flex items-center gap-2 no-underline hover:underline"
+              >
+                {face}
+              </LocalizedLink>
+            ) : (
+              <span className="inline-flex items-center gap-2">{face}</span>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export function CompetitionSeasonTable({ competitions }: { competitions: Competition[] }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -109,6 +148,7 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
   const [kind, setKind] = useState<string>(ALL);
   const [sort, setSort] = useState<{ key: SortKey; dir: SortDir } | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const { data: portraits } = useCompetitionWinnerPortraits();
 
   const rows = useMemo<EditionRow[]>(
     () =>
@@ -343,7 +383,9 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
                   {formatAired(r.lastAired, locale)}
                 </TableCell>
               )}
-              <TableCell>{formatList(r.winners)}</TableCell>
+              <TableCell>
+                <WinnerCell names={r.winners} portraits={portraits?.get(r.key)} />
+              </TableCell>
               <TableCell>{formatList(r.runnersUp)}</TableCell>
               {columns.missCongeniality && <TableCell>{formatList(r.missCongeniality)}</TableCell>}
               <TableCell className="text-muted-foreground">{r.outlet ?? '—'}</TableCell>

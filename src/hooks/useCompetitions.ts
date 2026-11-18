@@ -215,3 +215,50 @@ export function useCompetedInLabel(value: string | undefined): string | undefine
   if (category) return t(category.labelKey, category.label);
   return options.find((o) => o.slug === value)?.name ?? value;
 }
+
+export interface WinnerPortrait {
+  name: string;
+  slug: string | null;
+  imageUrl: string | null;
+}
+
+/**
+ * Winner portraits keyed `${competitionSlug}/${editionSlug}`, for the season
+ * table. The overview RPC returns winners as names only; the photo lives on
+ * the linked personality. Personality RLS drops drafts, so a hidden person
+ * comes back with no slug or photo and renders as a name.
+ */
+export function useCompetitionWinnerPortraits() {
+  return useQuery({
+    queryKey: ['competition-winner-portraits'],
+    staleTime: 30 * 60_000,
+    queryFn: async (): Promise<Map<string, WinnerPortrait[]>> => {
+      const { data, error } = await supabase
+        .from('competition_entrants')
+        .select(
+          'stage_name, personality:personalities(slug, image_url), edition:competition_editions!competition_entrants_edition_id_fkey(slug, competition:competitions(slug))',
+        )
+        .eq('is_winner', true)
+        .limit(2000);
+      if (error) throw error;
+      const map = new Map<string, WinnerPortrait[]>();
+      type Row = {
+        stage_name: string | null;
+        personality: { slug: string | null; image_url: string | null } | null;
+        edition: { slug: string; competition: { slug: string } | null } | null;
+      };
+      for (const r of (data ?? []) as unknown as Row[]) {
+        if (!r.edition?.competition) continue;
+        const key = `${r.edition.competition.slug}/${r.edition.slug}`;
+        const list = map.get(key) ?? [];
+        list.push({
+          name: r.stage_name ?? '',
+          slug: r.personality?.slug ?? null,
+          imageUrl: r.personality?.image_url ?? null,
+        });
+        map.set(key, list);
+      }
+      return map;
+    },
+  });
+}

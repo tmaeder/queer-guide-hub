@@ -75,7 +75,7 @@ function PageIndexCard({ page }: { page: CMSPage }) {
     >
       <RouteBullet
         type={line?.slug ?? 'page'}
-        letter={line?.letter}
+        icon={line?.icon}
         track={line?.track}
         label={line ? `${line.label} line` : undefined}
         size={38}

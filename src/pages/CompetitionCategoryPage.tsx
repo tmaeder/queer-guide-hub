@@ -159,7 +159,7 @@ export default function CompetitionCategoryPage({ category }: { category: Compet
       <DetailMasthead
         className="mt-6"
         type={def?.id ?? 'competition'}
-        letter={def?.bullet.letter}
+        icon={def?.icon}
         track={def?.bullet.track}
         bulletLabel={def ? t(def.labelKey, def.label) : undefined}
         eyebrow={t('competitions.eyebrow', 'Competitions')}

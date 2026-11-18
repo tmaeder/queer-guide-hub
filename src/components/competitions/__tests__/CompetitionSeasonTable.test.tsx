@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CompetitionSeasonTable } from '../CompetitionSeasonTable';
+
+vi.mock('@/hooks/useCompetitions', () => ({
+  useCompetitionWinnerPortraits: () => ({ data: undefined }),
+}));
 import type { Competition, CompetitionEdition, CompetitionKind } from '@/types/competition';
 import type { CompetitionCategory } from '@/lib/competitionCategories';
 
