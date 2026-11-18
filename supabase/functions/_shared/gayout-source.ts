@@ -59,7 +59,7 @@ export function gayOutPublicUrl(input: string): URL | null {
   try {
     const u = new URL(decodeGayOutText(input))
     if (u.protocol !== 'https:' || !['www.gayout.com', 'gayout.com'].includes(u.hostname) || u.username || u.password || u.port) return null
-    if (/[\u0000-\u001f]/.test(u.pathname)) return null
+    if (Array.from(u.pathname).some(char => char.charCodeAt(0) < 0x20)) return null
     u.hostname = 'www.gayout.com'; u.search = ''; u.hash = ''
     return u
   } catch { return null }
