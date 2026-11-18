@@ -136,7 +136,9 @@ begin
   else
     n:=p_result->'normalized';sid:=n->>'sourceId';digest:=p_result->>'fact_hash';
     if sid is null or digest !~ '^[a-f0-9]{64}$' or n->>'sourceName'<>'prideplaces'
-      or (w.kind='business' and sid<>w.url) or (w.kind='event' and (sid<>w.url||':'||(n->'metadata'->>'source_next_date') or n->'metadata'->>'source_next_date' !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
+      or (w.kind='business' and sid<>w.url) or (w.kind='event' and not coalesce(
+        (sid=w.url and n->'metadata'->>'date_unknown'='true' and n->'metadata'->>'requires_review'='true')
+        or (sid=w.url||':'||(n->'metadata'->>'source_next_date') and n->'metadata'->>'source_next_date' ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'),false))
       then raise exception 'Invalid normalized source identity or hash';end if;
     select fact_hash into old_hash from public.prideplaces_observations where source_id=sid;
     select * into prior from public.ingestion_staging where source_name='prideplaces' and source_entity_id=sid
