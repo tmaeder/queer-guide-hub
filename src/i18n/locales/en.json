@@ -2810,7 +2810,8 @@
       "pride": {
         "title": "Pride this season",
         "window": "Next 4 months",
-        "empty": "No upcoming Pride events."
+        "empty": "No upcoming Pride events.",
+        "cta": "View event"
       },
       "inspiration": {
         "villages": "Queer villages",
@@ -4053,11 +4054,15 @@
       "title": "What are you into?",
       "blurb": "Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "{{count}} selected"
+      "count": "{{count}} selected",
+      "signIn": "Sign in to pick interests",
+      "limit": "{{count}} of {{max}} picked",
+      "atLimit": "That is the limit. Remove one to pick another."
     },
     "friends": {
       "discover": "Find people"
-    }
+    },
+    "safetyTitle": "Check the law before you meet"
   },
   "hub": {
     "title": "Your hub",
@@ -4619,7 +4624,8 @@
         "copied": "Copied",
         "copy": "Copy",
         "apa": "APA",
-        "plain": "Plain text"
+        "plain": "Plain text",
+        "copyFailed": "Could not copy automatically. The citation is selected; copy it with your keyboard."
       },
       "metaTitle": "How the LGBTQ+ equality score is calculated",
       "metaDescription": "Every weight in the Queer Guide equality score, the 0–100 range, the tier cutoffs, its known limits, and how to cite it.",
@@ -5625,5 +5631,27 @@
   "i18n": {
     "selectLanguage": "Select language",
     "selectCurrency": "Select currency"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "Link to us",
+      "intro": "You are welcome to link to any page on Queer Guide. These are the ones most often cited. Copy a snippet into your page, or write your own link text.",
+      "badgeTitle": "Data badge",
+      "badgeBody": "For pages that use our rights data. The badge links to the rights-by-country page.",
+      "badgeSnippet": "Badge HTML",
+      "listingTitle": "If your organization is listed",
+      "listingBody": "Replace YOUR-LISTING with the last part of your listing’s address on Queer Guide.",
+      "listingSnippet": "Listing link HTML",
+      "attribution": "When you use our rights data, credit Queer Guide and the ILGA World Database, which maintains the underlying legal record.",
+      "copied": "Copied",
+      "copy": "Copy",
+      "copyFailed": "Could not copy automatically. The text is selected; copy it with your keyboard.",
+      "page": {
+        "rights": "LGBTQ+ rights by country (Queer Guide)",
+        "methodology": "How the Queer Guide equality score is calculated",
+        "help": "LGBTQ+ crisis lines by country (Queer Guide)",
+        "interactions": "Drug combination risks (Queer Guide)"
+      }
+    }
   }
 }

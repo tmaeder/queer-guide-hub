@@ -2268,7 +2268,7 @@
       "you": "Profil",
       "menuTitle": "Toutes les sections",
       "menuDescription": "Accédez à n’importe quelle section, changez de langue ou de thème.",
-      "hubDescription": "Tes messages, projets, personnes et favoris.",
+      "hubDescription": "Vos messages, projets, contacts et éléments enregistrés.",
       "trips": "Mes voyages",
       "settingsSection": "Affichage",
       "browseAll": "Parcourir toutes les sections",
@@ -2603,7 +2603,8 @@
       "pride": {
         "title": "Pride cette saison",
         "window": "4 prochains mois",
-        "empty": "Aucun événement Pride à venir."
+        "empty": "Aucun événement Pride à venir.",
+        "cta": "Voir l’événement"
       },
       "inspiration": {
         "villages": "Queer Villages",
@@ -4001,11 +4002,15 @@
       "title": "[FR] What are you into?",
       "blurb": "[FR] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[FR] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[FR] {{count}} selected"
+      "count": "[FR] {{count}} selected",
+      "signIn": "Connectez-vous pour choisir vos centres d’intérêt",
+      "limit": "{{count}} sur {{max}} choisis",
+      "atLimit": "La limite est atteinte. Retirez-en un pour en choisir un autre."
     },
     "friends": {
       "discover": "Trouver des personnes"
-    }
+    },
+    "safetyTitle": "Vérifiez la loi avant de vous rencontrer"
   },
   "hub": {
     "title": "Ton hub",
@@ -4572,7 +4577,8 @@
         "copied": "Copié",
         "copy": "Copier",
         "apa": "APA",
-        "plain": "Texte brut"
+        "plain": "Texte brut",
+        "copyFailed": "Copie automatique impossible. La citation est sélectionnée ; copiez-la avec le clavier."
       },
       "metaTitle": "Comment le score d'égalité LGBTQ+ est calculé",
       "metaDescription": "Chaque pondération du score d'égalité de Queer Guide, l'échelle 0–100, les seuils des niveaux, ses limites connues et comment le citer.",
@@ -5666,5 +5672,27 @@
   "i18n": {
     "selectLanguage": "Choisir la langue",
     "selectCurrency": "Choisir la devise"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "Faire un lien vers nous",
+      "intro": "Vous pouvez faire un lien vers n’importe quelle page de Queer Guide. Voici les plus souvent citées. Copiez un extrait dans votre page ou rédigez votre propre texte de lien.",
+      "badgeTitle": "Badge de données",
+      "badgeBody": "Pour les pages qui utilisent nos données sur les droits. Le badge renvoie vers la page des droits par pays.",
+      "badgeSnippet": "HTML du badge",
+      "listingTitle": "Si votre organisation est répertoriée",
+      "listingBody": "Remplacez YOUR-LISTING par la dernière partie de l’adresse de votre fiche sur Queer Guide.",
+      "listingSnippet": "HTML du lien vers la fiche",
+      "attribution": "Si vous utilisez nos données sur les droits, citez Queer Guide et l’ILGA World Database, qui tient à jour les informations juridiques sous-jacentes.",
+      "copied": "Copié",
+      "copy": "Copier",
+      "copyFailed": "Copie automatique impossible. Le texte est sélectionné ; copiez-le avec votre clavier.",
+      "page": {
+        "rights": "Droits LGBTQ+ par pays (Queer Guide)",
+        "methodology": "Comment le score d’égalité de Queer Guide est calculé",
+        "help": "Lignes d’écoute LGBTQ+ par pays (Queer Guide)",
+        "interactions": "Risques des combinaisons de drogues (Queer Guide)"
+      }
+    }
   }
 }

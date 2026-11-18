@@ -1,7 +1,7 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { SlidersHorizontal } from '@/components/icons';
+import { ArrowRight, ShieldCheck, SlidersHorizontal } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { useMeta } from '@/hooks/useMeta';
@@ -319,17 +319,32 @@ export default function People() {
         <div>
           {/* Counts only, never rows — safe to call anonymously. */}
           <GatedContentNotice cityId={cityId ?? undefined} />
-          <p className="mb-4 max-w-prose">
-            {t(
-              'people.safetyBody',
-              'Meeting strangers carries different risk in different countries. Check the legal position for where you are before you arrange to meet someone.',
-            )}
-          </p>
-          <Button variant="soft" asChild>
-            <LocalizedLink to="/tags/rights-by-country" className="no-underline">
-              {t('people.safetyCta', 'LGBTQ+ rights by country')}
-            </LocalizedLink>
-          </Button>
+          <div className="flex flex-col gap-6 rounded-container bg-card p-6 shadow-soft sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <span
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-muted"
+                aria-hidden
+              >
+                <ShieldCheck size={20} />
+              </span>
+              <div>
+                <h3 className="text-title font-bold">
+                  {t('people.safetyTitle', 'Check the law before you meet')}
+                </h3>
+                <p className="mt-1 max-w-prose text-sm text-muted-foreground">
+                  {t(
+                    'people.safetyBody',
+                    'Meeting strangers carries different risk in different countries. Check the legal position for where you are before you arrange to meet someone.',
+                  )}
+                </p>
+              </div>
+            </div>
+            <Button asChild className="shrink-0">
+              <LocalizedLink to="/tags/rights-by-country" className="no-underline">
+                {t('people.safetyCta', 'LGBTQ+ rights by country')} <ArrowRight aria-hidden />
+              </LocalizedLink>
+            </Button>
+          </div>
         </div>
       ),
     },

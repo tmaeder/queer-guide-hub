@@ -34,7 +34,7 @@ export function HoursTable({
   if (rows.length === 0) return null;
 
   return (
-    <div className={cn('border border-border-hairline', className)}>
+    <div className={cn('flex flex-col gap-0.5', className)}>
       {rows.map((r, i) => {
         const isToday = i === todayIndex;
         return (
@@ -42,12 +42,12 @@ export function HoursTable({
             key={r.day}
             aria-current={isToday ? 'date' : undefined}
             className={cn(
-              'grid grid-cols-[80px_1fr_auto] items-center gap-4 border-b border-border-hairline px-4 py-2 last:border-b-0',
-              isToday && 'bg-foreground text-background',
+              'grid grid-cols-[6rem_1fr_auto] items-baseline gap-4 rounded-element px-4 py-2',
+              isToday ? 'bg-foreground font-bold text-background' : undefined,
             )}
           >
-            <span className="text-13 font-bold">{r.day}</span>
-            <span className="text-13 tabular-nums">{r.open}</span>
+            <span className="text-15 font-bold">{r.day}</span>
+            <span className="text-15 tabular-nums">{r.open}</span>
             {r.note && (
               <span className="text-2xs font-bold uppercase tracking-label">{r.note}</span>
             )}

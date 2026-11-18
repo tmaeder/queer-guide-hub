@@ -2274,7 +2274,7 @@
       "you": "حسابي",
       "menuTitle": "كل الأقسام",
       "menuDescription": "انتقل إلى أي قسم، وبدّل اللغة أو المظهر.",
-      "hubDescription": "رسائلك وخططك والأشخاص والعناصر المحفوظة.",
+      "hubDescription": "رسائلك وخططك وأشخاصك وعناصرك المحفوظة.",
       "trips": "رحلاتي",
       "settingsSection": "العرض",
       "browseAll": "تصفّح كل الأقسام",
@@ -2607,7 +2607,8 @@
       "pride": {
         "title": "فعاليات الفخر هذا الموسم",
         "window": "الأشهر الأربعة القادمة",
-        "empty": "لا توجد فعاليات فخر قادمة."
+        "empty": "لا توجد فعاليات فخر قادمة.",
+        "cta": "عرض الفعالية"
       },
       "inspiration": {
         "villages": "قرى الكوير",
@@ -4005,11 +4006,15 @@
       "title": "[AR] What are you into?",
       "blurb": "[AR] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[AR] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[AR] {{count}} selected"
+      "count": "[AR] {{count}} selected",
+      "signIn": "سجّل الدخول لاختيار الاهتمامات",
+      "limit": "تم اختيار {{count}} من {{max}}",
+      "atLimit": "لقد وصلت إلى الحد الأقصى. أزل أحدها لاختيار غيره."
     },
     "friends": {
       "discover": "ابحث عن أشخاص"
-    }
+    },
+    "safetyTitle": "تحقّق من القانون قبل اللقاء"
   },
   "hub": {
     "title": "مركزك",
@@ -4576,7 +4581,8 @@
         "copied": "تم النسخ",
         "copy": "نسخ",
         "apa": "APA",
-        "plain": "نص عادي"
+        "plain": "نص عادي",
+        "copyFailed": "تعذّر النسخ تلقائيًا. تم تحديد الاقتباس؛ انسخه باستخدام لوحة المفاتيح."
       },
       "metaTitle": "كيف تُحسب درجة المساواة لمجتمع الميم-عين",
       "metaDescription": "كل وزن في درجة المساواة من Queer Guide، والنطاق 0–100، وحدود الفئات، وحدودها المعروفة، وطريقة الاستشهاد بها.",
@@ -5670,5 +5676,27 @@
   "i18n": {
     "selectLanguage": "اختر اللغة",
     "selectCurrency": "اختر العملة"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "ضع رابطًا إلينا",
+      "intro": "يمكنك وضع رابط إلى أي صفحة على Queer Guide. هذه هي الصفحات الأكثر استشهادًا بها. انسخ مقتطفًا إلى صفحتك، أو اكتب نص الرابط بنفسك.",
+      "badgeTitle": "شارة البيانات",
+      "badgeBody": "للصفحات التي تستخدم بياناتنا عن الحقوق. تقود الشارة إلى صفحة الحقوق حسب البلد.",
+      "badgeSnippet": "HTML للشارة",
+      "listingTitle": "إذا كانت منظمتك مدرجة",
+      "listingBody": "استبدل YOUR-LISTING بالجزء الأخير من عنوان صفحتك على Queer Guide.",
+      "listingSnippet": "HTML لرابط الإدراج",
+      "attribution": "عند استخدام بياناتنا عن الحقوق، اذكر Queer Guide وILGA World Database التي تحافظ على السجل القانوني الأساسي.",
+      "copied": "تم النسخ",
+      "copy": "نسخ",
+      "copyFailed": "تعذّر النسخ تلقائيًا. النص محدد؛ انسخه باستخدام لوحة المفاتيح.",
+      "page": {
+        "rights": "حقوق مجتمع الميم+ حسب البلد (Queer Guide)",
+        "methodology": "كيف تُحسب درجة المساواة في Queer Guide",
+        "help": "خطوط الأزمات لمجتمع الميم+ حسب البلد (Queer Guide)",
+        "interactions": "مخاطر الجمع بين المواد المخدرة (Queer Guide)"
+      }
+    }
   }
 }

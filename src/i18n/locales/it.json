@@ -2264,7 +2264,7 @@
       "you": "Profilo",
       "menuTitle": "Tutte le sezioni",
       "menuDescription": "Vai a qualsiasi sezione, cambia lingua o tema.",
-      "hubDescription": "I tuoi messaggi, piani, persone e salvati.",
+      "hubDescription": "I tuoi messaggi, programmi, contatti ed elementi salvati.",
       "trips": "I miei viaggi",
       "settingsSection": "Visualizzazione",
       "browseAll": "Sfoglia tutte le sezioni",
@@ -2599,7 +2599,8 @@
       "pride": {
         "title": "Pride questa stagione",
         "window": "Prossimi 4 mesi",
-        "empty": "Nessun evento Pride in arrivo."
+        "empty": "Nessun evento Pride in arrivo.",
+        "cta": "Vedi evento"
       },
       "inspiration": {
         "villages": "Queer Villages",
@@ -3997,11 +3998,15 @@
       "title": "[IT] What are you into?",
       "blurb": "[IT] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[IT] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[IT] {{count}} selected"
+      "count": "[IT] {{count}} selected",
+      "signIn": "Accedi per scegliere gli interessi",
+      "limit": "{{count}} di {{max}} selezionati",
+      "atLimit": "Hai raggiunto il limite. Rimuovine uno per sceglierne un altro."
     },
     "friends": {
       "discover": "Trova persone"
-    }
+    },
+    "safetyTitle": "Controlla la legge prima di incontrarvi"
   },
   "hub": {
     "title": "Il tuo hub",
@@ -4568,7 +4573,8 @@
         "copied": "Copiato",
         "copy": "Copia",
         "apa": "APA",
-        "plain": "Testo semplice"
+        "plain": "Testo semplice",
+        "copyFailed": "Impossibile copiare automaticamente. La citazione è selezionata; copiala con la tastiera."
       },
       "metaTitle": "Come viene calcolato il punteggio di uguaglianza LGBTQ+",
       "metaDescription": "Ogni peso del punteggio di uguaglianza di Queer Guide, l'intervallo 0–100, le soglie delle fasce, i limiti noti e come citarlo.",
@@ -5662,5 +5668,27 @@
   "i18n": {
     "selectLanguage": "Seleziona la lingua",
     "selectCurrency": "Seleziona la valuta"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "Collegati a noi",
+      "intro": "Puoi inserire un link a qualsiasi pagina di Queer Guide. Queste sono le più citate. Copia uno snippet nella tua pagina o scrivi il tuo testo del link.",
+      "badgeTitle": "Badge dei dati",
+      "badgeBody": "Per le pagine che usano i nostri dati sui diritti. Il badge rimanda alla pagina dei diritti per paese.",
+      "badgeSnippet": "HTML del badge",
+      "listingTitle": "Se la tua organizzazione è presente",
+      "listingBody": "Sostituisci YOUR-LISTING con l’ultima parte dell’indirizzo della tua scheda su Queer Guide.",
+      "listingSnippet": "HTML del link alla scheda",
+      "attribution": "Se usi i nostri dati sui diritti, cita Queer Guide e l’ILGA World Database, che cura i dati giuridici di base.",
+      "copied": "Copiato",
+      "copy": "Copia",
+      "copyFailed": "Impossibile copiare automaticamente. Il testo è selezionato; copialo con la tastiera.",
+      "page": {
+        "rights": "Diritti LGBTQ+ per paese (Queer Guide)",
+        "methodology": "Come viene calcolato il punteggio di uguaglianza di Queer Guide",
+        "help": "Linee di aiuto LGBTQ+ per paese (Queer Guide)",
+        "interactions": "Rischi delle combinazioni di droghe (Queer Guide)"
+      }
+    }
   }
 }

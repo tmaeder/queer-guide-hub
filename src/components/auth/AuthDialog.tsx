@@ -107,14 +107,14 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
               the heart, `gradient-text` (the wordmark "carries no colour", and
               gradients are banned outright), and `animate-pulse` on the mark of
               a sign-in surface. */}
-          <div className="mb-4 flex items-center justify-center">
+          <div className="mb-6 flex items-center justify-center">
             <Wordmark className="text-title text-foreground" />
           </div>
-          <DialogTitle>Welcome Back</DialogTitle>
-          <p className="text-sm text-muted-foreground mt-1">Sign in to continue</p>
+          <DialogTitle className="text-center text-headline">Welcome back</DialogTitle>
+          <p className="mt-1 text-center text-sm text-muted-foreground">Sign in to continue</p>
         </DialogHeader>
 
-        <div className="px-6 pb-6">
+        <div>
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
@@ -138,12 +138,14 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    className="pr-12"
                     required
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
+                    className="absolute inset-y-0 right-0 h-full min-h-0 rounded-l-none px-4 text-muted-foreground hover:bg-transparent hover:text-foreground"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={loading}
@@ -168,22 +170,17 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
             </Button>
           </form>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center"></div>
-              <div className="relative flex justify-center">
-                <span className="text-xs bg-background px-4 text-muted-foreground font-medium uppercase">
-                  New to Queer Guide?
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-4 text-center">
-              <Button variant="outline" onClick={goToSignUp} className="w-full">
-                Create account
-              </Button>
-            </div>
+          <div className="mt-6 flex items-center gap-4" aria-hidden>
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+              New to Queer Guide?
+            </span>
+            <span className="h-px flex-1 bg-border" />
           </div>
+          <p className="sr-only">New to Queer Guide?</p>
+          <Button variant="outline" onClick={goToSignUp} className="mt-4 w-full">
+            Create account
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

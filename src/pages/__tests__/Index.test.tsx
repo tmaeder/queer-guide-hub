@@ -6,6 +6,8 @@ import { renderWithProviders } from '@/test/test-utils';
 vi.mock('@/hooks/usePlaces', () => ({ useOptimizedCity: () => ({ city: null }) }));
 vi.mock('@/hooks/useHomeRegion', () => ({ useHomeRegion: () => ({ loading: false }) }));
 vi.mock('@/hooks/useEvents', () => ({ useEventsQuery: () => ({ events: [] }) }));
+vi.mock('@/hooks/useCityPhotos', () => ({ useCityPhotos: () => ({ data: [] }) }));
+vi.mock('@/components/home/RegionChip', () => ({ RegionChip: () => null }));
 vi.mock('@/components/home/subway/HeroSearch', () => ({ HeroSearch: () => null }));
 vi.mock('@/components/home/HomeContent', () => ({
   default: () => <section data-testid="home-content">Content bands</section>,

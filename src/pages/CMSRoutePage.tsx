@@ -14,6 +14,7 @@
  */
 
 import { useMemo } from 'react';
+import { LinkToUs } from '@/components/press/LinkToUs';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -292,6 +293,10 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
       {sanitizedHtml && (
         <div className="qg-cms-body" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
       )}
+
+      {/* Coded, not CMS: the snippets must name routes that exist, which a
+          test checks against the route manifest. */}
+      {slug === 'press' && <LinkToUs />}
 
       {childPages.length > 0 && (
         <div className="mt-12">

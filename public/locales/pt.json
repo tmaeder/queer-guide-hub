@@ -2599,7 +2599,8 @@
       "pride": {
         "title": "Pride nesta temporada",
         "window": "Próximos 4 meses",
-        "empty": "Sem eventos Pride próximos."
+        "empty": "Sem eventos Pride próximos.",
+        "cta": "Ver evento"
       },
       "inspiration": {
         "villages": "Queer Villages",
@@ -3997,11 +3998,15 @@
       "title": "[PT] What are you into?",
       "blurb": "[PT] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[PT] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[PT] {{count}} selected"
+      "count": "[PT] {{count}} selected",
+      "signIn": "Entre para escolher interesses",
+      "limit": "{{count}} de {{max}} selecionados",
+      "atLimit": "Você atingiu o limite. Remova um para escolher outro."
     },
     "friends": {
       "discover": "Encontrar pessoas"
-    }
+    },
+    "safetyTitle": "Confira a legislação antes de se encontrar"
   },
   "hub": {
     "title": "Seu hub",
@@ -4568,7 +4573,8 @@
         "copied": "Copiado",
         "copy": "Copiar",
         "apa": "APA",
-        "plain": "Texto simples"
+        "plain": "Texto simples",
+        "copyFailed": "Não foi possível copiar automaticamente. A citação está selecionada; copie-a com o teclado."
       },
       "metaTitle": "Como é calculada a pontuação de igualdade LGBTQ+",
       "metaDescription": "Cada peso da pontuação de igualdade do Queer Guide, o intervalo 0–100, os limiares dos níveis, os limites conhecidos e como citá-la.",
@@ -5662,5 +5668,27 @@
   "i18n": {
     "selectLanguage": "Selecionar idioma",
     "selectCurrency": "Selecionar moeda"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "Crie um link para nós",
+      "intro": "Você pode criar um link para qualquer página do Queer Guide. Estas são as mais citadas. Copie um trecho para a sua página ou escreva o seu próprio texto de link.",
+      "badgeTitle": "Selo de dados",
+      "badgeBody": "Para páginas que usam nossos dados sobre direitos. O selo leva à página de direitos por país.",
+      "badgeSnippet": "HTML do selo",
+      "listingTitle": "Se a sua organização está listada",
+      "listingBody": "Substitua YOUR-LISTING pela última parte do endereço da sua página no Queer Guide.",
+      "listingSnippet": "HTML do link da listagem",
+      "attribution": "Ao usar nossos dados sobre direitos, credite o Queer Guide e a ILGA World Database, que mantém o registro jurídico de base.",
+      "copied": "Copiado",
+      "copy": "Copiar",
+      "copyFailed": "Não foi possível copiar automaticamente. O texto está selecionado; copie-o pelo teclado.",
+      "page": {
+        "rights": "Direitos LGBTQ+ por país (Queer Guide)",
+        "methodology": "Como a pontuação de igualdade do Queer Guide é calculada",
+        "help": "Linhas de apoio em crise LGBTQ+ por país (Queer Guide)",
+        "interactions": "Riscos de combinar drogas (Queer Guide)"
+      }
+    }
   }
 }

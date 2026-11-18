@@ -2597,7 +2597,8 @@
       "pride": {
         "title": "本季骄傲活动",
         "window": "未来 4 个月",
-        "empty": "没有即将到来的骄傲活动。"
+        "empty": "没有即将到来的骄傲活动。",
+        "cta": "查看活动"
       },
       "inspiration": {
         "villages": "酷儿村",
@@ -3995,11 +3996,15 @@
       "title": "[ZH] What are you into?",
       "blurb": "[ZH] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[ZH] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
-      "count": "[ZH] {{count}} selected"
+      "count": "[ZH] {{count}} selected",
+      "signIn": "登录以选择兴趣",
+      "limit": "已选择 {{count}} / {{max}} 项",
+      "atLimit": "已达到上限。取消一项后即可选择其他兴趣。"
     },
     "friends": {
       "discover": "寻找用户"
-    }
+    },
+    "safetyTitle": "见面前先了解法律"
   },
   "hub": {
     "title": "我的中心",
@@ -4566,7 +4571,8 @@
         "copied": "已复制",
         "copy": "复制",
         "apa": "APA",
-        "plain": "纯文本"
+        "plain": "纯文本",
+        "copyFailed": "无法自动复制。引用文本已选中，请用键盘复制。"
       },
       "metaTitle": "LGBTQ+平等分数如何计算",
       "metaDescription": "Queer Guide平等分数的每项权重、0–100的范围、等级分界线、已知局限及引用方式。",
@@ -5660,5 +5666,27 @@
   "i18n": {
     "selectLanguage": "选择语言",
     "selectCurrency": "选择货币"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "链接到我们",
+      "intro": "欢迎链接到 Queer Guide 的任何页面。以下是最常被引用的页面。将代码片段复制到你的页面，或自行撰写链接文字。",
+      "badgeTitle": "数据徽章",
+      "badgeBody": "适用于使用我们权利数据的页面。徽章链接到各国权利页面。",
+      "badgeSnippet": "徽章 HTML",
+      "listingTitle": "如果你的组织已被收录",
+      "listingBody": "将 YOUR-LISTING 替换为你在 Queer Guide 上的条目地址的最后一部分。",
+      "listingSnippet": "条目链接 HTML",
+      "attribution": "使用我们的权利数据时，请注明 Queer Guide 和维护基础法律记录的 ILGA World Database。",
+      "copied": "已复制",
+      "copy": "复制",
+      "copyFailed": "无法自动复制。文字已选中，请用键盘复制。",
+      "page": {
+        "rights": "各国 LGBTQ+ 权利（Queer Guide）",
+        "methodology": "Queer Guide 平等评分的计算方法",
+        "help": "各国 LGBTQ+ 危机热线（Queer Guide）",
+        "interactions": "药物混用风险（Queer Guide）"
+      }
+    }
   }
 }

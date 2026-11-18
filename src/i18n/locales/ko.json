@@ -2264,7 +2264,7 @@
       "you": "내 정보",
       "menuTitle": "전체 섹션",
       "menuDescription": "원하는 섹션으로 이동하고 언어나 테마를 변경하세요.",
-      "hubDescription": "메시지, 계획, 사람, 저장한 항목.",
+      "hubDescription": "메시지, 계획, 사람들, 저장한 항목.",
       "trips": "내 여행",
       "settingsSection": "디스플레이",
       "browseAll": "모든 섹션 보기",
@@ -2597,7 +2597,8 @@
       "pride": {
         "title": "이번 시즌의 프라이드",
         "window": "향후 4개월",
-        "empty": "예정된 프라이드 이벤트가 없어요."
+        "empty": "예정된 프라이드 이벤트가 없어요.",
+        "cta": "이벤트 보기"
       },
       "inspiration": {
         "villages": "퀴어 빌리지",
@@ -3995,11 +3996,15 @@
       "title": "무엇에 관심이 있나요?",
       "blurb": "몇 개 골라 보세요. 고른 관심사가 추천을 결정하고, 다른 멤버가 공통점을 찾아 서로를 발견하는 통로가 돼요.",
       "blurbSignedOut": "로그인하고 몇 개 골라 보세요. 고른 관심사가 추천을 결정하고, 다른 멤버가 공통점을 찾아 서로를 발견하는 통로가 돼요.",
-      "count": "{{count}} 개 선택됨"
+      "count": "{{count}} 개 선택됨",
+      "signIn": "로그인하여 관심사 선택",
+      "limit": "{{max}}개 중 {{count}}개 선택",
+      "atLimit": "선택 한도에 도달했습니다. 다른 항목을 선택하려면 하나를 해제하세요."
     },
     "friends": {
       "discover": "사람 찾기"
-    }
+    },
+    "safetyTitle": "만나기 전에 법률 확인"
   },
   "hub": {
     "title": "내 허브",
@@ -4566,7 +4571,8 @@
         "copied": "복사됨",
         "copy": "복사",
         "apa": "APA",
-        "plain": "일반 텍스트"
+        "plain": "일반 텍스트",
+        "copyFailed": "자동으로 복사하지 못했습니다. 인용문이 선택되어 있으니 키보드로 복사하세요."
       },
       "metaTitle": "LGBTQ+ 평등 점수 산출 방법",
       "metaDescription": "Queer Guide 평등 점수의 모든 가중치, 0–100 범위, 등급 기준점, 알려진 한계, 인용 방법.",
@@ -5660,5 +5666,27 @@
   "i18n": {
     "selectLanguage": "언어 선택",
     "selectCurrency": "통화 선택"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "링크하기",
+      "intro": "Queer Guide의 어떤 페이지에도 링크하실 수 있습니다. 가장 자주 인용되는 페이지는 다음과 같습니다. 스니펫을 복사해 페이지에 넣거나 링크 텍스트를 직접 작성하세요.",
+      "badgeTitle": "데이터 배지",
+      "badgeBody": "권리 데이터를 사용하는 페이지용입니다. 배지는 국가별 권리 페이지로 연결됩니다.",
+      "badgeSnippet": "배지 HTML",
+      "listingTitle": "단체가 등록되어 있다면",
+      "listingBody": "YOUR-LISTING을 Queer Guide에 있는 등록 페이지 주소의 마지막 부분으로 바꾸세요.",
+      "listingSnippet": "등록 페이지 링크 HTML",
+      "attribution": "권리 데이터를 사용할 때는 Queer Guide와 기반 법률 기록을 관리하는 ILGA World Database를 출처로 표기하세요.",
+      "copied": "복사됨",
+      "copy": "복사",
+      "copyFailed": "자동으로 복사하지 못했습니다. 텍스트가 선택되어 있으니 키보드로 복사하세요.",
+      "page": {
+        "rights": "국가별 LGBTQ+ 권리 (Queer Guide)",
+        "methodology": "Queer Guide 평등 점수 산정 방법",
+        "help": "국가별 LGBTQ+ 위기 상담 전화 (Queer Guide)",
+        "interactions": "약물 병용 위험 (Queer Guide)"
+      }
+    }
   }
 }
