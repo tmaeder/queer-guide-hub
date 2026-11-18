@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 interface GatedCount {
@@ -22,6 +23,7 @@ interface GatedCount {
 interface GatedContentNoticeProps {
   /** Count gated entities in this city (city detail pages). */
   cityId?: string;
+  compact?: boolean;
   /** Count gated entities in this country (country detail pages). */
   countryId?: string;
 }
@@ -55,7 +57,11 @@ interface GatedContentNoticeProps {
  * (src/components/venues/filters/constants.ts) hides the filter chip rather
  * than offering it and returning nothing.
  */
-export function GatedContentNotice({ cityId, countryId }: GatedContentNoticeProps) {
+export function GatedContentNotice({
+  cityId,
+  countryId,
+  compact = false,
+}: GatedContentNoticeProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
 
@@ -87,34 +93,57 @@ export function GatedContentNotice({ cityId, countryId }: GatedContentNoticeProp
    */
   const highRisk = data?.high_risk !== false;
 
+  const brief = compact && !highRisk;
+  const explanation = (
+    <>
+      <p className="text-15 text-muted-foreground">
+        {highRisk
+          ? t('safety.gated.body', {
+              defaultValue:
+                'This destination has heightened legal risk for LGBTQ+ people, so venues, events and organizations are not shown publicly. Sign in to view them.',
+            })
+          : t('safety.gated.bodySensitive', {
+              defaultValue:
+                'Some places here are sensitive locations we only show to signed-in members. Sign in to view them.',
+            })}
+      </p>
+      <p className="text-13 text-muted-foreground">
+        {t('safety.gated.privacy', {
+          defaultValue:
+            'An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view.',
+        })}
+      </p>
+    </>
+  );
+
   return (
-    <div className="flex flex-col gap-4 bg-card p-6 sm:flex-row sm:items-center sm:justify-between rounded-container shadow-soft">
-      <div className="flex items-start gap-4">
+    <div
+      className={cn(
+        'flex gap-4 rounded-container',
+        brief
+          ? 'flex-wrap items-center justify-between bg-surface-container p-4'
+          : 'flex-col bg-card p-6 sm:flex-row sm:items-center sm:justify-between shadow-soft',
+      )}
+    >
+      <div className={cn('flex items-start gap-4', brief && 'min-w-0 flex-1')}>
         <Lock className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <div className="space-y-1">
-          <p className="text-body-lg font-medium">
+          <p className={brief ? 'text-13 font-medium' : 'text-body-lg font-medium'}>
             {t('safety.gated.title', {
               count: total,
               defaultValue: '{{count}} places here are only shown to signed-in members',
             })}
           </p>
-          <p className="text-15 text-muted-foreground">
-            {highRisk
-              ? t('safety.gated.body', {
-                  defaultValue:
-                    'This destination has heightened legal risk for LGBTQ+ people, so venues, events and organizations are not shown publicly. Sign in to view them.',
-                })
-              : t('safety.gated.bodySensitive', {
-                  defaultValue:
-                    'Some places here are sensitive locations we only show to signed-in members. Sign in to view them.',
-                })}
-          </p>
-          <p className="text-13 text-muted-foreground">
-            {t('safety.gated.privacy', {
-              defaultValue:
-                'An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view.',
-            })}
-          </p>
+          {brief ? (
+            <details>
+              <summary className="w-fit cursor-pointer py-1 text-13 font-semibold underline-offset-4 hover:underline">
+                {t('common.showMore', 'Show more')}
+              </summary>
+              <div className="mt-2 space-y-2">{explanation}</div>
+            </details>
+          ) : (
+            explanation
+          )}
         </div>
       </div>
       {/* asChild, not a Link wrapping a Button — that nests a <button>
