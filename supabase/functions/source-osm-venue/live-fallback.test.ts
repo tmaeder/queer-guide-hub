@@ -35,3 +35,22 @@ Deno.test('discovery rejects stale, malformed and truncated snapshots', async ()
     await assertRejects(() => run('planet-260921.osm.pbf', [{ ...binding, node: { type: 'uri', value: 'https://foreign.example/node/7' } }]), Error, 'Malformed')
   } finally { Date.now = now }
 })
+
+Deno.test('Cape Town uses time-limited first-party relevance evidence without inventing OSM tags', async () => {
+  const now = Date.now
+  Date.now = () => Date.parse('2026-11-18T06:00:00Z')
+  try {
+    const capeTown = { name: 'Cape Town', bbox: [-34.358, 18.295, -33.743, 18.945] as [number, number, number, number] }
+    const live = { type: 'node', id: 4802447522, lat: -33.9162396, lon: 18.417165, tags: { name: 'Cafe Manhattan', amenity: 'restaurant', 'addr:housenumber': '74', 'addr:street': 'Waterkant Street' } }
+    const fetcher = (() => Promise.resolve(Response.json({ elements: [live] }))) as typeof fetch
+    const rows = await refreshCity({ snapshot: '2026-09-21', candidates: [] }, capeTown, Date.now() + 1000, fetcher)
+    assertEquals(rows?.[0].tags, live.tags)
+    assertEquals((rows?.[0].relevance_evidence as Record<string, unknown>).source_url, 'https://cafemanhattan.co.za/')
+    assertEquals((rows?.[0].import_provenance as Record<string, unknown>).coverage, 'verified_seed_candidates')
+    for (const changed of [{ ...live, lat: 0 }, { ...live, tags: { ...live.tags, name: 'Different business' } }, { ...live, tags: { ...live.tags, 'addr:housenumber': '75' } }]) {
+      assertEquals(await refreshCity({ snapshot: '2026-09-21', candidates: [] }, capeTown, Date.now() + 1000, (() => Promise.resolve(Response.json({ elements: [changed] }))) as typeof fetch), null)
+    }
+    Date.now = () => Date.parse('2027-03-01T00:00:00Z')
+    assertEquals(await refreshCity({ snapshot: '2026-09-21', candidates: [] }, capeTown, Date.now() + 1000, (() => { throw Error('expired evidence must not fetch') }) as typeof fetch), null)
+  } finally { Date.now = now }
+})

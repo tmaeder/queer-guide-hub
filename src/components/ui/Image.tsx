@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { LucideIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
-import { imageReferrerPolicy } from '@/utils/imageHost';
+import { imageCrossOrigin, imageReferrerPolicy } from '@/utils/imageHost';
 import { getFallbackImage, type FallbackTheme } from '@/utils/fallbackImages';
 
 /**
@@ -291,6 +291,7 @@ export const Image = ({
   const photo = (
     <img
       ref={imgRef}
+      crossOrigin={effectiveSrc ? imageCrossOrigin(effectiveSrc) : undefined}
       src={effectiveSrc ?? undefined}
       srcSet={srcSet}
       sizes={srcSet ? (sizes ?? DEFAULT_SIZES[imageRole]) : undefined}
@@ -341,9 +342,9 @@ export const Image = ({
           </div>
         )
       ) : showingFallback ? (
-        fallbackArtwork ?? (
+        (fallbackArtwork ?? (
           <StationPlate theme={fallbackEntityType} fallbackKey={fallbackKey} icon={fallbackGlyph} />
-        )
+        ))
       ) : (
         photo
       )}

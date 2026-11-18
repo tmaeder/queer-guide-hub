@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isTrustedSrc, isMerchantSrc, imageReferrerPolicy } from '../imageHost';
+import { isTrustedSrc, isMerchantSrc, imageReferrerPolicy, imageCrossOrigin } from '../imageHost';
 
 describe('isTrustedSrc', () => {
   it('treats internal + supabase hosts as trusted', () => {
@@ -53,5 +53,16 @@ describe('imageReferrerPolicy', () => {
 
   it('strips the referer for publisher CDNs that 401 on a referer', () => {
     expect(imageReferrerPolicy('https://i.guim.co.uk/x.jpg')).toBe('no-referrer');
+  });
+});
+
+describe('credentialless Wikimedia images', () => {
+  it('omits Wikimedia cookies while keeping ordinary and merchant image behavior', () => {
+    expect(imageCrossOrigin('https://upload.wikimedia.org/wikipedia/commons/image.jpg')).toBe(
+      'anonymous',
+    );
+    expect(imageCrossOrigin('https://upload.wikimedia.org.evil.test/image.jpg')).toBeUndefined();
+    expect(imageCrossOrigin('https://misterb.com/cdn/image.jpg')).toBeUndefined();
+    expect(imageCrossOrigin('/local.webp')).toBeUndefined();
   });
 });
