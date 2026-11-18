@@ -6,6 +6,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null, loading: false }) }));
 vi.mock('@/hooks/useEditorsPick', () => ({ useEditorsPick: () => null }));
 vi.mock('@/hooks/useNewsStories', () => ({ useNewsStories: () => ({ stories: [], heroes: [] }) }));
 vi.mock('@/hooks/useEntityImageAssets', () => ({
