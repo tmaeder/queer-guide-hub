@@ -16,6 +16,10 @@
 /rights  /tags/rights-by-country  301
 /rights/*  /tags/rights-by-country/:splat  301
 
+# Short, citable URLs for the equality-score method.
+/methodology  /tags/rights-by-country/sources#points  301
+/equality-score  /tags/rights-by-country/sources#points  301
+
 # Community, connection, and personal work now share the unified Hub. Dynamic
 # detail routes are preserved by the locale-aware client router.
 /community          /hub/feed        301

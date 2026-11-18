@@ -849,6 +849,15 @@ export const AppRoutes = () => {
                     path="rights/trans"
                     element={<LocalizedRedirect to="/tags/rights-by-country/trans" />}
                   />
+                  {/* Short citable URLs for the equality-score method (also 301 in _redirects). */}
+                  <Route
+                    path="methodology"
+                    element={<LocalizedRedirect to="/tags/rights-by-country/sources#points" />}
+                  />
+                  <Route
+                    path="equality-score"
+                    element={<LocalizedRedirect to="/tags/rights-by-country/sources#points" />}
+                  />
                   {/* /support was the org-directory slice of /help wrapped in
                     intent chrome: same hook, same `role: 'support'` filter, and its
                     own crisis band was just a link to /help. Its two unique pieces

@@ -12,6 +12,51 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>;
 
+/**
+ * Human-readable statement of the formula below, published on
+ * /tags/rights-by-country/sources#points. NOT read by calculateEqualityScore
+ * (the nightly cron's formula stays untouched); equalityScoreRules.test.ts
+ * fails if a row here stops matching what the function actually does.
+ */
+export const EQUALITY_SCORE_BASE = 50;
+
+export interface EqualityScoreRule {
+  id: string;
+  /** What ILGA records. */
+  factor: string;
+  /** Signed points added to the base. */
+  points: number;
+}
+
+export const EQUALITY_SCORE_RULES: readonly EqualityScoreRule[] = [
+  { id: 'legal', factor: 'Same-sex sexual acts are legal', points: 15 },
+  { id: 'criminalised', factor: 'Same-sex sexual acts are criminalised', points: -25 },
+  { id: 'death', factor: '…and the penalty is death (in addition)', points: -15 },
+  { id: 'life', factor: '…or the penalty runs to life imprisonment (in addition)', points: -10 },
+  { id: 'eight', factor: '…or the penalty is up to 8 years (in addition)', points: -5 },
+  { id: 'marriage', factor: 'Same-sex marriage', points: 10 },
+  { id: 'civil-union', factor: 'Civil union only (no marriage)', points: 5 },
+  {
+    id: 'protection-so',
+    factor:
+      'Protection by sexual orientation, per area: constitution, employment, housing, education, health, goods and services, bullying (7 areas)',
+    points: 2,
+  },
+  { id: 'protection-gi', factor: 'Protection by gender identity, per area (same 7 areas)', points: 1 },
+  { id: 'hate-crime', factor: 'Hate-crime law covering sexual orientation', points: 3 },
+  { id: 'incitement', factor: 'Incitement to hatred prohibited (sexual orientation)', points: 2 },
+  { id: 'expression-free', factor: 'No known legal barriers to freedom of expression', points: 3 },
+  { id: 'expression-restricted', factor: 'Legal restrictions on freedom of expression', points: -5 },
+  { id: 'association-free', factor: 'No known legal barriers to freedom of association', points: 2 },
+  { id: 'association-restricted', factor: 'Explicit restrictions on freedom of association', points: -5 },
+  { id: 'adoption-joint', factor: 'Joint adoption by same-sex couples', points: 3 },
+  { id: 'adoption-second-parent', factor: 'Second-parent adoption only', points: 2 },
+  { id: 'conversion-ban', factor: 'Conversion practices banned', points: 3 },
+  { id: 'self-id', factor: 'Legal gender recognition by self-identification', points: 3 },
+  { id: 'marker-change', factor: 'Gender marker change possible (not self-ID)', points: 1 },
+  { id: 'intersex', factor: 'Protection of intersex bodily integrity', points: 2 },
+];
+
 export function calculateEqualityScore(row: Row): number {
   let score = 50; // Start from middle
 
