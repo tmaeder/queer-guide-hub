@@ -1954,7 +1954,8 @@
       "cityGuides": "都市ガイド",
       "recent": "最近見た項目",
       "more": "さらに探す",
-      "refreshFailed": "結果を更新できませんでした。"
+      "refreshFailed": "結果を更新できませんでした。",
+      "destinations": "都市・国・地区"
     },
     "heroLine1": "クィアな場所、",
     "heroLine2": "イベント、人々。",
@@ -3217,8 +3218,6 @@
         "sisterCities": "[JA] Sister cities"
       },
       "travel": {
-        "lines": "[JA] Lines",
-        "networkCaption": "[JA] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
         "gettingAround": "[JA] Getting around",
         "noDealsTitle": "[JA] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
         "noDealsBody": "[JA] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.",

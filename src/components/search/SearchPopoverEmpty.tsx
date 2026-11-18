@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type SearchHit } from '@/lib/searchClient';
-import { DESTINATIONS, INTENT_NAV, NAV_CLUSTERS } from '@/config/navigation';
+import { DESTINATIONS, INTENT_NAV, INTENT_TRACK, NAV_CLUSTERS } from '@/config/navigation';
+import { cn } from '@/lib/utils';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 
 export interface SearchPopoverEmptyProps {
@@ -30,6 +31,15 @@ function Eyebrow({ children }: { children: ReactNode }) {
  *  the chip's own padding and the row turns into a stack of dominoes. */
 const CHIP =
   'inline-flex cursor-pointer items-center gap-2 bg-transparent px-4 py-1.5 text-13 font-bold text-foreground transition-colors hover:bg-foreground hover:text-background';
+
+// Intent chips hover into their own track (INTENT_TRACK, same as the nav sheet).
+// Ink text on every fill: paper-on-pink 3.43:1, paper-on-blue 2.3:1.
+const INTENT_HOVER = {
+  pink: 'hover:bg-track-pink hover:text-track-ring',
+  blue: 'hover:bg-track-blue hover:text-track-ring',
+  green: 'hover:bg-track-green hover:text-track-ring',
+  yellow: 'hover:bg-track-yellow hover:text-track-ring',
+} as const;
 
 export function SearchPopoverEmpty({
   trending,
@@ -91,7 +101,7 @@ export function SearchPopoverEmpty({
             key={intent.id}
             type="button"
             onClick={() => onBrowse(intent.to)}
-            className={CHIP}
+            className={cn(CHIP, INTENT_HOVER[INTENT_TRACK[intent.id] ?? 'pink'])}
             title={t(intent.subtitleKey, intent.subtitleFallback)}
           >
             <intent.icon size={20} />

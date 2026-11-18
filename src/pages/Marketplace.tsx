@@ -11,7 +11,6 @@ import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceControlBar } from '@/components/marketplace/MarketplaceControlBar';
 import { MarketplaceLineIndex } from '@/components/marketplace/MarketplaceLineIndex';
 import { VerifiedOwnedBrands } from '@/components/marketplace/VerifiedOwnedBrands';
-import { OccasionChips } from '@/components/marketplace/OccasionChips';
 import { MarketplaceHeroCover } from '@/components/marketplace/MarketplaceHeroCover';
 import { BrandSpotlight } from '@/components/marketplace/BrandSpotlight';
 import { GuidesRail } from '@/components/guides/GuidesRail';
@@ -413,11 +412,7 @@ const Marketplace = () => {
         <MarketplaceMasthead
           title={t('header.intents.shop.label', 'Shop')}
           lede={t('header.intents.shop.subtitle', 'Books, apparel, art and gifts')}
-          count={
-            loading && total === 0
-              ? 'Counting…'
-              : `${total.toLocaleString()} listing${total !== 1 ? 's' : ''} in view`
-          }
+          count={null}
           actions={
             <>
               <Button asChild>
@@ -562,9 +557,6 @@ const Marketplace = () => {
                 pages were previously buried inside cards. */}
             <VerifiedOwnedBrands />
             <BrandSpotlight />
-            {/* Editor-curated collection chips; occasion toggles live in the
-                control band. */}
-            <OccasionChips kinds={['collection']} />
             {/* `alwaysRender` is load-bearing, not a preference. With /shop
                 folded in, /marketplace is the `shop` cluster hub, and the
                 desktop header is the Intent Router — no destination links — so

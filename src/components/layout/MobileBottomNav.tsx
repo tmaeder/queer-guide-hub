@@ -8,6 +8,15 @@ import { NavTab } from '@/components/layout/bottom-nav/NavTab';
 import { NavContributeButton } from '@/components/layout/bottom-nav/NavContributeButton';
 import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
 import { BOTTOM_NAV_TABS, type BottomNavTab } from '@/config/navigation';
+import type { Track } from '@/components/transit/routeBulletMap';
+
+// Hover colour per tab. Pink is left to the raised contribute button's neighbour, You.
+const TAB_TRACK: Record<BottomNavTab['id'], Track> = {
+  home: 'blue',
+  explore: 'green',
+  hub: 'yellow',
+  you: 'pink',
+};
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useInboxFeed } from '@/hooks/useInboxFeed';
@@ -158,6 +167,7 @@ export function MobileBottomNav() {
                 key={tab.id}
                 to={to}
                 icon={tab.icon}
+                track={TAB_TRACK[tab.id]}
                 label={t(tab.labelKey, FALLBACK_LABEL[tab.id])}
                 active={inHub ? isHub : isTabActive(tab, path)}
                 reduced={reduced}

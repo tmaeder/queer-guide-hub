@@ -129,3 +129,75 @@ export async function fetchTrendingCities(
   }
   return ordered;
 }
+
+/** A country or queer village shown beside cities in the homepage guides band. */
+export interface HomePlaceRow {
+  id: string;
+  name: string;
+  slug: string | null;
+  image_url: string | null;
+  editorial_hook: string | null;
+  /** Village rows only: the city it sits in. */
+  cityName?: string | null;
+  /** Country rows only: ISO-3166 alpha-2, for the outline map. */
+  code?: string | null;
+}
+
+/**
+ * Countries for the guides band: the visitor's own first when known, then the
+ * highest equality scores (most complete first on a tie). Ghost and merged rows are never shown.
+ */
+export async function fetchHomeCountries(
+  limit: number,
+  preferId?: string | null,
+): Promise<HomePlaceRow[]> {
+  const cols = 'id, name, slug, image_url, editorial_hook, code';
+  const [preferred, top] = await Promise.all([
+    preferId
+      ? supabase.from('countries').select(cols).eq('id', preferId).is('duplicate_of_id', null)
+      : Promise.resolve({ data: [], error: null }),
+    supabase
+      .from('countries')
+      .select(cols)
+      .is('duplicate_of_id', null)
+      .eq('seo_indexable', true)
+      .gte('equality_score', 75)
+      .order('equality_score', { ascending: false })
+      .order('content_completeness_score', { ascending: false, nullsFirst: false })
+      .limit(limit + 1),
+  ]);
+  if (preferred.error) throw preferred.error;
+  if (top.error) throw top.error;
+  const rows = [...(preferred.data ?? []), ...(top.data ?? [])] as HomePlaceRow[];
+  return [...new Map(rows.map((r) => [r.id, r])).values()].slice(0, limit);
+}
+
+/**
+ * Queer villages for the guides band: the visitor's country first, topped up
+ * with the most trusted worldwide. Ghosts (no venues, deindexed) are excluded.
+ */
+export async function fetchHomeVillages(
+  limit: number,
+  countryId?: string | null,
+): Promise<HomePlaceRow[]> {
+  const base = () =>
+    supabase
+      .from('queer_villages')
+      .select('id, name, slug, image_url, editorial_hook, cities:city_id(name)')
+      .is('duplicate_of_id', null)
+      .eq('seo_indexable', true)
+      .neq('shell_status', 'ghost')
+      .order('trust_score', { ascending: false, nullsFirst: false });
+  const [local, top] = await Promise.all([
+    countryId
+      ? base().eq('country_id', countryId).limit(limit)
+      : Promise.resolve({ data: [], error: null }),
+    base().limit(limit + 1),
+  ]);
+  if (local.error) throw local.error;
+  if (top.error) throw top.error;
+  type Raw = Omit<HomePlaceRow, 'cityName'> & { cities: { name: string } | null };
+  const rows = [...(local.data ?? []), ...(top.data ?? [])] as unknown as Raw[];
+  const unique = [...new Map(rows.map((r) => [r.id, r])).values()].slice(0, limit);
+  return unique.map(({ cities, ...v }) => ({ ...v, cityName: cities?.name ?? null }));
+}

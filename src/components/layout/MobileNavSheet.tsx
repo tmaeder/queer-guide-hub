@@ -24,7 +24,7 @@ import {
   INTENT_TRACK,
   isIntentActive,
 } from '@/config/navigation';
-import { TrackSwatch } from '@/components/transit/TrackSwatch';
+import { TRACK_BG, TRACK_TEXT } from '@/components/transit/routeBulletMap';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
@@ -184,11 +184,19 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
                     // overrides it with a colour of its own.
                     className="group flex items-center gap-4 rounded-element p-4 no-underline transition-colors hover:bg-foreground hover:text-background"
                   >
-                    {/* The line, then the icon — the same pair the desktop
-                          tab and the compact bar carry, so a reader arriving
-                          from either recognises the row. */}
-                    <TrackSwatch track={INTENT_TRACK[intent.id] ?? 'pink'} />
-                    <Icon size={20} className="shrink-0" aria-hidden />
+                    {/* The intent's line as a station disc carrying its icon.
+                          Ink ring border-gates the fill (WCAG 1.4.11); ink
+                          glyph on every track fill, per routeBulletMap. */}
+                    <span
+                      aria-hidden
+                      className={cn(
+                        'grid size-9 shrink-0 place-items-center rounded-full border-2 border-track-ring',
+                        TRACK_BG[INTENT_TRACK[intent.id] ?? 'pink'],
+                        TRACK_TEXT[INTENT_TRACK[intent.id] ?? 'pink'],
+                      )}
+                    >
+                      <Icon size={18} aria-hidden />
+                    </span>
                     <span className="flex flex-col">
                       <span className="text-15 font-bold">
                         {t(intent.labelKey, intent.fallback)}
