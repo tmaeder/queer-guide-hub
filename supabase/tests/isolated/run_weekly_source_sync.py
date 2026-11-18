@@ -94,6 +94,7 @@ begin
  select id into j from public.weekly_source_sync_jobs where run_id=rid and status='queued' limit 1;
  perform public.fixture_assert(public.claim_weekly_source_sync_job(rid,j) is null,'cancelled run cannot execute queued source');
  perform public.fixture_assert(not exists(select 1 from public.weekly_source_sync_jobs where run_id=rid and status in('pending','queued','running','waiting')),'cancel clears all outstanding outcomes');
+ perform public.fixture_assert((select items_processed=total and completed_at is not null and context->'weekly_summary'->>'skipped'=(total-1)::text from public.pipeline_runs where id=rid),'cancellation reconciles source counters and summary');
 end $$;
 
 -- Compact inventory exercises every terminal state and lease transition.

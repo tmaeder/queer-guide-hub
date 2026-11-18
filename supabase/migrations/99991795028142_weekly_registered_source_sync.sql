@@ -179,12 +179,31 @@ $$;
 -- Stopping a parent invalidates its leases without cancelling independent child imports.
 create function api_private.stop_weekly_source_sync_jobs()
 returns trigger language plpgsql security definer set search_path='' as $$
+declare summary jsonb;
 begin
   if new.pipeline_name='weekly-data-source-sync' and new.status in ('cancelled','failed','completed') then
     update public.weekly_source_sync_jobs set status='skipped',
       reason='Parent pipeline stopped: '||new.status,completed_at=clock_timestamp(),
       lease_token=null,lease_until=null,delivery_msg_id=null
     where run_id=new.id and status in ('pending','queued','running','waiting');
+    if found then
+      select jsonb_build_object('sources',count(*),'processed',count(*),
+        'succeeded',count(*) filter(where status='succeeded'),
+        'skipped',count(*) filter(where status='skipped'),
+        'blocked',count(*) filter(where status='blocked'),'failed',count(*) filter(where status='failed'),
+        'records_fetched',coalesce(sum(items_fetched),0),'records_staged',coalesce(sum(items_staged),0),
+        'metrics_unit','sources') into summary
+      from public.weekly_source_sync_jobs where run_id=new.id;
+      update public.pipeline_runs set context=coalesce(context,'{}')||jsonb_build_object('weekly_summary',summary,'metrics_unit','sources'),
+        items_total=(summary->>'sources')::integer,items_processed=(summary->>'processed')::integer,
+        items_succeeded=(summary->>'succeeded')::integer,
+        items_failed=(summary->>'blocked')::integer+(summary->>'failed')::integer,
+        completed_at=coalesce(new.completed_at,clock_timestamp()),updated_at=clock_timestamp(),
+        node_states=jsonb_build_object('weekly-sync',jsonb_build_object('status',new.status,
+          'summary',summary,'started_at',new.started_at,'completed_at',coalesce(new.completed_at,clock_timestamp()),
+          'items_in',summary->'sources','items_out',summary->'records_staged'))
+      where id=new.id;
+    end if;
   end if;
   return new;
 end;
