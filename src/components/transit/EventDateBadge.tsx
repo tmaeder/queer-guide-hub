@@ -71,7 +71,7 @@ export function EventDateBadge({
       <span aria-hidden="true" className="text-3xs font-bold tracking-wide">
         {p.top}
       </span>
-      <span aria-hidden="true" className="font-display text-title leading-none my-0.5">
+      <span aria-hidden="true" className="font-display text-headline leading-none my-0.5">
         {p.day}
       </span>
       {p.time && (
