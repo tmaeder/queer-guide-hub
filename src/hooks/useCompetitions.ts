@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
 import { supabase } from '@/integrations/supabase/client';
-import { untypedRpc } from '@/integrations/supabase/untyped';
+import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import { COMPETITION_CATEGORIES, type CompetitionCategory } from '@/lib/competitionCategories';
 import { COMPETED_ANY } from '@/lib/competedInFilter';
 import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
@@ -233,8 +233,8 @@ export function useCompetitionWinnerPortraits() {
     queryKey: ['competition-winner-portraits'],
     staleTime: 30 * 60_000,
     queryFn: async (): Promise<Map<string, WinnerPortrait[]>> => {
-      const { data, error } = await supabase
-        .from('competition_entrants')
+      // Not in the generated types; untyped like the other competition reads.
+      const { data, error } = await untypedFrom('competition_entrants')
         .select(
           'stage_name, personality:personalities(slug, image_url), edition:competition_editions!competition_entrants_edition_id_fkey(slug, competition:competitions(slug))',
         )
