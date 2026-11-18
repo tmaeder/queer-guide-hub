@@ -108,7 +108,7 @@ These pages tell students to check Equaldex and ILGA before going abroad. Pitch:
 
 ### Wikipedia
 
-Wikipedia links are `nofollow` and conflict-of-interest rules forbid adding our own links. Treat these as **pages to make citable**, not pages to edit. Equaldex — crowd-sourced, weaker than ILGA primary data — is cited on 168 article pages; editors swap a source when a better one exists, which is only true for us where we add something ILGA does not publish (the separated trans recognition + TGEU view, the competitions dataset). Never edit these from a queer.guide account.
+Wikipedia links are `nofollow`. Its [conflict-of-interest guideline](https://en.wikipedia.org/wiki/Wikipedia:Conflict_of_interest) strongly discourages directly editing articles connected to your work and requires relevant affiliations to be disclosed. Treat these as **pages to make citable**, not pages to add promotional links to. If proposing a relevant correction, disclose the affiliation on the article's talk page and leave the decision to independent editors; do not switch accounts to conceal the relationship. Equaldex is cited on 168 article pages; our potential contribution is information beyond the underlying primary source, such as the separated trans recognition and TGEU view or the competitions dataset. Citation suitability remains an editorial decision.
 
 | Target URL | Type | Pitch page | Angle | Effort | Checked |
 |---|---|---|---|---|---|
@@ -177,7 +177,7 @@ Limits:
 
 ### Connectors
 
-Ahrefs and Similarweb connectors exist in this workspace but **need authorisation** before use (claude.ai connector settings). Until then there is no backlink-profile or referring-domain data; do not quote either.
+No authenticated Ahrefs or Similarweb data was available to this research. Connect an approved backlink data provider before measuring a backlink profile or referring domains; do not quote either until measured. Connection availability and permissions depend on the research environment.
 
 ### Log
 
