@@ -6,7 +6,11 @@
     "personalities": "Personalidades",
     "history": "Historia",
     "lede": "Las palabras que usamos, las personas que dieron forma a la vida queer y la historia detrás de ambas.",
-    "navigation": "Secciones de saber"
+    "navigation": "Secciones de saber",
+    "termsHint": "Nuestras palabras, definidas",
+    "personalitiesHint": "Personas que marcaron la vida queer",
+    "historyHint": "Hitos, año a año",
+    "rightsHint": "Lo que dice la ley, por país"
   },
   "eventTypes": {
     "party": "Fiesta",
@@ -2747,7 +2751,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} persona",
+        "fieldCount_other": "{{formatted}} personas"
       },
       "detail": {
         "inTheNews": "In the news",
