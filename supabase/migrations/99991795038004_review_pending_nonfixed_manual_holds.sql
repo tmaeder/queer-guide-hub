@@ -2,7 +2,7 @@
 -- Resolve source-verified nonfixed venue cases while preserving human holds in every closing path.
 -- Function ownership, grants, security and unrelated behavior remain unchanged.
 do $patch$
-declare definition text; patched text;
+declare definition text; patched text; code_definition text; code_patched text;
   anchor text := E'      or nullif(btrim(e.venue_name), '''') is null\n    );';
   addition text := E'      or nullif(btrim(e.venue_name), '''') is null\n      or api_private.event_has_verified_nonfixed_location(e.id,e.field_provenance)\n    );';
   old_resolution text := 'case when e.venue_id is not null then ''venue_linked'' else ''event_no_longer_actionable'' end';
@@ -25,16 +25,19 @@ declare definition text; patched text;
     and ($guard$;
 begin
   definition := pg_get_functiondef('public.reconcile_event_venue_link_reviews()'::regprocedure);
+  -- Inspect executable text; retain the original definition for replacement.
+  code_definition:=regexp_replace(pg_get_functiondef('public.reconcile_event_venue_link_reviews()'::regprocedure), '--[^' || chr(10) || ']*', '', 'g');
   patched:=definition;
-  if not (position(new_resolution in definition)>0 and position(addition in definition)>0) then
-    if (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>1
-      or (length(definition)-length(replace(definition,old_resolution,'')))/length(old_resolution)<>1 then
+  if not (position(new_resolution in code_definition)>0 and position(addition in code_definition)>0) then
+    if (length(code_definition)-length(replace(code_definition,anchor,'')))/length(anchor)<>1
+      or (length(code_definition)-length(replace(code_definition,old_resolution,'')))/length(old_resolution)<>1 then
       raise exception 'Event venue review reconciliation changed; inspect before applying';
     end if;
     patched:=replace(replace(definition,anchor,addition),old_resolution,new_resolution);
   end if;
-  if position(guarded_queue in patched)=0 then
-    if (length(patched)-length(replace(patched,queue_anchor,'')))/length(queue_anchor)<>1 then
+  code_patched:=regexp_replace(patched, '--[^' || chr(10) || ']*', '', 'g');
+  if position(guarded_queue in code_patched)=0 then
+    if (length(code_patched)-length(replace(code_patched,queue_anchor,'')))/length(queue_anchor)<>1 then
       raise exception 'Event venue closing predicate changed; inspect before applying';
     end if;
     patched:=replace(patched,queue_anchor,guarded_queue);
