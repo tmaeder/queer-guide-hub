@@ -1,15 +1,15 @@
--- Prepared during the coordinated production DDL hold; NOT applied.
--- The field is already public city data. Only expose its explicit locator;
--- existing HTTPS/SSRF/credential guards and fetch limits still apply in research.ts.
+-- Reference copy promoted after the coordinated migration hold was released.
+-- Authoritative migration: supabase/migrations/99991795038043_review_city_official_website_projection.sql
 do $patch$
-declare definition text;
+declare raw_definition text := pg_get_functiondef('api_private.jev_public_record(jsonb)'::regprocedure);
+  definition text;
   anchor text := '''body'',''content'',''website'',''source_url''';
   addition text := '''body'',''content'',''website'',''official_website'',''source_url''';
 begin
-  definition:=pg_get_functiondef('api_private.jev_public_record(jsonb)'::regprocedure);
+  definition:=regexp_replace(raw_definition, '--[^' || chr(10) || ']*', '', 'g');
   if position(addition in definition)>0 then return; end if;
   if (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>1 then
     raise exception 'Public review projection changed; inspect before applying';
   end if;
-  execute replace(definition,anchor,addition);
+  execute replace(raw_definition,anchor,addition);
 end $patch$;

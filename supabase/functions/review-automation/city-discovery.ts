@@ -58,14 +58,14 @@ export async function discoverCityEvidence(input: NonNullable<ReturnType<typeof 
   if (match.kind !== 'selected' || !match.qid || !QID.test(match.qid) || !match.entity ||
     currentStatements(match.entity.claims.P17).length !== 1 || currentStatements(match.entity.claims.P625).length !== 1) return null
   const identity = match.probes.find(p => p.qid === match.qid)
-  if (!identity?.exactLabel || identity.class !== 'settlement' || identity.country !== 'agree' ||
+  if (!identity?.exactLabel || identity.name !== 'agree' || identity.class !== 'settlement' || identity.country !== 'agree' ||
     identity.coordinates !== 'agree' || identity.distanceKm === null || identity.distanceKm > 10 || identity.countryCorrections?.length) return null
   return {
     url: `https://www.wikidata.org/wiki/${match.qid}`,
     retrieved_at: new Date().toISOString(),
     text: JSON.stringify({ scope: 'Live Wikidata settlement identity only. Does not establish that the original defect was fixed, certify lifecycle or publication, or authorize a record change.',
       item: match.qid, exact_label: input.name, country_code: countryCode, classification: identity.class,
-      name_match: 'exact search label', country_match: identity.country, coordinate_match: identity.coordinates,
+      name_match: 'exact search label corroborated by entity names', country_match: identity.country, coordinate_match: identity.coordinates,
       distance_km: identity.distanceKm }),
   }
 }

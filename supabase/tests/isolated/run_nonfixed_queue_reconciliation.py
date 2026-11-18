@@ -11,7 +11,9 @@ PG = Path(os.environ.get("PG_BINDIR", "/opt/homebrew/opt/postgresql@17/bin"))
 helper_source = (ROOT / "supabase/migrations/99991794072220_review_verified_nonfixed_event_locations.sql").read_text()
 helper = re.search(r"create or replace function api_private.event_has_verified_nonfixed_location[\s\S]*?\$fn\$;", helper_source).group()
 baseline = (ROOT / "supabase/tests/fixtures/nonfixed-queue-reconciliation-baseline.sql").read_text()
-patch = (ROOT / "docs/review-queue-pending-nonfixed-reconciliation.sql").read_text()
+# The assertion must count executable code, not an example in prose.
+baseline = baseline.replace("AS $function$\n", "AS $function$\n-- Old branch: case when e.venue_id is not null then 'venue_linked' else 'event_no_longer_actionable' end\n", 1)
+patch = (ROOT / "supabase/migrations/99991795038004_review_pending_nonfixed_manual_holds.sql").read_text()
 schema = r"""
 create schema api_private;
 create table events(id uuid primary key,title text,venue_name text,city_id uuid,country_id uuid,
@@ -67,26 +69,63 @@ do $$begin
 end$$;
 create temp table function_before as select proowner,proacl,proconfig,prosecdef from pg_proc where oid='reconcile_event_venue_link_reviews()'::regprocedure;
 """
+closing_paths = r"""
+-- Every legacy closing condition needs a held row and an unheld control.
+insert into events select ('00000000-0000-0000-0000-'||lpad(i::text,12,'0'))::uuid,
+ 'Programme '||i,'Fixed programme','20000000-0000-0000-0000-000000000001','30000000-0000-0000-0000-000000000001',
+ now()+interval '10 days',now()+interval '17 days',null,null,true,false,null,'active','pride','fixture',i::text,'{}'
+ from generate_series(16,29)i;
+insert into review_queue(entity_type,entity_id,review_type,status,details)
+ select 'event',id,'venue_link_candidate','pending','{"source":"venue_quality_v2"}' from events where external_id::int>=16;
+update events set venue_id='50000000-0000-0000-0000-000000000001' where external_id in('16','21','26','28');
+update events set duplicate_of_id='00000000-0000-0000-0000-000000000001' where external_id in('17','22');
+update events set is_public=false where external_id in('18','23','29');
+update events set start_date=now()-interval '2 days' where external_id in('19','24','27');
+update events set venue_name='' where external_id in('20','25');
+update review_queue set details=details||'{"manual_hold":true}' where entity_id=(select id from events where external_id='16');
+update review_queue set resolved_by='40000000-0000-0000-0000-000000000001' where entity_id=(select id from events where external_id='17');
+update review_queue set resolved_at=now() where entity_id=(select id from events where external_id='19');
+update review_queue set details=details||'{"requires_confirm":true}' where entity_id=(select id from events where external_id='20');
+update review_queue set details=details||'{"hard_blocker":true}' where entity_id=(select id from events where external_id='28');
+insert into event_quality_issues(event_id,issue_code,status,evidence)
+ select id,'NAMED_VENUE_UNLINKED','open','{"manual_review_required":true}' from events where external_id in('18','27');
+insert into event_quality_issues(event_id,issue_code,status,reviewed_by)
+ select id,'NAMED_VENUE_UNLINKED','accepted','40000000-0000-0000-0000-000000000001' from events where external_id='26';
+insert into event_quality_issues(event_id,issue_code,status,reviewed_at)
+ select id,'NAMED_VENUE_UNLINKED','open',now() from events where external_id='29';
+truncate queue_before,events_before;
+insert into queue_before select * from review_queue;
+insert into events_before select * from events;
+select reconcile_event_venue_link_reviews();
+do $$begin
+ if (select count(*) from review_queue where status='resolved')<>14 then raise exception 'Unsafe legacy closing paths not reproduced';end if;
+end$$;
+delete from review_queue;
+insert into review_queue select * from queue_before;
+"""
 checks = r"""
 select reconcile_event_venue_link_reviews();
 do $$begin
  if(select count(*)from review_queue where status='resolved'and details->>'resolution'='verified_nonfixed_location')<>2 then raise exception 'Valid multi-site/onboard candidates did not close';end if;
- if exists(select 1 from review_queue q join events e on e.id=q.entity_id where e.external_id not in('1','14')and to_jsonb(q)is distinct from(select to_jsonb(b)from queue_before b where b.id=q.id))then raise exception 'Held/stale/mismatched candidate changed';end if;
+ if exists(select 1 from review_queue q join events e on e.id=q.entity_id where e.external_id not in('1','14','21','22','23','24','25')and to_jsonb(q)is distinct from(select to_jsonb(b)from queue_before b where b.id=q.id))then raise exception 'Held/stale/mismatched candidate changed';end if;
+ if (select count(*) from review_queue where status='resolved')<>7 then raise exception 'Unheld closing controls did not resolve';end if;
+ if not exists(select 1 from review_queue q join events e on e.id=q.entity_id where e.external_id='21' and q.details->>'resolution'='venue_linked') then raise exception 'Linked control lost its resolution';end if;
+ if (select count(*) from review_queue q join events e on e.id=q.entity_id where e.external_id in('22','23','24','25') and q.details->>'resolution'='event_no_longer_actionable')<>4 then raise exception 'Legacy closing controls lost their resolution';end if;
  if exists((select * from events except select * from events_before)union all(select * from events_before except select * from events))then raise exception 'Event content mutated';end if;
  if exists(select 1 from function_before b cross join pg_proc p where p.oid='reconcile_event_venue_link_reviews()'::regprocedure and row(p.proowner,p.proacl,p.proconfig,p.prosecdef)is distinct from row(b.proowner,b.proacl,b.proconfig,b.prosecdef))then raise exception 'Function security changed';end if;
  if exists(select 1 from review_queue where status='resolved'and resolved_by is not null)then raise exception 'Human verification invented';end if;
 end$$;
 select reconcile_event_venue_link_reviews();
-do $$begin if(select count(*)from review_queue)<>15 then raise exception 'Resolved proof reopened or duplicate created';end if;end$$;
+do $$begin if(select count(*)from review_queue)<>29 then raise exception 'Resolved proof reopened or duplicate created';end if;end$$;
 """
 with tempfile.TemporaryDirectory(prefix="qg-nonfixed-") as tmp:
     data = str(Path(tmp) / "data")
     subprocess.run([str(PG / "initdb"), "-D", data, "-A", "trust", "--no-locale"], check=True, stdout=subprocess.DEVNULL)
     subprocess.run([str(PG / "pg_ctl"), "-D", data, "-l", str(Path(tmp) / "postgres.log"), "-o", f"-k {tmp} -p 55493 -c listen_addresses=", "-w", "start"], check=True, stdout=subprocess.DEVNULL)
     try:
-        result = subprocess.run([str(PG / "psql"), "-X", "-h", tmp, "-p", "55493", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], input=schema + helper + baseline + before + patch + patch + checks, text=True, capture_output=True)
+        result = subprocess.run([str(PG / "psql"), "-X", "-h", tmp, "-p", "55493", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], input=schema + helper + baseline + before + closing_paths + patch + patch + checks, text=True, capture_output=True)
         if result.returncode:
             raise RuntimeError(result.stderr)
     finally:
         subprocess.run([str(PG / "pg_ctl"), "-D", data, "-m", "fast", "-w", "stop"], check=True, stdout=subprocess.DEVNULL)
-print("PASS: stale queue reproduced; valid multi-site/onboard cases close; 13 held/stale/unsafe cases preserved; no event or security changes; repeat runs remain stable")
+print("PASS: stale queue and unsafe legacy closures reproduced; 7 valid controls close; 22 held/stale/unsafe cases preserved; no event or security changes; repeat runs remain stable")
