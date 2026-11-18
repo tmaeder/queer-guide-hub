@@ -321,7 +321,8 @@ export default function MonitorTab() {
   const { data: countryStats } = useCountryIngestStats(14);
   const [selectedRunSnapshot, setSelectedRun] = useState<UnifiedRun | null>(null);
   const selectedRun =
-    allRuns.find((run) => run.id === selectedRunSnapshot?.id) ?? selectedRunSnapshot;
+    (allRuns.find((run) => run.id === selectedRunSnapshot?.id) as UnifiedRun | undefined) ??
+    selectedRunSnapshot;
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');

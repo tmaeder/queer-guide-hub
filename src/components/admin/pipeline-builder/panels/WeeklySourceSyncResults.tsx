@@ -140,7 +140,9 @@ export default function WeeklySourceSyncResults({ runId }: { runId: string }) {
         rows: (jobs.data ?? []) as SourceJob[],
         total: jobs.count ?? 0,
         status: run.data.status as string,
-        summary: (run.data.context?.weekly_summary ?? {}) as Record<string, number>,
+        summary:
+          (run.data.context as { weekly_summary?: Record<string, number> } | null)
+            ?.weekly_summary ?? {},
       };
     },
     refetchInterval: (query) =>
