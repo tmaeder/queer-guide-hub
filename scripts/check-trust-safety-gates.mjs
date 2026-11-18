@@ -10,7 +10,8 @@
  * Harm-anchored gates from docs/audits/2026-06-05-trust-safety-audit.md §4.
  */
 
-import { callRpc, notEvaluated, stallReason } from './lib/gate-rpc.mjs'
+import { callRpc, notEvaluated, readGateSnapshot, stallReason } from './lib/gate-rpc.mjs'
+import { applyCanonicalPersonGate } from './lib/person-provenance-gate.mjs'
 
 const BASE = process.env.SUPABASE_URL
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -99,7 +100,33 @@ if (!res.ok) {
   process.exit(1)
 }
 
-const gates = res.data
+// The legacy RPC uses a Wikidata ID as its sole provenance proxy. The current
+// release predicate also accepts stored source evidence and checks invalid IDs,
+// indexable profiles and ally claims. Use that deployed policy, without changing
+// any record or inventing an identifier just to satisfy an obsolete proxy.
+const callPersonGate = () => callRpc(`${BASE}/rest/v1/rpc/release_gate_checks`, {
+  method: 'POST',
+  headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+  body: '{}',
+})
+let personReport = await readGateSnapshot(BASE, KEY, 'release_gate_checks') ?? await callPersonGate()
+if (notEvaluated(personReport)) {
+  console.warn(`Person provenance gate did not evaluate — ${stallReason(personReport)}; retrying once.`)
+  await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS))
+  personReport = await callPersonGate()
+}
+if (!personReport.ok) {
+  console.error(`Person provenance gate did not evaluate: HTTP ${personReport.status}`)
+  process.exit(1)
+}
+let gates
+try {
+  gates = applyCanonicalPersonGate(res.data, personReport.data)
+} catch (error) {
+  console.error(`Person provenance gate did not evaluate: ${error.message}`)
+  process.exit(1)
+}
+console.log('Person provenance: evaluated the current release_gate_checks() policy')
 const critical = gates.filter((g) => g.severity === 'critical')
 const high = gates.filter((g) => g.severity === 'high')
 
