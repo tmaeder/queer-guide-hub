@@ -1,0 +1,146 @@
+{
+  "city_proof": {
+    "method": "web_primary_identity_research",
+    "observed_at": "2026-11-18T19:50:14.012063Z",
+    "name": "Schwanden",
+    "wikidata_qid": "Q659947",
+    "country": "CH",
+    "region": "Glarus",
+    "place_kind": "village in Glarus Süd; former municipality remains an inhabited settlement",
+    "sources": [
+      {
+        "url": "https://www.wikidata.org/wiki/Q659947",
+        "scope": "Rendered exact entity identifies Schwanden GL as village and former municipality in Glarus Sued, Glarus, Switzerland; current village identity is distinct from municipality Glarus Sued. No raw entity JSON capture claimed."
+      },
+      {
+        "url": "https://www.glarus-sued.ch/portraet/doerfer/schwanden.html/3763",
+        "status": 200,
+        "retrieved_at": "2026-11-18T19:50:14.012063Z",
+        "sha256": "c5d4e74ee6f629d62778265db72b3435bfdde14d0abde8348002d702cb345fc1",
+        "bytes": 38641,
+        "scope": "Current municipality lists Schwanden as one of its existing villages and describes settlement at Linth/Sernf confluence."
+      },
+      {
+        "url": "https://www.fabriktheater-schwanden.ch/",
+        "status": 200,
+        "retrieved_at": "2026-11-18T19:35:24.501630Z",
+        "sha256": "cc2146679ea17e08f237c5e25c02b76ec4d9b8f21ccdae3b7d01478a9447feb5",
+        "bytes": 81316,
+        "scope": "Public theatre operator confirms current cultural programme in Schwanden GL."
+      }
+    ],
+    "coordinates_added": false,
+    "human_reviewed": false
+  },
+  "city_created": [
+    {
+      "result": {
+        "id": "eab4da7f-7613-406d-b66a-338a46e5774d",
+        "action": "created",
+        "timezone": "Europe/Zurich",
+        "region_code": "CH-GL",
+        "coordinates_added": false
+      }
+    }
+  ],
+  "venue_creation": {
+    "city": {
+      "id": "eab4da7f-7613-406d-b66a-338a46e5774d",
+      "name": "Schwanden",
+      "timezone": "Europe/Zurich",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "region_name": "Glarus",
+      "shell_status": "real",
+      "duplicate_of_id": null
+    },
+    "locations": [
+      {
+        "name": "Fabriktheater Schwanden",
+        "slug": "fabriktheater-schwanden",
+        "address": "Sernftalstrasse 33",
+        "postal_code": "8762",
+        "category": "theater",
+        "website": "https://www.fabriktheater-schwanden.ch/",
+        "evidence": [
+          {
+            "url": "https://www.fabriktheater-schwanden.ch/",
+            "status": 200,
+            "final_url": "https://www.fabriktheater-schwanden.ch/",
+            "retrieved_at": "2026-11-18T19:35:24.501630Z",
+            "sha256": "cc2146679ea17e08f237c5e25c02b76ec4d9b8f21ccdae3b7d01478a9447feb5",
+            "bytes": 81316
+          },
+          {
+            "url": "https://www.fabriktheater-schwanden.ch/kontakt.html",
+            "status": 200,
+            "final_url": "https://www.fabriktheater-schwanden.ch/kontakt.html",
+            "retrieved_at": "2026-11-18T19:51:36.518100Z",
+            "sha256": "99dfa82dcb0a29f0ca4cc634306be855218e731c8d75fa7af784721073394f86",
+            "bytes": 14189
+          }
+        ],
+        "guard_pattern": "%fabriktheater%schwanden%",
+        "excerpt": "Fabriktheater Schwanden, Adresse bei Veranstaltungen:Sernftalstrasse33,8762SchwandenGL. Public contact explicitly distinguishes physical venue from postal contact in Benken.",
+        "description": "Public performance theatre at Sernftalstrasse 33 in Schwanden."
+      }
+    ]
+  },
+  "venue_created": [
+    {
+      "result": [
+        {
+          "name": "Fabriktheater Schwanden",
+          "venue_id": "2e412ad9-bdb2-4427-bff8-83b9c23d7500",
+          "organization_id": "41452e6f-4075-4f34-9b00-474bc79bd327"
+        }
+      ]
+    }
+  ],
+  "event_id": "6baa1de6-f464-4ade-a729-f010a74b139d",
+  "proof": {
+    "capture_method": "direct_primary_http_200",
+    "observed_at": "2026-11-18T19:52:47.748469Z",
+    "url": "https://www.fabriktheater-schwanden.ch/#frank-richter",
+    "capture_sha256": "cc2146679ea17e08f237c5e25c02b76ec4d9b8f21ccdae3b7d01478a9447feb5",
+    "capture_bytes": 81316,
+    "location_sources": [
+      {
+        "url": "https://www.fabriktheater-schwanden.ch/",
+        "status": 200,
+        "final_url": "https://www.fabriktheater-schwanden.ch/",
+        "retrieved_at": "2026-11-18T19:35:24.501630Z",
+        "sha256": "cc2146679ea17e08f237c5e25c02b76ec4d9b8f21ccdae3b7d01478a9447feb5",
+        "bytes": 81316
+      },
+      {
+        "url": "https://www.fabriktheater-schwanden.ch/kontakt.html",
+        "status": 200,
+        "final_url": "https://www.fabriktheater-schwanden.ch/kontakt.html",
+        "retrieved_at": "2026-11-18T19:51:36.518100Z",
+        "sha256": "99dfa82dcb0a29f0ca4cc634306be855218e731c8d75fa7af784721073394f86",
+        "bytes": 14189
+      }
+    ],
+    "note": "Owner exact programme row and Event JSON confirm November26,2026 at19:30 in Fabriktheater Schwanden. Contact explicitly distinguishes physical Sernftalstrasse33,8762Schwanden from Benken postal address; generic Hauptstrasse JSON location placeholder is not used. Existing ticketURL redirects to generic programme; exact owner event row links showticket.ch/2941415, used as booking destination. Saved start retained, unknown end preserved: templated21:30 JSON end without visible corroboration is not adopted. Native Swiss geography/CHF added; no media or verification/publication changes.",
+    "human_reviewed": false,
+    "booking_source": {
+      "url": "https://www.showticket.ch/2941415",
+      "status": 200,
+      "final_url": "https://www.showticket.ch/2941415",
+      "retrieved_at": "2026-11-18T19:53:23.302824Z",
+      "sha256": "13d0e09a0dd5a3b88e5f4eac23a923093cdbecdf85a22136608fbd554b247449",
+      "bytes": 44982
+    }
+  },
+  "linked": [
+    {
+      "result": {
+        "id": "6baa1de6-f464-4ade-a729-f010a74b139d",
+        "city_id": "eab4da7f-7613-406d-b66a-338a46e5774d",
+        "website": "https://www.fabriktheater-schwanden.ch/#frank-richter",
+        "currency": "CHF",
+        "venue_id": "2e412ad9-bdb2-4427-bff8-83b9c23d7500"
+      }
+    }
+  ]
+}

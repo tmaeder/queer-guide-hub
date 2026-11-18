@@ -1,0 +1,40 @@
+{
+  "event_id": "1fc209af-7f3b-403f-8984-06dfc2ea240d",
+  "proof": {
+    "contract": "organizer_venue_scope.v1",
+    "scope": "multi_site",
+    "title": "West Pride 2027",
+    "venue_label": "Gothenburg city programme, Pride House and Pride Parade",
+    "city_id": "7e464a6c-37b3-42ad-9858-893bf87dd412",
+    "country_id": "70ff31b3-b918-4258-a98e-d892691c9d52",
+    "start_date": "2027-06-07T00:00:00+00:00",
+    "end_date": "2027-06-13T00:00:00+00:00",
+    "source_id": "d3d44152-6884-4f5e-96ee-66f8c33c86e6",
+    "payload_hash": "f5ee899cd2e0cf4f1c764a32aa943e6ce205cbd488ad846a1a3d3e06411c2d5d",
+    "capture_sha256": "4db1ba5b544a2121103e2efd03ac28239a1c7a72dbca8905c469716a7eba51cb",
+    "url": "https://www.westpride.se/",
+    "capture_method": "direct_primary_http_200",
+    "capture_bytes": 53510,
+    "observed_at": "2026-11-18T20:29:57.025672Z",
+    "human_reviewed": false,
+    "note": "Owner explicitly confirms June7–13,2027 city programme, PrideHouseJune7–9, BusinessForumJune10 and PrideParadeJune12 across Gothenburg. Full programme open call remains in progress. Whole festival is multi-site; old Bananpiren-only label not current2027 confirmation. Replace stale2026 speculative public description with concise owner-grounded2027 facts; no historical EuroPride, size/safety/lineup claims copied. Generic homepage retained as website, not ticket booking; whole-city postcode cleared. Existing day-only dates, approximate city-centroid point, source bodies/history and all gates preserved."
+  },
+  "committed": [
+    {
+      "result": {
+        "id": "1fc209af-7f3b-403f-8984-06dfc2ea240d",
+        "scope": "multi_site",
+        "venue_created": false,
+        "native_contract_verified": true
+      }
+    }
+  ],
+  "queue_closed": [
+    {
+      "result": {
+        "resolved": 1,
+        "human_verification_claimed": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+  "policy": "audited_venue_merge_orphan:v1",
+  "candidates": [
+    {
+      "drop_id": "0274192c-994d-4924-a1a0-4c5b56dae3f8",
+      "keep_id": "9cbc0559-e8f6-457e-a9b2-2bfa7fd6f21a",
+      "drop_name": "Key west sauna",
+      "keep_name": "Key West",
+      "venue_merge_audit_id": "976377b1-b1a8-4931-ad33-8692d92c6f63"
+    },
+    {
+      "drop_id": "20c43fec-65af-49c3-9eab-8bc8000d2112",
+      "keep_id": "50dbea8c-ab69-4223-9822-84f9e05550c4",
+      "drop_name": "Fairy",
+      "keep_name": "Fairy Taipei",
+      "venue_merge_audit_id": "398668ab-5942-43f1-8201-3f639476d8d6"
+    },
+    {
+      "drop_id": "2962fa1f-a67b-4704-bca3-6c7cac9b6635",
+      "keep_id": "26b8a512-e32d-4ec4-91f8-d3dc66420e98",
+      "drop_name": "Eagle",
+      "keep_name": "Eagle bar Manchester",
+      "venue_merge_audit_id": "5cb2c81d-0d8d-480e-8be0-f41e969a9756"
+    },
+    {
+      "drop_id": "2a1b2b9a-605d-41fb-8a7a-e26a8993ca86",
+      "keep_id": "c28cbd5a-e534-439b-afff-04b7efc0918c",
+      "drop_name": "Twist bar",
+      "keep_name": "Twist",
+      "venue_merge_audit_id": "c1271aa6-fee9-469f-898c-7c6df17e7b12"
+    },
+    {
+      "drop_id": "32550e64-8014-4878-98e4-896f24a169bd",
+      "keep_id": "4f58ff35-0ad6-4b3c-91f6-fb8c26e40d06",
+      "drop_name": "Michel",
+      "keep_name": "Bar Michel",
+      "venue_merge_audit_id": "47e4b077-0e44-4e7a-8d45-739c53e47cdd"
+    },
+    {
+      "drop_id": "5dfa89c8-8d9c-4dc6-92d0-384ebb3abaac",
+      "keep_id": "ba592a0b-53f0-48aa-9a28-83b30015fa18",
+      "drop_name": "SAL",
+      "keep_name": "SAL Lindaplatz",
+      "venue_merge_audit_id": "58ba4e58-c40d-4c00-908a-f6bd2db7d2ec"
+    },
+    {
+      "drop_id": "6ea997ee-2a62-439d-b2cd-d9738729da83",
+      "keep_id": "10422275-76b8-4077-8632-05a7a34659b6",
+      "drop_name": "Boxer café",
+      "keep_name": "Boxer Cafe Bar",
+      "venue_merge_audit_id": "c03cb0f1-f456-4825-9930-85792b45ffda"
+    },
+    {
+      "drop_id": "9290d00a-7804-4191-ba8f-554146b97deb",
+      "keep_id": "0db9e0e9-05b7-4c23-af18-ccd5c11805b0",
+      "drop_name": "Beef Club",
+      "keep_name": "BEEF",
+      "venue_merge_audit_id": "f64104e2-45df-4981-8feb-407f408b31bc"
+    },
+    {
+      "drop_id": "949039cd-e6e5-4345-93c6-86373d1a3306",
+      "keep_id": "0a7cddd9-8288-4426-bf0b-89db66da6bcd",
+      "drop_name": "Ramona",
+      "keep_name": "Ramona Bar",
+      "venue_merge_audit_id": "7e38340c-e946-48cc-ad3c-167941253ebe"
+    },
+    {
+      "drop_id": "99d69945-bba2-4aab-af4f-1c4a41e370d0",
+      "keep_id": "d1a4fd74-f0c2-4add-a4fe-2493cea2a488",
+      "drop_name": "Comeback Bar",
+      "keep_name": "Comeback",
+      "venue_merge_audit_id": "0c5b8d68-b3d1-4995-9012-d68a0012c481"
+    },
+    {
+      "drop_id": "9c548f5a-edf7-4f14-849f-4f040ae4c0e9",
+      "keep_id": "30dcdf28-dcd7-4dc8-9237-608b124fbf6c",
+      "drop_name": "Thick bar",
+      "keep_name": "THICK Bar Madrid",
+      "venue_merge_audit_id": "f5a2a366-91b8-4c94-9027-9f4683ef5349"
+    },
+    {
+      "drop_id": "a12e8dc6-c219-4fb3-815e-4790424f766b",
+      "keep_id": "cd90aab8-30dd-4f0b-9692-48e5e62599ce",
+      "drop_name": "Purple",
+      "keep_name": "Purple Club Medellin",
+      "venue_merge_audit_id": "117bee4b-1e7f-4038-8088-a38dc74eb094"
+    },
+    {
+      "drop_id": "a8d9d304-08bc-45c3-8412-f8dc5948f0af",
+      "keep_id": "78ea3b2c-a776-4323-bcb2-f7cd3663811b",
+      "drop_name": "Pullermanns sauna",
+      "keep_name": "Pullermanns",
+      "venue_merge_audit_id": "5827909a-d11c-498d-9161-a4fe49d4bd9a"
+    },
+    {
+      "drop_id": "adc9edfc-db28-494d-9bb0-a51e1453f91f",
+      "keep_id": "84e13fa8-335e-4118-a815-29f1d4deded8",
+      "drop_name": "Paradise",
+      "keep_name": "Paradise Nightclub",
+      "venue_merge_audit_id": "526a3178-a7b9-4014-9bf0-aa3ccf3c8472"
+    },
+    {
+      "drop_id": "b947f657-2f75-4994-9ef8-031359e92102",
+      "keep_id": "a89cdbff-cfeb-46b9-a1db-05c09cc94c88",
+      "drop_name": "Ramdam bar",
+      "keep_name": "Ramdam",
+      "venue_merge_audit_id": "9b8fde18-3283-4dcd-a2da-6f78001df981"
+    },
+    {
+      "drop_id": "bcad3266-5519-4543-91c1-63cb3eba4710",
+      "keep_id": "6232130b-402f-4bdf-bb70-8d3cb72edb48",
+      "drop_name": "Quetzal",
+      "keep_name": "Le Quetzal",
+      "venue_merge_audit_id": "ed5ceea6-88df-4c63-af19-442f0fad41b0"
+    },
+    {
+      "drop_id": "f165f138-48b3-4ffb-856e-4a11029d6c5b",
+      "keep_id": "21558e8c-3628-42a5-a922-92822d9ec824",
+      "drop_name": "Buddy Gayshop/Cinema",
+      "keep_name": "BUDDY",
+      "venue_merge_audit_id": "8de9e533-f8fc-4d72-add1-38ace5c3ae6a"
+    }
+  ],
+  "batches": [
+    {
+      "batch": 1,
+      "result": [
+        {
+          "result": {
+            "merged": 5,
+            "dry_run": false,
+            "candidates": 5,
+            "superseded_findings": {
+              "dry_run": false,
+              "findings_reconciled": 17,
+              "organizations_examined": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "batch": 2,
+      "result": [
+        {
+          "result": {
+            "merged": 5,
+            "dry_run": false,
+            "candidates": 5,
+            "superseded_findings": {
+              "dry_run": false,
+              "findings_reconciled": 16,
+              "organizations_examined": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "batch": 3,
+      "result": [
+        {
+          "result": {
+            "merged": 5,
+            "dry_run": false,
+            "candidates": 5,
+            "superseded_findings": {
+              "dry_run": false,
+              "findings_reconciled": 17,
+              "organizations_examined": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "batch": 4,
+      "result": [
+        {
+          "result": {
+            "merged": 2,
+            "dry_run": false,
+            "candidates": 2,
+            "superseded_findings": {
+              "dry_run": false,
+              "findings_reconciled": 7,
+              "organizations_examined": 2
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "merged_profiles": 17,
+  "superseded_findings": 57,
+  "remaining_eligible": 0,
+  "human_verification_claimed": false
+}

@@ -1,0 +1,69 @@
+{
+  "event_id": "dbb5fca1-d14f-4173-8f70-37289a4fec5c",
+  "alias_proof": {
+    "method": "primary_town_name_research",
+    "observed_at": "2026-11-18T20:02:20.065725Z",
+    "url": "https://cortinadampezzo.it/en/landscape/town/",
+    "capture_method": "direct_primary_http_200",
+    "capture_sha256": "dd8fc248f85abe73422273a35bb5a75ad9efd695db7a133f06bec9a1720e7782",
+    "capture_bytes": 368387,
+    "note": "Local official destination site explicitly identifies town Cortina d'Ampezzo in Veneto. Existing same-country canonical Cortina Dampezzo has current GISCO/ISTAT025016 municipal corroboration and same geographic locality. Add exact punctuation/name alias only; no QID classification, point, municipal boundary, lifecycle or publication changes.",
+    "human_reviewed": false
+  },
+  "alias_committed": [
+    {
+      "result": {
+        "id": "e6394d8c-b093-4881-9848-3dfd25ecc801",
+        "alias": "Cortina d'Ampezzo",
+        "locale": "it",
+        "city_id": "98ce2d67-9056-4cdf-948e-d6994b528978",
+        "alias_key": "cortina d'ampezzo",
+        "created_at": "2026-11-18T20:04:38.187439+00:00"
+      }
+    }
+  ],
+  "scope_proof": {
+    "contract": "organizer_venue_scope.v1",
+    "scope": "multi_site",
+    "title": "Italy Gay Ski Week",
+    "venue_label": "Cortina ski resort, restaurants and Hotel Bellevue",
+    "city_id": "98ce2d67-9056-4cdf-948e-d6994b528978",
+    "country_id": "515cf5a4-80de-43c7-9c4c-7b97abcfc9b1",
+    "start_date": "2027-01-16T00:00:00+00:00",
+    "end_date": "2027-01-23T00:00:00+00:00",
+    "source_id": "50806e80-e938-4d14-a21f-b4753eb7240e",
+    "payload_hash": "aa0af4028e949e4ace20a97e3ddc6fe726101bae4adf6f14d573b2e3c4c4affc",
+    "capture_sha256": "532e15e81e341fe855bacdcb49a199f5794f1e552d066537af0a09b51eef341d",
+    "url": "https://www.italygaytravels.com/italy-gay-ski-week-cortina/",
+    "capture_method": "direct_primary_http_200",
+    "capture_bytes": 84399,
+    "observed_at": "2026-11-18T20:00:41.563737Z",
+    "human_reviewed": false,
+    "note": "Exact January16–23,2027 organiser programme uses hotel Bellevue as accommodation plus daily slopes, restaurants and apres-ski bars across Cortina. This is a multi-site hosted holiday, not an event fixed wholly at hotel. Unique same-country alias resolves existing canonical Cortina Dampezzo; no new city or hotel/venue/pin created. Dates remain day-only; prior human-reviewed images, description, attention and all existing provenance are unchanged. Municipal versus exact settlement verification and city publication gates untouched."
+  },
+  "scope_committed": [
+    {
+      "result": {
+        "id": "dbb5fca1-d14f-4173-8f70-37289a4fec5c",
+        "scope": "multi_site",
+        "venue_created": false,
+        "native_contract_verified": true
+      }
+    }
+  ],
+  "queue_committed": [
+    {
+      "result": {
+        "resolved": 1,
+        "human_verification_claimed": false
+      }
+    }
+  ],
+  "preserved_human_revision_id": "d6036c09-9bdd-4a78-b3ef-abf3892488cf",
+  "preserved_human_fields": [
+    "images",
+    "description",
+    "needs_attention",
+    "existing_field_provenance"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "event_id": "a23f64c1-669f-4a1e-9d4a-252e1c7857f9",
+  "proof": {
+    "capture_method": "direct_primary_http_200",
+    "observed_at": "2026-11-18T20:32:18.776565Z",
+    "url": "https://pridecymru.com/tickets/",
+    "capture_sha256": "e559af2afc4281644c1f71e77530bb12f6f15e932fcf05f4f8ac908f651afee8",
+    "capture_bytes": 480055,
+    "booking_source": {
+      "url": "https://www.citizenticket.com/event/pride-cymru-2027/",
+      "status": 200,
+      "final_url": "https://www.citizenticket.com/events/pride-cymru/pride-cymru-2027/",
+      "retrieved_at": "2026-11-18T20:32:18.776565Z",
+      "sha256": "754719a19e7e26e966afd782403a7296ea47a03ae54bd45c850cd7011bf12923",
+      "bytes": 103208
+    },
+    "note": "Exact owner2027 tickets page directly links this CitizenTicket event. Actual booking Event JSON explicitly gives2027-06-12T12:00:00+01:00 through2027-06-13T20:00:00+01:00. Convert to11:00Z and19:00Z; do not infer daily continuous hours. Owner namesCoopersField/CardiffCastle, booking still says location to be confirmed. Retain venue hold and set attention; no CoopersField venue/link or association with separately catalogued cruising area. Replace unsupported CardiffBay prose with source-grounded concise facts and actual booking. No prices, VIP age limits, images or source bodies changed.",
+    "human_reviewed": false
+  },
+  "committed": [
+    {
+      "result": {
+        "id": "a23f64c1-669f-4a1e-9d4a-252e1c7857f9",
+        "venue_created": false
+      }
+    }
+  ],
+  "scope": "Exact booking times/link and grounded description; native venue remains pending final location confirmation."
+}
