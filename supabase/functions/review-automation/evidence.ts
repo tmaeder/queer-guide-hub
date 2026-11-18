@@ -1,5 +1,6 @@
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import type { Evidence } from './policy.ts'
+import { readableSource } from './readable-source.ts'
 export function sourceUrl(raw: string): URL {
   const url = assertPublicHttpUrl(raw)
   const hasCredentials = Boolean(url.username) || Boolean(url.password)
@@ -29,7 +30,7 @@ export async function fetchEvidence(raw: string, fetcher: typeof fetch = fetch):
     const reader = response.body.getReader(); const decoder = new TextDecoder(); let text = ''; let bytes = 0
     try { while (true) { const part = await reader.read(); if (part.done) break; bytes += part.value.byteLength; if (bytes > 524288) throw new Error('Source exceeds 512 KiB limit'); text += decoder.decode(part.value, { stream: true }) } text += decoder.decode() }
     finally { await reader.cancel().catch(() => {}) }
-    text = text.replace(/<script\b(?![^>]*application\/ld\+json)[^>]*>[\s\S]*?<\/script>/gi, ' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 18000)
+    text = readableSource(text, type)
     if (text.length < 100) throw new Error('Source has insufficient readable text')
     return { url: url.href, retrieved_at: new Date().toISOString(), text }
   }
