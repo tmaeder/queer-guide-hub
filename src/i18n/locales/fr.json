@@ -4572,7 +4572,8 @@
         "copied": "Copié",
         "copy": "Copier",
         "apa": "APA",
-        "plain": "Texte brut"
+        "plain": "Texte brut",
+        "copyFailed": "Copie automatique impossible. La citation est sélectionnée ; copiez-la avec le clavier."
       },
       "metaTitle": "Comment le score d'égalité LGBTQ+ est calculé",
       "metaDescription": "Chaque pondération du score d'égalité de Queer Guide, l'échelle 0–100, les seuils des niveaux, ses limites connues et comment le citer.",

@@ -4568,7 +4568,8 @@
         "copied": "Kopiert",
         "copy": "Kopieren",
         "apa": "APA",
-        "plain": "Nur Text"
+        "plain": "Nur Text",
+        "copyFailed": "Automatisches Kopieren nicht möglich. Das Zitat ist markiert; kopiere es mit der Tastatur."
       },
       "metaTitle": "So wird der LGBTQ+-Gleichstellungswert berechnet",
       "metaDescription": "Alle Gewichtungen des Queer Guide Gleichstellungswerts, der Bereich 0–100, die Stufengrenzen, bekannte Grenzen und wie man ihn zitiert.",

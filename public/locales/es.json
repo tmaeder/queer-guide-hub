@@ -4568,7 +4568,8 @@
         "copied": "Copiado",
         "copy": "Copiar",
         "apa": "APA",
-        "plain": "Texto sin formato"
+        "plain": "Texto sin formato",
+        "copyFailed": "No se pudo copiar automáticamente. La cita está seleccionada; cópiala con el teclado."
       },
       "metaTitle": "Cómo se calcula la puntuación de igualdad LGBTQ+",
       "metaDescription": "Cada ponderación de la puntuación de igualdad de Queer Guide, el rango 0–100, los umbrales de los niveles, sus límites conocidos y cómo citarla.",

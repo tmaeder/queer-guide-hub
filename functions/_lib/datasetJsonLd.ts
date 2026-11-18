@@ -47,6 +47,16 @@ const TGEU_TRI = {
 
 type DatasetDef = Record<string, unknown>;
 
+const RIGHTS_WITH_SCORE: DatasetDef = {
+  name: 'LGBTQ+ rights by country, with equality score',
+  description:
+    'Legal status for LGBTQ+ people in every country and territory: criminalisation and penalties, partnership recognition, anti-discrimination protections, hate-crime law, adoption, gender recognition, conversion-practice bans and intersex protection, plus a 0–100 equality score computed from that record. Re-imported nightly from the ILGA World Database.',
+  isBasedOn: ILGA,
+  spatialCoverage: { '@type': 'Place', name: 'Worldwide' },
+  measurementTechnique: `${SITE_ORIGIN}/tags/rights-by-country/methodology`,
+  keywords: ['LGBTQ+ rights', 'equality score', 'methodology', 'ILGA'],
+};
+
 const STATIC_DATASETS: Record<string, DatasetDef> = {
   '/tags/rights-by-country': {
     name: 'LGBTQ+ legal status by country',
@@ -66,6 +76,9 @@ const STATIC_DATASETS: Record<string, DatasetDef> = {
     spatialCoverage: { '@type': 'Place', name: 'Worldwide' },
     keywords: ['LGBTQ+ rights', 'criminalisation', 'same-sex marriage', 'ILGA', 'equality'],
   },
+  // Same dataset, described from the pages that explain its sources and its score.
+  '/tags/rights-by-country/sources': RIGHTS_WITH_SCORE,
+  '/tags/rights-by-country/methodology': RIGHTS_WITH_SCORE,
   '/tags/rights-by-country/trans': {
     name: 'Trans legal gender recognition and documented anti-trans violence by country',
     description:
