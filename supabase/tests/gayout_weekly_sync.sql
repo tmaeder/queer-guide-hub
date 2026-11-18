@@ -12,13 +12,18 @@ begin
      has_function_privilege('authenticated','public.start_gayout_weekly_sync(jsonb)','execute') then
     raise exception 'Internal sync state is exposed';
   end if;
-  r:=(public.start_gayout_weekly_sync('{"dry_run":true,"triggered_by":"integration_test"}')->>'pipeline_run_id')::uuid;
+  again:=public.start_gayout_weekly_sync('{"dry_run":true,"triggered_by":"integration_test"}');
+  if not (again->>'created')::boolean then raise exception 'An active GayOut run exists; run fixtures only while idle';end if;
+  r:=(again->>'pipeline_run_id')::uuid;
   again:=public.start_gayout_weekly_sync('{"dry_run":true}');
   if (again->>'pipeline_run_id')::uuid<>r or (again->>'created')::boolean then raise exception 'Concurrent start did not reuse run';end if;
   claim:=public.gayout_claim_step(r,'source-places');
   if claim is null or public.gayout_claim_step(r,'source-places') is not null then raise exception 'Step lease not exclusive';end if;
   if public.gayout_finish_step(r,'source-places',gen_random_uuid(),'{"status":"completed"}',0,0,0,false,1) then raise exception 'Stale step token accepted';end if;
   perform public.gayout_init_cycle(r,'places');
+  -- init_cycle adopts pending work from older runs. Isolate this rollback-only
+  -- fixture so commit assertions do not consume that unrelated work.
+  update public.ingestion_staging set pipeline_run_id=null where pipeline_run_id=r;
   select * into strict q from public.gayout_claim_urls(r,'places',1);
   perform public.gayout_save_inventory(r,'places',q.url,q.lease_token,'fixture-hash',
     jsonb_build_array(jsonb_build_object('url',source_url,'work_kind','detail','source_entity_id','/en/switzerland/zurich/organizations/queer-guide-sync-fixture','target_table','organizations')),1,true);
