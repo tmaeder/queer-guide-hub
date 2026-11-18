@@ -6,7 +6,11 @@
     "personalities": "Personalities",
     "history": "History",
     "lede": "The words we use, the people who shaped queer life, and the history behind both.",
-    "navigation": "Knowledge sections"
+    "navigation": "Knowledge sections",
+    "termsHint": "The words we use, defined",
+    "personalitiesHint": "People who shaped queer life",
+    "historyHint": "Milestones, year by year",
+    "rightsHint": "What the law says, by country"
   },
   "breadcrumb": {
     "home": "Home",
@@ -2122,7 +2126,11 @@
       "exploreCity": "{{city}} city guide",
       "browseEvents": "Browse {{city}} events",
       "whatsOn": "What’s on",
-      "communitySpace": "Community space"
+      "communitySpace": "Community space",
+      "photos": "Photos",
+      "previousPhoto": "Previous photo",
+      "nextPhoto": "Next photo",
+      "pausePhotos": "Pause slideshow"
     },
     "discovery": {
       "openMap": "Open the map",
@@ -2155,7 +2163,8 @@
       "interchange": {
         "label": "Search everything",
         "subtitle": "Every line meets here"
-      }
+      },
+      "title": "Map"
     },
     "heroLine1": "Queer venues,",
     "heroLine2": "events, and people.",
@@ -2452,6 +2461,7 @@
       "you": "You",
       "menuTitle": "All sections",
       "menuDescription": "Jump to any section, switch language or theme.",
+      "hubDescription": "Your messages, plans, people and saved things.",
       "trips": "My Trips",
       "settingsSection": "Display",
       "browseAll": "Browse all sections",
@@ -2941,7 +2951,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} person",
+        "fieldCount_other": "{{formatted}} people"
       },
       "detail": {
         "inTheNews": "In the news",

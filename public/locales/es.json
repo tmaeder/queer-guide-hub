@@ -6,7 +6,11 @@
     "personalities": "Personalidades",
     "history": "Historia",
     "lede": "Las palabras que usamos, las personas que dieron forma a la vida queer y la historia detrás de ambas.",
-    "navigation": "Secciones de saber"
+    "navigation": "Secciones de saber",
+    "termsHint": "Nuestras palabras, definidas",
+    "personalitiesHint": "Personas que marcaron la vida queer",
+    "historyHint": "Hitos, año a año",
+    "rightsHint": "Lo que dice la ley, por país"
   },
   "eventTypes": {
     "party": "Fiesta",
@@ -1926,7 +1930,11 @@
       "exploreCity": "Explora {{city}}",
       "browseEvents": "Ver eventos en {{city}}",
       "whatsOn": "Qué hay",
-      "communitySpace": "Espacio comunitario"
+      "communitySpace": "Espacio comunitario",
+      "photos": "Fotos",
+      "previousPhoto": "Foto anterior",
+      "nextPhoto": "Foto siguiente",
+      "pausePhotos": "Pausar presentación"
     },
     "discovery": {
       "openMap": "Abrir el mapa",
@@ -2097,7 +2105,8 @@
       "interchange": {
         "label": "Busca en todo",
         "subtitle": "Aquí se cruzan todas las líneas"
-      }
+      },
+      "title": "Mapa"
     },
     "glossary": {
       "eyebrow": "Glosario",
@@ -2255,6 +2264,7 @@
       "you": "Perfil",
       "menuTitle": "Todas las secciones",
       "menuDescription": "Ve a cualquier sección, cambia el idioma o el tema.",
+      "hubDescription": "Tus mensajes, planes, personas y elementos guardados.",
       "trips": "Mis viajes",
       "settingsSection": "Pantalla",
       "browseAll": "Ver todas las secciones",
@@ -2747,7 +2757,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} persona",
+        "fieldCount_other": "{{formatted}} personas"
       },
       "detail": {
         "inTheNews": "In the news",

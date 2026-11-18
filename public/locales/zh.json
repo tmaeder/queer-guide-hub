@@ -6,7 +6,11 @@
     "personalities": "人物",
     "history": "历史",
     "lede": "我们使用的词语、塑造酷儿生活的人们，以及背后的历史。",
-    "navigation": "知识栏目"
+    "navigation": "知识栏目",
+    "termsHint": "我们使用的词语及其含义",
+    "personalitiesHint": "塑造酷儿生活的人们",
+    "historyHint": "逐年的重要事件",
+    "rightsHint": "各国法律现状"
   },
   "eventTypes": {
     "party": "派对",
@@ -1926,7 +1930,11 @@
       "exploreCity": "探索{{city}}",
       "browseEvents": "浏览{{city}}活动",
       "whatsOn": "活动预告",
-      "communitySpace": "社区空间"
+      "communitySpace": "社区空间",
+      "photos": "照片",
+      "previousPhoto": "上一张照片",
+      "nextPhoto": "下一张照片",
+      "pausePhotos": "暂停幻灯片"
     },
     "discovery": {
       "openMap": "打开地图",
@@ -2097,7 +2105,8 @@
       "interchange": {
         "label": "全站搜索",
         "subtitle": "所有线路在此交会"
-      }
+      },
+      "title": "地图"
     },
     "glossary": {
       "eyebrow": "术语库",
@@ -2255,6 +2264,7 @@
       "you": "我的",
       "menuTitle": "全部板块",
       "menuDescription": "跳转到任意板块，切换语言或主题。",
+      "hubDescription": "你的消息、计划、联系人和收藏。",
       "trips": "我的行程",
       "settingsSection": "显示",
       "browseAll": "浏览所有板块",
@@ -2745,7 +2755,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} 人",
+        "fieldCount_other": "{{formatted}} 人"
       },
       "detail": {
         "inTheNews": "In the news",

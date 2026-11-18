@@ -6,7 +6,11 @@
     "personalities": "Личности",
     "history": "История",
     "lede": "Слова, которые мы используем, люди, которые сформировали квир-жизнь, и история, стоящая за ними.",
-    "navigation": "Разделы знаний"
+    "navigation": "Разделы знаний",
+    "termsHint": "Наши слова и их значения",
+    "personalitiesHint": "Люди, повлиявшие на квир-жизнь",
+    "historyHint": "Вехи, год за годом",
+    "rightsHint": "Что говорит закон, по странам"
   },
   "eventTypes": {
     "party": "Вечеринка",
@@ -1958,7 +1962,11 @@
       "exploreCity": "Откройте для себя: {{city}}",
       "browseEvents": "События: {{city}}",
       "whatsOn": "Что происходит",
-      "communitySpace": "Пространство сообщества"
+      "communitySpace": "Пространство сообщества",
+      "photos": "Фотографии",
+      "previousPhoto": "Предыдущее фото",
+      "nextPhoto": "Следующее фото",
+      "pausePhotos": "Приостановить слайд-шоу"
     },
     "discovery": {
       "openMap": "Открыть карту",
@@ -2129,7 +2137,8 @@
       "interchange": {
         "label": "Искать везде",
         "subtitle": "Здесь пересекаются все линии"
-      }
+      },
+      "title": "Карта"
     },
     "glossary": {
       "eyebrow": "Глоссарий",
@@ -2287,6 +2296,7 @@
       "you": "Профиль",
       "menuTitle": "Все разделы",
       "menuDescription": "Перейдите в любой раздел, смените язык или тему.",
+      "hubDescription": "Ваши сообщения, планы, люди и сохранённое.",
       "trips": "Мои поездки",
       "settingsSection": "Отображение",
       "browseAll": "Просмотреть все разделы",
@@ -2781,7 +2791,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} человек",
+        "fieldCount_other": "{{formatted}} человек"
       },
       "detail": {
         "inTheNews": "In the news",
