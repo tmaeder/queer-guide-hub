@@ -107,7 +107,7 @@ describe('CountryDetail', () => {
     expect(
       [...container.querySelectorAll('article section[id]')].map((el) => el.id).slice(0, 3),
     ).toEqual(['cities', 'travel', 'rights']);
-    const ideas = screen.getByRole('list', { name: 'Ideas for your visit' });
+    const ideas = screen.getByRole('region', { name: 'Cities' });
     expect(
       within(ideas)
         .getByRole('link', { name: /Berlin/ })

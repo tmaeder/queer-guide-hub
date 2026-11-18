@@ -1,3 +1,5 @@
+import { GeoPhotoInset } from '@/components/geo/GeoPhotoInset';
+import { ImageCredit } from '@/components/ui/ImageCredit';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { TagChipRow } from '@/components/tags/TagChipRow';
@@ -147,8 +149,29 @@ export function VillageAbout({
   onContentUpdated?: () => void;
   t: TFunction;
 }) {
+  const metadata = village.image_metadata;
+  const source = metadata?.photographer_url;
+  const credit =
+    metadata?.photographer || metadata?.license ? (
+      <ImageCredit attribution={metadata.photographer} license={metadata.license} />
+    ) : undefined;
   return (
     <div className="flex flex-col gap-6">
+      <GeoPhotoInset
+        src={village.image_url}
+        alt={metadata?.alt || village.name}
+        fallbackKey={village.slug}
+        className="max-w-reading bg-transparent p-0"
+        caption={
+          credit && typeof source === 'string' && /^https:\/\//i.test(source) ? (
+            <a href={source} className="underline underline-offset-2">
+              {credit}
+            </a>
+          ) : (
+            credit
+          )
+        }
+      />
       {village.history && (
         <Editable
           contentType="queer_villages"
@@ -252,9 +275,11 @@ export function villageStops(
 export function VillageStops({
   venues,
   previousVenue,
+  variant = 'route',
 }: {
   venues: VillageVenue[];
   previousVenue?: VillageVenue;
+  variant?: 'compact' | 'route';
 }) {
   const { t } = useTranslation();
   if (venues.length === 0) return null;
@@ -262,7 +287,7 @@ export function VillageStops({
     value
       ? t(`venueCategories.${value}`, { defaultValue: venueCategoryFallbackLabel(value) ?? value })
       : null;
-  return <StopList stops={villageStops(venues, previousVenue, label)} variant="route" />;
+  return <StopList stops={villageStops(venues, previousVenue, label)} variant={variant} />;
 }
 
 /**
@@ -373,7 +398,7 @@ export function VillageMapInset({
     <EntityMap
       center={[Number(village.longitude), Number(village.latitude)]}
       zoom={15}
-      height={280}
+      height={360}
       visitedLookup={visitedLookup}
       markers={[
         {

@@ -25,14 +25,14 @@ for (const viewport of [
       const walk = page.locator('#walk');
       const total = await walk.locator('li').count();
       expect(total).toBeGreaterThan(0);
-      await expect(walk.locator('li:visible')).toHaveCount(Math.min(8, total));
+      await expect(walk.locator('li:visible')).toHaveCount(Math.min(4, total));
       const expand = walk.locator('summary');
-      if (total > 8) {
+      if (total > 4) {
         await expect(expand).toBeVisible();
         await expand.click();
         await expect(walk.locator('li:visible')).toHaveCount(total);
       }
-      await expect(walk.locator('svg path').first()).toHaveAttribute('d', /C/);
+      await expect(walk.getByRole('link').first()).toHaveAttribute('href', /\/venues\//);
       const distances = await walk
         .locator('p')
         .evaluateAll((nodes) =>
@@ -46,23 +46,15 @@ for (const viewport of [
       );
     });
 
-    test('opens the map and retains history and secondary actions', async ({ page }) => {
+    test('shows the map and retains history and secondary actions', async ({ page }) => {
       const map = page.locator('#map');
-      await expect(map.locator('button[aria-controls="map-detail"]')).toHaveAttribute(
-        'aria-expanded',
-        'false',
-      );
-      await expect(map.locator('canvas')).toHaveCount(0);
-      await page.getByRole('button', { name: 'Open map', exact: true }).click();
-      await expect(map.locator('button[aria-controls="map-detail"]')).toHaveAttribute(
-        'aria-expanded',
-        'true',
-      );
-      await expect(page.locator('#map-detail')).toBeVisible();
       await expect(map.locator('canvas')).toBeVisible();
       await expect(map.getByRole('status')).toHaveCount(0, { timeout: 30_000 });
       await expect(map.getByRole('button', { name: 'Zoom in', exact: true })).toBeEnabled();
-      await expect(page.locator('section[aria-label="Overview"] #map-detail')).toBeVisible();
+      await expect(map.getByRole('link', { name: 'Open the full map' })).toHaveAttribute(
+        'href',
+        /lat=40\./,
+      );
       const history = page.locator('#about');
       await history.getByRole('button', { name: 'Show more', exact: true }).click();
       await expect(history.locator('[id="about-detail"]')).toBeVisible();
