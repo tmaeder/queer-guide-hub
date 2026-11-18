@@ -151,3 +151,28 @@ export function breadcrumbJsonLd(pathname: string, pageTitle: string): string {
     ],
   });
 }
+
+/**
+ * Dataset for /tags/rights-by-country/sources, so the rights data and its
+ * scoring method can be found and cited as data. No `license` on purpose: the
+ * record is ILGA's and we have not set reuse terms beyond attribution.
+ */
+export function rightsDatasetJsonLd(): string {
+  return renderLd({
+    '@context': 'https://schema.org',
+    '@type': 'Dataset',
+    name: 'LGBTQ+ rights by country, with equality score',
+    description:
+      'Legal status for LGBTQ+ people in every country and territory: criminalisation and penalties, partnership recognition, anti-discrimination protections, hate-crime law, adoption, gender recognition, conversion-practice bans and intersex protection, plus a 0–100 equality score computed from that record. Re-imported nightly from the ILGA World Database.',
+    url: `${SITE_ORIGIN}/tags/rights-by-country/sources`,
+    isAccessibleForFree: true,
+    spatialCoverage: 'Worldwide',
+    creator: { '@type': 'Organization', name: 'Queer Guide', url: SITE_ORIGIN },
+    isBasedOn: {
+      '@type': 'Dataset',
+      name: 'ILGA World Database',
+      url: 'https://database.ilga.org',
+    },
+    measurementTechnique: `${SITE_ORIGIN}/tags/rights-by-country/sources#points`,
+  });
+}

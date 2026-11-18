@@ -141,6 +141,7 @@
     "/dmca",
     "/donate",
     "/email-updates",
+    "/equality-score",
     "/europe",
     "/events",
     "/events/:slug",
@@ -228,6 +229,7 @@
     "/me/travel",
     "/me/trips",
     "/messages",
+    "/methodology",
     "/milestones",
     "/my-groups",
     "/news",
@@ -442,6 +444,16 @@
     },
     "/rights/trans": {
       "to": "/tags/rights-by-country/trans",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/methodology": {
+      "to": "/tags/rights-by-country/sources#points",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/equality-score": {
+      "to": "/tags/rights-by-country/sources#points",
       "localized": true,
       "preserveQuery": true
     },

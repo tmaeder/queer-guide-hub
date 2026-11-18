@@ -1,3 +1,4 @@
+import { localizedRedirectTarget } from '@/lib/localizedRedirectTarget';
 import { GovernanceRedirect } from '@/components/admin/GovernanceRedirect';
 import React, { Suspense } from 'react';
 import { Route, Navigate, useLocation, useParams } from 'react-router';
@@ -278,11 +279,9 @@ function LocalizedRedirect({ to }: { to: string }) {
   const location = useLocation();
   const prefix =
     locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
-  const search = to.includes('?') ? '' : location.search;
   // Carry the fragment too: /rights#marriage is how the glossary and inbound
   // links address a single right, and dropping it lands the reader at the top.
-  const hash = to.includes('#') ? '' : location.hash;
-  return <Navigate to={`${prefix}${to}${search}${hash}`} replace />;
+  return <Navigate to={localizedRedirectTarget(to, prefix, location)} replace />;
 }
 
 /** Locale-preserving redirect for a dynamic legacy route segment. */
@@ -819,6 +818,8 @@ export const AppRoutes = () => {
             path="rights/trans"
             element={<LocalizedRedirect to="/tags/rights-by-country/trans" />}
           />
+          <Route path="methodology" element={<LocalizedRedirect to="/tags/rights-by-country/sources#points" />} />
+          <Route path="equality-score" element={<LocalizedRedirect to="/tags/rights-by-country/sources#points" />} />
           {/* /support was the org-directory slice of /help wrapped in
             intent chrome: same hook, same `role: 'support'` filter, and its
             own crisis band was just a link to /help. Its two unique pieces

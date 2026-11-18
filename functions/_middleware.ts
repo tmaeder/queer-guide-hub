@@ -48,7 +48,7 @@ import {
   SUPPORTED_LOCALES,
   DEFAULT_LOCALE,
 } from './_lib/routeMeta';
-import { homepageJsonLd, breadcrumbJsonLd } from './_lib/jsonLd';
+import { homepageJsonLd, breadcrumbJsonLd, rightsDatasetJsonLd } from './_lib/jsonLd';
 import { getBranding, brandStyleTag, brandingMeta, brandFontPreloads } from './_lib/branding';
 import { isBotUserAgent } from './_lib/botUa';
 import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
@@ -671,6 +671,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
   if (detail?.jsonLd) {
     headInjections.push(detail.jsonLd);
+  }
+  if (indexable && cleanPath === '/tags/rights-by-country/sources') {
+    headInjections.push(rightsDatasetJsonLd());
   }
   // oEmbed discovery (https://oembed.com §4) for shareable detail pages.
   if (detail && indexable) {
