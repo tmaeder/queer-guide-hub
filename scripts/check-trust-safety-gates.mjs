@@ -10,7 +10,7 @@
  * Harm-anchored gates from docs/audits/2026-06-05-trust-safety-audit.md §4.
  */
 
-import { callRpc, notEvaluated, stallReason } from './lib/gate-rpc.mjs'
+import { callRpc, notEvaluated, readGateSnapshot, stallReason } from './lib/gate-rpc.mjs'
 import { applyCanonicalPersonGate } from './lib/person-provenance-gate.mjs'
 
 const BASE = process.env.SUPABASE_URL
@@ -109,7 +109,7 @@ const callPersonGate = () => callRpc(`${BASE}/rest/v1/rpc/release_gate_checks`, 
   headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
   body: '{}',
 })
-let personReport = await callPersonGate()
+let personReport = await readGateSnapshot(BASE, KEY, 'release_gate_checks') ?? await callPersonGate()
 if (notEvaluated(personReport)) {
   console.warn(`Person provenance gate did not evaluate — ${stallReason(personReport)}; retrying once.`)
   await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS))
