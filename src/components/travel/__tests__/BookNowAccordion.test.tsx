@@ -8,7 +8,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { vi } from 'vitest';
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
-vi.mock('@/hooks/useRecommendations', () => ({ useRecommendations: () => ({ data: [], isLoading: false }) }));
+vi.mock('@/hooks/useRecommendations', () => ({
+  useRecommendations: () => ({ data: [], isLoading: false }),
+}));
 
 import { fireEvent } from '@testing-library/react';
 import { BookNowAccordion } from '../BookNowAccordion';
@@ -36,19 +38,28 @@ function renderAt(path: string, tripContext: TripBookingContext | null = null) {
 }
 
 describe('BookNowAccordion', () => {
-  it('renders closed by default (no booking tabs visible)', () => {
-    const { queryByRole } = renderAt('/travel');
-    expect(queryByRole('button', { name: 'Flights' })).toBeNull();
+  it('shows the three booking tiles closed by default', () => {
+    const { getByRole } = renderAt('/travel');
+    for (const name of ['Flights', 'Hotels', 'Activities']) {
+      expect(getByRole('button', { name })).toHaveAttribute('aria-pressed', 'false');
+    }
+  });
+
+  it('opens the matching search when a tile is clicked', () => {
+    const { getByRole } = renderAt('/travel');
+    fireEvent.click(getByRole('button', { name: 'Activities' }));
+    expect(getByRole('button', { name: 'Activities' })).toHaveAttribute('aria-pressed', 'true');
+    expect(getByRole('button', { name: /Search Activities/ })).toBeTruthy();
   });
 
   it('opens when a ?tab= deep link is present', () => {
     const { getByRole } = renderAt('/travel?tab=hotels');
-    expect(getByRole('button', { name: 'Hotels' })).toBeTruthy();
+    expect(getByRole('button', { name: 'Hotels' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('opens when a ?city= deep link is present', () => {
     const { getByRole } = renderAt('/travel?city=Berlin');
-    expect(getByRole('button', { name: 'Flights' })).toBeTruthy();
+    expect(getByRole('button', { name: 'Flights' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('shows the trip-context banner when the trip seeds the search', () => {
