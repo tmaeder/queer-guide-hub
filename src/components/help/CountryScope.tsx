@@ -19,7 +19,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search } from '@/components/icons';
+import { Globe, Search } from '@/components/icons';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import {
   Dialog,
@@ -65,8 +65,9 @@ export function CountryScope({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-      <p className="text-15 text-muted-foreground">
+    <div className="inline-flex max-w-full flex-wrap items-center gap-x-4 gap-y-2 rounded-container bg-card py-2 pl-4 pr-2 shadow-soft">
+      <p className="inline-flex items-center gap-2 text-15 text-muted-foreground">
+        <Globe size={16} aria-hidden />
         {country === 'ALL' ? (
           t('help.scope_all', 'Showing lines from every country we have.')
         ) : (
@@ -89,7 +90,7 @@ export function CountryScope({
             type="button"
             className="min-h-10 rounded-element border border-input bg-transparent px-4 py-1 text-13 font-bold text-foreground transition-colors hover:bg-foreground hover:text-background active:opacity-80"
           >
-            {t('help.scope_change', 'Change')}
+            {t('help.scope_change', 'Change country')}
           </button>
         </DialogTrigger>
         <DialogContent>

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Plane, Hotel, Ticket, TrendingUp, X, ChevronDown } from '@/components/icons';
+import { Plane, Hotel, Ticket, TrendingUp, X } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,10 +28,10 @@ import type { BookingResult } from '@/lib/booking/types';
 
 type BookingTab = 'flights' | 'hotels' | 'activities';
 
-const TAB_CONFIG: { value: BookingTab; label: string; icon: typeof Plane }[] = [
-  { value: 'flights', label: 'Flights', icon: Plane },
-  { value: 'hotels', label: 'Hotels', icon: Hotel },
-  { value: 'activities', label: 'Activities', icon: Ticket },
+const TAB_CONFIG: { value: BookingTab; label: string; hint: string; icon: typeof Plane }[] = [
+  { value: 'flights', label: 'Flights', hint: 'Live fares and deals', icon: Plane },
+  { value: 'hotels', label: 'Hotels', hint: 'Stays with queer-friendly filter', icon: Hotel },
+  { value: 'activities', label: 'Activities', hint: 'Tours and tickets by city', icon: Ticket },
 ];
 
 const HOTEL_TYPE_LABEL_FALLBACK: Record<HotelTypeOption, string> = {
@@ -259,67 +259,80 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
 
   return (
     <section className=" bg-surface-container mb-8 rounded-element" data-testid="book-now-section">
-      <button
-        type="button"
-        className="w-full flex items-center justify-between p-6 text-left"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-      >
-        <span>
-          <span className="block text-lg font-bold tracking-tight">
-            {t('pages.travel.bookNow.title', 'Book now')}
-          </span>
-          <span className="block text-sm text-muted-foreground mt-1">
-            {t(
-              'pages.travel.bookNow.subtitle',
-              'Search flights, hotels, and activities directly — no trip required.',
-            )}
-          </span>
-        </span>
-        <ChevronDown
-          size={20}
-          className="transition-transform duration-fast motion-reduce:transition-none"
-          style={{ transform: open ? 'rotate(180deg)' : 'none' }}
-        />
-      </button>
+      <div className="p-6">
+        <h3 className="text-title font-bold tracking-tight">
+          {t('pages.travel.bookNow.title', 'Book now')}
+        </h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {t(
+            'pages.travel.bookNow.subtitle',
+            'Search flights, hotels, and activities directly — no trip required.',
+          )}
+        </p>
+        {open && tripSeeding && (
+          <p className="mt-4 text-13 text-muted-foreground" data-testid="trip-context-banner">
+            {t('pages.travel.bookNow.tripContext', 'Searching for your {{city}} trip', {
+              city: tripCtx!.cityName,
+            })}
+            {tripDates ? ` · ${tripDates}` : ''}{' '}
+            <button
+              type="button"
+              className="underline underline-offset-2 hover:text-foreground"
+              onClick={() => setIgnoreTripContext(true)}
+            >
+              {t('pages.travel.bookNow.tripContextChange', 'change')}
+            </button>
+          </p>
+        )}
+        <div
+          role="group"
+          aria-label={t('pages.travel.bookNow.title', 'Book now')}
+          className="mt-6 grid gap-4 sm:grid-cols-3"
+        >
+          {TAB_CONFIG.map(({ value, label, hint, icon: Icon }) => {
+            const active = open && activeTab === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={active}
+                aria-label={label}
+                onClick={() => {
+                  if (active) {
+                    setOpen(false);
+                    return;
+                  }
+                  setOpen(true);
+                  handleTabChange(value);
+                }}
+                className={`flex min-h-11 items-center gap-4 rounded-element border p-4 text-left transition-colors ${
+                  active
+                    ? 'border-foreground bg-foreground text-background'
+                    : 'border-border bg-background hover:border-foreground/50'
+                }`}
+              >
+                <span
+                  className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${active ? 'bg-background text-foreground' : 'bg-muted'}`}
+                  aria-hidden
+                >
+                  <Icon size={20} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-bold">{label}</span>
+                  <span
+                    className={`block text-xs ${active ? 'text-background/70' : 'text-muted-foreground'}`}
+                  >
+                    {hint}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {open && (
-        <div className="">
-          {tripSeeding && (
-            <p
-              className="px-6 pb-2 text-13 text-muted-foreground"
-              data-testid="trip-context-banner"
-            >
-              {t('pages.travel.bookNow.tripContext', 'Searching for your {{city}} trip', {
-                city: tripCtx!.cityName,
-              })}
-              {tripDates ? ` · ${tripDates}` : ''}{' '}
-              <button
-                type="button"
-                className="underline underline-offset-2 hover:text-foreground"
-                onClick={() => setIgnoreTripContext(true)}
-              >
-                {t('pages.travel.bookNow.tripContextChange', 'change')}
-              </button>
-            </p>
-          )}
-          <div className="flex">
-            {TAB_CONFIG.map(({ value, label, icon: Icon }) => {
-              const active = activeTab === value;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => handleTabChange(value)}
-                  className={`flex-1 px-4 py-4 inline-flex items-center justify-center gap-2 text-sm font-medium border-b ${active ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                >
-                  <Icon style={{ height: 18, width: 18 }} />
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-
+        <div className="border-t border-border-hairline">
           <div className="p-6">
             {activeTab === 'flights' && (
               <FlightSearchForm
