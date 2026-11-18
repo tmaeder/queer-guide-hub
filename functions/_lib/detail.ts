@@ -1350,7 +1350,9 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
 
   // Aggregate venues + events for this city. Best-effort — if either fails the
   // page still renders with whatever we have.
-  const [venues, events] = await Promise.all([
+  // News mirrors what CityDetail shows humans (useNewsArticles: city_ids AND
+  // country_ids overlap, newest 5), so the bot links are a subset of the page.
+  const [venues, events, news] = await Promise.all([
     cityId
       ? fetchRows(
           env,
@@ -1369,6 +1371,28 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
           'title,slug,start_date',
           `city_id=eq.${cityId}&safety_gated=eq.false&start_date=gte.${new Date().toISOString().slice(0, 10)}&order=start_date.asc`,
           10,
+        ).catch(() => [])
+      : Promise.resolve([]),
+    cityId
+      ? fetchRows(
+          env,
+          'news_articles',
+          'title,slug,published_at',
+          [
+            `city_ids=ov.{${cityId}}`,
+            countryId ? `country_ids=ov.{${countryId}}` : '',
+            'slug=not.is.null',
+            'published_at=not.is.null',
+            'content=not.is.null',
+            'content=neq.',
+            'archived_at=is.null',
+            'duplicate_of_id=is.null',
+            'or=(quality_status.eq.passed,and(quality_status.is.null,or(quality_score.is.null,quality_score.gte.50)))',
+            'order=published_at.desc',
+          ]
+            .filter(Boolean)
+            .join('&'),
+          5,
         ).catch(() => [])
       : Promise.resolve([]),
   ]);
@@ -1403,6 +1427,16 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
     })
     .join('\n        ');
 
+  const newsList = news
+    .filter((n) => stringField(n, 'slug'))
+    .map((n) => {
+      const ntitle = escape(stringField(n, 'title') ?? '');
+      const nslug = escape(stringField(n, 'slug') ?? '');
+      const ndate = stringField(n, 'published_at');
+      return `<li><a href="/news/${nslug}">${ntitle}</a>${ndate ? ` — <time datetime="${escape(ndate)}">${escape(ndate.slice(0, 10))}</time>` : ''}</li>`;
+    })
+    .join('\n        ');
+
   const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
@@ -1410,6 +1444,7 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
       ${description ? paragraphsHtmlLinked(description, glossary) : `<p>${escape(name)} is part of the global queer life Queer Guide tracks. Below are the venues, events and travel tips we have on file for ${escape(name)}.</p>`}
       ${venues.length ? `<section><h2>Top LGBTQ+ venues in ${escape(label)}</h2><ul>\n        ${venuesList}\n      </ul></section>` : ''}
       ${events.length ? `<section><h2>Upcoming LGBTQ+ events in ${escape(label)}</h2><ul>\n        ${eventsList}\n      </ul></section>` : ''}
+      ${newsList ? `<section><h2>LGBTQ+ news from ${escape(label)}</h2><ul>\n        ${newsList}\n      </ul></section>` : ''}
       <section><h2>Plan your trip</h2><p>Check the <a href="/travel">country safety guide</a> before you go, and browse <a href="/hotels">queer-friendly hotels</a> and <a href="/villages">queer villages</a> for a place to stay.</p></section>
     </article>
     <nav aria-label="Site sections">

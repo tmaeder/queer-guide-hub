@@ -132,7 +132,9 @@ export async function fetchRows(
         if (k && v !== undefined) qs.append(k, v);
       }
     }
-    qs.set('order', order);
+    // An `order=` inside `filter` wins: detail pages pass their sort there
+    // (rating, start_date) and `set` used to overwrite it with `id.asc`.
+    if (!qs.has('order')) qs.set('order', order);
     qs.set('limit', String(pageSize));
     qs.set('offset', String(offset));
 
