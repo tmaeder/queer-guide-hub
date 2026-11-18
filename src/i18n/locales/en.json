@@ -5626,5 +5626,27 @@
   "i18n": {
     "selectLanguage": "Select language",
     "selectCurrency": "Select currency"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "Link to us",
+      "intro": "You are welcome to link to any page on Queer Guide. These are the ones most often cited. Copy a snippet into your page, or write your own link text.",
+      "badgeTitle": "Data badge",
+      "badgeBody": "For pages that use our rights data. The badge links to the rights-by-country page.",
+      "badgeSnippet": "Badge HTML",
+      "listingTitle": "If your organization is listed",
+      "listingBody": "Replace YOUR-LISTING with the last part of your listing’s address on Queer Guide.",
+      "listingSnippet": "Listing link HTML",
+      "attribution": "When you use our rights data, credit Queer Guide and the ILGA World Database, which maintains the underlying legal record.",
+      "copied": "Copied",
+      "copy": "Copy",
+      "copyFailed": "Could not copy automatically. The text is selected; copy it with your keyboard.",
+      "page": {
+        "rights": "LGBTQ+ rights by country (Queer Guide)",
+        "methodology": "How the Queer Guide equality score is calculated",
+        "help": "LGBTQ+ crisis lines by country (Queer Guide)",
+        "interactions": "Drug combination risks (Queer Guide)"
+      }
+    }
   }
 }

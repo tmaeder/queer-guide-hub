@@ -254,7 +254,8 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   },
   '/press': {
     title: 'Press & Media | Queer Guide',
-    description: 'Press releases, brand assets, and media inquiries for Queer Guide.',
+    description:
+      'Press contact, usage guidelines, link snippets and a data badge for anyone writing about or linking to Queer Guide.',
   },
   '/blog': {
     title: 'Queer Guide Blog — Stories from the Community',

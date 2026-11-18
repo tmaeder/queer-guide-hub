@@ -397,6 +397,25 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
+  // Paired with '/press' in STATIC_ROUTE_META. The page body is CMS content
+  // the crawler does not see, so this carries the link-to-us part.
+  '/press': {
+    h1: 'Press and media',
+    paragraphs: [
+      'Resources for journalists, researchers and anyone who wants to link to Queer Guide. You are welcome to link to any page; the ones most often cited are LGBTQ+ rights by country, how the equality score is calculated, crisis lines by country, and the drug combination chart.',
+      'A data badge is available at https://queer.guide/images/badge/queer-guide-data-v1.svg for pages that use our rights data. When you use that data, credit Queer Guide and the ILGA World Database, which maintains the underlying legal record.',
+    ],
+    links: [
+      { href: '/tags/rights-by-country', label: 'LGBTQ+ rights by country' },
+      {
+        href: '/tags/rights-by-country/methodology',
+        label: 'How the equality score is calculated',
+      },
+      { href: '/help', label: 'Crisis lines by country' },
+      { href: '/tags/interactions', label: 'Drug combination chart' },
+    ],
+  },
+
   // Paired with '/tags/rights-by-country/trans' in STATIC_ROUTE_META, per the note above.
   '/tags/rights-by-country/trans': {
     h1: 'Trans rights and safety',

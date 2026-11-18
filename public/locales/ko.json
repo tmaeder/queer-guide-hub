@@ -5661,5 +5661,27 @@
   "i18n": {
     "selectLanguage": "언어 선택",
     "selectCurrency": "통화 선택"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "링크하기",
+      "intro": "Queer Guide의 어떤 페이지에도 링크하실 수 있습니다. 가장 자주 인용되는 페이지는 다음과 같습니다. 스니펫을 복사해 페이지에 넣거나 링크 텍스트를 직접 작성하세요.",
+      "badgeTitle": "데이터 배지",
+      "badgeBody": "권리 데이터를 사용하는 페이지용입니다. 배지는 국가별 권리 페이지로 연결됩니다.",
+      "badgeSnippet": "배지 HTML",
+      "listingTitle": "단체가 등록되어 있다면",
+      "listingBody": "YOUR-LISTING을 Queer Guide에 있는 등록 페이지 주소의 마지막 부분으로 바꾸세요.",
+      "listingSnippet": "등록 페이지 링크 HTML",
+      "attribution": "권리 데이터를 사용할 때는 Queer Guide와 기반 법률 기록을 관리하는 ILGA World Database를 출처로 표기하세요.",
+      "copied": "복사됨",
+      "copy": "복사",
+      "copyFailed": "자동으로 복사하지 못했습니다. 텍스트가 선택되어 있으니 키보드로 복사하세요.",
+      "page": {
+        "rights": "국가별 LGBTQ+ 권리 (Queer Guide)",
+        "methodology": "Queer Guide 평등 점수 산정 방법",
+        "help": "국가별 LGBTQ+ 위기 상담 전화 (Queer Guide)",
+        "interactions": "약물 병용 위험 (Queer Guide)"
+      }
+    }
   }
 }

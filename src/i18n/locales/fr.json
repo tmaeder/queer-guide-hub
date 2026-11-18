@@ -5667,5 +5667,27 @@
   "i18n": {
     "selectLanguage": "Choisir la langue",
     "selectCurrency": "Choisir la devise"
+  },
+  "press": {
+    "linkToUs": {
+      "title": "Faire un lien vers nous",
+      "intro": "Vous pouvez faire un lien vers n’importe quelle page de Queer Guide. Voici les plus souvent citées. Copiez un extrait dans votre page ou rédigez votre propre texte de lien.",
+      "badgeTitle": "Badge de données",
+      "badgeBody": "Pour les pages qui utilisent nos données sur les droits. Le badge renvoie vers la page des droits par pays.",
+      "badgeSnippet": "HTML du badge",
+      "listingTitle": "Si votre organisation est répertoriée",
+      "listingBody": "Remplacez YOUR-LISTING par la dernière partie de l’adresse de votre fiche sur Queer Guide.",
+      "listingSnippet": "HTML du lien vers la fiche",
+      "attribution": "Si vous utilisez nos données sur les droits, citez Queer Guide et l’ILGA World Database, qui tient à jour les informations juridiques sous-jacentes.",
+      "copied": "Copié",
+      "copy": "Copier",
+      "copyFailed": "Copie automatique impossible. Le texte est sélectionné ; copiez-le avec votre clavier.",
+      "page": {
+        "rights": "Droits LGBTQ+ par pays (Queer Guide)",
+        "methodology": "Comment le score d’égalité de Queer Guide est calculé",
+        "help": "Lignes d’écoute LGBTQ+ par pays (Queer Guide)",
+        "interactions": "Risques des combinaisons de drogues (Queer Guide)"
+      }
+    }
   }
 }
