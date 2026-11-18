@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, type CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { FilterChip } from '@/components/transit/FilterChip';
@@ -188,124 +188,140 @@ export function RightsMapControls({
     rail.scrollLeft = Math.max(0, rail.scrollLeft + centred);
   }, [topic.slug]);
 
+  // Inactive chips sit INSIDE a tinted segment, so they drop their own plate:
+  // the segment is the group, the active chip is the only filled thing in it.
+  const segmentChip = 'bg-transparent hover:bg-background hover:text-foreground';
+
   return (
-    <div className="flex flex-col gap-2 md:gap-4">
-      {/* (a) Every right, one rail. The family is an inline swatch rather than
-          a row of its own — see the header. `Fragment` and not a wrapping div
-          so the chips stay direct flex children and the gap between a family's
-          last chip and the next family's label is the same rhythm as between
-          chips. */}
-      <div
-        ref={railRef}
-        role="group"
-        aria-label={t('rights.map.lineSelector', 'Rights')}
-        // `scrollbar-thin`, NOT the hidden scrollbar the nav rails use
-        // (RouteStrip, PickerLine). Those are navigation you scroll past; this
-        // is a filter whose remaining options are the point, and with the bar
-        // hidden the rail just looked clipped at the right edge on desktop.
-        // PresetChips, CategoryChips and Rail all keep the bar for the same
-        // reason.
-        className="-mx-1 flex snap-x items-center gap-2 overflow-x-auto px-1 pb-1 scrollbar-thin"
-      >
-        {RIGHT_SECTION_ORDER.map((section) => {
-          const track = SECTION_TRACK[section];
-          return (
-            <Fragment key={section}>
-              <span className="flex shrink-0 items-center gap-2 pl-2 first:pl-0">
-                <TrackSwatch track={track} />
-                {/* The SHORT line name: the five full headings measure ~600px
-                    inline, five chips' worth of an 18-chip rail. The full one
-                    stays the accessible name of nothing here — the chips carry
-                    their own names, and the ledger below prints the headings. */}
-                <span className="whitespace-nowrap text-2xs font-bold uppercase tracking-wide text-muted-foreground">
-                  {t(`country.rights.sectionShort.${section}`, RIGHT_SECTION_SHORT_LABEL[section])}
-                </span>
-              </span>
-              {topicsInSection(section).map((stationTopic) => {
-                const isActive = stationTopic.slug === topic.slug;
-                return (
-                  <FilterChip
-                    key={stationTopic.slug}
-                    active={isActive}
-                    data-topic={stationTopic.slug}
-                    onClick={() => onTopicChange(stationTopic)}
-                    label={topicListLabel(stationTopic, t)}
-                    // The active chip keeps the TRACK fill instead of
-                    // FilterChip's ink plate: the track colour is this
-                    // control's wayfinding and the map below is drawn in it.
-                    // `className` is last into `cn`, so tailwind-merge resolves
-                    // the bg/text conflict in favour of the track.
-                    className={cn(
-                      'whitespace-nowrap',
-                      isActive && cn(TRACK_BG[track], TRACK_TEXT[track]),
+    <div className="flex flex-col gap-4">
+      {/* (a) Every right, one rail. Each family is a SEGMENT — a tinted group
+          carrying its track swatch and short name, with its chips inside —
+          rather than a row of its own (see the header) or a loose divider
+          between chips. Grouping is what the old flat rail lacked: 18 chips
+          with five tiny labels between them read as one undifferentiated
+          strip. Still one scrolling line, never wrapped. */}
+      <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-4">
+        <span
+          aria-hidden
+          className="shrink-0 text-2xs font-bold uppercase tracking-wide text-muted-foreground md:w-32"
+        >
+          {t('rights.map.lineHeading', 'Which law')}
+        </span>
+        <div
+          ref={railRef}
+          role="group"
+          aria-label={t('rights.map.lineSelector', 'Rights')}
+          // `scrollbar-thin`, NOT the hidden scrollbar the nav rails use
+          // (RouteStrip, PickerLine). Those are navigation you scroll past; this
+          // is a filter whose remaining options are the point, and with the bar
+          // hidden the rail just looked clipped at the right edge on desktop.
+          className="-mx-1 flex min-w-0 flex-1 snap-x items-center gap-2 overflow-x-auto px-1 pb-1 scrollbar-thin"
+        >
+          {RIGHT_SECTION_ORDER.map((section) => {
+            const track = SECTION_TRACK[section];
+            return (
+              <div
+                key={section}
+                className="flex shrink-0 items-center gap-1 rounded-element bg-surface-container p-1"
+              >
+                <span className="flex shrink-0 items-center gap-2 px-2">
+                  <TrackSwatch track={track} />
+                  {/* The SHORT line name: the five full headings measure ~600px
+                      inline. The chips carry their own names, and the ledger
+                      below prints the full headings. */}
+                  <span className="whitespace-nowrap text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+                    {t(
+                      `country.rights.sectionShort.${section}`,
+                      RIGHT_SECTION_SHORT_LABEL[section],
                     )}
-                  />
-                );
-              })}
-            </Fragment>
-          );
-        })}
+                  </span>
+                </span>
+                {topicsInSection(section).map((stationTopic) => {
+                  const isActive = stationTopic.slug === topic.slug;
+                  return (
+                    <FilterChip
+                      key={stationTopic.slug}
+                      active={isActive}
+                      data-topic={stationTopic.slug}
+                      onClick={() => onTopicChange(stationTopic)}
+                      label={topicListLabel(stationTopic, t)}
+                      // The active chip keeps the TRACK fill instead of
+                      // FilterChip's ink plate: the track colour is this
+                      // control's wayfinding and the map below is drawn in it.
+                      // `className` is last into `cn`, so tailwind-merge
+                      // resolves the bg/text conflict in favour of the track.
+                      className={cn(
+                        'whitespace-nowrap',
+                        isActive ? cn(TRACK_BG[track], TRACK_TEXT[track]) : segmentChip,
+                      )}
+                    />
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* (b) Who the law protects. Same rail treatment, its heading inline as
-          the rail's first item rather than a line of its own.
+      {/* (b) Who the law protects — a segmented control, one tinted track
+          with the five readings inside it.
 
           The buttons stay DISABLED rather than hidden for the nine topics
           recorded once for everyone: a control that vanishes takes its own
           limitation with it, and that limitation — that this law has no
           per-group reading — is exactly what a reader checking trans
           protection needs told. */}
-      {/* tabIndex={0} is load-bearing, not decoration. This rail scrolls
-          horizontally at 390px, and the comment above explains why the chips
-          stay DISABLED rather than hidden for nine topics — but a disabled
-          control is out of the tab order, so in exactly that state the rail is
-          a scrollable region containing nothing focusable: reachable by mouse
-          or finger, unreachable by keyboard (axe `scrollable-region-focusable`,
-          serious, caught on /tags/rights-by-country [mobile] in CI). Making the container
-          itself focusable restores arrow-key scrolling precisely when the chips
-          cannot. Do not remove it on the grounds that "the chips are focusable"
-          — they are, only while the lens applies. */}
-      <div
-        role="group"
-        tabIndex={0}
-        aria-label={t('rights.map.lens.heading', 'Who the law protects')}
-        className="-mx-1 flex snap-x items-center gap-2 overflow-x-auto px-1 pb-1 scrollbar-thin"
-      >
-        <span className="shrink-0 whitespace-nowrap text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+      <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-4">
+        <span
+          aria-hidden
+          className="shrink-0 text-2xs font-bold uppercase tracking-wide text-muted-foreground md:w-32"
+        >
           {t('rights.map.lens.heading', 'Who the law protects')}
         </span>
-        {LENS_OPTIONS.map((option) => (
-          <FilterChip
-            key={option.value}
-            active={option.value === lens}
-            // `aria-disabled`, NOT `disabled`. Two reasons, and the first is a
-            // measured a11y failure: a `disabled` button is not focusable, so
-            // on mobile — where this rail scrolls — the scrollable region held
-            // no focusable content at all and a keyboard user could not reach
-            // it (axe `scrollable-region-focusable`, serious, caught on
-            // /tags/rights-by-country [mobile/light]).
-            //
-            // The second is the point of keeping these visible in the first
-            // place. `disabled` also drops them out of tab order, so a screen
-            // reader user tabbing the page would never learn the lens exists
-            // for this law — the exact limitation this control is here to
-            // state. Dimmed-but-reachable announces "Gender identity,
-            // unavailable" and the sentence below explains why.
-            aria-disabled={lensDisabled || undefined}
-            onClick={lensDisabled ? undefined : () => onLensChange(option.value)}
-            label={t(`rights.map.lens.${option.value}`, option.label)}
-            className={cn(
-              'whitespace-nowrap',
-              lensDisabled && 'opacity-50 hover:bg-background hover:text-foreground',
-            )}
-          />
-        ))}
+        {/* tabIndex={0} is load-bearing, not decoration. This rail scrolls
+            horizontally at 390px and its chips are aria-disabled for nine
+            topics, so the container itself must be focusable for keyboard
+            scrolling (axe `scrollable-region-focusable`, serious, caught on
+            /tags/rights-by-country [mobile] in CI). Do not remove it. */}
+        <div
+          role="group"
+          tabIndex={0}
+          aria-label={t('rights.map.lens.heading', 'Who the law protects')}
+          className="-mx-1 flex min-w-0 flex-1 overflow-x-auto px-1 pb-1 scrollbar-thin"
+        >
+          <div className="flex shrink-0 items-center gap-1 rounded-element bg-surface-container p-1">
+            {LENS_OPTIONS.map((option) => {
+              const isActive = option.value === lens;
+              return (
+                <FilterChip
+                  key={option.value}
+                  active={isActive}
+                  // `aria-disabled`, NOT `disabled`: a `disabled` button is not
+                  // focusable, so the scrollable region held no focusable
+                  // content (axe `scrollable-region-focusable`), and a screen
+                  // reader user tabbing the page would never learn the lens
+                  // exists for this law. Dimmed-but-reachable announces
+                  // "Gender identity, unavailable" and the note below says why.
+                  aria-disabled={lensDisabled || undefined}
+                  onClick={lensDisabled ? undefined : () => onLensChange(option.value)}
+                  label={t(`rights.map.lens.${option.value}`, option.label)}
+                  className={cn(
+                    'whitespace-nowrap',
+                    !isActive && segmentChip,
+                    lensDisabled &&
+                      'cursor-not-allowed opacity-50 hover:bg-transparent hover:text-foreground',
+                  )}
+                />
+              );
+            })}
+          </div>
+        </div>
       </div>
       {/* The reason sits UNDER the rail, not inside it: at 390px a rail item
           scrolls, and a reason you have to scroll sideways to find is reachable
           rather than visible. */}
       {lensDisabled ? (
-        <p className="text-13 text-muted-foreground">
+        <p className="m-0 text-13 text-muted-foreground md:pl-36">
           {t(
             'rights.map.lens.disabledNote',
             'This law is recorded once for everyone — no per-group reading exists.',

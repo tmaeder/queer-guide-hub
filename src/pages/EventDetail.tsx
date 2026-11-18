@@ -56,7 +56,6 @@ import {
   type SingleSectionDef,
 } from '@/components/transit/singleSectionModel';
 import { TagChipRow } from '@/components/tags/TagChipRow';
-import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
@@ -440,7 +439,6 @@ export default function EventDetail() {
                 countryName={effectiveCountry.name}
               />
             )}
-            <DestinationSafetyCard countryIds={[effectiveCountry?.id ?? event.country_id]} />
             <div className="flex flex-wrap items-start gap-x-8 gap-y-4 border-b border-border-hairline pb-4">
               <div className="min-w-0 flex-[1_1_36rem]">
                 <ErrorBoundary section="event-fact-strip" fallback={null}>

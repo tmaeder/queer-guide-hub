@@ -16,7 +16,6 @@ import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Image } from '@/components/ui/Image';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
-import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import { estimateReadingTime } from '@/lib/share';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
@@ -630,7 +629,6 @@ export default function NewsDetail() {
 
         {/* Sidebar */}
         <div className="flex flex-col gap-6">
-          <DestinationSafetyCard countryIds={article.country_ids ?? []} />
           <StoryClusterPanel articleId={article.id} />
           <TagsCard tags={tags} />
           <LocationCard

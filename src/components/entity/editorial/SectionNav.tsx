@@ -76,7 +76,7 @@ export function SectionNav({
         ref={listRef}
         className={cn(
           'mx-auto flex max-w-page items-center overflow-x-auto rounded-container bg-surface-container [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-          variant === 'subway' ? 'min-h-16 gap-4 md:gap-8' : 'min-h-12 gap-1',
+          variant === 'subway' ? 'min-h-16 gap-2 md:gap-4' : 'min-h-12 gap-1',
         )}
       >
         {items.map((item) => {
@@ -96,16 +96,16 @@ export function SectionNav({
                   }
                 }}
                 className={cn(
-                  'relative inline-flex items-center whitespace-nowrap text-13 font-bold transition-colors no-underline',
+                  'relative inline-flex items-center whitespace-nowrap text-15 font-bold transition-colors no-underline',
                   variant === 'subway'
                     ? cn(
-                        'h-10 gap-2 rounded-element px-4 before:block before:h-4 before:w-4 before:shrink-0 before:rounded-full before:border-[4px] before:border-foreground before:transition-colors',
+                        'h-11 gap-2.5 rounded-element px-4 before:block before:h-6 before:w-6 before:shrink-0 before:rounded-full before:border-[4px] before:transition-colors',
                         isActive
-                          ? 'bg-foreground text-background before:bg-track-blue'
-                          : 'text-muted-foreground before:bg-background hover:bg-surface-container hover:text-foreground hover:before:bg-track-blue',
+                          ? 'bg-foreground text-background before:border-background before:bg-track-blue'
+                          : 'text-muted-foreground before:border-foreground before:bg-background hover:bg-surface-container hover:text-foreground hover:before:bg-track-blue',
                       )
                     : cn(
-                        'h-10 rounded-element px-4',
+                        'h-11 rounded-element px-4',
                         isActive
                           ? 'bg-foreground text-background'
                           : 'text-muted-foreground hover:bg-surface-container-high hover:text-foreground',

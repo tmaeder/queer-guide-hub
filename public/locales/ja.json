@@ -6,7 +6,11 @@
     "personalities": "人物",
     "history": "歴史",
     "lede": "私たちが使う言葉、クィアの暮らしを形づくった人々、そしてその背後にある歴史。",
-    "navigation": "知識のセクション"
+    "navigation": "知識のセクション",
+    "termsHint": "私たちの言葉とその意味",
+    "personalitiesHint": "クィアの暮らしを形づくった人々",
+    "historyHint": "年ごとの出来事",
+    "rightsHint": "国ごとの法律"
   },
   "eventTypes": {
     "party": "パーティー",
@@ -1926,7 +1930,11 @@
       "exploreCity": "{{city}}を探索",
       "browseEvents": "{{city}}のイベントを見る",
       "whatsOn": "イベント情報",
-      "communitySpace": "コミュニティスペース"
+      "communitySpace": "コミュニティスペース",
+      "photos": "写真",
+      "previousPhoto": "前の写真",
+      "nextPhoto": "次の写真",
+      "pausePhotos": "スライドショーを一時停止"
     },
     "discovery": {
       "openMap": "地図を開く",
@@ -2097,7 +2105,8 @@
       "interchange": {
         "label": "すべてを検索",
         "subtitle": "すべての路線がここで交わる"
-      }
+      },
+      "title": "地図"
     },
     "glossary": {
       "eyebrow": "用語集",
@@ -2255,6 +2264,7 @@
       "you": "マイページ",
       "menuTitle": "すべてのセクション",
       "menuDescription": "任意のセクションに移動し、言語やテーマを切り替えます。",
+      "hubDescription": "メッセージ、プラン、人、保存したもの。",
       "trips": "マイトリップ",
       "settingsSection": "表示",
       "browseAll": "すべてのセクションを見る",
@@ -2745,7 +2755,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}}人",
+        "fieldCount_other": "{{formatted}}人"
       },
       "detail": {
         "inTheNews": "In the news",
@@ -4530,7 +4542,8 @@
         "trans": "[JA] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "[JA] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[JA] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
-      }
+      },
+      "methodologyLink": "すべての重み、ランクの境界値、引用方法"
     },
     "lens": {
       "title": "[JA] Who the law protects",
@@ -4547,6 +4560,93 @@
       "partial": "[JA] Some protections",
       "protected": "[JA] Broad protections",
       "unknown": "[JA] Not enough data"
+    },
+    "methodology": {
+      "cite": {
+        "copied": "コピーしました",
+        "copy": "コピー",
+        "apa": "APA",
+        "plain": "プレーンテキスト"
+      },
+      "metaTitle": "LGBTQ+平等スコアの算出方法",
+      "metaDescription": "Queer Guideの平等スコアのすべての重み、0–100の範囲、ランクの境界値、既知の限界、引用方法。",
+      "section": {
+        "formula": "計算式",
+        "range": "範囲とランク",
+        "limits": "既知の限界",
+        "cite": "引用"
+      },
+      "kicker": {
+        "formula": "すべての重み"
+      },
+      "body": {
+        "formula": "各国は{{start}}から始まります。ILGAが記録する各事実について点数を加算または減算し、合計を0から100の間に収めます。一部の行は択一です。国が得るのは婚姻かシビル・ユニオンのどちらかで両方ではなく、刑罰による減点も最大1つです。",
+        "range": "0–100の制限をかける前の最低合計は{{min}}、最高は{{max}}です。上限には余裕をもって到達するため、100は「100以上」を意味し、「すべての権利が記録されている」ことは意味しません。",
+        "ceiling": "採点対象の国・地域{{scored}}のうち{{atCeiling}}が現在ちょうど100です。スコアではこれらを互いに順位付けできません。",
+        "cite": "スコアはQueer Guide、その根拠となる法的事実はILGA World Databaseとして引用してください。スコアは毎晩再計算されるため、参照した日付を記載してください。"
+      },
+      "col": {
+        "fact": "記録された事実",
+        "points": "点数",
+        "field": "ILGAの項目"
+      },
+      "tiers": "ランクの境界値",
+      "tierUnknown": "ILGAの記録なし",
+      "limits": {
+        "start": "50から始めるため、ほとんど何も記録されていない国は尺度の中央に位置します。中程度のスコアは、中程度の権利を意味する場合も、データが乏しいことを意味する場合もあります。",
+        "penaltyText": "刑罰による減点は、ILGAによる刑罰の記述に基づき、死刑に関する別個の項目は参照しません。ILGAが刑罰を拘禁刑と記述しつつ、国の一部で死刑も記録している場合（ナイジェリア北部諸州のシャリーア法）、スコアは死刑ではなく終身刑として減点します。",
+        "uneven": "すべての保護分野で、性的指向は性自認より多く数えられ（2点対1点）、ヘイトクライム法と扇動禁止法は性的指向についてのみ数えられます。そのため、このスコアはトランスジェンダーの人々よりもレズビアン、ゲイ、バイセクシュアルの人々について多くを示します。",
+        "law": "国単位であり、執行ではなく法令を記録しており、安全性の評価ではありません。",
+        "sourcesLink": "データとその限界について詳しく",
+        "transLink": "国別のトランスの権利"
+      },
+      "breadcrumb": "方法論",
+      "heroLine": "権利ライン · 方法論",
+      "title": "平等スコアの算出方法",
+      "lede": "平等スコアは、ILGA World Databaseから毎晩算出する0–100の数値です。このページでは、すべての重み、範囲、ランクの境界値、そしてスコアが誤るケースを示します。",
+      "group": {
+        "criminalisation": "犯罪化",
+        "partnership": "パートナーシップ",
+        "protection": "差別禁止の保護",
+        "hate": "ヘイトクライムと扇動",
+        "civic": "表現と結社",
+        "family": "家族と身体の完全性"
+      },
+      "row": {
+        "legal": "同性間の性行為が合法",
+        "criminalised": "同性間の性行為が犯罪化されている",
+        "death": "死刑と記述された刑罰（「可能性あり」を含む）",
+        "life": "最高で終身刑",
+        "eight": "最高で8年の拘禁刑",
+        "marriage": "同性婚",
+        "civil-union": "シビル・ユニオンのみ",
+        "constitutional-so": "憲法：性的指向を対象",
+        "constitutional-gi": "憲法：性自認を対象",
+        "employment-so": "雇用：性的指向を対象",
+        "employment-gi": "雇用：性自認を対象",
+        "housing-so": "住宅：性的指向を対象",
+        "housing-gi": "住宅：性自認を対象",
+        "education-so": "教育：性的指向を対象",
+        "education-gi": "教育：性自認を対象",
+        "health-so": "医療：性的指向を対象",
+        "health-gi": "医療：性自認を対象",
+        "goods_services-so": "商品・サービス：性的指向を対象",
+        "goods_services-gi": "商品・サービス：性自認を対象",
+        "bullying-so": "いじめ：性的指向を対象",
+        "bullying-gi": "いじめ：性自認を対象",
+        "hate-crime": "ヘイトクライム法が性的指向を対象",
+        "incitement": "憎悪の扇動を禁止（性的指向を含む）",
+        "expression-free": "表現に対する既知の法的障壁なし",
+        "expression-restricted": "表現に対する法的制限（明示的か否かを問わず）",
+        "association-free": "結社に対する既知の法的障壁なし",
+        "association-restricted": "結社に対する明示的な法的制限",
+        "joint-adoption": "共同養子縁組",
+        "second-parent": "継子養子縁組のみ",
+        "conversion": "コンバージョン・プラクティスの禁止",
+        "self-id": "自己決定による法的性別認定",
+        "marker": "性別表記の変更が可能（自己決定によらない）",
+        "intersex": "インターセックスの人々の保護"
+      }
     }
   },
   "about": {

@@ -1,4 +1,4 @@
-import { Star, MapPin, Phone, Globe, Mail, Navigation2, Sparkles } from '@/components/icons';
+import { Star, MapPin, Phone, Globe, Mail, Navigation2 } from '@/components/icons';
 import { Card, CardContent } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { buildProfileUrl, normalizeHandle } from '@/lib/social/registry';
@@ -32,7 +32,6 @@ import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueSafetySignalDisplay } from '@/components/venues/VenueSafetySignalDisplay';
 import { FeaturedInGuides } from '@/components/guides/FeaturedInGuides';
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
-import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import { EntityMap, type EntityMapMarker } from '@/components/map/EntityMap';
 import { NearbyMapLegend } from '@/components/map/NearbyMapLegend';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
@@ -585,26 +584,6 @@ export function VenueBodyLead({
           />
         )}
         {children}
-        {(hasLocation || hasHours) && (
-          <div className="flex flex-wrap gap-x-4">
-            {hasLocation && (
-              <a
-                href="#location"
-                className="inline-flex min-h-11 items-center font-bold underline underline-offset-4"
-              >
-                {t('venues.detail.section.location', 'Location & contact')}
-              </a>
-            )}
-            {hasHours && (
-              <a
-                href="#hours"
-                className="inline-flex min-h-11 items-center font-bold underline underline-offset-4"
-              >
-                {t('venues.detail.section.hours', 'Opening hours')}
-              </a>
-            )}
-          </div>
-        )}
         {nextEvent && (
           <LocalizedLink
             to={`/events/${nextEvent.slug || nextEvent.id}`}
@@ -1211,15 +1190,8 @@ export function VenueLocationContact({
  * `hasUsableHours(venue.hours)` guard, so every venue with hours rendered them
  * twice — once as a section and once as a rail card.
  */
-export function VenueSidebar({ venue }: VenueSidebarProps) {
-  return (
-    <div className="flex flex-col gap-6">
-      <DestinationSafetyCard countryIds={[venue.country_id]} />
-
-      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Sparkles size={13} aria-hidden="true" />
-        Spotted something off? Use the flag in the header to let us know.
-      </p>
-    </div>
-  );
+// The rail's cards (destination safety, report hint) were removed; the
+// section strip beside it is rendered by SinglePage.
+export function VenueSidebar(_props: VenueSidebarProps) {
+  return null;
 }

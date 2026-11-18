@@ -6,7 +6,11 @@
     "personalities": "人物",
     "history": "历史",
     "lede": "我们使用的词语、塑造酷儿生活的人们，以及背后的历史。",
-    "navigation": "知识栏目"
+    "navigation": "知识栏目",
+    "termsHint": "我们使用的词语及其含义",
+    "personalitiesHint": "塑造酷儿生活的人们",
+    "historyHint": "逐年的重要事件",
+    "rightsHint": "各国法律现状"
   },
   "eventTypes": {
     "party": "派对",
@@ -1926,7 +1930,11 @@
       "exploreCity": "探索{{city}}",
       "browseEvents": "浏览{{city}}活动",
       "whatsOn": "活动预告",
-      "communitySpace": "社区空间"
+      "communitySpace": "社区空间",
+      "photos": "照片",
+      "previousPhoto": "上一张照片",
+      "nextPhoto": "下一张照片",
+      "pausePhotos": "暂停幻灯片"
     },
     "discovery": {
       "openMap": "打开地图",
@@ -2097,7 +2105,8 @@
       "interchange": {
         "label": "全站搜索",
         "subtitle": "所有线路在此交会"
-      }
+      },
+      "title": "地图"
     },
     "glossary": {
       "eyebrow": "术语库",
@@ -2255,6 +2264,7 @@
       "you": "我的",
       "menuTitle": "全部板块",
       "menuDescription": "跳转到任意板块，切换语言或主题。",
+      "hubDescription": "你的消息、计划、联系人和收藏。",
       "trips": "我的行程",
       "settingsSection": "显示",
       "browseAll": "浏览所有板块",
@@ -2745,7 +2755,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} 人",
+        "fieldCount_other": "{{formatted}} 人"
       },
       "detail": {
         "inTheNews": "In the news",
@@ -4530,7 +4542,8 @@
         "trans": "[ZH] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "[ZH] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[ZH] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
-      }
+      },
+      "methodologyLink": "每项权重、等级分界线及引用方式"
     },
     "lens": {
       "title": "[ZH] Who the law protects",
@@ -4547,6 +4560,93 @@
       "partial": "[ZH] Some protections",
       "protected": "[ZH] Broad protections",
       "unknown": "[ZH] Not enough data"
+    },
+    "methodology": {
+      "cite": {
+        "copied": "已复制",
+        "copy": "复制",
+        "apa": "APA",
+        "plain": "纯文本"
+      },
+      "metaTitle": "LGBTQ+平等分数如何计算",
+      "metaDescription": "Queer Guide平等分数的每项权重、0–100的范围、等级分界线、已知局限及引用方式。",
+      "section": {
+        "formula": "计算公式",
+        "range": "范围与等级",
+        "limits": "已知局限",
+        "cite": "引用"
+      },
+      "kicker": {
+        "formula": "每项权重"
+      },
+      "body": {
+        "formula": "每个国家从{{start}}分开始。根据ILGA记录的每项事实加分或减分，然后将总分限定在0到100之间。部分条目互斥：一个国家只能获得婚姻或民事结合中的一项，不能两者兼得，刑罚扣分也最多一项。",
+        "range": "在应用0–100限制之前，可能的最低总分为{{min}}，最高为{{max}}。最高分在仍有余量时即可达到，因此100表示“至少100”，而不是“所有权利均已记录”。",
+        "ceiling": "在{{scored}}个已评分的国家和地区中，目前有{{atCeiling}}个正好为100分。该分数无法对它们相互排名。",
+        "cite": "引用分数时请注明Queer Guide，引用其背后的法律事实时请注明ILGA World Database。分数每晚重新计算，因此请注明访问日期。"
+      },
+      "col": {
+        "fact": "记录的事实",
+        "points": "分值",
+        "field": "ILGA字段"
+      },
+      "tiers": "等级分界线",
+      "tierUnknown": "无ILGA记录",
+      "limits": {
+        "start": "从50分起算意味着几乎没有任何记录的国家会落在量表中部。中等分数可能代表中等程度的权利，也可能代表数据不足。",
+        "penaltyText": "刑罚扣分依据的是ILGA对刑罚的描述，而非其单独的死刑字段。若ILGA将刑罚描述为监禁，但同时记录该国部分地区适用死刑（尼日利亚北部各州依据伊斯兰教法），则分数按终身监禁扣分，而非死刑。",
+        "uneven": "在每个保护领域，性取向的分值都高于性别认同（2分对1分），而仇恨犯罪和煽动仇恨相关法律只计入性取向。因此，该分数对女同性恋、男同性恋和双性恋者的反映多于对跨性别者的反映。",
+        "law": "它是全国层面的，记录的是成文法而非执法情况，也不是安全评级。",
+        "sourcesLink": "进一步了解数据及其局限",
+        "transLink": "各国跨性别权利"
+      },
+      "breadcrumb": "方法说明",
+      "heroLine": "权利线 · 方法说明",
+      "title": "平等分数如何计算",
+      "lede": "平等分数是我们每晚根据ILGA World Database计算的0–100数值。本页列出每项权重、范围、等级分界线，以及分数会出错的情况。",
+      "group": {
+        "criminalisation": "刑事定罪",
+        "partnership": "伴侣关系",
+        "protection": "反歧视保护",
+        "hate": "仇恨犯罪与煽动",
+        "civic": "表达与结社",
+        "family": "家庭与身体完整性"
+      },
+      "row": {
+        "legal": "同性性行为合法",
+        "criminalised": "同性性行为被定罪",
+        "death": "刑罚被描述为死刑，包括“可能”",
+        "life": "刑罚最高为终身监禁",
+        "eight": "刑罚最高为8年监禁",
+        "marriage": "同性婚姻",
+        "civil-union": "仅限民事结合",
+        "constitutional-so": "宪法：涵盖性取向",
+        "constitutional-gi": "宪法：涵盖性别认同",
+        "employment-so": "就业：涵盖性取向",
+        "employment-gi": "就业：涵盖性别认同",
+        "housing-so": "住房：涵盖性取向",
+        "housing-gi": "住房：涵盖性别认同",
+        "education-so": "教育：涵盖性取向",
+        "education-gi": "教育：涵盖性别认同",
+        "health-so": "医疗：涵盖性取向",
+        "health-gi": "医疗：涵盖性别认同",
+        "goods_services-so": "商品和服务：涵盖性取向",
+        "goods_services-gi": "商品和服务：涵盖性别认同",
+        "bullying-so": "欺凌：涵盖性取向",
+        "bullying-gi": "欺凌：涵盖性别认同",
+        "hate-crime": "仇恨犯罪法涵盖性取向",
+        "incitement": "禁止煽动仇恨，涵盖性取向",
+        "expression-free": "表达不存在已知法律障碍",
+        "expression-restricted": "对表达的法律限制（明确或非明确）",
+        "association-free": "结社不存在已知法律障碍",
+        "association-restricted": "对结社的明确法律限制",
+        "joint-adoption": "共同收养",
+        "second-parent": "仅限继子女收养",
+        "conversion": "禁止扭转治疗做法",
+        "self-id": "通过自我认定实现法律性别承认",
+        "marker": "可变更性别标记，但非自我认定",
+        "intersex": "保护间性人"
+      }
     }
   },
   "about": {

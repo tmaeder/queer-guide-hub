@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { SinglePage } from '@/components/transit/SinglePage';
-import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { BrandStoryBlock } from '@/components/marketplace/BrandStoryBlock';
@@ -338,14 +337,6 @@ export default function MarketplaceItemDetail() {
           way to the seller. Same react-query entry, so no extra request. */}
       {!curatedBrand && <MakerCard listing={listing} curatedName={curatedName} />}
       <ProductStats listing={listing} />
-      {/* Spine S6. These listings are machine-ingested from merchant feeds, so
-          saying who added the row and when we last checked it is the honest
-          floor for a page that asks someone to spend money. */}
-      <ProvenanceLine
-        addedAt={listing.created_at}
-        checkedAt={listing.last_verified_at}
-        correctHref="/contact"
-      />
       <ProductAdminRow listing={listing} onSaved={refetch} />
     </>
   );
@@ -404,11 +395,6 @@ export default function MarketplaceItemDetail() {
               gated: listing.content_rating === 'adult' || listing.content_rating === 'explicit',
             }}
           />
-          {listing.description && (
-            <Button asChild variant="ghost">
-              <a href="#listing-details">{t('marketplace.listingDetails', 'Listing details')}</a>
-            </Button>
-          )}
           {listing.shipping_available && listing.shipping_info && (
             <Button asChild variant="ghost">
               <a href="#listing-shipping">{t('marketplace.shipping', 'Shipping')}</a>
