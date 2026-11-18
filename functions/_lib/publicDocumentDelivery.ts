@@ -64,6 +64,8 @@ export function publicDocumentDelivery(
     headers.set('Content-Encoding', 'gzip');
   }
   return new Response(request.method === 'HEAD' ? null : body, {
+    // This stream is already compressed. Workers' default would gzip it again.
+    encodeBody: 'manual',
     status: response.status,
     statusText: response.statusText,
     headers,
