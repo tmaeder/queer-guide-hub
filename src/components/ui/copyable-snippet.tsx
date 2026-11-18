@@ -1,13 +1,26 @@
 import { useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+
+interface CopyableSnippetProps {
+  label: string;
+  text: string;
+  /** Translated strings. The caller owns them so each page keeps its own keys. */
+  copyLabel: string;
+  copiedLabel: string;
+  failedMessage: string;
+}
 
 /**
  * A labelled block of text with a Copy button. When the clipboard is refused
  * (some browsers, embedded views), the text is selected instead and the reader
  * is told so: a silent failure leaves them believing it was copied.
  */
-export function CopyableSnippet({ label, text }: { label: string; text: string }) {
-  const { t } = useTranslation();
+export function CopyableSnippet({
+  label,
+  text,
+  copyLabel,
+  copiedLabel,
+  failedMessage,
+}: CopyableSnippetProps) {
   const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
   const textRef = useRef<HTMLPreElement>(null);
   const copy = async () => {
@@ -38,23 +51,15 @@ export function CopyableSnippet({ label, text }: { label: string; text: string }
           className="rounded-badge px-2 py-1 text-2xs font-bold underline"
           onClick={() => void copy()}
         >
-          {status === 'copied'
-            ? t('press.linkToUs.copied', 'Copied')
-            : t('press.linkToUs.copy', 'Copy')}
+          {status === 'copied' ? copiedLabel : copyLabel}
         </button>
       </div>
-      <pre
-        ref={textRef}
-        className="m-0 overflow-x-auto whitespace-pre-wrap break-all font-mono text-13"
-      >
+      <pre ref={textRef} className="m-0 whitespace-pre-wrap wrap-anywhere font-mono text-13">
         {text}
       </pre>
       {status === 'failed' && (
         <p role="alert" className="mt-2 text-13 text-muted-foreground">
-          {t(
-            'press.linkToUs.copyFailed',
-            'Could not copy automatically. The text is selected; copy it with your keyboard.',
-          )}
+          {failedMessage}
         </p>
       )}
     </div>
