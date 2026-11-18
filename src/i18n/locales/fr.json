@@ -2268,14 +2268,13 @@
       "you": "Profil",
       "menuTitle": "Toutes les sections",
       "menuDescription": "Accédez à n’importe quelle section, changez de langue ou de thème.",
-      "hubDescription": "Tes messages, projets, personnes et favoris.",
+      "hubDescription": "Vos messages, projets, contacts et éléments enregistrés.",
       "trips": "Mes voyages",
       "settingsSection": "Affichage",
       "browseAll": "Parcourir toutes les sections",
       "unreadCount": "{{count}} non lus",
       "tripsBadge": "{{count}} éléments de voyage à vérifier",
-      "hub": "Hub",
-      "hubDescription": "Vos messages, projets, contacts et éléments enregistrés."
+      "hub": "Hub"
     },
     "primaryNavigation": "[FR] Primary",
     "signInToContribute": "Se connecter pour contribuer"

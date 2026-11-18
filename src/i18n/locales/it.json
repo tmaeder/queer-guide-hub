@@ -2264,14 +2264,13 @@
       "you": "Profilo",
       "menuTitle": "Tutte le sezioni",
       "menuDescription": "Vai a qualsiasi sezione, cambia lingua o tema.",
-      "hubDescription": "I tuoi messaggi, piani, persone e salvati.",
+      "hubDescription": "I tuoi messaggi, programmi, contatti ed elementi salvati.",
       "trips": "I miei viaggi",
       "settingsSection": "Visualizzazione",
       "browseAll": "Sfoglia tutte le sezioni",
       "unreadCount": "{{count}} non letti",
       "tripsBadge": "{{count}} elementi di viaggio richiedono attenzione",
-      "hub": "Hub",
-      "hubDescription": "I tuoi messaggi, programmi, contatti ed elementi salvati."
+      "hub": "Hub"
     },
     "primaryNavigation": "[IT] Primary",
     "signInToContribute": "Accedi per contribuire"
