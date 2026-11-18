@@ -1,3 +1,4 @@
+import { DestinationPhoto } from '@/components/geo/DestinationPhoto';
 import { useState, useEffect, useMemo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
@@ -25,8 +26,6 @@ import { SimilarCities } from '@/components/personalization/SimilarCities';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
 import { SinglePage } from '@/components/transit/SinglePage';
-import { CityNetwork } from '@/components/home/subway/CityNetwork';
-import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { SeeAllLink } from '@/components/ui/SectionHeader';
@@ -43,7 +42,6 @@ import { NearbyTriptych } from '@/components/discovery/NearbyTriptych';
 import { CityLandmarksRail } from '@/components/geo/CityLandmarksRail';
 import { CityActions } from './city-detail/CityActions';
 import { CityAtAGlance } from './city-detail/CityAtAGlance';
-import { CityDiscoveryLead } from './city-detail/CityDiscoveryLead';
 import { CityOverviewTab } from './city-detail/CityOverviewTab';
 import { CityRightsTab } from './city-detail/CityRightsTab';
 import { CityVenuesTab, CityDistricts, CityEventsTab } from './city-detail/CityVenuesTab.parts';
@@ -239,16 +237,6 @@ export default function CityDetail() {
   const sections: GeoSection[] = city
     ? geoSections([
         {
-          id: 'rights',
-          title: t('cities.detail.section.rights', 'Safety & rights'),
-          note: t('cities.detail.section.rightsNote', 'Know before you go.'),
-          presentation: 'disclosure',
-          defaultOpen: hasAnyCriminalizationSignal(city.countries?.lgbti_criminalization),
-          content: (
-            <CityRightsTab city={city} fullCountry={fullCountry} countryLoading={countryLoading} />
-          ),
-        },
-        {
           id: 'venues',
           title: t('cities.detail.section.venues', 'Where to go'),
           content: venuesLoading ? (
@@ -311,6 +299,16 @@ export default function CityDetail() {
           title: t('cities.detail.section.travel', 'Getting there'),
           presentation: 'disclosure',
           content: <CityTravelTab city={city} effectiveIata={effectiveIata} />,
+        },
+        {
+          id: 'rights',
+          title: t('cities.detail.section.rights', 'Safety & rights'),
+          note: t('cities.detail.section.rightsNote', 'Know before you go.'),
+          presentation: 'disclosure',
+          defaultOpen: hasAnyCriminalizationSignal(city.countries?.lgbti_criminalization),
+          content: (
+            <CityRightsTab city={city} fullCountry={fullCountry} countryLoading={countryLoading} />
+          ),
         },
         {
           id: 'news',
@@ -405,6 +403,7 @@ export default function CityDetail() {
       criminalization={criminalization}
       countryName={city.countries?.name}
       cityId={city.id}
+      compactNotice
     />
   );
 
@@ -420,9 +419,13 @@ export default function CityDetail() {
           i18n.language,
         )}
         lead={introduction.lead ? <GlossaryLinkedText text={introduction.lead} /> : undefined}
-        backdrop={
-          hasCityNetwork(city.slug) ? (
-            <CityNetwork slug={city.slug} variant="backdrop" className="py-4" />
+        headerMedia={
+          syncImageUrl || currentFallback?.url ? (
+            <DestinationPhoto
+              src={syncImageUrl || currentFallback?.url}
+              name={city.name}
+              metadata={syncImageUrl ? cityPhoto.metadata : currentFallback?.metadata}
+            />
           ) : undefined
         }
         action={
@@ -454,35 +457,6 @@ export default function CityDetail() {
             <TripCoveringBanner
               target={{ type: 'city', cityId: city.id, countryId: city.countries?.id ?? null }}
             />
-            <CityDiscoveryLead
-              cityId={city.id}
-              cityName={city.name}
-              timeZone={city.timezone}
-              imageUrl={syncImageUrl || currentFallback?.url}
-              imageMetadata={syncImageUrl ? cityPhoto.metadata : currentFallback?.metadata}
-              events={events}
-              venues={venues}
-              safety={
-                <GeoSafetyVerdict
-                  countryId={city.countries?.id}
-                  equalityScore={city.countries?.equality_score}
-                  className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-none border-t border-border-hairline bg-transparent px-0 py-2 [&>div]:mb-0"
-                />
-              }
-              facts={<CityAtAGlance city={city} />}
-              map={
-                typeof city.latitude === 'number' && typeof city.longitude === 'number' ? (
-                  <CityMapTab
-                    city={city}
-                    venues={venues.slice(0, 12)}
-                    caption={
-                      city.region_name === city.name ? undefined : (city.region_name ?? undefined)
-                    }
-                    openLabel={t('cities.detail.openMap', 'Open the full map')}
-                  />
-                ) : undefined
-              }
-            />
             {!safetyFirst && safetyBanner}
             <GeoRouteRail
               sections={sections}
@@ -492,6 +466,30 @@ export default function CityDetail() {
               track="green"
               label={t('cities.detail.sections', 'Sections')}
             />
+            <section aria-label="Overview" className="grid min-w-0 gap-6">
+              <GeoSafetyVerdict
+                countryId={city.countries?.id}
+                equalityScore={city.countries?.equality_score}
+                className="flex min-h-11 flex-wrap items-center justify-between gap-4 px-4 py-2 [&>div]:mb-0"
+              />
+              <div
+                className={
+                  typeof city.latitude === 'number' && typeof city.longitude === 'number'
+                    ? 'grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12'
+                    : 'grid gap-6'
+                }
+              >
+                <CityMapTab
+                  city={city}
+                  venues={venues.slice(0, 12)}
+                  caption={
+                    city.region_name === city.name ? undefined : (city.region_name ?? undefined)
+                  }
+                  openLabel={t('cities.detail.openMap', 'Open the full map')}
+                />
+                <CityAtAGlance city={city} />
+              </div>
+            </section>
             <GeoSectionList sections={sections} />
           </>
         }
@@ -527,7 +525,6 @@ export default function CityDetail() {
                       <PersonalitiesForEntity
                         cityId={city.id}
                         countryId={city.countries?.id ?? null}
-                        cityName={city.name}
                       />
                       <GuidesRail filters={{ cityId: city.id }} />
                     </div>
@@ -571,8 +568,8 @@ export default function CityDetail() {
                         longitude={city.longitude != null ? Number(city.longitude) : null}
                       />
                       <SimilarCities
-                        cityId={city.id}
                         cityName={city.name}
+                        cityId={city.id}
                         countryId={city.country_id}
                         equalityScore={city.countries?.equality_score}
                         latitude={city.latitude}

@@ -1,5 +1,3 @@
-import { GeoPhotoInset } from '@/components/geo/GeoPhotoInset';
-import { ImageCredit } from '@/components/ui/ImageCredit';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { TagChipRow } from '@/components/tags/TagChipRow';
@@ -149,29 +147,8 @@ export function VillageAbout({
   onContentUpdated?: () => void;
   t: TFunction;
 }) {
-  const metadata = village.image_metadata;
-  const source = metadata?.photographer_url;
-  const credit =
-    metadata?.photographer || metadata?.license ? (
-      <ImageCredit attribution={metadata.photographer} license={metadata.license} />
-    ) : undefined;
   return (
     <div className="flex flex-col gap-6">
-      <GeoPhotoInset
-        src={village.image_url}
-        alt={metadata?.alt || village.name}
-        fallbackKey={village.slug}
-        className="max-w-reading bg-transparent p-0"
-        caption={
-          credit && typeof source === 'string' && /^https:\/\//i.test(source) ? (
-            <a href={source} className="underline underline-offset-2">
-              {credit}
-            </a>
-          ) : (
-            credit
-          )
-        }
-      />
       {village.history && (
         <Editable
           contentType="queer_villages"
