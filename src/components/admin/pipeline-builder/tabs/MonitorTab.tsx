@@ -40,6 +40,7 @@ import {
 } from '@/components/admin/primitives/AdminSimpleTable';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
+import WeeklySourceSyncResults from '../panels/WeeklySourceSyncResults';
 
 type StatusFilter = 'all' | 'running' | 'completed' | 'failed';
 type TypeFilter = 'all' | 'pipeline' | 'workflow';
@@ -318,7 +319,10 @@ export default function MonitorTab() {
   const { data: eventStats } = useEventIngestStats(14);
   const { data: cityStats } = useCityIngestStats(14);
   const { data: countryStats } = useCountryIngestStats(14);
-  const [selectedRun, setSelectedRun] = useState<UnifiedRun | null>(null);
+  const [selectedRunSnapshot, setSelectedRun] = useState<UnifiedRun | null>(null);
+  const selectedRun =
+    (allRuns.find((run) => run.id === selectedRunSnapshot?.id) as UnifiedRun | undefined) ??
+    selectedRunSnapshot;
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
@@ -629,7 +633,12 @@ export default function MonitorTab() {
                       {selectedRun.error_message}
                     </div>
                   )}
-                  {selectedRun.node_states &&
+                  {selectedRun.type === 'pipeline' &&
+                    selectedRun.name === 'weekly-data-source-sync' && (
+                      <WeeklySourceSyncResults key={selectedRun.id} runId={selectedRun.id} />
+                    )}
+                  {selectedRun.name !== 'weekly-data-source-sync' &&
+                    selectedRun.node_states &&
                     Object.entries(
                       selectedRun.node_states as Record<string, Record<string, unknown>>,
                     ).map(([nodeId, state]) => {
@@ -683,7 +692,10 @@ export default function MonitorTab() {
                         Full output
                       </summary>
                       <div className="bg-muted/40 p-2 rounded-element overflow-auto max-h-56 mt-1">
-                        <StructuredValueView value={selectedRun.output_result} className="text-2xs" />
+                        <StructuredValueView
+                          value={selectedRun.output_result}
+                          className="text-2xs"
+                        />
                       </div>
                     </details>
                   )}

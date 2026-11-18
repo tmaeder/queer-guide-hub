@@ -117,7 +117,11 @@ export default function OverviewTab() {
   const runNow = useMutation({
     mutationFn: async (row: UnifiedPipelineRow) => {
       if (row.kind === 'pipeline') {
-        const { error } = await supabase.functions.invoke('pipeline-executor', {
+        const endpoint =
+          row.name === 'weekly-data-source-sync'
+            ? 'pipeline-weekly-source-sync'
+            : 'pipeline-executor';
+        const { error } = await supabase.functions.invoke(endpoint, {
           body: { pipeline_id: row.id, triggered_by: 'manual-overview' },
         });
         if (error) throw error;
