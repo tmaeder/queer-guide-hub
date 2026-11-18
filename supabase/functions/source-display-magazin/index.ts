@@ -190,7 +190,7 @@ export const eventAdapter: SourceAdapter = {
       dates: { start: start ?? undefined, end: end ?? undefined },
       venue_name: v ? stripTags(v.venue) : undefined,
       website: (e.website as string) || (e.url as string) || null,
-      ticket_url: (e.tickets as string) || (e.website as string) || (e.url as string) || null,
+      ticket_url: typeof e.tickets === 'string' ? e.tickets.trim() || null : null,
       location: {
         address: v ? stripTags(v.address) || undefined : undefined,
         city: city ?? undefined,
