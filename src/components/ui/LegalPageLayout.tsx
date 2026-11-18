@@ -68,7 +68,7 @@ export const LegalPageLayout = ({
           {line && (
             <RouteBullet
               type={line.slug}
-              letter={line.letter}
+              icon={line.icon}
               track={line.track}
               label={`${line.label} line`}
               size={30}
@@ -174,7 +174,7 @@ export const LegalPageLayout = ({
                         >
                           <RouteBullet
                             type={sib.slug}
-                            letter={sib.letter}
+                            icon={sib.icon}
                             track={sib.track}
                             label={`${sib.label} line`}
                             size={20}

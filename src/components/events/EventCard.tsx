@@ -154,31 +154,35 @@ export const EventCard = memo(function EventCard({
                 </div>
               )}
 
-              <div
-                className="absolute top-1 right-1 z-10"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                onKeyDown={(e) => e.stopPropagation()}
-                role="presentation"
-              >
-                <FavoriteButton itemId={event.id} type="event" size="tap" />
+              {/* One pill for both card actions: favourite and add-to-trip. */}
+              <div className="absolute top-2 right-2 z-10 flex items-center rounded-element bg-background/90 shadow-soft">
+                <QuietAddToTripButton
+                  variant="icon"
+                  entity={{
+                    type: 'event',
+                    id: event.id,
+                    name: event.title,
+                    latitude: event.latitude ? Number(event.latitude) : null,
+                    longitude: event.longitude ? Number(event.longitude) : null,
+                    city_id: event.city_id ?? null,
+                    country_id: event.country_id ?? null,
+                    address: event.address ?? null,
+                    category: event.event_type ?? null,
+                  }}
+                />
+                {/* Scoped to the heart: a wrapper around the trip button would also
+                    swallow clicks bubbling up from its dialog through the portal. */}
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  role="presentation"
+                >
+                  <FavoriteButton itemId={event.id} type="event" size="tap" />
+                </span>
               </div>
-              <QuietAddToTripButton
-                className="top-2 right-14 z-10"
-                entity={{
-                  type: 'event',
-                  id: event.id,
-                  name: event.title,
-                  latitude: event.latitude ? Number(event.latitude) : null,
-                  longitude: event.longitude ? Number(event.longitude) : null,
-                  city_id: event.city_id ?? null,
-                  country_id: event.country_id ?? null,
-                  address: event.address ?? null,
-                  category: event.event_type ?? null,
-                }}
-              />
             </Image>
 
             <div

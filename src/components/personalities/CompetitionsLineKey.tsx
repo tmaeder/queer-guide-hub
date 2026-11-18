@@ -118,7 +118,7 @@ export function CompetitionsLineKey() {
               >
                 <RouteBullet
                   type={c.id}
-                  letter={c.bullet.letter}
+                  icon={c.icon}
                   track={c.bullet.track}
                   size={24}
                   decorative

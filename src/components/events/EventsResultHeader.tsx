@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { FilterChip } from '@/components/transit/FilterChip';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { displayCityName } from '@/utils/cityDisplay';
 import type { EventSort } from '@/utils/eventsQueryString';
 
@@ -31,6 +32,12 @@ interface EventsResultHeaderProps {
  * are mode switches. They belong with the results they describe, one row above
  * the grid, where wrapping costs a single 44px line instead of a permanent tax.
  */
+const VIEW_ICON: Record<ViewMode, 'grid' | 'list' | 'map'> = {
+  grid: 'grid',
+  timeline: 'list',
+  map: 'map',
+};
+
 export function EventsResultHeader({
   eventsCount,
   totalCount,
@@ -104,7 +111,7 @@ export function EventsResultHeader({
         )}
       </p>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2">
         {/* A native <select> restyled to the chip's DNA, following
             CitiesControlBar: src/components/ui/select.tsx is still on pre-rebrand
             tokens and renders as a permanently ink-filled chip, i.e. it reads as
@@ -124,8 +131,10 @@ export function EventsResultHeader({
             </option>
           ))}
         </select>
+        {/* Icon-only toggles keep count, sort and view on one line at
+            phone width; the name lives in aria-label and the tooltip. */}
         <div
-          className="flex items-center gap-2"
+          className="flex items-center gap-1"
           role="group"
           aria-label={t('pages.events.viewMode', 'View mode')}
         >
@@ -134,7 +143,10 @@ export function EventsResultHeader({
               key={mode}
               active={viewMode === mode}
               onClick={() => onViewModeChange(mode)}
-              label={viewLabel[mode]}
+              aria-label={viewLabel[mode]}
+              title={viewLabel[mode]}
+              className="min-w-11 justify-center px-0"
+              label={<TransitIcon name={VIEW_ICON[mode]} size={18} aria-hidden />}
             />
           ))}
         </div>

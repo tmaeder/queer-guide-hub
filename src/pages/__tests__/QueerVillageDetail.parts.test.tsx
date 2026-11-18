@@ -61,9 +61,9 @@ describe('QueerVillageDetail.parts', () => {
 
   it('VillageParentCity uses the CITY bullet, not the village one (spec rule 4)', () => {
     renderWithProviders(<VillageParentCity village={village} t={t} />);
-    // ROUTE_BULLET_MAP: city = "C", queer_village = "D".
-    expect(screen.getByText('C')).toBeInTheDocument();
-    expect(screen.queryByText('D')).not.toBeInTheDocument();
+    // ROUTE_BULLET_MAP: city and queer_village carry different labels.
+    expect(screen.getByRole('img', { name: 'City' })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: 'District' })).not.toBeInTheDocument();
   });
 });
 
