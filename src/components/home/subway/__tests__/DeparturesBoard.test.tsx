@@ -86,7 +86,11 @@ describe('homepage listings', () => {
     const link = screen.getByRole('link', { name: /Party/ });
     expect(container.querySelector('[data-letter="E"]')).toBeNull();
     expect(link).toHaveTextContent('18');
-    expect(link.textContent?.match(/17:00/g)).toHaveLength(1);
-    expect(link).toHaveTextContent('17:00 · Paris');
+    // Once, in the badge; the line below names the place only.
+    expect(link.querySelectorAll('time')).toHaveLength(1);
+    expect(link.querySelector('time')).toHaveTextContent('17:00');
+    expect(link.textContent?.replace(link.querySelector('time')!.textContent!, '')).not.toMatch(
+      /17:00/,
+    );
   });
 });

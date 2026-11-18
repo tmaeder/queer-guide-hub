@@ -1958,7 +1958,11 @@
       "exploreCity": "Откройте для себя: {{city}}",
       "browseEvents": "События: {{city}}",
       "whatsOn": "Что происходит",
-      "communitySpace": "Пространство сообщества"
+      "communitySpace": "Пространство сообщества",
+      "photos": "Фото",
+      "previousPhoto": "Предыдущее фото",
+      "nextPhoto": "Следующее фото",
+      "pausePhotos": "Приостановить слайд-шоу"
     },
     "discovery": {
       "openMap": "Открыть карту",
@@ -2129,7 +2133,8 @@
       "interchange": {
         "label": "Искать везде",
         "subtitle": "Здесь пересекаются все линии"
-      }
+      },
+      "title": "Карта"
     },
     "glossary": {
       "eyebrow": "Глоссарий",

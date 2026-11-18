@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
-import { ROUTE_BULLET_MAP, TRACK_BG, TRACK_TEXT } from '@/components/transit/routeBulletMap';
+import { EventDateBadge } from '@/components/transit/EventDateBadge';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Band } from '@/components/home/Band';
@@ -12,64 +12,24 @@ import { useHomeNearYou, type NearYouRow } from '@/hooks/useHomeNearYou';
 
 const ROWS = 4;
 
-/** Weekday + day number for the event bullet, and the clock time for the line
- *  under the title. All-day rows (midnight timestamps) carry no time, rather
- *  than a fake 00:00. */
-const boardDate = (iso: string, locale: string) => {
-  const d = new Date(iso);
-  const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false });
-  return {
-    weekday: d.toLocaleDateString(locale, { weekday: 'short' }).replace('.', '').toUpperCase(),
-    day: d.toLocaleDateString(locale, { day: 'numeric' }),
-    month: d.toLocaleDateString(locale, { month: 'short' }),
-    // The bullet shows no month; name it only when it is not this month.
-    otherMonth: d.getMonth() !== new Date().getMonth(),
-    time: time === '00:00' ? null : time,
-  };
-};
-
-const EVENT_TRACK = ROUTE_BULLET_MAP.event.track;
-
-/** The event's bullet carries its date: same track fill and ink ring as a
- *  RouteBullet, with the weekday over the day number instead of the letter E. */
-function DateBullet({ weekday, day }: { weekday: string; day: string }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`transit-marker grid size-12 shrink-0 place-content-center rounded-full border-2 border-track-ring text-center leading-none ${TRACK_BG[EVENT_TRACK]} ${TRACK_TEXT[EVENT_TRACK]}`}
-    >
-      <span className="text-2xs font-bold">{weekday}</span>
-      <span className="text-15 font-bold tabular-nums">{day}</span>
-    </span>
-  );
-}
-
 function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
   const href =
     row.kind === 'event' ? `/events/${row.slug || row.id}` : `/venues/${row.slug || row.id}`;
-  const date = row.kind === 'event' && row.startDate ? boardDate(row.startDate, locale) : null;
-
   return (
     <LocalizedLink
       to={href}
       className="grid min-h-[74px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-2 no-underline hover:bg-surface-container focus-visible:-outline-offset-2 md:px-6"
     >
-      {date ? (
-        <DateBullet weekday={date.weekday} day={date.day} />
+      {row.kind === 'event' && row.startDate ? (
+        <EventDateBadge startDate={row.startDate} locale={locale} />
       ) : (
-        <span className="grid size-12 place-items-center">
+        <span className="grid size-14 place-items-center">
           <RouteBullet type={row.kind} size={36} decorative />
         </span>
       )}
       <span className="min-w-0">
         <span className="block truncate text-title font-bold">{row.title}</span>{' '}
-        <span className="block truncate text-13 text-muted-foreground">
-          {date && (
-            // The bullet is decorative; the full date stays readable here.
-            <span className="sr-only">{`${date.weekday} ${date.day} ${date.month}, `}</span>
-          )}
-          {[date?.otherMonth && date.month, date?.time, row.via].filter(Boolean).join(' · ')}
-        </span>
+        {row.via && <span className="block truncate text-13 text-muted-foreground">{row.via}</span>}
       </span>
       <TransitIcon name="arrow-right" size={20} className="rtl:rotate-180" />
     </LocalizedLink>
