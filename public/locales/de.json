@@ -6,7 +6,11 @@
     "personalities": "Persönlichkeiten",
     "history": "Geschichte",
     "lede": "Die Begriffe, die wir verwenden, die Menschen, die queeres Leben geprägt haben, und die Geschichte dahinter.",
-    "navigation": "Wissensbereiche"
+    "navigation": "Wissensbereiche",
+    "termsHint": "Unsere Begriffe, erklärt",
+    "personalitiesHint": "Menschen, die queeres Leben prägten",
+    "historyHint": "Meilensteine, Jahr für Jahr",
+    "rightsHint": "Was das Gesetz sagt, nach Land"
   },
   "eventTypes": {
     "party": "Party",
@@ -2747,7 +2751,9 @@
         "bornThisWeek": "Born this week",
         "diedThisWeek": "Remembered this week",
         "browseByEra": "Browse by era",
-        "browseByField": "Browse by field"
+        "browseByField": "Browse by field",
+        "fieldCount_one": "{{formatted}} Person",
+        "fieldCount_other": "{{formatted}} Personen"
       },
       "detail": {
         "inTheNews": "In the news",

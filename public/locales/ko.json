@@ -6,7 +6,11 @@
     "personalities": "인물",
     "history": "역사",
     "lede": "우리가 쓰는 말, 퀴어의 삶을 만들어 온 사람들, 그리고 그 뒤의 역사.",
-    "navigation": "지식 섹션"
+    "navigation": "지식 섹션",
+    "termsHint": "우리가 쓰는 말과 뜻",
+    "personalitiesHint": "퀴어의 삶을 만든 사람들",
+    "historyHint": "연도별 주요 사건",
+    "rightsHint": "국가별 법률 현황"
   },
   "eventTypes": {
     "party": "파티",
@@ -2745,7 +2749,9 @@
         "bornThisWeek": "이번 주에 태어난 인물",
         "diedThisWeek": "이번 주에 기억하는 인물",
         "browseByEra": "시대별로 보기",
-        "browseByField": "분야별로 보기"
+        "browseByField": "분야별로 보기",
+        "fieldCount_one": "{{formatted}}명",
+        "fieldCount_other": "{{formatted}}명"
       },
       "detail": {
         "inTheNews": "뉴스에서",
