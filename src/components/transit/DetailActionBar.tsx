@@ -60,6 +60,12 @@ function MoreActions({ children }: { children: ReactNode }) {
     const close = (e: Event) => {
       const el = ref.current;
       if (!el?.open) return;
+      // Keep the dialog's trigger visible until it restores focus on close.
+      if (
+        !el.contains(document.activeElement) &&
+        document.activeElement?.closest('[role="dialog"], [role="alertdialog"]')
+      )
+        return;
       if (e instanceof KeyboardEvent) {
         // A nested dialog owns Escape while focus is in its portal.
         if (e.key !== 'Escape' || !el.contains(document.activeElement)) return;

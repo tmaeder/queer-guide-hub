@@ -43,13 +43,18 @@ describe('DetailActionBar', () => {
     const details = screen.getByText('More options').closest('details')!;
     details.open = true;
     const dialogControl = document.createElement('button');
-    document.body.append(dialogControl);
+    const dialog = document.createElement('div');
+    dialog.setAttribute('role', 'dialog');
+    dialog.append(dialogControl);
+    document.body.append(dialog);
     try {
       dialogControl.focus();
       fireEvent.keyDown(dialogControl, { key: 'Escape' });
       expect(details.open).toBe(true);
+      fireEvent.pointerDown(dialogControl);
+      expect(details.open).toBe(true);
     } finally {
-      dialogControl.remove();
+      dialog.remove();
     }
   });
 });
