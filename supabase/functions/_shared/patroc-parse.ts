@@ -120,7 +120,16 @@ export function normalizePatrocEventDates(
     if (minutes(rec.endTime) < minutes(rec.startTime)) day.setUTCDate(day.getUTCDate() + 1)
     end = patrocTimestamp(day.toISOString().slice(0, 10), rec.endTime, timezone)
   }
-  if (end && start.includes('T') === end.includes('T') && end < start) {
+  const localDay = (value: string): string => {
+    if (!value.includes('T')) return value
+    // Timed values validate their zone and populate this formatter above.
+    const formatter = patrocClockFormatters.get(timezone)!
+    const parts = Object.fromEntries(formatter.formatToParts(new Date(value)).map(p => [p.type, p.value]))
+    return `${parts.year.padStart(4, '0')}-${parts.month}-${parts.day}`
+  }
+  if (end && (start.includes('T') === end.includes('T')
+    ? end < start
+    : localDay(end) < localDay(start))) {
     throw new Error('Patroc end precedes start')
   }
   return { start, end }
