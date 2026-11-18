@@ -11,6 +11,8 @@ PG = Path(os.environ.get("PG_BINDIR", "/opt/homebrew/opt/postgresql@17/bin"))
 helper_source = (ROOT / "supabase/migrations/99991794072220_review_verified_nonfixed_event_locations.sql").read_text()
 helper = re.search(r"create or replace function api_private.event_has_verified_nonfixed_location[\s\S]*?\$fn\$;", helper_source).group()
 baseline = (ROOT / "supabase/tests/fixtures/nonfixed-queue-reconciliation-baseline.sql").read_text()
+# The assertion must count executable code, not an example in prose.
+baseline = baseline.replace("AS $function$\n", "AS $function$\n-- Old branch: case when e.venue_id is not null then 'venue_linked' else 'event_no_longer_actionable' end\n", 1)
 patch = (ROOT / "supabase/migrations/99991795038004_review_pending_nonfixed_manual_holds.sql").read_text()
 schema = r"""
 create schema api_private;
