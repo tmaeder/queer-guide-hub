@@ -11,9 +11,10 @@ import {
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { probeForRole } from '../_shared/image-probe.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
+import { sameAcceptedReuseEvidence } from './accepted-reuse.ts'
 
 const DETECTOR = 'event-image-quality'
-const RUNTIME_REVISION = '2026-10-23.current-artwork-reuse-v1'
+const RUNTIME_REVISION = '2026-11-18.accepted-reuse-count-v1'
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024
 
 type Severity = 'critical' | 'high' | 'medium' | 'low'
@@ -212,7 +213,7 @@ Deno.serve(async (req: Request) => {
                 }
               }
 
-              const activeCodes = findings.map((f) => f.code)
+              const activeCodes: string[] = []
               for (const finding of findings) {
                 const evidenceHash = await sha256(JSON.stringify(finding.evidence))
                 const { data: accepted, error: acceptedError } = await supabase
@@ -222,9 +223,24 @@ Deno.serve(async (req: Request) => {
                   .eq('issue_code', finding.code)
                   .eq('status', 'accepted')
                   .eq('evidence_hash', evidenceHash)
+                  .limit(1)
                   .maybeSingle()
                 requireDb(acceptedError, 'load accepted image issue')
                 if (accepted) continue
+                if (finding.code === 'IMAGE_CONTENT_REUSED') {
+                  const { data: prior, error: priorError } = await supabase
+                    .from('event_quality_issues')
+                    .select('evidence')
+                    .eq('event_id', eventId)
+                    .eq('issue_code', finding.code)
+                    .eq('status', 'accepted')
+                    .eq('evidence->>url', finding.evidence.url)
+                    .eq('evidence->>content_hash', finding.evidence.content_hash)
+                    .limit(100)
+                  requireDb(priorError, 'load accepted reuse identity')
+                  if (prior?.some((issue) => sameAcceptedReuseEvidence(issue.evidence, finding.evidence))) continue
+                }
+                activeCodes.push(finding.code)
                 const { data: open, error: openError } = await supabase
                   .from('event_quality_issues')
                   .select('id')

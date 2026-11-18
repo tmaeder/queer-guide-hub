@@ -513,9 +513,9 @@ jobs:
 
       # Unit discovery does not import Deno.serve entrypoints. A duplicate
       # block-scoped declaration passed helper tests but boot-failed in prod.
-      - name: Check enrichment and Foursquare entrypoints
+      - name: Check enrichment, Foursquare and image audit entrypoints
         working-directory: supabase/functions
-        run: deno check --node-modules-dir=none enrich-venue/index.ts source-foursquare/index.ts source-foursquare-free/index.ts
+        run: deno check --node-modules-dir=none enrich-venue/index.ts source-foursquare/index.ts source-foursquare-free/index.ts event-image-quality/index.ts
 
       - name: Run deno unit tests
         working-directory: supabase/functions
