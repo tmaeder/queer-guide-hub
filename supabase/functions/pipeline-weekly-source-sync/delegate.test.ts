@@ -54,3 +54,26 @@ Deno.test('disabled and recently successful source pipelines are not started aga
     assert(outcome?.reason)
   }
 })
+
+Deno.test('completed dry runs and canaries cannot count as fresh source imports', async () => {
+  for (const context of [{ dry_run: true }, { scope: 'canary' }, { lavenderatlas_cities: ['berlin'] }]) {
+    const { db, calls } = fake({ pipeline_definitions: [[{ id: child, name: 'outxout-catalogue-sync', is_enabled: true, nodes: [{ type: 'source-outxout' }] }]], pipeline_runs: [null, { id: child, context }] })
+    const outcome = await delegateToSourcePipeline(db, job, { slug: 'outxout' }, 'source-outxout', {}, transport, [], noFetch)
+    assertEquals(calls, ['outxout_open_run'])
+    assertEquals(outcome?.waiting, true)
+  }
+})
+Deno.test('active previews defer a real import without adopting their results', async () => {
+  const { db, calls } = fake({ pipeline_definitions: [[{ id: child, name: 'outxout-catalogue-sync', is_enabled: true, nodes: [{ type: 'source-outxout' }] }]], pipeline_runs: [{ id: child, status: 'running', context: { dry_run: true } }] })
+  const outcome = await delegateToSourcePipeline(db, job, { slug: 'outxout' }, 'source-outxout', {}, transport, [], noFetch)
+  assertEquals(outcome?.outcome, 'failed')
+  assertEquals(outcome?.retryable, true)
+  assertEquals(outcome?.child_run_id, undefined)
+  assertEquals(calls.length, 0)
+})
+Deno.test('an adopted preview cannot become a verified successful import', async () => {
+  const { db } = fake({ pipeline_runs: [{ id: child, pipeline_name: 'outxout-catalogue-sync', status: 'completed', items_failed: 0, context: { scope: 'canary' } }] })
+  const outcome = await delegateToSourcePipeline(db, { ...job, child_run_id: child, child_pipeline: 'outxout-catalogue-sync' }, {}, 'source-outxout', {}, transport, [], noFetch)
+  assertEquals(outcome?.outcome, 'failed')
+  assertEquals(outcome?.staged, 0)
+})

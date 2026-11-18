@@ -5,6 +5,13 @@ import type { SourceJob, SourceResult } from './contracts.ts'
 interface Pipeline { id: string; name: string; is_enabled: boolean; nodes: Array<{ type?: string }> }
 interface Transport { url: string; serviceKey: string; internalSecret?: string }
 
+function isPreview(context: unknown): boolean {
+  if (!context || typeof context !== 'object') return false
+  const value = context as Record<string, unknown>
+  return value.dry_run === true || value.scope === 'canary' || value.source_scope === 'canary' ||
+    value.lavenderatlas_cities !== undefined
+}
+
 /** Source-specific pipelines own their own leases, cursors and review gates. */
 export async function delegateToSourcePipeline(
   client: SupabaseClient, job: SourceJob, source: Record<string, unknown>, endpoint: string,
@@ -12,10 +19,11 @@ export async function delegateToSourcePipeline(
 ): Promise<SourceResult | null> {
   if (job.child_run_id) {
     const { data: child, error } = await client.from('pipeline_runs')
-      .select('id,pipeline_name,status,error_message,items_failed').eq('id', job.child_run_id).maybeSingle()
+      .select('id,pipeline_name,status,error_message,items_failed,context').eq('id', job.child_run_id).maybeSingle()
     if (error) throw Error('Could not inspect the source pipeline')
     if (!child || child.pipeline_name !== job.child_pipeline || child.id === job.run_id)
       return result('failed', 'The source pipeline run is unavailable or has changed identity')
+    if (isPreview(child.context)) return result('failed', 'A preview or limited source run cannot verify a full import')
     const waiting = { ...result('succeeded'), waiting: true, child_run_id: child.id, child_pipeline: child.pipeline_name }
     if (child.status === 'queued' || child.status === 'running') return waiting
     if (child.status === 'paused' || child.status === 'cancelled')
@@ -54,17 +62,20 @@ export async function delegateToSourcePipeline(
   if (!matches) return { ...result('blocked', 'The configured pipeline does not contain this source adapter'), required_settings: ['ingestion_sources.config.pipeline'] }
   if (context.dry_run === true) return result('skipped', `Dry run: source pipeline ${pipeline.name} would be started`)
 
-  const { data: active, error: activeError } = await client.from('pipeline_runs').select('id,status')
+  const { data: active, error: activeError } = await client.from('pipeline_runs').select('id,status,context')
     .eq('pipeline_id', pipeline.id).in('status', ['queued', 'running', 'paused']).order('created_at', { ascending: false }).limit(1).maybeSingle()
   if (activeError) throw Error('Could not check the active source pipeline')
+  if (active && isPreview(active.context)) return {
+    ...result('failed', 'A source preview is active; the real import will retry after it finishes'), retryable: true,
+  }
   if (active?.status === 'paused') return result('skipped', 'Source pipeline is paused')
   if (active) return { ...result('succeeded'), waiting: true, child_run_id: active.id, child_pipeline: pipeline.name }
-  const { data: recent, error: recentError } = await client.from('pipeline_runs').select('id,completed_at')
+  const { data: recent, error: recentError } = await client.from('pipeline_runs').select('id,completed_at,context')
     .eq('pipeline_id', pipeline.id).eq('status', 'completed').eq('items_failed', 0).is('error_message', null)
     .gte('completed_at', new Date(Date.now() - 7 * 86_400_000).toISOString())
     .order('completed_at', { ascending: false }).limit(1).maybeSingle()
   if (recentError) throw Error('Could not verify the source pipeline refresh interval')
-  if (recent) return { ...result('skipped', 'Source pipeline already completed within the weekly interval'),
+  if (recent && !isPreview(recent.context)) return { ...result('skipped', 'Source pipeline already completed within the weekly interval'),
     child_run_id: recent.id, child_pipeline: pipeline.name }
   if (pipeline.name === 'prideplaces-weekly-sync') {
     const { data: pump, error: pumpError } = await client.from('admin_automations')
