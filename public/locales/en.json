@@ -470,7 +470,8 @@
     "siteInformation": "Site information",
     "crisisSupport": "Crisis support",
     "cookiePreferences": "Cookie preferences",
-    "navigation": "Footer navigation"
+    "navigation": "Footer navigation",
+    "legalNav": "About and legal"
   },
   "auth": {
     "welcome": "Welcome!",
@@ -2462,7 +2463,8 @@
       "browseAll": "Browse all sections",
       "unreadCount": "{{count}} unread",
       "tripsBadge": "{{count}} trip items need attention",
-      "hub": "Hub"
+      "hub": "Hub",
+      "openHub": "Open Hub"
     },
     "signInToContribute": "Sign in to contribute"
   },

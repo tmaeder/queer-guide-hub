@@ -257,7 +257,8 @@
     "siteInformation": "Informazioni sul sito",
     "crisisSupport": "Supporto in caso di crisi",
     "cookiePreferences": "Preferenze dei cookie",
-    "navigation": "Navigazione del piè di pagina"
+    "navigation": "Navigazione del piè di pagina",
+    "legalNav": "Chi siamo e note legali"
   },
   "trips": {
     "title": "I miei viaggi",
@@ -2265,7 +2266,8 @@
       "browseAll": "Sfoglia tutte le sezioni",
       "unreadCount": "{{count}} non letti",
       "tripsBadge": "{{count}} elementi di viaggio richiedono attenzione",
-      "hub": "Hub"
+      "hub": "Hub",
+      "openHub": "Apri Hub"
     },
     "primaryNavigation": "[IT] Primary",
     "signInToContribute": "Accedi per contribuire"

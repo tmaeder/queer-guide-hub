@@ -257,7 +257,8 @@
     "siteInformation": "Информация о сайте",
     "crisisSupport": "Кризисная помощь",
     "cookiePreferences": "Настройки файлов cookie",
-    "navigation": "Навигация в нижнем колонтитуле"
+    "navigation": "Навигация в нижнем колонтитуле",
+    "legalNav": "О нас и правовая информация"
   },
   "trips": {
     "title": "Мои поездки",
@@ -2297,7 +2298,8 @@
       "browseAll": "Просмотреть все разделы",
       "unreadCount": "{{count}} непрочитанных",
       "tripsBadge": "{{count}} элементов поездки требуют внимания",
-      "hub": "Хаб"
+      "hub": "Хаб",
+      "openHub": "Открыть хаб"
     },
     "primaryNavigation": "[RU] Primary",
     "signInToContribute": "Войдите, чтобы внести вклад"

@@ -257,7 +257,8 @@
     "siteInformation": "网站信息",
     "crisisSupport": "危机援助",
     "cookiePreferences": "Cookie 设置",
-    "navigation": "页脚导航"
+    "navigation": "页脚导航",
+    "legalNav": "关于与法律信息"
   },
   "trips": {
     "title": "我的行程",
@@ -2265,7 +2266,8 @@
       "browseAll": "浏览所有板块",
       "unreadCount": "{{count}} 条未读",
       "tripsBadge": "{{count}} 个行程项目需要关注",
-      "hub": "中心"
+      "hub": "中心",
+      "openHub": "打开中心"
     },
     "primaryNavigation": "[ZH] Primary",
     "signInToContribute": "登录后参与贡献"
