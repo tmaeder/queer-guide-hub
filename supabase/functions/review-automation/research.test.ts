@@ -27,6 +27,22 @@ test('normalized source URL arrays retain existing attempt bounds and reject nes
   const result = await recoverSources({ ...context, proposal: { source_content: { normalized: { urls: ['https://example.org/canonical'] } } } }, async () => page())
   assert.equal(result.attempted, 1); assert.equal(result.evidence[0].url, 'https://example.org/canonical')
 })
+
+test('recovers a projected official city website with the same destination and request limits', async () => {
+  const calls: string[] = []
+  const result = await recoverSources({ ...context, record: { official_website: 'https://municipality.example/contact#details' } }, async url => {
+    calls.push(String(url)); return page()
+  })
+  assert.deepEqual(calls, ['https://municipality.example/contact'])
+  assert.equal(result.attempted, 1)
+  assert.equal(result.evidence[0].url, 'https://municipality.example/contact')
+  for (const official_website of ['http://municipality.example', 'https://localhost', 'https://municipality.example/?token=private']) {
+    assert.deepEqual(sourceCandidates({ ...context, record: { official_website } }), [])
+  }
+  assert.deepEqual(sourceCandidates({ ...context, record: { official_website: 'https://municipality.example/' },
+    urls: ['one','two','three','four'].map(n => `https://example.org/${n}`) }),
+    ['one','two','three','four'].map(n => `https://example.org/${n}`))
+})
 test('exact normalized source URL precedes stale detector alternatives without expanding the fetch budget', async () => {
   const calls: string[] = []
   const result = await recoverSources({ ...context, urls: ['one','two','three','four'].map(n => `https://example.org/${n}`),
