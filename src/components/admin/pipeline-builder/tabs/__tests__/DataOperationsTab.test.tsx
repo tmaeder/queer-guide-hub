@@ -7,6 +7,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router';
 import DataOperationsTab from '../DataOperationsTab';
 
+vi.mock('../../OutxoutPipelineStatus', () => ({ default: () => null }));
+
 const { rpc, response } = vi.hoisted(() => {
   const response = vi.fn();
   return { response, rpc: vi.fn(() => ({ returns: () => ({ abortSignal: response }) })) };
