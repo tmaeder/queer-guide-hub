@@ -146,12 +146,10 @@ function PersonalityCardImpl({
       onMouseLeave={isFinePointer ? scheduleClose : undefined}
       onFocus={isFinePointer ? scheduleOpen : undefined}
       onBlur={isFinePointer ? scheduleClose : undefined}
-      /* The lift and the border live on the LINK itself. `CardHoverEffect`'s
-         group/overlay contract exists for cards whose click target is a
-         sibling overlay — this card has no nested interactive elements, so the
-         whole anchor is the target and a nested lift wrapper only meant the
-         border sat on one element while a different one moved. */
-      className="personality-card card-lift group group/card flex h-full cursor-pointer touch-manipulation flex-col bg-card text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 rounded-container shadow-soft"
+      /* No hover effects (no lift, no marker animation): the card is a plain
+         link and the portrait stays as it is. The hover PREVIEW below is
+         separate and kept. */
+      className="personality-card flex h-full cursor-pointer touch-manipulation flex-col bg-card text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 rounded-container shadow-soft"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       {/* Portrait. `aspect-[3/4]` replaces a `paddingTop: 133.33%` box and an

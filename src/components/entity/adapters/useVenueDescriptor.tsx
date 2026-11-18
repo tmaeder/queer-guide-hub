@@ -14,6 +14,7 @@ import { useVenueSafetyScore } from '@/hooks/useVenueSafetySignals';
 import { TripAction } from '@/components/trips/TripAction';
 import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
 import { EntityKindChips } from '@/components/entity/EntityKindChips';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { selectDiscoveryEvent } from '@/lib/discoveryEvent';
 import { useVenueCategoryLabel } from '@/lib/venueCategories';
@@ -111,6 +112,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
     if (!venue) return null;
 
     const cityName = venue.cities?.name ?? null;
+    const citySlug = venue.cities?.slug || venue.cities?.id || null;
     const countryName = venue.countries?.name ?? null;
     const closure = venueClosureLabel(venue);
     const isClosed = closure !== null;
@@ -195,7 +197,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
           id: 'hours',
           title: t('venues.detail.section.hours', 'Opening hours'),
           when: hasUsableHours(venue.hours),
-          render: () => formatHours(venue.hours),
+          render: () => formatHours(venue.hours, venue.timezone ?? venue.cities?.timezone),
         },
         {
           // `when` is REQUIRED here, not optional tidiness. `VenueAmenities`
@@ -261,9 +263,50 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         },
       ],
       single: {
-        eyebrow: [venue.category ? categoryLabel : t('venues.detail.eyebrow', 'Venue'), cityName]
-          .filter(Boolean)
-          .join(' · '),
+        // The city is a link: the eyebrow is where the page first says where
+        // the venue is.
+        eyebrow: (
+          <>
+            {venue.category ? categoryLabel : t('venues.detail.eyebrow', 'Venue')}
+            {cityName && (
+              <>
+                {' · '}
+                {citySlug ? (
+                  <LocalizedLink
+                    to={`/city/${citySlug}`}
+                    className="underline-offset-4 hover:underline"
+                  >
+                    {cityName}
+                  </LocalizedLink>
+                ) : (
+                  cityName
+                )}
+              </>
+            )}
+          </>
+        ),
+        // Identity facts and tags sit directly under the masthead, not after
+        // every section — they are what a reader checks first.
+        tags: (
+          <div className="flex flex-col gap-4">
+            <EntityKindChips
+              kinds={[
+                { kind: 'venue' },
+                ...(venue.organizations
+                  ? [
+                      {
+                        kind: 'organization' as const,
+                        href: `/organizations/${venue.organizations.slug}`,
+                      },
+                    ]
+                  : []),
+              ]}
+              roles={venue.organizations?.roles ?? []}
+            />
+            <VenueFacts venue={venue} t={t} />
+            <VenueTags venue={venue} onContentUpdated={refetch} />
+          </div>
+        ),
         density: 'compact',
         openingSectionId: 'about',
         status:
@@ -286,22 +329,6 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         ),
         bodyTail: (
           <div className="flex flex-col gap-4">
-            <EntityKindChips
-              kinds={[
-                { kind: 'venue' },
-                ...(venue.organizations
-                  ? [
-                      {
-                        kind: 'organization' as const,
-                        href: `/organizations/${venue.organizations.slug}`,
-                      },
-                    ]
-                  : []),
-              ]}
-              roles={venue.organizations?.roles ?? []}
-            />
-            <VenueFacts venue={venue} t={t} />
-            <VenueTags venue={venue} onContentUpdated={refetch} />
             <VenueGuides venue={venue} />
             <OnBluesky entityType="venue" entityId={venue.id} gated={Boolean(venue.safety_gated)} />
             <FromTheGlossary tags={venue.tags} />
