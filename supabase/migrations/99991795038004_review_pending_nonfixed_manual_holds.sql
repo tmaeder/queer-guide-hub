@@ -2,7 +2,8 @@
 -- Resolve source-verified nonfixed venue cases while preserving human holds in every closing path.
 -- Function ownership, grants, security and unrelated behavior remain unchanged.
 do $patch$
-declare definition text; patched text;
+declare raw_definition text := pg_get_functiondef('public.reconcile_event_venue_link_reviews()'::regprocedure);
+  definition text; patched text;
   anchor text := E'      or nullif(btrim(e.venue_name), '''') is null\n    );';
   addition text := E'      or nullif(btrim(e.venue_name), '''') is null\n      or api_private.event_has_verified_nonfixed_location(e.id,e.field_provenance)\n    );';
   old_resolution text := 'case when e.venue_id is not null then ''venue_linked'' else ''event_no_longer_actionable'' end';
@@ -24,21 +25,21 @@ declare definition text; patched text;
     )
     and ($guard$;
 begin
-  definition := pg_get_functiondef('public.reconcile_event_venue_link_reviews()'::regprocedure);
-  patched:=definition;
+  definition := regexp_replace(raw_definition, '--[^' || chr(10) || ']*', '', 'g');
+  patched:=raw_definition;
   if not (position(new_resolution in definition)>0 and position(addition in definition)>0) then
     if (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>1
       or (length(definition)-length(replace(definition,old_resolution,'')))/length(old_resolution)<>1 then
       raise exception 'Event venue review reconciliation changed; inspect before applying';
     end if;
-    patched:=replace(replace(definition,anchor,addition),old_resolution,new_resolution);
+    patched:=replace(replace(raw_definition,anchor,addition),old_resolution,new_resolution);
   end if;
-  if position(guarded_queue in patched)=0 then
-    if (length(patched)-length(replace(patched,queue_anchor,'')))/length(queue_anchor)<>1 then
+  if position(guarded_queue in definition)=0 then
+    if (length(definition)-length(replace(definition,queue_anchor,'')))/length(queue_anchor)<>1 then
       raise exception 'Event venue closing predicate changed; inspect before applying';
     end if;
     patched:=replace(patched,queue_anchor,guarded_queue);
   end if;
-  if patched=definition then return; end if;
+  if patched=raw_definition then return; end if;
   execute patched;
 end $patch$;
