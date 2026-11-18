@@ -1,0 +1,65 @@
+[
+  {
+    "url": "https://qcal.app/event/empowerment-circle-friendsgiving-baltimore-md-us",
+    "retrieved_at": "2026-11-18T14:34:24.698971+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/empowerment-circle-friendsgiving-baltimore-md-us",
+    "sha256": "3d1b57cc510d3a6e71c101ebb9b477d4142b32b6145675e79f9a620f90e68f0c"
+  },
+  {
+    "url": "https://qcal.app/event/out-in-tech-boston-lgbtq-rights-and-inclusion-boston-ma-us",
+    "retrieved_at": "2026-11-18T14:34:24.694795+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/out-in-tech-boston-lgbtq-rights-and-inclusion-boston-ma-us",
+    "sha256": "e5c08eb1c28cdb25da7310f56985e351b80a86c8fed0892d2a0b376f643b2ef0"
+  },
+  {
+    "url": "https://qcal.app/event/transgender-day-of-remembrance-vigil-2026-ithaca-ny-us",
+    "retrieved_at": "2026-11-18T14:34:25.419696+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/transgender-day-of-remembrance-vigil-2026-ithaca-ny-us",
+    "sha256": "4bac2875fec2aec2a74ccf4c5023be44bd89e0259e6021c2cb10bff60551d4d6"
+  },
+  {
+    "url": "https://qcal.app/event/gender-affirming-care-letter-lab-denver-co-us",
+    "retrieved_at": "2026-11-18T14:34:25.425783+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/gender-affirming-care-letter-lab-denver-co-us",
+    "sha256": "d484771e395fb70440e69dae2a10fde286d6e9457d05fc4876d0c1ea75188aac"
+  },
+  {
+    "url": "https://qcal.app/event/senior-lunch-learn-in-person-san-diego-ca-us-2",
+    "retrieved_at": "2026-11-18T14:34:24.699144+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/senior-lunch-learn-in-person-san-diego-ca-us-2",
+    "sha256": "a4578f64c494547498484f8b475f55ee18f41ff5cca15c9f6ff8fda7650e27b9"
+  },
+  {
+    "url": "https://qcal.app/event/the-martineau-project-talks-on-dating-and-sleep-london-england-gb",
+    "retrieved_at": "2026-11-18T14:34:25.451388+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/the-martineau-project-talks-on-dating-and-sleep-london-england-gb",
+    "sha256": "fdfb9054ecdf0c252a5091c4e22c1ebe20cbb1628bd7c5ef147e60f03339f9f3"
+  },
+  {
+    "url": "https://qcal.app/event/virtual-center-support-thriving-together-new-york-ny-us",
+    "retrieved_at": "2026-11-18T14:34:25.452873+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/virtual-center-support-thriving-together-new-york-ny-us",
+    "sha256": "c5c705b701717a88144ec8d52dd1271d1505792cc5b0167dd2cea17460345e02"
+  },
+  {
+    "url": "https://qcal.app/event/after-work-walk-tennessee-knoxville-tn-us",
+    "retrieved_at": "2026-11-18T14:34:24.698461+00:00",
+    "status": 200,
+    "final_url": "https://qcal.app/event/after-work-walk-tennessee-knoxville-tn-us",
+    "sha256": "a8bf73511b598c0d7866e48f4d2bb9049eab54845637f621ed8ebe910f0fa12d"
+  },
+  {
+    "url": "https://gaycenter.org/event/virtual-center-support-thriving-together-4/",
+    "retrieved_at": "2026-11-18T14:34:25.755701+00:00",
+    "status": 200,
+    "final_url": "https://gaycenter.org/event/virtual-center-support-thriving-together-4/",
+    "sha256": "12d402ea2f7e09f7a6d915a4540a1f03fcbf88f9abed1bcf55baf015448cefb0"
+  }
+]

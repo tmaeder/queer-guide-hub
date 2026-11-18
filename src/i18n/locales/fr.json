@@ -4536,7 +4536,8 @@
         "trans": "[FR] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "[FR] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[FR] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
-      }
+      },
+      "methodologyLink": "Chaque pondération, les seuils des niveaux et comment citer"
     },
     "lens": {
       "title": "[FR] Who the law protects",
@@ -4553,6 +4554,93 @@
       "partial": "[FR] Some protections",
       "protected": "[FR] Broad protections",
       "unknown": "[FR] Not enough data"
+    },
+    "methodology": {
+      "cite": {
+        "copied": "Copié",
+        "copy": "Copier",
+        "apa": "APA",
+        "plain": "Texte brut"
+      },
+      "metaTitle": "Comment le score d'égalité LGBTQ+ est calculé",
+      "metaDescription": "Chaque pondération du score d'égalité de Queer Guide, l'échelle 0–100, les seuils des niveaux, ses limites connues et comment le citer.",
+      "section": {
+        "formula": "La formule",
+        "range": "Échelle et niveaux",
+        "limits": "Limites connues",
+        "cite": "Citer"
+      },
+      "kicker": {
+        "formula": "Chaque pondération"
+      },
+      "body": {
+        "formula": "Chaque pays part de {{start}}. Des points sont ajoutés ou retirés pour chaque fait enregistré par l'ILGA, puis le total est maintenu entre 0 et 100. Certaines lignes s'excluent : un pays obtient le mariage ou l'union civile, pas les deux, et au plus une déduction liée à la peine.",
+        "range": "Avant la limite 0–100, le total le plus bas possible est {{min}} et le plus haut {{max}}. Le maximum est atteint avec des points de marge, donc 100 signifie « au moins 100 », et non « tous les droits enregistrés ».",
+        "ceiling": "{{atCeiling}} des {{scored}} pays et territoires notés sont actuellement à exactement 100. Le score ne peut pas les classer entre eux.",
+        "cite": "Citez le score comme Queer Guide et les faits juridiques sous-jacents comme ILGA World Database. Les scores sont recalculés chaque nuit : indiquez la date de consultation."
+      },
+      "col": {
+        "fact": "Fait enregistré",
+        "points": "Points",
+        "field": "Champ ILGA"
+      },
+      "tiers": "Seuils des niveaux",
+      "tierUnknown": "Aucune donnée ILGA",
+      "limits": {
+        "start": "Partir de 50 signifie qu'un pays avec presque rien d'enregistré se retrouve au milieu de l'échelle. Un score moyen peut indiquer des droits moyens ou des données lacunaires.",
+        "penaltyText": "La déduction liée à la peine lit la description de la peine par l'ILGA, et non son champ distinct sur la peine de mort. Lorsque l'ILGA décrit la peine comme une peine de prison mais enregistre aussi la peine de mort dans une partie du pays (le Nigeria, en vertu de la Sharia dans les États du nord), le score déduit pour la réclusion à perpétuité, et non pour la peine de mort.",
+        "uneven": "L'orientation sexuelle compte davantage que l'identité de genre dans chaque domaine de protection (2 points contre 1), et les lois sur les crimes de haine et l'incitation ne comptent que pour l'orientation sexuelle. Le score en dit donc plus sur les personnes lesbiennes, gays et bisexuelles que sur les personnes trans.",
+        "law": "Il est national, il recense les lois et non leur application, et ce n'est pas une note de sécurité.",
+        "sourcesLink": "En savoir plus sur les données et leurs limites",
+        "transLink": "Droits trans par pays"
+      },
+      "breadcrumb": "Méthodologie",
+      "heroLine": "Ligne des droits · Méthodologie",
+      "title": "Comment le score d'égalité est calculé",
+      "lede": "Le score d'égalité est un nombre de 0–100 que nous calculons chaque nuit à partir de l'ILGA World Database. Cette page indique chaque pondération, l'échelle, les seuils des niveaux et les cas où le score se trompe.",
+      "group": {
+        "criminalisation": "Pénalisation",
+        "partnership": "Partenariat",
+        "protection": "Protection contre les discriminations",
+        "hate": "Crimes de haine et incitation",
+        "civic": "Expression et association",
+        "family": "Famille et intégrité corporelle"
+      },
+      "row": {
+        "legal": "Les actes sexuels entre personnes de même sexe sont légaux",
+        "criminalised": "Les actes sexuels entre personnes de même sexe sont pénalisés",
+        "death": "Peine décrite comme la peine de mort, y compris « possible »",
+        "life": "Peine allant jusqu'à la réclusion à perpétuité",
+        "eight": "Peine allant jusqu'à 8 ans d'emprisonnement",
+        "marriage": "Mariage entre personnes de même sexe",
+        "civil-union": "Union civile uniquement",
+        "constitutional-so": "Constitution : couvre l'orientation sexuelle",
+        "constitutional-gi": "Constitution : couvre l'identité de genre",
+        "employment-so": "Emploi : couvre l'orientation sexuelle",
+        "employment-gi": "Emploi : couvre l'identité de genre",
+        "housing-so": "Logement : couvre l'orientation sexuelle",
+        "housing-gi": "Logement : couvre l'identité de genre",
+        "education-so": "Éducation : couvre l'orientation sexuelle",
+        "education-gi": "Éducation : couvre l'identité de genre",
+        "health-so": "Santé : couvre l'orientation sexuelle",
+        "health-gi": "Santé : couvre l'identité de genre",
+        "goods_services-so": "Biens et services : couvre l'orientation sexuelle",
+        "goods_services-gi": "Biens et services : couvre l'identité de genre",
+        "bullying-so": "Harcèlement : couvre l'orientation sexuelle",
+        "bullying-gi": "Harcèlement : couvre l'identité de genre",
+        "hate-crime": "La loi sur les crimes de haine couvre l'orientation sexuelle",
+        "incitement": "Incitation à la haine interdite, y compris pour l'orientation sexuelle",
+        "expression-free": "Aucun obstacle juridique connu à l'expression",
+        "expression-restricted": "Restrictions juridiques à l'expression (explicites ou non)",
+        "association-free": "Aucun obstacle juridique connu à l'association",
+        "association-restricted": "Restrictions juridiques explicites à l'association",
+        "joint-adoption": "Adoption conjointe",
+        "second-parent": "Adoption de l'enfant du conjoint uniquement",
+        "conversion": "Pratiques de conversion interdites",
+        "self-id": "Reconnaissance juridique du genre par autodétermination",
+        "marker": "Changement de la mention de genre possible, sans autodétermination",
+        "intersex": "Protection des personnes intersexes"
+      }
     }
   },
   "about": {
