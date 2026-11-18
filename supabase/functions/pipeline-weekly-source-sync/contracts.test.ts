@@ -45,3 +45,10 @@ Deno.test('an incomplete catalogue or unknown OSM city is never reported as a co
   for (const body of [{ success: true, has_more: true }, { success: true, continuation_pending: true }, { success: true, cities_unknown: 1 }])
     assertEquals(adapterResult(200, body).outcome, 'failed')
 })
+
+Deno.test('HTTP 200 credential skips remain actionable blocked outcomes, not green imports', () => {
+  const outcome = adapterResult(200, { success: true, skipped: true, reason: 'Missing credentials', missing_credentials: ['PROVIDER_API_KEY'] })
+  assertEquals(outcome.outcome, 'blocked')
+  assertEquals(outcome.required_settings, ['PROVIDER_API_KEY'])
+  assertEquals(adapterResult(200, { success: true, skipped: true, reason: 'Source paused' }).outcome, 'skipped')
+})

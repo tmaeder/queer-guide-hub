@@ -84,6 +84,10 @@ export function adapterResult(status: number, value: unknown, secrets: string[] 
     return { ...result('failed', `Adapter returned an invalid response (HTTP ${status})`), retryable: status >= 500 }
   }
   const body = value as Record<string, unknown>
+  const missing = Array.isArray(body.missing_credentials)
+    ? body.missing_credentials.map(requiredSetting).filter((name): name is string => name !== null) : []
+  if (missing.length) return { ...result('blocked', safeError(body.reason ?? 'Required source credentials are unavailable', secrets)), required_settings: missing }
+  if (body.skipped === true) return result('skipped', safeError(body.reason ?? 'Source adapter skipped this import', secrets))
   const rows = Array.isArray(body.results) ? body.results as Record<string, unknown>[] : []
   const rowError = rows.find(row => typeof row.error === 'string' && row.error)?.error
   const fetched = count(body.items_total, body.total_items_found, body.items_found, body.fetched,
