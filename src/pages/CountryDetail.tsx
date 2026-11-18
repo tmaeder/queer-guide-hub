@@ -1,3 +1,4 @@
+import { DestinationPhoto } from '@/components/geo/DestinationPhoto';
 import { useEffect, useMemo, useState } from 'react';
 import { censusCount, censusParts } from '@/lib/censusParts';
 import { Image } from '@/components/ui/Image';
@@ -415,6 +416,7 @@ export default function CountryDetail() {
     ],
   ]);
   const countryName = editorial?.name ?? country.name;
+  const countryPhoto = resolveEntityImage('country', country);
   const tripSeedCity =
     cities.find(
       (city) =>
@@ -444,6 +446,15 @@ export default function CountryDetail() {
       type="country"
       eyebrow={eyebrowParts.join(' · ')}
       title={country.flag_emoji ? `${country.flag_emoji} ${countryName}` : countryName}
+      headerMedia={
+        countryPhoto.url ? (
+          <DestinationPhoto
+            src={countryPhoto.url}
+            name={countryName}
+            metadata={countryPhoto.metadata}
+          />
+        ) : undefined
+      }
       lead={editorial?.hook ? <GlossaryLinkedText text={editorial.hook} /> : undefined}
       tags={<GeoCensus type="country" items={census} />}
       action={
