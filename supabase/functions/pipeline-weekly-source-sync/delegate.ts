@@ -23,11 +23,11 @@ export async function delegateToSourcePipeline(
     if (error) throw Error('Could not inspect the source pipeline')
     if (!child || child.pipeline_name !== job.child_pipeline || child.id === job.run_id)
       return result('failed', 'The source pipeline run is unavailable or has changed identity')
+    if (child.status === 'paused' || child.status === 'cancelled')
+      return { ...result('skipped', `Source pipeline is ${child.status}`), child_run_id: child.id, child_pipeline: child.pipeline_name }
     if (isPreview(child.context)) return result('failed', 'A preview or limited source run cannot verify a full import')
     const waiting = { ...result('succeeded'), waiting: true, child_run_id: child.id, child_pipeline: child.pipeline_name }
     if (child.status === 'queued' || child.status === 'running') return waiting
-    if (child.status === 'paused' || child.status === 'cancelled')
-      return { ...result('skipped', `Source pipeline is ${child.status}`), child_run_id: child.id, child_pipeline: child.pipeline_name }
     if (child.status !== 'completed' || child.items_failed > 0 || child.error_message)
       return { ...result('failed', safeError(child.error_message ?? 'Source pipeline did not complete successfully', secrets)), child_run_id: child.id, child_pipeline: child.pipeline_name }
     const { count, error: countError } = await client.from('ingestion_staging')
@@ -65,10 +65,10 @@ export async function delegateToSourcePipeline(
   const { data: active, error: activeError } = await client.from('pipeline_runs').select('id,status,context')
     .eq('pipeline_id', pipeline.id).in('status', ['queued', 'running', 'paused']).order('created_at', { ascending: false }).limit(1).maybeSingle()
   if (activeError) throw Error('Could not check the active source pipeline')
-  if (active && isPreview(active.context)) return {
-    ...result('failed', 'A source preview is active; the real import will retry after it finishes'), retryable: true,
-  }
   if (active?.status === 'paused') return result('skipped', 'Source pipeline is paused')
+  if (active && isPreview(active.context)) return {
+    ...result('failed', 'A source preview is active; wait for it to finish before a real import'), retryable: true,
+  }
   if (active) return { ...result('succeeded'), waiting: true, child_run_id: active.id, child_pipeline: pipeline.name }
   const { data: recent, error: recentError } = await client.from('pipeline_runs').select('id,completed_at,context')
     .eq('pipeline_id', pipeline.id).eq('status', 'completed').eq('items_failed', 0).is('error_message', null)

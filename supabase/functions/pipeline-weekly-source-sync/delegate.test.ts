@@ -77,3 +77,10 @@ Deno.test('an adopted preview cannot become a verified successful import', async
   assertEquals(outcome?.outcome, 'failed')
   assertEquals(outcome?.staged, 0)
 })
+
+Deno.test('paused previews remain off for both new and adopted source jobs', async () => {
+  const { db } = fake({ pipeline_definitions: [[{ id: child, name: 'outxout-catalogue-sync', is_enabled: true, nodes: [{ type: 'source-outxout' }] }]], pipeline_runs: [{ id: child, status: 'paused', context: { dry_run: true } }] })
+  assertEquals((await delegateToSourcePipeline(db, job, { slug: 'outxout' }, 'source-outxout', {}, transport, [], noFetch))?.outcome, 'skipped')
+  const adopted = fake({ pipeline_runs: [{ id: child, pipeline_name: 'outxout-catalogue-sync', status: 'paused', context: { dry_run: true } }] })
+  assertEquals((await delegateToSourcePipeline(adopted.db, { ...job, child_run_id: child, child_pipeline: 'outxout-catalogue-sync' }, {}, 'source-outxout', {}, transport, [], noFetch))?.outcome, 'skipped')
+})
