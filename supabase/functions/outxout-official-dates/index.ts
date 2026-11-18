@@ -18,7 +18,7 @@ Deno.serve(async req=>{
   const send=async(data:RecordData,status=200)=>{
     const tracked=req.headers.get('x-automation-run-id')
     if(tracked&&/^\d{1,15}$/.test(tracked)){
-      await db`select public.admin_automation_finalize_run(automation_slug,${status>=400?'error':'success'},id,started_at,${Number(data.examined??0)},${Number(data.approved??0)},${db.json(data)},${status>=400?'official_date_worker_failed':null}) from public.admin_automation_runs where id=${tracked}::bigint and automation_slug in(${SLUG},${CONTINUE}) and status='running' and not summary?'pipeline_run_id'`
+      await db`select public.admin_automation_finalize_run(automation_slug,${status>=400?'error':'success'},id,started_at,${Number(data.examined??0)},${Number(data.approved??0)},${db.json(data)},${status>=400?'official_date_worker_failed':null}) from public.admin_automation_runs where id=${tracked}::bigint and automation_slug in(${SLUG},${CONTINUE}) and status='running' and not coalesce(summary,'{}'::jsonb)?'pipeline_run_id'`
     }
     return jsonResponse(data,status,req)
   }

@@ -36,7 +36,7 @@ export async function claimWithin(tx:Tx,mode:string){
     if(mode==='resume')return {idle:true}
     const [due]=await tx`select (date_trunc('week',now() at time zone 'Europe/Zurich')+interval '2 days 9 hours') at time zone 'Europe/Zurich' due`
     if(mode==='weekly'&&Date.now()<new Date(due.due).getTime())return {idle:true,reason:'not_due'}
-    const [prior]=await tx`select id,status from public.pipeline_runs where pipeline_name=${NAME} and context->>'policy'=${POLICY} and created_at>=${due.due}::timestamptz order by created_at desc limit 1`
+    const [prior]=await tx`select id,status from public.pipeline_runs where pipeline_name=${NAME} and context->>'policy'=${POLICY} and coalesce(context->>'dry_run','false')<>'true' and created_at>=${due.due}::timestamptz order by created_at desc limit 1`
     if(prior)return {idle:true,reason:'already_checked_this_week',run_id:prior.id}
     const [definition]=await tx`select id,is_enabled from public.pipeline_definitions where name=${NAME}`
     if(!definition?.is_enabled)return {idle:true,reason:'pipeline_disabled'}
