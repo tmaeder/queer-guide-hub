@@ -65,7 +65,7 @@ begin
   end if;
   insert into public.pipeline_runs(pipeline_id,pipeline_name,status,started_at,triggered_by,context)
     select id,'prideplaces-weekly-sync','running',now(),'source-prideplaces',
-      '{"source":"prideplaces","scope":"all_businesses_and_events","collection_status":"running","downstream_status":"independent_ingestion_gates"}'::jsonb
+      '{"source":"prideplaces","collection_scope":"all_businesses_and_events","collection_status":"running","downstream_status":"independent_ingestion_gates"}'::jsonb
     from public.pipeline_definitions where name='prideplaces-weekly-sync' returning id into rid;
   if rid is null then raise exception 'Pride Places pipeline definition missing';end if;
   insert into public.prideplaces_scan_runs(id,period) values(rid,period_day);
@@ -242,7 +242,7 @@ values('prideplaces-weekly-sync','Pride Places weekly sync','Full source collect
  '[{"id":"prideplaces","type":"source-prideplaces","position":{"x":180,"y":120},"data":{"label":"Pride Places","config":{}}}]',
  '[]','{"batch_size":4}',1,21600,'0 3 * * 0',false) on conflict(name) do nothing;
 insert into public.ingestion_sources(name,slug,source_type,target_table,edge_function,config,schedule,is_enabled)
-values('Pride Places','prideplaces','api','venues','source-prideplaces','{"batch_size":4,"scope":"all_businesses_and_events"}','0 3 * * 0',false)
+values('Pride Places','prideplaces','api','venues','source-prideplaces','{"batch_size":4,"collection_scope":"all_businesses_and_events"}','0 3 * * 0',false)
 on conflict(slug) do nothing;
 
 -- Registered but initially disabled: enable only after the deployed worker and
