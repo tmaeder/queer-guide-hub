@@ -55,6 +55,12 @@ describe('fetchRows pagination', () => {
     expect(new Set(rows.map((r) => r.slug)).size).toBe(rows.length);
   });
 
+  it('keeps an order passed in the filter instead of overwriting it with id.asc', async () => {
+    const calls = mockPostgrest(3);
+    await fetchRows(env, 'events', 'slug', 'city_id=eq.x&order=start_date.asc', 10);
+    expect(calls.map((c) => c.order)).toEqual(['start_date.asc']);
+  });
+
   it('stops on a short page rather than looping to the ceiling', async () => {
     const calls = mockPostgrest(1500);
     await fetchRows(env, 'venues', 'slug');

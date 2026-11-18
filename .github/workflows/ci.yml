@@ -78,6 +78,7 @@ jobs:
           python3 supabase/tests/isolated/run_news_commit_slugs.py
           python3 supabase/tests/isolated/run_review_news_commit_isolation.py
           python3 supabase/tests/isolated/run_review_cron_recovery.py
+          python3 supabase/tests/isolated/run_managed_event_categories.py
 
   typecheck:
     runs-on: ubuntu-latest
