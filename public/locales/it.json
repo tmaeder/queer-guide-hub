@@ -2264,7 +2264,8 @@
       "browseAll": "Sfoglia tutte le sezioni",
       "unreadCount": "{{count}} non letti",
       "tripsBadge": "{{count}} elementi di viaggio richiedono attenzione",
-      "hub": "Hub"
+      "hub": "Hub",
+      "hubDescription": "I tuoi messaggi, programmi, contatti ed elementi salvati."
     },
     "primaryNavigation": "[IT] Primary",
     "signInToContribute": "Accedi per contribuire"

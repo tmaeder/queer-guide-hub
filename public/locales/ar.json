@@ -2274,7 +2274,8 @@
       "browseAll": "تصفّح كل الأقسام",
       "unreadCount": "{{count}} غير مقروء",
       "tripsBadge": "{{count}} عناصر رحلة تحتاج إلى انتباه",
-      "hub": "المركز"
+      "hub": "المركز",
+      "hubDescription": "رسائلك وخططك وأشخاصك وعناصرك المحفوظة."
     },
     "primaryNavigation": "[AR] Primary",
     "signInToContribute": "سجّل الدخول للمساهمة"

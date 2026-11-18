@@ -2264,7 +2264,8 @@
       "browseAll": "すべてのセクションを見る",
       "unreadCount": "未読 {{count}} 件",
       "tripsBadge": "確認が必要な旅行項目が {{count}} 件",
-      "hub": "ハブ"
+      "hub": "ハブ",
+      "hubDescription": "メッセージ、予定、つながり、保存したもの。"
     },
     "primaryNavigation": "[JA] Primary",
     "signInToContribute": "ログインして参加する"

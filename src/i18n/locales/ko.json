@@ -2264,7 +2264,8 @@
       "browseAll": "모든 섹션 보기",
       "unreadCount": "읽지 않음 {{count}} 개",
       "tripsBadge": "확인이 필요한 여행 항목 {{count}} 개",
-      "hub": "허브"
+      "hub": "허브",
+      "hubDescription": "메시지, 계획, 사람들, 저장한 항목."
     },
     "primaryNavigation": "주요 내비게이션",
     "signInToContribute": "로그인하고 참여하기"

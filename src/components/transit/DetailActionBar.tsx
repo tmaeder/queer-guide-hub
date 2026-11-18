@@ -36,7 +36,7 @@ export function DetailActionBar({
   return (
     <div
       data-testid="detail-action-bar"
-      className={cn('flex flex-wrap items-center gap-2', className)}
+      className={cn('relative flex flex-wrap items-center gap-2', className)}
     >
       {primary}
       {(save || share) && (
@@ -60,7 +60,12 @@ function MoreActions({ children }: { children: ReactNode }) {
     const close = (e: Event) => {
       const el = ref.current;
       if (!el?.open) return;
-      if (e instanceof KeyboardEvent ? e.key === 'Escape' : !el.contains(e.target as Node)) {
+      if (e instanceof KeyboardEvent) {
+        // A nested dialog owns Escape while focus is in its portal.
+        if (e.key !== 'Escape' || !el.contains(document.activeElement)) return;
+        el.querySelector('summary')?.focus();
+        el.open = false;
+      } else if (!el.contains(e.target as Node)) {
         el.open = false;
       }
     };
@@ -73,7 +78,7 @@ function MoreActions({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <details ref={ref} className="relative">
+    <details ref={ref}>
       <summary className="flex size-11 cursor-pointer list-none items-center justify-center rounded-element border border-border-hairline bg-card text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
         <MoreHorizontal size={20} aria-hidden="true" />
         <span className="sr-only">{t('events.detail.moreOptions', 'More options')}</span>
@@ -82,7 +87,7 @@ function MoreActions({ children }: { children: ReactNode }) {
           borderless row whatever button variant it renders on its own. */}
       <div
         data-testid="detail-action-menu"
-        className="absolute left-0 top-full z-20 mt-2 flex w-64 flex-col rounded-container bg-background p-2 shadow-soft-lg sm:left-auto sm:right-0 [&_a]:flex [&_a]:min-h-11 [&_a]:w-full [&_a]:items-center [&_a]:justify-start [&_a]:gap-2 [&_a]:px-4 [&_a]:text-sm [&_a]:font-semibold [&_button]:min-h-11 [&_button]:w-full [&_button]:justify-start [&_button]:gap-2 [&_button]:px-4 [&_button]:text-sm [&_svg]:mr-0 [&_svg]:size-4 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-foreground [&_button]:shadow-none [&_button:hover]:bg-muted"
+        className="absolute left-0 top-full z-20 mt-2 flex w-64 max-w-full flex-col rounded-container bg-background p-2 shadow-soft-lg sm:left-auto sm:right-0 [&_a]:flex [&_a]:min-h-11 [&_a]:w-full [&_a]:items-center [&_a]:justify-start [&_a]:gap-2 [&_a]:px-4 [&_a]:text-sm [&_a]:font-semibold [&_button]:min-h-11 [&_button]:w-full [&_button]:justify-start [&_button]:gap-2 [&_button]:px-4 [&_button]:text-sm [&_svg]:mr-0 [&_svg]:size-4 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-foreground [&_button]:shadow-none [&_button:hover]:bg-muted"
       >
         {children}
       </div>

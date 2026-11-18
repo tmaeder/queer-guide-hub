@@ -2264,7 +2264,8 @@
       "browseAll": "Ver todas as seções",
       "unreadCount": "{{count}} não lidas",
       "tripsBadge": "{{count}} itens de viagem precisam de atenção",
-      "hub": "Hub"
+      "hub": "Hub",
+      "hubDescription": "Suas mensagens, planos, pessoas e itens salvos."
     },
     "primaryNavigation": "[PT] Primary",
     "signInToContribute": "Inicia sessão para contribuir"

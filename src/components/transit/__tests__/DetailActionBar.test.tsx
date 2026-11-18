@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { DetailActionBar } from '@/components/transit/DetailActionBar';
 
@@ -26,5 +26,30 @@ describe('DetailActionBar', () => {
   it('renders no overflow menu when there is nothing rare to show', () => {
     render(<DetailActionBar primary={<a href="/x">Read at source</a>} more={[false]} />);
     expect(screen.queryByText('More options')).toBeNull();
+  });
+  it('returns keyboard focus to the summary on Escape', () => {
+    render(<DetailActionBar more={[<button key="report">Report issue</button>]} />);
+    const summary = screen.getByText('More options').closest('summary')!;
+    const details = summary.closest('details')!;
+    details.open = true;
+    screen.getByRole('button', { name: 'Report issue' }).focus();
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    expect(details.open).toBe(false);
+    expect(summary).toHaveFocus();
+  });
+
+  it('leaves the overflow mounted and open while a nested dialog owns Escape', () => {
+    render(<DetailActionBar more={[<button key="report">Report issue</button>]} />);
+    const details = screen.getByText('More options').closest('details')!;
+    details.open = true;
+    const dialogControl = document.createElement('button');
+    document.body.append(dialogControl);
+    try {
+      dialogControl.focus();
+      fireEvent.keyDown(dialogControl, { key: 'Escape' });
+      expect(details.open).toBe(true);
+    } finally {
+      dialogControl.remove();
+    }
   });
 });
