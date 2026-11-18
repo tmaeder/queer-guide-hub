@@ -2302,8 +2302,7 @@
       "browseAll": "Просмотреть все разделы",
       "unreadCount": "{{count}} непрочитанных",
       "tripsBadge": "{{count}} элементов поездки требуют внимания",
-      "hub": "Хаб",
-      "hubDescription": "Ваши сообщения, планы, люди и сохранённое."
+      "hub": "Хаб"
     },
     "primaryNavigation": "[RU] Primary",
     "signInToContribute": "Войдите, чтобы внести вклад"

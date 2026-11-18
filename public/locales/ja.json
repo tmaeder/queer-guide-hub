@@ -2264,14 +2264,13 @@
       "you": "マイページ",
       "menuTitle": "すべてのセクション",
       "menuDescription": "任意のセクションに移動し、言語やテーマを切り替えます。",
-      "hubDescription": "メッセージ、プラン、人、保存したもの。",
+      "hubDescription": "メッセージ、予定、つながり、保存したもの。",
       "trips": "マイトリップ",
       "settingsSection": "表示",
       "browseAll": "すべてのセクションを見る",
       "unreadCount": "未読 {{count}} 件",
       "tripsBadge": "確認が必要な旅行項目が {{count}} 件",
-      "hub": "ハブ",
-      "hubDescription": "メッセージ、予定、つながり、保存したもの。"
+      "hub": "ハブ"
     },
     "primaryNavigation": "[JA] Primary",
     "signInToContribute": "ログインして参加する"

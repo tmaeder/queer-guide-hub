@@ -2274,14 +2274,13 @@
       "you": "حسابي",
       "menuTitle": "كل الأقسام",
       "menuDescription": "انتقل إلى أي قسم، وبدّل اللغة أو المظهر.",
-      "hubDescription": "رسائلك وخططك والأشخاص والعناصر المحفوظة.",
+      "hubDescription": "رسائلك وخططك وأشخاصك وعناصرك المحفوظة.",
       "trips": "رحلاتي",
       "settingsSection": "العرض",
       "browseAll": "تصفّح كل الأقسام",
       "unreadCount": "{{count}} غير مقروء",
       "tripsBadge": "{{count}} عناصر رحلة تحتاج إلى انتباه",
-      "hub": "المركز",
-      "hubDescription": "رسائلك وخططك وأشخاصك وعناصرك المحفوظة."
+      "hub": "المركز"
     },
     "primaryNavigation": "[AR] Primary",
     "signInToContribute": "سجّل الدخول للمساهمة"

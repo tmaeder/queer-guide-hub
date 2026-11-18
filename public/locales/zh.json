@@ -2270,8 +2270,7 @@
       "browseAll": "浏览所有板块",
       "unreadCount": "{{count}} 条未读",
       "tripsBadge": "{{count}} 个行程项目需要关注",
-      "hub": "中心",
-      "hubDescription": "你的消息、计划、联系人和收藏。"
+      "hub": "中心"
     },
     "primaryNavigation": "[ZH] Primary",
     "signInToContribute": "登录后参与贡献"

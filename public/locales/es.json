@@ -2270,8 +2270,7 @@
       "browseAll": "Ver todas las secciones",
       "unreadCount": "{{count}} sin leer",
       "tripsBadge": "{{count}} elementos de viaje necesitan atención",
-      "hub": "Hub",
-      "hubDescription": "Tus mensajes, planes, personas y elementos guardados."
+      "hub": "Hub"
     },
     "primaryNavigation": "[ES] Primary",
     "signInToContribute": "Inicia sesión para contribuir"
