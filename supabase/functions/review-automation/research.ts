@@ -29,7 +29,7 @@ export function sourceCandidates(context: Context): string[] {
     if (++visited > 2000 || depth > 6 || !value || typeof value !== 'object') return
     if (Array.isArray(value)) { for (const entry of value) walk(entry, depth + 1); return }
     for (const [key, entry] of Object.entries(value)) {
-      if (['url', 'source_url', 'website'].includes(key)) add(entry)
+      if (['url', 'source_url', 'website', 'official_website'].includes(key)) add(entry)
       else if (key === 'urls' && Array.isArray(entry)) { for (const url of entry.slice(0, 4)) add(url) }
       else if (entry && typeof entry === 'object') walk(entry, depth + 1)
     }

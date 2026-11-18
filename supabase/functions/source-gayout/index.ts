@@ -24,6 +24,7 @@ import {
   resolveEventType,
 } from './parse.ts'
 import { type PageAttempts, orderByAttempt } from './ordering.ts'
+import { handleGayOutWeeklySource } from './weekly.ts'
 
 // ============================================================
 // Source: gayout.com — worldwide LGBTQ+ MEGA EVENTS
@@ -382,6 +383,7 @@ Deno.serve(withErrorReporting('source-gayout', async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}))
+    if (body.gayout_weekly_sync === true) return handleGayOutWeeklySource(req, body)
     const apiKey = Deno.env.get('FIRECRAWL_API_KEY')
     if (!apiKey) {
       return jsonResponse(
