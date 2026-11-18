@@ -23,8 +23,8 @@ describe('CopyableSnippet', () => {
     const writeText = vi.fn(async () => {});
     stubClipboard(writeText);
     renderWithProviders(<CopyableSnippet label="APA" text={TEXT} {...LABELS} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Copy' }));
-    await screen.findByRole('button', { name: 'Copied' });
+    fireEvent.click(screen.getByRole('button', { name: 'Copy APA' }));
+    await screen.findByRole('button', { name: 'Copied APA' });
     expect(writeText).toHaveBeenCalledWith(TEXT);
     expect(screen.queryByRole('alert')).toBeNull();
   });
@@ -35,9 +35,9 @@ describe('CopyableSnippet', () => {
   ] as const)('says so and selects the text when the clipboard %s', async (_case, writeText) => {
     stubClipboard(writeText as (() => Promise<void>) | undefined);
     renderWithProviders(<CopyableSnippet label="APA" text={TEXT} {...LABELS} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Copy' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Copy APA' }));
     expect((await screen.findByRole('alert')).textContent).toBe('Not copied');
     await waitFor(() => expect(window.getSelection()?.toString()).toBe(TEXT));
-    expect(screen.getByRole('button', { name: 'Copy' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Copy APA' })).toBeTruthy();
   });
 });

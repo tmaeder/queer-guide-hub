@@ -1,0 +1,94 @@
+{
+  "creation": {
+    "city": {
+      "id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+      "name": "Zurich",
+      "timezone": "Europe/Zurich",
+      "country_id": "1b9cb03c-a611-4422-ba64-51f348a3b501",
+      "region_name": "Zurich",
+      "shell_status": "real",
+      "duplicate_of_id": null
+    },
+    "locations": [
+      {
+        "name": "Theater Spirgarten",
+        "slug": "theater-spirgarten",
+        "address": "Lindenplatz 5",
+        "postal_code": "8048",
+        "category": "theater",
+        "website": "https://www.spirgarten.ch/seminarraum-zuerich/theater",
+        "evidence": [
+          {
+            "url": "https://www.spirgarten.ch/seminarraum-zuerich/theater",
+            "status": 200,
+            "final_url": "https://www.spirgarten.ch/seminarraum-zuerich/theater",
+            "retrieved_at": "2026-11-18T19:36:49.623796Z",
+            "sha256": "2c1deb340eb2c9a81134f686a48a98ad8a9ba1453998a43f608d749de55fdac1",
+            "bytes": 80425
+          },
+          {
+            "url": "https://www.spirgarten.ch/impressum",
+            "status": 200,
+            "final_url": "https://www.spirgarten.ch/impressum",
+            "retrieved_at": "2026-11-18T19:37:15.032499Z",
+            "sha256": "2be1e5e7e74f06f68d2ecd3c261530b187068f2e1a1c517ab1cea48b381de2b0",
+            "bytes": 55141
+          }
+        ],
+        "guard_pattern": "%spir%garten%",
+        "excerpt": "Theater Spirgarten in Hotel Spirgarten, Lindenplatz5,8048Zurich. Operator theatre description and public contact data embedded in fetched page HTML independently establish hall activity/address.",
+        "description": "Public performance theatre in Hotel Spirgarten at Lindenplatz 5 in Zurich."
+      }
+    ]
+  },
+  "created": [
+    {
+      "result": [
+        {
+          "name": "Theater Spirgarten",
+          "venue_id": "971951f6-24a5-4303-aff4-2d0515cd7082",
+          "organization_id": "dfa61f87-28a3-4bc3-9507-0b7f76d310a8"
+        }
+      ]
+    }
+  ],
+  "event_id": "c7253633-4fd6-4e1e-8386-ca7ac56d9838",
+  "proof": {
+    "capture_method": "direct_primary_http_200",
+    "observed_at": "2026-11-18T19:36:49.953872Z",
+    "url": "https://www.actnews.ch/events/atsuko-okatsuka-2027",
+    "capture_sha256": "34ccccf98c5c028c7a648171774538c9e1d46ab68f2fbc8f0ceb924590513bc2",
+    "capture_bytes": 36121,
+    "location_sources": [
+      {
+        "url": "https://www.spirgarten.ch/seminarraum-zuerich/theater",
+        "status": 200,
+        "final_url": "https://www.spirgarten.ch/seminarraum-zuerich/theater",
+        "retrieved_at": "2026-11-18T19:36:49.623796Z",
+        "sha256": "2c1deb340eb2c9a81134f686a48a98ad8a9ba1453998a43f608d749de55fdac1",
+        "bytes": 80425
+      },
+      {
+        "url": "https://www.spirgarten.ch/impressum",
+        "status": 200,
+        "final_url": "https://www.spirgarten.ch/impressum",
+        "retrieved_at": "2026-11-18T19:37:15.032499Z",
+        "sha256": "2be1e5e7e74f06f68d2ecd3c261530b187068f2e1a1c517ab1cea48b381de2b0",
+        "bytes": 55141
+      }
+    ],
+    "note": "Exact promoter confirms February11,2027 at19:00 in Theater Spirgarten. Venue operator theatre page and embedded public contact establish Lindenplatz5,8048Zurich. Correct publisher typo Spiritgarten. Promoter and official ticketing agree saved start; external syndication19:30 is not adopted. Unknown end/tickets preserved. No age restriction inferred.",
+    "human_reviewed": false
+  },
+  "linked": [
+    {
+      "result": {
+        "id": "c7253633-4fd6-4e1e-8386-ca7ac56d9838",
+        "city_id": "35d1d772-8ce7-4c05-92a5-95ea7053b4bf",
+        "website": "https://www.actnews.ch/events/atsuko-okatsuka-2027",
+        "currency": "CHF",
+        "venue_id": "971951f6-24a5-4303-aff4-2d0515cd7082"
+      }
+    }
+  ]
+}
