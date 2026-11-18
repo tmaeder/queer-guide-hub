@@ -140,3 +140,20 @@ test("inclusive event pagination fails loudly on a saturated timestamp", () => {
     "2027-01-02T00:00:00Z",
   );
 });
+
+test("multi-type JSON-LD business arrays remain importable with factual evidence", () => {
+  const html = '<script type="application/ld+json">' + JSON.stringify({
+    "@type": ["LocalBusiness", "HealthAndBeautyBusiness"],
+    name: "Steam & Sauna, Akron",
+    description: "Editorial prose must not be copied into factual evidence.",
+    address: {
+      streetAddress: "41 S Case Ave",
+      addressLocality: "Akron",
+      addressCountry: "US",
+    },
+  }) + "</script>";
+  const v = detail(html, "https://outxout.com/venue/steam")[0];
+  assert.equal(v.normalized.name, "Steam & Sauna");
+  assert.equal(v.normalized.metadata.source_evidence.address, "41 S Case Ave");
+  assert.equal(v.normalized.metadata.source_evidence.description, undefined);
+});

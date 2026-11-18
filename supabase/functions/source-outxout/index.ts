@@ -209,7 +209,9 @@ async function collect(
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return corsResponse(req);
-  if (req.method !== "POST") return errorResponse("Method not allowed", 405, req);
+  if (req.method !== "POST") {
+    return errorResponse("Method not allowed", 405, req);
+  }
   const db = getServiceClient(), auth = await requireInternalOrAdmin(req, db);
   if (auth instanceof Response) return auth;
   const rpc = async (name: string, args: Obj = {}) => {
@@ -219,8 +221,24 @@ Deno.serve(async (req: Request) => {
   };
   let run: string | null = null, token: string | null = null;
   let failed = false;
+  let sourceScope = "catalogue";
+  const noteSource = async (values: Obj) => {
+    if (sourceScope !== "catalogue") return;
+    try {
+      const { error } = await db.from("ingestion_sources").update(values).eq(
+        "slug",
+        "outxout",
+      );
+      if (error) {
+        console.warn("Out x Out registry metrics update failed", error.code);
+      }
+    } catch {
+      console.warn("Out x Out registry metrics unavailable");
+    }
+  };
   try {
     const body = await req.json().catch(() => ({}));
+    sourceScope = body.scope === "canary" ? "canary" : "catalogue";
     if (body.dry_run === true) {
       const samples = Array.isArray(body.urls)
         ? body.urls.slice(0, 4)
@@ -261,6 +279,7 @@ Deno.serve(async (req: Request) => {
       });
     token = crypto.randomUUID();
     const claim = await rpc("outxout_claim", { p_run: run, p_token: token });
+    sourceScope = claim.scope ?? sourceScope;
     if (claim.busy) {
       return jsonResponse(
         {
@@ -288,6 +307,7 @@ Deno.serve(async (req: Request) => {
       );
     }
     const started = Date.now();
+    await noteSource({ last_run_at: new Date().toISOString() });
     let processed = 0;
     if (claim.phase === "collect") {
       // Four public fetches at a time, no unbounded background work. Checkpoints
@@ -369,6 +389,12 @@ Deno.serve(async (req: Request) => {
         p_run: run,
         p_token: token,
       });
+      if (result.complete) {
+        await noteSource({
+          last_success_at: new Date().toISOString(),
+          last_error: null,
+        });
+      }
       return jsonResponse(
         {
           success: true,
@@ -395,6 +421,7 @@ Deno.serve(async (req: Request) => {
     );
   } catch (error) {
     failed = true;
+    await noteSource({ last_error: String(error).slice(0, 1000) });
     if (run && token) {
       await db.rpc("outxout_retry_run", {
         p_run: run,

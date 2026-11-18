@@ -6,6 +6,9 @@ export type Item = {
   normalized: Obj;
   raw: Obj;
 };
+function schemaHas(o: Obj, type: string): boolean {
+  return (Array.isArray(o["@type"]) ? o["@type"] : [o["@type"]]).includes(type);
+}
 export const BASE = "https://outxout.com";
 const countries: Obj = {
   "United States": "US",
@@ -159,6 +162,51 @@ function wrap(kind: string, slug: string, normalized: Obj, raw: Obj): Item {
     ...normalized.metadata,
     source: "outxout",
     url: normalized.metadata?.url ?? `${BASE}/${kind}/${slug}`,
+    // Keep factual publisher evidence even when an existing canonical row only
+    // needs a gap update. Do not copy editorial descriptions into this snapshot.
+    source_evidence: Object.fromEntries(
+      Object.entries(raw.native ?? raw).filter(([key]) =>
+        [
+          "venue_id",
+          "venue_slug",
+          "venue_name",
+          "venue_display_name",
+          "venue_category",
+          "event_id",
+          "event_slug",
+          "event_display_name",
+          "start_date",
+          "end_date",
+          "event_address",
+          "location_name",
+          "timezone_name",
+          "recurrence_rule",
+          "event_status",
+          "sp_id",
+          "organization_name",
+          "address",
+          "city",
+          "state",
+          "country",
+          "lat",
+          "lng",
+          "website",
+          "venue_url",
+          "email",
+          "phone",
+          "web_hours",
+          "image_url",
+          "img_url",
+          "league_name",
+          "sports",
+          "seasons",
+          "fee",
+          "who_can_play",
+          "skill_levels",
+          "source_url",
+        ].includes(key)
+      ),
+    ),
   };
   // The commit RPC falls back to urls[0] for tickets; a directory page is NOT a ticket.
   normalized.urls = [];
@@ -253,7 +301,7 @@ export function event(e: Obj): Item {
   }, e);
 }
 export function professional(o: Obj, native: Obj, slug: string): Item {
-  const person = o["@type"] === "Person",
+  const person = schemaHas(o, "Person"),
     employer = o.worksFor ?? {},
     addr = o.address ?? employer.address ?? o.workLocation ?? {};
   const name = person ? employer.name : o.name;
@@ -306,9 +354,11 @@ export function detail(html: string, sourceUrl: string): Item[] {
     slug = decodeURIComponent(u.pathname.split("/").pop()!);
   if (u.pathname.startsWith("/service-provider/")) {
     const o = x.jsonld.find((o) =>
-      o["@type"] === "Person" || o["@type"] === "ProfessionalService"
+      schemaHas(o, "Person") || schemaHas(o, "ProfessionalService")
     ) ?? x.jsonld.find((o) =>
-      ["LocalBusiness", "Organization"].includes(o["@type"]) &&
+      ["LocalBusiness", "Organization"].some((t) =>
+        schemaHas(o, t)
+      ) &&
       o.url === sourceUrl
     );
     if (!o) {
@@ -334,7 +384,7 @@ export function detail(html: string, sourceUrl: string): Item[] {
     }
     const o = x.jsonld.find((o) =>
       ["LocalBusiness", "BarOrPub", "Hotel", "LodgingBusiness", "Restaurant"]
-        .includes(o["@type"])
+        .some((t) => schemaHas(o, t))
     );
     if (!o) throw Error("venue schema missing");
     const a = o.address ?? {}, g = o.geo ?? {};
@@ -356,11 +406,13 @@ export function detail(html: string, sourceUrl: string): Item[] {
           : Array.isArray(o.image)
           ? o.image
           : [],
-        venue_category: ["Hotel", "LodgingBusiness"].includes(o["@type"])
+        venue_category: ["Hotel", "LodgingBusiness"].some((t) =>
+            schemaHas(o, t)
+          )
           ? "Hotels"
-          : o["@type"] === "BarOrPub"
+          : schemaHas(o, "BarOrPub")
           ? "Bars"
-          : o["@type"] === "Restaurant"
+          : schemaHas(o, "Restaurant")
           ? "Restaurants"
           : "Other",
       }),
@@ -368,7 +420,7 @@ export function detail(html: string, sourceUrl: string): Item[] {
     ];
   }
   const native = x.objects.find((o) => o.event_slug === slug);
-  const o = x.jsonld.find((o) => o["@type"] === "Event");
+  const o = x.jsonld.find((o) => schemaHas(o, "Event"));
   if (!o && !native) throw Error("event schema missing");
   const loc = o?.location ?? {},
     addr = loc.address ?? {},
