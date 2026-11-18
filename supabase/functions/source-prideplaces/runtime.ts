@@ -14,7 +14,9 @@ const UA = 'QueerGuideBot/1.0 (+https://queer.guide)'
 export async function getPage(url: string): Promise<string> {
   sourceUrl(url)
   const response = await fetch(url, {
-    headers: { Accept: 'text/html', 'User-Agent': UA },
+    // The source advertises a five-second keep-alive window. Edge isolates can
+    // resume with stale pooled sockets; close this source connection after use.
+    headers: { Accept: 'text/html', 'User-Agent': UA, Connection: 'close' },
     signal: AbortSignal.timeout(20_000), redirect: 'error',
   })
   if (!response.ok) { await response.body?.cancel(); throw Error(`Source HTTP ${response.status}`) }
