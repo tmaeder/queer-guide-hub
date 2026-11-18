@@ -7,7 +7,7 @@ import { SITE_ORIGIN, DEFAULT_OG_IMAGE } from './routeMeta';
 const escapeJsonLd = (s: string) =>
   s.replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
 
-const renderLd = (obj: unknown) =>
+export const renderLd = (obj: unknown) =>
   `<script type="application/ld+json">${escapeJsonLd(JSON.stringify(obj))}</script>`;
 
 /** Optional DB-driven identity overrides (site_branding.meta). */
