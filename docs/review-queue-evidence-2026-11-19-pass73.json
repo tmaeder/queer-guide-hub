@@ -1,0 +1,77 @@
+{
+  "pass": 73,
+  "date": "2026-11-19",
+  "outcome": "seven_additional_assignments_quarantined_after_scoped_research",
+  "government_evidence": {
+    "city": "Münchenbernsdorf",
+    "url": "https://www.statistikportal.de/de/gemeindeverzeichnis/16076049",
+    "status": 200,
+    "bytes": 37761,
+    "sha256": "0c66b51de81367adcfaab46c2aae3f3331d6ac7409bd937b2f1bd575e8c9d710",
+    "finding": "Independent town in Thuringia, separate from Munich."
+  },
+  "human_history": {
+    "records": 6,
+    "revisions": 8,
+    "image_edits": 0,
+    "image_provenance_changes": 0,
+    "image_review_decisions": 0,
+    "full_human_revision_hashes_pinned_and_unchanged": true,
+    "reviewed_names_points_and_other_facts_unchanged": true
+  },
+  "validation": {
+    "guarded_rollback_passed": true,
+    "guarded_commit_passed": true,
+    "original_assets_and_links_preserved": true
+  },
+  "result": {
+    "results": [
+      {
+        "name": "Burghausen",
+        "city_id": "c8922da8-6124-4d6f-8fab-a2ffef32eeb6",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Efringen-Kirchen",
+        "city_id": "0239962e-dcf9-4f77-851b-c1285cc419e4",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Heringsdorf",
+        "city_id": "ef5998cb-7267-4b8b-870e-25a4784d7651",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Münchenbernsdorf",
+        "city_id": "0ad4bca7-dc88-4165-b83b-965429b4054c",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Stolberg",
+        "city_id": "54ca17c7-2efa-4b66-808e-66a3c41661b1",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Vechta",
+        "city_id": "d740e10b-4158-4690-977a-e536af88dfcc",
+        "outcome": "quarantined"
+      },
+      {
+        "name": "Würselen",
+        "city_id": "4ae9211e-733c-43be-99e1-a11aacb0f44e",
+        "outcome": "quarantined"
+      }
+    ],
+    "skipped": 0,
+    "quarantined": 7,
+    "assets_links_preserved": true,
+    "cases_claimed_resolved": 0
+  },
+  "scope": {
+    "new_quarantines_pass72_and73": 482,
+    "previously_flagged": 1,
+    "legitimate_munich_assignment_retained": 1,
+    "total_shared_url_assignments": 484,
+    "cases_claimed_resolved": 0
+  }
+}

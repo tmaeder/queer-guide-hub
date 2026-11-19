@@ -294,6 +294,7 @@ async function findBestScoredImage(
 async function processCity(supabase: SupabaseClient, id: string, name: string, country: string, pK?: string, uK?: string, force = false) {
   const { data: existing } = await supabase.from('cities').select('image_url, image_flagged, curated_image_url').eq('id', id).single()
   if (existing?.curated_image_url) return { success: true, image_url: existing.curated_image_url, cached: true, source: 'curated' }
+  if (!force && existing?.image_flagged) return { success: false, rejected: true, error: 'City image is held for review' }
   if (!force && !existing?.image_flagged && existing?.image_url) return { success: true, image_url: existing.image_url, cached: true }
 
   // Editorial pride-first queries for queer-essential cities. Bias image search
@@ -512,7 +513,7 @@ function linkedPlaceName(value: unknown): string {
 
 async function processCityBatch(supabase: SupabaseClient, pK?: string, uK?: string, force = false, limit = 50) {
   let q = supabase.from('cities').select('id, name, countries(name)')
-  if (!force) q = q.or('image_url.is.null,image_flagged.eq.true')
+  if (!force) q = q.is('image_url', null).is('curated_image_url', null).or('image_flagged.is.null,image_flagged.eq.false')
   const { data: rows, error } = await q.order('name').limit(limit)
   if (error) throw new Error(error.message)
   if (!rows?.length) return { success: true, message: 'No cities to process', processed: 0 }

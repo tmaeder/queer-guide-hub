@@ -10,6 +10,7 @@ interface ExistingCity {
 /**
  * Fetches/refreshes a city's hero image.
  * - Short-circuits on `curated_image_url` and on existing `image_url` when not flagged.
+ * - Flagged images stay quarantined until an explicit refresh.
  * - Only calls the edge function on real misses or when `refresh: true`.
  */
 export const useCityImages = () => {
@@ -30,6 +31,7 @@ export const useCityImages = () => {
         if (existing?.curated_image_url) {
           return { image_url: existing.curated_image_url, image_metadata: null, cached: true };
         }
+        if (existing?.image_flagged) return null;
         if (existing?.image_url && !existing.image_flagged) {
           return { image_url: existing.image_url, image_metadata: null, cached: true };
         }

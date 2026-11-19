@@ -35,6 +35,15 @@
         ],
         "createdAt": "2026-11-17T19:27:54.517Z",
         "reason": "Codex: parser regression fixture intentionally models a flag image with no text; this HTML is never rendered in product UI."
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "src/pages/__tests__/CityDetail.test.tsx"
+        ],
+        "createdAt": "2026-11-19T19:20:04.318Z",
+        "reason": "Codex: regression fixture and DOM selectors intentionally refer to withheld images; this test file supplies no product artwork."
       }
     ]
   }

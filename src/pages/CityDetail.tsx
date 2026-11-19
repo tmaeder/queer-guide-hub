@@ -6,7 +6,6 @@ import { useTrackView } from '@/hooks/useTrackView';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useCityImages } from '@/hooks/useCityImages';
 import { useNewsArticles } from '@/hooks/useNews';
@@ -79,7 +78,7 @@ export default function CityDetail() {
     url: string;
     metadata?: unknown;
   }>();
-  const currentFallback = fetchedImage?.cityId === city?.id ? fetchedImage : undefined;
+  const currentFallback = !city?.image_flagged && fetchedImage?.cityId === city?.id ? fetchedImage : undefined;
   const { track } = useTrackEvent();
 
   useEffect(() => {
@@ -170,7 +169,7 @@ export default function CityDetail() {
   const { villages, loading: villagesLoading } = useQueerVillages({ cityId: city?.id ?? null });
 
   useEffect(() => {
-    if (!city || syncImageUrl) return;
+    if (!city || syncImageUrl || city.image_flagged) return;
     let current = true;
     void (async () => {
       try {
@@ -190,12 +189,6 @@ export default function CityDetail() {
           });
           return;
         }
-        const { data } = await supabase.functions.invoke('get-pexels-images', {
-          body: { query: city.name, type: 'city' },
-        });
-        const first = data?.images?.[0];
-        const url = first?.url || first?.thumbnail;
-        if (current && url) setFetchedImage({ cityId: city.id, url, metadata: first });
       } catch {
         // The opening still works with its safety verdict and any local listings.
       }
