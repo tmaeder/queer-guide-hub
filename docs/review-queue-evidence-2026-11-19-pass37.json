@@ -30,13 +30,13 @@
   "validation": {
     "guarded_rollback_passed": true,
     "exact_commit_passed": true,
-    "full_before_after_city_and_venue_points_preserved": true,
     "unrelated_businesses_and_every_other_linked_venue_unchanged": true,
     "quality_changed_only_linkage": "pending/linkage_unresolved -> pass/linked_entity_present",
     "quality_checked_at_and_other_dimensions_preserved": true,
     "publication_ownership_media_editorial_contacts_gates_preserved": true,
     "native_source_reconciliation": true,
-    "linkage_cases_now_inactive": 2
+    "linkage_cases_now_inactive": 2,
+    "full_venue_business_and_other_linked_venue_rows_compared": true
   },
   "known_limitations": [
     "Owner Instagram retrieval unavailable; Code repair uses retained native identity/merge records plus a clearly labelled independent current directory",
