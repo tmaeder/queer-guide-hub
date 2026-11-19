@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from '@/components/icons';
+import { ChevronLeft, ChevronRight, Pause, Play } from '@/components/icons';
 import { Image } from '@/components/ui/Image';
 import { useFeaturedVenues } from '@/hooks/useVenuesV2Data';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useVenueCategoryLabel } from '@/lib/venueCategories';
 import { venueClosureLabel } from '@/lib/venueClosureLabel';
-import { getVenueVisual } from '@/lib/venueVisual';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 import type { Database } from '@/integrations/supabase/types';
@@ -61,7 +60,7 @@ export function VenuesHero({ fallback }: { fallback?: Venue }) {
       aria-label={
         pool.length ? t('venues.hero.label', 'Featured venue') : t('venues.title', 'Venues')
       }
-      className="relative min-w-0 overflow-hidden rounded-panel bg-card"
+      className="relative min-w-0 overflow-hidden rounded-panel bg-card shadow-soft"
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
       onFocus={() => setHovering(true)}
@@ -70,10 +69,10 @@ export function VenuesHero({ fallback }: { fallback?: Venue }) {
       }}
     >
       <div aria-live={manual ? 'polite' : 'off'}>
-        <HeroSlide key={venue.id} venue={venue} roomForControls={slides.length > 1} />
+        <HeroSlide key={venue.id} venue={venue} />
       </div>
       {slides.length > 1 && (
-        <div className="absolute bottom-2 end-2 flex items-center gap-0.5 rounded-element bg-background/90 p-0.5 shadow-soft">
+        <div className="absolute top-2 end-2 flex items-center gap-0.5 rounded-element bg-background/90 p-0.5 shadow-soft">
           <button
             type="button"
             onClick={() => step(-1)}
@@ -110,11 +109,10 @@ export function VenuesHero({ fallback }: { fallback?: Venue }) {
   );
 }
 
-function HeroSlide({ venue, roomForControls }: { venue: Venue; roomForControls: boolean }) {
+function HeroSlide({ venue }: { venue: Venue }) {
   const { i18n } = useTranslation();
   const category = useVenueCategoryLabel(venue.category);
   const photo = venue.images?.find(isValidImageUrl);
-  const visual = photo ? { src: photo, fit: 'cover' as const, plate: null } : getVenueVisual(venue);
   const name = localizedField(venue.name, venue.name_i18n as I18nMap, i18n.language);
   const description = localizedField(
     venue.description,
@@ -126,35 +124,43 @@ function HeroSlide({ venue, roomForControls }: { venue: Venue; roomForControls: 
   return (
     <LocalizedLink
       to={`/venues/${venue.slug || venue.id}`}
-      className="station-arrive group flex min-w-0 items-stretch no-underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+      className="station-arrive group relative flex min-h-56 min-w-0 flex-col justify-end overflow-hidden no-underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring md:min-h-64"
     >
-      {visual.src && (
-        <div className="w-1/4 max-w-36 shrink-0 self-center">
-          <Image
-            src={visual.src}
-            alt=""
-            aspect="square"
-            fit={visual.fit}
-            plate={visual.plate ?? undefined}
-            rounded="none"
-            priority
-            sizes="(min-width: 1024px) 144px, 23vw"
-          />
-        </div>
+      {photo && (
+        <Image
+          src={photo}
+          alt=""
+          aspect="auto"
+          rounded="none"
+          scrim="strong"
+          priority
+          sizes="(min-width: 768px) 60vw, 100vw"
+          frameClassName="absolute inset-0 h-full w-full"
+          className="transition-transform duration-slow group-hover:scale-[1.03] motion-reduce:transform-none"
+        />
       )}
       <div
-        className={`flex min-w-0 flex-1 items-center gap-2 px-4 pt-4 md:gap-4 md:px-6 ${roomForControls ? 'pb-14' : 'pb-4'}`}
+        className={`relative flex min-w-0 items-end gap-4 p-4 md:p-6 ${photo ? 'text-white' : ''}`}
       >
         <div className="min-w-0 flex-1">
-          {place && <p className="break-words text-13 text-muted-foreground">{place}</p>}
-          <h2 className="mt-1 break-words font-sans text-title font-bold leading-tight group-hover:underline sm:text-headline rtl:font-sans rtl:font-bold">
+          {place && (
+            <span
+              className={`inline-flex rounded-badge px-2 py-0.5 text-2xs font-bold uppercase tracking-label backdrop-blur-sm ${photo ? 'bg-black/40' : 'bg-muted'}`}
+            >
+              {place}
+            </span>
+          )}
+          <h2 className="mt-2 break-words font-sans text-title font-bold leading-tight group-hover:underline sm:text-headline rtl:font-sans rtl:font-bold">
             {name}
           </h2>
           {description && (
-            <p className="mt-2 line-clamp-2 text-15 text-muted-foreground">{description}</p>
+            <p
+              className={`mt-1 line-clamp-2 text-15 ${photo ? 'text-white/85' : 'text-muted-foreground'}`}
+            >
+              {description}
+            </p>
           )}
         </div>
-        <ArrowRight size={20} aria-hidden className="shrink-0 rtl:rotate-180" />
       </div>
     </LocalizedLink>
   );

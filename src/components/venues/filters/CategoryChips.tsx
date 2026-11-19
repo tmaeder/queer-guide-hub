@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ChevronDown } from '@/components/icons';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { useAuth } from '@/hooks/useAuth';
 import { AUTH_ONLY_CATEGORIES } from './constants';
 import { useVenueCategoryOptions } from '@/lib/venueCategories';
 import { venueCategoryIcon } from '../venueCategoryIcon';
+
+const PRIMARY_COUNT = 8;
 
 interface CategoryChipsProps {
   category: string;
@@ -29,6 +33,14 @@ export function CategoryChips({ category, onCategoryClick }: CategoryChipsProps)
     (o) => user || !AUTH_ONLY_CATEGORIES.includes(o.value) || o.value === category,
   );
 
+  const [expanded, setExpanded] = useState(false);
+  // One line by default: the first types plus whatever is active; the rest
+  // behind "More" so 17 chips do not cost two rows above every result.
+  const shown = expanded
+    ? visible
+    : visible.filter((o, i) => i < PRIMARY_COUNT || o.value === category);
+  const hidden = visible.length - shown.length;
+
   return (
     <div
       role="group"
@@ -41,7 +53,7 @@ export function CategoryChips({ category, onCategoryClick }: CategoryChipsProps)
         onClick={() => category && onCategoryClick(category)}
         label={t('venues.filters.allTypes', 'All')}
       />
-      {visible.map(({ value: cat, label }) => {
+      {shown.map(({ value: cat, label }) => {
         const Icon = venueCategoryIcon(cat);
         return (
           <FilterChip
@@ -57,6 +69,27 @@ export function CategoryChips({ category, onCategoryClick }: CategoryChipsProps)
           />
         );
       })}
+      {(hidden > 0 || expanded) && (
+        <FilterChip
+          active={false}
+          aria-pressed={undefined}
+          aria-expanded={expanded}
+          onClick={() => setExpanded((e) => !e)}
+          className="bg-transparent shadow-none text-muted-foreground"
+          label={
+            <>
+              {expanded
+                ? t('venues.filters.fewerTypes', 'Fewer')
+                : t('venues.filters.moreTypes', '+{{count}} more', { count: hidden })}
+              <ChevronDown
+                size={14}
+                aria-hidden
+                className={expanded ? 'rotate-180 transition-transform' : 'transition-transform'}
+              />
+            </>
+          }
+        />
+      )}
     </div>
   );
 }
