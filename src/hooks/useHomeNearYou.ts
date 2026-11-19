@@ -14,6 +14,7 @@ export interface NearYouRow {
   startDate: string | null;
   timezone?: string | null;
   datePrecision?: string | null;
+  eventType?: string | null;
   /** "SchwuZ · Berlin" — whatever geography we can honestly print. */
   via: string;
   rung: NearYouRung;
@@ -34,12 +35,13 @@ export interface NearYouResult {
 const DEAD_LIVENESS = ['dead', 'cancelled', 'dead_link'];
 
 const EVENT_SELECT =
-  'id, title, slug, start_date, timezone, date_precision:enrichment_status->date_confirmation->>precision, venue_name, city:cities(id, name)';
+  'id, title, slug, event_type, start_date, timezone, date_precision:enrichment_status->date_confirmation->>precision, venue_name, city:cities(id, name)';
 
 type EventRow = {
   id: string;
   title: string;
   slug: string | null;
+  event_type?: string | null;
   start_date: string | null;
   timezone: string | null;
   date_precision?: string | null;
@@ -53,6 +55,7 @@ const toEventRow = (e: EventRow, rung: NearYouRung): NearYouRow => ({
   title: e.title,
   slug: e.slug,
   startDate: e.start_date,
+  eventType: e.event_type ?? null,
   timezone: e.timezone,
   datePrecision: e.date_precision ?? null,
   via: [e.venue_name, e.city?.name].filter(Boolean).join(' · '),

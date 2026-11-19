@@ -1967,7 +1967,8 @@
       "cityEvents": "이벤트",
       "noCityEvents": "{{city}}에 예정된 이벤트가 아직 없습니다.",
       "pickCityForEvents": "도시를 선택하면 이벤트가 표시됩니다.",
-      "allDestinations": "여행"
+      "allDestinations": "여행",
+      "eventTypes": "이벤트 유형"
     },
     "heroLine1": "퀴어 장소,",
     "heroLine2": "이벤트, 그리고 사람들.",

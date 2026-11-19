@@ -1977,7 +1977,8 @@
       "cityEvents": "الفعاليات",
       "noCityEvents": "لا توجد فعاليات قادمة في {{city}} بعد.",
       "pickCityForEvents": "اختر مدينة لعرض فعالياتها.",
-      "allDestinations": "السفر"
+      "allDestinations": "السفر",
+      "eventTypes": "أنواع الفعاليات"
     },
     "heroLine1": "أماكن كويرية،",
     "heroLine2": "فعاليات وأشخاص.",

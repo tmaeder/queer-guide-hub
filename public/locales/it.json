@@ -1967,7 +1967,8 @@
       "cityEvents": "Eventi",
       "noCityEvents": "Ancora nessun evento in arrivo a {{city}}.",
       "pickCityForEvents": "Scegli una città per vedere i suoi eventi.",
-      "allDestinations": "Viaggi"
+      "allDestinations": "Viaggi",
+      "eventTypes": "Tipi di evento"
     },
     "heroLine1": "Locali queer,",
     "heroLine2": "eventi e persone.",
