@@ -1,0 +1,46 @@
+{
+  "pass": 51,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "scope": "Hessenhuis public postal address correction",
+  "venue_id": "1dc62968-17ed-48c2-811b-6a2891738829",
+  "organization_id": "4658fd07-3248-4ec7-908f-547cdd1482ad",
+  "primary_url": "https://www.hessenhuis.be/the-venue",
+  "source_sha256": "8920192356ac1f13b09ce5caad2e0f0cc736a268a53b18927eb7b4b71a13852c",
+  "address": "Falconrui 59",
+  "result": {
+    "org_changes": {
+      "address": {
+        "after": "Falconrui 59",
+        "before": "79 Falconrui Anvers (2000)"
+      },
+      "updated_at": {
+        "after": "2026-11-19T13:56:55.099797+00:00",
+        "before": "2026-11-19T11:21:20.912722+00:00"
+      }
+    },
+    "venue_changes": {
+      "address": {
+        "after": "Falconrui 59",
+        "before": "Falconrui 79"
+      },
+      "address_normalized": {
+        "after": "falconrui 59",
+        "before": "falconrui 79"
+      }
+    }
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "all_pins_and_other_fields_preserved": true,
+    "human_attention_and_quality_timestamp_preserved": true,
+    "no_new_point_or_case_resolution_claim": true
+  },
+  "not_applied": {
+    "november": "Current Japanese brasserie differs from historical German/Austrian cafe at same address; operator continuity requires research.",
+    "le_detour": "No sufficient current primary evidence for company merge; directory statements are not a confirmed corporate dissolution.",
+    "connection_shop": "Owner's club/shop distinction requires research before flattening business profiles."
+  },
+  "all_cases_complete": false
+}

@@ -1,0 +1,70 @@
+{
+  "pass": 55,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "creators": [
+    {
+      "brand_id": "cb9ca532-f267-4a92-a789-5bef96a89411",
+      "name": "Courtney Smyth",
+      "url": "https://courtneysmythwrites.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 183271,
+      "sha256": "186f126b5cae2792ee4877e3f3e552cf996b6a322eaf153ea4e2d5ae1d7e7c8f",
+      "retrieved_at": "2026-11-19T14:04:30.822521+00:00",
+      "work_url": "https://courtneysmythwrites.com/books-by-courtney-smyth",
+      "work_sha256": "c864ac1053778182e1f06eb20344b586af6b75a94635e05604ac954dd1ae73d3",
+      "work_retrieved_at": "2026-11-19T14:04:30.824937+00:00",
+      "registered_title": "The Unsolvable Case",
+      "listing_id": "da5d31c6-a494-413a-a838-214f873c5d7b",
+      "identity_basis": "Official creator home and own catalogue explicitly identify exact registered book. Preorder dates/availability, signed editions and private contacts are not imported or verified."
+    }
+  ],
+  "result": {
+    "brands": [
+      {
+        "id": "cb9ca532-f267-4a92-a789-5bef96a89411",
+        "name": "Courtney Smyth",
+        "website": "https://courtneysmythwrites.com/",
+        "organization_id": "0aa9d70e-b55e-487f-8960-91913456399f",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      }
+    ],
+    "passed_findings": 2
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "actual_contact_linkage_passes": 2,
+    "publication_ownership_and_other_fields_preserved": true,
+    "all_actual_human_reviews_and_quality_checked_at_preserved": true,
+    "native_draft_unclaimed_profile": true,
+    "obsolete_no_domain_fetch_stamp_cleared_by_inspected_native_trigger": true,
+    "no_image_credit_or_licence_change": true,
+    "native_source_reconciled": true,
+    "first_commit_refused_shared_lock": true,
+    "retry_only_after_scheduled_reconciler_completed": true
+  },
+  "recent_reconciler": [
+    {
+      "status": "succeeded",
+      "start_time": "2026-11-19 14:05:00.60598+00",
+      "seconds": "16.526051"
+    },
+    {
+      "status": "succeeded",
+      "start_time": "2026-11-19 14:00:01.440854+00",
+      "seconds": "22.364332"
+    },
+    {
+      "status": "succeeded",
+      "start_time": "2026-11-19 13:55:00.655775+00",
+      "seconds": "13.517369"
+    }
+  ],
+  "not_applied": [
+    "Brontez Purnell and Connie Glynn: search did not establish sufficient own-site locator evidence; no personal professional link inferred."
+  ],
+  "all_cases_complete": false
+}

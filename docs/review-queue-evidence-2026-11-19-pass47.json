@@ -1,0 +1,61 @@
+{
+  "pass": 47,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "listing_id": "9672e5d3-4b1b-407e-91e8-89a799465ac0",
+  "title_before": "I Kissed Shara Wheer",
+  "title_after": "I Kissed Shara Wheeler",
+  "supplier_isbn": "9781529099423",
+  "primary_sources": [
+    "https://www.caseymcquiston.com/books",
+    "https://www.panmacmillan.com/authors/casey-mcquiston/i-kissed-shara-wheeler/9781529099423"
+  ],
+  "evidence_method": "Rendered primary source reading; no raw capture hash claimed",
+  "root_cause": "Imported supplier title contains the same Wheer typo; supplier SKU matches exact publisher ISBN",
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "only_other_listing_changes": [
+      "title_normalized",
+      "taxonomy_v3_at"
+    ],
+    "full_rejected_creator_profile_unchanged": true,
+    "publication_ownership_and_quality_flags_unchanged": true,
+    "source_history_preserved": true
+  },
+  "reconciler": {
+    "recent_scheduled_runs": [
+      {
+        "status": "succeeded",
+        "message": "1 row",
+        "seconds": 21.876977,
+        "start_time": "2026-11-19T13:40:01.245588+00:00"
+      },
+      {
+        "status": "succeeded",
+        "message": "1 row",
+        "seconds": 12.598937,
+        "start_time": "2026-11-19T13:35:00.676455+00:00"
+      },
+      {
+        "status": "succeeded",
+        "message": "1 row",
+        "seconds": 21.741351,
+        "start_time": "2026-11-19T13:30:00.948386+00:00"
+      },
+      {
+        "status": "succeeded",
+        "message": "1 row",
+        "seconds": 15.784511,
+        "start_time": "2026-11-19T13:25:00.742047+00:00"
+      }
+    ],
+    "worklist_completed_seconds": [
+      32.459648,
+      31.582793
+    ],
+    "diagnostic_query_timeout": "Initial correlated cron history query reached its unchanged 8 second read bound; bounded recent-run query succeeded. This was not a scheduled reconciler timeout."
+  },
+  "case_resolutions_claimed": 0,
+  "all_cases_complete": false
+}

@@ -1,0 +1,138 @@
+{
+  "pass": 50,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "scope": "Four professional creator websites and native draft brand profiles",
+  "creators": [
+    {
+      "brand_id": "462f6ff8-e973-40c4-806b-63ef2e4862c6",
+      "name": "Adiba Jaigirdar",
+      "url": "https://adibajaigirdar.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 126117,
+      "sha256": "489d7f9310303840559535b99f3fbfb979c20d01ad43799e8351ed1f0fb94e8d",
+      "retrieved_at": "2026-11-19T13:52:42.662819+00:00",
+      "work_url": "https://adibajaigirdar.com/dos-and-donuts",
+      "work_sha256": "be841590215e1511a15933fb4ed89172a20025b7b2d2ce0a03316471fbfe3c9d",
+      "work_retrieved_at": "2026-11-19T13:52:42.663875+00:00",
+      "registered_title": "The Dos and Donuts of Love",
+      "listing_id": "94140d52-cf1e-4e56-a08f-9f54d9fc0277",
+      "identity_basis": "Official professional site and its own book catalogue or author biography explicitly identify exact registered work; no ownership or personality publication claimed"
+    },
+    {
+      "brand_id": "851e79f0-19b8-42a7-a16f-21c67cf3d579",
+      "name": "Aiden Thomas",
+      "url": "https://www.aiden-thomas.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 340771,
+      "sha256": "831f5eb2a864993950045a3340886e7bc59959e4fb3802b039d37d441d0e6d40",
+      "retrieved_at": "2026-11-19T13:52:42.664018+00:00",
+      "work_url": "https://www.aiden-thomas.com/media-kit",
+      "work_sha256": "1a1430e73f1ab9058b5aaa3418d6f3b6bc4f2a52c1b8930d62dac2f77c5d2c77",
+      "work_retrieved_at": "2026-11-19T13:52:42.664114+00:00",
+      "registered_title": "Celestial Monsters",
+      "listing_id": "88322eab-e811-42d6-9f2c-ba55f1cdc698",
+      "identity_basis": "Official professional site and its own book catalogue or author biography explicitly identify exact registered work; no ownership or personality publication claimed"
+    },
+    {
+      "brand_id": "30393f89-2fac-4d38-b76f-47e2ce6c1c38",
+      "name": "Aliette de Bodard",
+      "url": "https://www.aliettedebodard.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 51312,
+      "sha256": "e7966c1a5923242f759c6cad7454fa2d99231cfc073618e7e5378532690b99d2",
+      "retrieved_at": "2026-11-19T13:52:43.048829+00:00",
+      "work_url": "https://www.aliettedebodard.com/bibliography/novels/dominion-of-the-fallen/house-shattered-wings/",
+      "work_sha256": "538afb7de3689e02c25a70065aac0e19044c24052daa0145dbaba55a138c5f1f",
+      "work_retrieved_at": "2026-11-19T13:52:43.152998+00:00",
+      "registered_title": "The House of Shattered Wings",
+      "listing_id": "c9e8a868-707b-45f4-9b9a-1a2be68782a9",
+      "identity_basis": "Official professional site and its own book catalogue or author biography explicitly identify exact registered work; no ownership or personality publication claimed"
+    },
+    {
+      "brand_id": "d37675fa-b0dd-4ce3-a164-dc7644ef952e",
+      "name": "Ann Leckie",
+      "url": "https://annleckie.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 123158,
+      "sha256": "374453a97d8aada5f8a735f128556338091ce2d87cfaffa3019bab0d586f8ba6",
+      "retrieved_at": "2026-11-19T13:52:43.252859+00:00",
+      "work_url": "https://annleckie.com/novel/ancillary-sword/",
+      "work_sha256": "261a3d711c8d583067447939e0a422df8f108428af718e22575cadd8aaca1487",
+      "work_retrieved_at": "2026-11-19T13:52:43.424655+00:00",
+      "registered_title": "Ancillary Sword",
+      "listing_id": "18d1e95e-c5ee-407c-bd0c-18ede06fcee1",
+      "identity_basis": "Official professional site and its own book catalogue or author biography explicitly identify exact registered work; no ownership or personality publication claimed"
+    }
+  ],
+  "result": {
+    "brands": [
+      {
+        "id": "30393f89-2fac-4d38-b76f-47e2ce6c1c38",
+        "name": "Aliette de Bodard",
+        "website": "https://www.aliettedebodard.com/",
+        "organization_id": "c1152597-58ec-4ee9-8d90-7451975e78f3",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      },
+      {
+        "id": "462f6ff8-e973-40c4-806b-63ef2e4862c6",
+        "name": "Adiba Jaigirdar",
+        "website": "https://adibajaigirdar.com/",
+        "organization_id": "e15ddcf4-9e9e-405e-9897-14a1c9a7738c",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      },
+      {
+        "id": "851e79f0-19b8-42a7-a16f-21c67cf3d579",
+        "name": "Aiden Thomas",
+        "website": "https://www.aiden-thomas.com/",
+        "organization_id": "edb7e8a4-5c98-4073-b0c8-519bc6a4c2fb",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      },
+      {
+        "id": "d37675fa-b0dd-4ce3-a164-dc7644ef952e",
+        "name": "Ann Leckie",
+        "website": "https://annleckie.com/",
+        "organization_id": "2f5f99fc-6672-4450-ae09-37efede70ae9",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      }
+    ],
+    "passed_findings": 8
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "actual_contact_linkage_passes": 8,
+    "publication_and_ownership_unchanged": true,
+    "actual_human_reviews_preserved": true,
+    "all_existing_images_credits_licences_unchanged": true,
+    "quality_checked_at_unchanged": true,
+    "other_quality_dimensions_and_fields_preserved": true,
+    "native_profiles_draft_unclaimed": true,
+    "native_source_reconciled": true
+  },
+  "observed_native_side_effect": {
+    "brand_id": "462f6ff8-e973-40c4-806b-63ef2e4862c6",
+    "trigger": "marketplace_brands_clear_stale_logo_stamp",
+    "before": {
+      "logo_url": null,
+      "logo_source": "no_domain",
+      "logo_fetched_at": "2026-08-22T20:10:00.890762+00:00"
+    },
+    "after": {
+      "logo_url": null,
+      "logo_source": null,
+      "logo_fetched_at": null
+    },
+    "scope": "Only obsolete no-domain fetch stamp reset by existing native trigger after adding actual domain; no image/credit/licence changed",
+    "guard": "Initially rolled back; function inspected; exact two-field reset permitted for this brand only"
+  },
+  "all_cases_complete": false
+}
