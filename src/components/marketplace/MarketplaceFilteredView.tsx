@@ -1,3 +1,4 @@
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -98,35 +99,26 @@ export function MarketplaceFilteredView({
 
   return (
     <>
-      {/* Same swatch + tabular count as the masthead, so a sub-page states its
-          size the way the hub does. Rendered in every state for the same
-          anti-flip reason the masthead row is. */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <p className="flex items-center gap-4 text-13 text-muted-foreground">
-          <span
-            aria-hidden="true"
-            className="h-1.5 w-10 shrink-0 border border-border-hairline bg-track-yellow"
-          />
-          <span className="tabular-nums">
-            {t('marketplace.showingCount', {
-              defaultValue: '{{shown}} of {{total}} listings',
-              shown: accumulated.length.toLocaleString(),
-              total: total.toLocaleString(),
-            })}
-          </span>
-        </p>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as MarketplaceSort)}
-          aria-label={t('marketplace.sortLabel', 'Sort listings')}
-          className="h-8 bg-card px-2 text-13 font-bold rounded-container shadow-soft"
+      {/* Sort as a symbol: the native select sits invisibly over the icon. */}
+      <div className="mb-6 flex justify-end">
+        <span
+          className="relative grid size-11 place-items-center rounded-element bg-card shadow-soft hover:bg-foreground hover:text-background"
+          title={sortOptions.find((o) => o.value === sortBy)?.label}
         >
-          {sortOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          <TransitIcon name="sort" size={18} aria-hidden />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as MarketplaceSort)}
+            aria-label={t('marketplace.sortLabel', 'Sort listings')}
+            className="absolute inset-0 cursor-pointer opacity-0"
+          >
+            {sortOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </span>
       </div>
 
       {error && (

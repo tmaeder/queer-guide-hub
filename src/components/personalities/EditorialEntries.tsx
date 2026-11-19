@@ -108,7 +108,9 @@ export function EditorialEntries({ activeProfession, onProfessionSelect }: Edito
               </div>
               <div className="p-2">
                 <p className="truncate text-13 font-bold leading-tight">{p.name}</p>
-                <p className="truncate text-2xs tabular-nums text-muted-foreground">{dateLabel}</p>
+                <p className="mt-1 inline-block max-w-full truncate rounded-element bg-muted px-2 py-1 text-2xs tabular-nums text-muted-foreground">
+                  {dateLabel}
+                </p>
               </div>
             </LocalizedLink>
           </li>

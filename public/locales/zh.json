@@ -1963,7 +1963,12 @@
       "recent": "最近浏览",
       "more": "探索更多",
       "refreshFailed": "无法刷新这些结果。",
-      "destinations": "城市、国家和街区"
+      "destinations": "城市、国家和街区",
+      "cityEvents": "活动",
+      "noCityEvents": "{{city}}暂无即将举行的活动。",
+      "pickCityForEvents": "选择一个城市查看其活动。",
+      "allDestinations": "旅行",
+      "eventTypes": "活动类型"
     },
     "heroLine1": "酷儿场所、",
     "heroLine2": "活动和人物。",
@@ -2109,7 +2114,14 @@
         "label": "全站搜索",
         "subtitle": "所有线路在此交会"
       },
-      "title": "地图"
+      "title": "地图",
+      "layers": {
+        "label": "地图显示",
+        "venues": "地点",
+        "events": "活动",
+        "hotels": "住宿",
+        "restrooms": "洗手间"
+      }
     },
     "glossary": {
       "eyebrow": "术语库",

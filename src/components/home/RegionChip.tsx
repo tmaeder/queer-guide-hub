@@ -1,3 +1,4 @@
+import { ChevronDown } from '@/components/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -98,9 +99,9 @@ export function RegionChip({
           <button
             type="button"
             aria-label={t('home.discovery.cityChange', 'Change city')}
-            className="grid size-11 shrink-0 place-items-center rounded-element text-13 hover:bg-foreground hover:text-background"
+            className="grid size-11 shrink-0 place-items-center rounded-full bg-muted hover:bg-foreground hover:text-background"
           >
-            <span aria-hidden>▾</span>
+            <ChevronDown size={20} aria-hidden />
           </button>
         ) : (
           <FilterChip

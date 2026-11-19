@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { eventTypeIcon } from './eventTypeIcon';
 import { useEventTypeLabel } from '@/lib/eventTypes';
 import { StationBadge } from '@/components/ui/StationBadge';
-import { Calendar, iconSlug } from '@/components/icons';
+import { Calendar, MapPin, iconSlug } from '@/components/icons';
 import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -208,9 +208,9 @@ export const EventCard = memo(function EventCard({
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground truncate">
-                <span className="inline-flex items-center gap-1">
-                  <Calendar size={12} className="shrink-0" />
+              <p className="mt-1 flex min-w-0 items-center gap-1 whitespace-nowrap text-xs text-muted-foreground">
+                <Calendar size={12} className="shrink-0" aria-hidden />
+                <span className="shrink-0">
                   {formatEventDate(event.start_date, event.end_date)}
                 </span>
                 {/* This card stands for a whole recurring series (see migration
@@ -218,14 +218,19 @@ export const EventCard = memo(function EventCard({
                     dates; the count is what makes the collapse honest rather than
                     a disappearance. */}
                 {typeof event.series_size === 'number' && event.series_size > 1 && (
-                  <>
+                  <span className="shrink-0">
                     {' · '}
                     {t('events.card.moreDates', '+{{count}} more dates', {
                       count: event.series_size - 1,
                     })}
+                  </span>
+                )}
+                {locationLabel && (
+                  <>
+                    <MapPin size={12} className="ms-1.5 shrink-0" aria-hidden />
+                    <span className="min-w-0 truncate">{locationLabel}</span>
                   </>
                 )}
-                {locationLabel && <> · {locationLabel}</>}
               </p>
               {event.tags && event.tags.length > 0 && (
                 <TagChipRow tags={event.tags} max={2} size="sm" className="mt-2" linkless />

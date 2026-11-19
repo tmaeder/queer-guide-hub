@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
-import { Share2, BookOpen } from '@/components/icons';
+import { BookOpen } from '@/components/icons';
 import { formatDistanceToNow } from 'date-fns';
-import { shareOrCopy, articleShareUrl, estimateReadingTime } from '@/lib/share';
+import { estimateReadingTime } from '@/lib/share';
 import type { Tables } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
@@ -66,12 +66,6 @@ const RECENCY_WINDOW_MS = 60 * 60 * 1000;
 const isFreshArticle = (publishedAt: string | null | undefined): boolean => {
   if (!publishedAt) return false;
   return Date.now() - new Date(publishedAt).getTime() < RECENCY_WINDOW_MS;
-};
-
-const buildShareHandler = (slug: string, title: string) => (e: React.MouseEvent) => {
-  e.preventDefault();
-  e.stopPropagation();
-  void shareOrCopy({ title, url: articleShareUrl(slug) });
 };
 
 const HIDDEN_CATEGORY_VALUES = new Set(['general', 'rss-news', 'rss_news']);
@@ -180,7 +174,6 @@ const NewsCardImpl = ({
     article.content as string | null | undefined,
     article.excerpt,
   );
-  const onShare = buildShareHandler(article.slug, safeTitle);
 
   const relativeDate =
     !hideDate && article.published_at
@@ -280,9 +273,13 @@ const NewsCardImpl = ({
             </p>
           )}
           <div className="mt-6 flex items-center gap-4 text-2xs uppercase tracking-wider opacity-90">
-            {authorName && <span>By {authorName}</span>}
+            {authorName && (
+              <span className="inline-flex items-center gap-1 rounded-element bg-muted px-2 py-1">
+                By {authorName}
+              </span>
+            )}
             {readingTime !== null && (
-              <span className="inline-flex items-center gap-1">
+              <span className="inline-flex items-center gap-1 rounded-element bg-muted px-2 py-1">
                 <BookOpen size={12} aria-hidden="true" /> {readingTime} min read
               </span>
             )}
@@ -318,10 +315,14 @@ const NewsCardImpl = ({
           </h3>
           {langBadge}
           {dek && <p className="text-15 italic text-muted-foreground leading-relaxed">{dek}</p>}
-          <div className="flex items-center gap-4 text-2xs uppercase tracking-wider text-muted-foreground mt-2">
-            {authorName && <span>By {authorName}</span>}
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-2xs uppercase tracking-wider text-muted-foreground">
+            {authorName && (
+              <span className="inline-flex items-center gap-1 rounded-element bg-muted px-2 py-1">
+                By {authorName}
+              </span>
+            )}
             {readingTime !== null && (
-              <span className="inline-flex items-center gap-1">
+              <span className="inline-flex items-center gap-1 rounded-element bg-muted px-2 py-1">
                 <BookOpen size={12} aria-hidden="true" /> {readingTime} min
               </span>
             )}
@@ -412,21 +413,16 @@ const NewsCardImpl = ({
             </p>
           )}
           <div className="flex items-center gap-2 text-2xs uppercase tracking-wider text-muted-foreground">
-            {authorName && <span>By {authorName}</span>}
+            {authorName && (
+              <span className="inline-flex items-center gap-1 rounded-element bg-muted px-2 py-1">
+                By {authorName}
+              </span>
+            )}
             {readingTime !== null && (
-              <span className="inline-flex items-center gap-1">
+              <span className="inline-flex items-center gap-1 rounded-element bg-muted px-2 py-1">
                 <BookOpen size={12} aria-hidden="true" /> {readingTime} min
               </span>
             )}
-            <button
-              type="button"
-              onClick={onShare}
-              aria-label={`Share ${safeTitle}`}
-              className="relative z-10 ml-auto inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              style={{ height: 28, width: 28 }}
-            >
-              <Share2 size={14} aria-hidden="true" />
-            </button>
           </div>
         </div>
         {/* Card-wide click target — overlay sibling, never a wrapper (see EventCard). */}
@@ -482,16 +478,11 @@ const NewsCardImpl = ({
             </p>
           )}
           <div className="flex items-center gap-2 text-2xs uppercase tracking-wider text-muted-foreground mt-auto">
-            {readingTime !== null && <span>{readingTime} min</span>}
-            <button
-              type="button"
-              onClick={onShare}
-              aria-label={`Share ${safeTitle}`}
-              className="relative z-10 ml-auto inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              style={{ height: 24, width: 24 }}
-            >
-              <Share2 size={12} aria-hidden="true" />
-            </button>
+            {readingTime !== null && (
+              <span className="inline-flex items-center gap-1 rounded-element bg-muted px-2 py-1">
+                {readingTime} min
+              </span>
+            )}
           </div>
         </div>
         {/* Card-wide click target — overlay sibling, never a wrapper (see EventCard). */}
@@ -568,11 +559,15 @@ const NewsCardImpl = ({
           <div className="flex items-center justify-between gap-2 pt-4">
             <div className="flex items-center gap-2 text-2xs uppercase tracking-wider text-muted-foreground min-w-0">
               {readingTime !== null && (
-                <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-element bg-muted px-2 py-1">
                   <BookOpen size={12} aria-hidden="true" /> {readingTime} min
                 </span>
               )}
-              {authorName && <span className="truncate">By {authorName}</span>}
+              {authorName && (
+                <span className="truncate inline-flex items-center gap-1 rounded-element bg-muted px-2 py-1">
+                  By {authorName}
+                </span>
+              )}
             </div>
 
             <div
@@ -582,15 +577,6 @@ const NewsCardImpl = ({
               role="presentation"
             >
               <FavoriteButton itemId={article.id} type="news" />
-              <button
-                type="button"
-                onClick={onShare}
-                aria-label={`Share ${safeTitle}`}
-                className="inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                style={{ height: 28, width: 28 }}
-              >
-                <Share2 size={14} aria-hidden="true" />
-              </button>
             </div>
           </div>
         </CardContent>

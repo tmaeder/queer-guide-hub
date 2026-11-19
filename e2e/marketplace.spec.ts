@@ -165,19 +165,6 @@ test.describe('Marketplace — discovery surface', () => {
     ).toBeLessThanOrEqual(2);
   });
 
-  test('the verified queer-owned shelf states its own coverage', async ({ page }) => {
-    // Imported from the deleted /shop page. The count sentence is what makes a
-    // section headed "Queer-owned" defensible when ~0.93% of brands carry an
-    // ownership tag — without it the heading reads as a claim about the whole
-    // catalogue, which routeMetaContract.test.ts explicitly forbids.
-    await page.goto('/marketplace');
-    await page.waitForLoadState('domcontentloaded');
-    const shelf = page.locator('section[aria-labelledby="verified-owned-brands"]');
-    await expect(shelf).toBeVisible({ timeout: 30_000 });
-    await expect(shelf).toContainText(/\d+ brands in our catalogue are verified queer-owned/);
-    await expect(shelf).toContainText(/most brands carry no ownership information either way/);
-  });
-
   test('/marketplace cards expose affiliate links with rel="sponsored"', async ({ page }) => {
     await page.goto('/marketplace');
     // Wait for the grid itself first — affiliate CTAs only render on listings

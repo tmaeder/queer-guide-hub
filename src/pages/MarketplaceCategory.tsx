@@ -83,7 +83,8 @@ export default function MarketplaceCategory() {
     ? fineIcon(activeFine, activeGroup, subcategory)
     : fineIcon(
         subcategory,
-        Object.keys(GROUP_FINE).find((group) => GROUP_FINE[group].includes(subcategory)) ?? subcategory,
+        Object.keys(GROUP_FINE).find((group) => GROUP_FINE[group].includes(subcategory)) ??
+          subcategory,
         departmentOf(subcategory),
       );
   // Tag refinements live in ?tags= so a refined view is shareable / back-button
@@ -203,7 +204,8 @@ export default function MarketplaceCategory() {
     };
   }, [isDepartment, subcategory, activeGroup, activeFine, includeAdult, selectedTags]);
 
-  const showGuideInOpening = isDepartment && !includeAdult && !activeGroup && !activeFine && selectedTags.length === 0;
+  const showGuideInOpening =
+    isDepartment && !includeAdult && !activeGroup && !activeFine && selectedTags.length === 0;
 
   useMeta({
     title: heading ? `${heading} — Marketplace` : 'Marketplace category',
@@ -273,8 +275,13 @@ export default function MarketplaceCategory() {
             five rows (~230px) before the facets and the grid. The row bleeds to
             the screen edge so a chip cut off there reads as "more this way". */}
         {isDepartment && groupTiles.length > 1 && (
+          <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+            Category
+          </p>
+        )}
+        {isDepartment && groupTiles.length > 1 && (
           <div
-            className="-mx-4 mb-2 flex gap-1.5 overflow-x-auto px-4 py-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+            className="-mx-4 mb-4 flex gap-1.5 overflow-x-auto px-4 py-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
             aria-label="Filter by subcategory"
           >
             <FilterChip active={!activeGroup} label="All" onClick={() => setGroup('')} />
@@ -294,28 +301,40 @@ export default function MarketplaceCategory() {
           </div>
         )}
 
+        {/* The second level sits in an inset panel so it reads as nested
+            under the chosen category, not as a continuation of it. */}
         {isDepartment && activeGroup && fineTiles.length > 1 && (
-          <div
-            className="-mx-4 mb-2 flex gap-1.5 overflow-x-auto px-4 py-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
-            aria-label="Filter by fine category"
-          >
-            <FilterChip active={!activeFine} label="All" onClick={() => setFine('')} />
-            {fineTiles.map((f) => (
-              <FilterChip
-                key={f.slug}
-                active={activeFine === f.slug}
-                label={chipLabel(
-                  fineLabel(f.slug),
-                  f.count,
-                  activeFine === f.slug,
-                  fineIcon(f.slug, activeGroup, subcategory),
-                )}
-                onClick={() => setFine(f.slug)}
-              />
-            ))}
+          <div className="mb-4 rounded-container bg-muted p-4">
+            <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+              {groupLabel(activeGroup)}
+            </p>
+            <div
+              className="flex gap-1.5 overflow-x-auto no-scrollbar sm:flex-wrap sm:overflow-visible"
+              aria-label="Filter by fine category"
+            >
+              <FilterChip active={!activeFine} label="All" onClick={() => setFine('')} />
+              {fineTiles.map((f) => (
+                <FilterChip
+                  key={f.slug}
+                  active={activeFine === f.slug}
+                  label={chipLabel(
+                    fineLabel(f.slug),
+                    f.count,
+                    activeFine === f.slug,
+                    fineIcon(f.slug, activeGroup, subcategory),
+                  )}
+                  onClick={() => setFine(f.slug)}
+                />
+              ))}
+            </div>
           </div>
         )}
 
+        {isDepartment && tagFacets.length > 0 && (
+          <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+            Refine
+          </p>
+        )}
         {isDepartment && tagFacets.length > 0 && (
           <AttributeFacetGroups
             className="mb-4"

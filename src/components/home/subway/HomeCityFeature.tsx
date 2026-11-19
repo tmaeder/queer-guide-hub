@@ -16,8 +16,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { ChevronLeft, ChevronRight, Pause, Play } from '@/components/icons';
 import { CityNetwork } from './CityNetwork';
 
-/** Featured when the visitor's region has no city (no geo, no profile). */
-const FALLBACK_SLUG = 'zuerich';
+import { HOME_FALLBACK_CITY_SLUG as FALLBACK_SLUG } from '@/components/home/useHomeCity';
 /** Long enough to read the plate; WCAG 2.2.2 is met by the pause control. */
 const SLIDE_MS = 7000;
 
@@ -214,7 +213,7 @@ export function HomeCityFeature() {
             <ImageCredit
               attribution={current.attribution ?? undefined}
               license={current.license ?? undefined}
-              className="rounded-badge bg-card px-2 py-1"
+              className="rounded-badge bg-black/35 px-1.5 py-0.5 text-white/80 opacity-60 backdrop-blur-sm transition-opacity hover:opacity-100"
             />
           )}
         </div>

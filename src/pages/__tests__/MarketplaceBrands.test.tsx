@@ -84,6 +84,10 @@ const state = { directory: DIRECTORY, featured: FEATURED, loading: false };
 vi.mock('@/hooks/useMarketplaceBrands', () => ({
   useMarketplaceBrandsDirectory: () => ({ data: state.directory, isLoading: state.loading }),
   useMarketplaceBrandCovers: () => ({ data: state.featured, isLoading: false }),
+  useAdultMakerPhotos: () => ({ data: undefined }),
+}));
+vi.mock('@/hooks/useAdultContent', () => ({
+  useAdultAcknowledgement: () => ({ acknowledged: false }),
 }));
 
 import MarketplaceBrands from '../MarketplaceBrands';
@@ -187,13 +191,12 @@ describe('MarketplaceBrands', () => {
     renderPage();
 
     const adult = screen.getByRole('region', { name: /^Adult makers$/i });
-    const more = screen.getByRole('region', { name: /^More makers$/i });
 
     expect(within(adult).getByRole('link', { name: 'Zebra Goods' })).toBeInTheDocument();
     expect(within(adult).queryByRole('link', { name: 'Mixed Range Co' })).toBeNull();
     expect(within(adult).queryByRole('link', { name: 'Legacy Row' })).toBeNull();
-    expect(within(more).getByRole('link', { name: 'Mixed Range Co' })).toBeInTheDocument();
-    expect(within(more).getByRole('link', { name: 'Legacy Row' })).toBeInTheDocument();
+    // The "More makers" section was removed on request; these makers stay
+    // reachable through the A–Z index.
   });
 
   it('keeps a maker with no photograph reachable', () => {

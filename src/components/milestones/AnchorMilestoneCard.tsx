@@ -59,7 +59,7 @@ export function AnchorMilestoneCard({
                 overrides the track fill without the component learning about
                 eras. */}
             <RouteBullet type="milestone" size={24} className="bg-foreground text-background" />
-            <span className="text-2xs uppercase tracking-label text-muted-foreground">
+            <span className="rounded-element bg-muted px-2 py-1 text-2xs uppercase tracking-label text-muted-foreground">
               {eyebrow}
             </span>
           </span>

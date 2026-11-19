@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
-import { X, MapPin } from '@/components/icons';
+import { X, MapPin, Filter } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { dateFnsLocaleFor } from '@/i18n/dateFnsLocale';
 import { displayCityName } from '@/utils/cityDisplay';
@@ -100,9 +100,12 @@ export function EventActiveFilters(props: EventActiveFiltersProps) {
 
   return (
     <div className="flex flex-wrap gap-2 items-center">
-      <p className="text-sm text-muted-foreground">
-        {t('pages.events.activeFilters', 'Active filters:')}
-      </p>
+      <Filter
+        size={16}
+        className="text-muted-foreground"
+        role="img"
+        aria-label={t('pages.events.activeFilters', 'Active filters:')}
+      />
       {search && (
         <FilterPill
           clearLabel={t('pages.events.clearFilterSearch', 'Clear search')}
@@ -208,7 +211,10 @@ export function EventActiveFilters(props: EventActiveFiltersProps) {
           clearLabel={t('pages.events.clearFilterAge', 'Clear age filter')}
           onClear={() => setAgeRestriction('')}
         >
-          {t('pages.events.filterAge', { value: ageRestriction, defaultValue: `Age: ${ageRestriction}` })}
+          {t('pages.events.filterAge', {
+            value: ageRestriction,
+            defaultValue: `Age: ${ageRestriction}`,
+          })}
         </FilterPill>
       )}
       {selectedTags.map((tag) => (

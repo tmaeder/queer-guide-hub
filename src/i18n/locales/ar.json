@@ -1973,7 +1973,12 @@
       "recent": "شوهدت مؤخرًا",
       "more": "المزيد للاستكشاف",
       "refreshFailed": "تعذّر تحديث هذه النتائج.",
-      "destinations": "مدن وبلدان وأحياء"
+      "destinations": "مدن وبلدان وأحياء",
+      "cityEvents": "الفعاليات",
+      "noCityEvents": "لا توجد فعاليات قادمة في {{city}} بعد.",
+      "pickCityForEvents": "اختر مدينة لعرض فعالياتها.",
+      "allDestinations": "السفر",
+      "eventTypes": "أنواع الفعاليات"
     },
     "heroLine1": "أماكن كويرية،",
     "heroLine2": "فعاليات وأشخاص.",
@@ -2119,7 +2124,14 @@
         "label": "ابحث في كل شيء",
         "subtitle": "كل الخطوط تلتقي هنا"
       },
-      "title": "الخريطة"
+      "title": "الخريطة",
+      "layers": {
+        "label": "على الخريطة",
+        "venues": "أماكن",
+        "events": "فعاليات",
+        "hotels": "إقامة",
+        "restrooms": "دورات مياه"
+      }
     },
     "glossary": {
       "eyebrow": "المسرد",

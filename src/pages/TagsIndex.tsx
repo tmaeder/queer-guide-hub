@@ -31,6 +31,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useCentralizedTags, useTagUsageCounts } from '@/hooks/useCentralizedTags';
@@ -521,8 +522,9 @@ export default function TagsIndex() {
                     void affirm();
                     patch({ adult: true });
                   }}
-                  className="text-13 underline underline-offset-4"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-element bg-muted px-4 text-13 font-bold hover:bg-foreground hover:text-background"
                 >
+                  <TransitIcon name="eye" size={18} aria-hidden />
                   {t('tags.filter.includeAdult', 'Include 18+ terms')}
                 </button>
               )}
@@ -530,8 +532,9 @@ export default function TagsIndex() {
                 <button
                   type="button"
                   onClick={() => patch({ ...DEFAULT_TAGS_STATE, view: state.view })}
-                  className="text-13 underline underline-offset-4"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-element bg-muted px-4 text-13 font-bold hover:bg-foreground hover:text-background"
                 >
+                  <TransitIcon name="undo" size={18} aria-hidden />
                   {t('tags.filter.reset', 'Reset filters')}
                 </button>
               )}

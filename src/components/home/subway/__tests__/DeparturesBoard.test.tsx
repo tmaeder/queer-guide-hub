@@ -9,8 +9,8 @@ const { state, refetch } = vi.hoisted(() => ({
   refetch: vi.fn(),
 }));
 
-vi.mock('@/components/home/homeRegionContext', () => ({
-  useHomeRegionContext: () => ({ loading: state.regionLoading }),
+vi.mock('@/components/home/useHomeCity', () => ({
+  useHomeCity: () => ({ loading: state.regionLoading, cityId: 'c1', cityName: 'Berlin' }),
 }));
 vi.mock('@/hooks/useHomeNearYou', () => ({
   useHomeNearYou: () => ({ data: state.data, isLoading: false, isError: state.isError, refetch }),
@@ -30,15 +30,21 @@ describe('homepage listings', () => {
     state.regionLoading = true;
     const { container } = renderWithProviders(<DeparturesBoard />);
     expect(container.querySelector('[aria-busy="true"]')).toBeInTheDocument();
-    expect(screen.queryByText(/no listings found/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/no upcoming events/i)).not.toBeInTheDocument();
   });
 
-  it('keeps cached worldwide listings usable after a failed refresh and offers retry', () => {
+  it('says the city has no events instead of filling with other cities', () => {
+    state.data = { scope: 'city', localCount: 0, tripCount: 0, rows: [] };
+    renderWithProviders(<DeparturesBoard />);
+    expect(screen.getByText(/No upcoming events in/)).toBeInTheDocument();
+  });
+
+  it('keeps cached city events usable after a failed refresh and offers retry', () => {
     state.isError = true;
     state.data = {
-      scope: 'network',
-      localCount: 0,
-      tripCount: 1,
+      scope: 'city',
+      localCount: 1,
+      tripCount: 0,
       rows: [
         {
           kind: 'event',
@@ -46,15 +52,15 @@ describe('homepage listings', () => {
           slug: 'pride',
           title: 'Pride',
           via: 'Berlin',
-          rung: 'trip',
+          rung: 'local',
           startDate: null,
         },
       ],
     };
 
     renderWithProviders(<DeparturesBoard />);
-    expect(screen.getByRole('heading', { name: 'Places and events' })).toBeInTheDocument();
-    expect(screen.getByText('Worldwide')).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Events' })).toBeInTheDocument();
+    expect(screen.getByTitle('Berlin')).toBeVisible();
     expect(screen.getByRole('link', { name: 'Pride Berlin' })).toHaveAttribute(
       'href',
       '/events/pride',

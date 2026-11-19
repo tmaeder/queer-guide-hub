@@ -1967,7 +1967,12 @@
       "recent": "Consultés récemment",
       "more": "À découvrir aussi",
       "refreshFailed": "Impossible d’actualiser ces résultats.",
-      "destinations": "Villes, pays et quartiers"
+      "destinations": "Villes, pays et quartiers",
+      "cityEvents": "Événements",
+      "noCityEvents": "Aucun événement à venir à {{city}} pour l’instant.",
+      "pickCityForEvents": "Choisis une ville pour voir ses événements.",
+      "allDestinations": "Voyager",
+      "eventTypes": "Types d’événements"
     },
     "heroLine1": "Lieux queer,",
     "heroLine2": "événements et personnes.",
@@ -2113,7 +2118,14 @@
         "label": "Tout rechercher",
         "subtitle": "Toutes les lignes se croisent ici"
       },
-      "title": "Carte"
+      "title": "Carte",
+      "layers": {
+        "label": "Sur la carte",
+        "venues": "Lieux",
+        "events": "Événements",
+        "hotels": "Hébergements",
+        "restrooms": "Toilettes"
+      }
     },
     "glossary": {
       "eyebrow": "Glossaire",

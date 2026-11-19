@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
@@ -449,45 +450,61 @@ export function MarketplaceControlBar({
 
         <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">
           <SavedSearchesButton />
-          {/* A native <select> restyled to chip DNA, following HistoryTimeline.
-              This used to say the Select primitive was stuck on pre-rebrand
-              tokens; it is not — `ui/select.tsx` moved to `border-input` +
-              `bg-muted` and no longer reads as a permanently-active chip. What
-              keeps the native control here is the chip DNA itself: this row is
-              chips, and the primitive is a field. */}
-          <label className="sr-only" htmlFor="marketplace-sort">
-            Sort listings
-          </label>
-          <select
-            id="marketplace-sort"
-            value={sortBy}
-            onChange={(e) => onSortChange(e.target.value)}
-            className="h-8 shrink-0 bg-card px-2 text-13 font-bold text-foreground rounded-container shadow-soft"
+          {/* Sort as a symbol: the native select sits invisibly over the icon. */}
+          <span
+            className="relative grid size-11 shrink-0 place-items-center rounded-element bg-card shadow-soft hover:bg-foreground hover:text-background"
+            title={sortOptions.find((o) => o.value === sortBy)?.label}
           >
-            {sortOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
+            <TransitIcon name="sort" size={18} aria-hidden />
+            <select
+              id="marketplace-sort"
+              aria-label="Sort listings"
+              value={sortBy}
+              onChange={(e) => onSortChange(e.target.value)}
+              className="absolute inset-0 cursor-pointer opacity-0"
+            >
+              {sortOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </span>
+          {/* View as one segmented icon control. */}
+          <div
+            role="group"
+            aria-label="View"
+            className="inline-flex shrink-0 gap-0.5 rounded-element bg-muted p-0.5"
+          >
+            {(['grid', 'list'] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                aria-pressed={viewMode === mode}
+                aria-label={mode === 'grid' ? 'Grid' : 'List'}
+                title={mode === 'grid' ? 'Grid' : 'List'}
+                onClick={() => onViewModeChange(mode)}
+                className={cn(
+                  'grid size-10 place-items-center rounded-element transition-colors',
+                  viewMode === mode ? 'bg-foreground text-background' : 'hover:bg-background',
+                )}
+              >
+                <TransitIcon name={mode} size={18} aria-hidden />
+              </button>
             ))}
-          </select>
-          {/* Two labelled chips, not two ambiguous glyphs. */}
-          <FilterChip
-            active={viewMode === 'grid'}
-            onClick={() => onViewModeChange('grid')}
-            label="Grid"
-          />
-          <FilterChip
-            active={viewMode === 'list'}
-            onClick={() => onViewModeChange('list')}
-            label="List"
-          />
-          {/* Default-SFW browse is a real editorial position, and until now it
-              was invisible — the toggle lived inside the filter sheet, so a
-              reader could not tell the catalogue was filtered at all. */}
+          </div>
+          {/* Default-SFW browse is a real editorial position; the toggle stays
+              visible so a reader can tell the catalogue is filtered. */}
           <FilterChip
             active={includeAdult}
             onClick={() => onIncludeAdultChange(!includeAdult)}
-            label="Show 18+"
+            label={
+              <>
+                <TransitIcon name={includeAdult ? 'eye' : 'eye-off'} size={16} aria-hidden />
+                18+
+              </>
+            }
+            aria-label="Show 18+"
           />
         </div>
       </div>

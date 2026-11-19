@@ -1963,7 +1963,12 @@
       "recent": "最近見た項目",
       "more": "さらに探す",
       "refreshFailed": "結果を更新できませんでした。",
-      "destinations": "都市・国・地区"
+      "destinations": "都市・国・地区",
+      "cityEvents": "イベント",
+      "noCityEvents": "{{city}}で予定されているイベントはまだありません。",
+      "pickCityForEvents": "都市を選ぶとイベントが表示されます。",
+      "allDestinations": "旅行",
+      "eventTypes": "イベントの種類"
     },
     "heroLine1": "クィアな場所、",
     "heroLine2": "イベント、人々。",
@@ -2109,7 +2114,14 @@
         "label": "すべてを検索",
         "subtitle": "すべての路線がここで交わる"
       },
-      "title": "地図"
+      "title": "地図",
+      "layers": {
+        "label": "地図に表示",
+        "venues": "スポット",
+        "events": "イベント",
+        "hotels": "宿泊",
+        "restrooms": "トイレ"
+      }
     },
     "glossary": {
       "eyebrow": "用語集",

@@ -1,3 +1,4 @@
+import { useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
@@ -12,6 +13,7 @@ import { COMMUNITY_OWNED_OPTIONS } from '@/components/marketplace/marketplaceFil
 import {
   useMarketplaceBrandsDirectory,
   useMarketplaceBrandCovers,
+  useAdultMakerPhotos,
   type DirectoryBrand,
 } from '@/hooks/useMarketplaceBrands';
 import { FilterChip } from '@/components/transit/FilterChip';
@@ -215,7 +217,7 @@ export default function MarketplaceBrands() {
    * gallery and the index as the reader pressed "Show more", which is the sort
    * of thing that reads as the page losing its place.
    */
-  const [withCover, adultOnly, unpictured] = useMemo(() => {
+  const [withCover, adultOnly] = useMemo(() => {
     if (view === 'az') return [[], [], []] as DirectoryBrand[][];
     const cover: DirectoryBrand[] = [];
     const adult: DirectoryBrand[] = [];
@@ -230,6 +232,21 @@ export default function MarketplaceBrands() {
     }
     return [cover, adult, rest];
   }, [floor, view]);
+
+  const { acknowledged } = useAdultAcknowledgement();
+  const { data: adultPhotos } = useAdultMakerPhotos(
+    adultOnly.map((b) => b.display_name),
+    acknowledged,
+  );
+  const adultTiles = useMemo(
+    () =>
+      adultPhotos
+        ? adultOnly.map((b) =>
+            adultPhotos[b.display_name] ? { ...b, cover_url: adultPhotos[b.display_name] } : b,
+          )
+        : adultOnly,
+    [adultOnly, adultPhotos],
+  );
 
   const step = view === 'az' ? INDEX_STEP : GALLERY_STEP;
   const visibleTiles = view === 'az' ? [] : withCover.slice(0, shown);
@@ -457,7 +474,7 @@ export default function MarketplaceBrands() {
               // Remounting on any control change resets its page — no effect.
               key={`adult|${search}|${ownership.join()}`}
               id="makers-adult"
-              brands={adultOnly}
+              brands={adultTiles}
               spaced={withCover.length > 0}
               eyebrow={t('marketplace.makersAdultEyebrow', 'Adult · 18+')}
               title={t('marketplace.makersAdultTitle', 'Adult makers')}
@@ -471,20 +488,6 @@ export default function MarketplaceBrands() {
                   defaultValue: 'Show {{count}} more adult makers',
                   count,
                 })
-              }
-            />
-
-            {/* Makers with sfw goods but no usable product image. Deliberately
-                NOT under the adult heading — that would be false about them. */}
-            <MarkTileSection
-              key={`more|${search}|${ownership.join()}`}
-              id="makers-more"
-              brands={unpictured}
-              spaced={withCover.length + adultOnly.length > 0}
-              eyebrow={t('marketplace.makersMoreEyebrow', 'Also listed')}
-              title={t('marketplace.makersMoreTitle', 'More makers')}
-              moreLabel={(count) =>
-                t('marketplace.showMoreMakers', { defaultValue: 'Show {{count}} more', count })
               }
             />
 
@@ -568,13 +571,23 @@ function MarkTileSection({
   return (
     <section aria-labelledby={id} className={spaced ? 'mt-16' : undefined}>
       <SectionHeader id={id} eyebrow={eyebrow} title={title} subtitle={subtitle} />
-      <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-        {visible.map((b) => (
-          <li key={b.slug}>
-            <BrandMarkTile brand={b} />
-          </li>
-        ))}
-      </ul>
+      {visible.some((b) => b.cover_url) ? (
+        <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
+          {visible.map((b) => (
+            <li key={b.slug}>
+              {b.cover_url ? <BrandGalleryTile brand={b} /> : <BrandMarkTile brand={b} />}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          {visible.map((b) => (
+            <li key={b.slug}>
+              <BrandMarkTile brand={b} />
+            </li>
+          ))}
+        </ul>
+      )}
       {brands.length > visible.length && (
         <div className="mt-10 flex items-center justify-center">
           <Button variant="outline" size="lg" onClick={() => setShown((n) => n + GALLERY_STEP)}>

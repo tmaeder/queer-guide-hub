@@ -191,15 +191,15 @@ export function CompetitionsLineKey() {
                * floor for compact inline links (WCAG 2.5.8 AA).
                */}
               {shown.length > 0 && (
-                <ul className="col-span-2 m-0 flex min-w-0 list-none flex-wrap gap-x-4 gap-y-1 p-0 pl-8 md:col-span-1 md:col-start-2 md:row-start-1 md:pl-0">
+                <ul className="col-span-2 m-0 flex min-w-0 list-none flex-wrap gap-1.5 p-0 pl-8 md:col-span-1 md:col-start-2 md:row-start-1 md:pl-0">
                   {shown.map((o) => (
                     <li key={o.slug} className="min-w-0">
                       <LocalizedLink
                         to={filterPath(o.slug)}
-                        className="inline-flex max-w-full items-center gap-1 rounded-badge text-13 no-underline hover:underline"
+                        className="inline-flex max-w-full items-center gap-1.5 rounded-badge bg-muted px-2 py-1 text-13 no-underline hover:bg-foreground hover:text-background"
                       >
                         <span className="truncate">{o.name}</span>
-                        <span className="shrink-0 text-2xs tabular-nums text-muted-foreground">
+                        <span className="shrink-0 text-2xs tabular-nums opacity-70">
                           {o.people.toLocaleString()}
                         </span>
                       </LocalizedLink>
@@ -209,7 +209,7 @@ export function CompetitionsLineKey() {
                     <li>
                       <LocalizedLink
                         to={categoryPath(c)}
-                        className="inline-flex items-center rounded-badge text-13 text-muted-foreground no-underline hover:underline"
+                        className="inline-flex items-center rounded-badge px-2 py-1 text-13 font-bold no-underline hover:underline"
                       >
                         {t('pages.personalities.competitions.more', {
                           defaultValue: '+{{count}} more',

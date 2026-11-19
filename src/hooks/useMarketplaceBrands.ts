@@ -412,3 +412,33 @@ export function useVerifiedOwnedBrands(limit = 24) {
     },
   });
 }
+
+/**
+ * One product photo per adult-only maker, keyed by display name. Only fetched
+ * when `enabled` (the visitor has opted into 18+): the directory keeps adult
+ * product photos off the page for everyone else.
+ */
+export function useAdultMakerPhotos(names: string[], enabled: boolean) {
+  return useQuery({
+    queryKey: ['adult-maker-photos', names.join('|')],
+    enabled: enabled && names.length > 0,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<Record<string, string>> => {
+      const { data, error } = await supabase
+        .from('marketplace_listings')
+        .select('brand, images')
+        .in('brand', names.slice(0, 200))
+        .eq('status', 'active')
+        .not('images', 'is', null)
+        .order('boutique_score', { ascending: false, nullsFirst: false })
+        .limit(600);
+      if (error) throw error;
+      const out: Record<string, string> = {};
+      for (const r of (data ?? []) as { brand: string | null; images: string[] | null }[]) {
+        const src = r.images?.[0];
+        if (r.brand && src?.startsWith('https://') && !out[r.brand]) out[r.brand] = src;
+      }
+      return out;
+    },
+  });
+}

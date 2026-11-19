@@ -55,7 +55,7 @@ export function RightsNewsSection({
               ).find((candidate) => candidate.slug === event.target.value);
               if (selected) onTopicChange(selected);
             }}
-            className="mt-2 block w-full rounded-element border border-border bg-background px-4 py-2 text-sm text-foreground sm:min-w-72"
+            className="mt-2 block h-12 w-full cursor-pointer rounded-container bg-card px-4 text-15 font-bold text-foreground shadow-soft sm:min-w-72"
           >
             {RIGHT_SECTION_ORDER.map((section) => (
               <optgroup key={section} label={RIGHT_SECTION_LABEL[section]}>
@@ -176,13 +176,17 @@ function RightsNewsCard({
           {article.excerpt ? (
             <p className="m-0 line-clamp-2 text-13 text-muted-foreground">{article.excerpt}</p>
           ) : null}
-          <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-2 text-2xs text-muted-foreground">
+          <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-2 text-2xs text-muted-foreground">
             {article.publisher_name ? (
-              <span className="font-bold text-foreground">{article.publisher_name}</span>
+              <span className="inline-flex items-center gap-1 rounded-element bg-muted px-2 py-1 font-bold text-foreground">
+                {article.publisher_name}
+              </span>
             ) : null}
-            <span>{formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}</span>
+            <span className="inline-flex items-center gap-1 rounded-element bg-muted px-2 py-1">
+              {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
+            </span>
             {isStory ? (
-              <span className="inline-flex items-center gap-1">
+              <span className="inline-flex items-center gap-1 rounded-element bg-muted px-2 py-1">
                 <Layers size={12} aria-hidden="true" />
                 {article.story_article_count} articles
               </span>

@@ -8,6 +8,7 @@ const departmentCounts = vi.fn();
 
 vi.mock('@/hooks/useMarketplaceQueries', () => ({
   useMarketplaceDepartmentCounts: () => departmentCounts(),
+  useDepartmentPhotos: () => ({ data: {}, loading: false }),
 }));
 vi.mock('@/hooks/useAdultContent', () => ({
   useAdultAcknowledgement: () => ({ acknowledged: false }),

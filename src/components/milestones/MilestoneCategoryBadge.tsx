@@ -1,29 +1,10 @@
+import { createElement } from 'react';
 import { classificationSource, useManagedLabel } from '@/hooks/useManagedOptions';
 import seeds from '@/config/classificationSeeds.json';
-import {
-  Ban,
-  Flag,
-  Gavel,
-  Milestone as MilestoneIcon,
-  Scale,
-  ShieldAlert,
-  Stethoscope,
-} from '@/components/icons';
+import { milestoneCategoryIcon } from './milestoneCategoryIcon';
 import { useTranslation } from 'react-i18next';
-import type { LucideIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
-import { badgeVariants } from '@/components/ui/badge';
 import { milestoneCategoryLabelKey, type MilestoneCategory } from '@/types/milestone';
-
-const CATEGORY_ICON: Record<MilestoneCategory, LucideIcon> = {
-  'uprising-movement': Flag,
-  'law-equality': Scale,
-  'law-decriminalization': Gavel,
-  'law-criminalization': Ban,
-  depathologization: Stethoscope,
-  'persecution-destruction': ShieldAlert,
-  other: MilestoneIcon,
-};
 
 /**
  * Monochrome outline badge naming the milestone category (vocab-driven icon +
@@ -52,10 +33,14 @@ export function MilestoneCategoryBadge({
     seed,
   );
   if (!category) return null;
-  const Icon = CATEGORY_ICON[category] ?? MilestoneIcon;
   return (
-    <span className={cn(badgeVariants({ variant: 'plate' }), className)}>
-      <Icon className="h-3 w-3" aria-hidden />
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-element bg-muted px-2 py-1 text-2xs uppercase tracking-label text-foreground',
+        className,
+      )}
+    >
+      {createElement(milestoneCategoryIcon(category), { size: 14, 'aria-hidden': true })}
       {label}
     </span>
   );

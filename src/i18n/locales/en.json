@@ -2159,7 +2159,12 @@
       "recent": "Recently viewed",
       "more": "More from Queer Guide",
       "refreshFailed": "Couldn’t refresh these results.",
-      "destinations": "Cities, countries and villages"
+      "destinations": "Cities, countries and villages",
+      "cityEvents": "Events",
+      "noCityEvents": "No upcoming events in {{city}} yet.",
+      "pickCityForEvents": "Choose a city to see its events.",
+      "allDestinations": "Travel",
+      "eventTypes": "Event types"
     },
     "map": {
       "interchangeEyebrow": "Interchange",
@@ -2167,7 +2172,14 @@
         "label": "Search everything",
         "subtitle": "Every line meets here"
       },
-      "title": "Map"
+      "title": "Map",
+      "layers": {
+        "label": "Show on map",
+        "venues": "Places",
+        "events": "Events",
+        "hotels": "Stays",
+        "restrooms": "Restrooms"
+      }
     },
     "heroLine1": "Queer venues,",
     "heroLine2": "events, and people.",

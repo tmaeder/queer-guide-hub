@@ -31,7 +31,6 @@ import {
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { PersonalitiesFiltersBar } from '@/components/personalities/PersonalitiesFiltersBar';
 import { StickyLetterBar } from '@/components/ui/StickyLetterBar';
-import { FeaturedPersonalityRail } from '@/components/personalities/FeaturedPersonalityRail';
 import { EditorialEntries } from '@/components/personalities/EditorialEntries';
 import { CompetitionsLineKey } from '@/components/personalities/CompetitionsLineKey';
 import { useCompetedInLabel } from '@/hooks/useCompetitions';
@@ -390,8 +389,6 @@ export default function Personalities() {
         </div>
       </KnowledgeHeader>
       <PageContainer className="relative">
-        {!hasAnyFilter && view === 'grid' && <FeaturedPersonalityRail />}
-
         {/* NSFW visibility hint — surfaces the otherwise-hidden adult filter. */}
         <div className="mb-6 text-13 text-muted-foreground">
           {filters.exclude_adult !== false ? (

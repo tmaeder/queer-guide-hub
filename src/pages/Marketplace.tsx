@@ -1,3 +1,4 @@
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import {
@@ -10,7 +11,6 @@ import { useMeta } from '@/hooks/useMeta';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceControlBar } from '@/components/marketplace/MarketplaceControlBar';
 import { MarketplaceLineIndex } from '@/components/marketplace/MarketplaceLineIndex';
-import { VerifiedOwnedBrands } from '@/components/marketplace/VerifiedOwnedBrands';
 import { MarketplaceHeroCover } from '@/components/marketplace/MarketplaceHeroCover';
 import { BrandSpotlight } from '@/components/marketplace/BrandSpotlight';
 import { GuidesRail } from '@/components/guides/GuidesRail';
@@ -73,7 +73,6 @@ interface MainGridSectionProps {
 
 function MainGridSection({
   accumulated,
-  total,
   page,
   hasActiveFilters,
   viewMode,
@@ -93,19 +92,6 @@ function MainGridSection({
 
   return (
     <>
-      {/* Same swatch + tabular figure as the masthead and every sub-page's
-          count, so "how big is this set" is stated one way everywhere. */}
-      <p className="mb-6 flex items-center gap-4 text-13 text-muted-foreground">
-        <span
-          aria-hidden="true"
-          className="h-1.5 w-10 shrink-0 border border-border-hairline bg-track-yellow"
-        />
-        <span className="tabular-nums">
-          {visible.length.toLocaleString()} of {total.toLocaleString()} listing
-          {total !== 1 ? 's' : ''}
-        </span>
-      </p>
-
       {/* Calm uniform grid — editorial rhythm beats the old mosaic jigsaw.
           pb-* on virtual rows preserves the inter-row gap. */}
       <VirtualizedGrid
@@ -417,15 +403,18 @@ const Marketplace = () => {
             <>
               <Button asChild>
                 <LocalizedLink to="/marketplace/categories" className="no-underline">
+                  <TransitIcon name="grid" size={18} aria-hidden />
                   {t('pages.marketplace.browseCategories', 'Browse categories')}
                 </LocalizedLink>
               </Button>
               <Button variant="soft" asChild>
                 <LocalizedLink to="/marketplace/brands" className="no-underline">
+                  <TransitIcon name="hand" size={18} aria-hidden />
                   {t('marketplace.allMakers', 'All makers')}
                 </LocalizedLink>
               </Button>
               <Button variant="ghost" onClick={handleListBusiness}>
+                <TransitIcon name="plus" size={18} aria-hidden />
                 {t('pages.marketplace.listBusiness', 'List your business')}
               </Button>
             </>
@@ -551,11 +540,6 @@ const Marketplace = () => {
           <PageContainer flush className="flex flex-col gap-16 py-12 md:gap-24 md:py-16">
             <MarketplaceRow rowKey="new" title="New this week" />
             <MarketplaceHeroCover />
-            {/* The makers directory's entry point from the hub. Without a link
-                here the new /marketplace/brands index is reachable only by
-                typing it — the whole reason it was worth building is that brand
-                pages were previously buried inside cards. */}
-            <VerifiedOwnedBrands />
             <BrandSpotlight />
             {/* `alwaysRender` is load-bearing, not a preference. With /shop
                 folded in, /marketplace is the `shop` cluster hub, and the

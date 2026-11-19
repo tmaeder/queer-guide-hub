@@ -140,7 +140,7 @@ export function YourLines({ recent }: { recent: RecentlyViewedItem[] }) {
   if (!hasOwnThread || cards.length === 0) return null;
 
   return (
-    <ul className="m-0 flex h-full snap-x list-none gap-4 overflow-x-auto p-2 pb-4 scrollbar-thin">
+    <ul className="-mx-6 -mt-4 -mb-8 flex snap-x scroll-px-6 list-none gap-4 overflow-x-auto px-6 pt-4 pb-12 scrollbar-thin">
       {cards.map((c) => (
         <li
           key={c.key}

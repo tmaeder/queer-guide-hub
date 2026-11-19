@@ -1,6 +1,6 @@
 import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { useMarketplaceDepartmentCounts } from '@/hooks/useMarketplaceQueries';
+import { useDepartmentPhotos, useMarketplaceDepartmentCounts } from '@/hooks/useMarketplaceQueries';
 import { useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { ADULT_DEPARTMENTS, DEPARTMENT_ORDER, departmentLabel } from '@/lib/marketplaceTaxonomy';
 import { horizontalLine } from '@/components/transit/lineGeometry';
@@ -72,6 +72,10 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
     .filter((d) => acknowledged || !ADULT_DEPARTMENTS.has(d))
     .map((d) => ({ slug: d, count: counts.get(d) ?? 0 }));
 
+  const { data: photos } = useDepartmentPhotos(
+    tiles.filter((t) => !ADULT_DEPARTMENTS.has(t.slug)).map((t) => t.slug),
+  );
+
   if (!loading && tiles.length === 0) return null;
 
   return (
@@ -132,16 +136,36 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
                       tiles with text-only tiles of a different height. `i` and
                       `tiles.length` window one shared line, so the plates read
                       left-to-right as a route; see `DepartmentArt`. */}
-                  <DepartmentArt
-                    slug={tile.slug}
-                    index={i}
-                    count={tiles.length}
-                    active={active}
-                    className={cn(
-                      'border-b',
-                      active ? 'border-background/25' : 'border-border-hairline',
-                    )}
-                  />
+                  {(photos[tile.slug]?.length ?? 0) >= 3 ? (
+                    // Three products, not one: a mosaic stands for a department.
+                    <div
+                      aria-hidden="true"
+                      className="grid aspect-[16/10] grid-cols-3 gap-0.5 overflow-hidden bg-muted"
+                    >
+                      {photos[tile.slug].map((src) => (
+                        <img
+                          key={src}
+                          src={src}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          referrerPolicy="no-referrer"
+                          className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-[1.04] motion-reduce:transform-none"
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <DepartmentArt
+                      slug={tile.slug}
+                      index={i}
+                      count={tiles.length}
+                      active={active}
+                      className={cn(
+                        'border-b',
+                        active ? 'border-background/25' : 'border-border-hairline',
+                      )}
+                    />
+                  )}
                   <div className="flex flex-col gap-1 p-4">
                     {/* Space Grotesk 700, NOT Anton. The design project's
                         category hub sets these tiles in the display face, but
@@ -149,17 +173,6 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
                         enforces it — `text-title` may never carry a display
                         face. The repo's rank table outranks the mock. */}
                     <span className="flex items-baseline gap-2">
-                      {/* Stop number. A stop list numbers its stops, and the
-                          plate above already shows this tile's slice of the
-                          line — the figure names the position the art draws. */}
-                      <span
-                        className={cn(
-                          'text-2xs tabular-nums',
-                          active ? 'text-background/70' : 'text-muted-foreground',
-                        )}
-                      >
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
                       <span className="text-title font-bold leading-tight text-balance">
                         {departmentLabel(tile.slug)}
                       </span>

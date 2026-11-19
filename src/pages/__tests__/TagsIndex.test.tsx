@@ -266,7 +266,7 @@ describe('TagsIndex', () => {
 
   it('offers all four display modes as tabs', () => {
     renderAt('/tags');
-    const tabs = screen.getAllByRole('tab').map((el) => el.textContent);
+    const tabs = screen.getAllByRole('tab').map((el) => el.getAttribute('aria-label'));
     expect(tabs.join(' ')).toMatch(/Grid/);
     expect(tabs.join(' ')).toMatch(/List/);
     expect(tabs.join(' ')).toMatch(/Chips/);
