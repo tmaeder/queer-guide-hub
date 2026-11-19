@@ -300,7 +300,7 @@ export function Header() {
     // md:hidden, so `hidden lg:flex` left 768–1023px with no primary nav.
     <nav
       aria-label={t('header.primaryNavigation', 'Primary')}
-      className="no-scrollbar hidden h-12 min-w-0 items-center overflow-x-auto md:flex"
+      className="no-scrollbar hidden h-12 min-w-0 items-center overflow-x-auto [justify-content:safe_center] md:flex"
     >
       {INTENT_NAV.map((intent) => {
         const { to, labelKey, fallback, id } = intent;

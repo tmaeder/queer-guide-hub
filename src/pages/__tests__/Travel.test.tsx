@@ -95,6 +95,7 @@ function renderAt(path: string) {
     <MemoryRouter initialEntries={[path]}>
       <Routes>
         <Route path="/travel" element={<Travel />} />
+        <Route path="/travel/book" element={<div data-testid="book-page" />} />
       </Routes>
     </MemoryRouter>,
   );
@@ -149,17 +150,10 @@ describe('Travel page (Travelling intent)', () => {
     expect(headings.some((h) => /know before you go|see the map/i.test(h))).toBe(false);
   });
 
-  it('shows the trip-create hero to signed-out visitors', () => {
+  it('moved the trip planner to /travel/plan', () => {
     renderAt('/travel');
-    expect(screen.getByTestId('start-hero')).toBeInTheDocument();
-    expect(screen.queryByTestId('cockpit')).toBeNull();
-  });
-
-  it('shows the trip cockpit to signed-in users', () => {
-    authMock.mockReturnValue({ user: { id: 'u1' } });
-    renderAt('/travel');
-    expect(screen.getByTestId('cockpit')).toBeInTheDocument();
     expect(screen.queryByTestId('start-hero')).toBeNull();
+    expect(screen.queryByTestId('cockpit')).toBeNull();
   });
 
   it('offers the active trip directly from the opening', () => {
@@ -182,26 +176,18 @@ describe('Travel page (Travelling intent)', () => {
   it('renders the inspiration, villages and pride sections', () => {
     renderAt('/travel');
     expect(screen.getByTestId('go-now')).toBeInTheDocument();
-    expect(screen.getByTestId('destination-grid')).toBeInTheDocument();
-    expect(screen.getByTestId('guides-rail')).toBeInTheDocument();
     expect(screen.getByTestId('villages')).toBeInTheDocument();
     expect(screen.getByTestId('pride')).toBeInTheDocument();
   });
 
-  it('opens the booking accordion on ?intent=book', () => {
+  it('sends booking deep links to /travel/book', () => {
     renderAt('/travel?intent=book');
-    expect(screen.getByTestId('book')).toHaveAttribute('data-open', 'true');
-    expect(screen.queryByTestId('cover-story')).toBeNull();
+    expect(screen.getByTestId('book-page')).toBeInTheDocument();
   });
 
-  it('opens the booking accordion on ?tab= and ?city= deep links', () => {
+  it('keeps ?tab= and ?city= deep links working via /travel/book', () => {
     renderAt('/travel?tab=hotels');
-    expect(screen.getByTestId('book')).toHaveAttribute('data-open', 'true');
-  });
-
-  it('leaves the booking accordion closed by default', () => {
-    renderAt('/travel');
-    expect(screen.getByTestId('book')).toHaveAttribute('data-open', 'false');
+    expect(screen.getByTestId('book-page')).toBeInTheDocument();
   });
 
   it('fires a destination-led page_view without inventing an entity type', () => {

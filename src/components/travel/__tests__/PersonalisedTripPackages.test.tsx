@@ -43,6 +43,9 @@ vi.mock('lucide-react', () => {
 });
 vi.mock('@/components/transit/TrackLoader', () => ({ TrackLoader: () => <span /> }));
 vi.mock('@/hooks/useTripTemplates', () => ({ useTripTemplates: templatesMock }));
+vi.mock('@/hooks/useVisitorOrigin', () => ({
+  useVisitorOrigin: () => ({ originCity: null, originIata: null, loading: false }),
+}));
 vi.mock('@/hooks/useHotelSearch', () => ({ useHotelSearch: hotelSearchMock }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: authMock }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => navigateMock }));
@@ -68,6 +71,9 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
 vi.mock('@/components/travel/CarRentalSection', () => ({
   CarRentalSection: ({ city }: { city: string }) => <div>Car hire in {city}</div>,
 }));
+vi.mock('@/components/travel/InlineCitySearch', () => ({ InlineCitySearch: () => null }));
+vi.mock('@/components/travel/InlineFlightDeals', () => ({ InlineFlightDeals: () => null }));
+vi.mock('@/components/travel/QueerGuideStays', () => ({ QueerGuideStays: () => null }));
 vi.mock('@/components/travel/TransferSection', () => ({
   TransferSection: ({ city }: { city: string }) => <div>Transfers in {city}</div>,
 }));
@@ -134,10 +140,6 @@ describe('PersonalisedTripPackages', () => {
     expect(screen.getByRole('link', { name: /Madrid Pride/i })).toHaveAttribute(
       'href',
       '/events/madrid-pride',
-    );
-    expect(screen.getByRole('link', { name: /queer venues in Madrid/i })).toHaveAttribute(
-      'href',
-      '/venues?city=Madrid',
     );
   });
 

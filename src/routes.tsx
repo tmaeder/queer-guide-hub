@@ -96,6 +96,7 @@ const CityDetail = lazyRetry(() => import('./pages/CityDetail'));
 const CountryDetail = lazyRetry(() => import('./pages/CountryDetail'));
 const Travel = lazyRetry(() => import('./pages/Travel'));
 const TravelBook = lazyRetry(() => import('./pages/travel/Book'));
+const TravelPlan = lazyRetry(() => import('./pages/travel/Plan'));
 const MapPage = lazyRetry(() => import('./pages/Map'));
 const PersonalityDataSheet = lazyRetry(() => import('./pages/admin/PersonalityDataSheet'));
 const PersonalitiesAdmin = lazyRetry(() => import('./pages/admin/PersonalitiesAdmin'));
@@ -785,6 +786,7 @@ export const AppRoutes = () => {
           <Route path="places" element={<LocalizedRedirect to="/travel" />} />
           <Route path="travel" element={<Travel />} />
           <Route path="travel/book" element={<TravelBook />} />
+          <Route path="travel/plan" element={<TravelPlan />} />
           {/* /trips list folded into the /hub office (Plans module). The
           /trips/:id workspace + discover/shared stay top-level. */}
           <Route path="trips" element={<LocalizedRedirect to="/hub/plans" />} />

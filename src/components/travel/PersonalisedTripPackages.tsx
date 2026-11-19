@@ -5,6 +5,7 @@ import {
   BedDouble,
   Bus,
   CalendarDays,
+  Compass,
   CalendarRange,
   Coffee,
   Crown,
@@ -35,8 +36,12 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { CarRentalSection } from '@/components/travel/CarRentalSection';
 import { TransferSection } from '@/components/travel/TransferSection';
+import { InlineCitySearch } from '@/components/travel/InlineCitySearch';
+import { QueerGuideStays } from '@/components/travel/QueerGuideStays';
+import { InlineFlightDeals } from '@/components/travel/InlineFlightDeals';
 import { useAuth } from '@/hooks/useAuth';
 import { useHotelSearch } from '@/hooks/useHotelSearch';
+import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 import { useToast } from '@/hooks/use-toast';
@@ -48,7 +53,7 @@ import type { HotelTypeOption } from '@/components/booking/HotelSearchForm';
 import type { TransportMode } from '@/components/trips/tripLegs';
 
 type Mood = 'nightlife' | 'slow' | 'pride' | 'culture' | 'outdoors';
-type Timing = 'weekend' | 'month' | 'flexible';
+type Timing = 'weekend' | 'month' | 'flexible' | 'custom';
 type Budget = 'easy' | 'comfortable' | 'special';
 
 const MOODS: Array<{ value: Mood; label: string; hint: string; icon: typeof Plane }> = [
@@ -73,6 +78,7 @@ const TIMINGS: Array<{ value: Timing; label: string; icon: typeof Plane }> = [
   { value: 'weekend', label: 'This weekend', icon: CalendarDays },
   { value: 'month', label: 'Next month', icon: CalendarRange },
   { value: 'flexible', label: 'Surprise me', icon: Shuffle },
+  { value: 'custom', label: 'Pick dates', icon: CalendarRange },
 ];
 
 const BUDGETS: Array<{ value: Budget; label: string; icon: typeof Plane }> = [
@@ -102,7 +108,10 @@ const ARRIVAL_MODES: Array<{
   { value: 'drive', label: 'Drive', icon: Car, note: 'Car hire at destination' },
 ];
 
-function datesFor(timing: Timing, days: number) {
+function datesFor(timing: Timing, days: number, custom?: { start: string; end: string }) {
+  if (timing === 'custom' && custom?.start) {
+    return { start: custom.start, end: custom.end || custom.start };
+  }
   const today = startOfDay(new Date());
   const start = timing === 'weekend' ? nextFriday(today) : addMonths(today, 1);
   return {
@@ -224,26 +233,44 @@ export function PersonalisedTripPackages() {
   const { data: templates, isLoading } = useTripTemplates();
   const [mood, setMood] = useState<Mood>('nightlife');
   const [timing, setTiming] = useState<Timing>('weekend');
+  const [customDates, setCustomDates] = useState({ start: '', end: '' });
+  const [travellers, setTravellers] = useState(2);
   const [budget, setBudget] = useState<Budget>('comfortable');
   const [stayType, setStayType] = useState<HotelTypeOption>('hotel');
   const [arrivalMode, setArrivalMode] = useState<TransportMode>('rail');
-  const [origin, setOrigin] = useState('');
+  // Prefilled from the visitor's detected city until they type their own.
+  const { originCity } = useVisitorOrigin();
+  const [originInput, setOrigin] = useState<string | null>(null);
+  const origin = originInput ?? originCity ?? '';
+
+  const [place, setPlace] = useState<string | null>(null);
+  const places = useMemo(() => {
+    const seen = new Map<string, number>();
+    for (const tpl of templates ?? []) {
+      const city = tpl.cities.split(',')[0]?.trim();
+      if (city) seen.set(city, (seen.get(city) ?? 0) + 1);
+    }
+    return [...seen.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([c]) => c);
+  }, [templates]);
 
   const ranked = useMemo(
     () =>
-      [...(templates ?? [])].sort(
-        (a, b) => scoreTemplate(b, mood, timing) - scoreTemplate(a, mood, timing),
-      ),
-    [templates, mood, timing],
+      [...(templates ?? [])]
+        .filter((tpl) => !place || tpl.cities.toLowerCase().includes(place.toLowerCase()))
+        .sort((a, b) => scoreTemplate(b, mood, timing) - scoreTemplate(a, mood, timing)),
+    [templates, mood, timing, place],
   );
   const best = ranked[0];
-  const dates = best ? datesFor(timing, best.days) : null;
+  const dates = best ? datesFor(timing, best.days, customDates) : null;
   const priceMax = budget === 'easy' ? 140 : budget === 'comfortable' ? 300 : undefined;
   const { data: stays, isLoading: staysLoading } = useHotelSearch({
     city: best?.cities,
     checkIn: dates?.start,
     checkOut: dates?.end,
-    guests: 2,
+    guests: travellers,
     hotelType: stayType,
     priceMax,
     limit: 3,
@@ -258,7 +285,7 @@ export function PersonalisedTripPackages() {
       city: best.cities,
       checkIn: dates.start,
       checkOut: dates.end,
-      guests: '2',
+      guests: String(travellers),
     });
     if (type) params.set('type', type);
     if (tab === 'flights') params.set('to', best.cities);
@@ -270,7 +297,7 @@ export function PersonalisedTripPackages() {
       navigate('/auth?redirect=/travel');
       return;
     }
-    const tripDates = datesFor(timing, template.days);
+    const tripDates = datesFor(timing, template.days, customDates);
     createTrip.mutate(
       {
         title: template.title,
@@ -341,12 +368,102 @@ export function PersonalisedTripPackages() {
         <StepHeading
           n={1}
           title="Tell us the mood"
-          hint="Three quick choices reshuffle the pick."
+          hint="A few quick choices reshuffle the pick."
         />
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
           <ChipGroup label="Mood" value={mood} options={MOODS} onChange={setMood} />
-          <ChipGroup label="When?" value={timing} options={TIMINGS} onChange={setTiming} />
+          <div className="flex flex-col gap-4">
+            <ChipGroup label="When?" value={timing} options={TIMINGS} onChange={setTiming} />
+            {timing === 'custom' && (
+              <div className="flex flex-wrap gap-4">
+                <div className="flex flex-col gap-1.5 text-sm font-medium">
+                  <label htmlFor="trip-custom-start">From</label>
+                  <Input
+                    id="trip-custom-start"
+                    type="date"
+                    value={customDates.start}
+                    min={format(new Date(), 'yyyy-MM-dd')}
+                    onChange={(e) => setCustomDates((d) => ({ ...d, start: e.target.value }))}
+                    className="w-44"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5 text-sm font-medium">
+                  <label htmlFor="trip-custom-end">To</label>
+                  <Input
+                    id="trip-custom-end"
+                    type="date"
+                    value={customDates.end}
+                    min={customDates.start || format(new Date(), 'yyyy-MM-dd')}
+                    onChange={(e) => setCustomDates((d) => ({ ...d, end: e.target.value }))}
+                    className="w-44"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
           <ChipGroup label="Budget" value={budget} options={BUDGETS} onChange={setBudget} />
+          {places.length > 1 && (
+            <fieldset>
+              <legend className="mb-4 text-sm font-bold">
+                Where <span className="font-normal text-muted-foreground">(optional)</span>
+              </legend>
+              <div className="flex flex-wrap gap-2">
+                <FilterChip
+                  active={place === null}
+                  onClick={() => setPlace(null)}
+                  label={
+                    <>
+                      <Compass size={14} aria-hidden /> Anywhere
+                    </>
+                  }
+                />
+                {places.map((c) => (
+                  <FilterChip
+                    key={c}
+                    active={place === c}
+                    onClick={() => setPlace(place === c ? null : c)}
+                    label={
+                      <>
+                        <MapPin size={14} aria-hidden /> {c}
+                      </>
+                    }
+                  />
+                ))}
+              </div>
+            </fieldset>
+          )}
+          <fieldset>
+            <legend className="mb-4 text-sm font-bold">
+              Travellers <span className="font-normal text-muted-foreground">(optional)</span>
+            </legend>
+            <div className="inline-flex items-center gap-1 rounded-element bg-card p-1 shadow-soft">
+              <button
+                type="button"
+                onClick={() => setTravellers((n) => Math.max(1, n - 1))}
+                disabled={travellers <= 1}
+                aria-label="One traveller fewer"
+                className="grid size-11 place-items-center rounded-element text-title font-bold hover:bg-muted disabled:opacity-40"
+              >
+                −
+              </button>
+              <span
+                className="inline-flex min-w-24 items-center justify-center gap-2 text-15 font-bold tabular-nums"
+                aria-live="polite"
+              >
+                <Users size={16} aria-hidden />
+                {travellers} {travellers === 1 ? 'person' : 'people'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setTravellers((n) => Math.min(9, n + 1))}
+                disabled={travellers >= 9}
+                aria-label="One traveller more"
+                className="grid size-11 place-items-center rounded-element text-title font-bold hover:bg-muted disabled:opacity-40"
+              >
+                +
+              </button>
+            </div>
+          </fieldset>
         </div>
       </Card>
 
@@ -383,7 +500,7 @@ export function PersonalisedTripPackages() {
             <ol className="divide-y divide-border">
               <li className="p-6 sm:p-8">
                 <PackagePart icon={Sparkles} kicker="What you go for" title="Event & places" />
-                <div className="mt-4 grid gap-4 md:grid-cols-3">
+                <div className="mt-4 grid gap-4">
                   {best.event ? (
                     <LocalizedLink
                       to={`/events/${best.event.slug}`}
@@ -397,26 +514,8 @@ export function PersonalisedTripPackages() {
                         {best.event.startDate}
                       </span>
                     </LocalizedLink>
-                  ) : best.reason ? (
-                    <div className="rounded-element bg-surface-container p-4">
-                      <span className="block text-xs font-bold uppercase text-muted-foreground">
-                        Why it fits
-                      </span>
-                      <span className="mt-1 block font-bold">{best.reason}</span>
-                    </div>
                   ) : null}
-                  <LocalizedLink
-                    to={`/venues?city=${encodeURIComponent(best.cities)}`}
-                    className="flex min-h-12 items-center justify-between rounded-element bg-surface-container p-4 font-semibold no-underline hover:bg-muted"
-                  >
-                    Browse queer venues in {best.cities} <ArrowRight />
-                  </LocalizedLink>
-                  <LocalizedLink
-                    to={`/events?city=${encodeURIComponent(best.cities)}`}
-                    className="flex min-h-12 items-center justify-between rounded-element bg-surface-container p-4 font-semibold no-underline hover:bg-muted"
-                  >
-                    See more events <ArrowRight />
-                  </LocalizedLink>
+                  <InlineCitySearch city={best.cities} start={dates?.start} end={dates?.end} />
                 </div>
               </li>
               <li className="p-6 sm:p-8">
@@ -473,9 +572,7 @@ export function PersonalisedTripPackages() {
                       </a>
                     ))
                   ) : (
-                    <p className="rounded-element bg-surface-container p-4 text-sm text-muted-foreground">
-                      No verified live result yet. Open the full search to compare availability.
-                    </p>
+                    <QueerGuideStays city={best.cities} type={stayType} />
                   )}
                 </div>
                 <Button
@@ -519,59 +616,61 @@ export function PersonalisedTripPackages() {
                     Add the sailing as a leg once the trip is built.
                   </p>
                 ) : (
-                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                    {arrivalMode !== 'flight' && (
-                      <Input
-                        id="package-origin"
-                        aria-label="Starting from"
-                        className="sm:max-w-xs"
-                        value={origin}
-                        onChange={(event) => setOrigin(event.target.value)}
-                        placeholder="Starting from…"
-                      />
+                  <>
+                    {arrivalMode === 'flight' && (
+                      <div className="mt-4">
+                        <InlineFlightDeals cityId={best.primaryCityId} city={best.cities} />
+                      </div>
                     )}
-                    {arrivalMode === 'flight' ? (
-                      <Button onClick={() => navigate(bookingUrl('flights'))}>
-                        <Plane /> Search flights to {best.cities}
-                      </Button>
-                    ) : (
-                      <Button asChild={!!origin} disabled={!origin}>
-                        {origin ? (
-                          <a
-                            href={
-                              arrivalMode === 'rail'
-                                ? buildTrainlineUrl({
-                                    origin,
-                                    destination: best.cities,
-                                    departDate: dates?.start,
-                                    returnDate: dates?.end,
-                                  })
-                                : buildFlixbusUrl({
-                                    origin,
-                                    destination: best.cities,
-                                    departDate: dates?.start,
-                                  })
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer sponsored"
-                          >
-                            {arrivalMode === 'rail' ? <Train /> : <Bus />} Search{' '}
-                            {arrivalMode === 'rail' ? 'trains' : 'coaches'}
-                          </a>
-                        ) : (
-                          <span className="inline-flex items-center gap-2">
-                            {arrivalMode === 'rail' ? <Train /> : <Bus />} Search{' '}
-                            {arrivalMode === 'rail' ? 'trains' : 'coaches'}
-                          </span>
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                )}
-                {arrivalMode === 'flight' && (
-                  <div className="mt-4">
-                    <TransferSection city={best.cities} compact />
-                  </div>
+                    <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                      {arrivalMode !== 'flight' && (
+                        <Input
+                          id="package-origin"
+                          aria-label="Starting from"
+                          className="sm:max-w-xs"
+                          value={origin}
+                          onChange={(event) => setOrigin(event.target.value)}
+                          placeholder="Starting from…"
+                        />
+                      )}
+                      {arrivalMode === 'flight' ? (
+                        <Button variant="outline" onClick={() => navigate(bookingUrl('flights'))}>
+                          <Plane /> Compare all flights to {best.cities}
+                        </Button>
+                      ) : (
+                        <Button asChild={!!origin} disabled={!origin}>
+                          {origin ? (
+                            <a
+                              href={
+                                arrivalMode === 'rail'
+                                  ? buildTrainlineUrl({
+                                      origin,
+                                      destination: best.cities,
+                                      departDate: dates?.start,
+                                      returnDate: dates?.end,
+                                    })
+                                  : buildFlixbusUrl({
+                                      origin,
+                                      destination: best.cities,
+                                      departDate: dates?.start,
+                                    })
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer sponsored"
+                            >
+                              {arrivalMode === 'rail' ? <Train /> : <Bus />} Search{' '}
+                              {arrivalMode === 'rail' ? 'trains' : 'coaches'}
+                            </a>
+                          ) : (
+                            <span className="inline-flex items-center gap-2">
+                              {arrivalMode === 'rail' ? <Train /> : <Bus />} Search{' '}
+                              {arrivalMode === 'rail' ? 'trains' : 'coaches'}
+                            </span>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </>
                 )}
               </li>
             </ol>
@@ -582,6 +681,14 @@ export function PersonalisedTripPackages() {
                 <p className="mt-1 text-sm text-muted-foreground">
                   We add the destination, event and arrival mode. You shape the days after.
                 </p>
+                {arrivalMode === 'flight' && (
+                  <div className="mt-4 max-w-sm">
+                    <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                      Optional add-on
+                    </p>
+                    <TransferSection city={best.cities} compact />
+                  </div>
+                )}
               </div>
               <Button size="lg" onClick={() => handleCreate(best)} disabled={createTrip.isPending}>
                 {createTrip.isPending ? <TrackLoader size={16} /> : null}
@@ -593,33 +700,48 @@ export function PersonalisedTripPackages() {
           {ranked.length > 1 ? (
             <div>
               <h3 className="text-title font-bold">Other matches</h3>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                {ranked.slice(1, 3).map((template) => (
-                  <Card key={template.id} className="grid grid-cols-[96px_1fr] overflow-hidden">
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {ranked.slice(1, 4).map((template) => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => handleCreate(template)}
+                    className="card-lift group flex flex-col overflow-hidden rounded-container bg-card text-start shadow-soft"
+                  >
                     <CardImage
                       src={template.coverImageUrl}
-                      alt={`${template.cities} travel inspiration`}
-                      height={128}
-                      className="h-full"
+                      alt=""
+                      height={160}
+                      className="w-full"
                     />
-                    <div className="p-4">
-                      <p className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+                    <div className="flex flex-1 flex-col gap-2 p-4">
+                      <span className="inline-flex w-fit items-center gap-1.5 rounded-badge bg-muted px-2 py-0.5 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                        {template.source === 'event' ? (
+                          <Flag size={12} aria-hidden />
+                        ) : (
+                          <Sparkles size={12} aria-hidden />
+                        )}
                         {template.source === 'event' ? 'Event-led escape' : 'Another match'}
-                      </p>
-                      <p className="mt-1 font-bold">{template.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {template.cities} · {template.days} days
-                      </p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="mt-2 px-0"
-                        onClick={() => handleCreate(template)}
-                      >
-                        Choose this one <ArrowRight />
-                      </Button>
+                      </span>
+                      <span className="text-15 font-bold leading-tight group-hover:underline">
+                        {template.title}
+                      </span>
+                      <span className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin size={12} aria-hidden />
+                          {template.cities}
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <CalendarDays size={12} aria-hidden />
+                          {template.days} days
+                        </span>
+                      </span>
+                      <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-13 font-bold">
+                        Choose this one
+                        <ArrowRight size={14} aria-hidden className="rtl:rotate-180" />
+                      </span>
                     </div>
-                  </Card>
+                  </button>
                 ))}
               </div>
             </div>

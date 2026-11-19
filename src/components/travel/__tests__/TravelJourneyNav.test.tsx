@@ -7,6 +7,7 @@ describe('TravelJourneyNav', () => {
     renderWithProviders(<TravelJourneyNav />, { route: '/travel' });
     expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual([
       'Inspire',
+      'Plan a trip',
       'My trips',
       'Book',
     ]);
