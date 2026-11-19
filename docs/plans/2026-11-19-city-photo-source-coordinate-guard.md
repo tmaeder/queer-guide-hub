@@ -10,5 +10,7 @@ For automatic city selection, require an explicit known licence, a valid source 
 
 Read the authoritative stored city name/point in fetch-images. Enrich the existing city backfill due rows with one bounded city-coordinate lookup; preserve its existing RPC, cursor/logging, authorization and batch limits. Do not publish camera coordinates. Extend ImageResult with validated Commons-location evidence and remove query-derived caption/default-CC claims. Decode actual source markup with the existing text helper so imported author names remain faithful.
 
+Bind each city write to the source row's update timestamp. A concurrent edit or image hold must refuse publication and asset registration, and the backfill must record a skip rather than a completed hit. Cached/curated reads retain priority; this check governs new writes only.
+
 Validate literal York/NewYork, Hudson/NYC and Brighton namesake negatives, genuine nearby and10km-boundary positives, missing/malformed/out-of-range/zero/different-datum evidence, unknown licence, no city point/no source calls, caption-less providers, unchanged country behavior, cached/curated priority and held-image behavior. Run actual handler regressions and the appropriate existing edge/frontend checks. Deploy only reviewed source changes through existing authenticated access and verify complete live payloads. No boundary data, city coordinates, source authorization, human flags, publication, media rights or other source gates are relaxed.
 
