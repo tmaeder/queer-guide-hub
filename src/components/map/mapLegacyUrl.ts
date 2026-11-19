@@ -6,7 +6,7 @@ import { MAP_LINE_IDS, MAP_VIEW_IDS, type MapLine, type MapView } from './mapDom
  *
  * A PURE module, deliberately not a branch inside `useMapShellState`: that
  * hook needs a Router to instantiate, so every case here would otherwise cost
- * a render. The full 5 × 7 product is unit-tested.
+ * a render. The full legacy lens/layer product is unit-tested.
  *
  * Four rules:
  *
@@ -44,11 +44,13 @@ export const LEGACY_LENS_TO_VIEW: Record<LegacyLens, MapView> = {
  * asking for `layers=cities` carries no line information at all. That is rule
  * 2's whole reason for existing.
  */
-export const LEGACY_LAYER_TO_LINE: Record<string, MapLine | null> = {
+export const LEGACY_LAYER_TO_LINE: Record<LayerType, MapLine | null> = {
   venues: 'M',
   events: 'E',
   hotels: 'T',
   restrooms: 'C',
+  cruising: 'M',
+  organizations: 'C',
   cities: null,
   countries: null,
   neighbourhoods: null,

@@ -61,7 +61,7 @@ describe('the legacy layer vocabulary', () => {
   });
 });
 
-describe('the full 5 × 7 product', () => {
+describe('the full 5 × 9 product', () => {
   const LENSES: LegacyLens[] = ['pins', 'density', 'routes', 'boundary', 'combined'];
   const LAYERS = LAYER_DEFS.map((d) => d.type);
 
@@ -78,8 +78,8 @@ describe('the full 5 × 7 product', () => {
     }
   });
 
-  it('exercises 35 pairs, not 1 — the positive control', () => {
-    expect(LENSES.length * LAYERS.length).toBe(35);
+  it('exercises 45 pairs, not 1 — the positive control', () => {
+    expect(LENSES.length * LAYERS.length).toBe(45);
   });
 });
 

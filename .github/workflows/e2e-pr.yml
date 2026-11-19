@@ -125,7 +125,10 @@ jobs:
             echo "relevant=false" >> "$GITHUB_OUTPUT"
             echo "::notice::No app/e2e paths changed - skipping specs, reporting success."
           fi
-          if echo "$files" | grep -qE '^(scripts/ci/db-snapshot\.sh|scripts/ci/snapshot-fixtures\.mjs|scripts/ci/supabase-retry\.sh|\.github/workflows/db-snapshot\.yml)$'; then
+          # This exact historical recovery includes rolled-back checks against
+          # production city IDs. Refresh the snapshot and its applied-version
+          # ledger so it is correctly recognized as applied, preserving its SQL.
+          if echo "$files" | grep -qE '^(scripts/ci/db-snapshot\.sh|scripts/ci/snapshot-fixtures\.mjs|scripts/ci/supabase-retry\.sh|\.github/workflows/db-snapshot\.yml|supabase/migrations/20261119190359_geo_cms_territory_country_comparison\.sql)$'; then
             echo "snapshot_changed=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Snapshot cache key

@@ -408,14 +408,14 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Book the pieces of a queer trip — flights, stays, transfers and activities — with the legal and safety picture for the destination alongside.',
   },
+  '/travel/plan': {
+    title: 'Plan a Queer Trip — Cities, Stays and Events',
+    description:
+      'Pick a city and dates, then pull in Pride events, bars, stays and the safety picture for every stop.',
+  },
   // The remaining three targets of STATIC_ROUTE_BODY links that resolved to
   // DEFAULT_META. A crawler body exists to give the bot somewhere to go next;
   // sending it to three pages titled like the homepage defeats the point.
-  '/trips/discover': {
-    title: 'Public LGBTQ+ Trip Itineraries to Copy',
-    description:
-      'Trip itineraries shared by the community: day-by-day plans for Pride weekends and longer queer trips, ready to copy and adapt.',
-  },
   '/marketplace/categories': {
     title: 'Shop LGBTQ+ Products by Category',
     description:
@@ -556,6 +556,7 @@ export function canonicalUrl(pathname: string): string {
  * redirect, and it keeps its own meta entry above.
  */
 const CLIENT_REDIRECT_STUBS = new Set([
+  '/trips/discover',
   '/venues/events',
   '/venues/groups',
   '/venues/guides',
