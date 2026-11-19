@@ -1,0 +1,107 @@
+{
+  "pass": 39,
+  "date": "2026-11-19",
+  "status": "five_applied_after_guarded_rollback",
+  "scope": "Restore exact native historical/local venue-business identity; no company merger, current-open, license or legal-owner approval",
+  "human_reviewed": false,
+  "repairs": [
+    {
+      "venue": "5f6e8733-6c97-468d-9dba-76753508e497",
+      "old_venue": "6e76ca3d-5c4c-4647-a516-878bb65dcdb5",
+      "good": "0803afe3-95df-4f66-8355-561dc64d710d",
+      "bad": "a9a24638-17e9-4d23-b639-953935ace4e0",
+      "audit": "d0b5a8df-63c3-408a-b6a5-dae3492cac57",
+      "url": "https://www.togayther.es/guia-gay/discotecas-torremolinos/centuryon/",
+      "sha": null,
+      "source": "Exact retained local business and native physical merge audit, independently corroborated by the Torremolinos guide's Centuryon/Casablanca15 record and indexed 2026 promoter advertisement. Promoter PDF now returns404; old discocenturyon.com is not adopted or treated as an official current domain. No current opening or legal ownership inference."
+    },
+    {
+      "venue": "26515e29-55cd-4d69-b6dc-e17ed52cc2e2",
+      "old_venue": "91863561-c25f-4b72-b3c5-368084ef7d80",
+      "good": "8e0543b4-16ec-40b4-a39f-ff8db18780da",
+      "bad": "49e7e554-9974-4471-9fa2-fa22efddf016",
+      "audit": "ad8f9b3e-9ff2-446e-8e75-275e69251f86",
+      "url": "https://www.ciaotickets.com/it/location/industrie-catania-ct",
+      "sha": null,
+      "source": "Primary ticketing provider page rendered through web research identifies Industrie at Via Acquicella Porto13, Catania; exact retained local business and native physical merge audit agree. Subsequent raw HTML capture timed out; no raw capture/hash, current sale or opening inference."
+    },
+    {
+      "venue": "1a637f69-0496-48fa-a393-0289c4824c4e",
+      "old_venue": "ca573552-6c77-40b8-9241-1a1dc0b34c9a",
+      "good": "37e6c30b-be64-4d3d-8f81-63051585747d",
+      "bad": "60162850-318b-48da-87d5-c5283f459783",
+      "audit": "45a3b757-f9c6-4f3f-ad1b-91b359c8c8d6",
+      "url": "https://tic.visitasevilla.es/vsev/web_php/imatges/guias/19561666c3efe6c94b258592459.pdf",
+      "sha": "de1d51f0ceccdbd50a787c4c3c62158195214d90f7d701fa9ad14b4bccbd02d0",
+      "source": "Complete official Seville LGBTQ tourism PDF, page4 visually inspected, identifies ITACA at Amor de Dios31. Exact retained local business and native physical merge audit agree. Restore relationship only; do not refresh advertised historical hours."
+    },
+    {
+      "venue": "38f79c63-fae0-40e8-a2d5-ffcfb6899d5b",
+      "old_venue": "7a2fdc07-550e-4824-bc0b-19b0a80d9589",
+      "good": "709cc0d9-4121-4054-8eef-5028a3094036",
+      "bad": "a1e90670-72e6-49e6-92a1-62b579321e3f",
+      "audit": "3b649a51-43e5-41d8-8bfd-5aee41068940",
+      "url": "https://www.bilbaoturismo.net/BilbaoTurismo/en/gay-friendly/key-pub_2",
+      "sha": null,
+      "source": "Indexed official Bilbao tourism record identifies KEY PUB at Del Cristo13; owner Asier Bilbao's published historical video title also identifies PubKey/Cristo13. Exact retained native physical merge and local business match. Direct municipal fetch rejected and not bypassed; no raw capture/hash or current-open claim."
+    },
+    {
+      "venue": "2c421da6-fca5-426f-9d1a-ae75ad3cb3c9",
+      "old_venue": "858b8c60-3b95-47ee-bce0-113c9d0a6c12",
+      "good": "109e3d1c-edb4-4fad-b177-3b1a0c4840d7",
+      "bad": "592a765d-d0b5-4fee-af1c-1c95ed847ebf",
+      "audit": "8e27b7b2-8511-4b11-baa9-ec2f3265418a",
+      "url": "https://www.boe.es/borme/dias/2022/06/21/pdfs/BORME-A-2022-117-08.pdf",
+      "sha": "825dc382cf002184f44dc4834c8d229807c09dda2ed358adacefe6152a646a43",
+      "source": "Complete Spanish registry publication records the Strass-named bar enterprise at Villarroel68 in2022, corroborating the retained physical venue and native merge audit. Restore only the existing venue profile relationship. Do not assign any legal company, individual owner, current license or minority ownership status from this record."
+    }
+  ],
+  "validation": {
+    "rollback_and_commit_passed": true,
+    "coordinates_and_publication_gates_preserved": true,
+    "quality_dimensions_changed_only_linkage": true,
+    "actual_linkage_passes": 5,
+    "previously_active_cases_now_inactive": 5,
+    "native_source_reconciliation": true,
+    "full_venue_business_and_other_linked_venue_rows_compared": true
+  },
+  "held_separately": [
+    {
+      "venue": "Relaxe",
+      "reason": "Rollback refuses automatic copying of address, postcode and coordinates when primary venue changes; no commit for this case. Separate closure and point verification required.",
+      "historical_machine_governance_preserved": true
+    },
+    {
+      "venue": "Ken",
+      "reason": "Move/address continuity requires separate source review"
+    },
+    {
+      "venue": "Steamworks Chicago",
+      "reason": "Same-name international chain may have a legitimate corporate relationship; cross-country difference alone is not proof of wrong business"
+    }
+  ],
+  "primary_full_captures": [
+    {
+      "url": "https://tic.visitasevilla.es/vsev/web_php/imatges/guias/19561666c3efe6c94b258592459.pdf",
+      "sha256": "de1d51f0ceccdbd50a787c4c3c62158195214d90f7d701fa9ad14b4bccbd02d0",
+      "bytes": 941348,
+      "page": 4,
+      "visual_checked": true
+    },
+    {
+      "url": "https://www.boe.es/borme/dias/2022/06/21/pdfs/BORME-A-2022-117-08.pdf",
+      "sha256": "825dc382cf002184f44dc4834c8d229807c09dda2ed358adacefe6152a646a43",
+      "bytes": 416713,
+      "page": 16,
+      "scope": "Historical place/name corroboration only; no company/owner assignment",
+      "visual_checked": true
+    }
+  ],
+  "source_limitations": [
+    "Centuryon promoter PDF now404; indexed promotional reference is not claimed as a complete capture",
+    "Industrie primary ticketing page read through web; subsequent raw fetch timed out, no fabricated hash",
+    "Bilbao tourism page rejects direct fetch; exact native prior business and physical-merge record supported by indexed municipal and historical owner reference",
+    "Relaxe regulator raw fetch fails307; unavailable source is not bypassed"
+  ],
+  "all_queue_cases_complete": false
+}

@@ -1,0 +1,67 @@
+{
+  "pass": 38,
+  "date": "2026-11-19",
+  "status": "applied_and_native_source_rechecked",
+  "scope": "Restore incorrect canonical venue business relationships to existing matching local profiles; no business merge or legal ownership claim",
+  "actor": "AI-assisted factual repair",
+  "human_reviewed": false,
+  "repairs": [
+    {
+      "venue_id": "60e14014-4c4a-4b07-9882-fcd169c24bc8",
+      "previous_business_id": "ef481bb8-9cbf-4385-8f83-d9e800706378",
+      "restored_business_id": "efa9ef28-a2a6-4b10-bd40-3d221f27e841",
+      "retained_duplicate_venue_id": "1d4ad112-e81f-4433-a303-515ec22ac47b",
+      "physical_merge_audit_id": "d9a2555e-7eeb-44ef-a1e4-5a889692d6c4",
+      "source_url": "https://torremolinosplus.com/bears/",
+      "capture_sha256": "c750cca3075918119ba13cd305ebf7987184b51035803c30e7999eb6297fa059",
+      "evidence_scope": "ACOGAT primary membership listing identifies Bears in La Nogalera, Torremolinos; exact retained venue/business and physical merge audit confirm branch identity. LUST is an independent foreign business and seller; preserve it in full."
+    },
+    {
+      "venue_id": "1dc62968-17ed-48c2-811b-6a2891738829",
+      "previous_business_id": "2ae896e4-fff8-4997-9646-bfc4697f3120",
+      "restored_business_id": "4658fd07-3248-4ec7-908f-547cdd1482ad",
+      "retained_duplicate_venue_id": "2eccf405-1f5d-46bf-9b3a-92728cc86a3f",
+      "physical_merge_audit_id": "31357b81-eb82-4748-ac70-ff76279da8c1",
+      "source_url": "https://www.hessenhuis.be/the-venue",
+      "capture_sha256": "8920192356ac1f13b09ce5caad2e0f0cc736a268a53b18927eb7b4b71a13852c",
+      "evidence_scope": "Current owner identifies the Hessenhuis cafe on Falconrui, Antwerp. Restore only existing native business link; official visitor address 59 versus stored 79 remains a separate address issue. Preserve actual human duplicate, attention and quality timestamp decisions and all coordinates."
+    },
+    {
+      "venue_id": "28333841-97af-4930-bbf8-df6d348e1cf4",
+      "previous_business_id": "82fe60d3-375b-4296-b647-96d466372f46",
+      "restored_business_id": "7255349c-733e-435c-8db5-45d9a5c12d9a",
+      "retained_duplicate_venue_id": "b493f81d-f933-4a17-9220-9eb734c67b5d",
+      "physical_merge_audit_id": "2ab3add5-c733-4e17-9e2f-7375308a8523",
+      "source_url": "https://www.explorenicecotedazur.com/en/structure/le-swing/",
+      "capture_sha256": "308e26c2c6f739ab77ebe2d23ce2a6496aa8840754111266c7d16c3fcefcb23f",
+      "evidence_scope": "Current official Nice tourism page identifies Le Swing at 10 rue Defly, Nice; native physical merge audit and retained local business match. Preserve unrelated foreign Gaymers business."
+    },
+    {
+      "venue_id": "576197b6-0313-4cf4-9b5e-e0ed68ba050f",
+      "previous_business_id": "08164069-e392-4ece-9a7d-69cbabcb73fa",
+      "restored_business_id": "ae9bc268-e43c-46c3-9bea-742eb27d392e",
+      "retained_duplicate_venue_id": "611bd733-040d-4098-b1b9-946c3fd18a2a",
+      "physical_merge_audit_id": "32f32f83-f527-4d6f-99bb-9df39ad841a9",
+      "source_url": "https://barblend.nl/montmartre-xl",
+      "capture_sha256": null,
+      "evidence_scope": "Owner page rendered through web research from cafemontmartre.nl redirect identifies Montmartre XL at Reguliersdwarsstraat 48. Native physical merge audit and retained same-address Amsterdam business agree. Direct raw capture subsequently returned 429 and was not bypassed; no raw owner capture/hash claimed. Restore profile relationship only; no legal ownership or current opening approval."
+    }
+  ],
+  "validation": {
+    "guarded_rollback_passed": true,
+    "exact_commit_passed": true,
+    "unrelated_businesses_and_every_other_linked_venue_unchanged": true,
+    "quality_changed_only_linkage": "pending/linkage_unresolved -> pass/linked_entity_present",
+    "quality_checked_at_and_other_dimensions_preserved": true,
+    "publication_ownership_media_editorial_contacts_gates_preserved": true,
+    "native_source_reconciliation": true,
+    "linkage_cases_now_inactive": 4,
+    "full_venue_business_and_other_linked_venue_rows_compared": true
+  },
+  "known_limitations": [
+    "Hessenhuis official visitor number 59 conflicts with stored 79; address and point remain unchanged for separate review",
+    "Montmartre direct capture returned 429; earlier rendered owner page identifies same address; no raw capture/hash is claimed",
+    "Existing human Hessenhuis duplicate decision, attention flag and organization quality timestamp preserved"
+  ],
+  "global_completion_claimed": false
+}
