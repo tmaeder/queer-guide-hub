@@ -1,3 +1,4 @@
+import { AdultContentToggle } from '@/components/age-gate/AdultContentToggle';
 import { ChevronDown } from '@/components/icons';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -175,6 +176,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               <LanguageSwitcher />
               <CurrencySelector />
               <ThemeToggle />
+              <AdultContentToggle />
             </div>
             <LocalizedLink
               to="/"

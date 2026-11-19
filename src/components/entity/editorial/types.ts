@@ -1,8 +1,10 @@
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 
 export interface SectionDef {
   id: string;
   label: ReactNode;
+  /** Optional icon shown beside the label in the section nav only. */
+  icon?: ComponentType<{ size?: number; 'aria-hidden'?: boolean }>;
   kicker?: string;
   /** Optional one-line deck under the heading. */
   description?: ReactNode;

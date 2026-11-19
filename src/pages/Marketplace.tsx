@@ -13,7 +13,6 @@ import { MarketplaceControlBar } from '@/components/marketplace/MarketplaceContr
 import { MarketplaceLineIndex } from '@/components/marketplace/MarketplaceLineIndex';
 import { MarketplaceHeroCover } from '@/components/marketplace/MarketplaceHeroCover';
 import { BrandSpotlight } from '@/components/marketplace/BrandSpotlight';
-import { GuidesRail } from '@/components/guides/GuidesRail';
 // ContinueReadingRail was the SECOND thing on this page — a /guides component
 // on the shopping surface, IA debris rather than a section. It still lives on
 // /guides, where it belongs.
@@ -147,7 +146,6 @@ const LEGACY_SORT_MAP: Record<string, MarketplaceSort> = {
   za: 'newest',
 };
 const VIEW_MODE_KEY = 'qg.marketplace.viewMode';
-const SHOW_ADULT_KEY = 'qg.marketplace.showAdult';
 
 const Marketplace = () => {
   const { t } = useTranslation();
@@ -195,19 +193,11 @@ const Marketplace = () => {
   const filters = useMemo(() => parseFiltersFromParams(searchParams), [searchParams]);
 
   // Default-SFW browse: adult/explicit hidden until an explicit 18+ opt-in.
-  // Persisted for the browser/account; turning it on records the shared acknowledgement
-  // so the route-level AdultContentGate stays consistent.
-  const { acknowledge } = useAdultAcknowledgement();
-  const [includeAdult, setIncludeAdult] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem(SHOW_ADULT_KEY) === '1';
-  });
+  // Reads the site-wide 18+ affirmation (footer switch), so it never asks twice.
+  const { acknowledged: includeAdult, acknowledge, reset } = useAdultAcknowledgement();
   const handleIncludeAdultChange = (next: boolean) => {
-    setIncludeAdult(next);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(SHOW_ADULT_KEY, next ? '1' : '0');
-    }
     if (next) void acknowledge();
+    else reset();
     setUrlParams({ page: undefined });
   };
 
@@ -541,29 +531,6 @@ const Marketplace = () => {
             <MarketplaceRow rowKey="new" title="New this week" />
             <MarketplaceHeroCover />
             <BrandSpotlight />
-            {/* `alwaysRender` is load-bearing, not a preference. With /shop
-                folded in, /marketplace is the `shop` cluster hub, and the
-                desktop header is the Intent Router — no destination links — so
-                this is the ONLY path from desktop chrome into the guides
-                family. #2723 fixed a nightly that failed for days because
-                nothing linked /guides at all; letting this rail self-hide on a
-                thin query would re-orphan it. Guarded by
-                "the shop hub links to the guides family" in e2e/guides.spec.ts. */}
-            {/* `department: false` drops the generated `shop-*-shortlist`
-                rows. They are the same taxonomy as the Departments grid at the
-                top of this very page — a "Jewelry shortlist" card under a
-                "Jewelry" tile — and because they were published later than the
-                hand-written guides they outranked them on `published_at`: the
-                rail was rendering Swimwear shortlist + Underwear shortlist +
-                one real guide, i.e. two thirds duplicate navigation. They are
-                not deleted, they are RELOCATED — each one now opens on its own
-                department page, where a shortlist of that department is the
-                useful thing rather than a restatement of the tile above it. */}
-            <GuidesRail
-              title="Buying guides"
-              filters={{ entityType: 'marketplace', department: false, limit: 3 }}
-              alwaysRender
-            />
             <AffiliateDisclosure />
           </PageContainer>
         </div>

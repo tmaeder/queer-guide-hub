@@ -12,10 +12,10 @@ const ITEMS = [
     active: (path: string) => path === '/travel',
   },
   {
-    href: '/trips/discover',
-    label: 'Build a trip',
+    href: '/travel/plan',
+    label: 'Plan a trip',
     icon: Map,
-    active: (path: string) => path === '/trips/discover',
+    active: (path: string) => path === '/travel/plan',
   },
   {
     href: '/hub/plans',

@@ -1,5 +1,6 @@
 import { KnowledgeReadingLinks } from '@/components/knowledge/KnowledgeReadingLinks';
 import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, Globe, Map as MapIcon, Newspaper, Scale } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
@@ -202,6 +203,7 @@ export default function RightsIntent() {
   const sections: SectionDef[] = [
     {
       id: 'map',
+      icon: MapIcon,
       label: 'The map',
       kicker: 'Every country, one law at a time',
       hidden: !countries || countries.length === 0,
@@ -221,6 +223,7 @@ export default function RightsIntent() {
     },
     {
       id: 'world',
+      icon: Globe,
       label: 'The world',
       kicker: `All ${countries?.length ?? 0} countries and territories`,
       hidden: !countries || countries.length === 0,
@@ -242,6 +245,7 @@ export default function RightsIntent() {
     },
     {
       id: 'criminalizing',
+      icon: AlertTriangle,
       label: 'Still a crime',
       kicker: 'Where same-sex acts are criminalised',
       hidden: !countries || countries.length === 0,
@@ -275,6 +279,7 @@ export default function RightsIntent() {
     },
     {
       id: 'rights',
+      icon: Scale,
       label: 'The rights themselves',
       kicker: 'Where each one stands worldwide',
       hidden: !countries || countries.length === 0,
@@ -290,6 +295,7 @@ export default function RightsIntent() {
     },
     {
       id: 'news',
+      icon: Newspaper,
       label: 'Rights in the news',
       kicker: `Current reporting on ${topicListLabel(mapTopic, t)}`,
       content: (

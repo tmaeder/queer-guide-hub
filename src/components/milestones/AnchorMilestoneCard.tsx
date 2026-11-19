@@ -7,7 +7,6 @@ import { formatMilestoneDate, milestoneYear } from '@/lib/milestoneDate';
 import { displayableMilestoneImage } from '@/lib/milestoneImage';
 import type { Milestone } from '@/types/milestone';
 import { MilestoneCategoryBadge } from './MilestoneCategoryBadge';
-import { MilestoneImpactMarker } from './MilestoneImpactMarker';
 
 /**
  * Editorial anchor card — the large lead treatment for an era's defining
@@ -49,9 +48,6 @@ export function AnchorMilestoneCard({
           className,
         )}
       >
-        <span className="mt-1 flex w-4 shrink-0 justify-center">
-          <MilestoneImpactMarker impact={milestone.impact} size="station" />
-        </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
             {/* The line goes dark here, so the M bullet takes ink rather than

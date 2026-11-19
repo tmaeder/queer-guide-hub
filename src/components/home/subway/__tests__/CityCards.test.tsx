@@ -23,6 +23,7 @@ vi.mock('@/hooks/usePersonalizedCities', () => ({
   fetchCountryCities: async () => state.local,
   fetchHomeCountries: async () => state.countries,
   fetchHomeVillages: async () => state.villages,
+  fetchUpcomingHighlightCities: async () => new Map(),
 }));
 vi.mock('@/components/home/homeRegionContext', () => ({
   useHomeRegionContext: () => ({
@@ -77,7 +78,12 @@ describe('CityCards — mix', () => {
     state.villages = [place('Chueca')];
     renderWithProviders(<CityCards />);
     const hrefs = (await screen.findAllByRole('link')).map((l) => l.getAttribute('href'));
-    expect(hrefs).toEqual(['/city/berlin', '/country/spain', '/city/madrid', '/villages/chueca']);
+    // City order rotates daily; the interleave pattern does not.
+    expect(hrefs.map((h) => h?.split('/')[1])).toEqual(['city', 'country', 'city', 'villages']);
+    expect(hrefs.filter((h) => h?.startsWith('/city/')).sort()).toEqual([
+      '/city/berlin',
+      '/city/madrid',
+    ]);
   });
 });
 
@@ -114,5 +120,19 @@ describe('CityCards — card', () => {
     renderWithProviders(<CityCards />);
     expect(await screen.findByRole('status')).toHaveTextContent('This section could not load');
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+  });
+});
+
+describe('CityCards — highlights', () => {
+  it('puts a city with an upcoming Pride first and labels it', async () => {
+    state.cities = [city('Berlin', 100), city('Madrid', 100), city('Lisbon', 100)];
+    const mod = await import('@/hooks/usePersonalizedCities');
+    vi.spyOn(mod, 'fetchUpcomingHighlightCities').mockResolvedValueOnce(
+      new Map([['Lisbon', { title: 'Lisbon Pride', startDate: '2027-06-20T00:00:00Z' }]]),
+    );
+    renderWithProviders(<CityCards />);
+    const hrefs = (await screen.findAllByRole('link')).map((l) => l.getAttribute('href'));
+    expect(hrefs[0]).toBe('/city/lisbon');
+    expect(screen.getByText(/Lisbon Pride/)).toBeInTheDocument();
   });
 });

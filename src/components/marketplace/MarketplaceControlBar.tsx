@@ -305,7 +305,7 @@ export function MarketplaceControlBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="-mx-1 flex min-w-0 flex-1 items-center gap-2 overflow-x-auto px-1 pb-1">
+        <div className="-mx-4 -my-4 flex min-w-0 flex-1 items-center gap-2 overflow-x-auto px-4 py-4">
           <Popover open={deptOpen} onOpenChange={setDeptOpen}>
             <PopoverTrigger asChild>
               <FilterChip

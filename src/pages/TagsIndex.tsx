@@ -32,7 +32,6 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { TransitIcon } from '@/components/transit/TransitIcon';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useCentralizedTags, useTagUsageCounts } from '@/hooks/useCentralizedTags';
 import type { CategoryTreeNode, CentralizedTag } from '@/hooks/useCentralizedTags';
@@ -420,13 +419,6 @@ export default function TagsIndex() {
   }
 
   const filtered = hasActiveFilters(state);
-  const starterTerms =
-    !scope && !filtered && state.view !== 'graph'
-      ? ['chosen-family', 'coming-out', 'non-binary'].flatMap((slug) => {
-          const term = browseEntries.find(({ tag }) => tag.slug === slug)?.tag;
-          return term?.description ? [term] : [];
-        })
-      : [];
 
   return (
     <>
@@ -435,26 +427,6 @@ export default function TagsIndex() {
             what this is, and the "N terms · N lines · N stops" legend only
             restated the rail. A category stop keeps its name as the heading. */}
         {scope && <h2 className="text-title font-bold">{title}</h2>}
-        {starterTerms.length > 0 && (
-          <ul
-            aria-label={t('tags.opening.terms', 'A few terms to start with')}
-            className="mt-4 grid gap-2 sm:grid-cols-3"
-          >
-            {starterTerms.map((term) => (
-              <li key={term.id}>
-                <LocalizedLink
-                  to={`/tags/${term.slug}`}
-                  className="group block rounded-element bg-surface-container p-4 text-foreground no-underline"
-                >
-                  <span className="block font-semibold group-hover:underline">{term.name}</span>
-                  <span className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                    {term.description}
-                  </span>
-                </LocalizedLink>
-              </li>
-            ))}
-          </ul>
-        )}
       </KnowledgeHeader>
 
       <PageContainer as="section" flush className="pb-16 md:pb-24">

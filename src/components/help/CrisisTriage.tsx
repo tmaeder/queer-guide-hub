@@ -35,7 +35,7 @@ import {
   selectOpenAlternative,
 } from './helpData';
 import { CountryScope } from './CountryScope';
-import { SelfHelpDrawer } from './SelfHelpDrawer';
+import { SelfHelp } from './SelfHelp';
 
 const CHANNEL_ICON: Record<HotlineChannel['kind'], typeof Phone> = {
   phone: Phone,
@@ -400,9 +400,7 @@ export function CrisisTriage({
                 </li>
               ))}
             </ol>
-            <div className="mt-4">
-              <SelfHelpDrawer country={country} />
-            </div>
+            <SelfHelp />
           </div>
         </div>
       </div>

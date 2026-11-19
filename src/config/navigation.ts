@@ -257,7 +257,7 @@ export const INTENT_NAV: IntentDestination[] = [
     to: '/travel',
     icon: transitIcon('route'),
     labelKey: 'header.intents.travelling.label',
-    fallback: 'Travelling',
+    fallback: 'Travel',
     subtitleKey: 'header.intents.travelling.subtitle',
     subtitleFallback: 'Is it safe, where to stay, what to do',
     activePrefixes: [
@@ -283,7 +283,7 @@ export const INTENT_NAV: IntentDestination[] = [
     to: '/hub/people',
     icon: transitIcon('community'),
     labelKey: 'header.intents.meet.label',
-    fallback: 'Meet people',
+    fallback: 'Meet',
     subtitleKey: 'header.intents.meet.subtitle',
     subtitleFallback: 'Friends, dates, travel buddies and groups',
     activePrefixes: [

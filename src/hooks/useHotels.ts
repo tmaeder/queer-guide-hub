@@ -16,6 +16,8 @@ export interface HotelFilters {
   lgbtq_friendly?: boolean;
   featured?: boolean;
   tagSlug?: string;
+  /** Only stays that carry one of these amenity values. */
+  amenitiesAny?: string[];
 }
 
 const PAGE_SIZE = 24;
@@ -137,6 +139,9 @@ export async function fetchHotelsPage(
   }
   if (filters?.price_range) {
     query = query.eq('price_range', filters.price_range);
+  }
+  if (filters?.amenitiesAny?.length) {
+    query = query.overlaps('amenities', filters.amenitiesAny);
   }
   if (filters?.lgbtq_friendly !== undefined) {
     query = query.eq('lgbtq_friendly', filters.lgbtq_friendly);

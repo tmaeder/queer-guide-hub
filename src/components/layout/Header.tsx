@@ -149,7 +149,7 @@ export function Header() {
       onClick={() => (user ? navigate(submitCta.route) : setAuthDialogOpen(true))}
       aria-label={contributeLabel}
       title={contributeLabel}
-      className="h-11 w-11 shrink-0 gap-2 p-0 lg:w-auto lg:px-4"
+      className="h-11 w-11 shrink-0 gap-2 p-0 lg:w-auto lg:px-4 [&_svg]:size-6"
     >
       <TransitIcon name="add-station" size={24} />
       <span className="hidden lg:inline">{contributeLabel}</span>
@@ -300,7 +300,7 @@ export function Header() {
     // md:hidden, so `hidden lg:flex` left 768–1023px with no primary nav.
     <nav
       aria-label={t('header.primaryNavigation', 'Primary')}
-      className="no-scrollbar hidden h-12 min-w-0 items-center overflow-x-auto md:flex"
+      className="no-scrollbar hidden h-12 min-w-0 items-center overflow-x-auto [justify-content:safe_center] md:flex"
     >
       {INTENT_NAV.map((intent) => {
         const { to, labelKey, fallback, id } = intent;

@@ -240,7 +240,6 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
     links: [
       { href: '/cities', label: 'Browse cities' },
-      { href: '/trips/discover', label: 'Public trip itineraries' },
       { href: '/hotels', label: 'LGBTQ+ friendly hotels' },
       { href: '/venues', label: 'Venues at your destination' },
       { href: '/help', label: 'Crisis support abroad' },

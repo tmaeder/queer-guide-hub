@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { Flag } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import {
   fetchCountryCities,
@@ -7,6 +8,8 @@ import {
   fetchPersonalizedCitiesByIds,
   fetchHomeCountries,
   fetchHomeVillages,
+  fetchUpcomingHighlightCities,
+  type CityHighlight,
   type PersonalizedCityRow,
   type HomePlaceRow,
 } from '@/hooks/usePersonalizedCities';
@@ -35,6 +38,25 @@ interface Guide {
   imageUrl: string | null;
   /** Countries without a photo fall back to their outline. */
   countryCode?: string | null;
+  /** An upcoming Pride/festival that earned this city its slot. */
+  highlight?: CityHighlight;
+}
+
+const todayKey = () => Math.floor(Date.now() / 86_400_000);
+
+/** Deterministic per-day shuffle: the line-up changes daily, not per reload. */
+function dailyShuffle<T>(items: T[], day = Math.floor(Date.now() / 86_400_000)): T[] {
+  let seed = day;
+  const rand = () => {
+    seed = (seed * 1664525 + 1013904223) % 4294967296;
+    return seed / 4294967296;
+  };
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
 }
 
 const fromCity = (c: PersonalizedCityRow): Guide => ({
@@ -88,9 +110,27 @@ function interleave(cities: Guide[], countries: Guide[], villages: Guide[]): Gui
   return out;
 }
 
+/** Up to two cities with an upcoming Pride/festival lead; the rest rotate daily. */
+async function featuredCities(
+  pool: PersonalizedCityRow[],
+  highlights: Map<string, CityHighlight>,
+): Promise<PersonalizedCityRow[]> {
+  const boostedIds = [...highlights.keys()].slice(0, 2);
+  const byId = new Map(pool.map((c) => [c.id, c]));
+  const missing = boostedIds.filter((id) => !byId.has(id));
+  const extra = missing.length ? await fetchPersonalizedCitiesByIds(missing).catch(() => []) : [];
+  for (const c of extra) byId.set(c.id, c);
+  const boosted = boostedIds.flatMap((id) => {
+    const c = byId.get(id);
+    return c ? [c] : [];
+  });
+  return [...boosted, ...dailyShuffle(pool.filter((c) => !boostedIds.includes(c.id)))];
+}
+
 async function fetchCities(
   cityId: string | null | undefined,
   countryId: string | null | undefined,
+  highlights: Map<string, CityHighlight>,
 ) {
   // A known region keeps the cities in the visitor's country — mixing in
   // Berlin or Madrid under a Winterthur page reads as a broken filter.
@@ -103,17 +143,19 @@ async function fetchCities(
     const cities = home ? [home, ...rest] : rest;
     if (cities.length > 0) return cities.slice(0, CITY_GUIDE_COUNT);
   }
-  const trending = await fetchTrendingCities(200000, CITY_GUIDE_COUNT);
-  if (!cityId) return trending;
-  // Already in the editorial set — promote rather than fetch it twice.
-  const found = trending.find((c) => c.id === cityId);
-  if (found) return [found, ...trending.filter((c) => c.id !== cityId)];
-  const [home] = await fetchPersonalizedCitiesByIds([cityId]);
-  return home ? [home, ...trending].slice(0, CITY_GUIDE_COUNT) : trending;
+  const pool = await fetchTrendingCities(200000, 24);
+  const home = cityId
+    ? (pool.find((c) => c.id === cityId) ?? (await fetchPersonalizedCitiesByIds([cityId]))[0])
+    : undefined;
+  const rest = await featuredCities(
+    pool.filter((c) => c.id !== home?.id),
+    highlights,
+  );
+  return (home ? [home, ...rest.filter((c) => c.id !== home.id)] : rest).slice(0, CITY_GUIDE_COUNT);
 }
 
 export default function CityCards() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const region = useHomeRegionContext();
 
   const {
@@ -123,17 +165,20 @@ export default function CityCards() {
     isFetching,
     refetch,
   } = useQuery({
-    queryKey: ['home-destinations', 'mixed', region.cityId, region.countryId],
+    queryKey: ['home-destinations', 'mixed', region.cityId, region.countryId, todayKey()],
     enabled: !region.loading,
     queryFn: async () => {
       // Countries and villages are extras: if either fails, the cities still show.
+      const highlights = await fetchUpcomingHighlightCities().catch(
+        () => new Map<string, CityHighlight>(),
+      );
       const [cities, countries, villages] = await Promise.all([
-        fetchCities(region.cityId, region.countryId),
+        fetchCities(region.cityId, region.countryId, highlights),
         fetchHomeCountries(PLACE_GUIDE_COUNT, region.countryId).catch(() => []),
         fetchHomeVillages(PLACE_GUIDE_COUNT, region.countryId).catch(() => []),
       ]);
       return interleave(
-        cities.map(fromCity),
+        cities.map((c) => ({ ...fromCity(c), highlight: highlights.get(c.id) })),
         countries.map(fromCountry),
         villages.map(fromVillage),
       );
@@ -188,6 +233,18 @@ export default function CityCards() {
                     {g.name}
                   </span>
                   <div className="mt-1 truncate text-13 text-muted-foreground">{g.hook}</div>
+                  {g.highlight && (
+                    <span className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-badge bg-muted px-2 py-0.5 text-xs font-bold text-foreground">
+                      <Flag size={12} aria-hidden className="shrink-0" />
+                      <span className="truncate">
+                        {g.highlight.title} ·{' '}
+                        {new Date(g.highlight.startDate).toLocaleDateString(i18n.language, {
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </span>
+                    </span>
+                  )}
                 </div>
                 <LocalizedLink
                   to={g.href}

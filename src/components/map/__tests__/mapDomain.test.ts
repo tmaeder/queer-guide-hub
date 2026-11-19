@@ -34,7 +34,12 @@ import type { LayerType } from '@/hooks/useExploreMapData';
  *   the image is exactly the four-member set AND every line is non-empty.
  */
 
-const POINT_LAYERS = LAYER_DEFS.map((d) => d.type).filter((t) => !AREA_LAYERS.includes(t));
+// Cruising and organisations are standalone toggles (the homepage map), not
+// lines: with every line on, cruising already arrives inside `venues`.
+const TOGGLE_ONLY: LayerType[] = ['cruising', 'organizations'];
+const POINT_LAYERS = LAYER_DEFS.map((d) => d.type).filter(
+  (t) => !AREA_LAYERS.includes(t) && !TOGGLE_ONLY.includes(t),
+);
 
 describe('line classification', () => {
   it('resolves a line for every legal venue category', () => {
@@ -179,7 +184,10 @@ describe('entity bullets', () => {
   it('covers every layer exactly once', () => {
     const layers = LAYER_DEFS.map((d) => d.type);
     expect(Object.keys(ENTITY_BULLET).sort()).toEqual([...layers].sort());
-    expect(new Set(Object.values(ENTITY_BULLET)).size).toBe(layers.length);
+    // Cruising is a venue category with its own toggle, so it shares the
+    // venue bullet; every other layer has its own.
+    expect(new Set(Object.values(ENTITY_BULLET)).size).toBe(layers.length - 1);
+    expect(ENTITY_BULLET.cruising).toBe(ENTITY_BULLET.venues);
   });
 
   it('resolves every bullet key in ROUTE_BULLET_MAP', () => {
@@ -195,7 +203,7 @@ describe('entity bullets', () => {
   it('round-trips both spellings back to a layer', () => {
     // Callers hold both: search results are singular, the map is plural.
     for (const layer of Object.keys(ENTITY_BULLET) as LayerType[]) {
-      expect(layerForEntityKey(ENTITY_BULLET[layer])).toBe(layer);
+      if (layer !== 'cruising') expect(layerForEntityKey(ENTITY_BULLET[layer])).toBe(layer);
       expect(layerForEntityKey(layer)).toBe(layer);
     }
   });

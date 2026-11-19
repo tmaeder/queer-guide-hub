@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cn } from '@/lib/utils';
+import { X } from '@/components/icons';
 import { formatMilestoneDate } from '@/lib/milestoneDate';
 import type { Milestone, MilestoneRef } from '@/types/milestone';
 import { MilestoneCategoryBadge } from './MilestoneCategoryBadge';
@@ -53,7 +54,7 @@ export function MilestoneRow({
       // is exactly what EraTrack does. jsdom never applies that stylesheet, so
       // no unit test can catch the regression; only the Playwright
       // `display: flex` assertion can. See OnThisDayBand for the same trap.
-      className={cn('group flex items-start gap-4 no-underline', className)}
+      className={cn('group flex items-start no-underline', station ? 'gap-10' : 'gap-4', className)}
     >
       {station ? (
         // Year stop: centred on the 16px rail column and allowed to overhang
@@ -63,15 +64,17 @@ export function MilestoneRow({
           <span
             aria-hidden
             className={cn(
-              'relative z-10 inline-flex shrink-0 items-center gap-0.5 rounded-full border-2 px-1.5 py-0.5 text-3xs font-bold tabular-nums leading-none',
+              // ring-inset, not border: the unlayered border reset in
+              // index.css can win over a border-color utility here.
+              'relative z-10 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-2xs font-bold tabular-nums leading-none shadow-soft ring-2 ring-inset',
               milestone.impact === 'positive'
-                ? 'border-foreground bg-foreground text-background'
+                ? 'bg-foreground text-background ring-foreground'
                 : milestone.impact === 'negative'
-                  ? 'border-destructive bg-background text-destructive'
-                  : 'border-foreground bg-background text-foreground',
+                  ? 'bg-background text-destructive ring-destructive'
+                  : 'bg-background text-foreground ring-foreground',
             )}
           >
-            {milestone.impact === 'negative' && '✕'}
+            {milestone.impact === 'negative' && <X size={10} strokeWidth={3} aria-hidden />}
             {year}
           </span>
         </span>

@@ -52,11 +52,7 @@ import { getVenueVisual } from '@/lib/venueVisual';
 import { venueClosureLabel } from '@/lib/venueClosureLabel';
 import { useTranslation } from 'react-i18next';
 import { VENUES_V2_ENABLED } from '@/lib/featureFlags';
-import {
-  PageContainer,
-  PAGE_BLEED_MOBILE,
-  STICKY_UNDER_HEADER,
-} from '@/components/layout/PageContainer';
+import { PageContainer, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { useMotionTokens } from '@/lib/motion';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -417,8 +413,7 @@ const Venues = () => {
         {/* Toolbar */}
         <div
           className={cn(
-            `sticky ${STICKY_UNDER_HEADER} z-20 mb-4 overflow-hidden rounded-container border-b border-border-hairline bg-background py-2`,
-            PAGE_BLEED_MOBILE,
+            `sticky ${STICKY_UNDER_HEADER} z-20 mb-4 rounded-container bg-card/90 px-4 py-2 shadow-soft backdrop-blur-md md:px-6`,
             'flex flex-wrap items-center justify-between gap-4',
           )}
         >

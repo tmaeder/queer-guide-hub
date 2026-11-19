@@ -96,6 +96,7 @@ const CityDetail = lazyRetry(() => import('./pages/CityDetail'));
 const CountryDetail = lazyRetry(() => import('./pages/CountryDetail'));
 const Travel = lazyRetry(() => import('./pages/Travel'));
 const TravelBook = lazyRetry(() => import('./pages/travel/Book'));
+const TravelPlan = lazyRetry(() => import('./pages/travel/Plan'));
 const MapPage = lazyRetry(() => import('./pages/Map'));
 const PersonalityDataSheet = lazyRetry(() => import('./pages/admin/PersonalityDataSheet'));
 const PersonalitiesAdmin = lazyRetry(() => import('./pages/admin/PersonalitiesAdmin'));
@@ -191,7 +192,6 @@ const PostDetail = lazyRetry(() => import('./pages/social/PostDetail'));
 const BlueskyCallback = lazyRetry(() => import('./pages/social/BlueskyCallback'));
 const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
 const TripWorkspace = lazyRetry(() => import('./pages/trips/TripWorkspace'));
-const TripsDiscoverPage = lazyRetry(() => import('./pages/trips/TripsDiscoverPage'));
 const SharedTripPage = lazyRetry(() => import('./pages/trips/SharedTripPage'));
 const TripSubrouteRedirect = lazyRetry(() => import('./pages/trips/TripSubrouteRedirect'));
 const Donate = lazyRetry(() => import('./pages/Donate'));
@@ -786,12 +786,13 @@ export const AppRoutes = () => {
           <Route path="places" element={<LocalizedRedirect to="/travel" />} />
           <Route path="travel" element={<Travel />} />
           <Route path="travel/book" element={<TravelBook />} />
+          <Route path="travel/plan" element={<TravelPlan />} />
           {/* /trips list folded into the /hub office (Plans module). The
           /trips/:id workspace + discover/shared stay top-level. */}
           <Route path="trips" element={<LocalizedRedirect to="/hub/plans" />} />
           <Route path="trips/invitations" element={<TripInvitationsPage />} />
           <Route path="trips/inbox" element={<LocalizedRedirect to="/hub/plans" />} />
-          <Route path="trips/discover" element={<TripsDiscoverPage />} />
+          <Route path="trips/discover" element={<Navigate to="/travel" replace />} />
           <Route path="trips/shared/:token" element={<SharedTripPage />} />
           <Route path="trips/:tripId/today" element={<TripSubrouteRedirect view="today" />} />
           <Route path="trips/:tripId/booklet" element={<TripSubrouteRedirect view="booklet" />} />

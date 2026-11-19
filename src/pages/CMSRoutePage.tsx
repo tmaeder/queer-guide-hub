@@ -14,6 +14,7 @@
  */
 
 import { useMemo } from 'react';
+import { ArrowRight } from '@/components/icons';
 import { LinkToUs } from '@/components/press/LinkToUs';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
@@ -40,13 +41,6 @@ function legalOrder(slug: string): number {
   return i === -1 ? Number.MAX_SAFE_INTEGER : i;
 }
 
-/** Count the stations on a policy without parsing it — used by the hub to say
- *  how long each document is before you open it. */
-function countStations(html: string | null | undefined): number {
-  if (!html) return 0;
-  return (html.match(/<h2\b/gi) ?? []).length;
-}
-
 // ── Skeleton ────────────────────────────────────────────────────────────────
 function PageSkeleton() {
   return (
@@ -64,9 +58,8 @@ function PageSkeleton() {
 }
 
 // ── One index card, used by both the legal hub and generic hubs ─────────────
-function PageIndexCard({ page }: { page: CMSPage }) {
+function PageIndexCard({ page }: { page: Pick<CMSPage, 'slug' | 'title' | 'subtitle'> }) {
   const line = POLICY_LINES[page.slug];
-  const stations = countStations(page.body_html);
 
   return (
     <LocalizedLink
@@ -84,11 +77,6 @@ function PageIndexCard({ page }: { page: CMSPage }) {
         <h2 className="font-display text-headline leading-tight">{page.title}</h2>
         {page.subtitle && (
           <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{page.subtitle}</p>
-        )}
-        {stations > 0 && (
-          <p className="mt-4 text-2xs font-bold uppercase tracking-label text-muted-foreground">
-            <span className="tabular-nums">{stations}</span> sections
-          </p>
         )}
       </div>
     </LocalizedLink>
@@ -182,8 +170,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
     return (
       <PageContainer>
         <header className="border-b border-border-hairline pb-6">
-          <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">Legal</p>
-          <h1 className="mt-4 font-display text-display leading-none tracking-tight md:text-hero">
+          <h1 className="font-display text-display leading-none tracking-tight md:text-hero">
             {page.title}
           </h1>
           {page.subtitle && (
@@ -200,23 +187,43 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
             .map((child) => (
               <PageIndexCard key={child.slug} page={child} />
             ))}
+          {/* Accessibility is its own CMS page (not a child of `legal`, since it
+              is not a contract), but people look for the statement here. */}
+          {!childPages.some((c) => c.slug === 'accessibility') && (
+            <PageIndexCard
+              page={{
+                slug: 'accessibility',
+                title: 'Accessibility',
+                subtitle:
+                  'How the site works with assistive technology, and how to tell us when it doesn’t',
+              }}
+            />
+          )}
         </div>
 
-        <section className="mt-12 bg-muted rounded-container p-6" aria-labelledby="common">
+        <section
+          className="mt-12 rounded-panel bg-card p-6 shadow-soft md:p-8"
+          aria-labelledby="common"
+        >
           <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
             Straight there
           </p>
           <h2 id="common" className="mt-1 font-display text-headline leading-tight">
             Common requests
           </h2>
-          <ul className="mt-4 flex flex-col">
+          <ul className="mt-6 grid grid-cols-1 gap-2 md:grid-cols-2">
             {COMMON_REQUESTS.map((r) => (
-              <li key={r.to} className="border-b border-border-hairline last:border-b-0">
+              <li key={r.to}>
                 <LocalizedLink
                   to={r.to}
-                  className="block py-2 text-13 font-bold text-inherit no-underline transition-colors hover:bg-surface-container"
+                  className="group flex min-h-14 items-center justify-between gap-4 rounded-element bg-muted px-4 py-2 text-15 font-bold text-inherit no-underline transition-colors hover:bg-foreground hover:text-background"
                 >
                   {r.label}
+                  <ArrowRight
+                    size={16}
+                    aria-hidden
+                    className="shrink-0 transition-transform group-hover:translate-x-0.5 rtl:rotate-180"
+                  />
                 </LocalizedLink>
               </li>
             ))}

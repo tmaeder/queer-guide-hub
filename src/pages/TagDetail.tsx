@@ -32,6 +32,24 @@ import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
  */
 
 import { useEffect, useMemo } from 'react';
+import {
+  AlertTriangle,
+  Bookmark,
+  Camera,
+  CalendarDays,
+  FileText,
+  Flag,
+  GitBranch,
+  Info,
+  Lightbulb,
+  MapPin,
+  Newspaper,
+  PenLine,
+  Shapes,
+  ShoppingBag,
+  Stethoscope,
+  Users,
+} from '@/components/icons';
 import { useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -55,7 +73,10 @@ import { extractSections } from '@/lib/htmlSections';
 import { getCategoryShortName } from '@/components/resources/categoryMeta';
 import { resolveTagGlyph } from '@/lib/tags/tagIconography';
 import { PageContainer, SECTION_SCROLL_MARGIN } from '@/components/layout/PageContainer';
-import { KnowledgeReadingLinks, type KnowledgeReadingLink } from '@/components/knowledge/KnowledgeReadingLinks';
+import {
+  KnowledgeReadingLinks,
+  type KnowledgeReadingLink,
+} from '@/components/knowledge/KnowledgeReadingLinks';
 import { SinglePage } from '@/components/transit/SinglePage';
 import { RouteStrip, type RouteStation } from '@/components/transit/RouteStrip';
 import { FactGrid, type Fact } from '@/components/transit/FactGrid';
@@ -145,6 +166,26 @@ function extractFacts(data: Record<string, unknown> | null | undefined): Fact[] 
   }
   return out;
 }
+
+/** One mark per section stop in the page's route strip. */
+const STATION_ICONS: Record<string, typeof Info> = {
+  about: Info,
+  photo: Camera,
+  flag: Flag,
+  'hanky-code': Flag,
+  codes: FileText,
+  'sexual-health': Stethoscope,
+  combinations: AlertTriangle,
+  myths: Lightbulb,
+  workbooks: PenLine,
+  figure: Shapes,
+  taxonomy: GitBranch,
+  venues: MapPin,
+  events: CalendarDays,
+  news: Newspaper,
+  shop: ShoppingBag,
+  communities: Users,
+};
 
 export default function TagDetail() {
   const taxonomyRevision = useReferenceTaxonomy('pride_flag');
@@ -416,7 +457,7 @@ export default function TagDetail() {
     if (usage?.group_count) {
       s.push({ id: 'communities', title: t('tags.detail.communities', 'Communities') });
     }
-    return s;
+    return s.map((x) => (x.depth === 2 ? x : { ...x, icon: STATION_ICONS[x.id] ?? Bookmark }));
     // medicalCodeCount belongs here: the codes RPC resolves AFTER the first
     // render, so omitting it would pin the strip to the pre-fetch value of 0
     // and the stop would never appear. interactionCount, hasStiProfile,
@@ -666,13 +707,17 @@ export default function TagDetail() {
     });
   }
   if (hasSources) {
-    readingLinks.push({ href: '#term-sources', label: t('knowledge.sources', 'Sources and references') });
+    readingLinks.push({
+      href: '#term-sources',
+      label: t('knowledge.sources', 'Sources and references'),
+    });
   }
   if (tag.long_description) {
     readingLinks.push({ href: '#about', label: t('knowledge.fullEntry', 'Read the full entry') });
   }
   if (readingLinks.length < 3) {
-    const categorySlug = childSlug ?? parentSlug ?? (primary?.level === 0 ? primary.slug : undefined);
+    const categorySlug =
+      childSlug ?? parentSlug ?? (primary?.level === 0 ? primary.slug : undefined);
     readingLinks.push({
       href: categorySlug ? `/tags/c/${encodeURIComponent(categorySlug)}` : '/tags',
       label: categorySlug
@@ -788,7 +833,11 @@ export default function TagDetail() {
         </SidebarCard>
       )}
 
-      <div id="term-sources" tabIndex={-1} className={`grid gap-4 empty:hidden ${SECTION_SCROLL_MARGIN}`}>
+      <div
+        id="term-sources"
+        tabIndex={-1}
+        className={`grid gap-4 empty:hidden ${SECTION_SCROLL_MARGIN}`}
+      >
         {/* Above "Elsewhere" on purpose: the law a term comes from outranks
             "you can also read about this on Wikipedia". Sits alongside the
             diagnostic-codes pointer below — a term is either clinical or legal,
@@ -937,13 +986,18 @@ export default function TagDetail() {
           ENTITY_KIND_LABELS[(tag as { entity_kind?: string }).entity_kind ?? ''] ?? undefined
         }
         density="dense"
-        lead={displayDescription ? (
-          <span id={!tag.long_description ? 'about' : undefined} className={SECTION_SCROLL_MARGIN}>
-            <GlossaryLinkedText text={displayDescription} currentSlug={tag.slug} />
-          </span>
-        ) : !tag.long_description
-          ? t('tags.detail.noDefinition', 'No definition has been written for this term yet.')
-          : undefined}
+        lead={
+          displayDescription ? (
+            <span
+              id={!tag.long_description ? 'about' : undefined}
+              className={SECTION_SCROLL_MARGIN}
+            >
+              <GlossaryLinkedText text={displayDescription} currentSlug={tag.slug} />
+            </span>
+          ) : !tag.long_description ? (
+            t('tags.detail.noDefinition', 'No definition has been written for this term yet.')
+          ) : undefined
+        }
         tags={
           <div className="grid gap-4">
             {!displayDescription && facts.length > 0 && <FactGrid facts={facts} />}

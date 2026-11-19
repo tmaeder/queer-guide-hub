@@ -94,7 +94,7 @@ export function usePopupManager({
       const popup = new maplibregl.Popup({
         offset: 16,
         closeButton: true,
-        maxWidth: '260px',
+        maxWidth: '280px',
         className: 'venue-rich-popup',
       })
         .setLngLat(lngLat)

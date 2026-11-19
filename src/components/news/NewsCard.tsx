@@ -272,14 +272,16 @@ const NewsCardImpl = ({
               {dek}
             </p>
           )}
-          <div className="mt-6 flex items-center gap-4 text-2xs uppercase tracking-wider opacity-90">
+          {/* Dark plate, not bg-muted: these sit on a photo with white type, and
+              a light chip put white text on near-white (~1.4:1). */}
+          <div className="mt-6 flex items-center gap-2 text-2xs font-bold uppercase tracking-wider">
             {authorName && (
-              <span className="inline-flex items-center gap-1 rounded-element bg-muted px-2 py-1">
+              <span className="inline-flex items-center gap-1 rounded-element bg-black/55 px-2 py-1 text-white backdrop-blur-sm">
                 By {authorName}
               </span>
             )}
             {readingTime !== null && (
-              <span className="inline-flex items-center gap-1 rounded-element bg-muted px-2 py-1">
+              <span className="inline-flex items-center gap-1 rounded-element bg-black/55 px-2 py-1 text-white backdrop-blur-sm">
                 <BookOpen size={12} aria-hidden="true" /> {readingTime} min read
               </span>
             )}

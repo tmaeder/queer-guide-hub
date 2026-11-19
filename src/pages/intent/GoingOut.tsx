@@ -1,3 +1,4 @@
+import { CalendarDays, Compass, MapPin, Moon, ShieldCheck, Sparkles } from '@/components/icons';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -57,6 +58,7 @@ export default function GoingOut() {
   const sections: SectionDef[] = [
     {
       id: 'whats-on',
+      icon: CalendarDays,
       label: "What's on",
       content: (
         <UpcomingEvents eventsResult={eventsResult} cityName={cityName} variant="going-out" />
@@ -69,6 +71,7 @@ export default function GoingOut() {
     },
     {
       id: 'plan',
+      icon: MapPin,
       label: 'Where to go',
       kicker: cityName ? `Nightlife in ${cityName}` : 'Nightlife near you',
       content:
@@ -121,6 +124,7 @@ export default function GoingOut() {
     },
     {
       id: 'scenes',
+      icon: Sparkles,
       label: 'Scenes',
       kicker: 'Neighborhoods with their own gravity',
       // "Self-hiding" was only ever true of the RAIL, not the SECTION.
@@ -134,6 +138,7 @@ export default function GoingOut() {
     },
     {
       id: 'getting-home',
+      icon: Moon,
       label: 'Getting home',
       kicker: 'When the last tram leaves',
       hidden: !transit || transit.length === 0,
@@ -141,6 +146,7 @@ export default function GoingOut() {
     },
     {
       id: 'safety',
+      icon: ShieldCheck,
       label: 'Before you go',
       content: (
         <div className="going-out-safety">
@@ -162,6 +168,7 @@ export default function GoingOut() {
     },
     {
       id: 'elsewhere',
+      icon: Compass,
       label: 'Elsewhere',
       kicker: 'Cities worth the trip',
       content: (

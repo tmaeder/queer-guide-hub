@@ -37,7 +37,7 @@ export function BrandIndexRow({ brand }: { brand: DirectoryBrand }) {
   const count = brand.product_count ?? 0;
 
   return (
-    <div className="group relative flex items-center gap-4 border-b border-border-hairline px-2 py-2 transition-colors duration-fast hover:bg-surface-container-low">
+    <div className="group relative flex items-center gap-4 rounded-element px-2 py-2 transition-colors duration-fast hover:bg-card hover:shadow-soft">
       <BrandMark
         name={brand.display_name}
         logoUrl={brand.logo_url}
@@ -47,7 +47,7 @@ export function BrandIndexRow({ brand }: { brand: DirectoryBrand }) {
         padding="p-1"
       />
 
-      <span className="min-w-0 flex-1 truncate text-title font-bold leading-tight">
+      <span className="min-w-0 flex-1 truncate text-15 font-bold leading-tight group-hover:underline">
         {brand.display_name}
       </span>
 
@@ -61,7 +61,7 @@ export function BrandIndexRow({ brand }: { brand: DirectoryBrand }) {
         </span>
       )}
 
-      <span className="shrink-0 text-13 tabular-nums text-muted-foreground">
+      <span className="shrink-0 rounded-badge bg-muted px-2 py-0.5 text-xs font-bold tabular-nums text-muted-foreground">
         {count.toLocaleString()}
         {/* The column header is implied by alignment, which a screen reader
             cannot see — so each figure carries its own unit. */}

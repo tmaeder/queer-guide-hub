@@ -219,3 +219,41 @@ export async function fetchHomeVillages(
   const unique = [...new Map(rows.map((r) => [r.id, r])).values()].slice(0, limit);
   return unique.map(({ cities, ...v }) => ({ ...v, cityName: cities?.name ?? null }));
 }
+
+export interface CityHighlight {
+  title: string;
+  startDate: string;
+}
+
+/**
+ * Cities with a Pride or festival in the next `days` days, soonest first.
+ * One entry per city (its earliest such event).
+ */
+export async function fetchUpcomingHighlightCities(
+  days = 60,
+  limit = 60,
+): Promise<Map<string, CityHighlight>> {
+  const now = new Date();
+  const until = new Date(now.getTime() + days * 86_400_000);
+  const { data, error } = await supabase
+    .from('events')
+    .select('city_id, title, start_date')
+    .in('event_type', ['pride', 'festival'])
+    .gte('start_date', now.toISOString())
+    .lte('start_date', until.toISOString())
+    .not('city_id', 'is', null)
+    .is('duplicate_of_id', null)
+    .order('start_date', { ascending: true })
+    .limit(limit);
+  if (error) throw error;
+  const out = new Map<string, CityHighlight>();
+  for (const row of (data ?? []) as {
+    city_id: string;
+    title: string;
+    start_date: string;
+  }[]) {
+    if (!out.has(row.city_id))
+      out.set(row.city_id, { title: row.title, startDate: row.start_date });
+  }
+  return out;
+}

@@ -53,8 +53,8 @@ export function VillagesRail({ visitedFilter = 'all', limit = 8 }: Props) {
         </LocalizedLink>
       </header>
 
-      <ScrollArea className="-mx-4 px-4">
-        <ul className="flex gap-4 pb-4">
+      <ScrollArea className="-mx-6 -mt-4 -mb-8">
+        <ul className="flex gap-4 px-6 pt-4 pb-12">
           {filtered.map((village) => (
             <li key={village.id} className="w-72 shrink-0 snap-start">
               <VillageCard village={village} />

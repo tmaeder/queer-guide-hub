@@ -216,7 +216,7 @@ export function EditorialDetailLayout({
         {banner ? <div className="mb-6">{banner}</div> : null}
 
         <SectionNav
-          items={visibleSections.map((s) => ({ id: s.id, label: s.label }))}
+          items={visibleSections.map((s) => ({ id: s.id, label: s.label, icon: s.icon }))}
           activeId={activeId}
           onSelect={selectSection}
           variant={sectionNavVariant}

@@ -1,4 +1,5 @@
-import { useEffect, useRef, type CSSProperties } from 'react';
+import { createElement, useEffect, useRef, type CSSProperties } from 'react';
+import { Fingerprint, Heart, Shirt, UserRound, Users, type LucideIcon } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { FilterChip } from '@/components/transit/FilterChip';
@@ -56,12 +57,12 @@ import { TRACK_BG, TRACK_TEXT } from '@/components/transit/routeBulletMap';
  * reserved for the two criminal-exposure-with-death classes.
  */
 
-const LENS_OPTIONS: readonly { value: RightsLens; label: string }[] = [
-  { value: 'all', label: 'Everyone' },
-  { value: 'so', label: 'Sexual orientation' },
-  { value: 'gi', label: 'Gender identity' },
-  { value: 'ge', label: 'Gender expression' },
-  { value: 'sc', label: 'Sex characteristics' },
+const LENS_OPTIONS: readonly { value: RightsLens; label: string; icon: LucideIcon }[] = [
+  { value: 'all', label: 'Everyone', icon: Users },
+  { value: 'so', label: 'Sexual orientation', icon: Heart },
+  { value: 'gi', label: 'Gender identity', icon: UserRound },
+  { value: 'ge', label: 'Gender expression', icon: Shirt },
+  { value: 'sc', label: 'Sex characteristics', icon: Fingerprint },
 ];
 
 interface RightsMapControlsProps {
@@ -104,7 +105,7 @@ export function RightsMapLegend({
       // right on a phone is "Protected" and "No data" — not the death classes.
       // That is the correct end to lose on this page, and it is a consequence
       // of the order, so it is stated here rather than discovered later.
-      className="-mx-1 flex items-end gap-4 overflow-x-auto px-1 pb-1 scrollbar-thin"
+      className="-mx-2 -my-2 flex items-stretch gap-2 overflow-x-auto px-2 py-2 pb-4 scrollbar-thin"
       aria-label={t('rights.map.legend', 'Country counts by status')}
     >
       {MAP_CLASS_ORDER.filter((cls) => counts[cls] > 0).map((cls) => {
@@ -116,23 +117,25 @@ export function RightsMapLegend({
               aria-pressed={isActive}
               onClick={() => onActiveClassChange(isActive ? null : cls)}
               className={cn(
-                'flex flex-col items-start gap-1 rounded-element px-2 py-1',
-                isActive && 'bg-muted',
+                'flex h-full items-center gap-2.5 rounded-element bg-card px-2.5 py-2 text-start shadow-soft transition-colors',
+                isActive ? 'bg-foreground text-background' : 'hover:bg-muted',
               )}
             >
               <span
                 aria-hidden="true"
-                className="inline-block h-4 w-4 shrink-0 rounded-badge border border-border-hairline"
+                className="inline-block h-6 w-6 shrink-0 rounded-badge border border-track-ring"
                 style={legendSwatchStyle(cls)}
               />
-              {/* `text-headline`, not `text-title`: rank 4 is Space Grotesk and
-                  never Anton (src/test/__tests__/rankFourFace.test.ts — a
-                  source scan, because the ESLint design blocks can be
-                  silently replaced wholesale). The legend counts want the
-                  display face, so they take the rank that carries it. */}
-              <span className="font-display text-headline tabular-nums">{counts[cls]}</span>
-              <span className="text-13 text-muted-foreground">
-                {t(`rights.map.class.${cls}`, MAP_CLASS_LABEL[cls])}
+              <span className="flex flex-col leading-tight">
+                <span className="text-title font-bold tabular-nums">{counts[cls]}</span>
+                <span
+                  className={cn(
+                    'whitespace-nowrap text-xs',
+                    isActive ? 'text-background/80' : 'text-muted-foreground',
+                  )}
+                >
+                  {t(`rights.map.class.${cls}`, MAP_CLASS_LABEL[cls])}
+                </span>
               </span>
             </button>
           </li>
@@ -244,7 +247,12 @@ export function RightsMapControls({
                       active={isActive}
                       data-topic={stationTopic.slug}
                       onClick={() => onTopicChange(stationTopic)}
-                      label={topicListLabel(stationTopic, t)}
+                      label={
+                        <>
+                          {createElement(stationTopic.icon, { size: 14, 'aria-hidden': true })}
+                          {topicListLabel(stationTopic, t)}
+                        </>
+                      }
                       // The active chip keeps the TRACK fill instead of
                       // FilterChip's ink plate: the track colour is this
                       // control's wayfinding and the map below is drawn in it.
@@ -312,7 +320,12 @@ export function RightsMapControls({
                       : undefined
                   }
                   onClick={lensDisabled ? undefined : () => onLensChange(option.value)}
-                  label={t(`rights.map.lens.${option.value}`, option.label)}
+                  label={
+                    <>
+                      {createElement(option.icon, { size: 14, 'aria-hidden': true })}
+                      {t(`rights.map.lens.${option.value}`, option.label)}
+                    </>
+                  }
                   className={cn(
                     'whitespace-nowrap',
                     !isActive && segmentChip,
