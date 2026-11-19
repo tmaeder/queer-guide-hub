@@ -84,8 +84,8 @@ export default function EmailUpdates() {
     }
   }
   return (
-    <PageContainer size="form" className="space-y-8">
-      <header className="space-y-4">
+    <PageContainer className="grid gap-8 lg:grid-cols-[2fr_3fr] lg:items-start lg:gap-12">
+      <header className="space-y-4 lg:sticky lg:top-32">
         <span
           aria-hidden
           className="grid h-14 w-14 place-items-center rounded-full bg-foreground text-background"

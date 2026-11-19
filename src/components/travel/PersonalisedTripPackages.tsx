@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { addDays, addMonths, format, nextFriday, startOfDay } from 'date-fns';
 import {
   ArrowRight,
@@ -11,6 +11,7 @@ import {
   Crown,
   Flag,
   Flame,
+  Sun,
   Heart,
   Mountain,
   Music,
@@ -53,7 +54,14 @@ import { buildTrainlineUrl } from '@/utils/transport/trainlineUrl';
 import type { HotelTypeOption } from '@/components/booking/HotelSearchForm';
 import type { TransportMode } from '@/components/trips/tripLegs';
 
-type Mood = 'nightlife' | 'slow' | 'pride' | 'kinky' | 'culture' | 'outdoors';
+type Mood = 'nightlife' | 'slow' | 'pride' | 'kinky' | 'nudist' | 'culture' | 'outdoors';
+
+/** Themed templates surface only for their own mood. */
+const MOOD_THEME: Partial<Record<Mood, TripTemplate['theme']>> = {
+  kinky: 'kink',
+  nudist: 'nudist',
+};
+const fitsMood = (tpl: TripTemplate, mood: Mood) => !tpl.theme || MOOD_THEME[mood] === tpl.theme;
 type Timing = 'weekend' | 'month' | 'flexible' | 'custom';
 type Budget = 'easy' | 'comfortable' | 'special';
 
@@ -66,6 +74,12 @@ const MOODS: Array<{ value: Mood; label: string; hint: string; icon: typeof Plan
     label: 'Kinky',
     hint: 'Folsom, Darklands, Easter Berlin and more',
     icon: Flame,
+  },
+  {
+    value: 'nudist',
+    label: 'Nudist',
+    hint: 'Nude beaches and naturist resorts',
+    icon: Sun,
   },
   {
     value: 'culture',
@@ -130,7 +144,7 @@ function datesFor(timing: Timing, days: number, custom?: { start: string; end: s
 function scoreTemplate(template: TripTemplate, mood: Mood, timing: Timing) {
   let score = 0;
   // Kink weekends lead only when asked for, and never surface otherwise.
-  if (template.theme === 'kink') return mood === 'kinky' ? 20 : -20;
+  if (template.theme) return fitsMood(template, mood) ? 20 : -20;
   if (mood === 'pride' && template.source === 'event') score += 10;
   if (mood === 'nightlife' && template.vibe === 'nightlife') score += 9;
   if (mood === 'slow' && template.vibe === 'slow') score += 9;
@@ -150,12 +164,73 @@ function ChipGroup<T extends string>({
 }: {
   label: string;
   value: T;
-  options: Array<{ value: T; label: string; hint?: string; icon?: typeof Plane }>;
+  options: Array<{
+    value: T;
+    label: string;
+    hint?: string;
+    icon?: typeof Plane;
+    image?: string | null;
+  }>;
   onChange: (value: T) => void;
 }) {
+  // Photo variant: when the options carry pictures, show them as image cards.
+  if (options.some((o) => o.image)) {
+    return (
+      <fieldset>
+        <legend className="mb-4 text-15 font-bold">{label}</legend>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+          {options.map((option) => {
+            const on = value === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={on}
+                onClick={() => onChange(option.value)}
+                className={`group relative flex h-40 flex-col justify-end overflow-hidden rounded-container bg-foreground p-4 text-left text-white shadow-soft ${
+                  on ? 'ring-4 ring-foreground ring-offset-2 ring-offset-background' : ''
+                }`}
+              >
+                {option.image ? (
+                  <span className="absolute inset-0 [&_img]:h-full [&_img]:w-full [&_img]:object-cover">
+                    <CardImage src={option.image} alt="" height={160} className="h-full w-full" />
+                  </span>
+                ) : null}
+                <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/5" />
+                {option.icon ? (
+                  <span
+                    aria-hidden
+                    className={`absolute left-4 top-4 grid h-9 w-9 place-items-center rounded-full ${
+                      on ? 'bg-white text-black' : 'bg-black/45 text-white backdrop-blur-sm'
+                    }`}
+                  >
+                    <option.icon size={18} />
+                  </span>
+                ) : null}
+                {on ? (
+                  <span className="absolute right-4 top-4 rounded-badge bg-white px-2 py-0.5 text-2xs font-bold uppercase tracking-label text-black">
+                    Picked
+                  </span>
+                ) : null}
+                <span className="relative block text-15 font-bold leading-tight">
+                  {option.label}
+                </span>
+                {option.hint ? (
+                  <span className="relative mt-0.5 block text-13 leading-snug text-white/80">
+                    {option.hint}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
+    );
+  }
+
   return (
     <fieldset>
-      <legend className="mb-4 text-sm font-bold">{label}</legend>
+      <legend className="mb-4 text-15 font-bold">{label}</legend>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
           <button
@@ -163,15 +238,24 @@ function ChipGroup<T extends string>({
             type="button"
             aria-pressed={value === option.value}
             onClick={() => onChange(option.value)}
-            className={`flex min-h-11 items-center gap-2.5 rounded-element px-4 py-2 text-left transition-colors ${
+            className={`flex min-h-14 items-center gap-2.5 rounded-container px-4 py-2 text-left transition-colors ${
               value === option.value
-                ? 'bg-foreground text-background'
-                : 'bg-card shadow-soft hover:bg-muted'
+                ? 'bg-foreground text-background shadow-soft'
+                : 'bg-muted hover:bg-surface-container-high'
             }`}
           >
-            {option.icon ? <option.icon size={18} aria-hidden className="shrink-0" /> : null}
+            {option.icon ? (
+              <span
+                aria-hidden
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${
+                  value === option.value ? 'bg-background/15' : 'bg-card'
+                }`}
+              >
+                <option.icon size={18} />
+              </span>
+            ) : null}
             <span>
-              <span className="block text-sm font-semibold">{option.label}</span>
+              <span className="block text-15 font-bold">{option.label}</span>
               {option.hint ? (
                 <span
                   className={`block text-xs ${value === option.value ? 'text-background/70' : 'text-muted-foreground'}`}
@@ -256,7 +340,7 @@ export function PersonalisedTripPackages() {
   const places = useMemo(() => {
     const seen = new Map<string, number>();
     for (const tpl of templates ?? []) {
-      if (tpl.theme === 'kink' && mood !== 'kinky') continue;
+      if (!fitsMood(tpl, mood)) continue;
       const city = tpl.cities.split(',')[0]?.trim();
       if (city) seen.set(city, (seen.get(city) ?? 0) + 1);
     }
@@ -266,15 +350,38 @@ export function PersonalisedTripPackages() {
       .map(([c]) => c);
   }, [templates, mood]);
 
+  // Each mood shows the cover of the trip it would lead with.
+  const moodOptions = useMemo(() => {
+    // Each mood shows the cover of a trip it would lead with, never one already
+    // used by an earlier mood card.
+    const used = new Set<string>();
+    return MOODS.map((m) => {
+      const top = [...(templates ?? [])]
+        .filter(
+          (tpl) => tpl.coverImageUrl && fitsMood(tpl, m.value) && !used.has(tpl.coverImageUrl),
+        )
+        .sort((a, b) => scoreTemplate(b, m.value, timing) - scoreTemplate(a, m.value, timing))[0];
+      if (top?.coverImageUrl) used.add(top.coverImageUrl);
+      return { ...m, image: top?.coverImageUrl ?? null };
+    });
+  }, [templates, timing]);
+
   const ranked = useMemo(
     () =>
       [...(templates ?? [])]
-        .filter((tpl) => mood === 'kinky' || tpl.theme !== 'kink')
+        .filter((tpl) => fitsMood(tpl, mood))
         .filter((tpl) => !place || tpl.cities.toLowerCase().includes(place.toLowerCase()))
         .sort((a, b) => scoreTemplate(b, mood, timing) - scoreTemplate(a, mood, timing)),
     [templates, mood, timing, place],
   );
-  const best = ranked[0];
+  const [step, setStep] = useState(1);
+  const [pickedId, setPickedId] = useState<string | null>(null);
+  const best = ranked.find((tpl) => tpl.id === pickedId) ?? ranked[0];
+  const wizardTop = useRef<HTMLDivElement>(null);
+  const goTo = (n: number) => {
+    setStep(n);
+    wizardTop.current?.scrollIntoView({ block: 'start' });
+  };
   // A trip built around an event runs on the event's dates, not the timing chip.
   const dates = best
     ? best.event && timing !== 'custom'
@@ -383,349 +490,394 @@ export function PersonalisedTripPackages() {
         get there. Build it into a trip in one step.
       </p>
 
-      <Card className="p-6 sm:p-8">
-        <StepHeading
-          n={1}
-          title="Tell us the mood"
-          hint="A few quick choices reshuffle the pick."
-        />
-        <div className="mt-6 grid gap-6 lg:grid-cols-3">
-          <ChipGroup label="Mood" value={mood} options={MOODS} onChange={setMood} />
-          <div className="flex flex-col gap-4">
-            <ChipGroup label="When?" value={timing} options={TIMINGS} onChange={setTiming} />
-            {timing === 'custom' && (
-              <div className="flex flex-wrap gap-4">
-                <div className="flex flex-col gap-1.5 text-sm font-medium">
-                  <label htmlFor="trip-custom-start">From</label>
-                  <Input
-                    id="trip-custom-start"
-                    type="date"
-                    value={customDates.start}
-                    min={format(new Date(), 'yyyy-MM-dd')}
-                    onChange={(e) => setCustomDates((d) => ({ ...d, start: e.target.value }))}
-                    className="w-44"
-                  />
+      <div ref={wizardTop} className="scroll-mt-28">
+        <WizardSteps step={step} canChoose={!!best} onGo={goTo} />
+      </div>
+
+      {step === 1 && (
+        <Card className="p-6 sm:p-8">
+          <StepHeading
+            n={1}
+            title="Tell us the mood"
+            hint="A few quick choices reshuffle the pick."
+          />
+          <div className="mt-6 grid gap-6 lg:grid-cols-3">
+            <ChipGroup label="Mood" value={mood} options={moodOptions} onChange={setMood} />
+            <div className="flex flex-col gap-4">
+              <ChipGroup label="When?" value={timing} options={TIMINGS} onChange={setTiming} />
+              {timing === 'custom' && (
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex flex-col gap-1.5 text-sm font-medium">
+                    <label htmlFor="trip-custom-start">From</label>
+                    <Input
+                      id="trip-custom-start"
+                      type="date"
+                      value={customDates.start}
+                      min={format(new Date(), 'yyyy-MM-dd')}
+                      onChange={(e) => setCustomDates((d) => ({ ...d, start: e.target.value }))}
+                      className="w-44"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5 text-sm font-medium">
+                    <label htmlFor="trip-custom-end">To</label>
+                    <Input
+                      id="trip-custom-end"
+                      type="date"
+                      value={customDates.end}
+                      min={customDates.start || format(new Date(), 'yyyy-MM-dd')}
+                      onChange={(e) => setCustomDates((d) => ({ ...d, end: e.target.value }))}
+                      className="w-44"
+                    />
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1.5 text-sm font-medium">
-                  <label htmlFor="trip-custom-end">To</label>
-                  <Input
-                    id="trip-custom-end"
-                    type="date"
-                    value={customDates.end}
-                    min={customDates.start || format(new Date(), 'yyyy-MM-dd')}
-                    onChange={(e) => setCustomDates((d) => ({ ...d, end: e.target.value }))}
-                    className="w-44"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-          <ChipGroup label="Budget" value={budget} options={BUDGETS} onChange={setBudget} />
-          {places.length > 1 && (
-            <fieldset>
-              <legend className="mb-4 text-sm font-bold">
-                Where <span className="font-normal text-muted-foreground">(optional)</span>
-              </legend>
-              <div className="flex flex-wrap gap-2">
-                <FilterChip
-                  active={place === null}
-                  onClick={() => setPlace(null)}
-                  label={
-                    <>
-                      <Compass size={14} aria-hidden /> Anywhere
-                    </>
-                  }
-                />
-                {places.map((c) => (
+              )}
+            </div>
+            <ChipGroup label="Budget" value={budget} options={BUDGETS} onChange={setBudget} />
+            {places.length > 1 && (
+              <fieldset>
+                <legend className="mb-4 text-sm font-bold">
+                  Where <span className="font-normal text-muted-foreground">(optional)</span>
+                </legend>
+                <div className="flex flex-wrap gap-2">
                   <FilterChip
-                    key={c}
-                    active={place === c}
-                    onClick={() => setPlace(place === c ? null : c)}
+                    active={place === null}
+                    onClick={() => setPlace(null)}
                     label={
                       <>
-                        <MapPin size={14} aria-hidden /> {c}
+                        <Compass size={14} aria-hidden /> Anywhere
                       </>
                     }
                   />
-                ))}
-              </div>
-            </fieldset>
-          )}
-          <fieldset>
-            <legend className="mb-4 text-sm font-bold">
-              Travellers <span className="font-normal text-muted-foreground">(optional)</span>
-            </legend>
-            <div className="inline-flex items-center gap-1 rounded-element bg-card p-1 shadow-soft">
-              <button
-                type="button"
-                onClick={() => setTravellers((n) => Math.max(1, n - 1))}
-                disabled={travellers <= 1}
-                aria-label="One traveller fewer"
-                className="grid size-11 place-items-center rounded-element text-title font-bold hover:bg-muted disabled:opacity-40"
-              >
-                −
-              </button>
-              <span
-                className="inline-flex min-w-24 items-center justify-center gap-2 text-15 font-bold tabular-nums"
-                aria-live="polite"
-              >
-                <Users size={16} aria-hidden />
-                {travellers} {travellers === 1 ? 'person' : 'people'}
-              </span>
-              <button
-                type="button"
-                onClick={() => setTravellers((n) => Math.min(9, n + 1))}
-                disabled={travellers >= 9}
-                aria-label="One traveller more"
-                className="grid size-11 place-items-center rounded-element text-title font-bold hover:bg-muted disabled:opacity-40"
-              >
-                +
-              </button>
-            </div>
-          </fieldset>
-        </div>
-      </Card>
-
-      {isLoading && !best ? (
-        <Skeleton variant="rectangular" className="h-[640px] rounded-container" />
-      ) : best ? (
-        <>
-          <Card className="overflow-hidden">
-            <div className="relative">
-              <CardImage
-                src={best.coverImageUrl}
-                alt={`${best.cities} travel inspiration`}
-                height={320}
-                priority
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
-                <p className="text-2xs font-bold uppercase tracking-wide text-white/80">
-                  Step 2 · Your package
-                </p>
-                <h3 className="mt-2 max-w-2xl text-headline font-bold">{best.title}</h3>
-                <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/85">
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin size={15} /> {best.cities}
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <CalendarDays size={15} /> {best.days} days
-                  </span>
-                  {best.venueCount ? <span>{best.venueCount} matched places</span> : null}
-                </p>
-              </div>
-            </div>
-
-            <ol className="divide-y divide-border">
-              <li className="p-6 sm:p-8">
-                <PackagePart icon={Sparkles} kicker="What you go for" title="Event & places" />
-                <div className="mt-4 grid gap-4">
-                  {best.event ? (
-                    <LocalizedLink
-                      to={`/events/${best.event.slug}`}
-                      className="block rounded-element bg-surface-container p-4 no-underline hover:bg-muted"
-                    >
-                      <span className="block text-xs font-bold uppercase text-muted-foreground">
-                        Anchor event
-                      </span>
-                      <span className="mt-1 block font-bold">{best.event.title}</span>
-                      <span className="mt-1 block text-sm text-muted-foreground">
-                        {best.event.startDate}
-                      </span>
-                    </LocalizedLink>
-                  ) : null}
-                  <InlineCitySearch city={best.cities} start={dates?.start} end={dates?.end} />
-                </div>
-              </li>
-              <li className="p-6 sm:p-8">
-                <PackagePart icon={BedDouble} kicker="Where you sleep" title="Stay your way" />
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {STAY_TYPES.map((type) => (
-                    <button
-                      key={type.value}
-                      type="button"
-                      aria-pressed={stayType === type.value}
-                      onClick={() => setStayType(type.value)}
-                      className={`inline-flex min-h-11 items-center gap-2 rounded-element px-4 py-2 text-sm font-semibold ${
-                        stayType === type.value
-                          ? 'bg-foreground text-background'
-                          : 'bg-card shadow-soft hover:bg-muted'
-                      }`}
-                    >
-                      <type.icon size={16} aria-hidden />
-                      {type.label}
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-6 grid gap-4">
-                  {staysLoading ? (
-                    <Skeleton variant="rectangular" className="h-24 rounded-element" />
-                  ) : bookableStays.length ? (
-                    bookableStays.map((stay) => (
-                      <a
-                        key={stay.id}
-                        href={stay.bookingUrl}
-                        target="_blank"
-                        rel="noopener noreferrer sponsored"
-                        className="grid grid-cols-[72px_1fr_auto] items-center gap-4 rounded-element bg-surface-container p-4 no-underline hover:bg-muted"
-                      >
-                        {stay.imageUrl ? (
-                          <img
-                            src={stay.imageUrl}
-                            alt=""
-                            className="h-16 w-[72px] rounded-element object-cover"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="grid h-16 w-[72px] place-items-center rounded-element bg-muted">
-                            <BedDouble />
-                          </div>
-                        )}
-                        <span className="min-w-0">
-                          <span className="block truncate font-bold">{stay.title}</span>
-                          <span className="block text-xs text-muted-foreground">Live result</span>
-                        </span>
-                        <span className="text-sm font-bold">
-                          {stay.currency} {Math.round(stay.price)}
-                        </span>
-                      </a>
-                    ))
-                  ) : (
-                    <QueerGuideStays city={best.cities} type={stayType} />
-                  )}
-                </div>
-                <Button
-                  variant="outline"
-                  className="mt-4 w-full"
-                  onClick={() => navigate(bookingUrl('hotels', stayType))}
-                >
-                  <Hotel /> Compare all {STAY_TYPES.find((type) => type.value === stayType)?.label}
-                </Button>
-              </li>
-              <li className="p-6 sm:p-8">
-                <PackagePart icon={Plane} kicker="Door to door" title="How you get there" />
-                {/* One choice, one origin, one button: the mode picks the
-                    provider so the reader never chooses transport twice. */}
-                <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Arrive by">
-                  {ARRIVAL_MODES.map(({ value, label, icon: Icon }) => (
+                  {places.map((c) => (
                     <FilterChip
-                      key={value}
-                      active={arrivalMode === value}
-                      onClick={() => setArrivalMode(value)}
+                      key={c}
+                      active={place === c}
+                      onClick={() => setPlace(place === c ? null : c)}
                       label={
                         <>
-                          <Icon size={16} aria-hidden />
-                          {label}
+                          <MapPin size={14} aria-hidden /> {c}
                         </>
                       }
                     />
                   ))}
                 </div>
-                {arrivalMode === 'drive' ? (
-                  <div className="mt-4">
-                    <CarRentalSection
-                      city={best.cities}
-                      checkIn={dates?.start}
-                      checkOut={dates?.end}
-                      compact
-                    />
-                  </div>
-                ) : arrivalMode === 'ferry' ? (
-                  <p className="mt-4 text-sm text-muted-foreground">
-                    Add the sailing as a leg once the trip is built.
+              </fieldset>
+            )}
+            <fieldset>
+              <legend className="mb-4 text-sm font-bold">
+                Travellers <span className="font-normal text-muted-foreground">(optional)</span>
+              </legend>
+              <div className="inline-flex items-center gap-1 rounded-element bg-card p-1 shadow-soft">
+                <button
+                  type="button"
+                  onClick={() => setTravellers((n) => Math.max(1, n - 1))}
+                  disabled={travellers <= 1}
+                  aria-label="One traveller fewer"
+                  className="grid size-11 place-items-center rounded-element text-title font-bold hover:bg-muted disabled:opacity-40"
+                >
+                  −
+                </button>
+                <span
+                  className="inline-flex min-w-24 items-center justify-center gap-2 text-15 font-bold tabular-nums"
+                  aria-live="polite"
+                >
+                  <Users size={16} aria-hidden />
+                  {travellers} {travellers === 1 ? 'person' : 'people'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setTravellers((n) => Math.min(9, n + 1))}
+                  disabled={travellers >= 9}
+                  aria-label="One traveller more"
+                  className="grid size-11 place-items-center rounded-element text-title font-bold hover:bg-muted disabled:opacity-40"
+                >
+                  +
+                </button>
+              </div>
+            </fieldset>
+          </div>
+        </Card>
+      )}
+
+      {isLoading && !best ? (
+        <Skeleton variant="rectangular" className="h-[640px] rounded-container" />
+      ) : best ? (
+        <>
+          {step >= 3 && step <= 5 && (
+            <Card className="overflow-hidden">
+              <div className="relative">
+                <CardImage
+                  src={best.coverImageUrl}
+                  alt={`${best.cities} travel inspiration`}
+                  height={320}
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
+                  <p className="text-2xs font-bold uppercase tracking-wide text-white/80">
+                    Your package
                   </p>
-                ) : (
-                  <>
-                    {arrivalMode === 'flight' && (
-                      <div className="mt-4">
-                        <InlineFlightDeals cityId={best.primaryCityId} city={best.cities} />
-                      </div>
-                    )}
-                    <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                      {arrivalMode !== 'flight' && (
-                        <Input
-                          id="package-origin"
-                          aria-label="Starting from"
-                          className="sm:max-w-xs"
-                          value={origin}
-                          onChange={(event) => setOrigin(event.target.value)}
-                          placeholder="Starting from…"
-                        />
-                      )}
-                      {arrivalMode === 'flight' ? (
-                        <Button variant="outline" onClick={() => navigate(bookingUrl('flights'))}>
-                          <Plane /> Compare all flights to {best.cities}
-                        </Button>
-                      ) : (
-                        <Button asChild={!!origin} disabled={!origin}>
-                          {origin ? (
-                            <a
-                              href={
-                                arrivalMode === 'rail'
-                                  ? buildTrainlineUrl({
-                                      origin,
-                                      destination: best.cities,
-                                      departDate: dates?.start,
-                                      returnDate: dates?.end,
-                                    })
-                                  : buildFlixbusUrl({
-                                      origin,
-                                      destination: best.cities,
-                                      departDate: dates?.start,
-                                    })
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer sponsored"
-                            >
-                              {arrivalMode === 'rail' ? <Train /> : <Bus />} Search{' '}
-                              {arrivalMode === 'rail' ? 'trains' : 'coaches'}
-                            </a>
-                          ) : (
-                            <span className="inline-flex items-center gap-2">
-                              {arrivalMode === 'rail' ? <Train /> : <Bus />} Search{' '}
-                              {arrivalMode === 'rail' ? 'trains' : 'coaches'}
+                  <h3 className="mt-2 max-w-2xl text-headline font-bold">{best.title}</h3>
+                  <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/85">
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin size={15} /> {best.cities}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <CalendarDays size={15} /> {best.days} days
+                    </span>
+                    {best.venueCount ? <span>{best.venueCount} matched places</span> : null}
+                  </p>
+                </div>
+              </div>
+
+              <ol className="divide-y divide-border">
+                {step === 3 && (
+                  <li className="p-6 sm:p-8">
+                    <PackagePart icon={Sparkles} kicker="What you go for" title="Event & places" />
+                    <div className="mt-4 grid gap-4">
+                      {best.event ? (
+                        <LocalizedLink
+                          to={`/events/${best.event.slug}`}
+                          className="block rounded-element bg-surface-container p-4 no-underline hover:bg-muted"
+                        >
+                          <span className="block text-xs font-bold uppercase text-muted-foreground">
+                            Anchor event
+                          </span>
+                          <span className="mt-1 block font-bold">{best.event.title}</span>
+                          <span className="mt-1 block text-sm text-muted-foreground">
+                            {best.event.startDate}
+                          </span>
+                        </LocalizedLink>
+                      ) : null}
+                      <InlineCitySearch city={best.cities} start={dates?.start} end={dates?.end} />
+                    </div>
+                  </li>
+                )}
+                {step === 4 && (
+                  <li className="p-6 sm:p-8">
+                    <PackagePart icon={BedDouble} kicker="Where you sleep" title="Stay your way" />
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {STAY_TYPES.map((type) => (
+                        <button
+                          key={type.value}
+                          type="button"
+                          aria-pressed={stayType === type.value}
+                          onClick={() => setStayType(type.value)}
+                          className={`inline-flex min-h-11 items-center gap-2 rounded-element px-4 py-2 text-sm font-semibold ${
+                            stayType === type.value
+                              ? 'bg-foreground text-background'
+                              : 'bg-card shadow-soft hover:bg-muted'
+                          }`}
+                        >
+                          <type.icon size={16} aria-hidden />
+                          {type.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="mt-6 grid gap-4">
+                      {mood === 'nudist' ? (
+                        // Live partner results know nothing about naturism, so the
+                        // nudist package only offers stays tagged clothing-optional.
+                        <QueerGuideStays city={best.cities} type={stayType} naturist />
+                      ) : staysLoading ? (
+                        <Skeleton variant="rectangular" className="h-24 rounded-element" />
+                      ) : bookableStays.length ? (
+                        bookableStays.map((stay) => (
+                          <a
+                            key={stay.id}
+                            href={stay.bookingUrl}
+                            target="_blank"
+                            rel="noopener noreferrer sponsored"
+                            className="grid grid-cols-[72px_1fr_auto] items-center gap-4 rounded-element bg-surface-container p-4 no-underline hover:bg-muted"
+                          >
+                            {stay.imageUrl ? (
+                              <img
+                                src={stay.imageUrl}
+                                alt=""
+                                className="h-16 w-[72px] rounded-element object-cover"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="grid h-16 w-[72px] place-items-center rounded-element bg-muted">
+                                <BedDouble />
+                              </div>
+                            )}
+                            <span className="min-w-0">
+                              <span className="block truncate font-bold">{stay.title}</span>
+                              <span className="block text-xs text-muted-foreground">
+                                Live result
+                              </span>
                             </span>
-                          )}
-                        </Button>
+                            <span className="text-sm font-bold">
+                              {stay.currency} {Math.round(stay.price)}
+                            </span>
+                          </a>
+                        ))
+                      ) : (
+                        <QueerGuideStays city={best.cities} type={stayType} />
                       )}
                     </div>
-                  </>
+                    <Button
+                      variant="outline"
+                      className="mt-4 w-full"
+                      onClick={() => navigate(bookingUrl('hotels', stayType))}
+                    >
+                      <Hotel /> Compare all{' '}
+                      {STAY_TYPES.find((type) => type.value === stayType)?.label}
+                    </Button>
+                  </li>
                 )}
-              </li>
-            </ol>
+                {step === 5 && (
+                  <li className="p-6 sm:p-8">
+                    <PackagePart icon={Plane} kicker="Door to door" title="How you get there" />
+                    {/* One choice, one origin, one button: the mode picks the
+                    provider so the reader never chooses transport twice. */}
+                    <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Arrive by">
+                      {ARRIVAL_MODES.map(({ value, label, icon: Icon }) => (
+                        <FilterChip
+                          key={value}
+                          active={arrivalMode === value}
+                          onClick={() => setArrivalMode(value)}
+                          label={
+                            <>
+                              <Icon size={16} aria-hidden />
+                              {label}
+                            </>
+                          }
+                        />
+                      ))}
+                    </div>
+                    {arrivalMode === 'drive' ? (
+                      <div className="mt-4">
+                        <CarRentalSection
+                          city={best.cities}
+                          checkIn={dates?.start}
+                          checkOut={dates?.end}
+                          compact
+                        />
+                      </div>
+                    ) : arrivalMode === 'ferry' ? (
+                      <p className="mt-4 text-sm text-muted-foreground">
+                        Add the sailing as a leg once the trip is built.
+                      </p>
+                    ) : (
+                      <>
+                        {arrivalMode === 'flight' && (
+                          <div className="mt-4">
+                            <InlineFlightDeals cityId={best.primaryCityId} city={best.cities} />
+                          </div>
+                        )}
+                        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                          {arrivalMode !== 'flight' && (
+                            <Input
+                              id="package-origin"
+                              aria-label="Starting from"
+                              className="sm:max-w-xs"
+                              value={origin}
+                              onChange={(event) => setOrigin(event.target.value)}
+                              placeholder="Starting from…"
+                            />
+                          )}
+                          {arrivalMode === 'flight' ? (
+                            <Button
+                              variant="outline"
+                              onClick={() => navigate(bookingUrl('flights'))}
+                            >
+                              <Plane /> Compare all flights to {best.cities}
+                            </Button>
+                          ) : (
+                            <Button asChild={!!origin} disabled={!origin}>
+                              {origin ? (
+                                <a
+                                  href={
+                                    arrivalMode === 'rail'
+                                      ? buildTrainlineUrl({
+                                          origin,
+                                          destination: best.cities,
+                                          departDate: dates?.start,
+                                          returnDate: dates?.end,
+                                        })
+                                      : buildFlixbusUrl({
+                                          origin,
+                                          destination: best.cities,
+                                          departDate: dates?.start,
+                                        })
+                                  }
+                                  target="_blank"
+                                  rel="noopener noreferrer sponsored"
+                                >
+                                  {arrivalMode === 'rail' ? <Train /> : <Bus />} Search{' '}
+                                  {arrivalMode === 'rail' ? 'trains' : 'coaches'}
+                                </a>
+                              ) : (
+                                <span className="inline-flex items-center gap-2">
+                                  {arrivalMode === 'rail' ? <Train /> : <Bus />} Search{' '}
+                                  {arrivalMode === 'rail' ? 'trains' : 'coaches'}
+                                </span>
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </li>
+                )}
+              </ol>
+            </Card>
+          )}
 
-            <div className="flex flex-col gap-4 border-t border-border bg-muted/40 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
-              <div>
-                <StepHeading n={3} title="Make it a trip" />
-                <p className="mt-1 text-sm text-muted-foreground">
-                  We add the destination, event and arrival mode. You shape the days after.
-                </p>
-                {arrivalMode === 'flight' && (
-                  <div className="mt-4 max-w-sm">
-                    <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
-                      Optional add-on
-                    </p>
-                    <TransferSection city={best.cities} compact />
-                  </div>
-                )}
+          {step === 6 && (
+            <Card className="overflow-hidden">
+              <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+                <div>
+                  <StepHeading n={6} title="Make it a trip" />
+                  <p className="mt-2 font-bold">
+                    {best.title} · {best.cities} · {best.days} days
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    We add the destination, event and arrival mode. You shape the days after.
+                  </p>
+                  {arrivalMode === 'flight' && (
+                    <div className="mt-4 max-w-sm">
+                      <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                        Optional add-on
+                      </p>
+                      <TransferSection city={best.cities} compact />
+                    </div>
+                  )}
+                </div>
+                <Button
+                  size="lg"
+                  onClick={() => handleCreate(best)}
+                  disabled={createTrip.isPending}
+                >
+                  {createTrip.isPending ? <TrackLoader size={16} /> : null}
+                  Build this escape <ArrowRight />
+                </Button>
               </div>
-              <Button size="lg" onClick={() => handleCreate(best)} disabled={createTrip.isPending}>
-                {createTrip.isPending ? <TrackLoader size={16} /> : null}
-                Build this escape <ArrowRight />
-              </Button>
-            </div>
-          </Card>
+            </Card>
+          )}
 
-          {ranked.length > 1 ? (
-            <div>
-              <h3 className="text-title font-bold">Other matches</h3>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {ranked.slice(1, 4).map((template) => (
+          {step === 2 && ranked.length > 0 ? (
+            <Card className="p-6 sm:p-8">
+              <StepHeading
+                n={2}
+                title="Choose your escape"
+                hint="The best matches for your choices. Pick one to see the package."
+              />
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {ranked.slice(0, 6).map((template) => (
                   <button
                     key={template.id}
                     type="button"
-                    onClick={() => handleCreate(template)}
-                    className="card-lift group flex flex-col overflow-hidden rounded-container bg-card text-start shadow-soft"
+                    aria-pressed={template.id === best.id}
+                    onClick={() => {
+                      setPickedId(template.id);
+                      goTo(3);
+                    }}
+                    className={`card-lift group flex flex-col overflow-hidden rounded-container bg-card text-start shadow-soft ${
+                      template.id === best.id ? 'ring-4 ring-foreground' : ''
+                    }`}
                   >
                     <CardImage
                       src={template.coverImageUrl}
@@ -740,7 +892,11 @@ export function PersonalisedTripPackages() {
                         ) : (
                           <Sparkles size={12} aria-hidden />
                         )}
-                        {template.source === 'event' ? 'Event-led escape' : 'Another match'}
+                        {template.id === ranked[0].id
+                          ? 'Best match'
+                          : template.source === 'event'
+                            ? 'Event-led escape'
+                            : 'Another match'}
                       </span>
                       <span className="text-15 font-bold leading-tight group-hover:underline">
                         {template.title}
@@ -755,15 +911,17 @@ export function PersonalisedTripPackages() {
                           {template.days} days
                         </span>
                       </span>
-                      <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-13 font-bold">
-                        Choose this one
-                        <ArrowRight size={14} aria-hidden className="rtl:rotate-180" />
+                      <span
+                        aria-hidden
+                        className="mt-auto grid h-9 w-9 place-items-center self-end rounded-full bg-foreground text-background"
+                      >
+                        <ArrowRight size={16} className="rtl:rotate-180" />
                       </span>
                     </div>
                   </button>
                 ))}
               </div>
-            </div>
+            </Card>
           ) : null}
         </>
       ) : (
@@ -774,6 +932,81 @@ export function PersonalisedTripPackages() {
           </p>
         </Card>
       )}
+
+      {best && (
+        <div className="flex items-center justify-between gap-4">
+          {step > 1 ? (
+            <Button variant="outline" size="lg" onClick={() => goTo(step - 1)}>
+              <ArrowRight className="rotate-180 rtl:rotate-0" /> Back
+            </Button>
+          ) : (
+            <span />
+          )}
+          {step < 6 ? (
+            <Button size="lg" onClick={() => goTo(step + 1)}>
+              {NEXT_LABEL[step]} <ArrowRight className="rtl:rotate-180" />
+            </Button>
+          ) : null}
+        </div>
+      )}
     </section>
+  );
+}
+
+const WIZARD_STEPS = ['Mood', 'Choose', 'Places', 'Stay', 'Getting there', 'Book'] as const;
+const NEXT_LABEL: Record<number, string> = {
+  1: 'See matches',
+  2: 'See the package',
+  3: 'Where to stay',
+  4: 'How to get there',
+  5: 'Make it a trip',
+};
+
+function WizardSteps({
+  step,
+  canChoose,
+  onGo,
+}: {
+  step: number;
+  canChoose: boolean;
+  onGo: (n: number) => void;
+}) {
+  return (
+    <nav aria-label="Trip finder steps">
+      <ol className="m-0 flex list-none flex-wrap gap-2 p-0">
+        {WIZARD_STEPS.map((label, i) => {
+          const n = i + 1;
+          const active = n === step;
+          const reachable = n === 1 || canChoose;
+          return (
+            <li key={label}>
+              <button
+                type="button"
+                disabled={!reachable}
+                aria-current={active ? 'step' : undefined}
+                onClick={() => onGo(n)}
+                className={`inline-flex min-h-11 items-center gap-2 rounded-element px-4 text-13 font-bold disabled:opacity-40 ${
+                  active ? 'bg-foreground text-background' : 'bg-card shadow-soft hover:bg-muted'
+                }`}
+              >
+                <span
+                  aria-hidden
+                  className={`grid h-6 w-6 place-items-center rounded-full text-2xs ${
+                    active
+                      ? 'bg-background/15'
+                      : n < step
+                        ? 'bg-foreground text-background'
+                        : 'bg-muted'
+                  }`}
+                >
+                  {n < step ? '✓' : n}
+                </span>
+                {label}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
   );
 }

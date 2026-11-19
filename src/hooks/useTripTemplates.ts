@@ -89,8 +89,8 @@ export interface TripTemplate {
   } | null;
   /** Measured matching venue count when the source provides one. */
   venueCount: number | null;
-  /** Set on the kink-weekend tier (Folsom, Darklands, Easter Berlin…). */
-  theme?: 'kink';
+  /** Themed tiers that only surface for their own mood. */
+  theme?: 'kink' | 'nudist';
 }
 
 /** The international kink calendar: multi-day weekends people travel for.
@@ -216,7 +216,7 @@ export function useTripTemplates() {
       const horizon = new Date(now.getTime() + 90 * 86_400_000);
 
       const kinkHorizon = new Date(now.getTime() + 395 * 86_400_000);
-      const [eventRes, prefRes, kinkRes] = await Promise.all([
+      const [eventRes, prefRes, kinkRes, nudeRes] = await Promise.all([
         supabase
           .from('events')
           .select(
@@ -251,6 +251,15 @@ export function useTripTemplates() {
           .or(KINK_TITLE_TERMS.map((t) => `title.ilike.%${t}%`).join(','))
           .order('start_date', { ascending: true })
           .limit(60),
+        supabase
+          .from('venues')
+          .select('city_id')
+          .in('venue_subtype', ['nude-beach', 'naturist-resort'])
+          .is('duplicate_of_id', null)
+          .is('closed_at', null)
+          .neq('review_status', 'archived')
+          .not('city_id', 'is', null)
+          .limit(1000),
       ]);
 
       // Event lookup is best-effort — if it fails we still surface seasonal
@@ -317,6 +326,57 @@ export function useTripTemplates() {
         });
       }
 
+      // Naturist tier: the cities with the most nude beaches and naturist
+      // places, counted from the venues themselves.
+      // Counted by id first, then the top cities resolved in one query: a
+      // venues→cities embed does not resolve since the geo FK flips.
+      type NudeCity = {
+        id: string;
+        name: string;
+        image_url: string | null;
+        country_id: string | null;
+        countries: { currency: string | null } | null;
+      };
+      const nudeCounts = new Map<string, number>();
+      for (const row of (nudeRes.data ?? []) as { city_id: string | null }[]) {
+        if (row.city_id) nudeCounts.set(row.city_id, (nudeCounts.get(row.city_id) ?? 0) + 1);
+      }
+      const topNude = [...nudeCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20);
+      const nudeCities = new Map<string, { city: NudeCity; n: number }>();
+      if (topNude.length) {
+        const { data: cityRows } = await supabase
+          .from('cities')
+          .select('id, name, image_url, country_id, countries:country_id(currency)')
+          .in(
+            'id',
+            topNude.map(([id]) => id),
+          );
+        for (const c of (cityRows ?? []) as unknown as NudeCity[]) {
+          if (c.country_id) nudeCities.set(c.id, { city: c, n: nudeCounts.get(c.id) ?? 0 });
+        }
+      }
+      for (const { city, n } of [...nudeCities.values()]
+        .sort((a, b) => Number(!!b.city.image_url) - Number(!!a.city.image_url) || b.n - a.n)
+        .slice(0, 6)) {
+        eventTemplates.push({
+          id: `nudist:${city.id}`,
+          title: `Naturist days in ${city.name}`,
+          cities: city.name,
+          cityIds: [city.id],
+          primaryCityId: city.id,
+          primaryCountryId: city.country_id as string,
+          days: 4,
+          currency: city.countries?.currency ?? 'USD',
+          coverImageUrl: city.image_url,
+          source: 'seasonal',
+          vibe: null,
+          reason: `${n} nude beaches and naturist places`,
+          event: null,
+          venueCount: n,
+          theme: 'nudist',
+        });
+      }
+
       // Preference tier: 1–2 cities in the user's home country (excluding
       // home city). Best-effort — failures don't block other tiers.
       if (prefRes.error) {
@@ -367,8 +427,8 @@ export function useTripTemplates() {
     // A reader offered the same city twice reads the second card as a bug.
     const claimed = new Set<string>();
     const merged: TripTemplate[] = [];
-    const kink = remoteTemplates.filter((t) => t.theme === 'kink');
-    for (const tpl of [...remoteTemplates.filter((t) => t.theme !== 'kink'), ...seasonal]) {
+    const themed = remoteTemplates.filter((t) => t.theme);
+    for (const tpl of [...remoteTemplates.filter((t) => !t.theme), ...seasonal]) {
       if (tpl.cityIds.some((id) => claimed.has(id))) continue;
       for (const id of tpl.cityIds) claimed.add(id);
       merged.push(tpl);
@@ -378,7 +438,7 @@ export function useTripTemplates() {
       ...remote,
       // Kink weekends ride alongside, outside the cap and the city dedupe: they
       // only rank first when the reader picks the Kinky mood.
-      data: [...merged.slice(0, 6), ...kink],
+      data: [...merged.slice(0, 6), ...themed],
       // The surface is usable as soon as either source arrives; it is only
       // genuinely loading while BOTH are empty.
       isLoading: remote.isLoading && seasonal.length === 0,

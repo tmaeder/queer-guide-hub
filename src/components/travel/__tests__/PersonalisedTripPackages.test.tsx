@@ -129,13 +129,32 @@ beforeEach(() => {
   addPlacesBulkMock.mockResolvedValue(undefined);
 });
 
+/** Walk the wizard from the mood step to the package step. */
+function toPackage() {
+  fireEvent.click(screen.getByRole('button', { name: /See matches/i }));
+  fireEvent.click(screen.getByRole('button', { name: /See the package/i }));
+}
+
+function toStay() {
+  toPackage();
+  fireEvent.click(screen.getByRole('button', { name: /Where to stay/i }));
+}
+
+function toTransport() {
+  toStay();
+  fireEvent.click(screen.getByRole('button', { name: /How to get there/i }));
+}
+
 describe('PersonalisedTripPackages', () => {
   it('shows inspiration first and reranks a real event for Pride energy', () => {
     render(<PersonalisedTripPackages />);
     expect(screen.getByText(/pick a mood, then check the package/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /See matches/i }));
     expect(screen.getByText('Nightlife in Berlin')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Mood/ }));
 
     fireEvent.click(screen.getByRole('button', { name: /Pride energy/i }));
+    toPackage();
     expect(screen.getByRole('heading', { name: 'Pride weekend in Madrid' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Madrid Pride/i })).toHaveAttribute(
       'href',
@@ -145,12 +164,14 @@ describe('PersonalisedTripPackages', () => {
 
   it('passes the selected stay type into the live hotel search', () => {
     render(<PersonalisedTripPackages />);
+    toStay();
     fireEvent.click(screen.getByRole('button', { name: 'B&Bs' }));
     expect(hotelSearchMock).toHaveBeenLastCalledWith(expect.objectContaining({ hotelType: 'bnb' }));
   });
 
   it('one mode choice drives one search; rail and coach need an origin', () => {
     render(<PersonalisedTripPackages />);
+    toTransport();
     fireEvent.click(screen.getByRole('button', { name: /^Train$/i }));
     expect(screen.getByRole('button', { name: /Search trains/i })).toBeDisabled();
     fireEvent.change(screen.getByLabelText(/Starting from/i), { target: { value: 'Zürich' } });
@@ -168,7 +189,9 @@ describe('PersonalisedTripPackages', () => {
   it('creates a trip with the event and chosen arrival mode in the seeded place', async () => {
     render(<PersonalisedTripPackages />);
     fireEvent.click(screen.getByRole('button', { name: /Pride energy/i }));
+    toTransport();
     fireEvent.click(screen.getByRole('button', { name: /^Ferry/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Make it a trip/i }));
     fireEvent.click(screen.getByRole('button', { name: /Build this escape/i }));
 
     const onSuccess = createTripMock.mock.calls[0][1].onSuccess;

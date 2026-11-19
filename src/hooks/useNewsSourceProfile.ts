@@ -25,23 +25,27 @@ export function useNewsSourceProfile(name: string | null | undefined) {
         .limit(1)
         .maybeSingle();
       if (error || !data) return null;
-      const org = (
-        data as unknown as {
-          organizations: {
-            slug: string | null;
-            logo_url: string | null;
-            description: string | null;
-          } | null;
-        }
-      ).organizations;
+      // Generated types predate these columns; describe the row by hand.
+      const row = data as unknown as {
+        id: string;
+        description: string | null;
+        website_url: string | null;
+        artwork_url: string | null;
+        organizations: {
+          slug: string | null;
+          logo_url: string | null;
+          description: string | null;
+        } | null;
+      };
+      const org = row.organizations;
       const { count } = await supabase
         .from('news_articles')
         .select('id', { count: 'exact', head: true })
-        .eq('source_id', data.id);
+        .eq('source_id', row.id);
       return {
-        description: data.description ?? org?.description ?? null,
-        websiteUrl: data.website_url ?? null,
-        logoUrl: org?.logo_url ?? data.artwork_url ?? null,
+        description: row.description ?? org?.description ?? null,
+        websiteUrl: row.website_url ?? null,
+        logoUrl: org?.logo_url ?? row.artwork_url ?? null,
         orgSlug: org?.slug ?? null,
         articleCount: count ?? null,
       };
