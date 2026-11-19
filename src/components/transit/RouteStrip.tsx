@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { createElement, useEffect, useRef, type ComponentType } from 'react';
 import { cn } from '@/lib/utils';
 import {
   PAGE_BLEED,
@@ -13,6 +13,8 @@ export interface RouteStation {
   title: string;
   /** 1 = a station on the line (an `<h2>`), 2 = a sub-station (an `<h3>`). */
   depth?: 1 | 2;
+  /** Shown before the title in the horizontal strip, after the number. */
+  icon?: ComponentType<{ size?: number; 'aria-hidden'?: boolean }>;
 }
 
 interface RouteStripProps {
@@ -245,6 +247,7 @@ export function RouteStrip({
                       {numbers[i]}
                     </span>
                   )}
+                  {s.icon && createElement(s.icon, { size: 14, 'aria-hidden': true })}
                   {s.title}
                 </a>
               </li>
