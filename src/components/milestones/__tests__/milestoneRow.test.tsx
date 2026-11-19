@@ -132,11 +132,12 @@ describe('MilestoneRow', () => {
       expect(container.querySelector(`${MARKER_INLINE}, ${MARKER_STATION}`)).toBeFalsy();
     });
 
-    it("centres the station marker in the 16px column EraTrack's rail shares", () => {
+    it("centres the year stop in the 16px column EraTrack's rail shares", () => {
       const { container } = render(<MilestoneRow milestone={row()} marker="station" />);
       const col = container.querySelector('.w-4.justify-center');
       expect(col).toBeTruthy();
-      expect(col?.querySelector('.h-4.w-4')).toBeTruthy();
+      // The year rides in the station itself.
+      expect(col?.textContent).toMatch(/\d{4}/);
     });
   });
 });
