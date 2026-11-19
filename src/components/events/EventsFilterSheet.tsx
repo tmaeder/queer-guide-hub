@@ -42,18 +42,17 @@ export function EventsFilterSheet({
         {/* `singleColumn`: the panel's own grid steps to 2 columns at md and 4 at
             lg, which are VIEWPORT queries — inside a 448px sheet on a desktop
             they would lay four pickers across 448px. */}
-        <EventFiltersPanel
-          {...panel}
-          singleColumn
-          onApply={() => {
-            onApply();
-            onOpenChange(false);
-          }}
-        />
+        <EventFiltersPanel {...panel} singleColumn />
 
         <SheetFooter className="mt-auto flex-row items-center gap-2 pt-4">
           <ShareFiltersButton />
-          <Button className="flex-1" onClick={() => onOpenChange(false)}>
+          <Button
+            className="flex-1"
+            onClick={() => {
+              onApply?.();
+              onOpenChange(false);
+            }}
+          >
             {typeof resultCount === 'number'
               ? t('pages.events.showResults', {
                   count: resultCount,
