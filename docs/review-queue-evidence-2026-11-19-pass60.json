@@ -1,0 +1,65 @@
+{
+  "pass": 60,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "scope": "Khon Kaen factual city lifecycle, canonical slug and official HTTPS website",
+  "proof": {
+    "source": "primary_municipal_identity_lifecycle_research",
+    "human_reviewed": false,
+    "decision_actor": "AI-assisted factual lifecycle repair",
+    "user_authorization": "User delegates clear-evidence factual editorial decisions",
+    "qid": "Q876526",
+    "municipality_name": "เทศบาลนครขอนแก่น / Khon Kaen City Municipality",
+    "country": "TH",
+    "region": "TH-40",
+    "municipal_url": "https://kkmuni.go.th/basic-info",
+    "municipal_sha256": "0b3088fdc32a9d06e26cabe5ae33a92efac42b85b43fb19b0f33ab587f9f380c",
+    "municipal_retrieved_at": "2026-11-19T14:22:42.979723+00:00",
+    "wikidata_url": "https://www.wikidata.org/wiki/Special:EntityData/Q876526.json",
+    "wikidata_sha256": "9ca290bc02e148d50f19db99752dba553e3cfc474e95ee97dbeb675cbbaf2778",
+    "identity_basis": "Current municipal basic-information page explicitly identifies Khon Kaen City Municipality, Mueang district, Khon Kaen province, postcode40000. Current Wikidata country Thailand, municipal classes, same official domain and two nearby city points corroborate the record. No duplicate city found.",
+    "coordinate_scope": "Existing representative point matches one current Wikidata point essentially exactly and is within1km of the other; no point or dependent place is moved or certified.",
+    "scope": "Only factual lifecycle, canonical city slug and current HTTPS form of existing official municipal website. Retain SEOfalse, attentionfalse, all other facts/history and human verification gates.",
+    "source_limitations": "Home exceeds unchanged512KiB raw cap; complete390173byte own basic-information page is the successful bounded primary capture. No full raw homepage hash or widened retrieval budget claimed."
+  },
+  "result": {
+    "case": {
+      "active": false,
+      "members": 0
+    },
+    "slug": "khon-kaen",
+    "city_id": "706af621-a68d-4c79-8c9d-3eb12089efaf",
+    "shell_status": "real",
+    "seo_indexable": false,
+    "related_counts": {
+      "geo_places": 1,
+      "city_aliases": 18,
+      "personalities": 1,
+      "city_coverage_gaps": 1,
+      "city_consensus_audit": 1,
+      "city_quality_signals": 7
+    },
+    "needs_attention": false,
+    "official_website": "https://kkmuni.go.th/",
+    "old_slug_redirect": "tmp-ae1ec780-c2ec-4d89-8cfc-4f9e7567c822",
+    "private_saved_references": 0,
+    "native_verification_status": "country_checked"
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "source_contract_md5": "1db69e45d248bb357467e18dd7bb84e3",
+    "all_other_city_fields_preserved": true,
+    "one_complete_birthplace_row_and_all_other_related_content_preserved": true,
+    "native_shared_geo_only_slug_and_update_time_changed": true,
+    "private_saved_refs": 0,
+    "seo_false_attention_false_preserved": true,
+    "human_identity_and_parent_verification_false": true,
+    "live_redirect": {
+      "url": "https://queer.guide/city/tmp-ae1ec780-c2ec-4d89-8cfc-4f9e7567c822",
+      "status": 301,
+      "location": "https://queer.guide/city/khon-kaen"
+    }
+  },
+  "all_cases_complete": false
+}

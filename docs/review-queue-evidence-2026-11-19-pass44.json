@@ -1,0 +1,100 @@
+{
+  "pass": 44,
+  "date": "2026-11-19",
+  "status": "applied",
+  "scope": "Verified professional creator websites and native draft profile links",
+  "human_reviewed": false,
+  "creators": [
+    {
+      "brand_id": "94f848df-b242-4427-bb37-7bf450e2ee14",
+      "name": "Alice Oseman",
+      "url": "https://aliceoseman.com/",
+      "status": 200,
+      "bytes": 68598,
+      "sha256": "c8129ae219b3e6eea9ddc57ca3eb47771032dfa2a70da0be0c3dacb94f4d7a22",
+      "retrieved_at": "2026-11-19T12:02:56.332086+00:00",
+      "work_url": "https://aliceoseman.com/heartstopper/graphic-novels/",
+      "work_sha256": "062976692bdc082f6da3bff826c47a384b1ec5eeff49b50aacb56a4a0476f6b7",
+      "work_retrieved_at": "2026-11-19T12:05:41.594314+00:00",
+      "registered_title": "Heartstopper Volume Four",
+      "listing_id": "12ab54f8-02e3-447b-8883-41bbaee53331",
+      "identity_basis": "Exact creator name on official home page and exact registered work heading on official graphic-novel catalogue"
+    },
+    {
+      "brand_id": "c8f053c6-c40b-4dba-864d-a86e88e9a286",
+      "name": "Adam Silvera",
+      "url": "https://www.adamsilvera.com/",
+      "status": 200,
+      "bytes": 111647,
+      "sha256": "74361aa417328114650a3b5ef8b875102fb25e9e8300a829fed59915d22ac8e1",
+      "retrieved_at": "2026-11-19T12:02:56.314998+00:00",
+      "registered_title": "They Both Die at the End",
+      "listing_id": "0228f23d-30d5-4817-9bc4-8d55f5e0c262",
+      "identity_basis": "Exact creator name in official page title and exact registered title in its own books navigation; no successful About-page capture claimed"
+    },
+    {
+      "brand_id": "d22bd39f-f3d3-41cc-be01-77178f66574d",
+      "name": "Becky Albertalli",
+      "url": "https://www.beckyalbertalli.com/",
+      "status": 200,
+      "bytes": 6077,
+      "sha256": "f79a88dd2bea51560b7fedf5fc1058158ff9141a964060593afbd1c41e077f00",
+      "retrieved_at": "2026-11-19T12:02:56.574739+00:00",
+      "registered_title": "Simon vs. the Homo Sapiens Agenda",
+      "listing_id": "31b207b6-d98c-4bfc-b2c7-7e58f59785f4",
+      "identity_basis": "Official home page names the author and identifies authorship of the exact registered work"
+    }
+  ],
+  "created_native_profiles": [
+    {
+      "brand_id": "94f848df-b242-4427-bb37-7bf450e2ee14",
+      "organization_id": "e29167d3-59b8-4a5e-aa2d-99051edeac2d",
+      "status": "draft",
+      "claimed": false,
+      "roles": [
+        "brand"
+      ]
+    },
+    {
+      "brand_id": "c8f053c6-c40b-4dba-864d-a86e88e9a286",
+      "organization_id": "8e933ce7-3139-465c-9d5a-03d233a80834",
+      "status": "draft",
+      "claimed": false,
+      "roles": [
+        "brand"
+      ]
+    },
+    {
+      "brand_id": "d22bd39f-f3d3-41cc-be01-77178f66574d",
+      "organization_id": "86886760-e224-4e6a-8524-6f963625f30a",
+      "status": "draft",
+      "claimed": false,
+      "roles": [
+        "brand"
+      ]
+    }
+  ],
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "actual_contact_and_linkage_passes": 6,
+    "original_published_status_unchanged": true,
+    "ownership_not_applicable_unchanged": true,
+    "portrait_credits_story_and_known_human_media_editorial_reviews_preserved": true,
+    "overall_quality_checked_at_unchanged": true,
+    "source_history_and_all_other_fields_preserved": true,
+    "native_source_reconciled": true
+  },
+  "not_applied": {
+    "casey_mcquiston": "Current official site corroborated; complete rejected publication/ownership profile remains unchanged. No rejection or publication gate overridden.",
+    "forst": "Multiple namesakes and child venue conflicts remain unresolved; no relocation inferred from name alone.",
+    "alabama": "Regional record mixes multiple municipalities and locations. Six child venues and two birthplace links are preserved; no blanket ghost/merge or point change.",
+    "vichy_abrest": "Composite municipality reference remains held; no silent collapse into Vichy."
+  },
+  "ci_release": {
+    "code_guard": "Prepared in PR5404; not deployed",
+    "required_checks": "GitHub Actions startup failure",
+    "latest_evidence": "https://github.com/tmaeder/queer-guide-hub/actions/runs/44519070994",
+    "annotation": "Please verify your email address to run GitHub Actions workflows."
+  },
+  "all_cases_complete": false
+}
