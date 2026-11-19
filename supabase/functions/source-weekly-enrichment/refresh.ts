@@ -7,12 +7,20 @@ type Row = Record<string, unknown>
 interface Source extends Row { id: string; slug: string; config: Row; updated_at: string }
 const UUID = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i
 const UA = 'QueerGuide/1.0 (+https://queer.guide; contact@queer.guide)'
+export class ImageProviderRateLimitError extends Error {
+  constructor(provider: string) { super(`${provider} image quota is exhausted (HTTP 429); wait for its quota reset or increase the account limit`); this.name = 'ImageProviderRateLimitError' }
+}
 
 async function json(url: string, headers: Record<string, string>, fetcher: typeof fetch): Promise<Row> {
   const response = await fetcher(url, { headers, redirect: 'error', signal: AbortSignal.timeout(8000) })
+  const host = new URL(url).hostname
+  if (response.status === 429 && ['api.pexels.com', 'api.unsplash.com'].includes(host)) {
+    await response.body?.cancel(); throw new ImageProviderRateLimitError(host === 'api.pexels.com' ? 'Pexels' : 'Unsplash')
+  }
   if (response.status === 401 || response.status === 403) {
     await response.body?.cancel()
-    if (new URL(url).hostname === 'api.pexels.com') throw new InvalidCredentialsError('PEXELS_API_KEY', response.status)
+    if (host === 'api.pexels.com') throw new InvalidCredentialsError('PEXELS_API_KEY', response.status)
+    if (host === 'api.unsplash.com') throw new InvalidCredentialsError('UNSPLASH_ACCESS_KEY', response.status)
     throw Error(`Wikipedia provider HTTP ${response.status}`)
   }
   if (!response.ok) { await response.body?.cancel(); throw Error(`Refresh provider HTTP ${response.status}`) }
@@ -73,14 +81,39 @@ export async function pexelsProposal(target: Row, key: string, fetcher: typeof f
     image_license: 'Pexels License', license_url: 'https://www.pexels.com/license/', score }
 }
 
+/** Preserve the existing interactive image tool's configured Unsplash fallback. */
+export async function imageProposal(target: Row, getEnv: (name: string) => string | undefined, fetcher: typeof fetch): Promise<{ proposed: Row | null; fallback: boolean }> {
+  const pexels = getEnv('PEXELS_API_KEY'), unsplash = getEnv('UNSPLASH_ACCESS_KEY')
+  if (!pexels && !unsplash) throw new MissingCredentialsError(['PEXELS_API_KEY', 'UNSPLASH_ACCESS_KEY'])
+  if (pexels) {
+    try { return { proposed: await pexelsProposal(target, pexels, fetcher), fallback: false } }
+    catch (error) { if (!unsplash || !(error instanceof ImageProviderRateLimitError || error instanceof InvalidCredentialsError)) throw error }
+  }
+  const country = Array.isArray(target.countries) ? target.countries[0]?.name : (target.countries as Row | null)?.name
+  if (typeof target.name !== 'string' || typeof country !== 'string' || !country) return { proposed: null, fallback: true }
+  const query = `${target.name} ${country} city architecture`
+  const data = await json(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=8&orientation=landscape`, { Authorization: `Client-ID ${unsplash}` }, fetcher)
+  if (!Array.isArray(data.results)) throw Error('Unsplash returned no results array')
+  const photos = (data.results as Row[]).map(photo => ({ photo, score: scoreImage({ alt: String(photo.alt_description || photo.description || ''),
+    width: Number(photo.width), height: Number(photo.height), source: 'unsplash', subject: { name: String(target.name), country }, subjectType: 'city' }) }))
+    .filter(item => {
+      try { const url = new URL(String((item.photo.urls as Row)?.regular)); return url.protocol === 'https:' && url.hostname === 'images.unsplash.com' && !url.username && !url.password && isAcceptable(item.score, 'cover') } catch { return false }
+    }).sort((a, b) => b.score - a.score)
+  if (!photos.length) return { proposed: null, fallback: true }
+  const { photo, score } = photos[0], user = photo.user as Row
+  return { fallback: true, proposed: { image_url: (photo.urls as Row).regular, image_alt: photo.alt_description || photo.description,
+    image_source: 'unsplash', image_attribution: user?.name, photographer_url: (user?.links as Row)?.html,
+    source_url: (photo.links as Row)?.html, source_id: String(photo.id), width: photo.width, height: photo.height,
+    image_license: 'Unsplash License', license_url: 'https://unsplash.com/license', score } }
+}
+
 /** A rotating weekly batch produces review suggestions; it never writes live entities. */
 export async function refreshSource(
   db: SupabaseClient, source: Source, body: Row, getEnv: (name: string) => string | undefined, fetcher: typeof fetch = fetch,
 ): Promise<Row> {
   const wikipedia = source.slug === 'wikipedia'
   if (!wikipedia && source.slug !== 'pexels') throw Error('Unsupported weekly enrichment registration')
-  const key = wikipedia ? '' : getEnv('PEXELS_API_KEY')
-  if (!wikipedia && !key) throw new MissingCredentialsError('PEXELS_API_KEY')
+  if (!wikipedia && !getEnv('PEXELS_API_KEY') && !getEnv('UNSPLASH_ACCESS_KEY')) throw new MissingCredentialsError(['PEXELS_API_KEY', 'UNSPLASH_ACCESS_KEY'])
   const table = wikipedia ? 'personalities' : 'cities'
   const config = source.config && typeof source.config === 'object' && !Array.isArray(source.config) ? source.config : {}
   const cursor = typeof config.weekly_refresh_cursor === 'string' && UUID.test(config.weekly_refresh_cursor) ? config.weekly_refresh_cursor : null
@@ -97,10 +130,12 @@ export async function refreshSource(
   let targets = await scan(cursor)
   if (!targets.length && cursor) targets = await scan(null)
   const dry = body.dry_run === true, deadline = Date.now() + 75_000
-  let fetched = 0, staged = 0, skipped = 0, next: string | null = null
+  let fetched = 0, staged = 0, skipped = 0, fallback = false, next: string | null = null
   for (const target of targets) {
     if (Date.now() >= deadline) break
-    const proposed = wikipedia ? await wikipediaProposal(target, fetcher) : await pexelsProposal(target, key!, fetcher)
+    const image = wikipedia ? null : await imageProposal(target, name => name === 'PEXELS_API_KEY' && fallback ? undefined : getEnv(name), fetcher)
+    const proposed = wikipedia ? await wikipediaProposal(target, fetcher) : image?.proposed
+    fallback ||= image?.fallback === true
     fetched++; next = String(target.id)
     if (!proposed) { skipped++; continue }
     const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(proposed))))].map(v => v.toString(16).padStart(2, '0')).join('')
@@ -122,5 +157,7 @@ export async function refreshSource(
     if (error || !data?.length) throw Error('Refresh settings changed; the next attempt will safely deduplicate suggestions')
   }
   return { success: true, dry_run: dry, items_total: fetched, items_processed: staged, items_succeeded: staged,
-    items_skipped: skipped, items_failed: 0, summary: { target_table: table, review_required: true, weekly_batch_limit: limit } }
+    items_skipped: skipped, items_failed: 0,
+    ...(fallback ? { reason: 'Used the existing Unsplash fallback because Pexels was unavailable or unconfigured' } : {}),
+    summary: { target_table: table, review_required: true, weekly_batch_limit: limit, used_unsplash_fallback: fallback } }
 }

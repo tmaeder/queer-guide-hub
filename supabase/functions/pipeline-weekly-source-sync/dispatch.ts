@@ -78,7 +78,7 @@ export async function dispatchSource(
       return result('skipped', 'Canonical scraper registration is covered by this run')
     }
     const key = requiredSetting(source.requires_api_key)
-    if (key && !['source-foursquare-free', 'source-awin'].includes(endpoint)) {
+    if (key && !['source-foursquare-free', 'source-awin', 'source-weekly-enrichment'].includes(endpoint)) {
       const secret = settings.getEnv(key)
       if (!secret && !job.child_run_id) return { ...result('blocked', `Missing required setting: ${key}`), required_settings: [key] }
       if (secret) secrets.push(secret)

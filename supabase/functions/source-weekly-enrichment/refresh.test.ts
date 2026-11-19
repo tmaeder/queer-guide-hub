@@ -1,6 +1,6 @@
 import { assertEquals, assertRejects } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { wikipediaProposal, pexelsProposal, refreshSource } from './refresh.ts'
+import { wikipediaProposal, pexelsProposal, imageProposal, refreshSource } from './refresh.ts'
 const target = { id: '11111111-1111-4111-8111-111111111111', wikidata_qid: 'Q42', bio: 'Old biography' }
 function wikiFetcher(override: Record<string, unknown> = {}): typeof fetch {
   return (url => Promise.resolve(Response.json(String(url).includes('wikidata.org')
@@ -22,7 +22,7 @@ const photo = { id: 123, width: 1800, height: 1000, alt: 'Berlin city skyline Ge
 Deno.test('Pexels suggestions retain attribution and place context', async () => {
   const result = await pexelsProposal({ name: 'Berlin', countries: { name: 'Germany' } }, 'private-key', ((url, init) => {
     assertEquals(new URL(String(url)).searchParams.get('query'), 'Berlin Germany city architecture')
-    assertEquals((init?.headers as Record<string, string>).Authorization, 'private-key')
+    assertEquals(((init as { headers?: Record<string, string> })?.headers ?? {}).Authorization, 'private-key')
     return Promise.resolve(Response.json({ photos: [photo] }))
   }) as typeof fetch)
   assertEquals(result?.image_attribution, 'Photographer')
@@ -35,6 +35,23 @@ Deno.test('Pexels refuses unrelated and untrusted image candidates', async () =>
 })
 Deno.test('Pexels rejected credentials identify the exact secret', async () => {
   await assertRejects(() => pexelsProposal({ name: 'Berlin', countries: { name: 'Germany' } }, 'key', (() => Promise.resolve(new Response('', { status: 401 }))) as typeof fetch), Error, 'PEXELS_API_KEY')
+})
+Deno.test('exhausted Pexels quota uses the existing Unsplash key with honest attribution', async () => {
+  const calls: string[] = []
+  const result = await imageProposal({ name: 'Berlin', countries: { name: 'Germany' } }, key => ({ PEXELS_API_KEY: 'pexels-key', UNSPLASH_ACCESS_KEY: 'unsplash-key' })[key], ((url, init) => {
+    calls.push(new URL(String(url)).hostname)
+    if (String(url).includes('api.pexels.com')) return Promise.resolve(new Response('', { status: 429 }))
+    assertEquals(((init as { headers?: Record<string, string> })?.headers ?? {}).Authorization, 'Client-ID unsplash-key')
+    return Promise.resolve(Response.json({ results: [{ id: 'photo', alt_description: photo.alt, width: 1800, height: 1000,
+      urls: { regular: 'https://images.unsplash.com/photo-123' }, user: { name: 'Unsplash photographer', links: { html: 'https://unsplash.com/@photographer' } }, links: { html: 'https://unsplash.com/photos/photo' } }] }))
+  }) as typeof fetch)
+  assertEquals(calls, ['api.pexels.com', 'api.unsplash.com'])
+  assertEquals(result.fallback, true)
+  assertEquals(result.proposed?.image_source, 'unsplash')
+  assertEquals(result.proposed?.image_attribution, 'Unsplash photographer')
+})
+Deno.test('image refresh names alternative keys when neither provider is configured', async () => {
+  await assertRejects(() => imageProposal({}, () => undefined, (() => { throw Error('must not fetch') }) as typeof fetch), Error, 'PEXELS_API_KEY, UNSPLASH_ACCESS_KEY')
 })
 function fake(prior = false) {
   const writes: Array<{ table: string; kind: string; value: unknown }> = []

@@ -9,8 +9,8 @@ Deno.test('GayOut uses internal raw sitemap extraction without Firecrawl', async
   const document = await acquireGayOutDocument(sitemap, true, env, ((url, init) => {
     requests.push(String(url))
     if (String(url) === sitemap) return Promise.resolve(new Response('', { status: 403 }))
-    assertEquals((init?.headers as Record<string, string>)['X-Internal-Secret'], 'worker-secret')
-    assertEquals(JSON.parse(String(init?.body)), { url: sitemap, raw: true, render: false })
+    assertEquals(((init as { headers?: Record<string, string> })?.headers ?? {})['X-Internal-Secret'], 'worker-secret')
+    assertEquals(JSON.parse(String((init as { body?: unknown })?.body)), { url: sitemap, raw: true, render: false })
     return Promise.resolve(Response.json({ rawHtml: xml, finalUrl: sitemap }))
   }) as typeof fetch)
   assertEquals(document.method, 'extract')
@@ -20,7 +20,7 @@ Deno.test('GayOut uses internal raw sitemap extraction without Firecrawl', async
 Deno.test('GayOut retries ordinary extraction with a bounded render attempt', async () => {
   const renders: boolean[] = []
   const result = await extractGayOutDocument(sitemap, true, env, ((_url, init) => {
-    const render = JSON.parse(String(init?.body)).render; renders.push(render)
+    const render = JSON.parse(String((init as { body?: unknown })?.body)).render; renders.push(render)
     return Promise.resolve(render ? Response.json({ rawHtml: xml, finalUrl: sitemap }) : new Response('', { status: 502 }))
   }) as typeof fetch)
   assertEquals(result?.html, xml)
