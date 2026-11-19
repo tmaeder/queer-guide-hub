@@ -30,7 +30,8 @@ export function TravelCoverStory() {
   const title = published?.headline ?? destination?.name;
   const context = published?.entityName ?? destination?.countryName;
   const credit = destination?.imageMetadata as
-    { attribution?: string; photographer?: string; license?: string } | undefined;
+    | { attribution?: string; photographer?: string; license?: string }
+    | undefined;
   const network =
     destination && hasCityNetwork(destination.slug) ? (
       <div className="h-full bg-muted px-8 py-4" aria-hidden="true">
