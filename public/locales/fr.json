@@ -2118,7 +2118,14 @@
         "label": "Tout rechercher",
         "subtitle": "Toutes les lignes se croisent ici"
       },
-      "title": "Carte"
+      "title": "Carte",
+      "layers": {
+        "label": "Sur la carte",
+        "venues": "Lieux",
+        "events": "Événements",
+        "hotels": "Hébergements",
+        "restrooms": "Toilettes"
+      }
     },
     "glossary": {
       "eyebrow": "Glossaire",

@@ -2114,7 +2114,14 @@
         "label": "全站搜索",
         "subtitle": "所有线路在此交会"
       },
-      "title": "地图"
+      "title": "地图",
+      "layers": {
+        "label": "地图显示",
+        "venues": "地点",
+        "events": "活动",
+        "hotels": "住宿",
+        "restrooms": "洗手间"
+      }
     },
     "glossary": {
       "eyebrow": "术语库",

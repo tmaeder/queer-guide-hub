@@ -2114,7 +2114,14 @@
         "label": "Cerca in tutto",
         "subtitle": "Qui si incontrano tutte le linee"
       },
-      "title": "Mappa"
+      "title": "Mappa",
+      "layers": {
+        "label": "Sulla mappa",
+        "venues": "Luoghi",
+        "events": "Eventi",
+        "hotels": "Alloggi",
+        "restrooms": "Bagni"
+      }
     },
     "glossary": {
       "eyebrow": "Glossario",

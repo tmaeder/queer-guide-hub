@@ -2114,7 +2114,14 @@
         "label": "Busca en todo",
         "subtitle": "Aquí se cruzan todas las líneas"
       },
-      "title": "Mapa"
+      "title": "Mapa",
+      "layers": {
+        "label": "En el mapa",
+        "venues": "Lugares",
+        "events": "Eventos",
+        "hotels": "Alojamiento",
+        "restrooms": "Baños"
+      }
     },
     "glossary": {
       "eyebrow": "Glosario",

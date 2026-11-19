@@ -2114,7 +2114,14 @@
         "label": "전체 검색",
         "subtitle": "모든 노선이 만나는 곳"
       },
-      "title": "지도"
+      "title": "지도",
+      "layers": {
+        "label": "지도에 표시",
+        "venues": "장소",
+        "events": "이벤트",
+        "hotels": "숙소",
+        "restrooms": "화장실"
+      }
     },
     "glossary": {
       "eyebrow": "용어집",

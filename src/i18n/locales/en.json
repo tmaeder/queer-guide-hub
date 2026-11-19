@@ -2172,7 +2172,14 @@
         "label": "Search everything",
         "subtitle": "Every line meets here"
       },
-      "title": "Map"
+      "title": "Map",
+      "layers": {
+        "label": "Show on map",
+        "venues": "Places",
+        "events": "Events",
+        "hotels": "Stays",
+        "restrooms": "Restrooms"
+      }
     },
     "heroLine1": "Queer venues,",
     "heroLine2": "events, and people.",

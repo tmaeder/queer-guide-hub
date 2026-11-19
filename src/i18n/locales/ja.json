@@ -2114,7 +2114,14 @@
         "label": "すべてを検索",
         "subtitle": "すべての路線がここで交わる"
       },
-      "title": "地図"
+      "title": "地図",
+      "layers": {
+        "label": "地図に表示",
+        "venues": "スポット",
+        "events": "イベント",
+        "hotels": "宿泊",
+        "restrooms": "トイレ"
+      }
     },
     "glossary": {
       "eyebrow": "用語集",
