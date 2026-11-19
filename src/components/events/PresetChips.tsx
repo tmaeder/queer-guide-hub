@@ -93,7 +93,7 @@ export function PresetChips({
     // one line. The chips are `h-8` square-cornered ink boxes (FilterChip's DNA)
     // rather than the pre-rebrand `rounded-full py-2` pills, which stood 44px
     // tall and carried a radius the subway-map system had already retired.
-    <div className="-mx-4 -my-2 flex items-center gap-2 overflow-x-auto px-4 py-4 snap-x scroll-px-4 scrollbar-thin">
+    <div className="-mx-4 -my-2 flex items-center gap-2 overflow-x-auto px-4 py-4 snap-x scroll-px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <div
         className="flex shrink-0 gap-2"
         role="tablist"
