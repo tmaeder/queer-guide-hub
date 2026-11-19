@@ -1,3 +1,6 @@
+import { createElement } from 'react';
+import { milestoneCategoryIcon } from '@/components/milestones/milestoneCategoryIcon';
+import { List, Minus, Star, TrendingDown, TrendingUp } from '@/components/icons';
 import { useClassificationOptions } from '@/hooks/useManagedOptions';
 import seeds from '@/config/classificationSeeds.json';
 import { useMemo, useState } from 'react';
@@ -19,6 +22,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { KnowledgeHeader } from '@/components/knowledge/KnowledgeHeader';
 
 const IMPACTS = ['positive', 'neutral', 'negative'] as const;
+const IMPACT_ICON = { positive: TrendingUp, neutral: Minus, negative: TrendingDown } as const;
 
 /**
  * /history — the queer-history timeline as curated era chapters, drawn as the
@@ -91,10 +95,6 @@ export default function HistoryTimeline() {
     () => (yearCounts ? sumEraCounts(yearCounts) : undefined),
     [yearCounts],
   );
-  const totalCount = useMemo(
-    () => (yearCounts ?? []).reduce((sum, c) => sum + c.n, 0),
-    [yearCounts],
-  );
 
   const countries = useMemo(() => {
     // The dropdown works on the display LABEL: bulk-imported rows may carry
@@ -135,20 +135,6 @@ export default function HistoryTimeline() {
             'Milestones that shaped LGBTQ+ life — uprisings, laws, setbacks. Dated and sourced.',
           )}
         </p>
-        {totalCount > 0 && (
-          <p className="mt-4 flex items-center gap-2 text-13 text-muted-foreground">
-            {/* The one place on the page that NAMES the line — which is what
-                earns the pink here rather than it being decoration. */}
-            <span
-              aria-hidden
-              className="inline-block h-2 w-6 shrink-0 rounded-full bg-track-pink"
-            />
-            {t('milestones.stats', '{{count}} milestones across {{eras}} eras', {
-              count: totalCount,
-              eras: visibleEras.length,
-            })}
-          </p>
-        )}
       </KnowledgeHeader>
 
       <OnThisDayBand />
@@ -169,7 +155,12 @@ export default function HistoryTimeline() {
                 <FilterChip
                   key={c}
                   active={category === c}
-                  label={label}
+                  label={
+                    <>
+                      {createElement(milestoneCategoryIcon(c), { size: 16, 'aria-hidden': true })}
+                      {label}
+                    </>
+                  }
                   onClick={() => setParam('category', category === c ? null : c)}
                 />
               ))}
@@ -186,12 +177,22 @@ export default function HistoryTimeline() {
                   set their own state now. */}
               <FilterChip
                 active={!showAll}
-                label={t('milestones.filter.major', 'Major milestones')}
+                label={
+                  <>
+                    <Star size={16} aria-hidden />
+                    {t('milestones.filter.major', 'Major milestones')}
+                  </>
+                }
                 onClick={() => setParam('all', null)}
               />
               <FilterChip
                 active={showAll}
-                label={t('milestones.filter.showAll', 'All milestones')}
+                label={
+                  <>
+                    <List size={16} aria-hidden />
+                    {t('milestones.filter.showAll', 'All milestones')}
+                  </>
+                }
                 onClick={() => setParam('all', '1')}
               />
             </div>
@@ -210,7 +211,12 @@ export default function HistoryTimeline() {
                 <FilterChip
                   key={i}
                   active={impact === i}
-                  label={t(`milestones.impact.${i}`)}
+                  label={
+                    <>
+                      {createElement(IMPACT_ICON[i], { size: 16, 'aria-hidden': true })}
+                      {t(`milestones.impact.${i}`)}
+                    </>
+                  }
                   onClick={() => setParam('impact', impact === i ? null : i)}
                 />
               ))}
