@@ -31,8 +31,8 @@ test.describe('Guides — unified hub', () => {
   // the hub lives AND incidentally proves the fold preserved this path instead
   // of breaking it. The section on /marketplace passes `alwaysRender` to
   // GuidesRail for exactly the reason below.
-  test('the shop hub links to the guides family', async ({ page }) => {
-    await page.goto('/shop');
+  test('the events hub links to the guides family', async ({ page }) => {
+    await page.goto('/events');
     await page.waitForLoadState('domcontentloaded');
     const main = page.getByRole('main');
     // The "All guides" action is deliberately data-independent — the guide

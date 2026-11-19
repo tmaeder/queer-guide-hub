@@ -72,7 +72,7 @@ export const MAP_VIEW_IDS = ['stations', 'heat', 'areas', 'routes'] as const;
  * the tracks.
  */
 export type MapStationEntity =
-  'venue' | 'event' | 'hotel' | 'restroom' | 'city' | 'country' | 'queer_village';
+  'venue' | 'event' | 'hotel' | 'restroom' | 'city' | 'country' | 'queer_village' | 'organization';
 
 /** What a station offers the reader. `directions` is always an external
  *  handoff — this app issues no routing request. */
@@ -341,6 +341,8 @@ const LAYER_LINE: Partial<Record<LayerType, MapLine>> = {
   events: 'E',
   restrooms: 'C',
   hotels: 'T',
+  cruising: 'M',
+  organizations: 'C',
 };
 
 /**
@@ -404,6 +406,9 @@ export function linesForLayers(layers: readonly LayerType[]): MapLine[] {
  * at all.
  */
 export const ENTITY_BULLET: Record<LayerType, MapStationEntity> = {
+  // Cruising is a venue category given its own toggle; it comes first so the
+  // inverse below still resolves 'venue' to the venues layer.
+  cruising: 'venue',
   venues: 'venue',
   events: 'event',
   hotels: 'hotel',
@@ -411,6 +416,7 @@ export const ENTITY_BULLET: Record<LayerType, MapStationEntity> = {
   cities: 'city',
   countries: 'country',
   neighbourhoods: 'queer_village',
+  organizations: 'organization',
 };
 
 const BULLET_LAYER = Object.fromEntries(

@@ -13,7 +13,6 @@ import { MarketplaceControlBar } from '@/components/marketplace/MarketplaceContr
 import { MarketplaceLineIndex } from '@/components/marketplace/MarketplaceLineIndex';
 import { MarketplaceHeroCover } from '@/components/marketplace/MarketplaceHeroCover';
 import { BrandSpotlight } from '@/components/marketplace/BrandSpotlight';
-import { GuidesRail } from '@/components/guides/GuidesRail';
 // ContinueReadingRail was the SECOND thing on this page — a /guides component
 // on the shopping surface, IA debris rather than a section. It still lives on
 // /guides, where it belongs.
@@ -532,29 +531,6 @@ const Marketplace = () => {
             <MarketplaceRow rowKey="new" title="New this week" />
             <MarketplaceHeroCover />
             <BrandSpotlight />
-            {/* `alwaysRender` is load-bearing, not a preference. With /shop
-                folded in, /marketplace is the `shop` cluster hub, and the
-                desktop header is the Intent Router — no destination links — so
-                this is the ONLY path from desktop chrome into the guides
-                family. #2723 fixed a nightly that failed for days because
-                nothing linked /guides at all; letting this rail self-hide on a
-                thin query would re-orphan it. Guarded by
-                "the shop hub links to the guides family" in e2e/guides.spec.ts. */}
-            {/* `department: false` drops the generated `shop-*-shortlist`
-                rows. They are the same taxonomy as the Departments grid at the
-                top of this very page — a "Jewelry shortlist" card under a
-                "Jewelry" tile — and because they were published later than the
-                hand-written guides they outranked them on `published_at`: the
-                rail was rendering Swimwear shortlist + Underwear shortlist +
-                one real guide, i.e. two thirds duplicate navigation. They are
-                not deleted, they are RELOCATED — each one now opens on its own
-                department page, where a shortlist of that department is the
-                useful thing rather than a restatement of the tile above it. */}
-            <GuidesRail
-              title="Buying guides"
-              filters={{ entityType: 'marketplace', department: false, limit: 3 }}
-              alwaysRender
-            />
             <AffiliateDisclosure />
           </PageContainer>
         </div>

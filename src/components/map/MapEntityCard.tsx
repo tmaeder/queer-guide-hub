@@ -1,13 +1,4 @@
-import {
-  ExternalLink,
-  Star,
-  Clock,
-  Radio,
-  MapPin,
-  TrendingUp,
-  Users,
-  Heart,
-} from '@/components/icons';
+import { Star, Clock, Radio, MapPin, TrendingUp, Users, Heart } from '@/components/icons';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { Image } from '@/components/ui/Image';
@@ -308,15 +299,14 @@ export function MapEntityCard({
           <Signals point={point} />
         </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-2">
+        <div className="mt-4 flex items-center gap-2">
           {point.linkTo && onNavigate && (
             <button
               type="button"
               onClick={() => onNavigate(point.linkTo!)}
-              className="inline-flex h-8 items-center gap-1.5 rounded-element bg-foreground px-2.5 text-13 font-bold text-background hover:opacity-90"
+              className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-element bg-foreground px-4 text-13 font-bold text-background hover:opacity-90"
             >
-              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-              Details
+              View details
             </button>
           )}
           {/* Every pin, detail page or not, can be walked to. */}
@@ -324,25 +314,30 @@ export function MapEntityCard({
             href={`https://www.google.com/maps/dir/?api=1&destination=${point.lat},${point.lng}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="no-underline inline-flex h-8 items-center gap-1.5 rounded-element bg-muted px-2.5 text-13 font-bold text-foreground hover:bg-foreground hover:text-background"
+            aria-label="Directions"
+            title="Directions"
+            className={`no-underline inline-flex h-11 items-center justify-center gap-1.5 rounded-element bg-muted text-13 font-bold text-foreground hover:bg-foreground hover:text-background ${
+              point.linkTo && onNavigate ? 'w-11 shrink-0' : 'flex-1 px-4'
+            }`}
           >
-            <TransitIcon name="locate" size={16} aria-hidden />
-            Directions
+            <TransitIcon name="locate" size={18} aria-hidden />
+            {!(point.linkTo && onNavigate) && 'Directions'}
           </a>
           {point.linkTo && onShare && (
             <button
               type="button"
               onClick={() => onShare(point)}
               aria-label="Share"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-element bg-muted text-foreground hover:bg-foreground hover:text-background"
+              title="Share"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-element bg-muted text-foreground hover:bg-foreground hover:text-background"
             >
-              <TransitIcon name="share" size={16} aria-hidden />
+              <TransitIcon name="share" size={18} aria-hidden />
             </button>
           )}
           {(point.type === 'venues' || point.type === 'events') && (
             <QuietAddToTripButton
               variant="inline"
-              className="ml-auto h-8 w-8"
+              className="h-11 w-11 shrink-0 border-0 bg-muted"
               entity={{
                 type: point.type === 'venues' ? 'venue' : 'event',
                 id: point.id,

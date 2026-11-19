@@ -257,7 +257,7 @@ export const INTENT_NAV: IntentDestination[] = [
     to: '/travel',
     icon: transitIcon('route'),
     labelKey: 'header.intents.travelling.label',
-    fallback: 'Travelling',
+    fallback: 'Travel',
     subtitleKey: 'header.intents.travelling.subtitle',
     subtitleFallback: 'Is it safe, where to stay, what to do',
     activePrefixes: [

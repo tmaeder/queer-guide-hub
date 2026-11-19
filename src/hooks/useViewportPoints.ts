@@ -48,7 +48,14 @@ import {
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 /** Point layer types handled by this hook */
-export const POINT_LAYER_TYPES: LayerType[] = ['venues', 'events', 'restrooms', 'hotels'];
+export const POINT_LAYER_TYPES: LayerType[] = [
+  'venues',
+  'events',
+  'restrooms',
+  'hotels',
+  'cruising',
+  'organizations',
+];
 
 export interface PointFeatureProps {
   id: string;
@@ -206,6 +213,8 @@ async function fetchOptimizedAssets(
 async function fetchVenuesInBbox(
   bbox: Bbox,
   filters: ExploreMapFilters | undefined,
+  /** Leave cruising out when the cruising layer is toggled separately. */
+  excludeCruising = false,
 ): Promise<PointFeature[]> {
   let query = supabase
     .from('venues')
@@ -229,6 +238,7 @@ async function fetchVenuesInBbox(
     .limit(VIEWPORT_POINT_LIMIT);
 
   if (filters?.category) query = query.eq('category', filters.category);
+  else if (excludeCruising) query = query.neq('category', 'cruising');
   if (filters?.tags?.length) query = query.overlaps('tags', filters.tags);
   if (filters?.search) {
     query = query.or(
@@ -434,6 +444,52 @@ async function fetchHotelsInBbox(bbox: Bbox): Promise<PointFeature[]> {
   }));
 }
 
+/** Organisations that are parties in their own right. Venue-identity orgs
+ *  (minted above each venue) are skipped: their venue is already a pin. */
+async function fetchOrganizationsInBbox(bbox: Bbox): Promise<PointFeature[]> {
+  const { data, error } = await supabase
+    .from('organizations')
+    .select('id, slug, name, latitude, longitude, logo_url, roles, primary_venue_id')
+    .eq('status', 'active')
+    .not('latitude', 'is', null)
+    .not('longitude', 'is', null)
+    .gte('latitude', bbox.south)
+    .lte('latitude', bbox.north)
+    .gte('longitude', bbox.west)
+    .lte('longitude', bbox.east)
+    .limit(VIEWPORT_POINT_LIMIT);
+  if (error) throw error;
+  return (data ?? [])
+    .filter(
+      (o: Record<string, unknown>) =>
+        !(Array.isArray(o.roles) && o.roles.includes('venue') && o.primary_venue_id),
+    )
+    .map((o: Record<string, unknown>) => ({
+      type: 'Feature' as const,
+      geometry: {
+        type: 'Point' as const,
+        coordinates: [Number(o.longitude), Number(o.latitude)],
+      },
+      properties: {
+        id: `organization-${o.id}`,
+        pointType: 'organizations' as const,
+        entity: ENTITY_BULLET.organizations,
+        line: lineFor('organizations'),
+        name: (o.name as string) ?? 'Organisation',
+        subtitle: '',
+        color: lineColor('C'),
+        linkTo: o.slug ? `/organizations/${o.slug}` : '',
+        featured: false,
+        live: false,
+        iconKey: glyphKeyFor('organizations'),
+        meta: JSON.stringify({
+          image: typeof o.logo_url === 'string' ? o.logo_url : undefined,
+          isLogo: typeof o.logo_url === 'string',
+        }),
+      },
+    }));
+}
+
 async function fetchRestroomsInBbox(bbox: Bbox): Promise<PointFeature[]> {
   const lat = (bbox.south + bbox.north) / 2;
   const lng = (bbox.west + bbox.east) / 2;
@@ -527,7 +583,8 @@ export function useViewportPoints({
       const promises: Promise<void>[] = [];
 
       for (const type of enabled) {
-        const ck = cacheKey(type, bk, fh);
+        const noCruising = type === 'venues' && enabled.includes('cruising');
+        const ck = cacheKey(noCruising ? 'venues:nc' : type, bk, fh);
         const cached = featureCache.get(ck);
         if (cached) {
           allFeatures.push(...cached);
@@ -540,7 +597,17 @@ export function useViewportPoints({
             let features: PointFeature[] = [];
             switch (type) {
               case 'venues':
-                features = await withRetry(() => fetchVenuesInBbox(quantized, filtersRef.current));
+                features = await withRetry(() =>
+                  fetchVenuesInBbox(quantized, filtersRef.current, noCruising),
+                );
+                break;
+              case 'cruising':
+                features = await withRetry(() =>
+                  fetchVenuesInBbox(quantized, { ...filtersRef.current, category: 'cruising' }),
+                );
+                break;
+              case 'organizations':
+                features = await withRetry(() => fetchOrganizationsInBbox(quantized));
                 break;
               case 'events':
                 features = await withRetry(() => fetchEventsInBbox(quantized, filtersRef.current));

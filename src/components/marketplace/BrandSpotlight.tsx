@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { ArrowRight } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MarketplaceCard } from './MarketplaceCard';
@@ -51,45 +52,52 @@ export function BrandSpotlight() {
   return (
     <section aria-labelledby="brand-spotlight" className="mb-16 lg:mb-24">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
-        <div className="flex flex-col justify-between gap-8 rounded-container bg-muted p-8 lg:col-span-4">
-          <div>
-            <p className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
+        <div className="flex flex-col justify-between gap-8 rounded-panel bg-card p-8 shadow-soft lg:col-span-4">
+          <div className="flex flex-col gap-4">
+            <p className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
               Brand spotlight
             </p>
-            <BrandMark
-              name={brand.display_name}
-              logoUrl={brand.logo_url}
-              onInk={brand.logo_on_ink ?? false}
-              className="mb-4 h-12 w-12 rounded-element"
-              monogramClassName="text-title font-bold"
-              padding="p-1"
-            />
-            <h2 id="brand-spotlight" className="mb-2 font-display text-headline tracking-tight">
-              {brand.display_name}
-            </h2>
+            <div className="flex items-center gap-4">
+              <BrandMark
+                name={brand.display_name}
+                logoUrl={brand.logo_url}
+                onInk={brand.logo_on_ink ?? false}
+                className="h-16 w-16 shrink-0 rounded-container"
+                monogramClassName="text-headline font-bold"
+                padding="p-1.5"
+              />
+              <div className="min-w-0">
+                <h2
+                  id="brand-spotlight"
+                  className="font-display text-headline leading-tight tracking-tight"
+                >
+                  {brand.display_name}
+                </h2>
+                <p className="text-13 text-muted-foreground">
+                  {brand.product_count.toLocaleString()} listing
+                  {brand.product_count !== 1 ? 's' : ''}
+                </p>
+              </div>
+            </div>
             {ownership.length > 0 && (
-              <div className="mb-4 flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5">
                 {ownership.map((t) => (
-                  <Badge key={t} variant="outline">
+                  <Badge key={t} variant="soft">
                     {OWNERSHIP_LABELS[t]}
                   </Badge>
                 ))}
               </div>
             )}
-            {story ? (
-              <p className="text-sm leading-relaxed text-muted-foreground line-clamp-4">{story}</p>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                {brand.product_count.toLocaleString()} listing
-                {brand.product_count !== 1 ? 's' : ''} on Queer Guide.
-              </p>
+            {story && (
+              <p className="text-15 leading-relaxed text-muted-foreground line-clamp-4">{story}</p>
             )}
           </div>
           <LocalizedLink
             to={`/marketplace/brands/${brand.slug}`}
-            className="inline-flex items-center gap-2 text-sm font-medium underline underline-offset-4 hover:no-underline"
+            className="no-underline inline-flex h-11 items-center justify-center gap-2 self-start rounded-element bg-foreground px-4 text-13 font-bold text-background hover:opacity-90"
           >
-            Visit brand page →
+            Visit brand page
+            <ArrowRight size={16} aria-hidden className="rtl:rotate-180" />
           </LocalizedLink>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:col-span-8">

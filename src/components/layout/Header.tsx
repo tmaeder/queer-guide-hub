@@ -149,7 +149,7 @@ export function Header() {
       onClick={() => (user ? navigate(submitCta.route) : setAuthDialogOpen(true))}
       aria-label={contributeLabel}
       title={contributeLabel}
-      className="h-11 w-11 shrink-0 gap-2 p-0 lg:w-auto lg:px-4"
+      className="h-11 w-11 shrink-0 gap-2 p-0 lg:w-auto lg:px-4 [&_svg]:size-6"
     >
       <TransitIcon name="add-station" size={24} />
       <span className="hidden lg:inline">{contributeLabel}</span>

@@ -435,6 +435,9 @@ const Events = () => {
         <GuidesRail
           title={t('guides.rail.titleWorldwide', 'Guides from everywhere')}
           filters={{ entityType: 'event', limit: 6 }}
+          // Load-bearing: the shop hub dropped its buying-guides rail, so this
+          // is the guaranteed desktop path into /guides (e2e/guides.spec.ts).
+          alwaysRender
         />
       </PageContainer>
     </div>

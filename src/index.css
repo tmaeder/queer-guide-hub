@@ -748,7 +748,8 @@
   place-items: center;
   width: 28px;
   height: 28px;
-  min-height: 0;
+  min-width: 0 !important;
+  min-height: 0 !important;
   padding: 0 !important;
   border-radius: 9999px;
   background: hsl(var(--card) / 0.9) !important;
