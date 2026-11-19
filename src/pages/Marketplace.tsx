@@ -147,7 +147,6 @@ const LEGACY_SORT_MAP: Record<string, MarketplaceSort> = {
   za: 'newest',
 };
 const VIEW_MODE_KEY = 'qg.marketplace.viewMode';
-const SHOW_ADULT_KEY = 'qg.marketplace.showAdult';
 
 const Marketplace = () => {
   const { t } = useTranslation();
@@ -195,19 +194,11 @@ const Marketplace = () => {
   const filters = useMemo(() => parseFiltersFromParams(searchParams), [searchParams]);
 
   // Default-SFW browse: adult/explicit hidden until an explicit 18+ opt-in.
-  // Persisted for the browser/account; turning it on records the shared acknowledgement
-  // so the route-level AdultContentGate stays consistent.
-  const { acknowledge } = useAdultAcknowledgement();
-  const [includeAdult, setIncludeAdult] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem(SHOW_ADULT_KEY) === '1';
-  });
+  // Reads the site-wide 18+ affirmation (footer switch), so it never asks twice.
+  const { acknowledged: includeAdult, acknowledge, reset } = useAdultAcknowledgement();
   const handleIncludeAdultChange = (next: boolean) => {
-    setIncludeAdult(next);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(SHOW_ADULT_KEY, next ? '1' : '0');
-    }
     if (next) void acknowledge();
+    else reset();
     setUrlParams({ page: undefined });
   };
 
