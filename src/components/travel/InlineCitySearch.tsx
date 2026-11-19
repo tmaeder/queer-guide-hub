@@ -29,10 +29,10 @@ export function InlineCitySearch({
   const { results, loading } = useSearch(query, { types: [kind], location: city, dateRange });
   const top = results.slice(0, 6);
   const seeAllParams = new URLSearchParams({ city });
-  if (query.trim()) seeAllParams.set('search', query.trim());
+  if (query.trim()) seeAllParams.set(kind === 'event' ? 'q' : 'search', query.trim());
   if (kind === 'event' && start) {
-    seeAllParams.set('start', start);
-    seeAllParams.set('end', end || start);
+    seeAllParams.set('from', start);
+    seeAllParams.set('to', end || start);
   }
   const seeAll = `/${kind === 'venue' ? 'venues' : 'events'}?${seeAllParams.toString()}`;
 

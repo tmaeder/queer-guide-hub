@@ -75,7 +75,7 @@ export function parseFilterState(params: URLSearchParams): EventsFilterState {
   const sort = params.get('sort');
 
   return {
-    q: params.get('q') ?? '',
+    q: params.get('q') ?? params.get('search') ?? '',
     cities,
     types: splitCsv(params.get('types')),
     tags: splitCsv(params.get('tags')),
@@ -83,8 +83,9 @@ export function parseFilterState(params: URLSearchParams): EventsFilterState {
     languages: splitCsv(params.get('lang')),
     ageRestriction: params.get('age') ?? '',
     organizerId: params.get('org') ?? '',
-    from: params.get('from') ?? undefined,
-    to: params.get('to') ?? undefined,
+    // `start`/`end` are accepted so date links from other surfaces still land.
+    from: params.get('from') ?? params.get('start') ?? undefined,
+    to: params.get('to') ?? params.get('end') ?? undefined,
     nearMe: params.get('near') === '1',
     showPast: params.get('past') === '1',
     isFree: params.get('free') === '1',
