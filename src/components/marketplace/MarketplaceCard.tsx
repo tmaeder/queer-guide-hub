@@ -396,26 +396,24 @@ function RowBody({
   return (
     <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 py-2 pr-2">
       <CardBadges isAdult={isAdult} isAffiliate={isAffiliate} queerOwned={queerOwned} />
-      <p className="text-2xs uppercase tracking-label text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
+      <div className="flex min-w-0 flex-wrap items-start gap-1.5 text-2xs uppercase tracking-label text-muted-foreground">
         {listing.brand && brandSlug(listing.brand) ? (
-          <>
-            <LocalizedLink
-              to={`/marketplace/brands/${brandSlug(listing.brand)}`}
-              onClick={(e) => e.stopPropagation()}
-              className="hover:text-foreground"
-            >
-              <HighlightedText text={listing.brand} query={searchQuery} />
-            </LocalizedLink>
-            <span className="mx-1.5">·</span>
-          </>
+          <LocalizedLink
+            to={`/marketplace/brands/${brandSlug(listing.brand)}`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex min-h-0 max-w-full items-center truncate rounded-element bg-muted px-2 py-1 no-underline hover:bg-foreground hover:text-background"
+          >
+            <HighlightedText text={listing.brand} query={searchQuery} />
+          </LocalizedLink>
         ) : listing.business_name ? (
-          <>
+          <span className="inline-flex min-h-0 max-w-full items-center truncate rounded-element bg-muted px-2 py-1">
             <HighlightedText text={listing.business_name} query={searchQuery} />
-            <span className="mx-1.5">·</span>
-          </>
+          </span>
         ) : null}
-        <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
-      </p>
+        <span className="inline-flex min-h-0 max-w-full items-center truncate rounded-element bg-muted px-2 py-1">
+          {departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}
+        </span>
+      </div>
       <h3 className="text-title font-bold leading-snug line-clamp-2">
         <LocalizedLink
           to={`/marketplace/${listing.slug}`}

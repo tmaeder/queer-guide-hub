@@ -81,8 +81,12 @@ function Eyebrow({ guide }: { guide: GuideCardSummary }) {
     );
   }
   return (
-    <p className="text-xs2 uppercase tracking-[0.15em] text-muted-foreground">
-      {parts.join(' · ')}
+    <p className="flex flex-wrap gap-1.5 text-2xs uppercase tracking-label text-muted-foreground">
+      {parts.map((p) => (
+        <span key={p} className="rounded-element bg-muted px-2 py-1">
+          {p}
+        </span>
+      ))}
     </p>
   );
 }
@@ -171,7 +175,7 @@ export const GuideCard = memo(function GuideCard({
         </h3>
         {guide.dek && <p className="italic text-body-lg text-muted-foreground">{guide.dek}</p>}
         <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2">
-          <span className="inline-flex items-center gap-2 text-13 text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-element bg-muted px-2 py-1 text-13 text-muted-foreground">
             {isQuest ? <Flag size={14} aria-hidden /> : <Clock size={14} aria-hidden />}
             {isQuest
               ? t('guides.card.communityQuest', 'Community quest')
