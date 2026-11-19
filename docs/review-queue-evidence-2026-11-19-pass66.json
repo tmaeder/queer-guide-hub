@@ -1,0 +1,34 @@
+{
+  "pass": 66,
+  "date": "2026-11-19",
+  "city_id": "343d6987-2e90-4d58-a2df-fc9fa3ac7425",
+  "name": "Beausoleil",
+  "outcome": "research_only_no_mutation",
+  "active_review_case": false,
+  "retained_point": {
+    "latitude": 43.7402914,
+    "longitude": 7.4209279
+  },
+  "evidence": [
+    {
+      "url": "https://geo.api.gouv.fr/communes/06012?fields=nom,code,codeDepartement,centre&format=geojson&geometry=contour",
+      "sha256": "de7adf326c9baaffa07d3ce196787912bf07d45da0bc9c221985e943c7f20c1b",
+      "bytes": 5743,
+      "status": 200
+    },
+    {
+      "url": "https://geo.api.gouv.fr/communes/06012?fields=nom,code,codeDepartement,centre",
+      "sha256": "8e1fedd280e33a356ac83bdea39ea5701c150f640856e4806edd31d31ae32c7f",
+      "bytes": 115,
+      "status": 200
+    }
+  ],
+  "checks": {
+    "official_polygon_valid": true,
+    "stored_point_inside_official_commune": true,
+    "government_centre_inside_official_commune": true,
+    "coarse_country_mask_for_both": "MC",
+    "overlapping_FR_cell": false
+  },
+  "decision": "Preserve the valid municipal point. The government centre also matches MC in the coarse country mask, so moving the city would not repair the underlying boundary-data conflict. No boundary overrides, tolerance changes, finding deletion or case-resolution claim."
+}

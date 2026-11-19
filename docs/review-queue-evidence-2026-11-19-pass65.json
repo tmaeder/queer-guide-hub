@@ -1,0 +1,49 @@
+{
+  "pass": 65,
+  "date": "2026-11-19",
+  "status": "research_only",
+  "scope": "Distinguish coastline generalization from current city-coordinate defects",
+  "native_contract": "api_private.geo_hygiene_stats counts defects only for country_mismatch or km_to_land>5; its live comment explicitly excludes Natural Earth coastline generalization",
+  "coastal_diagnostics": [
+    {
+      "name": "Skiáthos",
+      "events": 0,
+      "venues": 3,
+      "city_id": "10a0dd93-1fe9-4447-9674-3db712cd8e35",
+      "latitude": 39.1661973,
+      "longitude": 23.4888908,
+      "actual_iso": null,
+      "km_to_land": 0.2,
+      "claimed_iso": "GR",
+      "detected_at": "2026-11-19T03:55:01.03054+00:00",
+      "nearest_iso": "GR",
+      "violation_class": "offshore"
+    },
+    {
+      "name": "Rota",
+      "events": 0,
+      "venues": 7,
+      "city_id": "bdd54cde-3f6d-4b24-b4c2-b136d8de7157",
+      "latitude": 36.61666667,
+      "longitude": -6.35,
+      "actual_iso": null,
+      "km_to_land": 0.4,
+      "claimed_iso": "ES",
+      "detected_at": "2026-11-19T03:55:01.03054+00:00",
+      "nearest_iso": "ES",
+      "violation_class": "offshore"
+    }
+  ],
+  "official_rota_source": {
+    "url": "https://ws089.juntadeandalucia.es/sima/ficha.htm?mun=11030",
+    "principal_nucleus_coordinates": {
+      "latitude": 36.617,
+      "longitude": -6.358,
+      "source_year": 2022
+    },
+    "scope": "Government's principal-town coordinates are near the retained coarse town point. No arbitrary pin shift is made solely to erase a low-resolution coastal marker."
+  },
+  "data_changes": 0,
+  "findings_deleted": 0,
+  "all_cases_complete": false
+}
