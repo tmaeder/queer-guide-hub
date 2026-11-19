@@ -13,9 +13,6 @@ import { CoverageNote } from '@/components/intent/CoverageNote';
 import { UpcomingEvents } from '@/components/intent/UpcomingEvents';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
 import { IntentSheet } from '@/components/people/IntentSheet';
-import { PeopleHereRail } from '@/components/people/PeopleHereRail';
-import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
-import { InterestPicker } from '@/components/people/InterestPicker';
 import {
   useMeetSpaces,
   useLocalGroups,
@@ -275,40 +272,6 @@ export default function People() {
             <PeopleConnectionMap />
           </Suspense>
         </DeferredSection>
-      ),
-    },
-    {
-      id: 'members',
-      label: t('people.sections.members', 'Members'),
-      kicker: t('people.sections.membersKicker', 'People you can message directly'),
-      content: (
-        <div className="space-y-4">
-          {/* The rail is the payoff and the notice is the honest fallback.
-              emptyState is what makes this section legible at all: with 0
-              presence rows the rail is null everywhere on the site, so without
-              it this heading would sit above nothing. */}
-          <PeopleHereRail
-            mode="locals"
-            cityId={cityId ?? undefined}
-            title={
-              cityName
-                ? t('people.rail.titleCity', {
-                    defaultValue: 'Members in {{city}}',
-                    city: cityName,
-                  })
-                : t('people.rail.title', 'Members to meet')
-            }
-            seeAllHref="/hub/members"
-            emptyState={<MeetMembersNotice cityId={cityId ?? undefined} cityName={cityName} />}
-          />
-
-          {/* Directly under the rail it feeds. The shared-interest signal that
-              makes that rail worth reading has had nothing to work with:
-              tag_follows held 0 rows against 9,170 tags because the only way to
-              declare an interest was one tag-detail page at a time. This is the
-              input, placed where its effect shows up. */}
-          <InterestPicker className="mt-4" />
-        </div>
       ),
     },
     {

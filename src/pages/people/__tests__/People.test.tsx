@@ -106,11 +106,17 @@ describe('People hub', () => {
 
   it('keeps the connection map reachable after the listings', () => {
     renderWithProviders(<People />);
-    expect(screen.getByRole('heading', { name: 'Kaserne' }).compareDocumentPosition(
-      screen.getByRole('heading', { name: 'Connection map' }),
-    ) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(
+      screen
+        .getByRole('heading', { name: 'Kaserne' })
+        .compareDocumentPosition(screen.getByRole('heading', { name: 'Connection map' })) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     const opening = screen.getByRole('heading', { level: 1 }).closest('header')!;
-    expect(within(opening).getByRole('link', { name: 'Connection map' })).toHaveAttribute('href', '#map');
+    expect(within(opening).getByRole('link', { name: 'Connection map' })).toHaveAttribute(
+      'href',
+      '#map',
+    );
     expect(screen.getAllByText('Connection map').length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: 'Open full map' })).toHaveAttribute('href', '/map');
   });
@@ -132,11 +138,6 @@ describe('People hub', () => {
       'href',
       '/hub/travel',
     );
-  });
-
-  it('shows the honest member notice instead of an empty rail', () => {
-    renderWithProviders(<People />);
-    expect(screen.getByTestId('member-notice')).toBeInTheDocument();
   });
 
   // A village links to /place/:slug and a community centre to /venues/:slug —
