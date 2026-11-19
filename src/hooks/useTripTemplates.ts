@@ -89,7 +89,33 @@ export interface TripTemplate {
   } | null;
   /** Measured matching venue count when the source provides one. */
   venueCount: number | null;
+  /** Set on the kink-weekend tier (Folsom, Darklands, Easter Berlin…). */
+  theme?: 'kink';
 }
+
+/** The international kink calendar: multi-day weekends people travel for.
+ *  Matched on title because `event_type` is unreliable on these rows (IML and
+ *  Folsom Europe are filed `other`/`festival`). */
+const KINK_TITLE_TERMS = [
+  'folsom',
+  'darklands',
+  'easter berlin',
+  'snax',
+  'leather week',
+  'leather weekend',
+  'leather pride',
+  'leather & fetish',
+  'fetish week',
+  'fetish fest',
+  'fetish weekend',
+  'rubber weekend',
+  'mr. leather',
+  'mr leather',
+  'up your alley',
+  'dore alley',
+];
+/** Side events of a weekend, not a reason to travel on their own. */
+const KINK_EXCLUDE = /meet ?& ?greet|contest|after ?part/i;
 
 /**
  * The seasonal tier, derived.
@@ -189,7 +215,8 @@ export function useTripTemplates() {
       const now = new Date();
       const horizon = new Date(now.getTime() + 90 * 86_400_000);
 
-      const [eventRes, prefRes] = await Promise.all([
+      const kinkHorizon = new Date(now.getTime() + 395 * 86_400_000);
+      const [eventRes, prefRes, kinkRes] = await Promise.all([
         supabase
           .from('events')
           .select(
@@ -212,6 +239,18 @@ export function useTripTemplates() {
               .order('lgbt_friendly_rating', { ascending: false, nullsFirst: false })
               .limit(4)
           : Promise.resolve({ data: [], error: null }),
+        supabase
+          .from('events')
+          .select(
+            'id, title, slug, start_date, end_date, images, city_id, event_type, cities(id, name, image_url, country_id, countries:country_id(currency))',
+          )
+          .eq('status', 'active')
+          .is('duplicate_of_id', null)
+          .gte('start_date', now.toISOString().slice(0, 10))
+          .lte('start_date', kinkHorizon.toISOString().slice(0, 10))
+          .or(KINK_TITLE_TERMS.map((t) => `title.ilike.%${t}%`).join(','))
+          .order('start_date', { ascending: true })
+          .limit(60),
       ]);
 
       // Event lookup is best-effort — if it fails we still surface seasonal
@@ -237,7 +276,20 @@ export function useTripTemplates() {
           countries: { currency: string | null } | null;
         } | null;
       };
-      for (const raw of (eventRes.data ?? []) as unknown as EventRow[]) {
+      const kinkCities = new Set<string>();
+      const kinkRows = ((kinkRes.data ?? []) as unknown as EventRow[]).filter((raw) => {
+        const cityId = raw.cities?.id;
+        if (!cityId || KINK_EXCLUDE.test(raw.title)) return false;
+        // One weekend per city: the earliest, which is the next one to book.
+        if (kinkCities.has(cityId)) return false;
+        kinkCities.add(cityId);
+        return true;
+      });
+      const rows = [
+        ...((eventRes.data ?? []) as unknown as EventRow[]).map((r) => ({ r, kink: false })),
+        ...kinkRows.map((r) => ({ r, kink: true })),
+      ];
+      for (const { r: raw, kink } of rows) {
         const city = raw.cities;
         if (!city?.country_id) continue;
         const cover = raw.images?.[0] ?? city.image_url ?? null;
@@ -261,6 +313,7 @@ export function useTripTemplates() {
             startDate: raw.start_date.slice(0, 10),
           },
           venueCount: null,
+          ...(kink ? { theme: 'kink' as const } : {}),
         });
       }
 
@@ -314,7 +367,8 @@ export function useTripTemplates() {
     // A reader offered the same city twice reads the second card as a bug.
     const claimed = new Set<string>();
     const merged: TripTemplate[] = [];
-    for (const tpl of [...remoteTemplates, ...seasonal]) {
+    const kink = remoteTemplates.filter((t) => t.theme === 'kink');
+    for (const tpl of [...remoteTemplates.filter((t) => t.theme !== 'kink'), ...seasonal]) {
       if (tpl.cityIds.some((id) => claimed.has(id))) continue;
       for (const id of tpl.cityIds) claimed.add(id);
       merged.push(tpl);
@@ -322,7 +376,9 @@ export function useTripTemplates() {
 
     return {
       ...remote,
-      data: merged.slice(0, 6),
+      // Kink weekends ride alongside, outside the cap and the city dedupe: they
+      // only rank first when the reader picks the Kinky mood.
+      data: [...merged.slice(0, 6), ...kink],
       // The surface is usable as soon as either source arrives; it is only
       // genuinely loading while BOTH are empty.
       isLoading: remote.isLoading && seasonal.length === 0,

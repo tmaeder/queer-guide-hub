@@ -10,6 +10,7 @@ import {
   Coffee,
   Crown,
   Flag,
+  Flame,
   Heart,
   Mountain,
   Music,
@@ -52,7 +53,7 @@ import { buildTrainlineUrl } from '@/utils/transport/trainlineUrl';
 import type { HotelTypeOption } from '@/components/booking/HotelSearchForm';
 import type { TransportMode } from '@/components/trips/tripLegs';
 
-type Mood = 'nightlife' | 'slow' | 'pride' | 'culture' | 'outdoors';
+type Mood = 'nightlife' | 'slow' | 'pride' | 'kinky' | 'culture' | 'outdoors';
 type Timing = 'weekend' | 'month' | 'flexible' | 'custom';
 type Budget = 'easy' | 'comfortable' | 'special';
 
@@ -60,6 +61,12 @@ const MOODS: Array<{ value: Mood; label: string; hint: string; icon: typeof Plan
   { value: 'nightlife', label: 'Big nights', hint: 'Clubs, bars and late starts', icon: Music },
   { value: 'slow', label: 'Soft & romantic', hint: 'Cafés, spas and unhurried days', icon: Heart },
   { value: 'pride', label: 'Pride energy', hint: 'A trip anchored by a real event', icon: Flag },
+  {
+    value: 'kinky',
+    label: 'Kinky',
+    hint: 'Folsom, Darklands, Easter Berlin and more',
+    icon: Flame,
+  },
   {
     value: 'culture',
     label: 'Culture & community',
@@ -122,6 +129,8 @@ function datesFor(timing: Timing, days: number, custom?: { start: string; end: s
 
 function scoreTemplate(template: TripTemplate, mood: Mood, timing: Timing) {
   let score = 0;
+  // Kink weekends lead only when asked for, and never surface otherwise.
+  if (template.theme === 'kink') return mood === 'kinky' ? 20 : -20;
   if (mood === 'pride' && template.source === 'event') score += 10;
   if (mood === 'nightlife' && template.vibe === 'nightlife') score += 9;
   if (mood === 'slow' && template.vibe === 'slow') score += 9;
@@ -247,6 +256,7 @@ export function PersonalisedTripPackages() {
   const places = useMemo(() => {
     const seen = new Map<string, number>();
     for (const tpl of templates ?? []) {
+      if (tpl.theme === 'kink' && mood !== 'kinky') continue;
       const city = tpl.cities.split(',')[0]?.trim();
       if (city) seen.set(city, (seen.get(city) ?? 0) + 1);
     }
@@ -254,17 +264,26 @@ export function PersonalisedTripPackages() {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
       .map(([c]) => c);
-  }, [templates]);
+  }, [templates, mood]);
 
   const ranked = useMemo(
     () =>
       [...(templates ?? [])]
+        .filter((tpl) => mood === 'kinky' || tpl.theme !== 'kink')
         .filter((tpl) => !place || tpl.cities.toLowerCase().includes(place.toLowerCase()))
         .sort((a, b) => scoreTemplate(b, mood, timing) - scoreTemplate(a, mood, timing)),
     [templates, mood, timing, place],
   );
   const best = ranked[0];
-  const dates = best ? datesFor(timing, best.days, customDates) : null;
+  // A trip built around an event runs on the event's dates, not the timing chip.
+  const dates = best
+    ? best.event && timing !== 'custom'
+      ? {
+          start: best.event.startDate,
+          end: format(addDays(new Date(best.event.startDate), best.days - 1), 'yyyy-MM-dd'),
+        }
+      : datesFor(timing, best.days, customDates)
+    : null;
   const priceMax = budget === 'easy' ? 140 : budget === 'comfortable' ? 300 : undefined;
   const { data: stays, isLoading: staysLoading } = useHotelSearch({
     city: best?.cities,
