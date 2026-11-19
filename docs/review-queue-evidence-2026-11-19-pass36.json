@@ -1,0 +1,122 @@
+{
+  "pass": 36,
+  "date": "2026-11-19",
+  "status": "applied_and_source_rechecked",
+  "decisions": {
+    "actor": "AI-assisted factual repair",
+    "human_reviewed": false,
+    "user_authorization": "User delegates clear evidence-backed decisions without repeated approval"
+  },
+  "merges": [
+    {
+      "keep_id": "d9086031-7251-40a6-aaf4-2cb085968fdf",
+      "drop_id": "d42a62b8-d0c8-4daf-990f-bf10102e8aa6",
+      "city": "Kempten (Allg\u00e4u)",
+      "qid": "Q3994",
+      "native_audit_id": "01cf98ca-6584-471b-9fb2-5efe834a506f",
+      "moved": {
+        "events": 1,
+        "birthplace_links": 1
+      }
+    },
+    {
+      "keep_id": "65e7ca7a-994c-444b-80bd-db3469f210ad",
+      "drop_id": "dce875be-5ebd-44e2-83eb-d318fec71816",
+      "city": "Hull",
+      "qid": "Q128147",
+      "native_audit_id": "507601d6-e9d2-4fe7-a5f4-845c6ebd50b3",
+      "moved": {
+        "venues": 8,
+        "organizations": 7,
+        "birthplace_links": 2,
+        "venue_coord_fix_references": 5
+      }
+    }
+  ],
+  "primary_sources": [
+    {
+      "url": "https://www.kempten.de/impressum-1583.html",
+      "status": 200,
+      "bytes": 305305,
+      "sha256": "5e23e3fe8de3b6af9e8d447066dc185db9f91edcc65a0b0ed3d9e2016149cc19",
+      "retrieved_at": "2026-11-19T07:55:51.923345+00:00"
+    },
+    {
+      "url": "https://www.statistikportal.de/de/gemeindeverzeichnis/09763000",
+      "status": 200,
+      "bytes": 37774,
+      "sha256": "ff48a5145b9fe8ae19ecf757d85ecc9500cd05a88ef83fe97174a35ac8f8d135",
+      "retrieved_at": "2026-11-19T07:55:52.092143+00:00"
+    },
+    {
+      "url": "https://www.hull.gov.uk/open-data/publication-scheme/2",
+      "status": 200,
+      "bytes": 51907,
+      "sha256": "700d037fc3296be8b6b7b172bfcf6f7b34eda4197c1b2291c314791f9acdff3e",
+      "retrieved_at": "2026-11-19T10:10:34.887687+00:00"
+    }
+  ],
+  "wikidata_entity_pages": [
+    "https://www.wikidata.org/wiki/Q3994",
+    "https://www.wikidata.org/wiki/Q128147"
+  ],
+  "guarded_validation": {
+    "rollback_passed": true,
+    "commit_passed": true,
+    "full_city_hash_guards": true,
+    "full_related_record_comparison": true,
+    "saved_or_private_relationships": 0,
+    "coordinates_preserved": true,
+    "publication_and_attention_preserved": true,
+    "original_records_and_native_reversible_audits_retained": true
+  },
+  "quarantine": {
+    "city": "Kempten donor",
+    "image_source_id": "36705525",
+    "reason": "Retained attribution explicitly identifies Munich; flagged before merge to prevent gap-fill image adoption",
+    "original_asset_preserved": true
+  },
+  "native_gap_transfer": {
+    "fields": [
+      "timezone"
+    ],
+    "values": [
+      "Europe/Berlin",
+      "Europe/London"
+    ],
+    "unsupported_image_and_legacy_narrative_not_transferred": true
+  },
+  "source_reconciliation": {
+    "cleared_machine_findings": 4,
+    "previously_active_cases_made_inactive": 2,
+    "case_keys": [
+      "city_identity:65e7ca7a-994c-444b-80bd-db3469f210ad",
+      "city_identity:d42a62b8-d0c8-4daf-990f-bf10102e8aa6"
+    ],
+    "human_resolution_actor_not_fabricated": true,
+    "native_geography": "country_checked; identity_verified=false; parent_verified=false"
+  },
+  "not_claimed": {
+    "all_queue_cases_complete": false,
+    "hull_partial_pdf_full_capture": false,
+    "github_actions_restored": false
+  },
+  "live_redirect_checks": [
+    {
+      "oldSlug": "tmp-507e55d6-1fc2-4d36-807b-45805cc7afe7",
+      "slug": "kempten-allgaeu",
+      "status": 301,
+      "location": "https://queer.guide/city/kempten-allgaeu",
+      "final_url": "https://queer.guide/city/kempten-allgaeu",
+      "pass": true
+    },
+    {
+      "oldSlug": "kingston-upon-hull-gb-5vq8n",
+      "slug": "hull",
+      "status": 301,
+      "location": "https://queer.guide/city/hull",
+      "final_url": "https://queer.guide/city/hull",
+      "pass": true
+    }
+  ]
+}
