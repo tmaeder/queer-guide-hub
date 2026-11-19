@@ -74,7 +74,7 @@ function RegionalContent() {
           description={t('home.yourLines.description', 'Places and things you looked at recently.')}
         >
           {/* Keep the map position stable when the deferred rail gains cards. */}
-          <div className="h-72 overflow-y-auto">
+          <div className="min-h-72">
             <HomeSection section="your-lines">
               <DeferredSection rootMargin="160px 0px" fallback={recommendationsLoading}>
                 <Suspense fallback={recommendationsLoading}>
