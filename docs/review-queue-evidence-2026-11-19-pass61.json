@@ -1,0 +1,146 @@
+{
+  "pass": 61,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "scope": "Skiathos town and Tema city factual lifecycle repairs",
+  "places": [
+    {
+      "proof": {
+        "source": "primary_municipal_identity_lifecycle_research",
+        "human_reviewed": false,
+        "decision_actor": "AI-assisted factual lifecycle repair",
+        "user_authorization": "User delegates clear-evidence factual editorial decisions",
+        "qid": "Q7534982",
+        "municipality_name": "Σκιάθος / Skiathos town",
+        "country": "GR",
+        "municipal_url": "https://www.n-skiathos.gr/el/",
+        "municipal_sha256": "dfe811896add996f6cf9424b666a4111f461d7cbf9657596462beb3de74df999",
+        "municipal_retrieved_at": "2026-11-19T14:26:04.348016+00:00",
+        "wikidata_url": "https://www.wikidata.org/wiki/Special:EntityData/Q7534982.json",
+        "wikidata_sha256": "6f28f2b38cde98fdbd08a76bd89b93eb1aa42faac8888d351ff7d347b9d055c9",
+        "identity_basis": "Current municipal government home explicitly distinguishes the town of Skiathos; current Wikidata identifies the town and island's seat, Greece, same official website and two nearby town points. Existing city description and Wikipedia title explicitly represent the town; no island/city scope conversion.",
+        "coordinate_scope": "Both current Wikidata town points agree within1km with retained representative point. No city or dependent point changed.",
+        "scope": "Only factual real-town lifecycle, canonical URL and current HTTPS municipal locator. Preserve old broad region label without certifying it; parent/identity verification remain false. Retain SEOfalse, attentionfalse, all other facts/history and editorial gates."
+      },
+      "result": {
+        "case": {
+          "active": false,
+          "members": 0
+        },
+        "slug": "skiathos",
+        "city_id": "10a0dd93-1fe9-4447-9674-3db712cd8e35",
+        "shell_status": "real",
+        "seo_indexable": false,
+        "related_counts": {
+          "cities": 1,
+          "venues": 4,
+          "geo_places": 2,
+          "city_aliases": 12,
+          "organizations": 3,
+          "venue_coord_fixes": 1,
+          "city_coverage_gaps": 1,
+          "city_slug_redirects": 1,
+          "city_quality_signals": 6,
+          "geo_city_coord_findings": 1
+        },
+        "needs_attention": false,
+        "official_website": "https://www.n-skiathos.gr/el/",
+        "old_slug_redirect": "tmp-443fda95-7646-49ec-82df-4bce17921351",
+        "private_saved_references": 0,
+        "native_verification_status": "country_checked"
+      }
+    },
+    {
+      "proof": {
+        "source": "primary_municipal_identity_lifecycle_research",
+        "human_reviewed": false,
+        "decision_actor": "AI-assisted factual lifecycle repair",
+        "user_authorization": "User delegates clear-evidence factual editorial decisions",
+        "qid": "Q726143",
+        "municipality_name": "Tema, Ghana",
+        "country": "GH",
+        "region": "GH-AA",
+        "municipal_url": "https://tma.gov.gh/",
+        "municipal_source_method": "Rendered current primary Tema Metropolitan Assembly home read",
+        "municipal_raw_capture_complete": false,
+        "municipal_raw_capture_limitation": "Subsequent bounded raw home request reset by peer; linked About page returned403. Neither retried/bypassed or marked as successful raw captures. No municipal raw hash or automated source recovery claimed.",
+        "wikidata_url": "https://www.wikidata.org/wiki/Special:EntityData/Q726143.json",
+        "wikidata_sha256": "888c06d886812d2958b5355f33b75f86ced7b7db79441eef7f3f83c86cecfc50",
+        "wikidata_retrieved_at": "2026-11-19T14:26:04.347861+00:00",
+        "identity_basis": "Current primary metropolitan assembly site identifies Tema, and current complete Wikidata capture identifies the Ghanaian port city, Ghana country, metropolitan parent, same official domain and two nearby city points. Existing city description and Wikipedia title explicitly represent Tema city.",
+        "coordinate_scope": "Both current Wikidata points are roughly1.8–1.9km from the unchanged city representative point. No point, venue, birthplace or private location moved/certified.",
+        "scope": "Only factual city lifecycle and canonical slug. Preserve old official URL/availability uncertainty, SEOfalse, attentionfalse, all other facts/history and actual human verification gates."
+      },
+      "result": {
+        "case": {
+          "active": false,
+          "members": 0
+        },
+        "slug": "tema",
+        "city_id": "806cf9ec-4b2e-4675-9322-cd93cdbe74a6",
+        "shell_status": "real",
+        "seo_indexable": false,
+        "related_counts": {
+          "geo_places": 1,
+          "city_aliases": 10,
+          "personalities": 1,
+          "city_coverage_gaps": 1,
+          "city_consensus_audit": 1,
+          "city_quality_signals": 6,
+          "city_review_queue_legacy": 1
+        },
+        "needs_attention": false,
+        "old_slug_redirect": "tmp-87c1ee5a-f169-4500-8df5-0773e4808c4f",
+        "private_saved_references": 0,
+        "native_verification_status": "country_checked"
+      }
+    }
+  ],
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "source_contract_md5": "1db69e45d248bb357467e18dd7bb84e3",
+    "all_pins_other_facts_actual_human_gates_and_seo_attention_flags_preserved": true,
+    "skiathos_four_complete_venues_and_three_businesses_preserved": true,
+    "tema_complete_birthplace_row_preserved": true,
+    "private_saved_refs_zero_both": true,
+    "shared_geo_changes_only_own_slug_timestamp": true,
+    "human_identity_parent_verification_still_false": true,
+    "actual_cases_inactive": true,
+    "live_tmp_url_redirects_301_to": [
+      "https://queer.guide/city/skiathos",
+      "https://queer.guide/city/tema"
+    ]
+  },
+  "post_refresh_observation": {
+    "all_five_repaired_cases_still_inactive": [
+      {
+        "id": "0f57da34-f65f-05e3-bdbc-b51b73167c4f",
+        "active": false,
+        "members": 1
+      },
+      {
+        "id": "6acd80e3-6f0c-c91c-f2a6-6cae82699133",
+        "active": false,
+        "members": 1
+      },
+      {
+        "id": "899c045b-4929-7585-4596-f3cd5788c82a",
+        "active": false,
+        "members": 0
+      },
+      {
+        "id": "9dabaf4e-1d8a-609e-0c91-9a4f81fb5101",
+        "active": false,
+        "members": 0
+      },
+      {
+        "id": "f9584961-b7d9-482f-5473-cbc13898f2d7",
+        "active": false,
+        "members": 0
+      }
+    ],
+    "note": "Inactive Khon Kaen and Tema cases retain historical cached members after worklist refresh; active remainsfalse. Commit-time members werezero. No later zero-member claim is made."
+  },
+  "all_cases_complete": false
+}
