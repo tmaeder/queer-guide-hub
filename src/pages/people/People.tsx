@@ -1,7 +1,15 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { SlidersHorizontal } from '@/components/icons';
+import {
+  CalendarDays,
+  Compass,
+  Home,
+  Map,
+  Repeat,
+  SlidersHorizontal,
+  Users,
+} from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { useMeta } from '@/hooks/useMeta';
@@ -114,6 +122,7 @@ export default function People() {
   const sections: SectionDef[] = [
     {
       id: 'spaces',
+      icon: Home,
       label: t('people.sections.spaces', 'Community spaces'),
       kicker: cityName
         ? t('people.sections.spacesKickerCity', {
@@ -179,6 +188,7 @@ export default function People() {
     },
     {
       id: 'groups',
+      icon: Users,
       label: t('people.sections.groups', 'Groups to join'),
       kicker: t(
         'people.sections.groupsKickerWorldwide',
@@ -215,6 +225,7 @@ export default function People() {
     },
     {
       id: 'whats-on',
+      icon: CalendarDays,
       label: t('people.sections.whatsOn', "What's on"),
       kicker: t('people.sections.whatsOnKicker', 'Turning up somewhere beats messaging'),
       content: <UpcomingEvents eventsResult={eventsResult} cityName={cityName} borderless />,
@@ -226,6 +237,7 @@ export default function People() {
     },
     {
       id: 'regulars',
+      icon: Repeat,
       label: t('people.sections.regulars', 'Bars and cafés'),
       kicker: t('people.sections.regularsKicker', 'Where people become regulars'),
       // Self-hiding: useNightlifeVenues is city-gated, so this is absent
@@ -253,6 +265,7 @@ export default function People() {
     },
     {
       id: 'map',
+      icon: Map,
       label: t('people.sections.map', 'Connection map'),
       description: t(
         'people.sections.mapDescription',
@@ -276,6 +289,7 @@ export default function People() {
     },
     {
       id: 'elsewhere',
+      icon: Compass,
       label: t('people.sections.elsewhere', 'Elsewhere'),
       kicker: t('people.sections.elsewhereKicker', 'Cities with the deepest scenes'),
       content: (
