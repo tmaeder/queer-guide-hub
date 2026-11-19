@@ -27,7 +27,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 
 import { useMeta } from '@/hooks/useMeta';
 import { useCMSPage } from '@/hooks/useCMSPage';
@@ -42,6 +42,8 @@ import { HelpFilterSpine } from '@/components/help/HelpFilterSpine';
 import { HotlineRow } from '@/components/help/HotlineRow';
 import { DirectoryList } from '@/components/help/DirectoryList';
 import { MoreSupportBand } from '@/components/help/MoreSupportBand';
+import { SituationGuide, SituationPicker } from '@/components/help/SituationGuide';
+import { situationById, type SituationId } from '@/components/help/situations';
 import {
   channelHref,
   COUNTRY_NAMES,
@@ -84,6 +86,20 @@ export default function HelpHotlines() {
   }, [params.country, user]);
 
   const geo = useGeoCountry(initialCountry);
+
+  // `?need=` makes a situation linkable; mental health is the default.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const situation = situationById(searchParams.get('need'));
+  const setNeed = (id: SituationId) =>
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (id === 'crisis') next.delete('need');
+        else next.set('need', id);
+        return next;
+      },
+      { replace: true },
+    );
 
   const [countryFilter, setCountryFilter] = useState<string>(geo.country);
   const [topicFilter, setTopicFilter] = useState<string>('ALL');
@@ -149,6 +165,16 @@ export default function HelpHotlines() {
     });
   }, [inScope, topicFilter, searchQuery]);
 
+  const situationLines = useMemo(
+    () =>
+      sortByAvailability(
+        inScope.filter(
+          (h) => !isDirectory(h) && h.topics.some((x) => situation.topics.includes(x)),
+        ),
+      ),
+    [inScope, situation],
+  );
+
   const callNow = useMemo(
     () => sortByAvailability(visible.filter((h) => !isDirectory(h))),
     [visible],
@@ -198,16 +224,27 @@ export default function HelpHotlines() {
           dead row above the acute-danger action. */}
       <CrisisBar country={countryFilter} />
 
-      <div className="mt-6">
-        <CrisisTriage
-          hotlines={hotlines}
-          hero={hero}
-          country={countryFilter}
-          availableCountries={availableCountries}
-          onCountryChange={setCountryFilter}
-          savedLines={savedLines}
+      <SituationPicker value={situation.id} onChange={setNeed} />
+
+      {situation.id === 'crisis' ? (
+        <div className="mt-8">
+          <CrisisTriage
+            hotlines={hotlines}
+            hero={hero}
+            country={countryFilter}
+            availableCountries={availableCountries}
+            onCountryChange={setCountryFilter}
+            savedLines={savedLines}
+          />
+        </div>
+      ) : (
+        <SituationGuide
+          situation={situation}
+          lines={situationLines}
+          isBookmarked={isBookmarked}
+          toggleBookmark={toggleBookmark}
         />
-      </div>
+      )}
 
       {/* The seam. Everything above answers "what do I do now"; everything
           below is for browsing, and the rule says so out loud. */}
