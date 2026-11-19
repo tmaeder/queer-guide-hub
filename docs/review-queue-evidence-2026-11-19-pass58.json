@@ -1,0 +1,50 @@
+{
+  "pass": 58,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "creators": [
+    {
+      "brand_id": "3a6b5190-dfd8-4f67-8902-bf255f754168",
+      "name": "Colm Toibin",
+      "url": "https://colmtoibin.com/",
+      "source_method": "direct_primary_http_200",
+      "status": 200,
+      "bytes": 94283,
+      "sha256": "b5c6e6d8b67ec3055401a9eb93fd278c665eee93f570cc88be04778a5ac30210",
+      "retrieved_at": "2026-11-19T14:12:18.055801+00:00",
+      "work_url": "https://colmtoibin.com/the-magician/",
+      "work_sha256": "d4549eb4a679ddebb185127f5561ffba3fafeb68b4c7190a85245f2e0853048e",
+      "work_retrieved_at": "2026-11-19T14:12:36.834941+00:00",
+      "registered_title": "The Magician",
+      "listing_id": "2f522095-3e0c-4605-83f9-0977632f5587",
+      "identity_basis": "Official Colm Tóibín home and own The Magician page identify exact registered author/work; registry spelling retained without merging labels"
+    }
+  ],
+  "result": {
+    "brands": [
+      {
+        "id": "3a6b5190-dfd8-4f67-8902-bf255f754168",
+        "name": "Colm Toibin",
+        "website": "https://colmtoibin.com/",
+        "organization_id": "ae6acbc8-a4ad-4456-8367-4a9e4c5f680b",
+        "publication_status": "published",
+        "ownership_review_status": "not_applicable"
+      }
+    ],
+    "passed_findings": 2
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "actual_contact_linkage_passes": 2,
+    "publication_ownership_quality_checked_at_all_other_fields_and_actual_human_reviews_preserved": true,
+    "all_images_credits_and_licences_unchanged": true,
+    "native_profile_draft_unclaimed": true,
+    "native_source_reconciled": true
+  },
+  "not_applied": {
+    "christos_tsiolkas": "Proposed official site inaccessible through research tool; no personal domain assigned.",
+    "dian_hanson": "Publisher evidence confirms works but not personal professional locator; publisher company domain is not assigned as individual creator profile."
+  },
+  "all_cases_complete": false
+}
