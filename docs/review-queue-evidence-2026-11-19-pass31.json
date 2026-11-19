@@ -1,0 +1,52 @@
+{
+  "pass": 31,
+  "date": "2026-11-19",
+  "pr": 5397,
+  "merge_commit": "0bd90bcf09d67bef3a8f7027b623dd9b174d924f",
+  "github_actions_blocker": {
+    "reason": "Please verify your email address to run GitHub Actions workflows.",
+    "source": "https://github.com/tmaeder/queer-guide-hub/actions/runs/44469171299",
+    "jobs_started": 0,
+    "user_action_pending": true
+  },
+  "worker_release": {
+    "version": 46,
+    "status": "ACTIVE",
+    "files": 20,
+    "all_files_match_merged_source": true,
+    "changed_files": [
+      "functions/review-automation/index.ts",
+      "functions/review-automation/policy.ts"
+    ],
+    "verify_jwt": false,
+    "internal_body_auth_preserved": true,
+    "ezbr_sha256": "316be2d68df3bf83a761082e519da75b13aad775b5e143bd89c529637284727c",
+    "method": "Connected Supabase deployment tool after merged PR checks pass and normal deployment workflows cannot start."
+  },
+  "frontend_release": {
+    "url": "https://e451ed69.queer-guide.pages.dev",
+    "production": "https://queer.guide",
+    "build_id": "0bd90bcf09d67bef3a8f7027b623dd9b174d924f",
+    "method": "Exact merged source build and local authenticated Wrangler Pages deployment; preserve existing public Sentry DSN and release3 build setting.",
+    "review_asset": "/assets/js/AdminDashboard-B9FqXs2F.js",
+    "asset_sha256": "158cc82ba890d4066c12946ceefe386c5a6c0d67b62c10026166b2c5308e5e33",
+    "live_bytes_match_local_build": true,
+    "production_smoke": {
+      "passed": 18,
+      "failed": 0
+    },
+    "production_browser_checks": {
+      "passed": 6,
+      "failed": 0
+    },
+    "notes": "Earlier production returned previous build1a1b968; an ad-hoc deployment advertised the new commit but its assets were not validated. This release verifies actual live build-id and Review asset bytes on production and its deployment URL. No OAuth credential or private environment secret is copied into build evidence."
+  },
+  "existing_blocker_label_repair": {
+    "changed_jobs": 314,
+    "only_after_worker_and_ui_verified": true,
+    "old_reason_evidence_evaluation_retained": true,
+    "full_before_after_audit": true,
+    "status_attempts_fingerprint_retry_and_case_preserved": true,
+    "case_resolutions_claimed": 0
+  }
+}

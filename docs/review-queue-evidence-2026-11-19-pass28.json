@@ -1,0 +1,135 @@
+{
+  "pass": 28,
+  "observed_date": "2026-11-19",
+  "repairs": [
+    {
+      "entity_type": "city",
+      "entity_id": "6d357747-d492-4039-9f8b-4b14391046e9",
+      "name": "Hanau",
+      "scope": "Restore retained clean description by removing one exact unsupported insertion, then native country-only geography recheck; unchanged original source value, all other city fields/gates and all linked venues.",
+      "proof": {
+        "source": "primary_municipal_state_and_federal_identity_research",
+        "human_reviewed": false,
+        "observed_date": "2026-11-19",
+        "sources": [
+          {
+            "url": "https://www.hanau.de/",
+            "sha256": "511f4aae3ca9e790c9c3763b7ef084719453c86a15e4619099ad4b7b1a4897c0",
+            "observed_at": "2026-11-19T00:13:15.283578+00:00"
+          },
+          {
+            "url": "https://innen.hessen.de/Kommunales/Kommunen/Gemeinden-und-Landkreise",
+            "sha256": "2db43412c6e46e17a6fe0c2e28665ef98efd44292234c66a9a2817ee26f0e02c",
+            "observed_at": "2026-11-19T00:13:15.317283+00:00"
+          },
+          {
+            "url": "https://www.statistikportal.de/de/gemeindeverzeichnis/06415000",
+            "sha256": "e3411d316b811722d7123991f3a61c6360db1fb29ecd78379f1041f45577cf87",
+            "observed_at": "2026-11-19T00:13:15.529226+00:00"
+          }
+        ],
+        "qid": "Q3802",
+        "ags": "06415000",
+        "identity": "Hanau,Brüder-Grimm-Stadt,Hesse,Germany",
+        "scope": "Current primary government sources corroborate the existing real city, state and website; fetched Wikidata names and nearby point agree. Restore only the previously retained clean description by removing an exact unsupported insertion. Preserve all other wording without asserting it all newly verified, original source provenance, name,QID,point,lifecycle,attention/media/publication gates and all related records. Refresh stale native geography country-check cache only; no human identity/parent verification or private geography approval."
+      },
+      "human_reviewed": false
+    },
+    {
+      "name": "Hachette",
+      "proof": {
+        "name": "Hachette",
+        "url": "https://www.hachette.co.uk/",
+        "status": 200,
+        "bytes": 339577,
+        "sha256": "5d939da0dd0e4c5aa4298a5f2e8ca87e15ab62aac5b560cba8b2178079003d1a",
+        "observed_at": "2026-11-19T00:21:39.428292+00:00",
+        "identity": "Hachette UK official publisher group website publishes the registry sample book Ace and Aro Journeys (ISBN9781839976384). Scope is the current professional publisher-group web identity, not a different Hachette country company or a legal ownership assertion.",
+        "product_proof": {
+          "url": "https://www.hachette.co.uk/titles/none/ace-and-aro-journeys/9781839976384/",
+          "status": 200,
+          "sha256": "3d7e4d31566916d8969c658e890ffb838d595d858adc7e0deca0222bc610bd09",
+          "observed_at": "2026-11-19T00:21:14.727627+00:00"
+        }
+      },
+      "scope": "Verified professional website; existing native domain trigger creates unclaimed draft brand-only profile. Contact/linkage quality passes reflect actual website/relationship. Ownership not_applicable, publication draft, all unrelated fields/gates and source labels preserved.",
+      "human_reviewed": false
+    },
+    {
+      "name": "C. B. Lee",
+      "proof": {
+        "url": "https://cb-lee.com/",
+        "final_url": "https://cb-lee.com/",
+        "status": 200,
+        "bytes": 122277,
+        "sha256": "ae27a88699f863568cc6ab6f23d917be0e165999cb87c50bb165d08a257e133a",
+        "observed_at": "2026-11-19T00:23:46.181417+00:00",
+        "name": "C. B. Lee",
+        "identity": "Official author homepage names CB Lee and explicitly features Coffeeshop in an Alternate Universe, the exact registered sample book. Author event organizer independently links this professional domain."
+      },
+      "scope": "Verified professional website; existing native domain trigger creates unclaimed draft brand-only profile. Contact/linkage quality passes reflect actual website/relationship. Ownership not_applicable, publication draft, all unrelated fields/gates and source labels preserved.",
+      "human_reviewed": false
+    },
+    {
+      "name": "Clare Ashton",
+      "proof": {
+        "url": "https://rclareashton.wordpress.com/",
+        "final_url": "https://rclareashton.wordpress.com/",
+        "status": 200,
+        "bytes": 132799,
+        "sha256": "dbf49e72871a436a8dbdb00251c17f64e3aaa8f13e9d4018c63144494b7d1d52",
+        "observed_at": "2026-11-19T00:23:46.820315+00:00",
+        "name": "Clare Ashton",
+        "identity": "Official author blog/books identify Clare Ashton and Poppy Jenkins, the exact work in the registry; only the author professional host is linked, not the shared wordpress.com platform.",
+        "work_proof": {
+          "url": "https://rclareashton.wordpress.com/books/",
+          "final_url": "https://rclareashton.wordpress.com/books/",
+          "status": 200,
+          "bytes": 208395,
+          "sha256": "ff7ac4a48672d7aed3ffd59c5c3d0715d0256e96acd69b3e43465173f8ceb0d3",
+          "observed_at": "2026-11-19T00:23:46.698092+00:00"
+        }
+      },
+      "scope": "Verified professional website; existing native domain trigger creates unclaimed draft brand-only profile. Contact/linkage quality passes reflect actual website/relationship. Ownership not_applicable, publication draft, all unrelated fields/gates and source labels preserved.",
+      "human_reviewed": false
+    },
+    {
+      "name": "Charlie Josephine",
+      "proof": {
+        "url": "https://charliejosephine.com/",
+        "final_url": "https://charliejosephine.com/",
+        "status": 200,
+        "bytes": 78101,
+        "sha256": "e77eb0499a20f7019a984dfb1189ab8fb408779c103318a9a61e3aa37b62b359",
+        "observed_at": "2026-11-19T00:23:46.250288+00:00",
+        "name": "Charlie Josephine",
+        "identity": "Official professional site and Cowbois page explicitly credit the author for the exact registry sample work; publisher Concord corroborates authorship.",
+        "work_proof": {
+          "url": "https://charliejosephine.com/work/cowbois",
+          "final_url": "https://charliejosephine.com/work/cowbois",
+          "status": 200,
+          "bytes": 138495,
+          "sha256": "07478500e4408aa4167e959fef44f17a1fc12167ec351db40dd515cfc3dbfa99",
+          "observed_at": "2026-11-19T00:23:46.352449+00:00"
+        }
+      },
+      "scope": "Verified professional website; existing native domain trigger creates unclaimed draft brand-only profile. Contact/linkage quality passes reflect actual website/relationship. Ownership not_applicable, publication draft, all unrelated fields/gates and source labels preserved.",
+      "human_reviewed": false
+    }
+  ],
+  "restricted_sources": [
+    {
+      "name": "Franklin Sports",
+      "url": "https://franklinsports.com/",
+      "http_status": 403,
+      "action": "No retry, bypass, URL assignment or evidence pass."
+    },
+    {
+      "name": "Go Softwear",
+      "url": "https://www.gosoftwear.com/collections/go-softwear",
+      "http_status": 429,
+      "action": "No retry, bypass, URL assignment or evidence pass."
+    }
+  ],
+  "closure_and_lifecycle_approvals": "Pending user answers; no city lifecycle or Barracuda closure change."
+}

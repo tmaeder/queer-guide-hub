@@ -1,0 +1,94 @@
+{
+  "pass": 33,
+  "date": "2026-11-19",
+  "human_reviewed": false,
+  "repairs": [
+    {
+      "entity_type": "cities",
+      "ids": [
+        "c8922da8-6124-4d6f-8fab-a2ffef32eeb6",
+        "d8fddf07-99ef-4661-8104-476ddc1f2bde",
+        "ea557d25-5826-4823-9712-a633d2ee00b0",
+        "bf8341e3-3bd8-4857-8b4c-fbe8ecc7aa86"
+      ],
+      "names": [
+        "Burghausen",
+        "Hutthurm",
+        "Stralsund",
+        "Laax"
+      ],
+      "change": "placeholder to real",
+      "proof": {
+        "source": "primary_municipal_identity_lifecycle_research",
+        "human_reviewed": false,
+        "decision_actor": "AI-assisted factual lifecycle repair",
+        "user_authorization": "User delegates clear-evidence decisions: Don't ask me, if there's clear evidence for stuff like this. decide yourself.",
+        "scope": "Identity-only placeholder to real for the exact current municipalities Burghausen,Hutthurm,Stralsund and Laax, supported by current official sites and independently read Wikidata name/country/settlement-class/nearby-point facts. Preserve all names,QIDs,points,facts,complete related venues/businesses, existing attention flags, SEO false, media/safety/verification/ownership, and human coordinate repair history. No synthetic human stamp or publication/indexing approval.",
+        "proofs": {
+          "Laax": {
+            "url": "https://www.laax-gr.ch/",
+            "final_url": "https://www.laax-gr.ch/",
+            "status": 200,
+            "bytes": 40070,
+            "sha256": "4462cf8714443666c0a71c38231b1ef06a7a9e3274561df0f720e2cb928e7222",
+            "observed_at": "2026-11-19T07:17:57.486056+00:00",
+            "qid": "Q69606",
+            "name": "Laax",
+            "region_code": "CH-GR",
+            "country_code": "CH",
+            "wikidata_url": "https://www.wikidata.org/wiki/Q69606",
+            "classification": "municipality of Switzerland",
+            "coordinate_scope": "Existing representative point agrees with the researched town/municipality, without creating or certifying a precise venue/private location."
+          },
+          "Burghausen": {
+            "url": "https://www.burghausen.de/",
+            "final_url": "https://www.burghausen.de/",
+            "status": 200,
+            "bytes": 737843,
+            "sha256": "0fb48a9403d4577596ae2d023fc330101bbec3fc06dca5ffb92168a8b9ebda34",
+            "observed_at": "2026-11-19T07:17:57.563151+00:00",
+            "qid": "Q262669",
+            "name": "Burghausen",
+            "region_code": "DE-BY",
+            "country_code": "DE",
+            "wikidata_url": "https://www.wikidata.org/wiki/Q262669",
+            "classification": "urban municipality in Germany",
+            "coordinate_scope": "Existing representative point agrees with the researched town/municipality, without creating or certifying a precise venue/private location."
+          },
+          "Hutthurm": {
+            "url": "https://www.hutthurm.de",
+            "final_url": "https://www.hutthurm.de",
+            "status": 200,
+            "bytes": 129864,
+            "sha256": "df599ca5bfe7491b924d804911be7dffb1f5ecbf39bc9ce37a76d51999d76498",
+            "observed_at": "2026-11-19T07:17:57.512399+00:00",
+            "qid": "Q504225",
+            "name": "Hutthurm",
+            "region_code": "DE-BY",
+            "country_code": "DE",
+            "wikidata_url": "https://www.wikidata.org/wiki/Q504225",
+            "classification": "market municipality of Germany",
+            "coordinate_scope": "Existing representative point agrees with the researched town/municipality, without creating or certifying a precise venue/private location."
+          },
+          "Stralsund": {
+            "url": "https://www.stralsund.de/",
+            "final_url": "https://www.stralsund.de/",
+            "status": 200,
+            "bytes": 112463,
+            "sha256": "4ad050d17a45d955d806812069fa25bbb3fa1c57f4c1ed3a912d650de9ec3af5",
+            "observed_at": "2026-11-19T07:17:57.787779+00:00",
+            "qid": "Q4065",
+            "name": "Stralsund",
+            "region_code": "DE-MV",
+            "country_code": "DE",
+            "wikidata_url": "https://www.wikidata.org/wiki/Q4065",
+            "classification": "urban municipality in Germany",
+            "coordinate_scope": "Existing representative point agrees with the researched town/municipality, without creating or certifying a precise venue/private location."
+          }
+        }
+      },
+      "preserved": "Full other city fields, points/QIDs, complete related venues/businesses, SEO false and each existing attention flag. Known human Burghausen coordinate repair4376d9ba is preserved; any new human decision refuses. Native geography remains country_checked without human identity/parent verification."
+    }
+  ],
+  "rehearsal_note": "A busy automatic-review advisory lock initially refuses. Independent work continues; subsequent same guarded rollback/commit succeed without bypass or lock timeout increase."
+}
