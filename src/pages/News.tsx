@@ -189,18 +189,24 @@ export default function News() {
 
             <WeekInReview articles={articles as Article[]} />
 
-            <div className="pt-8 flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
-              <div>
-                <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground">
-                  Looking for more?
+            {/* An ink plate rather than a footnote: the archive is the
+                invitation to keep reading, so it gets the page's loudest band. */}
+            <div className="flex flex-col gap-6 rounded-panel bg-foreground p-8 text-background md:flex-row md:items-end md:justify-between md:p-12">
+              <div className="max-w-reading">
+                <p className="m-0 text-2xs uppercase tracking-label text-background/70">
+                  {t('pages.news.archiveEyebrow', 'Keep reading')}
                 </p>
-                <p className="text-base mt-1 m-0">
-                  The full archive has every story, every filter.
+                <p className="m-0 mt-2 font-display text-display leading-none">
+                  {t('pages.news.archiveTitle', 'Every story we have ever told.')}
+                </p>
+                <p className="m-0 mt-4 text-body-lg text-background/80">
+                  {t(
+                    'pages.news.archiveBody',
+                    'Rights won, rights fought for, nights out and the people who made them. Search the full archive by topic, place or date.',
+                  )}
                 </p>
               </div>
-              {/* asChild, not a Link wrapping a Button — that nests a <button>
-                  inside an <a>, which is invalid HTML. */}
-              <Button asChild variant="default" className="gap-2">
+              <Button asChild variant="accent" className="shrink-0 gap-2">
                 <LocalizedLink to="/news/all" className="no-underline">
                   {t('pages.news.openArchive', 'Open archive')}
                   <ArrowRight size={16} />

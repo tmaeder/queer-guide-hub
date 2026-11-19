@@ -292,14 +292,14 @@ function MarketplaceCardImpl({
           <StationBadge glyph={glyph} className="-mt-8" />
           <CardBadges isAdult={isAdult} isAffiliate={isAffiliate} queerOwned={queerOwned} />
 
-          <div className="flex min-w-0 flex-wrap gap-1.5 text-2xs uppercase tracking-label text-muted-foreground">
+          <div className="flex min-w-0 flex-wrap items-start gap-1.5 text-2xs uppercase tracking-label text-muted-foreground">
             {/* Brand leads (linked to its brand page); department gives context. */}
             {listing.brand && brandSlug(listing.brand) ? (
               <>
                 <LocalizedLink
                   to={`/marketplace/brands/${brandSlug(listing.brand)}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="max-w-full truncate rounded-element bg-muted px-2 py-1 no-underline hover:bg-foreground hover:text-background"
+                  className="inline-flex min-h-0 max-w-full items-center truncate rounded-element bg-muted px-2 py-1 no-underline hover:bg-foreground hover:text-background"
                 >
                   <HighlightedText text={listing.brand} query={searchQuery} />
                 </LocalizedLink>
@@ -310,18 +310,18 @@ function MarketplaceCardImpl({
                   <LocalizedLink
                     to={`/marketplace/merchants/${listing.merchant_domain}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="max-w-full truncate rounded-element bg-muted px-2 py-1 no-underline hover:bg-foreground hover:text-background"
+                    className="inline-flex min-h-0 max-w-full items-center truncate rounded-element bg-muted px-2 py-1 no-underline hover:bg-foreground hover:text-background"
                   >
                     <HighlightedText text={listing.business_name} query={searchQuery} />
                   </LocalizedLink>
                 ) : (
-                  <span className="max-w-full truncate rounded-element bg-muted px-2 py-1">
+                  <span className="inline-flex min-h-0 max-w-full items-center truncate rounded-element bg-muted px-2 py-1">
                     <HighlightedText text={listing.business_name} query={searchQuery} />
                   </span>
                 )}
               </>
             ) : null}
-            <span className="max-w-full truncate rounded-element bg-muted px-2 py-1">
+            <span className="inline-flex min-h-0 max-w-full items-center truncate rounded-element bg-muted px-2 py-1">
               {departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}
             </span>
           </div>

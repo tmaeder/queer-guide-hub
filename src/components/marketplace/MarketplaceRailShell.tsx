@@ -81,8 +81,11 @@ export function MarketplaceRailShell({
 
       <div
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-thin"
-        style={{ scrollPaddingLeft: '0.25rem' }}
+        // Padding (offset by negative margins) leaves room for the cards'
+        // soft shadows, which overflow-x would otherwise clip flat; the mask
+        // fades the trailing edge instead of cutting a card in half.
+        className="-mx-4 -my-4 flex gap-4 overflow-x-auto px-4 py-4 no-scrollbar snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_calc(100%-3rem),transparent)]"
+        style={{ scrollPaddingLeft: '1rem' }}
       >
         {loading
           ? Array.from({ length: 4 }).map((_, i) => (

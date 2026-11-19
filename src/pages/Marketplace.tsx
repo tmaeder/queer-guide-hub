@@ -11,7 +11,6 @@ import { useMeta } from '@/hooks/useMeta';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceControlBar } from '@/components/marketplace/MarketplaceControlBar';
 import { MarketplaceLineIndex } from '@/components/marketplace/MarketplaceLineIndex';
-import { VerifiedOwnedBrands } from '@/components/marketplace/VerifiedOwnedBrands';
 import { MarketplaceHeroCover } from '@/components/marketplace/MarketplaceHeroCover';
 import { BrandSpotlight } from '@/components/marketplace/BrandSpotlight';
 import { GuidesRail } from '@/components/guides/GuidesRail';
@@ -541,11 +540,6 @@ const Marketplace = () => {
           <PageContainer flush className="flex flex-col gap-16 py-12 md:gap-24 md:py-16">
             <MarketplaceRow rowKey="new" title="New this week" />
             <MarketplaceHeroCover />
-            {/* The makers directory's entry point from the hub. Without a link
-                here the new /marketplace/brands index is reachable only by
-                typing it — the whole reason it was worth building is that brand
-                pages were previously buried inside cards. */}
-            <VerifiedOwnedBrands />
             <BrandSpotlight />
             {/* `alwaysRender` is load-bearing, not a preference. With /shop
                 folded in, /marketplace is the `shop` cluster hub, and the
