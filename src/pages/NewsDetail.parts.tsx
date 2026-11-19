@@ -18,6 +18,8 @@ import {
   Smile,
   ShieldCheck,
   ArrowUpRight,
+  Clock,
+  FileText,
 } from '@/components/icons';
 import { formatDistanceToNow } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +27,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { detailHref } from '@/lib/searchRoutes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/Image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -41,6 +42,7 @@ import {
   fetchNamesByIds,
 } from '@/hooks/usePageFetchers';
 import { fetchStoryClusterForArticle } from '@/hooks/useNewsStories';
+import { useNewsSourceProfile } from '@/hooks/useNewsSourceProfile';
 import type { StoryDetail } from '@/hooks/useNewsStories';
 import { useUserTravelPreferences } from '@/hooks/useUserTravelPreferences';
 import { useAuth } from '@/hooks/useAuth';
@@ -426,45 +428,111 @@ export function SourceCard({
   lastVerifiedAt?: string | null;
 }) {
   const { t } = useTranslation();
+  const { data: profile } = useNewsSourceProfile(sourceName);
   if (!sourceName && !sourceUrl) return null;
+
+  // The publisher's own site: the stored homepage, else the article's origin.
+  let site: string | null = profile?.websiteUrl ?? null;
+  if (!site && sourceUrl) {
+    try {
+      site = new URL(sourceUrl).origin;
+    } catch {
+      site = null;
+    }
+  }
+  const domain = site ? site.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '') : null;
+  const initials = (sourceName || domain || '?')
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Newspaper size={16} aria-hidden="true" />
+        <CardTitle className="flex items-center gap-2 text-13 font-bold uppercase tracking-label text-muted-foreground">
+          <Newspaper size={14} aria-hidden="true" />
           {t('newsDetail.aboutSource', 'About the source')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        {sourceName && <p className="m-0 font-medium">{sourceName}</p>}
-        {!!corroborationCount && corroborationCount > 1 && (
-          <p className="m-0 flex items-center gap-1.5 text-13 text-muted-foreground">
-            <ShieldCheck size={14} aria-hidden="true" />
-            {t('newsDetail.corroboratedAcross', 'Corroborated across {{count}} outlets', {
-              count: corroborationCount,
-            })}
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex items-center gap-4">
+          <span className="relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-container bg-logo-plate text-title font-bold text-track-ring shadow-soft">
+            <span aria-hidden="true">{initials}</span>
+            {profile?.logoUrl && (
+              <img
+                src={profile.logoUrl}
+                alt=""
+                className="absolute inset-0 h-full w-full bg-logo-plate object-contain p-1.5"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            )}
+          </span>
+          <div className="min-w-0">
+            {sourceName && <p className="m-0 text-title font-bold leading-tight">{sourceName}</p>}
+            {domain && <p className="m-0 truncate text-13 text-muted-foreground">{domain}</p>}
+          </div>
+        </div>
+
+        {profile?.description && (
+          <p className="m-0 line-clamp-4 text-15 leading-relaxed text-muted-foreground">
+            {profile.description}
           </p>
         )}
-        {lastVerifiedAt && (
-          <p className="m-0 text-xs text-muted-foreground">
-            {t('newsDetail.lastVerified', 'Last verified {{time}}', {
-              time: formatDistanceToNow(new Date(lastVerifiedAt), { addSuffix: true }),
-            })}
-          </p>
-        )}
-        {sourceUrl && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-2 w-full justify-start"
-            onClick={() => window.open(sourceUrl, '_blank', 'noopener')}
-          >
-            <Globe size={16} className="mr-2" />
-            {t('newsDetail.visitSource', 'Visit {{source}}', {
-              source: sourceName || t('newsDetail.source', 'source'),
-            })}
-          </Button>
-        )}
+
+        <ul className="m-0 flex list-none flex-col gap-2 p-0 text-13 text-muted-foreground">
+          {!!profile?.articleCount && (
+            <li className="flex items-center gap-2">
+              <FileText size={14} aria-hidden="true" />
+              {t('newsDetail.sourceArticles', '{{count}} articles on Queer Guide', {
+                count: profile.articleCount,
+              })}
+            </li>
+          )}
+          {!!corroborationCount && corroborationCount > 1 && (
+            <li className="flex items-center gap-2">
+              <ShieldCheck size={14} aria-hidden="true" />
+              {t('newsDetail.corroboratedAcross', 'Corroborated across {{count}} outlets', {
+                count: corroborationCount,
+              })}
+            </li>
+          )}
+          {lastVerifiedAt && (
+            <li className="flex items-center gap-2">
+              <Clock size={14} aria-hidden="true" />
+              {t('newsDetail.lastVerified', 'Last verified {{time}}', {
+                time: formatDistanceToNow(new Date(lastVerifiedAt), { addSuffix: true }),
+              })}
+            </li>
+          )}
+        </ul>
+
+        <div className="flex flex-wrap gap-2">
+          {site && (
+            <a
+              href={site}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center gap-2 rounded-element bg-foreground px-4 text-13 font-bold text-background no-underline hover:opacity-90"
+            >
+              <Globe size={16} aria-hidden="true" />
+              {t('newsDetail.visitSource', 'Visit {{source}}', {
+                source: sourceName || t('newsDetail.source', 'source'),
+              })}
+            </a>
+          )}
+          {sourceName && (
+            <LocalizedLink
+              to={`/news/all?q=${encodeURIComponent(sourceName)}`}
+              className="inline-flex min-h-11 items-center gap-2 rounded-element bg-muted px-4 text-13 font-bold text-foreground no-underline hover:bg-foreground hover:text-background"
+            >
+              {t('newsDetail.moreFromSource', 'More from {{source}}', { source: sourceName })}
+            </LocalizedLink>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

@@ -18,6 +18,8 @@ interface ShareMenuProps extends ShareOptions {
   size?: 'sm' | 'default';
   variant?: 'outline' | 'ghost';
   label?: string;
+  /** Icon-only trigger; `label` becomes its accessible name. */
+  iconOnly?: boolean;
   /**
    * When set, signed-in users get a "Send to member" entry that shares this
    * entity in-app as an `entity_share` chat card (or a group post).
@@ -37,6 +39,7 @@ export function ShareMenu({
   size = 'sm',
   variant = 'outline',
   label = 'Share',
+  iconOnly = false,
   entity,
 }: ShareMenuProps) {
   const { user } = useAuth();
@@ -53,9 +56,15 @@ export function ShareMenu({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant={variant} size={size}>
-            <Share2 size={14} className="mr-1.5" />
-            {label}
+          <Button
+            variant={variant}
+            size={size}
+            aria-label={iconOnly ? label : undefined}
+            title={iconOnly ? label : undefined}
+            className={iconOnly ? 'w-11 px-0' : undefined}
+          >
+            <Share2 size={14} className={iconOnly ? undefined : 'mr-1.5'} />
+            {!iconOnly && label}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">

@@ -387,10 +387,14 @@ export default function NewsDetail() {
           {/* Meta row */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-13 text-muted-foreground">
             {authorName && (
-              <span className="flex items-center gap-1">
+              <LocalizedLink
+                to={`/news/all?q=${encodeURIComponent(authorName)}`}
+                className="flex items-center gap-1 text-inherit no-underline hover:text-foreground hover:underline"
+                title={t('newsDetail.moreByAuthor', 'More by {{author}}', { author: authorName })}
+              >
                 <User size={14} />
                 {t('newsDetail.byAuthor', 'By {{author}}', { author: authorName })}
-              </span>
+              </LocalizedLink>
             )}
             {article.published_at && (
               <span className="flex items-center gap-1">
@@ -444,10 +448,15 @@ export default function NewsDetail() {
           )}
           <DetailActionBar
             primary={
-              <Button asChild>
-                <a href={article.url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink size={16} className="mr-2" aria-hidden="true" />
-                  {t('newsDetail.readAtSource', 'Read at source')}
+              <Button asChild className="w-11 px-0">
+                <a
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t('newsDetail.readAtSource', 'Read at source')}
+                  title={t('newsDetail.readAtSource', 'Read at source')}
+                >
+                  <ExternalLink size={16} aria-hidden="true" />
                 </a>
               </Button>
             }
@@ -457,6 +466,7 @@ export default function NewsDetail() {
                 url={window.location.href}
                 title={articleTitle}
                 label={t('newsDetail.share', 'Share')}
+                iconOnly
                 variant="ghost"
                 size="default"
                 entity={{
