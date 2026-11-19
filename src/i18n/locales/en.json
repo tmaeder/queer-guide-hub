@@ -847,6 +847,10 @@
       "saving": "Saving…",
       "save": "Save rating",
       "saved": "Your rating is saved."
+    },
+    "filters": {
+      "allTypes": "All",
+      "categoryGroup": "Venue type"
     }
   },
   "marketplace": {

@@ -1608,6 +1608,10 @@
       "saving": "جارٍ الحفظ…",
       "save": "حفظ التقييم",
       "saved": "تم حفظ تقييمك."
+    },
+    "filters": {
+      "allTypes": "الكل",
+      "categoryGroup": "نوع المكان"
     }
   },
   "marketplace": {
