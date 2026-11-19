@@ -34,33 +34,27 @@ export function TaxonomyDirectory() {
           />
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-13 text-muted-foreground">Export all</span>
           <ExportExcelButton
             size="sm"
-            label="Excel"
-            ariaLabel="Export all taxonomies (Excel)"
+            label="Export all taxonomies (Excel)"
             onExport={() => exportAllTaxonomies('Excel')}
           />
           <ExportExcelButton
             size="sm"
             format="CSV"
-            label="CSV"
-            ariaLabel="Export all taxonomies (CSV)"
+            label="Export all taxonomies (CSV)"
             onExport={() => exportAllTaxonomies('CSV')}
           />
           {/* Tags are ~10k rows; these skip them for a quick vocabulary-only file. */}
-          <span className="text-13 text-muted-foreground">Without tags</span>
           <ExportExcelButton
             size="sm"
-            label="Excel"
-            ariaLabel="Export without tags (Excel)"
+            label="Export without tags (Excel)"
             onExport={() => exportAllTaxonomies('Excel', { includeTags: false })}
           />
           <ExportExcelButton
             size="sm"
             format="CSV"
-            label="CSV"
-            ariaLabel="Export without tags (CSV)"
+            label="Export without tags (CSV)"
             onExport={() => exportAllTaxonomies('CSV', { includeTags: false })}
           />
         </div>
