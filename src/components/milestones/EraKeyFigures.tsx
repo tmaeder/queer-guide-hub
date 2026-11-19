@@ -1,19 +1,12 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { UserRound } from '@/components/icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useHistoryKeyFigures } from '@/hooks/useMilestones';
 import type { HistoryEra } from '@/config/historyEras';
 
 const MAX_FIGURES = 8;
-
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? '')
-    .join('');
 
 /**
  * "Key figures of this era" — the people most linked to an era's published
@@ -55,7 +48,7 @@ export function EraKeyFigures({ era }: { era: HistoryEra }) {
 
   return (
     <div className="mb-8">
-      <p className="mb-4 text-2xs uppercase tracking-label text-muted-foreground">
+      <p className="mb-4 text-13 font-bold uppercase tracking-label text-foreground">
         {t('milestones.era.keyFigures', 'Key figures of this era')}
       </p>
       <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
@@ -65,12 +58,14 @@ export function EraKeyFigures({ era }: { era: HistoryEra }) {
               to={`/personalities/${f.slug}`}
               // A chip FILLS on hover — it never lifts. `no-underline` keeps the
               // unlayered `li a` rule from collapsing the flex row.
-              className="flex items-center gap-2 bg-card py-1 pl-1 pr-2 text-13 no-underline transition-colors duration-fast hover:bg-foreground hover:text-background rounded-container shadow-soft"
+              className="flex items-center gap-2 bg-card py-1 pl-1 pr-4 text-15 font-bold no-underline transition-colors duration-fast hover:bg-foreground hover:text-background rounded-container shadow-soft"
             >
               {/* Avatars are circles — the sanctioned rounded-full exception. */}
-              <Avatar className="h-7 w-7">
+              <Avatar className="h-9 w-9">
                 {f.image_url ? <AvatarImage src={f.image_url} alt="" /> : null}
-                <AvatarFallback className="text-2xs">{initials(f.name)}</AvatarFallback>
+                <AvatarFallback>
+                  <UserRound size={18} aria-hidden />
+                </AvatarFallback>
               </Avatar>
               {f.name}
             </LocalizedLink>

@@ -53,7 +53,7 @@ export function EraSection({
     // previous scroll-mt-24 (96px) undershot.
     <section id={`era-${era.slug}`} className="scroll-mt-28">
       <header className="mb-8 border-t border-border-hairline pt-8">
-        <p className="flex items-center gap-2 text-2xs uppercase tracking-label text-muted-foreground">
+        <p className="inline-flex items-center gap-2 rounded-element bg-muted px-2 py-1 text-2xs font-bold uppercase tracking-label text-muted-foreground">
           {/* Line swatch in this chapter's own stroke. The pill is the
               sanctioned legend form, and it is what makes the pink→ink switch
               read as "the line goes dark" rather than a rendering glitch. */}
