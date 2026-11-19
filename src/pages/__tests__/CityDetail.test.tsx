@@ -2,7 +2,8 @@
  * @vitest-environment jsdom
  */
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
+import { supabase } from '@/integrations/supabase/client';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -11,6 +12,7 @@ const state = vi.hoisted(() => ({
   user: null as null | { id: string },
   venuesQuery: vi.fn(),
   eventsQuery: vi.fn(),
+  fetchCityImage: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
@@ -25,7 +27,7 @@ vi.mock('@/hooks/useFavorites', () => ({
   useFavorites: () => ({ toggleFavorite: vi.fn(), isFavorited: () => false }),
 }));
 vi.mock('@/hooks/useCityImages', () => ({
-  useCityImages: () => ({ fetchCityImage: vi.fn().mockResolvedValue(null) }),
+  useCityImages: () => ({ fetchCityImage: state.fetchCityImage }),
 }));
 vi.mock('@/hooks/useNews', () => ({
   useNewsArticles: () => ({ articles: [], loading: false, error: null, refetch: vi.fn() }),
@@ -91,25 +93,58 @@ vi.mock('@/components/weather/WeatherForecast', () => ({ WeatherForecast: () => 
 
 import CityDetail from '../CityDetail';
 
+const imageInvoke = vi.spyOn(supabase.functions, 'invoke').mockResolvedValue({ data: null, error: null });
+
 afterEach(() => {
   state.user = null;
   vi.clearAllMocks();
+  state.fetchCityImage.mockReset().mockResolvedValue(null);
 });
 
 function renderPage() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-  return render(
+  const page = () => (
     <MemoryRouter initialEntries={['/city/berlin']}>
       <QueryClientProvider client={qc}>
         <Routes>
           <Route path="/city/:slug" element={<CityDetail />} />
         </Routes>
       </QueryClientProvider>
-    </MemoryRouter>,
+    </MemoryRouter>
   );
+  const view = render(page());
+  return { ...view, rerenderPage: () => view.rerender(page()) };
 }
 
 describe('CityDetail', () => {
+  it('keeps flagged images quarantined without automatic image requests', async () => {
+    state.city = { id: 'c1', name: 'Cleves', slug: 'cleves', image_flagged: true,
+      image_url: 'https://img.test/munich.jpg', created_at: '2024-01-01' };
+    await act(async () => { renderPage(); });
+    expect(state.fetchCityImage).not.toHaveBeenCalled();
+    expect(imageInvoke).not.toHaveBeenCalled();
+    expect(document.querySelector('img[src="https://img.test/munich.jpg"]')).toBeNull();
+  });
+
+  it('does not request an unscored stock fallback after a safe lookup misses', async () => {
+    state.city = { id: 'c1', name: 'Cleves', slug: 'cleves', created_at: '2024-01-01' };
+    await act(async () => { renderPage(); });
+    expect(state.fetchCityImage).toHaveBeenCalledTimes(1);
+    expect(imageInvoke).not.toHaveBeenCalled();
+  });
+
+  it('hides a fetched image when the current city is subsequently flagged', async () => {
+    const city = { id: 'c1', name: 'Berlin', slug: 'berlin', created_at: '2024-01-01' };
+    state.city = city;
+    state.fetchCityImage.mockResolvedValueOnce({ image_url: 'https://img.test/berlin.jpg' });
+    const view = renderPage();
+    await waitFor(() => expect(document.querySelector('img[src="https://img.test/berlin.jpg"]')).not.toBeNull());
+    state.city = { ...city, image_flagged: true };
+    view.rerenderPage();
+    expect(document.querySelector('img[src="https://img.test/berlin.jpg"]')).toBeNull();
+    expect(state.fetchCityImage).toHaveBeenCalledTimes(1);
+  });
+
   it('renders the not-found stop when there is no such city', () => {
     state.city = null;
     renderPage();

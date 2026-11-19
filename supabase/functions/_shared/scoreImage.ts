@@ -109,7 +109,11 @@ export function scoreImage(input: ScoreInput): number {
   // bar without naming the entity; quality then comes from dimensions + tokens.
   if (isGeneric) score += 25
 
-  const subjectMentioned = subjectName.length > 0 && alt.includes(subjectName)
+  const subjectMentioned = subjectName.length > 0 && (
+    input.subjectType === 'city' ? hasWord(alt, subjectName) : alt.includes(subjectName)
+  )
+  // Country context and image quality do not establish which city is pictured.
+  if (input.subjectType === 'city' && !subjectMentioned) return Number.NEGATIVE_INFINITY
   if (subjectMentioned) score += isGeneric ? 30 : 50
   if (countryName && alt.includes(countryName)) score += 20
 
