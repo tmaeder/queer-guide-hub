@@ -26,6 +26,12 @@ Deno.test('GayOut exhausted credits are blocked with a funded-account requiremen
   assertEquals(outcome?.required_settings, ['FIRECRAWL_API_KEY'])
   assertEquals(outcome?.retryable, false)
 })
+Deno.test('GayOut internal extraction configuration errors name the required settings', async () => {
+  const { db } = fake({ pipeline_runs: [{ id: child, pipeline_name: 'gayout-weekly-sync', status: 'failed', error_message: 'E_GAYOUT_EXTRACT_AUTH: rejected secret' }] })
+  const outcome = await delegateToSourcePipeline(db, { ...job, child_run_id: child, child_pipeline: 'gayout-weekly-sync' }, {}, 'source-gayout', {}, transport, [], noFetch)
+  assertEquals(outcome?.outcome, 'blocked')
+  assertEquals(outcome?.required_settings, ['EXTRACT_WORKER_URL', 'EXTRACT_WORKER_SECRET'])
+})
 Deno.test('active child remains waiting, independently of parent import attempts', async () => {
   const { db } = fake({ pipeline_runs: [{ id: child, pipeline_name: 'outxout-catalogue-sync', status: 'running' }] })
   const outcome = await delegateToSourcePipeline(db, { ...job, child_run_id: child, child_pipeline: 'outxout-catalogue-sync' }, {}, 'source-outxout', {}, transport, [], noFetch)
