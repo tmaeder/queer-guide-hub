@@ -1,4 +1,4 @@
-import { createElement, useEffect, useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { motion, useScroll, useSpring } from 'motion/react';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
@@ -216,17 +216,7 @@ export function EditorialDetailLayout({
         {banner ? <div className="mb-6">{banner}</div> : null}
 
         <SectionNav
-          items={visibleSections.map((s) => ({
-            id: s.id,
-            label: s.icon ? (
-              <span className="inline-flex items-center gap-1.5">
-                {createElement(s.icon, { size: 14, 'aria-hidden': true })}
-                {s.label}
-              </span>
-            ) : (
-              s.label
-            ),
-          }))}
+          items={visibleSections.map((s) => ({ id: s.id, label: s.label, icon: s.icon }))}
           activeId={activeId}
           onSelect={selectSection}
           variant={sectionNavVariant}

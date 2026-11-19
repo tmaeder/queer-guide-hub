@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { createElement, useEffect, useRef, type ComponentType, type ReactNode } from 'react';
 import {
   PAGE_BLEED,
   PAGE_BLEED_GUTTER,
@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 export interface SectionNavItem {
   id: string;
   label: ReactNode;
+  /** Shown before the label; replaces the subway station dot. */
+  icon?: ComponentType<{ size?: number; 'aria-hidden'?: boolean }>;
 }
 
 export interface SectionNavProps {
@@ -97,22 +99,36 @@ export function SectionNav({
                 }}
                 className={cn(
                   'relative inline-flex items-center whitespace-nowrap text-15 font-bold transition-colors no-underline',
-                  variant === 'subway'
+                  variant === 'subway' && item.icon
                     ? cn(
-                        'h-11 gap-2.5 rounded-element px-4 before:block before:h-6 before:w-6 before:shrink-0 before:rounded-full before:border-[4px] before:transition-colors',
-                        isActive
-                          ? 'bg-foreground text-background before:border-background before:bg-track-blue'
-                          : 'text-muted-foreground before:border-foreground before:bg-background hover:bg-surface-container hover:text-foreground hover:before:bg-track-blue',
-                      )
-                    : cn(
-                        'h-11 rounded-element px-4',
+                        'h-11 gap-2 rounded-element px-4',
                         isActive
                           ? 'bg-foreground text-background'
-                          : 'text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
-                      ),
+                          : 'text-muted-foreground hover:bg-surface-container hover:text-foreground',
+                      )
+                    : variant === 'subway'
+                      ? cn(
+                          'h-11 gap-2.5 rounded-element px-4 before:block before:h-6 before:w-6 before:shrink-0 before:rounded-full before:border-[4px] before:transition-colors',
+                          isActive
+                            ? 'bg-foreground text-background before:border-background before:bg-track-blue'
+                            : 'text-muted-foreground before:border-foreground before:bg-background hover:bg-surface-container hover:text-foreground hover:before:bg-track-blue',
+                        )
+                      : cn(
+                          'h-11 rounded-element px-4',
+                          isActive
+                            ? 'bg-foreground text-background'
+                            : 'text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
+                        ),
                 )}
               >
-                {item.label}
+                {item.icon ? (
+                  <span className="inline-flex items-center gap-2">
+                    {createElement(item.icon, { size: 16, 'aria-hidden': true })}
+                    {item.label}
+                  </span>
+                ) : (
+                  item.label
+                )}
               </a>
             </li>
           );
