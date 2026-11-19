@@ -91,6 +91,42 @@ export function useMarketplaceDepartmentCounts(includeAdult = false) {
 }
 
 /**
+ * Up to three SFW product photos per department, for the department tiles.
+ *
+ * Fixes both faults of the deleted `useDepartmentCovers`: it queries EACH
+ * department (so one big department cannot crowd the others out), and it
+ * returns a mosaic of three products rather than one, so no single sock
+ * stands for a whole department. A department with fewer than three photos
+ * keeps its drawn art.
+ */
+export function useDepartmentPhotos(slugs: string[]) {
+  return useAsync<Record<string, string[]>>(
+    [slugs.join(',')],
+    async () => {
+      const entries = await Promise.all(
+        slugs.map(async (slug) => {
+          const { data } = await supabase
+            .from('marketplace_listings')
+            .select('images')
+            .eq('department', slug)
+            .eq('status', 'active')
+            .eq('content_rating', 'sfw')
+            .not('images', 'is', null)
+            .order('boutique_score', { ascending: false, nullsFirst: false })
+            .limit(8);
+          const urls = (data ?? [])
+            .map((r) => (r.images as string[] | null)?.[0])
+            .filter((u): u is string => !!u && u.startsWith('https://'));
+          return [slug, [...new Set(urls)].slice(0, 3)] as const;
+        }),
+      );
+      return Object.fromEntries(entries);
+    },
+    {},
+  );
+}
+
+/**
  * Canonical group counts, content-rating gated.
  *
  * The `department` argument carries TWO distinct meanings and they must stay
