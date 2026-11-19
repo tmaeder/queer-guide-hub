@@ -7,7 +7,6 @@ describe('TravelJourneyNav', () => {
     renderWithProviders(<TravelJourneyNav />, { route: '/travel' });
     expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual([
       'Inspire',
-      'Build a trip',
       'My trips',
       'Book',
     ]);
@@ -16,14 +15,5 @@ describe('TravelJourneyNav', () => {
   it('marks an individual trip as part of My trips', () => {
     renderWithProviders(<TravelJourneyNav />, { route: '/trips/trip-42?view=plan' });
     expect(screen.getByRole('link', { name: /my trips/i })).toHaveAttribute('aria-current', 'page');
-  });
-
-  it('marks the route builder independently from owned trips', () => {
-    renderWithProviders(<TravelJourneyNav />, { route: '/trips/discover' });
-    expect(screen.getByRole('link', { name: /build a trip/i })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
-    expect(screen.getByRole('link', { name: /my trips/i })).not.toHaveAttribute('aria-current');
   });
 });

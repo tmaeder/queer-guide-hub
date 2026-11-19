@@ -55,13 +55,13 @@ export function EmptyTripsHero({ onCreate }: Props) {
     {
       key: 'discover' as const,
       icon: Compass,
-      title: t('trips.empty.paths.discover.title', 'Fork a public trip'),
+      title: t('trips.empty.paths.travel.title', 'Find travel ideas'),
       description: t(
-        'trips.empty.paths.discover.description',
-        'Real itineraries from other QG travelers.',
+        'trips.empty.paths.travel.description',
+        'Matched destinations, events and stays to start from.',
       ),
-      cta: t('trips.empty.paths.discover.cta', 'Open Discover'),
-      onClick: () => navigate('/trips/discover'),
+      cta: t('trips.empty.paths.travel.cta', 'Open Travel'),
+      onClick: () => navigate('/travel'),
       brand: false,
     },
   ];
@@ -120,8 +120,8 @@ export function EmptyTripsHero({ onCreate }: Props) {
                 {t('trips.empty.discoverTitle', 'Recent public trips')}
               </h3>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/trips/discover')}>
-              {t('trips.empty.discoverCta', 'Open Discover')}
+            <Button variant="ghost" size="sm" onClick={() => navigate('/travel')}>
+              {t('trips.empty.travelCta', 'Open Travel')}
               <ArrowRight size={14} className="ml-1" />
             </Button>
           </div>

@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useAuth } from '@/hooks/useAuth';
 import { useTripMutations } from '@/hooks/useTrips';
@@ -123,14 +122,6 @@ export function StartTripHero() {
       </div>
 
       {error && <p className="text-sm text-destructive mt-4">{error}</p>}
-
-      <p className="text-sm text-muted-foreground mt-4">
-        {t('pages.travel.hero.discover', 'Or')}{' '}
-        <LocalizedLink to="/trips/discover">
-          {t('pages.travel.hero.discoverLink', 'browse public trips')}
-        </LocalizedLink>{' '}
-        {t('pages.travel.hero.discoverTail', 'from the community.')}
-      </p>
     </section>
   );
 }

@@ -1,4 +1,4 @@
-import { BookOpen, Compass, Luggage, Map } from '@/components/icons';
+import { BookOpen, Compass, Luggage } from '@/components/icons';
 import { useLocation } from 'react-router';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { stripLocale } from '@/lib/locale';
@@ -10,12 +10,6 @@ const ITEMS = [
     label: 'Inspire',
     icon: Compass,
     active: (path: string) => path === '/travel',
-  },
-  {
-    href: '/trips/discover',
-    label: 'Build a trip',
-    icon: Map,
-    active: (path: string) => path === '/trips/discover',
   },
   {
     href: '/hub/plans',
