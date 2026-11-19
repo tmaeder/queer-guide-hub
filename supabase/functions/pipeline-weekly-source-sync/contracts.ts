@@ -104,7 +104,8 @@ export function adapterResult(status: number, value: unknown, secrets: string[] 
   const bad = status < 200 || status >= 300 || body.success === false || Boolean(error) || failed > 0
   return {
     outcome: bad ? 'failed' : 'succeeded', fetched, staged, skipped, failed,
-    ...(bad ? { reason: safeError(error ?? `Adapter failed (HTTP ${status})`, secrets) } : {}),
+    ...(bad ? { reason: safeError(error ?? `Adapter failed (HTTP ${status})`, secrets) }
+      : typeof body.reason === 'string' ? { reason: safeError(body.reason, secrets) } : {}),
     retryable: bad && (status === 408 || status === 429 || status >= 500 || failed > 0),
   }
 }

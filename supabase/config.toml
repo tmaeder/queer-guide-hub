@@ -214,6 +214,9 @@ verify_jwt = false
 [functions.pipeline-weekly-source-sync]
 verify_jwt = false
 
+[functions.source-weekly-enrichment]
+verify_jwt = false
+
 [functions.pipeline-normalize]
 verify_jwt = false
 

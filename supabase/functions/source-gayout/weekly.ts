@@ -1,8 +1,8 @@
 import { getServiceClient, requireInternalOrAdmin, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
-import { extractContent } from '../_shared/extract-client.ts'
-import { fetchGayOutDocument, GayOutFetchError } from '../_shared/gayout-fetch.ts'
+import { GayOutFetchError } from '../_shared/gayout-fetch.ts'
 import { GAYOUT_COUNTRY_ALIASES, GAYOUT_SITEMAPS, parseGayOutPage, parseGayOutSeed, parseGayOutSitemap } from '../_shared/gayout-source.ts'
 import type { GayOutInventory } from '../_shared/gayout-source.ts'
+import { acquireGayOutDocument } from './acquire.ts'
 
 /** The database owns the inventory cursor and leases; a request handles a bounded slice. */
 export async function handleGayOutWeeklySource(req: Request, body: Record<string, any>): Promise<Response> {
@@ -27,10 +27,9 @@ export async function handleGayOutWeeklySource(req: Request, body: Record<string
     if (error || pipeline?.pipeline_name !== 'gayout-weekly-sync' || pipeline.status !== 'running') return errorResponse('Active GayOut pipeline run required', 400, req)
     const dryRun = pipeline.context?.dry_run === true
     if (Boolean(body.dry_run) !== dryRun) return errorResponse('Dry-run context mismatch', 400, req)
-    const options = (sitemap: boolean) => ({ sitemap, firecrawlApiKey: Deno.env.get('FIRECRAWL_API_KEY'),
-      render: async (url: string) => extractContent(db, { url, render: true, crawl: false, timeoutMs: 15000 }) })
+    const acquire = (url: string, sitemap: boolean) => acquireGayOutDocument(url, sitemap, name => Deno.env.get(name))
     if (dryRun) {
-      const doc = await fetchGayOutDocument(GAYOUT_SITEMAPS[inventory], options(true))
+      const doc = await acquire(GAYOUT_SITEMAPS[inventory], true)
       const parsed = parseGayOutSitemap(doc.html || '', inventory)
       return jsonResponse({ success: true, dry_run: true, items: 0, has_more: false,
         summary: { inventory, discovered: parsed.entries.length, child_sitemaps: parsed.sitemaps.length, acquisition: doc.method } }, 200, req)
@@ -50,7 +49,7 @@ export async function handleGayOutWeeklySource(req: Request, body: Record<string
     for (const q of [...claimed]) {
       if (Date.now() > deadline) { await finish(q, 'pending'); claimed = claimed.filter(x => x !== q); continue }
       try {
-        const document = await fetchGayOutDocument(q.url, options(q.work_kind === 'sitemap'))
+        const document = await acquire(q.url, q.work_kind === 'sitemap')
         if (q.work_kind === 'sitemap') {
           const xml = document.html || '', parsed = parseGayOutSitemap(xml, inventory)
           const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(xml)))].map(x => x.toString(16).padStart(2, '0')).join('')
