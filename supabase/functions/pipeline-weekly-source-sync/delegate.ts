@@ -28,6 +28,9 @@ export async function delegateToSourcePipeline(
     if (isPreview(child.context)) return result('failed', 'A preview or limited source run cannot verify a full import')
     const waiting = { ...result('succeeded'), waiting: true, child_run_id: child.id, child_pipeline: child.pipeline_name }
     if (child.status === 'queued' || child.status === 'running') return waiting
+    if (child.pipeline_name === 'gayout-weekly-sync' && String(child.error_message).includes('E_GAYOUT_PROVIDER_QUOTA'))
+      return { ...result('blocked', 'The configured Firecrawl account has no available credits. Refill that account or replace FIRECRAWL_API_KEY with a funded account key.'),
+        required_settings: ['FIRECRAWL_API_KEY'], child_run_id: child.id, child_pipeline: child.pipeline_name }
     if (child.status !== 'completed' || child.items_failed > 0 || child.error_message)
       return { ...result('failed', safeError(child.error_message ?? 'Source pipeline did not complete successfully', secrets)), child_run_id: child.id, child_pipeline: child.pipeline_name }
     const { count, error: countError } = await client.from('ingestion_staging')

@@ -1,45 +1,15 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
-import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
+import { writeToStaging, MissingCredentialsError, InvalidCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { parseCsv } from '../_shared/csv.ts'
+import { resolveAwinFeedUrl } from './feed.ts'
 
 // ============================================================
 // Source: AWIN Affiliate Product Feed
 // Replaces: import-awin-products
 // ============================================================
-
-// Default Awin datafeed URL (gzip CSV) built from the API credentials —
-// mirrors the URL the retired import-awin-products fetcher constructed, so
-// the admin import keeps working without an explicit AWIN_FEED_URL.
-async function defaultAwinFeedUrl(): Promise<string | undefined> {
-  const token = Deno.env.get('AWIN_DATAFEED_API_KEY') || Deno.env.get('AWIN_API_TOKEN')
-  const advertiserId = Deno.env.get('AWIN_ADVERTISER_ID')
-  if (!token || !advertiserId) return undefined
-  // Feed IDs and advertiser IDs are different. Use Awin's advertised download
-  // URL rather than constructing a category-filter URL from an advertiser ID.
-  const response = await fetch(`https://productdata.awin.com/datafeed/list/apikey/${encodeURIComponent(token)}`, {
-    signal: AbortSignal.timeout(20000),
-  })
-  if (!response.ok) {
-    throw new Error(`AWIN feed inventory ${response.status}: configure AWIN_DATAFEED_API_KEY from Create-a-Feed (the publisher API token is a separate credential), or AWIN_FEED_URL`)
-  }
-  const feeds = parseCsv(await response.text()).map(row => Object.fromEntries(
-    Object.entries(row).map(([key, value]) => [key.toLowerCase().replace(/[^a-z0-9]/g, ''), value]),
-  ))
-  const candidates = feeds.filter(row => String(row.advertiserid) === advertiserId
-    && /^(en|english)$/i.test(String(row.language || '')))
-  if (candidates.length !== 1) {
-    throw new Error(`AWIN feed inventory has ${candidates.length} English feeds for the configured advertiser; set AWIN_FEED_URL to the intended feed download URL`)
-  }
-  const url = String(candidates[0].url || candidates[0].downloadurl || '')
-  const parsed = new URL(url)
-  if (parsed.protocol !== 'https:' || !['productdata.awin.com', 'datafeed.api.productserve.com'].includes(parsed.hostname)) {
-    throw new Error('AWIN feed inventory returned an unsupported download host')
-  }
-  return url
-}
 
 // Awin's datafeed download is a gzip FILE (not Content-Encoding), so fetch
 // does not auto-decompress it. Sniff the magic bytes and inflate if needed.
@@ -57,7 +27,7 @@ const awinAdapter: SourceAdapter = {
   entityType: 'marketplace',
 
   async fetch(config: AdapterConfig): Promise<RawItem[]> {
-    const feedUrl = (config.filters?.feedUrl as string) || Deno.env.get('AWIN_FEED_URL') || await defaultAwinFeedUrl()
+    const feedUrl = await resolveAwinFeedUrl(config.filters?.feedUrl as string | undefined, name => Deno.env.get(name))
     if (!feedUrl) throw new MissingCredentialsError('AWIN_FEED_URL')
 
     const supabase = getServiceClient()
@@ -137,6 +107,9 @@ Deno.serve(withErrorReporting('source-awin', async (req) => {
   } catch (error) {
     if (error instanceof MissingCredentialsError) {
       return jsonResponse(skippedResponse('missing_credentials', error.missing), 200, req)
+    }
+    if (error instanceof InvalidCredentialsError) {
+      return jsonResponse(skippedResponse('invalid_credentials', error.missing), 200, req)
     }
     return errorResponse((error as Error).message, 500, req)
   }

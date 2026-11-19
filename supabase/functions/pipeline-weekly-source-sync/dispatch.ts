@@ -78,7 +78,7 @@ export async function dispatchSource(
       return result('skipped', 'Canonical scraper registration is covered by this run')
     }
     const key = requiredSetting(source.requires_api_key)
-    if (key && endpoint !== 'source-foursquare-free') {
+    if (key && !['source-foursquare-free', 'source-awin'].includes(endpoint)) {
       const secret = settings.getEnv(key)
       if (!secret && !job.child_run_id) return { ...result('blocked', `Missing required setting: ${key}`), required_settings: [key] }
       if (secret) secrets.push(secret)
@@ -116,7 +116,7 @@ export async function dispatchSource(
       if (stateError) throw Error('Could not verify the selected feed outcome')
       if (state?.last_error) return {
         ...outcome, outcome: 'failed', reason: safeError(state.last_error, secrets),
-        retryable: /429|\b5\d\d\b|timeout|temporar|network|fetch failed/i.test(state.last_error),
+        retryable: /429|\b5\d\d\b|timeout|timed out|abort|temporar|network|fetch failed/i.test(state.last_error),
       }
     }
     if (outcome.outcome === 'failed' && /missing|required|not configured|unconfigured/i.test(outcome.reason ?? '')) {

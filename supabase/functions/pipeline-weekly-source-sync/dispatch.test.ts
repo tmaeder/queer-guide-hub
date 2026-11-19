@@ -71,3 +71,19 @@ Deno.test('interactive enrichment registrations are explicitly blocked as schedu
   assertEquals(outcome.outcome, 'blocked')
   assertEquals(outcome.required_settings, ['ingestion_sources.edge_function'])
 })
+
+Deno.test('feed aborts retry but permanent failures do not', async () => {
+  for (const [message, retryable] of [['The signal has been aborted', true], ['HTTP 404 Not Found', false]] as const) {
+    const outcome = await dispatchSource(client({ is_active: true }, { last_error: message }), job,
+      {}, settings, (() => Promise.resolve(Response.json({ success: true, items: 0 }))) as typeof fetch)
+    assertEquals(outcome.outcome, 'failed')
+    assertEquals(outcome.retryable, retryable)
+  }
+})
+
+Deno.test('Awin owns its alternative credentials despite legacy registry metadata', async () => {
+  const outcome = await dispatchSource(client({ is_enabled: true, slug: 'awin', edge_function: 'source-awin', requires_api_key: 'AWIN_API_TOKEN' }),
+    { ...job, registry: 'ingestion_sources' }, {}, settings, (() => Promise.resolve(Response.json({ success: true, skipped: true, reason: 'missing_credentials', missing_credentials: ['AWIN_DATAFEED_API_KEY'] }))) as typeof fetch)
+  assertEquals(outcome.outcome, 'blocked')
+  assertEquals(outcome.required_settings, ['AWIN_DATAFEED_API_KEY'])
+})
