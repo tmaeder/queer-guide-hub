@@ -60,7 +60,7 @@ export function TagIndexCard({ tag, icon, categoryLabel, aliasMatch }: TagIndexI
       />
       <div className="flex flex-1 flex-col gap-2 p-4">
         {categoryLabel && (
-          <span className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
+          <span className="self-start rounded-element bg-muted px-2 py-1 text-2xs font-medium uppercase tracking-wide text-muted-foreground">
             {categoryLabel}
           </span>
         )}

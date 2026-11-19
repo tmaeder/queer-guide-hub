@@ -35,9 +35,9 @@ import {
 } from '@/lib/tags/tagsIndexState';
 
 const VIEW_TABS: { key: TagView; icon: TransitIconName; labelKey: string; fallback: string }[] = [
-  { key: 'grid', icon: 'library', labelKey: 'tags.view.grid', fallback: 'Grid' },
-  { key: 'list', icon: 'documents', labelKey: 'tags.view.list', fallback: 'List' },
-  { key: 'chips', icon: 'filter', labelKey: 'tags.view.chips', fallback: 'Chips' },
+  { key: 'grid', icon: 'grid', labelKey: 'tags.view.grid', fallback: 'Grid' },
+  { key: 'list', icon: 'list', labelKey: 'tags.view.list', fallback: 'List' },
+  { key: 'chips', icon: 'hash', labelKey: 'tags.view.chips', fallback: 'Chips' },
   { key: 'graph', icon: 'route', labelKey: 'tags.view.graph', fallback: 'Graph' },
 ];
 
@@ -157,7 +157,7 @@ export function TagsFilterSpine({
           <div
             role="tablist"
             aria-label={t('tags.view.label', 'Display')}
-            className="inline-flex rounded-element bg-muted p-1"
+            className="inline-flex gap-0.5 rounded-element bg-muted p-0.5"
           >
             {VIEW_TABS.map(({ key, icon, labelKey, fallback }, i) => (
               <button
@@ -184,12 +184,11 @@ export function TagsFilterSpine({
                 }}
                 title={t(labelKey, fallback)}
                 className={cn(
-                  'flex min-h-11 items-center gap-1.5 rounded-element px-2 py-2 text-13 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-                  view === key ? CHIP_ON : CHIP_OFF,
+                  'grid size-11 place-items-center rounded-element transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+                  view === key ? CHIP_ON : 'hover:bg-background',
                 )}
               >
-                <TransitIcon name={icon} size={18} />
-                <span>{t(labelKey, fallback)}</span>
+                <TransitIcon name={icon} size={20} aria-hidden />
               </button>
             ))}
           </div>
@@ -235,7 +234,7 @@ export function TagsFilterSpine({
         </div>
         <div role="group" aria-label={t('search.filters', 'Filters')} className={SEG}>
           <IconToggle
-            icon="grid"
+            icon="layers"
             label={t('search.all', 'All')}
             pressed={kind === 'all'}
             onClick={() => onKind('all')}
