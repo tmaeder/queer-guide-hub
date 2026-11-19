@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plane, Search, ArrowRightLeft } from '@/components/icons';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Search, ArrowRightLeft } from '@/components/icons';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AirportAutocomplete } from './AirportAutocomplete';
@@ -76,13 +76,7 @@ export function FlightSearchForm({
   return (
     <div className="flex flex-col gap-6">
       <Card>
-        <CardHeader>
-          <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-            <Plane size={20} className="text-primary" />
-            Search Flights
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 md:p-6">
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-end">
               <AirportAutocomplete
@@ -99,8 +93,8 @@ export function FlightSearchForm({
                 variant="ghost"
                 size="icon"
                 onClick={handleSwap}
-                style={{ alignSelf: 'end' }}
-                className="mb-0.5"
+                aria-label="Swap origin and destination"
+                className="justify-self-center rounded-full bg-muted hover:bg-foreground hover:text-background"
               >
                 <ArrowRightLeft size={16} />
               </Button>
@@ -118,7 +112,9 @@ export function FlightSearchForm({
 
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-4 items-end">
               <div>
-                <label htmlFor="flight-departure-date" className="text-sm font-medium mb-1 block">Departure</label>
+                <label htmlFor="flight-departure-date" className="text-sm font-medium mb-1 block">
+                  Departure
+                </label>
                 <Input
                   id="flight-departure-date"
                   type="date"
@@ -128,7 +124,9 @@ export function FlightSearchForm({
                 />
               </div>
               <div>
-                <label htmlFor="flight-return-date" className="text-sm font-medium mb-1 block">Return (optional)</label>
+                <label htmlFor="flight-return-date" className="text-sm font-medium mb-1 block">
+                  Return (optional)
+                </label>
                 <Input
                   id="flight-return-date"
                   type="date"
@@ -137,9 +135,9 @@ export function FlightSearchForm({
                   min={departureDate || new Date().toISOString().split('T')[0]}
                 />
               </div>
-              <Button onClick={handleSearch} disabled={!origin} style={{ alignSelf: 'end' }}>
-                <Search size={16} className="mr-1.5" />
-                Search
+              <Button onClick={handleSearch} disabled={!origin} className="w-full sm:w-auto">
+                <Search size={16} />
+                {origin ? 'Search flights' : 'Pick a departure airport'}
               </Button>
             </div>
           </div>

@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Plane, Hotel, Ticket, TrendingUp, X } from '@/components/icons';
+import { Plane, Hotel, Ticket, TrendingUp, X, Train, Bus, ArrowRight } from '@/components/icons';
+import { useQuery } from '@tanstack/react-query';
+import { fetchHotelsPage } from '@/hooks/useHotels';
+import { HotelCard } from '@/components/hotels/HotelCard';
+import { FilterChip } from '@/components/transit/FilterChip';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { buildTrainlineUrl } from '@/utils/transport/trainlineUrl';
+import { buildFlixbusUrl } from '@/utils/transport/flixbusUrl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -222,6 +229,17 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
     });
   };
 
+  const [travelMode, setTravelMode] = useState<'flight' | 'rail' | 'coach'>('flight');
+  const stayCity = hotelSearch?.city?.trim() || '';
+  const { data: ownStays, isLoading: ownStaysLoading } = useQuery({
+    queryKey: ['book-own-stays', stayCity.toLowerCase()],
+    enabled: activeTab === 'hotels' && stayCity.length > 1,
+    queryFn: () => fetchHotelsPage({ city: stayCity }, { pageSize: 6 }).then((r) => r.hotels),
+    staleTime: 10 * 60_000,
+  });
+  const searchHotelCity = (city: string) =>
+    handleHotelSearch({ city, guests: hotelSearch?.guests ?? initialGuests ?? 2 });
+
   const handleHotelSearch = (params: HotelSearchParams) => {
     setHotelSearch(params);
     syncHotelParamsToUrl(params);
@@ -331,6 +349,36 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
         <div className="border-t border-border-hairline">
           <div className="p-6">
             {activeTab === 'flights' && (
+              <div
+                className="mb-4 flex flex-wrap gap-2"
+                role="group"
+                aria-label={t('pages.travel.book.mode', 'Travel by')}
+              >
+                {(
+                  [
+                    ['flight', Plane, t('pages.travel.book.fly', 'Fly')],
+                    ['rail', Train, t('pages.travel.book.train', 'Train')],
+                    ['coach', Bus, t('pages.travel.book.coach', 'Coach')],
+                  ] as const
+                ).map(([mode, Icon, label]) => (
+                  <FilterChip
+                    key={mode}
+                    active={travelMode === mode}
+                    onClick={() => setTravelMode(mode)}
+                    label={
+                      <>
+                        <Icon size={16} aria-hidden />
+                        {label}
+                      </>
+                    }
+                  />
+                ))}
+              </div>
+            )}
+            {activeTab === 'flights' && travelMode !== 'flight' && (
+              <GroundSearch mode={travelMode} />
+            )}
+            {activeTab === 'flights' && travelMode === 'flight' && (
               <FlightSearchForm
                 // Remount when the trip seed lands so the one-shot useState
                 // initializers pick it up (URL params still win).
@@ -397,7 +445,7 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
             )}
           </div>
 
-          {activeTab === 'flights' && (
+          {activeTab === 'flights' && travelMode === 'flight' && (
             <div className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp size={20} />
@@ -422,10 +470,19 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                   ))}
                 </ResultsGrid>
               ) : (
-                <EmptyState>
+                <EmptyState
+                  icon={Plane}
+                  title={t('pages.travel.book.dealsEmptyTitle', 'Where to next?')}
+                >
                   {originIata
-                    ? 'No popular deals available right now. Try searching for a specific route above.'
-                    : 'Enable location services to see personalized deals, or search for a route above.'}
+                    ? t(
+                        'pages.travel.book.dealsEmpty',
+                        'No live deals right now. Pick a route above and we compare fares for you.',
+                      )
+                    : t(
+                        'pages.travel.book.dealsEmptyNoOrigin',
+                        'Pick a route above, or allow location to see deals from your nearest airport.',
+                      )}
                 </EmptyState>
               )}
             </div>
@@ -436,9 +493,39 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
               <div className="flex items-center gap-2 mb-4">
                 <Hotel size={20} />
                 <h3 className="text-base font-bold tracking-tight">
-                  {hotelSearch?.city ? `Hotels in ${hotelSearch.city}` : 'Search for hotels'}
+                  {hotelSearch?.city ? `Stays in ${hotelSearch.city}` : 'Search for stays'}
                 </h3>
               </div>
+
+              {stayCity && (ownStaysLoading || (ownStays && ownStays.length > 0)) && (
+                <div className="mb-8">
+                  <div className="mb-4 flex items-end justify-between gap-4">
+                    <div>
+                      <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                        {t('pages.travel.book.ownStaysEyebrow', 'On queer.guide')}
+                      </p>
+                      <p className="text-15 font-bold">
+                        {t(
+                          'pages.travel.book.ownStaysTitle',
+                          'Queer-run B&Bs, guesthouses and private stays',
+                        )}
+                      </p>
+                    </div>
+                    <LocalizedLink
+                      to={`/hotels?city=${encodeURIComponent(stayCity)}`}
+                      className="inline-flex shrink-0 items-center gap-1 text-13 font-bold no-underline hover:underline"
+                    >
+                      {t('pages.travel.book.ownStaysAll', 'See all')}
+                      <ArrowRight size={14} aria-hidden />
+                    </LocalizedLink>
+                  </div>
+                  <ResultsGrid>
+                    {ownStaysLoading
+                      ? [1, 2, 3].map((i) => <HotelCard key={i} loading />)
+                      : ownStays!.map((h) => <HotelCard key={h.id} hotel={h} />)}
+                  </ResultsGrid>
+                </div>
+              )}
 
               {hasActiveHotelFilters && hotelSearch && (
                 <div className="flex flex-wrap gap-2 mb-4 items-center">
@@ -526,11 +613,34 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                   </div>
                 </EmptyState>
               ) : hotelSearch ? (
-                <EmptyState>
-                  No hotels found in {hotelSearch.city}. Try a different city.
-                </EmptyState>
+                ownStays && ownStays.length > 0 ? null : (
+                  <EmptyState
+                    icon={Hotel}
+                    title={t('pages.travel.book.staysEmptyTitle', 'Nothing bookable here yet')}
+                    suggestions={SUGGESTED_CITIES.filter(
+                      (c) => c.toLowerCase() !== hotelSearch.city.toLowerCase(),
+                    )}
+                    onSuggest={searchHotelCity}
+                  >
+                    {t(
+                      'pages.travel.book.staysEmpty',
+                      'No partner stays came back for {{city}}. Try one of these queer favourites:',
+                      { city: hotelSearch.city },
+                    )}
+                  </EmptyState>
+                )
               ) : (
-                <EmptyState>Search for a city above to find hotels.</EmptyState>
+                <EmptyState
+                  icon={Hotel}
+                  title={t('pages.travel.book.staysStartTitle', 'Where do you want to wake up?')}
+                  suggestions={SUGGESTED_CITIES}
+                  onSuggest={searchHotelCity}
+                >
+                  {t(
+                    'pages.travel.book.staysStart',
+                    'Search a city, or start with one of these queer favourites:',
+                  )}
+                </EmptyState>
               )}
             </div>
           )}
@@ -555,12 +665,30 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                     <UnifiedBookingCard key={activity.id} result={activity} />
                   ))}
                 </ResultsGrid>
-              ) : activityCity ? (
-                <EmptyState>
-                  No activities found in {activityCity}. Try a different city.
-                </EmptyState>
               ) : (
-                <EmptyState>Search for a city above to find activities and tours.</EmptyState>
+                <EmptyState
+                  icon={Ticket}
+                  title={
+                    activityCity
+                      ? t('pages.travel.book.activitiesEmptyTitle', 'Nothing listed yet')
+                      : t('pages.travel.book.activitiesStartTitle', 'Tours, tickets and nights out')
+                  }
+                  suggestions={SUGGESTED_CITIES.filter(
+                    (c) => c.toLowerCase() !== activityCity.toLowerCase(),
+                  )}
+                  onSuggest={setActivityCity}
+                >
+                  {activityCity
+                    ? t(
+                        'pages.travel.book.activitiesEmpty',
+                        'No activities came back for {{city}}. Try one of these:',
+                        { city: activityCity },
+                      )
+                    : t(
+                        'pages.travel.book.activitiesStart',
+                        'Search a city, or start with one of these:',
+                      )}
+                </EmptyState>
               )}
             </div>
           )}
@@ -574,10 +702,93 @@ function ResultsGrid({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{children}</div>;
 }
 
-function EmptyState({ children }: { children: React.ReactNode }) {
+const SUGGESTED_CITIES = ['Berlin', 'Barcelona', 'Lisbon', 'Bangkok', 'Mexico City', 'Amsterdam'];
+
+function EmptyState({
+  icon: Icon,
+  title,
+  suggestions,
+  onSuggest,
+  children,
+}: {
+  icon?: typeof Plane;
+  title?: string;
+  suggestions?: string[];
+  onSuggest?: (city: string) => void;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="text-center py-8 bg-muted rounded-element">
-      <div className="text-muted-foreground">{children}</div>
+    <div className="flex flex-col items-center gap-4 rounded-container bg-card px-6 py-10 text-center shadow-soft">
+      {Icon && (
+        <span className="grid size-14 place-items-center rounded-full bg-muted">
+          <Icon size={24} aria-hidden />
+        </span>
+      )}
+      {title && <p className="text-title font-bold">{title}</p>}
+      <div className="max-w-md text-15 text-muted-foreground">{children}</div>
+      {suggestions && onSuggest && suggestions.length > 0 && (
+        <div className="flex flex-wrap justify-center gap-2">
+          {suggestions.map((city) => (
+            <FilterChip key={city} active={false} onClick={() => onSuggest(city)} label={city} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Train and coach: one route, one search, opened at the partner. */
+function GroundSearch({ mode }: { mode: 'rail' | 'coach' }) {
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [date, setDate] = useState('');
+  const ready = from.trim().length > 1 && to.trim().length > 1;
+  const href = !ready
+    ? undefined
+    : mode === 'rail'
+      ? buildTrainlineUrl({ origin: from, destination: to, departDate: date || undefined })
+      : buildFlixbusUrl({ origin: from, destination: to, departDate: date || undefined });
+  const Icon = mode === 'rail' ? Train : Bus;
+  return (
+    <div className="grid gap-4 rounded-container bg-card p-4 shadow-soft md:grid-cols-[1fr_1fr_180px_auto] md:items-end">
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="ground-from">From</Label>
+        <Input
+          id="ground-from"
+          value={from}
+          onChange={(e) => setFrom(e.target.value)}
+          placeholder="Zürich"
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="ground-to">To</Label>
+        <Input
+          id="ground-to"
+          value={to}
+          onChange={(e) => setTo(e.target.value)}
+          placeholder="Berlin"
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="ground-date">Date</Label>
+        <Input
+          id="ground-date"
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+      </div>
+      {href ? (
+        <Button asChild>
+          <a href={href} target="_blank" rel="noopener noreferrer sponsored">
+            <Icon size={16} /> Search {mode === 'rail' ? 'trains' : 'coaches'}
+          </a>
+        </Button>
+      ) : (
+        <Button disabled>
+          <Icon size={16} /> Search {mode === 'rail' ? 'trains' : 'coaches'}
+        </Button>
+      )}
     </div>
   );
 }

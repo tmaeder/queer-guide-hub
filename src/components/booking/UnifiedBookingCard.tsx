@@ -51,15 +51,29 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
     }
   };
 
+  const hasPrice = typeof result.price === 'number' && result.price > 0;
+  // A partner "browse this city" link has no photo and no price: give it a
+  // plate and an invitation instead of a bare row reading "Price on request".
+  const isBrowse = result.vertical === 'activity' && !result.imageUrl && !hasPrice;
+
   return (
-    <Card>
-      {result.imageUrl && (
+    <Card className={isBrowse ? 'card-lift overflow-hidden' : undefined}>
+      {result.imageUrl ? (
         <img
           src={result.imageUrl}
           alt={result.title}
           style={{ width: '100%', height: 140, objectFit: 'cover' }}
         />
-      )}
+      ) : isBrowse ? (
+        <div className="flex h-36 flex-col items-center justify-center gap-2 bg-muted">
+          <span className="grid size-14 place-items-center rounded-full bg-card shadow-soft">
+            <Ticket size={26} aria-hidden />
+          </span>
+          <span className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+            Tours · tickets · nights out
+          </span>
+        </div>
+      ) : null}
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -74,9 +88,11 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
               <p className="font-bold text-sm truncate">{result.title}</p>
             )}
           </div>
-          <Badge className="ml-2 font-bold text-sm">
-            {formatPrice(result.price, result.currency)}
-          </Badge>
+          {hasPrice && (
+            <Badge className="ml-2 font-bold text-sm">
+              {formatPrice(result.price, result.currency)}
+            </Badge>
+          )}
         </div>
 
         {result.vertical === 'flight' && originCity && (
@@ -142,6 +158,13 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
           </div>
         )}
 
+        {isBrowse && (
+          <p className="mb-4 text-13 text-muted-foreground">
+            Guided walks, queer history tours, shows and day trips, picked by a partner and bookable
+            in a few taps.
+          </p>
+        )}
+
         {result.vertical === 'activity' && result.durationText && (
           <p className="text-xs text-muted-foreground mb-2">{result.durationText}</p>
         )}
@@ -155,7 +178,9 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
         <div className="flex gap-2">
           <Button size="sm" className="flex-1" onClick={handleBook}>
             <ExternalLink size={14} className="mr-1.5" />
-            {`Book ${result.vertical === 'flight' ? 'Flight' : result.vertical === 'hotel' ? 'Hotel' : 'Activity'}`}
+            {isBrowse
+              ? 'Explore activities'
+              : `Book ${result.vertical === 'flight' ? 'Flight' : result.vertical === 'hotel' ? 'Hotel' : 'Activity'}`}
           </Button>
           {onAddToTrip && (
             <Button size="sm" variant="outline" onClick={() => onAddToTrip(result)}>
