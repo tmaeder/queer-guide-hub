@@ -15,6 +15,8 @@ import {
   Accessibility,
   Hotel,
   Landmark,
+  Moon,
+  Users,
 } from '@/components/icons';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import type { BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
@@ -23,6 +25,13 @@ import type { BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
 
 /** Layers rendered as native MapLibre circle + label layers (area feel). */
 export const AREA_LAYERS: LayerType[] = ['cities', 'countries', 'neighbourhoods'];
+
+/**
+ * Layers the homepage map toggles on their own; they are not /map lines.
+ * Cruising is a venue category (it arrives inside `venues` when every line is
+ * on) and organisations have no line yet. Legacy /map URLs never named them.
+ */
+export const TOGGLE_ONLY_LAYERS: LayerType[] = ['cruising', 'organizations'];
 
 // ── Layer registry ───────────────────────────────────────────────────────────
 
@@ -45,6 +54,8 @@ export const LAYER_DEFS: LayerDef[] = [
   { type: 'countries', label: 'Countries', icon: Globe, defaultOn: false },
   { type: 'restrooms', label: 'Restrooms', icon: Accessibility, defaultOn: false },
   { type: 'hotels', label: 'Hotels', icon: Hotel, defaultOn: true },
+  { type: 'cruising', label: 'Cruising', icon: Moon, defaultOn: true },
+  { type: 'organizations', label: 'Organisations', icon: Users, defaultOn: false },
   { type: 'neighbourhoods', label: 'Villages', icon: Landmark, defaultOn: false },
 ];
 

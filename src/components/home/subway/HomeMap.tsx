@@ -12,7 +12,14 @@ import type { LayerType } from '@/hooks/useExploreMapData';
 const LAYER_CHIPS: { type: LayerType; icon: TransitIconName; key: string; fallback: string }[] = [
   { type: 'venues', icon: 'nightlife', key: 'home.map.layers.venues', fallback: 'Places' },
   { type: 'events', icon: 'events', key: 'home.map.layers.events', fallback: 'Events' },
+  { type: 'cruising', icon: 'after-dark', key: 'home.map.layers.cruising', fallback: 'Cruising' },
   { type: 'hotels', icon: 'housing', key: 'home.map.layers.hotels', fallback: 'Hotels & B&Bs' },
+  {
+    type: 'organizations',
+    icon: 'community',
+    key: 'home.map.layers.organizations',
+    fallback: 'Organisations',
+  },
   { type: 'restrooms', icon: 'restroom', key: 'home.map.layers.restrooms', fallback: 'Restrooms' },
 ];
 
@@ -22,7 +29,7 @@ export default function HomeMap() {
   // Same city as the hero: the visitor's own, else the featured fallback.
   const region = useHomeCity();
   const { data: centre, isLoading } = useCityCentre(region.cityId);
-  const [layers, setLayers] = useState<LayerType[]>(['venues', 'events']);
+  const [layers, setLayers] = useState<LayerType[]>(['venues', 'events', 'cruising']);
   // Toggle a layer; never leave the map with nothing on it.
   const toggle = (type: LayerType) =>
     setLayers((cur) =>

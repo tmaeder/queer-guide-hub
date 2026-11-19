@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { COLOR_TOKENS } from '@/components/admin/design/tokenCatalog';
 import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
-import { AREA_LAYERS, LAYER_DEFS } from '@/config/mapLayers';
+import { AREA_LAYERS, LAYER_DEFS, TOGGLE_ONLY_LAYERS } from '@/config/mapLayers';
 
 /**
  * The map's colour gate.
@@ -118,7 +118,9 @@ describe.each(['light', 'dark'] as const)('map palette (%s mode)', (m) => {
 
   it('gives the four point layers four DIFFERENT tracks', async () => {
     const { LAYER_COLORS } = await import('@/hooks/useExploreMapData');
-    const pointLayers = LAYER_DEFS.map((d) => d.type).filter((t) => !AREA_LAYERS.includes(t));
+    const pointLayers = LAYER_DEFS.map((d) => d.type).filter(
+      (t) => !AREA_LAYERS.includes(t) && !TOGGLE_ONLY_LAYERS.includes(t),
+    );
     // venues / events / hotels / restrooms — the whole reason `hotel` moved
     // blue → yellow in ROUTE_BULLET_MAP. Two pin types sharing a hue is
     // indistinguishable on a canvas, where there is no letter to fall back on.
