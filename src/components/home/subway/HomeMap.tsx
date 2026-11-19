@@ -12,7 +12,6 @@ import type { LayerType } from '@/hooks/useExploreMapData';
 const LAYER_CHIPS: { type: LayerType; icon: TransitIconName; key: string; fallback: string }[] = [
   { type: 'venues', icon: 'nightlife', key: 'home.map.layers.venues', fallback: 'Places' },
   { type: 'events', icon: 'events', key: 'home.map.layers.events', fallback: 'Events' },
-  { type: 'hotels', icon: 'housing', key: 'home.map.layers.hotels', fallback: 'Stays' },
   { type: 'restrooms', icon: 'restroom', key: 'home.map.layers.restrooms', fallback: 'Restrooms' },
 ];
 

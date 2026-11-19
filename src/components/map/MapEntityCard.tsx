@@ -1,4 +1,13 @@
-import { ExternalLink, Star, Clock, Radio, MapPin, TrendingUp, Users, Heart } from '@/components/icons';
+import {
+  ExternalLink,
+  Star,
+  Clock,
+  Radio,
+  MapPin,
+  TrendingUp,
+  Users,
+  Heart,
+} from '@/components/icons';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { Image } from '@/components/ui/Image';
@@ -281,9 +290,19 @@ export function MapEntityCard({
       )}
 
       <div className="flex flex-col gap-1.5 p-2">
-        <div className="truncate text-body-lg font-semibold leading-tight text-foreground">
-          {point.name}
-        </div>
+        {point.linkTo && onNavigate ? (
+          <button
+            type="button"
+            onClick={() => onNavigate(point.linkTo!)}
+            className="truncate text-left text-body-lg font-semibold leading-tight text-foreground hover:underline"
+          >
+            {point.name}
+          </button>
+        ) : (
+          <div className="truncate text-body-lg font-semibold leading-tight text-foreground">
+            {point.name}
+          </div>
+        )}
         {metaLine && <div className="truncate text-13 text-muted-foreground">{metaLine}</div>}
         <Signals point={point} />
 
@@ -299,6 +318,16 @@ export function MapEntityCard({
                 View details
               </button>
             )}
+            {/* Every pin, detail page or not, can be walked to. */}
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${point.lat},${point.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-13 font-medium text-foreground underline"
+            >
+              <TransitIcon name="locate" size={16} aria-hidden />
+              Directions
+            </a>
             {point.linkTo && onShare && (
               <button
                 type="button"
