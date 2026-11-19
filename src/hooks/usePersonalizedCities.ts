@@ -169,7 +169,25 @@ export async function fetchHomeCountries(
   if (preferred.error) throw preferred.error;
   if (top.error) throw top.error;
   const rows = [...(preferred.data ?? []), ...(top.data ?? [])] as HomePlaceRow[];
-  return [...new Map(rows.map((r) => [r.id, r])).values()].slice(0, limit);
+  const out = [...new Map(rows.map((r) => [r.id, r])).values()].slice(0, limit);
+  // Most countries carry no photo of their own; borrow the largest pictured
+  // city's, so a country card leads with a photo like the city cards do.
+  const bare = out.filter((r) => !r.image_url).map((r) => r.id);
+  if (bare.length) {
+    const { data } = await supabase
+      .from('cities')
+      .select('country_id, image_url')
+      .in('country_id', bare)
+      .not('image_url', 'is', null)
+      .is('duplicate_of_id', null)
+      .order('population', { ascending: false, nullsFirst: false })
+      .limit(bare.length * 5);
+    const photo = new Map<string, string>();
+    for (const c of (data ?? []) as { country_id: string; image_url: string }[])
+      if (!photo.has(c.country_id)) photo.set(c.country_id, c.image_url);
+    for (const r of out) r.image_url ??= photo.get(r.id) ?? null;
+  }
+  return out;
 }
 
 /**
