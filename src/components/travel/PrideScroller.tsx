@@ -42,7 +42,7 @@ export function PrideScroller() {
         <ul
           aria-label={listLabel}
           tabIndex={0}
-          className="flex snap-x gap-4 overflow-x-auto pb-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="-mx-6 -my-4 flex snap-x scroll-px-6 gap-4 overflow-x-auto px-6 pt-4 pb-12 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {data.map((event) => {
             const timeZone =

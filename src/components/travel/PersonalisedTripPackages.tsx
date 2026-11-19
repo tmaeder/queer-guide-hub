@@ -5,6 +5,18 @@ import {
   BedDouble,
   Bus,
   CalendarDays,
+  CalendarRange,
+  Coffee,
+  Crown,
+  Flag,
+  Heart,
+  Mountain,
+  Music,
+  Shuffle,
+  Users,
+  Wallet,
+  Bed,
+  Building2,
   Car,
   Hotel,
   MapPin,
@@ -39,32 +51,42 @@ type Mood = 'nightlife' | 'slow' | 'pride' | 'culture' | 'outdoors';
 type Timing = 'weekend' | 'month' | 'flexible';
 type Budget = 'easy' | 'comfortable' | 'special';
 
-const MOODS: Array<{ value: Mood; label: string; hint: string }> = [
-  { value: 'nightlife', label: 'Big nights', hint: 'Clubs, bars and late starts' },
-  { value: 'slow', label: 'Soft & romantic', hint: 'Cafés, spas and unhurried days' },
-  { value: 'pride', label: 'Pride energy', hint: 'A trip anchored by a real event' },
-  { value: 'culture', label: 'Culture & community', hint: 'Local stories and queer spaces' },
-  { value: 'outdoors', label: 'Outside, please', hint: 'Water, trails and fresh air' },
+const MOODS: Array<{ value: Mood; label: string; hint: string; icon: typeof Plane }> = [
+  { value: 'nightlife', label: 'Big nights', hint: 'Clubs, bars and late starts', icon: Music },
+  { value: 'slow', label: 'Soft & romantic', hint: 'Cafés, spas and unhurried days', icon: Heart },
+  { value: 'pride', label: 'Pride energy', hint: 'A trip anchored by a real event', icon: Flag },
+  {
+    value: 'culture',
+    label: 'Culture & community',
+    hint: 'Local stories and queer spaces',
+    icon: Users,
+  },
+  {
+    value: 'outdoors',
+    label: 'Outside, please',
+    hint: 'Water, trails and fresh air',
+    icon: Mountain,
+  },
 ];
 
-const TIMINGS: Array<{ value: Timing; label: string }> = [
-  { value: 'weekend', label: 'This weekend' },
-  { value: 'month', label: 'Next month' },
-  { value: 'flexible', label: 'Surprise me' },
+const TIMINGS: Array<{ value: Timing; label: string; icon: typeof Plane }> = [
+  { value: 'weekend', label: 'This weekend', icon: CalendarDays },
+  { value: 'month', label: 'Next month', icon: CalendarRange },
+  { value: 'flexible', label: 'Surprise me', icon: Shuffle },
 ];
 
-const BUDGETS: Array<{ value: Budget; label: string }> = [
-  { value: 'easy', label: 'Easy on the wallet' },
-  { value: 'comfortable', label: 'Comfortable' },
-  { value: 'special', label: 'Make it special' },
+const BUDGETS: Array<{ value: Budget; label: string; icon: typeof Plane }> = [
+  { value: 'easy', label: 'Easy on the wallet', icon: Wallet },
+  { value: 'comfortable', label: 'Comfortable', icon: BedDouble },
+  { value: 'special', label: 'Make it special', icon: Crown },
 ];
 
-const STAY_TYPES: Array<{ value: HotelTypeOption; label: string }> = [
-  { value: 'hotel', label: 'Hotels' },
-  { value: 'boutique', label: 'Boutique' },
-  { value: 'bnb', label: 'B&Bs' },
-  { value: 'apartment', label: 'Apartments' },
-  { value: 'hostel', label: 'Hostels' },
+const STAY_TYPES: Array<{ value: HotelTypeOption; label: string; icon: typeof Plane }> = [
+  { value: 'hotel', label: 'Hotels', icon: Hotel },
+  { value: 'boutique', label: 'Boutique', icon: Sparkles },
+  { value: 'bnb', label: 'B&Bs', icon: Coffee },
+  { value: 'apartment', label: 'Apartments', icon: Building2 },
+  { value: 'hostel', label: 'Hostels', icon: Bed },
 ];
 
 const ARRIVAL_MODES: Array<{
@@ -110,7 +132,7 @@ function ChipGroup<T extends string>({
 }: {
   label: string;
   value: T;
-  options: Array<{ value: T; label: string; hint?: string }>;
+  options: Array<{ value: T; label: string; hint?: string; icon?: typeof Plane }>;
   onChange: (value: T) => void;
 }) {
   return (
@@ -123,20 +145,23 @@ function ChipGroup<T extends string>({
             type="button"
             aria-pressed={value === option.value}
             onClick={() => onChange(option.value)}
-            className={`min-h-11 rounded-element border px-4 py-2 text-left transition-colors ${
+            className={`flex min-h-11 items-center gap-2.5 rounded-element px-4 py-2 text-left transition-colors ${
               value === option.value
-                ? 'border-foreground bg-foreground text-background'
-                : 'border-border bg-background hover:border-foreground/50'
+                ? 'bg-foreground text-background'
+                : 'bg-card shadow-soft hover:bg-muted'
             }`}
           >
-            <span className="block text-sm font-semibold">{option.label}</span>
-            {option.hint ? (
-              <span
-                className={`block text-xs ${value === option.value ? 'text-background/70' : 'text-muted-foreground'}`}
-              >
-                {option.hint}
-              </span>
-            ) : null}
+            {option.icon ? <option.icon size={18} aria-hidden className="shrink-0" /> : null}
+            <span>
+              <span className="block text-sm font-semibold">{option.label}</span>
+              {option.hint ? (
+                <span
+                  className={`block text-xs ${value === option.value ? 'text-background/70' : 'text-muted-foreground'}`}
+                >
+                  {option.hint}
+                </span>
+              ) : null}
+            </span>
           </button>
         ))}
       </div>
@@ -403,12 +428,13 @@ export function PersonalisedTripPackages() {
                       type="button"
                       aria-pressed={stayType === type.value}
                       onClick={() => setStayType(type.value)}
-                      className={`rounded-element border px-4 py-2 text-sm font-semibold ${
+                      className={`inline-flex min-h-11 items-center gap-2 rounded-element px-4 py-2 text-sm font-semibold ${
                         stayType === type.value
-                          ? 'border-foreground bg-foreground text-background'
-                          : 'border-border'
+                          ? 'bg-foreground text-background'
+                          : 'bg-card shadow-soft hover:bg-muted'
                       }`}
                     >
+                      <type.icon size={16} aria-hidden />
                       {type.label}
                     </button>
                   ))}
@@ -533,7 +559,7 @@ export function PersonalisedTripPackages() {
                             {arrivalMode === 'rail' ? 'trains' : 'coaches'}
                           </a>
                         ) : (
-                          <span>
+                          <span className="inline-flex items-center gap-2">
                             {arrivalMode === 'rail' ? <Train /> : <Bus />} Search{' '}
                             {arrivalMode === 'rail' ? 'trains' : 'coaches'}
                           </span>

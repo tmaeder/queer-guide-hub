@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Compass, Flag, MapPin, Plane, Sparkles } from '@/components/icons';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -6,7 +7,6 @@ import { useMeta } from '@/hooks/useMeta';
 import { PageIntro } from '@/components/layout/PageIntro';
 import { Button } from '@/components/ui/button';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
-import { CoverageNote } from '@/components/intent/CoverageNote';
 import { PrideScroller } from '@/components/travel/PrideScroller';
 import { BookNowAccordion } from '@/components/travel/BookNowAccordion';
 import { TripCockpit } from '@/components/travel/TripCockpit';
@@ -14,7 +14,6 @@ import { StartTripHero } from '@/components/travel/StartTripHero';
 import { VillagesRail } from '@/components/travel/VillagesRail';
 import { DiscoverableTripsRail } from '@/components/travel/DiscoverableTripsRail';
 import { BrowseVisitedToolbar } from '@/components/travel/BrowseVisitedToolbar';
-import { TravelDiscoveryMap } from '@/components/travel/TravelDiscoveryMap';
 import { TravelCoverStory } from '@/components/travel/TravelCoverStory';
 import { GoNowRail } from '@/components/travel/GoNowRail';
 import { DestinationGrid } from '@/components/travel/DestinationGrid';
@@ -27,9 +26,6 @@ import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 import { AMBIENT_TRIP_CONTEXT_ENABLED } from '@/lib/trips/ambientTripFlags';
 import { useTripBookingContext } from '@/hooks/useTripBookingContext';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
-import { useIntentLocation } from '@/hooks/useIntentLocation';
-import { useAllCountriesRights } from '@/hooks/useIntentData';
-import { hasAnyCriminalizationSignal, hasDeathPenalty } from '@/utils/equalityScore';
 import {
   readStoredVisitedFilter,
   writeVisitedFilter,
@@ -70,17 +66,7 @@ export default function Travel() {
     writeVisitedFilter(next);
   };
 
-  const { countryCode } = useIntentLocation();
-  const { data: countries } = useAllCountriesRights();
   const tripBookingContext = useTripBookingContext();
-
-  const home = useMemo(
-    () =>
-      countryCode && countries
-        ? (countries.find((c) => c.code?.toLowerCase() === countryCode.toLowerCase()) ?? null)
-        : null,
-    [countries, countryCode],
-  );
 
   useEffect(() => {
     // No entityType: 'intent' is not a member of EntityType, and inventing one
@@ -109,15 +95,10 @@ export default function Travel() {
     canonicalPath: '/travel',
   });
 
-  const criminalizingCount = useMemo(
-    () =>
-      (countries ?? []).filter((c) => hasAnyCriminalizationSignal(c.lgbti_criminalization)).length,
-    [countries],
-  );
-
   const sections: SectionDef[] = [
     {
       id: 'plan',
+      icon: Sparkles,
       label: t('pages.travel.packages.section', 'Find your escape'),
       content: (
         <div>
@@ -131,6 +112,7 @@ export default function Travel() {
     },
     {
       id: 'inspiration',
+      icon: Compass,
       label: t('pages.travel.sections.inspiration', 'Where to go'),
       content: (
         <div>
@@ -154,65 +136,22 @@ export default function Travel() {
       ),
     },
     {
-      id: 'map',
-      label: t('pages.travel.sections.map', 'See the map'),
-      // Moved out from between 'plan' and 'inspiration'. The map is a tool, and
-      // sitting second it split the two things this page is for — the planner
-      // and the reasons to use it — with a full-width utility surface. It now
-      // follows the inspiration cluster it belongs to thematically ("where to
-      // go", seen at a glance) instead of interrupting it.
-      content: <TravelDiscoveryMap />,
-    },
-    {
       id: 'villages',
+      icon: MapPin,
       label: t('pages.travel.sections.villages', 'Neighborhoods'),
       content: <VillagesRail visitedFilter={visitedFilter} />,
     },
     {
       id: 'pride',
+      icon: Flag,
       label: t('pages.travel.sections.pride', 'Pride season'),
       content: <PrideScroller />,
     },
     {
       id: 'book',
+      icon: Plane,
       label: t('pages.travel.sections.book', 'Getting there'),
       content: <BookNowAccordion defaultOpen={bookIntent} tripContext={tripBookingContext} />,
-    },
-    {
-      id: 'safety',
-      label: t('pages.travel.sections.safety', 'Know before you go'),
-      content: (
-        <div>
-          <CoverageNote>
-            We hold the legal position for all {countries?.length ?? 250} countries and territories.{' '}
-            {criminalizingCount} of them criminalise same-sex acts.
-          </CoverageNote>
-          {home ? (
-            <p className="text-body-lg mb-4">
-              You appear to be in <strong>{home.name}</strong>.{' '}
-              {hasDeathPenalty(home.lgbti_criminalization)
-                ? 'Same-sex acts can carry the death penalty here.'
-                : hasAnyCriminalizationSignal(home.lgbti_criminalization)
-                  ? 'Same-sex acts are criminalised here.'
-                  : 'Same-sex acts are not criminalised here.'}
-            </p>
-          ) : null}
-          <div className="flex flex-wrap gap-4">
-            <LocalizedLink
-              to="/tags/rights-by-country"
-              className="bg-muted px-6 py-2 font-medium no-underline rounded-element"
-            >
-              Check any country
-            </LocalizedLink>
-            <LocalizedLink
-              to="/city/compare"
-              className="bg-muted px-6 py-2 font-medium no-underline rounded-element"
-            >
-              Compare two places
-            </LocalizedLink>
-          </div>
-        </div>
-      ),
     },
   ];
 

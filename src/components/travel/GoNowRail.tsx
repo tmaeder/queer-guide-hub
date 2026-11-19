@@ -3,7 +3,7 @@ import { CalendarDays, TrendingUp, Sun } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ExternalImg } from '@/components/ui/ExternalImg';
+import { Image } from '@/components/ui/Image';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import { useGoNowDestinations, type GoNowReason } from '@/hooks/useGoNowDestinations';
@@ -63,12 +63,14 @@ export function GoNowRail() {
                     </div>
                   ) : (
                     <>
-                      <ExternalImg
-                        src={img}
-                        cfWidth={500}
-                        fallbackSrc={fallback}
+                      <Image
+                        src={img ?? fallback}
                         alt={d.name}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
+                        aspect="auto"
+                        rounded="none"
+                        sizes="240px"
+                        frameClassName="absolute inset-0 h-full w-full"
+                        className="transition-transform group-hover:scale-[1.03]"
                       />
                       <div className="img-scrim-readable absolute inset-0" />
                     </>

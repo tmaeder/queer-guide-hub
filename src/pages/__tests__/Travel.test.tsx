@@ -22,7 +22,9 @@ const { useTrackMock, trackFn, authMock, countriesMock, intentLocationMock } = v
   countriesMock: vi.fn(),
   intentLocationMock: vi.fn(),
 }));
-const activeTrip = vi.hoisted(() => ({ current: null as { id: string; primary_city_name: string } | null }));
+const activeTrip = vi.hoisted(() => ({
+  current: null as { id: string; primary_city_name: string } | null,
+}));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (_k: string, d?: string) => d ?? _k }),
@@ -131,17 +133,20 @@ beforeEach(() => {
 });
 
 describe('Travel page (Travelling intent)', () => {
-  it('puts the cover before the planner and closes with the legal briefing', () => {
+  it('puts the cover before the planner', () => {
     renderAt('/travel');
     expect(screen.getByTestId('cover-story').closest('header')).toContainElement(
       screen.getByRole('heading', { level: 1 }),
     );
-    expect(screen.getByTestId('cover-story').compareDocumentPosition(
-      screen.getByTestId('personalised-packages'),
-    ) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(
+      screen
+        .getByTestId('cover-story')
+        .compareDocumentPosition(screen.getByTestId('personalised-packages')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent ?? '');
     expect(headings[0]).toMatch(/find your escape/i);
-    expect(headings[headings.length - 1]).toMatch(/know before you go/i);
+    expect(headings.some((h) => /know before you go|see the map/i.test(h))).toBe(false);
   });
 
   it('shows the trip-create hero to signed-out visitors', () => {
@@ -174,19 +179,13 @@ describe('Travel page (Travelling intent)', () => {
     expect(screen.getByTestId('discoverable')).toBeInTheDocument();
   });
 
-  it('renders the map, inspiration, villages and pride sections', () => {
+  it('renders the inspiration, villages and pride sections', () => {
     renderAt('/travel');
-    expect(screen.getByTestId('discovery-map')).toBeInTheDocument();
     expect(screen.getByTestId('go-now')).toBeInTheDocument();
     expect(screen.getByTestId('destination-grid')).toBeInTheDocument();
     expect(screen.getByTestId('guides-rail')).toBeInTheDocument();
     expect(screen.getByTestId('villages')).toBeInTheDocument();
     expect(screen.getByTestId('pride')).toBeInTheDocument();
-  });
-
-  it('links out to the Rights intent for any country', () => {
-    renderAt('/travel');
-    expect(screen.getByRole('link', { name: /check any country/i })).toBeInTheDocument();
   });
 
   it('opens the booking accordion on ?intent=book', () => {
@@ -203,20 +202,6 @@ describe('Travel page (Travelling intent)', () => {
   it('leaves the booking accordion closed by default', () => {
     renderAt('/travel');
     expect(screen.getByTestId('book')).toHaveAttribute('data-open', 'false');
-  });
-
-  it('surfaces the visitor country and its legal status when geo resolves', () => {
-    intentLocationMock.mockReturnValue({
-      cityId: null,
-      citySlug: null,
-      cityName: null,
-      countryCode: 'TL',
-      loading: false,
-      inferred: true,
-    });
-    renderAt('/travel');
-    expect(screen.getByText(/Testland/)).toBeInTheDocument();
-    expect(screen.getByText(/criminalised/i)).toBeInTheDocument();
   });
 
   it('fires a destination-led page_view without inventing an entity type', () => {
