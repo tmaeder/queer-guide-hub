@@ -55,8 +55,6 @@ const LAYER_FALLBACK_ICONS: Record<LayerType, TransitIconName> = {
   neighbourhoods: 'pride',
   cities: 'community',
   countries: 'compass',
-  cruising: 'after-dark',
-  organizations: 'community',
 };
 
 /** Resolve the best icon for a marker given its layer type + optional category. */

@@ -3,7 +3,10 @@ import { useMemo } from 'react';
 import { useMeta } from '@/hooks/useMeta';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthead';
-import { useMarketplaceSubcategoryGroupCounts } from '@/hooks/useMarketplaceQueries';
+import {
+  useGroupPhotos,
+  useMarketplaceSubcategoryGroupCounts,
+} from '@/hooks/useMarketplaceQueries';
 import { useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import {
   ADULT_DEPARTMENTS,
@@ -105,6 +108,15 @@ export default function MarketplaceCategories() {
     };
   }, [groups, acknowledged, taxonomyRevision]);
 
+  const photoPairs = useMemo(
+    () =>
+      [...sections, ...singles].flatMap((sec) =>
+        sec.stops.map((stop) => ({ department: sec.slug, group: stop.slug })),
+      ),
+    [sections, singles],
+  );
+  const { data: groupPhotos } = useGroupPhotos(photoPairs);
+
   useMeta({
     title: 'All categories — Marketplace',
     description: 'Browse every queer-friendly marketplace category on Queer Guide.',
@@ -183,7 +195,7 @@ export default function MarketplaceCategories() {
                           index={i}
                           count={section.stops.length}
                           label={groupLabel(stop.slug)}
-                          listings={stop.count}
+                          photos={groupPhotos[`${section.slug}/${stop.slug}`]}
                           blurb={meta?.blurb}
                         />
                       </li>
@@ -217,7 +229,7 @@ export default function MarketplaceCategories() {
                           count={1}
                           label={groupLabel(stop.slug)}
                           context={departmentLabel(section.slug)}
-                          listings={stop.count}
+                          photos={groupPhotos[`${section.slug}/${stop.slug}`]}
                           blurb={toyGroupMeta(stop.slug)?.blurb}
                         />
                       </li>
@@ -244,7 +256,6 @@ export default function MarketplaceCategories() {
                         index={i}
                         count={orphans.length}
                         label={groupLabel(stop.slug)}
-                        listings={stop.count}
                       />
                     </li>
                   ))}
@@ -273,7 +284,7 @@ function CategoryPlateTile({
   index,
   count,
   label,
-  listings,
+  photos,
   blurb,
   context,
 }: {
@@ -283,7 +294,7 @@ function CategoryPlateTile({
   index: number;
   count: number;
   label: string;
-  listings: number;
+  photos?: string[];
   blurb?: string;
   /** Replaces the ordinal: the department a pooled tile belongs to. */
   context?: string;
@@ -293,13 +304,32 @@ function CategoryPlateTile({
       to={to}
       className="group flex h-full flex-col overflow-hidden rounded-container border border-border-hairline bg-card no-underline card-lift-sm"
     >
-      <DepartmentArt
-        slug={plateSlug}
-        glyph={glyph}
-        index={index}
-        count={count}
-        className="border-b border-border-hairline"
-      />
+      {(photos?.length ?? 0) >= 3 ? (
+        <div
+          aria-hidden="true"
+          className="grid aspect-[16/10] grid-cols-3 gap-0.5 overflow-hidden border-b border-border-hairline bg-muted"
+        >
+          {photos!.map((src) => (
+            <img
+              key={src}
+              src={src}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              referrerPolicy="no-referrer"
+              className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-[1.04] motion-reduce:transform-none"
+            />
+          ))}
+        </div>
+      ) : (
+        <DepartmentArt
+          slug={plateSlug}
+          glyph={glyph}
+          index={index}
+          count={count}
+          className="border-b border-border-hairline"
+        />
+      )}
       <div className="flex flex-1 flex-col gap-1 p-4">
         {context && context !== label && (
           <span className="text-2xs uppercase tracking-label text-muted-foreground">{context}</span>
@@ -315,9 +345,6 @@ function CategoryPlateTile({
         {blurb && (
           <span className="text-13 leading-snug text-muted-foreground text-pretty">{blurb}</span>
         )}
-        <span className="mt-auto pt-2 text-2xs uppercase tracking-label tabular-nums text-muted-foreground">
-          {listings.toLocaleString()} listing{listings !== 1 ? 's' : ''}
-        </span>
       </div>
     </LocalizedLink>
   );

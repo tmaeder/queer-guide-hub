@@ -1,3 +1,4 @@
+import { Heart } from '@/components/icons';
 import { DestinationPhoto } from '@/components/geo/DestinationPhoto';
 import { useState, useEffect, useMemo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -78,7 +79,8 @@ export default function CityDetail() {
     url: string;
     metadata?: unknown;
   }>();
-  const currentFallback = !city?.image_flagged && fetchedImage?.cityId === city?.id ? fetchedImage : undefined;
+  const currentFallback =
+    !city?.image_flagged && fetchedImage?.cityId === city?.id ? fetchedImage : undefined;
   const { track } = useTrackEvent();
 
   useEffect(() => {
@@ -427,11 +429,23 @@ export default function CityDetail() {
             <button
               type="button"
               onClick={handleFavoriteToggle}
-              className="min-h-11 rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-surface-container active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-pressed={isFavorited(city.id)}
+              aria-label={
+                isFavorited(city.id)
+                  ? t('cities.detail.favorited', 'Saved to favorites')
+                  : t('cities.detail.favorite', 'Save to favorites')
+              }
+              title={
+                isFavorited(city.id)
+                  ? t('cities.detail.favorited', 'Saved to favorites')
+                  : t('cities.detail.favorite', 'Save to favorites')
+              }
+              className="inline-flex size-11 items-center justify-center rounded-element transition-colors hover:bg-surface-container active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              {isFavorited(city.id)
-                ? t('cities.detail.favorited', 'Saved to favorites')
-                : t('cities.detail.favorite', 'Save to favorites')}
+              <Heart
+                className={`h-5 w-5 ${isFavorited(city.id) ? 'fill-current' : ''}`}
+                aria-hidden="true"
+              />
             </button>
             <LocationActionMenu label={t('common.moreActions', 'More actions')}>
               <CityActions city={city} refetchCity={refetchCity} t={t} />

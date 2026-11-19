@@ -431,7 +431,7 @@ const NewsCardImpl = ({
         <LocalizedLink
           to={`/news/${article.slug}`}
           aria-label={safeTitle}
-          className="absolute inset-0 rounded-container no-underline"
+          className="absolute inset-0 rounded-container no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         />
       </div>
     );
@@ -491,7 +491,7 @@ const NewsCardImpl = ({
         <LocalizedLink
           to={`/news/${article.slug}`}
           aria-label={safeTitle}
-          className="absolute inset-0 rounded-container no-underline"
+          className="absolute inset-0 rounded-container no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         />
       </div>
     );
@@ -503,7 +503,7 @@ const NewsCardImpl = ({
       {/* No inline borderColor: an inline style beats every class, so it
           silently killed the hover border below. Card already defaults to
           `border-border`. */}
-      <Card className="cursor-pointer transition-all duration-normal group-hover:-translate-y-0.5 group-hover:shadow-soft-hover">
+      <Card className="cursor-pointer">
         <CardHeader style={{ flexDirection: 'column' }} className="flex gap-2 p-0">
           <div className="relative overflow-hidden rounded-container">
             {hasImage ? (
@@ -517,6 +517,7 @@ const NewsCardImpl = ({
                 alt={safeTitle}
                 width={400}
                 height={density === 'compact' ? 140 : 192}
+                className="transition-transform duration-slow group-hover:scale-[1.04] motion-reduce:transform-none"
                 style={{
                   width: '100%',
                   height: density === 'compact' ? 140 : 192,
@@ -542,7 +543,7 @@ const NewsCardImpl = ({
           )}
 
           <h3
-            className="font-semibold m-0 text-15 leading-tight overflow-hidden"
+            className="font-semibold m-0 text-15 leading-tight overflow-hidden decoration-2 underline-offset-4 group-hover:underline"
             style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
           >
             {safeTitle}
@@ -588,7 +589,7 @@ const NewsCardImpl = ({
       <LocalizedLink
         to={`/news/${article.slug}`}
         aria-label={safeTitle}
-        className="absolute inset-0 rounded-container no-underline"
+        className="absolute inset-0 rounded-container no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       />
     </CardHoverEffect>
   );
