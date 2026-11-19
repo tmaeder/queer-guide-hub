@@ -9,8 +9,10 @@ Deno.test('city image handler preserves quarantine before search/write and exclu
   const originalServe = Deno.serve
   const originalFetch = globalThis.fetch
   let handler: ((req: Request) => Promise<Response>) | undefined
-  let existing = { image_url: 'https://images.test/munich.jpg', image_flagged: true, curated_image_url: null as string | null }
+  let existing = { image_url: 'https://images.test/munich.jpg', image_flagged: true, curated_image_url: null as string | null,
+    name: 'Cleves', latitude: 51.789, longitude: 6.138, countries: { name: 'Germany' } }
   const calls: URL[] = []
+  const unexpected: string[] = []
   try {
     Object.defineProperty(Deno, 'serve', { configurable: true, writable: true, value: (candidate: unknown) => {
       handler = candidate as (req: Request) => Promise<Response>
@@ -19,11 +21,12 @@ Deno.test('city image handler preserves quarantine before search/write and exclu
     globalThis.fetch = async (input, init) => {
       const request = new Request(input, init)
       const url = new URL(request.url)
+      if (request.method !== 'GET' || url.origin !== 'https://fixture.supabase.co') unexpected.push(request.method + ' ' + request.url)
       assert.equal(request.method, 'GET', 'Automatic quarantine handling attempted a write')
       assert.equal(url.origin, 'https://fixture.supabase.co', 'Quarantined image reached an external provider')
       assert.equal(url.pathname, '/rest/v1/cities')
       calls.push(url)
-      const single = url.searchParams.get('select') === 'image_url,image_flagged,curated_image_url'
+      const single = url.searchParams.get('select')?.includes('image_flagged')
       return new Response(JSON.stringify(single ? existing : []), {
         status: 200, headers: { 'Content-Type': 'application/json' },
       })
@@ -60,6 +63,7 @@ Deno.test('city image handler preserves quarantine before search/write and exclu
     const beforeAnonymous = calls.length
     assert.equal((await handler(request(body, false))).status, 401)
     assert.equal(calls.length, beforeAnonymous)
+    assert.deepEqual(unexpected, [])
   } finally {
     Object.defineProperty(Deno, 'serve', { configurable: true, writable: true, value: originalServe })
     globalThis.fetch = originalFetch
