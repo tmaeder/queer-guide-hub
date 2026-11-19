@@ -147,15 +147,17 @@ describe('PersonalisedTripPackages', () => {
     expect(hotelSearchMock).toHaveBeenLastCalledWith(expect.objectContaining({ hotelType: 'bnb' }));
   });
 
-  it('requires an origin before exposing route-specific train and coach links', () => {
+  it('one mode choice drives one search; rail and coach need an origin', () => {
     render(<PersonalisedTripPackages />);
-    expect(screen.getByRole('button', { name: /Trains/i })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: /^Train$/i }));
+    expect(screen.getByRole('button', { name: /Search trains/i })).toBeDisabled();
     fireEvent.change(screen.getByLabelText(/Starting from/i), { target: { value: 'Zürich' } });
-    expect(screen.getByRole('link', { name: /Trains/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Search trains/i })).toHaveAttribute(
       'href',
       expect.stringContaining('destination=Berlin'),
     );
-    expect(screen.getByRole('link', { name: /Coaches/i })).toHaveAttribute(
+    fireEvent.click(screen.getByRole('button', { name: /^Coach$/i }));
+    expect(screen.getByRole('link', { name: /Search coaches/i })).toHaveAttribute(
       'href',
       expect.stringContaining('arrivalCity=Berlin'),
     );

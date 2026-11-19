@@ -3,24 +3,21 @@ import { addDays, addMonths, format, nextFriday, startOfDay } from 'date-fns';
 import {
   ArrowRight,
   BedDouble,
-  Bike,
   Bus,
   CalendarDays,
   Car,
-  CarTaxiFront,
-  Footprints,
   Hotel,
   MapPin,
   Plane,
   Ship,
   Sparkles,
   Train,
-  TramFront,
 } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardImage } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { FilterChip } from '@/components/transit/FilterChip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TrackLoader } from '@/components/transit/TrackLoader';
@@ -34,7 +31,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useTripMutations } from '@/hooks/useTrips';
 import { useTripTemplates, type TripTemplate } from '@/hooks/useTripTemplates';
 import { buildFlixbusUrl } from '@/utils/transport/flixbusUrl';
-import { buildOmioUrl } from '@/utils/transport/omioUrl';
 import { buildTrainlineUrl } from '@/utils/transport/trainlineUrl';
 import type { HotelTypeOption } from '@/components/booking/HotelSearchForm';
 import type { TransportMode } from '@/components/trips/tripLegs';
@@ -82,13 +78,6 @@ const ARRIVAL_MODES: Array<{
   { value: 'transit', label: 'Coach', icon: Bus, note: 'Omio + FlixBus' },
   { value: 'ferry', label: 'Ferry', icon: Ship, note: 'Add the sailing as a leg' },
   { value: 'drive', label: 'Drive', icon: Car, note: 'Car hire at destination' },
-];
-
-const LOCAL_MODES = [
-  { label: 'Public transit', icon: TramFront },
-  { label: 'Taxi / rideshare', icon: CarTaxiFront },
-  { label: 'Cycling', icon: Bike },
-  { label: 'Walking', icon: Footprints },
 ];
 
 function datesFor(timing: Timing, days: number) {
@@ -473,129 +462,91 @@ export function PersonalisedTripPackages() {
               </li>
               <li className="p-6 sm:p-8">
                 <PackagePart icon={Plane} kicker="Door to door" title="How you get there" />
-                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                  {ARRIVAL_MODES.map(({ value, label, icon: Icon, note }) => (
-                    <button
+                {/* One choice, one origin, one button: the mode picks the
+                    provider so the reader never chooses transport twice. */}
+                <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Arrive by">
+                  {ARRIVAL_MODES.map(({ value, label, icon: Icon }) => (
+                    <FilterChip
                       key={value}
-                      type="button"
-                      aria-pressed={arrivalMode === value}
+                      active={arrivalMode === value}
                       onClick={() => setArrivalMode(value)}
-                      className={`rounded-element border p-4 text-left ${arrivalMode === value ? 'border-foreground bg-foreground text-background' : 'border-border bg-background'}`}
-                    >
-                      <Icon />
-                      <span className="mt-4 block font-bold">{label}</span>
-                      <span
-                        className={`mt-1 block text-xs ${arrivalMode === value ? 'text-background/70' : 'text-muted-foreground'}`}
-                      >
-                        {note}
-                      </span>
-                    </button>
+                      label={
+                        <>
+                          <Icon size={16} aria-hidden />
+                          {label}
+                        </>
+                      }
+                    />
                   ))}
                 </div>
-
-                <div className="mt-6 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-                  <div>
-                    <label htmlFor="package-origin" className="text-sm font-bold">
-                      Starting from
-                    </label>
-                    <Input
-                      id="package-origin"
-                      className="mt-2"
-                      value={origin}
-                      onChange={(event) => setOrigin(event.target.value)}
-                      placeholder="Your city"
+                {arrivalMode === 'drive' ? (
+                  <div className="mt-4">
+                    <CarRentalSection
+                      city={best.cities}
+                      checkIn={dates?.start}
+                      checkOut={dates?.end}
+                      compact
                     />
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <Button size="sm" onClick={() => navigate(bookingUrl('flights'))}>
-                        <Plane /> Flights
+                  </div>
+                ) : arrivalMode === 'ferry' ? (
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    Add the sailing as a leg once the trip is built.
+                  </p>
+                ) : (
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                    {arrivalMode !== 'flight' && (
+                      <Input
+                        id="package-origin"
+                        aria-label="Starting from"
+                        className="sm:max-w-xs"
+                        value={origin}
+                        onChange={(event) => setOrigin(event.target.value)}
+                        placeholder="Starting from…"
+                      />
+                    )}
+                    {arrivalMode === 'flight' ? (
+                      <Button onClick={() => navigate(bookingUrl('flights'))}>
+                        <Plane /> Search flights to {best.cities}
                       </Button>
-                      {origin ? (
-                        <Button size="sm" variant="outline" asChild>
+                    ) : (
+                      <Button asChild={!!origin} disabled={!origin}>
+                        {origin ? (
                           <a
-                            href={buildTrainlineUrl({
-                              origin,
-                              destination: best.cities,
-                              departDate: dates?.start,
-                              returnDate: dates?.end,
-                            })}
+                            href={
+                              arrivalMode === 'rail'
+                                ? buildTrainlineUrl({
+                                    origin,
+                                    destination: best.cities,
+                                    departDate: dates?.start,
+                                    returnDate: dates?.end,
+                                  })
+                                : buildFlixbusUrl({
+                                    origin,
+                                    destination: best.cities,
+                                    departDate: dates?.start,
+                                  })
+                            }
                             target="_blank"
                             rel="noopener noreferrer sponsored"
                           >
-                            <Train /> Trains
+                            {arrivalMode === 'rail' ? <Train /> : <Bus />} Search{' '}
+                            {arrivalMode === 'rail' ? 'trains' : 'coaches'}
                           </a>
-                        </Button>
-                      ) : (
-                        <Button size="sm" variant="outline" disabled>
-                          <Train /> Trains
-                        </Button>
-                      )}
-                      {origin ? (
-                        <Button size="sm" variant="outline" asChild>
-                          <a
-                            href={buildOmioUrl({
-                              origin,
-                              destination: best.cities,
-                              departDate: dates?.start,
-                              returnDate: dates?.end,
-                            })}
-                            target="_blank"
-                            rel="noopener noreferrer sponsored"
-                          >
-                            <Bus /> Rail + coach
-                          </a>
-                        </Button>
-                      ) : (
-                        <Button size="sm" variant="outline" disabled>
-                          <Bus /> Rail + coach
-                        </Button>
-                      )}
-                      {origin ? (
-                        <Button size="sm" variant="outline" asChild>
-                          <a
-                            href={buildFlixbusUrl({
-                              origin,
-                              destination: best.cities,
-                              departDate: dates?.start,
-                            })}
-                            target="_blank"
-                            rel="noopener noreferrer sponsored"
-                          >
-                            <Bus /> Coaches
-                          </a>
-                        </Button>
-                      ) : (
-                        <Button size="sm" variant="outline" disabled>
-                          <Bus /> Coaches
-                        </Button>
-                      )}
-                    </div>
-                    {!origin ? (
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        Add an origin to unlock route-specific rail and coach searches.
-                      </p>
-                    ) : null}
+                        ) : (
+                          <span>
+                            {arrivalMode === 'rail' ? <Train /> : <Bus />} Search{' '}
+                            {arrivalMode === 'rail' ? 'trains' : 'coaches'}
+                          </span>
+                        )}
+                      </Button>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-sm font-bold">Around {best.cities}</p>
-                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      {LOCAL_MODES.map(({ label, icon: Icon }) => (
-                        <div key={label} className="rounded-element bg-surface-container p-4">
-                          <Icon size={18} />
-                          <span className="mt-2 block text-sm font-semibold">{label}</span>
-                        </div>
-                      ))}
-                    </div>
+                )}
+                {arrivalMode === 'flight' && (
+                  <div className="mt-4">
+                    <TransferSection city={best.cities} compact />
                   </div>
-                </div>
-                <div className="mt-6 grid gap-4 lg:grid-cols-2">
-                  <CarRentalSection
-                    city={best.cities}
-                    checkIn={dates?.start}
-                    checkOut={dates?.end}
-                    compact
-                  />
-                  <TransferSection city={best.cities} compact />
-                </div>
+                )}
               </li>
             </ol>
 
