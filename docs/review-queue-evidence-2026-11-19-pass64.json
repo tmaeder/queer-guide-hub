@@ -1,0 +1,66 @@
+{
+  "pass": 64,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "scope": "Rota municipality identity, lifecycle and canonical URL",
+  "proof": {
+    "source": "primary_government_municipal_identity_lifecycle_research",
+    "human_reviewed": false,
+    "decision_actor": "AI-assisted factual lifecycle repair",
+    "user_authorization": "User delegates clear-evidence factual editorial decisions",
+    "qid": "Q15907",
+    "municipality_code": "11030",
+    "municipality_name": "Rota, Cádiz, Andalucía",
+    "country": "ES",
+    "region": "ES-AN",
+    "registry_url": "https://ws089.juntadeandalucia.es/sima/ficha.htm?mun=11030",
+    "registry_sha256": "0bc466a3cc2285abbb0a6120515598d2c1c5befff05ed2119668222804a38ce4",
+    "registry_retrieved_at": "2026-11-19T18:34:34.304690+00:00",
+    "municipal_url": "https://www.aytorota.es/",
+    "municipal_sha256": "6e90ba9a75e37e5f903f2c0e820f300727f0d07e268e98e73d9f1a3901522921",
+    "wikidata_url": "https://www.wikidata.org/wiki/Special:EntityData/Q15907.json",
+    "wikidata_sha256": "8c8622a059603fce0029884503c2fb1e401977b1f11098952cc3ea2d2c2f8127",
+    "identity_basis": "Current official municipal site and Andalusia's official municipal profile identify Rota, Cádiz. Complete current city entity matches Spain municipality class, INE11030, country Spain and same official website. Existing description/state already represent this Spanish municipality; no canonical city holds this QID.",
+    "coordinate_scope": "Keep existing representative point, about1.1km from current Wikidata town point. No town/venue/private point movement or precise boundary verification claimed.",
+    "scope": "Only confirmed missing QID, factual city lifecycle, canonical slug and exact provenance. Preserve SEOfalse, attentiontrue, all other facts/history and human verification gates."
+  },
+  "result": {
+    "case": {
+      "active": false,
+      "members": 0
+    },
+    "slug": "rota",
+    "city_id": "bdd54cde-3f6d-4b24-b4c2-b136d8de7157",
+    "shell_status": "real",
+    "wikidata_qid": "Q15907",
+    "seo_indexable": false,
+    "related_counts": {
+      "venues": 8,
+      "geo_places": 1,
+      "organizations": 7,
+      "personalities": 1,
+      "city_coverage_gaps": 1,
+      "city_quality_signals": 4,
+      "geo_city_coord_findings": 1
+    },
+    "needs_attention": true,
+    "old_slug_redirect": "tmp-f55893e5-8138-485c-afad-f8a02ad659a5",
+    "private_saved_references": 0,
+    "native_verification_status": "country_checked"
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "pinned_native_source_contract": "1db69e45d248bb357467e18dd7bb84e3",
+    "eight_complete_venues_seven_businesses_and_birthplace_preserved": true,
+    "all_existing_points_and_other_city_fields_preserved": true,
+    "private_saved_references": 0,
+    "seo_false_attention_true_preserved": true,
+    "native_country_checked_identity_parent_false": true,
+    "actual_case_inactive": true,
+    "live_old_city_url_status": 301,
+    "live_old_city_url_location": "https://queer.guide/city/rota"
+  },
+  "remaining_coordinate_review": "Separate cached offshore diagnostic remains unchanged. Native diagnostic places current representative point0.4km from land; official SIMA also publishes principal-town coordinates. This deserves separate scoped investigation, not blanket dismissal.",
+  "all_cases_complete": false
+}

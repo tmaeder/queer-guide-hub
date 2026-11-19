@@ -1,0 +1,82 @@
+{
+  "pass": 68,
+  "date": "2026-11-19",
+  "name": "Fort-de-France",
+  "proof": {
+    "source": "primary_government_municipal_identity_lifecycle_research",
+    "human_reviewed": false,
+    "decision_actor": "AI-assisted factual lifecycle repair",
+    "user_authorization": "User delegates clear-evidence factual editorial decisions",
+    "qid": "Q81621",
+    "municipality_code": "97209",
+    "municipality_name": "Fort-de-France",
+    "evidence": [
+      {
+        "url": "https://www.fortdefrance.fr/",
+        "status": 200,
+        "bytes": 247734,
+        "sha256": "ee8bbeeac615869188c55d75b872503362cb07ea0f95c937c2431a449337643d"
+      },
+      {
+        "url": "https://geo.api.gouv.fr/communes/97209?fields=nom,code,codeDepartement,centre",
+        "status": 200,
+        "bytes": 122,
+        "sha256": "b15c97f29b8a934615e8a049def19622da448421994d4933dfe92828417c4b14"
+      },
+      {
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q81621.json",
+        "status": 200,
+        "bytes": 130598,
+        "sha256": "bc9379508f52c183ef4eec1f509ee11f766abf0536d56816d7c28a7247089ca7"
+      }
+    ],
+    "facts": [
+      "French government identifies current commune 97209 in department 972",
+      "Municipal government confirms Fort-de-France as a city and commune in Martinique",
+      "Current entity has French commune and city classes; stored point matches its representative point"
+    ],
+    "preserve": [
+      "All points, stored Martinique country/region, all other facts, linked records, SEO false and attention false",
+      "Native geographic verification remains review for MQ versus coarse-mask nearest FR",
+      "No human identity or parent certification"
+    ]
+  },
+  "validation": {
+    "guarded_rollback_passed": true,
+    "guarded_commit_passed": true,
+    "all_referenced_rows_preserved": true,
+    "native_slug_collision_preserved": true,
+    "source_definition_md5": "1db69e45d248bb357467e18dd7bb84e3"
+  },
+  "result": {
+    "case": {
+      "active": false,
+      "members": 0
+    },
+    "slug": "fort-de-france-1",
+    "city_id": "ca89cf6f-d161-4d25-b558-8831b803894c",
+    "shell_status": "real",
+    "seo_indexable": false,
+    "related_counts": {
+      "cities": 1,
+      "venues": 5,
+      "geo_places": 2,
+      "city_aliases": 32,
+      "organizations": 4,
+      "personalities": 1,
+      "venue_coord_fixes": 1,
+      "city_coverage_gaps": 1,
+      "city_slug_redirects": 1,
+      "city_quality_signals": 7,
+      "geo_city_coord_findings": 1
+    },
+    "needs_attention": false,
+    "old_slug_redirect": "tmp-f5ab6400-e1b1-4335-ae29-2b1d09e9af19",
+    "private_saved_references": 0,
+    "native_verification_status": "review"
+  },
+  "limitations": [
+    "Existing retired duplicate reserves fort-de-france and its historical redirect already points to this city. Native factory selects fort-de-france-1; neither duplicate nor old redirect is altered.",
+    "Native verification remains review for assigned MQ and coarse polygon nearest FR. No identity or parent certification."
+  ]
+}

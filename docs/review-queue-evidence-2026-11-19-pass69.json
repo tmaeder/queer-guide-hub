@@ -1,0 +1,51 @@
+{
+  "pass": 69,
+  "date": "2026-11-19",
+  "outcome": "existing_territory_comparator_repaired_and_deployed",
+  "migration_file": "supabase/migrations/99991795072410_geo_cms_territory_country_comparison.sql",
+  "production_migration": {
+    "version": "20261119190359",
+    "name": "geo_cms_territory_country_comparison"
+  },
+  "changed_expressions": 3,
+  "policy": "Use existing public.geo_countries_equivalent for the country boundary check; mapping, geometry, tolerance and assigned country codes unchanged.",
+  "validation": {
+    "regression_before": "Fails on Fort-de-France MQ/FR false mismatch",
+    "atomic_deployment": "All four regression assertions and authorization checks pass before transaction commits; verification writes are rolled back to a savepoint",
+    "independent_postdeployment": {
+      "cases": 4,
+      "unprivileged_denied": true,
+      "human_gates_preserved": true,
+      "source_rows_unchanged": true
+    },
+    "deployed_definition_matches_reviewed_source": true,
+    "cases": [
+      "Fort-de-France MQ/FR country_checked",
+      "Sosnowiec unchanged country_checked",
+      "Beausoleil FR/MC remains review",
+      "Lippen classification remains review"
+    ],
+    "no_source_rows_changed": true
+  },
+  "scoped_reverification": {
+    "checks": {
+      "reason": "Country checked. Place identity and parent still need external evidence",
+      "match_kind": "nearest",
+      "country_code": "MQ",
+      "country_match": true,
+      "parent_verified": false,
+      "polygon_country": "FR",
+      "identity_verified": false,
+      "distance_to_city_m": null,
+      "queer_designation_verified": false
+    },
+    "status": "country_checked",
+    "city_id": "ca89cf6f-d161-4d25-b558-8831b803894c",
+    "source_row_unchanged": true,
+    "additional_cases_resolved": 0
+  },
+  "limitations": [
+    "No bulk verification refresh, queue deletion, identity certification or additional case-resolution claim.",
+    "Public city URL HEAD checks received HTTP403; no live redirect success is claimed for Sosnowiec or Fort-de-France."
+  ]
+}
