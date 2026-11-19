@@ -365,7 +365,6 @@ export default function QueerVillageDetail() {
     <SinglePage
       type="queer_village"
       density="compact"
-      letter="Q"
       eyebrow={t('village.eyebrow', 'District · Green line')}
       title={village.name}
       status={village.featured ? t('village.facts.editorsPick', 'Editor’s pick') : undefined}

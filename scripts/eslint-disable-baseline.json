@@ -1,5 +1,5 @@
 {
-  "total": 414,
+  "total": 413,
   "files": {
     "src/components/admin/CloudflareDashboard.tsx": {
       "react-hooks/set-state-in-effect": 1
@@ -336,9 +336,6 @@
     },
     "src/components/motion/MotionPage.tsx": {
       "react-hooks/refs": 2
-    },
-    "src/components/news/editorial/LiveTicker.tsx": {
-      "react-hooks/purity": 1
     },
     "src/components/personalities/PersonalitiesFiltersBar.tsx": {
       "react-hooks/exhaustive-deps": 2,

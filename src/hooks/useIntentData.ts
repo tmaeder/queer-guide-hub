@@ -105,6 +105,7 @@ export interface IntentEvent {
   city: string | null;
   images: string[] | null;
   timezone: string | null;
+  date_precision?: string | null;
   age_restriction: string | null;
   liveness_status: string;
 }
@@ -147,7 +148,7 @@ export function useEventsWithFallback(cityId: string | null | undefined, limit =
         supabase
           .from('events')
           .select(
-            'id, title, slug, start_date, city, images, timezone, age_restriction, liveness_status',
+            'id, title, slug, start_date, city, images, timezone, date_precision:enrichment_status->date_confirmation->>precision, age_restriction, liveness_status',
           )
           .eq('status', 'active')
           .is('duplicate_of_id', null)

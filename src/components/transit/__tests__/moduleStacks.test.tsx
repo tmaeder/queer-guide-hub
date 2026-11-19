@@ -142,8 +142,7 @@ describe('NestedEntityCard', () => {
         <NestedEntityCard type="venue" eyebrow="Venue" name="SO36" href="/venues/so36" />
       </MemoryRouter>,
     );
-    expect(screen.getByLabelText('Venue')).toBeInTheDocument();
-    expect(screen.getByText('V')).toBeInTheDocument();
+    expect(screen.getByLabelText('Venue').querySelector('svg')).not.toBeNull();
   });
 });
 

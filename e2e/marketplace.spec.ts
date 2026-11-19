@@ -133,10 +133,8 @@ test.describe('Marketplace — discovery surface', () => {
     // — the band was not moving, the ruler was.
     const settle = async () => {
       await page.evaluate(() => document.fonts.ready);
-      // The count line renders "Counting…" until the first query resolves.
-      await expect(page.locator('main header .tabular-nums')).not.toHaveText(/Counting/, {
-        timeout: 15_000,
-      });
+      // The simplified masthead has no count line; the department query below
+      // is the loading state that can change the control band's position.
       // The index has its own aggregate query. Measuring its ten-card loading
       // skeleton against the loaded list creates a false 600px "movement".
       await expect(indexSection).toHaveAttribute('aria-busy', 'false', { timeout: 15_000 });

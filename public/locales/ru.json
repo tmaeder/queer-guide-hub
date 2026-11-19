@@ -257,7 +257,8 @@
     "siteInformation": "Информация о сайте",
     "crisisSupport": "Кризисная помощь",
     "cookiePreferences": "Настройки файлов cookie",
-    "navigation": "Навигация в нижнем колонтитуле"
+    "navigation": "Навигация в нижнем колонтитуле",
+    "legalNav": "О нас и правовая информация"
   },
   "trips": {
     "title": "Мои поездки",
@@ -1986,7 +1987,8 @@
       "cityGuides": "Гиды по городам",
       "recent": "Недавно просмотренное",
       "more": "Что ещё посмотреть",
-      "refreshFailed": "Не удалось обновить результаты."
+      "refreshFailed": "Не удалось обновить результаты.",
+      "destinations": "Города, страны и кварталы"
     },
     "heroLine1": "Квир-места,",
     "heroLine2": "события и люди.",
@@ -2296,7 +2298,8 @@
       "browseAll": "Просмотреть все разделы",
       "unreadCount": "{{count}} непрочитанных",
       "tripsBadge": "{{count}} элементов поездки требуют внимания",
-      "hub": "Хаб"
+      "hub": "Хаб",
+      "openHub": "Открыть хаб"
     },
     "primaryNavigation": "[RU] Primary",
     "signInToContribute": "Войдите, чтобы внести вклад"
@@ -3253,8 +3256,6 @@
         "sisterCities": "[RU] Sister cities"
       },
       "travel": {
-        "lines": "[RU] Lines",
-        "networkCaption": "[RU] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
         "gettingAround": "[RU] Getting around",
         "noDealsTitle": "[RU] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
         "noDealsBody": "[RU] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.",

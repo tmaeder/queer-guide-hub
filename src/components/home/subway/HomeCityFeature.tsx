@@ -148,8 +148,7 @@ export function HomeCityFeature() {
             <CityNetwork slug={slug} variant="thumb" className="h-full" />
           </div>
         )}
-        <div className="absolute inset-x-2 top-2 flex flex-wrap items-start justify-between gap-2 sm:inset-x-4 sm:top-4">
-          <RegionChip region={region} align="start" />
+        <div className="absolute inset-x-2 top-2 flex flex-wrap items-start justify-end gap-2 sm:inset-x-4 sm:top-4">
           {slides.length > 1 && (
             <div className="flex shrink-0 items-center gap-0.5 rounded-element bg-card p-0.5">
               <button
@@ -188,29 +187,37 @@ export function HomeCityFeature() {
             </div>
           )}
         </div>
-        {cityReady && (
-          <div className="absolute inset-x-2 bottom-2 flex flex-wrap items-end justify-between gap-x-2 gap-y-1 sm:inset-x-4 sm:bottom-4">
-            <h2 id="home-city-feature-title" className="text-headline leading-none">
-              <LocalizedLink
-                to={`/city/${city?.slug ?? slug}`}
-                aria-label={t('home.cityFeature.exploreCity', '{{city}} city guide', {
-                  city: cityName,
-                })}
-                className="inline-flex min-h-11 items-center gap-2 rounded-element bg-card px-4 py-2 font-display text-foreground underline-offset-4 hover:underline rtl:font-sans rtl:font-bold"
-              >
-                {cityName}
-                <TransitIcon name="arrow-right" size={20} className="rtl:rotate-180" />
-              </LocalizedLink>
-            </h2>
-            {current && (current.attribution || current.license) && (
-              <ImageCredit
-                attribution={current.attribution ?? undefined}
-                license={current.license ?? undefined}
-                className="rounded-badge bg-card px-2 py-1"
-              />
-            )}
-          </div>
-        )}
+        <div className="absolute inset-x-2 bottom-2 flex flex-wrap items-end justify-between gap-x-2 gap-y-1 sm:inset-x-4 sm:bottom-4">
+          {/* One plate: the city guide link and the control that changes the
+              city. Before a city is known it is just the picker. */}
+          {cityReady ? (
+            <div className="inline-flex items-center rounded-element bg-card pe-1">
+              <h2 id="home-city-feature-title" className="text-headline leading-none">
+                <LocalizedLink
+                  to={`/city/${city?.slug ?? slug}`}
+                  aria-label={t('home.cityFeature.exploreCity', '{{city}} city guide', {
+                    city: cityName,
+                  })}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-element px-4 py-2 font-display text-foreground underline-offset-4 hover:underline rtl:font-sans rtl:font-bold"
+                >
+                  {cityName}
+                  <TransitIcon name="arrow-right" size={20} className="rtl:rotate-180" />
+                </LocalizedLink>
+              </h2>
+              <span aria-hidden className="h-6 w-px bg-border" />
+              <RegionChip region={region} align="start" compact />
+            </div>
+          ) : (
+            <RegionChip region={region} align="start" />
+          )}
+          {current && (current.attribution || current.license) && (
+            <ImageCredit
+              attribution={current.attribution ?? undefined}
+              license={current.license ?? undefined}
+              className="rounded-badge bg-card px-2 py-1"
+            />
+          )}
+        </div>
       </div>
 
       {cityReady && (

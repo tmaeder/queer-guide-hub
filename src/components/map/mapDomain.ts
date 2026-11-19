@@ -1,3 +1,4 @@
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 /**
  * The map's domain vocabulary: LINES, VIEWS, STATIONS, ROUTES — and the one
  * registry that classifies everything onto them.
@@ -229,6 +230,8 @@ export interface MapContext {
 export interface MapLineDef {
   /** Letter on the line bullet. Its own namespace — see the file head. */
   letter: string;
+  /** Icon drawn on the line bullet in place of the letter. */
+  icon: TransitIconName;
   /** Fallback label; `map.lines.<id>` wins where a locale has it. */
   label: string;
   /** The `ROUTE_BULLET_MAP` key this line borrows its TRACK from, so the
@@ -255,6 +258,7 @@ export interface MapLineDef {
 export const MAP_LINES: Record<MapLine, MapLineDef> = {
   M: {
     letter: 'M',
+    icon: 'nightlife',
     label: 'Venues',
     bulletKey: 'venue',
     countProp: 'm_count',
@@ -262,6 +266,7 @@ export const MAP_LINES: Record<MapLine, MapLineDef> = {
   },
   E: {
     letter: 'E',
+    icon: 'events',
     label: 'Events',
     bulletKey: 'event',
     countProp: 'e_count',
@@ -269,6 +274,7 @@ export const MAP_LINES: Record<MapLine, MapLineDef> = {
   },
   C: {
     letter: 'C',
+    icon: 'community',
     label: 'Community & care',
     bulletKey: 'restroom',
     countProp: 'c_count',
@@ -276,6 +282,7 @@ export const MAP_LINES: Record<MapLine, MapLineDef> = {
   },
   T: {
     letter: 'T',
+    icon: 'housing',
     label: 'Travel & stay',
     bulletKey: 'hotel',
     countProp: 't_count',

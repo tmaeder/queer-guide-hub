@@ -187,10 +187,7 @@ function MarketplaceCardImpl({
     (t) => t === 'queer_owned' || t === 'trans_owned',
   );
 
-  const metaFacts = [
-    listing.last_verified_at ? 'Verified' : null,
-    listing.venues?.city ? listing.venues.city : null,
-  ].filter(Boolean);
+  const metaFacts = [listing.venues?.city ? listing.venues.city : null].filter(Boolean);
 
   const imageBlock = (
     <div className="relative">

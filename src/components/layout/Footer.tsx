@@ -185,8 +185,9 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             </LocalizedLink>
           </div>
         </div>
-        {/* Copyright sits on the page ground, below the ink island. */}
-        <p className={cn('py-4 text-2xs text-muted-foreground', PAGE_GUTTER)}>
+        {/* Copyright sits on the page ground, below the ink island, at the
+            island's own inset so it lines up with the text inside it. */}
+        <p className={cn('island-capped py-4 text-2xs text-muted-foreground', PAGE_GUTTER)}>
           &copy; {currentYear} Queer Guide
         </p>
       </DeferredSection>

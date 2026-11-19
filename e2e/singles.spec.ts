@@ -302,17 +302,18 @@ test.describe('safety layer', () => {
   });
 });
 
-test.describe('city network diagram', () => {
-  test('renders for a city that has real geometry', async ({ page }) => {
+test.describe('city travel options', () => {
+  test('opens real travel options without the removed metro panel', async ({ page }) => {
     await open(page, '/city/berlin#travel');
     await expect(page.locator('button[aria-controls="travel-detail"]')).toHaveAttribute(
       'aria-expanded',
       'true',
     );
     await page.locator('#travel').scrollIntoViewIfNeeded();
-    // The line legend is what makes the diagram information rather than
-    // ornament — the homepage card renders the same geometry `aria-hidden`.
-    await expect(page.getByText('U7', { exact: true })).toBeVisible();
+    const travel = page.locator('#travel-detail');
+    await expect(travel).toBeVisible();
+    await expect(travel.getByText(/^Flights(?: from .+)?$/, { exact: true })).toBeVisible();
+    await expect(travel.getByText('U7', { exact: true })).toHaveCount(0);
   });
 
   test('renders nothing for a city with no network rather than a fake one', async ({ page }) => {

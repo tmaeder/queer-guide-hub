@@ -70,6 +70,7 @@ export function UpcomingEvents({
               <li key={event.id} className="going-out-departure group relative">
                 <EventDateBadge
                   startDate={event.start_date}
+                  datePrecision={event.date_precision}
                   locale={i18n?.language}
                   timeZone={timeZone}
                   className="going-out-departure-date"
@@ -109,6 +110,7 @@ export function UpcomingEvents({
               <div className="flex items-center gap-4 px-4 py-4 transition-colors group-hover:bg-surface-container">
                 <EventDateBadge
                   startDate={e.start_date}
+                  datePrecision={e.date_precision}
                   locale={i18n?.language}
                   timeZone={e.timezone && isValidTimezone(e.timezone) ? e.timezone : undefined}
                 />

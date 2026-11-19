@@ -42,9 +42,6 @@ vi.mock('@/hooks/useCurrency', () => ({
 vi.mock('@/components/guides/GuidesRail', () => ({
   GuidesRail: () => <div data-testid="guides-rail" />,
 }));
-vi.mock('@/components/marketplace/OccasionChips', () => ({
-  OccasionChips: () => <div data-testid="collection-chips" />,
-}));
 
 import Marketplace from '../Marketplace';
 

@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 export interface TripActionProps {
   intent: TripCaptureIntent;
   source: string;
-  variant?: 'detail' | 'card' | 'compact';
+  variant?: 'detail' | 'card' | 'compact' | 'icon';
   label?: string;
   className?: string;
   stopPropagation?: boolean;
@@ -56,8 +56,8 @@ export function TripAction({
     <>
       <Button
         type="button"
-        variant={variant === 'detail' ? 'default' : 'outline'}
-        size="sm"
+        variant={variant === 'detail' ? 'default' : variant === 'icon' ? 'ghost' : 'outline'}
+        size={variant === 'icon' ? 'icon' : 'sm'}
         disabled={isPending || (!!entity && statusLoading)}
         aria-busy={isPending || (!!entity && statusLoading)}
         aria-label={actionLabel}
@@ -75,7 +75,7 @@ export function TripAction({
         )}
       >
         <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        <span className="truncate">{actionLabel}</span>
+        {variant !== 'icon' && <span className="truncate">{actionLabel}</span>}
       </Button>
 
       {dialogIntent?.kind === 'add_entity' ? (

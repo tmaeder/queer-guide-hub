@@ -17,6 +17,8 @@ interface DetailMastheadProps {
    * decides, so every existing masthead is untouched.
    */
   letter?: string;
+  /** Icon for the bullet, for lines outside the entity map. */
+  icon?: TransitIconName;
   track?: Track | 'ink';
   bulletLabel?: string;
   /** Uppercase line above the title, e.g. "Venue · Nightlife track". */
@@ -61,6 +63,7 @@ interface DetailMastheadProps {
 export function DetailMasthead({
   type,
   letter,
+  icon,
   track,
   bulletLabel,
   eyebrow,
@@ -79,6 +82,7 @@ export function DetailMasthead({
           type={type}
           size={size === 'compact' ? 32 : 44}
           letter={letter}
+          icon={icon}
           track={track}
           label={bulletLabel}
         />
