@@ -116,15 +116,17 @@ describe.each(['light', 'dark'] as const)('map palette (%s mode)', (m) => {
     }
   });
 
-  it('gives the four point layers four DIFFERENT tracks', async () => {
+  it('distinguishes the four original point types and keeps added layers on their entity tracks', async () => {
     const { LAYER_COLORS } = await import('@/hooks/useExploreMapData');
     const pointLayers = LAYER_DEFS.map((d) => d.type).filter((t) => !AREA_LAYERS.includes(t));
-    // venues / events / hotels / restrooms — the whole reason `hotel` moved
-    // blue → yellow in ROUTE_BULLET_MAP. Two pin types sharing a hue is
-    // indistinguishable on a canvas, where there is no letter to fall back on.
-    expect(pointLayers).toHaveLength(4);
-    const hues = pointLayers.map((t) => LAYER_COLORS[t]);
+    // Preserve the four original entity tracks. The added cruising clouds
+    // share the venue track; organization glyphs share the community track.
+    expect(pointLayers).toHaveLength(6);
+    const hues = (['venues', 'events', 'hotels', 'restrooms'] as const).map((t) => LAYER_COLORS[t]);
     expect(new Set(hues).size).toBe(4);
+    const { trackColor } = await import('@/lib/mapTokens');
+    expect(LAYER_COLORS.cruising).toBe(trackColor(ROUTE_BULLET_MAP.venue.track));
+    expect(LAYER_COLORS.organizations).toBe(trackColor(ROUTE_BULLET_MAP.organization.track));
   });
 
   it('keeps area layers off the tracks entirely', async () => {

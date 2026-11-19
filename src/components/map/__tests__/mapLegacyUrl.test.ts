@@ -43,7 +43,10 @@ describe('the legacy layer vocabulary', () => {
   it('names every layer the registry knows — no silent gap', () => {
     // A layer missing from the table would translate to `undefined`, be
     // filtered out, and look exactly like an area layer.
-    const known = LAYER_DEFS.map((d) => d.type).sort();
+    // The new homepage-only toggles were never part of the retired line URL vocabulary.
+    const known = LAYER_DEFS.map((d) => d.type)
+      .filter((type) => type !== 'cruising' && type !== 'organizations')
+      .sort();
     expect(Object.keys(LEGACY_LAYER_TO_LINE).sort()).toEqual(known);
   });
 
@@ -52,7 +55,9 @@ describe('the legacy layer vocabulary', () => {
   });
 
   it('maps every POINT layer to a real line', () => {
-    const points = LAYER_DEFS.map((d) => d.type).filter((t) => !AREA_LAYERS.includes(t));
+    const points = LAYER_DEFS.map((d) => d.type).filter(
+      (t) => !AREA_LAYERS.includes(t) && t !== 'cruising' && t !== 'organizations',
+    );
     const reached = new Set(points.map((p) => LEGACY_LAYER_TO_LINE[p]));
     expect(reached.has(null)).toBe(false);
     // and the four lines are all reachable, so no line is unaddressable from
@@ -61,9 +66,10 @@ describe('the legacy layer vocabulary', () => {
   });
 });
 
-describe('the full 5 × 7 product', () => {
+describe('the full lens/layer product', () => {
   const LENSES: LegacyLens[] = ['pins', 'density', 'routes', 'boundary', 'combined'];
-  const LAYERS = LAYER_DEFS.map((d) => d.type);
+  const LAYERS = LAYER_DEFS.map((d) => d.type)
+    .filter((type) => type !== 'cruising' && type !== 'organizations');
 
   it('never throws and never yields an empty line set', () => {
     for (const lens of LENSES) {
@@ -78,7 +84,7 @@ describe('the full 5 × 7 product', () => {
     }
   });
 
-  it('exercises 35 pairs, not 1 — the positive control', () => {
+  it('exercises all 35 legacy pairs — the positive control', () => {
     expect(LENSES.length * LAYERS.length).toBe(35);
   });
 });

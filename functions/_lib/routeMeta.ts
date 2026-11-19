@@ -411,10 +411,10 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   // The remaining three targets of STATIC_ROUTE_BODY links that resolved to
   // DEFAULT_META. A crawler body exists to give the bot somewhere to go next;
   // sending it to three pages titled like the homepage defeats the point.
-  '/trips/discover': {
-    title: 'Public LGBTQ+ Trip Itineraries to Copy',
+  '/travel/plan': {
+    title: 'Plan a Queer Trip',
     description:
-      'Trip itineraries shared by the community: day-by-day plans for Pride weekends and longer queer trips, ready to copy and adapt.',
+      'Pick a city and dates, then pull in Pride events, bars, stays and the safety picture for every stop.',
   },
   '/marketplace/categories': {
     title: 'Shop LGBTQ+ Products by Category',
@@ -568,6 +568,7 @@ const CLIENT_REDIRECT_STUBS = new Set([
   '/venues/travel',
   '/events/guides',
   '/news/me',
+  '/trips/discover',
   // Not reserved detail slugs — these two are top-level LocalizedRedirects
   // (/places -> /travel, /support -> /help) that also carried STATIC_ROUTE_META
   // and a STATIC_ROUTE_BODY, so they were in sitemap-static.xml serving real

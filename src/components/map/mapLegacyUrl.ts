@@ -6,7 +6,7 @@ import { MAP_LINE_IDS, MAP_VIEW_IDS, type MapLine, type MapView } from './mapDom
  *
  * A PURE module, deliberately not a branch inside `useMapShellState`: that
  * hook needs a Router to instantiate, so every case here would otherwise cost
- * a render. The full 5 × 7 product is unit-tested.
+ * a render. Every lens/layer combination is unit-tested.
  *
  * Four rules:
  *

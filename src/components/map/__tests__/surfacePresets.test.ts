@@ -67,12 +67,13 @@ describe('invariant B — geography is a view, never a line', () => {
     }
   });
 
-  it('THE POSITIVE CONTROL: the lines cover exactly the non-area layers', () => {
+  it('THE POSITIVE CONTROL: the lines cover exactly their non-area sources', () => {
     // Without this, `fetchLayers: []` on every line satisfies the assertion
     // above perfectly while the map fetches nothing.
     const reached = [...new Set(MAP_LINE_IDS.flatMap((l) => MAP_LINES[l].fetchLayers))].sort();
     const expected = LAYER_DEFS.map((d) => d.type)
-      .filter((t) => !AREA_LAYERS.includes(t))
+      // Standalone homepage toggles are not line sources (mapDomain.test.ts).
+      .filter((t) => !AREA_LAYERS.includes(t) && t !== 'cruising' && t !== 'organizations')
       .sort();
     expect(reached).toEqual(expected);
   });
