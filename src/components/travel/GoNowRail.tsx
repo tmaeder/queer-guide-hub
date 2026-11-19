@@ -38,8 +38,8 @@ export function GoNowRail() {
         </h3>
       </header>
 
-      <ScrollArea className="-mx-4 px-4">
-        <ul className="flex gap-4 pb-4">
+      <ScrollArea className="-mx-6 -mt-4 -mb-8">
+        <ul className="flex gap-4 px-6 pt-4 pb-12">
           {data.map((d) => {
             const fallback = getFallbackImage('place', d.cityId);
             const img = isValidImageUrl(d.imageUrl) ? d.imageUrl : null;

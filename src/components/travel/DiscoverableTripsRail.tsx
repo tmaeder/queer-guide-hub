@@ -37,8 +37,8 @@ export function DiscoverableTripsRail({ limit = 8 }: Props) {
         </div>
       </header>
 
-      <ScrollArea className="-mx-4 px-4">
-        <ul className="flex gap-4 pb-4">
+      <ScrollArea className="-mx-6 -mt-4 -mb-8">
+        <ul className="flex gap-4 px-6 pt-4 pb-12">
           {trips.map((trip) => (
             <li key={trip.id} className="w-80 shrink-0 snap-start">
               <PublicTripCard trip={trip} />
