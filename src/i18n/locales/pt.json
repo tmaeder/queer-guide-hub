@@ -1963,7 +1963,10 @@
       "recent": "Vistos recentemente",
       "more": "Mais para explorar",
       "refreshFailed": "Não foi possível atualizar estes resultados.",
-      "destinations": "Cidades, países e bairros"
+      "destinations": "Cidades, países e bairros",
+      "cityEvents": "Eventos",
+      "noCityEvents": "Ainda não há eventos próximos em {{city}}.",
+      "pickCityForEvents": "Escolhe uma cidade para ver os eventos."
     },
     "heroLine1": "Locais queer,",
     "heroLine2": "eventos e pessoas.",

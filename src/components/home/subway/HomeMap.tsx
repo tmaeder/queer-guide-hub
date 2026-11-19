@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Band } from '@/components/home/Band';
-import { useHomeRegionContext } from '@/components/home/homeRegionContext';
+import { useHomeCity } from '@/components/home/useHomeCity';
 import { useCityCentre } from '@/hooks/regionOverride';
 import ExploreMap from '@/components/map/ExploreMap';
 import type { LayerType } from '@/hooks/useExploreMapData';
@@ -10,7 +10,8 @@ const LAYERS: LayerType[] = ['venues', 'events'];
 /** The /map community map, scoped to the homepage's city when there is one. */
 export default function HomeMap() {
   const { t } = useTranslation();
-  const region = useHomeRegionContext();
+  // Same city as the hero: the visitor's own, else the featured fallback.
+  const region = useHomeCity();
   const { data: centre, isLoading } = useCityCentre(region.cityId);
   const center: [number, number] | undefined = centre
     ? [centre.longitude, centre.latitude]

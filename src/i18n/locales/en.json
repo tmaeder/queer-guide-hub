@@ -2159,7 +2159,10 @@
       "recent": "Recently viewed",
       "more": "More from Queer Guide",
       "refreshFailed": "Couldn’t refresh these results.",
-      "destinations": "Cities, countries and villages"
+      "destinations": "Cities, countries and villages",
+      "cityEvents": "Events",
+      "noCityEvents": "No upcoming events in {{city}} yet.",
+      "pickCityForEvents": "Choose a city to see its events."
     },
     "map": {
       "interchangeEyebrow": "Interchange",

@@ -273,11 +273,12 @@ export function Header() {
         // scroll threshold.
         <Button
           variant={onInk ? 'ghostReversed' : 'ghost'}
-          size="sm"
+          size="icon"
           onClick={() => setAuthDialogOpen(true)}
           aria-label={t('header.signIn', 'Sign in')}
+          title={t('header.signIn', 'Sign in')}
         >
-          {t('header.signIn', 'Sign in')}
+          <UserRound size={20} aria-hidden />
         </Button>
       )}
     </div>
@@ -314,7 +315,7 @@ export function Header() {
             aria-label={label}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'group relative grid h-11 min-w-11 shrink-0 place-items-center rounded-container px-2 no-underline transition-colors',
+              'group relative grid h-11 min-w-11 shrink-0 place-items-center rounded-container px-1.5 no-underline transition-colors lg:px-2',
               active
                 ? onInk
                   ? 'text-background'

@@ -3,11 +3,10 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { EventDateBadge } from '@/components/transit/EventDateBadge';
 import { TransitIcon } from '@/components/transit/TransitIcon';
-import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Band } from '@/components/home/Band';
 import { RegionChip } from '@/components/home/RegionChip';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
-import { useHomeRegionContext } from '@/components/home/homeRegionContext';
+import { useHomeCity } from '@/components/home/useHomeCity';
 import { useHomeNearYou, type NearYouRow } from '@/hooks/useHomeNearYou';
 
 const ROWS = 4;
@@ -44,32 +43,18 @@ function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
 /** Regional listings name their actual scope and group worldwide additions separately. */
 export function DeparturesBoard({ showRegionPicker = false }: { showRegionPicker?: boolean }) {
   const { t, i18n } = useTranslation();
-  const region = useHomeRegionContext();
+  // Same city as the hero above: the visitor's own, else the featured fallback.
+  const region = useHomeCity();
   const { data, isLoading, isError, isFetching, refetch } = useHomeNearYou(region, ROWS);
 
   const loading = region.loading || isLoading;
   const rows = data?.rows ?? [];
-  const local = rows.filter((r) => r.rung === 'local');
-  const trip = rows.filter((r) => r.rung === 'trip');
-
-  const country =
-    data?.scope === 'country' &&
-    typeof Intl.DisplayNames === 'function' &&
-    region.countryCode &&
-    /^[a-z]{2}$/i.test(region.countryCode)
-      ? new Intl.DisplayNames(i18n.resolvedLanguage ?? i18n.language, {
-          type: 'region',
-          fallback: 'none',
-        }).of(region.countryCode.toUpperCase())
-      : undefined;
-  const area = data?.scope === 'city' ? region.cityName : country || region.countryName;
-  const scope =
-    data?.scope === 'network' ? t('home.discovery.listingsGlobal', 'Worldwide') : data && area;
+  const scope = region.cityName ?? null;
 
   return (
     <Band
       surface="tint"
-      title={t('home.discovery.listings', 'Places and events')}
+      title={t('home.discovery.cityEvents', 'Events')}
       description={
         <span className="relative block min-h-6">
           <span className="absolute inset-x-0 truncate" title={scope ?? undefined}>
@@ -101,28 +86,14 @@ export function DeparturesBoard({ showRegionPicker = false }: { showRegionPicker
           />
         ) : rows.length === 0 ? (
           <p className="px-4 py-8 text-15 text-muted-foreground md:px-6">
-            {t('home.discovery.noListings', 'No listings found for this area.')}
+            {region.cityName
+              ? t('home.discovery.noCityEvents', 'No upcoming events in {{city}} yet.', {
+                  city: region.cityName,
+                })
+              : t('home.discovery.pickCityForEvents', 'Choose a city to see its events.')}
           </p>
         ) : (
-          <>
-            {local.map((r) => (
-              <BoardRow key={`${r.kind}:${r.id}`} row={r} locale={i18n.language} />
-            ))}
-            {trip.length > 0 && (
-              <>
-                {local.length > 0 && (
-                  <div className="border-t border-border px-4 py-2 md:px-6">
-                    <Eyebrow as="div">
-                      {t('home.discovery.otherEvents', 'Events elsewhere')}
-                    </Eyebrow>
-                  </div>
-                )}
-                {trip.map((r) => (
-                  <BoardRow key={`${r.kind}:${r.id}`} row={r} locale={i18n.language} />
-                ))}
-              </>
-            )}
-          </>
+          rows.map((r) => <BoardRow key={`${r.kind}:${r.id}`} row={r} locale={i18n.language} />)
         )}
       </div>
       {isError && rows.length > 0 && (
