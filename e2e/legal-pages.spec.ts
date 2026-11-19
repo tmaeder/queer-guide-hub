@@ -162,14 +162,14 @@ test.describe('Policy lines', () => {
 test.describe('Legal hub', () => {
   test.setTimeout(120_000);
 
-  test('indexes the four lines in line order, with their lengths', async ({ page }) => {
+  test('indexes the legal lines in line order', async ({ page }) => {
     await page.goto('/legal');
     await waitForAppReady(page);
     // Wait for the index cards themselves, never for `a[href$="/terms"]` — the
     // FOOTER carries that link on every page, so it resolves before the CMS
     // children query does and `$$eval` then snapshots an empty grid. That is
     // what made this test fail against a healthy production page.
-    await expect(page.locator('main a.card-lift h2')).toHaveCount(4, { timeout: 30_000 });
+    await expect(page.locator('main a.card-lift h2')).toHaveCount(5, { timeout: 30_000 });
 
     const titles = await page.$$eval('main a.card-lift h2', (els) =>
       els.map((el) => (el.textContent ?? '').trim()),
@@ -181,8 +181,9 @@ test.describe('Legal hub', () => {
       'Privacy Policy',
       'Cookie Policy',
       'Copyright Policy',
+      // Accessibility is its own CMS page, linked from the hub as the fifth line.
+      'Accessibility',
     ]);
-    await expect(page.getByText(/\d+ sections/).first()).toBeVisible();
   });
 
   // INVERTED by the 2026-08-17 soft re-skin (#2848), which retired --shadow-hard

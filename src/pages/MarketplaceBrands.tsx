@@ -1,3 +1,4 @@
+import { LayoutGrid, List } from '@/components/icons';
 import { useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -338,7 +339,12 @@ export default function MarketplaceBrands() {
               <FilterChip
                 key={o.value}
                 active={ownership.includes(o.value)}
-                label={o.label}
+                label={
+                  <>
+                    <o.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {o.label}
+                  </>
+                }
                 onClick={() => toggleOwnership(o.value)}
               />
             ))}
@@ -353,12 +359,22 @@ export default function MarketplaceBrands() {
               <span className="flex gap-2">
                 <FilterChip
                   active={view === 'gallery'}
-                  label={t('marketplace.viewGallery', 'Gallery')}
+                  label={
+                    <>
+                      <LayoutGrid className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      {t('marketplace.viewGallery', 'Gallery')}
+                    </>
+                  }
                   onClick={() => setViewMode('gallery')}
                 />
                 <FilterChip
                   active={view === 'az'}
-                  label={t('marketplace.viewAz', 'A–Z index')}
+                  label={
+                    <>
+                      <List className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      {t('marketplace.viewAz', 'A–Z index')}
+                    </>
+                  }
                   onClick={() => setViewMode('az')}
                 />
               </span>

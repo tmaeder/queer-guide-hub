@@ -135,7 +135,7 @@ function HeroSlide({ venue }: { venue: Venue }) {
           scrim="strong"
           priority
           sizes="(min-width: 768px) 60vw, 100vw"
-          frameClassName="absolute inset-0 h-full w-full"
+          frameClassName="absolute inset-0 h-full w-full rounded-panel"
           className="transition-transform duration-slow group-hover:scale-[1.03] motion-reduce:transform-none"
         />
       )}

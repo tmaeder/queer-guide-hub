@@ -13,7 +13,7 @@ import {
   isAreaLayer,
   type MapLine,
 } from '../mapDomain';
-import { AREA_LAYERS, LAYER_DEFS } from '@/config/mapLayers';
+import { AREA_LAYERS, LAYER_DEFS, TOGGLE_ONLY_LAYERS } from '@/config/mapLayers';
 import { VENUE_CATEGORIES } from '@/lib/venueCategories';
 import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
 import type { LayerType } from '@/hooks/useExploreMapData';
@@ -36,7 +36,7 @@ import type { LayerType } from '@/hooks/useExploreMapData';
 
 // Cruising and organisations are standalone toggles (the homepage map), not
 // lines: with every line on, cruising already arrives inside `venues`.
-const TOGGLE_ONLY: LayerType[] = ['cruising', 'organizations'];
+const TOGGLE_ONLY: LayerType[] = TOGGLE_ONLY_LAYERS;
 const POINT_LAYERS = LAYER_DEFS.map((d) => d.type).filter(
   (t) => !AREA_LAYERS.includes(t) && !TOGGLE_ONLY.includes(t),
 );
