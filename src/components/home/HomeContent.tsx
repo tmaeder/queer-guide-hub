@@ -58,8 +58,8 @@ function RegionalContent() {
         <Band
           surface="tint"
           title={t('home.discovery.destinations', 'Cities, countries and villages')}
-          seeAllHref="/cities"
-          seeAllLabel={t('home.discovery.allCities', 'All cities')}
+          seeAllHref="/travel"
+          seeAllLabel={t('home.discovery.allDestinations', 'Travel')}
         >
           <DeferredSection rootMargin="160px 0px" fallback={cityCardsLoading}>
             <Suspense fallback={cityCardsLoading}>

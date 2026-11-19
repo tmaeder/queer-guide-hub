@@ -1966,7 +1966,8 @@
       "destinations": "都市・国・地区",
       "cityEvents": "イベント",
       "noCityEvents": "{{city}}で予定されているイベントはまだありません。",
-      "pickCityForEvents": "都市を選ぶとイベントが表示されます。"
+      "pickCityForEvents": "都市を選ぶとイベントが表示されます。",
+      "allDestinations": "旅行"
     },
     "heroLine1": "クィアな場所、",
     "heroLine2": "イベント、人々。",

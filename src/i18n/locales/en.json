@@ -2162,7 +2162,8 @@
       "destinations": "Cities, countries and villages",
       "cityEvents": "Events",
       "noCityEvents": "No upcoming events in {{city}} yet.",
-      "pickCityForEvents": "Choose a city to see its events."
+      "pickCityForEvents": "Choose a city to see its events.",
+      "allDestinations": "Travel"
     },
     "map": {
       "interchangeEyebrow": "Interchange",

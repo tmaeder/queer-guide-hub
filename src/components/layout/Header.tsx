@@ -315,7 +315,7 @@ export function Header() {
             aria-label={label}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'group relative grid h-11 min-w-11 shrink-0 place-items-center rounded-container px-1.5 no-underline transition-colors lg:px-2',
+              'group relative grid h-11 min-w-11 shrink-0 place-items-center rounded-element px-2 no-underline transition-colors lg:px-2.5',
               active
                 ? onInk
                   ? 'text-background'

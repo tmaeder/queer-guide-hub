@@ -1998,7 +1998,8 @@
       "destinations": "Города, страны и кварталы",
       "cityEvents": "События",
       "noCityEvents": "В {{city}} пока нет предстоящих событий.",
-      "pickCityForEvents": "Выберите город, чтобы увидеть события."
+      "pickCityForEvents": "Выберите город, чтобы увидеть события.",
+      "allDestinations": "Путешествия"
     },
     "heroLine1": "Квир-места,",
     "heroLine2": "события и люди.",

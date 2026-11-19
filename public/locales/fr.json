@@ -1970,7 +1970,8 @@
       "destinations": "Villes, pays et quartiers",
       "cityEvents": "Événements",
       "noCityEvents": "Aucun événement à venir à {{city}} pour l’instant.",
-      "pickCityForEvents": "Choisis une ville pour voir ses événements."
+      "pickCityForEvents": "Choisis une ville pour voir ses événements.",
+      "allDestinations": "Voyager"
     },
     "heroLine1": "Lieux queer,",
     "heroLine2": "événements et personnes.",

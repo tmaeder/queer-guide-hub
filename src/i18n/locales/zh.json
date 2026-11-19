@@ -1966,7 +1966,8 @@
       "destinations": "城市、国家和街区",
       "cityEvents": "活动",
       "noCityEvents": "{{city}}暂无即将举行的活动。",
-      "pickCityForEvents": "选择一个城市查看其活动。"
+      "pickCityForEvents": "选择一个城市查看其活动。",
+      "allDestinations": "旅行"
     },
     "heroLine1": "酷儿场所、",
     "heroLine2": "活动和人物。",
