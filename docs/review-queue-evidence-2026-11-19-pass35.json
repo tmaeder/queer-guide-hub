@@ -1,0 +1,75 @@
+{
+  "pass": 35,
+  "date": "2026-11-19",
+  "human_reviewed": false,
+  "proof": {
+    "source": "native_city_lifecycle_contract_completion",
+    "human_reviewed": false,
+    "scope": "Complete only the six already source-confirmed real-place lifecycle decisions by replacing temporary slugs through the existing native slug generator. Preserve old paths in city_slug_redirects, all city facts/QIDs/points/SEO/attention/verification, source payloads and related records. The current native city_quality_profile treats real+tmp-slug as unresolved; only real+non-temp clears this exact lifecycle signal. Resolve only untouched machine-generated lifecycle rows using that exact native predicate, then use native case reconciliation; no other findings, human review, job history or private geography changes.",
+    "source_definition_md5": "1db69e45d248bb357467e18dd7bb84e3",
+    "identity_proof_refs": [
+      "codex_source_pass32_primary_municipal_real_place_identity",
+      "codex_source_pass33_primary_municipal_real_place_identity"
+    ]
+  },
+  "repairs": [
+    {
+      "id": "57ff3de4-4589-4d8d-90cd-177f46a72c85",
+      "name": "Spiez",
+      "previous_slug": "tmp-4a997258-7c06-4019-b39b-0eecb02c05cf",
+      "canonical_slug": "spiez",
+      "redirect_to_same_id": true,
+      "case_inactive_after_native_reconciliation": true,
+      "seo_indexable": false
+    },
+    {
+      "id": "bab3daba-f83c-4f92-8d7b-2641adc1b7b2",
+      "name": "Kreuzlingen",
+      "previous_slug": "tmp-aa91a651-c890-421e-ba8d-cd0d5d30638c",
+      "canonical_slug": "kreuzlingen",
+      "redirect_to_same_id": true,
+      "case_inactive_after_native_reconciliation": true,
+      "seo_indexable": false
+    },
+    {
+      "id": "bf8341e3-3bd8-4857-8b4c-fbe8ecc7aa86",
+      "name": "Laax",
+      "previous_slug": "tmp-470842dd-b494-450c-9dc2-c2dfeb1fb7f9",
+      "canonical_slug": "laax",
+      "redirect_to_same_id": true,
+      "case_inactive_after_native_reconciliation": true,
+      "seo_indexable": false
+    },
+    {
+      "id": "c8922da8-6124-4d6f-8fab-a2ffef32eeb6",
+      "name": "Burghausen",
+      "previous_slug": "tmp-b4d855db-8e5b-46ad-be8e-c469948851b3",
+      "canonical_slug": "burghausen",
+      "redirect_to_same_id": true,
+      "case_inactive_after_native_reconciliation": true,
+      "seo_indexable": false
+    },
+    {
+      "id": "d8fddf07-99ef-4661-8104-476ddc1f2bde",
+      "name": "Hutthurm",
+      "previous_slug": "tmp-251fe04b-a2b6-45d4-ae1c-f2b5af41793b",
+      "canonical_slug": "hutthurm",
+      "redirect_to_same_id": true,
+      "case_inactive_after_native_reconciliation": true,
+      "seo_indexable": false
+    },
+    {
+      "id": "ea557d25-5826-4823-9712-a633d2ee00b0",
+      "name": "Stralsund",
+      "previous_slug": "tmp-98422116-c004-4648-a375-45be24f9ef6c",
+      "canonical_slug": "stralsund",
+      "redirect_to_same_id": true,
+      "case_inactive_after_native_reconciliation": true,
+      "seo_indexable": false
+    }
+  ],
+  "source_rows_resolved": 6,
+  "actual_cases_inactive": 6,
+  "validation": "Exact full-row guarded rollback/commit; pinned native lifecycle CASE definition; untouched machine source rows only; native slug generation, geography and case reconciliation; all related places and human history preserved. The old tmp-* prefix made a real-status-only correction incomplete; canonical URLs now complete the same source-backed decisions.",
+  "live_http_redirects_verified": 6
+}
