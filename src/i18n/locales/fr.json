@@ -1606,6 +1606,10 @@
       "saving": "Enregistrement…",
       "save": "Enregistrer la note",
       "saved": "Votre note est enregistrée."
+    },
+    "filters": {
+      "allTypes": "Tous",
+      "categoryGroup": "Type de lieu"
     }
   },
   "marketplace": {

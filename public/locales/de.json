@@ -1785,6 +1785,10 @@
       "saving": "Wird gespeichert…",
       "save": "Bewertung speichern",
       "saved": "Deine Bewertung ist gespeichert."
+    },
+    "filters": {
+      "allTypes": "Alle",
+      "categoryGroup": "Art des Ortes"
     }
   },
   "marketplace": {

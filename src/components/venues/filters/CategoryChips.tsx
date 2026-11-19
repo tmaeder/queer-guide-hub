@@ -1,7 +1,9 @@
-import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
+import { FilterChip } from '@/components/transit/FilterChip';
 import { useAuth } from '@/hooks/useAuth';
 import { AUTH_ONLY_CATEGORIES } from './constants';
 import { useVenueCategoryOptions } from '@/lib/venueCategories';
+import { venueCategoryIcon } from '../venueCategoryIcon';
 
 interface CategoryChipsProps {
   category: string;
@@ -9,10 +11,13 @@ interface CategoryChipsProps {
 }
 
 /**
- * Horizontally scroll on narrow screens (Airbnb-style), wrap on wider screens.
- * -mx + px keeps the scroll edge flush with card.
+ * Venue categories as the shared FilterChip (same chip as the events
+ * presets): icon + sentence-case label, an "All" chip first. One scrolling
+ * row on phones; wraps from md up. -mx + px keeps the scroll edge flush with
+ * the filter card.
  */
 export function CategoryChips({ category, onCategoryClick }: CategoryChipsProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
 
   // Signed out, every row in an AUTH_ONLY category is safety_gated and RLS
@@ -26,18 +31,33 @@ export function CategoryChips({ category, onCategoryClick }: CategoryChipsProps)
   );
 
   return (
-    <div className="flex gap-1.5 overflow-x-auto sm:flex-wrap max-w-full -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-thin">
-      {visible.map(({ value: cat, label }) => (
-        <Button
-          key={cat}
-          variant={category === cat ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => onCategoryClick(cat)}
-          className="rounded-badge h-8 px-4 text-xs font-bold uppercase transition-all whitespace-nowrap flex-shrink-0"
-        >
-          {label}
-        </Button>
-      ))}
+    <div
+      role="group"
+      aria-label={t('venues.filters.categoryGroup', 'Venue type')}
+      className="-mx-4 flex max-w-[calc(100%+2rem)] gap-2 no-scrollbar overflow-x-auto px-4 md:mx-0 md:max-w-full md:flex-wrap md:px-0"
+    >
+      <FilterChip
+        active={!category}
+        // The hook toggles: clicking the active category clears it.
+        onClick={() => category && onCategoryClick(category)}
+        label={t('venues.filters.allTypes', 'All')}
+      />
+      {visible.map(({ value: cat, label }) => {
+        const Icon = venueCategoryIcon(cat);
+        return (
+          <FilterChip
+            key={cat}
+            active={category === cat}
+            onClick={() => onCategoryClick(cat)}
+            label={
+              <>
+                <Icon size={16} aria-hidden />
+                <span className="whitespace-nowrap">{label}</span>
+              </>
+            }
+          />
+        );
+      })}
     </div>
   );
 }
