@@ -1,0 +1,61 @@
+{
+  "pass": 63,
+  "date": "2026-11-19",
+  "status": "applied",
+  "human_reviewed": false,
+  "scope": "Battenberg(Eder) municipality identity, lifecycle and canonical URL",
+  "proof": {
+    "source": "primary_government_municipal_identity_lifecycle_research",
+    "human_reviewed": false,
+    "decision_actor": "AI-assisted factual lifecycle repair",
+    "user_authorization": "User delegates clear-evidence factual editorial decisions",
+    "qid": "Q552488",
+    "municipality_code": "06635004",
+    "municipality_name": "Battenberg (Eder), Stadt",
+    "country": "DE",
+    "region": "DE-HE",
+    "registry_url": "https://www.statistikportal.de/de/gemeindeverzeichnis/06635004",
+    "registry_sha256": "146e9ad6aa384852ee4d8d9d8b268b6f992f88972b0e88011bc08a07567e0ad1",
+    "registry_retrieved_at": "2026-11-19T17:21:13.583156+00:00",
+    "registry_as_of": "2026-09-30",
+    "municipal_url": "https://www.battenberg-eder.de/",
+    "municipal_sha256": "77f8cf7c9e9fc8549716e45ae07cd0b684ef3375fdfe1ffeefeb086e50ec6d81",
+    "wikidata_url": "https://www.wikidata.org/wiki/Special:EntityData/Q552488.json",
+    "wikidata_sha256": "e4eae9aa54691052594f809bfed81545a18af0d976ca510fda01016496595c41",
+    "identity_basis": "Current government register explicitly identifies independent Stadt Battenberg(Eder) in Hesse, Waldeck-Frankenberg. Current city entity has same AGS06635004, country Germany, town/urban municipality classes and exact existing official municipal website. No existing canonical city has this QID.",
+    "coordinate_scope": "Retain existing representative municipal point about3km from the Wikidata town point; no new point, correction or precise boundary/venue/private-pin verification claimed.",
+    "scope": "Only confirmed previously missing QID, factual lifecycle, canonical slug and exact provenance. Preserve SEOfalse, attentiontrue, all other facts/history and actual human verification gates."
+  },
+  "result": {
+    "case": {
+      "active": false,
+      "members": 0
+    },
+    "slug": "battenberg",
+    "city_id": "0c1eecaa-1963-43dd-9643-b3644d019155",
+    "shell_status": "real",
+    "wikidata_qid": "Q552488",
+    "seo_indexable": false,
+    "related_counts": {
+      "geo_places": 1,
+      "personalities": 1,
+      "city_coverage_gaps": 1,
+      "city_quality_signals": 4
+    },
+    "needs_attention": true,
+    "old_slug_redirect": "tmp-bda86ae0-0bbd-46e3-b7a9-f6f05559d98c",
+    "private_saved_references": 0,
+    "native_verification_status": "country_checked"
+  },
+  "validation": {
+    "guarded_rollback_and_commit": true,
+    "pinned_native_source_contract": "1db69e45d248bb357467e18dd7bb84e3",
+    "one_complete_birthplace_row_and_all_other_related_records_unchanged": true,
+    "all_points_seo_attention_other_facts_and_human_gates_preserved": true,
+    "native_shared_geo_only_own_slug_timestamp_changed": true,
+    "private_saved_references": 0,
+    "native_country_checked_identity_parent_false": true,
+    "actual_case_inactive": true
+  },
+  "all_cases_complete": false
+}
