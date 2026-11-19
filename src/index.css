@@ -2089,6 +2089,31 @@ h2:not(.font-sans),
   font-size: 10px;
   line-height: 24px;
   margin: 6px;
+  /* Quiet: a see-through pill in muted type, so the credit never competes
+     with the map or the results pill beside it. */
+  background: hsl(var(--card) / 0.6);
+  color: hsl(var(--muted-foreground));
+  box-shadow: none;
+  backdrop-filter: blur(4px);
+}
+.maplibregl-ctrl-attrib a {
+  color: inherit;
+}
+/* Collapsed to the "i" until hovered or focused, whatever MapLibre's own
+   open state says (it re-opens the credit on wide maps). */
+.maplibregl-ctrl-attrib.maplibregl-compact:not(:hover):not(:focus-within) {
+  background: transparent;
+  opacity: 0.6;
+  padding-right: 24px;
+}
+.maplibregl-ctrl-attrib.maplibregl-compact:not(:hover):not(:focus-within)
+  .maplibregl-ctrl-attrib-inner {
+  display: none;
+}
+/* A map that mounts twice (StrictMode remount, style reload) can stack a
+   second control; one credit is enough. */
+.maplibregl-ctrl-attrib ~ .maplibregl-ctrl-attrib {
+  display: none;
 }
 .maplibregl-ctrl-attrib.maplibregl-compact {
   min-height: 24px;
