@@ -1,5 +1,5 @@
 import { corsResponse, errorResponse, getServiceClient, jsonResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
-import { buildQuestions, decide, parseEvaluation, POLICY_VERSION, SOURCES, type Context, type Evidence } from './policy.ts'
+import { buildQuestions, decide, parseEvaluation, POLICY_VERSION, requiresCityLifecycleReview, SOURCES, type Context, type Evidence } from './policy.ts'
 import { recoverSources } from './research.ts'
 import { cityDiscoveryInput, discoverCityEvidence } from './city-discovery.ts'
 import { discoverPublisherEvidence, eventPublisherDate, publisherTarget } from './publisher-discovery.ts'
@@ -91,6 +91,7 @@ Deno.serve(async req => {
         if (context.item.queue_type !== job.queue_type) throw new Error('Review queue context mismatch')
         const sourceKind = SOURCES[job.queue_type as keyof typeof SOURCES]
         if (context.blocker) result = { blocker: context.blocker }
+        else if (requiresCityLifecycleReview(context)) result = { blocker: 'city_lifecycle_requires_human_review' }
         else if (sourceKind === 'private' || sourceKind === 'human') result = { blocker: 'protected_review_context' }
         else if (!context.candidates.length) result = { blocker: 'missing_action_candidate' }
         else if (new Set(context.candidates.map(c => c.id)).size !== context.candidates.length) result = { blocker: 'ambiguous_action_catalog' }

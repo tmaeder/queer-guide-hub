@@ -117,6 +117,32 @@ test('protected queues cannot fetch sources or call Jev even if their native con
   const mismatch = await run({ context: { ...context, item: { queue_type: 'submissions', title: 'Private' } } })
   assert.equal(mismatch.fetched.length, 0); assert.equal(mismatch.reservations.length, 0)
 })
+test('placeholder lifecycle decisions stop before sources and paid inference while preserving database blockers', async () => {
+  const lifecycle = { ...context, item: { ...context.item, queue_type: 'general-review', meta: { review_type: 'CITY_LIFECYCLE_UNRESOLVED' } },
+    record: { name: 'Example Town', shell_status: 'placeholder' },
+    candidates: [{ id: 'recheck', action: 'recheck', payload: {}, explanation: 'Resolve only an already repaired invariant.' }] }
+  const held = await run({ queue: 'general-review', context: lifecycle })
+  assert.equal(held.body.blocked, 2)
+  assert.equal(held.fetched.length, 0)
+  assert.equal(held.reservations.length, 0)
+  for (const call of held.finished) assert.equal((call.p_result as { blocker: string }).blocker, 'city_lifecycle_requires_human_review')
+  const denied = await run({ queue: 'general-review', context: { ...lifecycle, blocker: 'source_not_authorized' } })
+  for (const call of denied.finished) assert.equal((call.p_result as { blocker: string }).blocker, 'source_not_authorized')
+  assert.equal(denied.fetched.length, 0)
+})
+test('a corrected lifecycle and other geography cases retain ordinary source rechecking', async () => {
+  for (const item of [
+    { ...context.item, queue_type: 'general-review', meta: { review_type: 'CITY_LIFECYCLE_UNRESOLVED' } },
+    { ...context.item, queue_type: 'geography' },
+  ]) {
+    const result = await run({ queue: item.queue_type, sourceStatus: 503,
+      context: { ...context, item, record: { name: 'Example Town', shell_status: 'real' },
+        candidates: [{ id: 'recheck', action: 'recheck', payload: {}, explanation: 'Recheck current evidence.' }] } })
+    assert.ok(result.fetched.length > 0)
+    assert.equal(result.reservations.length, 0)
+    for (const call of result.finished) assert.equal((call.p_result as { blocker: string }).blocker, 'source_unavailable')
+  }
+})
 test('missing or ambiguous action catalogs block before source fetching and paid inference', async () => {
   for (const candidates of [[], [context.candidates[0], context.candidates[0]]]) {
     const result = await run({ context: { ...context, candidates } })
