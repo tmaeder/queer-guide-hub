@@ -11,6 +11,8 @@ import { useMeta } from '@/hooks/useMeta';
 import { useGeoCountry } from '@/hooks/useGeoCountry';
 import { TestingSitesBand } from '@/components/health/TestingSitesBand';
 import { RiskMark } from '@/components/health/RiskMark';
+import { Clock, FlaskConical, Syringe } from '@/components/icons';
+import { protectionIcon } from '@/lib/stiProtectionIcons';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { TRANSMISSION_RISK_ORDER, transmissionRiskVisual } from '@/lib/stiRisk';
 import {
@@ -199,7 +201,7 @@ function Plate({
  * graphic and carries no glyphs at all; it can shrink to nothing without
  * costing a character. Its left edge is the datum — see the plate's lead.
  */
-function TestingWindow({ row }: { row: TestingRow }) {
+function TestingWindow({ row, axis = false }: { row: TestingRow; axis?: boolean }) {
   const { t } = useTranslation();
 
   if (row.symptoms_only) {
@@ -212,13 +214,17 @@ function TestingWindow({ row }: { row: TestingRow }) {
 
   return (
     <>
-      <span className="block text-2xs font-bold">
-        {row.test_kind} · {t('stiGuide.fromWeeks', '{{n}}w+', { n: row.earliest_weeks })}
+      <span className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-13 font-bold">{row.test_kind}</span>
+        <span className="inline-flex items-center gap-1 rounded-badge bg-foreground px-2 py-0.5 text-2xs font-bold text-background">
+          <Clock size={12} aria-hidden />
+          {t('stiGuide.fromWeekN', 'from week {{n}}', { n: row.earliest_weeks })}
+        </span>
       </span>
       <span
         aria-hidden="true"
         data-information-geometry="true"
-        className="relative mt-1.5 block h-3 overflow-hidden rounded-full"
+        className="relative mt-2 block h-3 overflow-hidden rounded-full bg-card"
       >
         {/* Ticks sit behind the bar so a value can be read off the chart
             without a trip back to the axis. */}
@@ -234,6 +240,30 @@ function TestingWindow({ row }: { row: TestingRow }) {
           style={{ left: `${barStartPercent(row.earliest_weeks ?? 0)}%` }}
         />
       </span>
+      {axis && (
+        <span
+          aria-hidden="true"
+          className="relative mt-1 block h-4 text-3xs font-bold text-muted-foreground"
+        >
+          {WEEK_TICKS.map((w, i) => (
+            <span
+              key={w}
+              className="absolute top-0 whitespace-nowrap"
+              style={{
+                left: `${weekOffsetPercent(w)}%`,
+                transform:
+                  i === 0
+                    ? undefined
+                    : i === WEEK_TICKS.length - 1
+                      ? 'translateX(-100%)'
+                      : 'translateX(-50%)',
+              }}
+            >
+              {i === WEEK_TICKS.length - 1 ? `${w} wk` : w}
+            </span>
+          ))}
+        </span>
+      )}
       <span className="sr-only">
         {t('stiGuide.reliableFrom', '{{kind}} reliable from {{n}} weeks', {
           kind: row.test_kind,
@@ -462,7 +492,9 @@ export default function StiGuidePage() {
     <PageContainer>
       {/* ── Masthead ─────────────────────────────────────────────────────── */}
       <Eyebrow>{t('stiGuide.eyebrow', 'Sexual health')}</Eyebrow>
-      <h1 className="mt-2 font-display text-headline md:text-display">{t('stiGuide.title', 'The STI guide')}</h1>
+      <h1 className="mt-2 font-display text-headline md:text-display">
+        {t('stiGuide.title', 'The STI guide')}
+      </h1>
       <p className="mt-6 max-w-reading text-body-lg leading-relaxed">
         {t(
           'stiGuide.intro',
@@ -622,7 +654,7 @@ export default function StiGuidePage() {
             const routes = routesFor(sti, practices, matrix?.cells ?? []);
             const prevention = methodsBySti.get(sti.id) ?? [];
             return (
-              <li key={sti.id} className="rounded-container bg-surface-container p-6 shadow-soft">
+              <li key={sti.id} className="rounded-container bg-card p-6 shadow-soft">
                 <h3 className="flex flex-wrap items-baseline gap-x-2">
                   <LocalizedLink
                     to={`/tags/${encodeURIComponent(sti.slug)}`}
@@ -640,17 +672,20 @@ export default function StiGuidePage() {
                     {routes.map((r) => (
                       <li
                         key={r.practice.slug}
-                        className="flex items-center gap-2 rounded-element px-2 py-2 even:bg-surface-container-high"
+                        className="flex items-center gap-2 rounded-element px-2 py-2 even:bg-muted"
                       >
-                        <RiskMark
-                          risk={r.risk}
-                          blood={r.blood}
-                          size="sm"
-                          srLabel={`${transmissionRiskVisual(r.risk).label}${
-                            r.blood ? ` — ${t('stiGuide.bloodNote', 'risk with blood')}` : ''
-                          }`}
-                          className="shrink-0"
-                        />
+                        {/* Fixed slot so names line up when a blood route
+                            carries a second glyph. */}
+                        <span className="flex w-14 shrink-0">
+                          <RiskMark
+                            risk={r.risk}
+                            blood={r.blood}
+                            size="sm"
+                            srLabel={`${transmissionRiskVisual(r.risk).label}${
+                              r.blood ? ` — ${t('stiGuide.bloodNote', 'risk with blood')}` : ''
+                            }`}
+                          />
+                        </span>
                         <span className="text-13 font-bold">{r.practice.label}</span>
                         <span className="ml-auto text-3xs uppercase tracking-label text-muted-foreground">
                           {GROUP_LABELS[r.practice.group] ?? r.practice.group}
@@ -665,12 +700,25 @@ export default function StiGuidePage() {
                 )}
 
                 {prevention.length > 0 && (
-                  <p className="mt-2 text-13 leading-relaxed">
-                    <span className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                  <div className="mt-4">
+                    <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
                       {t('stiGuide.protectedBy', 'Protected by')}
-                    </span>{' '}
-                    {prevention.map((m) => m.label).join(' · ')}
-                  </p>
+                    </p>
+                    <ul className="m-0 mt-2 flex list-none flex-wrap gap-2 p-0">
+                      {prevention.map((m) => {
+                        const Icon = protectionIcon(m.slug);
+                        return (
+                          <li
+                            key={m.slug}
+                            className="inline-flex items-center gap-1.5 rounded-badge bg-muted px-2.5 py-1 text-13 font-bold"
+                          >
+                            <Icon size={14} aria-hidden />
+                            {m.label}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
                 )}
               </li>
             );
@@ -875,7 +923,7 @@ export default function StiGuidePage() {
           {(protection?.stis ?? []).map((sti) => {
             const rows = testingByTag.get(sti.id) ?? [];
             return (
-              <li key={sti.id} className="rounded-container bg-surface-container p-6 shadow-soft">
+              <li key={sti.id} className="rounded-container bg-card p-6 shadow-soft">
                 <h3>
                   <LocalizedLink
                     to={`/tags/${encodeURIComponent(sti.slug)}`}
@@ -892,10 +940,11 @@ export default function StiGuidePage() {
                   rows.map((row, i) => (
                     <div
                       key={`${sti.id}-${row.test_kind}-${row.sample}-${i}`}
-                      className="mt-4 rounded-element bg-surface-container-high p-4 first:mt-0"
+                      className="mt-4 rounded-element bg-muted p-4"
                     >
-                      <TestingWindow row={row} />
-                      <p className="mt-2 text-2xs text-muted-foreground">
+                      <TestingWindow row={row} axis />
+                      <p className="mt-4 flex items-center gap-1.5 text-13 text-muted-foreground">
+                        <FlaskConical size={14} aria-hidden className="shrink-0" />
                         {t('stiGuide.sampleIs', 'Sample: {{sample}}', { sample: row.sample })}
                       </p>
                       {row.note && (
@@ -906,11 +955,14 @@ export default function StiGuidePage() {
                     </div>
                   ))
                 )}
-                <p className="mt-4 text-2xs leading-relaxed text-muted-foreground">
-                  <span className="font-bold uppercase tracking-label">
-                    {t('stiGuide.vaccineCol', 'Vaccine?')}
-                  </span>{' '}
-                  {sti.vaccine_note ?? t('stiGuide.noVaccineLong', 'None.')}
+                <p className="mt-4 flex items-start gap-2 text-13 leading-relaxed text-muted-foreground">
+                  <Syringe size={14} aria-hidden className="mt-1 shrink-0" />
+                  <span>
+                    <span className="font-bold text-foreground">
+                      {t('stiGuide.vaccineLabel', 'Vaccine:')}
+                    </span>{' '}
+                    {sti.vaccine_note ?? t('stiGuide.noVaccineLong', 'None.')}
+                  </span>
                 </p>
               </li>
             );
