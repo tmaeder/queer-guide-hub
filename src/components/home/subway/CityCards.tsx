@@ -234,7 +234,7 @@ export default function CityCards() {
                   </span>
                   <div className="mt-1 truncate text-13 text-muted-foreground">{g.hook}</div>
                   {g.highlight && (
-                    <span className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-badge bg-track-pink px-2 py-0.5 text-xs font-bold text-foreground">
+                    <span className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-badge bg-muted px-2 py-0.5 text-xs font-bold text-foreground">
                       <Flag size={12} aria-hidden className="shrink-0" />
                       <span className="truncate">
                         {g.highlight.title} ·{' '}
