@@ -58,7 +58,7 @@ function PageSkeleton() {
 }
 
 // ── One index card, used by both the legal hub and generic hubs ─────────────
-function PageIndexCard({ page }: { page: CMSPage }) {
+function PageIndexCard({ page }: { page: Pick<CMSPage, 'slug' | 'title' | 'subtitle'> }) {
   const line = POLICY_LINES[page.slug];
 
   return (
@@ -187,6 +187,18 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
             .map((child) => (
               <PageIndexCard key={child.slug} page={child} />
             ))}
+          {/* Accessibility is its own CMS page (not a child of `legal`, since it
+              is not a contract), but people look for the statement here. */}
+          {!childPages.some((c) => c.slug === 'accessibility') && (
+            <PageIndexCard
+              page={{
+                slug: 'accessibility',
+                title: 'Accessibility',
+                subtitle:
+                  'How the site works with assistive technology, and how to tell us when it doesn’t',
+              }}
+            />
+          )}
         </div>
 
         <section
