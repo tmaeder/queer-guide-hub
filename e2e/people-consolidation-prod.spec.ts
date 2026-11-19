@@ -180,7 +180,7 @@ test('the complete Hub navigation stays inside a mobile viewport', async ({ page
 
 test('public Hub community surfaces keep decorative chrome borderless', async ({ page }) => {
   const routes = {
-    '/hub/people': 'Meet people',
+    '/hub/people': 'Meet',
     '/hub/members': 'Members',
     '/hub/groups': 'Community Groups',
   } as const;

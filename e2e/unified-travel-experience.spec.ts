@@ -20,7 +20,7 @@ test.describe('unified travel experience', () => {
   test('/travel renders the travel hub', async ({ page }) => {
     await page.goto('/travel');
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Travelling', exact: true }),
+      page.getByRole('heading', { level: 1, name: 'Trips made for you', exact: true }),
     ).toBeVisible({ timeout: 15_000 });
   });
 
@@ -36,7 +36,7 @@ test.describe('unified travel experience', () => {
     await page.goto('/travel?mode=browse');
     await expect(page).toHaveURL(/\/travel/);
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Travelling', exact: true }),
+      page.getByRole('heading', { level: 1, name: 'Trips made for you', exact: true }),
     ).toBeVisible({ timeout: 15_000 });
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/travel$/);
   });
