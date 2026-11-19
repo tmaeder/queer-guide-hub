@@ -7,7 +7,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Wind, Hand, FileText, ExternalLink } from '@/components/icons';
+import { Download, Wind, Hand, FileText, ExternalLink } from '@/components/icons';
 
 export function SelfHelp() {
   const { t } = useTranslation();
@@ -65,12 +65,20 @@ export function SelfHelp() {
             )}
           </p>
           <a
+            href="/downloads/my-safety-plan.pdf"
+            download
+            className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-element bg-foreground px-4 text-13 font-bold text-background no-underline hover:opacity-90"
+          >
+            <Download size={16} aria-hidden />
+            {t('help.safety_plan_download', 'Download plan (PDF)')}
+          </a>
+          <a
             href="https://suicidesafetyplan.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 inline-flex min-h-11 items-center gap-1 text-13 font-bold text-foreground"
+            className="mt-2 inline-flex min-h-11 items-center gap-1 text-13 text-muted-foreground"
           >
-            {t('help.safety_plan_link', 'Open template (Stanley-Brown)')}
+            {t('help.safety_plan_link_original', 'Original Stanley-Brown')}
             <ExternalLink size={12} aria-hidden />
           </a>
         </div>
