@@ -41,7 +41,7 @@ export function WeekInReview({ articles }: WeekInReviewProps) {
             >
               <span
                 aria-hidden="true"
-                className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-track-ring bg-track-pink font-display text-title text-track-ring"
+                className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-track-ring bg-track-pink text-title font-bold text-track-ring"
               >
                 {i + 1}
               </span>

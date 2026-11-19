@@ -42,10 +42,11 @@ export function LocationActionMenu({
           ref={triggerRef}
           type="button"
           aria-haspopup="dialog"
-          className="inline-flex items-center gap-2 rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-surface-container active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={label}
+          title={label}
+          className="inline-flex size-11 items-center justify-center rounded-element transition-colors hover:bg-surface-container active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
-          {label}
+          <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
         </button>
       </PopoverTrigger>
       <PopoverContent

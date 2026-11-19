@@ -3172,6 +3172,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "client:locale:%2Ftrips%2Fdiscover:%2Ftravel:Navigate:0",
+    "source": "/trips/discover",
+    "target": "/travel",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "client:locale:%2Ftrips%2F%3AtripId%2Ftoday:%2Ftrips%2F%3AtripId%3Fview%3Dtoday:TripSubrouteRedirect:0",
     "source": "/trips/:tripId/today",
     "target": "/trips/:tripId?view=today",

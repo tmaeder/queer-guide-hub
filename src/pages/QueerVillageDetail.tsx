@@ -1,3 +1,4 @@
+import { Heart } from '@/components/icons';
 import { DestinationPhoto } from '@/components/geo/DestinationPhoto';
 import { useEffect, useMemo, useState } from 'react';
 import { selectDiscoveryEvent } from '@/lib/discoveryEvent';
@@ -389,11 +390,23 @@ export default function QueerVillageDetail() {
           <button
             type="button"
             onClick={handleFavoriteToggle}
-            className="rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-surface-container active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-pressed={isFavorited(village.id)}
+            aria-label={
+              isFavorited(village.id)
+                ? t('village.action.favorited', 'Saved to favorites')
+                : t('village.action.favorite', 'Save to favorites')
+            }
+            title={
+              isFavorited(village.id)
+                ? t('village.action.favorited', 'Saved to favorites')
+                : t('village.action.favorite', 'Save to favorites')
+            }
+            className="inline-flex size-11 items-center justify-center rounded-element transition-colors hover:bg-surface-container active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            {isFavorited(village.id)
-              ? t('village.action.favorited', 'Saved to favorites')
-              : t('village.action.favorite', 'Save to favorites')}
+            <Heart
+              className={`h-5 w-5 ${isFavorited(village.id) ? 'fill-current' : ''}`}
+              aria-hidden="true"
+            />
           </button>
           <LocationActionMenu label={t('common.moreActions', 'More actions')}>
             <PlanTripFromHereButton

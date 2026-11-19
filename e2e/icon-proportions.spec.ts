@@ -59,7 +59,7 @@ for (const width of [1100, 1440]) {
 
     const header = page.getByRole('banner');
     const nav = header.getByRole('navigation', { name: 'Primary', exact: true });
-    const labels = ['Going out', 'Travelling', 'Meet people', 'Knowledge', 'News', 'Shop'];
+    const labels = ['Going out', 'Travel', 'Meet', 'Knowledge', 'News', 'Shop'];
     async function expectTextOnlyNavigation() {
       await expect(nav).toBeInViewport();
       await expect(nav.getByRole('link')).toHaveCount(labels.length);

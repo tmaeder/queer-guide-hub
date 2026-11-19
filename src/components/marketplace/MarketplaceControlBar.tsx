@@ -1,3 +1,16 @@
+import {
+  Clock,
+  Crown,
+  DollarSign,
+  Dumbbell,
+  Heart,
+  Plane,
+  Rainbow,
+  Sun,
+  Tag,
+  Zap,
+  type LucideIcon,
+} from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import { useEffect, useRef, useState } from 'react';
@@ -66,11 +79,28 @@ interface MarketplaceControlBarProps {
 // did not forward refs or rest props, so `<PopoverTrigger asChild>` could not
 // use it; FilterChip now does both.
 
+const OCCASION_ICONS: Array<[RegExp, LucideIcon]> = [
+  [/everyday|casual|basic/, Sun],
+  [/gym|sport|fitness|active/, Dumbbell],
+  [/wedding|love|romance|date/, Heart],
+  [/holiday|travel|vacation|beach/, Plane],
+  [/bold|statement|loud/, Zap],
+  [/vintage|retro|classic/, Clock],
+  [/pride|rainbow/, Rainbow],
+  [/drag|party|night|festival/, Crown],
+];
+
+/** A tag chip's icon, chosen from the slug's words; a generic tag otherwise. */
+function occasionIcon(slug: string): LucideIcon {
+  return OCCASION_ICONS.find(([re]) => re.test(slug))?.[1] ?? Tag;
+}
+
 /**
  * The single sticky control row for /marketplace: dominant search field,
  * the four highest-value facets as one-tap chips, and the long-tail
  * filters demoted to a Sheet. All state lives in the URL.
  */
+
 export function MarketplaceControlBar({
   filters,
   onFiltersChange,
@@ -272,7 +302,7 @@ export function MarketplaceControlBar({
               }
             }}
             style={{ paddingLeft: 42 }}
-            className="h-12 bg-card text-15 shadow-soft rounded-container"
+            className="h-12 rounded-container border-transparent bg-card text-15 shadow-soft focus-visible:border-input"
             role="combobox"
             aria-autocomplete="list"
             aria-expanded={false}
@@ -289,8 +319,8 @@ export function MarketplaceControlBar({
           />
         </div>
         <Button
-          variant="outline"
-          className="h-12"
+          variant="ghost"
+          className="h-12 rounded-container bg-card px-4 shadow-soft hover:bg-foreground hover:text-background"
           onClick={() => setSheetOpen(true)}
           aria-label="All filters"
         >
@@ -349,7 +379,16 @@ export function MarketplaceControlBar({
             </PopoverContent>
           </Popover>
 
-          <FilterChip active={queerOwnedActive} onClick={toggleQueerOwned} label="Queer-owned" />
+          <FilterChip
+            active={queerOwnedActive}
+            onClick={toggleQueerOwned}
+            label={
+              <>
+                <Rainbow className="h-4 w-4 shrink-0" aria-hidden="true" />
+                Queer-owned
+              </>
+            }
+          />
 
           <Popover open={priceOpen} onOpenChange={setPriceOpen}>
             <PopoverTrigger asChild>
@@ -357,11 +396,14 @@ export function MarketplaceControlBar({
                 active={Boolean(filters.priceRange)}
                 aria-label="Filter by price"
                 label={
-                  activeBand
-                    ? activeBand.label
-                    : filters.priceRange
-                      ? `$${filters.priceRange.min}+`
-                      : 'Price'
+                  <>
+                    <DollarSign className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {activeBand
+                      ? activeBand.label
+                      : filters.priceRange
+                        ? `$${filters.priceRange.min}+`
+                        : 'Price'}
+                  </>
                 }
               />
             </PopoverTrigger>
@@ -443,7 +485,15 @@ export function MarketplaceControlBar({
                 if (activeOcc === c.slug) toggleOcc(c.slug);
                 else toggleTagSlug(c.slug);
               }}
-              label={c.label}
+              label={
+                <>
+                  {(() => {
+                    const Icon = occasionIcon(c.slug);
+                    return <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />;
+                  })()}
+                  {c.label}
+                </>
+              }
             />
           ))}
         </div>

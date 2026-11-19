@@ -1,3 +1,5 @@
+import { LayoutGrid, MapPin } from '@/components/icons';
+import { VENUE_CATEGORY_ICONS } from '@/components/venues/venueCategoryIcon';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, ArrowUpRight, Landmark, Search, Store } from '@/components/icons';
@@ -181,7 +183,19 @@ export function CityVenuesTab({ venues }: { venues: VenueRelation[] }) {
           <FilterChip
             key={option.value}
             active={category === option.value}
-            label={option.label}
+            label={
+              <>
+                {(() => {
+                  const Icon =
+                    option.value === 'all'
+                      ? LayoutGrid
+                      : (VENUE_CATEGORY_ICONS[option.value as keyof typeof VENUE_CATEGORY_ICONS] ??
+                        MapPin);
+                  return <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />;
+                })()}
+                {option.label}
+              </>
+            }
             className={
               category === option.value
                 ? 'bg-track-pink text-ink hover:bg-track-pink hover:text-ink'

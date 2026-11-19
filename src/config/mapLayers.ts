@@ -26,6 +26,13 @@ import type { BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
 /** Layers rendered as native MapLibre circle + label layers (area feel). */
 export const AREA_LAYERS: LayerType[] = ['cities', 'countries', 'neighbourhoods'];
 
+/**
+ * Layers the homepage map toggles on their own; they are not /map lines.
+ * Cruising is a venue category (it arrives inside `venues` when every line is
+ * on) and organisations have no line yet. Legacy /map URLs never named them.
+ */
+export const TOGGLE_ONLY_LAYERS: LayerType[] = ['cruising', 'organizations'];
+
 // ── Layer registry ───────────────────────────────────────────────────────────
 
 export interface LayerDef {

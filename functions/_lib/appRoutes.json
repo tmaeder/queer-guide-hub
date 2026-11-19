@@ -319,6 +319,7 @@
     "/tools/workbook/:slug",
     "/travel",
     "/travel/book",
+    "/travel/plan",
     "/trips",
     "/trips/:tripId",
     "/trips/:tripId/*",
@@ -482,6 +483,11 @@
       "to": "/hub/plans",
       "localized": true,
       "preserveQuery": true
+    },
+    "/trips/discover": {
+      "to": "/travel",
+      "localized": false,
+      "preserveQuery": false
     },
     "/bookings": {
       "to": "/hub/plans",

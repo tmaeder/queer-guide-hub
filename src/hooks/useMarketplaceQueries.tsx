@@ -127,6 +127,38 @@ export function useDepartmentPhotos(slugs: string[]) {
 }
 
 /**
+ * Up to three SFW product photos per category group, keyed `department/group`.
+ * Unordered on purpose: ordering by `boutique_score` costs ~400ms per group
+ * (a full department sort), unordered stops at the first three matches (~10ms).
+ */
+export function useGroupPhotos(pairs: { department: string; group: string }[]) {
+  return useAsync<Record<string, string[]>>(
+    [pairs.map((p) => `${p.department}/${p.group}`).join(',')],
+    async () => {
+      const entries = await Promise.all(
+        pairs.map(async ({ department, group }) => {
+          const { data } = await supabase
+            .from('marketplace_listings')
+            .select('images')
+            .eq('department', department)
+            .eq('subcategory_group', group)
+            .eq('status', 'active')
+            .eq('content_rating', 'sfw')
+            .not('images', 'is', null)
+            .limit(6);
+          const urls = (data ?? [])
+            .map((r) => (r.images as string[] | null)?.[0])
+            .filter((u): u is string => !!u && u.startsWith('https://'));
+          return [`${department}/${group}`, [...new Set(urls)].slice(0, 3)] as const;
+        }),
+      );
+      return Object.fromEntries(entries);
+    },
+    {},
+  );
+}
+
+/**
  * Canonical group counts, content-rating gated.
  *
  * The `department` argument carries TWO distinct meanings and they must stay
