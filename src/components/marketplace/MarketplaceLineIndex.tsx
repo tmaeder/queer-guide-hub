@@ -149,17 +149,6 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
                         enforces it — `text-title` may never carry a display
                         face. The repo's rank table outranks the mock. */}
                     <span className="flex items-baseline gap-2">
-                      {/* Stop number. A stop list numbers its stops, and the
-                          plate above already shows this tile's slice of the
-                          line — the figure names the position the art draws. */}
-                      <span
-                        className={cn(
-                          'text-2xs tabular-nums',
-                          active ? 'text-background/70' : 'text-muted-foreground',
-                        )}
-                      >
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
                       <span className="text-title font-bold leading-tight text-balance">
                         {departmentLabel(tile.slug)}
                       </span>

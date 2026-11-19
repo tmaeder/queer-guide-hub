@@ -21,24 +21,18 @@ const OWNERSHIP_LABELS: Record<string, string> = {
   nonprofit: 'Non-profit',
 };
 
-/** Stable week index so the featured brand rotates weekly, not per render. */
-function isoWeek(date: Date): number {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-}
+/** Days since the epoch: the featured brand changes daily, not per render. */
+const dayIndex = (date: Date) => Math.floor(date.getTime() / 86_400_000);
 
 /**
  * Editorial feature block for ONE queer/trans-owned brand — monogram/logo,
- * story excerpt and its three strongest products. Rotates weekly across
+ * story excerpt and its three strongest products. Rotates daily across
  * the spotlight pool; hides when the pool is empty.
  */
 export function BrandSpotlight() {
   const { user } = useAuth();
-  const { data: pool = [] } = useSpotlightBrands(4);
-  const brand = pool.length > 0 ? pool[isoWeek(new Date()) % pool.length] : null;
+  const { data: pool = [] } = useSpotlightBrands(30);
+  const brand = pool.length > 0 ? pool[dayIndex(new Date()) % pool.length] : null;
   const { data: detail } = useMarketplaceBrand(brand?.slug);
   const { data: listings = [] } = useBrandTopListings(detail?.brand_key, 3);
   const listingIds = useMemo(() => listings.map((l) => l.id), [listings]);

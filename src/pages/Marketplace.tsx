@@ -73,7 +73,6 @@ interface MainGridSectionProps {
 
 function MainGridSection({
   accumulated,
-  total,
   page,
   hasActiveFilters,
   viewMode,
@@ -93,19 +92,6 @@ function MainGridSection({
 
   return (
     <>
-      {/* Same swatch + tabular figure as the masthead and every sub-page's
-          count, so "how big is this set" is stated one way everywhere. */}
-      <p className="mb-6 flex items-center gap-4 text-13 text-muted-foreground">
-        <span
-          aria-hidden="true"
-          className="h-1.5 w-10 shrink-0 border border-border-hairline bg-track-yellow"
-        />
-        <span className="tabular-nums">
-          {visible.length.toLocaleString()} of {total.toLocaleString()} listing
-          {total !== 1 ? 's' : ''}
-        </span>
-      </p>
-
       {/* Calm uniform grid — editorial rhythm beats the old mosaic jigsaw.
           pb-* on virtual rows preserves the inter-row gap. */}
       <VirtualizedGrid
