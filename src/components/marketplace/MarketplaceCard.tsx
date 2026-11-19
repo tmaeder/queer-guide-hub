@@ -292,18 +292,17 @@ function MarketplaceCardImpl({
           <StationBadge glyph={glyph} className="-mt-8" />
           <CardBadges isAdult={isAdult} isAffiliate={isAffiliate} queerOwned={queerOwned} />
 
-          <p className="text-2xs uppercase tracking-label text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
+          <div className="flex min-w-0 flex-wrap gap-1.5 text-2xs uppercase tracking-label text-muted-foreground">
             {/* Brand leads (linked to its brand page); department gives context. */}
             {listing.brand && brandSlug(listing.brand) ? (
               <>
                 <LocalizedLink
                   to={`/marketplace/brands/${brandSlug(listing.brand)}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="hover:text-foreground"
+                  className="max-w-full truncate rounded-element bg-muted px-2 py-1 no-underline hover:bg-foreground hover:text-background"
                 >
                   <HighlightedText text={listing.brand} query={searchQuery} />
                 </LocalizedLink>
-                <span className="mx-1.5">·</span>
               </>
             ) : listing.business_name ? (
               <>
@@ -311,20 +310,21 @@ function MarketplaceCardImpl({
                   <LocalizedLink
                     to={`/marketplace/merchants/${listing.merchant_domain}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="hover:text-foreground"
+                    className="max-w-full truncate rounded-element bg-muted px-2 py-1 no-underline hover:bg-foreground hover:text-background"
                   >
                     <HighlightedText text={listing.business_name} query={searchQuery} />
                   </LocalizedLink>
                 ) : (
-                  <HighlightedText text={listing.business_name} query={searchQuery} />
+                  <span className="max-w-full truncate rounded-element bg-muted px-2 py-1">
+                    <HighlightedText text={listing.business_name} query={searchQuery} />
+                  </span>
                 )}
-                <span className="mx-1.5">·</span>
               </>
             ) : null}
-            <span>
+            <span className="max-w-full truncate rounded-element bg-muted px-2 py-1">
               {departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}
             </span>
-          </p>
+          </div>
 
           {/* Station-name weight. The 18+ marker is no longer inside the
               heading — it was being read into the accessible name. */}

@@ -1,3 +1,4 @@
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import {
@@ -403,15 +404,18 @@ const Marketplace = () => {
             <>
               <Button asChild>
                 <LocalizedLink to="/marketplace/categories" className="no-underline">
+                  <TransitIcon name="grid" size={18} aria-hidden />
                   {t('pages.marketplace.browseCategories', 'Browse categories')}
                 </LocalizedLink>
               </Button>
               <Button variant="soft" asChild>
                 <LocalizedLink to="/marketplace/brands" className="no-underline">
+                  <TransitIcon name="hand" size={18} aria-hidden />
                   {t('marketplace.allMakers', 'All makers')}
                 </LocalizedLink>
               </Button>
               <Button variant="ghost" onClick={handleListBusiness}>
+                <TransitIcon name="plus" size={18} aria-hidden />
                 {t('pages.marketplace.listBusiness', 'List your business')}
               </Button>
             </>
