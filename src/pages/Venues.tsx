@@ -39,13 +39,8 @@ import { AchievementToast } from '@/components/venues/AchievementToast';
 import { MapShell } from '@/components/map/MapShell';
 import type { MapShellFilters } from '@/components/map/MapShell.types';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { LoadMore } from '@/components/transit/LoadMore';
 import { MapPin, Grid, Map } from '@/components/icons';
@@ -454,11 +449,13 @@ const Venues = () => {
 
           <div className="flex items-center gap-2">
             <Select value={sortBy} onValueChange={setSortBy}>
+              {/* Sort as a symbol; the trigger's own chevron is hidden. */}
               <SelectTrigger
                 aria-label={t('pages.venues.sortBy', 'Sort venues')}
-                className="h-9 w-28 text-sm sm:w-36"
+                title={t('pages.venues.sortBy', 'Sort venues')}
+                className="h-11 w-11 justify-center px-0 [&>svg:last-child]:hidden"
               >
-                <SelectValue />
+                <TransitIcon name="sort" size={18} aria-hidden />
               </SelectTrigger>
               <SelectContent>
                 {VENUES_V2_ENABLED && (

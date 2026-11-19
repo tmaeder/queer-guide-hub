@@ -743,7 +743,10 @@
     "hero": {
       "kicker": "Featured this week",
       "cta": "Read more",
-      "label": "Featured venue"
+      "label": "Featured venue",
+      "previous": "Previous venue",
+      "next": "Next venue",
+      "pause": "Pause rotation"
     },
     "personalStrip": {
       "title": "{{name}} · Level {{level}}",
@@ -847,6 +850,10 @@
       "saving": "Saving…",
       "save": "Save rating",
       "saved": "Your rating is saved."
+    },
+    "filters": {
+      "allTypes": "All",
+      "categoryGroup": "Venue type"
     }
   },
   "marketplace": {

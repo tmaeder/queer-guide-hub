@@ -1502,7 +1502,10 @@
     "hero": {
       "kicker": "À l’honneur cette semaine",
       "cta": "En savoir plus",
-      "label": "Lieu mis en avant"
+      "label": "Lieu mis en avant",
+      "previous": "Lieu précédent",
+      "next": "Lieu suivant",
+      "pause": "Mettre en pause"
     },
     "personalStrip": {
       "title": "{{name}} · Niveau {{level}}",
@@ -1606,6 +1609,10 @@
       "saving": "Enregistrement…",
       "save": "Enregistrer la note",
       "saved": "Votre note est enregistrée."
+    },
+    "filters": {
+      "allTypes": "Tous",
+      "categoryGroup": "Type de lieu"
     }
   },
   "marketplace": {

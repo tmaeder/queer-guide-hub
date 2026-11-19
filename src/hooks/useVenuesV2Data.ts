@@ -69,6 +69,32 @@ export function useFeaturedVenue(enabled = true) {
   return { venue: data ?? null, loading: isLoading };
 }
 
+/**
+ * Featured venues with a photo, for the rotating /venues hero. Gated rows are
+ * dropped by RLS for anon; closed or gated ones are filtered by the caller.
+ */
+export function useFeaturedVenues(limit = 12) {
+  const { user } = useAuth();
+  const { data, isLoading } = useQuery({
+    queryKey: ['venues-featured-rotation', user?.id ?? 'anon', limit],
+    staleTime: 10 * 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('venues')
+        .select('*')
+        .eq('is_featured', true)
+        .neq('data_source', 'refuge-restrooms')
+        .neq('review_status', 'archived')
+        .is('duplicate_of_id', null)
+        .not('images', 'is', null)
+        .order('updated_at', { ascending: false })
+        .limit(limit);
+      return (data as Venue[]) ?? [];
+    },
+  });
+  return { venues: data ?? [], loading: isLoading };
+}
+
 export function useCityLeaderboard(cityId: string | null, limit = 5) {
   const { data, isLoading, isPlaceholderData } = useQuery({
     queryKey: ['venue-leaderboard', cityId, limit],

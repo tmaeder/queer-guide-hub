@@ -1498,7 +1498,10 @@
     "hero": {
       "kicker": "Destacado esta semana",
       "cta": "Leer más",
-      "label": "Lugar destacado"
+      "label": "Lugar destacado",
+      "previous": "Lugar anterior",
+      "next": "Siguiente lugar",
+      "pause": "Pausar rotación"
     },
     "personalStrip": {
       "title": "{{name}} · Nivel {{level}}",
@@ -1602,6 +1605,10 @@
       "saving": "Guardando…",
       "save": "Guardar valoración",
       "saved": "Tu valoración se ha guardado."
+    },
+    "filters": {
+      "allTypes": "Todos",
+      "categoryGroup": "Tipo de lugar"
     }
   },
   "marketplace": {

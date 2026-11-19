@@ -16,7 +16,7 @@
  *     glossary figure wants.
  */
 import { cn } from '@/lib/utils';
-import { formatImageCredit, type ImageCreditParts } from '@/lib/imageCredit';
+import { formatImageCredit, stripCreditMarkup, type ImageCreditParts } from '@/lib/imageCredit';
 
 export interface ImageCreditProps extends ImageCreditParts {
   /** A pre-composed line, for callers whose data already carries one. */
@@ -36,7 +36,8 @@ export function ImageCredit({
   onDark = false,
   className,
 }: ImageCreditProps) {
-  const line = credit?.trim() || formatImageCredit({ attribution, license, source });
+  const line =
+    (credit && stripCreditMarkup(credit)) || formatImageCredit({ attribution, license, source });
   if (!line) return null;
 
   if (variant === 'overlay') {

@@ -264,13 +264,7 @@ export default function CityDetail() {
           content:
             events.length > 0 ? (
               <>
-                <CityEventsTab
-                  key={city.id}
-                  events={events}
-                  timeZone={city.timezone}
-                  locale={i18n.language}
-                  openLabel={t('cities.detail.openEvent', 'Open')}
-                />
+                <CityEventsTab key={city.id} events={events} timeZone={city.timezone} />
                 <div className="mt-6">
                   {seeAll(`/events?city=${encodeURIComponent(city.name)}`)}
                 </div>

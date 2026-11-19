@@ -1498,7 +1498,10 @@
     "hero": {
       "kicker": "今週の注目",
       "cta": "もっと見る",
-      "label": "注目スポット"
+      "label": "注目スポット",
+      "previous": "前のスポット",
+      "next": "次のスポット",
+      "pause": "切り替えを一時停止"
     },
     "personalStrip": {
       "title": "{{name}} · レベル{{level}}",
@@ -1602,6 +1605,10 @@
       "saving": "保存中…",
       "save": "評価を保存",
       "saved": "評価を保存しました。"
+    },
+    "filters": {
+      "allTypes": "すべて",
+      "categoryGroup": "スポットの種類"
     }
   },
   "marketplace": {

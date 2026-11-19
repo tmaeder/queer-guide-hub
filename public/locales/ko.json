@@ -1498,7 +1498,10 @@
     "hero": {
       "kicker": "이번 주 추천",
       "cta": "더 보기",
-      "label": "추천 장소"
+      "label": "추천 장소",
+      "previous": "이전 장소",
+      "next": "다음 장소",
+      "pause": "순환 일시정지"
     },
     "personalStrip": {
       "title": "{{name}} · 레벨 {{level}}",
@@ -1602,6 +1605,10 @@
       "saving": "저장 중…",
       "save": "평가 저장",
       "saved": "평가를 저장했어요."
+    },
+    "filters": {
+      "allTypes": "전체",
+      "categoryGroup": "장소 유형"
     }
   },
   "marketplace": {

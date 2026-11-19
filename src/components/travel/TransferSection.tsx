@@ -1,3 +1,4 @@
+import { TravelLinkCard } from '@/components/travel/TravelLinkCard';
 import { Bus, Shield, ExternalLink } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -31,31 +32,18 @@ export function TransferSection({
 
   if (compact) {
     return (
-      <div
-        className="flex items-center gap-4 rounded-container p-4"
-        style={{
-          backgroundColor: isLowSafety ? 'hsl(var(--warning) / 0.15)' : 'hsl(var(--muted))',
-        }}
-      >
-        <Bus
-          size={20}
-          style={{ color: isLowSafety ? 'hsl(var(--warning))' : 'hsl(var(--primary))' }}
-          className="shrink-0"
-        />
-        <div className="flex-1">
-          <p className="font-semibold text-sm">
-            {isLowSafety ? 'Private Transfer Recommended' : `Airport Transfer in ${city}`}
-          </p>
-          {isLowSafety && (
-            <p className="text-xs text-muted-foreground">
-              Private transfers are safer in destinations with lower equality scores
-            </p>
-          )}
-        </div>
-        <Button size="sm" onClick={() => window.open(kiwitaxiUrl, '_blank', 'noopener')}>
-          Book
-        </Button>
-      </div>
+      <TravelLinkCard
+        icon={Bus}
+        title={isLowSafety ? 'Private transfer recommended' : `Airport transfer in ${city}`}
+        note={
+          isLowSafety
+            ? 'Private transfers are safer in destinations with lower equality scores'
+            : 'Fixed price, booked ahead'
+        }
+        cta="Book a transfer"
+        href={kiwitaxiUrl}
+        warn={isLowSafety}
+      />
     );
   }
 

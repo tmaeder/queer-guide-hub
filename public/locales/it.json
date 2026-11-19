@@ -1498,7 +1498,10 @@
     "hero": {
       "kicker": "In evidenza questa settimana",
       "cta": "Scopri di più",
-      "label": "Luogo in evidenza"
+      "label": "Luogo in evidenza",
+      "previous": "Locale precedente",
+      "next": "Locale successivo",
+      "pause": "Metti in pausa"
     },
     "personalStrip": {
       "title": "{{name}} · Livello {{level}}",
@@ -1602,6 +1605,10 @@
       "saving": "Salvataggio…",
       "save": "Salva valutazione",
       "saved": "La tua valutazione è stata salvata."
+    },
+    "filters": {
+      "allTypes": "Tutti",
+      "categoryGroup": "Tipo di locale"
     }
   },
   "marketplace": {
