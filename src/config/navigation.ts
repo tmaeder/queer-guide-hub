@@ -283,7 +283,7 @@ export const INTENT_NAV: IntentDestination[] = [
     to: '/hub/people',
     icon: transitIcon('community'),
     labelKey: 'header.intents.meet.label',
-    fallback: 'Meet people',
+    fallback: 'Meet',
     subtitleKey: 'header.intents.meet.subtitle',
     subtitleFallback: 'Friends, dates, travel buddies and groups',
     activePrefixes: [

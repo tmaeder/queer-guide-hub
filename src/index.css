@@ -732,6 +732,34 @@
   background: hsl(var(--muted)) !important;
 }
 
+/* The rich entity card owns its own spacing: media runs edge to edge, so the
+   popup frame carries no padding, and the card speaks the site face, not
+   MapLibre's Helvetica default. */
+.venue-rich-popup .maplibregl-popup-content {
+  padding: 0 !important;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-soft-lg) !important;
+}
+.venue-rich-popup .maplibregl-popup-close-button {
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  min-height: 0;
+  padding: 0 !important;
+  border-radius: 9999px;
+  background: hsl(var(--card) / 0.9) !important;
+  box-shadow: var(--shadow-soft);
+  font-size: 16px !important;
+  line-height: 1;
+}
+.venue-rich-popup .maplibregl-popup-close-button:hover {
+  background: hsl(var(--card)) !important;
+}
+
 /* Lightweight hover previews (cluster composition + point name). Token-driven
    so they inherit the body face (Space Grotesk). */
 .qg-map-hover {
