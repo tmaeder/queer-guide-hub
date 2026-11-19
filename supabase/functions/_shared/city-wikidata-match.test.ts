@@ -40,7 +40,7 @@ Deno.test('a distant namesake cannot hide a geographically corroborated one', as
   assertEquals((await createCitySearchResolver(f.request, [])(input)).qid, 'Q2')
 })
 Deno.test('two same-country nearby settlements remain ambiguous instead of selecting search rank', async () => {
-  const f = fixture([{ id: 'Q1', label: 'Oklahoma City' }, { id: 'Q2', label: 'Oklahoma City' }], { ...common, Q1: { claims: claims() }, Q2: { claims: claims(35.6, -97.5) } })
+  const f = fixture([{ id: 'Q1', label: 'Oklahoma City' }, { id: 'Q2', label: 'Oklahoma City' }], { ...common, Q1: { claims: claims() }, Q2: { claims: claims(35.52, -97.5) } })
   const r = await createCitySearchResolver(f.request, [])(input)
   assertEquals(r.kind, 'ambiguous'); assertEquals(r.qid, null)
 })
@@ -76,8 +76,25 @@ Deno.test('a search alias cannot bind Langnau to the returned Affeltrangen entit
   })
   const r = await createCitySearchResolver(f.request, [])({ ...input, base: 'Langnau', queries: ['Langnau'], countryCode: 'CH', latitude: 47.29008102, longitude: 8.52852917 })
   assertEquals(r.kind, 'no_match'); assertEquals(r.qid, null)
-  assertEquals(r.probes[0].coordinates, 'agree')
+  assertEquals(r.probes[0].coordinates, 'disagree')
   assertEquals(r.probes[0].name, 'disagree')
+})
+
+Deno.test('an exact commune name cannot corroborate a point outside its locality', async () => {
+  const f = fixture([{ id: 'Q731527', label: 'San-Nicolao' }], {
+    Q731527: { claims: claims(42.375, 9.525, 'Q484170', 'Q142') },
+    Q484170: { labels: { en: { value: 'commune of France' } } },
+    Q142: { claims: { P297: [statement('FR')] } },
+  })
+  const resolve = createCitySearchResolver(f.request, [])
+  const locality = { base: 'San Nicolao', queries: ['San Nicolao'], countryCode: 'FR' }
+  const old = await resolve({ ...locality, latitude: 42.2259104, longitude: 9.550115 })
+  assertEquals(old.kind, 'no_match')
+  assertEquals(old.qid, null)
+  assertEquals(old.probes[0].coordinates, 'disagree')
+  const corrected = await resolve({ ...locality, latitude: 42.3687, longitude: 9.5068 })
+  assertEquals(corrected.kind, 'selected')
+  assertEquals(corrected.qid, 'Q731527')
 })
 
 Deno.test('even a search label needs corroboration from the returned entity names', async () => {
