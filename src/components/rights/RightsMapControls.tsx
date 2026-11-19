@@ -303,6 +303,14 @@ export function RightsMapControls({
                   // exists for this law. Dimmed-but-reachable announces
                   // "Gender identity, unavailable" and the note below says why.
                   aria-disabled={lensDisabled || undefined}
+                  title={
+                    lensDisabled
+                      ? t(
+                          'rights.map.lens.disabledNote',
+                          'This law is recorded once for everyone — no per-group reading exists.',
+                        )
+                      : undefined
+                  }
                   onClick={lensDisabled ? undefined : () => onLensChange(option.value)}
                   label={t(`rights.map.lens.${option.value}`, option.label)}
                   className={cn(
@@ -321,7 +329,9 @@ export function RightsMapControls({
           scrolls, and a reason you have to scroll sideways to find is reachable
           rather than visible. */}
       {lensDisabled ? (
-        <p className="m-0 text-13 text-muted-foreground md:pl-36">
+        // Visually removed on request; kept for screen readers, and as the
+        // chips' tooltip, so the dimmed control still says why.
+        <p className="sr-only">
           {t(
             'rights.map.lens.disabledNote',
             'This law is recorded once for everyone — no per-group reading exists.',

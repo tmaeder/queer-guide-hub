@@ -35,11 +35,12 @@ export function RightsLedger({
         const rows = summary.filter((r) => r.topic.section === sectionId);
         if (rows.length === 0) return null;
         return (
-          <div key={sectionId}>
-            <h3 className="mb-2 text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+          // One card per group, so the groups read as separate areas.
+          <div key={sectionId} className="rounded-container bg-card p-4 shadow-soft md:p-6">
+            <h3 className="mb-4 text-13 font-bold uppercase tracking-wide">
               {RIGHT_SECTION_LABEL[sectionId]}
             </h3>
-            <ul className="list-none p-0 m-0">
+            <ul className="m-0 list-none divide-y divide-border-hairline p-0">
               {rows.map(({ topic, yes, no, measured, uncounted }) => {
                 const Icon = topic.icon;
                 // The bar shows the counted share of measured countries; for
@@ -53,49 +54,53 @@ export function RightsLedger({
                     // Anchor target for `/tags/rights-by-country#<slug>` — glossary tags that
                     // name a class of law link here (see tagRightTopics.ts).
                     id={topic.slug}
-                    className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border py-2 scroll-mt-24"
+                    className="grid scroll-mt-24 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-1 py-4"
                   >
-                    <Icon size={16} aria-hidden="true" className="shrink-0" />
-                    <span className="min-w-0 flex-1 font-medium">{topicListLabel(topic, t)}</span>
-                    {uncounted ? (
-                      // WITHOUT a number rather than dropped: an omitted right
-                      // reads as "this does not exist"; an uncounted one reads
-                      // as what it is.
-                      <span className="text-13 text-muted-foreground">
-                        Recorded per country — open a country to read it.
-                      </span>
-                    ) : (
-                      <>
-                        <span
-                          aria-hidden="true"
-                          className="hidden h-1 w-20 shrink-0 overflow-hidden rounded-full bg-muted sm:block"
-                        >
+                    <span className="row-span-2 grid size-10 place-items-center rounded-full bg-muted">
+                      <Icon size={18} aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 font-bold">{topicListLabel(topic, t)}</span>
+                    <span className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+                      {uncounted ? (
+                        // WITHOUT a number rather than dropped: an omitted right
+                        // reads as "this does not exist"; an uncounted one reads
+                        // as what it is.
+                        <span className="text-13 text-muted-foreground">
+                          Recorded per country — open a country to read it.
+                        </span>
+                      ) : (
+                        <>
                           <span
-                            className="block h-full bg-foreground/60"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </span>
-                        <span className="whitespace-nowrap text-13 text-muted-foreground tabular-nums">
-                          {topic.severeNegative
-                            ? `${no} of ${measured} countries criminalise`
-                            : topic.kind === 'protection-matrix'
-                              ? // "fully" is load-bearing: the bar is all four of
-                                // SO/GI/GE/SC — partial protection is not counted.
-                                `${yes} of ${measured} countries fully protect`
-                              : `${yes} of ${measured} countries protect`}
-                        </span>
-                      </>
-                    )}
-                    {onNewsTopicSelect ? (
-                      <button
-                        type="button"
-                        onClick={() => onNewsTopicSelect(topic)}
-                        className="shrink-0 text-2xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        aria-label={`Latest coverage about ${topicListLabel(topic, t)}`}
-                      >
-                        Latest coverage
-                      </button>
-                    ) : null}
+                            aria-hidden="true"
+                            className="h-1.5 w-20 shrink-0 overflow-hidden rounded-full bg-muted"
+                          >
+                            <span
+                              className="block h-full bg-foreground/60"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </span>
+                          <span className="whitespace-nowrap text-13 text-muted-foreground tabular-nums">
+                            {topic.severeNegative
+                              ? `${no} of ${measured} countries criminalise`
+                              : topic.kind === 'protection-matrix'
+                                ? // "fully" is load-bearing: the bar is all four of
+                                  // SO/GI/GE/SC — partial protection is not counted.
+                                  `${yes} of ${measured} countries fully protect`
+                                : `${yes} of ${measured} countries protect`}
+                          </span>
+                        </>
+                      )}
+                      {onNewsTopicSelect ? (
+                        <button
+                          type="button"
+                          onClick={() => onNewsTopicSelect(topic)}
+                          className="ms-auto shrink-0 rounded-element bg-muted px-2 py-1 text-2xs font-bold text-foreground hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          aria-label={`Latest coverage about ${topicListLabel(topic, t)}`}
+                        >
+                          Latest coverage
+                        </button>
+                      ) : null}
+                    </span>
                   </li>
                 );
               })}
