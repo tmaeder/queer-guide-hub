@@ -42,6 +42,10 @@ export interface NodeState {
   duration_ms?: number
   /** Node failed but its config has continue_on_error — DAG kept going */
   tolerated?: boolean
+  /** Persisted cursor and concurrency/retry counters for resumable nodes. */
+  continuation?: Record<string, unknown> | null
+  continuation_revision?: number
+  continuation_retries?: number
 }
 
 /** Pipeline definition node (stored in pipeline_definitions.nodes) */

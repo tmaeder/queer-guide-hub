@@ -23,6 +23,7 @@ export function BottomNavSheet({
   onOpenChange,
   title,
   description,
+  headerAction,
   openedByPointer = false,
   onDismissFocus,
   children,
@@ -31,6 +32,8 @@ export function BottomNavSheet({
   onOpenChange: (open: boolean) => void;
   title: string;
   description?: string;
+  /** Optional control beside the title, e.g. a link to the section's home. */
+  headerAction?: ReactNode;
   /** Tap-opened: focus the sheet itself rather than ringing its first link. */
   openedByPointer?: boolean;
   /** Where focus goes on close; defaults to Radix's (the trigger). */
@@ -45,7 +48,7 @@ export function BottomNavSheet({
         ref={contentRef}
         {...(description ? {} : { 'aria-describedby': undefined })}
         overlayClassName="bg-black/20 backdrop-blur-none"
-        className="mobile-hub-sheet inset-x-0 bottom-0 top-auto mx-auto max-h-[85dvh] grid-cols-1 translate-x-0 translate-y-0 gap-6 overflow-y-auto rounded-b-none pb-[max(1.5rem,env(safe-area-inset-bottom))] data-[state=open]:animate-none data-[state=closed]:animate-none"
+        className="mobile-hub-sheet inset-x-0 bottom-0 top-auto mx-auto max-h-[85dvh] grid-cols-1 translate-x-0 translate-y-0 gap-4 overflow-y-auto rounded-b-none bg-card px-4 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] data-[state=open]:animate-none data-[state=closed]:animate-none"
         onOpenAutoFocus={(event) => {
           returnFocus.current =
             document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -62,9 +65,13 @@ export function BottomNavSheet({
             returnFocus.current.focus({ preventScroll: true });
         }}
       >
-        <DialogHeader className="pe-8 text-left">
-          <DialogTitle className="font-display text-headline">{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
+        <DialogHeader className="pe-10 text-left">
+          <div className="flex items-baseline justify-between gap-4">
+            <DialogTitle className="font-display text-headline">{title}</DialogTitle>
+            {headerAction}
+          </div>
+          {/* Read by assistive tech; the title already says what the sheet is. */}
+          {description && <DialogDescription className="sr-only">{description}</DialogDescription>}
         </DialogHeader>
         {children}
       </DialogContent>
@@ -84,6 +91,7 @@ export function NavSheetTile({
   active,
   onClick,
   badge,
+  variant = 'tile',
 }: {
   to: string;
   icon: ComponentType<{ size?: number; className?: string; 'aria-hidden'?: boolean }>;
@@ -91,15 +99,38 @@ export function NavSheetTile({
   active?: boolean;
   onClick?: () => void;
   badge?: ReactNode;
+  /** `tile`: icon over label, for short nouns. `row`: icon beside label, for
+   *  labels long enough to truncate in a tile ("Travel buddies"). */
+  variant?: 'tile' | 'row';
 }) {
+  const state = active
+    ? 'bg-foreground text-background'
+    : 'bg-muted hover:bg-foreground hover:text-background';
+  if (variant === 'row') {
+    return (
+      <LocalizedLink
+        to={to}
+        onClick={onClick}
+        aria-current={active ? 'page' : undefined}
+        className={cn(
+          'relative flex min-h-12 items-center gap-2 rounded-element px-4 py-2 text-13 font-bold no-underline transition-colors',
+          state,
+        )}
+      >
+        <Icon size={18} aria-hidden className="shrink-0" />
+        <span className="min-w-0 flex-1 truncate">{label}</span>
+        {badge && <span className="flex shrink-0">{badge}</span>}
+      </LocalizedLink>
+    );
+  }
   return (
     <LocalizedLink
       to={to}
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'relative flex flex-col items-center justify-center gap-2 rounded-element p-4 text-center no-underline transition-colors',
-        active ? 'bg-foreground text-background' : 'hover:bg-foreground hover:text-background',
+        'relative flex flex-col items-center justify-center gap-1.5 rounded-element px-2 py-4 text-center no-underline transition-colors',
+        state,
       )}
     >
       <Icon size={20} aria-hidden />

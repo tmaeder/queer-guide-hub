@@ -19,7 +19,7 @@ describe('StationRing', () => {
 });
 
 describe('RouteBullet', () => {
-  it('maps entity types to letter + track and always uses ink for the letter', () => {
+  it('maps entity types to icon + track and always uses ink for the glyph', () => {
     // Ink on EVERY track fill — paper-on-pink measures 3.43:1 and the bullet
     // letter is 17px, well under the large-text threshold. See the
     // text-on-track lock in tokenContrast.test.ts.
@@ -28,11 +28,13 @@ describe('RouteBullet', () => {
     // have gone paper-on-cyan at 2.32:1 in exactly one theme. A track fill is
     // identity, not theme, so its type is ink in BOTH modes.
     render(<RouteBullet type="venue" />);
-    const bullet = screen.getByText('V');
+    const bullet = screen.getByRole('img', { name: 'Venue' });
     expect(bullet.className).toContain('bg-track-pink');
     expect(bullet.className).toContain('text-track-ring');
+    expect(bullet.textContent).toBe('');
+    expect(bullet.querySelector('svg')).not.toBeNull();
     render(<RouteBullet type="event" />);
-    expect(screen.getByText('E').className).toContain('text-track-ring');
+    expect(screen.getByRole('img', { name: 'Event' }).className).toContain('text-track-ring');
   });
 
   it('covers the search entity vocabulary', () => {

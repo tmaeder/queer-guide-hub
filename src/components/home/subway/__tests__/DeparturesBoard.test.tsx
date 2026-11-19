@@ -93,6 +93,32 @@ describe('homepage listings', () => {
       /17:00/,
     );
   });
+  it('keeps a confirmed calendar date and does not invent an event time', () => {
+    state.data = {
+      scope: 'city',
+      localCount: 1,
+      tripCount: 0,
+      rows: [
+        {
+          kind: 'event',
+          id: 'day',
+          slug: 'day',
+          title: 'Pride day',
+          via: 'London',
+          rung: 'local',
+          startDate: '2027-07-24T00:00:00Z',
+          timezone: 'Europe/London',
+          datePrecision: 'day',
+        },
+      ],
+    };
+    const { container } = renderWithProviders(<DeparturesBoard />);
+    const date = container.querySelector('time');
+    expect(date).toHaveAttribute('datetime', '2027-07-24');
+    expect(date).toHaveTextContent('24');
+    expect(date).not.toHaveTextContent('01:00');
+  });
+
   it('uses the event timezone across a UTC date boundary', () => {
     state.data = {
       scope: 'city',

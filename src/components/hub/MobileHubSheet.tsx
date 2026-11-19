@@ -7,6 +7,7 @@ import {
   NavSheetTile,
 } from '@/components/layout/bottom-nav/BottomNavSheet';
 import { getActiveHubModule, HUB_MODULES, HUB_SECTIONS } from '@/config/hubModules';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 interface MobileHubSheetProps {
   open: boolean;
@@ -15,6 +16,9 @@ interface MobileHubSheetProps {
   unreadCount: number;
   onDismissFocus: () => void;
 }
+
+/** Personal first; `home` (Overview) moves to the header as "Open Hub". */
+const ORDER = ['personal', 'community', 'connect'] as const;
 
 export function MobileHubSheet({
   open,
@@ -26,6 +30,8 @@ export function MobileHubSheet({
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const activeModule = getActiveHubModule(pathname);
+  const overview = HUB_MODULES.find((m) => m.section === 'home');
+  const close = () => onOpenChange(false);
 
   return (
     <BottomNavSheet
@@ -38,29 +44,47 @@ export function MobileHubSheet({
       )}
       openedByPointer={openedByPointer}
       onDismissFocus={onDismissFocus}
+      headerAction={
+        overview && (
+          <LocalizedLink
+            to={overview.path}
+            onClick={close}
+            aria-current={overview === activeModule ? 'page' : undefined}
+            className="shrink-0 text-13 font-bold underline underline-offset-4"
+          >
+            {t('header.mobileNav.openHub', 'Open Hub')}
+          </LocalizedLink>
+        )
+      }
     >
       <nav aria-label={t('hub.nav', 'Hub sections')} className="flex min-w-0 flex-col gap-6">
-        {HUB_SECTIONS.map((section) => {
-          const modules = HUB_MODULES.filter((module) => module.section === section.id);
-          if (!modules.length) return null;
+        {/* Your own things first: the three a returning member opens most,
+            as big tiles. Then the community lists as two-column rows, so
+            long labels ("Travel buddies") read in full instead of truncating. */}
+        {ORDER.map((sectionId) => {
+          const section = HUB_SECTIONS.find((s) => s.id === sectionId);
+          const modules = HUB_MODULES.filter((m) => m.section === sectionId);
+          if (!section || !modules.length) return null;
+          const personal = sectionId === 'personal';
           return (
-            <div key={section.id} className="flex flex-col gap-2">
-              {section.defaultLabel && (
+            <section key={sectionId} className="flex flex-col gap-2">
+              {!personal && section.defaultLabel && (
                 <h3 className={NAV_SHEET_HEADING}>
                   {section.labelKey
                     ? t(section.labelKey, section.defaultLabel)
                     : section.defaultLabel}
                 </h3>
               )}
-              <div className="grid grid-cols-3 gap-2">
+              <div className={personal ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-2 gap-2'}>
                 {modules.map((module) => (
                   <NavSheetTile
                     key={module.id}
+                    variant={personal ? 'tile' : 'row'}
                     to={module.path}
                     icon={module.icon}
                     label={t(module.labelKey, module.defaultLabel)}
                     active={module === activeModule}
-                    onClick={() => onOpenChange(false)}
+                    onClick={close}
                     badge={
                       module.badge === 'unread' && unreadCount > 0 ? (
                         <NavBadge
@@ -75,7 +99,7 @@ export function MobileHubSheet({
                   />
                 ))}
               </div>
-            </div>
+            </section>
           );
         })}
       </nav>

@@ -35,6 +35,7 @@ function organizationLd(overrides?: OrgOverrides) {
     sameAs: overrides?.org_sameas ?? [
       'https://www.instagram.com/queer.guide',
       'https://www.linkedin.com/company/queer-guide',
+      'https://github.com/tmaeder/queer-guide-hub',
     ],
   };
 }

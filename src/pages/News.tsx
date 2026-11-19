@@ -1,10 +1,5 @@
 import { useMemo } from 'react';
-import {
-  useNewsArticles,
-  useNewsCategories,
-  useNewsCategoryCounts,
-  useNewsSources,
-} from '@/hooks/useNews';
+import { useNewsArticles, useNewsCategories, useNewsSources } from '@/hooks/useNews';
 import type { NewsCategory } from '@/hooks/useNews';
 import { useNewsFront } from '@/hooks/useNewsFront';
 import { useNewsStories } from '@/hooks/useNewsStories';
@@ -22,7 +17,6 @@ import { IssueMasthead } from '@/components/news/editorial/IssueMasthead';
 import { LeadStory } from '@/components/news/editorial/LeadStory';
 import { AboveTheFold } from '@/components/news/editorial/AboveTheFold';
 import { ForYouSection } from '@/components/news/editorial/ForYouSection';
-import { LiveTicker } from '@/components/news/editorial/LiveTicker';
 import { SectionBand } from '@/components/news/editorial/SectionBand';
 import { StoryCollectionsBand } from '@/components/news/editorial/StoryCollectionsBand';
 import { WeekInReview } from '@/components/news/editorial/WeekInReview';
@@ -42,7 +36,6 @@ export default function News() {
   const { articles, refetch: refetchArticles } = useNewsArticles(ALL_ARTICLES);
   const sources = useNewsSources();
   const categories = useNewsCategories();
-  const { totalArticles } = useNewsCategoryCounts(categories);
   // Live, self-ranking front: hotness = recency × quality × soft featured boost
   // × trending. Replaces the old `is_featured` pin that left a months-old story
   // as the permanent headline. Auto-refreshes (poll + focus) so it never goes stale.
@@ -138,26 +131,10 @@ export default function News() {
     return map;
   }, [categories]);
 
-  const tickerArticles = useMemo(() => {
-    return [...articles]
-      .sort(
-        (a, b) =>
-          new Date((b.published_at ?? 0) as string).getTime() -
-          new Date((a.published_at ?? 0) as string).getTime(),
-      )
-      .slice(0, 30) as unknown as Pick<
-      Tables<'news_articles'>,
-      'id' | 'slug' | 'title' | 'published_at'
-    >[];
-  }, [articles]);
-
   return (
     <div className="min-h-screen relative">
       <PageContainer>
-        <IssueMasthead
-          totalArticles={totalArticles ?? articles.length}
-          sourceCount={sources.length}
-        />
+        <IssueMasthead />
 
         <div
           className={`grid grid-cols-1 gap-12 xl:gap-16 ${user ? 'xl:grid-cols-[1fr_320px]' : ''}`}
@@ -170,8 +147,6 @@ export default function News() {
               categoriesMap={categoriesMap}
               imageAsset={leadArticle ? assets.get(leadArticle.id) : undefined}
             />
-
-            <LiveTicker articles={tickerArticles} />
 
             <AboveTheFold
               topStory={topStory}
@@ -212,7 +187,7 @@ export default function News() {
               />
             )}
 
-            <WeekInReview articles={articles as Article[]} sourceCount={sources.length} />
+            <WeekInReview articles={articles as Article[]} />
 
             <div className="pt-8 flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
               <div>

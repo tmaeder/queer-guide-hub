@@ -6,7 +6,6 @@ import { DeferredSection } from '@/components/home/DeferredSection';
 import { CityCardsSkeleton } from '@/components/home/subway/CityCardsSkeleton';
 import { DeparturesBoard } from '@/components/home/subway/DeparturesBoard';
 import { HomeSectionError } from '@/components/home/HomeSectionError';
-import { IntentMap } from '@/components/home/subway/IntentMap';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { lazyRetry } from '@/utils/lazyRetry';
@@ -58,7 +57,7 @@ function RegionalContent() {
       <HomeSection section="cities">
         <Band
           surface="tint"
-          title={t('home.discovery.cityGuides', 'City guides')}
+          title={t('home.discovery.destinations', 'Cities, countries and villages')}
           seeAllHref="/cities"
           seeAllLabel={t('home.discovery.allCities', 'All cities')}
         >
@@ -96,9 +95,6 @@ export default function HomeContent() {
       <ErrorBoundary section="home-region" fallback={() => <RegionalContent />}>
         <RegionalContent />
       </ErrorBoundary>
-      <HomeSection section="intent-map">
-        <IntentMap />
-      </HomeSection>
     </>
   );
 }

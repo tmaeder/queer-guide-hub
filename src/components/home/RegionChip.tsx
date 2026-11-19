@@ -27,9 +27,12 @@ import { resolveRegionBySlug, type HomeRegionApi } from '@/hooks/useHomeRegion';
 export function RegionChip({
   region,
   align = 'end',
+  compact = false,
 }: {
   region: HomeRegionApi;
   align?: 'start' | 'end';
+  /** Icon-only trigger, for sitting beside a link that already names the city. */
+  compact?: boolean;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -91,20 +94,30 @@ export function RegionChip({
       }}
     >
       <PopoverTrigger asChild>
-        <FilterChip
-          active={open}
-          // Reserve the same width for loading, inferred and selected labels.
-          // The full city remains in the accessible name when text truncates.
-          className="w-36 max-w-full justify-between"
-          label={
-            <>
-              <span className="truncate">{label}</span>
-              <span aria-hidden>▾</span>
-            </>
-          }
-          // Name starts with the visible text (WCAG 2.5.3 label in name).
-          aria-label={`${label} — ${t('home.discovery.cityChange', 'Change city')}`}
-        />
+        {compact ? (
+          <button
+            type="button"
+            aria-label={t('home.discovery.cityChange', 'Change city')}
+            className="grid size-11 shrink-0 place-items-center rounded-element text-13 hover:bg-foreground hover:text-background"
+          >
+            <span aria-hidden>▾</span>
+          </button>
+        ) : (
+          <FilterChip
+            active={open}
+            // Reserve the same width for loading, inferred and selected labels.
+            // The full city remains in the accessible name when text truncates.
+            className="w-36 max-w-full justify-between"
+            label={
+              <>
+                <span className="truncate">{label}</span>
+                <span aria-hidden>▾</span>
+              </>
+            }
+            // Name starts with the visible text (WCAG 2.5.3 label in name).
+            aria-label={`${label} — ${t('home.discovery.cityChange', 'Change city')}`}
+          />
+        )}
       </PopoverTrigger>
       <PopoverContent align={align} className="w-72 bg-muted rounded-element p-0">
         <div className="border-b border-border-hairline p-2">
