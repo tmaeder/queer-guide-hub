@@ -30,6 +30,12 @@ export type Context = {
   blocker?: string
 }
 export type Evidence = { url: string; retrieved_at: string; text: string; kind?: 'public_source' | 'proposal_integrity' }
+/** The native lifecycle action is only a recheck; classifying a placeholder needs a person. */
+export function requiresCityLifecycleReview(context: Context): boolean {
+  return context.item.queue_type === 'general-review' &&
+    context.item.meta?.review_type === 'CITY_LIFECYCLE_UNRESOLVED' &&
+    context.record?.shell_status === 'placeholder'
+}
 export type Choice = { type: 'choice'; choice: string; confidence: number; probabilities: Record<string, number> }
 export type Evaluation = { model: string; answers: Record<string, Choice>; usage?: unknown }
 const rules: Record<string, string> = {
@@ -51,6 +57,7 @@ export function buildQuestions(context: Context, evidence: Evidence[]) {
   const kind = SOURCES[context.item.queue_type as QueueSource]
   if (!kind) throw new Error(`Unregistered Review source: ${context.item.queue_type}`)
   if (kind === 'private' || kind === 'human') throw new Error('Protected Review context cannot be sent to Jev')
+  if (requiresCityLifecycleReview(context)) throw new Error('City lifecycle requires human review')
   if (!context.candidates.length || new Set(context.candidates.map(c => c.id)).size !== context.candidates.length) throw new Error('Invalid Review action catalog')
   const integrityRule = context.candidates.length === 1 && context.candidates[0].action === 'reject' ? context.candidates[0].payload.integrity_rule : null
   const integrityCheck = integrityRule === 'uncertainty_without_replacement'

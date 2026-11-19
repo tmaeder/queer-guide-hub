@@ -52,7 +52,8 @@ export function JevReviewStatus({ caseId }: { caseId?: string }) {
       'visual_evidence_requires_human_review',
       'mandatory_human_publication_review',
       'protected_review',
-    ].includes(job.outcome.reason ?? '');
+      'city_lifecycle_requires_human_review',
+    ].includes(reason ?? '');
   const dollars = (nano: number) =>
     (nano / 1e9).toLocaleString(undefined, { style: 'currency', currency: 'USD' });
   if (caseId && !job) return null;
@@ -63,8 +64,14 @@ export function JevReviewStatus({ caseId }: { caseId?: string }) {
           <p>
             Jev: {job.status} · {job.attempts} attempts
           </p>
-          {reason && <p className="mt-1">{reason.replace(/_/g, ' ')}</p>}
-          {job.status === 'blocked' && (
+          {reason && (
+            <p className="mt-1">
+              {reason === 'city_lifecycle_requires_human_review'
+                ? 'A person must decide whether this placeholder represents a real place.'
+                : reason.replace(/_/g, ' ')}
+            </p>
+          )}
+          {job.status === 'blocked' && reason !== 'city_lifecycle_requires_human_review' && (
             <p className="mt-1">
               {requiresHumanDecision
                 ? 'This case requires a human decision.'
