@@ -1,0 +1,44 @@
+{
+  "pass": 34,
+  "date": "2026-11-19",
+  "entity_type": "city",
+  "id": "dbb3d43d-5da0-4f43-b5af-c9e0274133c2",
+  "name": "Lippen (Lohsa)",
+  "proof": {
+    "source": "primary_municipal_and_state_identity_research",
+    "captures": {
+      "municipal": {
+        "url": "https://www.lohsa.de/lippen.html",
+        "final_url": "https://www.lohsa.de/lippen.html",
+        "status": 200,
+        "bytes": 53800,
+        "sha256": "73433b02c469ee3a7012a248909f024afe81308f722f0822f88f8c62ac5cb6f4",
+        "observed_at": "2026-11-19T07:23:39.564715+00:00"
+      },
+      "state": {
+        "url": "https://geoportal.sachsen.de/portal/IndexDaten/ORTE_UND_ADRESSEN/POSTLEITZAHL/POST_ORTSTEIL/POST_ORTSTEIL_1715_02999.html",
+        "final_url": "https://geoportal.sachsen.de/portal/IndexDaten/ORTE_UND_ADRESSEN/POSTLEITZAHL/POST_ORTSTEIL/POST_ORTSTEIL_1715_02999.html",
+        "status": 200,
+        "bytes": 36706,
+        "sha256": "6093205d60e162093ef2e3e0b957f2b8c43f126b28eeb0d30f5c1a7d2a31d179",
+        "observed_at": "2026-11-19T07:23:38.644381+00:00"
+      }
+    },
+    "wikidata_url": "https://www.wikidata.org/wiki/Q160661",
+    "wikidata_method": "read_rendered_entity_statements; no raw JSON capture claimed",
+    "human_reviewed": false,
+    "scope": "The QID is correct for Lippen/Lipiny, an inhabited village and Ortsteil of Lohsa,Saxony,Germany, agreeing with the existing saved point and02999 postcode. The Czech Lipno nad Vltavou description and website belong to a different place; replace them with precise current government identity facts. Reconcile only stale provenance values whose existing real data already agree with the German QID. Quarantine the explicitly Munich-labelled generic reused image and wrong Czech image candidate without deleting original media/history. Preserve all coordinates,QID,all other facts,existing SEO/attention/safety gates, and the unresolved locality-versus-city classification/lifecycle pending proper structural normalization; no independent-municipality or publication approval."
+  },
+  "changes": [
+    "Replace wrong Czech namesake website with the municipal district page for German Lippen.",
+    "Replace the Czech namesake description with precise municipal/state-sourced village identity.",
+    "Quarantine explicitly Munich-labelled generic backfill and wrong Czech image candidate, retaining media/history and no replacement.",
+    "Reconcile stale coords/area/population/elevation provenance values with the already correct German QID and unchanged stored facts."
+  ],
+  "preserved": [
+    "Q160661 is correct and remains unchanged; no identifier retraction from an assumed namesake.",
+    "Existing German point, numeric facts, postcode, translations, all related records, SEO false, attention true and every original source history.",
+    "The locality-versus-independent-city classification hold and placeholder lifecycle remain; no municipality/publication or human verification stamp is manufactured."
+  ],
+  "validation": "Exact full-row guarded rollback/commit; complete related-record and classification-audit equality guards; no human history or active lease. Native classification correctly distinguishes an Ortsteil/locality from an independent municipality."
+}
