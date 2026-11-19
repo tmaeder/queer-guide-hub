@@ -322,25 +322,27 @@ export default function AdminDataSources() {
       key: 'name',
       header: 'Source',
       render: (source) => (
-        <div className="min-w-48 max-w-72 space-y-1">
+        <div className="w-64 min-w-0 space-y-0.5 xl:w-80">
           <button
-            className="text-left font-bold underline-offset-4 hover:underline"
+            className="block max-w-full truncate text-left font-bold underline-offset-4 hover:underline"
             onClick={() => setSelected(source)}
+            title={source.name}
           >
             {source.name}
           </button>
-          <div className="break-all text-xs text-muted-foreground">
+          <div className="truncate text-xs text-muted-foreground">
             {safeSourceUrl(source.url) ? (
               <a
                 href={safeSourceUrl(source.url)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline"
+                title={source.url ?? undefined}
               >
                 {source.url}
               </a>
             ) : (
-              source.identifier
+              <span title={source.identifier ?? undefined}>{source.identifier}</span>
             )}
           </div>
         </div>
@@ -349,11 +351,15 @@ export default function AdminDataSources() {
     {
       key: 'type',
       header: 'Type',
+      cellClassName: 'whitespace-nowrap',
       render: (source) => (
-        <>
-          <div>{SOURCE_REGISTRIES[source.registry]}</div>
-          <div className="text-xs text-muted-foreground">{source.type}</div>
-        </>
+        <Badge
+          variant="outline"
+          className="max-w-48 truncate px-2 py-0 text-2xs font-normal"
+          title={`${SOURCE_REGISTRIES[source.registry]} · ${source.type}`}
+        >
+          {SOURCE_REGISTRIES[source.registry]} · {source.type}
+        </Badge>
       ),
     },
     {
@@ -473,8 +479,8 @@ export default function AdminDataSources() {
         </>
       }
       filters={
-        <div className="grid w-full grid-cols-1 items-end gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(12rem,2fr)_repeat(4,minmax(0,1fr))]">
-          <div className="space-y-1">
+        <div className="flex w-full flex-col gap-4">
+          <div className="max-w-2xl space-y-1">
             <Label htmlFor="source-search">Search sources</Label>
             <Input
               id="source-search"
@@ -484,51 +490,53 @@ export default function AdminDataSources() {
               onChange={(e) => changeFilter('search', e.target.value)}
             />
           </div>
-          <FilterSelect
-            label="Registry"
-            value={filters.registry}
-            onChange={(value) => changeFilter('registry', value)}
-          >
-            <option value="all">All registries</option>
-            {Object.entries(SOURCE_REGISTRIES).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </FilterSelect>
-          <FilterSelect
-            label="Source type"
-            value={filters.type}
-            onChange={(value) => changeFilter('type', value)}
-          >
-            <option value="all">All types</option>
-            {types.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </FilterSelect>
-          <FilterSelect
-            label="Enabled status"
-            value={filters.enabled}
-            onChange={(value) => changeFilter('enabled', value)}
-          >
-            <option value="all">All statuses</option>
-            <option value="enabled">Enabled</option>
-            <option value="disabled">Disabled</option>
-          </FilterSelect>
-          <FilterSelect
-            label="Health"
-            value={filters.health}
-            onChange={(value) => changeFilter('health', value)}
-          >
-            <option value="all">All health</option>
-            {Object.entries(HEALTH_LABELS).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </FilterSelect>
+          <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <FilterSelect
+              label="Registry"
+              value={filters.registry}
+              onChange={(value) => changeFilter('registry', value)}
+            >
+              <option value="all">All registries</option>
+              {Object.entries(SOURCE_REGISTRIES).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </FilterSelect>
+            <FilterSelect
+              label="Source type"
+              value={filters.type}
+              onChange={(value) => changeFilter('type', value)}
+            >
+              <option value="all">All types</option>
+              {types.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </FilterSelect>
+            <FilterSelect
+              label="Enabled status"
+              value={filters.enabled}
+              onChange={(value) => changeFilter('enabled', value)}
+            >
+              <option value="all">All statuses</option>
+              <option value="enabled">Enabled</option>
+              <option value="disabled">Disabled</option>
+            </FilterSelect>
+            <FilterSelect
+              label="Health"
+              value={filters.health}
+              onChange={(value) => changeFilter('health', value)}
+            >
+              <option value="all">All health</option>
+              {Object.entries(HEALTH_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </FilterSelect>
+          </div>
         </div>
       }
     >

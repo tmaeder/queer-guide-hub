@@ -266,10 +266,13 @@ export function RulesTab({ rules }: { rules: StyleguideRule[] }) {
             .filter((r) => r.section === section)
             .map((rule) => (
               <Card key={rule.id} className={rule.is_active ? 'mb-2' : 'mb-2 opacity-50'}>
-                <CardContent className="flex items-start gap-4 pt-6">
+                <CardContent className="flex items-start gap-4 p-4">
                   <div className="min-w-0 flex-1">
-                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <Badge variant={rule.severity === 'never' ? 'destructive' : 'outline'}>
+                    <div className="mb-1 flex flex-wrap items-center gap-2">
+                      <Badge
+                        variant={rule.severity === 'never' ? 'destructive' : 'outline'}
+                        className="px-2 py-0 text-2xs"
+                      >
                         {rule.severity}
                       </Badge>
                       <span className="font-bold">{rule.title}</span>
