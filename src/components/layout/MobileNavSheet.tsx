@@ -85,9 +85,8 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
         )}
       >
         <div className="flex flex-col gap-6">
-          {/* Intents first — the job you came to do. A 2-column grid keeps all
-              six above the fold; the subtitle stays because, unlike the
-              destination nouns below, these are not self-explanatory. */}
+          {/* Intents first — the job you came to do. Compact rows, icon beside
+              the label; the subtitle moves to the tooltip. */}
           <section className="flex flex-col gap-2">
             <h3 className={NAV_SHEET_HEADING}>
               {t('header.intents.sheetHeading', 'What are you here for?')}
@@ -103,8 +102,9 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
                     to={intent.to}
                     onClick={close}
                     aria-current={active ? 'page' : undefined}
+                    title={t(intent.subtitleKey, intent.subtitleFallback)}
                     className={cn(
-                      'group flex flex-col items-start gap-1.5 rounded-element p-4 no-underline transition-colors',
+                      'group flex min-h-14 items-center gap-2 rounded-element px-2 py-2 no-underline transition-colors',
                       active
                         ? 'bg-foreground text-background'
                         : 'bg-muted hover:bg-foreground hover:text-background',
@@ -115,27 +115,15 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
                     <span
                       aria-hidden
                       className={cn(
-                        'mb-0.5 grid size-8 shrink-0 place-items-center rounded-full border-2 border-track-ring',
+                        'grid size-8 shrink-0 place-items-center rounded-full border-2 border-track-ring',
                         TRACK_BG[track],
                         TRACK_TEXT[track],
                       )}
                     >
                       <Icon size={16} aria-hidden />
                     </span>
-                    <span className="text-15 font-bold leading-tight">
+                    <span className="min-w-0 truncate text-15 font-bold leading-tight">
                       {t(intent.labelKey, intent.fallback)}
-                    </span>
-                    {/* `text-muted-foreground`, not opacity (axe measured 3.19:1).
-                        On the inverted ink state, paper at 70% is 9.1:1. */}
-                    <span
-                      className={cn(
-                        'line-clamp-2 text-2xs leading-tight',
-                        active
-                          ? 'text-background/70'
-                          : 'text-muted-foreground group-hover:text-background/70',
-                      )}
-                    >
-                      {t(intent.subtitleKey, intent.subtitleFallback)}
                     </span>
                   </LocalizedLink>
                 );

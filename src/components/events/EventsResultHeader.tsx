@@ -119,18 +119,30 @@ export function EventsResultHeader({
         <label className="sr-only" htmlFor="events-sort">
           {t('pages.events.sortLabel', 'Sort events')}
         </label>
-        <select
-          id="events-sort"
-          value={sort}
-          onChange={(e) => onSortChange(e.target.value as EventSort)}
-          className="max-w-[9rem] shrink-0 bg-card px-2 text-13 font-bold text-foreground rounded-container shadow-soft"
+        {/* Sort as a symbol: the native select sits invisibly over the icon, so
+            the platform picker still opens and the label stays accessible. */}
+        <span
+          className="relative grid size-11 shrink-0 place-items-center rounded-element bg-card shadow-soft hover:bg-foreground hover:text-background"
+          title={sortLabel[sort]}
         >
-          {SORT_ORDER.map((key) => (
-            <option key={key} value={key} disabled={key === 'distance' && !userLocation && !nearMe}>
-              {sortLabel[key]}
-            </option>
-          ))}
-        </select>
+          <TransitIcon name="sort" size={18} aria-hidden />
+          <select
+            id="events-sort"
+            value={sort}
+            onChange={(e) => onSortChange(e.target.value as EventSort)}
+            className="absolute inset-0 cursor-pointer opacity-0"
+          >
+            {SORT_ORDER.map((key) => (
+              <option
+                key={key}
+                value={key}
+                disabled={key === 'distance' && !userLocation && !nearMe}
+              >
+                {sortLabel[key]}
+              </option>
+            ))}
+          </select>
+        </span>
         {/* Icon-only toggles keep count, sort and view on one line at
             phone width; the name lives in aria-label and the tooltip. */}
         <div

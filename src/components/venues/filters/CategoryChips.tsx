@@ -12,9 +12,8 @@ interface CategoryChipsProps {
 
 /**
  * Venue categories as the shared FilterChip (same chip as the events
- * presets): icon + sentence-case label, an "All" chip first. One scrolling
- * row on phones; wraps from md up. -mx + px keeps the scroll edge flush with
- * the filter card.
+ * presets): icon + sentence-case label, an "All" chip first. Wraps at every
+ * width: a scrolling row clipped chips mid-label at the card edges.
  */
 export function CategoryChips({ category, onCategoryClick }: CategoryChipsProps) {
   const { t } = useTranslation();
@@ -34,7 +33,7 @@ export function CategoryChips({ category, onCategoryClick }: CategoryChipsProps)
     <div
       role="group"
       aria-label={t('venues.filters.categoryGroup', 'Venue type')}
-      className="-mx-4 flex max-w-[calc(100%+2rem)] gap-2 no-scrollbar overflow-x-auto px-4 md:mx-0 md:max-w-full md:flex-wrap md:px-0"
+      className="flex flex-wrap gap-2"
     >
       <FilterChip
         active={!category}

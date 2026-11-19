@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowUpRight, Landmark, Search, Store } from '@/components/icons';
-import { OccurrenceList, type Occurrence } from '@/components/transit/OccurrenceList';
+import { ArrowRight, ArrowUpRight, Landmark, Search, Store } from '@/components/icons';
+import { EventDateBadge } from '@/components/transit/EventDateBadge';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Image } from '@/components/ui/Image';
@@ -275,60 +275,86 @@ export function CityDistricts({ villages }: { villages: VillageRelation[] }) {
   );
 }
 
-export function cityOccurrences(
-  events: EventRelation[],
-  locale: string,
-  openLabel: string,
-  timeZone?: string | null,
-  untilLabel = 'Until',
-): Occurrence[] {
-  return events.map((e) => {
-    const start = e.start_date ? new Date(e.start_date) : null;
-    const end = e.end_date ? new Date(e.end_date) : null;
-    const ongoing = start && end && start.getTime() <= Date.now() && end.getTime() > Date.now();
-    const d = ongoing ? end : start;
-    const title = localizedField(e.title, e.title_i18n as I18nMap, locale);
-    return {
-      id: e.id,
-      date:
-        d && !Number.isNaN(d.getTime())
-          ? `${ongoing ? `${untilLabel} · ` : ''}${d
-              .toLocaleDateString(locale, {
-                weekday: 'short',
-                day: 'numeric',
-                month: 'short',
-                ...(d.getFullYear() !== new Date().getFullYear()
-                  ? { year: 'numeric' as const }
-                  : {}),
-                ...(timeZone ? { timeZone } : {}),
-              })
-              .toUpperCase()}`
-          : '',
-      detail: e.venue_name ? `${title} · ${e.venue_name}` : title,
-      status: e.is_free ? 'FREE' : undefined,
-      action: e.slug ? (
-        <LocalizedLink
-          to={`/events/${e.slug}`}
-          aria-label={`${openLabel} — ${title}`}
-          className="inline-flex min-h-11 items-center rounded-element text-xs font-bold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
-        >
-          {openLabel}
-          <ArrowUpRight aria-hidden="true" size={14} className="ml-1" />
-        </LocalizedLink>
-      ) : undefined,
-    };
-  });
+/**
+ * City events as departure rows, the same shape as the homepage board: date
+ * disc, bold title, venue below, the whole row a link, Free as a quiet tag.
+ */
+function CityEventRows({
+  events,
+  timeZone,
+}: {
+  events: EventRelation[];
+  timeZone?: string | null;
+}) {
+  const { t, i18n } = useTranslation();
+  const [now] = useState(() => Date.now());
+  if (!events.length) return null;
+  return (
+    <ul className="m-0 list-none divide-y divide-border-hairline overflow-hidden rounded-container bg-card p-0 shadow-soft">
+      {events.map((e) => {
+        const title = localizedField(e.title, e.title_i18n as I18nMap, i18n.language);
+        // An event already running shows its END date with "Until", never a
+        // historical start presented as an upcoming departure.
+        const start = e.start_date ? new Date(e.start_date).getTime() : NaN;
+        const end = e.end_date ? new Date(e.end_date).getTime() : NaN;
+        const ongoing = start <= now && end > now;
+        const shown = ongoing ? e.end_date : e.start_date;
+        const body = (
+          <>
+            {shown ? (
+              <EventDateBadge startDate={shown} locale={i18n.language} timeZone={timeZone} />
+            ) : (
+              <span className="size-16 shrink-0" aria-hidden />
+            )}
+            <span className="min-w-0">
+              {ongoing && (
+                <span className="block text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                  {t('cities.discovery.until', 'Until')}
+                </span>
+              )}
+              <span className="block truncate text-15 font-bold">{title}</span>
+              {e.venue_name && (
+                <span className="block truncate text-13 text-muted-foreground">{e.venue_name}</span>
+              )}
+            </span>
+            <span className="flex items-center gap-2">
+              {e.is_free && (
+                <span className="rounded-badge bg-muted px-2 py-0.5 text-2xs font-bold">
+                  {t('events.free', 'Free')}
+                </span>
+              )}
+              {e.slug && <ArrowRight size={18} aria-hidden className="rtl:rotate-180" />}
+            </span>
+          </>
+        );
+        const row =
+          'grid min-h-20 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-2 no-underline';
+        return (
+          <li key={e.id}>
+            {e.slug ? (
+              <LocalizedLink
+                to={`/events/${e.slug}`}
+                className={cn(row, 'hover:bg-surface-container focus-visible:-outline-offset-2')}
+              >
+                {body}
+              </LocalizedLink>
+            ) : (
+              <div className={row}>{body}</div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
 export function CityEventsTab({
   events,
-  locale,
-  openLabel,
   timeZone,
 }: {
   events: EventRelation[];
-  locale: string;
-  openLabel: string;
+  /** Unused since rows read the i18n locale; kept so callers need no change. */
+  locale?: string;
   timeZone?: string | null;
 }) {
   const { t } = useTranslation();
@@ -366,13 +392,6 @@ export function CityEventsTab({
         (sum, [, group]) => sum + Math.min(group.length, type === 'all' ? 3 : visible),
         0,
       );
-  const toOccurrences = (list: EventRelation[]) =>
-    cityOccurrences(list, locale, openLabel, zone, t('cities.discovery.until', 'Until')).map(
-      (o) => ({
-        ...o,
-        status: o.status ? t('events.free', 'Free') : undefined,
-      }),
-    );
   const reset = () => {
     setType('all');
     setDate('upcoming');
@@ -432,11 +451,7 @@ export function CityEventsTab({
         />
       </div>
       {flat && filtered.length > 0 && (
-        <OccurrenceList
-          floodFirst={false}
-          className="overflow-hidden rounded-container bg-muted"
-          occurrences={toOccurrences(filtered.slice(0, visible))}
-        />
+        <CityEventRows events={filtered.slice(0, visible)} timeZone={zone} />
       )}
       <div className="space-y-6" data-testid="city-departure-groups">
         {displayedGroups.map(([key, group]) => (
@@ -452,11 +467,7 @@ export function CityEventsTab({
                 t('eventTypes.other', 'Other')}
               <span className="text-sm font-normal text-muted-foreground">{group.length}</span>
             </h3>
-            <OccurrenceList
-              floodFirst={false}
-              className="overflow-hidden rounded-container bg-muted"
-              occurrences={toOccurrences(group.slice(0, type === 'all' ? 3 : visible))}
-            />
+            <CityEventRows events={group.slice(0, type === 'all' ? 3 : visible)} timeZone={zone} />
             {type === 'all' && group.length > 3 && (
               <button
                 type="button"

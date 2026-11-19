@@ -1498,7 +1498,10 @@
     "hero": {
       "kicker": "本周精选",
       "cta": "了解更多",
-      "label": "精选场所"
+      "label": "精选场所",
+      "previous": "上一个场所",
+      "next": "下一个场所",
+      "pause": "暂停轮播"
     },
     "personalStrip": {
       "title": "{{name}} · {{level}}级",

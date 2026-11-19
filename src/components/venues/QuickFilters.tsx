@@ -1,6 +1,6 @@
 import { Clock, MapPin, DollarSign, X } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
+import { FilterChip } from '@/components/transit/FilterChip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,31 +30,37 @@ export function QuickFilters({ value, onChange, hasLocation }: QuickFiltersProps
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Button
-        type="button"
-        size="sm"
-        variant={value.openNow ? 'default' : 'outline'}
-        className="h-8 gap-2 rounded-badge px-2"
+      <FilterChip
+        active={!!value.openNow}
+        className={value.openNow ? undefined : 'bg-card'}
         onClick={() => onChange({ ...value, openNow: !value.openNow || undefined })}
-      >
-        <Clock className="h-3.5 w-3.5" />
-        {t('venues.quickFilters.openNow', 'Open now')}
-      </Button>
+        label={
+          <>
+            <Clock size={16} aria-hidden />
+            {t('venues.quickFilters.openNow', 'Open now')}
+          </>
+        }
+      />
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            type="button"
-            size="sm"
-            variant={value.radiusKm != null ? 'default' : 'outline'}
-            className="h-8 gap-2 rounded-badge px-2"
+          <FilterChip
+            active={value.radiusKm != null}
+            aria-pressed={undefined}
             disabled={!hasLocation}
-          >
-            <MapPin className="h-3.5 w-3.5" />
-            {value.radiusKm
-              ? t('venues.quickFilters.radiusKm', { km: value.radiusKm, defaultValue: 'Within {{km}} km' })
-              : t('venues.quickFilters.radius', 'Distance')}
-          </Button>
+            className={cn('disabled:opacity-50', value.radiusKm == null && 'bg-card')}
+            label={
+              <>
+                <MapPin size={16} aria-hidden />
+                {value.radiusKm
+                  ? t('venues.quickFilters.radiusKm', {
+                      km: value.radiusKm,
+                      defaultValue: 'Within {{km}} km',
+                    })
+                  : t('venues.quickFilters.radius', 'Distance')}
+              </>
+            }
+          />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {RADIUS_OPTIONS.map((km) => (
@@ -66,9 +72,7 @@ export function QuickFilters({ value, onChange, hasLocation }: QuickFiltersProps
               {t('venues.quickFilters.radiusKm', { km, defaultValue: 'Within {{km}} km' })}
             </DropdownMenuItem>
           ))}
-          <DropdownMenuItem
-            onSelect={() => onChange({ ...value, radiusKm: undefined })}
-          >
+          <DropdownMenuItem onSelect={() => onChange({ ...value, radiusKm: undefined })}>
             {t('venues.quickFilters.anyDistance', 'Any distance')}
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -76,17 +80,19 @@ export function QuickFilters({ value, onChange, hasLocation }: QuickFiltersProps
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            type="button"
-            size="sm"
-            variant={value.priceLevel != null ? 'default' : 'outline'}
-            className="h-8 gap-2 rounded-badge px-2"
-          >
-            <DollarSign className="h-3.5 w-3.5" />
-            {value.priceLevel
-              ? '$'.repeat(value.priceLevel)
-              : t('venues.quickFilters.price', 'Price')}
-          </Button>
+          <FilterChip
+            active={value.priceLevel != null}
+            aria-pressed={undefined}
+            className={value.priceLevel == null ? 'bg-card' : undefined}
+            label={
+              <>
+                <DollarSign size={16} aria-hidden />
+                {value.priceLevel
+                  ? '$'.repeat(value.priceLevel)
+                  : t('venues.quickFilters.price', 'Price')}
+              </>
+            }
+          />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {PRICE_OPTIONS.map((p) => (
@@ -105,16 +111,14 @@ export function QuickFilters({ value, onChange, hasLocation }: QuickFiltersProps
       </DropdownMenu>
 
       {active && (
-        <Button
+        <button
           type="button"
-          size="sm"
-          variant="ghost"
-          className="rounded-badge h-8 text-muted-foreground"
           onClick={() => onChange({})}
+          className="inline-flex min-h-11 items-center gap-1.5 px-2 text-13 font-bold text-muted-foreground hover:text-foreground"
         >
-          <X className="mr-1 h-3.5 w-3.5" />
+          <X size={16} aria-hidden />
           {t('venues.quickFilters.clear', 'Clear')}
-        </Button>
+        </button>
       )}
     </div>
   );

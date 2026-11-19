@@ -29,8 +29,7 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
 
   // Only deals that actually fly to this page's destination, with a real price.
   const matchedDeals = (deals ?? []).filter(
-    (deal) =>
-      deal.destination === destinationIata && Number.isFinite(deal.price) && deal.price > 0,
+    (deal) => deal.destination === destinationIata && Number.isFinite(deal.price) && deal.price > 0,
   );
 
   if (originLoading) {

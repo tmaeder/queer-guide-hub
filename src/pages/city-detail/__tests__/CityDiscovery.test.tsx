@@ -79,8 +79,6 @@ describe('city galleries and filters', () => {
   it('groups departures by type, sorts within each group, and combines type and free filters', () => {
     wrap(
       <CityEventsTab
-        locale="en"
-        openLabel="Open"
         events={[
           {
             id: 'late',
@@ -113,14 +111,14 @@ describe('city galleries and filters', () => {
     expect(
       within(party)
         .getAllByRole('link')
-        .map((link) => link.getAttribute('aria-label')),
-    ).toEqual(['Open — Early party', 'Open — Late party']);
+        .map((link) => link.textContent),
+    ).toEqual([expect.stringContaining('Early party'), expect.stringContaining('Late party')]);
     fireEvent.change(screen.getByRole('combobox', { name: 'Event type' }), {
       target: { value: 'party' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Free only' }));
     expect(screen.getAllByRole('link')).toHaveLength(1);
-    expect(screen.getByRole('link', { name: 'Open — Early party' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Early party/ })).toBeInTheDocument();
     fireEvent.change(screen.getByRole('combobox', { name: 'When' }), {
       target: { value: 'today' },
     });
@@ -133,8 +131,6 @@ describe('city galleries and filters', () => {
     // "Other 1", "Pride 1", "Festival 1".
     wrap(
       <CityEventsTab
-        locale="en"
-        openLabel="Open"
         events={[
           { id: 'p', title: 'Pride', slug: 'p', event_type: 'pride', start_date: '2099-06-19' },
           { id: 'o', title: 'Monday', slug: 'o', event_type: 'other', start_date: '2099-01-05' },
@@ -143,10 +139,10 @@ describe('city galleries and filters', () => {
       />,
     );
     expect(screen.queryAllByRole('region')).toHaveLength(0);
-    expect(screen.getAllByRole('link').map((link) => link.getAttribute('aria-label'))).toEqual([
-      'Open — Monday',
-      'Open — Pride',
-      'Open — Fest',
+    expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual([
+      expect.stringContaining('Monday'),
+      expect.stringContaining('Pride'),
+      expect.stringContaining('Fest'),
     ]);
   });
 
@@ -155,8 +151,6 @@ describe('city galleries and filters', () => {
     vi.setSystemTime(new Date('2026-10-10T12:00:00Z'));
     wrap(
       <CityEventsTab
-        locale="en"
-        openLabel="Open"
         events={[
           {
             id: 'ongoing',
@@ -169,7 +163,8 @@ describe('city galleries and filters', () => {
         ]}
       />,
     );
-    expect(screen.getByText(/Until/)).toHaveTextContent('OCT 12');
+    expect(screen.getByText('Until')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /October 12/ })).toBeInTheDocument();
     expect(screen.queryByText(/2022/)).not.toBeInTheDocument();
   });
 
@@ -183,8 +178,6 @@ describe('city galleries and filters', () => {
     }));
     wrap(
       <CityEventsTab
-        locale="en"
-        openLabel="Open"
         events={[
           ...parties,
           {

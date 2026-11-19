@@ -118,7 +118,9 @@ export function FlightSearchForm({
 
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-4 items-end">
               <div>
-                <label htmlFor="flight-departure-date" className="text-sm font-medium mb-1 block">Departure</label>
+                <label htmlFor="flight-departure-date" className="text-sm font-medium mb-1 block">
+                  Departure
+                </label>
                 <Input
                   id="flight-departure-date"
                   type="date"
@@ -128,7 +130,9 @@ export function FlightSearchForm({
                 />
               </div>
               <div>
-                <label htmlFor="flight-return-date" className="text-sm font-medium mb-1 block">Return (optional)</label>
+                <label htmlFor="flight-return-date" className="text-sm font-medium mb-1 block">
+                  Return (optional)
+                </label>
                 <Input
                   id="flight-return-date"
                   type="date"

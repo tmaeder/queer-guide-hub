@@ -42,8 +42,22 @@ const SOURCE_LABELS: Record<string, string> = {
  * via Pexels" is a tautology, while "CC BY-SA 4.0 · via Wikimedia Commons"
  * genuinely tells a reader where to go.
  */
+/**
+ * Commons `Artist` fields are HTML (`<a href=… title=…>Name</a>`), and some
+ * upstream step strips only the angle brackets, leaving `a href="…" title="…"Name/a`.
+ * Both shapes reduce to the visible name.
+ */
+export function stripCreditMarkup(text: string): string {
+  return text
+    .replace(/<[^>]*>/g, '')
+    .replace(/\ba\s+href="[^"]*"(?:\s+[\w-]+="[^"]*")*/g, '')
+    .replace(/\/a\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export function formatImageCredit(parts: ImageCreditParts): string | null {
-  const attribution = parts.attribution?.trim();
+  const attribution = parts.attribution ? stripCreditMarkup(parts.attribution) : undefined;
   const license = parts.license?.trim();
   const source = parts.source?.trim();
 

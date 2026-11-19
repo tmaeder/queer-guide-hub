@@ -1681,7 +1681,10 @@
     "hero": {
       "kicker": "Diese Woche im Fokus",
       "cta": "Mehr erfahren",
-      "label": "Hervorgehobener Ort"
+      "label": "Hervorgehobener Ort",
+      "previous": "Vorheriger Ort",
+      "next": "Nächster Ort",
+      "pause": "Wechsel pausieren"
     },
     "personalStrip": {
       "title": "{{name}} · Level {{level}}",

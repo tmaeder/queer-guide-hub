@@ -30,7 +30,10 @@ export function DiscoverableTripsRail({ limit = 8 }: Props) {
           <p className="mb-1 text-2xs uppercase tracking-[0.18em] text-muted-foreground">
             {t('travel.publicTripsRail.kicker', 'Real itineraries')}
           </p>
-          <h2 id="travel-public-trips-rail-heading" className="text-headline font-bold tracking-tight">
+          <h2
+            id="travel-public-trips-rail-heading"
+            className="text-headline font-bold tracking-tight"
+          >
             {t('travel.publicTripsRail.heading', 'See how others planned theirs')}
           </h2>
         </div>
@@ -63,7 +66,12 @@ function RailSkeleton() {
       <div className="mb-4 h-6 w-56 bg-muted" />
       <div className="flex gap-4 overflow-hidden">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} variant="rectangular" height={200} className="w-80 shrink-0 rounded-container" />
+          <Skeleton
+            key={i}
+            variant="rectangular"
+            height={200}
+            className="w-80 shrink-0 rounded-container"
+          />
         ))}
       </div>
     </section>

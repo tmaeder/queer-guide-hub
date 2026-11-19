@@ -1498,7 +1498,10 @@
     "hero": {
       "kicker": "Destacado esta semana",
       "cta": "Leer más",
-      "label": "Lugar destacado"
+      "label": "Lugar destacado",
+      "previous": "Lugar anterior",
+      "next": "Siguiente lugar",
+      "pause": "Pausar rotación"
     },
     "personalStrip": {
       "title": "{{name}} · Nivel {{level}}",

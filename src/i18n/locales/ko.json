@@ -1498,7 +1498,10 @@
     "hero": {
       "kicker": "이번 주 추천",
       "cta": "더 보기",
-      "label": "추천 장소"
+      "label": "추천 장소",
+      "previous": "이전 장소",
+      "next": "다음 장소",
+      "pause": "순환 일시정지"
     },
     "personalStrip": {
       "title": "{{name}} · 레벨 {{level}}",

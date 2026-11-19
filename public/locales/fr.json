@@ -1502,7 +1502,10 @@
     "hero": {
       "kicker": "À l’honneur cette semaine",
       "cta": "En savoir plus",
-      "label": "Lieu mis en avant"
+      "label": "Lieu mis en avant",
+      "previous": "Lieu précédent",
+      "next": "Lieu suivant",
+      "pause": "Mettre en pause"
     },
     "personalStrip": {
       "title": "{{name}} · Niveau {{level}}",
