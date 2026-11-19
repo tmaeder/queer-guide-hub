@@ -181,6 +181,10 @@ export default function MarketplaceBrands() {
   const isFiltering = search.trim() !== '' || ownership.length > 0;
   const showHighlight = !isFiltering && featuredBrands.length > 0;
 
+  const availableLetters = useMemo(
+    () => new Set(brands.map((b) => initialOf(b.display_name))),
+    [brands],
+  );
   const floor = useMemo(() => {
     const needle = search.trim().toLowerCase();
     // Only skip the highlighted makers when they are actually on screen above.
@@ -409,6 +413,7 @@ export default function MarketplaceBrands() {
         {view === 'az' && (
           <StickyLetterBar
             letter={letter}
+            available={availableLetters}
             onChange={(next) => {
               setShown(INDEX_STEP);
               setLetter(next);
@@ -506,7 +511,7 @@ export default function MarketplaceBrands() {
                     <li key={b.slug} className="break-inside-avoid">
                       {showHeading && (
                         <h3
-                          className="mt-8 inline-flex rounded-element bg-surface-container-high px-4 py-2 font-display text-headline leading-none first:mt-0"
+                          className="mb-2 mt-8 flex items-center gap-4 font-display text-headline leading-none after:h-px after:flex-1 after:bg-border-hairline first:mt-0"
                           aria-label={
                             bucket === '#'
                               ? t(
