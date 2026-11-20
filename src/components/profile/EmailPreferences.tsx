@@ -252,7 +252,7 @@ export function EmailPreferences() {
                 </Label>
                 <input
                   id="email-timezone"
-                  className="h-10 w-full rounded-element border border-input bg-background px-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-10 w-full rounded-element border border-input bg-background px-4 text-base focus-visible:outline-none md:text-sm focus-visible:ring-2 focus-visible:ring-ring"
                   value={delivery.timezone}
                   maxLength={100}
                   placeholder="Europe/Zurich"
@@ -269,7 +269,7 @@ export function EmailPreferences() {
                   <select
                     id={`email-${field}`}
                     disabled={!delivery.quiet_hours_enabled}
-                    className="h-10 w-full rounded-element border border-input bg-background px-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="h-10 w-full rounded-element border border-input bg-background px-4 text-base focus-visible:outline-none md:text-sm focus-visible:ring-2 focus-visible:ring-ring"
                     value={delivery[field]}
                     onChange={(e) => setDelivery({ ...delivery, [field]: Number(e.target.value) })}
                   >

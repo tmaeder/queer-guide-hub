@@ -164,6 +164,14 @@ class ElementRemover {
   }
 }
 
+/** Inserts markup directly after the matched element (used after <meta charset>). */
+class AfterInjector {
+  constructor(private readonly html: string) {}
+  element(el: Element) {
+    el.after(this.html, { html: true });
+  }
+}
+
 class HeadInjector {
   constructor(private readonly html: string) {}
   element(el: Element) {
@@ -737,6 +745,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     .on('meta[name="twitter:image"]', new ElementRemover())
     .on('script, style', new ScriptNonceInjector(cspNonce))
     .on('head', new HeadInjector(headInjections.join('\n    ')));
+  // Detail-page preloads (the destination hero image) go right after
+  // <meta charset>, ahead of the stylesheet and module preloads that
+  // HeadInjector's end-of-head position would put them behind: the hero is the
+  // LCP element and nothing else on the page can discover it before the JS
+  // graph has run. Not gated on `indexable` — it is a loading hint for humans.
+  if (detail?.preloads?.length) {
+    rewriter.on('meta[charset]', new AfterInjector('\n    ' + detail.preloads.join('\n    ')));
+  }
   if (reportPage) rewriter.on('meta[name="robots"]', new ElementRemover());
 
   // P3.3 — per-route noscript fallback. Crisis routes keep the global
