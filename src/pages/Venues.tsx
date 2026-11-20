@@ -9,6 +9,7 @@
 // deleting it re-emits the poisoned hash.
 import { Suspense, useState, useEffect, useMemo, useCallback } from 'react';
 import { lazyRetry } from '@/utils/lazyRetry';
+import { DeferredSection } from '@/components/home/DeferredSection';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -626,26 +627,28 @@ const Venues = () => {
                   );
                 })()}
 
+              {/* Below the 24-card grid: mount (and fetch) only on approach, so
+                  first paint doesn't render four rails nobody can see yet. */}
               {showRails && (
-                <GuidesRail
-                  title={t('guides.rail.titleWorldwide', 'Guides from everywhere')}
-                  filters={{ entityType: 'venue', limit: 6 }}
-                />
-              )}
+                <DeferredSection rootMargin="400px 0px">
+                  <div className="flex flex-col gap-12">
+                    <GuidesRail
+                      title={t('guides.rail.titleWorldwide', 'Guides from everywhere')}
+                      filters={{ entityType: 'venue', limit: 6 }}
+                    />
 
-              {showRails && (
-                <VenuesRails
-                  userLocation={userLocation}
-                  primaryCityId={primaryCity.id}
-                  primaryCityName={primaryCity.name}
-                />
-              )}
+                    <VenuesRails
+                      userLocation={userLocation}
+                      primaryCityId={primaryCity.id}
+                      primaryCityName={primaryCity.name}
+                    />
 
-              {showRails && (
-                <LeaderboardWidget cityId={primaryCity.id} cityName={primaryCity.name} />
-              )}
+                    <LeaderboardWidget cityId={primaryCity.id} cityName={primaryCity.name} />
 
-              {showRails && user && <VenuesPersonalStrip />}
+                    {user && <VenuesPersonalStrip />}
+                  </div>
+                </DeferredSection>
+              )}
             </motion.div>
           ) : (
             <motion.div
