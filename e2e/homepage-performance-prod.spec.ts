@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { DESTINATIONS_HEADING, loadDestinations, loadHomeContent } from './support/homeContent';
 
 // Public, read-only checks: never inherit the admin login from the setup project.
 test.use({ storageState: { cookies: [], origins: [] }, serviceWorkers: 'block' });
@@ -22,12 +23,7 @@ for (const width of [412, 1280]) {
     });
 
     // Scrolling must load the real content chunk, not strand the placeholder.
-    await page
-      .locator('.subway-hero')
-      .evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().bottom + window.scrollY));
-    await expect(
-      page.getByRole('heading', { name: 'What are you here for?' }),
-    ).toBeVisible({ timeout: 20_000 });
+    await loadHomeContent(page);
     await hero.locator('a[href="/venues"]').click();
     await expect(page).toHaveURL(/\/venues(?:\?|$)/);
     await expect(page.locator('main')).toBeVisible();
@@ -117,6 +113,7 @@ test('news photos never request publisher image hosts before or after mirror loo
 });
 
 test('mobile defers city-card scripts until the reader approaches the guides', async ({ page }) => {
+  test.setTimeout(150_000); // loadDestinations: see its comment on the motion-enabled stall
   await page.setViewportSize({ width: 412, height: 823 });
   const cardScripts: string[] = [];
   page.on('request', (request) => {
@@ -126,14 +123,14 @@ test('mobile defers city-card scripts until the reader approaches the guides', a
   });
 
   await page.goto('/');
-  const cities = page.getByRole('region', { name: 'City guides' });
-  await expect(cities.getByRole('link', { name: 'All cities' })).toHaveAttribute('href', '/cities');
+  // The band head renders with HomeContent; only its card grid is deferred.
+  const cities = page.getByRole('region', { name: DESTINATIONS_HEADING });
+  await expect(cities.getByRole('link', { name: /^Travel/ })).toHaveAttribute('href', '/travel');
   await expect(
-    page.getByRole('region', { name: /^places and events/i }).locator('[aria-busy]'),
+    page.getByRole('region', { name: 'Events', exact: true }).locator('[aria-busy]'),
   ).toHaveAttribute('aria-busy', 'false');
   expect(cardScripts).toEqual([]);
 
-  await cities.scrollIntoViewIfNeeded();
-  await expect(cities.locator('a[href*="/city/"]').first()).toBeVisible();
+  await loadDestinations(page);
   expect(cardScripts.some((url) => /\/CityCards-/.test(url))).toBe(true);
 });

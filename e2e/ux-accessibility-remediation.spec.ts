@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { loadHomeContent } from './support/homeContent';
+import { DESTINATIONS_HEADING, loadHomeContent } from './support/homeContent';
 import { waitForAppReady } from './support/appReady';
 import { REDUCED_MOTION } from './support/reducedMotion';
 
@@ -71,11 +71,12 @@ test.describe('UX accessibility remediation — production contract', () => {
 
     await gotoHome(page, 1280, 900);
     await loadHomeContent(page);
-    const section = page.getByRole('region', { name: 'City guides' });
+    const section = page.getByRole('region', { name: DESTINATIONS_HEADING });
     await expect(
-      page.getByRole('region', { name: /^places and events/i }).locator('[aria-busy]'),
+      page.getByRole('region', { name: 'Events', exact: true }).locator('[aria-busy]'),
     ).toHaveAttribute('aria-busy', 'false');
-    await section.scrollIntoViewIfNeeded();
+    // The card grid mounts on its own viewport margin, below the map band.
+    await section.evaluate((el) => el.scrollIntoView({ block: 'end' }));
     await page.keyboard.press('Tab');
     await expect(section.getByText(/this section could not load/i)).toBeVisible({
       timeout: 30_000,
