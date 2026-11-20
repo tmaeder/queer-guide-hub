@@ -189,7 +189,6 @@ export default function Welcome() {
         {stepId === 'profile' && (
           <div className="max-w-xl">
             <div className="mb-8">
-              <Heart size={40} className="mb-4 text-foreground" style={{ fill: 'currentcolor' }} />
               <h1 className="text-headline font-bold tracking-tight mb-2">
                 {t('onboarding.welcome', 'Welcome to Queer Guide')}
               </h1>
@@ -212,7 +211,6 @@ export default function Welcome() {
         {stepId === 'passkey' && (
           <div className="max-w-xl">
             <div className="mb-8">
-              <Heart size={40} className="mb-4 text-foreground" style={{ fill: 'currentcolor' }} />
               <h1 className="text-headline font-bold tracking-tight mb-2">
                 {t('onboarding.welcome', 'Welcome to Queer Guide')}
               </h1>
