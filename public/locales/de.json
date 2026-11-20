@@ -5838,5 +5838,35 @@
       "noNeighbourhoods": "Für {{where}} sind noch keine Viertel eingetragen.",
       "noneForFilter": "Für {{where}} ist unter diesem Filter noch nichts eingetragen."
     }
+  },
+  "emailPreferences": {
+    "groups": {
+      "messages": "Nachrichten",
+      "trips": "Reisen & Events",
+      "community": "Gruppen & Community",
+      "account": "Dein Konto"
+    },
+    "operational": {
+      "event_updates": "Programmänderungen und Erinnerungen für Events, an denen ich teilnehme",
+      "trip_updates": "Programmänderungen und Erinnerungen am Vortag (UTC) für meine Reisen",
+      "group_invitations": "Wenn ich in eine Gruppe eingeladen werde",
+      "group_requests": "Ergebnis meiner Beitrittsanfragen zu Gruppen",
+      "group_comments": "Erwähnungen und Antworten in meinen Gruppen",
+      "community_comments": "Erwähnungen und Antworten in der Community",
+      "business_updates": "Claim- und Service-Updates für Betriebe, die ich vertrete",
+      "contributions": "Entscheidungen zu meinen Beiträgen",
+      "payments": "Wenn eine geprüfte Zahlungsbestätigung bereitsteht"
+    }
+  },
+  "intimate": {
+    "hanky": {
+      "help": "Linke Tasche = Top / gebend, rechts = Bottom / nehmend. Privat gespeichert. nur du siehst es.",
+      "sideFor": "Tasche für {{color}}",
+      "side": {
+        "left": "Links",
+        "right": "Rechts",
+        "both": "Beide"
+      }
+    }
   }
 }

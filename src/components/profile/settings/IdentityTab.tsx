@@ -5,14 +5,85 @@ import { useClassificationOptions } from '@/hooks/useManagedOptions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SelectField } from './fields';
-import { Heart } from '@/components/icons';
+import {
+  CircleDashed,
+  Compass,
+  DoorClosed,
+  DoorOpen,
+  EyeOff,
+  Heart,
+  Minus,
+  Network,
+  Repeat,
+  Shuffle,
+  User,
+  Users,
+} from '@/components/icons';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
-import { PRIDE_FLAGS } from '@/lib/flags';
+import { ToggleChip } from '@/components/ui/ToggleChip';
+import { PRIDE_FLAGS, flagById } from '@/lib/flags';
 import { FlagSwatch } from '@/components/tags/FlagSwatch';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 
 const MAX_IDENTITY_FLAGS = 8;
+
+function flag(id: string) {
+  const f = flagById(id);
+  return f ? <FlagSwatch flag={f} decorative className="h-3 w-5 border" /> : undefined;
+}
+const icon = (Icon: typeof Heart) => <Icon size={16} aria-hidden="true" />;
+
+/** Closest curated flag per option. Romantic orientations have no flags of their
+ *  own in the set, so the aro spectrum takes the aromantic flag (its grey stripe
+ *  is grey-aromantic people) and bi/pan take the bi/pan flags. */
+const GENDER_FLAGS = {
+  non_binary: flag('nonbinary-pride'),
+  genderfluid: flag('genderfluid-pride'),
+  genderqueer: flag('genderqueer-pride'),
+  agender: flag('agender-pride'),
+  transgender_woman: flag('transgender-pride'),
+  transgender_man: flag('transgender-pride'),
+};
+const ORIENTATION_FLAGS = {
+  gay: flag('rainbow-pride'),
+  lesbian: flag('lesbian-pride'),
+  bisexual: flag('bisexual-pride'),
+  pansexual: flag('pansexual-pride'),
+  asexual: flag('asexual-pride'),
+  demisexual: flag('demisexual-pride'),
+  queer: flag('rainbow-pride'),
+};
+const ROMANTIC_FLAGS = {
+  homoromantic: flag('rainbow-pride'),
+  biromantic: flag('bisexual-pride'),
+  panromantic: flag('pansexual-pride'),
+  aromantic: flag('aromantic-pride'),
+  demiromantic: flag('aromantic-pride'),
+  greyromantic: flag('aromantic-pride'),
+  queerplatonic: flag('rainbow-pride'),
+};
+const RELATIONSHIP_STATUS_ICONS = {
+  single: icon(User),
+  taken: icon(Heart),
+  its_complicated: icon(Shuffle),
+  open_to_explore: icon(Compass),
+  prefer_not_to_say: icon(EyeOff),
+};
+const RELATIONSHIP_STYLE_ICONS = {
+  monogamous: icon(Heart),
+  polyamorous: icon(Users),
+  relationship_anarchist: icon(Network),
+  open_relationship: icon(DoorOpen),
+  swinging: icon(Repeat),
+  exploring: icon(Compass),
+  prefer_not_to_say: icon(EyeOff),
+};
+const COMING_OUT_ICONS = {
+  out: icon(DoorOpen),
+  partially_out: icon(CircleDashed),
+  not_out: icon(DoorClosed),
+  not_applicable: icon(Minus),
+};
 
 const GENDER_OPTIONS = [
   { value: 'woman', label: 'Woman' },
@@ -120,7 +191,7 @@ function FlagPicker({
   };
 
   return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label="Pride flags">
+    <div className="flex flex-wrap gap-1.5" role="group" aria-label="Pride flags">
       {PRIDE_FLAGS.filter((flag) => {
         const terms = referenceTaxonomyRows('pride_flag');
         return (
@@ -131,22 +202,19 @@ function FlagPicker({
       }).map((flag) => {
         const active = selected.includes(flag.id);
         const disabled = !active && atCap;
+        const name = t(flag.nameKey, flag.nameEn);
         return (
-          <button
+          <ToggleChip
             key={flag.id}
-            type="button"
-            aria-pressed={active}
+            pressed={active}
             disabled={disabled}
-            onClick={() => toggle(flag.id)}
-            className={cn(
-              'inline-flex items-center gap-2 bg-muted rounded-element px-2 py-1 text-13 font-bold transition-colors',
-              active ? 'bg-foreground text-background' : 'hover:bg-muted',
-              disabled && 'opacity-40',
-            )}
+            onPressedChange={() => toggle(flag.id)}
+            title={name}
+            icon={<FlagSwatch flag={flag} decorative className="h-3 w-5 border" />}
           >
-            <FlagSwatch flag={flag} decorative className="h-4 w-6 border" />
-            {t(flag.nameKey, flag.nameEn)}
-          </button>
+            {/* "Pride Flag" repeats on every chip; the swatch already says it. */}
+            {name.replace(/ (Pride )?Flag$/, '')}
+          </ToggleChip>
         );
       })}
     </div>
@@ -228,6 +296,7 @@ export function IdentityTab({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField
                 id="gender_identity"
+                icons={GENDER_FLAGS}
                 label="Gender Identity"
                 value={formData.gender_identity}
                 onChange={(v) => onChange('gender_identity', v)}
@@ -235,6 +304,7 @@ export function IdentityTab({
               />
               <SelectField
                 id="sexual_orientation"
+                icons={ORIENTATION_FLAGS}
                 label="Sexual Orientation"
                 value={formData.sexual_orientation}
                 onChange={(v) => onChange('sexual_orientation', v)}
@@ -282,6 +352,7 @@ export function IdentityTab({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField
                 id="romantic_orientation"
+                icons={ROMANTIC_FLAGS}
                 label="Romantic Orientation"
                 value={formData.romantic_orientation}
                 onChange={(v) => onChange('romantic_orientation', v)}
@@ -289,6 +360,7 @@ export function IdentityTab({
               />
               <SelectField
                 id="current_relationship_status"
+                icons={RELATIONSHIP_STATUS_ICONS}
                 label="Current Status"
                 value={formData.current_relationship_status}
                 onChange={(v) => onChange('current_relationship_status', v)}
@@ -297,6 +369,7 @@ export function IdentityTab({
             </div>
             <SelectField
               id="relationship_style"
+              icons={RELATIONSHIP_STYLE_ICONS}
               label="Relationship Style"
               value={formData.relationship_style}
               onChange={(v) => onChange('relationship_style', v)}
@@ -325,6 +398,7 @@ export function IdentityTab({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField
                 id="coming_out_family"
+                icons={COMING_OUT_ICONS}
                 label="Family"
                 placeholder="Not answered"
                 value={formData.coming_out_status.family}
@@ -333,6 +407,7 @@ export function IdentityTab({
               />
               <SelectField
                 id="coming_out_friends"
+                icons={COMING_OUT_ICONS}
                 label="Friends"
                 placeholder="Not answered"
                 value={formData.coming_out_status.friends}
@@ -343,6 +418,7 @@ export function IdentityTab({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField
                 id="coming_out_work"
+                icons={COMING_OUT_ICONS}
                 label="Work / School"
                 placeholder="Not answered"
                 value={formData.coming_out_status.work}
@@ -351,6 +427,7 @@ export function IdentityTab({
               />
               <SelectField
                 id="coming_out_public"
+                icons={COMING_OUT_ICONS}
                 label="Public"
                 placeholder="Not answered"
                 value={formData.coming_out_status.public}

@@ -5838,5 +5838,35 @@
       "noNeighbourhoods": "Todavía no hay barrios en {{where}}.",
       "noneForFilter": "Todavía no hay nada en {{where}} con este filtro."
     }
+  },
+  "emailPreferences": {
+    "groups": {
+      "messages": "Mensajes",
+      "trips": "Viajes y eventos",
+      "community": "Grupos y comunidad",
+      "account": "Tu cuenta"
+    },
+    "operational": {
+      "event_updates": "Cambios de horario y recordatorios de los eventos a los que me uní",
+      "trip_updates": "Cambios de horario y recordatorios del día anterior (UTC) de mis viajes",
+      "group_invitations": "Cuando recibo una invitación a un grupo",
+      "group_requests": "Resultado de mis solicitudes para unirme a grupos",
+      "group_comments": "Menciones y respuestas en mis grupos",
+      "community_comments": "Menciones y respuestas en la comunidad",
+      "business_updates": "Novedades de reclamación y servicio de los negocios que represento",
+      "contributions": "Decisiones sobre mis contribuciones",
+      "payments": "Cuando una confirmación de pago verificada está lista"
+    }
+  },
+  "intimate": {
+    "hanky": {
+      "help": "Bolsillo izquierdo = activo / da, derecho = pasivo / recibe. Se guarda en privado. Solo tú lo ves.",
+      "sideFor": "Bolsillo para {{color}}",
+      "side": {
+        "left": "Izquierda",
+        "right": "Derecha",
+        "both": "Ambos"
+      }
+    }
   }
 }

@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 606,
+  "total": 604,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -277,7 +277,7 @@
       "TS7030": 1
     },
     "src/components/profile/ProfileHeader.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/components/profile/__tests__/AvatarDisplay.test.tsx": {
       "TS2322": 2
@@ -764,7 +764,6 @@
       "TS2322": 1
     },
     "src/pages/intimate/IntimateOnboard.tsx": {
-      "TS2503": 1,
       "TS7030": 1
     },
     "src/pages/onboarding/VenuePersonalization.tsx": {

@@ -1,15 +1,20 @@
 import { useTranslation } from 'react-i18next';
-import { Check } from '@/components/icons';
-import { cn } from '@/lib/utils';
-import { useUserIntent, LOOKING_FOR_OPTIONS, LOOKING_FOR_LABELS } from '@/hooks/useUserIntent';
+import { Briefcase, Heart, Luggage, MapPin, Users } from '@/components/icons';
+import { ToggleChip } from '@/components/ui/ToggleChip';
+import {
+  useUserIntent,
+  LOOKING_FOR_OPTIONS,
+  LOOKING_FOR_LABELS,
+  type LookingFor,
+} from '@/hooks/useUserIntent';
 
-const intentChip = (active: boolean) =>
-  cn(
-    'inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-element px-2.5 py-2 text-xs transition-colors bg-surface-container',
-    active
-      ? 'bg-foreground text-background'
-      : 'border-border text-muted-foreground hover:text-foreground',
-  );
+const ICONS: Record<LookingFor, typeof Heart> = {
+  friends: Users,
+  dating: Heart,
+  travel_buddies: Luggage,
+  locals: MapPin,
+  networking: Briefcase,
+};
 
 /**
  * The canonical "what you're looking for" chips. Single source of truth for
@@ -22,22 +27,18 @@ export function IntentChips() {
   const { lookingFor, toggleLookingFor } = useUserIntent();
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5">
       {LOOKING_FOR_OPTIONS.map((v) => {
-        const active = lookingFor.includes(v);
+        const Icon = ICONS[v];
         return (
-          <button
+          <ToggleChip
             key={v}
-            type="button"
-            aria-pressed={active}
-            onClick={() => toggleLookingFor(v)}
-            className={intentChip(active)}
+            pressed={lookingFor.includes(v)}
+            onPressedChange={() => toggleLookingFor(v)}
+            icon={<Icon size={14} aria-hidden="true" />}
           >
-            {active && <Check className="h-3.5 w-3.5" aria-hidden />}
-            <span className="whitespace-nowrap">
-              {t(`people.intent.lookingForOptions.${v}`, LOOKING_FOR_LABELS[v])}
-            </span>
-          </button>
+            {t(`people.intent.lookingForOptions.${v}`, LOOKING_FOR_LABELS[v])}
+          </ToggleChip>
         );
       })}
     </div>

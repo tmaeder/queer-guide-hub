@@ -1,15 +1,62 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useMyIntimateProfile, useOptOutIntimateProfile } from '@/hooks/useIntimateProfile';
+import {
+  useIntimateKinkTags,
+  useMyIntimateProfile,
+  useMyIntimateText,
+  useOptOutIntimateProfile,
+  useSetIntimateText,
+  useUpsertIntimateProfile,
+} from '@/hooks/useIntimateProfile';
 import { FlatFieldGroup } from '@/components/ui/FlatFieldGroup';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { HankyCodePicker } from '@/components/intimate/HankyCodePicker';
+import { IntimateStepFields, type IntimateDraft } from '@/components/intimate/IntimateStepFields';
+import { INTO_TAGS as FALLBACK_INTO, LIMITS as FALLBACK_LIMITS } from '@/assets/intimate/options';
+import { getGenitalPictogramSet } from '@/assets/intimate/pictograms';
+import type { WizardStep } from '@/lib/intimate/types';
+
+const SECTIONS: { step: WizardStep; label: string }[] = [
+  { step: 'genitalia', label: 'Genitalia' },
+  { step: 'genital-pictogram', label: 'Anatomy' },
+  { step: 'size', label: 'Size' },
+  { step: 'angle', label: 'Angle' },
+  { step: 'body-pictogram', label: 'Body' },
+  { step: 'body-type', label: 'Body type' },
+  { step: 'age', label: 'Age band' },
+  { step: 'height', label: 'Height' },
+  { step: 'role', label: 'Role' },
+  { step: 'into', label: 'Into' },
+  { step: 'limits', label: 'Limits' },
+  { step: 'safer-sex', label: 'Safer sex' },
+  { step: 'text', label: 'About' },
+];
 
 export function IntimateTab() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { data: me, isLoading } = useMyIntimateProfile();
+  const { data: existingText } = useMyIntimateText();
+  const { data: kinkTags } = useIntimateKinkTags();
+  const upsert = useUpsertIntimateProfile();
+  const setText = useSetIntimateText();
   const optOut = useOptOutIntimateProfile();
+
+  const [draft, setDraft] = useState<IntimateDraft>({});
+  const [aboutText, setAboutText] = useState('');
+  const [lookingText, setLookingText] = useState('');
+  const [textDirty, setTextDirty] = useState(false);
+
+  useEffect(() => {
+    if (existingText) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- seed editable copy from fetched text
+      setAboutText(existingText.about_intimate ?? '');
+      setLookingText(existingText.looking_for ?? '');
+    }
+  }, [existingText]);
 
   if (isLoading) {
     return (
@@ -21,76 +68,150 @@ export function IntimateTab() {
     );
   }
 
-  const enabled = !!me?.opted_in_at;
+  // No profile, or one started without the 18+ consent: the wizard owns that gate.
+  if (!me?.consent_18plus_at) {
+    return (
+      <FlatFieldGroup
+        title="Intimate profile"
+        description="Optional add-on. Hidden by default. Visible only to other users who have also opted in."
+        noTopBorder
+      >
+        <p className="text-sm leading-relaxed text-foreground">
+          Enable an explicit, pictogram-based profile to connect with other opted-in users for
+          travel hookups, local cruising, kink, or a privacy-preserving alternative to photo-based
+          apps.
+        </p>
+        <Button
+          onClick={() => navigate('/intimate/onboard')}
+          className="self-start rounded-element"
+        >
+          Enable intimate profile
+        </Button>
+      </FlatFieldGroup>
+    );
+  }
 
-  const handleDisable = async () => {
+  const visible = !!me.opted_in_at;
+  const merged = { ...me, ...draft } as IntimateDraft;
+  const hasPictograms = Object.keys(getGenitalPictogramSet(merged.genitalia ?? null)).length > 0;
+  const sections = SECTIONS.filter(({ step }) => {
+    if (step === 'size' || step === 'angle') return merged.genitalia === 'penis';
+    if (step === 'genital-pictogram') return hasPictograms;
+    return true;
+  });
+  const kinkVocab: readonly string[] = kinkTags?.length
+    ? kinkTags.map((t) => t.slug)
+    : (FALLBACK_INTO as readonly string[]);
+  const dirty = Object.keys(draft).length > 0 || textDirty;
+  const busy = upsert.isPending || setText.isPending || optOut.isPending;
+
+  const save = async () => {
+    try {
+      if (Object.keys(draft).length) await upsert.mutateAsync(draft);
+      if (textDirty)
+        await setText.mutateAsync({
+          aboutIntimate: aboutText.trim() || null,
+          lookingFor: lookingText.trim() || null,
+        });
+      setDraft({});
+      setTextDirty(false);
+      toast({ title: 'Intimate profile saved' });
+    } catch (e) {
+      toast({ title: 'Could not save', description: String(e), variant: 'destructive' });
+    }
+  };
+
+  const show = async () => {
+    await upsert.mutateAsync({ opted_in_at: new Date().toISOString() });
+    toast({ title: 'Intimate profile visible to opted-in users.' });
+  };
+
+  const hide = async () => {
     await optOut.mutateAsync({});
     toast({ title: 'Intimate profile hidden. Your data is preserved.' });
   };
 
-  const handleDelete = async () => {
+  const remove = async () => {
     if (!window.confirm('Permanently delete your intimate profile? This cannot be undone.')) return;
     await optOut.mutateAsync({ hardDelete: true });
+    setDraft({});
     toast({ title: 'Intimate profile deleted.' });
   };
 
   return (
-    <FlatFieldGroup
-      title="Intimate profile"
-      description="Optional add-on. Hidden by default. Visible only to other users who have also opted in."
-      noTopBorder
-    >
-      {!enabled ? (
-        <>
-          <p className="text-sm leading-relaxed text-foreground">
-            Enable an explicit, pictogram-based profile to connect with other opted-in users for
-            travel hookups, local cruising, kink, or a privacy-preserving alternative to photo-based
-            apps.
-          </p>
-          <Button onClick={() => navigate('/intimate/onboard')} className="rounded-element">
-            Enable intimate profile
-          </Button>
-        </>
-      ) : (
-        <>
-          <p className="text-sm">Your intimate profile is active.</p>
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={() => navigate('/intimate/onboard')} className="rounded-element">
-              Edit
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/tools/checklist')}
-              className="rounded-element"
-            >
-              Interests & boundaries checklist
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/intimate')}
-              className="rounded-element"
-            >
-              Open discovery
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleDisable}
-              disabled={optOut.isPending}
-              className="rounded-element"
-            >
-              Hide (keep data)
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={optOut.isPending}
-              className="rounded-element"
-            >
-              Delete intimate profile
-            </Button>
-          </div>
-        </>
-      )}
-    </FlatFieldGroup>
+    <div className="flex flex-col gap-6">
+      <FlatFieldGroup
+        title="Intimate profile"
+        description={
+          visible
+            ? 'Visible only to other users who have also opted in.'
+            : 'Hidden. Nobody can see it until you show it again.'
+        }
+        noTopBorder
+      >
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+          <LocalizedLink to="/intimate" className="underline underline-offset-4">
+            Open discovery
+          </LocalizedLink>
+          <LocalizedLink to="/tools/checklist" className="underline underline-offset-4">
+            Interests & boundaries checklist
+          </LocalizedLink>
+        </div>
+      </FlatFieldGroup>
+
+      {sections.map(({ step, label }) => (
+        <section key={step} aria-label={label} className="flex flex-col gap-2">
+          <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+            {label}
+          </h3>
+          <IntimateStepFields
+            step={step}
+            merged={merged}
+            update={(patch) => setDraft((d) => ({ ...d, ...patch }))}
+            kinkVocab={kinkVocab}
+            limitsVocab={kinkTags?.length ? kinkVocab : (FALLBACK_LIMITS as readonly string[])}
+            aboutText={aboutText}
+            setAboutText={(v) => {
+              setAboutText(v);
+              setTextDirty(true);
+            }}
+            lookingText={lookingText}
+            setLookingText={(v) => {
+              setLookingText(v);
+              setTextDirty(true);
+            }}
+          />
+        </section>
+      ))}
+
+      <section aria-label="Hanky code" className="flex flex-col gap-2">
+        <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+          Hanky code
+        </h3>
+        <HankyCodePicker />
+      </section>
+
+      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+        <Button onClick={save} disabled={!dirty || busy} className="rounded-element">
+          {upsert.isPending || setText.isPending ? 'Saving…' : 'Save'}
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={visible ? hide : show}
+          disabled={busy}
+          className="rounded-element"
+        >
+          {visible ? 'Hide (keep data)' : 'Show profile'}
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={remove}
+          disabled={busy}
+          className="ml-auto rounded-element text-destructive"
+        >
+          Delete
+        </Button>
+      </div>
+    </div>
   );
 }
