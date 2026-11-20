@@ -30,8 +30,6 @@ const SECTIONS: { step: WizardStep; label: string }[] = [
   { step: 'angle', label: 'Angle' },
   { step: 'age', label: 'Age band' },
   { step: 'role', label: 'Role' },
-  { step: 'into', label: 'Into' },
-  { step: 'limits', label: 'Limits' },
   { step: 'safer-sex', label: 'Safer sex' },
   { step: 'text', label: 'Looking for' },
 ];
