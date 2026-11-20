@@ -1698,7 +1698,12 @@
     "joined": "Membre depuis {{date}}",
     "editAvatar": "Changer d’avatar",
     "lensHidden": "Ce profil n’est pas visible dans cette vue. Passe sur Toi pour continuer.",
-    "sections": "Sections du profil"
+    "sections": "Sections du profil",
+    "signInGate": {
+      "title": "Connecte-toi pour voir ce profil",
+      "body": "Les profils des membres ne sont visibles que par les membres connectés.",
+      "cta": "Se connecter"
+    }
   },
   "groups": {
     "title": "Groupes",

@@ -1,9 +1,9 @@
 import { Suspense, useState, useRef } from 'react';
-import { Navigate, useParams, useSearchParams } from 'react-router';
+import { Navigate, useLocation, useParams, useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Flag, Settings, Share2, Shield, User } from '@/components/icons';
+import { ArrowLeft, Flag, Lock, Settings, Share2, Shield, User } from '@/components/icons';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ScrollableTabList } from '@/components/profile/ScrollableTabList';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
@@ -55,7 +55,8 @@ export default function ProfilePage() {
   const { t } = useTranslation();
   const params = useParams<{ userId: string; tab?: string; locale?: string }>();
   const navigate = useLocalizedNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const location = useLocation();
   const { toast } = useToast();
   const targetUserId = params.userId;
 
@@ -146,13 +147,42 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <PageContainer>
         <div className="flex flex-col gap-6 animate-pulse">
           <div className="h-8 bg-muted rounded-element w-1/4" />
           <div className="h-64 bg-muted rounded-container" />
           <div className="h-32 bg-muted rounded-container" />
+        </div>
+      </PageContainer>
+    );
+  }
+
+  // Profiles are members-only (get_public_profile_safe is not granted to anon),
+  // so a signed-out visitor gets a sign-in prompt, never a false "not found".
+  if (!user) {
+    const redirect = encodeURIComponent(location.pathname + location.search + location.hash);
+    return (
+      <PageContainer size="form">
+        <div className="flex flex-col items-center gap-6 py-12 text-center">
+          <Lock size={32} className="text-muted-foreground" aria-hidden="true" />
+          <div className="flex flex-col gap-2">
+            <h1 className="font-display text-headline">
+              {t('profile.signInGate.title', 'Sign in to view this profile')}
+            </h1>
+            <p className="text-body-lg text-muted-foreground">
+              {t(
+                'profile.signInGate.body',
+                'Member profiles are only visible to signed-in members.',
+              )}
+            </p>
+          </div>
+          <Button asChild>
+            <LocalizedLink to={`/auth?redirect=${redirect}`} className="no-underline">
+              {t('profile.signInGate.cta', 'Sign in')}
+            </LocalizedLink>
+          </Button>
         </div>
       </PageContainer>
     );
@@ -279,7 +309,11 @@ export default function ProfilePage() {
               onEditAvatar={() => void openEditor('avatar')}
             />
 
-            <Tabs value={tab} onValueChange={(next) => void setTab(next)} className="w-full min-w-0">
+            <Tabs
+              value={tab}
+              onValueChange={(next) => void setTab(next)}
+              className="w-full min-w-0"
+            >
               <ScrollableTabList aria-label={t('profile.sections', 'Profile sections')}>
                 {(
                   [
@@ -324,7 +358,9 @@ export default function ProfilePage() {
                           </LocalizedLink>
                         </Button>
                         <Button variant="ghost" asChild>
-                          <LocalizedLink to={profileEditPath(profile.user_id, 'privacy', 'travel_visibility')}>
+                          <LocalizedLink
+                            to={profileEditPath(profile.user_id, 'privacy', 'travel_visibility')}
+                          >
                             {t('profile.travel.visibility', 'Travel visibility')}
                           </LocalizedLink>
                         </Button>
@@ -347,7 +383,10 @@ export default function ProfilePage() {
           </>
         ) : (
           <p className="rounded-container bg-card p-6 text-muted-foreground">
-            {t('profile.lensHidden', 'This profile isn’t visible in this view. Switch to You to continue editing.')}
+            {t(
+              'profile.lensHidden',
+              'This profile isn’t visible in this view. Switch to You to continue editing.',
+            )}
           </p>
         )}
       </div>

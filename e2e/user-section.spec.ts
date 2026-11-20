@@ -46,11 +46,19 @@ test.describe('user section — edge', () => {
   });
 
   // Profiles are members-only: get_public_profile_safe is not granted to anon
-  // (20261021174528), so a signed-out visitor gets the page shell and no profile.
-  test('a signed-out visitor is shown no profile and no owner controls', async ({ page }) => {
+  // (20261021174528), so a signed-out visitor is asked to sign in, not told the
+  // profile is missing.
+  test('a signed-out visitor is asked to sign in and sees no owner controls', async ({ page }) => {
     await page.addInitScript(seedConsent);
     await page.goto(`/user/${OTHER_USER}`);
-    await expect(page.getByText('Profile not found')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('heading', { name: 'Sign in to view this profile' })).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(page.getByText('Profile not found')).toHaveCount(0);
+    await expect(page.getByRole('main').getByRole('link', { name: 'Sign in' })).toHaveAttribute(
+      'href',
+      /\/auth\?redirect=%2Fuser%2F/,
+    );
     await expect(page.getByRole('tab')).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Edit profile' })).toHaveCount(0);
     await expect(page.getByRole('group', { name: 'View profile as' })).toHaveCount(0);
