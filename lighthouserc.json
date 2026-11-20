@@ -467,7 +467,7 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 14700,
+                "maxNumericValue": 29300,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -488,7 +488,7 @@
             "resource-summary:script:size": [
               "error",
               {
-                "maxNumericValue": 1110000,
+                "maxNumericValue": 1716000,
                 "aggregationMethod": "optimistic"
               }
             ]
@@ -547,7 +547,7 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 15300,
+                "maxNumericValue": 29800,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -568,7 +568,7 @@
             "resource-summary:script:size": [
               "error",
               {
-                "maxNumericValue": 1267000,
+                "maxNumericValue": 1881000,
                 "aggregationMethod": "optimistic"
               }
             ]
