@@ -11,6 +11,8 @@ import { scoreImage as sharedScoreImage, pickBest, isAcceptable, MIN_ACCEPTANCE_
 import { upsertImageAsset, deriveImageFormat } from '../_shared/image-assets.ts'
 import type { ImageSource } from '../_shared/scoreImage.ts'
 import { evaluateCover } from '../_shared/image-probe.ts'
+import { cityPhotoIsGrounded, validCityPhotoPoint } from '../_shared/city-photo-grounding.ts'
+import type { LatLng } from '../_shared/geo-link-guards.ts'
 import {
   type ImageResult,
   fetchFromPexels,
@@ -216,7 +218,8 @@ const COUNTRY_KEYWORDS: Record<string, string> = {
 // Scored image search (city, country, village)
 // ---------------------------------------------------------------------------
 
-function scoreCityImage(img: ImageResult, cityName: string, countryName: string): number {
+function scoreCityImage(img: ImageResult, cityName: string, countryName: string, point: LatLng): number {
+  if (!cityPhotoIsGrounded(img, point)) return Number.NEGATIVE_INFINITY
   return sharedScoreImage({
     alt: img.alt,
     width: img.width,
@@ -291,11 +294,16 @@ async function findBestScoredImage(
 // ---------------------------------------------------------------------------
 
 
-async function processCity(supabase: SupabaseClient, id: string, name: string, country: string, pK?: string, uK?: string, force = false) {
-  const { data: existing } = await supabase.from('cities').select('image_url, image_flagged, curated_image_url').eq('id', id).single()
+async function processCity(supabase: SupabaseClient, id: string, name: string, country: string, _pK?: string, _uK?: string, force = false) {
+  const { data: existing } = await supabase.from('cities').select('image_url, image_flagged, curated_image_url, name, latitude, longitude, updated_at, countries(name)').eq('id', id).single()
   if (existing?.curated_image_url) return { success: true, image_url: existing.curated_image_url, cached: true, source: 'curated' }
   if (!force && existing?.image_flagged) return { success: false, rejected: true, error: 'City image is held for review' }
   if (!force && !existing?.image_flagged && existing?.image_url) return { success: true, image_url: existing.image_url, cached: true }
+  if (!existing || typeof existing.name !== 'string' || typeof existing.updated_at !== 'string' || !validCityPhotoPoint(existing)) {
+    return { success: false, rejected: true, error: 'Stored city identity and coordinates are required for image selection' }
+  }
+  name = existing.name
+  country = linkedPlaceName(existing.countries)
 
   // Editorial pride-first queries for queer-essential cities. Bias image search
   // toward Pride parades, rainbow imagery, and historic LGBTQ+ landmarks for
@@ -304,22 +312,18 @@ async function processCity(supabase: SupabaseClient, id: string, name: string, c
   const cityKey = name.toLowerCase()
   const primaryQuery = CITY_PRIDE_KEYWORDS[cityKey] ?? (country ? `${name} ${country}` : name)
   const queries = [primaryQuery, `${name} city landmark`]
-  const best = await findBestScoredImage(queries, (img) => scoreCityImage(img, name, country), pK, uK)
+  const best = await findBestScoredImage(queries, (img) => scoreCityImage(img, name, country, existing))
 
   if (!best || !isAcceptable(best.score)) {
-    await supabase.from('cities').update({
-      image_url: null,
-      image_metadata: { rejected: true, reason: best ? `score ${best.score} < ${MIN_ACCEPTANCE_SCORE}` : 'no candidates', updated_at: new Date().toISOString() },
-      image_flagged: false, updated_at: new Date().toISOString(),
-    }).eq('id', id)
     return { success: false, error: `No acceptable image for ${name}`, rejected: true }
   }
 
   const storedUrl = await storeImageToStorage(supabase, best.url, 'city-images', 'cities', id)
   const metadata = { thumbnail: best.thumbnail, alt: best.alt, photographer: best.photographer, photographer_url: best.photographer_url, source: best.source, source_id: best.source_id, license: best.license, score: best.score, stored_locally: storedUrl !== best.url, updated_at: new Date().toISOString() }
 
-  const { error } = await supabase.from('cities').update({ image_url: storedUrl, image_metadata: metadata, image_flagged: false, updated_at: new Date().toISOString() }).eq('id', id)
+  const { data: changed, error } = await supabase.from('cities').update({ image_url: storedUrl, image_metadata: metadata, image_flagged: false, updated_at: new Date().toISOString() }).eq('id', id).eq('updated_at', existing.updated_at).select('id').maybeSingle()
   if (error) return { success: false, error: error.message }
+  if (!changed || Array.isArray(changed) || changed.id !== id) return { success: false, rejected: true, error: 'City changed during image selection' }
 
   await upsertImageAsset(supabase, { url: storedUrl, source: 'scraper', source_ref: `${best.source}:${best.source_id}`, license: best.license ?? null, attribution: best.photographer ?? null, alt_text: best.alt ?? null, alt_provenance: 'imported', width: best.width ?? null, height: best.height ?? null, format: deriveImageFormat(storedUrl) ?? deriveImageFormat(best.url), entity_type: 'city', entity_id: id, role: 'cover' })
   return { success: true, image_url: storedUrl, image_metadata: metadata, cached: false }
@@ -593,7 +597,7 @@ Deno.serve(async (req) => {
 
     const pK = Deno.env.get('PEXELS_API_KEY') ?? ''
     const uK = Deno.env.get('UNSPLASH_ACCESS_KEY') ?? ''
-    if (!pK && !uK) return errorResponse('No image API keys configured (PEXELS_API_KEY or UNSPLASH_ACCESS_KEY)', 500, req)
+    if (!pK && !uK && entityType !== 'city') return errorResponse('No image API keys configured (PEXELS_API_KEY or UNSPLASH_ACCESS_KEY)', 500, req)
 
     const { batchMode, batchLimit, forceUpdate, dry_run: dryRun } = body
     const force = forceUpdate === true

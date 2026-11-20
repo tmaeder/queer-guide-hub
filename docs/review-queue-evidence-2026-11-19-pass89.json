@@ -1,0 +1,37 @@
+{
+  "pass": 89,
+  "scope": "CI dependencies for immutable historical verifier regression and current travel label",
+  "repairs": [
+    "The exact recovered production migration requires four city IDs omitted from anonymous CI snapshots. Add synthetic local-only missing city/shared-geography fixtures before pending replay; preserve existing rows and snapshot country geometry.",
+    "Match the mobile search browser assertion to the existing Travel label in configuration and English translations."
+  ],
+  "safeguards": "Seed calls existing loopback URL guard before generating SQL. No production target, source data export, external network, geometry replacement, historical SQL edits or authentication waiver. Existing source rows use ON CONFLICT DO NOTHING; only synthetic Lippen receives the test classification. Dependency runs only while the historical version is absent from the snapshot.",
+  "validation": {
+    "fixture_guard_and_parser_tests": 2,
+    "fixture_sql": "Parses under both production PostgreSQL 17 and current tooling grammars",
+    "eslint": "passed",
+    "map_regressions_final": "240 passed across 23 files",
+    "targeted_contracts": "141 passed across five files",
+    "rank_font": "6 passed",
+    "local_sql_runtime_limit": "Docker daemon unavailable; actual migration replay is delegated to the existing isolated remote Critical paths job. No runtime replay pass claimed before that job succeeds."
+  },
+  "remote_ci_previous_head": {
+    "head": "28b574cb6",
+    "passed": [
+      "migration-versions",
+      "Critical data-quality gates",
+      "lint",
+      "typecheck",
+      "edge-fn-tests",
+      "worker-tests",
+      "scraper-tests",
+      "Trust & safety gates",
+      "Verify locales have all en.json keys"
+    ],
+    "fixed_failures": [
+      "Critical paths: missing production city fixtures in anonymous snapshot",
+      "Playwright + axe: stale Travelling label expectation"
+    ]
+  },
+  "source_repairs": "Moffat commit additionally closes its geography case. This brings the current pass to 15 repaired inactive cases, separate from 71 withheld image assignments and Alabama's open relationship review."
+}
