@@ -10973,6 +10973,7 @@ export type Database = {
           description: string | null
           description_i18n: Json
           discussion_recommended: boolean
+          glossary_tag_slug: string | null
           id: string
           is_active: boolean
           label: string
@@ -10991,6 +10992,7 @@ export type Database = {
           description?: string | null
           description_i18n?: Json
           discussion_recommended?: boolean
+          glossary_tag_slug?: string | null
           id?: string
           is_active?: boolean
           label: string
@@ -11009,6 +11011,7 @@ export type Database = {
           description?: string | null
           description_i18n?: Json
           discussion_recommended?: boolean
+          glossary_tag_slug?: string | null
           id?: string
           is_active?: boolean
           label?: string
