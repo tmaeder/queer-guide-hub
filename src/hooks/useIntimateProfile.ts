@@ -3,9 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import type { IntimateProfile, IntimateDiscoveryCard } from '@/lib/intimate/types';
+import type { TablesInsert } from '@/integrations/supabase/types';
 
 const SELECT =
-  'id, opted_in_at, consent_18plus_at, genitalia, genital_pictogram_key, size_cm, erection_angle_deg, body_pictogram_key, body_type, height_cm, age_band, role, into_tags, limits, safer_sex_prefs, discovery_city_id, discovery_active_until, moderation_status, last_active_at';
+  'id, opted_in_at, consent_18plus_at, genitalia, genital_pictogram_key, size_cm, erection_angle_deg, body_pictogram_key, body_type, height_cm, age_band, role, into_tags, limits, safer_sex_prefs, discovery_city_id, discovery_active_until, moderation_status, last_active_at, dating_prefs';
 
 export function useMyIntimateProfile() {
   const { user } = useAuth();
@@ -88,7 +89,11 @@ export function useUpsertIntimateProfile() {
       if (!user) throw new Error('not signed in');
       const { data, error } = await supabase
         .from('intimate_profiles')
-        .upsert({ id: user.id, ...patch }, { onConflict: 'id' })
+        // dating_prefs is jsonb (`Json` in the generated types); our shape is a
+        // narrower object, so widen it for the client.
+        .upsert({ id: user.id, ...patch } as TablesInsert<'intimate_profiles'>, {
+          onConflict: 'id',
+        })
         .select(SELECT)
         .single();
       if (error) throw error;

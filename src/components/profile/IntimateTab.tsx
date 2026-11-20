@@ -32,6 +32,7 @@ const SECTIONS: { step: WizardStep; label: string }[] = [
   { step: 'age', label: 'Your age' },
   { step: 'role', label: 'Your role' },
   { step: 'safer-sex', label: 'Your safer sex' },
+  { step: 'seeking', label: 'Who you are looking for' },
   { step: 'text', label: 'Looking for' },
 ];
 
@@ -195,7 +196,7 @@ export function IntimateTab() {
           <p className="text-sm text-muted-foreground">What you want from others.</p>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
-          {sections.filter((x) => x.step === 'text').map(field)}
+          {sections.filter((x) => x.step === 'seeking' || x.step === 'text').map(field)}
           <section aria-label="Hanky code" className="flex flex-col gap-2">
             <h4 className="text-sm font-medium">Hanky code</h4>
             <HankyCodePicker />
