@@ -19,7 +19,9 @@ import { INTO_TAGS as FALLBACK_INTO, LIMITS as FALLBACK_LIMITS } from '@/assets/
 import { getGenitalPictogramSet } from '@/assets/intimate/pictograms';
 import type { WizardStep } from '@/lib/intimate/types';
 
-const KinkChecklistPanel = lazyRetry(() => import('@/components/kinks/KinkChecklistPanel'));
+const KinkGridEditor = lazyRetry(() =>
+  import('@/components/kinks/KinkGridEditor').then((m) => ({ default: m.KinkGridEditor })),
+);
 
 const SECTIONS: { step: WizardStep; label: string }[] = [
   { step: 'genitalia', label: 'Genitalia' },
@@ -183,7 +185,7 @@ export function IntimateTab() {
             Private by default. Your no's and hard limits are never shown to anyone.
           </p>
           <Suspense fallback={<div className="h-40 rounded-element bg-muted" />}>
-            <KinkChecklistPanel />
+            <KinkGridEditor />
           </Suspense>
         </section>
       )}
