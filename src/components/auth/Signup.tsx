@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, EyeOff } from '@/components/icons';
+import { ArrowLeft, ArrowRight, Eye, EyeOff, KeyRound } from '@/components/icons';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { Trans, useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,8 +27,16 @@ interface Props {
 
 const MIN_PASSWORD_LEN = 8;
 
+const STEPS = ['email', 'password', 'confirm'] as const;
+type Step = (typeof STEPS)[number];
+const STEP_FIELD: Record<Step, 'email' | 'password' | 'consent'> = {
+  email: 'email',
+  password: 'password',
+  confirm: 'consent',
+};
+
 /**
- * One-screen signup: email + password + consent creates the account.
+ * Three-step signup — email (or Apple), password, consent — creates the account.
  *
  * Username and avatar used to be a mandatory second screen BEFORE the account
  * existed. They now live in onboarding, because `handle_new_user` mints both
@@ -53,6 +61,7 @@ export default function Signup({ onBack, redirectTo }: Props) {
     required: captchaRequired,
   } = useTurnstile();
 
+  const [stepIndex, setStepIndex] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordScore, setPasswordScore] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -98,7 +107,14 @@ export default function Signup({ onBack, redirectTo }: Props) {
     const next = { ...values, ...patch };
     setValues(next);
     if (attempted) setErrors(zodFieldErrors(schema, next));
-    else if ('consent' in patch) {
+    else if (!('consent' in patch)) {
+      // A step's error clears as soon as the reader edits that field.
+      setErrors((prev) => {
+        const rest = { ...prev };
+        for (const k of Object.keys(patch)) delete rest[k];
+        return rest;
+      });
+    } else {
       const consentError = zodFieldErrors(schema, next).consent;
       setErrors((prev) => {
         const { consent: _drop, ...rest } = prev;
@@ -191,7 +207,46 @@ export default function Signup({ onBack, redirectTo }: Props) {
     }
   };
 
-  const firstError = submitError ?? errors.email ?? errors.password ?? errors.consent ?? null;
+  const step = STEPS[stepIndex];
+  const stepField = STEP_FIELD[step];
+  const stepError = errors[stepField] ?? submitError ?? null;
+
+  // Validate only the current step's field, then move on. The final step
+  // submits through handleFormSubmit, which re-checks everything.
+  const next = () => {
+    const fieldErrors = zodFieldErrors(schema, values);
+    const own = fieldErrors[stepField];
+    if (own) {
+      setErrors({ [stepField]: own });
+      onInvalid({ [stepField]: own });
+      return;
+    }
+    if (step === 'password' && strengthError) {
+      setErrors({ password: strengthError });
+      emit('signup_validation_error', { metadata: { error: 'password_too_weak' } });
+      return;
+    }
+    setErrors({});
+    setSubmitError(null);
+    setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
+  };
+
+  const back = () => {
+    setErrors({});
+    setSubmitError(null);
+    setStepIndex((i) => Math.max(i - 1, 0));
+  };
+
+  const titles: Record<Step, string> = {
+    email: t('auth.signup.title', 'Create your account'),
+    password: t('auth.signup.passwordTitle', 'Choose a password'),
+    confirm: t('auth.signup.confirmTitle', 'One last thing'),
+  };
+  const blurbs: Record<Step, string> = {
+    email: t('auth.signup.blurb', 'Free, takes a minute.'),
+    password: t('auth.signup.passwordBlurb', 'At least 8 characters. Longer is stronger.'),
+    confirm: t('auth.signup.confirmBlurb', 'Confirm and your account is ready.'),
+  };
 
   return (
     <Card className="max-w-md mx-auto rounded-container">
@@ -201,30 +256,56 @@ export default function Signup({ onBack, redirectTo }: Props) {
           <div className="flex items-center justify-center">
             <Wordmark className="text-title text-foreground" />
           </div>
+          <ol
+            className="m-0 flex list-none gap-2 p-0"
+            aria-label={t('auth.signup.progress', {
+              defaultValue: 'Step {{n}} of {{total}}',
+              n: stepIndex + 1,
+              total: STEPS.length,
+            })}
+          >
+            {STEPS.map((s, i) => (
+              <li
+                key={s}
+                aria-current={i === stepIndex ? 'step' : undefined}
+                className={`h-1 flex-1 rounded-full transition-colors duration-normal ${
+                  i <= stepIndex ? 'bg-foreground' : 'bg-muted'
+                }`}
+              />
+            ))}
+          </ol>
+          <p className="text-center text-2xs uppercase tracking-label text-muted-foreground">
+            {t('auth.signup.progress', {
+              defaultValue: 'Step {{n}} of {{total}}',
+              n: stepIndex + 1,
+              total: STEPS.length,
+            })}
+          </p>
           <CardTitle className="text-center text-headline font-bold tracking-tight text-balance">
-            {t('auth.signup.title', 'Create your account')}
+            {titles[step]}
           </CardTitle>
-          <CardDescription className="text-center text-15">
-            {t('auth.signup.blurb', 'Free, takes a minute.')}
-          </CardDescription>
+          <CardDescription className="text-center text-15">{blurbs[step]}</CardDescription>
         </div>
       </CardHeader>
 
       <CardContent>
         <div className="flex flex-col gap-6">
-          <OAuthButtons onError={setSubmitError} />
+          {step === 'email' && (
+            <>
+              <OAuthButtons onError={setSubmitError} />
+              <div className="flex items-center gap-4" role="separator">
+                <span className="h-px flex-1 bg-border-hairline" aria-hidden />
+                <span className="text-2xs uppercase tracking-label text-muted-foreground">
+                  {t('auth.signup.orWithEmail', 'Or with email')}
+                </span>
+                <span className="h-px flex-1 bg-border-hairline" aria-hidden />
+              </div>
+            </>
+          )}
 
-          <div className="flex items-center gap-4" role="separator">
-            <span className="h-px flex-1 bg-border-hairline" aria-hidden />
-            <span className="text-2xs uppercase tracking-label text-muted-foreground">
-              {t('auth.signup.orWithEmail', 'Or with email')}
-            </span>
-            <span className="h-px flex-1 bg-border-hairline" aria-hidden />
-          </div>
-
-          {firstError && (
+          {stepError && (
             <Alert variant="destructive" role="alert">
-              <AlertDescription>{firstError}</AlertDescription>
+              <AlertDescription>{stepError}</AlertDescription>
             </Alert>
           )}
 
@@ -235,97 +316,162 @@ export default function Signup({ onBack, redirectTo }: Props) {
           <form
             onSubmit={(e) => {
               e.preventDefault();
+              if (step !== 'confirm') return next();
               emit('signup_submit_attempt');
               void handleFormSubmit();
             }}
             className="flex flex-col gap-4"
             noValidate
           >
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="signup-email">{t('auth.fields.email', 'Email')}</Label>
-              <Input
-                id="signup-email"
-                type="email"
-                autoComplete="email"
-                placeholder={t('auth.placeholders.email', 'you@example.com')}
-                disabled={isSubmitting}
-                aria-invalid={!!errors.email}
-                name="email"
-                value={email}
-                onChange={(e) => update({ email: e.target.value })}
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="signup-password">{t('auth.fields.password', 'Password')}</Label>
-              <div className="relative">
+            {step === 'email' && (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="signup-email">{t('auth.fields.email', 'Email')}</Label>
                 <Input
-                  id="signup-password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  placeholder={t('auth.placeholders.passwordMin8', 'At least 8 characters')}
+                  id="signup-email"
+                  type="email"
+                  autoComplete="email"
+                  autoFocus
+                  placeholder={t('auth.placeholders.email', 'you@example.com')}
                   disabled={isSubmitting}
-                  aria-invalid={!!errors.password}
-                  name="password"
-                  value={password}
-                  onChange={(e) => update({ password: e.target.value })}
-                  className="pe-12"
+                  aria-invalid={!!errors.email}
+                  name="email"
+                  value={email}
+                  onChange={(e) => update({ email: e.target.value })}
                 />
-                {/* Inside the field, end-aligned — same as sign-in. */}
+              </div>
+            )}
+
+            {step === 'password' && (
+              <div className="flex flex-col gap-2">
+                {/* The email rides along for password managers. */}
+                <input
+                  type="email"
+                  name="email"
+                  autoComplete="username"
+                  value={email}
+                  readOnly
+                  hidden
+                />
+                <Label htmlFor="signup-password">{t('auth.fields.password', 'Password')}</Label>
+                <div className="relative">
+                  <Input
+                    id="signup-password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    autoFocus
+                    placeholder={t('auth.placeholders.passwordMin8', 'At least 8 characters')}
+                    disabled={isSubmitting}
+                    aria-invalid={!!errors.password}
+                    name="password"
+                    value={password}
+                    onChange={(e) => update({ password: e.target.value })}
+                    className="pe-12"
+                  />
+                  {/* Inside the field, end-aligned — same as sign-in. */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute inset-y-0 end-0 my-auto"
+                    onClick={() => setShowPassword((s) => !s)}
+                    aria-label={
+                      showPassword
+                        ? t('auth.hidePassword', 'Hide password')
+                        : t('auth.showPassword', 'Show password')
+                    }
+                    disabled={isSubmitting}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </Button>
+                </div>
+                <PasswordStrengthMeter
+                  password={password}
+                  email={email}
+                  onScoreChange={setPasswordScore}
+                />
+                {/* Enrolment needs a signed-in user, so the passkey is offered
+                    on the first onboarding screen, right after this wizard. */}
+                <p className="flex items-center gap-2 text-13 text-muted-foreground">
+                  <KeyRound className="h-4 w-4 shrink-0" aria-hidden />
+                  {t(
+                    'auth.signup.passkeyNext',
+                    'Prefer no password? Add a passkey right after you sign up.',
+                  )}
+                </p>
+              </div>
+            )}
+
+            {step === 'confirm' && (
+              <>
+                <div className="flex items-center justify-between gap-4 rounded-element bg-muted px-4 py-2 text-13">
+                  <span className="min-w-0 truncate">
+                    <span className="text-muted-foreground">
+                      {t('auth.signup.signingUpAs', 'Signing up as')}
+                    </span>{' '}
+                    <span className="font-bold">{email}</span>
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setStepIndex(0)}
+                    disabled={isSubmitting}
+                  >
+                    {t('auth.signup.change', 'Change')}
+                  </Button>
+                </div>
+                <Label className="flex items-start gap-4 rounded-element bg-muted p-4 text-13 font-normal leading-relaxed text-muted-foreground">
+                  <Checkbox
+                    id="signup-consent"
+                    checked={consent === true}
+                    onCheckedChange={(v) => update({ consent: v === true })}
+                    aria-label={t(
+                      'auth.consent.combinedAria',
+                      'Accept terms, privacy, confirm 18 or older, and acknowledge the 18+ dating platform',
+                    )}
+                    className="mt-0.5"
+                    disabled={isSubmitting}
+                  />
+                  <span>
+                    {/* components map (not JSX children) — child-index inference broke when a formatter split " and " into two text nodes, dropping the <3> link */}
+                    <Trans
+                      i18nKey="auth.consent.combined"
+                      defaults="I agree to the <1>Terms</1> and <3>Privacy Policy</3>, confirm I am 18 or older, and understand Queer Guide is an 18+ platform that includes dating and intimate features."
+                      components={{
+                        1: <LocalizedLink to="/terms">Terms</LocalizedLink>,
+                        3: <LocalizedLink to="/privacy">Privacy Policy</LocalizedLink>,
+                      }}
+                    />
+                  </span>
+                </Label>
+                {captcha}
+              </>
+            )}
+
+            <div className="mt-2 flex gap-2">
+              {stepIndex > 0 && (
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute inset-y-0 end-0 my-auto"
-                  onClick={() => setShowPassword((s) => !s)}
-                  aria-label={
-                    showPassword
-                      ? t('auth.hidePassword', 'Hide password')
-                      : t('auth.showPassword', 'Show password')
-                  }
+                  variant="outline"
+                  size="lg"
+                  onClick={back}
                   disabled={isSubmitting}
+                  aria-label={t('auth.signup.back', 'Back')}
+                  className="px-4"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  <ArrowLeft className="h-4 w-4 rtl:rotate-180" aria-hidden />
                 </Button>
-              </div>
-              <PasswordStrengthMeter
-                password={password}
-                email={email}
-                onScoreChange={setPasswordScore}
-              />
-            </div>
-
-            <Label className="flex items-start gap-4 rounded-element bg-muted p-4 text-13 font-normal leading-relaxed text-muted-foreground">
-              <Checkbox
-                id="signup-consent"
-                checked={consent === true}
-                onCheckedChange={(v) => update({ consent: v === true })}
-                aria-label={t(
-                  'auth.consent.combinedAria',
-                  'Accept terms, privacy, confirm 18 or older, and acknowledge the 18+ dating platform',
+              )}
+              <Button type="submit" size="lg" disabled={isSubmitting} className="flex-1">
+                {isSubmitting && <TrackLoader size={16} className="mr-2" />}
+                {step === 'confirm'
+                  ? t('auth.signup.create', 'Create account')
+                  : t('auth.signup.continue', 'Continue')}
+                {step !== 'confirm' && (
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
                 )}
-                className="mt-0.5"
-                disabled={isSubmitting}
-              />
-              <span>
-                {/* components map (not JSX children) — child-index inference broke when a formatter split " and " into two text nodes, dropping the <3> link */}
-                <Trans
-                  i18nKey="auth.consent.combined"
-                  defaults="I agree to the <1>Terms</1> and <3>Privacy Policy</3>, confirm I am 18 or older, and understand Queer Guide is an 18+ platform that includes dating and intimate features."
-                  components={{
-                    1: <LocalizedLink to="/terms">Terms</LocalizedLink>,
-                    3: <LocalizedLink to="/privacy">Privacy Policy</LocalizedLink>,
-                  }}
-                />
-              </span>
-            </Label>
-
-            {captcha}
-
-            <Button type="submit" size="lg" disabled={isSubmitting} className="mt-2 w-full">
-              {isSubmitting && <TrackLoader size={16} className="mr-2" />}
-              {t('auth.signup.create', 'Create account')}
-            </Button>
+              </Button>
+            </div>
           </form>
 
           <div className="border-t border-border-hairline pt-4 text-center">
