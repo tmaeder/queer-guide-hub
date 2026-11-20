@@ -77,15 +77,22 @@ describe('UsernameSelector — suggestion list', () => {
 describe('UsernameSelector — pre-picked suggestion', () => {
   it('picks the first suggestion when the current handle is not one of them', async () => {
     const onChange = vi.fn();
-    render(<UsernameSelector value="member8290" onChange={onChange} />);
+    render(<UsernameSelector value="member8290" onChange={onChange} prepick />);
     await waitFor(() => expect(onChange).toHaveBeenCalledWith('queer_dev'));
     expect(screen.queryByText(/Selected:/i)).not.toBeInTheDocument();
   });
 
   it('keeps a handle that is already one of the suggestions', async () => {
     const onChange = vi.fn();
-    render(<UsernameSelector value="pride_user" onChange={onChange} />);
+    render(<UsernameSelector value="pride_user" onChange={onChange} prepick />);
     await waitFor(() => screen.getByRole('button', { name: 'pride_user' }));
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('does not pick anything without prepick (settings rename)', async () => {
+    const onChange = vi.fn();
+    render(<UsernameSelector value={null} onChange={onChange} />);
+    await waitFor(() => screen.getByRole('button', { name: 'queer_dev' }));
     expect(onChange).not.toHaveBeenCalled();
   });
 });

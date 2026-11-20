@@ -30,13 +30,13 @@ export function ProfileSetupStep({
     <div className="flex flex-col gap-6">
       {only !== 'avatar' && (
         <div className="flex flex-col gap-2">
-          <UsernameSelector value={username} onChange={onUsernameChange} />
+          <UsernameSelector value={username} onChange={onUsernameChange} prepick />
         </div>
       )}
 
       {only !== 'username' && (
         <div className="flex flex-col gap-2">
-          <AvatarQuickPick value={avatar} onChange={onAvatarChange} />
+          <AvatarQuickPick value={avatar} onChange={onAvatarChange} prepick />
         </div>
       )}
     </div>

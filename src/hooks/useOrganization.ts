@@ -146,6 +146,23 @@ export function useOrganizationsList(opts: {
   });
 }
 
+/** Countries for the directory's location filter. ~250 rows, cached for the session. */
+export function useOrganizationCountries() {
+  return useQuery({
+    queryKey: ['organization-countries'],
+    staleTime: Infinity,
+    queryFn: async (): Promise<{ code: string; name: string }[]> => {
+      const { data, error } = await supabase
+        .from('countries')
+        .select('code, name')
+        .is('duplicate_of_id', null)
+        .order('name');
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  });
+}
+
 export interface TestingSite extends OrgListItem {
   website: string | null;
   email: string | null;

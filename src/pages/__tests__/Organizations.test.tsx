@@ -11,7 +11,7 @@ vi.mock('@/components/organizations/OrganizationCard', () => ({
   OrganizationCard: ({ org }: { org: { name: string } }) => <div data-testid="org">{org.name}</div>,
 }));
 
-type Opts = { role?: string; q?: string; limit?: number; enabled?: boolean };
+type Opts = { role?: string; q?: string; countryCode?: string; limit?: number; enabled?: boolean };
 const calls: Opts[] = [];
 const byRole: Record<string, string[]> = {
   support: ['Switchboard'],
@@ -22,7 +22,16 @@ const byRole: Record<string, string[]> = {
   organizer: [],
   community: [],
 };
+vi.mock('@/hooks/useHomeRegion', () => ({
+  useHomeRegion: () => ({ countryCode: 'de' }),
+}));
 vi.mock('@/hooks/useOrganization', () => ({
+  useOrganizationCountries: () => ({
+    data: [
+      { code: 'DE', name: 'Germany' },
+      { code: 'GB', name: 'United Kingdom' },
+    ],
+  }),
   useOrganizationsList: (opts: Opts) => {
     calls.push(opts);
     if (opts.enabled === false) return { data: [], isLoading: false };
@@ -89,5 +98,24 @@ describe('Organizations directory', () => {
     });
     expect(calls.some((c) => c.q === 'swit' && c.enabled !== false)).toBe(true);
     expect(screen.getByText('Search Hit')).toBeInTheDocument();
+  });
+
+  it('filters by country in the query and keeps it in the URL', () => {
+    renderAt('/organizations?role=support&country=gb');
+    expect(screen.getByRole('combobox', { name: 'Country' })).toHaveValue('GB');
+    expect(calls.some((c) => c.role === 'support' && c.countryCode === 'GB' && c.enabled !== false)).toBe(true);
+  });
+
+  it('scopes the overview sections to the chosen country', () => {
+    renderAt('/organizations?country=GB');
+    const publisher = calls.filter((c) => c.role === 'publisher');
+    expect(publisher.length).toBeGreaterThan(0);
+    expect(publisher.every((c) => c.countryCode === 'GB')).toBe(true);
+  });
+
+  it('offers Near me from the visitor region', () => {
+    renderAt();
+    fireEvent.click(screen.getByRole('button', { name: 'Near me' }));
+    expect(screen.getByRole('combobox', { name: 'Country' })).toHaveValue('DE');
   });
 });
