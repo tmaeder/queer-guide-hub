@@ -18,6 +18,7 @@
 --      to the plain name; trg_zz_city_alias_sync keeps the old name as an
 --      alias, slugs are unchanged. Swedish genitive "s" is dropped
 --      (Ystads kommun -> Ystad); Gotlands kommun -> Gotland (the island).
+--      Also Estonian "X vald" / "X linn" and Croatian "Općina X".
 do $$
 declare
   r record; v_qid text; v_title text; v_new int := 0; v_moved int; v_detached int; v_res jsonb;
@@ -165,7 +166,15 @@ begin
       ('739e634e-3127-46e9-996c-fbc64d72f9ef'::uuid, 'Timrå'),
       ('a72cf2c6-8cd8-4130-b12e-2578fd0c35bc'::uuid, 'Vaggeryd'),
       ('ad44d3ba-3cd9-4272-9d94-ed8c9bd528a5'::uuid, 'Vallentuna'),
-      ('89e76210-0d42-4484-a90b-42dec271ab68'::uuid, 'Ystad')
+      ('89e76210-0d42-4484-a90b-42dec271ab68'::uuid, 'Ystad'),
+      -- Estonian "vald" (rural municipality) / "linn" (town), Croatian "Općina".
+      -- Tartu vald is NOT renamed: it is the rural municipality around the
+      -- city of Tartu, which has its own row.
+      ('4fd0e2bf-dec1-4489-a91c-ab16f77ef93f'::uuid, 'Haapsalu'),
+      ('6c38b129-b79d-4908-a19a-d719ca2cb517'::uuid, 'Valga'),
+      ('043462de-decb-4fdf-9a6c-27424e84a17d'::uuid, 'Alutaguse'),
+      ('b122460d-689e-4503-9e51-fad24f1a736b'::uuid, 'Rae'),
+      ('8807bf14-485a-4ab6-950a-7563c6e54677'::uuid, 'Medulin')
     ) t(id, new_name)
   loop
     update public.cities set name = r.new_name
