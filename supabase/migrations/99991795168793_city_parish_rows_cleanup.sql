@@ -29,8 +29,11 @@ begin
   perform set_config('app.actor', 'migration:city_parish_cleanup', true);
 
   create temp table _par on commit drop as
-    select id, country_id, region_name, latitude, longitude from public.cities
-     where duplicate_of_id is null and name ~* '^\s*parroquia\s';
+    select id, country_id, region_name, latitude, longitude from public.cities c
+     where duplicate_of_id is null and name ~* '^\s*parroquia\s'
+       -- skip rows whose geo spine rows are missing (partial CI snapshot)
+       and exists (select 1 from public.geo_places g where g.id = c.id)
+       and exists (select 1 from public.geo_places g where g.id = c.country_id);
 
   create temp table _pv on commit drop as
     select v.id venue_id, p.id parish_id, p.country_id, p.region_name,
@@ -107,8 +110,7 @@ begin
     v_new, v_moved, v_detached, v_arch;
 
   if exists (select 1 from public.venues v join public.cities c on c.id = v.city_id
-              where v.duplicate_of_id is null and c.name ~* '^\s*parroquia\s'
-                and c.duplicate_of_id is null) then
+              where v.duplicate_of_id is null and c.id in (select id from _par)) then
     raise exception 'venues still on a parish row';
   end if;
 end $$;

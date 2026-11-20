@@ -38,7 +38,11 @@ begin
         ('385461ab-202a-4f25-a01f-57c2ca06df77'::uuid, 'Huehuetoca'),
         ('b3d65da8-d6d9-4412-924e-3dd7484c0563'::uuid, 'Grândola')
       ) m(row_id, target)
-      join public.cities c on c.id = m.row_id and c.duplicate_of_id is null;
+      join public.cities c on c.id = m.row_id and c.duplicate_of_id is null
+     -- a partial snapshot (CI) can lack the geo spine rows that city inserts
+     -- and archives write through; skip such rows instead of failing.
+     where exists (select 1 from public.geo_places g where g.id = c.id)
+       and exists (select 1 from public.geo_places g where g.id = c.country_id);
 
   create temp table _dv on commit drop as
     select v.id venue_id, m.row_id, m.target, m.country_id, m.region_name,
