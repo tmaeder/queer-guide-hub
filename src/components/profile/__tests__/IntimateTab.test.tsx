@@ -20,6 +20,13 @@ vi.mock('@/hooks/useIntimateProfile', () => ({
   useSetIntimateText: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 vi.mock('@/components/intimate/HankyCodePicker', () => ({ HankyCodePicker: () => null }));
+vi.mock('@/hooks/useHankySignals', () => ({
+  roleFromHanky: () => [],
+  useHankyVariants: () => ({ data: [] }),
+  useMyHankySignals: () => ({ data: {} }),
+}));
+vi.mock('@/hooks/useKinkRatings', () => ({ useMyKinkRatings: () => ({ data: new Map() }) }));
+vi.mock('@/hooks/useKinkTaxonomy', () => ({ useKinkTaxonomy: () => ({ data: undefined }) }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 
 import { IntimateTab } from '../IntimateTab';

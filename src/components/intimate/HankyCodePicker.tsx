@@ -53,10 +53,12 @@ export function HankyCodePicker({
 
   if (!variants?.length) return null;
   const variantOf = new Map(variants.map((v) => [v.colorId, v.variantId]));
-  const rows = HANKY_CODE.flatMap((entry) => {
-    const variantId = variantOf.get(entry.id);
-    return variantId ? [{ entry, variantId }] : [];
-  });
+  const rows = [...HANKY_CODE]
+    .sort((a, b) => colourOrder(a.hex) - colourOrder(b.hex))
+    .flatMap((entry) => {
+      const variantId = variantOf.get(entry.id);
+      return variantId ? [{ entry, variantId }] : [];
+    });
 
   const set = (variantId: string, side: HankySide | null) => {
     if (onChange) return onChange(variantId, side);
@@ -86,7 +88,7 @@ export function HankyCodePicker({
             'Each colour is a kink. Wear it on the left pocket if you give or top, the right if you receive or bottom, both if you do either. Shown to other opted-in members.',
           )}
       </p>
-      <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 md:grid-cols-8">
+      <div className="-mx-1 flex snap-x gap-1.5 overflow-x-auto px-1 pb-2">
         {rows.map(({ entry, variantId }) => {
           const side = mine[variantId];
           return (
@@ -98,7 +100,7 @@ export function HankyCodePicker({
               title={t(entry.meaningKey, entry.meaningEn)}
               onClick={() => set(variantId, side ? null : 'left')}
               className={cn(
-                'relative flex min-h-0 flex-col items-center gap-1 rounded-element px-1 pb-1.5 pt-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40',
+                'relative flex min-h-0 w-24 shrink-0 snap-start flex-col items-center gap-1 rounded-element px-1 pb-1.5 pt-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40',
                 side ? 'bg-foreground text-background' : 'bg-muted hover:bg-surface-container-high',
               )}
             >
@@ -133,11 +135,10 @@ export function HankyCodePicker({
                 size={44}
                 className="shrink-0"
               />
-              <span className="flex-1 text-sm">
+              <span className="flex min-w-0 flex-1 flex-col text-sm leading-tight">
                 <span className="font-bold">{t(entry.colorKey, entry.colorEn)}</span>
                 <span className="text-muted-foreground">
-                  {' '}
-                  · {t(entry.meaningKey, entry.meaningEn)}
+                  {t(entry.meaningKey, entry.meaningEn)}
                 </span>
               </span>
               <div
@@ -154,10 +155,11 @@ export function HankyCodePicker({
                     disabled={pending}
                     onPressedChange={() => set(variantId, s.value)}
                   >
-                    {t(`intimate.hanky.side.${s.value}`, s.label)}
-                    <span className="font-normal opacity-70">
-                      {' · '}
-                      {t(`intimate.hanky.sideMeaning.${s.value}`, SIDE_MEANING[s.value])}
+                    <span className="flex flex-col items-center leading-tight">
+                      <span>{t(`intimate.hanky.side.${s.value}`, s.label)}</span>
+                      <span className="font-normal opacity-70">
+                        {t(`intimate.hanky.sideMeaning.${s.value}`, SIDE_MEANING[s.value])}
+                      </span>
                     </span>
                   </ToggleChip>
                 ))}
@@ -168,4 +170,16 @@ export function HankyCodePicker({
       )}
     </div>
   );
+}
+
+/** Rainbow order by hue; greys and black/white last, light to dark. */
+function colourOrder(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+  if (d < 0.15) return 1000 - max * 100;
+  const h = max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  // +15° so near-360 red sorts first, not last.
+  return (h * 60 + 15) % 360;
 }
