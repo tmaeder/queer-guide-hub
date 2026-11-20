@@ -1848,6 +1848,11 @@ h2:not(.font-sans),
 .route-network-rail__inner--breadcrumbs {
   display: block;
 }
+/* Sit a little inside the floating topbar's edges rather than flush with them. */
+.route-network-rail__inner--breadcrumbs .route-network-rail__canvas {
+  width: auto;
+  margin-inline: 24px;
+}
 .route-network-rail__canvas {
   position: relative;
   width: 100%;
@@ -1942,6 +1947,9 @@ h2:not(.font-sans),
   }
   .route-network-rail--breadcrumbs {
     height: 66px;
+  }
+  .route-network-rail__inner--breadcrumbs .route-network-rail__canvas {
+    margin-inline: 12px;
   }
   .route-network-rail__inner {
     gap: 10px;
