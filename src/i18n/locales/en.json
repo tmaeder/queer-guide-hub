@@ -3221,7 +3221,7 @@
       },
       "identity": {
         "title": "Identity & dating",
-        "description": "Identity details save automatically. Dating has its own controls."
+        "description": "Who you are, dating, and the optional 18+ intimate profile."
       },
       "privacy": {
         "title": "Privacy & visibility",
@@ -3246,7 +3246,16 @@
       "avatar": {
         "title": "Your avatar",
         "description": "Choose how your profile appears."
+      },
+      "body": {
+        "title": "Body & about",
+        "description": "Build, height, weight and clothing sizes. Private unless you share it."
       }
+    },
+    "groups": {
+      "you": "You",
+      "preferences": "Preferences",
+      "account": "Account"
     }
   },
   "map": {

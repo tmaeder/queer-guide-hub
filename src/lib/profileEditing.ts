@@ -1,13 +1,12 @@
 /** Sections of the /settings page, in display order. */
 export const SETTINGS_SECTIONS = [
   'profile',
-  'identity',
   'body',
-  'intimate',
+  'identity',
+  'travel',
+  'notifications',
   'privacy',
   'security',
-  'notifications',
-  'travel',
   'data',
 ] as const;
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
@@ -25,7 +24,7 @@ const LEGACY_SECTIONS: Record<string, ProfileEditorSection> = {
   identity: 'identity',
   dating: 'identity',
   relationships: 'identity',
-  intimate: 'intimate',
+  intimate: 'identity',
   privacy: 'privacy',
   visibility: 'privacy',
   account: 'security',

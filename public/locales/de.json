@@ -3027,7 +3027,7 @@
       },
       "identity": {
         "title": "Identität & Dating",
-        "description": "Identitätsangaben werden automatisch gespeichert. Dating hat eigene Einstellungen."
+        "description": "Wer du bist, Dating und das optionale Intimprofil ab 18."
       },
       "privacy": {
         "title": "Privatsphäre & Sichtbarkeit",
@@ -3052,7 +3052,16 @@
       "avatar": {
         "title": "Dein Avatar",
         "description": "Wähle, wie dein Profil aussieht."
+      },
+      "body": {
+        "title": "Körper & mehr",
+        "description": "Statur, Größe, Gewicht und Kleidergrößen. Privat, außer du teilst sie."
       }
+    },
+    "groups": {
+      "you": "Du",
+      "preferences": "Präferenzen",
+      "account": "Konto"
     }
   },
   "map": {

@@ -21,6 +21,10 @@ import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
 import { DangerZone } from '@/components/profile/settings/DangerZone';
 import { ModerationSettings } from '@/components/profile/settings/ModerationSettings';
 import { BlueskyConnect } from '@/components/profile/settings/BlueskyConnect';
+import { KinkVisibilitySettings } from '@/components/kinks/KinkVisibilitySettings';
+import { PhotoGallery } from '@/components/profile/PhotoGallery';
+import { BodyProfileEditor } from '@/components/profile/BodyProfileEditor';
+import { IntimateAboutField } from '@/components/profile/IntimateTextFields';
 import { IntimateTab } from '@/components/profile/IntimateTab';
 import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
 import { StatusEditor } from '@/components/status/StatusEditor';
@@ -53,7 +57,6 @@ const TITLES: Record<ProfileEditorSection, string> = {
   profile: 'Profile',
   identity: 'Identity & dating',
   body: 'Body & about',
-  intimate: 'Intimate profile',
   privacy: 'Privacy & visibility',
   security: 'Sign-in & security',
   notifications: 'Notifications',
@@ -63,9 +66,8 @@ const TITLES: Record<ProfileEditorSection, string> = {
 };
 const SUBTITLES: Record<ProfileEditorSection, string> = {
   profile: 'Your vibe, name, pronouns, bio and links. Details save automatically.',
-  identity: 'Identity details save automatically.',
+  identity: 'Who you are, and the optional 18+ intimate profile.',
   body: 'Your build, age band, height and a few lines about you. Part of the 18+ intimate profile.',
-  intimate: 'Optional and 18+. Visible only to other members who have also opted in.',
   privacy: 'Who sees each part of your profile. Changes save automatically.',
   security: 'Your handle, passkey and password.',
   notifications: 'What we send to your device and inbox.',
@@ -361,7 +363,23 @@ function ProfileSettingsContent({
   const editor =
     section === 'profile' ? (
       <>
+        <section aria-labelledby="settings-avatar" className="flex flex-col gap-2">
+          <h3
+            id="settings-avatar"
+            className="text-2xs font-bold uppercase tracking-wide text-muted-foreground"
+          >
+            Avatar & profile picture
+          </h3>
+          <AvatarChooser
+            email={user.email || ''}
+            currentUrl={px?.avatar_url}
+            currentConfig={px?.avatar_config as AvatarConfig | null}
+            onSave={handleAvatarSave}
+          />
+        </section>
+        <PhotoGallery userId={user.id} isOwnProfile />
         <StatusEditor />
+        <IntimateAboutField />
         <BasicInfoTab
           formData={formData}
           profile={profile}
@@ -379,11 +397,10 @@ function ProfileSettingsContent({
           onComingOutChange={handleComingOutChange}
           onFlagsChange={handleIdentityFlagsChange}
         />
+        <IntimateTab />
       </>
     ) : section === 'body' ? (
-      <IntimateTab part="body" />
-    ) : section === 'intimate' ? (
-      <IntimateTab />
+      <BodyProfileEditor />
     ) : section === 'privacy' ? (
       <>
         <PrivacyTab
@@ -393,6 +410,7 @@ function ProfileSettingsContent({
           focusField={focusField}
           showSecurity={false}
         />
+        <KinkVisibilitySettings />
         <ModerationSettings />
         <BlueskyConnect />
       </>

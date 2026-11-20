@@ -10,7 +10,7 @@ interface TravelPrefs {
   interests?: string[];
   accessibility_needs?: string[];
   preferred_accommodation?: string[];
-  travel_style?: string;
+  travel_style?: string | string[];
 }
 
 interface PreferencesMirrorCardProps {
@@ -44,24 +44,36 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
     onUpdate({ travel_preferences: { ...travel, budget_level: undefined } });
 
   const isEmpty =
-    interests.length === 0 && accessibility.length === 0 && !travel.budget_level && !travel.travel_style;
+    interests.length === 0 &&
+    accessibility.length === 0 &&
+    !travel.budget_level &&
+    !(Array.isArray(travel.travel_style) ? travel.travel_style.length : travel.travel_style);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Your preferences</CardTitle>
         <p className="text-sm text-muted-foreground">
-          What we use to rank places, stays and trips for you. Edit travel prefs in
-          Travel preferences above; remove anything here.
+          What we use to rank places, stays and trips for you. Edit travel prefs in Travel
+          preferences above; remove anything here.
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {isEmpty && (
           <p className="text-sm text-muted-foreground">
             No preferences yet. They build up as you{' '}
-            <LocalizedLink to="/search" className="underline underline-offset-4">search</LocalizedLink>,{' '}
-            <LocalizedLink to="/onboarding/search" className="underline underline-offset-4">pick your vibes</LocalizedLink>{' '}
-            or plan <LocalizedLink to="/trips" className="underline underline-offset-4">trips</LocalizedLink>.
+            <LocalizedLink to="/search" className="underline underline-offset-4">
+              search
+            </LocalizedLink>
+            ,{' '}
+            <LocalizedLink to="/onboarding/search" className="underline underline-offset-4">
+              pick your vibes
+            </LocalizedLink>{' '}
+            or plan{' '}
+            <LocalizedLink to="/trips" className="underline underline-offset-4">
+              trips
+            </LocalizedLink>
+            .
           </p>
         )}
 
@@ -69,7 +81,10 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
           <div className="flex flex-col gap-2">
             <div className="flex items-baseline justify-between">
               <p className="text-sm font-medium">Vibes</p>
-              <LocalizedLink to="/onboarding/search" className="text-xs underline underline-offset-4">
+              <LocalizedLink
+                to="/onboarding/search"
+                className="text-xs underline underline-offset-4"
+              >
                 Edit where they're set
               </LocalizedLink>
             </div>
@@ -141,7 +156,8 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              Only you see these. We use them to rank and badge places for you — never on your profile.
+              Only you see these. We use them to rank and badge places for you — never on your
+              profile.
             </p>
           </div>
         )}

@@ -704,6 +704,11 @@
       "localized": true,
       "preserveQuery": true
     },
+    "/settings/intimate": {
+      "to": "/settings/identity",
+      "localized": true,
+      "preserveQuery": true
+    },
     "/people": {
       "to": "/hub/people",
       "localized": true,

@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { KINK_CATEGORY_ICONS } from '@/components/kinks/kinkCategoryIcons';
 import { KinkRatingControl } from '@/components/kinks/KinkRatingControl';
 import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
 import {
@@ -76,10 +77,14 @@ export function KinkGridEditor() {
       {taxonomy.categories.map((cat) => {
         const items = taxonomy.itemsByCategory.get(cat.id) ?? [];
         const rated = ratedPerCategory.get(cat.id) ?? 0;
+        const CatIcon = KINK_CATEGORY_ICONS[cat.slug];
         return (
           <AccordionItem key={cat.id} value={cat.slug}>
             <AccordionTrigger className="text-15 font-medium">
-              <span className="flex items-center gap-2">
+              <span className="flex items-center gap-2.5">
+                {CatIcon && (
+                  <CatIcon size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+                )}
                 {kinkLabel(cat, lang)}
                 <span className="text-13 font-normal text-muted-foreground">
                   {rated}/{items.length}

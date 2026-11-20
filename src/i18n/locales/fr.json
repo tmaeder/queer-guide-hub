@@ -3031,7 +3031,7 @@
       },
       "identity": {
         "title": "Identité et rencontres",
-        "description": "Les infos d’identité s’enregistrent automatiquement. Les rencontres ont leurs propres réglages."
+        "description": "Qui vous êtes, les rencontres et le profil intime optionnel (18+)."
       },
       "privacy": {
         "title": "Confidentialité et visibilité",
@@ -3056,7 +3056,16 @@
       "avatar": {
         "title": "Ton avatar",
         "description": "Choisis l’apparence de ton profil."
+      },
+      "body": {
+        "title": "Corps & infos",
+        "description": "Silhouette, taille, poids et tailles de vêtements. Privé sauf si vous le partagez."
       }
+    },
+    "groups": {
+      "you": "Vous",
+      "preferences": "Préférences",
+      "account": "Compte"
     }
   },
   "map": {

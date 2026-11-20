@@ -3025,7 +3025,7 @@
       },
       "identity": {
         "title": "身份与约会",
-        "description": "身份信息自动保存。约会有单独的设置。"
+        "description": "你是谁、约会，以及可选的18+亲密资料。"
       },
       "privacy": {
         "title": "隐私与可见性",
@@ -3050,7 +3050,16 @@
       "avatar": {
         "title": "你的头像",
         "description": "选择你的个人资料外观。"
+      },
+      "body": {
+        "title": "身体与尺码",
+        "description": "体型、身高、体重和服装尺码。除非你分享，否则保持私密。"
       }
+    },
+    "groups": {
+      "you": "你",
+      "preferences": "偏好",
+      "account": "账户"
     }
   },
   "map": {

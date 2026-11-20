@@ -134,7 +134,6 @@ export function BasicInfoTab({
             {/* Location + DOB */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <Label htmlFor="location">Location</Label>
                 <LocationAutocomplete
                   value={formData.location}
                   onChange={(value) => onChange('location', value)}

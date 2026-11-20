@@ -129,10 +129,10 @@ export function BrandSpotlight() {
           </div>
           <LocalizedLink
             to={`/marketplace/brands/${brand.slug}`}
-            className="no-underline inline-flex h-11 items-center justify-center gap-2 self-start rounded-element bg-foreground px-4 text-13 font-bold text-background hover:opacity-90"
+            aria-label={`Visit ${brand.display_name}`}
+            className="no-underline inline-flex size-11 items-center justify-center self-start rounded-element bg-foreground text-background hover:opacity-90"
           >
-            Visit brand page
-            <ArrowRight size={16} aria-hidden className="rtl:rotate-180" />
+            <ArrowRight size={18} aria-hidden className="rtl:rotate-180" />
           </LocalizedLink>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:col-span-8">

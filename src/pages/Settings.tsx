@@ -15,7 +15,6 @@ import {
   ArrowRight,
   Bell,
   Download,
-  Flame,
   Heart,
   KeyRound,
   Plane,
@@ -24,12 +23,18 @@ import {
   UserRound,
 } from '@/components/icons';
 import {
-  SETTINGS_SECTIONS,
   isSettingsSection,
   legacySettingsDestination,
   type SettingsSection,
 } from '@/lib/profileEditing';
 import type { ProfileEditorHandle } from '@/components/profile/ProfileEditor';
+
+/** Sidebar groups: who you are, how the site works for you, your account. */
+const GROUPS: { label: string; sections: SettingsSection[] }[] = [
+  { label: 'You', sections: ['profile', 'body', 'identity'] },
+  { label: 'Preferences', sections: ['travel', 'notifications'] },
+  { label: 'Account', sections: ['privacy', 'security', 'data'] },
+];
 
 const ProfileEditor = lazyRetry(() => import('@/components/profile/ProfileEditor'));
 
@@ -37,7 +42,6 @@ const NAV: Record<SettingsSection, { label: string; icon: typeof User }> = {
   profile: { label: 'Profile', icon: User },
   identity: { label: 'Identity & dating', icon: Heart },
   body: { label: 'Body & about', icon: UserRound },
-  intimate: { label: 'Intimate profile', icon: Flame },
   privacy: { label: 'Privacy & visibility', icon: Shield },
   security: { label: 'Sign-in & security', icon: KeyRound },
   notifications: { label: 'Notifications', icon: Bell },
@@ -122,33 +126,42 @@ export default function Settings({ section: sectionProp }: { section?: SettingsS
               !showIndexOnMobile && 'hidden md:block',
             )}
           >
-            <ul className="m-0 flex list-none flex-col gap-1 p-0">
-              {SETTINGS_SECTIONS.map((s) => {
-                const Icon = NAV[s].icon;
-                const active = !showIndexOnMobile && s === section;
-                const activeDesktop = s === section;
-                return (
-                  <li key={s}>
-                    <LocalizedLink
-                      to={`/settings/${s}`}
-                      onClick={(e) => void go(e, s)}
-                      aria-current={activeDesktop ? 'page' : undefined}
-                      className={cn(
-                        'flex min-h-11 items-center gap-2 rounded-element px-4 text-15 font-bold no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                        activeDesktop
-                          ? 'md:bg-foreground md:text-background'
-                          : 'text-foreground md:text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
-                        active && 'bg-foreground text-background',
-                      )}
-                    >
-                      <Icon size={18} aria-hidden="true" />
-                      <span className="flex-1">{label(s)}</span>
-                      <ArrowRight size={16} aria-hidden="true" className="md:hidden" />
-                    </LocalizedLink>
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="flex flex-col gap-4">
+              {GROUPS.map((group) => (
+                <div key={group.label} className="flex flex-col gap-1">
+                  <p className="px-4 text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+                    {t(`settings.groups.${group.label.toLowerCase()}`, group.label)}
+                  </p>
+                  <ul className="m-0 flex list-none flex-col gap-1 p-0">
+                    {group.sections.map((s) => {
+                      const Icon = NAV[s].icon;
+                      const active = !showIndexOnMobile && s === section;
+                      const activeDesktop = s === section;
+                      return (
+                        <li key={s}>
+                          <LocalizedLink
+                            to={`/settings/${s}`}
+                            onClick={(e) => void go(e, s)}
+                            aria-current={activeDesktop ? 'page' : undefined}
+                            className={cn(
+                              'flex min-h-11 items-center gap-2 rounded-element px-4 text-15 font-bold no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                              activeDesktop
+                                ? 'md:bg-foreground md:text-background'
+                                : 'text-foreground md:text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
+                              active && 'bg-foreground text-background',
+                            )}
+                          >
+                            <Icon size={18} aria-hidden="true" />
+                            <span className="flex-1">{label(s)}</span>
+                            <ArrowRight size={16} aria-hidden="true" className="md:hidden" />
+                          </LocalizedLink>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </nav>
 
           <div className={cn('min-w-0', showIndexOnMobile && 'hidden md:block')}>

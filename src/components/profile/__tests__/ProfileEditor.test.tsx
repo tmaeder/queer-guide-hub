@@ -38,6 +38,12 @@ vi.mock('@/components/profile/settings/ModerationSettings', () => ({
   ModerationSettings: () => null,
 }));
 vi.mock('@/components/profile/settings/DangerZone', () => ({ DangerZone: () => null }));
+vi.mock('@/components/profile/PhotoGallery', () => ({ PhotoGallery: () => null }));
+vi.mock('@/components/kinks/KinkVisibilitySettings', () => ({
+  KinkVisibilitySettings: () => null,
+}));
+vi.mock('@/components/profile/BodyProfileEditor', () => ({ BodyProfileEditor: () => null }));
+vi.mock('@/components/profile/IntimateTextFields', () => ({ IntimateAboutField: () => null }));
 vi.mock('@/components/profile/IntimateTab', () => ({ IntimateTab: () => null }));
 vi.mock('@/components/profile/TravelPreferencesEditor', () => ({
   TravelPreferencesEditor: () => null,

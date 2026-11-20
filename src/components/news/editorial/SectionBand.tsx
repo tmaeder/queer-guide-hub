@@ -38,9 +38,7 @@ export function SectionBand({
             {category.name}
           </h2>
           {dek && (
-            <p className="mt-2 text-15 italic text-muted-foreground max-w-xl leading-snug">
-              {dek}
-            </p>
+            <p className="mt-2 text-15 italic text-muted-foreground max-w-xl leading-snug">{dek}</p>
           )}
         </div>
         <LocalizedLink
@@ -60,7 +58,7 @@ export function SectionBand({
       />
 
       {tail.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10 [&>*]:h-full [&_[data-slot=card]]:h-full">
           {tail.map((article) => (
             <NewsCard
               key={article.id}

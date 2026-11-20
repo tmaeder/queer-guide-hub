@@ -26,23 +26,20 @@ const SECTIONS: { step: WizardStep; label: string }[] = [
   { step: 'genital-pictogram', label: 'Anatomy' },
   { step: 'size', label: 'Size' },
   { step: 'angle', label: 'Angle' },
-  { step: 'body-pictogram', label: 'Body' },
-  { step: 'body-type', label: 'Body type' },
   { step: 'age', label: 'Age band' },
-  { step: 'height', label: 'Height' },
   { step: 'role', label: 'Role' },
   { step: 'into', label: 'Into' },
   { step: 'limits', label: 'Limits' },
   { step: 'safer-sex', label: 'Safer sex' },
-  { step: 'text', label: 'About' },
+  { step: 'text', label: 'Looking for' },
 ];
 
-/** Steps that describe the person rather than their sex life: their own settings section. */
-const BODY_STEPS: readonly WizardStep[] = ['body-pictogram', 'body-type', 'age', 'height', 'text'];
-
-/** `intimate`: anatomy, roles, kinks, hanky, checklist and visibility. `body`: body and about. */
-export function IntimateTab({ part = 'intimate' }: { part?: 'intimate' | 'body' } = {}) {
-  const isBody = part === 'body';
+/**
+ * Anatomy, roles, kinks, hanky, checklist and visibility. Build, height and weight
+ * live in Body & about (`BodyProfileEditor`, synced back here); "About me" lives in
+ * the Profile section (`IntimateAboutField`).
+ */
+export function IntimateTab() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { data: me, isLoading } = useMyIntimateProfile();
@@ -103,7 +100,6 @@ export function IntimateTab({ part = 'intimate' }: { part?: 'intimate' | 'body' 
   const merged = { ...me, ...draft } as IntimateDraft;
   const hasPictograms = Object.keys(getGenitalPictogramSet(merged.genitalia ?? null)).length > 0;
   const sections = SECTIONS.filter(({ step }) => {
-    if (BODY_STEPS.includes(step) !== isBody) return false;
     if (step === 'size' || step === 'angle') return merged.genitalia === 'penis';
     if (step === 'genital-pictogram') return hasPictograms;
     return true;
@@ -170,20 +166,19 @@ export function IntimateTab({ part = 'intimate' }: { part?: 'intimate' | 'body' 
               setLookingText(v);
               setTextDirty(true);
             }}
+            textParts="looking"
           />
         </section>
       ))}
 
-      {!isBody && (
-        <section aria-label="Hanky code" className="flex flex-col gap-2">
-          <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
-            Hanky code
-          </h3>
-          <HankyCodePicker />
-        </section>
-      )}
+      <section aria-label="Hanky code" className="flex flex-col gap-2">
+        <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+          Hanky code
+        </h3>
+        <HankyCodePicker />
+      </section>
 
-      {visible && !isBody && (
+      {visible && (
         <section aria-label="Interests & boundaries" className="flex flex-col gap-2">
           <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
             Interests & boundaries
@@ -201,26 +196,22 @@ export function IntimateTab({ part = 'intimate' }: { part?: 'intimate' | 'body' 
         <Button onClick={save} disabled={!dirty || busy} className="rounded-element">
           {upsert.isPending || setText.isPending ? 'Saving…' : 'Save'}
         </Button>
-        {!isBody && (
-          <Button
-            variant="ghost"
-            onClick={visible ? hide : show}
-            disabled={busy}
-            className="rounded-element"
-          >
-            {visible ? 'Hide (keep data)' : 'Show profile'}
-          </Button>
-        )}
-        {!isBody && (
-          <Button
-            variant="ghost"
-            onClick={remove}
-            disabled={busy}
-            className="ml-auto rounded-element text-destructive"
-          >
-            Delete
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          onClick={visible ? hide : show}
+          disabled={busy}
+          className="rounded-element"
+        >
+          {visible ? 'Hide (keep data)' : 'Show profile'}
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={remove}
+          disabled={busy}
+          className="ml-auto rounded-element text-destructive"
+        >
+          Delete
+        </Button>
       </div>
     </div>
   );

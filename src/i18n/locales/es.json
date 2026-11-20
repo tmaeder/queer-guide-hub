@@ -3027,7 +3027,7 @@
       },
       "identity": {
         "title": "Identidad y citas",
-        "description": "Los datos de identidad se guardan automáticamente. Las citas tienen sus propios controles."
+        "description": "Quién eres, citas y el perfil íntimo opcional (18+)."
       },
       "privacy": {
         "title": "Privacidad y visibilidad",
@@ -3052,7 +3052,16 @@
       "avatar": {
         "title": "Tu avatar",
         "description": "Elige cómo se ve tu perfil."
+      },
+      "body": {
+        "title": "Cuerpo y más",
+        "description": "Complexión, altura, peso y tallas de ropa. Privado salvo que lo compartas."
       }
+    },
+    "groups": {
+      "you": "Tú",
+      "preferences": "Preferencias",
+      "account": "Cuenta"
     }
   },
   "map": {

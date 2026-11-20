@@ -3025,7 +3025,7 @@
       },
       "identity": {
         "title": "정체성과 데이팅",
-        "description": "정체성 정보는 자동 저장됩니다. 데이팅은 별도로 설정합니다."
+        "description": "나에 대해, 데이팅, 선택 사항인 18세 이상 친밀 프로필."
       },
       "privacy": {
         "title": "개인정보와 공개 범위",
@@ -3050,7 +3050,16 @@
       "avatar": {
         "title": "내 아바타",
         "description": "프로필 모습을 고르세요."
+      },
+      "body": {
+        "title": "몸과 사이즈",
+        "description": "체형, 키, 몸무게, 옷 사이즈. 공유하지 않으면 비공개입니다."
       }
+    },
+    "groups": {
+      "you": "나",
+      "preferences": "환경설정",
+      "account": "계정"
     }
   },
   "map": {

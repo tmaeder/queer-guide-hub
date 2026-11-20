@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { ToggleChip } from '@/components/ui/ToggleChip';
 import { Textarea } from '@/components/ui/textarea';
 import { FlatField } from '@/components/ui/FlatFieldGroup';
+import { Slider } from '@/components/ui/slider';
 import {
   AGE_BANDS,
   BODY_TYPES,
@@ -135,6 +136,8 @@ export interface IntimateStepFieldsProps {
   setAboutText: (v: string) => void;
   lookingText: string;
   setLookingText: (v: string) => void;
+  /** Which textareas the `text` step renders. Settings splits them across sections. */
+  textParts?: 'both' | 'about' | 'looking';
 }
 
 /** The editable fields of one intimate-profile step. Shared by the onboarding
@@ -149,7 +152,12 @@ export function IntimateStepFields({
   setAboutText,
   lookingText,
   setLookingText,
+  textParts = 'both',
 }: IntimateStepFieldsProps) {
+  const ageIndex = Math.max(
+    0,
+    AGE_BANDS.indexOf((merged.age_band ?? '') as (typeof AGE_BANDS)[number]),
+  );
   return (
     <>
       {step === 'genitalia' && (
@@ -228,12 +236,24 @@ export function IntimateStepFields({
       )}
 
       {step === 'age' && (
-        <ChipPicker
-          options={AGE_BANDS as readonly string[]}
-          selected={merged.age_band ? [merged.age_band] : []}
-          onToggle={(v) => update({ age_band: v })}
-          single
-        />
+        <div className="flex max-w-md flex-col gap-2">
+          <span className="text-sm font-bold tabular-nums" aria-live="polite">
+            {merged.age_band ?? 'Not set'}
+          </span>
+          <Slider
+            min={0}
+            max={AGE_BANDS.length - 1}
+            step={1}
+            value={[ageIndex]}
+            onValueChange={([i]) => update({ age_band: AGE_BANDS[i] })}
+            aria-label="Age band"
+            aria-valuetext={merged.age_band ?? 'Not set'}
+          />
+          <div className="flex justify-between text-2xs text-muted-foreground">
+            <span>{AGE_BANDS[0]}</span>
+            <span>{AGE_BANDS[AGE_BANDS.length - 1]}</span>
+          </div>
+        </div>
       )}
 
       {step === 'height' && (
@@ -292,26 +312,30 @@ export function IntimateStepFields({
 
       {step === 'text' && (
         <>
-          <FlatField label="About me (optional)" htmlFor="about">
-            <Textarea
-              id="about"
-              maxLength={1000}
-              placeholder="A few lines about you."
-              value={aboutText}
-              onChange={(e) => setAboutText(e.target.value)}
-              className="rounded-element"
-            />
-          </FlatField>
-          <FlatField label="Looking for (optional)" htmlFor="looking">
-            <Textarea
-              id="looking"
-              maxLength={500}
-              placeholder="What are you into right now?"
-              value={lookingText}
-              onChange={(e) => setLookingText(e.target.value)}
-              className="rounded-element"
-            />
-          </FlatField>
+          {textParts !== 'looking' && (
+            <FlatField label="About me (optional)" htmlFor="about">
+              <Textarea
+                id="about"
+                maxLength={1000}
+                placeholder="A few lines about you."
+                value={aboutText}
+                onChange={(e) => setAboutText(e.target.value)}
+                className="rounded-element"
+              />
+            </FlatField>
+          )}
+          {textParts !== 'about' && (
+            <FlatField label="Looking for (optional)" htmlFor="looking">
+              <Textarea
+                id="looking"
+                maxLength={500}
+                placeholder="What are you into right now?"
+                value={lookingText}
+                onChange={(e) => setLookingText(e.target.value)}
+                className="rounded-element"
+              />
+            </FlatField>
+          )}
         </>
       )}
     </>

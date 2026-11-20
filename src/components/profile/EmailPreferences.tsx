@@ -64,7 +64,7 @@ function CheckRow({
 
 function RowGroup({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div>
+    <div className="rounded-element bg-muted px-4 pb-1 pt-2.5">
       <p className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">{title}</p>
       <div className="divide-y divide-border">{children}</div>
     </div>
@@ -245,7 +245,7 @@ export function EmailPreferences() {
         </div>
       ) : (
         <>
-          <fieldset disabled={busy} className="flex flex-col gap-6">
+          <fieldset disabled={busy} className="flex flex-col gap-2.5">
             <legend className="mb-4 font-semibold">
               {t('emailPreferences.activity', 'Activity emails')}
             </legend>
@@ -293,7 +293,7 @@ export function EmailPreferences() {
               {operationalRows(['business_updates', 'contributions', 'payments'])}
             </RowGroup>
 
-            <div className="flex flex-col gap-4 rounded-element bg-muted p-4">
+            <div className="mt-4 flex flex-col gap-4 rounded-element border border-border p-4">
               <CheckRow
                 id="email-quiet-hours"
                 icon={<Moon size={18} />}
