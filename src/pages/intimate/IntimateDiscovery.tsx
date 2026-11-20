@@ -178,11 +178,22 @@ export default function IntimateDiscovery({
     (ranked ?? []).forEach((r) => m.set(r.userId, r.shared));
     return m;
   }, [ranked]);
+  const seekingHanky = me?.dating_prefs?.seeking?.hanky;
+  // Hanky matches per card: what you look for (saved + filter) and what you wear.
+  const hankyMatchById = useMemo(() => {
+    const wanted = { ...seekingHanky, ...hanky };
+    return new Map(
+      visibleCards.map((c) => [c.user_id, hankyMatches(c.hanky, wanted, myHanky ?? {})]),
+    );
+  }, [visibleCards, seekingHanky, hanky, myHanky]);
+  // Most hanky matches first; the people-ranking order breaks ties.
   const rankedCards = useMemo(() => {
-    if (!rankIndex.size) return visibleCards;
     const at = (id: string) => rankIndex.get(id) ?? Number.MAX_SAFE_INTEGER;
-    return [...visibleCards].sort((a, b) => at(a.user_id) - at(b.user_id));
-  }, [visibleCards, rankIndex]);
+    const hits = (id: string) => hankyMatchById.get(id)?.size ?? 0;
+    return [...visibleCards].sort(
+      (a, b) => hits(b.user_id) - hits(a.user_id) || at(a.user_id) - at(b.user_id),
+    );
+  }, [visibleCards, rankIndex, hankyMatchById]);
 
   useIncomingLikeListener((row) => {
     // If the receiver has already liked the sender, the trigger creates a
@@ -374,11 +385,7 @@ export default function IntimateDiscovery({
                       <HankyWorn
                         signals={c.hanky}
                         compact
-                        matching={hankyMatches(
-                          c.hanky,
-                          { ...seeking.hanky, ...hanky },
-                          myHanky ?? {},
-                        )}
+                        matching={hankyMatchById.get(c.user_id)}
                         className="mt-1.5"
                       />
                       <SignalChips shared={shared} className="mt-1.5" max={2} />
