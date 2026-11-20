@@ -1688,7 +1688,19 @@
     "blockedUsers": "المستخدمون المحظورون",
     "reportUser": "الإبلاغ عن مستخدم",
     "sendMessage": "إرسال رسالة",
-    "favoritesShortcut": "المفضلة"
+    "favoritesShortcut": "المفضلة",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "travel": "السفر",
+      "activity": "النشاط",
+      "groups": "المجموعات"
+    },
+    "share": "مشاركة الملف",
+    "report": "الإبلاغ عن الملف",
+    "joined": "انضم في {{date}}",
+    "editAvatar": "تغيير الصورة الرمزية",
+    "lensHidden": "هذا الملف غير ظاهر في هذا العرض. بدّل إلى «أنت» للمتابعة.",
+    "sections": "أقسام الملف"
   },
   "groups": {
     "title": "المجموعات",
@@ -2999,6 +3011,47 @@
       "copy": "[AR] Copy address",
       "openInbox": "[AR] Open inbox",
       "claimFirst": "[AR] Choose a username above to activate your address."
+    },
+    "title": "الإعدادات",
+    "viewProfile": "عرض ملفك الشخصي",
+    "sectionsLabel": "أقسام الإعدادات",
+    "allSettings": "كل الإعدادات",
+    "travel": {
+      "reviewSearch": "مراجعة تفضيلات البحث"
+    },
+    "sections": {
+      "profile": {
+        "title": "الملف الشخصي",
+        "description": "حالتك واسمك وضمائرك ونبذتك وروابطك. يُحفظ تلقائيًا."
+      },
+      "identity": {
+        "title": "الهوية والمواعدة",
+        "description": "تُحفظ تفاصيل الهوية تلقائيًا. للمواعدة إعداداتها الخاصة."
+      },
+      "privacy": {
+        "title": "الخصوصية والظهور",
+        "description": "من يرى كل جزء من ملفك. تُحفظ التغييرات تلقائيًا."
+      },
+      "security": {
+        "title": "تسجيل الدخول والأمان",
+        "description": "معرّفك ومفتاح المرور وكلمة المرور."
+      },
+      "notifications": {
+        "title": "الإشعارات",
+        "description": "ما نرسله إلى جهازك وبريدك."
+      },
+      "travel": {
+        "title": "السفر",
+        "description": "تفضيلات ترتيب الأماكن والرحلات لك، وصندوق حجوزاتك."
+      },
+      "data": {
+        "title": "بياناتك",
+        "description": "نزّل كل ما نحتفظ به عنك، أو احذف حسابك."
+      },
+      "avatar": {
+        "title": "صورتك الرمزية",
+        "description": "اختر كيف يظهر ملفك."
+      }
     }
   },
   "map": {
@@ -4067,7 +4120,8 @@
       "trips": "الرحلات",
       "overview": "نظرة عامة",
       "messages": "الرسائل",
-      "plans": "الخطط"
+      "plans": "الخطط",
+      "progress": "التقدّم"
     },
     "calendar": {
       "title": "القادم",
@@ -4184,6 +4238,9 @@
     },
     "plans": {
       "trips": "رحلاتك"
+    },
+    "progress": {
+      "description": "المهام والمستوى والسلاسل والتقدير. لا يراها غيرك."
     }
   },
   "city": {

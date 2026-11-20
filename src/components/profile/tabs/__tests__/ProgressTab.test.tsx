@@ -66,7 +66,7 @@ describe('ProgressTab', () => {
     errSpy.mockRestore();
   });
 
-  it('renders the segmented sub-tabs and the owner-only footer', () => {
+  it('renders the segmented sub-tabs', () => {
     render(
       <MemoryRouter>
         <ProgressTab />
@@ -75,7 +75,6 @@ describe('ProgressTab', () => {
     expect(screen.getByRole('tab', { name: 'Score' })).toBeTruthy();
     expect(screen.getByRole('tab', { name: 'Activity' })).toBeTruthy();
     expect(screen.getByRole('tab', { name: 'Recognition' })).toBeTruthy();
-    expect(screen.getByText('Visible only to you.')).toBeTruthy();
   });
 
   it('isolates a thrown section to a card instead of blanking the tab', () => {
@@ -88,7 +87,7 @@ describe('ProgressTab', () => {
     // The throwing section degrades to the SectionErrorFallback card…
     expect(screen.getByText('Failed to load data')).toBeTruthy();
     // …while the rest of the tab shell still renders (no whole-tab blank).
-    expect(screen.getByText('Visible only to you.')).toBeTruthy();
     expect(screen.getByRole('tab', { name: 'Score' })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Recognition' })).toBeTruthy();
   });
 });

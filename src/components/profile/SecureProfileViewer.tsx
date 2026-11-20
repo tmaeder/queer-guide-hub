@@ -1,5 +1,6 @@
 import type { ProfileEditorSection } from '@/lib/profileEditing';
 import { Button } from '@/components/ui/button';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +10,6 @@ interface SecureProfileViewerProps {
   profile: Record<string, unknown>;
   isOwnProfile: boolean;
   onEdit?: (section: ProfileEditorSection, privacyField?: string) => void;
-  editingSection?: ProfileEditorSection | null;
 }
 
 // Visibility is enforced server-side: for other users' profiles the data comes
@@ -22,7 +22,6 @@ export function SecureProfileViewer({
   profile,
   isOwnProfile,
   onEdit,
-  editingSection,
 }: SecureProfileViewerProps) {
   const { isAdmin } = useAdminRoles();
 
@@ -48,10 +47,27 @@ export function SecureProfileViewer({
   const hasAbout = occupation || education || interests;
   const hasSensitive = genderIdentity || sexualOrientation || relationshipStatus;
 
+  // Empty sections are noise: the owner gets one prompt, visitors get nothing.
+  if (!hasAbout && !(website || phone) && !hasSensitive) {
+    return isOwnProfile ? (
+      <p className="rounded-container bg-card p-6 text-muted-foreground">
+        Nothing about you here yet.{' '}
+        <LocalizedLink to="/settings/profile" className="underline underline-offset-4">
+          Add details
+        </LocalizedLink>{' '}
+        or{' '}
+        <LocalizedLink to="/settings/identity" className="underline underline-offset-4">
+          identity
+        </LocalizedLink>
+        .
+      </p>
+    ) : null;
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* Basic Information */}
-      {editingSection !== 'profile' && (isOwnProfile || hasAbout) && (
+      {hasAbout && (
         <Card>
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -120,7 +136,7 @@ export function SecureProfileViewer({
       )}
 
       {/* Contact Information */}
-      {editingSection !== 'profile' && (website || phone) && (
+      {(website || phone) && (
         <Card>
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -176,7 +192,7 @@ export function SecureProfileViewer({
 
       {/* Identity & relationship details — server only returns these when the
           profile's identity/relationships visibility allows this viewer */}
-      {editingSection !== 'dating' && (isOwnProfile || hasSensitive) && (
+      {hasSensitive && (
         <Card>
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -196,7 +212,7 @@ export function SecureProfileViewer({
                   >
                     Visibility
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => onEdit('dating')}>
+                  <Button variant="outline" size="sm" onClick={() => onEdit('identity')}>
                     Edit
                   </Button>
                 </div>

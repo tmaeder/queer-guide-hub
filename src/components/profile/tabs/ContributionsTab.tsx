@@ -41,17 +41,9 @@ export function ContributionsTab({ userId, isOwnProfile, lens = 'you', privacySe
   const photos = { id: 'contribution-photos', title: t('profile.contributions.photos', 'Photos') };
   const submissions = { id: 'contribution-submissions', title: t('profile.contributions.submissions', 'Submissions') };
   const watches = { id: 'contribution-watches', title: t('profile.contributions.watches', 'Watched sites') };
-  const sections = ownView ? [posts, reviews, photos, submissions, watches] : [posts, reviews, photos];
 
   return (
     <div className="flex flex-col gap-8">
-      <nav aria-label={t('profile.contributions.jumpTo', 'On this page')} className="flex flex-wrap gap-x-4 gap-y-2 border-b border-border-hairline pb-4">
-        {sections.map(({ id, title }) => (
-          <a key={id} href={`#${id}`} className="py-2 text-13 font-medium underline underline-offset-4">
-            {title}
-          </a>
-        ))}
-      </nav>
       <section id={posts.id} aria-label={posts.title} className="flex flex-col gap-4">
         <h3 className="font-sans text-title font-bold">{posts.title}</h3>
         <UserPostsList userId={userId} isOwnProfile={ownView} />

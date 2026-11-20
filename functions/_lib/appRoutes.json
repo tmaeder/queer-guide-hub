@@ -188,6 +188,7 @@
     "/hub/news",
     "/hub/people",
     "/hub/plans",
+    "/hub/progress",
     "/hub/saved",
     "/hub/settings",
     "/hub/travel",
@@ -290,7 +291,14 @@
     "/rights/trans",
     "/search",
     "/settings",
+    "/settings/:section",
+    "/settings/data",
+    "/settings/identity",
+    "/settings/notifications",
     "/settings/privacy",
+    "/settings/profile",
+    "/settings/security",
+    "/settings/travel",
     "/share-target",
     "/share/redirect-report/:reportId",
     "/shop",
@@ -664,6 +672,36 @@
       "localized": true,
       "preserveQuery": true
     },
+    "/me/progress": {
+      "to": "/hub/progress",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/passport": {
+      "to": "/hub/progress",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/missions": {
+      "to": "/hub/progress",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/leaderboard": {
+      "to": "/hub/progress",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/account": {
+      "to": "/settings/security",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/me/tiers": {
+      "to": "/hub/progress",
+      "localized": true,
+      "preserveQuery": true
+    },
     "/people": {
       "to": "/hub/people",
       "localized": true,
@@ -735,9 +773,9 @@
       "preserveQuery": true
     },
     "/profile/tiers": {
-      "to": "/me/progress",
-      "localized": false,
-      "preserveQuery": false
+      "to": "/hub/progress",
+      "localized": true,
+      "preserveQuery": true
     },
     "/profile/footprint": {
       "to": "/me/travel",

@@ -1,8 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 // Signed-in legacy /me + /me/progress coverage. /me now redirects into the
-// /hub office and /me/progress lands on the unified profile's own-only
-// Progress tab (/user/:id/progress) via MeRedirect — both auth-walled
+// /hub office and /me/progress lands on the hub Progress module (/hub/progress) — both auth-walled
 // (anon → /auth). Uses the admin storageState from auth.setup and skips when
 // E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD are unset. Non-mutating.
 //
@@ -41,10 +40,10 @@ test.describe('/me/progress — signed-in', () => {
     await expect(page).toHaveURL(/\/hub$/);
   });
 
-  test('/me/progress resolves to the own profile with the Progress tab', async ({ page }) => {
+  test('/me/progress resolves to the hub Progress module', async ({ page }) => {
     await page.goto('/me/progress');
-    await expect(page).toHaveURL(/\/user\/[0-9a-f-]+\/progress/);
-    await expect(page.getByRole('tab', { name: 'Progress' })).toBeVisible();
+    await expect(page).toHaveURL(/\/hub\/progress$/);
+    await expect(page.getByRole('heading', { name: 'Progress', level: 1 })).toBeVisible();
   });
 
   test('/me/progress renders the tab shell — no blank or route crash', async ({ page }) => {

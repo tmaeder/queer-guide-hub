@@ -93,7 +93,7 @@ describe('Settings workspace', () => {
 
   it('renders one contextual editor with save feedback and no duplicate Settings header', () => {
     renderAt();
-    expect(screen.getByRole('heading', { name: 'Edit profile' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Profile' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
     expect(screen.getByRole('status')).toHaveTextContent('Profile changes saved');
   });
@@ -107,17 +107,21 @@ describe('Settings workspace', () => {
     expect(screen.getByText(editor)).toBeTruthy();
   });
 
-  it('groups account controls and opens the password form on demand', () => {
-    renderAt('/user/u1?edit=account');
-    const sections = screen.getByRole('navigation', { name: 'Jump to account settings' });
-    expect(sections).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Notifications' })).toHaveAttribute('href', '#account-notifications');
-    expect(screen.getByRole('region', { name: 'Travel and documents' })).toBeTruthy();
+  it('keeps sign-in controls together and opens the password form on demand', () => {
+    renderAt('/user/u1?edit=security');
+    expect(screen.getByRole('heading', { name: 'Sign-in & security' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Username' })).toBeTruthy();
     const password = screen.getByRole('button', { name: 'Change password' });
     expect(password).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(password);
     expect(password).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('textbox', { name: 'New password' })).toBeVisible();
+  });
+
+  it('maps the retired account section onto sign-in & security', () => {
+    renderAt('/user/u1?edit=account');
+    expect(screen.getByRole('heading', { name: 'Sign-in & security' })).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: 'Jump to account settings' })).toBeNull();
   });
 
   it('follows a new section link within the mounted workspace and keeps only one editor open', () => {

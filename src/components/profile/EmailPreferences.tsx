@@ -115,7 +115,7 @@ export function EmailPreferences() {
   return (
     <section
       aria-labelledby="email-preferences-heading"
-      className="space-y-4 border-t border-border pt-6"
+      className="flex flex-col gap-4 rounded-container bg-card p-6 shadow-soft"
     >
       <div>
         <h3 id="email-preferences-heading" className="font-semibold">
