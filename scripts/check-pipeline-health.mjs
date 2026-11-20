@@ -6133,6 +6133,41 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// ---------------------------------------------------------------------------
+// §  City name twins (city_name_twin_signals, 99991795161280)
+// ---------------------------------------------------------------------------
+// Live same-country cities where one row's name is the other's name_local —
+// the shape of Gent/Ghent, Kolmar/Colmar, La Habana/Havana. 22 were reviewed
+// and are NOT duplicates (districts, municipalities, different places), so
+// this warns only when the count rises above that baseline.
+{
+  const BASELINE = 22
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_name_twin_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ city_name_twin_signals not deployed yet (migration 99991795161280?) — skipping')
+  } else if (!res.ok) {
+    console.error(`✗ city_name_twin_signals returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const sig = await res.json()
+    if (sig?.probe_ok !== true || !(sig.live_cities > 0)) {
+      console.error(`✗ city_name_twin_signals probe not ok: ${JSON.stringify(sig)}`)
+      FAILED = true
+    } else if (sig.pairs > BASELINE) {
+      console.warn(
+        `⚠ ${sig.pairs} city name twins (baseline ${BASELINE}) — a city was likely created under a second ` +
+          `spelling. Review and merge_cities() the new ones: ${(sig.sample || []).join('; ')}`,
+      )
+    } else {
+      console.log(`✓ city name twins: ${sig.pairs} (baseline ${BASELINE}) over ${sig.live_cities} live cities`)
+    }
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')
