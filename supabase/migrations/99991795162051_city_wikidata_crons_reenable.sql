@@ -49,3 +49,38 @@ begin
     raise exception 'city_alias_harvest command does not carry batch_limit 5';
   end if;
 end $$;
+
+-- city_cost_of_living_backfill was retired on 2026-09-26 as "verified no
+-- eligible work remains". That stopped being true as the corpus grew: 13,831
+-- live cities hold an empty cost_of_living ('{}', not NULL), 13,805 of them
+-- created after the retirement, and nothing else fills it. Hourly at 300 rows
+-- clears that in ~2 days; once drained a run updates nothing. It is an rpc
+-- automation (no action.command), so the cron is scheduled here directly.
+do $$
+begin
+  if not exists (select 1 from public.admin_automations where slug = 'city_cost_of_living_backfill') then
+    raise notice 'city_cost_of_living_backfill not registered here; skipping';
+    return;
+  end if;
+
+  -- admin_automation_lifecycle_guard refuses to enable a 'completed' row, but
+  -- allows moving it back to 'active' while it is still disabled.
+  update public.admin_automations
+     set lifecycle_state = 'active',
+         capability_reason = 'No supported manual runner or truthful dry-run is registered'
+   where slug = 'city_cost_of_living_backfill' and lifecycle_state = 'completed';
+
+  update public.admin_automations
+     set enabled = true,
+         consecutive_failures = 0,
+         schedule = '10 * * * *',
+         description = 'Derives a coarse cost band from the country GDP per capita. No numeric indices — the source cannot support them. Re-enabled 2026-11-20: new cities arrive with an empty band.'
+   where slug = 'city_cost_of_living_backfill';
+
+  perform cron.schedule('city_cost_of_living_backfill', '10 * * * *',
+    'SELECT public.run_city_cost_of_living_backfill(300);');
+
+  if not exists (select 1 from cron.job where jobname = 'city_cost_of_living_backfill' and active) then
+    raise exception 'city_cost_of_living_backfill cron not active';
+  end if;
+end $$;
