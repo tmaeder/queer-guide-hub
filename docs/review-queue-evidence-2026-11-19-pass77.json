@@ -1,0 +1,12 @@
+{
+  "pass": 77,
+  "scope": "Prevent automatic city image assignment from geographically ambiguous source captions",
+  "examples": ["York GB versus New York City", "Hudson NY versus Hudson River Park NYC", "Brighton NY versus Brighton and Hove GB"],
+  "behavior": "Require explicit supported licence, required creator credit, WGS-84 source camera coordinates and distance at most 10 km from the authoritative stored city point; retain existing name and image quality gates. Abstain without erasing metadata. Bind publication to the city updated_at snapshot.",
+  "validation": {"edge_tests_passed": 2400, "existing_ignored": 8, "failed": 0, "changed_file_eslint": "passed", "diff_check": "passed"},
+  "deployments": [
+    {"function": "fetch-images", "version": 103, "verify_jwt": true, "files": 13, "readback": "all deployed file contents exactly equal reviewed bundle", "bundle_sha256": "2b39a228b7b9560842600158596ad2dfe3dec5fb246edd15c6b2a14e6b589ba4"},
+    {"function": "queer-imagery-backfill", "version": 1672, "verify_jwt": false, "files": 15, "readback": "all deployed file contents exactly equal reviewed bundle", "bundle_sha256": "9b0dd5536e2382fd8984878f1157187a32b1d8c38f09576576c1a7ead838350e"}
+  ],
+  "limits": "No new provider calls, model calls, retrieval budgets, authentication changes or frontend deployment. Missing source coordinates cause abstention; they do not establish that a photograph is wrong. No case clearance claimed by this source release. GitHub Actions account startup failure remains separate from passing local checks."
+}
