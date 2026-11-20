@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 602,
+  "total": 601,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -283,7 +283,7 @@
       "TS2556": 1
     },
     "src/components/profile/settings/BasicInfoTab.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/components/profile/tabs/GroupsTab.tsx": {
       "TS2322": 1
