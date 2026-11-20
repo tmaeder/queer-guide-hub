@@ -162,7 +162,13 @@ for (const route of ROUTES) {
       await open(page, route.path);
       if (route.path.startsWith('/villages/')) {
         await expect(page.getByTestId('single-rail')).toHaveCount(0);
-        await expect(page.locator('#map canvas')).toBeVisible();
+        // The map sits below the fold on a phone, and EntityMap does not load
+        // a map below the fold of an unscrolled page until the reader scrolls
+        // (most of the page's mobile blocking time otherwise). Scroll to it the
+        // way a reader would: "available on a phone" means it is there when you
+        // get to it, not that it loads for readers who never do.
+        await page.locator('#map').scrollIntoViewIfNeeded();
+        await expect(page.locator('#map canvas')).toBeVisible({ timeout: 15_000 });
         await expect(
           page.locator('article').getByRole('link', { name: 'Correct this page' }),
         ).toBeVisible();
