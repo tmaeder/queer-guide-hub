@@ -4,7 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
-import { VenueCard } from '@/components/venues/VenueCard';
+import { GoingOutPlaces } from '@/components/intent/GoingOutPlaces';
+import { FilterChip } from '@/components/transit/FilterChip';
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import { EVENT_TYPE_GROUPS, eventTypesFor, parsePlaceView } from '@/lib/goingOutFilters';
 import { UpcomingEvents } from '@/components/intent/UpcomingEvents';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
 import { useCityTransitService } from '@/hooks/useCityTransitService';
@@ -27,8 +30,21 @@ import './going-out.css';
 
 export default function GoingOut() {
   const { t } = useTranslation();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const citySlug = params.get('city');
+  const typeId = params.get('type');
+  const placeId = params.get('place');
+  const view = parsePlaceView(params.get('view'));
+  const setParam = (key: string, value: string | null) =>
+    setParams(
+      (cur) => {
+        const next = new URLSearchParams(cur);
+        if (value) next.set(key, value);
+        else next.delete(key);
+        return next;
+      },
+      { replace: true, preventScrollReset: true },
+    );
   const {
     cityId,
     countryId,
@@ -38,7 +54,10 @@ export default function GoingOut() {
   } = useIntentLocation(citySlug);
 
   const { data: venues, isLoading: venuesLoading } = useNightlifeVenues(cityId, 12);
+  // Unfiltered result feeds the hero highlights; the filtered one feeds the list.
   const { data: eventsResult } = useEventsWithFallback(cityId, 6);
+  const eventTypes = eventTypesFor(typeId);
+  const { data: filteredEvents } = useEventsWithFallback(cityId, 8, eventTypes);
   const { data: cities } = useDestinationCities(8, { excludeCityId: cityId, countryId });
   // Same query CityLandmarksRail runs; react-query dedupes it. Used only to
   // decide whether the "Scenes" section should exist at all.
@@ -61,7 +80,37 @@ export default function GoingOut() {
       icon: CalendarDays,
       label: "What's on",
       content: (
-        <UpcomingEvents eventsResult={eventsResult} cityName={cityName} variant="going-out" />
+        <div className="space-y-4">
+          <div
+            role="group"
+            aria-label={t('goingOut.events.filterLabel', 'Event type')}
+            className="flex flex-wrap gap-2"
+          >
+            <FilterChip
+              active={!eventTypes}
+              onClick={() => setParam('type', null)}
+              label={t('goingOut.events.all', 'All events')}
+            />
+            {EVENT_TYPE_GROUPS.map((g) => (
+              <FilterChip
+                key={g.id}
+                active={typeId === g.id}
+                onClick={() => setParam('type', g.id)}
+                label={
+                  <>
+                    <TransitIcon name={g.icon} size={16} />
+                    {t(`goingOut.events.types.${g.id}`, g.label)}
+                  </>
+                }
+              />
+            ))}
+          </div>
+          <UpcomingEvents
+            eventsResult={eventTypes ? filteredEvents : (filteredEvents ?? eventsResult)}
+            cityName={cityName}
+            variant="going-out"
+          />
+        </div>
       ),
       action: (
         <LocalizedLink to="/events" className="text-13 no-underline hover:underline">
@@ -73,46 +122,41 @@ export default function GoingOut() {
       id: 'plan',
       icon: MapPin,
       label: 'Where to go',
-      kicker: cityName ? `Nightlife in ${cityName}` : 'Nightlife near you',
-      content:
-        venuesLoading || locLoading ? (
-          <p className="text-muted-foreground">Finding places…</p>
-        ) : venues && venues.length > 0 ? (
-          // VenueCard, not a hand-typed <li>. The row already carries images,
-          // hours, tags and verification — this page fetched them and rendered
-          // none of them, which is why "going out" read as a directory listing
-          // instead of somewhere you might actually go tonight.
-          <ul className="going-out-venues list-none p-0 m-0 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {venues.map((v) => (
-              <li key={v.id}>
-                <VenueCard
-                  venue={v as unknown as Parameters<typeof VenueCard>[0]['venue']}
-                  coverAspect="hero"
-                />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="going-out-empty">
-            <div className="going-out-empty__copy">
-              <div>
-                <strong>No nightlife listed for {where} yet.</strong>
-                <p>
-                  Take the full directory or map route, or put a place the community should know
-                  about on the guide.
-                </p>
+      kicker: cityName ? `Places in ${cityName}` : 'Places near you',
+      content: locLoading ? (
+        <p className="text-muted-foreground">Finding places…</p>
+      ) : (
+        <GoingOutPlaces
+          cityId={cityId ?? null}
+          countryId={countryId ?? null}
+          where={where}
+          placeId={placeId}
+          view={view}
+          onPlaceChange={(id) => setParam('place', id)}
+          onViewChange={(v) => setParam('view', v === 'grid' ? null : v)}
+          empty={
+            <div className="going-out-empty">
+              <div className="going-out-empty__copy">
+                <div>
+                  <strong>No places listed for {where} yet.</strong>
+                  <p>
+                    Take the full directory or map route, or put a place the community should know
+                    about on the guide.
+                  </p>
+                </div>
+                <div className="going-out-empty__links">
+                  <LocalizedLink to="/venues">Browse every venue</LocalizedLink>
+                  <LocalizedLink to="/map">Open the map</LocalizedLink>
+                  <LocalizedLink to="/submit">Add a place</LocalizedLink>
+                </div>
               </div>
-              <div className="going-out-empty__links">
-                <LocalizedLink to="/venues">Browse every venue</LocalizedLink>
-                <LocalizedLink to="/map">Open the map</LocalizedLink>
-                <LocalizedLink to="/submit">Add a place</LocalizedLink>
+              <div className="going-out-empty__map" aria-hidden="true">
+                <NoStationTrack />
               </div>
             </div>
-            <div className="going-out-empty__map" aria-hidden="true">
-              <NoStationTrack />
-            </div>
-          </div>
-        ),
+          }
+        />
+      ),
       action: (
         <LocalizedLink
           to={cityName ? `/venues?city=${encodeURIComponent(cityName)}` : '/venues'}

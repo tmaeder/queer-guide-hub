@@ -5734,5 +5734,47 @@
         "interactions": "Rischi delle combinazioni di droghe (Queer Guide)"
       }
     }
+  },
+  "goingOut": {
+    "events": {
+      "filterLabel": "Tipo di evento",
+      "all": "Tutti gli eventi",
+      "types": {
+        "party": "Feste",
+        "drag": "Drag e spettacoli",
+        "pride": "Pride e festival",
+        "film": "Cinema e arte",
+        "social": "Incontri e meetup",
+        "talks": "Talk e workshop"
+      }
+    },
+    "places": {
+      "filterLabel": "Tipo di luogo",
+      "all": "Tutti i luoghi",
+      "types": {
+        "bars": "Bar",
+        "clubs": "Club",
+        "cafes": "Caffè",
+        "food": "Ristoranti",
+        "saunas": "Saune",
+        "culture": "Teatri e gallerie",
+        "community": "Centri comunitari",
+        "shops": "Negozi",
+        "wellness": "Palestre e saloni",
+        "outdoor": "All’aperto",
+        "organizations": "Organizzazioni",
+        "neighbourhoods": "Quartieri"
+      },
+      "viewLabel": "Vista",
+      "view": {
+        "grid": "Griglia",
+        "list": "Elenco",
+        "map": "Mappa"
+      },
+      "loading": "Ricerca dei luoghi…",
+      "noOrgs": "Nessuna organizzazione elencata per {{where}} per ora.",
+      "noNeighbourhoods": "Nessun quartiere elencato per {{where}} per ora.",
+      "noneForFilter": "Nulla elencato per {{where}} con questo filtro per ora."
+    }
   }
 }
