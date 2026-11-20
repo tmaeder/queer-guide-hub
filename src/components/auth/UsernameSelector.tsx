@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,11 +46,14 @@ export function UsernameSelector({ value, onChange, prepick = false }: Props) {
   }, []);
 
   // Always one of the shown names picked, unless the reader typed their own.
-  // A no-op once a shown name (or a typed one) is selected.
-  useEffect(() => {
+  // Runs when a new list arrives (first load and every reroll), not on picks.
+  const autoPick = useEffectEvent((list: string[]) => {
     if (!prepick) return;
-    if (suggestions[0] && !custom && !suggestions.includes(value ?? '')) onChange(suggestions[0]);
-  }, [prepick, suggestions, custom, value, onChange]);
+    if (list[0] && !custom && !list.includes(value ?? '')) onChange(list[0]);
+  });
+  useEffect(() => {
+    autoPick(suggestions);
+  }, [suggestions]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
