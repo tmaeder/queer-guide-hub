@@ -144,6 +144,7 @@ export function KinkGridEditor() {
                             <KinkRatingControl
                               key={side}
                               side={side}
+                              reserveLabel
                               rating={row?.rating ?? null}
                               needsDiscussion={row?.needs_discussion ?? false}
                               onRate={(r) => handleRate(item.id, side, r)}
