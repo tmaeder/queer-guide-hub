@@ -1,4 +1,13 @@
-import { CalendarDays, Compass, MapPin, Moon, ShieldCheck, Sparkles } from '@/components/icons';
+import {
+  ArrowRight,
+  CalendarDays,
+  Compass,
+  MapPin,
+  Moon,
+  Scale,
+  ShieldCheck,
+  Sparkles,
+} from '@/components/icons';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -194,19 +203,23 @@ export default function GoingOut() {
       label: 'Before you go',
       content: (
         <div className="going-out-safety">
-          <div className="going-out-safety__copy">
-            {/* Anon-safe: gated_count_for_location returns COUNTS only, never rows,
-                so this can tell a signed-out reader that content exists in a
-                criminalising country without exposing any of it. */}
-            <GatedContentNotice cityId={cityId ?? undefined} />
+          <div className="going-out-safety__law">
+            <span className="going-out-safety__icon" aria-hidden="true">
+              <Scale size={24} />
+            </span>
             <p>
               Laws differ sharply by country, and going out is where that bites. Check the legal
               position before the night starts, not after.
             </p>
+            <LocalizedLink to="/tags/rights-by-country" className="going-out-safety__link">
+              LGBTQ+ rights by country
+              <ArrowRight size={16} aria-hidden="true" className="rtl:rotate-180" />
+            </LocalizedLink>
           </div>
-          <LocalizedLink to="/tags/rights-by-country" className="going-out-safety__link">
-            LGBTQ+ rights by country
-          </LocalizedLink>
+          {/* Anon-safe: gated_count_for_location returns COUNTS only, never rows,
+              so this can tell a signed-out reader that content exists in a
+              criminalising country without exposing any of it. */}
+          <GatedContentNotice cityId={cityId ?? undefined} />
         </div>
       ),
     },
