@@ -1,0 +1,203 @@
+{
+  "pass": 78,
+  "scope": "Replace wrong-city photographs in four active blocked image cases",
+  "safeguards": "Rollback rehearsal followed by guarded commit. Exact city/shared geography snapshots, real human revision hashes, no human image edits or active leases. Exact automated old cover links replaced for York and Hudson; original assets and all other city links retained. Native image quality predicate and cross-country URL/hash reuse checks pass. No publication, coordinate, privacy or human verification flags changed.",
+  "restorations": [
+    {
+      "city_id": "d740e10b-4158-4690-977a-e536af88dfcc",
+      "name": "Vechta",
+      "source": "wikimedia",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Vechta_Lichtertage_Kaponier_1.JPG",
+      "source_ref": "wikimedia:File:Vechta Lichtertage Kaponier 1.JPG",
+      "description": "\"Kaponier\" in Vechta during the lightshow \"Vechtaer Lichtertage 2015\"",
+      "photographer": "Corradox",
+      "photographer_url": "https://commons.wikimedia.org/wiki/File:Vechta_Lichtertage_Kaponier_1.JPG",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/44/Vechta_Lichtertage_Kaponier_1.JPG/960px-Vechta_Lichtertage_Kaponier_1.JPG",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/44/Vechta_Lichtertage_Kaponier_1.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "width": 960,
+      "height": 720,
+      "bytes": 207386,
+      "sha256": "4114fc38e5c286411105e3c571c6991bc4be200f35a854723348f91caff7edc5",
+      "api_capture_sha256": "3d84ce036f567a72acc61644f6c64b8851800572492ae07135e2d7eda6608d99",
+      "capture_at": "2026-11-19T20:51:44.996862+00:00",
+      "GPS": [
+        "",
+        ""
+      ],
+      "phash": "27270380ac9e1a3a",
+      "phash_algorithm": "Exact existing ImageScript1.2.15 64-bit average hash on complete downloaded bytes",
+      "human_reviewed": false,
+      "decision_actor": "AI-assisted factual repair",
+      "visual_check": "AI inspection of complete source photograph: appropriate location-specific architecture or streetscape; no rejected map or visible creator monogram. Source caption retained with its historical date.",
+      "basis": "Source file caption and location identify this city; explicit licence and named creator checked from Commons metadata. Actual downloaded image dimensions and hash verified.",
+      "outcome": {
+        "cases": [
+          {
+            "id": "74e5803a-78dc-b577-4753-4c5960c75dd9",
+            "active": false,
+            "members": 0
+          }
+        ],
+        "city_id": "d740e10b-4158-4690-977a-e536af88dfcc",
+        "license": "CC BY-SA 4.0",
+        "asset_id": "1aca93c8-dec8-487f-ac51-0c15b60cf55b",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/44/Vechta_Lichtertage_Kaponier_1.JPG/960px-Vechta_Lichtertage_Kaponier_1.JPG",
+        "attribution": "Corradox",
+        "actual_phash": "27270380ac9e1a3a",
+        "image_flagged": false,
+        "reviews_resolved": 1,
+        "old_asset_retained": true,
+        "source_metadata_unchanged_except_image": true
+      }
+    },
+    {
+      "city_id": "c6ece719-a37a-44f1-8c69-1707a001aeff",
+      "name": "Frankenberg/Sachsen",
+      "source": "wikimedia",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Frankenberg_(Sachsen),_Markt_(1).jpg",
+      "source_ref": "wikimedia:File:Frankenberg (Sachsen), Markt (1).jpg",
+      "description": "Markt, Frankenberg/Sa.",
+      "photographer": "Aagnverglaser",
+      "photographer_url": "https://commons.wikimedia.org/wiki/File:Frankenberg_(Sachsen),_Markt_(1).jpg",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/39/Frankenberg_%28Sachsen%29%2C_Markt_%281%29.jpg/960px-Frankenberg_%28Sachsen%29%2C_Markt_%281%29.jpg",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/39/Frankenberg_%28Sachsen%29%2C_Markt_%281%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "width": 960,
+      "height": 639,
+      "bytes": 177286,
+      "sha256": "b6e8512c73729874227f0defda092889ec520223e7ec30244a345fd4902697ca",
+      "api_capture_sha256": "b26ea92fab40633f88f3bd83b55a4b13fc1488db4107f966c7fef19f1164d934",
+      "capture_at": "2026-11-19T20:51:45.534146+00:00",
+      "GPS": [
+        "",
+        ""
+      ],
+      "phash": "fffffeefe8a55b11",
+      "phash_algorithm": "Exact existing ImageScript1.2.15 64-bit average hash on complete downloaded bytes",
+      "human_reviewed": false,
+      "decision_actor": "AI-assisted factual repair",
+      "visual_check": "AI inspection of complete source photograph: appropriate location-specific architecture or streetscape; no rejected map or visible creator monogram. Source caption retained with its historical date.",
+      "basis": "Source file caption and location identify this city; explicit licence and named creator checked from Commons metadata. Actual downloaded image dimensions and hash verified.",
+      "outcome": {
+        "cases": [
+          {
+            "id": "e481ed9c-39a7-fdfe-ab8f-0e96f9ee9320",
+            "active": false,
+            "members": 0
+          }
+        ],
+        "city_id": "c6ece719-a37a-44f1-8c69-1707a001aeff",
+        "license": "CC BY 4.0",
+        "asset_id": "c9154c5b-a619-4145-a956-364362828788",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/39/Frankenberg_%28Sachsen%29%2C_Markt_%281%29.jpg/960px-Frankenberg_%28Sachsen%29%2C_Markt_%281%29.jpg",
+        "attribution": "Aagnverglaser",
+        "actual_phash": "fffffeefe8a55b11",
+        "image_flagged": false,
+        "reviews_resolved": 1,
+        "old_asset_retained": true,
+        "source_metadata_unchanged_except_image": true
+      }
+    },
+    {
+      "city_id": "561c5e47-5113-4fed-84bd-004e8d21b4f1",
+      "name": "York",
+      "source": "wikimedia",
+      "source_url": "https://commons.wikimedia.org/wiki/File:York_Minster_(2797690).jpg",
+      "source_ref": "wikimedia:File:York Minster (2797690).jpg",
+      "description": "York Minster in 2013",
+      "photographer": "FEGreene",
+      "photographer_url": "https://commons.wikimedia.org/wiki/File:York_Minster_(2797690).jpg",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/York_Minster_%282797690%29.jpg/960px-York_Minster_%282797690%29.jpg",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/1/14/York_Minster_%282797690%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "width": 960,
+      "height": 720,
+      "bytes": 203031,
+      "sha256": "3cfb85fcf8aa7b08818e3fcccc6ec9f43940fad84bbbaf0b6e81486202ee9a61",
+      "api_capture_sha256": "1b9ed867df565df23b4e387dfb7fa70ed221c289c2417485bc9941897fc32bf1",
+      "capture_at": "2026-11-19T20:51:45.743913+00:00",
+      "GPS": [
+        "",
+        ""
+      ],
+      "phash": "fff7e3f080988000",
+      "phash_algorithm": "Exact existing ImageScript1.2.15 64-bit average hash on complete downloaded bytes",
+      "human_reviewed": false,
+      "decision_actor": "AI-assisted factual repair",
+      "visual_check": "AI inspection of complete source photograph: appropriate location-specific architecture or streetscape; no rejected map or visible creator monogram. Source caption retained with its historical date.",
+      "basis": "Source file caption and location identify this city; explicit licence and named creator checked from Commons metadata. Actual downloaded image dimensions and hash verified.",
+      "outcome": {
+        "cases": [
+          {
+            "id": "776b5f0f-b846-8d53-71ef-dbc67cb78eef",
+            "active": false,
+            "members": 0
+          }
+        ],
+        "city_id": "561c5e47-5113-4fed-84bd-004e8d21b4f1",
+        "license": "CC0",
+        "asset_id": "31813c0b-7064-472a-8380-da9bd68b0eb5",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/York_Minster_%282797690%29.jpg/960px-York_Minster_%282797690%29.jpg",
+        "attribution": "FEGreene",
+        "actual_phash": "fff7e3f080988000",
+        "image_flagged": false,
+        "reviews_resolved": 1,
+        "old_asset_retained": true,
+        "source_metadata_unchanged_except_image": true
+      }
+    },
+    {
+      "city_id": "78bbd52b-22c1-47ac-87e9-e705acb99b8f",
+      "name": "Hudson",
+      "source": "wikimedia",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Warren_Street_west_view,_Hudson,_NY.jpg",
+      "source_ref": "wikimedia:File:Warren Street west view, Hudson, NY.jpg",
+      "description": "Looking west along Warren Street from South Fourth Street in the historic district, Hudson, NY, USA",
+      "photographer": "Daniel Case",
+      "photographer_url": "https://commons.wikimedia.org/wiki/File:Warren_Street_west_view,_Hudson,_NY.jpg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Warren_Street_west_view%2C_Hudson%2C_NY.jpg/960px-Warren_Street_west_view%2C_Hudson%2C_NY.jpg",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Warren_Street_west_view%2C_Hudson%2C_NY.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "width": 960,
+      "height": 748,
+      "bytes": 195505,
+      "sha256": "a4c6bb8884f15fb5a88ad26187522350a7057f7046f07053c6750c173a3c5830",
+      "api_capture_sha256": "6f5416b4cfcdd17e3dccb3aa61d9afe9074574118eb3f1e88f55914607ea24df",
+      "capture_at": "2026-11-19T20:51:46.017127+00:00",
+      "GPS": [
+        "42.250000",
+        "-73.788333"
+      ],
+      "phash": "fffef8f8e0f08000",
+      "phash_algorithm": "Exact existing ImageScript1.2.15 64-bit average hash on complete downloaded bytes",
+      "human_reviewed": false,
+      "decision_actor": "AI-assisted factual repair",
+      "visual_check": "AI inspection of complete source photograph: appropriate location-specific architecture or streetscape; no rejected map or visible creator monogram. Source caption retained with its historical date.",
+      "basis": "Source file caption and location identify this city; explicit licence and named creator checked from Commons metadata. Actual downloaded image dimensions and hash verified.",
+      "outcome": {
+        "cases": [
+          {
+            "id": "3d9f2118-bb3b-7112-6b30-4bdacac68642",
+            "active": false,
+            "members": 0
+          }
+        ],
+        "city_id": "78bbd52b-22c1-47ac-87e9-e705acb99b8f",
+        "license": "CC BY-SA 3.0",
+        "asset_id": "62b21c51-0eb0-4b2b-a7ea-ceb32ca49e32",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Warren_Street_west_view%2C_Hudson%2C_NY.jpg/960px-Warren_Street_west_view%2C_Hudson%2C_NY.jpg",
+        "attribution": "Daniel Case",
+        "actual_phash": "fffef8f8e0f08000",
+        "image_flagged": false,
+        "reviews_resolved": 1,
+        "old_asset_retained": true,
+        "source_metadata_unchanged_except_image": true
+      }
+    }
+  ]
+}

@@ -3,7 +3,7 @@ import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5
 import { wikipediaProposal, pexelsProposal, imageProposal, refreshSource } from './refresh.ts'
 const target = { id: '11111111-1111-4111-8111-111111111111', wikidata_qid: 'Q42', bio: 'Old biography' }
 function wikiFetcher(override: Record<string, unknown> = {}): typeof fetch {
-  return (url => Promise.resolve(Response.json(String(url).includes('wikidata.org')
+  return (url => Promise.resolve(Response.json(new URL(String(url)).hostname === 'www.wikidata.org'
     ? { entities: { Q42: { claims: { P31: [{ mainsnak: { datavalue: { value: { id: 'Q5' } } } }] }, sitelinks: { enwiki: { title: 'Douglas Adams' } } } } }
     : { type: 'standard', wikibase_item: 'Q42', extract: 'A factual biography.', content_urls: { desktop: { page: 'https://en.wikipedia.org/wiki/Douglas_Adams' } }, ...override }))) as typeof fetch
 }
@@ -40,7 +40,7 @@ Deno.test('exhausted Pexels quota uses the existing Unsplash key with honest att
   const calls: string[] = []
   const result = await imageProposal({ name: 'Berlin', countries: { name: 'Germany' } }, key => ({ PEXELS_API_KEY: 'pexels-key', UNSPLASH_ACCESS_KEY: 'unsplash-key' })[key], ((url, init) => {
     calls.push(new URL(String(url)).hostname)
-    if (String(url).includes('api.pexels.com')) return Promise.resolve(new Response('', { status: 429 }))
+    if (new URL(String(url)).hostname === 'api.pexels.com') return Promise.resolve(new Response('', { status: 429 }))
     assertEquals(((init as { headers?: Record<string, string> })?.headers ?? {}).Authorization, 'Client-ID unsplash-key')
     return Promise.resolve(Response.json({ results: [{ id: 'photo', alt_description: photo.alt, width: 1800, height: 1000,
       urls: { regular: 'https://images.unsplash.com/photo-123' }, user: { name: 'Unsplash photographer', links: { html: 'https://unsplash.com/@photographer' } }, links: { html: 'https://unsplash.com/photos/photo' } }] }))

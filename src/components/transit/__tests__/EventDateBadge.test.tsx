@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { eventDateParts } from '../EventDateBadge';
+import { eventDateParts } from '../eventDateParts';
 
 const now = new Date(2026, 10, 18, 9, 0).getTime();
 

@@ -429,7 +429,7 @@ Deno.serve(async (req: Request) => {
         p_error: String(error).slice(0, 1000),
       });
     }
-    return errorResponse(String(error), 500, req);
+    return errorResponse(error instanceof Error ? error.message : "Out x Out run failed", 500, req);
   } finally {
     if (run && token && !failed) {
       await db.rpc("outxout_release", { p_run: run, p_token: token });
