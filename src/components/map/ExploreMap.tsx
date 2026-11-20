@@ -136,6 +136,11 @@ export interface ExploreMapProps {
    *  ⌘/ctrl+scroll, two fingers on touch). Use when the map is embedded above
    *  page content (e.g. the homepage hero) so it doesn't trap page scroll. */
   cooperativeGestures?: boolean;
+  /** Breathe the ring around live pins after each data load (default). The
+   *  homepage turns it off: each burst repaints the whole style every frame for
+   *  5.4s while the visitor is scrolling past, and an embedded map has no
+   *  pins-just-arrived moment to announce. Off = the reduced-motion ring. */
+  livePulse?: boolean;
   /** Render MapLibre's native zoom/geolocate buttons (default). MapShell sets
    *  false and mounts its own design-system MapNavControls cluster instead —
    *  the native GeolocateControl stays mounted (hidden) because it owns the
@@ -182,6 +187,7 @@ export const ExploreMap = ({
   savedOnly = false,
   showSharedMobility = false,
   cooperativeGestures = false,
+  livePulse = true,
   showNativeNav = true,
   onMapHandle,
 }: ExploreMapProps) => {
@@ -416,7 +422,12 @@ export const ExploreMap = ({
   const { spiderfy, clearSpider } = useSpiderfy({ spiderMarkersRef, showPopup, onSelectPointRef });
 
   // ── Live pulse animation (Phase 4) ────────────────────────────────────────
-  const { startPulse } = usePulseAnimation({ mapRef, mapReady, prefersReducedMotion, pulseRafRef });
+  const { startPulse } = usePulseAnimation({
+    mapRef,
+    mapReady,
+    prefersReducedMotion: prefersReducedMotion || !livePulse,
+    pulseRafRef,
+  });
 
   // ── Map lifecycle (construct + controls + handlers + teardown + initial fly)
   useMapInstance({
