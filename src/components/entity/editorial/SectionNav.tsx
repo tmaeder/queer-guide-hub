@@ -78,7 +78,9 @@ export function SectionNav({
         ref={listRef}
         className={cn(
           'mx-auto flex max-w-page items-center overflow-x-auto rounded-container bg-surface-container [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-          variant === 'subway' ? 'min-h-16 gap-2 md:gap-4' : 'min-h-12 gap-1',
+          variant === 'subway'
+            ? 'min-h-16 gap-2 p-2 md:justify-between md:gap-4'
+            : 'min-h-12 gap-1 p-1',
         )}
       >
         {items.map((item) => {
