@@ -5836,5 +5836,35 @@
       "noNeighbourhoods": "{{where}}にはまだエリアが登録されていません。",
       "noneForFilter": "{{where}}にはこの条件でまだ何も登録されていません。"
     }
+  },
+  "emailPreferences": {
+    "groups": {
+      "messages": "メッセージ",
+      "trips": "旅行とイベント",
+      "community": "グループとコミュニティ",
+      "account": "アカウント"
+    },
+    "operational": {
+      "event_updates": "参加したイベントの日程変更とリマインダー",
+      "trip_updates": "旅行の日程変更と前日（UTC）のリマインダー",
+      "group_invitations": "グループに招待されたとき",
+      "group_requests": "グループ参加リクエストの結果",
+      "group_comments": "自分のグループでのメンションと返信",
+      "community_comments": "コミュニティでのメンションと返信",
+      "business_updates": "代表しているビジネスの申請とサービスの更新",
+      "contributions": "投稿に関する決定",
+      "payments": "確認済みの支払い確認が届いたとき"
+    }
+  },
+  "intimate": {
+    "hanky": {
+      "help": "左ポケット＝タチ／する側、右＝ウケ／される側。非公開で保存され、あなただけが見られます。",
+      "sideFor": "{{color}}のポケット",
+      "side": {
+        "left": "左",
+        "right": "右",
+        "both": "両方"
+      }
+    }
   }
 }

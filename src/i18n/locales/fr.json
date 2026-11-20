@@ -5842,5 +5842,35 @@
       "noNeighbourhoods": "Aucun quartier répertorié pour {{where}} pour le moment.",
       "noneForFilter": "Rien de répertorié pour {{where}} avec ce filtre pour le moment."
     }
+  },
+  "emailPreferences": {
+    "groups": {
+      "messages": "Messages",
+      "trips": "Voyages et événements",
+      "community": "Groupes et communauté",
+      "account": "Votre compte"
+    },
+    "operational": {
+      "event_updates": "Changements d’horaire et rappels pour les événements auxquels je participe",
+      "trip_updates": "Changements d’horaire et rappels la veille (UTC) pour mes voyages",
+      "group_invitations": "Quand je reçois une invitation à un groupe",
+      "group_requests": "Résultat de mes demandes d’adhésion aux groupes",
+      "group_comments": "Mentions et réponses dans mes groupes",
+      "community_comments": "Mentions et réponses dans la communauté",
+      "business_updates": "Mises à jour de revendication et de service pour les entreprises que je représente",
+      "contributions": "Décisions sur mes contributions",
+      "payments": "Quand une confirmation de paiement vérifiée est prête"
+    }
+  },
+  "intimate": {
+    "hanky": {
+      "help": "Poche gauche = top / actif, droite = bottom / passif. Enregistré en privé. vous seul le voyez.",
+      "sideFor": "Poche pour {{color}}",
+      "side": {
+        "left": "Gauche",
+        "right": "Droite",
+        "both": "Les deux"
+      }
+    }
   }
 }

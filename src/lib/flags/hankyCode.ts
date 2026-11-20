@@ -5,9 +5,9 @@ import { hankyDefinition } from '@/lib/referenceTaxonomyDefinitions';
  *
  * This table exists so /tags/handkerchief-code can document the code as queer
  * history, the way the diagnostic-codes band documents clinical classification.
- * It is deliberately NOT a signaling feature: nothing in the product lets a
- * user "wear" a hanky colour, and nothing should — that decision is
- * user-locked (2026-08-16 brainstorm).
+ * Since 2026-11-20 (user request) members can also record the colours they
+ * wear, privately, inside the 18+ intimate settings (HankyCodePicker →
+ * user_hanky_signals). Nothing shows another member's colours.
  *
  * The CLASSIC tier is the ten-colour core as published in Larry Townsend's
  * "The Leatherman's Handbook II" (1983), the closest thing the code has to a

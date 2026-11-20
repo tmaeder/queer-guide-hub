@@ -5836,5 +5836,35 @@
       "noNeighbourhoods": "{{where}} 暂无已登记的街区。",
       "noneForFilter": "在此筛选条件下，{{where}} 暂无内容。"
     }
+  },
+  "emailPreferences": {
+    "groups": {
+      "messages": "消息",
+      "trips": "行程与活动",
+      "community": "群组与社区",
+      "account": "你的账户"
+    },
+    "operational": {
+      "event_updates": "我参加的活动的时间变更和提醒",
+      "trip_updates": "我的行程的时间变更和前一天（UTC）提醒",
+      "group_invitations": "当我收到群组邀请时",
+      "group_requests": "我的入群申请结果",
+      "group_comments": "我的群组中的提及和回复",
+      "community_comments": "社区中的提及和回复",
+      "business_updates": "我代表的商家的认领和服务更新",
+      "contributions": "关于我的贡献的决定",
+      "payments": "当已验证的付款确认就绪时"
+    }
+  },
+  "intimate": {
+    "hanky": {
+      "help": "左口袋 = 主动 / 给予方，右口袋 = 被动 / 接受方。仅私密保存，只有你能看到。",
+      "sideFor": "{{color}} 的口袋",
+      "side": {
+        "left": "左",
+        "right": "右",
+        "both": "两边"
+      }
+    }
   }
 }

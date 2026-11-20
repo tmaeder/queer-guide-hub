@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -21,6 +22,8 @@ interface SelectFieldProps {
   placeholder?: string;
   description?: string;
   disabled?: boolean;
+  /** Leading mark per option value (icon or flag); shown in the list and the closed trigger. */
+  icons?: Partial<Record<string, ReactNode>>;
 }
 
 export function SelectField({
@@ -32,6 +35,7 @@ export function SelectField({
   placeholder,
   description,
   disabled,
+  icons,
 }: SelectFieldProps) {
   return (
     <div className="flex flex-col gap-1">
@@ -43,7 +47,14 @@ export function SelectField({
         <SelectContent>
           {options.map((opt) => (
             <SelectItem key={opt.value} value={opt.value}>
-              {opt.label}
+              {icons?.[opt.value] ? (
+                <span className="inline-flex items-center gap-2">
+                  {icons[opt.value]}
+                  {opt.label}
+                </span>
+              ) : (
+                opt.label
+              )}
             </SelectItem>
           ))}
         </SelectContent>
