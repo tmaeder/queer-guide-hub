@@ -305,7 +305,7 @@ export function MarketplaceControlBar({
               }
             }}
             style={{ paddingLeft: 42 }}
-            className="h-12 rounded-container border-transparent bg-card text-15 shadow-soft focus-visible:border-input"
+            className="h-12 rounded-container border-transparent bg-card text-base md:text-15 shadow-soft focus-visible:border-input"
             role="combobox"
             aria-autocomplete="list"
             aria-expanded={false}
