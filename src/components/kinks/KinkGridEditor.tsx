@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { KINK_CATEGORY_ICONS } from '@/components/kinks/kinkCategoryIcons';
 import { KinkRatingControl } from '@/components/kinks/KinkRatingControl';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
 import {
   useMyKinkRatings,
@@ -103,7 +104,16 @@ export function KinkGridEditor() {
                   return (
                     <li key={item.id} className="space-y-1">
                       <div className="flex items-center gap-1">
-                        <span className="text-sm">{kinkLabel(item, lang)}</span>
+                        {item.glossary_tag_slug ? (
+                          <LocalizedLink
+                            to={`/tags/${item.glossary_tag_slug}`}
+                            className="text-sm underline decoration-border underline-offset-4 hover:decoration-foreground"
+                          >
+                            {kinkLabel(item, lang)}
+                          </LocalizedLink>
+                        ) : (
+                          <span className="text-sm">{kinkLabel(item, lang)}</span>
+                        )}
                         {item.description && (
                           <Tooltip>
                             <TooltipTrigger asChild>

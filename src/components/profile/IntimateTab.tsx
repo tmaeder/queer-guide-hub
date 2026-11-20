@@ -2,6 +2,7 @@ import { Suspense, useState } from 'react';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import {
   useIntimateKinkTags,
@@ -28,9 +29,9 @@ const SECTIONS: { step: WizardStep; label: string }[] = [
   { step: 'genital-pictogram', label: 'Anatomy' },
   { step: 'size', label: 'Size' },
   { step: 'angle', label: 'Angle' },
-  { step: 'age', label: 'Age band' },
-  { step: 'role', label: 'Role' },
-  { step: 'safer-sex', label: 'Safer sex' },
+  { step: 'age', label: 'Your age' },
+  { step: 'role', label: 'Your role' },
+  { step: 'safer-sex', label: 'Your safer sex' },
   { step: 'text', label: 'Looking for' },
 ];
 
@@ -139,56 +140,88 @@ export function IntimateTab() {
     toast({ title: 'Intimate profile deleted.' });
   };
 
+  const field = ({ step, label }: { step: WizardStep; label: string }) => (
+    <section key={step} aria-label={label} className="flex flex-col gap-2">
+      {step !== 'text' && <h4 className="text-sm font-medium">{label}</h4>}
+      <IntimateStepFields
+        step={step}
+        merged={merged}
+        update={(patch) => setDraft((d) => ({ ...d, ...patch }))}
+        kinkVocab={kinkVocab}
+        limitsVocab={kinkTags?.length ? kinkVocab : (FALLBACK_LIMITS as readonly string[])}
+        aboutText={aboutText}
+        setAboutText={(v) => {
+          setAboutText(v);
+          setTextDirty(true);
+        }}
+        lookingText={lookingText}
+        setLookingText={(v) => {
+          setLookingText(v);
+          setTextDirty(true);
+        }}
+        textParts="looking"
+      />
+    </section>
+  );
+  const group = (title: string, description: string, steps: readonly WizardStep[]) => {
+    const inGroup = sections.filter((x) => steps.includes(x.step));
+    if (!inGroup.length) return null;
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6">{inGroup.map(field)}</CardContent>
+      </Card>
+    );
+  };
+
   return (
     <div className="flex flex-col gap-6">
-      {sections.map(({ step, label }) => (
-        <section key={step} aria-label={label} className="flex flex-col gap-2">
-          <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
-            {label}
-          </h3>
-          <IntimateStepFields
-            step={step}
-            merged={merged}
-            update={(patch) => setDraft((d) => ({ ...d, ...patch }))}
-            kinkVocab={kinkVocab}
-            limitsVocab={kinkTags?.length ? kinkVocab : (FALLBACK_LIMITS as readonly string[])}
-            aboutText={aboutText}
-            setAboutText={(v) => {
-              setAboutText(v);
-              setTextDirty(true);
-            }}
-            lookingText={lookingText}
-            setLookingText={(v) => {
-              setLookingText(v);
-              setTextDirty(true);
-            }}
-            textParts="looking"
-          />
-        </section>
-      ))}
+      {group('You', 'What you are, as shown to other opted-in members.', [
+        'genitalia',
+        'genital-pictogram',
+        'size',
+        'angle',
+        'age',
+        'role',
+        'safer-sex',
+      ])}
 
-      <section aria-label="Hanky code" className="flex flex-col gap-2">
-        <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
-          Hanky code
-        </h3>
-        <HankyCodePicker />
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>What you're looking for</CardTitle>
+          <p className="text-sm text-muted-foreground">What you want from others.</p>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6">
+          {sections.filter((x) => x.step === 'text').map(field)}
+          <section aria-label="Hanky code" className="flex flex-col gap-2">
+            <h4 className="text-sm font-medium">Hanky code</h4>
+            <HankyCodePicker />
+          </section>
+        </CardContent>
+      </Card>
 
       {visible && (
-        <section aria-label="Interests & boundaries" className="flex flex-col gap-2">
-          <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
-            Interests & boundaries
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Private by default. Your no's and hard limits are never shown to anyone.
-          </p>
-          <Suspense fallback={<div className="h-40 rounded-element bg-muted" />}>
-            <KinkGridEditor />
-          </Suspense>
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle>Interests & boundaries</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Private by default. Your no's and hard limits are never shown to anyone.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <section aria-label="Interests & boundaries">
+              <Suspense fallback={<div className="h-40 rounded-element bg-muted" />}>
+                <KinkGridEditor />
+              </Suspense>
+            </section>
+          </CardContent>
+        </Card>
       )}
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+      <div className="flex flex-wrap items-center gap-2">
         <Button onClick={save} disabled={!dirty || busy} className="rounded-element">
           {upsert.isPending || setText.isPending ? 'Saving…' : 'Save'}
         </Button>

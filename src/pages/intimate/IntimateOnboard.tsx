@@ -244,6 +244,7 @@ export default function IntimateOnboard() {
               setAboutText={setAboutText}
               lookingText={lookingText}
               setLookingText={setLookingText}
+              textParts="looking"
             />
           )}
 

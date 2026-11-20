@@ -47,8 +47,8 @@ describe('IntimateTab', () => {
     });
     render(wrap(<IntimateTab />));
     expect(screen.queryByText(/Enable intimate profile/i)).toBeNull();
-    expect(screen.getByRole('region', { name: 'Role' })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Safer sex' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Your role' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Your safer sex' })).toBeInTheDocument();
     // Into/Limits duplicate the checklist below.
     expect(screen.queryByRole('region', { name: 'Into' })).toBeNull();
     // Build and height moved to Body & about; age band stays here as a slider.

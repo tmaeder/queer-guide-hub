@@ -123,7 +123,7 @@ export function BasicInfoTab({
             {/* Bio */}
             <FormField
               id="bio"
-              label="Bio"
+              label="About me"
               value={formData.bio}
               onChange={(v) => onChange('bio', v)}
               placeholder="Tell us about yourself..."

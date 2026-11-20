@@ -4,7 +4,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, ChevronDown } from '@/components/icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,7 +24,6 @@ import { BlueskyConnect } from '@/components/profile/settings/BlueskyConnect';
 import { KinkVisibilitySettings } from '@/components/kinks/KinkVisibilitySettings';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { BodyProfileEditor } from '@/components/profile/BodyProfileEditor';
-import { IntimateAboutField } from '@/components/profile/IntimateTextFields';
 import { IntimateTab } from '@/components/profile/IntimateTab';
 import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
 import { StatusEditor } from '@/components/status/StatusEditor';
@@ -363,23 +362,30 @@ function ProfileSettingsContent({
   const editor =
     section === 'profile' ? (
       <>
-        <section aria-labelledby="settings-avatar" className="flex flex-col gap-2">
-          <h3
-            id="settings-avatar"
-            className="text-2xs font-bold uppercase tracking-wide text-muted-foreground"
-          >
-            Avatar & profile picture
-          </h3>
-          <AvatarChooser
-            email={user.email || ''}
-            currentUrl={px?.avatar_url}
-            currentConfig={px?.avatar_config as AvatarConfig | null}
-            onSave={handleAvatarSave}
-          />
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle id="settings-avatar">Avatar & profile picture</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <section aria-labelledby="settings-avatar">
+              <AvatarChooser
+                email={user.email || ''}
+                currentUrl={px?.avatar_url}
+                currentConfig={px?.avatar_config as AvatarConfig | null}
+                onSave={handleAvatarSave}
+              />
+            </section>
+          </CardContent>
+        </Card>
         <PhotoGallery userId={user.id} isOwnProfile />
-        <StatusEditor />
-        <IntimateAboutField />
+        <Card>
+          <CardHeader>
+            <CardTitle>Vibe & looking for</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StatusEditor />
+          </CardContent>
+        </Card>
         <BasicInfoTab
           formData={formData}
           profile={profile}

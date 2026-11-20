@@ -136,19 +136,19 @@ export function PhotoGallery({ userId, isOwnProfile, hideWhenEmpty }: PhotoGalle
 
   return (
     <Card>
-      <CardContent>
-        <div className="flex items-center justify-between mb-4">
+      <CardContent className="flex flex-col gap-4 p-6">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Camera className="w-5 h-5" />
-            <h6 className="text-base font-semibold">Photo Gallery</h6>
+            <Camera className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-lg font-semibold leading-none tracking-tight">Photos</h3>
             {photos && photos.length > 0 && <Badge variant="secondary">{photos.length}</Badge>}
           </div>
           {isOwnProfile && (
             <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
               <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Photo
+                <Button size="sm" variant="outline">
+                  <Plus className="h-4 w-4" />
+                  Add photo
                 </Button>
               </DialogTrigger>
               <DialogContent>
@@ -223,17 +223,16 @@ export function PhotoGallery({ userId, isOwnProfile, hideWhenEmpty }: PhotoGalle
         </div>
 
         {!photos || photos.length === 0 ? (
-          <div className="text-center py-8">
-            <ImageIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <h6 className="text-base font-medium mb-2">No photos yet</h6>
+          <div className="flex items-center gap-4 rounded-element bg-muted p-4">
+            <ImageIcon className="h-8 w-8 shrink-0 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
               {isOwnProfile
-                ? 'Upload your first photo to get started'
-                : "This user hasn't uploaded any photos yet"}
+                ? 'No photos yet. They show on your profile beside your avatar.'
+                : 'No photos yet.'}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
             {photos.map((photo) => (
               <div key={photo.id} className="relative group">
                 <button

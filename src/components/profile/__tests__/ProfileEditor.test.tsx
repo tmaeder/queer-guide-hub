@@ -43,7 +43,6 @@ vi.mock('@/components/kinks/KinkVisibilitySettings', () => ({
   KinkVisibilitySettings: () => null,
 }));
 vi.mock('@/components/profile/BodyProfileEditor', () => ({ BodyProfileEditor: () => null }));
-vi.mock('@/components/profile/IntimateTextFields', () => ({ IntimateAboutField: () => null }));
 vi.mock('@/components/profile/IntimateTab', () => ({ IntimateTab: () => null }));
 vi.mock('@/components/profile/TravelPreferencesEditor', () => ({
   TravelPreferencesEditor: () => null,
