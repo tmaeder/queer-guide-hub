@@ -330,7 +330,7 @@ export default function MarketplaceBrands() {
                 setSearch(e.target.value);
               }}
               placeholder={t('marketplace.searchMakers', 'Search makers')}
-              className="h-full min-w-0 flex-1 bg-transparent text-15 outline-none"
+              className="h-full min-w-0 flex-1 bg-transparent text-base outline-none md:text-15"
             />
           </label>
 

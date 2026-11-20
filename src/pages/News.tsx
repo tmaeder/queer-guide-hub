@@ -23,6 +23,7 @@ import { WeekInReview } from '@/components/news/editorial/WeekInReview';
 import { ReaderRail } from '@/components/news/editorial/ReaderRail';
 import { useAuth } from '@/hooks/useAuth';
 import { NewStoriesPill } from '@/components/news/editorial/NewStoriesPill';
+import { DeferredSection } from '@/components/home/DeferredSection';
 import { PageContainer, STICKY_RAIL_UNDER_HEADER } from '@/components/layout/PageContainer';
 
 type Article = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
@@ -181,60 +182,64 @@ export default function News() {
               }
             />
 
-            {sectionCats.map((cat) => {
-              const items = articlesByCategory.get(cat.slug) ?? [];
-              if (items.length === 0) return null;
-              return (
-                <SectionBand
-                  key={cat.id}
-                  category={cat}
-                  articles={items}
-                  sourcesMap={sourcesMap}
-                  categoriesMap={categoriesMap}
-                  assets={assets}
-                  dek={cat.description ?? undefined}
+            {/* Everything below For You mounts on approach: rendering every band
+                in one pass at load was ~1 s of mobile main thread (TBT). */}
+            <DeferredSection rootMargin="400px 0px">
+              {sectionCats.map((cat) => {
+                const items = articlesByCategory.get(cat.slug) ?? [];
+                if (items.length === 0) return null;
+                return (
+                  <SectionBand
+                    key={cat.id}
+                    category={cat}
+                    articles={items}
+                    sourcesMap={sourcesMap}
+                    categoriesMap={categoriesMap}
+                    assets={assets}
+                    dek={cat.description ?? undefined}
+                  />
+                );
+              })}
+
+              {!articlesLoading && stories.length > 0 && (
+                <StoryCollectionsBand
+                  stories={stories as Parameters<typeof StoryCollectionsBand>[0]['stories']}
+                  heroes={storyHeroes as Parameters<typeof StoryCollectionsBand>[0]['heroes']}
                 />
-              );
-            })}
+              )}
 
-            {!articlesLoading && stories.length > 0 && (
-              <StoryCollectionsBand
-                stories={stories as Parameters<typeof StoryCollectionsBand>[0]['stories']}
-                heroes={storyHeroes as Parameters<typeof StoryCollectionsBand>[0]['heroes']}
-              />
-            )}
+              <WeekInReview articles={articles as Article[]} />
 
-            <WeekInReview articles={articles as Article[]} />
-
-            {/* An ink plate rather than a footnote: the archive is the
-                invitation to keep reading, so it gets the page's loudest band.
-                Held back while articles load: every band above renders
-                nothing until then, so it would paint near the top and then be
-                pushed ~1,000px down (CLS 0.8-1.2 on /news). */}
-            {!articlesLoading && (
-              <div className="flex flex-col gap-6 rounded-panel bg-foreground p-8 text-background md:flex-row md:items-end md:justify-between md:p-12">
-                <div className="max-w-reading">
-                  <p className="m-0 text-2xs uppercase tracking-label text-background/70">
-                    {t('pages.news.archiveEyebrow', 'Keep reading')}
-                  </p>
-                  <p className="m-0 mt-2 font-display text-display leading-none">
-                    {t('pages.news.archiveTitle', 'Every story we have ever told.')}
-                  </p>
-                  <p className="m-0 mt-4 text-body-lg text-background/80">
-                    {t(
-                      'pages.news.archiveBody',
-                      'Rights won, rights fought for, nights out and the people who made them. Search the full archive by topic, place or date.',
-                    )}
-                  </p>
+              {/* An ink plate rather than a footnote: the archive is the
+                  invitation to keep reading, so it gets the page's loudest band.
+                  Held back while articles load: every band above renders
+                  nothing until then, so it would paint near the top and then be
+                  pushed ~1,000px down (CLS 0.8-1.2 on /news). */}
+              {!articlesLoading && (
+                <div className="flex flex-col gap-6 rounded-panel bg-foreground p-8 text-background md:flex-row md:items-end md:justify-between md:p-12">
+                  <div className="max-w-reading">
+                    <p className="m-0 text-2xs uppercase tracking-label text-background/70">
+                      {t('pages.news.archiveEyebrow', 'Keep reading')}
+                    </p>
+                    <p className="m-0 mt-2 font-display text-display leading-none">
+                      {t('pages.news.archiveTitle', 'Every story we have ever told.')}
+                    </p>
+                    <p className="m-0 mt-4 text-body-lg text-background/80">
+                      {t(
+                        'pages.news.archiveBody',
+                        'Rights won, rights fought for, nights out and the people who made them. Search the full archive by topic, place or date.',
+                      )}
+                    </p>
+                  </div>
+                  <Button asChild variant="accent" className="shrink-0 gap-2">
+                    <LocalizedLink to="/news/all" className="no-underline">
+                      {t('pages.news.openArchive', 'Open archive')}
+                      <ArrowRight size={16} />
+                    </LocalizedLink>
+                  </Button>
                 </div>
-                <Button asChild variant="accent" className="shrink-0 gap-2">
-                  <LocalizedLink to="/news/all" className="no-underline">
-                    {t('pages.news.openArchive', 'Open archive')}
-                    <ArrowRight size={16} />
-                  </LocalizedLink>
-                </Button>
-              </div>
-            )}
+              )}
+            </DeferredSection>
           </div>
 
           {user && (
