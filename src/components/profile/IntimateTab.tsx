@@ -37,7 +37,7 @@ function HankyHints({
   onFix,
 }: {
   wanted: Record<string, HankySide>;
-  onFix: (colorId: string, side: HankySide) => void;
+  onFix: (variantId: string, side: HankySide) => void;
 }) {
   const { data: variants } = useHankyVariants();
   const { data: signals } = useMyHankySignals();
@@ -49,10 +49,17 @@ function HankyHints({
     const color = colorOf.get(variantId);
     if (color) worn[color] = side;
   }
+  // Seeking is keyed by variant id, like the signals.
+  const wantedByColor: Record<string, HankySide> = {};
+  for (const [variantId, side] of Object.entries(wanted)) {
+    const color = colorOf.get(variantId);
+    if (color) wantedByColor[color] = side;
+  }
+  const variantOf = new Map((variants ?? []).map((v) => [v.colorId, v.variantId]));
   const items = new Map((taxonomy?.items ?? []).map((i) => [i.slug, i]));
   const checks = hankyChecks({
     worn,
-    wanted,
+    wanted: wantedByColor,
     label: (c) => {
       const e = HANKY_CODE.find((h) => h.id === c);
       return e ? `${e.colorEn} (${e.meaningEn})` : c;
@@ -79,7 +86,7 @@ function HankyHints({
                 size="sm"
                 variant="outline"
                 className="rounded-element"
-                onClick={() => onFix(c.colorId, c.fixSide!)}
+                onClick={() => onFix(variantOf.get(c.colorId) ?? c.colorId, c.fixSide!)}
               >
                 Look for {c.fixSide} instead
               </Button>
@@ -311,14 +318,14 @@ export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {
           {sections.filter((x) => x.step === 'seeking' || x.step === 'text').map(field)}
           <HankyHints
             wanted={merged.dating_prefs?.seeking?.hanky ?? {}}
-            onFix={(colorId, side) => {
+            onFix={(variantId, side) => {
               const prefs = merged.dating_prefs ?? {};
               const seeking = prefs.seeking ?? {};
               setDraft((d) => ({
                 ...d,
                 dating_prefs: {
                   ...prefs,
-                  seeking: { ...seeking, hanky: { ...(seeking.hanky ?? {}), [colorId]: side } },
+                  seeking: { ...seeking, hanky: { ...(seeking.hanky ?? {}), [variantId]: side } },
                 },
               }));
             }}
