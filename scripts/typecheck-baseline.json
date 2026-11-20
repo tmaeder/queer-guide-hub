@@ -190,7 +190,7 @@
     "src/components/inbox/EmailView.tsx": {
       "TS2339": 3
     },
-    "src/components/map/EntityMap.tsx": {
+    "src/components/map/EntityMap.impl.tsx": {
       "TS2322": 6,
       "TS2345": 1
     },

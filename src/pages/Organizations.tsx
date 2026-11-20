@@ -285,7 +285,7 @@ export default function Organizations() {
               updateParams({ q: e.target.value.trim() });
             }}
             placeholder="Search organizations by name"
-            className="h-full min-w-0 flex-1 bg-transparent text-15 outline-none"
+            className="h-full min-w-0 flex-1 bg-transparent text-base outline-none md:text-15"
           />
         </label>
         <label className="flex h-11 min-w-0 flex-1 items-center gap-2 bg-card px-4 shadow-soft rounded-container sm:max-w-56">
@@ -294,7 +294,7 @@ export default function Organizations() {
           <select
             value={country}
             onChange={(e) => updateParams({ country: e.target.value })}
-            className="h-full min-w-0 flex-1 bg-transparent text-15 outline-none"
+            className="h-full min-w-0 flex-1 bg-transparent text-base outline-none md:text-15"
           >
             <option value="">All countries</option>
             {country && !countries.some((c) => c.code.toUpperCase() === country) && (
