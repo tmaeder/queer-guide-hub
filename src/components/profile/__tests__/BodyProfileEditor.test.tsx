@@ -33,4 +33,14 @@ describe('BodyProfileEditor', () => {
       expect.objectContaining({ height_cm: 180, body_type: 'average' }),
     );
   });
+
+  it('flags a body type that disagrees with height and weight, and blocks impossible values', () => {
+    render(<BodyProfileEditor />);
+    fireEvent.click(screen.getByRole('button', { name: /twink/ }));
+    fireEvent.change(screen.getByLabelText('Weight (kg)'), { target: { value: '110' } });
+    expect(screen.getByRole('region', { name: 'Worth a second look' })).toHaveTextContent('twink');
+    expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
+    fireEvent.change(screen.getByLabelText('Weight (kg)'), { target: { value: '400' } });
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
 });
