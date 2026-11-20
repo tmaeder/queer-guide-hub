@@ -48,7 +48,7 @@ function RegionalContent() {
         <DeparturesBoard />
       </HomeSection>
       <HomeSection section="home-map">
-        <DeferredSection rootMargin="200px 0px" fallback={mapLoading}>
+        <DeferredSection rootMargin="200px 0px" afterInteraction fallback={mapLoading}>
           <Suspense fallback={mapLoading}>
             <HomeMap />
           </Suspense>

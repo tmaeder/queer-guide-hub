@@ -1,0 +1,55 @@
+{
+  "pass": 81,
+  "scope": "Husnes settlement lifecycle",
+  "proof": {
+    "source": "primary_municipal_settlement_research",
+    "source_url": "https://www.kvinnherad.kommune.no/tenester/naering-og-landbruk/naeringsareal-til-sals/naeringsareal-husnes-sentrum",
+    "human_reviewed": false,
+    "decision_actor": "AI-assisted factual lifecycle repair",
+    "user_authorization": "Standing delegation for clear-evidence factual editorial decisions",
+    "qid_retained_without_new_assertion": "Q2432140",
+    "evidence": [
+      {
+        "url": "https://www.kvinnherad.kommune.no/tenester/naering-og-landbruk/naeringsareal-til-sals/naeringsareal-husnes-sentrum",
+        "final_url": "https://www.kvinnherad.kommune.no/tenester/naering-og-landbruk/naeringsareal-til-sals/naeringsareal-husnes-sentrum",
+        "status": 200,
+        "sha256": "4b5cba1a8c93aa7959c66dcb4f2c6849199010b198abe8c97648fa2ff519f5ac",
+        "bytes": 65939,
+        "capture_at": "2026-11-19T21:01:48.562758+00:00"
+      }
+    ],
+    "facts": [
+      "Kvinnherad municipality explicitly identifies Husnes as its regional centre and locates the site north of its centre.",
+      "Existing application settlement classification accepts villages and urban areas; no rank promotion or parent-municipality merge.",
+      "Preserve all coordinates, other city facts, unpublished SEO state and attention flag."
+    ]
+  },
+  "outcome": {
+    "case": {
+      "active": false,
+      "members": 0
+    },
+    "slug": "husnes",
+    "city_id": "ed4ef6b2-3f4e-4049-ba34-33d622e902f5",
+    "shell_status": "real",
+    "seo_indexable": false,
+    "related_counts": {
+      "geo_places": 1,
+      "personalities": 1,
+      "city_coverage_gaps": 1,
+      "city_quality_signals": 8
+    },
+    "needs_attention": false,
+    "old_slug_redirect": "tmp-241c94df-df1c-4c0b-bfb6-eed5e4ce9bfa",
+    "private_saved_references": 0,
+    "native_verification_status": "country_checked"
+  },
+  "safeguards": "Exact city/finding snapshots, no real human history, lease/shared-lock guards, all related records locked and compared, native slug and placeholder redirect, native country verification without identity or parent certification. No SEO or coordinate changes.",
+  "unapplied": [
+    {
+      "name": "Połczyn-Zdrój",
+      "reason": "Current Q557797 and description represent the wider urban-rural gmina. Municipal evidence establishes the town but does not authorize silently treating mixed scope as resolved.",
+      "source_url": "https://www.polczyn-zdroj.pl/page/historia-gminy"
+    }
+  ]
+}

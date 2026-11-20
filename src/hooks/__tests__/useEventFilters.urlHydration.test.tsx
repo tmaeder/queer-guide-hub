@@ -72,8 +72,10 @@ describe('useEventFilters — URL filters must reach the FIRST fetch', () => {
     const filters = result.current.request.filters;
     expect(filters).toMatchObject({ cities: ['Zürich'] });
     expect(filters.dateRange).toBeDefined();
-    expect(filters.dateRange!.start).toContain('2026-09-11');
-    expect(filters.dateRange!.end).toContain('2026-09-12');
+    // URL date-only values mean local calendar days. Their UTC ISO date can
+    // differ east/west of Greenwich; assert the complete intended bounds.
+    expect(filters.dateRange!.start).toBe(new Date(2026, 8, 11).toISOString());
+    expect(filters.dateRange!.end).toBe(new Date(2026, 8, 12, 23, 59, 59, 999).toISOString());
     expect(result.current.isDefaultBrowse).toBe(false);
   });
 

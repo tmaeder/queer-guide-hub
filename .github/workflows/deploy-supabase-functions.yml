@@ -195,7 +195,7 @@ jobs:
           # Known narrowly shared modules have explicit consumers. Deploy them
           # without replacing unrelated, independently running importers.
           SHARED_CHANGED=$(git diff --name-only HEAD~1 HEAD | grep '^supabase/functions/_shared/' | grep -Ev '\.(test|spec)\.ts$' || true)
-          GLOBAL_SHARED_CHANGED=$(printf '%s\n' "$SHARED_CHANGED" | grep -Ev '^supabase/functions/_shared/(gayout-executor|pipeline-message|city-wikidata-match)\.ts$' | sed '/^$/d' || true)
+          GLOBAL_SHARED_CHANGED=$(printf '%s\n' "$SHARED_CHANGED" | grep -Ev '^supabase/functions/_shared/(gayout-executor|pipeline-message|city-wikidata-match|redirect-inventory-manifest)\.ts$' | sed '/^$/d' || true)
           # Other shared runtime modules retain the conservative full deploy.
           if [ "$REDEPLOY_ALL" = "true" ] || [ -n "$GLOBAL_SHARED_CHANGED" ]; then
             echo "Redeploying every function (manual trigger or shared code changed)."
@@ -212,6 +212,12 @@ jobs:
 
           if printf '%s\n' "$SHARED_CHANGED" | grep -Eq '^supabase/functions/_shared/city-wikidata-match\.ts$'; then
             CHANGED=$(printf '%s\ncity-factual-backfill\nreview-automation\n' "$CHANGED" | sed '/^$/d' | sort -u)
+          fi
+
+          # Generated redirect definitions are read only by redirect-api,
+          # through redirect-inventory-api; they are not shared importer code.
+          if printf '%s\n' "$SHARED_CHANGED" | grep -Eq '^supabase/functions/_shared/redirect-inventory-manifest\.ts$'; then
+            CHANGED=$(printf '%s\nredirect-api\n' "$CHANGED" | sed '/^$/d' | sort -u)
           fi
 
           # Function-specific config edits deploy only those functions. A new

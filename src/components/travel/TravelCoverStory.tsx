@@ -116,7 +116,7 @@ export function TravelCoverStory() {
             <ImageCredit
               attribution={slide.credit?.attribution || slide.credit?.photographer}
               license={slide.credit?.license}
-              className="absolute bottom-2 start-2 hidden rounded-badge bg-black/35 px-1.5 py-0.5 text-white/80 opacity-60 backdrop-blur-sm group-has-[img]:block"
+              className="absolute bottom-2 start-2 hidden rounded-badge bg-black/60 px-1.5 py-0.5 text-white backdrop-blur-sm group-has-[img]:block"
             />
           </Image>
         ) : slide.network ? (

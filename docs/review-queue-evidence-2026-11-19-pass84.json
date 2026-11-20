@@ -1,0 +1,529 @@
+{
+  "pass": 84,
+  "scope": "Withhold unsupported Mexico City parade cover assignments",
+  "source": {
+    "asset_id": "1a52ee92-783a-4bbc-9316-d932ca198b59",
+    "source_ref": "pexels:13030035",
+    "source_url": "https://www.pexels.com/photo/13030035/",
+    "retained_caption": "Colorful celebration at LGBT pride parade in Mexico City, showcasing vibrant costumes and joyful participants.",
+    "limits": "Retained database attribution is evidence of the depicted city. No fresh source availability or licence verification claimed; original asset, unknown licence and all links retained."
+  },
+  "selection": "Only same exact asset URL with stored city points more than 100 km from Mexico City's stored point. This conservative exclusion avoids ambiguous nearby/coordless rows; it does not loosen the 10 km automatic photo admission rule.",
+  "quarantined": 71,
+  "public_records_quarantined": [
+    "Caborca",
+    "Tepatitlán de Morelos",
+    "Tototlán"
+  ],
+  "outcomes": [
+    {
+      "name": "Acatic",
+      "city_id": "624031d4-8834-4f0f-83f3-942c7b031b2e",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Agua Caliente Vieja de Apazulco",
+      "city_id": "0dc4ca6f-709d-40a4-88f3-2dbf82141886",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Agua Fría",
+      "city_id": "7a27ccf9-4176-425d-9a4b-925e01a6a504",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Aguas Calientes",
+      "city_id": "ac3bb09e-5ac7-4adf-94c4-7e7f52ca5f7c",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Aguascalientes",
+      "city_id": "2e8913be-7731-46fd-a03d-66eae57bbe20",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Aguascalientes, Aguascalientes",
+      "city_id": "205c6cd9-9cd1-479a-9867-4883266f20a4",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Aljojuca",
+      "city_id": "08e5b900-c55d-407b-8e88-ccf109146a46",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Asunción Nochixtlán",
+      "city_id": "28faa166-79a5-4c79-b799-d976a05a66f1",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Bahía de Conejos",
+      "city_id": "94dddfee-21a2-48ee-85d0-e296ca54f81b",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Banderilla",
+      "city_id": "78220b44-ad2a-4293-ab84-5e4fd4c61fab",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Barranca del Oro",
+      "city_id": "ec83cb18-3cfc-4aec-8593-32f0c51f5351",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Boca del Río",
+      "city_id": "a5a17b47-6f95-483e-9a1e-7e4a4d1f6736",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Buenavista",
+      "city_id": "e972786a-6530-4183-ab0a-1416667c725b",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Caborca",
+      "city_id": "f169599b-d3ee-4e41-9fdf-913fd171c558",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Casa Blanca",
+      "city_id": "59774cfb-6483-45fd-a941-6bdf13e41d1a",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Cerro Grande",
+      "city_id": "b7ad9109-dddf-41d7-a8ed-99e0ed560731",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Cerro Prieto",
+      "city_id": "a59593f2-3fa8-4229-99bf-44160f7445e8",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Charcas",
+      "city_id": "7dd894d0-a028-422b-8ef6-62e6598660d5",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Chilpancingo",
+      "city_id": "e759f4d2-436c-4508-b606-1a91f8de08c6",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Cholul",
+      "city_id": "637ba547-6cf8-427b-827a-f78faf8ce598",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Coalcomán de Vázquez Pallares",
+      "city_id": "91bfd2fb-5434-4aa7-80c1-eabd80271ec7",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Cocula",
+      "city_id": "5fe60ab6-4637-41be-8c2f-540e99b2973a",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Compostela",
+      "city_id": "cacd5bf1-a174-43cb-8bb5-7456a1de4289",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Cosoleacaque",
+      "city_id": "a25322fb-0dcb-4394-8aa1-da005d996b09",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Cuquío",
+      "city_id": "92799624-adbd-40f8-93ee-f24dd1cfa195",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Esperanza",
+      "city_id": "333e25ca-7087-41cb-927d-bd1e3d58487e",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Estero del Ídolo",
+      "city_id": "3cd8d804-b53b-4be5-ace8-2d0a236847a9",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Huachipilín Calentura",
+      "city_id": "9d909016-82a0-4344-a3f8-07690be591bf",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Huautla",
+      "city_id": "5e89dc21-c48c-4168-9694-d72541ff8c38",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Jalisco",
+      "city_id": "2ba5efdc-f416-44a0-b207-00bd6dcee7d4",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Jungapeo",
+      "city_id": "a787171f-c344-4136-b0cd-6882b990ca8f",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "La Calzada",
+      "city_id": "e1758374-d91c-461e-9c7f-fc0856dcc163",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "La Griega",
+      "city_id": "54bcb23f-ac42-449c-8854-95f0f2d0a301",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "La Unión del Cuatro",
+      "city_id": "2073110f-fe9c-4240-8772-31176c9f40e5",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "La Venta del Astillero",
+      "city_id": "a82b549e-934c-46e2-9b3d-d01354e9bde7",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Las Palmas de Arriba",
+      "city_id": "f78c9c77-70d0-4890-b4de-9f00eb9f2d39",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Loma De Bácum",
+      "city_id": "b23da275-f84b-46a6-9289-9f43acb139f1",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Los Llanos",
+      "city_id": "8d30d617-17af-46f8-8656-f549baea3449",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Mazatlán",
+      "city_id": "99b2abed-e052-4772-b8a2-954a864e9b4e",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Michoacán",
+      "city_id": "e39080b7-7354-45cb-92b2-a930c32b198e",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Nava",
+      "city_id": "65c9e811-3e33-4d20-9c4d-3933ebb0d87a",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Nochistlán",
+      "city_id": "b176c385-7be1-47de-b763-68a10c892ec8",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Orizaba",
+      "city_id": "42a1de4b-51d7-4911-b49c-3e2af35530ee",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Parácuaro",
+      "city_id": "ffaa0a5e-2671-4556-ac09-4815ee1ac12a",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Parajes del Valle",
+      "city_id": "cd740165-2f8a-4f1a-90d6-50331e8ff1ed",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Parras",
+      "city_id": "54057c6d-cd80-4bd5-8631-8753316fd05f",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Patamban",
+      "city_id": "233f181b-60d3-4159-b295-339e03b44de0",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Puerto Libertad",
+      "city_id": "c4160d69-72dd-40dd-80e8-12b97be9155b",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Sahuayo de Morelos",
+      "city_id": "3635f675-d54b-4dab-b6b5-56713d0aba31",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "San José Ithó",
+      "city_id": "cce691f1-c6a9-4813-a898-547fe9ca29e7",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "San Juan de Allende",
+      "city_id": "1dec91e4-bad9-47b0-aefa-b6e7d0673f1c",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "San Luis del Agua Caliente",
+      "city_id": "1a82ab0e-2be7-4955-97e0-34b9eb351128",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "San Pedro Huilotepec",
+      "city_id": "21ad1486-f6b7-44fe-90b1-b7dc6db0a806",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Santa Anita Huiloac",
+      "city_id": "ea9bf69f-5833-4ea1-9134-6d485fc6e091",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Santa Rosa",
+      "city_id": "628c7ca7-0f8c-4820-8204-8bb0bd05d309",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Santa Rosalía",
+      "city_id": "9d793b59-199a-456e-8915-6b46b6d25d43",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Sinaloa",
+      "city_id": "2537b3f8-2e1d-4175-b1e8-39caaafcd2eb",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Talpa de Allende",
+      "city_id": "e154696a-d8f9-4e5a-8d71-913c3f90a328",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Tehuacán",
+      "city_id": "460e38ef-1933-461e-bcb8-64bebba32d17",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Tepatitlán",
+      "city_id": "cab4f330-42fd-4e43-812c-20d2321a3a89",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Tepatitlán de Morelos",
+      "city_id": "c2bdff7f-6382-4d75-94a7-aa00247a548c",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Tepetongo",
+      "city_id": "fb95d092-a411-4ad5-9b10-727526f7062d",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Tierra Colorada",
+      "city_id": "7c242e0a-9442-428d-8cca-a30f4f2d5a7f",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Tlaltenango de Sánchez Román",
+      "city_id": "21c5c156-abd9-4603-afda-fd14c282776d",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Tlaxco",
+      "city_id": "3282e605-a181-4934-b8c2-40e36dfc1806",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Tototlán",
+      "city_id": "4eb68934-6e86-4647-8be9-f6dcda017a4f",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Veracruz",
+      "city_id": "5cedc8be-15f0-40ed-a0c8-e510b1ccc29a",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Villahermosa",
+      "city_id": "60b393dc-a87c-4615-b8e7-429806008297",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Xochipala",
+      "city_id": "aeac38f6-7085-4ad7-81e5-b711675f8a84",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Zacoalco de Torres",
+      "city_id": "bf6d48b6-61c5-4d5e-9fdf-f5d72c7294e4",
+      "outcome": "quarantined"
+    },
+    {
+      "name": "Rio Grande Valley",
+      "city_id": "0614d22b-bc1f-4a9f-a221-75444ad11a26",
+      "outcome": "quarantined"
+    }
+  ],
+  "excluded": [
+    {
+      "id": "fc79ca36-999b-45fc-a598-f78668f12249",
+      "name": "Atotonilco de Tula",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "25b1a549-61f1-4317-8430-ea9dc2cf791d",
+      "name": "Cañada",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "f1538125-159a-4bd7-b9b1-f39175c12fbb",
+      "name": "Cd. Fray Bernardino de Sahágun",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "2da3fe75-4548-44c3-b356-992390e94ed1",
+      "name": "CDMX",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "7f7e3a71-71b9-42c2-b049-83200955d300",
+      "name": "Chapultepec",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "6b2f0b7f-d262-44ab-bb66-dcd0b26bc9d2",
+      "name": "Chicontepec",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "e679155f-77b4-42c3-aaee-8b8203325fe0",
+      "name": "Cholula",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "2625c108-0e1b-48eb-9260-0e0ae273faee",
+      "name": "Ciudad de México ",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "32d7b6fd-a044-4679-bc20-c4e5805bf5cc",
+      "name": "Coyoacán, Mexiko-Stadt, Mexiko",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "fac0caf4-9bfd-4bc1-bcae-47dfe8010c26",
+      "name": "Cuauhtemoc",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "ae4790df-aa4d-4a3e-9d0f-fceb6925699e",
+      "name": "Huehuetoca",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "09b4b5c2-36d7-4f1c-bb83-9759b475c9c4",
+      "name": "Juchitán",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "cbd7a15c-c6d1-4124-87d5-06007ed2fffc",
+      "name": "Mazatepec",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "6bba8a1e-1899-408f-a892-b723398b9979",
+      "name": "Mexico City",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "55a2acd6-620a-4c3e-80ac-6c4cb210ec1f",
+      "name": "Naucalpan de Juarez, CDMX",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "f8f71a97-d901-4dcb-9811-4861a53ce2f8",
+      "name": "Ocotlán de Morelos",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "01eff25e-17d4-4c49-b478-974b33f37071",
+      "name": "Pachuquilla",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "0dfc2fd5-d793-4b55-afaa-af619fc3d2b7",
+      "name": "San Andres Coexcotitlan",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "c5363de7-1402-4448-9ece-291668c41f2d",
+      "name": "San Gregorio Cuautzingo",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "2718be44-1a4e-4e12-8899-129060b6cd65",
+      "name": "San Miguel Nepantla",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "a4e426d3-3ea7-428c-ac3a-af3ddc9d9ec7",
+      "name": "San Nicolas Galeana",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "d8738a87-a5ca-4d26-85d2-d813f1765b70",
+      "name": "San Pedro Tlaquepaque",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "cce3005e-fae4-4de2-a800-773653c6f3a2",
+      "name": "Teotihuacán",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "6d3abb37-e2c8-404d-bf17-c96ff630b161",
+      "name": "Tepoztlán",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "2e36764c-1857-4894-89c0-aa0c05298f80",
+      "name": "Tequexquináhuac",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "b71cd36b-c63e-409b-b3c7-6bc9f65a0734",
+      "name": "Unidad Morelos",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "922e1aed-506d-4d2c-8f36-70c5a517bb52",
+      "name": "Xochitepec",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "26de3835-6e57-4cc9-8d96-ecde7c307c82",
+      "name": "Xonacatlán",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "712d1a22-8005-473c-9656-57a60791bcc0",
+      "name": "Zacatelco",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    },
+    {
+      "id": "eb3a0043-be16-4e15-896c-e3a9dff06952",
+      "name": "Zacatepec de Hidalgo",
+      "reason": "Excluded: point absent or within conservative 100 km Mexico City exclusion; no new assignment or quality verification claimed."
+    }
+  ],
+  "safeguards": "Six rollback/commit batches; source and shared geography protected hashes, exact original caption/source asset, field provenance snapshot, human histories/decisions and active leases guarded. Reversible image_flagged with sourced image provenance only; URL, metadata, attribution, licence, assets, cover links, coordinates and every non-image city fact retained.",
+  "cases_claimed_resolved": 0
+}

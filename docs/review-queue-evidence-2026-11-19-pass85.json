@@ -1,0 +1,62 @@
+{
+  "pass": 85,
+  "scope": "Owner-confirmed Sticks & Stones Köln 2027 physical venue and address",
+  "proof": {
+    "source": "organizer_and_venue_owner",
+    "human_reviewed": false,
+    "decision_actor": "AI-assisted factual repair",
+    "evidence": [
+      {
+        "name": "organizer",
+        "url": "https://www.sticks-and-stones.com/de/startseite/promotion/",
+        "final_url": "https://www.sticks-and-stones.com/de/startseite/promotion/",
+        "status": 200,
+        "sha256": "77fd99d7dbd4b94dfcc2ff18b696e5a3216417ebe39be9b57d46cfdcda036e71",
+        "bytes": 323826,
+        "capture_at": "2026-11-19T21:16:14.104036+00:00"
+      },
+      {
+        "name": "directions",
+        "url": "https://www.sticks-and-stones.com/de/startseite/anfahrt/",
+        "final_url": "https://www.sticks-and-stones.com/de/startseite/anfahrt/",
+        "status": 200,
+        "sha256": "3b289e2510a3bdc88845f9d77912ccd3f5b5284fe12ec7781998f902fa129a61",
+        "bytes": 242152,
+        "capture_at": "2026-11-19T21:16:14.838127+00:00"
+      },
+      {
+        "name": "venue",
+        "url": "https://www.palladium-koeln.de/programm/",
+        "final_url": "https://www.palladium-koeln.de/programm/",
+        "status": 200,
+        "sha256": "e10167c024f763f259f7790e40495cb3b4e46c030586185ca7fcdde2bd20a508",
+        "bytes": 241509,
+        "capture_at": "2026-11-19T21:16:13.612155+00:00"
+      }
+    ],
+    "facts": [
+      "Organizer confirms 30 January 2027 at Palladium, Schanzenstraße 40, 51063 Köln.",
+      "Palladium owner calendar independently lists STICKS AND STONES on 30 January 2027 and publishes the same address."
+    ],
+    "limits": "New physical venue stays pending, unverified and not SEO indexed. No venue coordinates supplied. Existing event point and all other fields remain unchanged."
+  },
+  "outcome": {
+    "case": {
+      "id": "37ab2387-3d1f-8aa4-10a4-ad5a6b67abcb",
+      "active": false,
+      "members": 0
+    },
+    "address": "Schanzenstraße 40, 51063 Köln, Germany",
+    "event_id": "79eff53b-f0ec-4f72-bda0-04b091d0b5c9",
+    "venue_id": "1daef00b-932e-4cc8-9605-1363e0c4f334",
+    "venue_verified": false,
+    "reviews_resolved": 1,
+    "venue_point_absent": true,
+    "venue_review_status": "pending",
+    "venue_seo_indexable": false,
+    "event_point_unchanged": true
+  },
+  "safeguards": "Exact event and source-finding snapshots; human and lease guards; existing accepted issue history retained byte-for-byte. Native trigger resolves venue finding. The only native side effects allowed are geo_linked_at and country provenance derived from the new matching city/country FK; all other event facts and point unchanged. New venue pending/unverified/not SEO indexed, no coordinates, no fabricated imagery or ownership.",
+  "native_event_venue_geography_md5": "e7e78b66ab51509eaaa0cfdb1664f9c0",
+  "limits": "The prior accepted issue was a directory-coverage limitation, not a verified wrong venue: no exact same-city venue existed. Historical review fields remain unchanged. Nuremberg outdoor market and organizer-withheld Berlin location remain separate research cases; no forced physical venue guesses."
+}

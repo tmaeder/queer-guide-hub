@@ -43,7 +43,11 @@ export default function News() {
   // Live, self-ranking front: hotness = recency × quality × soft featured boost
   // × trending. Replaces the old `is_featured` pin that left a months-old story
   // as the permanent headline. Auto-refreshes (poll + focus) so it never goes stale.
-  const { articles: frontArticles, refetch: refetchFront } = useNewsFront(40);
+  const {
+    articles: frontArticles,
+    loading: frontLoading,
+    refetch: refetchFront,
+  } = useNewsFront(40);
   const { count: newCount, reset: resetNewCount } = useRealtimeNewsInserts();
 
   const handleRefreshNew = () => {
@@ -145,12 +149,21 @@ export default function News() {
         >
           <div className="min-w-0">
             <NewStoriesPill count={newCount} onRefresh={handleRefreshNew} />
-            <LeadStory
-              article={leadArticle}
-              sourcesMap={sourcesMap}
-              categoriesMap={categoriesMap}
-              imageAsset={leadArticle ? assets.get(leadArticle.id) : undefined}
-            />
+            {/* Reserve the lead's space while the front feed loads; the bands below
+                otherwise paint first and are pushed down when it arrives. */}
+            {frontLoading && !leadArticle ? (
+              <div
+                aria-hidden="true"
+                className="mb-12 min-h-[200px] rounded-panel bg-muted md:min-h-[520px]"
+              />
+            ) : (
+              <LeadStory
+                article={leadArticle}
+                sourcesMap={sourcesMap}
+                categoriesMap={categoriesMap}
+                imageAsset={leadArticle ? assets.get(leadArticle.id) : undefined}
+              />
+            )}
 
             <AboveTheFold
               topStory={topStory}
@@ -184,7 +197,7 @@ export default function News() {
               );
             })}
 
-            {stories.length > 0 && (
+            {!articlesLoading && stories.length > 0 && (
               <StoryCollectionsBand
                 stories={stories as Parameters<typeof StoryCollectionsBand>[0]['stories']}
                 heroes={storyHeroes as Parameters<typeof StoryCollectionsBand>[0]['heroes']}
@@ -195,10 +208,9 @@ export default function News() {
 
             {/* An ink plate rather than a footnote: the archive is the
                 invitation to keep reading, so it gets the page's loudest band.
-                Held back until the feed above it has loaded: on a phone the
-                sections above are short while loading, so this band sat in
-                the first viewport and was then pushed down — Lighthouse
-                mobile measured that single shift at 0.48 CLS (2026-11-20). */}
+                Held back while articles load: every band above renders
+                nothing until then, so it would paint near the top and then be
+                pushed ~1,000px down (CLS 0.8-1.2 on /news). */}
             {!articlesLoading && (
               <div className="flex flex-col gap-6 rounded-panel bg-foreground p-8 text-background md:flex-row md:items-end md:justify-between md:p-12">
                 <div className="max-w-reading">

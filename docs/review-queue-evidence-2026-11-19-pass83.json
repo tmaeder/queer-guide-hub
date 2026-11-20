@@ -1,0 +1,38 @@
+{
+  "pass": 83,
+  "scope": "Resolve remaining Shamong Township classification member with explicit state municipality register",
+  "proof": {
+    "source": "primary_state_municipality_register",
+    "source_url": "https://www.nj.gov/pinelands/home/munico/municipalities/",
+    "evidence": [
+      {
+        "name": "shamong-state",
+        "url": "https://www.nj.gov/pinelands/home/munico/municipalities/",
+        "final_url": "https://www.nj.gov/pinelands/home/munico/municipalities/",
+        "status": 200,
+        "sha256": "18247619a42a708fb1b198ad9b6dcfadb928a26020aa67b9f26c3d870eca5406",
+        "bytes": 36787,
+        "capture_at": "2026-11-19T21:04:14.579163+00:00"
+      }
+    ],
+    "human_reviewed": false,
+    "decision_actor": "AI-assisted factual classification repair",
+    "basis": "The New Jersey Pinelands Commission explicitly lists Shamong Township under Burlington County municipalities and states its entire municipality land area is in the State-designated Pinelands Area. This supports independent municipal classification under the existing application vocabulary.",
+    "limits": "No Wikidata class identifiers invented. No new coordinate, identity, parent or human verification certification. Attention remains true."
+  },
+  "outcome": {
+    "case": {
+      "id": "2d8fd13d-2bfe-6fbe-d688-c762713c448f",
+      "active": false,
+      "members": 0
+    },
+    "city_id": "d826067b-a3f7-45dc-beca-a2fc817e255f",
+    "classification": "municipality",
+    "parent_verified": false,
+    "identity_verified": false,
+    "attention_retained": true,
+    "coordinates_unchanged": true,
+    "native_verification_status": "country_checked"
+  },
+  "safeguards": "Existing municipality vocabulary and native verdict pinned unchanged. Only city_place_audit and updated_at changed; complete city/shared geography comparison; no human history; active lease exclusion and shared lock respected. Refreshed changed case snapshot only after confirming source rows unchanged. Rollback rehearsal passed before guarded commit. Geography remains country_checked, identity and parent false; attention true retained. Exact scoped native reconciliation makes consolidated case inactive."
+}
