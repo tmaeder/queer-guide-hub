@@ -1,3 +1,4 @@
+import { ChangePasswordPanel } from '@/components/profile/ChangePasswordPanel';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
@@ -26,6 +27,8 @@ export default function Welcome() {
   const { t } = useTranslation();
   const [enrolling, setEnrolling] = useState(false);
   const [enrollErr, setEnrollErr] = useState<string | null>(null);
+  // Passkey path only: if enrolment fails, a password is the way in instead.
+  const [passwordFallback, setPasswordFallback] = useState(false);
   const [step, setStep] = useState(0);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
@@ -51,8 +54,12 @@ export default function Welcome() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, user]);
 
-  const steps: StepperStep[] = useMemo(
-    () => [
+  // Came from the passkey path of signup: the account has a random password
+  // nobody knows, so the passkey is the first thing to set up.
+  const passkeyFirst = searchParams.get('passkey') === '1';
+
+  const steps: StepperStep[] = useMemo(() => {
+    const all: StepperStep[] = [
       {
         id: 'profile',
         label: t('onboarding.steps.profile', 'Your handle'),
@@ -79,9 +86,10 @@ export default function Welcome() {
         label: t('onboarding.steps.trust', 'Trust tier'),
         description: t('onboarding.steps.trustDesc', 'Your community standing begins here.'),
       },
-    ],
-    [t],
-  );
+    ];
+    if (!passkeyFirst) return all;
+    return [all[1], all[0], ...all.slice(2)];
+  }, [t, passkeyFirst]);
 
   const handleEnrollPasskey = async () => {
     setEnrolling(true);
@@ -158,9 +166,19 @@ export default function Welcome() {
         onNext={handleNext}
         onPrev={handlePrev}
         onSkip={() => void finish(true)}
-        showSkip={step < steps.length - 1}
+        // Handle and avatar are part of signing up, so that step cannot be
+        // skipped (Continue keeps the assigned ones). Nor can the passkey step
+        // when it is how this account signs in.
+        showSkip={
+          step < steps.length - 1 &&
+          stepId !== 'profile' &&
+          !(stepId === 'passkey' && passkeyFirst && !hasPasskey && !passwordFallback)
+        }
         // Blocks double-submit while the profile step writes.
-        canGoNext={!profileSaving}
+        canGoNext={
+          !profileSaving &&
+          !(stepId === 'passkey' && passkeyFirst && !hasPasskey && !passwordFallback)
+        }
         nextLabel={
           step === steps.length - 1
             ? t('onboarding.finish', 'Enter Queer Guide')
@@ -178,7 +196,7 @@ export default function Welcome() {
               <p className="text-muted-foreground leading-relaxed">
                 {t(
                   'onboarding.profileBlurb',
-                  'Your account is ready. We gave you a handle and an avatar. Keep them or make them yours.',
+                  'Choose your username and picture. We suggested a handle and an avatar to start from.',
                 )}
               </p>
             </div>
@@ -221,8 +239,27 @@ export default function Welcome() {
               </p>
               {enrollErr && (
                 <Alert variant="destructive" className="mb-4">
-                  <AlertDescription>{enrollErr}</AlertDescription>
+                  <AlertDescription>
+                    {enrollErr}
+                    {passkeyFirst && !passwordFallback && (
+                      <>
+                        {' '}
+                        <button
+                          type="button"
+                          className="underline"
+                          onClick={() => setPasswordFallback(true)}
+                        >
+                          {t('onboarding.passkeyFallback', 'Set a password instead')}
+                        </button>
+                      </>
+                    )}
+                  </AlertDescription>
                 </Alert>
+              )}
+              {passwordFallback && (
+                <div className="mb-4">
+                  <ChangePasswordPanel />
+                </div>
               )}
               <Button
                 type="button"
