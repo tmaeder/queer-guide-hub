@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { REDUCED_MOTION } from './support/reducedMotion';
+import { DESTINATIONS_HEADING, loadDestinations, loadHomeContent } from './support/homeContent';
 
 test.use({ ...REDUCED_MOTION, storageState: { cookies: [], origins: [] } });
 
@@ -55,25 +56,36 @@ for (const width of [390, 1280]) {
   });
 }
 
-test('homepage prioritizes listings and city guides ', async ({ page }) => {
+// The intent map ("What are you here for?", 7 links incl. /search) was removed in
+// 52e24db6d; search is entered from the hero combobox, which the discovery cases
+// above exercise end to end, so that half of this case is not re-pinned anywhere.
+test('homepage prioritizes listings and destinations', async ({ page }) => {
+  test.setTimeout(150_000); // loadDestinations: see its comment
   await openHome(page);
-  const listings = page.getByRole('heading', { name: /^places and events/i });
-  const cities = page.getByRole('region', { name: 'City guides' });
-  await expect(listings).toBeVisible();
-  await expect(cities.getByRole('link', { name: 'All cities' })).toHaveAttribute('href', '/cities');
-  const map = page.getByRole('region', { name: 'What are you here for?' });
-  await expect(map.getByRole('link')).toHaveCount(7);
-  await expect(map.locator('a[href="/search"]')).toBeVisible();
+  // loadDestinations waits for the first city card: the positive control that the
+  // band is populated. The country slot is the mixed-band invariant.
+  const destinations = await loadDestinations(page);
+  const events = page.getByRole('region', { name: 'Events', exact: true });
+  await expect(events.getByRole('link', { name: /^See all events/ })).toHaveAttribute(
+    'href',
+    '/events',
+  );
+  await expect(destinations.getByRole('link', { name: /^Travel/ })).toHaveAttribute(
+    'href',
+    '/travel',
+  );
+  await expect(destinations.locator('a[href^="/country/"]').first()).toBeAttached();
+  // The map band mounts on first interaction (loadDestinations scrolled), so all
+  // four heads are present here. Order is the contract: listings before destinations.
+  await expect(page.getByRole('heading', { name: 'Map', exact: true })).toBeVisible();
   expect((await page.locator('main h2').allTextContents()).map((text) => text.trim())).toEqual([
     // The featured city is region-dependent; only that it is NAMED is invariant.
     expect.stringMatching(/^\S/),
-    expect.stringMatching(/^Places and events/),
-    'City guides',
-    'What are you here for?',
+    'Events',
+    'Map',
+    DESTINATIONS_HEADING,
   ]);
   await expect(page.getByRole('region', { name: 'Your lines' })).toHaveCount(0);
-  await map.locator('a[href="/search"]').click();
-  await expect(page).toHaveURL(/\/search(?:\?|$)/);
 });
 
 test('the city feature links to the directory when there is no upcoming event', async ({
@@ -138,28 +150,39 @@ test('a returning visitor sees their history and suggested places after local di
 
   try {
     await openHome(page);
-    const cities = page.getByRole('region', { name: 'City guides' });
-    await cities.scrollIntoViewIfNeeded();
-    await expect(cities.locator('a[href^="/city/"]').first()).toBeVisible();
-    const map = page.getByRole('region', { name: 'What are you here for?' });
-    await map.scrollIntoViewIfNeeded();
+    await loadHomeContent(page);
     const yourLines = page.getByRole('region', { name: 'Your lines' });
-    await expect(yourLines.getByRole('link', { name: 'Recent venue' })).toBeVisible();
-    const mapPosition = () => map.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
-    const before = await mapPosition();
+    // The rail is deferred; re-scroll in case the map band above grows after the
+    // first scroll and pushes it back out of its viewport margin.
+    await expect(async () => {
+      await yourLines.evaluate((el) => el.scrollIntoView({ block: 'end' }));
+      await expect(yourLines.getByRole('link', { name: 'Recent venue' })).toBeVisible({
+        timeout: 3_000,
+      });
+    }).toPass({ timeout: 30_000 });
+    // Your lines is the last band now (the intent map below it was removed), so the
+    // guarded quantity is its own HEIGHT: the reserved min-height must absorb the
+    // cards. Height, not a document position: the deferred map band ABOVE can mount
+    // during the wait and move every position (measured 186px) without this band
+    // shifting anything itself.
+    const bandHeight = () => yourLines.evaluate((el) => el.getBoundingClientRect().height);
+    const before = await bandHeight();
     release();
     await expect(yourLines.getByRole('link', { name: 'Suggested venue 0' })).toHaveAttribute(
       'href',
       '/venues/suggested-venue-0',
     );
     await expect(yourLines.getByText('Matches your interests').first()).toBeVisible();
-    expect(await mapPosition()).toBeCloseTo(before);
+    // <=1px: rounding. The defect this guards was 16px (the rail's negative margin
+    // collapsing out of the reservation once the cards outgrew it).
+    expect(Math.abs((await bandHeight()) - before)).toBeLessThanOrEqual(1);
   } finally {
     release();
   }
 });
 
 test('homepage requests do not generate PostgREST client errors', async ({ page }) => {
+  test.setTimeout(150_000); // loadDestinations: see its comment
   const failures: string[] = [];
   page.on('response', (response) => {
     if (
@@ -171,9 +194,7 @@ test('homepage requests do not generate PostgREST client errors', async ({ page 
     }
   });
   await openHome(page);
-  const cities = page.getByRole('region', { name: 'City guides' });
-  await cities.scrollIntoViewIfNeeded();
-  await expect(cities.locator('a[href*="/city/"]').first()).toBeVisible({ timeout: 20_000 });
+  await loadDestinations(page);
   expect(failures).toEqual([]);
 });
 
@@ -215,15 +236,22 @@ test('city selection recovers from a stale recent and can be reset', async ({ pa
   );
 
   await openHome(page);
+  // Wait for the plate's compact picker: before the city resolves the trigger is a
+  // wider chip, and opening it mid-swap re-anchors the popover under the click.
+  const cityGuide = page.locator('#home-city-feature-title a');
+  await expect(cityGuide).toBeVisible();
   const cityPicker = page.getByRole('button', { name: /change city/i });
   await cityPicker.click();
   await page.getByRole('button', { name: 'Removed city', exact: true }).click();
-  await expect(page.getByText('Couldn’t load these results.')).toBeVisible();
+  // The failed lookup is retried before it surfaces (measured ~4s on prod).
+  await expect(page.getByText('Couldn’t load these results.')).toBeVisible({ timeout: 15_000 });
   await page.getByRole('button', { name: 'Berlin', exact: true }).click();
-  await expect(cityPicker).toContainText('Berlin');
+  // Since 52e24db6d the picker is an icon button inside the hero's city plate, so
+  // the chosen city is named by the plate's city-guide link, not by the picker.
+  await expect(cityGuide).toHaveAttribute('href', '/city/berlin');
 
   await page.reload();
-  await expect(cityPicker).toContainText('Berlin');
+  await expect(cityGuide).toHaveAttribute('href', '/city/berlin');
   await cityPicker.click();
   await page.getByRole('button', { name: 'Use my area', exact: true }).click();
   expect(await page.evaluate(() => sessionStorage.getItem('qg_home_region'))).toBeNull();
@@ -242,6 +270,7 @@ test('city labels keep the picker and adjacent link in place', async ({ page }) 
     );
   });
   await openHome(page);
+  await expect(page.locator('#home-city-feature-title a')).toBeVisible();
   const picker = page.getByRole('button', { name: /change city/i });
   const events = page.getByRole('link', { name: 'See all events' });
   const initialPicker = await picker.boundingBox();
@@ -255,8 +284,14 @@ test('city labels keep the picker and adjacent link in place', async ({ page }) 
     sessionStorage.setItem('qg_home_region', JSON.stringify(value));
     window.dispatchEvent(new Event('qg-home-region-changed'));
   });
-  await expect(picker).toHaveAccessibleName(/A very long city name/);
+  // The region name surfaces as the Events band's scope line (truncated, full name
+  // in `title`); the hero picker is icon-only since 52e24db6d and never carries it.
+  // Positive control: the long name really rendered before positions are compared.
+  await expect(
+    page.getByRole('region', { name: 'Events', exact: true }).getByTitle(/A very long city name/),
+  ).toBeAttached();
   expect((await picker.boundingBox())!.width).toBe(initialPicker!.width);
+  expect((await picker.boundingBox())!.x).toBe(initialPicker!.x);
   expect((await events.boundingBox())!.x).toBe(initialEvents!.x);
 });
 
@@ -296,7 +331,7 @@ test('showing the resolved listing scope does not move the board', async ({ page
   );
   try {
     await openHome(page);
-    const listings = page.getByRole('region', { name: /^places and events/i });
+    const listings = page.getByRole('region', { name: 'Events', exact: true });
     const board = listings.locator('[aria-busy]');
     await expect(board).toHaveAttribute('aria-busy', 'true');
     await page.evaluate(() => document.fonts.ready);

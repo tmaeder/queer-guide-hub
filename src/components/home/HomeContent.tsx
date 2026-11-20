@@ -73,8 +73,10 @@ function RegionalContent() {
           title={t('home.yourLines.title', 'Your lines')}
           description={t('home.yourLines.description', 'Places and things you looked at recently.')}
         >
-          {/* Keep the map position stable when the deferred rail gains cards. */}
-          <div className="min-h-72">
+          {/* Keep the band height stable when the deferred rail gains cards. flow-root
+              stops the rail's negative margins collapsing out once it outgrows the
+              reservation, which shrank the band 16px and moved the footer. */}
+          <div className="flow-root min-h-72">
             <HomeSection section="your-lines">
               <DeferredSection rootMargin="160px 0px" fallback={recommendationsLoading}>
                 <Suspense fallback={recommendationsLoading}>
