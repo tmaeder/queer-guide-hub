@@ -6,6 +6,11 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
+// The bands below the fold mount on IntersectionObserver, which never fires in
+// jsdom; render them straight away so the band assertions see the real tree.
+vi.mock('@/components/home/DeferredSection', () => ({
+  DeferredSection: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null, loading: false }) }));
 vi.mock('@/hooks/useEditorsPick', () => ({ useEditorsPick: () => null }));
 vi.mock('@/hooks/useNewsStories', () => ({ useNewsStories: () => ({ stories: [], heroes: [] }) }));
