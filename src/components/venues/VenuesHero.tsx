@@ -6,8 +6,8 @@ import { Image } from '@/components/ui/Image';
 import { useFeaturedVenues } from '@/hooks/useVenuesV2Data';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useVenueCategoryLabel } from '@/lib/venueCategories';
-import { venueClosureLabel } from '@/lib/venueClosureLabel';
-import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+import { isVenueHeroEligible, venueHeroPhoto } from './venuesHeroPool';
+import { VENUES_HERO_META_NAME, VENUES_HERO_SIZES, VENUES_HERO_WIDTHS } from './venuesHeroImage';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -16,24 +16,34 @@ type Venue = Database['public']['Tables']['venues']['Row'];
 const ROTATE_MS = 7000;
 
 /**
+ * The featured venue the edge preloaded for this page view, if any
+ * (functions/_lib/venuesHeroPreload.ts). Opening on it means the hero photo
+ * is already in flight before the app has rendered.
+ */
+function edgeChosenVenueId(): string | null {
+  if (typeof document === 'undefined') return null;
+  return (
+    document.querySelector(`meta[name="${VENUES_HERO_META_NAME}"]`)?.getAttribute('content') || null
+  );
+}
+
+/**
  * Rotating featured venue. Advances every 7s; pauses on hover, on focus, and
  * when the reader presses pause. Never autoplays under reduced motion.
- * Starts on a random slide so the first venue differs between visits.
+ * Starts on the venue the edge preloaded, else on a random slide, so the first
+ * venue differs between visits either way.
  */
 export function VenuesHero({ fallback }: { fallback?: Venue }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const { venues: featured } = useFeaturedVenues();
-  const pool = useMemo(
-    () =>
-      featured.filter(
-        (v) => !v.safety_gated && !venueClosureLabel(v) && v.images?.some(isValidImageUrl),
-      ),
-    [featured],
-  );
+  const pool = useMemo(() => featured.filter(isVenueHeroEligible), [featured]);
   // A random starting slide, chosen once, so the first venue differs per visit.
-  const [offset] = useState(() => Math.floor(Math.random() * 1000));
+  const [randomOffset] = useState(() => Math.floor(Math.random() * 1000));
+  const [edgeId] = useState(edgeChosenVenueId);
   const slides = pool.length ? pool : fallback ? [fallback] : [];
+  const edgeIndex = edgeId ? slides.findIndex((v) => v.id === edgeId) : -1;
+  const offset = edgeIndex >= 0 ? edgeIndex : randomOffset;
 
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -112,7 +122,7 @@ export function VenuesHero({ fallback }: { fallback?: Venue }) {
 function HeroSlide({ venue }: { venue: Venue }) {
   const { i18n } = useTranslation();
   const category = useVenueCategoryLabel(venue.category);
-  const photo = venue.images?.find(isValidImageUrl);
+  const photo = venueHeroPhoto(venue);
   const name = localizedField(venue.name, venue.name_i18n as I18nMap, i18n.language);
   const description = localizedField(
     venue.description,
@@ -134,7 +144,9 @@ function HeroSlide({ venue }: { venue: Venue }) {
           rounded="none"
           scrim="strong"
           priority
-          sizes="(min-width: 768px) 60vw, 100vw"
+          // The edge preloads this exact request (functions/_lib/venuesHeroPreload.ts).
+          sizes={VENUES_HERO_SIZES}
+          widths={VENUES_HERO_WIDTHS}
           frameClassName="absolute inset-0 h-full w-full rounded-panel"
           className="transition-transform duration-slow group-hover:scale-[1.03] motion-reduce:transform-none"
         />

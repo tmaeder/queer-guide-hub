@@ -31,6 +31,7 @@ vi.mock('@/components/profile/ProfileEditor', async () => {
 });
 
 import Settings from '../Settings';
+import { SETTINGS_SECTIONS } from '@/lib/profileEditing';
 
 function Probe() {
   const { pathname, search } = useLocation();
@@ -65,7 +66,10 @@ describe('settings page', () => {
   it('lists every section and opens the requested one', async () => {
     renderAt('/settings/notifications');
     const nav = screen.getByRole('navigation', { name: 'Settings sections' });
-    expect(nav.querySelectorAll('a')).toHaveLength(8);
+    // One link per section, in SETTINGS_SECTIONS order.
+    expect([...nav.querySelectorAll('a')].map((a) => a.getAttribute('href'))).toEqual(
+      SETTINGS_SECTIONS.map((s) => `/settings/${s}`),
+    );
     expect(screen.getByRole('link', { name: /Notifications/ })).toHaveAttribute(
       'aria-current',
       'page',
