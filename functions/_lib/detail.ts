@@ -9,6 +9,7 @@
  * middleware falls back to the slug-derived static fallback in routeMeta.ts.
  */
 import { fetchRows, type Env } from './sitemap';
+import { HELP_COUNTRY_RE, helpCountryDetail } from './helpCountry';
 import {
   glossaryHref,
   segmentGlossaryText,
@@ -2590,6 +2591,13 @@ export async function resolveSlugRedirect(env: Env, pathname: string): Promise<s
 export async function resolveDetailRoute(env: Env, pathname: string): Promise<DetailResult | null> {
   if (!env.SUPABASE_URL || (!env.SUPABASE_ANON_KEY && !env.SUPABASE_SERVICE_ROLE_KEY)) {
     return null;
+  }
+  if (HELP_COUNTRY_RE.test(pathname)) {
+    try {
+      return await helpCountryDetail(env, pathname);
+    } catch {
+      return null;
+    }
   }
   const m = matchDetailPath(pathname);
   if (!m) return null;
