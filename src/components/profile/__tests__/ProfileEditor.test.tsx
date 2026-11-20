@@ -91,11 +91,11 @@ describe('Settings workspace', () => {
   });
   afterEach(() => vi.useRealTimers());
 
-  it('renders one contextual editor with save feedback and no duplicate Settings header', () => {
+  it('renders one contextual editor and claims no save before anything is edited', () => {
     renderAt();
     expect(screen.getByRole('heading', { name: 'Profile' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
-    expect(screen.getByRole('status')).toHaveTextContent('Profile changes saved');
+    expect(screen.queryByText('Profile changes saved')).toBeNull();
   });
 
   it.each([
