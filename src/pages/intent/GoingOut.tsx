@@ -238,9 +238,20 @@ export default function GoingOut() {
                     <h3>{c.name}</h3>
                     {c.countries?.name ? <p>{c.countries.name}</p> : null}
                   </div>
-                  {hasCityNetwork(c.slug) ? (
-                    <CityNetwork slug={c.slug} variant="thumb" className="h-24" />
-                  ) : null}
+                  {/* A city with no committed network gets a template line,
+                      picked by slug so it stays put across visits. */}
+                  <CityNetwork
+                    slug={c.slug}
+                    variant="thumb"
+                    className="h-24"
+                    index={
+                      hasCityNetwork(c.slug)
+                        ? undefined
+                        : Math.abs(
+                            [...c.slug].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) | 0, 0),
+                          )
+                    }
+                  />
                 </LocalizedLink>
               ) : (
                 <div className="flex h-full flex-col p-6">
