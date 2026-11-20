@@ -78,6 +78,7 @@ export default function HomeMap() {
             initialZoom={center ? 12 : undefined}
             skipAutoFly
             cooperativeGestures
+            livePulse={false}
           />
         )}
       </div>
