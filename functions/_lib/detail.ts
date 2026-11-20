@@ -20,6 +20,7 @@ import { SITE_ORIGIN, DEFAULT_OG_IMAGE, type RouteMeta } from './routeMeta';
 import { safeOgImage } from './safeOgImage';
 import { categoryLabel, categoryLabelTitle } from './categoryLabels';
 import { buildProfileUrl, normalizeHandle, socialSameAs } from '../../src/lib/social/registry';
+import { cityOrCountryHeroUrl, destinationHeroPreload } from './heroPreload';
 import { trimTrailingSlashes } from '../../src/lib/trimTrailingSlashes';
 
 export type DetailResult = {
@@ -32,6 +33,12 @@ export type DetailResult = {
    * alternates. Source: the row's seo_indexable column (default true).
    */
   indexable?: boolean;
+  /**
+   * Extra <link rel="preload"> tags for the document head — today only the
+   * destination hero image (see heroPreload.ts). Applies to human visitors as
+   * much as crawlers: it is a loading hint, not content.
+   */
+  preloads?: string[];
 };
 
 const TITLE_SUFFIX = ' | Queer Guide';
@@ -1298,7 +1305,7 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
     'cities',
     'slug',
     slug,
-    'id,name,slug,description,image_url,latitude,longitude,country_id,is_capital,is_major_city,population,lgbt_friendly_rating,shell_status,seo_indexable,updated_at,region_name,region_code',
+    'id,name,slug,description,image_url,curated_image_url,image_flagged,latitude,longitude,country_id,is_capital,is_major_city,population,lgbt_friendly_rating,shell_status,seo_indexable,updated_at,region_name,region_code',
   );
   if (!cityRow) return null;
 
@@ -1492,7 +1499,14 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
 
   const jsonLd = renderLd(prune(placeLd)) + (itemList ? '\n' + renderLd(prune(itemList)) : '');
 
-  return { meta, body, jsonLd, indexable: cityRow.seo_indexable !== false };
+  const heroPreload = destinationHeroPreload(cityOrCountryHeroUrl('city', cityRow));
+  return {
+    meta,
+    body,
+    jsonLd,
+    indexable: cityRow.seo_indexable !== false,
+    preloads: heroPreload ? [heroPreload] : undefined,
+  };
 }
 
 // Country — /country/:slug
@@ -1506,7 +1520,7 @@ async function countryDetail(
   const rows = await fetchRows(
     env,
     'countries',
-    'id,name,slug,code,description,editorial_hook,editorial_long,image_url,capital,latitude,longitude,equality_score,lgbti_same_sex_unions,population,seo_indexable,updated_at',
+    'id,name,slug,code,description,editorial_hook,editorial_long,image_url,curated_image_url,image_flagged,capital,latitude,longitude,equality_score,lgbti_same_sex_unions,population,seo_indexable,updated_at',
     `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
     1,
   );
@@ -1561,7 +1575,14 @@ async function countryDetail(
   // `countries` carries seo_indexable and this renderer ignored it — the same
   // omission as personalityDetail, villageDetail, tagDetail, eventDetail and
   // cityDetail. Found 2026-08-29 while fixing the last two.
-  return { meta, body, jsonLd: renderLd(prune(countryLd)), indexable: row.seo_indexable !== false };
+  const heroPreload = destinationHeroPreload(cityOrCountryHeroUrl('country', row));
+  return {
+    meta,
+    body,
+    jsonLd: renderLd(prune(countryLd)),
+    indexable: row.seo_indexable !== false,
+    preloads: heroPreload ? [heroPreload] : undefined,
+  };
 }
 
 // Hotels — /hotels/:slug
@@ -1734,7 +1755,16 @@ async function villageDetail(
   // said — the same hole personalityDetail had (see the comment at its return).
   // run_village_trust_recompute now sets the column false for the zero-content
   // 'ghost' tier, and this is the half that makes that visible to crawlers.
-  return { meta, body, jsonLd: renderLd(prune(placeLd)), indexable: row.seo_indexable !== false };
+  // The page's hero reads village.image_url only (QueerVillageDetail), not the
+  // images[] fallback the og:image above uses, so the preload does the same.
+  const heroPreload = destinationHeroPreload(stringField(row, 'image_url'));
+  return {
+    meta,
+    body,
+    jsonLd: renderLd(prune(placeLd)),
+    indexable: row.seo_indexable !== false,
+    preloads: heroPreload ? [heroPreload] : undefined,
+  };
 }
 
 // Tags — /tags/:slug

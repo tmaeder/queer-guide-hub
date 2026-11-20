@@ -1,6 +1,8 @@
 // Cloudflare-specific optimizations and utilities
 
-import { isMerchantSrc } from '@/utils/imageHost';
+// Relative, not '@/': functions/_lib/heroPreload.ts imports this module and the
+// Pages Functions bundler does not resolve the app's path alias.
+import { isMerchantSrc } from './imageHost';
 
 const IMG_CDN_HOST = 'img.queer.guide';
 
@@ -89,9 +91,7 @@ export function buildCfSrcSet(
   }
 
   if (!isCfResizableSource(parsed) || parsed.pathname.includes('/cdn-cgi/image/')) return undefined;
-  return widths
-    .map((w) => `${buildCfImageUrl(url, { width: w, quality })} ${w}w`)
-    .join(', ');
+  return widths.map((w) => `${buildCfImageUrl(url, { width: w, quality })} ${w}w`).join(', ');
 }
 
 /**
@@ -100,7 +100,7 @@ export function buildCfSrcSet(
 export const initCloudflareOptimizations = () => {
   // Add dns-prefetch for external domains used by the app
   const domains = ['supabase.co'];
-  domains.forEach(domain => {
+  domains.forEach((domain) => {
     if (!document.querySelector(`link[rel="dns-prefetch"][href="https://${domain}"]`)) {
       const link = document.createElement('link');
       link.rel = 'dns-prefetch';
