@@ -24,6 +24,7 @@ import {
   Hotel,
   MapPin,
   Plane,
+  Search,
   Ship,
   Sparkles,
   Train,
@@ -56,6 +57,23 @@ import type { TransportMode } from '@/components/trips/tripLegs';
 
 type Mood = 'nightlife' | 'slow' | 'pride' | 'kinky' | 'nudist' | 'culture' | 'outdoors';
 
+// Hand-picked from image_assets so each card shows the mood, not a random trip cover.
+const MOOD_IMAGES: Record<Mood, string> = {
+  nightlife:
+    'https://img.queer.guide/event-images/62ce499d7e0ecc9dcb730756823bef5104b1f453e72a88c174a0b84d7996a50a.jpg',
+  slow: 'https://img.queer.guide/event-images/949880044b089416ab6f0f9fd2f69feda7324e32293a7a707f97b828a40fbe59.jpg',
+  pride:
+    'https://img.queer.guide/event-images/891d71c676779cbe5a8462af0f17a2482147fc799da240bb6b2bad721458fdb3.jpg',
+  kinky:
+    'https://img.queer.guide/event-images/94e56ee4df9475627a708dee6e3558b4d02c670205a17172291429a5055efe88.jpg',
+  nudist:
+    'https://img.queer.guide/event-images/268affb0d3a1777000daeb5bed297939120d2a563503b7bc369b812f4ddc033e.jpg',
+  culture:
+    'https://img.queer.guide/event-images/3d036de30bc7e9cfdbefa3384c86c38f13d49638a54a9de5fb5d9b36b0d1b989.jpg',
+  outdoors:
+    'https://img.queer.guide/city-images/b4ca6e0818c5f639ad22c3d5e598fada07bafc945595aa2706e1cbf1ee7c64dc.jpg',
+};
+
 /** Themed templates surface only for their own mood. */
 const MOOD_THEME: Partial<Record<Mood, TripTemplate['theme']>> = {
   kinky: 'kink',
@@ -64,6 +82,7 @@ const MOOD_THEME: Partial<Record<Mood, TripTemplate['theme']>> = {
 const fitsMood = (tpl: TripTemplate, mood: Mood) => !tpl.theme || MOOD_THEME[mood] === tpl.theme;
 type Timing = 'weekend' | 'month' | 'flexible' | 'custom';
 type Budget = 'easy' | 'comfortable' | 'special';
+type Duration = 'auto' | 'weekend' | 'week' | 'twoweeks';
 
 const MOODS: Array<{ value: Mood; label: string; hint: string; icon: typeof Plane }> = [
   { value: 'nightlife', label: 'Big nights', hint: 'Clubs, bars and late starts', icon: Music },
@@ -107,6 +126,19 @@ const BUDGETS: Array<{ value: Budget; label: string; icon: typeof Plane }> = [
   { value: 'comfortable', label: 'Comfortable', icon: BedDouble },
   { value: 'special', label: 'Make it special', icon: Crown },
 ];
+
+// Optional: 'auto' keeps each trip's own length.
+const DURATIONS: Array<{ value: Duration; label: string; icon: typeof Plane }> = [
+  { value: 'auto', label: 'As the trip suggests', icon: Sparkles },
+  { value: 'weekend', label: 'A long weekend', icon: Sun },
+  { value: 'week', label: 'A week', icon: CalendarDays },
+  { value: 'twoweeks', label: 'Two weeks', icon: CalendarRange },
+];
+const DURATION_DAYS: Record<Exclude<Duration, 'auto'>, number> = {
+  weekend: 3,
+  week: 7,
+  twoweeks: 14,
+};
 
 const STAY_TYPES: Array<{ value: HotelTypeOption; label: string; icon: typeof Plane }> = [
   { value: 'hotel', label: 'Hotels', icon: Hotel },
@@ -329,6 +361,9 @@ export function PersonalisedTripPackages() {
   const [customDates, setCustomDates] = useState({ start: '', end: '' });
   const [travellers, setTravellers] = useState(2);
   const [budget, setBudget] = useState<Budget>('comfortable');
+  const [duration, setDuration] = useState<Duration>('auto');
+  const tripDays = (tpl: TripTemplate) =>
+    duration === 'auto' ? tpl.days : DURATION_DAYS[duration];
   const [stayType, setStayType] = useState<HotelTypeOption>('hotel');
   const [arrivalMode, setArrivalMode] = useState<TransportMode>('rail');
   // Prefilled from the visitor's detected city until they type their own.
@@ -337,34 +372,31 @@ export function PersonalisedTripPackages() {
   const origin = originInput ?? originCity ?? '';
 
   const [place, setPlace] = useState<string | null>(null);
-  const places = useMemo(() => {
-    const seen = new Map<string, number>();
+  // Every city this mood has a trip for; the chips show a random handful so
+  // the same few cities do not lead every visit. Shuffle draws another set,
+  // and the search box reaches any of them.
+  const allPlaces = useMemo(() => {
+    const seen = new Set<string>();
     for (const tpl of templates ?? []) {
       if (!fitsMood(tpl, mood)) continue;
       const city = tpl.cities.split(',')[0]?.trim();
-      if (city) seen.set(city, (seen.get(city) ?? 0) + 1);
+      if (city) seen.add(city);
     }
-    return [...seen.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([c]) => c);
+    return [...seen].sort((a, b) => a.localeCompare(b));
   }, [templates, mood]);
+  const [placeSeed, setPlaceSeed] = useState(() => Math.random());
+  const places = useMemo(() => {
+    // Seeded shuffle, so a re-render does not reorder the chips under a click.
+    let x = Math.floor(placeSeed * 2 ** 31) || 1;
+    const rand = () => (x = (x * 48271) % 2147483647) / 2147483647;
+    return [...allPlaces]
+      .map((c) => [rand(), c] as const)
+      .sort((a, b) => a[0] - b[0])
+      .slice(0, 6)
+      .map(([, c]) => c);
+  }, [allPlaces, placeSeed]);
 
-  // Each mood shows the cover of the trip it would lead with.
-  const moodOptions = useMemo(() => {
-    // Each mood shows the cover of a trip it would lead with, never one already
-    // used by an earlier mood card.
-    const used = new Set<string>();
-    return MOODS.map((m) => {
-      const top = [...(templates ?? [])]
-        .filter(
-          (tpl) => tpl.coverImageUrl && fitsMood(tpl, m.value) && !used.has(tpl.coverImageUrl),
-        )
-        .sort((a, b) => scoreTemplate(b, m.value, timing) - scoreTemplate(a, m.value, timing))[0];
-      if (top?.coverImageUrl) used.add(top.coverImageUrl);
-      return { ...m, image: top?.coverImageUrl ?? null };
-    });
-  }, [templates, timing]);
+  const moodOptions = MOODS.map((m) => ({ ...m, image: MOOD_IMAGES[m.value] }));
 
   const ranked = useMemo(
     () =>
@@ -387,9 +419,9 @@ export function PersonalisedTripPackages() {
     ? best.event && timing !== 'custom'
       ? {
           start: best.event.startDate,
-          end: format(addDays(new Date(best.event.startDate), best.days - 1), 'yyyy-MM-dd'),
+          end: format(addDays(new Date(best.event.startDate), tripDays(best) - 1), 'yyyy-MM-dd'),
         }
-      : datesFor(timing, best.days, customDates)
+      : datesFor(timing, tripDays(best), customDates)
     : null;
   const priceMax = budget === 'easy' ? 140 : budget === 'comfortable' ? 300 : undefined;
   const { data: stays, isLoading: staysLoading } = useHotelSearch({
@@ -423,7 +455,7 @@ export function PersonalisedTripPackages() {
       navigate('/auth?redirect=/travel');
       return;
     }
-    const tripDates = datesFor(timing, template.days, customDates);
+    const tripDates = datesFor(timing, tripDays(template), customDates);
     createTrip.mutate(
       {
         title: template.title,
@@ -532,8 +564,14 @@ export function PersonalisedTripPackages() {
                 </div>
               )}
             </div>
+            <ChipGroup
+              label="How long (optional)"
+              value={duration}
+              options={DURATIONS}
+              onChange={setDuration}
+            />
             <ChipGroup label="Budget" value={budget} options={BUDGETS} onChange={setBudget} />
-            {places.length > 1 && (
+            {allPlaces.length > 1 && (
               <fieldset>
                 <legend className="mb-4 text-sm font-bold">
                   Where <span className="font-normal text-muted-foreground">(optional)</span>
@@ -548,7 +586,8 @@ export function PersonalisedTripPackages() {
                       </>
                     }
                   />
-                  {places.map((c) => (
+                  {/* A searched city stays visible as the active chip. */}
+                  {(place && !places.includes(place) ? [place, ...places] : places).map((c) => (
                     <FilterChip
                       key={c}
                       active={place === c}
@@ -560,7 +599,52 @@ export function PersonalisedTripPackages() {
                       }
                     />
                   ))}
+                  {allPlaces.length > places.length && (
+                    <FilterChip
+                      active={false}
+                      onClick={() => setPlaceSeed(Math.random())}
+                      aria-label="Show other places"
+                      label={
+                        <>
+                          <Shuffle size={14} aria-hidden /> Other places
+                        </>
+                      }
+                    />
+                  )}
                 </div>
+                <div className="relative mt-4 max-w-sm">
+                  <Search
+                    size={16}
+                    aria-hidden
+                    className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <Input
+                    type="search"
+                    list="trip-place-options"
+                    aria-label="Search a city"
+                    placeholder="Search a city"
+                    onChange={(e) => {
+                      const q = e.target.value.trim();
+                      setPlace(
+                        q
+                          ? (allPlaces.find((c) => c.toLowerCase() === q.toLowerCase()) ?? q)
+                          : null,
+                      );
+                    }}
+                    className="ps-10"
+                  />
+                  <datalist id="trip-place-options">
+                    {allPlaces.map((c) => (
+                      <option key={c} value={c} />
+                    ))}
+                  </datalist>
+                </div>
+                {place && ranked.length === 0 && (
+                  <p className="mt-2 text-13 text-muted-foreground">
+                    No {MOODS.find((m) => m.value === mood)?.label.toLowerCase() ?? ''} trip for{' '}
+                    {place} yet. Try another mood or city.
+                  </p>
+                )}
               </fieldset>
             )}
             <fieldset>
@@ -623,7 +707,7 @@ export function PersonalisedTripPackages() {
                       <MapPin size={15} /> {best.cities}
                     </span>
                     <span className="inline-flex items-center gap-1">
-                      <CalendarDays size={15} /> {best.days} days
+                      <CalendarDays size={15} /> {tripDays(best)} days
                     </span>
                     {best.venueCount ? <span>{best.venueCount} matched places</span> : null}
                   </p>
@@ -832,7 +916,7 @@ export function PersonalisedTripPackages() {
                 <div>
                   <StepHeading n={6} title="Make it a trip" />
                   <p className="mt-2 font-bold">
-                    {best.title} · {best.cities} · {best.days} days
+                    {best.title} · {best.cities} · {tripDays(best)} days
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     We add the destination, event and arrival mode. You shape the days after.
