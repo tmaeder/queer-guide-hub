@@ -25,8 +25,14 @@ test.describe('/venues hero preload', () => {
     const preload = html.match(PRELOAD_RE);
     expect(preload, 'a venue was named but no image preload was emitted').not.toBeNull();
     expect(preload![2]).toBe('(min-width: 768px) 60vw, 100vw');
-    // The preload sits right after <meta charset>, ahead of the stylesheet.
+    // Ahead of the stylesheet, so it is discovered first…
     expect(html.indexOf(preload![0])).toBeLessThan(html.indexOf('rel="stylesheet"'));
+    // …but after the viewport meta. Before it, mobile Chrome evaluates
+    // `100vw` against its 980px default and preloads a bigger candidate than
+    // the <img> then asks for, so the hero downloads twice.
+    const viewport = html.indexOf('name="viewport"');
+    expect(viewport).toBeGreaterThan(-1);
+    expect(html.indexOf(preload![0])).toBeGreaterThan(viewport);
   });
 
   test('a filtered listing hides the hero, so it gets no preload', async ({ request }) => {
@@ -44,7 +50,7 @@ test.describe('/venues hero preload', () => {
   }) => {
     const context = await browser.newContext({
       viewport: { width: 412, height: 915 },
-      deviceScaleFactor: 2.625,
+      deviceScaleFactor: 1.75,
       isMobile: true,
       hasTouch: true,
       // No autoplay, so the first slide stays on screen while we read it.

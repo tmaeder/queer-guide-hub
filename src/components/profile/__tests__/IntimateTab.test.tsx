@@ -5,13 +5,18 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const useMyIntimateProfile = vi.fn();
 const useOptOutIntimateProfile = vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false }));
+const upsertMutate = vi.fn();
 
 vi.mock('@/hooks/useIntimateProfile', () => ({
   useMyIntimateProfile: (...a: unknown[]) => useMyIntimateProfile(...a),
   useOptOutIntimateProfile: (...a: unknown[]) => useOptOutIntimateProfile(...a),
   useMyIntimateText: () => ({ data: null }),
   useIntimateKinkTags: () => ({ data: [] }),
-  useUpsertIntimateProfile: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpsertIntimateProfile: () => ({
+    mutateAsync: vi.fn(),
+    mutate: upsertMutate,
+    isPending: false,
+  }),
   useSetIntimateText: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 vi.mock('@/components/intimate/HankyCodePicker', () => ({ HankyCodePicker: () => null }));
@@ -51,6 +56,9 @@ describe('IntimateTab', () => {
     expect(screen.getByRole('region', { name: 'Your safer sex' })).toBeInTheDocument();
     // Into/Limits duplicate the checklist below.
     expect(screen.queryByRole('region', { name: 'Into' })).toBeNull();
+    // Partner preferences: a two-handle age range, not one band.
+    expect(screen.getByRole('region', { name: 'Who you are looking for' })).toBeInTheDocument();
+    expect(screen.getAllByRole('slider', { name: /Age range/ })).toHaveLength(2);
     // Build and height moved to Body & about; age band stays here as a slider.
     expect(screen.queryByRole('region', { name: 'Body' })).toBeNull();
     expect(screen.getByRole('slider', { name: 'Age band' })).toBeInTheDocument();
@@ -68,6 +76,25 @@ describe('IntimateTab', () => {
     });
     render(wrap(<IntimateTab />));
     expect(screen.getByRole('button', { name: 'Show profile' })).toBeInTheDocument();
+  });
+
+  it('derives the age band from the date of birth instead of asking again', () => {
+    const now = new Date().toISOString();
+    useMyIntimateProfile.mockReturnValue({
+      data: {
+        opted_in_at: now,
+        consent_18plus_at: now,
+        genitalia: 'vulva',
+        role: [],
+        age_band: null,
+      },
+      isLoading: false,
+    });
+    const dob = `${new Date().getFullYear() - 31}-01-01`;
+    render(wrap(<IntimateTab dateOfBirth={dob} />));
+    expect(screen.queryByRole('slider', { name: 'Age band' })).toBeNull();
+    expect(screen.getByText('30-34')).toBeInTheDocument();
+    expect(upsertMutate).toHaveBeenCalledWith({ age_band: '30-34' });
   });
 
   it('shows loading state', () => {

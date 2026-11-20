@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { IntimateStepFields, type IntimateDraft } from '@/components/intimate/In
 import { INTO_TAGS as FALLBACK_INTO, LIMITS as FALLBACK_LIMITS } from '@/assets/intimate/options';
 import { getGenitalPictogramSet } from '@/assets/intimate/pictograms';
 import type { WizardStep } from '@/lib/intimate/types';
+import { ageBandFromDob } from '@/lib/intimate/ageBand';
 
 const KinkGridEditor = lazyRetry(() =>
   import('@/components/kinks/KinkGridEditor').then((m) => ({ default: m.KinkGridEditor })),
@@ -32,6 +33,7 @@ const SECTIONS: { step: WizardStep; label: string }[] = [
   { step: 'age', label: 'Your age' },
   { step: 'role', label: 'Your role' },
   { step: 'safer-sex', label: 'Your safer sex' },
+  { step: 'seeking', label: 'Who you are looking for' },
   { step: 'text', label: 'Looking for' },
 ];
 
@@ -40,7 +42,9 @@ const SECTIONS: { step: WizardStep; label: string }[] = [
  * live in Body & about (`BodyProfileEditor`, synced back here); "About me" lives in
  * the Profile section (`IntimateAboutField`).
  */
-export function IntimateTab() {
+/** `dateOfBirth`: the profile's, when known. The age band is then derived from it
+ *  instead of being asked a second time. */
+export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {}) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { data: me, isLoading } = useMyIntimateProfile();
@@ -51,6 +55,17 @@ export function IntimateTab() {
   const optOut = useOptOutIntimateProfile();
 
   const [draft, setDraft] = useState<IntimateDraft>({});
+
+  // Age is set once, as the date of birth. Keep the intimate band in step with
+  // it; the ref stops a failed save from retrying on every render.
+  const derivedBand = ageBandFromDob(dateOfBirth);
+  const syncedBand = useRef<string | null>(null);
+  useEffect(() => {
+    if (!derivedBand || !me?.consent_18plus_at || me.age_band === derivedBand) return;
+    if (syncedBand.current === derivedBand) return;
+    syncedBand.current = derivedBand;
+    upsert.mutate({ age_band: derivedBand });
+  }, [derivedBand, me?.consent_18plus_at, me?.age_band, upsert]);
   const [aboutText, setAboutText] = useState('');
   const [lookingText, setLookingText] = useState('');
   const [textDirty, setTextDirty] = useState(false);
@@ -140,29 +155,43 @@ export function IntimateTab() {
     toast({ title: 'Intimate profile deleted.' });
   };
 
-  const field = ({ step, label }: { step: WizardStep; label: string }) => (
-    <section key={step} aria-label={label} className="flex flex-col gap-2">
-      {step !== 'text' && <h4 className="text-sm font-medium">{label}</h4>}
-      <IntimateStepFields
-        step={step}
-        merged={merged}
-        update={(patch) => setDraft((d) => ({ ...d, ...patch }))}
-        kinkVocab={kinkVocab}
-        limitsVocab={kinkTags?.length ? kinkVocab : (FALLBACK_LIMITS as readonly string[])}
-        aboutText={aboutText}
-        setAboutText={(v) => {
-          setAboutText(v);
-          setTextDirty(true);
-        }}
-        lookingText={lookingText}
-        setLookingText={(v) => {
-          setLookingText(v);
-          setTextDirty(true);
-        }}
-        textParts="looking"
-      />
-    </section>
-  );
+  const field = ({ step, label }: { step: WizardStep; label: string }) =>
+    step === 'age' && derivedBand ? (
+      <section key={step} aria-label={label} className="flex flex-col gap-1">
+        <h4 className="text-sm font-medium">{label}</h4>
+        <p className="text-sm">
+          <span className="font-bold">{derivedBand}</span>{' '}
+          <span className="text-muted-foreground">from your date of birth in Profile.</span>
+        </p>
+      </section>
+    ) : (
+      <section key={step} aria-label={label} className="flex flex-col gap-2">
+        {step !== 'text' && <h4 className="text-sm font-medium">{label}</h4>}
+        <IntimateStepFields
+          step={step}
+          merged={merged}
+          update={(patch) => setDraft((d) => ({ ...d, ...patch }))}
+          kinkVocab={kinkVocab}
+          limitsVocab={kinkTags?.length ? kinkVocab : (FALLBACK_LIMITS as readonly string[])}
+          aboutText={aboutText}
+          setAboutText={(v) => {
+            setAboutText(v);
+            setTextDirty(true);
+          }}
+          lookingText={lookingText}
+          setLookingText={(v) => {
+            setLookingText(v);
+            setTextDirty(true);
+          }}
+          textParts="looking"
+        />
+        {step === 'age' && (
+          <p className="text-xs text-muted-foreground">
+            Add your date of birth in Profile and this fills itself in.
+          </p>
+        )}
+      </section>
+    );
   const group = (title: string, description: string, steps: readonly WizardStep[]) => {
     const inGroup = sections.filter((x) => steps.includes(x.step));
     if (!inGroup.length) return null;
@@ -195,7 +224,7 @@ export function IntimateTab() {
           <p className="text-sm text-muted-foreground">What you want from others.</p>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
-          {sections.filter((x) => x.step === 'text').map(field)}
+          {sections.filter((x) => x.step === 'seeking' || x.step === 'text').map(field)}
           <section aria-label="Hanky code" className="flex flex-col gap-2">
             <h4 className="text-sm font-medium">Hanky code</h4>
             <HankyCodePicker />

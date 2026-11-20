@@ -20,6 +20,17 @@ export interface IntimateProfile {
   discovery_active_until: string | null;
   moderation_status: string;
   last_active_at: string;
+  /** Free-form preferences; `seeking` holds who the member is looking for. */
+  dating_prefs?: { seeking?: IntimateSeeking } & Record<string, unknown>;
+}
+
+/** Who a member is looking for. Age bounds are AGE_BANDS values. */
+export interface IntimateSeeking {
+  genitalia?: string[];
+  age_min?: string | null;
+  age_max?: string | null;
+  roles?: string[];
+  body_types?: string[];
 }
 
 export interface IntimateDiscoveryCard {
@@ -37,6 +48,7 @@ export interface IntimateDiscoveryCard {
 
 export type WizardStep =
   | 'consent'
+  | 'seeking'
   | 'genitalia'
   | 'genital-pictogram'
   | 'size'

@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useBlockedUsers } from '@/hooks/useBlockedUsers';
 
 /** The one place to see and undo blocks; blocking itself happens on a profile. */
@@ -17,7 +18,7 @@ export function BlockedUsersSettings() {
       </CardHeader>
       <CardContent>
         {list.isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading blocked members…</p>
+          <TrackLoader label="Loading blocked members" />
         ) : people.length === 0 ? (
           <p className="text-sm text-muted-foreground">No one blocked.</p>
         ) : (

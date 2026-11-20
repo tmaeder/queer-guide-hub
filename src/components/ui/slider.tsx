@@ -44,12 +44,20 @@ const Slider = React.forwardRef<
       <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-primary/20">
         <SliderPrimitive.Range className="absolute h-full bg-primary" />
       </SliderPrimitive.Track>
-      <SliderPrimitive.Thumb
-        aria-label={ariaLabel}
-        aria-labelledby={ariaLabelledBy}
-        aria-valuetext={ariaValueText}
-        className="block h-4 w-4 rounded-full bg-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-      />
+      {/* One thumb per value: a two-value slider is a range and needs both. */}
+      {(props.value ?? props.defaultValue ?? [0]).map((_, i, all) => (
+        <SliderPrimitive.Thumb
+          key={i}
+          aria-label={
+            ariaLabel && all.length > 1
+              ? `${ariaLabel} (${i === 0 ? 'minimum' : 'maximum'})`
+              : ariaLabel
+          }
+          aria-labelledby={ariaLabelledBy}
+          aria-valuetext={ariaValueText}
+          className="block h-4 w-4 rounded-full bg-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+        />
+      ))}
     </SliderPrimitive.Root>
   ),
 );

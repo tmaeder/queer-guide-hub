@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useBodyProfile, useSaveBodyProfile, type BodyProfilePatch } from '@/hooks/useBodyProfile';
 import { useMyIntimateProfile, useUpsertIntimateProfile } from '@/hooks/useIntimateProfile';
+import { bodyChecks } from '@/lib/bodyChecks';
 import { IntimateStepFields } from '@/components/intimate/IntimateStepFields';
 
 const LETTER_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'] as const;
@@ -74,8 +75,23 @@ export function BodyProfileEditor() {
   };
   const merged = { ...base, ...draft };
   const set = (patch: BodyProfilePatch) => setDraft((d) => ({ ...d, ...patch }));
+  // Each figure pictures one body type (key `body-<type>`), so picking either
+  // sets the other and the two can never disagree.
+  const setBuild = (patch: BodyProfilePatch) => {
+    if (patch.body_pictogram_key !== undefined) {
+      const type = patch.body_pictogram_key?.replace(/^body-/, '') ?? null;
+      set({ body_pictogram_key: patch.body_pictogram_key, body_type: type });
+    } else if (patch.body_type !== undefined) {
+      set({
+        body_type: patch.body_type,
+        body_pictogram_key: patch.body_type ? `body-${patch.body_type}` : null,
+      });
+    } else set(patch);
+  };
   const num = (v: string) => (v === '' ? null : Number(v));
   const dirty = Object.keys(draft).length > 0;
+  const checks = bodyChecks(merged);
+  const blocked = checks.some((c) => c.level === 'error');
   const busy = save.isPending || upsertIntimate.isPending;
 
   const onSave = async () => {
@@ -109,7 +125,7 @@ export function BodyProfileEditor() {
             <IntimateStepFields
               step="body-pictogram"
               merged={merged}
-              update={set}
+              update={setBuild}
               kinkVocab={[]}
               limitsVocab={[]}
               aboutText=""
@@ -123,7 +139,7 @@ export function BodyProfileEditor() {
             <IntimateStepFields
               step="body-type"
               merged={merged}
-              update={set}
+              update={setBuild}
               kinkVocab={[]}
               limitsVocab={[]}
               aboutText=""
@@ -234,8 +250,30 @@ export function BodyProfileEditor() {
         </CardContent>
       </Card>
 
+      {checks.length > 0 && (
+        <section
+          aria-label="Worth a second look"
+          className="flex flex-col gap-1.5 rounded-element bg-muted p-4"
+          aria-live="polite"
+        >
+          <h3 className="text-sm font-semibold">
+            {blocked ? 'Fix before saving' : 'Worth a second look'}
+          </h3>
+          <ul className="flex list-disc flex-col gap-1 ps-4 text-sm">
+            {checks.map((c) => (
+              <li
+                key={c.field + c.message}
+                className={c.level === 'error' ? 'text-destructive' : undefined}
+              >
+                {c.message}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <div className="flex items-center gap-2">
-        <Button onClick={onSave} disabled={!dirty || busy} className="rounded-element">
+        <Button onClick={onSave} disabled={!dirty || busy || blocked} className="rounded-element">
           {busy ? 'Saving…' : 'Save'}
         </Button>
       </div>
