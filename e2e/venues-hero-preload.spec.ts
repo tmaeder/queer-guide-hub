@@ -51,15 +51,37 @@ test.describe('/venues hero preload', () => {
     const context = await browser.newContext({
       viewport: { width: 412, height: 915 },
       deviceScaleFactor: 1.75,
-      isMobile: true,
+      // NOT isMobile. Playwright's headless shell does not apply the viewport
+      // meta to the preload scanner under mobile emulation, so it preloads at
+      // the 980px default (1200w) while the <img> asks for 800w — a test-browser
+      // artifact: full Chrome (what Lighthouse runs) downloads 800w once with
+      // the preload placed after the viewport meta. Without isMobile the layout
+      // viewport is 412px on both sides, which is what this test is for: the
+      // preload's srcset/sizes agree with the <img>'s. That the preload sits
+      // after the viewport meta is asserted structurally in the first test.
       hasTouch: true,
       // No autoplay, so the first slide stays on screen while we read it.
       reducedMotion: 'reduce',
     });
     const page = await context.newPage();
-    const photoRequests: string[] = [];
-    page.on('request', (r) => {
-      if (r.resourceType() === 'image') photoRequests.push(r.url());
+    // Count NETWORK fetches, not request events. Chrome raises a second
+    // request event when the <img> takes the preloaded bytes back out of the
+    // HTTP cache (fromDiskCache, 0 bytes) — that is the preload working, not a
+    // second download. CDP is the only place that says which one it was:
+    // img.queer.guide sends no Timing-Allow-Origin, so Resource Timing can't.
+    const cdp = await context.newCDPSession(page);
+    await cdp.send('Network.enable');
+    const fetches = new Map<string, { url: string; cached: boolean }>();
+    cdp.on('Network.requestWillBeSent', (e) => {
+      if (e.type === 'Image') fetches.set(e.requestId, { url: e.request.url, cached: false });
+    });
+    cdp.on('Network.requestServedFromCache', (e) => {
+      const f = fetches.get(e.requestId);
+      if (f) f.cached = true;
+    });
+    cdp.on('Network.responseReceived', (e) => {
+      const f = fetches.get(e.requestId);
+      if (f && (e.response.fromDiskCache || e.response.fromPrefetchCache)) f.cached = true;
     });
     const response = await page.goto('/venues', { waitUntil: 'domcontentloaded' });
     const html = (await response?.text()) ?? '';
@@ -80,11 +102,13 @@ test.describe('/venues hero preload', () => {
       .toBe(true);
     // …so the photo is downloaded once, not once for the preload and again
     // for the image.
-    const forHero = photoRequests.filter((u) => u.includes(asset));
+    const forHero = [...fetches.values()].filter((f) => f.url.includes(asset));
+    // Positive control: the hero was requested at all, so an empty list can't
+    // pass the "once" check below.
+    expect(forHero.length).toBeGreaterThanOrEqual(1);
+    const downloads = forHero.filter((f) => !f.cached).map((f) => f.url);
     if (new URL(baseURL ?? 'https://queer.guide').hostname === 'queer.guide') {
-      expect(forHero).toHaveLength(1);
-    } else {
-      expect(forHero.length).toBeGreaterThanOrEqual(1);
+      expect(downloads).toHaveLength(1);
     }
     await context.close();
   });
