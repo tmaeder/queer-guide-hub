@@ -485,8 +485,17 @@ function dynamicMeta(pathname: string): RouteMeta | null {
     };
   }
 
+  // Member profiles are keyed by uuid; title-casing it printed
+  // "Dfec8c70 5b7d … — User". The page itself is noindex.
+  if (/^\/users?\//.test(pathname)) {
+    return {
+      title: `Profile${TITLE_SUFFIX}`,
+      description: 'A member profile on Queer Guide.',
+    };
+  }
+
   const match =
-    /^\/(venue|venues|event|events|hotel|hotels|news|blog|personality|personalities|tag|tags|city|cities|country|countries|place|places|article|user|users)\/([^/?#]+)/.exec(
+    /^\/(venue|venues|event|events|hotel|hotels|news|blog|personality|personalities|tag|tags|city|cities|country|countries|place|places|article)\/([^/?#]+)/.exec(
       pathname,
     );
   if (!match) return null;

@@ -17,6 +17,7 @@ const PILLS = [
   'Messages',
   'Plans',
   'Saved',
+  'Progress',
 ] as const;
 
 /** One route per page component behind /hub, so every shell that renders the bar
@@ -34,6 +35,7 @@ const ROUTES: ReadonlyArray<{ path: string; active: string; shell: string }> = [
   { path: '/hub/messages', active: 'Messages', shell: 'HubShell + AuthGate' },
   { path: '/hub/plans', active: 'Plans', shell: 'HubShell + AuthGate' },
   { path: '/hub/saved', active: 'Saved', shell: 'HubShell + AuthGate' },
+  { path: '/hub/progress', active: 'Progress', shell: 'HubShell + AuthGate' },
 ];
 
 /** The bar, located structurally rather than by aria-label — the label comes

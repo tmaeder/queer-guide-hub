@@ -123,7 +123,10 @@ export function GoingOutPlaces({
     <div
       role="group"
       aria-label={t('goingOut.places.filterLabel', 'Place type')}
-      className="flex flex-wrap gap-2"
+      // One scrolling row instead of five wrapped ones; the mask fades the
+      // trailing edge so it reads as "more this way". Chips go flat: a soft
+      // shadow inside a horizontal scroller is cut off at the box edge.
+      className="-mx-4 flex min-w-0 flex-1 gap-2 overflow-x-auto px-4 py-1 [mask-image:linear-gradient(to_right,black_calc(100%-2.5rem),transparent)] [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden [&_.shadow-soft]:shadow-none [&_.shadow-soft]:ring-1 [&_.shadow-soft]:ring-surface-container-high"
     >
       <FilterChip
         active={!filter}
@@ -147,21 +150,30 @@ export function GoingOutPlaces({
   );
 
   const views = (
-    <div role="group" aria-label={t('goingOut.places.viewLabel', 'View')} className="flex gap-2">
+    <div
+      role="group"
+      aria-label={t('goingOut.places.viewLabel', 'View')}
+      className="flex shrink-0 gap-1 self-start rounded-element bg-surface-container p-1 sm:self-auto"
+    >
       {PLACE_VIEWS.map((v) => {
         const Icon = VIEW_ICONS[v];
+        const name = t(`goingOut.places.view.${v}`, VIEW_LABELS[v]);
         return (
-          <FilterChip
+          <button
             key={v}
-            active={view === v}
+            type="button"
+            aria-pressed={view === v}
+            aria-label={name}
+            title={name}
             onClick={() => onViewChange(v)}
-            label={
-              <>
-                <Icon className="h-4 w-4" aria-hidden />
-                {t(`goingOut.places.view.${v}`, VIEW_LABELS[v])}
-              </>
-            }
-          />
+            className={`grid size-11 place-items-center rounded-element transition-colors ${
+              view === v
+                ? 'bg-foreground text-background'
+                : 'text-muted-foreground hover:bg-card hover:text-foreground'
+            }`}
+          >
+            <Icon className="h-4 w-4" aria-hidden />
+          </button>
         );
       })}
     </div>
@@ -290,7 +302,7 @@ export function GoingOutPlaces({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
         {chips}
         {views}
       </div>

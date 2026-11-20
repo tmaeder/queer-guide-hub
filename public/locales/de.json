@@ -1865,7 +1865,19 @@
     "blockedUsers": "Blockierte Nutzer*innen",
     "reportUser": "Nutzer*in melden",
     "sendMessage": "Nachricht senden",
-    "favoritesShortcut": "Favoriten"
+    "favoritesShortcut": "Favoriten",
+    "tabs": {
+      "overview": "Übersicht",
+      "travel": "Reisen",
+      "activity": "Aktivität",
+      "groups": "Gruppen"
+    },
+    "share": "Profil teilen",
+    "report": "Profil melden",
+    "joined": "Dabei seit {{date}}",
+    "editAvatar": "Avatar ändern",
+    "lensHidden": "Dieses Profil ist in dieser Ansicht nicht sichtbar. Wechsle zu „Du“, um weiter zu bearbeiten.",
+    "sections": "Profilbereiche"
   },
   "groups": {
     "title": "Gruppen",
@@ -2991,6 +3003,47 @@
       "copy": "[DE] Copy address",
       "openInbox": "[DE] Open inbox",
       "claimFirst": "[DE] Choose a username above to activate your address."
+    },
+    "title": "Einstellungen",
+    "viewProfile": "Dein Profil ansehen",
+    "sectionsLabel": "Einstellungsbereiche",
+    "allSettings": "Alle Einstellungen",
+    "travel": {
+      "reviewSearch": "Suchpräferenzen prüfen"
+    },
+    "sections": {
+      "profile": {
+        "title": "Profil",
+        "description": "Vibe, Name, Pronomen, Bio und Links. Angaben werden automatisch gespeichert."
+      },
+      "identity": {
+        "title": "Identität & Dating",
+        "description": "Identitätsangaben werden automatisch gespeichert. Dating hat eigene Einstellungen."
+      },
+      "privacy": {
+        "title": "Privatsphäre & Sichtbarkeit",
+        "description": "Wer welchen Teil deines Profils sieht. Änderungen werden automatisch gespeichert."
+      },
+      "security": {
+        "title": "Anmeldung & Sicherheit",
+        "description": "Dein Handle, Passkey und Passwort."
+      },
+      "notifications": {
+        "title": "Benachrichtigungen",
+        "description": "Was wir an dein Gerät und dein Postfach senden."
+      },
+      "travel": {
+        "title": "Reisen",
+        "description": "Präferenzen, nach denen Orte und Reisen für dich sortiert werden, und dein Buchungs-Postfach."
+      },
+      "data": {
+        "title": "Deine Daten",
+        "description": "Lade alles herunter, was wir über dich speichern, oder lösche dein Konto."
+      },
+      "avatar": {
+        "title": "Dein Avatar",
+        "description": "Wähle, wie dein Profil aussieht."
+      }
     }
   },
   "map": {
@@ -4059,7 +4112,8 @@
       "trips": "Reisen",
       "overview": "Übersicht",
       "messages": "Nachrichten",
-      "plans": "Pläne"
+      "plans": "Pläne",
+      "progress": "Fortschritt"
     },
     "calendar": {
       "title": "Anstehend",
@@ -4176,6 +4230,9 @@
     },
     "plans": {
       "trips": "Deine Reisen"
+    },
+    "progress": {
+      "description": "Missionen, Level, Serien und Anerkennung. Nur für dich sichtbar."
     }
   },
   "city": {

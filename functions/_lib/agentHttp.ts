@@ -26,6 +26,9 @@ export function preferredContent(accept: string | null): 'html' | 'markdown' | n
   return html === 0 && markdown === 0 ? null : markdown > html ? 'markdown' : 'html';
 }
 
+// An optional `:param?` owns its leading slash: `/user/:id/:tab?` must match
+// `/user/<id>` as well as `/user/<id>/travel`. Emitting `/[^/]*` instead made
+// every direct load of a profile a hard edge 404.
 const compilePatterns = (paths: string[]) =>
   paths.map(
     (path) =>
@@ -33,12 +36,13 @@ const compilePatterns = (paths: string[]) =>
         '^' +
           path
             .split('/')
+            .filter((segment, i) => i > 0 || segment !== '')
             .map((segment) => {
-              if (segment === '*') return '.*';
-              if (segment.startsWith(':')) return segment.endsWith('?') ? '[^/]*' : '[^/]+';
-              return segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              if (segment === '*') return '/.*';
+              if (segment.startsWith(':')) return segment.endsWith('?') ? '(?:/[^/]+)?' : '/[^/]+';
+              return '/' + segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             })
-            .join('/') +
+            .join('') +
           '/?$',
       ),
   );
