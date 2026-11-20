@@ -17,8 +17,8 @@
 -- Greenwich Village survives (47 venues, the longer history); West Village's
 -- 23 venue rows move onto it.
 -- Reversible: _queer_village_merge_core writes an audit row. Skipped where a
--- village's parent city has no geo_places row (partial CI snapshot): the
--- merge re-syncs the spine and would fail on the missing parent.
+-- village or its parent city has no geo_places row (partial CI snapshot): the
+-- merge re-syncs the spine and would fail on the missing row.
 do $$
 begin
   perform set_config('app.actor', 'migration:village_neartown_montrose_merge', true);
@@ -27,7 +27,8 @@ begin
      and not exists (
        select 1 from public.queer_villages q
         where q.id in ('3bffbb78-dd35-4b2f-86f0-c8605d658165', 'f10201bc-a6b6-4ccc-aeb6-886354926f5e')
-          and not exists (select 1 from public.geo_places g where g.id = q.city_id)) then
+          and (not exists (select 1 from public.geo_places g where g.id = q.city_id)
+               or not exists (select 1 from public.geo_places g where g.id = q.id))) then
     perform public._queer_village_merge_core(
       'f10201bc-a6b6-4ccc-aeb6-886354926f5e', '3bffbb78-dd35-4b2f-86f0-c8605d658165', null);
   else
@@ -43,7 +44,8 @@ begin
      and not exists (
        select 1 from public.queer_villages q
         where q.id in ('7dde05b1-f77d-4f35-bbae-8e9597e4cff8', '754df796-c869-430d-b949-550de60a71b3')
-          and not exists (select 1 from public.geo_places g where g.id = q.city_id)) then
+          and (not exists (select 1 from public.geo_places g where g.id = q.city_id)
+               or not exists (select 1 from public.geo_places g where g.id = q.id))) then
     perform public._queer_village_merge_core(
       '754df796-c869-430d-b949-550de60a71b3', '7dde05b1-f77d-4f35-bbae-8e9597e4cff8', null);
   else
@@ -55,7 +57,8 @@ begin
      and not exists (
        select 1 from public.queer_villages q
         where q.id in ('72a89abb-7e61-4d3b-988d-0c53f4c5c4a0', 'd66d6332-f74d-4333-9d32-d662f4a7fa1e')
-          and not exists (select 1 from public.geo_places g where g.id = q.city_id)) then
+          and (not exists (select 1 from public.geo_places g where g.id = q.city_id)
+               or not exists (select 1 from public.geo_places g where g.id = q.id))) then
     perform set_config('app.actor', 'migration:village_west_greenwich_merge', true);
     perform public._queer_village_merge_core(
       'd66d6332-f74d-4333-9d32-d662f4a7fa1e', '72a89abb-7e61-4d3b-988d-0c53f4c5c4a0', null);
