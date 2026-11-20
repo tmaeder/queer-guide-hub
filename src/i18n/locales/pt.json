@@ -5865,7 +5865,7 @@
   },
   "intimate": {
     "hanky": {
-      "help": "Bolso esquerdo = ativo / dá, direito = passivo / recebe. Salvo em privado. só você vê.",
+      "help": "Bolso esquerdo = ativo / dá, direito = passivo / recebe. Salvo em privado. Só você vê.",
       "sideFor": "Bolso para {{color}}",
       "side": {
         "left": "Esquerda",

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { lazyRetry } from '@/utils/lazyRetry';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -12,12 +13,15 @@ import {
 } from '@/hooks/useIntimateProfile';
 import { FlatFieldGroup } from '@/components/ui/FlatFieldGroup';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Compass, Eye, EyeOff } from '@/components/icons';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { HankyCodePicker } from '@/components/intimate/HankyCodePicker';
 import { IntimateStepFields, type IntimateDraft } from '@/components/intimate/IntimateStepFields';
 import { INTO_TAGS as FALLBACK_INTO, LIMITS as FALLBACK_LIMITS } from '@/assets/intimate/options';
 import { getGenitalPictogramSet } from '@/assets/intimate/pictograms';
 import type { WizardStep } from '@/lib/intimate/types';
+
+const KinkChecklistPanel = lazyRetry(() => import('@/components/kinks/KinkChecklistPanel'));
 
 const SECTIONS: { step: WizardStep; label: string }[] = [
   { step: 'genitalia', label: 'Genitalia' },
@@ -35,7 +39,12 @@ const SECTIONS: { step: WizardStep; label: string }[] = [
   { step: 'text', label: 'About' },
 ];
 
-export function IntimateTab() {
+/** Steps that describe the person rather than their sex life: their own settings section. */
+const BODY_STEPS: readonly WizardStep[] = ['body-pictogram', 'body-type', 'age', 'height', 'text'];
+
+/** `intimate`: anatomy, roles, kinks, hanky, checklist and visibility. `body`: body and about. */
+export function IntimateTab({ part = 'intimate' }: { part?: 'intimate' | 'body' } = {}) {
+  const isBody = part === 'body';
   const navigate = useNavigate();
   const { toast } = useToast();
   const { data: me, isLoading } = useMyIntimateProfile();
@@ -96,6 +105,7 @@ export function IntimateTab() {
   const merged = { ...me, ...draft } as IntimateDraft;
   const hasPictograms = Object.keys(getGenitalPictogramSet(merged.genitalia ?? null)).length > 0;
   const sections = SECTIONS.filter(({ step }) => {
+    if (BODY_STEPS.includes(step) !== isBody) return false;
     if (step === 'size' || step === 'angle') return merged.genitalia === 'penis';
     if (step === 'genital-pictogram') return hasPictograms;
     return true;
@@ -141,24 +151,22 @@ export function IntimateTab() {
 
   return (
     <div className="flex flex-col gap-6">
-      <FlatFieldGroup
-        title="Intimate profile"
-        description={
-          visible
-            ? 'Visible only to other users who have also opted in.'
-            : 'Hidden. Nobody can see it until you show it again.'
-        }
-        noTopBorder
-      >
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-          <LocalizedLink to="/intimate" className="underline underline-offset-4">
-            Open discovery
+      <div className="flex flex-wrap items-center gap-2 rounded-element bg-muted p-1.5 ps-4 text-sm">
+        {isBody && (
+          <span className="me-auto text-muted-foreground">
+            Shown with your intimate profile, to opted-in members only.
+          </span>
+        )}
+        <span hidden={isBody} className="me-auto inline-flex items-center gap-2 font-bold">
+          {visible ? <Eye size={16} aria-hidden /> : <EyeOff size={16} aria-hidden />}
+          {visible ? 'Visible to opted-in members' : 'Hidden'}
+        </span>
+        <Button variant="ghost" size="sm" asChild>
+          <LocalizedLink to="/intimate" className="no-underline">
+            <Compass size={16} aria-hidden /> Discovery
           </LocalizedLink>
-          <LocalizedLink to="/tools/checklist" className="underline underline-offset-4">
-            Interests & boundaries checklist
-          </LocalizedLink>
-        </div>
-      </FlatFieldGroup>
+        </Button>
+      </div>
 
       {sections.map(({ step, label }) => (
         <section key={step} aria-label={label} className="flex flex-col gap-2">
@@ -185,33 +193,53 @@ export function IntimateTab() {
         </section>
       ))}
 
-      <section aria-label="Hanky code" className="flex flex-col gap-2">
-        <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
-          Hanky code
-        </h3>
-        <HankyCodePicker />
-      </section>
+      {!isBody && (
+        <section aria-label="Hanky code" className="flex flex-col gap-2">
+          <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+            Hanky code
+          </h3>
+          <HankyCodePicker />
+        </section>
+      )}
+
+      {visible && !isBody && (
+        <section aria-label="Interests & boundaries" className="flex flex-col gap-2">
+          <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+            Interests & boundaries
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            Private by default. Your no's and hard limits are never shown to anyone.
+          </p>
+          <Suspense fallback={<div className="h-40 rounded-element bg-muted" />}>
+            <KinkChecklistPanel />
+          </Suspense>
+        </section>
+      )}
 
       <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
         <Button onClick={save} disabled={!dirty || busy} className="rounded-element">
           {upsert.isPending || setText.isPending ? 'Saving…' : 'Save'}
         </Button>
-        <Button
-          variant="ghost"
-          onClick={visible ? hide : show}
-          disabled={busy}
-          className="rounded-element"
-        >
-          {visible ? 'Hide (keep data)' : 'Show profile'}
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={remove}
-          disabled={busy}
-          className="ml-auto rounded-element text-destructive"
-        >
-          Delete
-        </Button>
+        {!isBody && (
+          <Button
+            variant="ghost"
+            onClick={visible ? hide : show}
+            disabled={busy}
+            className="rounded-element"
+          >
+            {visible ? 'Hide (keep data)' : 'Show profile'}
+          </Button>
+        )}
+        {!isBody && (
+          <Button
+            variant="ghost"
+            onClick={remove}
+            disabled={busy}
+            className="ml-auto rounded-element text-destructive"
+          >
+            Delete
+          </Button>
+        )}
       </div>
     </div>
   );

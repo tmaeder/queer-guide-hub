@@ -2,6 +2,8 @@
 export const SETTINGS_SECTIONS = [
   'profile',
   'identity',
+  'body',
+  'intimate',
   'privacy',
   'security',
   'notifications',
@@ -23,7 +25,7 @@ const LEGACY_SECTIONS: Record<string, ProfileEditorSection> = {
   identity: 'identity',
   dating: 'identity',
   relationships: 'identity',
-  intimate: 'identity',
+  intimate: 'intimate',
   privacy: 'privacy',
   visibility: 'privacy',
   account: 'security',
@@ -38,7 +40,9 @@ const LEGACY_SECTIONS: Record<string, ProfileEditorSection> = {
   avatar: 'avatar',
 };
 
-export function profileEditorSection(value: string | null | undefined): ProfileEditorSection | null {
+export function profileEditorSection(
+  value: string | null | undefined,
+): ProfileEditorSection | null {
   return value ? (LEGACY_SECTIONS[value] ?? null) : null;
 }
 

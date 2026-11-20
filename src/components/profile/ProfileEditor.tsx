@@ -52,6 +52,8 @@ type ProfileX = Profile & { username?: string | null; username_auto_assigned?: b
 const TITLES: Record<ProfileEditorSection, string> = {
   profile: 'Profile',
   identity: 'Identity & dating',
+  body: 'Body & about',
+  intimate: 'Intimate profile',
   privacy: 'Privacy & visibility',
   security: 'Sign-in & security',
   notifications: 'Notifications',
@@ -61,7 +63,9 @@ const TITLES: Record<ProfileEditorSection, string> = {
 };
 const SUBTITLES: Record<ProfileEditorSection, string> = {
   profile: 'Your vibe, name, pronouns, bio and links. Details save automatically.',
-  identity: 'Identity details save automatically. Dating has its own controls.',
+  identity: 'Identity details save automatically.',
+  body: 'Your build, age band, height and a few lines about you. Part of the 18+ intimate profile.',
+  intimate: 'Optional and 18+. Visible only to other members who have also opted in.',
   privacy: 'Who sees each part of your profile. Changes save automatically.',
   security: 'Your handle, passkey and password.',
   notifications: 'What we send to your device and inbox.',
@@ -375,8 +379,11 @@ function ProfileSettingsContent({
           onComingOutChange={handleComingOutChange}
           onFlagsChange={handleIdentityFlagsChange}
         />
-        <IntimateTab />
       </>
+    ) : section === 'body' ? (
+      <IntimateTab part="body" />
+    ) : section === 'intimate' ? (
+      <IntimateTab />
     ) : section === 'privacy' ? (
       <>
         <PrivacyTab

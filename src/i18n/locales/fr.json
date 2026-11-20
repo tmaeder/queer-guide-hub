@@ -5869,7 +5869,7 @@
   },
   "intimate": {
     "hanky": {
-      "help": "Poche gauche = top / actif, droite = bottom / passif. Enregistré en privé. vous seul le voyez.",
+      "help": "Poche gauche = top / actif, droite = bottom / passif. Enregistré en privé. Vous seul le voyez.",
       "sideFor": "Poche pour {{color}}",
       "side": {
         "left": "Gauche",
