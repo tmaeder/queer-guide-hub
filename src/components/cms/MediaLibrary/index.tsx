@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Trash2, Zap } from '@/components/icons';
+import { AlertTriangle, Copy, Database, Images, Trash2, Zap } from '@/components/icons';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useUnifiedMedia, PAGE_SIZE } from '@/hooks/useUnifiedMedia';
@@ -190,9 +190,18 @@ export function MediaLibrary() {
       {/* Tabs: Library / Duplicates / Storage */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="library">Library</TabsTrigger>
-          <TabsTrigger value="duplicates">Duplicates</TabsTrigger>
-          <TabsTrigger value="storage">Storage</TabsTrigger>
+          <TabsTrigger value="library" className="gap-1.5">
+            <Images size={14} aria-hidden />
+            Library
+          </TabsTrigger>
+          <TabsTrigger value="duplicates" className="gap-1.5">
+            <Copy size={14} aria-hidden />
+            Duplicates
+          </TabsTrigger>
+          <TabsTrigger value="storage" className="gap-1.5">
+            <Database size={14} aria-hidden />
+            Storage
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="library" className="flex flex-col gap-4 mt-4">

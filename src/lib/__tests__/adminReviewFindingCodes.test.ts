@@ -230,7 +230,7 @@ describe('the reader surfaces', () => {
   );
 
   it('headlines ready cases and separately labels raw decisions, never all_total', () => {
-    expect(page).toContain('fmtCount(summary!.ready_total)');
+    expect(page).toContain("['ready', summary!.ready_total]");
     expect(page).toContain('Raw decisions ({fmtCount(summary?.decisions_total)})');
     expect(page).not.toContain('fmtCount(summary!.all_total)} decisions');
   });

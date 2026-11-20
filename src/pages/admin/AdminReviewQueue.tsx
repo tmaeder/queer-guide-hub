@@ -309,32 +309,41 @@ export default function AdminReviewQueue() {
         <div>
           {/* eslint-disable-next-line queerguide/admin-ui-primitives -- compact title inside the full-height review workspace */}
           <h1 className="font-sans text-title font-bold tracking-tight">Review queue</h1>
-          <p
-            className={`${mobile && selected ? 'hidden' : ''} mt-1 text-sm text-muted-foreground`}
+          <div
+            className={`${mobile && selected ? 'hidden' : 'flex'} mt-2 flex-wrap items-center gap-2 text-13 text-muted-foreground`}
             aria-live="polite"
           >
             {query.data ? (
-              <>
-                <span className="tabular-nums">{fmtCount(summary!.ready_total)}</span> ready ·{' '}
-                <span className="tabular-nums">{fmtCount(summary!.research_total)}</span>{' '}
-                researching ·{' '}
-                <span className="tabular-nums">{fmtCount(summary!.blocked_total)}</span> blocked
-              </>
+              (
+                [
+                  ['ready', summary!.ready_total],
+                  ['researching', summary!.research_total],
+                  ['blocked', summary!.blocked_total],
+                ] as const
+              ).map(([label, n]) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center gap-1 rounded-badge bg-muted px-2 py-0.5"
+                >
+                  <span className="font-semibold tabular-nums text-foreground">{fmtCount(n)}</span>
+                  {label}
+                </span>
+              ))
             ) : (
-              'Loading review cases…'
+              <span>Loading review cases…</span>
             )}
-          </p>
+          </div>
           {summary && (!mobile || !selected) && (
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-2 text-xs text-muted-foreground">
               {fmtCount(summary.case_total)} cases from {fmtCount(summary.decisions_total)} source
-              tasks.{' '}
+              tasks ·{' '}
               <button
-                className="underline underline-offset-4"
+                className="underline underline-offset-4 hover:text-foreground"
                 onClick={() => changeParams({ scope: 'decisions' })}
               >
                 Inspect raw tasks
               </button>
-              {summary.research_enabled === false && ' · Automatic research is paused.'}
+              {summary.research_enabled === false && ' · Automatic research is paused'}
               {summary.worklist_as_of &&
                 ` · Updated ${new Date(summary.worklist_as_of).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
             </p>

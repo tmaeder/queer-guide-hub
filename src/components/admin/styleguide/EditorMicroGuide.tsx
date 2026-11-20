@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Card, CardContent } from '@/components/ui/card';
+import { BookOpen, ChevronDown } from '@/components/icons';
 
 /**
  * The editorial micro-guide, shown above the editing tabs.
@@ -19,9 +19,20 @@ import { Card, CardContent } from '@/components/ui/card';
  */
 export function EditorMicroGuide() {
   return (
-    <Card className="mb-6">
-      <CardContent className="pt-6">
-        <h2 className="mb-2 text-title font-bold">Writing for this page</h2>
+    <details className="group mb-2 rounded-element bg-muted px-4 py-2">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-15 font-semibold [&::-webkit-details-marker]:hidden">
+        <BookOpen size={16} aria-hidden />
+        Writing for this page
+        <span className="font-normal text-13 text-muted-foreground">
+          · how to add rules, terms and examples
+        </span>
+        <ChevronDown
+          size={16}
+          aria-hidden
+          className="ml-auto shrink-0 transition-transform group-open:rotate-180"
+        />
+      </summary>
+      <div className="pb-2 pt-2">
         <p className="mb-4 max-w-prose text-13 text-muted-foreground">
           You are writing a standard for people, not a prompt for a machine. Write the rule the way
           you would say it to a new contributor over coffee. The compiler handles the rest.
@@ -161,7 +172,7 @@ export function EditorMicroGuide() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-      </CardContent>
-    </Card>
+      </div>
+    </details>
   );
 }

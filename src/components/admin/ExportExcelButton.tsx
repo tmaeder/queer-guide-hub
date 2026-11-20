@@ -8,9 +8,18 @@ interface ExportExcelButtonProps {
   onExport: () => Promise<void>;
   label?: string;
   format?: 'Excel' | 'CSV';
+  /** Full accessible name when the visible label is shortened. */
+  ariaLabel?: string;
+  size?: 'default' | 'sm';
 }
 
-export function ExportExcelButton({ onExport, label, format = 'Excel' }: ExportExcelButtonProps) {
+export function ExportExcelButton({
+  onExport,
+  label,
+  format = 'Excel',
+  ariaLabel,
+  size,
+}: ExportExcelButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {
@@ -31,7 +40,9 @@ export function ExportExcelButton({ onExport, label, format = 'Excel' }: ExportE
     <Button
       onClick={handleExport}
       variant="outline"
+      size={size}
       disabled={isExporting}
+      aria-label={ariaLabel}
       style={{ alignItems: 'center' }}
       className="inline-flex gap-1.5"
     >

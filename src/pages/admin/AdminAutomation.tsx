@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, formatDistanceToNowStrict } from 'date-fns';
 import {
   Workflow,
   Play,
@@ -345,21 +345,31 @@ export default function AdminAutomation() {
             {
               key: 'name',
               header: 'Name',
+              width: 'xl',
               render: (a) => (
-                <>
+                <div className="min-w-56">
                   <div className="font-semibold">{a.name}</div>
                   <div className="font-mono text-2xs text-muted-foreground mt-0.5">{a.slug}</div>
                   {a.description && (
-                    <div className="text-2xs text-muted-foreground mt-0.5">{a.description}</div>
+                    <div
+                      className="text-2xs text-muted-foreground mt-0.5 line-clamp-2"
+                      title={a.description}
+                    >
+                      {a.description}
+                    </div>
                   )}
-                </>
+                </div>
               ),
             },
             {
               key: 'managed_by',
               header: 'Managed by',
+              cellClassName: 'whitespace-nowrap',
               render: (a) => (
-                <Badge variant={a.managed_by === 'system' ? 'secondary' : 'outline'}>
+                <Badge
+                  variant={a.managed_by === 'system' ? 'secondary' : 'outline'}
+                  className="px-2 py-0 text-2xs font-normal"
+                >
                   {a.managed_by}
                 </Badge>
               ),
@@ -367,26 +377,32 @@ export default function AdminAutomation() {
             {
               key: 'schedule',
               header: 'Schedule',
-              cellClassName: 'font-mono text-2xs',
+              cellClassName: 'font-mono text-2xs whitespace-nowrap',
               render: (a) => a.schedule ?? '—',
             },
             {
               key: 'next_run',
               header: 'Next run',
-              cellClassName: 'text-2xs text-muted-foreground tabular-nums',
+              cellClassName: 'text-2xs text-muted-foreground tabular-nums whitespace-nowrap',
               render: (a) => (a.enabled ? formatNextFire(a.schedule) : '—'),
             },
             {
               key: 'last_run',
               header: 'Last run',
+              cellClassName: 'text-2xs text-muted-foreground tabular-nums whitespace-nowrap',
               render: (a) =>
-                a.last_run_at
-                  ? formatDistanceToNow(new Date(a.last_run_at), { addSuffix: true })
-                  : 'Never',
+                a.last_run_at ? (
+                  <span title={new Date(a.last_run_at).toLocaleString()}>
+                    {formatDistanceToNowStrict(new Date(a.last_run_at), { addSuffix: true })}
+                  </span>
+                ) : (
+                  'Never'
+                ),
             },
             {
               key: 'status',
               header: 'Status',
+              cellClassName: 'whitespace-nowrap',
               render: (a) =>
                 isAdmin ? (
                   <Button
@@ -397,16 +413,35 @@ export default function AdminAutomation() {
                       toggleEnabled(a.slug, !a.enabled);
                     }}
                     disabled={busySlug !== null}
-                    className="font-normal h-6 text-2xs"
+                    aria-label={
+                      a.enabled
+                        ? `${a.name} is enabled. Pause it`
+                        : a.last_run_status === 'auto_paused'
+                          ? `${a.name} auto-paused after ${a.consecutive_failures} errors. Resume it`
+                          : `${a.name} is paused. Enable it`
+                    }
+                    title={a.enabled ? 'Click to pause' : 'Click to enable'}
+                    className="h-8 gap-1.5 rounded-badge px-2 text-2xs font-normal"
                   >
                     {busySlug === `toggle:${a.slug}` ? (
-                      <TrackLoader size={11} className="mr-1" />
-                    ) : null}
+                      <TrackLoader size={11} />
+                    ) : (
+                      <span
+                        aria-hidden
+                        className={`size-2 rounded-full ${
+                          a.enabled
+                            ? 'bg-foreground'
+                            : a.last_run_status === 'auto_paused'
+                              ? 'bg-destructive'
+                              : 'border border-foreground'
+                        }`}
+                      />
+                    )}
                     {a.enabled
-                      ? 'enabled · click to pause'
+                      ? 'Enabled'
                       : a.last_run_status === 'auto_paused'
-                        ? `auto-paused after ${a.consecutive_failures} errors · click to resume`
-                        : 'paused · click to enable'}
+                        ? `Auto-paused (${a.consecutive_failures})`
+                        : 'Paused'}
                   </Button>
                 ) : a.enabled ? (
                   <Badge variant="outline" className="font-normal">

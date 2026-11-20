@@ -286,6 +286,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
     path: 'styleguide',
     archetype: 'H',
     title: 'Styleguide & Voice',
+    adopted: true,
     caveat:
       'Rules, terminology and examples are all H — named rules carrying an is_active toggle, ' +
       'which is the frame verbatim. The fourth tab is not: Publish is a compiled-prompt preview ' +
