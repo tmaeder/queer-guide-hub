@@ -51,6 +51,25 @@ export function useMyHankySignals() {
   });
 }
 
+/** Another member's visible signals. RLS returns them only when both of you
+ *  are opted-in intimate members. */
+export function useMemberHankySignals(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['hanky-signals', 'member', userId],
+    enabled: !!userId,
+    queryFn: async (): Promise<Record<string, HankySide>> => {
+      const { data, error } = await untypedFrom('user_hanky_signals')
+        .select('variant_id, side')
+        .eq('user_id', userId!)
+        .is('revoked_at', null);
+      if (error) throw error;
+      return Object.fromEntries(
+        (data ?? []).map((r) => [r.variant_id as string, r.side as HankySide]),
+      );
+    },
+  });
+}
+
 /** Wear a colour on a side (side=null takes it off). Every change is a fresh
  *  consent row in user_hanky_consent_events, written by the table's trigger. */
 export function useSetHankySignal() {
@@ -66,9 +85,9 @@ export function useSetHankySignal() {
               user_id: user.id,
               variant_id: variantId,
               side,
-              // Nothing renders other members' signals yet, so store the
-              // honest value rather than the table's public default.
-              visibility: 'private',
+              // Opted-in members can read 'members_adult' signals (RLS
+              // user_hanky_signals_members_read); discovery matches on them.
+              visibility: 'members_adult',
               consented_at: now,
               revoked_at: null,
             },
@@ -83,4 +102,14 @@ export function useSetHankySignal() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['hanky-signals'] }),
   });
+}
+
+/** Pockets → the role vocabulary: left = top, right = bottom, both = vers. */
+export function roleFromHanky(signals: Record<string, HankySide>): string[] {
+  const sides = new Set(Object.values(signals));
+  const roles: string[] = [];
+  if (sides.has('both') || (sides.has('left') && sides.has('right'))) roles.push('vers');
+  else if (sides.has('left')) roles.push('top');
+  else if (sides.has('right')) roles.push('bottom');
+  return roles;
 }

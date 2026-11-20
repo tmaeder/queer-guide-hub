@@ -31,6 +31,8 @@ export interface IntimateSeeking {
   age_max?: string | null;
   roles?: string[];
   body_types?: string[];
+  /** Hanky colours wanted: cultural_variants.id → pocket. */
+  hanky?: Record<string, 'left' | 'right' | 'both'>;
 }
 
 export interface IntimateDiscoveryCard {
@@ -44,6 +46,8 @@ export interface IntimateDiscoveryCard {
   age_band: string | null;
   height_cm: number | null;
   last_active_at: string;
+  /** Worn hanky colours, variant id → pocket. Attached client-side. */
+  hanky?: Record<string, 'left' | 'right' | 'both'>;
 }
 
 export type WizardStep =

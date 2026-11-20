@@ -6,6 +6,8 @@ export interface SeekingFilters {
   ageBands: string[];
   bodyTypes: string[];
   genitalia: string[];
+  /** cultural_variants.id → pocket wanted. */
+  hanky: Record<string, 'left' | 'right' | 'both'>;
 }
 
 /** A member's "who you're looking for" as discovery filters. Empty = anyone. */
@@ -18,9 +20,15 @@ export function seekingToFilters(seeking: IntimateSeeking | null | undefined): S
     roles: seeking?.roles ?? [],
     bodyTypes: seeking?.body_types ?? [],
     genitalia: seeking?.genitalia ?? [],
+    hanky: seeking?.hanky ?? {},
     ageBands: fullRange || lo < 0 || hi < 0 ? [] : bands.slice(lo, hi + 1),
   };
 }
 
 export const hasSeeking = (f: SeekingFilters) =>
-  f.roles.length + f.ageBands.length + f.bodyTypes.length + f.genitalia.length > 0;
+  f.roles.length +
+    f.ageBands.length +
+    f.bodyTypes.length +
+    f.genitalia.length +
+    Object.keys(f.hanky).length >
+  0;

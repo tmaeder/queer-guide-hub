@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { getGenitalPictogramSet, bodyPictograms, angleOptions } from '@/assets/intimate/pictograms';
 import { useState } from 'react';
 import { KinkVisibleList } from '@/components/kinks/KinkVisibleList';
+import { HankyWorn } from '@/components/intimate/HankyWorn';
+import { useMemberHankySignals } from '@/hooks/useHankySignals';
 import { KinkPeerActions } from '@/components/kinks/KinkPeerActions';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -37,6 +39,7 @@ export default function IntimateUserDetail() {
   const { data: profile, isLoading } = useIntimateProfile(userId);
   const report = useReportIntimateProfile();
   const { data: displayProfile } = useProfileDisplay(userId);
+  const { data: hanky } = useMemberHankySignals(userId);
   const sendRequestMut = useSendFriendRequest();
   const blockMut = useBlockUser();
 
@@ -177,6 +180,12 @@ export default function IntimateUserDetail() {
             ) : null}
           </dl>
         </FlatFieldGroup>
+
+        {hanky && Object.keys(hanky).length > 0 && (
+          <FlatFieldGroup title="Hanky code">
+            <HankyWorn signals={hanky} />
+          </FlatFieldGroup>
+        )}
 
         <FlatFieldGroup title="Interests & boundaries">
           {userId && <KinkVisibleList ownerId={userId} />}

@@ -5851,6 +5851,12 @@
         "left": "Left",
         "right": "Right",
         "both": "Both"
+      },
+      "helpMembers": "Each colour is a kink. Wear it on the left pocket if you give or top, the right if you receive or bottom, both if you do either. Shown to other opted-in members.",
+      "sideMeaning": {
+        "left": "top / giving",
+        "right": "bottom / receiving",
+        "both": "either"
       }
     }
   }

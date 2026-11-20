@@ -128,6 +128,30 @@ const EMPTY_FC: PointCollection = { type: 'FeatureCollection', features: [] };
 
 const featureCache = new LRUCache<PointFeature[]>(48);
 
+/**
+ * Requests still in flight, by the same key as `featureCache`. On load the map
+ * reports its viewport twice in quick succession, and both `doFetch` calls
+ * landed before the first result was cached, so every layer's query went out
+ * twice (measured on prod 2026-11-20: identical events and venues requests
+ * 250 ms apart). A second caller now waits on the first request instead.
+ */
+const inflight = new Map<string, Promise<PointFeature[]>>();
+
+function fetchOnce(ck: string, load: () => Promise<PointFeature[]>): Promise<PointFeature[]> {
+  const pending = inflight.get(ck);
+  if (pending) return pending;
+  const p = load().then((features) => {
+    featureCache.set(ck, features);
+    return features;
+  });
+  inflight.set(ck, p);
+  const clear = () => {
+    if (inflight.get(ck) === p) inflight.delete(ck);
+  };
+  p.then(clear, clear);
+  return p;
+}
+
 function cacheKey(type: string, bk: string, fh: string): string {
   return `${type}|${bk}|${fh}`;
 }
@@ -297,41 +321,86 @@ async function fetchVenuesInBbox(
   });
 }
 
-async function fetchEventsInBbox(
+const EVENT_POINT_COLUMNS =
+  'id, slug, title, start_date, end_date, event_type, is_featured, images, liveness_status, trust_score, latitude, longitude, city';
+
+/**
+ * Future events inside `bbox`, filtered on the server.
+ *
+ * An event's location is its own coordinates, or its venue's when it has
+ * none, and PostgREST cannot OR a column against an embedded one. So this
+ * runs two queries and merges them:
+ *   1. events whose own coordinates are inside the bbox (~95% of rows);
+ *   2. events with no coordinates of their own whose venue is inside it.
+ *
+ * Until 2026-11-20 there was no server-side bbox at all: it fetched the
+ * soonest 1000 future events WORLDWIDE and filtered in JS. With 10,100 future
+ * events on prod, a city viewport showed whichever of the planet's next 1000
+ * happened to fall inside it, and every load pulled 576 KB — three times,
+ * because the cache key carries the bbox the query ignored.
+ *
+ * With no date range, a recurring series shows its next date only, the rule
+ * the /events feed applies (`fetchEventsPage` in useEvents.tsx). A reader who
+ * picks a date range wants every date inside it, so the collapse is skipped.
+ */
+export async function fetchEventsInBbox(
   bbox: Bbox,
   filters: ExploreMapFilters | undefined,
 ): Promise<PointFeature[]> {
-  let query = supabase
-    .from('events')
-    .select(
-      'id, slug, title, start_date, end_date, event_type, is_featured, images, liveness_status, trust_score, latitude, longitude, city, venue_id, venues!events_venue_id_fkey(name, latitude, longitude)',
-    )
-    .eq('status', 'active')
-    .is('duplicate_of_id', null)
-    .gte('start_date', new Date().toISOString())
+  const nowIso = new Date().toISOString();
+  const build = (select: string) => {
+    let query = supabase
+      .from('events')
+      .select(select)
+      .eq('status', 'active')
+      .is('duplicate_of_id', null)
+      .gte('start_date', nowIso);
+    if (filters?.search) {
+      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+    }
+    if (filters?.dateRange) {
+      query = query
+        .gte('start_date', filters.dateRange.start)
+        .lte('start_date', filters.dateRange.end);
+    } else {
+      query = query.eq('series_next', true).is('parent_event_id', null);
+    }
+    return query;
+  };
+
+  const ownCoords = build(`${EVENT_POINT_COLUMNS}, venues!events_venue_id_fkey(name)`)
+    .gte('latitude', bbox.south)
+    .lte('latitude', bbox.north)
+    .gte('longitude', bbox.west)
+    .lte('longitude', bbox.east)
     .order('is_featured', { ascending: false })
     .order('start_date', { ascending: true })
-    // NOTE: there is deliberately no server-side bbox filter here — an event's
-    // coords may live on the row OR on its joined venue, so the bbox is applied
-    // in JS below. That means this fetches every future active event globally
-    // (~257 today, which is why it is not yet slow). Once that count passes
-    // VIEWPORT_POINT_LIMIT this silently becomes wrong, not just slow: the cap
-    // is applied globally by is_featured/start_date BEFORE the bbox filter, so
-    // a viewport can end up with zero events. Fix then = filter server-side on
-    // coalesce(event coords, venue coords), not a bigger limit.
     .limit(VIEWPORT_POINT_LIMIT);
 
-  if (filters?.search) {
-    query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
-  }
-  if (filters?.dateRange) {
-    query = query
-      .gte('start_date', filters.dateRange.start)
-      .lte('start_date', filters.dateRange.end);
-  }
+  const venueCoords = build(
+    `${EVENT_POINT_COLUMNS}, venues!events_venue_id_fkey!inner(name, latitude, longitude)`,
+  )
+    .is('latitude', null)
+    .gte('venues.latitude', bbox.south)
+    .lte('venues.latitude', bbox.north)
+    .gte('venues.longitude', bbox.west)
+    .lte('venues.longitude', bbox.east)
+    .order('is_featured', { ascending: false })
+    .order('start_date', { ascending: true })
+    .limit(VIEWPORT_POINT_LIMIT);
 
-  const { data, error } = await query;
-  if (error) throw error;
+  const [a, b] = await Promise.all([ownCoords, venueCoords]);
+  if (a.error) throw a.error;
+  if (b.error) throw b.error;
+  const seen = new Set<string>();
+  const data = [...((a.data ?? []) as unknown[]), ...((b.data ?? []) as unknown[])].filter(
+    (row) => {
+      const id = String((row as { id: unknown }).id);
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    },
+  ) as Record<string, unknown>[];
 
   // Keep only events with a usable location inside the bbox.
   const rows = (data ?? [])
@@ -594,32 +663,27 @@ export function useViewportPoints({
 
         const p = (async () => {
           try {
-            let features: PointFeature[] = [];
-            switch (type) {
-              case 'venues':
-                features = await withRetry(() =>
-                  fetchVenuesInBbox(quantized, filtersRef.current, noCruising),
-                );
-                break;
-              case 'cruising':
-                features = await withRetry(() =>
-                  fetchVenuesInBbox(quantized, { ...filtersRef.current, category: 'cruising' }),
-                );
-                break;
-              case 'organizations':
-                features = await withRetry(() => fetchOrganizationsInBbox(quantized));
-                break;
-              case 'events':
-                features = await withRetry(() => fetchEventsInBbox(quantized, filtersRef.current));
-                break;
-              case 'restrooms':
-                features = await withRetry(() => fetchRestroomsInBbox(quantized));
-                break;
-              case 'hotels':
-                features = await withRetry(() => fetchHotelsInBbox(quantized));
-                break;
-            }
-            featureCache.set(ck, features);
+            const features = await fetchOnce(ck, async () => {
+              switch (type) {
+                case 'venues':
+                  return withRetry(() =>
+                    fetchVenuesInBbox(quantized, filtersRef.current, noCruising),
+                  );
+                case 'cruising':
+                  return withRetry(() =>
+                    fetchVenuesInBbox(quantized, { ...filtersRef.current, category: 'cruising' }),
+                  );
+                case 'organizations':
+                  return withRetry(() => fetchOrganizationsInBbox(quantized));
+                case 'events':
+                  return withRetry(() => fetchEventsInBbox(quantized, filtersRef.current));
+                case 'restrooms':
+                  return withRetry(() => fetchRestroomsInBbox(quantized));
+                case 'hotels':
+                  return withRetry(() => fetchHotelsInBbox(quantized));
+              }
+              return [];
+            });
             allFeatures.push(...features);
             counts[type] = features.length;
           } catch (layerErr) {

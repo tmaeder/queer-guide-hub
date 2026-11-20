@@ -15,6 +15,9 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ageBandsFromRange, type InterestOption } from '@/lib/intimate/discoveryFilters';
 import { cn } from '@/lib/utils';
+import { HankyCodePicker } from '@/components/intimate/HankyCodePicker';
+
+type Pocket = 'left' | 'right' | 'both';
 
 function ageRangeFromBands(bands: string[]): [number, number] {
   if (!bands.length) return [0, AGE_BANDS.length - 1];
@@ -48,6 +51,9 @@ interface IntimateDiscoveryFiltersProps {
   onAgesChange: (values: string[]) => void;
   bodies: string[];
   onBodiesChange: (values: string[]) => void;
+  /** Sought hanky colours, keyed by variant id → the pocket they wear it in. */
+  hanky?: Record<string, Pocket>;
+  onHankyChange?: (value: Record<string, Pocket>) => void;
 }
 
 export function IntimateDiscoveryFilters({
@@ -61,8 +67,12 @@ export function IntimateDiscoveryFilters({
   onAgesChange,
   bodies,
   onBodiesChange,
+  hanky = {},
+  onHankyChange,
 }: IntimateDiscoveryFiltersProps) {
-  const activeCount = roles.length + interests.length + bodies.length + (ages.length ? 1 : 0);
+  const hankyCount = Object.keys(hanky).length;
+  const activeCount =
+    roles.length + interests.length + bodies.length + hankyCount + (ages.length ? 1 : 0);
   const interestById = useMemo(
     () => new Map(interestOptions.map((option) => [option.id, option])),
     [interestOptions],
@@ -93,6 +103,7 @@ export function IntimateDiscoveryFilters({
     onInterestsChange([]);
     onAgesChange([]);
     onBodiesChange([]);
+    onHankyChange?.({});
   };
 
   return (
@@ -122,6 +133,29 @@ export function IntimateDiscoveryFilters({
         selected={bodies}
         onChange={onBodiesChange}
       />
+      {onHankyChange && (
+        <details className="group" open={hankyCount > 0 || undefined}>
+          <summary className="flex min-h-9 cursor-pointer list-none items-center gap-1 text-13 font-medium text-muted-foreground">
+            Hanky code{hankyCount ? ` · ${hankyCount}` : ''}
+            <ChevronDown
+              className="h-4 w-4 transition-transform group-open:rotate-180"
+              aria-hidden
+            />
+          </summary>
+          <div className="pt-2">
+            <HankyCodePicker
+              value={hanky}
+              onChange={(variantId, side) => {
+                const next = { ...hanky };
+                if (side) next[variantId] = side;
+                else delete next[variantId];
+                onHankyChange(next);
+              }}
+              help="Show people who wear these colours. Left: they give or top. Right: they receive or bottom."
+            />
+          </div>
+        </details>
+      )}
 
       {chips.length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto pb-1" aria-label="Active filters">
