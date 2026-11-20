@@ -234,12 +234,12 @@ export default function Organizations() {
 
   return (
     <PageContainer>
-      <header className="mb-6 grid min-w-0 items-end gap-4 md:grid-cols-2 md:gap-8">
+      <header className="mb-4 grid min-w-0 grid-cols-1 items-end gap-4 md:grid-cols-2 md:gap-8">
         <div>
           <h1 className="font-display text-headline leading-tight md:text-display">
             Organizations
           </h1>
-          <p className="mt-2 max-w-reading text-pretty text-muted-foreground">
+          <p className="mt-1 max-w-reading text-pretty text-15 text-muted-foreground">
             Find queer organizations to turn to, learn from, or get involved with.
           </p>
         </div>
@@ -254,11 +254,13 @@ export default function Organizations() {
                   <li key={org.id}>
                     <LocalizedLink
                       to={`/organizations/${org.slug}`}
-                      className="group flex min-h-14 items-center justify-between gap-4 py-2 text-foreground no-underline"
+                      className="group flex min-h-11 items-center justify-between gap-4 py-1 text-foreground no-underline"
                     >
                       <div className="min-w-0">
-                        <p className="text-sm text-muted-foreground">{label}</p>
-                        <p className="break-words font-semibold group-hover:underline">
+                        <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+                          {label}
+                        </p>
+                        <p className="truncate text-15 font-semibold group-hover:underline">
                           {org.name}
                         </p>
                       </div>
@@ -271,8 +273,8 @@ export default function Organizations() {
         )}
       </header>
 
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row">
-        <label className="flex h-12 min-w-0 flex-1 items-center gap-2 bg-card px-4 shadow-soft rounded-container">
+      <div className="mb-2 flex flex-wrap gap-2">
+        <label className="flex h-11 min-w-0 basis-full items-center gap-2 bg-card px-4 shadow-soft rounded-container sm:basis-0 sm:flex-1">
           <Search size={20} aria-hidden="true" className="shrink-0 text-muted-foreground" />
           <span className="sr-only">Search organizations</span>
           <input
@@ -286,7 +288,7 @@ export default function Organizations() {
             className="h-full min-w-0 flex-1 bg-transparent text-base outline-none md:text-15"
           />
         </label>
-        <label className="flex h-12 items-center gap-2 bg-card px-4 shadow-soft rounded-container sm:w-64">
+        <label className="flex h-11 min-w-0 flex-1 items-center gap-2 bg-card px-4 shadow-soft rounded-container sm:max-w-56">
           <MapPin size={20} aria-hidden="true" className="shrink-0 text-muted-foreground" />
           <span className="sr-only">Country</span>
           <select
@@ -308,7 +310,7 @@ export default function Organizations() {
         {nearCode && nearCode !== country && (
           <Button
             variant="outline"
-            className="h-12"
+            className="h-11"
             onClick={() => updateParams({ country: nearCode })}
           >
             <MapPin size={16} aria-hidden="true" />
@@ -317,7 +319,11 @@ export default function Organizations() {
         )}
       </div>
 
-      <div className="mb-8 flex flex-wrap gap-2" role="group" aria-label="Filter by kind">
+      <div
+        className="-mx-4 mb-6 flex gap-1 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0 [&::-webkit-scrollbar]:hidden"
+        role="group"
+        aria-label="Filter by kind"
+      >
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -326,8 +332,10 @@ export default function Organizations() {
               type="button"
               aria-pressed={active === tab.id}
               onClick={() => onTab(tab.id)}
-              className={`inline-flex items-center gap-2 rounded-element border px-4 py-2 text-15 transition-colors ${
-                active === tab.id ? 'bg-foreground text-background' : 'border-border hover:bg-muted'
+              className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-element px-3 text-13 font-semibold transition-colors ${
+                active === tab.id
+                  ? 'bg-foreground text-background'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
             >
               {Icon && <Icon size={15} aria-hidden="true" />}

@@ -5732,5 +5732,47 @@
         "interactions": "药物混用风险（Queer Guide）"
       }
     }
+  },
+  "goingOut": {
+    "events": {
+      "filterLabel": "活动类型",
+      "all": "全部活动",
+      "types": {
+        "party": "派对",
+        "drag": "变装与演出",
+        "pride": "骄傲节与节庆",
+        "film": "电影与艺术",
+        "social": "社交与聚会",
+        "talks": "讲座与工作坊"
+      }
+    },
+    "places": {
+      "filterLabel": "场所类型",
+      "all": "全部场所",
+      "types": {
+        "bars": "酒吧",
+        "clubs": "夜店",
+        "cafes": "咖啡馆",
+        "food": "餐厅",
+        "saunas": "桑拿",
+        "culture": "剧院与画廊",
+        "community": "社区中心",
+        "shops": "商店",
+        "wellness": "健身房与沙龙",
+        "outdoor": "户外",
+        "organizations": "组织",
+        "neighbourhoods": "街区"
+      },
+      "viewLabel": "视图",
+      "view": {
+        "grid": "网格",
+        "list": "列表",
+        "map": "地图"
+      },
+      "loading": "正在查找场所…",
+      "noOrgs": "{{where}} 暂无已登记的组织。",
+      "noNeighbourhoods": "{{where}} 暂无已登记的街区。",
+      "noneForFilter": "在此筛选条件下，{{where}} 暂无内容。"
+    }
   }
 }

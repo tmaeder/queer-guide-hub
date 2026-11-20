@@ -74,11 +74,16 @@ export interface IntentVenue {
 }
 
 /** Nightlife venues for a city, ranked by the site's own quality signal. */
-export function useNightlifeVenues(cityId: string | null | undefined, limit = 12) {
+export function useNightlifeVenues(
+  cityId: string | null | undefined,
+  limit = 12,
+  categories: readonly string[] = NIGHTLIFE_CATEGORIES,
+  enabled = true,
+) {
   const { user, loading } = useAuth();
   return useQuery({
-    queryKey: ['intent-nightlife', user?.id ?? 'anon', cityId, limit],
-    enabled: Boolean(cityId) && !loading,
+    queryKey: ['intent-nightlife', user?.id ?? 'anon', cityId, limit, [...categories].sort()],
+    enabled: enabled && Boolean(cityId) && !loading,
     staleTime: 300_000,
     queryFn: async (): Promise<IntentVenue[]> => {
       const { data, error } = await supabase
@@ -88,7 +93,7 @@ export function useNightlifeVenues(cityId: string | null | undefined, limit = 12
         )
         .eq('city_id', cityId!)
         .is('duplicate_of_id', null)
-        .in('category', NIGHTLIFE_CATEGORIES as unknown as string[])
+        .in('category', [...categories])
         .order('quality_score', { ascending: false, nullsFirst: false })
         .limit(limit);
       if (error) throw error;
@@ -108,6 +113,15 @@ export interface IntentEvent {
   date_precision?: string | null;
   age_restriction: string | null;
   liveness_status: string;
+  /** Present on ~18% of events; render only when set. */
+  venue_name?: string | null;
+  event_type?: string | null;
+  description?: string | null;
+  tags?: string[] | null;
+  is_free?: boolean | null;
+  price_min?: number | null;
+  price_max?: number | null;
+  currency?: string | null;
 }
 
 /** Which rung of the fallback ladder produced the events we are showing. */
@@ -136,19 +150,23 @@ const WINDOW_DAYS: Record<Exclude<EventWindow, 'anywhere'>, number> = {
  * returns the window it actually landed on so the UI can say so plainly, and
  * falls back to the soonest events anywhere rather than to nothing.
  */
-export function useEventsWithFallback(cityId: string | null | undefined, limit = 6) {
+export function useEventsWithFallback(
+  cityId: string | null | undefined,
+  limit = 6,
+  eventTypes?: readonly string[],
+) {
   const { user, loading } = useAuth();
   return useQuery({
-    queryKey: ['intent-events-fallback', user?.id ?? 'anon', cityId, limit],
+    queryKey: ['intent-events-fallback', user?.id ?? 'anon', cityId, limit, eventTypes ?? null],
     enabled: !loading,
     staleTime: 300_000,
     queryFn: async (): Promise<EventsWithFallback> => {
       const now = new Date().toISOString();
-      const upcoming = () =>
-        supabase
+      const upcoming = () => {
+        const q = supabase
           .from('events')
           .select(
-            'id, title, slug, start_date, city, images, timezone, date_precision:enrichment_status->date_confirmation->>precision, age_restriction, liveness_status',
+            'id, title, slug, start_date, city, images, timezone, date_precision:enrichment_status->date_confirmation->>precision, age_restriction, liveness_status, venue_name, event_type, description, tags, is_free, price_min, price_max, currency',
           )
           .eq('status', 'active')
           .is('duplicate_of_id', null)
@@ -156,6 +174,8 @@ export function useEventsWithFallback(cityId: string | null | undefined, limit =
           .gte('start_date', now)
           .order('start_date', { ascending: true })
           .limit(limit);
+        return eventTypes?.length ? q.in('event_type', [...eventTypes]) : q;
+      };
 
       if (cityId) {
         for (const w of ['tonight', 'this-weekend', 'next-7-days', 'next-30-days'] as const) {

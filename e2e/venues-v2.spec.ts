@@ -37,22 +37,20 @@ test.describe('Venues v2', () => {
     expect(cardCount).toBeGreaterThan(0);
   });
 
-  test('shows anonymous personalization promo instead of "For your taste"', async ({ page }) => {
+  test('anonymous visitors get no personalised rail and no promo', async ({ page }) => {
     await page.goto('/venues');
     await page.waitForLoadState('domcontentloaded');
 
-    // Anonymous users should NOT see the "For your taste" rail heading.
-    const forYou = page.getByRole('heading', { level: 2, name: /for your taste/i });
-    expect(await forYou.count()).toBe(0);
+    // Positive control: the rails have rendered, so the absences below mean
+    // something.
+    await expect(page.getByRole('heading', { level: 2, name: /new this month/i })).toBeVisible({
+      timeout: 15_000,
+    });
 
-    // Instead, the promo section is present.
-    const promo = page.getByRole('region', { name: /personalize your venues/i });
-    await expect(promo).toBeVisible();
-
-    // Promo has a CTA that targets the onboarding flow.
-    const cta = promo.getByRole('link', { name: /get started/i });
-    await expect(cta).toBeVisible();
-    await expect(cta).toHaveAttribute('href', /onboarding\/venues|\/auth/);
+    // "For your taste" needs a user; anon must not see it.
+    await expect(page.getByRole('heading', { level: 2, name: /for your taste/i })).toHaveCount(0);
+    // The personalization promo was dropped in #5407 rather than replaced.
+    await expect(page.getByRole('region', { name: /personalize your venues/i })).toHaveCount(0);
   });
 
   test('selecting a category filter hides rails and shows the matching grid heading', async ({

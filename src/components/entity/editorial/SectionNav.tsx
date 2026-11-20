@@ -58,7 +58,7 @@ export function SectionNav({
       /* A rounded route selector. The rail is tonal rather than ruled, and it
          stays inside the page gutter so its soft silhouette remains visible. */
       className={cn(
-        'sticky z-30 mb-8 bg-background py-2',
+        'sticky z-30 mb-8 bg-background pt-4 pb-2',
         PAGE_BLEED,
         PAGE_BLEED_GUTTER,
         STICKY_UNDER_HEADER,
