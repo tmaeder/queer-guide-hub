@@ -5843,5 +5843,35 @@
       "noNeighbourhoods": "Nessun quartiere elencato per {{where}} per ora.",
       "noneForFilter": "Nulla elencato per {{where}} con questo filtro per ora."
     }
+  },
+  "emailPreferences": {
+    "groups": {
+      "messages": "Messaggi",
+      "trips": "Viaggi ed eventi",
+      "community": "Gruppi e community",
+      "account": "Il tuo account"
+    },
+    "operational": {
+      "event_updates": "Modifiche di orario e promemoria per gli eventi a cui partecipo",
+      "trip_updates": "Modifiche di orario e promemoria del giorno prima (UTC) per i miei viaggi",
+      "group_invitations": "Quando ricevo un invito a un gruppo",
+      "group_requests": "Esito delle mie richieste di adesione ai gruppi",
+      "group_comments": "Menzioni e risposte nei miei gruppi",
+      "community_comments": "Menzioni e risposte nella community",
+      "business_updates": "Aggiornamenti su rivendicazioni e servizi per le attività che rappresento",
+      "contributions": "Decisioni sui miei contributi",
+      "payments": "Quando una conferma di pagamento verificata è pronta"
+    }
+  },
+  "intimate": {
+    "hanky": {
+      "help": "Tasca sinistra = top / attivo, destra = bottom / passivo. Salvato in privato. Lo vedi solo tu.",
+      "sideFor": "Tasca per {{color}}",
+      "side": {
+        "left": "Sinistra",
+        "right": "Destra",
+        "both": "Entrambe"
+      }
+    }
   }
 }

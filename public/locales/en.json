@@ -5806,5 +5806,35 @@
       "noNeighbourhoods": "No neighbourhoods listed for {{where}} yet.",
       "noneForFilter": "Nothing listed for {{where}} under this filter yet."
     }
+  },
+  "emailPreferences": {
+    "groups": {
+      "messages": "Messages",
+      "trips": "Trips & events",
+      "community": "Groups & community",
+      "account": "Your account"
+    },
+    "operational": {
+      "event_updates": "Email me schedule changes and reminders for events I joined",
+      "trip_updates": "Email me schedule changes and UTC next-day reminders for my trips",
+      "group_invitations": "Email me when I receive a group invitation",
+      "group_requests": "Email me the outcome of my group join requests",
+      "group_comments": "Email me mentions and replies in my groups",
+      "community_comments": "Email me mentions and replies in the community",
+      "business_updates": "Email me claim and service updates for businesses I represent",
+      "contributions": "Email me decisions on my contributions",
+      "payments": "Email me when a verified payment confirmation is ready"
+    }
+  },
+  "intimate": {
+    "hanky": {
+      "help": "Left pocket = top / giving, right = bottom / receiving. Saved privately. only you see it.",
+      "sideFor": "Pocket for {{color}}",
+      "side": {
+        "left": "Left",
+        "right": "Right",
+        "both": "Both"
+      }
+    }
   }
 }

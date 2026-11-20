@@ -9,7 +9,12 @@ const useOptOutIntimateProfile = vi.fn(() => ({ mutateAsync: vi.fn(), isPending:
 vi.mock('@/hooks/useIntimateProfile', () => ({
   useMyIntimateProfile: (...a: unknown[]) => useMyIntimateProfile(...a),
   useOptOutIntimateProfile: (...a: unknown[]) => useOptOutIntimateProfile(...a),
+  useMyIntimateText: () => ({ data: null }),
+  useIntimateKinkTags: () => ({ data: [] }),
+  useUpsertIntimateProfile: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useSetIntimateText: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
+vi.mock('@/components/intimate/HankyCodePicker', () => ({ HankyCodePicker: () => null }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 
 import { IntimateTab } from '../IntimateTab';
@@ -34,15 +39,30 @@ describe('IntimateTab', () => {
     expect(screen.getByText(/Enable intimate profile/i)).toBeInTheDocument();
   });
 
-  it('shows management buttons when opted-in', () => {
+  it('edits every field inline when opted-in', () => {
+    const now = new Date().toISOString();
     useMyIntimateProfile.mockReturnValue({
-      data: { opted_in_at: new Date().toISOString() },
+      data: { opted_in_at: now, consent_18plus_at: now, genitalia: 'vulva', role: [] },
       isLoading: false,
     });
     render(wrap(<IntimateTab />));
-    expect(screen.getByText('Edit')).toBeInTheDocument();
-    expect(screen.getByText(/Hide/)).toBeInTheDocument();
-    expect(screen.getByText(/Delete intimate profile/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Enable intimate profile/i)).toBeNull();
+    expect(screen.getByRole('region', { name: 'Role' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Safer sex' })).toBeInTheDocument();
+    // Size/angle only apply to a penis.
+    expect(screen.queryByRole('region', { name: 'Size' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Hide/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+  });
+
+  it('offers to show a hidden profile without re-onboarding', () => {
+    useMyIntimateProfile.mockReturnValue({
+      data: { opted_in_at: null, consent_18plus_at: new Date().toISOString() },
+      isLoading: false,
+    });
+    render(wrap(<IntimateTab />));
+    expect(screen.getByRole('button', { name: 'Show profile' })).toBeInTheDocument();
   });
 
   it('shows loading state', () => {

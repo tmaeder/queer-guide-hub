@@ -5841,5 +5841,35 @@
       "noNeighbourhoods": "{{where}}에 등록된 동네가 아직 없습니다.",
       "noneForFilter": "이 필터로 {{where}}에 등록된 항목이 아직 없습니다."
     }
+  },
+  "emailPreferences": {
+    "groups": {
+      "messages": "메시지",
+      "trips": "여행 및 이벤트",
+      "community": "그룹 및 커뮤니티",
+      "account": "내 계정"
+    },
+    "operational": {
+      "event_updates": "참여한 이벤트의 일정 변경 및 알림",
+      "trip_updates": "내 여행의 일정 변경 및 전날(UTC) 알림",
+      "group_invitations": "그룹 초대를 받았을 때",
+      "group_requests": "그룹 가입 요청 결과",
+      "group_comments": "내 그룹의 멘션과 답글",
+      "community_comments": "커뮤니티의 멘션과 답글",
+      "business_updates": "내가 대표하는 비즈니스의 소유권 및 서비스 업데이트",
+      "contributions": "내 기여에 대한 결정",
+      "payments": "확인된 결제 확인서가 준비되면"
+    }
+  },
+  "intimate": {
+    "hanky": {
+      "help": "왼쪽 주머니 = 탑 / 주는 쪽, 오른쪽 = 바텀 / 받는 쪽. 비공개로 저장되며 나만 볼 수 있습니다.",
+      "sideFor": "{{color}} 주머니",
+      "side": {
+        "left": "왼쪽",
+        "right": "오른쪽",
+        "both": "양쪽"
+      }
+    }
   }
 }
