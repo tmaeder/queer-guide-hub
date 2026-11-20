@@ -2278,7 +2278,8 @@
       "you": "내 정보",
       "community": "커뮤니티",
       "viewProfile": "공개 프로필 보기",
-      "yourAccount": "내 계정"
+      "yourAccount": "내 계정",
+      "hub": "내 허브"
     },
     "modes": {
       "dating": "사랑을 찾아서",
@@ -3754,7 +3755,10 @@
       "scope": "받은 메일 및 보낸 메일",
       "sent": "보냄",
       "loadError": "메시지를 불러오지 못했습니다. 다시 시도하세요."
-    }
+    },
+    "newCount": "새 알림 {{count}}",
+    "groupNew": "새 알림",
+    "groupEarlier": "이전"
   },
   "extension": {
     "signInGate": {

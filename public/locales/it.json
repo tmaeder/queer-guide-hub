@@ -2278,7 +2278,8 @@
       "you": "Profilo",
       "community": "Community",
       "viewProfile": "Vedi profilo pubblico",
-      "yourAccount": "Il tuo account"
+      "yourAccount": "Il tuo account",
+      "hub": "Il tuo hub"
     },
     "modes": {
       "dating": "In cerca d'amore",
@@ -3756,7 +3757,10 @@
       "scope": "Posta ricevuta e inviata",
       "sent": "Inviato",
       "loadError": "Impossibile caricare i messaggi. Riprova."
-    }
+    },
+    "newCount": "{{count}} nuove",
+    "groupNew": "Nuove",
+    "groupEarlier": "Precedenti"
   },
   "extension": {
     "signInGate": {

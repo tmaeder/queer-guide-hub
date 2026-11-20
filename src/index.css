@@ -950,10 +950,13 @@ body {
 
 /* Route navigation and the skip link focus this non-interactive landmark.
    Its viewport-wide outline looks like a pink divider below the breadcrumb.
-   The Hub sheet also takes focus as a container when opened by tap.
+   The Hub sheet also takes focus as a container when opened by tap, and so
+   does every dropdown menu (Radix focuses the menu itself on open; its items
+   carry their own focus ring).
    Keep focus transfer and leave control focus indicators intact. */
 #main-content:focus,
-.mobile-hub-sheet:focus {
+.mobile-hub-sheet:focus,
+[role='menu']:focus {
   outline: none !important;
 }
 

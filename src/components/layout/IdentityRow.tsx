@@ -20,6 +20,10 @@ export interface IdentityRowProps {
   avatarSrc?: string;
   avatarInitial: string;
   username: string | null;
+  /** Leads when set; the handle then sits under it. */
+  displayName?: string | null;
+  /** A muted line under the name, e.g. "View profile". */
+  subtitle?: string;
   /** Shown only when there is no username. */
   email: string | null;
   /** Rendered when neither a username nor an email is available. */
@@ -32,6 +36,8 @@ export function IdentityRow({
   avatarSrc,
   avatarInitial,
   username,
+  displayName,
+  subtitle,
   email,
   fallbackLabel,
   avatarPx = 36,
@@ -46,11 +52,13 @@ export function IdentityRow({
         <AvatarFallback>{avatarInitial}</AvatarFallback>
       </Avatar>
       <span className={cn('flex min-w-0 flex-col', className)}>
-        {username ? (
-          <span className="truncate font-mono text-15 font-semibold">@{username}</span>
-        ) : (
-          <span className="truncate text-15 font-semibold">{email || fallbackLabel}</span>
+        <span className="truncate text-15 font-semibold">
+          {displayName || (username ? `@${username}` : email || fallbackLabel)}
+        </span>
+        {displayName && username && (
+          <span className="truncate text-xs text-muted-foreground">@{username}</span>
         )}
+        {subtitle && <span className="truncate text-xs text-muted-foreground">{subtitle}</span>}
       </span>
     </>
   );

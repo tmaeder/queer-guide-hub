@@ -2278,7 +2278,8 @@
       "you": "Perfil",
       "community": "Comunidade",
       "viewProfile": "Ver perfil público",
-      "yourAccount": "Sua conta"
+      "yourAccount": "Sua conta",
+      "hub": "Seu hub"
     },
     "modes": {
       "dating": "Procurando Amor",
@@ -3756,7 +3757,10 @@
       "scope": "Correio recebido e enviado",
       "sent": "Enviado",
       "loadError": "Não foi possível carregar as mensagens. Tente novamente."
-    }
+    },
+    "newCount": "{{count}} novas",
+    "groupNew": "Novas",
+    "groupEarlier": "Anteriores"
   },
   "extension": {
     "signInGate": {

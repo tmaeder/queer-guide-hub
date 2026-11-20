@@ -2278,7 +2278,8 @@
       "you": "Profil",
       "community": "Community",
       "viewProfile": "Öffentliches Profil ansehen",
-      "yourAccount": "Dein Konto"
+      "yourAccount": "Dein Konto",
+      "hub": "Dein Hub"
     },
     "modes": {
       "dating": "Auf der Suche nach Liebe",
@@ -3756,7 +3757,10 @@
       "scope": "Empfangene und gesendete E-Mails",
       "sent": "Gesendet",
       "loadError": "Nachrichten konnten nicht geladen werden. Bitte versuche es erneut."
-    }
+    },
+    "newCount": "{{count}} neu",
+    "groupNew": "Neu",
+    "groupEarlier": "Früher"
   },
   "extension": {
     "signInGate": {

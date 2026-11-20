@@ -2288,7 +2288,8 @@
       "you": "حسابي",
       "community": "المجتمع",
       "viewProfile": "عرض الملف العام",
-      "yourAccount": "حسابك"
+      "yourAccount": "حسابك",
+      "hub": "مركزك"
     },
     "modes": {
       "dating": "أبحث عن الحب",
@@ -3764,7 +3765,10 @@
       "scope": "البريد الوارد والمرسل",
       "sent": "مرسل",
       "loadError": "تعذر تحميل الرسائل. حاول مرة أخرى."
-    }
+    },
+    "newCount": "{{count}} جديدة",
+    "groupNew": "جديد",
+    "groupEarlier": "سابقًا"
   },
   "extension": {
     "signInGate": {

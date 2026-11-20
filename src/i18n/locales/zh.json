@@ -2278,7 +2278,8 @@
       "you": "我的",
       "community": "社区",
       "viewProfile": "查看公开资料",
-      "yourAccount": "你的账户"
+      "yourAccount": "你的账户",
+      "hub": "你的中心"
     },
     "modes": {
       "dating": "寻找爱情",
@@ -3754,7 +3755,10 @@
       "scope": "收件和已发送邮件",
       "sent": "已发送",
       "loadError": "无法加载邮件。请重试。"
-    }
+    },
+    "newCount": "{{count}} 条新",
+    "groupNew": "新",
+    "groupEarlier": "更早"
   },
   "extension": {
     "signInGate": {

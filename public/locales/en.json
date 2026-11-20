@@ -229,7 +229,10 @@
       "scope": "Received and sent mail",
       "sent": "Sent",
       "loadError": "Messages could not load. Try again."
-    }
+    },
+    "newCount": "{{count}} new",
+    "groupNew": "New",
+    "groupEarlier": "Earlier"
   },
   "eventTypes": {
     "party": "Party",
@@ -2478,7 +2481,8 @@
       "accessibility": "Accessibility",
       "extension": "Browser Extension",
       "viewProfile": "View public profile",
-      "yourAccount": "Your account"
+      "yourAccount": "Your account",
+      "hub": "Your hub"
     },
     "notifications": {
       "label": "Notifications",

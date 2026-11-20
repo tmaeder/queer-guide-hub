@@ -2278,7 +2278,8 @@
       "you": "マイページ",
       "community": "コミュニティ",
       "viewProfile": "公開プロフィールを見る",
-      "yourAccount": "あなたのアカウント"
+      "yourAccount": "あなたのアカウント",
+      "hub": "あなたのハブ"
     },
     "modes": {
       "dating": "恋人を探す",
@@ -3754,7 +3755,10 @@
       "scope": "受信・送信したメール",
       "sent": "送信済み",
       "loadError": "メッセージを読み込めませんでした。もう一度お試しください。"
-    }
+    },
+    "newCount": "新着 {{count}}",
+    "groupNew": "新着",
+    "groupEarlier": "以前"
   },
   "extension": {
     "signInGate": {

@@ -2282,7 +2282,8 @@
       "you": "Profil",
       "community": "Communauté",
       "viewProfile": "Voir le profil public",
-      "yourAccount": "Votre compte"
+      "yourAccount": "Votre compte",
+      "hub": "Votre hub"
     },
     "modes": {
       "dating": "En quête d'amour",
@@ -3760,7 +3761,10 @@
       "scope": "Messages reçus et envoyés",
       "sent": "Envoyé",
       "loadError": "Impossible de charger les messages. Réessayez."
-    }
+    },
+    "newCount": "{{count}} nouv.",
+    "groupNew": "Nouveau",
+    "groupEarlier": "Plus tôt"
   },
   "extension": {
     "signInGate": {
