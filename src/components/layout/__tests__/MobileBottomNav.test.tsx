@@ -33,6 +33,9 @@ vi.mock('react-i18next', () => ({
 vi.mock('@/components/layout/MobileNavSheet', () => ({
   MobileNavSheet: ({ open }: { open: boolean }) => (open ? <div data-testid="nav-sheet" /> : null),
 }));
+vi.mock('@/components/layout/MobileYouSheet', () => ({
+  MobileYouSheet: ({ open }: { open: boolean }) => (open ? <div>You sheet</div> : null),
+}));
 vi.mock('@/components/auth/AuthDialog', () => ({
   AuthDialog: ({ open }: { open: boolean }) => (open ? <div data-testid="auth-dialog" /> : null),
 }));

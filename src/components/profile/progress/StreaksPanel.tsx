@@ -20,14 +20,14 @@ function StatTile({
   suffix?: string | null;
 }) {
   return (
-    <div className="rounded-container p-4 bg-card">
-      <p className="flex items-center gap-1 text-2xs uppercase tracking-[0.1em] text-muted-foreground">
+    <div className="flex min-w-0 flex-col gap-0.5 px-4 py-2.5">
+      <p className="flex items-baseline gap-1 text-title font-bold tabular-nums leading-none">
+        {value}
+        {suffix && <span className="text-xs font-normal text-muted-foreground">{suffix}</span>}
+      </p>
+      <p className="flex items-center gap-1 truncate text-2xs text-muted-foreground">
         {icon}
         {label}
-      </p>
-      <p className="mt-2 text-headline tabular-nums leading-none">
-        {value}
-        {suffix && <span className="text-body-lg text-muted-foreground"> {suffix}</span>}
       </p>
     </div>
   );
@@ -51,7 +51,7 @@ export function StreaksPanel() {
     <section aria-label="Reading" className="flex flex-col gap-4">
       <SectionHeader size="section" title="Reading" />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 divide-border rounded-container bg-card sm:grid-cols-4 sm:divide-x">
         <StatTile
           icon={<BookOpen size={12} aria-hidden />}
           label="Guide streak"
@@ -77,38 +77,34 @@ export function StreaksPanel() {
       </div>
 
       {continueItems.length > 0 && (
-        <div className="rounded-container bg-surface-container p-6 bg-card">
-          <header className="flex items-center justify-between gap-4 mb-4">
-            <p className="text-13 uppercase tracking-[0.1em] text-muted-foreground">
-              Continue reading
-            </p>
+        <div className="rounded-container bg-card px-4 py-2.5">
+          <header className="flex items-center justify-between gap-4">
+            <h3 className="text-sm font-bold">Continue reading</h3>
             <LocalizedLink
               to="/guides"
-              className="inline-flex items-center gap-1 text-13 text-muted-foreground hover:text-foreground"
+              className="inline-flex min-h-11 items-center gap-1 text-xs text-muted-foreground no-underline hover:text-foreground"
             >
               All guides <ArrowRight size={14} aria-hidden />
             </LocalizedLink>
           </header>
-          <ul className="">
+          <ul className="m-0 list-none divide-y divide-border p-0">
             {continueItems.map((it) => (
-              <li key={it.guide_id} className="py-2">
+              <li key={it.guide_id}>
                 <LocalizedLink
                   to={`/guides/${it.guide.slug}`}
-                  className="group flex items-center gap-4 no-underline"
+                  className="group flex min-h-11 items-center gap-4 py-2 no-underline"
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-15 truncate group-hover:underline underline-offset-4">
-                      {it.guide.title}
-                    </p>
-                    <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-muted">
-                      <div
-                        aria-hidden
-                        className="h-full bg-foreground"
-                        style={{ width: `${Math.max(4, Math.min(100, it.scroll_pct))}%` }}
-                      />
-                    </div>
-                  </div>
-                  <span className="text-2xs uppercase tracking-[0.1em] text-muted-foreground tabular-nums">
+                  <span className="min-w-0 flex-1 truncate text-sm group-hover:underline underline-offset-4">
+                    {it.guide.title}
+                  </span>
+                  <span className="h-1 w-16 shrink-0 overflow-hidden rounded-full bg-muted">
+                    <span
+                      aria-hidden
+                      className="block h-full bg-foreground"
+                      style={{ width: `${Math.max(4, Math.min(100, it.scroll_pct))}%` }}
+                    />
+                  </span>
+                  <span className="w-8 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
                     {it.scroll_pct}%
                   </span>
                 </LocalizedLink>
@@ -120,7 +116,7 @@ export function StreaksPanel() {
 
       <LocalizedLink
         to="/hub/saved"
-        className="inline-flex items-center gap-2 text-13 text-muted-foreground hover:text-foreground"
+        className="inline-flex min-h-11 items-center gap-2 self-start text-xs text-muted-foreground no-underline hover:text-foreground"
       >
         <Bookmark size={14} aria-hidden />
         Saved stories live in your saved items

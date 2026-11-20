@@ -72,24 +72,16 @@ describe('MobileNavSheet', () => {
     expect(document.querySelector('a[href="/privacy"]')).toBeNull();
   });
 
-  it('offers sign-in for anon and sign-out for signed-in users', () => {
+  it('offers sign-in for anon; account rows live in the You sheet', () => {
     renderSheet(true);
     expect(screen.getByText('Sign in')).toBeInTheDocument();
-    expect(screen.queryByText('Sign Out')).toBeNull();
 
     mockUser = { id: 'u-1', email: 'a@b.co' };
-    renderSheet(true);
-    expect(screen.getByText('Sign Out')).toBeInTheDocument();
-  });
-
-  it('shows the admin link only to admins/moderators', () => {
-    renderSheet(true);
-    expect(document.querySelector('a[href="/admin"]')).toBeNull();
-
-    mockUser = { id: 'u-1' };
     mockRoles = { isAdmin: true, isModerator: false };
     renderSheet(true);
-    expect(document.querySelector('a[href="/admin"]')).not.toBeNull();
+    expect(screen.queryByText('Sign Out')).toBeNull();
+    expect(document.querySelector('a[href="/admin"]')).toBeNull();
+    expect(document.querySelector('a[href="/hub/friends"]')).toBeNull();
   });
 
   it('closes the sheet when a destination is tapped', () => {
@@ -97,18 +89,5 @@ describe('MobileNavSheet', () => {
     const link = document.querySelector('a[href="/venues"]') as HTMLAnchorElement;
     fireEvent.click(link);
     expect(onOpenChange).toHaveBeenCalledWith(false);
-  });
-
-  it('shows a friends row with the online count for signed-in users only', () => {
-    renderSheet(true);
-    expect(document.querySelector('a[href="/hub/friends"]')).toBeNull();
-
-    mockUser = { id: 'u-1', email: 'a@b.co' };
-    mockFriendsOnline = 3;
-    renderSheet(true);
-    const row = document.querySelector('a[href="/hub/friends"]');
-    expect(row).not.toBeNull();
-    expect(row!.textContent).toContain('Friends');
-    expect(row!.textContent).toContain('3 online');
   });
 });

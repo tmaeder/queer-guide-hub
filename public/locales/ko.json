@@ -1572,7 +1572,8 @@
       "locked": "+{{pts}} 점",
       "visited": "{{count}} 개 장소 방문",
       "empty": "아직 체크인이 없어요. 여권을 시작하려면 장소를 방문해 보세요.",
-      "signInPrompt": "로그인하여 여권을 확인하세요."
+      "signInPrompt": "로그인하여 여권을 확인하세요.",
+      "earnedCount": "{{total}}개 중 {{earned}}개 획득"
     },
     "onboarding": {
       "progress": "단계 {{current}}/{{total}}",
@@ -1699,7 +1700,10 @@
       "title": "이 프로필을 보려면 로그인하세요",
       "body": "회원 프로필은 로그인한 회원에게만 표시됩니다.",
       "cta": "로그인"
-    }
+    },
+    "headerLabel": "프로필",
+    "verified": "인증됨",
+    "setStatus": "상태 설정…"
   },
   "groups": {
     "title": "그룹",
@@ -3880,7 +3884,8 @@
       "set": "분위기 설정",
       "title": "내 분위기",
       "placeholder": "지금 기분은?",
-      "for4h": "4시간"
+      "for4h": "4시간",
+      "emoji": "이모지 선택"
     },
     "stickers": {
       "title": "스티커"

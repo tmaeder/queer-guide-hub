@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ErrorBoundary, SectionErrorFallback } from '@/components/error/ErrorBoundary';
-import { ScoreLevelChip } from '@/components/score/ScoreLevelChip';
 import { DomainBreakdown } from '@/components/score/DomainBreakdown';
 import { MissionsRow } from '@/components/profile/MissionsRow';
 import { VenuesPersonalStrip } from '@/components/venues/VenuesPersonalStrip';
@@ -54,12 +53,6 @@ export function ProgressTab() {
           <Guarded>
             {score ? (
               <div className="flex flex-col gap-2">
-                <ScoreLevelChip
-                  level={score.level}
-                  tier={score.tier}
-                  totalPoints={score.total_points}
-                  progress={score.progress}
-                />
                 {score.weekly_delta !== 0 && (
                   <p className="px-1 text-13 tabular-nums text-muted-foreground">
                     {score.weekly_delta > 0 ? '+' : ''}
@@ -102,7 +95,6 @@ export function ProgressTab() {
           </Guarded>
         </TabsContent>
       </Tabs>
-
     </div>
   );
 }
