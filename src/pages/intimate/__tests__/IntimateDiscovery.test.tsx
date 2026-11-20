@@ -27,6 +27,10 @@ vi.mock('@/hooks/usePeopleDiscovery', () => ({
   usePeopleDiscovery: () => ({ data: [] }),
 }));
 
+vi.mock('@/hooks/useHankySignals', () => ({
+  useMyHankySignals: () => ({ data: {} }),
+  useHankyVariants: () => ({ data: [] }),
+}));
 vi.mock('@/hooks/useKinkTaxonomy', () => ({
   useKinkTaxonomy: () => ({ data: undefined, isLoading: false, isError: false }),
 }));

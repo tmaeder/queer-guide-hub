@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { hankyChecks } from '../hankyChecks';
+import { hankyChecks, hankyMatches } from '../hankyChecks';
 
 const base = {
   label: (c: string) => c,
@@ -28,5 +28,17 @@ describe('hankyChecks', () => {
       slug === 'watersports' && side === 'giving' ? 'no' : undefined;
     expect(hankyChecks({ ...base, rating, worn: {}, wanted: { yellow: 'right' } })).toHaveLength(1);
     expect(hankyChecks({ ...base, rating, worn: {}, wanted: { yellow: 'left' } })).toEqual([]);
+  });
+});
+
+describe('hankyMatches', () => {
+  it('matches a sought colour in a compatible pocket', () => {
+    expect([...hankyMatches({ v: 'left' }, { v: 'left' }, {})]).toEqual(['v']);
+    expect([...hankyMatches({ v: 'left' }, { v: 'right' }, {})]).toEqual([]);
+    expect([...hankyMatches({ v: 'both' }, { v: 'right' }, {})]).toEqual(['v']);
+  });
+  it('matches a colour you wear in the opposite pocket', () => {
+    expect([...hankyMatches({ v: 'right' }, {}, { v: 'left' })]).toEqual(['v']);
+    expect([...hankyMatches({ v: 'left' }, {}, { v: 'left' })]).toEqual([]);
   });
 });
