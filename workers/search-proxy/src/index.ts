@@ -1009,8 +1009,8 @@ async function handleSimilar(request: Request, env: Env, cors: HeadersInit): Pro
 
 	// Related neighbours via the unified search_documents knn (related_entities RPC):
 	// the seed lookup + liveness filtering happen server-side, and display fields
-	// are already on search_documents — so no separate seed fetch or fetchDisplayMap
-	// hop is needed. Mapped back to the legacy /similar shape
+	// are already on search_documents — so no separate seed fetch or display
+	// enrichment hop is needed. Mapped back to the legacy /similar shape
 	// ({ content_type, content_id, score, metadata }) so existing consumers
 	// (SimilarItems, SimilarCities) are unaffected.
 	const related = await relatedEntities(env, {
