@@ -23,6 +23,10 @@ import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/com
 import { X } from '@/components/icons';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { SizeChipGrid } from '@/components/marketplace/SizeChipGrid';
+import { ToggleChip } from '@/components/ui/ToggleChip';
+import { useAuth } from '@/hooks/useAuth';
+import { useBodyProfile } from '@/hooks/useBodyProfile';
+import { mySizeSlugs, mySizesToggle } from '@/lib/mySizes';
 import { ColorSwatchGrid } from '@/components/marketplace/ColorSwatchGrid';
 import type { MarketplaceFiltersInput } from '@/hooks/useMarketplace';
 import {
@@ -89,6 +93,8 @@ export function MarketplaceFilterSheet({
   resultCount,
 }: MarketplaceFilterSheetProps) {
   useMarketplaceTaxonomy();
+  const { user } = useAuth();
+  const { data: bodyProfile } = useBodyProfile(user?.id);
 
   const { data: facets } = useMarketplaceFacets({
     category: filters.category,
@@ -183,6 +189,11 @@ export function MarketplaceFilterSheet({
   const selectedSizes = attributeTags
     .filter((t) => t.startsWith('size-'))
     .map((t) => t.slice('size-'.length));
+  // Sizes saved under Settings > Body & about that this department stocks.
+  const available = new Set(sizeOptions.map((o) => o.slug));
+  const mySizes = mySizeSlugs(bodyProfile).filter((slug) => available.has(slug));
+  const { on: mySizesOn, next: mySizesNext } = mySizesToggle(attributeTags, mySizes);
+  const toggleMySizes = () => setTags(mySizesNext, vocabTags);
   const selectedColors = attributeTags
     .filter((t) => t.startsWith('color-'))
     .map((t) => t.slice('color-'.length));
@@ -273,7 +284,14 @@ export function MarketplaceFilterSheet({
               <div className="flex flex-col gap-4 pt-2">
                 {visibleKinds.includes('size') && sizeOptions.length > 0 && (
                   <div className="flex flex-col gap-2">
-                    <Label>{ATTRIBUTE_KIND_LABELS.size}</Label>
+                    <div className="flex items-center justify-between gap-2">
+                      <Label>{ATTRIBUTE_KIND_LABELS.size}</Label>
+                      {mySizes.length > 0 && (
+                        <ToggleChip pressed={mySizesOn} onPressedChange={toggleMySizes}>
+                          My sizes ({mySizes.map((s) => s.toUpperCase()).join(', ')})
+                        </ToggleChip>
+                      )}
+                    </div>
                     <SizeChipGrid
                       options={sizeOptions}
                       selected={selectedSizes}

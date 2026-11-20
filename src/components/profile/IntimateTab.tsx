@@ -225,8 +225,15 @@ export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           {sections.filter((x) => x.step === 'seeking' || x.step === 'text').map(field)}
-          <section aria-label="Hanky code" className="flex flex-col gap-2">
-            <h4 className="text-sm font-medium">Hanky code</h4>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Hanky code</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <section aria-label="Hanky code">
             <HankyCodePicker />
           </section>
         </CardContent>
