@@ -581,6 +581,44 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
   // while this hand-written copy sat dead. buildNoscriptHtml still returns null
   // for /help (crisis routes keep the default hotline <noscript>); this entry
   // feeds buildBodyHtml, the crawler's first-pass body.
+  // The next three pages render their data client-side; these intros plus the
+  // live link lists in hubLinks.ts are what a crawler or link-checker sees.
+  '/tags/interactions': {
+    h1: 'Drug combination chart',
+    paragraphs: [
+      'Which substances are dangerous to combine. Each pair carries a risk rating, credited to the harm-reduction or regulatory source that assessed it.',
+      'This is harm-reduction information, not medical advice. If someone is unwell after mixing substances, call your local emergency number.',
+    ],
+    links: [
+      { href: '/tags/sti-guide', label: 'STI guide' },
+      { href: '/help', label: 'Crisis lines by country' },
+      { href: '/tags', label: 'Glossary' },
+    ],
+  },
+  '/tags/sti-guide': {
+    h1: 'STI guide: transmission, testing and protection',
+    paragraphs: [
+      'How sexually transmitted infections spread, when a test can detect them, and which prevention method protects against which infection.',
+      'Testing is free or low-cost in many places. Ask a sexual-health clinic about the right test window for your situation.',
+    ],
+    links: [
+      { href: '/tags/interactions', label: 'Drug combination chart' },
+      { href: '/organizations', label: 'Support organizations' },
+      { href: '/tags', label: 'Glossary' },
+    ],
+  },
+  '/organizations': {
+    h1: 'LGBTQ+ organizations',
+    paragraphs: [
+      'Community groups, support services, event organizers and advocacy organizations working for LGBTQ+ people, with what each one does and where.',
+    ],
+    links: [
+      { href: '/help', label: 'Crisis lines by country' },
+      { href: '/events', label: 'Events' },
+      { href: '/tags/rights-by-country', label: 'Rights by country' },
+    ],
+  },
+
   '/help': {
     h1: 'LGBTQ+ help hotlines and crisis support',
     paragraphs: [
