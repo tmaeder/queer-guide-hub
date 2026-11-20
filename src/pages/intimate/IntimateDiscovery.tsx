@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useMyIntimateProfile, useIntimateDiscovery } from '@/hooks/useIntimateProfile';
+import { hasSeeking, seekingToFilters } from '@/lib/intimate/seeking';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { usePeopleDiscovery } from '@/hooks/usePeopleDiscovery';
 import {
   useIntimateMatches,
@@ -41,6 +43,21 @@ export default function IntimateDiscovery({
   const [into, setInto] = useState<string[]>([]);
   const [ages, setAges] = useState<string[]>([]);
   const [bodies, setBodies] = useState<string[]>([]);
+  const [genitalia, setGenitalia] = useState<string[]>([]);
+  // Start from "who you're looking for" (Settings › Identity & dating), once
+  // per loaded profile. Render-time seeding, not an effect.
+  const seeking = seekingToFilters(me?.dating_prefs?.seeking);
+  const [seededFor, setSeededFor] = useState<string | null>(null);
+  if (me && seededFor !== me.id) {
+    setSeededFor(me.id);
+    setRoles(seeking.roles);
+    setAges(seeking.ageBands);
+    setBodies(seeking.bodyTypes);
+    setGenitalia(seeking.genitalia);
+  }
+  const usingSeeking =
+    hasSeeking(seeking) &&
+    (genitalia.length > 0 || roles.length > 0 || ages.length > 0 || bodies.length > 0);
   const {
     data: kinkTaxonomy,
     isLoading: kinkTaxonomyLoading,
@@ -105,6 +122,7 @@ export default function IntimateDiscovery({
     kinkItemSlugs: selectedKinkItemSlugs,
     ageBands: ages,
     bodyTypes: bodies,
+    genitalia,
   });
 
   const { data: likedIds = [] } = useMyIntimateLikes();
@@ -233,6 +251,27 @@ export default function IntimateDiscovery({
           </div>
         </div>
       </header>
+
+      {usingSeeking && (
+        <p className="flex flex-wrap items-center gap-x-2 text-13 text-muted-foreground">
+          Filtered by who you're looking for.
+          <button
+            type="button"
+            className="font-bold text-foreground underline underline-offset-4"
+            onClick={() => {
+              setRoles([]);
+              setAges([]);
+              setBodies([]);
+              setGenitalia([]);
+            }}
+          >
+            Show everyone
+          </button>
+          <LocalizedLink to="/settings/identity" className="underline underline-offset-4">
+            Edit preferences
+          </LocalizedLink>
+        </p>
+      )}
 
       <IntimateDiscoveryFilters
         roles={roles}
