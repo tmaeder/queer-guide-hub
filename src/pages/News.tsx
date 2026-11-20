@@ -33,7 +33,11 @@ const ALL_ARTICLES = {};
 export default function News() {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { articles, refetch: refetchArticles } = useNewsArticles(ALL_ARTICLES);
+  const {
+    articles,
+    loading: articlesLoading,
+    refetch: refetchArticles,
+  } = useNewsArticles(ALL_ARTICLES);
   const sources = useNewsSources();
   const categories = useNewsCategories();
   // Live, self-ranking front: hotness = recency × quality × soft featured boost
@@ -190,29 +194,35 @@ export default function News() {
             <WeekInReview articles={articles as Article[]} />
 
             {/* An ink plate rather than a footnote: the archive is the
-                invitation to keep reading, so it gets the page's loudest band. */}
-            <div className="flex flex-col gap-6 rounded-panel bg-foreground p-8 text-background md:flex-row md:items-end md:justify-between md:p-12">
-              <div className="max-w-reading">
-                <p className="m-0 text-2xs uppercase tracking-label text-background/70">
-                  {t('pages.news.archiveEyebrow', 'Keep reading')}
-                </p>
-                <p className="m-0 mt-2 font-display text-display leading-none">
-                  {t('pages.news.archiveTitle', 'Every story we have ever told.')}
-                </p>
-                <p className="m-0 mt-4 text-body-lg text-background/80">
-                  {t(
-                    'pages.news.archiveBody',
-                    'Rights won, rights fought for, nights out and the people who made them. Search the full archive by topic, place or date.',
-                  )}
-                </p>
+                invitation to keep reading, so it gets the page's loudest band.
+                Held back until the feed above it has loaded: on a phone the
+                sections above are short while loading, so this band sat in
+                the first viewport and was then pushed down — Lighthouse
+                mobile measured that single shift at 0.48 CLS (2026-11-20). */}
+            {!articlesLoading && (
+              <div className="flex flex-col gap-6 rounded-panel bg-foreground p-8 text-background md:flex-row md:items-end md:justify-between md:p-12">
+                <div className="max-w-reading">
+                  <p className="m-0 text-2xs uppercase tracking-label text-background/70">
+                    {t('pages.news.archiveEyebrow', 'Keep reading')}
+                  </p>
+                  <p className="m-0 mt-2 font-display text-display leading-none">
+                    {t('pages.news.archiveTitle', 'Every story we have ever told.')}
+                  </p>
+                  <p className="m-0 mt-4 text-body-lg text-background/80">
+                    {t(
+                      'pages.news.archiveBody',
+                      'Rights won, rights fought for, nights out and the people who made them. Search the full archive by topic, place or date.',
+                    )}
+                  </p>
+                </div>
+                <Button asChild variant="accent" className="shrink-0 gap-2">
+                  <LocalizedLink to="/news/all" className="no-underline">
+                    {t('pages.news.openArchive', 'Open archive')}
+                    <ArrowRight size={16} />
+                  </LocalizedLink>
+                </Button>
               </div>
-              <Button asChild variant="accent" className="shrink-0 gap-2">
-                <LocalizedLink to="/news/all" className="no-underline">
-                  {t('pages.news.openArchive', 'Open archive')}
-                  <ArrowRight size={16} />
-                </LocalizedLink>
-              </Button>
-            </div>
+            )}
           </div>
 
           {user && (

@@ -142,10 +142,14 @@ export default function Organizations() {
 
   // One-row probes for the roles that can be empty.
   const { data: organizerProbe = [] } = useOrganizationsList({
-    role: 'organizer', countryCode, limit: 1,
+    role: 'organizer',
+    countryCode,
+    limit: 1,
   });
   const { data: communityProbe = [] } = useOrganizationsList({
-    role: 'community', countryCode, limit: 1,
+    role: 'community',
+    countryCode,
+    limit: 1,
   });
   const probeHit: Record<string, boolean> = {
     organizer: organizerProbe.length > 0,
@@ -157,16 +161,28 @@ export default function Organizations() {
   // Same query keys as OverviewSection, so React Query dedupes them.
   const overview = {
     support: useOrganizationsList({
-      role: 'support', countryCode, limit: OVERVIEW_SIZE, enabled: showOverview,
+      role: 'support',
+      countryCode,
+      limit: OVERVIEW_SIZE,
+      enabled: showOverview,
     }),
     advocacy: useOrganizationsList({
-      role: 'advocacy', countryCode, limit: OVERVIEW_SIZE, enabled: showOverview,
+      role: 'advocacy',
+      countryCode,
+      limit: OVERVIEW_SIZE,
+      enabled: showOverview,
     }),
     publisher: useOrganizationsList({
-      role: 'publisher', countryCode, limit: OVERVIEW_SIZE, enabled: showOverview,
+      role: 'publisher',
+      countryCode,
+      limit: OVERVIEW_SIZE,
+      enabled: showOverview,
     }),
     seller: useOrganizationsList({
-      role: 'seller', countryCode, limit: OVERVIEW_SIZE, enabled: showOverview,
+      role: 'seller',
+      countryCode,
+      limit: OVERVIEW_SIZE,
+      enabled: showOverview,
     }),
   };
   const support = overview.support.data ?? [];
@@ -175,7 +191,9 @@ export default function Organizations() {
     (r) => !r.isLoading && (r.data ?? []).length === 0,
   );
   const supportLead = support.find((org) => !org.dissolved_at && org.slug);
-  const advocacyLead = advocacy.find((org) => !org.dissolved_at && org.slug && org.id !== supportLead?.id);
+  const advocacyLead = advocacy.find(
+    (org) => !org.dissolved_at && org.slug && org.id !== supportLead?.id,
+  );
   const introductions = [
     { org: supportLead, label: 'Support' },
     { org: advocacyLead, label: 'Advocacy' },
@@ -218,27 +236,37 @@ export default function Organizations() {
     <PageContainer>
       <header className="mb-6 grid min-w-0 items-end gap-4 md:grid-cols-2 md:gap-8">
         <div>
-          <h1 className="font-display text-headline leading-tight md:text-display">Organizations</h1>
+          <h1 className="font-display text-headline leading-tight md:text-display">
+            Organizations
+          </h1>
           <p className="mt-2 max-w-reading text-pretty text-muted-foreground">
             Find queer organizations to turn to, learn from, or get involved with.
           </p>
         </div>
         {showOverview && (supportLead || advocacyLead) && (
-          <ul aria-label="Organizations to get to know" className="divide-y divide-border border-y border-border">
-            {introductions.map(({ org, label }) => org && (
-              <li key={org.id}>
-                <LocalizedLink
-                  to={`/organizations/${org.slug}`}
-                  className="group flex min-h-14 items-center justify-between gap-4 py-2 text-foreground no-underline"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm text-muted-foreground">{label}</p>
-                    <p className="break-words font-semibold group-hover:underline">{org.name}</p>
-                  </div>
-                  <ArrowRight size={16} className="shrink-0" aria-hidden="true" />
-                </LocalizedLink>
-              </li>
-            ))}
+          <ul
+            aria-label="Organizations to get to know"
+            className="divide-y divide-border border-y border-border"
+          >
+            {introductions.map(
+              ({ org, label }) =>
+                org && (
+                  <li key={org.id}>
+                    <LocalizedLink
+                      to={`/organizations/${org.slug}`}
+                      className="group flex min-h-14 items-center justify-between gap-4 py-2 text-foreground no-underline"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm text-muted-foreground">{label}</p>
+                        <p className="break-words font-semibold group-hover:underline">
+                          {org.name}
+                        </p>
+                      </div>
+                      <ArrowRight size={16} className="shrink-0" aria-hidden="true" />
+                    </LocalizedLink>
+                  </li>
+                ),
+            )}
           </ul>
         )}
       </header>
@@ -255,7 +283,7 @@ export default function Organizations() {
               updateParams({ q: e.target.value.trim() });
             }}
             placeholder="Search organizations by name"
-            className="h-full min-w-0 flex-1 bg-transparent text-15 outline-none"
+            className="h-full min-w-0 flex-1 bg-transparent text-base outline-none md:text-15"
           />
         </label>
         <label className="flex h-12 items-center gap-2 bg-card px-4 shadow-soft rounded-container sm:w-64">
@@ -264,7 +292,7 @@ export default function Organizations() {
           <select
             value={country}
             onChange={(e) => updateParams({ country: e.target.value })}
-            className="h-full min-w-0 flex-1 bg-transparent text-15 outline-none"
+            className="h-full min-w-0 flex-1 bg-transparent text-base outline-none md:text-15"
           >
             <option value="">All countries</option>
             {country && !countries.some((c) => c.code.toUpperCase() === country) && (

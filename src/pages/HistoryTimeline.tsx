@@ -240,7 +240,7 @@ export default function HistoryTimeline() {
                 onChange={(e) => setParam('country', e.target.value || null)}
                 aria-label={t('milestones.filter.country', 'Country')}
                 className={cn(
-                  'h-8 bg-muted rounded-element px-2 text-13 font-bold',
+                  'h-8 bg-muted rounded-element px-2 text-base font-bold md:text-13',
                   '[&>option]:bg-background [&>option]:text-foreground',
                   country ? 'bg-foreground text-background' : 'bg-background text-foreground',
                 )}
