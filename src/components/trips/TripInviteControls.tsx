@@ -101,7 +101,7 @@ export function TripInviteControls({ tripId, enabled }: { tripId: string; enable
           </Label>
           <select
             id="trip-invite-role"
-            className="h-10 w-full rounded-element border border-input bg-background px-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-10 w-full rounded-element border border-input bg-background px-4 text-base focus-visible:outline-none md:text-sm focus-visible:ring-2 focus-visible:ring-ring"
             value={role}
             disabled={update.isPending}
             onChange={(e) => setRole(e.target.value as 'viewer' | 'editor')}
