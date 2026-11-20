@@ -5742,5 +5742,47 @@
         "interactions": "مخاطر الجمع بين المواد المخدرة (Queer Guide)"
       }
     }
+  },
+  "goingOut": {
+    "events": {
+      "filterLabel": "نوع الفعالية",
+      "all": "كل الفعاليات",
+      "types": {
+        "party": "حفلات",
+        "drag": "دراغ وعروض",
+        "pride": "برايد ومهرجانات",
+        "film": "أفلام وفن",
+        "social": "لقاءات وتجمعات",
+        "talks": "محاضرات وورش عمل"
+      }
+    },
+    "places": {
+      "filterLabel": "نوع المكان",
+      "all": "كل الأماكن",
+      "types": {
+        "bars": "بارات",
+        "clubs": "نوادٍ",
+        "cafes": "مقاهٍ",
+        "food": "مطاعم",
+        "saunas": "ساونا",
+        "culture": "مسارح ومعارض",
+        "community": "مراكز مجتمعية",
+        "shops": "متاجر",
+        "wellness": "صالات رياضية وصالونات",
+        "outdoor": "في الهواء الطلق",
+        "organizations": "منظمات",
+        "neighbourhoods": "أحياء"
+      },
+      "viewLabel": "العرض",
+      "view": {
+        "grid": "شبكة",
+        "list": "قائمة",
+        "map": "خريطة"
+      },
+      "loading": "جارٍ البحث عن أماكن…",
+      "noOrgs": "لا توجد منظمات مدرجة في {{where}} بعد.",
+      "noNeighbourhoods": "لا توجد أحياء مدرجة في {{where}} بعد.",
+      "noneForFilter": "لا يوجد شيء مدرج في {{where}} ضمن هذا الفلتر بعد."
+    }
   }
 }

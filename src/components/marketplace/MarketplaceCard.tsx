@@ -283,7 +283,7 @@ function MarketplaceCardImpl({
     <CardHoverEffect>
       {/* No `hover:border-foreground/40` and no `hoverable`: a border tint is a
           second hover language competing with the lift. The card lifts. */}
-      <Card className="group overflow-hidden" onMouseEnter={() => setHovered(true)}>
+      <Card className="group h-full overflow-hidden" onMouseEnter={() => setHovered(true)}>
         {imageBlock}
 
         <div className="flex flex-col gap-2 px-4 pb-4 group-has-[[data-fallback=station]]/card:pt-4">

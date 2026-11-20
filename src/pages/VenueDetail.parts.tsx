@@ -763,7 +763,6 @@ export function VenueRunBy({ venue, t }: { venue: VenueWithRelations; t: TFuncti
         .filter(Boolean)
         .join(' · ')}
       href={`/organizations/${venue.organizations.slug}`}
-      actionLabel={t('venues.detail.openBusiness', 'Open business')}
     />
   );
 }

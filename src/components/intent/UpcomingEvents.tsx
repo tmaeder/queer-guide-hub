@@ -5,6 +5,19 @@ import type { EventWindow, EventsWithFallback } from '@/hooks/useIntentData';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { isValidTimezone } from '@/utils/timezone';
+import { formatEventPrice } from '@/lib/eventPrice';
+import { stripHtmlTags } from '@/utils/htmlDecode';
+import type { IntentEvent } from '@/hooks/useIntentData';
+
+/** One-line blurb: the description's first line, else up to three tags. */
+function eventBlurb(event: IntentEvent): string | null {
+  const text = event.description
+    ? stripHtmlTags(event.description).replace(/\s+/g, ' ').trim()
+    : '';
+  if (text) return text;
+  const tags = (event.tags ?? []).filter(Boolean).slice(0, 3);
+  return tags.length ? tags.join(' · ') : null;
+}
 
 /**
  * The "What's on" body, shared by /going-out and /people.
@@ -42,7 +55,7 @@ export function UpcomingEvents({
   variant?: 'default' | 'going-out';
   borderless?: boolean;
 }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const events = eventsResult?.events ?? [];
   const departuresBoard = variant === 'going-out';
 
@@ -59,8 +72,8 @@ export function UpcomingEvents({
         Our events coverage is thin: listings come from organisers and submissions, so an empty week
         here means we have no record, not that nothing is happening.
       </CoverageNote>
-      {/* The date badge carries weekday, day and time; the row adds title and
-          city only, so the date is never stated twice. */}
+      {/* The date badge carries weekday, day and time; the row adds title,
+          venue/type/price and a one-line blurb, so the date is never stated twice. */}
       {departuresBoard && events.length > 0 ? (
         <ul className="going-out-departures m-0 list-none p-0">
           {events.map((event) => {
@@ -75,7 +88,10 @@ export function UpcomingEvents({
                   timeZone={timeZone}
                   className="going-out-departure-date"
                 />
-                <span className="going-out-departure-title">{event.title}</span>
+                <span className="going-out-departure-main">
+                  <span className="going-out-departure-title">{event.title}</span>
+                  <EventMeta event={event} typeLabel={(v) => t(`eventTypes.${v}`, v)} />
+                </span>
                 <span className="going-out-departure-city">
                   {event.city ?? 'Destination to be confirmed'}
                 </span>
@@ -135,6 +151,32 @@ export function UpcomingEvents({
         </ul>
       ) : null}
     </div>
+  );
+}
+
+function EventMeta({
+  event,
+  typeLabel,
+}: {
+  event: IntentEvent;
+  typeLabel: (value: string) => string;
+}) {
+  // `other` carries no information, and a missing price is omitted rather
+  // than printed as "TBA".
+  const facts = [
+    event.venue_name,
+    event.event_type && event.event_type !== 'other' ? typeLabel(event.event_type) : null,
+    formatEventPrice(event),
+  ].filter(Boolean);
+  const blurb = eventBlurb(event);
+  if (facts.length === 0 && !blurb) return null;
+  return (
+    <>
+      {facts.length > 0 ? (
+        <span className="going-out-departure-meta">{facts.join(' · ')}</span>
+      ) : null}
+      {blurb ? <span className="going-out-departure-blurb">{blurb}</span> : null}
+    </>
   );
 }
 

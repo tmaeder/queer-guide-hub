@@ -392,7 +392,13 @@ export function fetchLayersForLines(lines: readonly MapLine[]): LayerType[] {
  * URL instead and this is only needed by surfaces still expressed in layers.
  */
 export function linesForLayers(layers: readonly LayerType[]): MapLine[] {
-  return MAP_LINE_IDS.filter((line) => MAP_LINES[line].fetchLayers.some((l) => layers.includes(l)));
+  return MAP_LINE_IDS.filter(
+    (line) =>
+      MAP_LINES[line].fetchLayers.some((l) => layers.includes(l)) ||
+      // Toggle-only layers (cruising, organizations) fetch on their own but
+      // draw on another line; without this, Cruising alone drew nothing.
+      layers.some((l) => LAYER_LINE[l] === line),
+  );
 }
 
 /**
