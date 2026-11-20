@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { ClipboardList, Eye, Link2, Wand2 } from '@/components/icons';
+import { ClipboardList, Wand2 } from '@/components/icons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { KinkGridEditor } from '@/components/kinks/KinkGridEditor';
 import { KinkWizard } from '@/components/kinks/KinkWizard';
-import { KinkVisibilityStep } from '@/components/kinks/KinkVisibilityStep';
-import { KinkShareManager } from '@/components/kinks/KinkShareManager';
 
-/** The checklist itself: guided, full list, visibility, share. Callers own the opt-in gate. */
+/** The checklist itself: guided or full list. Who sees it lives under Privacy & visibility. */
 export default function KinkChecklistPanel() {
   const [tab, setTab] = useState('guided');
   return (
@@ -20,26 +18,12 @@ export default function KinkChecklistPanel() {
           <ClipboardList className="h-4 w-4" />
           Full list
         </TabsTrigger>
-        <TabsTrigger value="visibility" className="gap-1.5">
-          <Eye className="h-4 w-4" />
-          Visibility
-        </TabsTrigger>
-        <TabsTrigger value="share" className="gap-1.5">
-          <Link2 className="h-4 w-4" />
-          Share
-        </TabsTrigger>
       </TabsList>
       <TabsContent value="guided">
-        <KinkWizard onFinished={() => setTab('share')} />
+        <KinkWizard onFinished={() => setTab('grid')} />
       </TabsContent>
       <TabsContent value="grid">
         <KinkGridEditor />
-      </TabsContent>
-      <TabsContent value="visibility">
-        <KinkVisibilityStep />
-      </TabsContent>
-      <TabsContent value="share">
-        <KinkShareManager />
       </TabsContent>
     </Tabs>
   );

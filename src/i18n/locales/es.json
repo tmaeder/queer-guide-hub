@@ -2278,7 +2278,8 @@
       "you": "Perfil",
       "community": "Comunidad",
       "viewProfile": "Ver perfil público",
-      "yourAccount": "Tu cuenta"
+      "yourAccount": "Tu cuenta",
+      "hub": "Tu hub"
     },
     "modes": {
       "dating": "Buscando el amor",
@@ -3027,7 +3028,7 @@
       },
       "identity": {
         "title": "Identidad y citas",
-        "description": "Los datos de identidad se guardan automáticamente. Las citas tienen sus propios controles."
+        "description": "Quién eres, citas y el perfil íntimo opcional (18+)."
       },
       "privacy": {
         "title": "Privacidad y visibilidad",
@@ -3052,7 +3053,20 @@
       "avatar": {
         "title": "Tu avatar",
         "description": "Elige cómo se ve tu perfil."
+      },
+      "body": {
+        "title": "Cuerpo y más",
+        "description": "Complexión, altura, peso y tallas de ropa. Privado salvo que lo compartas."
+      },
+      "display": {
+        "title": "Idioma y pantalla",
+        "description": "Idioma, moneda, tema y accesibilidad."
       }
+    },
+    "groups": {
+      "you": "Tú",
+      "preferences": "Preferencias",
+      "account": "Cuenta"
     }
   },
   "map": {
@@ -3743,7 +3757,10 @@
       "scope": "Correo recibido y enviado",
       "sent": "Enviado",
       "loadError": "No se pudieron cargar los mensajes. Inténtalo de nuevo."
-    }
+    },
+    "newCount": "{{count}} nuevas",
+    "groupNew": "Nuevo",
+    "groupEarlier": "Anteriores"
   },
   "extension": {
     "signInGate": {

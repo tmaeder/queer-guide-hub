@@ -45,7 +45,7 @@ export function SelectField({
     <div className="flex flex-col gap-1">
       <Label htmlFor={id}>{label}</Label>
       <Select value={value} onValueChange={onChange} disabled={disabled}>
-        <SelectTrigger id={id}>
+        <SelectTrigger id={id} className="justify-start [&>svg:last-child]:ms-auto">
           {/* Direct children: the trigger line-clamps every `> span`, which turns a
               wrapper into a block and stacks the icon above the text. */}
           {showFieldIcon && (
@@ -53,10 +53,7 @@ export function SelectField({
               {fieldIcon}
             </span>
           )}
-          <SelectValue
-            className="me-auto"
-            placeholder={placeholder || `Select ${label.toLowerCase()}`}
-          />
+          <SelectValue placeholder={placeholder || 'Not set'} />
         </SelectTrigger>
         <SelectContent>
           {options.map((opt) => (

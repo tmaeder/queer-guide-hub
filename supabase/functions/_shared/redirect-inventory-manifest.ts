@@ -3852,6 +3852,16 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
+    "id": "client:locale:%2Fsettings%2Fintimate:%2Fsettings%2Fidentity:LocalizedRedirect:0",
+    "source": "/settings/intimate",
+    "target": "/settings/identity",
+    "origin": "Client router",
+    "kind": "Client",
+    "statusCode": null,
+    "state": "Enabled",
+    "updatedAt": null
+  },
+  {
     "id": "client:locale:%2Fprofile%2Fsettings:Profile%20settings%20(depends%20on%20signed-in%20user%20and%20section):SettingsRedirect:0",
     "source": "/profile/settings",
     "target": "Profile settings (depends on signed-in user and section)",

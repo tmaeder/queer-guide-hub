@@ -4,7 +4,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, ChevronDown } from '@/components/icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,6 +21,12 @@ import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
 import { DangerZone } from '@/components/profile/settings/DangerZone';
 import { ModerationSettings } from '@/components/profile/settings/ModerationSettings';
 import { BlueskyConnect } from '@/components/profile/settings/BlueskyConnect';
+import { KinkVisibilitySettings } from '@/components/kinks/KinkVisibilitySettings';
+import { PhotoGallery } from '@/components/profile/PhotoGallery';
+import { DisplaySettings } from '@/components/profile/settings/DisplaySettings';
+import { BlockedUsersSettings } from '@/components/profile/settings/BlockedUsersSettings';
+import { ContentConsentSettings } from '@/components/profile/settings/ContentConsentSettings';
+import { BodyProfileEditor } from '@/components/profile/BodyProfileEditor';
 import { IntimateTab } from '@/components/profile/IntimateTab';
 import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
 import { StatusEditor } from '@/components/status/StatusEditor';
@@ -53,23 +59,23 @@ const TITLES: Record<ProfileEditorSection, string> = {
   profile: 'Profile',
   identity: 'Identity & dating',
   body: 'Body & about',
-  intimate: 'Intimate profile',
   privacy: 'Privacy & visibility',
   security: 'Sign-in & security',
   notifications: 'Notifications',
   travel: 'Travel',
+  display: 'Language & display',
   data: 'Your data',
   avatar: 'Your avatar',
 };
 const SUBTITLES: Record<ProfileEditorSection, string> = {
   profile: 'Your vibe, name, pronouns, bio and links. Details save automatically.',
-  identity: 'Identity details save automatically.',
+  identity: 'Who you are, and the optional 18+ intimate profile.',
   body: 'Your build, age band, height and a few lines about you. Part of the 18+ intimate profile.',
-  intimate: 'Optional and 18+. Visible only to other members who have also opted in.',
   privacy: 'Who sees each part of your profile. Changes save automatically.',
   security: 'Your handle, passkey and password.',
   notifications: 'What we send to your device and inbox.',
   travel: 'Preferences that rank places and trips for you, and your booking inbox.',
+  display: 'Language, currency, theme and accessibility.',
   data: 'Download everything we hold about you, or delete your account.',
   avatar: 'Choose how your profile appears.',
 };
@@ -361,7 +367,30 @@ function ProfileSettingsContent({
   const editor =
     section === 'profile' ? (
       <>
-        <StatusEditor />
+        <Card>
+          <CardHeader>
+            <CardTitle id="settings-avatar">Avatar & profile picture</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <section aria-labelledby="settings-avatar">
+              <AvatarChooser
+                email={user.email || ''}
+                currentUrl={px?.avatar_url}
+                currentConfig={px?.avatar_config as AvatarConfig | null}
+                onSave={handleAvatarSave}
+              />
+            </section>
+          </CardContent>
+        </Card>
+        <PhotoGallery userId={user.id} isOwnProfile />
+        <Card>
+          <CardHeader>
+            <CardTitle>Vibe & looking for</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StatusEditor />
+          </CardContent>
+        </Card>
         <BasicInfoTab
           formData={formData}
           profile={profile}
@@ -379,11 +408,23 @@ function ProfileSettingsContent({
           onComingOutChange={handleComingOutChange}
           onFlagsChange={handleIdentityFlagsChange}
         />
+        <section
+          aria-labelledby="settings-intimate"
+          className="flex flex-col gap-4 border-t border-border pt-6"
+        >
+          <div className="flex flex-col gap-1">
+            <h2 id="settings-intimate" className="text-title font-bold">
+              Intimate profile
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Optional and 18+. Shown only to members who also opted in.
+            </p>
+          </div>
+          <IntimateTab />
+        </section>
       </>
     ) : section === 'body' ? (
-      <IntimateTab part="body" />
-    ) : section === 'intimate' ? (
-      <IntimateTab />
+      <BodyProfileEditor />
     ) : section === 'privacy' ? (
       <>
         <PrivacyTab
@@ -393,9 +434,14 @@ function ProfileSettingsContent({
           focusField={focusField}
           showSecurity={false}
         />
+        <KinkVisibilitySettings />
+        <ContentConsentSettings />
+        <BlockedUsersSettings />
         <ModerationSettings />
         <BlueskyConnect />
       </>
+    ) : section === 'display' ? (
+      <DisplaySettings />
     ) : section === 'avatar' ? (
       <AvatarChooser
         email={user.email || ''}

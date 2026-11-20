@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 
 const STORAGE_KEY = 'qg_age_affirmation';
 const LEGACY_MARKETPLACE_KEY = 'qg.marketplace.ageAck';
@@ -65,15 +66,14 @@ async function persistAccountAffirmation(
   // The profile is the durable, auditable source of truth. Selecting the
   // updated row is deliberate: an RLS-blocked UPDATE can otherwise look like a
   // successful request that changed zero rows.
-  const profileResult = await supabase
-    .from('profiles')
-    .update({ age_confirmed_at: affirmedAt })
-    .eq('user_id', user.id)
-    .select('age_confirmed_at')
-    .maybeSingle();
+  // `authenticated` has no column grant on age_confirmed_at, so the write goes
+  // through a definer RPC scoped to the caller's own row.
+  const profileResult = await untypedRpc<string | null>('set_my_age_confirmation', {
+    p_confirmed: true,
+  });
 
   if (profileResult.error) return profileResult.error;
-  if (!profileResult.data?.age_confirmed_at) {
+  if (!profileResult.data) {
     return new Error('Profile confirmation was not saved');
   }
 
@@ -129,6 +129,14 @@ export function useAgeAffirmation() {
     setStatus('unaffirmed');
     setAccountSyncError(null);
     window.dispatchEvent(new Event(SYNC_EVENT));
+    // "Off revokes it everywhere": clear both account copies too, or the next
+    // load restores the affirmation from them.
+    void (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) return;
+      await untypedRpc('set_my_age_confirmation', { p_confirmed: false });
+      await supabase.auth.updateUser({ data: { age_confirmed_at: null } });
+    })().catch(setAccountSyncError);
   }, []);
 
   // Keep state in sync with storage events from other tabs + same-tab siblings.
@@ -170,11 +178,9 @@ export function useAgeAffirmation() {
 
       if (!cached) setStatus('checking');
 
-      const profileResult = await supabase
-        .from('profiles')
-        .select('age_confirmed_at')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      // Own row through the definer self-read: a direct select of this column is
+      // denied by the profiles column allowlist.
+      const profileResult = await supabase.rpc('get_my_profile').maybeSingle();
 
       if (disposed || currentResolution !== resolutionId.current) return;
 

@@ -2278,7 +2278,8 @@
       "you": "내 정보",
       "community": "커뮤니티",
       "viewProfile": "공개 프로필 보기",
-      "yourAccount": "내 계정"
+      "yourAccount": "내 계정",
+      "hub": "내 허브"
     },
     "modes": {
       "dating": "사랑을 찾아서",
@@ -3025,7 +3026,7 @@
       },
       "identity": {
         "title": "정체성과 데이팅",
-        "description": "정체성 정보는 자동 저장됩니다. 데이팅은 별도로 설정합니다."
+        "description": "나에 대해, 데이팅, 선택 사항인 18세 이상 친밀 프로필."
       },
       "privacy": {
         "title": "개인정보와 공개 범위",
@@ -3050,7 +3051,20 @@
       "avatar": {
         "title": "내 아바타",
         "description": "프로필 모습을 고르세요."
+      },
+      "body": {
+        "title": "몸과 사이즈",
+        "description": "체형, 키, 몸무게, 옷 사이즈. 공유하지 않으면 비공개입니다."
+      },
+      "display": {
+        "title": "언어 및 표시",
+        "description": "언어, 통화, 테마, 접근성."
       }
+    },
+    "groups": {
+      "you": "나",
+      "preferences": "환경설정",
+      "account": "계정"
     }
   },
   "map": {
@@ -3741,7 +3755,10 @@
       "scope": "받은 메일 및 보낸 메일",
       "sent": "보냄",
       "loadError": "메시지를 불러오지 못했습니다. 다시 시도하세요."
-    }
+    },
+    "newCount": "새 알림 {{count}}",
+    "groupNew": "새 알림",
+    "groupEarlier": "이전"
   },
   "extension": {
     "signInGate": {

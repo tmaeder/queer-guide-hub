@@ -294,6 +294,7 @@
     "/settings/:section",
     "/settings/body",
     "/settings/data",
+    "/settings/display",
     "/settings/identity",
     "/settings/intimate",
     "/settings/notifications",
@@ -701,6 +702,11 @@
     },
     "/me/tiers": {
       "to": "/hub/progress",
+      "localized": true,
+      "preserveQuery": true
+    },
+    "/settings/intimate": {
+      "to": "/settings/identity",
       "localized": true,
       "preserveQuery": true
     },

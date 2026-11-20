@@ -229,7 +229,10 @@
       "scope": "Received and sent mail",
       "sent": "Sent",
       "loadError": "Messages could not load. Try again."
-    }
+    },
+    "newCount": "{{count}} new",
+    "groupNew": "New",
+    "groupEarlier": "Earlier"
   },
   "eventTypes": {
     "party": "Party",
@@ -2478,7 +2481,8 @@
       "accessibility": "Accessibility",
       "extension": "Browser Extension",
       "viewProfile": "View public profile",
-      "yourAccount": "Your account"
+      "yourAccount": "Your account",
+      "hub": "Your hub"
     },
     "notifications": {
       "label": "Notifications",
@@ -3221,7 +3225,7 @@
       },
       "identity": {
         "title": "Identity & dating",
-        "description": "Identity details save automatically. Dating has its own controls."
+        "description": "Who you are, dating, and the optional 18+ intimate profile."
       },
       "privacy": {
         "title": "Privacy & visibility",
@@ -3246,7 +3250,20 @@
       "avatar": {
         "title": "Your avatar",
         "description": "Choose how your profile appears."
+      },
+      "body": {
+        "title": "Body & about",
+        "description": "Build, height, weight and clothing sizes. Private unless you share it."
+      },
+      "display": {
+        "title": "Language & display",
+        "description": "Language, currency, theme and accessibility."
       }
+    },
+    "groups": {
+      "you": "You",
+      "preferences": "Preferences",
+      "account": "Account"
     }
   },
   "map": {

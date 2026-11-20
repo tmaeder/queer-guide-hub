@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { LogOut, Shield, UserRound, Users } from '@/components/icons';
+import { LayoutGrid, LogOut, Shield, UserRound, Users } from '@/components/icons';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,7 +11,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -188,49 +187,42 @@ export function Header() {
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" style={{ width: 280, zIndex: 50 }}>
-            {/* Identity — leads the menu, links to the personal /hub office */}
-            <DropdownMenuLabel className="p-0 font-normal">
+          <DropdownMenuContent align="end" className="w-72 bg-card p-1.5" style={{ zIndex: 50 }}>
+            {/* Identity leads and opens your public profile. */}
+            <DropdownMenuItem asChild className="p-0">
               <LocalizedLink
-                to="/hub"
-                className="flex items-center gap-2 rounded-element p-2 no-underline"
+                to={`/user/${user.id}`}
+                className="flex items-center gap-2.5 rounded-element p-2 no-underline"
               >
                 <IdentityRow
                   avatarSrc={avatarSrc}
                   avatarInitial={avatarInitial}
                   username={username}
+                  displayName={displayName}
+                  subtitle={t('header.userMenu.viewProfile', 'View public profile')}
                   email={user.email ?? null}
                   fallbackLabel={t('header.userMenu.you', 'You')}
-                  avatarPx={36}
+                  avatarPx={40}
                 />
               </LocalizedLink>
-            </DropdownMenuLabel>
+            </DropdownMenuItem>
 
             <DropdownMenuSeparator />
 
             <DropdownMenuItem asChild>
-              <LocalizedLink to={`/user/${user.id}`} className="flex gap-2 no-underline">
-                <UserRound size={16} />
-                <span>{t('header.userMenu.viewProfile', 'View public profile')}</span>
+              <LocalizedLink to="/hub" className="flex gap-2 no-underline">
+                <LayoutGrid size={16} />
+                <span>{t('header.userMenu.hub', 'Your hub')}</span>
               </LocalizedLink>
             </DropdownMenuItem>
 
-            {/* No theme switch in THIS menu — it lives in the footer and the
-                mobile nav sheet instead, which is where the other display
-                controls (language, currency) are.
-
-                This comment used to claim dark mode had been "dropped with the
-                subway-map rebrand". That was false and stale: `src/index.css`
-                carries a full `.dark` token block, `ThemeProvider` applies the
-                class, `ThemeToggle` ships in Footer and MobileNavSheet, and it
-                offers Light/Dark/System. Dark mode is supported — a token needs
-                a value in both blocks. */}
+            {/* Theme, language and currency live in Settings > Language & display. */}
 
             <DropdownMenuItem asChild>
               <LocalizedLink to="/hub/friends" className="flex gap-2 no-underline">
                 <Users size={16} />
                 <span>{t('header.userMenu.friends', 'Friends')}</span>
-                <FriendsOnlineCount count={friendsOnline} />
+                {(friendsOnline ?? 0) > 0 && <FriendsOnlineCount count={friendsOnline} />}
               </LocalizedLink>
             </DropdownMenuItem>
 

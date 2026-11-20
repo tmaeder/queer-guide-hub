@@ -2278,7 +2278,8 @@
       "you": "Profil",
       "community": "Community",
       "viewProfile": "Öffentliches Profil ansehen",
-      "yourAccount": "Dein Konto"
+      "yourAccount": "Dein Konto",
+      "hub": "Dein Hub"
     },
     "modes": {
       "dating": "Auf der Suche nach Liebe",
@@ -3027,7 +3028,7 @@
       },
       "identity": {
         "title": "Identität & Dating",
-        "description": "Identitätsangaben werden automatisch gespeichert. Dating hat eigene Einstellungen."
+        "description": "Wer du bist, Dating und das optionale Intimprofil ab 18."
       },
       "privacy": {
         "title": "Privatsphäre & Sichtbarkeit",
@@ -3052,7 +3053,20 @@
       "avatar": {
         "title": "Dein Avatar",
         "description": "Wähle, wie dein Profil aussieht."
+      },
+      "body": {
+        "title": "Körper & mehr",
+        "description": "Statur, Größe, Gewicht und Kleidergrößen. Privat, außer du teilst sie."
+      },
+      "display": {
+        "title": "Sprache & Anzeige",
+        "description": "Sprache, Währung, Design und Barrierefreiheit."
       }
+    },
+    "groups": {
+      "you": "Du",
+      "preferences": "Präferenzen",
+      "account": "Konto"
     }
   },
   "map": {
@@ -3743,7 +3757,10 @@
       "scope": "Empfangene und gesendete E-Mails",
       "sent": "Gesendet",
       "loadError": "Nachrichten konnten nicht geladen werden. Bitte versuche es erneut."
-    }
+    },
+    "newCount": "{{count}} neu",
+    "groupNew": "Neu",
+    "groupEarlier": "Früher"
   },
   "extension": {
     "signInGate": {

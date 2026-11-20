@@ -50,6 +50,7 @@ import {
 import {
   fetchProfileTravelPreferences,
   fetchTravelPrefsHomeCity,
+  guessHomeCityFromProfile,
   saveProfileTravelPreferences,
 } from '@/hooks/useTravelPreferencesEditor';
 import { useToast } from '@/hooks/use-toast';
@@ -71,7 +72,7 @@ interface TravelPreferences {
   safety_threshold: number;
   preferred_accommodation: string[];
   interests: string[];
-  travel_style: string;
+  travel_style: string[];
   accessibility_needs: string[];
 }
 
@@ -80,7 +81,7 @@ const DEFAULT_PREFS: TravelPreferences = {
   safety_threshold: 50,
   preferred_accommodation: ['hotel'],
   interests: [],
-  travel_style: 'solo',
+  travel_style: ['solo'],
   accessibility_needs: [],
 };
 
@@ -195,7 +196,13 @@ export function TravelPreferencesEditor() {
     (async () => {
       const stored = await fetchProfileTravelPreferences(user.id);
       if (stored) {
-        setPrefs({ ...DEFAULT_PREFS, ...stored });
+        // travel_style was a single value before it became multi-select.
+        const style = stored.travel_style as string | string[] | null | undefined;
+        setPrefs({
+          ...DEFAULT_PREFS,
+          ...stored,
+          travel_style: Array.isArray(style) ? style : style ? [style] : [],
+        });
       }
       setLoaded(true);
     })();
@@ -214,6 +221,18 @@ export function TravelPreferencesEditor() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [travelPrefs]);
+
+  // No home city saved yet: prefill from the profile address. Not saved until Save.
+  useEffect(() => {
+    if (!user || homeCity || travelPrefs === undefined || travelPrefs?.home_city_id) return;
+    let live = true;
+    guessHomeCityFromProfile(user.id).then((city) => {
+      if (live && city) setHomeCity((cur) => cur ?? city);
+    });
+    return () => {
+      live = false;
+    };
+  }, [user, travelPrefs, homeCity]);
 
   const toggleTransport = (mode: TransportMode) => {
     setPreferredTransport((prev) =>
@@ -244,7 +263,7 @@ export function TravelPreferencesEditor() {
   };
 
   const toggleArrayItem = (
-    key: 'interests' | 'preferred_accommodation' | 'accessibility_needs',
+    key: 'interests' | 'preferred_accommodation' | 'accessibility_needs' | 'travel_style',
     value: string,
   ) => {
     setPrefs((prev) => ({
@@ -368,17 +387,11 @@ export function TravelPreferencesEditor() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Select
-            value={prefs.travel_style}
-            onValueChange={(v) => setPrefs((p) => ({ ...p, travel_style: v }))}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItems options={STYLE_OPTIONS} />
-            </SelectContent>
-          </Select>
+          <Chips
+            options={STYLE_OPTIONS}
+            selected={prefs.travel_style}
+            onToggle={(v) => toggleArrayItem('travel_style', v)}
+          />
         </CardContent>
       </Card>
 

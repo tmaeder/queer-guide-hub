@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 // The /user + /settings information architecture against a real deployment.
-// Read-only: the one write (Bio) is restored before the test ends.
+// Read-only: the one write (About me) is restored before the test ends.
 
 const hasAuth = !!(process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD);
 /** A public member who is not the signed-in test account. */
@@ -39,7 +39,7 @@ test.describe('user section — edge', () => {
   });
 
   test('settings sections are known app routes', async ({ request }) => {
-    for (const path of ['/settings', '/settings/privacy', '/settings/notifications']) {
+    for (const path of ['/settings', '/settings/privacy', '/settings/notifications', '/settings/body']) {
       const res = await request.get(path, { maxRedirects: 0 });
       expect(res.status(), path).toBe(200);
     }
@@ -107,7 +107,7 @@ test.describe('user section — signed in', () => {
   test('switching settings sections saves a pending edit first', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/settings/profile');
-    const bio = page.getByRole('textbox', { name: 'Bio' });
+    const bio = page.getByRole('textbox', { name: 'About me' });
     await expect(bio).toBeVisible({ timeout: 20_000 });
     const original = await bio.inputValue();
     const marker = `${original} e2e-${Date.now()}`.trim();
@@ -120,11 +120,11 @@ test.describe('user section — signed in', () => {
         .click();
       await expect(page).toHaveURL(/\/settings\/privacy$/);
       await page.goto('/settings/profile');
-      await expect(page.getByRole('textbox', { name: 'Bio' })).toHaveValue(marker, {
+      await expect(page.getByRole('textbox', { name: 'About me' })).toHaveValue(marker, {
         timeout: 20_000,
       });
     } finally {
-      const field = page.getByRole('textbox', { name: 'Bio' });
+      const field = page.getByRole('textbox', { name: 'About me' });
       await field.fill(original);
       await page
         .getByRole('navigation', { name: 'Settings sections' })

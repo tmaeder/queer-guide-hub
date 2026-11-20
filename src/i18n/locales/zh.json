@@ -2278,7 +2278,8 @@
       "you": "我的",
       "community": "社区",
       "viewProfile": "查看公开资料",
-      "yourAccount": "你的账户"
+      "yourAccount": "你的账户",
+      "hub": "你的中心"
     },
     "modes": {
       "dating": "寻找爱情",
@@ -3025,7 +3026,7 @@
       },
       "identity": {
         "title": "身份与约会",
-        "description": "身份信息自动保存。约会有单独的设置。"
+        "description": "你是谁、约会，以及可选的18+亲密资料。"
       },
       "privacy": {
         "title": "隐私与可见性",
@@ -3050,7 +3051,20 @@
       "avatar": {
         "title": "你的头像",
         "description": "选择你的个人资料外观。"
+      },
+      "body": {
+        "title": "身体与尺码",
+        "description": "体型、身高、体重和服装尺码。除非你分享，否则保持私密。"
+      },
+      "display": {
+        "title": "语言与显示",
+        "description": "语言、货币、主题和无障碍。"
       }
+    },
+    "groups": {
+      "you": "你",
+      "preferences": "偏好",
+      "account": "账户"
     }
   },
   "map": {
@@ -3741,7 +3755,10 @@
       "scope": "收件和已发送邮件",
       "sent": "已发送",
       "loadError": "无法加载邮件。请重试。"
-    }
+    },
+    "newCount": "{{count}} 条新",
+    "groupNew": "新",
+    "groupEarlier": "更早"
   },
   "extension": {
     "signInGate": {

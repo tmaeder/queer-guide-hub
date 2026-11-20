@@ -5,6 +5,7 @@ import { SocialSummaryRow } from '@/components/profile/SocialSummaryRow';
 import { ActivityStrip } from '@/components/profile/ActivityStrip';
 import { GapPromptCard } from '@/components/profile/GapPromptCard';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
+import { BodyProfileCard } from '@/components/profile/BodyProfileCard';
 import { getProfileGap } from '@/lib/profileGaps';
 import { previewFilterProfile, sectionVisible, type ProfileLens } from '@/lib/profileLens';
 
@@ -70,6 +71,11 @@ export function OverviewTab({
       {/* Absent when empty, for everyone: absence reads as "nothing yet" or
           "not shared", which an empty card only restated. */}
       {activityVisible && <ActivityStrip userId={profile.user_id as string} hideWhenEmpty />}
+
+      <BodyProfileCard
+        userId={profile.user_id as string}
+        ownerLens={isOwnProfile ? lens : undefined}
+      />
 
       <SecureProfileViewer
         profile={isOwnProfile ? previewFilterProfile(profile, lens) : profile}

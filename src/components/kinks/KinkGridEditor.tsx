@@ -9,7 +9,9 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { KINK_CATEGORY_ICONS } from '@/components/kinks/kinkCategoryIcons';
 import { KinkRatingControl } from '@/components/kinks/KinkRatingControl';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
 import {
   useMyKinkRatings,
@@ -76,10 +78,14 @@ export function KinkGridEditor() {
       {taxonomy.categories.map((cat) => {
         const items = taxonomy.itemsByCategory.get(cat.id) ?? [];
         const rated = ratedPerCategory.get(cat.id) ?? 0;
+        const CatIcon = KINK_CATEGORY_ICONS[cat.slug];
         return (
           <AccordionItem key={cat.id} value={cat.slug}>
             <AccordionTrigger className="text-15 font-medium">
-              <span className="flex items-center gap-2">
+              <span className="flex items-center gap-2.5">
+                {CatIcon && (
+                  <CatIcon size={18} aria-hidden className="shrink-0 text-muted-foreground" />
+                )}
                 {kinkLabel(cat, lang)}
                 <span className="text-13 font-normal text-muted-foreground">
                   {rated}/{items.length}
@@ -98,7 +104,16 @@ export function KinkGridEditor() {
                   return (
                     <li key={item.id} className="space-y-1">
                       <div className="flex items-center gap-1">
-                        <span className="text-sm">{kinkLabel(item, lang)}</span>
+                        {item.glossary_tag_slug ? (
+                          <LocalizedLink
+                            to={`/tags/${item.glossary_tag_slug}`}
+                            className="text-sm underline decoration-border underline-offset-4 hover:decoration-foreground"
+                          >
+                            {kinkLabel(item, lang)}
+                          </LocalizedLink>
+                        ) : (
+                          <span className="text-sm">{kinkLabel(item, lang)}</span>
+                        )}
                         {item.description && (
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -129,6 +144,7 @@ export function KinkGridEditor() {
                             <KinkRatingControl
                               key={side}
                               side={side}
+                              reserveLabel
                               rating={row?.rating ?? null}
                               needsDiscussion={row?.needs_discussion ?? false}
                               onRate={(r) => handleRate(item.id, side, r)}

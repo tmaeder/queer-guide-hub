@@ -505,7 +505,7 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
               Reroll
             </Button>
           </div>
-          <div className="grid grid-cols-3 gap-2" role="group" aria-labelledby="avatar-style-label">
+          <div className="grid grid-cols-6 gap-2" role="group" aria-labelledby="avatar-style-label">
             {STYLE_PRESETS.map((_, i) => (
               <button
                 key={i}
@@ -516,11 +516,11 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
                 className={cn(
                   'aspect-square rounded-element flex items-center justify-center transition-colors',
                   styleIdx === i
-                    ? 'bg-accent'
+                    ? 'bg-surface-container ring-2 ring-foreground'
                     : 'bg-surface-container hover:bg-surface-container-high',
                 )}
               >
-                <div className="w-16 h-16">
+                <div className="h-full w-full p-1">
                   <BigHead {...buildConfig(i, skin, hairColor, accessory)} />
                 </div>
               </button>

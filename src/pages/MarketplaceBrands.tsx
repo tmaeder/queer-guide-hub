@@ -455,7 +455,6 @@ export default function MarketplaceBrands() {
             {showHighlight && (
               <SectionHeader
                 id="makers-floor"
-                eyebrow={t('marketplace.makersFloorEyebrow', 'The floor')}
                 title={t('marketplace.makersFloorTitle', 'Every other maker')}
               />
             )}
@@ -497,7 +496,6 @@ export default function MarketplaceBrands() {
               id="makers-adult"
               brands={adultTiles}
               spaced={withCover.length > 0}
-              eyebrow={t('marketplace.makersAdultEyebrow', 'Adult · 18+')}
               title={t('marketplace.makersAdultTitle', 'Adult makers')}
               subtitle={t('marketplace.makersAdultSubtitle', {
                 defaultValue:
@@ -581,7 +579,7 @@ function MarkTileSection({
   id: string;
   brands: DirectoryBrand[];
   spaced: boolean;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   subtitle?: string;
   moreLabel: (count: number) => string;

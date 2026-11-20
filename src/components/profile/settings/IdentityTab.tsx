@@ -3,7 +3,6 @@ import { referenceTaxonomyRows } from '@/lib/referenceTaxonomyStore';
 import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 import { useClassificationOptions } from '@/hooks/useManagedOptions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SelectField } from './fields';
 import {
   Accessibility,
@@ -283,177 +282,167 @@ export function IdentityTab({
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
+          <CardTitle>Identity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <SelectField
+              id="gender_identity"
+              fieldIcon={icon(Sparkles)}
+              icons={GENDER_FLAGS}
+              label="Gender identity"
+              value={formData.gender_identity}
+              onChange={(v) => onChange('gender_identity', v)}
+              options={genderOptions}
+            />
+            <SelectField
+              id="sexual_orientation"
+              fieldIcon={icon(Heart)}
+              icons={ORIENTATION_FLAGS}
+              label="Sexual orientation"
+              value={formData.sexual_orientation}
+              onChange={(v) => onChange('sexual_orientation', v)}
+              options={orientationOptions}
+            />
+            <SelectField
+              id="romantic_orientation"
+              fieldIcon={icon(HeartHandshake)}
+              icons={ROMANTIC_FLAGS}
+              label="Romantic orientation"
+              value={formData.romantic_orientation}
+              onChange={(v) => onChange('romantic_orientation', v)}
+              options={romantic_orientationOptions}
+            />
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
           <CardTitle>Flags</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Pride flags shown on your profile. Public by default — change who sees them under
-            Privacy. Up to {MAX_IDENTITY_FLAGS}.
+            Shown on your profile. Up to {MAX_IDENTITY_FLAGS}. Who sees them is set under Privacy.
           </p>
         </CardHeader>
         <CardContent>
           <FlagPicker selected={formData.identity_flags} onChange={onFlagsChange} />
         </CardContent>
       </Card>
-
       <Card>
         <CardHeader>
-          <CardTitle>LGBTQ+ Identity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField
-                id="gender_identity"
-                fieldIcon={icon(Sparkles)}
-                icons={GENDER_FLAGS}
-                label="Gender Identity"
-                value={formData.gender_identity}
-                onChange={(v) => onChange('gender_identity', v)}
-                options={genderOptions}
-              />
-              <SelectField
-                id="sexual_orientation"
-                fieldIcon={icon(Heart)}
-                icons={ORIENTATION_FLAGS}
-                label="Sexual Orientation"
-                value={formData.sexual_orientation}
-                onChange={(v) => onChange('sexual_orientation', v)}
-                options={orientationOptions}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField
-                id="chosen_family_status"
-                fieldIcon={icon(Users)}
-                label="Chosen Family"
-                value={formData.chosen_family_status}
-                onChange={(v) => onChange('chosen_family_status', v)}
-                options={chosen_familyOptions}
-              />
-              <SelectField
-                id="disability_status"
-                fieldIcon={icon(Accessibility)}
-                label="Disability Status"
-                options={disabilityOptions}
-                value={formData.disability_status}
-                onChange={(v) => onChange('disability_status', v)}
-                placeholder="Optional"
-              />
-            </div>
-            <SelectField
-              id="neurodivergent_status"
-              fieldIcon={icon(Lightbulb)}
-              label="Neurodivergent Status"
-              options={neurodivergenceOptions}
-              value={formData.neurodivergent_status}
-              onChange={(v) => onChange('neurodivergent_status', v)}
-              placeholder="Optional"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Relationships</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Dating and intimacy preferences live in the opt-in Intimate module below.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField
-                id="romantic_orientation"
-                fieldIcon={icon(HeartHandshake)}
-                icons={ROMANTIC_FLAGS}
-                label="Romantic Orientation"
-                value={formData.romantic_orientation}
-                onChange={(v) => onChange('romantic_orientation', v)}
-                options={romantic_orientationOptions}
-              />
-              <SelectField
-                id="current_relationship_status"
-                fieldIcon={icon(Heart)}
-                icons={RELATIONSHIP_STATUS_ICONS}
-                label="Current Status"
-                value={formData.current_relationship_status}
-                onChange={(v) => onChange('current_relationship_status', v)}
-                options={relationship_statusOptions}
-              />
-            </div>
-            <SelectField
-              id="relationship_style"
-              fieldIcon={icon(Network)}
-              icons={RELATIONSHIP_STYLE_ICONS}
-              label="Relationship Style"
-              value={formData.relationship_style}
-              onChange={(v) => onChange('relationship_style', v)}
-              options={relationship_styleOptions}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Coming Out</CardTitle>
+          <CardTitle>Coming out</CardTitle>
           <p className="text-sm text-muted-foreground">
             This information is private by default and only visible to people you choose.
           </p>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-4">
-            <Alert>
-              <Heart size={16} />
-              <AlertDescription>
-                Coming out is a deeply personal journey. All fields here are optional and private by
-                default.
-              </AlertDescription>
-            </Alert>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField
-                id="coming_out_family"
-                fieldIcon={icon(Home)}
-                icons={COMING_OUT_ICONS}
-                label="Family"
-                placeholder="Not answered"
-                value={formData.coming_out_status.family}
-                onChange={(v) => onComingOutChange('family', v)}
-                options={coming_outOptions}
-              />
-              <SelectField
-                id="coming_out_friends"
-                fieldIcon={icon(Users)}
-                icons={COMING_OUT_ICONS}
-                label="Friends"
-                placeholder="Not answered"
-                value={formData.coming_out_status.friends}
-                onChange={(v) => onComingOutChange('friends', v)}
-                options={coming_outOptions}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField
-                id="coming_out_work"
-                fieldIcon={icon(Briefcase)}
-                icons={COMING_OUT_ICONS}
-                label="Work / School"
-                placeholder="Not answered"
-                value={formData.coming_out_status.work}
-                onChange={(v) => onComingOutChange('work', v)}
-                options={coming_outOptions}
-              />
-              <SelectField
-                id="coming_out_public"
-                fieldIcon={icon(Globe)}
-                icons={COMING_OUT_ICONS}
-                label="Public"
-                placeholder="Not answered"
-                value={formData.coming_out_status.public}
-                onChange={(v) => onComingOutChange('public', v)}
-                options={coming_outOptions}
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <SelectField
+              id="coming_out_family"
+              fieldIcon={icon(Home)}
+              icons={COMING_OUT_ICONS}
+              label="Family"
+              placeholder="Not answered"
+              value={formData.coming_out_status.family}
+              onChange={(v) => onComingOutChange('family', v)}
+              options={coming_outOptions}
+            />
+            <SelectField
+              id="coming_out_friends"
+              fieldIcon={icon(Users)}
+              icons={COMING_OUT_ICONS}
+              label="Friends"
+              placeholder="Not answered"
+              value={formData.coming_out_status.friends}
+              onChange={(v) => onComingOutChange('friends', v)}
+              options={coming_outOptions}
+            />
+
+            <SelectField
+              id="coming_out_work"
+              fieldIcon={icon(Briefcase)}
+              icons={COMING_OUT_ICONS}
+              label="Work or school"
+              placeholder="Not answered"
+              value={formData.coming_out_status.work}
+              onChange={(v) => onComingOutChange('work', v)}
+              options={coming_outOptions}
+            />
+            <SelectField
+              id="coming_out_public"
+              fieldIcon={icon(Globe)}
+              icons={COMING_OUT_ICONS}
+              label="Public"
+              placeholder="Not answered"
+              value={formData.coming_out_status.public}
+              onChange={(v) => onComingOutChange('public', v)}
+              options={coming_outOptions}
+            />
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Relationships</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Dating and intimacy preferences live in the intimate profile below.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <SelectField
+              id="current_relationship_status"
+              fieldIcon={icon(Heart)}
+              icons={RELATIONSHIP_STATUS_ICONS}
+              label="Current status"
+              value={formData.current_relationship_status}
+              onChange={(v) => onChange('current_relationship_status', v)}
+              options={relationship_statusOptions}
+            />
+            <SelectField
+              id="relationship_style"
+              fieldIcon={icon(Network)}
+              icons={RELATIONSHIP_STYLE_ICONS}
+              label="Relationship style"
+              value={formData.relationship_style}
+              onChange={(v) => onChange('relationship_style', v)}
+              options={relationship_styleOptions}
+            />
+            <SelectField
+              id="chosen_family_status"
+              fieldIcon={icon(Users)}
+              label="Chosen family"
+              value={formData.chosen_family_status}
+              onChange={(v) => onChange('chosen_family_status', v)}
+              options={chosen_familyOptions}
+            />
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Disability & neurodivergence</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Optional. Shown with your identity, under the same Privacy setting.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <SelectField
+              id="disability_status"
+              fieldIcon={icon(Accessibility)}
+              label="Disability"
+              options={disabilityOptions}
+              value={formData.disability_status}
+              onChange={(v) => onChange('disability_status', v)}
+            />
+            <SelectField
+              id="neurodivergent_status"
+              fieldIcon={icon(Lightbulb)}
+              label="Neurodivergence"
+              options={neurodivergenceOptions}
+              value={formData.neurodivergent_status}
+              onChange={(v) => onChange('neurodivergent_status', v)}
+            />
           </div>
         </CardContent>
       </Card>
