@@ -8,7 +8,12 @@
         "https://queer.guide/cities",
         "https://queer.guide/travel",
         "https://queer.guide/news",
-        "https://queer.guide/about"
+        "https://queer.guide/about",
+        "https://queer.guide/city/berlin",
+        "https://queer.guide/country/germany",
+        "https://queer.guide/villages/chueca",
+        "https://queer.guide/venues/le-mistral",
+        "https://queer.guide/tags/consent"
       ],
       "numberOfRuns": 3,
       "settings": {
@@ -444,6 +449,206 @@
               "error",
               {
                 "maxNumericValue": 913000,
+                "aggregationMethod": "optimistic"
+              }
+            ]
+          }
+        },
+        {
+          "matchingUrlPattern": "^https://queer\\.guide\\/city\\/berlin(\\?.*)?$",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.22,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "largest-contentful-paint": [
+              "error",
+              {
+                "maxNumericValue": 14700,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "total-blocking-time": [
+              "error",
+              {
+                "maxNumericValue": 5900,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              {
+                "maxNumericValue": 0.1,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 1110000,
+                "aggregationMethod": "optimistic"
+              }
+            ]
+          }
+        },
+        {
+          "matchingUrlPattern": "^https://queer\\.guide\\/country\\/germany(\\?.*)?$",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.3,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "largest-contentful-paint": [
+              "error",
+              {
+                "maxNumericValue": 13000,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "total-blocking-time": [
+              "error",
+              {
+                "maxNumericValue": 1550,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              {
+                "maxNumericValue": 0.1,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 1073000,
+                "aggregationMethod": "optimistic"
+              }
+            ]
+          }
+        },
+        {
+          "matchingUrlPattern": "^https://queer\\.guide\\/villages\\/chueca(\\?.*)?$",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.24,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "largest-contentful-paint": [
+              "error",
+              {
+                "maxNumericValue": 15300,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "total-blocking-time": [
+              "error",
+              {
+                "maxNumericValue": 6600,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              {
+                "maxNumericValue": 0.1,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 1267000,
+                "aggregationMethod": "optimistic"
+              }
+            ]
+          }
+        },
+        {
+          "matchingUrlPattern": "^https://queer\\.guide\\/venues\\/le-mistral(\\?.*)?$",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.27,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "largest-contentful-paint": [
+              "error",
+              {
+                "maxNumericValue": 13300,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "total-blocking-time": [
+              "error",
+              {
+                "maxNumericValue": 2650,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              {
+                "maxNumericValue": 0.1,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 1408000,
+                "aggregationMethod": "optimistic"
+              }
+            ]
+          }
+        },
+        {
+          "matchingUrlPattern": "^https://queer\\.guide\\/tags\\/consent(\\?.*)?$",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.31,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "largest-contentful-paint": [
+              "error",
+              {
+                "maxNumericValue": 10500,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "total-blocking-time": [
+              "error",
+              {
+                "maxNumericValue": 1450,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              {
+                "maxNumericValue": 0.1,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 1000000,
                 "aggregationMethod": "optimistic"
               }
             ]
