@@ -292,6 +292,8 @@ export default function IntimateDiscovery({
         onAgesChange={setAges}
         bodies={bodies}
         onBodiesChange={setBodies}
+        hanky={hanky}
+        onHankyChange={setHanky}
       />
 
       {loadingDisc ? (
