@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BigHead } from '@bigheads/core';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -28,6 +28,13 @@ export function AvatarQuickPick({ value, onChange, count = 6 }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [seed, count],
   );
+
+  // Always one of the shown avatars picked: the first of each new batch,
+  // unless the current one is already in it.
+  useEffect(() => {
+    if (options[0] && !options.some((cfg) => sameConfig(value, cfg))) onChange(options[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options]);
 
   return (
     <div className="flex flex-col gap-4">

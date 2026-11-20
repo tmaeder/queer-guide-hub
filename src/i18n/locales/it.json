@@ -1298,7 +1298,22 @@
         "interests": "Interessi"
       },
       "blurb": "Free, takes a minute.",
-      "haveAccountQ": "Already have an account? Sign in"
+      "haveAccountQ": "Already have an account? Sign in",
+      "passwordTitle": "Scegli una password",
+      "confirmTitle": "Un’ultima cosa",
+      "passwordBlurb": "Almeno 8 caratteri. Più lunga, più sicura.",
+      "confirmBlurb": "Conferma e il tuo account è pronto.",
+      "progress": "Passo {{n}} di {{total}}",
+      "signingUpAs": "Registrazione come",
+      "change": "Modifica",
+      "back": "Indietro",
+      "continue": "Continua",
+      "passkeyTitle": "Come vuoi accedere?",
+      "passkeyBlurb": "Una passkey usa il tuo volto, l’impronta o il PIN del dispositivo.",
+      "usePasskey": "Usa una passkey",
+      "passkeyWhy": "Niente da ricordare, niente da far trapelare.",
+      "usePassword": "Usa invece una password",
+      "passkeyAfter": "Aggiungi la passkey nella schermata successiva."
     },
     "pronouns": {
       "she/her": "lei",
@@ -1385,7 +1400,13 @@
       "profile": "[IT] Your handle",
       "profileDesc": "[IT] Pick a username and avatar, or keep the ones we assigned."
     },
-    "profileBlurb": "[IT] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
+    "profileBlurb": "Scegli il tuo nome utente e la tua immagine. Ti abbiamo suggerito un nome e un avatar da cui partire.",
+    "passkeyFallback": "Imposta invece una password",
+    "passkeyHeading": "Accedi con una passkey",
+    "passkeyRequiredBlurb": "È così che accedi al tuo nuovo account. Bastano pochi secondi.",
+    "passkeyWhy1": "Sblocca con il volto, l’impronta o il PIN del dispositivo",
+    "passkeyWhy2": "Niente da ricordare, niente da rubare o far trapelare",
+    "passkeyWhy3": "Si sincronizza sui tuoi dispositivi con il gestore di password"
   },
   "events": {
     "title": "Eventi",
@@ -5373,7 +5394,8 @@
       "entrants": "[IT] Entries",
       "linked": "[IT] Linked to a profile"
     },
-    "backToPersonalities": "← Personalità"
+    "backToPersonalities": "← Personalità",
+    "competedAs": "come {{name}}"
   },
   "styleguide": {
     "metaTitle": "[IT] Editorial styleguide and tone of voice",

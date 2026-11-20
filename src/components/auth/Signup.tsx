@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, ArrowRight, Eye, EyeOff, KeyRound } from '@/components/icons';
-import { Wordmark } from '@/components/brand/Wordmark';
 import { Trans, useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -62,6 +61,10 @@ export default function Signup({ onBack, redirectTo }: Props) {
   } = useTurnstile();
 
   const [stepIndex, setStepIndex] = useState(0);
+  // Passkey first: on WebAuthn-capable devices the password step offers a
+  // passkey as the main path. null = not chosen yet.
+  const supportsPasskey = typeof window !== 'undefined' && !!window.PublicKeyCredential;
+  const [usePasskey, setUsePasskey] = useState<boolean | null>(supportsPasskey ? null : false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordScore, setPasswordScore] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -131,7 +134,7 @@ export default function Signup({ onBack, redirectTo }: Props) {
   // Strength is measured by zxcvbn asynchronously, so it cannot live in the
   // zod schema — schema covers length, this covers entropy.
   const strengthError =
-    password.length >= MIN_PASSWORD_LEN && passwordScore < 2
+    !usePasskey && password.length >= MIN_PASSWORD_LEN && passwordScore < 2
       ? t('auth.errors.passwordTooWeak', 'Please choose a stronger password')
       : null;
 
@@ -185,7 +188,8 @@ export default function Signup({ onBack, redirectTo }: Props) {
     // while mode==='signup' so it cannot race this to "/".
     const next =
       redirectTo && redirectTo !== '/' ? `?redirect=${encodeURIComponent(redirectTo)}` : '';
-    navigate(`/onboarding/welcome${next}`, { replace: true });
+    const passkey = usePasskey ? `${next ? '&' : '?'}passkey=1` : '';
+    navigate(`/onboarding/welcome${next}${passkey}`, { replace: true });
   };
 
   const onInvalid = (fieldErrors: Record<string, string>) => {
@@ -234,17 +238,41 @@ export default function Signup({ onBack, redirectTo }: Props) {
   const back = () => {
     setErrors({});
     setSubmitError(null);
+    // Stepping back onto the password step re-offers the choice.
+    if (step === 'confirm' && usePasskey) {
+      setUsePasskey(null);
+      update({ password: '' });
+    }
     setStepIndex((i) => Math.max(i - 1, 0));
+  };
+
+  // The account still needs a password underneath (Supabase email signup), so
+  // the passkey path sets a random one nobody sees. The passkey itself is
+  // enrolled on the first onboarding screen, where the session exists; until
+  // then "Forgot password" is the way back in.
+  const choosePasskey = () => {
+    const bytes = crypto.getRandomValues(new Uint8Array(24));
+    const random = btoa(String.fromCharCode(...bytes));
+    setUsePasskey(true);
+    setValues((v) => ({ ...v, password: random }));
+    setErrors({});
+    setStepIndex(STEPS.indexOf('confirm'));
   };
 
   const titles: Record<Step, string> = {
     email: t('auth.signup.title', 'Create your account'),
-    password: t('auth.signup.passwordTitle', 'Choose a password'),
+    password:
+      usePasskey === null
+        ? t('auth.signup.passkeyTitle', 'How will you sign in?')
+        : t('auth.signup.passwordTitle', 'Choose a password'),
     confirm: t('auth.signup.confirmTitle', 'One last thing'),
   };
   const blurbs: Record<Step, string> = {
     email: t('auth.signup.blurb', 'Free, takes a minute.'),
-    password: t('auth.signup.passwordBlurb', 'At least 8 characters. Longer is stronger.'),
+    password:
+      usePasskey === null
+        ? t('auth.signup.passkeyBlurb', 'A passkey uses your face, fingerprint or device PIN.')
+        : t('auth.signup.passwordBlurb', 'At least 8 characters. Longer is stronger.'),
     confirm: t('auth.signup.confirmBlurb', 'Confirm and your account is ready.'),
   };
 
@@ -252,10 +280,6 @@ export default function Signup({ onBack, redirectTo }: Props) {
     <Card className="max-w-md mx-auto rounded-container">
       <CardHeader>
         <div className="flex flex-col gap-4">
-          {/* Wordmark alone — see Auth.tsx. */}
-          <div className="flex items-center justify-center">
-            <Wordmark className="text-title text-foreground" />
-          </div>
           <ol
             className="m-0 flex list-none gap-2 p-0"
             aria-label={t('auth.signup.progress', {
@@ -341,7 +365,27 @@ export default function Signup({ onBack, redirectTo }: Props) {
               </div>
             )}
 
-            {step === 'password' && (
+            {step === 'password' && usePasskey === null && (
+              <div className="flex flex-col gap-2">
+                <Button type="button" size="lg" onClick={choosePasskey} className="w-full">
+                  <KeyRound className="h-4 w-4" aria-hidden />
+                  {t('auth.signup.usePasskey', 'Use a passkey')}
+                </Button>
+                <p className="text-center text-13 text-muted-foreground">
+                  {t('auth.signup.passkeyWhy', 'Nothing to remember, nothing to leak.')}
+                </p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setUsePasskey(false)}
+                  className="w-full"
+                >
+                  {t('auth.signup.usePassword', 'Use a password instead')}
+                </Button>
+              </div>
+            )}
+
+            {step === 'password' && usePasskey === false && (
               <div className="flex flex-col gap-2">
                 {/* The email rides along for password managers. */}
                 <input
@@ -389,26 +433,23 @@ export default function Signup({ onBack, redirectTo }: Props) {
                   email={email}
                   onScoreChange={setPasswordScore}
                 />
-                {/* Enrolment needs a signed-in user, so the passkey is offered
-                    on the first onboarding screen, right after this wizard. */}
-                <p className="flex items-center gap-2 text-13 text-muted-foreground">
-                  <KeyRound className="h-4 w-4 shrink-0" aria-hidden />
-                  {t(
-                    'auth.signup.passkeyNext',
-                    'Prefer no password? Add a passkey right after you sign up.',
-                  )}
-                </p>
               </div>
             )}
 
             {step === 'confirm' && (
               <>
                 <div className="flex items-center justify-between gap-4 rounded-element bg-muted px-4 py-2 text-13">
-                  <span className="min-w-0 truncate">
+                  <span className="min-w-0 break-words">
                     <span className="text-muted-foreground">
                       {t('auth.signup.signingUpAs', 'Signing up as')}
                     </span>{' '}
                     <span className="font-bold">{email}</span>
+                    {usePasskey && (
+                      <span className="mt-0.5 flex items-center gap-1.5 text-muted-foreground">
+                        <KeyRound className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                        {t('auth.signup.passkeyAfter', 'You add your passkey on the next screen.')}
+                      </span>
+                    )}
                   </span>
                   <Button
                     type="button"
@@ -462,7 +503,12 @@ export default function Signup({ onBack, redirectTo }: Props) {
                   <ArrowLeft className="h-4 w-4 rtl:rotate-180" aria-hidden />
                 </Button>
               )}
-              <Button type="submit" size="lg" disabled={isSubmitting} className="flex-1">
+              <Button
+                type="submit"
+                size="lg"
+                disabled={isSubmitting}
+                className={`flex-1 ${step === 'password' && usePasskey === null ? 'hidden' : ''}`}
+              >
                 {isSubmitting && <TrackLoader size={16} className="mr-2" />}
                 {step === 'confirm'
                   ? t('auth.signup.create', 'Create account')

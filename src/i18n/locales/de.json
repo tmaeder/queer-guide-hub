@@ -1467,7 +1467,22 @@
         "interests": "Interessen"
       },
       "blurb": "Free, takes a minute.",
-      "haveAccountQ": "Already have an account? Sign in"
+      "haveAccountQ": "Already have an account? Sign in",
+      "passwordTitle": "Passwort wählen",
+      "confirmTitle": "Noch eine Sache",
+      "passwordBlurb": "Mindestens 8 Zeichen. Länger ist sicherer.",
+      "confirmBlurb": "Bestätige, dann ist dein Konto bereit.",
+      "progress": "Schritt {{n}} von {{total}}",
+      "signingUpAs": "Registrierung als",
+      "change": "Ändern",
+      "back": "Zurück",
+      "continue": "Weiter",
+      "passkeyTitle": "Wie möchtest du dich anmelden?",
+      "passkeyBlurb": "Ein Passkey nutzt dein Gesicht, deinen Fingerabdruck oder die Geräte-PIN.",
+      "usePasskey": "Passkey verwenden",
+      "passkeyWhy": "Nichts zu merken, nichts, was durchsickern kann.",
+      "usePassword": "Stattdessen ein Passwort verwenden",
+      "passkeyAfter": "Deinen Passkey fügst du im nächsten Schritt hinzu."
     },
     "pronouns": {
       "she/her": "sie/ihr",
@@ -1554,7 +1569,13 @@
       "profile": "[DE] Your handle",
       "profileDesc": "[DE] Pick a username and avatar, or keep the ones we assigned."
     },
-    "profileBlurb": "[DE] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
+    "profileBlurb": "Wähle deinen Benutzernamen und dein Bild. Ein Handle und ein Avatar sind schon vorgeschlagen.",
+    "passkeyFallback": "Stattdessen ein Passwort festlegen",
+    "passkeyHeading": "Mit Passkey anmelden",
+    "passkeyRequiredBlurb": "So meldest du dich bei deinem neuen Konto an. Es dauert nur ein paar Sekunden.",
+    "passkeyWhy1": "Entsperren mit Gesicht, Fingerabdruck oder Geräte-PIN",
+    "passkeyWhy2": "Nichts zu merken, nichts zu phishen oder zu leaken",
+    "passkeyWhy3": "Synchronisiert über deine Geräte mit deinem Passwortmanager"
   },
   "sos": {
     "button": "SOS",
@@ -5373,7 +5394,8 @@
       "entrants": "[DE] Entries",
       "linked": "[DE] Linked to a profile"
     },
-    "backToPersonalities": "← Persönlichkeiten"
+    "backToPersonalities": "← Persönlichkeiten",
+    "competedAs": "als {{name}}"
   },
   "styleguide": {
     "metaTitle": "[DE] Editorial styleguide and tone of voice",

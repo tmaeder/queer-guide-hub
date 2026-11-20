@@ -554,7 +554,22 @@
       "haveAccount": "Sign in",
       "haveAccountQ": "Already have an account? Sign in",
       "create": "Create account",
-      "orWithEmail": "Or with email"
+      "orWithEmail": "Or with email",
+      "passwordTitle": "Choose a password",
+      "confirmTitle": "One last thing",
+      "passwordBlurb": "At least 8 characters. Longer is stronger.",
+      "confirmBlurb": "Confirm and your account is ready.",
+      "progress": "Step {{n}} of {{total}}",
+      "signingUpAs": "Signing up as",
+      "change": "Change",
+      "back": "Back",
+      "continue": "Continue",
+      "passkeyTitle": "How will you sign in?",
+      "passkeyBlurb": "A passkey uses your face, fingerprint or device PIN.",
+      "usePasskey": "Use a passkey",
+      "passkeyWhy": "Nothing to remember, nothing to leak.",
+      "usePassword": "Use a password instead",
+      "passkeyAfter": "You add your passkey on the next screen."
     },
     "pronouns": {
       "she/her": "she/her",
@@ -637,7 +652,13 @@
       "profile": "Your handle",
       "profileDesc": "Pick a username and avatar, or keep the ones we assigned."
     },
-    "profileBlurb": "Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
+    "profileBlurb": "Choose your username and picture. We suggested a handle and an avatar to start from.",
+    "passkeyFallback": "Set a password instead",
+    "passkeyHeading": "Sign in with a passkey",
+    "passkeyRequiredBlurb": "This is how you sign in to your new account. It takes a few seconds.",
+    "passkeyWhy1": "Sign in with your face, fingerprint or device PIN",
+    "passkeyWhy2": "Nothing to remember, nothing to phish or leak",
+    "passkeyWhy3": "Syncs across your devices with your password manager"
   },
   "events": {
     "title": "Events",
@@ -5422,7 +5443,8 @@
       "entrants": "Entries",
       "linked": "Linked to a profile"
     },
-    "backToPersonalities": "← Personalities"
+    "backToPersonalities": "← Personalities",
+    "competedAs": "as {{name}}"
   },
   "styleguide": {
     "metaTitle": "Editorial styleguide and tone of voice",

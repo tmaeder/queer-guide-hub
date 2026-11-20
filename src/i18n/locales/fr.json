@@ -1302,7 +1302,22 @@
         "interests": "Centres d'intérêt"
       },
       "blurb": "Free, takes a minute.",
-      "haveAccountQ": "Already have an account? Sign in"
+      "haveAccountQ": "Already have an account? Sign in",
+      "passwordTitle": "Choisis un mot de passe",
+      "confirmTitle": "Une dernière chose",
+      "passwordBlurb": "Au moins 8 caractères. Plus long, plus sûr.",
+      "confirmBlurb": "Confirme et ton compte est prêt.",
+      "progress": "Étape {{n}} sur {{total}}",
+      "signingUpAs": "Inscription en tant que",
+      "change": "Modifier",
+      "back": "Retour",
+      "continue": "Continuer",
+      "passkeyTitle": "Comment veux-tu te connecter ?",
+      "passkeyBlurb": "Une clé d’accès utilise ton visage, ton empreinte ou le code de ton appareil.",
+      "usePasskey": "Utiliser une clé d’accès",
+      "passkeyWhy": "Rien à retenir, rien à divulguer.",
+      "usePassword": "Utiliser plutôt un mot de passe",
+      "passkeyAfter": "Tu ajoutes ta clé d’accès à l’écran suivant."
     },
     "pronouns": {
       "she/her": "elle",
@@ -1389,7 +1404,13 @@
       "profile": "[FR] Your handle",
       "profileDesc": "[FR] Pick a username and avatar, or keep the ones we assigned."
     },
-    "profileBlurb": "[FR] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
+    "profileBlurb": "Choisis ton nom d’utilisateur et ta photo. Nous avons proposé un pseudo et un avatar pour commencer.",
+    "passkeyFallback": "Définir plutôt un mot de passe",
+    "passkeyHeading": "Se connecter avec une clé d’accès",
+    "passkeyRequiredBlurb": "C’est ainsi que tu te connectes à ton nouveau compte. Cela prend quelques secondes.",
+    "passkeyWhy1": "Déverrouille avec ton visage, ton empreinte ou le code de ton appareil",
+    "passkeyWhy2": "Rien à retenir, rien à hameçonner ni à divulguer",
+    "passkeyWhy3": "Synchronisée sur tes appareils avec ton gestionnaire de mots de passe"
   },
   "events": {
     "title": "Événements",
@@ -5377,7 +5398,8 @@
       "entrants": "[FR] Entries",
       "linked": "[FR] Linked to a profile"
     },
-    "backToPersonalities": "← Personnalités"
+    "backToPersonalities": "← Personnalités",
+    "competedAs": "en tant que {{name}}"
   },
   "styleguide": {
     "metaTitle": "[FR] Editorial styleguide and tone of voice",

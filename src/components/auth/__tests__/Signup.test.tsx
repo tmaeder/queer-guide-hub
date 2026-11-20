@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 const mockSignUp = vi.fn();
@@ -28,8 +28,9 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({ children }: { children: React.ReactNode }) => <a href="#">{children}</a>,
 }));
 
+const mockNavigate = vi.fn();
 vi.mock('@/hooks/useLocalizedNavigate', () => ({
-  useLocalizedNavigate: () => vi.fn(),
+  useLocalizedNavigate: () => mockNavigate,
 }));
 
 // No EmailVerificationScreen / UsernameSelector stubs: Signup imports neither
@@ -179,5 +180,39 @@ describe('Signup (three-step wizard)', { timeout: 20000 }, () => {
       'signup_validation_error',
       expect.objectContaining({ metadata: { fields: ['email'] } }),
     );
+  });
+
+  describe('on a passkey-capable device', () => {
+    beforeEach(() => {
+      (window as unknown as { PublicKeyCredential: unknown }).PublicKeyCredential = function () {};
+    });
+    afterEach(() => {
+      delete (window as unknown as { PublicKeyCredential?: unknown }).PublicKeyCredential;
+    });
+
+    it('offers the passkey first and signs up without a password the reader typed', async () => {
+      render(<Signup onBack={onBack} />);
+      fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
+      cont();
+      expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /Use a passkey/ }));
+      fireEvent.click(screen.getByRole('checkbox'));
+      fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
+      await waitFor(() => expect(mockSignUp).toHaveBeenCalledTimes(1));
+      expect((mockSignUp.mock.calls[0][1] as string).length).toBeGreaterThanOrEqual(24);
+      await waitFor(() =>
+        expect(mockNavigate).toHaveBeenCalledWith('/onboarding/welcome?passkey=1', {
+          replace: true,
+        }),
+      );
+    });
+
+    it('still lets the reader choose a password', () => {
+      render(<Signup onBack={onBack} />);
+      fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
+      cont();
+      fireEvent.click(screen.getByRole('button', { name: /Use a password instead/ }));
+      expect(screen.getByLabelText('Password')).toBeInTheDocument();
+    });
   });
 });

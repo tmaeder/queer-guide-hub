@@ -1298,7 +1298,22 @@
         "interests": "Interests"
       },
       "blurb": "Free, takes a minute.",
-      "haveAccountQ": "Already have an account? Sign in"
+      "haveAccountQ": "Already have an account? Sign in",
+      "passwordTitle": "设置密码",
+      "confirmTitle": "最后一步",
+      "passwordBlurb": "至少 8 个字符。越长越安全。",
+      "confirmBlurb": "确认后你的账户就准备好了。",
+      "progress": "第 {{n}} 步，共 {{total}} 步",
+      "signingUpAs": "注册邮箱",
+      "change": "更改",
+      "back": "返回",
+      "continue": "继续",
+      "passkeyTitle": "你想用什么方式登录？",
+      "passkeyBlurb": "通行密钥使用你的面容、指纹或设备 PIN。",
+      "usePasskey": "使用通行密钥",
+      "passkeyWhy": "无需记忆，也不会泄露。",
+      "usePassword": "改用密码",
+      "passkeyAfter": "你将在下一个页面添加通行密钥。"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -1385,7 +1400,13 @@
       "profile": "[ZH] Your handle",
       "profileDesc": "[ZH] Pick a username and avatar, or keep the ones we assigned."
     },
-    "profileBlurb": "[ZH] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
+    "profileBlurb": "选择你的用户名和头像。我们已为你推荐了一个用户名和头像。",
+    "passkeyFallback": "改为设置密码",
+    "passkeyHeading": "使用通行密钥登录",
+    "passkeyRequiredBlurb": "这是你登录新账户的方式，只需几秒钟。",
+    "passkeyWhy1": "用面容、指纹或设备 PIN 解锁",
+    "passkeyWhy2": "无需记忆，无法被钓鱼或泄露",
+    "passkeyWhy3": "通过密码管理器在你的设备间同步"
   },
   "events": {
     "title": "活动",
@@ -5371,7 +5392,8 @@
       "entrants": "[ZH] Entries",
       "linked": "[ZH] Linked to a profile"
     },
-    "backToPersonalities": "← 人物"
+    "backToPersonalities": "← 人物",
+    "competedAs": "以 {{name}} 身份"
   },
   "styleguide": {
     "metaTitle": "[ZH] Editorial styleguide and tone of voice",

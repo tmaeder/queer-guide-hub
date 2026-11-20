@@ -1298,7 +1298,22 @@
         "interests": "Interests"
       },
       "blurb": "Free, takes a minute.",
-      "haveAccountQ": "Already have an account? Sign in"
+      "haveAccountQ": "Already have an account? Sign in",
+      "passwordTitle": "パスワードを設定",
+      "confirmTitle": "あと一つだけ",
+      "passwordBlurb": "8文字以上。長いほど安全です。",
+      "confirmBlurb": "確認するとアカウントの準備が完了します。",
+      "progress": "ステップ {{n}} / {{total}}",
+      "signingUpAs": "登録するメール",
+      "change": "変更",
+      "back": "戻る",
+      "continue": "続ける",
+      "passkeyTitle": "サインイン方法を選んでください",
+      "passkeyBlurb": "パスキーは顔、指紋、またはデバイスのPINを使います。",
+      "usePasskey": "パスキーを使う",
+      "passkeyWhy": "覚えるものも、漏れるものもありません。",
+      "usePassword": "代わりにパスワードを使う",
+      "passkeyAfter": "パスキーは次の画面で追加します。"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -1385,7 +1400,13 @@
       "profile": "[JA] Your handle",
       "profileDesc": "[JA] Pick a username and avatar, or keep the ones we assigned."
     },
-    "profileBlurb": "[JA] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
+    "profileBlurb": "ユーザー名と画像を選んでください。最初のハンドルとアバターは提案済みです。",
+    "passkeyFallback": "代わりにパスワードを設定",
+    "passkeyHeading": "パスキーでサインイン",
+    "passkeyRequiredBlurb": "新しいアカウントへのサインイン方法です。数秒で完了します。",
+    "passkeyWhy1": "顔、指紋、またはデバイスのPINでロック解除",
+    "passkeyWhy2": "覚えるものも、盗まれたり漏れたりするものもありません",
+    "passkeyWhy3": "パスワードマネージャーでデバイス間に同期されます"
   },
   "events": {
     "title": "イベント",
@@ -5371,7 +5392,8 @@
       "entrants": "[JA] Entries",
       "linked": "[JA] Linked to a profile"
     },
-    "backToPersonalities": "← 人物"
+    "backToPersonalities": "← 人物",
+    "competedAs": "{{name}}として"
   },
   "styleguide": {
     "metaTitle": "[JA] Editorial styleguide and tone of voice",
