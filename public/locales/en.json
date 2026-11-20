@@ -927,7 +927,19 @@
     "blockedUsers": "Blocked Users",
     "reportUser": "Report User",
     "sendMessage": "Send Message",
-    "favoritesShortcut": "Favorites"
+    "favoritesShortcut": "Favorites",
+    "tabs": {
+      "overview": "Overview",
+      "travel": "Travel",
+      "activity": "Activity",
+      "groups": "Groups"
+    },
+    "share": "Share profile",
+    "report": "Report profile",
+    "joined": "Joined {{date}}",
+    "editAvatar": "Change avatar",
+    "lensHidden": "This profile isn’t visible in this view. Switch to You to continue editing.",
+    "sections": "Profile sections"
   },
   "groups": {
     "title": "Groups",
@@ -3185,6 +3197,47 @@
       "copy": "Copy address",
       "openInbox": "Open inbox",
       "claimFirst": "Choose a username above to activate your address."
+    },
+    "title": "Settings",
+    "viewProfile": "View your profile",
+    "sectionsLabel": "Settings sections",
+    "allSettings": "All settings",
+    "travel": {
+      "reviewSearch": "Review search preferences"
+    },
+    "sections": {
+      "profile": {
+        "title": "Profile",
+        "description": "Your vibe, name, pronouns, bio and links. Details save automatically."
+      },
+      "identity": {
+        "title": "Identity & dating",
+        "description": "Identity details save automatically. Dating has its own controls."
+      },
+      "privacy": {
+        "title": "Privacy & visibility",
+        "description": "Who sees each part of your profile. Changes save automatically."
+      },
+      "security": {
+        "title": "Sign-in & security",
+        "description": "Your handle, passkey and password."
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "What we send to your device and inbox."
+      },
+      "travel": {
+        "title": "Travel",
+        "description": "Preferences that rank places and trips for you, and your booking inbox."
+      },
+      "data": {
+        "title": "Your data",
+        "description": "Download everything we hold about you, or delete your account."
+      },
+      "avatar": {
+        "title": "Your avatar",
+        "description": "Choose how your profile appears."
+      }
     }
   },
   "map": {
@@ -4110,7 +4163,8 @@
       "overview": "Overview",
       "messages": "Messages",
       "plans": "Plans",
-      "saved": "Saved"
+      "saved": "Saved",
+      "progress": "Progress"
     },
     "calendar": {
       "title": "Upcoming",
@@ -4227,6 +4281,9 @@
     },
     "plans": {
       "trips": "Your trips"
+    },
+    "progress": {
+      "description": "Missions, level, streaks and recognition. Visible only to you."
     }
   },
   "city": {

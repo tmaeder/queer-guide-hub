@@ -60,7 +60,7 @@ export function ProfileHeader({
     <Card>
       <CardContent>
         <div className="flex flex-col md:flex-row gap-6 items-start">
-          <div className="flex flex-col items-center gap-2 text-center md:text-left">
+          <div className="flex flex-col items-start gap-2">
             {isOwnProfile && onEditAvatar ? (
               <button
                 type="button"
@@ -92,17 +92,17 @@ export function ProfileHeader({
           </div>
 
           <div className="flex-1 flex flex-col gap-4 min-w-0">
-            <div>
-              <div className="flex flex-col gap-2 mb-2">
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2">
                 <h1 className="text-headline font-display font-semibold leading-tight">
                   {displayName}
                 </h1>
-                <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
+                <div className="flex flex-wrap items-center gap-2">
                   <TrustTierBadge userId={profile.user_id as string} showLabel />
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-2 text-muted-foreground mb-4 text-13 md:justify-start [&>*+*]:before:content-['•'] [&>*+*]:before:mr-2">
+              <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-13 [&>*+*]:before:content-['•'] [&>*+*]:before:mr-2">
                 {!!profile.pronouns && <span>{profile.pronouns as string}</span>}
                 {!!profile.age_range && <span>{profile.age_range as string}</span>}
                 {!!profile.location && (
@@ -122,15 +122,14 @@ export function ProfileHeader({
 
               <FlagChipRow
                 flagIds={profile.identity_flags as string[] | undefined}
-                className="mb-4 justify-center md:justify-start"
               />
 
               {!!profile.bio && (
-                <p className="text-muted-foreground mb-4 max-w-2xl">{profile.bio as string}</p>
+                <p className="text-muted-foreground max-w-2xl">{profile.bio as string}</p>
               )}
 
               {(hasStatus || isOwnProfile) && (
-                <div className="mb-4 max-w-2xl">
+                <div className="max-w-2xl">
                   <StatusBar
                     status={status ?? undefined}
                     onClick={isOwnProfile ? onEditStatus : undefined}
@@ -148,7 +147,7 @@ export function ProfileHeader({
               )}
 
               {socialAccounts.length > 0 && (
-                <div className="mb-4">
+                <div>
                   <SocialAccountsDisplay
                     socialAccounts={profile.social_accounts}
                     socialLinks={socialLinks}

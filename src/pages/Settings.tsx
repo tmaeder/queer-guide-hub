@@ -99,7 +99,7 @@ export default function Settings({ section: sectionProp }: { section?: SettingsS
   return (
     <PageContainer>
       <div className="flex flex-col gap-6 md:gap-8">
-        <header>
+        <header className={cn(!showIndexOnMobile && 'sr-only md:not-sr-only')}>
           <h1 className="font-display text-headline leading-tight md:text-display">
             {t('settings.title', 'Settings')}
           </h1>

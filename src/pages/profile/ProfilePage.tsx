@@ -3,7 +3,7 @@ import { Navigate, useParams, useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Flag, Share2, Shield, User } from '@/components/icons';
+import { ArrowLeft, Flag, Settings, Share2, Shield, User } from '@/components/icons';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ScrollableTabList } from '@/components/profile/ScrollableTabList';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
@@ -237,6 +237,13 @@ export default function ProfilePage() {
             </Button>
           )}
           <div className="flex items-center gap-2">
+            {ownView && (
+              <Button variant="outline" size="icon" asChild>
+                <LocalizedLink to="/settings" aria-label={t('settings.title', 'Settings')}>
+                  <Settings size={16} aria-hidden="true" />
+                </LocalizedLink>
+              </Button>
+            )}
             <Button
               variant="outline"
               size="icon"
