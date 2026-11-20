@@ -5392,7 +5392,8 @@
       "entrants": "[JA] Entries",
       "linked": "[JA] Linked to a profile"
     },
-    "backToPersonalities": "← 人物"
+    "backToPersonalities": "← 人物",
+    "competedAs": "{{name}}として"
   },
   "styleguide": {
     "metaTitle": "[JA] Editorial styleguide and tone of voice",

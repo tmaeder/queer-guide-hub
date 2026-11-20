@@ -5428,7 +5428,8 @@
       "entrants": "[RU] Entries",
       "linked": "[RU] Linked to a profile"
     },
-    "backToPersonalities": "← Личности"
+    "backToPersonalities": "← Личности",
+    "competedAs": "как {{name}}"
   },
   "styleguide": {
     "metaTitle": "[RU] Editorial styleguide and tone of voice",

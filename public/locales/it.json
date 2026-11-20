@@ -5394,7 +5394,8 @@
       "entrants": "[IT] Entries",
       "linked": "[IT] Linked to a profile"
     },
-    "backToPersonalities": "← Personalità"
+    "backToPersonalities": "← Personalità",
+    "competedAs": "come {{name}}"
   },
   "styleguide": {
     "metaTitle": "[IT] Editorial styleguide and tone of voice",

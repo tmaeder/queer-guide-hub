@@ -5392,7 +5392,8 @@
       "entrants": "[ZH] Entries",
       "linked": "[ZH] Linked to a profile"
     },
-    "backToPersonalities": "← 人物"
+    "backToPersonalities": "← 人物",
+    "competedAs": "以 {{name}} 身份"
   },
   "styleguide": {
     "metaTitle": "[ZH] Editorial styleguide and tone of voice",

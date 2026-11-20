@@ -5392,7 +5392,8 @@
       "entrants": "참가",
       "linked": "프로필 연결됨"
     },
-    "backToPersonalities": "← 인물"
+    "backToPersonalities": "← 인물",
+    "competedAs": "{{name}}(으)로"
   },
   "styleguide": {
     "metaTitle": "편집 스타일 가이드와 문체",

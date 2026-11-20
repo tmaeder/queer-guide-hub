@@ -5398,7 +5398,8 @@
       "entrants": "[FR] Entries",
       "linked": "[FR] Linked to a profile"
     },
-    "backToPersonalities": "← Personnalités"
+    "backToPersonalities": "← Personnalités",
+    "competedAs": "en tant que {{name}}"
   },
   "styleguide": {
     "metaTitle": "[FR] Editorial styleguide and tone of voice",

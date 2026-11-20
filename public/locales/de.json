@@ -5394,7 +5394,8 @@
       "entrants": "[DE] Entries",
       "linked": "[DE] Linked to a profile"
     },
-    "backToPersonalities": "← Persönlichkeiten"
+    "backToPersonalities": "← Persönlichkeiten",
+    "competedAs": "als {{name}}"
   },
   "styleguide": {
     "metaTitle": "[DE] Editorial styleguide and tone of voice",

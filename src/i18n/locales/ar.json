@@ -5402,7 +5402,8 @@
       "entrants": "[AR] Entries",
       "linked": "[AR] Linked to a profile"
     },
-    "backToPersonalities": "→ الشخصيات"
+    "backToPersonalities": "→ الشخصيات",
+    "competedAs": "باسم {{name}}"
   },
   "styleguide": {
     "metaTitle": "[AR] Editorial styleguide and tone of voice",

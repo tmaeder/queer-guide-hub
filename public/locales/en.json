@@ -5443,7 +5443,8 @@
       "entrants": "Entries",
       "linked": "Linked to a profile"
     },
-    "backToPersonalities": "← Personalities"
+    "backToPersonalities": "← Personalities",
+    "competedAs": "as {{name}}"
   },
   "styleguide": {
     "metaTitle": "Editorial styleguide and tone of voice",
