@@ -77,3 +77,26 @@ describe('city alias guard allows a city its own name', () => {
     expect(collide).toBeGreaterThan(own);
   });
 });
+
+describe('parish rows are not cities', () => {
+  const parish = readFileSync(
+    'supabase/migrations/99991795168793_city_parish_rows_cleanup.sql',
+    'utf8',
+  )
+    .split('\n')
+    .filter((l) => !l.trim().startsWith('--'))
+    .join('\n');
+
+  it('moves venues off the parish rows before archiving them', () => {
+    expect(parish.indexOf('update public.venues v set city_id = t.cid')).toBeLessThan(
+      parish.indexOf('archive_city_as_nonplace'),
+    );
+  });
+
+  it('teaches the non-place check that a Parroquia name is a subdivision', () => {
+    expect(parish).toContain("when p_name ~* '^\\s*parroquia\\s' then 'admin_subdivision'");
+    expect(parish).toContain(
+      "when p_name ~* '^\\s*(rt|rw)\\s*\\.?\\s*\\d+' then 'neighbourhood_unit'",
+    );
+  });
+});
