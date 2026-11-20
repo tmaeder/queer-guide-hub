@@ -17,7 +17,7 @@ export function BlockedUsersSettings() {
       </CardHeader>
       <CardContent>
         {list.isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <p className="text-sm text-muted-foreground">Loading blocked members…</p>
         ) : people.length === 0 ? (
           <p className="text-sm text-muted-foreground">No one blocked.</p>
         ) : (
