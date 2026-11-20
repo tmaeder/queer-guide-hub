@@ -14,9 +14,12 @@ type Status = 'idle' | 'checking' | 'available' | 'taken' | 'invalid' | 'error';
 interface Props {
   value: string | null;
   onChange: (username: string) => void;
+  /** Select the first suggestion automatically (signup). Off where a pick is
+   *  costly to undo, like the once-a-year rename in settings. */
+  prepick?: boolean;
 }
 
-export function UsernameSelector({ value, onChange }: Props) {
+export function UsernameSelector({ value, onChange, prepick = false }: Props) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -45,6 +48,7 @@ export function UsernameSelector({ value, onChange }: Props) {
   // Always one of the shown names picked, unless the reader typed their own.
   // Runs when a new list arrives (first load and every reroll), not on picks.
   const autoPick = useEffectEvent((list: string[]) => {
+    if (!prepick) return;
     if (list[0] && !custom && !list.includes(value ?? '')) onChange(list[0]);
   });
   useEffect(() => {
