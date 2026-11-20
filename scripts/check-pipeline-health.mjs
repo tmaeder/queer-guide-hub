@@ -6157,6 +6157,12 @@ const DISOWNED_PROSE_CEILING = 380
     if (sig?.probe_ok !== true || !(sig.live_cities > 0)) {
       console.error(`✗ city_name_twin_signals probe not ok: ${JSON.stringify(sig)}`)
       FAILED = true
+    } else if (sig.colliding_aliases > 0) {
+      console.error(
+        `✗ ${sig.colliding_aliases} city alias(es) name a different live city in the same country — ` +
+          'trg_city_alias_reject_collision is missing or bypassed',
+      )
+      FAILED = true
     } else if (sig.pairs > BASELINE) {
       console.warn(
         `⚠ ${sig.pairs} city name twins (baseline ${BASELINE}) — a city was likely created under a second ` +

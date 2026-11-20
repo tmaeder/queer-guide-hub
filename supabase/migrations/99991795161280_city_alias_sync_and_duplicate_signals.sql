@@ -18,6 +18,46 @@
 -- Alias overlap alone is NOT used to merge: measured, 181 live pairs share an
 -- alias key and many are different places (Mannheim/Ludwigshafen, districts,
 -- Swedish kommun vs town). The detector uses name_local, the strong signal.
+--
+-- Those overlaps are wrong aliases, not duplicates: 176 aliases on 174 cities
+-- named a DIFFERENT live city in the same country (Brick <- Newark,
+-- Carmel <- Bethlehem, Mannheim <- Ludwigshafen). The resolver matches the
+-- real city by its own name first, so the alias did nothing useful and would
+-- have misrouted the name the moment that city's row was missing.
+--   0. trg_city_alias_reject_collision: a BEFORE INSERT/UPDATE guard on
+--      city_aliases, so no writer (this trigger, city-factual-backfill's
+--      Wikidata harvest, merge_cities) can store such an alias. It skips the
+--      row (returns NULL) rather than raising, so batch writers keep going.
+--   5. The existing 176 are deleted after the merges below.
+
+-- 0. Collision guard ----------------------------------------------------------
+create or replace function public.city_alias_reject_collision()
+returns trigger
+language plpgsql
+security definer
+set search_path to 'public', 'pg_catalog'
+as $fn$
+declare
+  v_country uuid;
+begin
+  select country_id into v_country from public.cities where id = new.city_id;
+  if exists (
+    select 1 from public.cities b
+     where b.country_id = v_country and b.id <> new.city_id
+       and b.duplicate_of_id is null
+       and b.canonical_key = public.city_canonical_key(new.alias)
+  ) then
+    return null;
+  end if;
+  return new;
+end $fn$;
+
+revoke all on function public.city_alias_reject_collision() from public, anon, authenticated;
+
+drop trigger if exists trg_city_alias_reject_collision on public.city_aliases;
+create trigger trg_city_alias_reject_collision
+  before insert or update of alias, city_id on public.city_aliases
+  for each row execute function public.city_alias_reject_collision();
 
 -- 1. Sync trigger -----------------------------------------------------------
 create or replace function public.city_alias_sync()
@@ -118,6 +158,23 @@ begin
   end if;
 end $$;
 
+-- 5. Delete aliases that name a different live city ---------------------------
+-- Runs after the merges, so an alias whose other city was just merged away
+-- (Kolmar on Colmar) is no longer a collision and survives.
+do $$
+declare v_n int;
+begin
+  delete from public.city_aliases al
+   using public.cities a
+   where a.id = al.city_id and a.duplicate_of_id is null
+     and al.alias_key <> a.canonical_key
+     and exists (select 1 from public.cities b
+                  where b.country_id = a.country_id and b.id <> a.id
+                    and b.duplicate_of_id is null and b.canonical_key = al.alias_key);
+  get diagnostics v_n = row_count;
+  raise notice 'deleted % colliding city aliases', v_n;
+end $$;
+
 -- 4. Detector -----------------------------------------------------------------
 create or replace function public.city_name_twin_signals()
 returns jsonb
@@ -145,6 +202,12 @@ as $fn$
     'probe_ok', true,
     'live_cities', (select count(*) from live),
     'pairs', (select count(*) from pairs),
+    'colliding_aliases', (
+      select count(*) from public.city_aliases al
+        join live a on a.id = al.city_id
+       where al.alias_key <> a.canonical_key
+         and exists (select 1 from live b where b.country_id = a.country_id
+                       and b.id <> a.id and b.canonical_key = al.alias_key)),
     'sample', coalesce((select jsonb_agg(p.a_name || ' / ' || p.b_name || ' [' || p.cc || '] ' || coalesce(p.km::text, '?') || ' km')
                           from (select * from pairs order by km nulls last limit 40) p), '[]'::jsonb)
   )
@@ -163,6 +226,13 @@ begin
   v := public.city_name_twin_signals();
   if not coalesce((v->>'probe_ok')::boolean, false) then
     raise exception 'city_name_twin_signals probe failed: %', v;
+  end if;
+  if (v->>'colliding_aliases')::int <> 0 then
+    raise exception 'colliding city aliases remain: %', v->>'colliding_aliases';
+  end if;
+  if not exists (select 1 from pg_trigger where tgname = 'trg_city_alias_reject_collision'
+                   and tgrelid = 'public.city_aliases'::regclass and tgenabled <> 'D') then
+    raise exception 'trg_city_alias_reject_collision not attached';
   end if;
   raise notice 'city_name_twin_signals: %', v;
 end $$;

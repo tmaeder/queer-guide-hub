@@ -34,3 +34,28 @@ describe('city alias sync', () => {
     expect(i).toBeLessThan(health.lastIndexOf('process.exit(1)'));
   });
 });
+
+describe('city alias collision guard', () => {
+  it('skips (returns null) an alias that is another live city name in the same country', () => {
+    const g = sql.slice(
+      sql.indexOf('function public.city_alias_reject_collision'),
+      sql.indexOf('function public.city_alias_sync'),
+    );
+    expect(g).toMatch(
+      /b\.country_id = v_country and b\.id <> new\.city_id[\s\S]*b\.duplicate_of_id is null[\s\S]*return null;/,
+    );
+    expect(sql).toMatch(
+      /create trigger trg_city_alias_reject_collision\s+before insert or update of alias, city_id on public\.city_aliases/,
+    );
+  });
+
+  it('deletes existing collisions only after the merges', () => {
+    expect(sql.indexOf('delete from public.city_aliases')).toBeGreaterThan(
+      sql.indexOf('perform public.merge_cities'),
+    );
+  });
+
+  it('hard-fails the health check on any colliding alias', () => {
+    expect(health).toMatch(/sig\.colliding_aliases > 0\) \{[\s\S]{0,300}FAILED = true/);
+  });
+});
