@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedRpc } from '@/integrations/supabase/untyped';
+import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import type { IntimateProfile, IntimateDiscoveryCard } from '@/lib/intimate/types';
 import type { TablesInsert } from '@/integrations/supabase/types';
@@ -53,6 +53,37 @@ export interface DiscoveryFilters {
   /** Not in the discovery view; filtered here against intimate_profiles, which
    *  opted-in members can already read (the detail page shows it). */
   genitalia?: string[];
+  /** Wanted hanky colours (variant id → pocket). Matched against members'
+   *  'members_adult' signals; a 'both' on either side matches any pocket. */
+  hanky?: Record<string, 'left' | 'right' | 'both'>;
+}
+
+async function keepHanky(
+  cards: IntimateDiscoveryCard[],
+  wanted: DiscoveryFilters['hanky'],
+): Promise<IntimateDiscoveryCard[]> {
+  const entries = Object.entries(wanted ?? {});
+  if (!entries.length || !cards.length) return cards;
+  const { data, error } = await untypedFrom('user_hanky_signals')
+    .select('user_id, variant_id, side')
+    .in(
+      'user_id',
+      cards.map((c) => c.user_id),
+    )
+    .is('revoked_at', null);
+  if (error) throw error;
+  const matches = (side: string, want: string) =>
+    side === want || side === 'both' || want === 'both';
+  const keep = new Set(
+    (data ?? [])
+      .filter((r) =>
+        entries.some(
+          ([variant, want]) => r.variant_id === variant && matches(String(r.side), want),
+        ),
+      )
+      .map((r) => r.user_id as string),
+  );
+  return cards.filter((c) => keep.has(c.user_id));
 }
 
 async function keepGenitalia(
@@ -78,7 +109,10 @@ export function useIntimateDiscovery(filters: DiscoveryFilters) {
   return useQuery({
     queryKey: ['intimate-discovery', filters],
     queryFn: async (): Promise<IntimateDiscoveryCard[]> =>
-      keepGenitalia(await fetchDiscovery(filters), filters.genitalia),
+      keepGenitalia(
+        await keepHanky(await fetchDiscovery(filters), filters.hanky),
+        filters.genitalia,
+      ),
   });
 }
 

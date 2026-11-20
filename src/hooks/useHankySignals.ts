@@ -66,9 +66,9 @@ export function useSetHankySignal() {
               user_id: user.id,
               variant_id: variantId,
               side,
-              // Nothing renders other members' signals yet, so store the
-              // honest value rather than the table's public default.
-              visibility: 'private',
+              // Opted-in members can read 'members_adult' signals (RLS
+              // user_hanky_signals_members_read); discovery matches on them.
+              visibility: 'members_adult',
               consented_at: now,
               revoked_at: null,
             },
@@ -83,4 +83,14 @@ export function useSetHankySignal() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['hanky-signals'] }),
   });
+}
+
+/** Pockets → the role vocabulary: left = top, right = bottom, both = vers. */
+export function roleFromHanky(signals: Record<string, HankySide>): string[] {
+  const sides = new Set(Object.values(signals));
+  const roles: string[] = [];
+  if (sides.has('both') || (sides.has('left') && sides.has('right'))) roles.push('vers');
+  else if (sides.has('left')) roles.push('top');
+  else if (sides.has('right')) roles.push('bottom');
+  return roles;
 }

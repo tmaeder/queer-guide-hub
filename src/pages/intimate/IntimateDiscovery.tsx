@@ -44,6 +44,7 @@ export default function IntimateDiscovery({
   const [ages, setAges] = useState<string[]>([]);
   const [bodies, setBodies] = useState<string[]>([]);
   const [genitalia, setGenitalia] = useState<string[]>([]);
+  const [hanky, setHanky] = useState<Record<string, 'left' | 'right' | 'both'>>({});
   // Start from "who you're looking for" (Settings › Identity & dating), once
   // per loaded profile. Render-time seeding, not an effect.
   const seeking = seekingToFilters(me?.dating_prefs?.seeking);
@@ -54,10 +55,15 @@ export default function IntimateDiscovery({
     setAges(seeking.ageBands);
     setBodies(seeking.bodyTypes);
     setGenitalia(seeking.genitalia);
+    setHanky(seeking.hanky);
   }
   const usingSeeking =
     hasSeeking(seeking) &&
-    (genitalia.length > 0 || roles.length > 0 || ages.length > 0 || bodies.length > 0);
+    (genitalia.length > 0 ||
+      Object.keys(hanky).length > 0 ||
+      roles.length > 0 ||
+      ages.length > 0 ||
+      bodies.length > 0);
   const {
     data: kinkTaxonomy,
     isLoading: kinkTaxonomyLoading,
@@ -123,6 +129,7 @@ export default function IntimateDiscovery({
     ageBands: ages,
     bodyTypes: bodies,
     genitalia,
+    hanky,
   });
 
   const { data: likedIds = [] } = useMyIntimateLikes();
@@ -263,6 +270,7 @@ export default function IntimateDiscovery({
               setAges([]);
               setBodies([]);
               setGenitalia([]);
+              setHanky({});
             }}
           >
             Show everyone

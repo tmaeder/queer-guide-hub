@@ -20,6 +20,13 @@ vi.mock('@/hooks/useIntimateProfile', () => ({
   useSetIntimateText: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 vi.mock('@/components/intimate/HankyCodePicker', () => ({ HankyCodePicker: () => null }));
+vi.mock('@/hooks/useHankySignals', () => ({
+  roleFromHanky: () => [],
+  useHankyVariants: () => ({ data: [] }),
+  useMyHankySignals: () => ({ data: {} }),
+}));
+vi.mock('@/hooks/useKinkRatings', () => ({ useMyKinkRatings: () => ({ data: new Map() }) }));
+vi.mock('@/hooks/useKinkTaxonomy', () => ({ useKinkTaxonomy: () => ({ data: undefined }) }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 
 import { IntimateTab } from '../IntimateTab';
@@ -52,7 +59,8 @@ describe('IntimateTab', () => {
     });
     render(wrap(<IntimateTab />));
     expect(screen.queryByText(/Enable intimate profile/i)).toBeNull();
-    expect(screen.getByRole('region', { name: 'Your role' })).toBeInTheDocument();
+    // Role comes from the hanky pockets now; no separate role picker.
+    expect(screen.queryByRole('region', { name: 'Your role' })).toBeNull();
     expect(screen.getByRole('region', { name: 'Your safer sex' })).toBeInTheDocument();
     // Into/Limits duplicate the checklist below.
     expect(screen.queryByRole('region', { name: 'Into' })).toBeNull();
