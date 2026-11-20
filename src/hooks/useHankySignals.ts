@@ -51,6 +51,25 @@ export function useMyHankySignals() {
   });
 }
 
+/** Another member's visible signals. RLS returns them only when both of you
+ *  are opted-in intimate members. */
+export function useMemberHankySignals(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['hanky-signals', 'member', userId],
+    enabled: !!userId,
+    queryFn: async (): Promise<Record<string, HankySide>> => {
+      const { data, error } = await untypedFrom('user_hanky_signals')
+        .select('variant_id, side')
+        .eq('user_id', userId!)
+        .is('revoked_at', null);
+      if (error) throw error;
+      return Object.fromEntries(
+        (data ?? []).map((r) => [r.variant_id as string, r.side as HankySide]),
+      );
+    },
+  });
+}
+
 /** Wear a colour on a side (side=null takes it off). Every change is a fresh
  *  consent row in user_hanky_consent_events, written by the table's trigger. */
 export function useSetHankySignal() {

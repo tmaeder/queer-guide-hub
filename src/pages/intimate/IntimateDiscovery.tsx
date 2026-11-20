@@ -14,6 +14,7 @@ import {
 } from '@/hooks/useIntimateMatches';
 import { Button } from '@/components/ui/button';
 import { SignalChips } from '@/components/people/SignalChips';
+import { HankyWorn } from '@/components/intimate/HankyWorn';
 import type { PeopleMatchShared } from '@/hooks/usePeopleDiscovery';
 import { LikePassActions } from '@/components/intimate/LikePassActions';
 import { SwipeDeck, type SwipeableCard } from '@/components/intimate/SwipeDeck';
@@ -367,6 +368,7 @@ export default function IntimateDiscovery({
                           {c.role.join(', ')}
                         </div>
                       ) : null}
+                      <HankyWorn signals={c.hanky} compact className="mt-1.5" />
                       <SignalChips shared={shared} className="mt-1.5" max={2} />
                     </div>
                   </Link>

@@ -21,6 +21,10 @@ vi.mock('@/hooks/useIntimateActions', () => ({
   useProfileDisplay: () => ({ display: 'pictogram' }),
   useSendFriendRequest: () => ({ mutate: vi.fn() }),
 }));
+vi.mock('@/hooks/useHankySignals', () => ({
+  useMemberHankySignals: () => ({ data: {} }),
+  useHankyVariants: () => ({ data: [] }),
+}));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/assets/intimate/pictograms', () => ({
   getGenitalPictogramSet: () => [],
