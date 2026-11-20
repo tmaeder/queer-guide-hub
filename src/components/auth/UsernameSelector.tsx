@@ -14,9 +14,12 @@ type Status = 'idle' | 'checking' | 'available' | 'taken' | 'invalid' | 'error';
 interface Props {
   value: string | null;
   onChange: (username: string) => void;
+  /** Select the first suggestion automatically (signup). Off where a pick is
+   *  costly to undo, like the once-a-year rename in settings. */
+  prepick?: boolean;
 }
 
-export function UsernameSelector({ value, onChange }: Props) {
+export function UsernameSelector({ value, onChange, prepick = false }: Props) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -43,11 +46,11 @@ export function UsernameSelector({ value, onChange }: Props) {
   }, []);
 
   // Always one of the shown names picked, unless the reader typed their own.
-  // Runs when a new list arrives (first load and every reroll), not on picks.
+  // A no-op once a shown name (or a typed one) is selected.
   useEffect(() => {
+    if (!prepick) return;
     if (suggestions[0] && !custom && !suggestions.includes(value ?? '')) onChange(suggestions[0]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [suggestions]);
+  }, [prepick, suggestions, custom, value, onChange]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.

@@ -8,6 +8,8 @@ import { generateRandomConfig, type AvatarConfig } from './avatarConfig';
 interface Props {
   value: AvatarConfig | null;
   onChange: (config: AvatarConfig) => void;
+  /** Select the first avatar of each batch automatically (signup). */
+  prepick?: boolean;
   count?: number;
 }
 
@@ -19,7 +21,7 @@ const sameConfig = (a: AvatarConfig | null, b: AvatarConfig) =>
  * Reroll generates a fresh batch. No deep customization — the simplified
  * builder in AvatarChooser covers that.
  */
-export function AvatarQuickPick({ value, onChange, count = 6 }: Props) {
+export function AvatarQuickPick({ value, onChange, count = 6, prepick = false }: Props) {
   const [seed, setSeed] = useState(0);
 
   const options = useMemo(
@@ -32,9 +34,9 @@ export function AvatarQuickPick({ value, onChange, count = 6 }: Props) {
   // Always one of the shown avatars picked: the first of each new batch,
   // unless the current one is already in it.
   useEffect(() => {
+    if (!prepick) return;
     if (options[0] && !options.some((cfg) => sameConfig(value, cfg))) onChange(options[0]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options]);
+  }, [prepick, options, value, onChange]);
 
   return (
     <div className="flex flex-col gap-4">
