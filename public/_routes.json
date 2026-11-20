@@ -17,6 +17,7 @@
     "/robots.txt",
     "/cli.mjs",
     "/build-id.txt",
+    "/asset-list.txt",
     "/placeholder.svg",
     "/design-audit.json",
     "/offline.html",

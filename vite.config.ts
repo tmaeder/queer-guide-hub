@@ -35,7 +35,7 @@ const COMMIT_SHA = process.env.CF_PAGES_COMMIT_SHA || process.env.GITHUB_SHA || 
 // built-asset sweep in scripts/smoke-pages.sh, which reasons about that.
 const BUILD_ID = COMMIT_SHA || `local-${Date.now()}`;
 
-// Emit /build-id.txt into the build output so the running app can
+// Emit /build-id.txt (and /asset-list.txt, see below) into the build output so the running app can
 // fetch it on visibilitychange and compare against the build it booted
 // with. Served by CF Pages with the default /*.txt cache rule (5 min).
 function emitBuildIdFile(): Plugin {
@@ -47,6 +47,27 @@ function emitBuildIdFile(): Plugin {
       try {
         fs.mkdirSync(outDir, { recursive: true });
         fs.writeFileSync(path.join(outDir, 'build-id.txt'), BUILD_ID + '\n', 'utf8');
+        // Every hashed script and stylesheet this build emitted, one path per
+        // line. scripts/smoke-pages.sh reads it from the live site to sweep the
+        // lazily loaded route chunks no HTML references (the scheduled smoke
+        // run has no dist/ of its own), and the deploy diffs it against the
+        // previous build's list to purge every newly emitted chunk once origin
+        // serves it. A chunk requested during the deploy window can be cached
+        // as the HTML fallback under `immutable` for a year, on one edge only:
+        // /assets/js/Eyebrow-* and IntentPageLayout-* did that on 2026-11-20.
+        const assetsDir = path.join(outDir, 'assets');
+        const assets: string[] = [];
+        const walk = (dir: string) => {
+          for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            const full = path.join(dir, entry.name);
+            if (entry.isDirectory()) walk(full);
+            else if (/\.(js|css)$/.test(entry.name)) {
+              assets.push('/' + path.relative(outDir, full).split(path.sep).join('/'));
+            }
+          }
+        };
+        if (fs.existsSync(assetsDir)) walk(assetsDir);
+        fs.writeFileSync(path.join(outDir, 'asset-list.txt'), assets.sort().join('\n') + '\n', 'utf8');
       } catch {
         // Best-effort: if the dist dir isn't writable the version-check
         // util simply gets a 404 and skips its notification.
