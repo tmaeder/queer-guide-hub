@@ -58,12 +58,13 @@ export interface DiscoveryFilters {
   hanky?: Record<string, 'left' | 'right' | 'both'>;
 }
 
-async function keepHanky(
+/** Attaches each card's worn hanky colours, then keeps only cards wearing a
+ *  wanted colour in a matching pocket ('both' on either side matches). */
+async function withHanky(
   cards: IntimateDiscoveryCard[],
   wanted: DiscoveryFilters['hanky'],
 ): Promise<IntimateDiscoveryCard[]> {
-  const entries = Object.entries(wanted ?? {});
-  if (!entries.length || !cards.length) return cards;
+  if (!cards.length) return cards;
   const { data, error } = await untypedFrom('user_hanky_signals')
     .select('user_id, variant_id, side')
     .in(
@@ -72,18 +73,20 @@ async function keepHanky(
     )
     .is('revoked_at', null);
   if (error) throw error;
+  const byUser = new Map<string, Record<string, 'left' | 'right' | 'both'>>();
+  for (const r of data ?? []) {
+    const m = byUser.get(r.user_id as string) ?? {};
+    m[r.variant_id as string] = r.side as 'left' | 'right' | 'both';
+    byUser.set(r.user_id as string, m);
+  }
+  const withSignals = cards.map((c) => ({ ...c, hanky: byUser.get(c.user_id) }));
+  const entries = Object.entries(wanted ?? {});
+  if (!entries.length) return withSignals;
   const matches = (side: string, want: string) =>
     side === want || side === 'both' || want === 'both';
-  const keep = new Set(
-    (data ?? [])
-      .filter((r) =>
-        entries.some(
-          ([variant, want]) => r.variant_id === variant && matches(String(r.side), want),
-        ),
-      )
-      .map((r) => r.user_id as string),
+  return withSignals.filter((c) =>
+    entries.some(([variant, want]) => c.hanky?.[variant] && matches(c.hanky[variant], want)),
   );
-  return cards.filter((c) => keep.has(c.user_id));
 }
 
 async function keepGenitalia(
@@ -110,7 +113,7 @@ export function useIntimateDiscovery(filters: DiscoveryFilters) {
     queryKey: ['intimate-discovery', filters],
     queryFn: async (): Promise<IntimateDiscoveryCard[]> =>
       keepGenitalia(
-        await keepHanky(await fetchDiscovery(filters), filters.hanky),
+        await withHanky(await fetchDiscovery(filters), filters.hanky),
         filters.genitalia,
       ),
   });
