@@ -59,3 +59,65 @@ describe('city alias collision guard', () => {
     expect(health).toMatch(/sig\.colliding_aliases > 0\) \{[\s\S]{0,300}FAILED = true/);
   });
 });
+
+describe('city alias guard allows a city its own name', () => {
+  const fix = readFileSync(
+    'supabase/migrations/99991795168229_city_alias_guard_allows_own_name.sql',
+    'utf8',
+  )
+    .split('\n')
+    .filter((l) => !l.trim().startsWith('--'))
+    .join('\n');
+
+  it('returns the row before the collision check when the alias is the city own key', () => {
+    const own = fix.indexOf('if v_key is not distinct from v_own_key then');
+    const collide = fix.indexOf('b.canonical_key = v_key');
+    expect(own).toBeGreaterThan(0);
+    expect(fix.slice(own, own + 80)).toContain('return new');
+    expect(collide).toBeGreaterThan(own);
+  });
+});
+
+describe('parish rows are not cities', () => {
+  const parish = readFileSync(
+    'supabase/migrations/99991795168793_city_parish_rows_cleanup.sql',
+    'utf8',
+  )
+    .split('\n')
+    .filter((l) => !l.trim().startsWith('--'))
+    .join('\n');
+
+  it('moves venues off the parish rows before archiving them', () => {
+    expect(parish.indexOf('update public.venues v set city_id = t.cid')).toBeLessThan(
+      parish.indexOf('archive_city_as_nonplace'),
+    );
+  });
+
+  it('teaches the non-place check that a Parroquia name is a subdivision', () => {
+    expect(parish).toContain("when p_name ~* '^\\s*parroquia\\s' then 'admin_subdivision'");
+    expect(parish).toContain(
+      "when p_name ~* '^\\s*(rt|rw)\\s*\\.?\\s*\\d+' then 'neighbourhood_unit'",
+    );
+  });
+});
+
+describe('district rows are not cities', () => {
+  const district = readFileSync(
+    'supabase/migrations/99991795170139_city_district_rows_cleanup.sql',
+    'utf8',
+  )
+    .split('\n')
+    .filter((l) => !l.trim().startsWith('--'))
+    .join('\n');
+
+  it('keeps the parish rule when restating the non-place check', () => {
+    expect(district).toContain("when p_name ~* '^\\s*parroquia\\s' then 'admin_subdivision'");
+    expect(district).toContain(
+      "when p_name ~* '^\\s*(barrio|bairro)\\s' then 'neighbourhood_unit'",
+    );
+  });
+
+  it('does not treat Colonia as a non-place (Colonia del Sacramento is a town)', () => {
+    expect(district).not.toMatch(/when p_name ~\* '\^\\s\*\(?colonia/);
+  });
+});
