@@ -756,14 +756,20 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     .on('meta[name="twitter:image"]', new ElementRemover())
     .on('script, style', new ScriptNonceInjector(cspNonce))
     .on('head', new HeadInjector(headInjections.join('\n    ')));
-  // Detail-page preloads (the destination hero image) go right after
-  // <meta charset>, ahead of the stylesheet and module preloads that
-  // HeadInjector's end-of-head position would put them behind: the hero is the
-  // LCP element and nothing else on the page can discover it before the JS
+  // Hero-image preloads (destination detail pages, the /venues hub) go right
+  // after <meta name="viewport">, ahead of the stylesheet and module preloads
+  // that HeadInjector's end-of-head position would put them behind: the hero is
+  // the LCP element and nothing else on the page can discover it before the JS
   // graph has run. Not gated on `indexable` — it is a loading hint for humans.
+  //
+  // AFTER THE VIEWPORT META, not after <meta charset>: the preload picks its
+  // candidate from `imagesizes` (e.g. 100vw) when the parser reaches it. Before
+  // the viewport meta, mobile Chrome still lays out at its 980px default, so a
+  // 412px phone preloaded the 1200w image and the <img> then fetched 800w as
+  // well — every hero downloaded twice (Lighthouse mobile, 2026-11-20).
   const preloads = [...(detail?.preloads ?? []), ...(venuesHero ? [venuesHero.preload] : [])];
   if (preloads.length) {
-    rewriter.on('meta[charset]', new AfterInjector('\n    ' + preloads.join('\n    ')));
+    rewriter.on('meta[name="viewport"]', new AfterInjector('\n    ' + preloads.join('\n    ')));
   }
   if (reportPage) rewriter.on('meta[name="robots"]', new ElementRemover());
 
