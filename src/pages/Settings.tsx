@@ -17,6 +17,7 @@ import {
   Download,
   Heart,
   KeyRound,
+  Palette,
   Plane,
   Shield,
   User,
@@ -32,7 +33,7 @@ import type { ProfileEditorHandle } from '@/components/profile/ProfileEditor';
 /** Sidebar groups: who you are, how the site works for you, your account. */
 const GROUPS: { label: string; sections: SettingsSection[] }[] = [
   { label: 'You', sections: ['profile', 'body', 'identity'] },
-  { label: 'Preferences', sections: ['travel', 'notifications'] },
+  { label: 'Preferences', sections: ['travel', 'notifications', 'display'] },
   { label: 'Account', sections: ['privacy', 'security', 'data'] },
 ];
 
@@ -46,6 +47,7 @@ const NAV: Record<SettingsSection, { label: string; icon: typeof User }> = {
   security: { label: 'Sign-in & security', icon: KeyRound },
   notifications: { label: 'Notifications', icon: Bell },
   travel: { label: 'Travel', icon: Plane },
+  display: { label: 'Language & display', icon: Palette },
   data: { label: 'Your data', icon: Download },
 };
 

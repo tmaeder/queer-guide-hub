@@ -3250,6 +3250,10 @@
       "body": {
         "title": "Body & about",
         "description": "Build, height, weight and clothing sizes. Private unless you share it."
+      },
+      "display": {
+        "title": "Language & display",
+        "description": "Language, currency, theme and accessibility."
       }
     },
     "groups": {

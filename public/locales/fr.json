@@ -3060,6 +3060,10 @@
       "body": {
         "title": "Corps & infos",
         "description": "Silhouette, taille, poids et tailles de vêtements. Privé sauf si vous le partagez."
+      },
+      "display": {
+        "title": "Langue et affichage",
+        "description": "Langue, devise, thème et accessibilité."
       }
     },
     "groups": {

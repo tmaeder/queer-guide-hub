@@ -3056,6 +3056,10 @@
       "body": {
         "title": "Cuerpo y más",
         "description": "Complexión, altura, peso y tallas de ropa. Privado salvo que lo compartas."
+      },
+      "display": {
+        "title": "Idioma y pantalla",
+        "description": "Idioma, moneda, tema y accesibilidad."
       }
     },
     "groups": {

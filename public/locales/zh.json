@@ -3054,6 +3054,10 @@
       "body": {
         "title": "身体与尺码",
         "description": "体型、身高、体重和服装尺码。除非你分享，否则保持私密。"
+      },
+      "display": {
+        "title": "语言与显示",
+        "description": "语言、货币、主题和无障碍。"
       }
     },
     "groups": {

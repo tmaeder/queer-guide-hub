@@ -1028,6 +1028,7 @@ export const AppRoutes = () => {
           <Route path="settings/security" element={<SettingsPage section="security" />} />
           <Route path="settings/notifications" element={<SettingsPage section="notifications" />} />
           <Route path="settings/travel" element={<SettingsPage section="travel" />} />
+          <Route path="settings/display" element={<SettingsPage section="display" />} />
           <Route path="settings/data" element={<SettingsPage section="data" />} />
           <Route path="settings/:section" element={<SettingsPage />} />
           <Route path="profile/settings" element={<SettingsRedirect />} />

@@ -3054,6 +3054,10 @@
       "body": {
         "title": "몸과 사이즈",
         "description": "체형, 키, 몸무게, 옷 사이즈. 공유하지 않으면 비공개입니다."
+      },
+      "display": {
+        "title": "언어 및 표시",
+        "description": "언어, 통화, 테마, 접근성."
       }
     },
     "groups": {

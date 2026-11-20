@@ -3056,6 +3056,10 @@
       "body": {
         "title": "Körper & mehr",
         "description": "Statur, Größe, Gewicht und Kleidergrößen. Privat, außer du teilst sie."
+      },
+      "display": {
+        "title": "Sprache & Anzeige",
+        "description": "Sprache, Währung, Design und Barrierefreiheit."
       }
     },
     "groups": {

@@ -23,6 +23,8 @@ import { ModerationSettings } from '@/components/profile/settings/ModerationSett
 import { BlueskyConnect } from '@/components/profile/settings/BlueskyConnect';
 import { KinkVisibilitySettings } from '@/components/kinks/KinkVisibilitySettings';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
+import { DisplaySettings } from '@/components/profile/settings/DisplaySettings';
+import { ContentConsentSettings } from '@/components/profile/settings/ContentConsentSettings';
 import { BodyProfileEditor } from '@/components/profile/BodyProfileEditor';
 import { IntimateTab } from '@/components/profile/IntimateTab';
 import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
@@ -60,6 +62,7 @@ const TITLES: Record<ProfileEditorSection, string> = {
   security: 'Sign-in & security',
   notifications: 'Notifications',
   travel: 'Travel',
+  display: 'Language & display',
   data: 'Your data',
   avatar: 'Your avatar',
 };
@@ -71,6 +74,7 @@ const SUBTITLES: Record<ProfileEditorSection, string> = {
   security: 'Your handle, passkey and password.',
   notifications: 'What we send to your device and inbox.',
   travel: 'Preferences that rank places and trips for you, and your booking inbox.',
+  display: 'Language, currency, theme and accessibility.',
   data: 'Download everything we hold about you, or delete your account.',
   avatar: 'Choose how your profile appears.',
 };
@@ -430,9 +434,12 @@ function ProfileSettingsContent({
           showSecurity={false}
         />
         <KinkVisibilitySettings />
+        <ContentConsentSettings />
         <ModerationSettings />
         <BlueskyConnect />
       </>
+    ) : section === 'display' ? (
+      <DisplaySettings />
     ) : section === 'avatar' ? (
       <AvatarChooser
         email={user.email || ''}

@@ -31,7 +31,7 @@ test.describe('settings page', () => {
     await page.goto('/settings');
     await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
     const nav = page.getByRole('navigation', { name: 'Settings sections' });
-    await expect(nav.getByRole('link')).toHaveCount(8);
+    await expect(nav.getByRole('link')).toHaveCount(9);
     await expect(page.getByRole('region', { name: 'Profile', exact: true })).toBeVisible({
       timeout: 20_000,
     });

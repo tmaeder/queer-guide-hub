@@ -294,6 +294,7 @@
     "/settings/:section",
     "/settings/body",
     "/settings/data",
+    "/settings/display",
     "/settings/identity",
     "/settings/intimate",
     "/settings/notifications",

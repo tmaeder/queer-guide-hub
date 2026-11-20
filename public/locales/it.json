@@ -3056,6 +3056,10 @@
       "body": {
         "title": "Corpo e altro",
         "description": "Corporatura, altezza, peso e taglie. Privato a meno che tu non lo condivida."
+      },
+      "display": {
+        "title": "Lingua e visualizzazione",
+        "description": "Lingua, valuta, tema e accessibilità."
       }
     },
     "groups": {
