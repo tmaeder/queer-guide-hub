@@ -44,15 +44,15 @@ export function DisplaySettings() {
           </Row>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Accessibility</CardTitle>
+      <section aria-labelledby="settings-a11y" className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h3 id="settings-a11y" className="text-lg font-semibold leading-none tracking-tight">
+            Accessibility
+          </h3>
           <p className="text-sm text-muted-foreground">Saved on this device.</p>
-        </CardHeader>
-        <CardContent>
-          <AccessibilityControls />
-        </CardContent>
-      </Card>
+        </div>
+        <AccessibilityControls />
+      </section>
     </div>
   );
 }

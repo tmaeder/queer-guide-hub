@@ -2,7 +2,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAccessibility } from '@/hooks/useAccessibility';
 import { RefreshCw, Eye, Volume2, Keyboard, MousePointer, Palette } from '@/components/icons';
 
@@ -14,20 +20,20 @@ export function AccessibilityControls() {
       {/* Font Size Control */}
       <Card>
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="flex items-center gap-2">
             <Eye size={20} />
             Text Size
           </CardTitle>
-          <CardDescription>
-            Adjust the text size throughout the application
-          </CardDescription>
+          <CardDescription>Adjust the text size throughout the application</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-2">
             <Label htmlFor="font-size">Font Size</Label>
             <Select
               value={settings.fontSize}
-              onValueChange={(value) => updateSetting('fontSize', value as 'small' | 'medium' | 'large' | 'extra-large')}
+              onValueChange={(value) =>
+                updateSetting('fontSize', value as 'small' | 'medium' | 'large' | 'extra-large')
+              }
             >
               <SelectTrigger id="font-size">
                 <SelectValue />
@@ -46,15 +52,13 @@ export function AccessibilityControls() {
       {/* Visual Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="flex items-center gap-2">
             <Palette size={20} />
             Visual Settings
           </CardTitle>
-          <CardDescription>
-            Customize visual appearance for better accessibility
-          </CardDescription>
+          <CardDescription>Customize visual appearance for better accessibility</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-1">
               <Label htmlFor="high-contrast">High Contrast Mode</Label>
@@ -88,15 +92,13 @@ export function AccessibilityControls() {
       {/* Motion Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="flex items-center gap-2">
             <MousePointer size={20} />
             Motion & Animation
           </CardTitle>
-          <CardDescription>
-            Control animations and motion effects
-          </CardDescription>
+          <CardDescription>Control animations and motion effects</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-1">
               <Label htmlFor="reduce-motion">Reduce Motion</Label>
@@ -116,15 +118,13 @@ export function AccessibilityControls() {
       {/* Screen Reader Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="flex items-center gap-2">
             <Volume2 size={20} />
             Screen Reader Support
           </CardTitle>
-          <CardDescription>
-            Optimize the interface for screen readers
-          </CardDescription>
+          <CardDescription>Optimize the interface for screen readers</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-1">
               <Label htmlFor="screen-reader">Screen Reader Optimized</Label>
@@ -144,13 +144,11 @@ export function AccessibilityControls() {
       {/* Keyboard Navigation Info */}
       <Card>
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="flex items-center gap-2">
             <Keyboard size={20} />
             Keyboard Navigation
           </CardTitle>
-          <CardDescription>
-            Learn about keyboard shortcuts and navigation
-          </CardDescription>
+          <CardDescription>Learn about keyboard shortcuts and navigation</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -179,16 +177,13 @@ export function AccessibilityControls() {
       {/* Reset Button */}
       <Card>
         <CardHeader>
-          <CardTitle>Reset Settings</CardTitle>
+          <CardTitle className="flex items-center gap-2">Reset Settings</CardTitle>
           <CardDescription>
             Restore all accessibility settings to their default values
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button
-            variant="outline"
-            onClick={resetToDefaults}
-          >
+          <Button variant="outline" onClick={resetToDefaults}>
             <RefreshCw size={16} />
             Reset to Defaults
           </Button>
