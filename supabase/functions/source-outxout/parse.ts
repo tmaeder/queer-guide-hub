@@ -64,7 +64,7 @@ export function country(s: unknown): string | null {
 export function cleanName(s: string, city?: string): string {
   return city && s.endsWith(`, ${city}`) ? s.slice(0, -city.length - 2) : s;
 }
-export function point(lat: any, lng: any): Obj {
+export function point(lat: unknown, lng: unknown): Obj {
   if (
     lat == null || lng == null || !Number.isFinite(+lat) ||
     !Number.isFinite(+lng) || Math.abs(+lat) > 90 || Math.abs(+lng) > 180 ||
@@ -72,7 +72,7 @@ export function point(lat: any, lng: any): Obj {
   ) return { lat: null, lng: null };
   return { lat: +lat, lng: +lng };
 }
-function walk(value: any, visit: (o: Obj) => void): void {
+function walk(value: unknown, visit: (o: Obj) => void): void {
   if (!value || typeof value !== "object") return;
   if (!Array.isArray(value)) visit(value);
   for (const v of Object.values(value)) walk(v, visit);
