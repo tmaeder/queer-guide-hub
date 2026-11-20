@@ -7,7 +7,8 @@
 // either. A hashed URL that cannot be purged can only be escaped by changing
 // its bytes, which is what this comment does. Do not remove it to "tidy up" —
 // deleting it re-emits the poisoned hash.
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Suspense, useState, useEffect, useMemo, useCallback } from 'react';
+import { lazyRetry } from '@/utils/lazyRetry';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -36,7 +37,6 @@ import { VenuesRails } from '@/components/venues/VenuesRails';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { LeaderboardWidget } from '@/components/venues/LeaderboardWidget';
 import { AchievementToast } from '@/components/venues/AchievementToast';
-import { MapShell } from '@/components/map/MapShell';
 import type { MapShellFilters } from '@/components/map/MapShell.types';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
@@ -54,6 +54,9 @@ import { useTranslation } from 'react-i18next';
 import { VENUES_V2_ENABLED } from '@/lib/featureFlags';
 import { PageContainer, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { useMotionTokens } from '@/lib/motion';
+
+// The map view pulls in maplibre (~315 KB); the default grid view must not.
+const MapShell = lazyRetry(() => import('@/components/map/MapShell'));
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 
@@ -653,7 +656,9 @@ const Venues = () => {
               exit={{ opacity: 0, scale: 0.98 }}
               transition={tweens.fast}
             >
-              <MapShell surface="venues" height={700} filtersOverride={mapFilters} />
+              <Suspense fallback={<div className="h-full w-full bg-muted" aria-hidden="true" />}>
+                <MapShell surface="venues" height={700} filtersOverride={mapFilters} />
+              </Suspense>
               {!loading && filteredTotal === 0 && Object.keys(currentFilters).length > 0 && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 pointer-events-none">
                   <div className="pointer-events-auto rounded-element bg-background p-6 text-center">
