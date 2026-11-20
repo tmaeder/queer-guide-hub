@@ -23,6 +23,7 @@ vi.mock('@/hooks/useIntimateActions', () => ({
 }));
 vi.mock('@/hooks/useHankySignals', () => ({
   useMemberHankySignals: () => ({ data: {} }),
+  useMyHankySignals: () => ({ data: {} }),
   useHankyVariants: () => ({ data: [] }),
 }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));

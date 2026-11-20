@@ -13,7 +13,8 @@ import { getGenitalPictogramSet, bodyPictograms, angleOptions } from '@/assets/i
 import { useState } from 'react';
 import { KinkVisibleList } from '@/components/kinks/KinkVisibleList';
 import { HankyWorn } from '@/components/intimate/HankyWorn';
-import { useMemberHankySignals } from '@/hooks/useHankySignals';
+import { useMemberHankySignals, useMyHankySignals } from '@/hooks/useHankySignals';
+import { hankyMatches } from '@/lib/intimate/hankyChecks';
 import { KinkPeerActions } from '@/components/kinks/KinkPeerActions';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -40,6 +41,7 @@ export default function IntimateUserDetail() {
   const report = useReportIntimateProfile();
   const { data: displayProfile } = useProfileDisplay(userId);
   const { data: hanky } = useMemberHankySignals(userId);
+  const { data: myHanky } = useMyHankySignals();
   const sendRequestMut = useSendFriendRequest();
   const blockMut = useBlockUser();
 
@@ -183,7 +185,14 @@ export default function IntimateUserDetail() {
 
         {hanky && Object.keys(hanky).length > 0 && (
           <FlatFieldGroup title="Hanky code">
-            <HankyWorn signals={hanky} />
+            <HankyWorn
+              signals={hanky}
+              matching={
+                userId === me?.id
+                  ? undefined
+                  : hankyMatches(hanky, me?.dating_prefs?.seeking?.hanky ?? {}, myHanky ?? {})
+              }
+            />
           </FlatFieldGroup>
         )}
 
