@@ -60,14 +60,14 @@ type Mood = 'nightlife' | 'slow' | 'pride' | 'kinky' | 'nudist' | 'culture' | 'o
 // Hand-picked from image_assets so each card shows the mood, not a random trip cover.
 const MOOD_IMAGES: Record<Mood, string> = {
   nightlife:
-    'https://img.queer.guide/event-images/62ce499d7e0ecc9dcb730756823bef5104b1f453e72a88c174a0b84d7996a50a.jpg',
-  slow: 'https://img.queer.guide/event-images/949880044b089416ab6f0f9fd2f69feda7324e32293a7a707f97b828a40fbe59.jpg',
+    'https://img.queer.guide/event-images/c9182ef09b5dc457803920330ae50d766902fa6810318da987f2eadbd3e28cae.jpg',
+  slow: 'https://img.queer.guide/city-images/f3d8c9642e5a9a396ccc89ec2c04e3effe09286d494f421e2ecca69e2fcf2e48.jpg',
   pride:
     'https://img.queer.guide/event-images/891d71c676779cbe5a8462af0f17a2482147fc799da240bb6b2bad721458fdb3.jpg',
   kinky:
     'https://img.queer.guide/event-images/94e56ee4df9475627a708dee6e3558b4d02c670205a17172291429a5055efe88.jpg',
   nudist:
-    'https://img.queer.guide/event-images/268affb0d3a1777000daeb5bed297939120d2a563503b7bc369b812f4ddc033e.jpg',
+    'https://images.pexels.com/photos/14354909/pexels-photo-14354909.jpeg?auto=compress&cs=tinysrgb&w=1200',
   culture:
     'https://img.queer.guide/event-images/3d036de30bc7e9cfdbefa3384c86c38f13d49638a54a9de5fb5d9b36b0d1b989.jpg',
   outdoors:
