@@ -122,6 +122,10 @@ describe('the infra installs live in exactly one place', () => {
      * with no tile failover. A THIRD installer still fails here, and it should
      * — at that point "route it through useMapInstance" is the cheaper answer
      * than a third copy.
+     *
+     * The EntityMap entry is `EntityMap.impl.tsx`: the map itself moved there
+     * when EntityMap.tsx became a lazy wrapper (it now only loads maplibre
+     * when the map nears the viewport). Same installer, new file.
      */
     const installers = FILES.filter(
       (f) =>
@@ -136,7 +140,7 @@ describe('the infra installs live in exactly one place', () => {
       'the set of basemap-failover installers changed. A new entry means a ' +
         'map was built outside useMapInstance AND hand-wired; prefer routing ' +
         'it through the hook. A missing entry means a map lost its failover.',
-    ).toEqual(['components/map/EntityMap.tsx', 'components/map/hooks/useMapInstance.ts']);
+    ).toEqual(['components/map/EntityMap.impl.tsx', 'components/map/hooks/useMapInstance.ts']);
   });
 });
 
