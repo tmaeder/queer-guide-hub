@@ -5888,6 +5888,12 @@
         "left": "Esquerda",
         "right": "Direita",
         "both": "Ambos"
+      },
+      "helpMembers": "Cada cor é um kink. Bolso esquerdo se você dá ou é top, direito se recebe ou é bottom, os dois se faz ambos. Visível para outros membros inscritos.",
+      "sideMeaning": {
+        "left": "top / dá",
+        "right": "bottom / recebe",
+        "both": "ambos"
       }
     }
   }

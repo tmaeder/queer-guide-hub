@@ -5888,6 +5888,12 @@
         "left": "Sinistra",
         "right": "Destra",
         "both": "Entrambe"
+      },
+      "helpMembers": "Ogni colore è un kink. Tasca sinistra se dai o sei top, destra se ricevi o sei bottom, entrambe se fai tutte e due. Visibile agli altri membri iscritti.",
+      "sideMeaning": {
+        "left": "top / dà",
+        "right": "bottom / riceve",
+        "both": "entrambi"
       }
     }
   }

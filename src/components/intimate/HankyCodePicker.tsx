@@ -13,19 +13,43 @@ import {
 
 const SIDE_LETTER: Record<HankySide, string> = { left: 'L', right: 'R', both: 'L·R' };
 
+const SIDE_MEANING: Record<HankySide, string> = {
+  left: 'top / giving',
+  right: 'bottom / receiving',
+  both: 'either',
+};
+
 const SIDES: { value: HankySide; label: string }[] = [
   { value: 'left', label: 'Left' },
   { value: 'right', label: 'Right' },
   { value: 'both', label: 'Both' },
 ];
 
-/** Pick the hanky colours you wear and on which side. Private to you. */
-export function HankyCodePicker() {
+interface HankyCodePickerProps {
+  /** Controlled mode (e.g. the colours you are looking for). Omit both to edit
+   *  the colours you wear, saved straight to user_hanky_signals. */
+  value?: Record<string, HankySide>;
+  onChange?: (variantId: string, side: HankySide | null) => void;
+  /** Called with your full set after each saved change (own-signals mode). */
+  onWornChange?: (signals: Record<string, HankySide>) => void;
+  help?: string;
+}
+
+/** Pick hanky colours and the pocket for each. */
+export function HankyCodePicker({
+  value,
+  onChange,
+  onWornChange,
+  help,
+}: HankyCodePickerProps = {}) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { data: variants } = useHankyVariants();
-  const { data: mine = {} } = useMyHankySignals();
+  const controlled = !!onChange;
+  const { data: saved = {} } = useMyHankySignals();
+  const mine = controlled ? (value ?? {}) : saved;
   const setSignal = useSetHankySignal();
+  const pending = !controlled && setSignal.isPending;
 
   if (!variants?.length) return null;
   const variantOf = new Map(variants.map((v) => [v.colorId, v.variantId]));
@@ -34,24 +58,33 @@ export function HankyCodePicker() {
     return variantId ? [{ entry, variantId }] : [];
   });
 
-  const set = (variantId: string, side: HankySide | null) =>
+  const set = (variantId: string, side: HankySide | null) => {
+    if (onChange) return onChange(variantId, side);
     setSignal.mutate(
       { variantId, side },
       {
+        onSuccess: () => {
+          const next = { ...saved };
+          if (side) next[variantId] = side;
+          else delete next[variantId];
+          onWornChange?.(next);
+        },
         onError: (e) =>
           toast({ title: 'Could not save', description: String(e), variant: 'destructive' }),
       },
     );
+  };
 
   const worn = rows.filter((r) => mine[r.variantId]);
 
   return (
     <div className="flex flex-col gap-4">
       <p className="text-xs text-muted-foreground">
-        {t(
-          'intimate.hanky.help',
-          'Left pocket = top / giving, right = bottom / receiving. Saved privately. Only you see it.',
-        )}
+        {help ??
+          t(
+            'intimate.hanky.helpMembers',
+            'Each colour is a kink. Wear it on the left pocket if you give or top, the right if you receive or bottom, both if you do either. Shown to other opted-in members.',
+          )}
       </p>
       <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 md:grid-cols-8">
         {rows.map(({ entry, variantId }) => {
@@ -61,7 +94,7 @@ export function HankyCodePicker() {
               key={entry.id}
               type="button"
               aria-pressed={!!side}
-              disabled={setSignal.isPending}
+              disabled={pending}
               title={t(entry.meaningKey, entry.meaningEn)}
               onClick={() => set(variantId, side ? null : 'left')}
               className={cn(
@@ -72,6 +105,14 @@ export function HankyCodePicker() {
               <HankyPocket color={entry.hex} side={side ?? 'left'} size={56} />
               <span className="w-full truncate text-center text-2xs font-bold leading-tight">
                 {t(entry.colorKey, entry.colorEn)}
+              </span>
+              <span
+                className={cn(
+                  'line-clamp-2 w-full text-center text-2xs leading-tight',
+                  side ? 'text-background/80' : 'text-muted-foreground',
+                )}
+              >
+                {t(entry.meaningKey, entry.meaningEn)}
               </span>
               {side && (
                 <span className="absolute end-1 top-1 rounded-badge bg-background px-1 font-display text-2xs text-foreground">
@@ -110,10 +151,14 @@ export function HankyCodePicker() {
                   <ToggleChip
                     key={s.value}
                     pressed={mine[variantId] === s.value}
-                    disabled={setSignal.isPending}
+                    disabled={pending}
                     onPressedChange={() => set(variantId, s.value)}
                   >
                     {t(`intimate.hanky.side.${s.value}`, s.label)}
+                    <span className="font-normal opacity-70">
+                      {' · '}
+                      {t(`intimate.hanky.sideMeaning.${s.value}`, SIDE_MEANING[s.value])}
+                    </span>
                   </ToggleChip>
                 ))}
               </div>

@@ -5888,6 +5888,12 @@
         "left": "Links",
         "right": "Rechts",
         "both": "Beide"
+      },
+      "helpMembers": "Jede Farbe steht für einen Kink. Links trägst du sie, wenn du gibst oder top bist, rechts, wenn du nimmst oder bottom bist, auf beiden Seiten, wenn beides. Für andere freigeschaltete Mitglieder sichtbar.",
+      "sideMeaning": {
+        "left": "Top / gebend",
+        "right": "Bottom / nehmend",
+        "both": "beides"
       }
     }
   }

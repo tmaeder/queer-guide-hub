@@ -4,6 +4,7 @@ import { ToggleChip } from '@/components/ui/ToggleChip';
 import { Textarea } from '@/components/ui/textarea';
 import { FlatField } from '@/components/ui/FlatFieldGroup';
 import { Slider } from '@/components/ui/slider';
+import { HankyCodePicker } from '@/components/intimate/HankyCodePicker';
 import {
   AGE_BANDS,
   BODY_TYPES,
@@ -498,12 +499,16 @@ function SeekingFields({
         </div>
       </div>
       <div className="flex flex-col gap-2">
-        <span className="text-13 text-muted-foreground">Roles</span>
-        <ChipPicker
-          options={ROLES as readonly string[]}
-          icons={ROLE_ICONS}
-          selected={seeking.roles ?? []}
-          onToggle={(v) => toggle('roles', v)}
+        <span className="text-13 text-muted-foreground">Hanky code</span>
+        <HankyCodePicker
+          value={seeking.hanky ?? {}}
+          onChange={(variantId, side) => {
+            const next = { ...(seeking.hanky ?? {}) };
+            if (side) next[variantId] = side;
+            else delete next[variantId];
+            set({ hanky: next });
+          }}
+          help="Pick the kinks you want, and the pocket the other person wears them in: left for someone who gives or tops, right for someone who receives or bottoms."
         />
       </div>
       <div className="flex flex-col gap-2">

@@ -52,7 +52,8 @@ describe('IntimateTab', () => {
     });
     render(wrap(<IntimateTab />));
     expect(screen.queryByText(/Enable intimate profile/i)).toBeNull();
-    expect(screen.getByRole('region', { name: 'Your role' })).toBeInTheDocument();
+    // Role comes from the hanky pockets now; no separate role picker.
+    expect(screen.queryByRole('region', { name: 'Your role' })).toBeNull();
     expect(screen.getByRole('region', { name: 'Your safer sex' })).toBeInTheDocument();
     // Into/Limits duplicate the checklist below.
     expect(screen.queryByRole('region', { name: 'Into' })).toBeNull();

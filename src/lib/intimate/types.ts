@@ -31,6 +31,8 @@ export interface IntimateSeeking {
   age_max?: string | null;
   roles?: string[];
   body_types?: string[];
+  /** Hanky colours wanted: cultural_variants.id → pocket. */
+  hanky?: Record<string, 'left' | 'right' | 'both'>;
 }
 
 export interface IntimateDiscoveryCard {

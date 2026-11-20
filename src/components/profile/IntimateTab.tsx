@@ -15,6 +15,7 @@ import {
 import { FlatFieldGroup } from '@/components/ui/FlatFieldGroup';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HankyCodePicker } from '@/components/intimate/HankyCodePicker';
+import { roleFromHanky } from '@/hooks/useHankySignals';
 import { IntimateStepFields, type IntimateDraft } from '@/components/intimate/IntimateStepFields';
 import { INTO_TAGS as FALLBACK_INTO, LIMITS as FALLBACK_LIMITS } from '@/assets/intimate/options';
 import { getGenitalPictogramSet } from '@/assets/intimate/pictograms';
@@ -31,7 +32,6 @@ const SECTIONS: { step: WizardStep; label: string }[] = [
   { step: 'size', label: 'Size' },
   { step: 'angle', label: 'Angle' },
   { step: 'age', label: 'Your age' },
-  { step: 'role', label: 'Your role' },
   { step: 'safer-sex', label: 'Your safer sex' },
   { step: 'seeking', label: 'Who you are looking for' },
   { step: 'text', label: 'Looking for' },
@@ -214,9 +214,24 @@ export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {
         'size',
         'angle',
         'age',
-        'role',
         'safer-sex',
       ])}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Your hanky code</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Your pockets set your role: left is top, right is bottom, both is vers.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <section aria-label="Hanky code">
+            <HankyCodePicker
+              onWornChange={(signals) => upsert.mutate({ role: roleFromHanky(signals) })}
+            />
+          </section>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -225,17 +240,6 @@ export function IntimateTab({ dateOfBirth }: { dateOfBirth?: string | null } = {
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           {sections.filter((x) => x.step === 'seeking' || x.step === 'text').map(field)}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Hanky code</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <section aria-label="Hanky code">
-            <HankyCodePicker />
-          </section>
         </CardContent>
       </Card>
 
