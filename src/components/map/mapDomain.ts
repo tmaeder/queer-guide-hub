@@ -5,7 +5,7 @@ import type { TransitIconName } from '@/components/transit/transitIconPaths';
  *
  * ## Lines are not layers
  *
- * `LayerType` (7 values) is the FETCH vocabulary: the four bbox fetchers in
+ * `LayerType` (9 values) is the FETCH vocabulary: the point bbox fetchers in
  * `useViewportPoints`, the area queries in `useExploreMapData`, `useAreaLayers`
  * and every `AREA_*` style key are keyed off it, and none of that changes.
  *
@@ -251,9 +251,9 @@ export interface MapLineDef {
  * `C` deliberately does NOT include support organizations yet. `organization`
  * was removed from `VENUE_CATEGORIES` by migration `20260915140000` — "a
  * category answers what kind of place is this, and an organization is not a
- * kind of place" — and there is no `organizations` member of `LayerType` and no
- * bbox fetcher for one. Adding it is its own change; the label says community
- * and care, which is what the line actually holds.
+ * kind of place". Organizations and cruising now have standalone homepage
+ * toggles; they are not additional line fetches. M already receives cruising
+ * venues through the shared venue source.
  */
 export const MAP_LINES: Record<MapLine, MapLineDef> = {
   M: {

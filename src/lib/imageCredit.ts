@@ -48,8 +48,12 @@ const SOURCE_LABELS: Record<string, string> = {
  * Both shapes reduce to the visible name.
  */
 export function stripCreditMarkup(text: string): string {
-  return text
-    .replace(/<[^>]*>/g, '')
+  let stripped = text;
+  for (let prev = ''; prev !== stripped;) {
+    prev = stripped;
+    stripped = stripped.replace(/<[^>]*>/g, '');
+  }
+  return stripped
     .replace(/\ba\s+href="[^"]*"(?:\s+[\w-]+="[^"]*")*/g, '')
     .replace(/\/a\b/g, '')
     .replace(/\s+/g, ' ')

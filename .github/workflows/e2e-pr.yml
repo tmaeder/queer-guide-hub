@@ -211,6 +211,14 @@ jobs:
             psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-review-cron-dependency.sql
           fi
 
+          # The recovered verifier regression needs four city rows that can be
+          # absent from the anonymous, capped snapshot. Fill synthetic local
+          # dependencies without changing its historical SQL or country geometry.
+          if [ -f /tmp/migrations/20261119190359_geo_cms_territory_country_comparison.sql ] && ! grep -qx '20261119190359' snapshot/versions.txt; then
+            DB_URL="$DB_URL" node scripts/ci/seed-territory-verifier-migration.mjs > /tmp/ci-territory-verifier-fixtures.sql
+            psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-territory-verifier-fixtures.sql
+          fi
+
           # Only the PR's NEW migrations: versions production has not applied.
           for f in $(ls /tmp/migrations/*.sql | sort); do
             v=$(basename "$f" | cut -d_ -f1)

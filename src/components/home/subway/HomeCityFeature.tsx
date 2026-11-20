@@ -213,7 +213,7 @@ export function HomeCityFeature() {
             <ImageCredit
               attribution={current.attribution ?? undefined}
               license={current.license ?? undefined}
-              className="rounded-badge bg-black/70 px-1.5 py-0.5 text-white backdrop-blur-sm"
+              className="rounded-badge bg-black/60 px-1.5 py-0.5 text-white backdrop-blur-sm"
             />
           )}
         </div>
