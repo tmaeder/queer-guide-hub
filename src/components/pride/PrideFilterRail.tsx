@@ -183,7 +183,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
             onChange={(e) => setFilters({ ...filters, query: e.target.value })}
             placeholder={t('pride.filters.searchPlaceholder')}
             aria-label={t('pride.filters.searchAria')}
-            className="w-full rounded-element bg-background pl-8 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
+            className="w-full rounded-element bg-background pl-8 pr-4 py-2 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
           />
         </div>
 
