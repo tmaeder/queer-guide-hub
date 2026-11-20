@@ -1682,7 +1682,19 @@
     "blockedUsers": "Utenti bloccati",
     "reportUser": "Segnala utente",
     "sendMessage": "Invia messaggio",
-    "favoritesShortcut": "Preferiti"
+    "favoritesShortcut": "Preferiti",
+    "tabs": {
+      "overview": "Panoramica",
+      "travel": "Viaggi",
+      "activity": "Attività",
+      "groups": "Gruppi"
+    },
+    "share": "Condividi profilo",
+    "report": "Segnala profilo",
+    "joined": "Iscritto da {{date}}",
+    "editAvatar": "Cambia avatar",
+    "lensHidden": "Questo profilo non è visibile in questa vista. Passa a Tu per continuare.",
+    "sections": "Sezioni del profilo"
   },
   "groups": {
     "title": "Gruppi",
@@ -2991,6 +3003,47 @@
       "copy": "[IT] Copy address",
       "openInbox": "[IT] Open inbox",
       "claimFirst": "[IT] Choose a username above to activate your address."
+    },
+    "title": "Impostazioni",
+    "viewProfile": "Vedi il tuo profilo",
+    "sectionsLabel": "Sezioni delle impostazioni",
+    "allSettings": "Tutte le impostazioni",
+    "travel": {
+      "reviewSearch": "Rivedi le preferenze di ricerca"
+    },
+    "sections": {
+      "profile": {
+        "title": "Profilo",
+        "description": "Vibe, nome, pronomi, bio e link. I dati si salvano automaticamente."
+      },
+      "identity": {
+        "title": "Identità e incontri",
+        "description": "I dati di identità si salvano automaticamente. Gli incontri hanno controlli propri."
+      },
+      "privacy": {
+        "title": "Privacy e visibilità",
+        "description": "Chi vede ogni parte del tuo profilo. Le modifiche si salvano automaticamente."
+      },
+      "security": {
+        "title": "Accesso e sicurezza",
+        "description": "Il tuo handle, la passkey e la password."
+      },
+      "notifications": {
+        "title": "Notifiche",
+        "description": "Cosa inviamo al tuo dispositivo e alla tua casella."
+      },
+      "travel": {
+        "title": "Viaggi",
+        "description": "Preferenze che ordinano luoghi e viaggi per te, e la casella delle prenotazioni."
+      },
+      "data": {
+        "title": "I tuoi dati",
+        "description": "Scarica tutto ciò che conserviamo su di te o elimina il tuo account."
+      },
+      "avatar": {
+        "title": "Il tuo avatar",
+        "description": "Scegli come appare il tuo profilo."
+      }
     }
   },
   "map": {
@@ -4059,7 +4112,8 @@
       "trips": "Viaggi",
       "overview": "Panoramica",
       "messages": "Messaggi",
-      "plans": "Piani"
+      "plans": "Piani",
+      "progress": "Progressi"
     },
     "calendar": {
       "title": "In programma",
@@ -4176,6 +4230,9 @@
     },
     "plans": {
       "trips": "I tuoi viaggi"
+    },
+    "progress": {
+      "description": "Missioni, livello, serie e riconoscimenti. Visibile solo a te."
     }
   },
   "city": {

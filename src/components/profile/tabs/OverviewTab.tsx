@@ -1,12 +1,8 @@
 import type { ReactNode } from 'react';
 import type { ProfileEditorSection } from '@/lib/profileEditing';
-import { Button } from '@/components/ui/button';
-import { profileEditPath } from '@/lib/profileEditing';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { SecureProfileViewer } from '@/components/profile/SecureProfileViewer';
 import { SocialSummaryRow } from '@/components/profile/SocialSummaryRow';
 import { ActivityStrip } from '@/components/profile/ActivityStrip';
-import { CompletionNudge } from '@/components/profile/CompletionNudge';
 import { GapPromptCard } from '@/components/profile/GapPromptCard';
 import { getProfileGap } from '@/lib/profileGaps';
 import { previewFilterProfile, sectionVisible, type ProfileLens } from '@/lib/profileLens';
@@ -15,27 +11,23 @@ interface OverviewTabProps {
   profile: Record<string, unknown>;
   isOwnProfile: boolean;
   lens?: ProfileLens;
-  completionPct?: number;
   onPostsClick?: () => void;
   onEdit?: (section: ProfileEditorSection, privacyField?: string) => void;
+  /** The inline avatar editor, when open. */
   editor?: ReactNode;
-  editingSection?: ProfileEditorSection | null;
 }
 
 export function OverviewTab({
   profile,
   isOwnProfile,
   lens = 'you',
-  completionPct,
   onPostsClick,
   onEdit,
   editor,
-  editingSection,
 }: OverviewTabProps) {
   const ownView = isOwnProfile && lens === 'you';
-  // One completion surface only: the actionable gap prompt when there's a
-  // specific gap, otherwise the generic percentage nudge.
-  const hasGap = ownView && getProfileGap(profile) !== null;
+  // One nudge at most, and only when it names a specific gap.
+  const hasGap = ownView && !editor && getProfileGap(profile) !== null;
   const privacy = (profile.privacy_settings ?? {}) as Record<string, unknown>;
   const socialVisible = sectionVisible(
     privacy.social_visibility as string | undefined,
@@ -51,54 +43,25 @@ export function OverviewTab({
 
   return (
     <div className="flex flex-col gap-6">
-      {ownView && (
-        <div className="flex flex-wrap gap-2">
-          <Button variant="ghost" onClick={() => onEdit?.('privacy')}>
-            Privacy & visibility
-          </Button>
-        </div>
-      )}
       {ownView && editor}
-      {!editor &&
-        (hasGap ? (
-          <GapPromptCard profile={profile} />
-        ) : (
-          ownView &&
-          typeof completionPct === 'number' && <CompletionNudge percent={completionPct} />
-        ))}
+      {hasGap && <GapPromptCard profile={profile} />}
 
-      {socialVisible ? (
+      {socialVisible && (
         <SocialSummaryRow
           userId={profile.user_id as string}
           isOwnProfile={ownView}
           onPostsClick={onPostsClick}
         />
-      ) : (
-        isOwnProfile && (
-          <p className="text-13 text-muted-foreground">
-            Community summary hidden at this visibility.{' '}
-            <LocalizedLink
-              to={profileEditPath(profile.user_id as string, 'privacy')}
-              className="underline"
-            >
-              Privacy settings
-            </LocalizedLink>
-          </p>
-        )
       )}
 
-      {/* Own activity always (incl. empty state); another user's only when they've
-          opted in — RLS returns rows only then, and hideWhenEmpty suppresses the
-          card otherwise so absence reads as "not shared", not "no activity". */}
-      {activityVisible && (
-        <ActivityStrip userId={profile.user_id as string} hideWhenEmpty={!ownView} />
-      )}
+      {/* Absent when empty, for everyone: absence reads as "nothing yet" or
+          "not shared", which an empty card only restated. */}
+      {activityVisible && <ActivityStrip userId={profile.user_id as string} hideWhenEmpty />}
 
       <SecureProfileViewer
         profile={isOwnProfile ? previewFilterProfile(profile, lens) : profile}
         isOwnProfile={ownView}
         onEdit={ownView ? onEdit : undefined}
-        editingSection={editingSection}
       />
     </div>
   );

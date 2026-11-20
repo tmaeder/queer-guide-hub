@@ -26,6 +26,7 @@ const EntityDetail = lazyRetry(() => import('./pages/EntityDetail'));
 const Guides = lazyRetry(() => import('./pages/Guides'));
 const GuideDetail = lazyRetry(() => import('./pages/GuideDetail'));
 const ProfilePage = lazyRetry(() => import('./pages/profile/ProfilePage'));
+const SettingsPage = lazyRetry(() => import('./pages/Settings'));
 const VenuePersonalization = lazyRetry(() => import('./pages/onboarding/VenuePersonalization'));
 const Events = lazyRetry(() => import('./pages/Events'));
 const EventDetail = lazyRetry(() => import('./pages/EventDetail'));
@@ -203,8 +204,8 @@ const CMSPage = lazyRetry(() => import('./pages/Page'));
 const ShareTarget = lazyRetry(() => import('./pages/ShareTarget'));
 const PridePage = lazyRetry(() => import('./pages/Pride'));
 
-/** Old settings links now open the authenticated owner's contextual profile editor. */
-function SettingsRedirect({ privacy = false }: { privacy?: boolean }) {
+/** Old settings links (/hub/settings, /me/settings, /profile/settings) → /settings/<section>. */
+function SettingsRedirect() {
   const { locale } = useParams<{ locale?: string }>();
   const location = useLocation();
   const { user, loading } = useAuth();
@@ -220,7 +221,7 @@ function SettingsRedirect({ privacy = false }: { privacy?: boolean }) {
     );
   return (
     <Navigate
-      to={`${prefix}${legacySettingsDestination(user.id, location.search, privacy)}${location.hash}`}
+      to={`${prefix}${legacySettingsDestination(user.id, location.search)}${location.hash}`}
       replace
     />
   );
@@ -990,6 +991,7 @@ export const AppRoutes = () => {
           <Route path="hub/messages" element={<HubPage module="messages" />} />
           <Route path="hub/plans" element={<HubPage module="plans" />} />
           <Route path="hub/saved" element={<HubPage module="saved" />} />
+          <Route path="hub/progress" element={<HubPage module="progress" />} />
           <Route path="hub/settings" element={<SettingsRedirect />} />
           {/* Retired module paths → their consolidated home. LocalizedRedirect
           preserves the query string (e.g. ?conversation=). */}
@@ -1006,16 +1008,26 @@ export const AppRoutes = () => {
           <Route path="me/calendar" element={<LocalizedRedirect to="/hub/plans" />} />
           <Route path="me/travel" element={<MeRedirect tab="travel" />} />
           <Route path="me/groups" element={<LocalizedRedirect to="/hub/messages" />} />
-          <Route path="me/contributions" element={<MeRedirect tab="contributions" />} />
-          <Route path="me/progress" element={<MeRedirect tab="progress" />} />
-          <Route path="me/passport" element={<MeRedirect tab="progress" />} />
-          <Route path="me/missions" element={<MeRedirect tab="progress" />} />
-          <Route path="me/leaderboard" element={<MeRedirect tab="progress" />} />
+          <Route path="me/contributions" element={<MeRedirect tab="activity" />} />
+          <Route path="me/progress" element={<LocalizedRedirect to="/hub/progress" />} />
+          <Route path="me/passport" element={<LocalizedRedirect to="/hub/progress" />} />
+          <Route path="me/missions" element={<LocalizedRedirect to="/hub/progress" />} />
+          <Route path="me/leaderboard" element={<LocalizedRedirect to="/hub/progress" />} />
           <Route path="me/settings" element={<SettingsRedirect />} />
-          <Route path="me/account" element={<MeRedirect tab="account" />} />
-          <Route path="me/tiers" element={<MeRedirect tab="progress" />} />
-          <Route path="settings" element={<SettingsRedirect />} />
-          <Route path="settings/privacy" element={<SettingsRedirect privacy />} />
+          <Route path="me/account" element={<LocalizedRedirect to="/settings/security" />} />
+          <Route path="me/tiers" element={<LocalizedRedirect to="/hub/progress" />} />
+          {/* Every preference lives on /settings; the section is a path segment. */}
+          {/* Literal paths, not settings/:section — `/:locale?/privacy` would
+          otherwise read /settings/privacy as locale "settings". */}
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="settings/profile" element={<SettingsPage section="profile" />} />
+          <Route path="settings/identity" element={<SettingsPage section="identity" />} />
+          <Route path="settings/privacy" element={<SettingsPage section="privacy" />} />
+          <Route path="settings/security" element={<SettingsPage section="security" />} />
+          <Route path="settings/notifications" element={<SettingsPage section="notifications" />} />
+          <Route path="settings/travel" element={<SettingsPage section="travel" />} />
+          <Route path="settings/data" element={<SettingsPage section="data" />} />
+          <Route path="settings/:section" element={<SettingsPage />} />
           <Route path="profile/settings" element={<SettingsRedirect />} />
           {/* Legacy People routes preserve inbound links while Hub remains
           the single canonical shell. */}
@@ -1064,7 +1076,7 @@ export const AppRoutes = () => {
           <Route path="tools/workbook/:slug" element={<WorkbookRunner />} />
           {/* Hand-typed shortcut (404 reports) → the checklist tool. */}
           <Route path="kink" element={<LocalizedRedirect to="/tools/checklist" />} />
-          <Route path="profile/tiers" element={<Navigate to="/me/progress" replace />} />
+          <Route path="profile/tiers" element={<LocalizedRedirect to="/hub/progress" />} />
           <Route path="profile/footprint" element={<Navigate to="/me/travel" replace />} />
           <Route path="profile/footprint/:userId/public" element={<FootprintRedirect />} />
           <Route path="user/:userId/:tab?" element={<ProfilePage />} />
