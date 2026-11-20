@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import legacyProfileOptions from '@/config/legacyProfileTaxonomySeeds.json';
 import { referenceTaxonomyRows } from '@/lib/referenceTaxonomyStore';
 import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
@@ -26,7 +27,6 @@ import {
   Users,
 } from '@/components/icons';
 import { useTranslation } from 'react-i18next';
-import { ToggleChip } from '@/components/ui/ToggleChip';
 import { PRIDE_FLAGS, flagById } from '@/lib/flags';
 import { FlagSwatch } from '@/components/tags/FlagSwatch';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
@@ -197,7 +197,11 @@ function FlagPicker({
   };
 
   return (
-    <div className="flex flex-wrap gap-1.5" role="group" aria-label="Pride flags">
+    <div
+      className="-mx-1 flex snap-x gap-1.5 overflow-x-auto px-1 pb-2"
+      role="group"
+      aria-label="Pride flags"
+    >
       {PRIDE_FLAGS.filter((flag) => {
         const terms = referenceTaxonomyRows('pride_flag');
         return (
@@ -210,17 +214,24 @@ function FlagPicker({
         const disabled = !active && atCap;
         const name = t(flag.nameKey, flag.nameEn);
         return (
-          <ToggleChip
+          <button
             key={flag.id}
-            pressed={active}
+            type="button"
+            aria-pressed={active}
             disabled={disabled}
-            onPressedChange={() => toggle(flag.id)}
+            onClick={() => toggle(flag.id)}
             title={name}
-            icon={<FlagSwatch flag={flag} decorative className="h-3 w-5 border" />}
+            className={cn(
+              'flex min-h-0 w-24 shrink-0 snap-start flex-col items-center gap-1.5 rounded-element px-1 pb-2 pt-2.5 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40',
+              active ? 'bg-foreground text-background' : 'bg-muted hover:bg-surface-container-high',
+            )}
           >
-            {/* "Pride Flag" repeats on every chip; the swatch already says it. */}
-            {name.replace(/ (Pride )?Flag$/, '')}
-          </ToggleChip>
+            <FlagSwatch flag={flag} decorative className="h-8 w-14 border" />
+            {/* "Pride Flag" repeats on every tile; the swatch already says it. */}
+            <span className="w-full text-center leading-tight">
+              {name.replace(/ (Pride )?Flag$/, '')}
+            </span>
+          </button>
         );
       })}
     </div>
