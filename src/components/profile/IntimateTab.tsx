@@ -13,8 +13,6 @@ import {
 } from '@/hooks/useIntimateProfile';
 import { FlatFieldGroup } from '@/components/ui/FlatFieldGroup';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Compass, Eye, EyeOff } from '@/components/icons';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { HankyCodePicker } from '@/components/intimate/HankyCodePicker';
 import { IntimateStepFields, type IntimateDraft } from '@/components/intimate/IntimateStepFields';
 import { INTO_TAGS as FALLBACK_INTO, LIMITS as FALLBACK_LIMITS } from '@/assets/intimate/options';
@@ -151,23 +149,6 @@ export function IntimateTab({ part = 'intimate' }: { part?: 'intimate' | 'body' 
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center gap-2 rounded-element bg-muted p-1.5 ps-4 text-sm">
-        {isBody && (
-          <span className="me-auto text-muted-foreground">
-            Shown with your intimate profile, to opted-in members only.
-          </span>
-        )}
-        <span hidden={isBody} className="me-auto inline-flex items-center gap-2 font-bold">
-          {visible ? <Eye size={16} aria-hidden /> : <EyeOff size={16} aria-hidden />}
-          {visible ? 'Visible to opted-in members' : 'Hidden'}
-        </span>
-        <Button variant="ghost" size="sm" asChild>
-          <LocalizedLink to="/intimate" className="no-underline">
-            <Compass size={16} aria-hidden /> Discovery
-          </LocalizedLink>
-        </Button>
-      </div>
-
       {sections.map(({ step, label }) => (
         <section key={step} aria-label={label} className="flex flex-col gap-2">
           <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
