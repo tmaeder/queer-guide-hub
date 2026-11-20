@@ -1,0 +1,61 @@
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+
+const sql = readFileSync(
+  'supabase/migrations/99991795161280_city_alias_sync_and_duplicate_signals.sql',
+  'utf8',
+)
+  .split('\n')
+  .filter((l) => !l.trim().startsWith('--'))
+  .join('\n');
+const health = readFileSync('scripts/check-pipeline-health.mjs', 'utf8');
+
+describe('city alias sync', () => {
+  it('runs after the geo spine trigger, which creates the profile the alias FK needs', () => {
+    expect(sql).toMatch(
+      /create trigger trg_zz_city_alias_sync\s+after insert or update of name, name_local on public\.cities/,
+    );
+    expect('trg_zz_city_alias_sync' > 'trg_sync_geo_spine').toBe(true);
+  });
+
+  it('keeps name, name_local and the previous name on rename', () => {
+    expect(sql).toContain('(new.name, null::text)');
+    expect(sql).toContain('(new.name_local, new.name_local_lang)');
+    expect(sql).toMatch(/old\.name is distinct from new\.name then old\.name/);
+  });
+
+  it('never writes the generated alias_key column', () => {
+    expect(sql).not.toMatch(/city_aliases \([^)]*alias_key/);
+  });
+
+  it('is wired into the health check before the terminal exit', () => {
+    const i = health.indexOf('/rest/v1/rpc/city_name_twin_signals');
+    expect(i).toBeGreaterThan(0);
+    expect(i).toBeLessThan(health.lastIndexOf('process.exit(1)'));
+  });
+});
+
+describe('city alias collision guard', () => {
+  it('skips (returns null) an alias that is another live city name in the same country', () => {
+    const g = sql.slice(
+      sql.indexOf('function public.city_alias_reject_collision'),
+      sql.indexOf('function public.city_alias_sync'),
+    );
+    expect(g).toMatch(
+      /b\.country_id = v_country and b\.id <> new\.city_id[\s\S]*b\.duplicate_of_id is null[\s\S]*return null;/,
+    );
+    expect(sql).toMatch(
+      /create trigger trg_city_alias_reject_collision\s+before insert or update of alias, city_id on public\.city_aliases/,
+    );
+  });
+
+  it('deletes existing collisions only after the merges', () => {
+    expect(sql.indexOf('delete from public.city_aliases')).toBeGreaterThan(
+      sql.indexOf('perform public.merge_cities'),
+    );
+  });
+
+  it('hard-fails the health check on any colliding alias', () => {
+    expect(health).toMatch(/sig\.colliding_aliases > 0\) \{[\s\S]{0,300}FAILED = true/);
+  });
+});
