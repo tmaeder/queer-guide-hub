@@ -1572,7 +1572,8 @@
       "locked": "+{{pts}} pt",
       "visited": "{{count}} luoghi visitati",
       "empty": "Nessun check-in.",
-      "signInPrompt": "Accedi per vedere il passaporto."
+      "signInPrompt": "Accedi per vedere il passaporto.",
+      "earnedCount": "{{earned}} su {{total}} ottenuti"
     },
     "onboarding": {
       "progress": "Passo {{current}} di {{total}}",
@@ -1699,7 +1700,10 @@
       "title": "Accedi per vedere questo profilo",
       "body": "I profili dei membri sono visibili solo ai membri che hanno effettuato l’accesso.",
       "cta": "Accedi"
-    }
+    },
+    "headerLabel": "Profilo",
+    "verified": "Verificato",
+    "setStatus": "Imposta uno stato…"
   },
   "groups": {
     "title": "Gruppi",
@@ -3882,7 +3886,8 @@
       "set": "Imposta un vibe",
       "title": "Il tuo vibe",
       "placeholder": "Qual è il tuo vibe?",
-      "for4h": "4 h"
+      "for4h": "4 h",
+      "emoji": "Scegli un’emoji"
     },
     "stickers": {
       "title": "Adesivi"

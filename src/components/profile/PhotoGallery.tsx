@@ -19,9 +19,11 @@ import { useUserPhotos } from '@/hooks/useUserPhotos';
 interface PhotoGalleryProps {
   userId: string;
   isOwnProfile: boolean;
+  /** Render nothing for visitors when there are no photos. */
+  hideWhenEmpty?: boolean;
 }
 
-export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
+export function PhotoGallery({ userId, isOwnProfile, hideWhenEmpty }: PhotoGalleryProps) {
   const { photos, isLoading, uploadPhoto, deletePhoto, updateCaption, getSignedPhotoUrl } =
     useUserPhotos(userId);
   const ALLOWED_IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -77,7 +79,6 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
     };
     loadUrls();
     return () => {
-       
       isMounted = false;
     };
   }, [photos, getSignedPhotoUrl]);
@@ -125,13 +126,13 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-center justify-center h-32">
-            <TrackLoader size={24} />
-          </div>
+          <div className="h-32" role="status" aria-label="Loading photos" />
         </CardContent>
       </Card>
     );
   }
+
+  if (hideWhenEmpty && !isOwnProfile && !photos?.length) return null;
 
   return (
     <Card>
@@ -320,11 +321,7 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
           <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
             <DialogContent className="max-w-4xl">
               <div className="relative">
-                <img
-                  src={selectedImage}
-                  alt=""
-                  className="w-full max-h-[80vh] object-contain"
-                />
+                <img src={selectedImage} alt="" className="w-full max-h-[80vh] object-contain" />
                 <Button
                   className="absolute top-2 right-2"
                   variant="secondary"

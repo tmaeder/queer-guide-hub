@@ -1572,7 +1572,8 @@
       "locked": "+{{pts}} pts",
       "visited": "{{count}} lugares visitados",
       "empty": "Aún no hay check-ins.",
-      "signInPrompt": "Inicia sesión para ver tu pasaporte."
+      "signInPrompt": "Inicia sesión para ver tu pasaporte.",
+      "earnedCount": "{{earned}} de {{total}} conseguidos"
     },
     "onboarding": {
       "progress": "Paso {{current}} de {{total}}",
@@ -1699,7 +1700,10 @@
       "title": "Inicia sesión para ver este perfil",
       "body": "Los perfiles de los miembros solo son visibles para miembros con sesión iniciada.",
       "cta": "Iniciar sesión"
-    }
+    },
+    "headerLabel": "Perfil",
+    "verified": "Verificado",
+    "setStatus": "Añadir un estado…"
   },
   "groups": {
     "title": "Grupos",
@@ -3882,7 +3886,8 @@
       "set": "Define tu vibe",
       "title": "Tu vibe",
       "placeholder": "¿Cuál es tu vibe?",
-      "for4h": "4 h"
+      "for4h": "4 h",
+      "emoji": "Elegir un emoji"
     },
     "stickers": {
       "title": "Stickers"

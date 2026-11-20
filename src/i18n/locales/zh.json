@@ -1572,7 +1572,8 @@
       "locked": "+{{pts}}分",
       "visited": "访问了{{count}}个场所",
       "empty": "尚无签到。",
-      "signInPrompt": "登录以查看你的护照。"
+      "signInPrompt": "登录以查看你的护照。",
+      "earnedCount": "已获得 {{earned}}/{{total}}"
     },
     "onboarding": {
       "progress": "步骤 {{current}}/{{total}}",
@@ -1699,7 +1700,10 @@
       "title": "登录以查看此个人资料",
       "body": "会员个人资料仅对已登录的会员可见。",
       "cta": "登录"
-    }
+    },
+    "headerLabel": "个人资料",
+    "verified": "已验证",
+    "setStatus": "设置状态…"
   },
   "groups": {
     "title": "群组",
@@ -3880,7 +3884,8 @@
       "set": "设置心情",
       "title": "你的心情",
       "placeholder": "你的心情如何？",
-      "for4h": "4 小时"
+      "for4h": "4 小时",
+      "emoji": "选择表情"
     },
     "stickers": {
       "title": "贴纸"

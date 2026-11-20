@@ -8,7 +8,7 @@ export function UserSubmissionsList() {
   const { data: submissions = [], isLoading } = useUserSubmissions(user?.id, true);
 
   if (isLoading) {
-    return <div className="h-20 rounded-container bg-card animate-pulse" />;
+    return <div className="h-20 rounded-container bg-card" />;
   }
   if (submissions.length === 0) {
     return <p className="text-sm text-muted-foreground">No submissions yet.</p>;

@@ -4,6 +4,7 @@ import { SecureProfileViewer } from '@/components/profile/SecureProfileViewer';
 import { SocialSummaryRow } from '@/components/profile/SocialSummaryRow';
 import { ActivityStrip } from '@/components/profile/ActivityStrip';
 import { GapPromptCard } from '@/components/profile/GapPromptCard';
+import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { getProfileGap } from '@/lib/profileGaps';
 import { previewFilterProfile, sectionVisible, type ProfileLens } from '@/lib/profileLens';
 
@@ -41,10 +42,22 @@ export function OverviewTab({
     !isOwnProfile ||
     sectionVisible(privacy.activity_visibility as string | undefined, lens, 'private');
 
+  // Photos sit beside the avatar as part of who you are, under the same
+  // audience setting that gated them when they lived on the Activity tab.
+  const photosVisible = sectionVisible(
+    privacy.contributions_visibility as string | undefined,
+    isOwnProfile ? lens : 'community',
+    'public',
+  );
+
   return (
     <div className="flex flex-col gap-6">
       {ownView && editor}
       {hasGap && <GapPromptCard profile={profile} />}
+
+      {photosVisible && (
+        <PhotoGallery userId={profile.user_id as string} isOwnProfile={ownView} hideWhenEmpty />
+      )}
 
       {socialVisible && (
         <SocialSummaryRow

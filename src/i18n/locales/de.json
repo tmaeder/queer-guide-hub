@@ -1755,7 +1755,8 @@
       "locked": "+{{pts}} Pkt.",
       "visited": "{{count}} Orte besucht",
       "empty": "Noch keine Check-ins. Besuche einen Ort, um deinen Pass zu starten.",
-      "signInPrompt": "Melde dich an, um deinen Reisepass zu sehen."
+      "signInPrompt": "Melde dich an, um deinen Reisepass zu sehen.",
+      "earnedCount": "{{earned}} von {{total}} erreicht"
     },
     "onboarding": {
       "progress": "Schritt {{current}} von {{total}}",
@@ -1882,7 +1883,10 @@
       "title": "Melde dich an, um dieses Profil zu sehen",
       "body": "Mitgliederprofile sind nur für angemeldete Mitglieder sichtbar.",
       "cta": "Anmelden"
-    }
+    },
+    "headerLabel": "Profil",
+    "verified": "Verifiziert",
+    "setStatus": "Status setzen…"
   },
   "groups": {
     "title": "Gruppen",
@@ -3882,7 +3886,8 @@
       "set": "Vibe festlegen",
       "title": "Dein Vibe",
       "placeholder": "Wie ist dein Vibe?",
-      "for4h": "4 Std."
+      "for4h": "4 Std.",
+      "emoji": "Emoji wählen"
     },
     "stickers": {
       "title": "Sticker"

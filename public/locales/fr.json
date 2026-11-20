@@ -1576,7 +1576,8 @@
       "locked": "+{{pts}} pts",
       "visited": "{{count}} lieux visités",
       "empty": "Aucun check-in pour l’instant.",
-      "signInPrompt": "Connecte-toi pour voir ton passeport."
+      "signInPrompt": "Connecte-toi pour voir ton passeport.",
+      "earnedCount": "{{earned}} sur {{total}} obtenus"
     },
     "onboarding": {
       "progress": "Étape {{current}} sur {{total}}",
@@ -1703,7 +1704,10 @@
       "title": "Connecte-toi pour voir ce profil",
       "body": "Les profils des membres ne sont visibles que par les membres connectés.",
       "cta": "Se connecter"
-    }
+    },
+    "headerLabel": "Profil",
+    "verified": "Vérifié",
+    "setStatus": "Définir un statut…"
   },
   "groups": {
     "title": "Groupes",
@@ -3886,7 +3890,8 @@
       "set": "Définir une ambiance",
       "title": "Votre ambiance",
       "placeholder": "Quelle est votre ambiance ?",
-      "for4h": "4 h"
+      "for4h": "4 h",
+      "emoji": "Choisir un emoji"
     },
     "stickers": {
       "title": "Stickers"

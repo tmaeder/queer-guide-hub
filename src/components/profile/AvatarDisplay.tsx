@@ -8,19 +8,21 @@ interface AvatarDisplayProps {
   avatarUrl?: string;
   avatarConfig?: AvatarConfig;
   email?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 const sizeStyles = {
   sm: { width: 32, height: 32 },
   md: { width: 40, height: 40 },
   lg: { width: 64, height: 64 },
+  xl: { width: 104, height: 104 },
 };
 
 const sizePixels = {
   sm: 32,
   md: 40,
   lg: 64,
+  xl: 104,
 };
 
 export const AvatarDisplay = ({
@@ -35,13 +37,13 @@ export const AvatarDisplay = ({
   // Priority: avatarUrl > avatarConfig > initials > fallback
   if (avatarUrl) {
     return (
-      <Avatar>
-        <span style={{ ...dims }} className="inline-flex">
+      <Avatar style={dims}>
+        <>
           <AvatarImage src={avatarUrl} alt="User avatar" />
           <AvatarFallback>
             <User size={16} />
           </AvatarFallback>
-        </span>
+        </>
       </Avatar>
     );
   }
@@ -76,24 +78,24 @@ export const AvatarDisplay = ({
   // Use initials avatar if email is available
   if (initialsUrl) {
     return (
-      <Avatar>
-        <span style={{ ...dims }} className="inline-flex">
+      <Avatar style={dims}>
+        <>
           <AvatarImage src={initialsUrl} alt="User avatar" />
           <AvatarFallback>
             <User size={16} />
           </AvatarFallback>
-        </span>
+        </>
       </Avatar>
     );
   }
 
   return (
-    <Avatar>
-      <span style={{ ...dims }} className="inline-flex">
+    <Avatar style={dims}>
+      <>
         <AvatarFallback>
           <User size={16} />
         </AvatarFallback>
-      </span>
+      </>
     </Avatar>
   );
 };

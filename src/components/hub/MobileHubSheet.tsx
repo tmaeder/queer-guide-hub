@@ -9,7 +9,7 @@ import {
 } from '@/components/layout/bottom-nav/BottomNavSheet';
 import { getActiveHubModule, HUB_MODULES, HUB_SECTIONS } from '@/config/hubModules';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Sparkles } from '@/components/icons';
+import { LayoutDashboard, Sparkles } from '@/components/icons';
 import { StatusEditor } from '@/components/status/StatusEditor';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -62,9 +62,11 @@ export function MobileHubSheet({
             to={overview.path}
             onClick={close}
             aria-current={overview === activeModule ? 'page' : undefined}
-            className="shrink-0 text-13 font-bold underline underline-offset-4"
+            aria-label={t('header.mobileNav.openHub', 'Open Hub')}
+            title={t('header.mobileNav.openHub', 'Open Hub')}
+            className="flex size-11 shrink-0 items-center justify-center rounded-full text-foreground no-underline transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            {t('header.mobileNav.openHub', 'Open Hub')}
+            <LayoutDashboard size={20} aria-hidden />
           </LocalizedLink>
         )
       }
@@ -106,7 +108,7 @@ export function MobileHubSheet({
                     : section.defaultLabel}
                 </h3>
               )}
-              <div className={personal ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-2 gap-2'}>
+              <div className={personal ? 'grid grid-cols-4 gap-1.5' : 'grid grid-cols-2 gap-1.5'}>
                 {modules.map((module) => (
                   <NavSheetTile
                     key={module.id}

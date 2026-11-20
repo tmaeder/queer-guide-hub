@@ -3,6 +3,7 @@ import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { MobileNavSheet } from '@/components/layout/MobileNavSheet';
+import { MobileYouSheet } from '@/components/layout/MobileYouSheet';
 import { MobileHubSheet } from '@/components/hub/MobileHubSheet';
 import { NavTab } from '@/components/layout/bottom-nav/NavTab';
 import { NavContributeButton } from '@/components/layout/bottom-nav/NavContributeButton';
@@ -27,7 +28,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useLongPress } from '@/hooks/useLongPress';
 import { useMotionTokens } from '@/lib/motion';
 import { getSubmitCta } from '@/lib/submitCta';
-import { generateAvatarUrl } from '@/lib/avatar';
 import { stripLocale, isMapRoute } from '@/lib/locale';
 
 const FALLBACK_LABEL: Record<BottomNavTab['id'], string> = {
@@ -71,6 +71,8 @@ export function MobileBottomNav() {
   const [authOpen, setAuthOpen] = useState(false);
   const [hubOpening, setHubOpening] = useState<{ path: string; byPointer: boolean } | null>(null);
   const hubTrigger = useRef<HTMLAnchorElement>(null);
+  const [you, setYou] = useState<{ byPointer: boolean } | null>(null);
+  const youTrigger = useRef<HTMLAnchorElement>(null);
 
   const openExplore = () => {
     trigger('nudge');
@@ -89,9 +91,9 @@ export function MobileBottomNav() {
   };
   const tapHaptic = () => trigger('nudge');
 
-  const avatarSrc =
-    profile?.avatar_url ||
-    (user?.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
+  // A real picture or nothing: the generated initials disc read as a letter,
+  // not as "you". Without an uploaded photo the tab keeps its person icon.
+  const avatarSrc = (profile?.avatar_url as string | null | undefined) || undefined;
   const avatarInitial = ((profile?.display_name as string | null) || user?.email || 'U')
     .charAt(0)
     .toUpperCase();
@@ -157,6 +159,7 @@ export function MobileBottomNav() {
           {BOTTOM_NAV_TABS.map((tab) => {
             const isExplore = tab.id === 'explore';
             const isHub = tab.id === 'hub';
+            const isYou = tab.id === 'you' && !!user;
             const anonGated = tab.authGated && !user;
             const showUnread = tab.badge === 'unread' && !!user;
             // The "You" tab points at the own public profile, which needs the
@@ -187,19 +190,28 @@ export function MobileBottomNav() {
                       }
                     : isHub
                       ? openHub
-                      : anonGated
-                        ? () => navigate('/auth', { state: { from: tab.to } })
-                        : undefined
+                      : isYou
+                        ? (event: MouseEvent<HTMLAnchorElement>) => {
+                            youTrigger.current = event.currentTarget;
+                            setYou({ byPointer: event.detail > 0 });
+                          }
+                        : anonGated
+                          ? () => navigate('/auth', { state: { from: tab.to } })
+                          : undefined
                 }
-                hasPopup={isExplore || isHub}
-                expanded={isExplore ? sheetOpen : hubSheetOpen}
+                hasPopup={isExplore || isHub || isYou}
+                expanded={isExplore ? sheetOpen : isYou ? !!you : hubSheetOpen}
                 badgeCount={showUnread ? unreadCount : undefined}
                 badgeLabel={
                   showUnread
                     ? t('header.mobileNav.unreadCount', '{{count}} unread', { count: unreadCount })
                     : undefined
                 }
-                avatar={tab.avatar && user ? { src: avatarSrc, initial: avatarInitial } : null}
+                avatar={
+                  tab.avatar && user && avatarSrc
+                    ? { src: avatarSrc, initial: avatarInitial }
+                    : null
+                }
                 longPress={isExplore ? exploreLongPress : undefined}
                 accessory={isExplore ? exploreAccessory : undefined}
               />
@@ -238,6 +250,17 @@ export function MobileBottomNav() {
         onDismissFocus={() => {
           setHubOpening(null);
           hubTrigger.current?.focus({ preventScroll: true });
+        }}
+      />
+      <MobileYouSheet
+        open={!!you}
+        openedByPointer={you?.byPointer ?? false}
+        onOpenChange={(open) => {
+          if (!open) setYou(null);
+        }}
+        onDismissFocus={() => {
+          setYou(null);
+          youTrigger.current?.focus({ preventScroll: true });
         }}
       />
       <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />

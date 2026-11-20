@@ -1572,7 +1572,8 @@
       "locked": "+{{pts}} ポイント",
       "visited": "{{count}}スポット訪問",
       "empty": "まだチェックインがありません。",
-      "signInPrompt": "サインインしてパスポートを見る。"
+      "signInPrompt": "サインインしてパスポートを見る。",
+      "earnedCount": "{{total}}件中{{earned}}件獲得"
     },
     "onboarding": {
       "progress": "ステップ {{current}}/{{total}}",
@@ -1699,7 +1700,10 @@
       "title": "このプロフィールを見るにはログインしてください",
       "body": "メンバーのプロフィールはログインしたメンバーにのみ表示されます。",
       "cta": "ログイン"
-    }
+    },
+    "headerLabel": "プロフィール",
+    "verified": "認証済み",
+    "setStatus": "ステータスを設定…"
   },
   "groups": {
     "title": "グループ",
@@ -3880,7 +3884,8 @@
       "set": "気分を設定",
       "title": "あなたの気分",
       "placeholder": "今の気分は？",
-      "for4h": "4時間"
+      "for4h": "4時間",
+      "emoji": "絵文字を選ぶ"
     },
     "stickers": {
       "title": "スタンプ"

@@ -817,7 +817,8 @@
       "locked": "+{{pts}} pts",
       "visited": "{{count}} venues visited",
       "empty": "No check-ins yet. Visit a venue to start your passport.",
-      "signInPrompt": "Sign in to see your passport."
+      "signInPrompt": "Sign in to see your passport.",
+      "earnedCount": "{{earned}} of {{total}} earned"
     },
     "onboarding": {
       "progress": "Step {{current}} of {{total}}",
@@ -944,7 +945,10 @@
       "title": "Sign in to view this profile",
       "body": "Member profiles are only visible to signed-in members.",
       "cta": "Sign in"
-    }
+    },
+    "headerLabel": "Profile",
+    "verified": "Verified",
+    "setStatus": "Set a status…"
   },
   "groups": {
     "title": "Groups",
@@ -3938,7 +3942,8 @@
       "set": "Set a vibe",
       "title": "Your vibe",
       "placeholder": "What's your vibe?",
-      "for4h": "4h"
+      "for4h": "4h",
+      "emoji": "Pick an emoji"
     },
     "stickers": {
       "title": "Stickers"

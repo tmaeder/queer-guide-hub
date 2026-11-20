@@ -34,8 +34,8 @@ export function WatchedSitesList() {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-2" role="status" aria-label="Loading watched sites">
-        <Skeleton className="h-16 w-full rounded-element" />
-        <Skeleton className="h-16 w-full rounded-element" />
+        <Skeleton animation={false} className="h-16 w-full rounded-element" />
+        <Skeleton animation={false} className="h-16 w-full rounded-element" />
       </div>
     );
   }

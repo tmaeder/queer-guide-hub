@@ -1,40 +1,24 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { LogOut, Plane, Shield, UserRound, Users } from '@/components/icons';
 import {
   BottomNavSheet,
   NAV_SHEET_HEADING,
   NavSheetTile,
 } from '@/components/layout/bottom-nav/BottomNavSheet';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { IdentityRow } from '@/components/layout/IdentityRow';
-import { FriendsOnlineCount } from '@/components/layout/FriendsOnlineCount';
-import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
-import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
-import { CurrencySelector } from '@/components/i18n/CurrencySelector';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { Button } from '@/components/ui/button';
 import {
   DESTINATIONS,
   NAV_CLUSTERS,
-  LEGAL_ITEMS,
   INTENT_NAV,
   INTENT_TRACK,
   isIntentActive,
 } from '@/config/navigation';
 import { TRACK_BG, TRACK_TEXT } from '@/components/transit/routeBulletMap';
 import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { useInboxBadge } from '@/hooks/useInboxBadge';
-import { useFriendsOnlineCount } from '@/hooks/useFriendIds';
-import { generateAvatarUrl } from '@/lib/avatar';
 import { cn } from '@/lib/utils';
-
-const ACCOUNT_ROW =
-  'flex min-h-12 items-center gap-2 px-4 py-2 text-15 font-medium no-underline hover:bg-foreground/5';
 
 interface MobileNavSheetProps {
   open: boolean;
@@ -51,11 +35,7 @@ interface MobileNavSheetProps {
  */
 export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNavSheetProps) {
   const { t } = useTranslation();
-  const { user, signOut } = useAuth();
-  const { profile } = useProfile();
-  const { isAdmin, isModerator } = useAdminRoles();
-  const friendsOnline = useFriendsOnlineCount(user?.id);
-  const tripCount = useInboxBadge();
+  const { user } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const { pathname } = useLocation();
   // Same locale strip the footer uses, so "am I on this route" is answered the
@@ -64,13 +44,6 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
   const isHere = (to: string) => localePath === to;
 
   const close = () => onOpenChange(false);
-
-  const displayName = (profile?.display_name as string | null) || null;
-  const username = (profile?.username as string | null) || null;
-  const avatarSrc =
-    profile?.avatar_url ||
-    (user?.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
-  const avatarInitial = (displayName || user?.email || 'U').charAt(0).toUpperCase();
 
   return (
     <>
@@ -144,7 +117,7 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
                 <div key={cluster.id} className="flex flex-col gap-2">
                   {/* `h4`: a cluster is a subsection of "Browse everything". */}
                   <h4 className="text-13 font-bold">{t(cluster.labelKey)}</h4>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
                     {items.map((dest) => (
                       <NavSheetTile
                         key={dest.to}
@@ -161,119 +134,18 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
             })}
           </section>
 
-          {/* Account: one grouped list instead of loose rows scattered
-              through the sheet. */}
-          <section className="flex flex-col gap-2">
-            <h3 className={NAV_SHEET_HEADING}>{t('header.userMenu.you', 'You')}</h3>
-            {user ? (
-              <div className="flex flex-col divide-y divide-border-hairline overflow-hidden rounded-element bg-muted">
-                <div className="flex items-center gap-2 pe-2">
-                  <LocalizedLink
-                    to="/hub"
-                    onClick={close}
-                    className="flex min-w-0 flex-1 items-center gap-2 p-4 no-underline hover:bg-foreground/5"
-                  >
-                    <IdentityRow
-                      avatarSrc={avatarSrc}
-                      avatarInitial={avatarInitial}
-                      username={username}
-                      email={user.email ?? null}
-                      fallbackLabel={t('header.userMenu.you', 'You')}
-                      avatarPx={40}
-                    />
-                  </LocalizedLink>
-                  <LocalizedLink
-                    to={`/user/${user.id}`}
-                    onClick={close}
-                    aria-label={t('header.userMenu.viewProfile', 'View public profile')}
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-element text-muted-foreground no-underline hover:bg-foreground hover:text-background"
-                  >
-                    <UserRound size={18} />
-                  </LocalizedLink>
-                </div>
-                <LocalizedLink
-                  to="/hub/plans"
-                  onClick={close}
-                  aria-current={isHere('/hub/plans') ? 'page' : undefined}
-                  className={ACCOUNT_ROW}
-                >
-                  <Plane size={18} className="text-muted-foreground" />
-                  <span>{t('header.mobileNav.trips', 'My Trips')}</span>
-                  <NavBadge
-                    inline
-                    count={tripCount}
-                    label={t('header.mobileNav.tripsBadge', '{{count}} trip items need attention', {
-                      count: tripCount,
-                    })}
-                  />
-                </LocalizedLink>
-                <LocalizedLink
-                  to="/hub/friends"
-                  onClick={close}
-                  aria-current={isHere('/hub/friends') ? 'page' : undefined}
-                  className={ACCOUNT_ROW}
-                >
-                  <Users size={18} className="text-muted-foreground" />
-                  <span>{t('header.userMenu.friends', 'Friends')}</span>
-                  <FriendsOnlineCount count={friendsOnline} />
-                </LocalizedLink>
-                {(isAdmin || isModerator) && (
-                  <LocalizedLink to="/admin" onClick={close} className={ACCOUNT_ROW}>
-                    <Shield size={18} className="text-muted-foreground" />
-                    <span>{t('header.adminConsole', 'Admin Console')}</span>
-                  </LocalizedLink>
-                )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    close();
-                    void signOut();
-                  }}
-                  className={cn(ACCOUNT_ROW, 'w-full text-left text-destructive')}
-                >
-                  <LogOut size={18} />
-                  <span>{t('header.signOut', 'Sign Out')}</span>
-                </button>
-              </div>
-            ) : (
-              <Button
-                variant="accent"
-                onClick={() => {
-                  close();
-                  setAuthOpen(true);
-                }}
-                className="w-full"
-              >
-                {t('header.signIn', 'Sign in')}
-              </Button>
-            )}
-          </section>
-
-          {/* Display settings and the small print, in one quiet footer. */}
-          <section className="flex flex-col gap-4 border-t border-border-hairline pt-4">
-            <h3 className="sr-only">{t('header.mobileNav.settingsSection', 'Display')}</h3>
-            <div className="flex flex-wrap items-center gap-2">
-              <LanguageSwitcher />
-              <CurrencySelector />
-              <ThemeToggle />
-            </div>
-            <nav
-              aria-label={t('footer.legalNav', 'About and legal')}
-              className="flex flex-wrap gap-x-4 gap-y-1"
+          {!user && (
+            <Button
+              variant="accent"
+              onClick={() => {
+                close();
+                setAuthOpen(true);
+              }}
+              className="w-full"
             >
-              {LEGAL_ITEMS.map((item) => (
-                <LocalizedLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={close}
-                  aria-current={isHere(item.to) ? 'page' : undefined}
-                  className="inline-flex min-h-11 items-center text-13 text-muted-foreground no-underline hover:text-foreground hover:underline"
-                >
-                  {t(item.labelKey)}
-                </LocalizedLink>
-              ))}
-            </nav>
-          </section>
+              {t('header.signIn', 'Sign in')}
+            </Button>
+          )}
         </div>
       </BottomNavSheet>
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -50,13 +50,14 @@ export function IntimateTab() {
   const [lookingText, setLookingText] = useState('');
   const [textDirty, setTextDirty] = useState(false);
 
-  useEffect(() => {
-    if (existingText) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- seed editable copy from fetched text
-      setAboutText(existingText.about_intimate ?? '');
-      setLookingText(existingText.looking_for ?? '');
-    }
-  }, [existingText]);
+  // Seed the editable copy once per fetched value (render-time adjustment,
+  // not an effect: React re-renders immediately with the seeded state).
+  const [seededText, setSeededText] = useState<typeof existingText>(undefined);
+  if (existingText && existingText !== seededText) {
+    setSeededText(existingText);
+    setAboutText(existingText.about_intimate ?? '');
+    setLookingText(existingText.looking_for ?? '');
+  }
 
   if (isLoading) {
     return (
