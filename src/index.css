@@ -1650,6 +1650,19 @@ h2:not(.font-sans),
    the island geometry but uses the product's single soft elevation token. */
 .site-header {
   box-shadow: var(--shadow-soft);
+  /* Fade, don't snap, between the paper and ink states on scroll. The
+     --tw-duration hands the same pace to the links' transition-colors. */
+  --tw-duration: 300ms;
+  transition:
+    background-color 300ms ease,
+    color 300ms ease,
+    box-shadow 300ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-header {
+    --tw-duration: 0ms;
+    transition: none;
+  }
 }
 
 @media (min-width: 768px) {
