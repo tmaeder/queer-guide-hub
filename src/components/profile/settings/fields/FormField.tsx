@@ -13,14 +13,28 @@ interface FormFieldProps {
   rows?: number;
   type?: string;
   disabled?: boolean;
+  /** Visually hide the label (kept for screen readers) when a heading already names the field. */
+  hideLabel?: boolean;
 }
 
 export function FormField({
-  id, label, value, onChange, placeholder, description, multiline, rows = 3, type, disabled,
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+  description,
+  multiline,
+  rows = 3,
+  type,
+  disabled,
+  hideLabel,
 }: FormFieldProps) {
   return (
     <div className="flex flex-col gap-1">
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id} className={hideLabel ? 'sr-only' : undefined}>
+        {label}
+      </Label>
       {multiline ? (
         <Textarea
           id={id}
@@ -40,9 +54,7 @@ export function FormField({
           disabled={disabled}
         />
       )}
-      {description && (
-        <span className="text-xs text-muted-foreground">{description}</span>
-      )}
+      {description && <span className="text-xs text-muted-foreground">{description}</span>}
     </div>
   );
 }
