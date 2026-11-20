@@ -201,10 +201,10 @@ export default function Signup({ onBack, redirectTo }: Props) {
           <div className="flex items-center justify-center">
             <Wordmark className="text-title text-foreground" />
           </div>
-          <CardTitle className="text-2xl md:text-3xl font-bold tracking-tight text-center text-balance">
+          <CardTitle className="text-center text-headline font-bold tracking-tight text-balance">
             {t('auth.signup.title', 'Create your account')}
           </CardTitle>
-          <CardDescription className="text-center text-sm">
+          <CardDescription className="text-center text-15">
             {t('auth.signup.blurb', 'Free, takes a minute.')}
           </CardDescription>
         </div>
@@ -214,13 +214,12 @@ export default function Signup({ onBack, redirectTo }: Props) {
         <div className="flex flex-col gap-6">
           <OAuthButtons onError={setSubmitError} />
 
-          <div className="relative text-center">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full" />
-            </div>
-            <span className="relative bg-background px-2 text-xs text-muted-foreground uppercase">
+          <div className="flex items-center gap-4" role="separator">
+            <span className="h-px flex-1 bg-border-hairline" aria-hidden />
+            <span className="text-2xs uppercase tracking-label text-muted-foreground">
               {t('auth.signup.orWithEmail', 'Or with email')}
             </span>
+            <span className="h-px flex-1 bg-border-hairline" aria-hidden />
           </div>
 
           {firstError && (
@@ -270,11 +269,14 @@ export default function Signup({ onBack, redirectTo }: Props) {
                   name="password"
                   value={password}
                   onChange={(e) => update({ password: e.target.value })}
+                  className="pe-12"
                 />
+                {/* Inside the field, end-aligned — same as sign-in. */}
                 <Button
                   type="button"
                   variant="ghost"
-                  size="sm"
+                  size="icon"
+                  className="absolute inset-y-0 end-0 my-auto"
                   onClick={() => setShowPassword((s) => !s)}
                   aria-label={
                     showPassword
@@ -293,7 +295,7 @@ export default function Signup({ onBack, redirectTo }: Props) {
               />
             </div>
 
-            <Label className="flex items-start gap-2 pt-1 text-sm font-normal text-muted-foreground">
+            <Label className="flex items-start gap-4 rounded-element bg-muted p-4 text-13 font-normal leading-relaxed text-muted-foreground">
               <Checkbox
                 id="signup-consent"
                 checked={consent === true}
@@ -320,15 +322,15 @@ export default function Signup({ onBack, redirectTo }: Props) {
 
             {captcha}
 
-            <Button type="submit" disabled={isSubmitting} className="mt-2">
+            <Button type="submit" size="lg" disabled={isSubmitting} className="mt-2 w-full">
               {isSubmitting && <TrackLoader size={16} className="mr-2" />}
               {t('auth.signup.create', 'Create account')}
             </Button>
           </form>
 
-          <div className="text-center pt-2">
+          <div className="border-t border-border-hairline pt-4 text-center">
             <Button variant="ghost" onClick={onBack} disabled={isSubmitting}>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-13 text-muted-foreground">
                 {t('auth.signup.haveAccountQ', 'Already have an account? Sign in')}
               </span>
             </Button>
