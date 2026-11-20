@@ -29,7 +29,7 @@ function Guarded({ children }: { children: ReactNode }) {
 
 /**
  * Own-only gamification surface. Absorbs the former /me/passport, /me/missions,
- * /me/leaderboard, /profile/tiers and /news/me pages. The ten sections are
+ * /me/leaderboard, /profile/tiers and /news/me pages. The nine sections are
  * grouped into a secondary segmented view (Score / Explore / Recognition) so
  * the surface is scannable instead of one long dump — and Radix unmounts the
  * inactive panels, so heavy queries (100-row leaderboard, full catalog) only
@@ -103,7 +103,6 @@ export function ProgressTab() {
         </TabsContent>
       </Tabs>
 
-      <p className="text-13 text-muted-foreground">Visible only to you.</p>
     </div>
   );
 }

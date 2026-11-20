@@ -110,7 +110,7 @@ export function PreferenceChips({ chips, onToggle, onForget, className }: Prefer
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuItem asChild>
-                  <LocalizedLink to="/me/settings">
+                  <LocalizedLink to="/settings/travel">
                     {t('prefs.chips.edit', 'Edit in settings')}
                   </LocalizedLink>
                 </DropdownMenuItem>

@@ -49,7 +49,7 @@ describe('Header user menu — friends online', () => {
     await openMenu();
     const items = screen.getAllByRole('menuitem');
     const friendsIdx = items.findIndex((el) => el.textContent?.includes('Friends'));
-    const accountIdx = items.findIndex((el) => el.getAttribute('href') === '/me/account');
+    const accountIdx = items.findIndex((el) => el.getAttribute('href') === '/settings');
     expect(friendsIdx).toBeGreaterThanOrEqual(0);
     expect(accountIdx).toBeGreaterThanOrEqual(0);
     expect(friendsIdx).toBe(accountIdx - 1);

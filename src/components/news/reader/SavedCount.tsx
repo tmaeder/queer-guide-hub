@@ -8,7 +8,7 @@ export function SavedCount() {
 
   return (
     <LocalizedLink
-      to="/me/progress"
+      to="/hub/progress"
       className="block rounded-container p-6 no-underline text-inherit hover:bg-muted transition-colors"
     >
       <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">

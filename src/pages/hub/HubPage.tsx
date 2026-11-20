@@ -5,6 +5,7 @@ import { OverviewModule } from '@/components/hub/modules/OverviewModule';
 import { MessagesModule } from '@/components/hub/modules/MessagesModule';
 import { PlansModule } from '@/components/hub/modules/PlansModule';
 import { SavedModule } from '@/components/hub/modules/SavedModule';
+import { ProgressTab } from '@/components/profile/tabs/ProgressTab';
 import Feed from '@/pages/Feed';
 import { useMeta } from '@/hooks/useMeta';
 import type { HubModuleId } from '@/config/hubModules';
@@ -22,6 +23,7 @@ const MODULE_TITLES: Record<HubModuleId, string> = {
   messages: 'Messages',
   plans: 'Plans',
   saved: 'Saved',
+  progress: 'Progress',
 };
 
 /**
@@ -54,6 +56,18 @@ export default function HubPage({ module = 'overview' }: { module?: HubModuleId 
       <PlansModule />
     ) : module === 'saved' ? (
       <SavedModule />
+    ) : module === 'progress' ? (
+      <div className="flex flex-col gap-6">
+        <header className="flex flex-col gap-1">
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
+            {t('hub.modules.progress', 'Progress')}
+          </h1>
+          <p className="text-13 text-muted-foreground">
+            {t('hub.progress.description', 'Missions, level, streaks and recognition. Visible only to you.')}
+          </p>
+        </header>
+        <ProgressTab />
+      </div>
     ) : (
       <OverviewModule />
     );
