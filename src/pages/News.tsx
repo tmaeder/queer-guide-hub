@@ -33,13 +33,21 @@ const ALL_ARTICLES = {};
 export default function News() {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { articles, refetch: refetchArticles } = useNewsArticles(ALL_ARTICLES);
+  const {
+    articles,
+    loading: articlesLoading,
+    refetch: refetchArticles,
+  } = useNewsArticles(ALL_ARTICLES);
   const sources = useNewsSources();
   const categories = useNewsCategories();
   // Live, self-ranking front: hotness = recency × quality × soft featured boost
   // × trending. Replaces the old `is_featured` pin that left a months-old story
   // as the permanent headline. Auto-refreshes (poll + focus) so it never goes stale.
-  const { articles: frontArticles, refetch: refetchFront } = useNewsFront(40);
+  const {
+    articles: frontArticles,
+    loading: frontLoading,
+    refetch: refetchFront,
+  } = useNewsFront(40);
   const { count: newCount, reset: resetNewCount } = useRealtimeNewsInserts();
 
   const handleRefreshNew = () => {
@@ -141,12 +149,21 @@ export default function News() {
         >
           <div className="min-w-0">
             <NewStoriesPill count={newCount} onRefresh={handleRefreshNew} />
-            <LeadStory
-              article={leadArticle}
-              sourcesMap={sourcesMap}
-              categoriesMap={categoriesMap}
-              imageAsset={leadArticle ? assets.get(leadArticle.id) : undefined}
-            />
+            {/* Reserve the lead's space while the front feed loads; the bands below
+                otherwise paint first and are pushed down when it arrives. */}
+            {frontLoading && !leadArticle ? (
+              <div
+                aria-hidden="true"
+                className="mb-12 min-h-[200px] rounded-panel bg-muted md:min-h-[520px]"
+              />
+            ) : (
+              <LeadStory
+                article={leadArticle}
+                sourcesMap={sourcesMap}
+                categoriesMap={categoriesMap}
+                imageAsset={leadArticle ? assets.get(leadArticle.id) : undefined}
+              />
+            )}
 
             <AboveTheFold
               topStory={topStory}
@@ -180,7 +197,7 @@ export default function News() {
               );
             })}
 
-            {stories.length > 0 && (
+            {!articlesLoading && stories.length > 0 && (
               <StoryCollectionsBand
                 stories={stories as Parameters<typeof StoryCollectionsBand>[0]['stories']}
                 heroes={storyHeroes as Parameters<typeof StoryCollectionsBand>[0]['heroes']}
@@ -190,29 +207,34 @@ export default function News() {
             <WeekInReview articles={articles as Article[]} />
 
             {/* An ink plate rather than a footnote: the archive is the
-                invitation to keep reading, so it gets the page's loudest band. */}
-            <div className="flex flex-col gap-6 rounded-panel bg-foreground p-8 text-background md:flex-row md:items-end md:justify-between md:p-12">
-              <div className="max-w-reading">
-                <p className="m-0 text-2xs uppercase tracking-label text-background/70">
-                  {t('pages.news.archiveEyebrow', 'Keep reading')}
-                </p>
-                <p className="m-0 mt-2 font-display text-display leading-none">
-                  {t('pages.news.archiveTitle', 'Every story we have ever told.')}
-                </p>
-                <p className="m-0 mt-4 text-body-lg text-background/80">
-                  {t(
-                    'pages.news.archiveBody',
-                    'Rights won, rights fought for, nights out and the people who made them. Search the full archive by topic, place or date.',
-                  )}
-                </p>
+                invitation to keep reading, so it gets the page's loudest band.
+                Held back while articles load: every band above renders
+                nothing until then, so it would paint near the top and then be
+                pushed ~1,000px down (CLS 0.8-1.2 on /news). */}
+            {!articlesLoading && (
+              <div className="flex flex-col gap-6 rounded-panel bg-foreground p-8 text-background md:flex-row md:items-end md:justify-between md:p-12">
+                <div className="max-w-reading">
+                  <p className="m-0 text-2xs uppercase tracking-label text-background/70">
+                    {t('pages.news.archiveEyebrow', 'Keep reading')}
+                  </p>
+                  <p className="m-0 mt-2 font-display text-display leading-none">
+                    {t('pages.news.archiveTitle', 'Every story we have ever told.')}
+                  </p>
+                  <p className="m-0 mt-4 text-body-lg text-background/80">
+                    {t(
+                      'pages.news.archiveBody',
+                      'Rights won, rights fought for, nights out and the people who made them. Search the full archive by topic, place or date.',
+                    )}
+                  </p>
+                </div>
+                <Button asChild variant="accent" className="shrink-0 gap-2">
+                  <LocalizedLink to="/news/all" className="no-underline">
+                    {t('pages.news.openArchive', 'Open archive')}
+                    <ArrowRight size={16} />
+                  </LocalizedLink>
+                </Button>
               </div>
-              <Button asChild variant="accent" className="shrink-0 gap-2">
-                <LocalizedLink to="/news/all" className="no-underline">
-                  {t('pages.news.openArchive', 'Open archive')}
-                  <ArrowRight size={16} />
-                </LocalizedLink>
-              </Button>
-            </div>
+            )}
           </div>
 
           {user && (

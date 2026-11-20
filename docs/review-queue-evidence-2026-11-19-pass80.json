@@ -1,0 +1,94 @@
+{
+  "pass": 80,
+  "scope": "Horten settlement lifecycle repair from municipal history",
+  "proof": {
+    "source": "primary_municipal_city_status_research",
+    "human_reviewed": false,
+    "decision_actor": "AI-assisted factual lifecycle repair",
+    "user_authorization": "Standing delegation for clear-evidence factual editorial decisions",
+    "qid_retained_without_new_assertion": "Q12715526",
+    "evidence": [
+      {
+        "url": "https://lhs.horten.kommune.no/2020/11/03/du-vet-du-bor-i-horten/",
+        "final_url": "https://lhs.horten.kommune.no/2020/11/03/du-vet-du-bor-i-horten/",
+        "status": 200,
+        "sha256": "6d1cce39cdc3b9941af5e18512a0be3a0c2615bceb1708dc608b5004c0dc925c",
+        "bytes": 37933,
+        "capture_at": "2026-11-19T20:59:13.048914+00:00"
+      }
+    ],
+    "facts": [
+      "The municipal Local History Centre explicitly describes the town Horten growing from Karljohansvern into residential neighbourhoods.",
+      "This establishes settlement identity separately from the wider municipality.",
+      "Preserve missing coordinates, unpublished SEO status, attention flag and unresolved classification audit. Lifecycle repair does not verify geography."
+    ],
+    "source_url": "https://lhs.horten.kommune.no/2020/11/03/du-vet-du-bor-i-horten/"
+  },
+  "outcome": {
+    "case": {
+      "active": false,
+      "members": 0
+    },
+    "slug": "horten",
+    "city_id": "26f124b4-c469-4f55-b34a-3a89d0397049",
+    "shell_status": "real",
+    "seo_indexable": false,
+    "related_counts": {
+      "geo_places": 1,
+      "city_aliases": 1,
+      "personalities": 1,
+      "city_coverage_gaps": 1,
+      "city_quality_signals": 3
+    },
+    "needs_attention": true,
+    "old_slug_redirect": "tmp-0998ed9a-2e47-4ac0-a62d-78d31f667ace",
+    "private_saved_references": 0,
+    "native_verification_status": "missing"
+  },
+  "safeguards": "Exact source and review snapshots; no human edits or decisions; active leases and shared reconciler lock respected; all related rows locked and compared; native slug generation and old placeholder redirect; scoped source finding reconciliation. Missing coordinates, attention flag, unresolved classification audit and unpublished SEO state retained.",
+  "cron_health": [
+    {
+      "jobid": 2854,
+      "status": "running",
+      "start_time": "2026-11-19 21:00:01.1828+00",
+      "seconds": null,
+      "message": null
+    },
+    {
+      "jobid": 2855,
+      "status": "succeeded",
+      "start_time": "2026-11-19 20:59:00.407108+00",
+      "seconds": "35.064207",
+      "message": "1 row"
+    },
+    {
+      "jobid": 2854,
+      "status": "succeeded",
+      "start_time": "2026-11-19 20:55:00.645861+00",
+      "seconds": "12.725807",
+      "message": "1 row"
+    },
+    {
+      "jobid": 2855,
+      "status": "succeeded",
+      "start_time": "2026-11-19 20:54:00.888972+00",
+      "seconds": "45.289590",
+      "message": "1 row"
+    },
+    {
+      "jobid": 2854,
+      "status": "succeeded",
+      "start_time": "2026-11-19 20:50:00.788746+00",
+      "seconds": "21.627536",
+      "message": "1 row"
+    },
+    {
+      "jobid": 2855,
+      "status": "succeeded",
+      "start_time": "2026-11-19 20:49:00.450448+00",
+      "seconds": "41.096520",
+      "message": "1 row"
+    }
+  ],
+  "limits": "The lifecycle case is inactive. This does not resolve Horten's missing coordinates or imply geography verification. Recent completed reconciler and worklist runs succeeded without raising timeouts."
+}

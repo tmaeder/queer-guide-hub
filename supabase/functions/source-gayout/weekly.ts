@@ -4,25 +4,33 @@ import { GAYOUT_COUNTRY_ALIASES, GAYOUT_SITEMAPS, parseGayOutPage, parseGayOutSe
 import type { GayOutInventory } from '../_shared/gayout-source.ts'
 import { acquireGayOutDocument } from './acquire.ts'
 
+type GayOutQueueRow = {
+  url: string; lease_token: string; work_kind?: string
+  document_hash?: string | null; document_offset?: number; source_lastmod?: string | null
+}
+type GayOutWeeklyBody = {
+  inventory?: string; pipeline_run_id?: string; node_id?: string; dry_run?: unknown; batch_size?: unknown
+}
+
 /** The database owns the inventory cursor and leases; a request handles a bounded slice. */
-export async function handleGayOutWeeklySource(req: Request, body: Record<string, any>): Promise<Response> {
+export async function handleGayOutWeeklySource(req: Request, body: GayOutWeeklyBody): Promise<Response> {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const db = getServiceClient()
   const auth = await requireInternalOrAdmin(req, db)
   if (auth instanceof Response) return auth
   let run = '', inventory: GayOutInventory = 'places'
-  let claimed: Array<Record<string, any>> = []
+  let claimed: GayOutQueueRow[] = []
   async function rpc(name: string, args: Record<string, unknown>) {
     const { data, error } = await db.rpc(name, args)
     if (error) throw new Error(`${name}: ${error.message}`)
     return data
   }
-  const finish = (q: Record<string, any>, state: string, error: string | null = null, delay = 0) => rpc('gayout_finish_url', {
+  const finish = (q: GayOutQueueRow, state: string, error: string | null = null, delay = 0) => rpc('gayout_finish_url', {
     p_run: run, p_inventory: inventory, p_url: q.url, p_token: q.lease_token, p_state: state, p_error: error, p_delay: delay,
   })
   try {
-    if (!['places', 'events'].includes(body.inventory)) return errorResponse('Invalid GayOut inventory', 400, req)
-    inventory = body.inventory; run = body.pipeline_run_id
+    if (!['places', 'events'].includes(body.inventory ?? '')) return errorResponse('Invalid GayOut inventory', 400, req)
+    inventory = body.inventory as GayOutInventory; run = body.pipeline_run_id ?? ''
     const { data: pipeline, error } = await db.from('pipeline_runs').select('pipeline_name,status,context').eq('id', run).single()
     if (error || pipeline?.pipeline_name !== 'gayout-weekly-sync' || pipeline.status !== 'running') return errorResponse('Active GayOut pipeline run required', 400, req)
     const dryRun = pipeline.context?.dry_run === true
@@ -56,7 +64,7 @@ export async function handleGayOutWeeklySource(req: Request, body: Record<string
           const jobs = [...parsed.sitemaps.map(url => ({ url, work_kind: 'sitemap' })), ...parsed.entries.map(s => ({
             url: s.url, work_kind: 'detail', source_entity_id: s.sourceId, target_table: s.targetTable, lastmod: s.lastmod,
           }))]
-          let offset = hash === q.document_hash ? q.document_offset : 0
+          let offset = hash === q.document_hash ? q.document_offset ?? 0 : 0
           do {
             const end = Math.min(jobs.length, offset + 500)
             await rpc('gayout_save_inventory', { p_run: run, p_inventory: inventory, p_url: q.url, p_token: q.lease_token,
@@ -101,7 +109,7 @@ export async function handleGayOutWeeklySource(req: Request, body: Record<string
     return jsonResponse({ success: true, items: processed, items_processed: processed, items_succeeded: processed,
       staged, has_more: summary.pending > 0, retry_after_seconds: delay, summary }, 200, req)
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
+    const message = error instanceof Error ? error.message : 'GayOut run failed'
     for (const q of claimed) await finish(q, 'retry', message, 300).catch(() => undefined)
     if (run) await rpc('gayout_cycle_summary', { p_run: run, p_inventory: inventory, p_error: message }).catch(() => undefined)
     return jsonResponse({ success: false, error: message }, 503, req)
