@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildHelpCountry,
+  helpCountryDetail,
   helpCountryCodes,
   helpSitemapEntries,
   HELP_COUNTRY_RE,
@@ -81,5 +82,20 @@ describe('helpCountry', () => {
     expect(buildHelpCountry('int', LINES).meta.title).toBe(
       'LGBTQ+ crisis lines worldwide | Queer Guide',
     );
+  });
+
+  it('only indexes the lowercase URL, so /help/DE is never a second copy of /help/de', async () => {
+    const env = { SUPABASE_URL: 'https://x.supabase.co', SUPABASE_ANON_KEY: 'a' } as never;
+    const fetchMock = async () =>
+      new Response(JSON.stringify([{ body_json: { hotlines: LINES } }]), { status: 200 });
+    const original = globalThis.fetch;
+    globalThis.fetch = fetchMock as typeof fetch;
+    try {
+      expect((await helpCountryDetail(env, '/help/de'))?.indexable).toBe(true);
+      expect((await helpCountryDetail(env, '/help/DE'))?.indexable).toBe(false);
+      expect((await helpCountryDetail(env, '/help/De'))?.indexable).toBe(false);
+    } finally {
+      globalThis.fetch = original;
+    }
   });
 });

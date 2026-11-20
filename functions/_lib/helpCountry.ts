@@ -116,7 +116,10 @@ export function buildHelpCountry(code: string, hotlines: HelpHotline[]): DetailR
 export async function helpCountryDetail(env: Env, pathname: string): Promise<DetailResult | null> {
   const m = pathname.match(HELP_COUNTRY_RE);
   if (!m) return null;
-  return buildHelpCountry(m[1], await fetchHelpHotlines(env));
+  const result = buildHelpCountry(m[1], await fetchHelpHotlines(env));
+  // The canonical is built from the raw path, so /help/DE would be a second
+  // indexable copy of /help/de. Only the lowercase form is indexable.
+  return m[1] === m[1].toLowerCase() ? result : { ...result, indexable: false };
 }
 
 export function helpSitemapEntries(hotlines: HelpHotline[], lastmod: string) {
