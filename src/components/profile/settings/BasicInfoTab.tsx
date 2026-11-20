@@ -103,7 +103,8 @@ export function BasicInfoTab({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="public">Anyone</SelectItem>
-                      <SelectItem value="friends">Community</SelectItem>
+                      <SelectItem value="community">Signed-in members</SelectItem>
+                      <SelectItem value="friends">Friends</SelectItem>
                       <SelectItem value="private">Only me</SelectItem>
                     </SelectContent>
                   </Select>

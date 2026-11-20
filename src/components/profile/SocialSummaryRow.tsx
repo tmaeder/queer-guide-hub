@@ -33,6 +33,9 @@ export function SocialSummaryRow({ userId, isOwnProfile, onPostsClick }: SocialS
     },
   ];
 
+  // Three zero tiles say nothing; hide the row until there is a count to show.
+  if (!data || items.every((item) => item.count === 0)) return null;
+
   return (
     <div className="grid grid-cols-3 gap-2" aria-label="Community summary">
       {items.map(({ icon: Icon, label, count, to, onClick }) => {

@@ -3772,9 +3772,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Fcontributions:%2Fuser%2F%3AcurrentUserId%2Fcontributions%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Fcontributions:%2Fuser%2F%3AcurrentUserId%2Factivity%20(or%20%2Fauth):MeRedirect:0",
     "source": "/me/contributions",
-    "target": "/user/:currentUserId/contributions (or /auth)",
+    "target": "/user/:currentUserId/activity (or /auth)",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3782,9 +3782,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Fprogress:%2Fuser%2F%3AcurrentUserId%2Fprogress%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Fprogress:%2Fhub%2Fprogress:LocalizedRedirect:0",
     "source": "/me/progress",
-    "target": "/user/:currentUserId/progress (or /auth)",
+    "target": "/hub/progress",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3792,9 +3792,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Fpassport:%2Fuser%2F%3AcurrentUserId%2Fprogress%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Fpassport:%2Fhub%2Fprogress:LocalizedRedirect:0",
     "source": "/me/passport",
-    "target": "/user/:currentUserId/progress (or /auth)",
+    "target": "/hub/progress",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3802,9 +3802,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Fmissions:%2Fuser%2F%3AcurrentUserId%2Fprogress%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Fmissions:%2Fhub%2Fprogress:LocalizedRedirect:0",
     "source": "/me/missions",
-    "target": "/user/:currentUserId/progress (or /auth)",
+    "target": "/hub/progress",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3812,9 +3812,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Fleaderboard:%2Fuser%2F%3AcurrentUserId%2Fprogress%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Fleaderboard:%2Fhub%2Fprogress:LocalizedRedirect:0",
     "source": "/me/leaderboard",
-    "target": "/user/:currentUserId/progress (or /auth)",
+    "target": "/hub/progress",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3832,9 +3832,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Faccount:%2Fuser%2F%3AcurrentUserId%2Faccount%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Faccount:%2Fsettings%2Fsecurity:LocalizedRedirect:0",
     "source": "/me/account",
-    "target": "/user/:currentUserId/account (or /auth)",
+    "target": "/settings/security",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -3842,29 +3842,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fme%2Ftiers:%2Fuser%2F%3AcurrentUserId%2Fprogress%20(or%20%2Fauth):MeRedirect:0",
+    "id": "client:locale:%2Fme%2Ftiers:%2Fhub%2Fprogress:LocalizedRedirect:0",
     "source": "/me/tiers",
-    "target": "/user/:currentUserId/progress (or /auth)",
-    "origin": "Client router",
-    "kind": "Client",
-    "statusCode": null,
-    "state": "Enabled",
-    "updatedAt": null
-  },
-  {
-    "id": "client:locale:%2Fsettings:Profile%20settings%20(depends%20on%20signed-in%20user%20and%20section):SettingsRedirect:0",
-    "source": "/settings",
-    "target": "Profile settings (depends on signed-in user and section)",
-    "origin": "Client router",
-    "kind": "Client",
-    "statusCode": null,
-    "state": "Enabled",
-    "updatedAt": null
-  },
-  {
-    "id": "client:locale:%2Fsettings%2Fprivacy:Profile%20settings%20(depends%20on%20signed-in%20user%20and%20section):SettingsRedirect:0",
-    "source": "/settings/privacy",
-    "target": "Profile settings (depends on signed-in user and section)",
+    "target": "/hub/progress",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,
@@ -4062,9 +4042,9 @@ export const deployedRedirectManifest = [
     "updatedAt": null
   },
   {
-    "id": "client:locale:%2Fprofile%2Ftiers:%2Fme%2Fprogress:Navigate:0",
+    "id": "client:locale:%2Fprofile%2Ftiers:%2Fhub%2Fprogress:LocalizedRedirect:0",
     "source": "/profile/tiers",
-    "target": "/me/progress",
+    "target": "/hub/progress",
     "origin": "Client router",
     "kind": "Client",
     "statusCode": null,

@@ -1682,7 +1682,19 @@
     "blockedUsers": "차단한 사용자",
     "reportUser": "사용자 신고",
     "sendMessage": "메시지 보내기",
-    "favoritesShortcut": "즐겨찾기"
+    "favoritesShortcut": "즐겨찾기",
+    "tabs": {
+      "overview": "개요",
+      "travel": "여행",
+      "activity": "활동",
+      "groups": "그룹"
+    },
+    "share": "프로필 공유",
+    "report": "프로필 신고",
+    "joined": "{{date}} 가입",
+    "editAvatar": "아바타 변경",
+    "lensHidden": "이 보기에서는 프로필이 보이지 않습니다. 계속 편집하려면 나로 전환하세요.",
+    "sections": "프로필 섹션"
   },
   "groups": {
     "title": "그룹",
@@ -2989,6 +3001,47 @@
       "copy": "주소 복사",
       "openInbox": "받은 편지함 열기",
       "claimFirst": "위에서 사용자 이름을 정하면 주소가 활성화돼요."
+    },
+    "title": "설정",
+    "viewProfile": "내 프로필 보기",
+    "sectionsLabel": "설정 섹션",
+    "allSettings": "전체 설정",
+    "travel": {
+      "reviewSearch": "검색 설정 검토"
+    },
+    "sections": {
+      "profile": {
+        "title": "프로필",
+        "description": "분위기, 이름, 대명사, 소개, 링크. 자동으로 저장됩니다."
+      },
+      "identity": {
+        "title": "정체성과 데이팅",
+        "description": "정체성 정보는 자동 저장됩니다. 데이팅은 별도로 설정합니다."
+      },
+      "privacy": {
+        "title": "개인정보와 공개 범위",
+        "description": "프로필의 각 부분을 누가 볼지. 자동으로 저장됩니다."
+      },
+      "security": {
+        "title": "로그인과 보안",
+        "description": "핸들, 패스키, 비밀번호."
+      },
+      "notifications": {
+        "title": "알림",
+        "description": "기기와 메일로 보내는 내용."
+      },
+      "travel": {
+        "title": "여행",
+        "description": "장소와 여행 순위를 정하는 선호와 예약 메일함."
+      },
+      "data": {
+        "title": "내 데이터",
+        "description": "저장된 모든 정보를 내려받거나 계정을 삭제하세요."
+      },
+      "avatar": {
+        "title": "내 아바타",
+        "description": "프로필 모습을 고르세요."
+      }
     }
   },
   "map": {
@@ -4057,7 +4110,8 @@
       "trips": "여행",
       "overview": "개요",
       "messages": "메시지",
-      "plans": "플랜"
+      "plans": "플랜",
+      "progress": "진행 상황"
     },
     "calendar": {
       "title": "다가오는 일정",
@@ -4174,6 +4228,9 @@
     },
     "plans": {
       "trips": "내 여행"
+    },
+    "progress": {
+      "description": "미션, 레벨, 연속 기록, 인정. 나만 볼 수 있습니다."
     }
   },
   "city": {

@@ -1,19 +1,16 @@
-import { Suspense, useEffect, useState, useRef } from 'react';
-import { useParams, useSearchParams } from 'react-router';
+import { Suspense, useState, useRef } from 'react';
+import { Navigate, useParams, useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { ArrowLeft, Eye, Flag, Share2, Shield, User, Heart } from '@/components/icons';
+import { ArrowLeft, Flag, Settings, Share2, Shield, User } from '@/components/icons';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ScrollableTabList } from '@/components/profile/ScrollableTabList';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
 import { OverviewTab } from '@/components/profile/tabs/OverviewTab';
-import { ContributionsTab } from '@/components/profile/tabs/ContributionsTab';
-import { GroupsTab } from '@/components/profile/tabs/GroupsTab';
+import { ActivityTab } from '@/components/profile/tabs/ActivityTab';
 import { TravelTab } from '@/components/profile/tabs/TravelTab';
-import { ProgressTab } from '@/components/profile/tabs/ProgressTab';
+import { ReportContentDialog } from '@/components/moderation/ReportContentDialog';
 import { StatusPicker } from '@/components/status/StatusPicker';
 import { ViewAsToggle } from '@/components/profile/ViewAsToggle';
 import { previewFilterProfile, sectionVisible, type ProfileLens } from '@/lib/profileLens';
@@ -21,8 +18,6 @@ import { useSecurePublicProfile } from '@/hooks/useSecurePublicProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useStatus } from '@/hooks/useStatus';
 import { usePublicStatus } from '@/hooks/usePublicStatus';
-import { useCommunityScore } from '@/hooks/useCommunityScore';
-import { usePublicCommunityScore } from '@/hooks/usePublicCommunityScore';
 import { useToast } from '@/hooks/use-toast';
 import { useMeta } from '@/hooks/useMeta';
 import { useTranslation } from 'react-i18next';
@@ -30,46 +25,41 @@ import { publicDisplayName } from '@/lib/displayName';
 import { useProfile } from '@/hooks/useProfile';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import {
-  profileEditorSection,
-  profileEditPath,
-  type ProfileEditorSection,
-} from '@/lib/profileEditing';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { profileEditPath, type ProfileEditorSection } from '@/lib/profileEditing';
 import type { ProfileEditorHandle } from '@/components/profile/ProfileEditor';
 import { PageContainer } from '@/components/layout/PageContainer';
 
-// Saved + Trips moved to the /hub office modules (stale /user/:id/saved links
-// fall back to overview via the TABS.includes guard below).
 const ProfileEditor = lazyRetry(() => import('@/components/profile/ProfileEditor'));
 
-const TABS = ['overview', 'travel', 'groups', 'contributions', 'progress', 'account'] as const;
+const TABS = ['overview', 'travel', 'activity'] as const;
 type ProfileTab = (typeof TABS)[number];
-/** Tabs that expose private personal data — only the owner viewing as themselves. */
-const OWN_ONLY_TABS: readonly ProfileTab[] = ['progress', 'account'];
-
-/** Lens options for the mobile "view as" sheet. */
-const LENS_OPTIONS: Array<{ value: ProfileLens; label: string; hint: string }> = [
-  { value: 'you', label: 'You', hint: 'Everything, as only you see it.' },
-  { value: 'community', label: 'Community', hint: 'What signed-in members see.' },
-  { value: 'public', label: 'Public', hint: 'What signed-out visitors see.' },
-];
+/** Old tab URLs → where that content lives now. */
+const MOVED_TABS: Record<string, string> = {
+  groups: 'activity',
+  contributions: 'activity',
+};
+const MOVED_ELSEWHERE: Record<string, string> = {
+  progress: '/hub/progress',
+  account: '/settings/security',
+  saved: '/hub/saved',
+  trips: '/hub/plans',
+};
 
 /**
- * Unified profile page at /user/:userId/:tab? — renders anyone (own mode when
- * it's you). Progress is own-only. The private personal surfaces (inbox,
- * saved, trips) live in /hub; legacy /me/* routes redirect there or here.
+ * Unified profile page at /user/:userId/:tab? — identity only. Owners see the
+ * same page with an audience lens and an inline avatar editor; every other
+ * preference lives on /settings, progress on /hub/progress.
  */
-export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
+export default function ProfilePage() {
   const { t } = useTranslation();
-  const params = useParams<{ userId?: string; tab?: string }>();
+  const params = useParams<{ userId: string; tab?: string; locale?: string }>();
   const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const targetUserId = params.userId;
 
-  const isMeRoute = !params.userId;
-  const targetUserId = params.userId ?? user?.id;
-
-  useMeta({ title: isMeRoute ? 'Your profile' : 'Profile', noIndex: true });
+  useMeta({ title: 'Profile', noIndex: true });
 
   const isOwnProfile = !!user && user.id === targetUserId;
   const {
@@ -88,37 +78,17 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
   const { status: ownStatus } = useStatus();
   const { status: othersStatus } = usePublicStatus(isOwnProfile ? null : (targetUserId ?? null));
   const status = isOwnProfile ? ownStatus : othersStatus;
-  const { data: ownScore } = useCommunityScore();
-  const { score: othersScore } = usePublicCommunityScore(
-    isOwnProfile ? null : (targetUserId ?? null),
-  );
-  const score = isOwnProfile ? ownScore : othersScore;
   const [statusPickerOpen, setStatusPickerOpen] = useState(false);
-  const [viewAsOpen, setViewAsOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [lens, setLens] = useState<ProfileLens>('you');
 
-  // tabProp comes from the static /me/<tab> routes; params.tab from /user/:userId/:tab?.
-  const requestedTab = (tabProp ?? params.tab ?? 'overview') as ProfileTab;
   const ownView = isOwnProfile && lens === 'you';
-  const requestedEditor = profileEditorSection(searchParams.get('edit'));
-  const editSection =
-    ownView && requestedEditor && requestedEditor !== 'account' && requestedEditor !== 'travel'
-      ? requestedEditor
-      : null;
-  const tab: ProfileTab = TABS.includes(requestedTab)
-    ? OWN_ONLY_TABS.includes(requestedTab) && !ownView
-      ? 'overview'
-      : requestedTab
+  const editSection = ownView && searchParams.get('edit') === 'avatar' ? 'avatar' : null;
+  const tab: ProfileTab = (TABS as readonly string[]).includes(params.tab ?? '')
+    ? (params.tab as ProfileTab)
     : 'overview';
 
-  useEffect(() => {
-    if (isMeRoute && !user) navigate('/auth');
-  }, [isMeRoute, user, navigate]);
-
-  if (isMeRoute && !user) return null;
-
-  const isAccount = tab === 'account';
-  const basePath = isMeRoute ? '/me' : `/user/${params.userId}`;
+  const basePath = `/user/${params.userId}`;
   const setTab = async (next: string) => {
     if (editorRef.current && !(await editorRef.current.savePending())) return;
     navigate(next === 'overview' ? basePath : `${basePath}/${next}`, { replace: true });
@@ -126,36 +96,33 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
   const openEditor = async (section: ProfileEditorSection, focusField?: string) => {
     if (!ownView || !targetUserId) return;
     if (editorRef.current && !(await editorRef.current.savePending())) return;
-    const path = profileEditPath(targetUserId, section);
-    navigate(`${path}${focusField ? `&field=${encodeURIComponent(focusField)}` : ''}`);
+    navigate(profileEditPath(targetUserId, section, focusField));
   };
   const changeLens = async (next: ProfileLens) => {
     if (editorRef.current && !(await editorRef.current.savePending())) return;
     setLens(next);
-    setViewAsOpen(false);
   };
   const closeEditor = () => {
-    const params = new URLSearchParams(searchParams);
-    params.delete('edit');
-    params.delete('field');
+    const next = new URLSearchParams(searchParams);
+    next.delete('edit');
+    next.delete('field');
     navigate(
-      `${basePath}${tab === 'overview' ? '' : `/${tab}`}${params.size ? `?${params.toString()}` : ''}`,
+      `${basePath}${tab === 'overview' ? '' : `/${tab}`}${next.size ? `?${next.toString()}` : ''}`,
       { replace: true },
     );
   };
   const editor = editSection ? (
     <Suspense fallback={<PageLoadingState variant="list" count={2} />}>
-      <ProfileEditor
-        section={editSection}
-        onClose={closeEditor}
-        editorRef={editorRef}
-        focusField={searchParams.get('field') ?? undefined}
-      />
+      <ProfileEditor section="avatar" onClose={closeEditor} editorRef={editorRef} />
     </Suspense>
   ) : undefined;
 
-  const completionPct = (profile as Record<string, unknown> | null)
-    ?.profile_completion_percentage as number | undefined;
+  // Retired tabs: same-page content moves to Activity, the rest to its new home.
+  const prefix = params.locale ? `/${params.locale}` : '';
+  if (params.tab && MOVED_TABS[params.tab])
+    return <Navigate to={`${prefix}${basePath}/${MOVED_TABS[params.tab]}`} replace />;
+  if (params.tab && MOVED_ELSEWHERE[params.tab] && isOwnProfile)
+    return <Navigate to={`${prefix}${MOVED_ELSEWHERE[params.tab]}`} replace />;
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -247,151 +214,79 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
     );
   }
 
+  const privacySettings = (profile.privacy_settings ?? {}) as Record<string, unknown>;
+  const lensVisible =
+    ownView ||
+    !isOwnProfile ||
+    sectionVisible(
+      typeof visibility === 'string' ? visibility : visibility ? 'public' : 'private',
+      lens,
+      'public',
+    );
+
   return (
-    <PageContainer flush={isAccount} className={isAccount ? 'pb-8 pt-4 md:pb-12 md:pt-8' : undefined}>
-      <div className="flex min-w-0 flex-col gap-4 md:gap-6">
-        {isAccount ? (
-          <header>
-            <Button variant="ghost" className="mb-2 -ms-2" onClick={() => void setTab('overview')}>
-              <ArrowLeft size={16} aria-hidden="true" />
-              {t('profile.account.backToProfile', 'Back to your profile')}
+    <PageContainer>
+      <div className="flex min-w-0 flex-col gap-6">
+        <div className="flex items-center justify-between gap-2">
+          {isOwnProfile ? (
+            <ViewAsToggle lens={lens} onChange={(next) => void changeLens(next)} />
+          ) : (
+            <Button variant="ghost" onClick={() => navigate(-1)} className="-ms-2">
+              <ArrowLeft size={16} className="mr-2" aria-hidden="true" />
+              {t('common.back', 'Back')}
             </Button>
-            <h1 className="font-display text-headline leading-tight md:text-display">
-              {t('profile.account.title', 'Account settings')}
-            </h1>
-            <p className="mt-2 max-w-reading text-muted-foreground">
-              {t('profile.account.description', 'Manage how you sign in, what you hear from us, and the data you keep here.')}
-            </p>
-            <Button className="mt-4" variant="outline" onClick={() => void openEditor('privacy')}>
-              {t('profile.account.profilePrivacy', 'Profile privacy')}
-            </Button>
-          </header>
-        ) : (
-          <div className="flex items-center justify-between">
-            {isMeRoute ? (
-              <h1 className="sr-only">Your profile</h1>
-            ) : (
-              <Button variant="outline" onClick={() => navigate(-1)} className="rounded-element">
-                <ArrowLeft size={16} className="mr-2" />
-                Back
+          )}
+          <div className="flex items-center gap-2">
+            {ownView && (
+              <Button variant="outline" size="icon" asChild>
+                <LocalizedLink to="/settings" aria-label={t('settings.title', 'Settings')}>
+                  <Settings size={16} aria-hidden="true" />
+                </LocalizedLink>
               </Button>
             )}
-            <div className="flex flex-wrap items-center justify-end gap-2 ml-auto">
-              {ownView && (
-                <Button variant="outline" asChild>
-                  <LocalizedLink to="/hub/saved">
-                    <Heart size={16} className="mr-2" aria-hidden="true" />
-                    {t('profile.favoritesShortcut', 'Favorites')}
-                  </LocalizedLink>
-                </Button>
-              )}
-              {isOwnProfile && (
-                <>
-                  <ViewAsToggle
-                    lens={lens}
-                    onChange={(next) => void changeLens(next)}
-                    className="hidden md:inline-flex"
-                  />
-                  <Sheet open={viewAsOpen} onOpenChange={setViewAsOpen}>
-                    <SheetTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        aria-label="View profile as…"
-                        className="rounded-element md:hidden"
-                      >
-                        <Eye size={16} />
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent side="bottom" className="pb-8">
-                      <SheetHeader className="mb-4">
-                        <SheetTitle>View profile as</SheetTitle>
-                      </SheetHeader>
-                      <div className="flex flex-col gap-2">
-                        {LENS_OPTIONS.map(({ value, label, hint }) => (
-                          <button
-                            key={value}
-                            type="button"
-                            aria-pressed={lens === value}
-                            onClick={() => {
-                              void changeLens(value);
-                            }}
-                            className={
-                              'rounded-element p-4 text-left transition-colors bg-surface-container' +
-                              (lens === value ? 'bg-muted/40' : 'border-border hover:bg-muted/30')
-                            }
-                          >
-                            <span className="block text-sm font-medium">{label}</span>
-                            <span className="block text-13 text-muted-foreground">{hint}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </SheetContent>
-                  </Sheet>
-                </>
-              )}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleShare}
+              aria-label={t('profile.share', 'Share profile')}
+            >
+              <Share2 size={16} aria-hidden="true" />
+            </Button>
+            {!isOwnProfile && user && (
               <Button
                 variant="outline"
                 size="icon"
-                onClick={handleShare}
-                aria-label="Share profile"
-                className="rounded-element"
+                onClick={() => setReportOpen(true)}
+                aria-label={t('profile.report', 'Report profile')}
               >
-                <Share2 size={16} />
+                <Flag size={16} aria-hidden="true" />
               </Button>
-              {!isOwnProfile && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label="Report user"
-                  className="rounded-element"
-                >
-                  <Flag size={16} />
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
-        {ownView ||
-        !isOwnProfile ||
-        sectionVisible(
-          typeof visibility === 'string' ? visibility : visibility ? 'public' : 'private',
-          lens,
-          'public',
-        ) ? (
-          <>
-            {!isAccount && (
-              <ProfileHeader
-                profile={
-                  isOwnProfile
-                    ? previewFilterProfile(profile as unknown as Record<string, unknown>, lens)
-                    : (profile as unknown as Record<string, unknown>)
-                }
-                isOwnProfile={ownView}
-                status={status}
-                score={score}
-                onEditStatus={() => setStatusPickerOpen(true)}
-                onEditProfile={() => void openEditor('profile')}
-                onEditAvatar={() => void openEditor('avatar')}
-                onEditSignals={() => void openEditor('status')}
-              />
             )}
+          </div>
+        </div>
 
-            <Tabs value={tab} onValueChange={setTab} className="w-full min-w-0">
+        {lensVisible ? (
+          <>
+            <ProfileHeader
+              profile={
+                isOwnProfile
+                  ? previewFilterProfile(profile as unknown as Record<string, unknown>, lens)
+                  : (profile as unknown as Record<string, unknown>)
+              }
+              isOwnProfile={ownView}
+              status={status}
+              onEditStatus={() => setStatusPickerOpen(true)}
+              onEditAvatar={() => void openEditor('avatar')}
+            />
+
+            <Tabs value={tab} onValueChange={(next) => void setTab(next)} className="w-full min-w-0">
               <ScrollableTabList aria-label={t('profile.sections', 'Profile sections')}>
                 {(
                   [
                     ['overview', t('profile.tabs.overview', 'Overview')],
                     ['travel', t('profile.tabs.travel', 'Travel')],
-                    ['groups', t('profile.tabs.groups', 'Groups')],
-                    ['contributions', t('profile.tabs.contributions', 'Contributions')],
-                    ...(ownView
-                      ? ([
-                          ['progress', t('profile.tabs.progress', 'Progress')],
-                          ['account', t('header.userMenu.account', 'Account')],
-                        ] as const)
-                      : []),
-                  ] as ReadonlyArray<readonly [string, string]>
+                    ['activity', t('profile.tabs.activity', 'Activity')],
+                  ] as const
                 ).map(([v, l]) => (
                   <TabsTrigger
                     key={v}
@@ -409,85 +304,63 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
                   profile={profile as unknown as Record<string, unknown>}
                   isOwnProfile={isOwnProfile}
                   lens={lens}
-                  completionPct={completionPct}
-                  onPostsClick={() => void setTab('contributions')}
+                  onPostsClick={() => void setTab('activity')}
                   onEdit={(section, field) => void openEditor(section, field)}
                   editor={editor}
-                  editingSection={editSection}
                 />
               </TabsContent>
 
               <TabsContent value="travel">
                 <h2 className="sr-only">{t('profile.tabs.travel', 'Travel')}</h2>
-                {ownView && requestedEditor === 'travel' && (
-                  <div className="mb-6">
-                    <Suspense fallback={<PageLoadingState variant="list" count={2} />}>
-                      <ProfileEditor section="travel" onClose={closeEditor} editorRef={editorRef} />
-                    </Suspense>
-                  </div>
-                )}
                 <TravelTab
                   userId={profile.user_id}
                   isOwnProfile={ownView}
-                  preferences={ownView && requestedEditor !== 'travel' && (
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="outline" onClick={() => void openEditor('travel')}>
-                        {t('profile.travel.preferences', 'Travel preferences')}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        onClick={() => void openEditor('privacy', 'travel_visibility')}
-                      >
-                        {t('profile.travel.visibility', 'Travel visibility')}
-                      </Button>
-                    </div>
-                  )}
+                  preferences={
+                    ownView && (
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" asChild>
+                          <LocalizedLink to="/settings/travel">
+                            {t('profile.travel.preferences', 'Travel preferences')}
+                          </LocalizedLink>
+                        </Button>
+                        <Button variant="ghost" asChild>
+                          <LocalizedLink to={profileEditPath(profile.user_id, 'privacy', 'travel_visibility')}>
+                            {t('profile.travel.visibility', 'Travel visibility')}
+                          </LocalizedLink>
+                        </Button>
+                      </div>
+                    )
+                  }
                 />
               </TabsContent>
 
-              <TabsContent value="groups">
-                <h2 className="sr-only">{t('profile.tabs.groups', 'Groups')}</h2>
-                <GroupsTab
+              <TabsContent value="activity">
+                <h2 className="sr-only">{t('profile.tabs.activity', 'Activity')}</h2>
+                <ActivityTab
                   userId={profile.user_id}
                   isOwnProfile={isOwnProfile}
                   lens={lens}
-                  privacySettings={(profile.privacy_settings ?? {}) as Record<string, unknown>}
+                  privacySettings={privacySettings}
                 />
               </TabsContent>
-
-              <TabsContent value="contributions">
-                <h2 className="sr-only">{t('profile.tabs.contributions', 'Contributions')}</h2>
-                <ContributionsTab
-                  userId={profile.user_id}
-                  isOwnProfile={isOwnProfile}
-                  lens={lens}
-                  privacySettings={(profile.privacy_settings ?? {}) as Record<string, unknown>}
-                />
-              </TabsContent>
-
-              {ownView && (
-                <TabsContent value="account">
-                  <Suspense fallback={<PageLoadingState variant="list" count={2} />}>
-                    <ProfileEditor section="account" editorRef={editorRef} />
-                  </Suspense>
-                </TabsContent>
-              )}
-
-              {ownView && (
-                <TabsContent value="progress">
-                  <h2 className="sr-only">{t('profile.tabs.progress', 'Progress')}</h2>
-                  <ProgressTab />
-                </TabsContent>
-              )}
             </Tabs>
           </>
         ) : (
           <p className="rounded-container bg-card p-6 text-muted-foreground">
-            This profile isn’t visible in this view. Switch to You to continue editing.
+            {t('profile.lensHidden', 'This profile isn’t visible in this view. Switch to You to continue editing.')}
           </p>
         )}
       </div>
-      {ownView && !isAccount && <StatusPicker open={statusPickerOpen} onOpenChange={setStatusPickerOpen} />}
+      {ownView && <StatusPicker open={statusPickerOpen} onOpenChange={setStatusPickerOpen} />}
+      {!isOwnProfile && user && (
+        <ReportContentDialog
+          open={reportOpen}
+          onOpenChange={setReportOpen}
+          contentType="profile"
+          contentId={profile.user_id}
+          targetUserId={profile.user_id}
+        />
+      )}
     </PageContainer>
   );
 }

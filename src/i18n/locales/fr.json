@@ -1686,7 +1686,19 @@
     "blockedUsers": "Utilisateur·ices bloqué·es",
     "reportUser": "Signaler",
     "sendMessage": "Envoyer un message",
-    "favoritesShortcut": "Favoris"
+    "favoritesShortcut": "Favoris",
+    "tabs": {
+      "overview": "Aperçu",
+      "travel": "Voyages",
+      "activity": "Activité",
+      "groups": "Groupes"
+    },
+    "share": "Partager le profil",
+    "report": "Signaler le profil",
+    "joined": "Membre depuis {{date}}",
+    "editAvatar": "Changer d’avatar",
+    "lensHidden": "Ce profil n’est pas visible dans cette vue. Passe sur Toi pour continuer.",
+    "sections": "Sections du profil"
   },
   "groups": {
     "title": "Groupes",
@@ -2995,6 +3007,47 @@
       "copy": "[FR] Copy address",
       "openInbox": "[FR] Open inbox",
       "claimFirst": "[FR] Choose a username above to activate your address."
+    },
+    "title": "Paramètres",
+    "viewProfile": "Voir ton profil",
+    "sectionsLabel": "Sections des paramètres",
+    "allSettings": "Tous les paramètres",
+    "travel": {
+      "reviewSearch": "Revoir les préférences de recherche"
+    },
+    "sections": {
+      "profile": {
+        "title": "Profil",
+        "description": "Ton vibe, ton nom, tes pronoms, ta bio et tes liens. Enregistrement automatique."
+      },
+      "identity": {
+        "title": "Identité et rencontres",
+        "description": "Les infos d’identité s’enregistrent automatiquement. Les rencontres ont leurs propres réglages."
+      },
+      "privacy": {
+        "title": "Confidentialité et visibilité",
+        "description": "Qui voit chaque partie de ton profil. Enregistrement automatique."
+      },
+      "security": {
+        "title": "Connexion et sécurité",
+        "description": "Ton identifiant, ta clé d’accès et ton mot de passe."
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Ce que nous envoyons sur ton appareil et dans ta boîte mail."
+      },
+      "travel": {
+        "title": "Voyages",
+        "description": "Préférences qui classent lieux et voyages pour toi, et ta boîte de réservations."
+      },
+      "data": {
+        "title": "Tes données",
+        "description": "Télécharge tout ce que nous avons sur toi, ou supprime ton compte."
+      },
+      "avatar": {
+        "title": "Ton avatar",
+        "description": "Choisis l’apparence de ton profil."
+      }
     }
   },
   "map": {
@@ -4063,7 +4116,8 @@
       "trips": "Voyages",
       "overview": "Aperçu",
       "messages": "Messages",
-      "plans": "Plans"
+      "plans": "Plans",
+      "progress": "Progression"
     },
     "calendar": {
       "title": "À venir",
@@ -4180,6 +4234,9 @@
     },
     "plans": {
       "trips": "Tes voyages"
+    },
+    "progress": {
+      "description": "Missions, niveau, séries et reconnaissance. Visible par toi seul·e."
     }
   },
   "city": {
