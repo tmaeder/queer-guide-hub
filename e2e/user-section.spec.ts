@@ -45,14 +45,14 @@ test.describe('user section — edge', () => {
     }
   });
 
-  test('a signed-out visitor sees three tabs and no owner controls', async ({ page }) => {
+  // Profiles are members-only: get_public_profile_safe is not granted to anon
+  // (20261021174528), so a signed-out visitor gets the page shell and no profile.
+  test('a signed-out visitor is shown no profile and no owner controls', async ({ page }) => {
     await page.addInitScript(seedConsent);
     await page.goto(`/user/${OTHER_USER}`);
-    const tabs = page.getByRole('tab');
-    await expect(tabs.first()).toBeVisible({ timeout: 20_000 });
-    await expect(tabs).toHaveText(['Overview', 'Travel', 'Activity']);
+    await expect(page.getByText('Profile not found')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('tab')).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Edit profile' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Report profile' })).toHaveCount(0);
     await expect(page.getByRole('group', { name: 'View profile as' })).toHaveCount(0);
   });
 });

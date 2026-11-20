@@ -19,6 +19,8 @@ const PILLS = [
   'Saved',
   'Progress',
 ] as const;
+/** The mobile sheet lists Personal first and moves Overview to its header. */
+const SHEET_PILLS = [...PILLS.slice(9), ...PILLS.slice(1, 9)];
 
 /** One route per page component behind /hub, so every shell that renders the bar
  *  is exercised. `/hub/dating` is absent on purpose: Cruising redirects an
@@ -66,7 +68,7 @@ test.describe('hub nav', () => {
     // nothing — the vacuous-sweep failure this repo keeps re-learning.
     expect(ROUTES.length).toBeGreaterThanOrEqual(6);
     expect(new Set(ROUTES.map((r) => r.shell)).size).toBeGreaterThanOrEqual(4);
-    expect(PILLS.length).toBe(12);
+    expect(PILLS.length).toBe(13);
   });
 
   for (const route of ROUTES) {
@@ -148,7 +150,7 @@ test.describe('hub nav', () => {
     await expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
     await trigger.click();
     await expect(page).toHaveURL(/\/going-out$/);
-    await expect(hubNav.getByRole('link')).toHaveText([...PILLS]);
+    await expect(hubNav.getByRole('link')).toHaveText(SHEET_PILLS);
     await expect(hubNav.locator('[aria-current]')).toHaveCount(0);
     expect(await sheet.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
     await hubNav.getByRole('link', { name: 'People' }).click();
