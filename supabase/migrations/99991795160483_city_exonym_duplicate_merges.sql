@@ -62,7 +62,11 @@ begin
     ) as t(keep_id, drop_id, label)
   loop
     if not exists (select 1 from public.cities where id = r.keep_id and duplicate_of_id is null)
-       or not exists (select 1 from public.cities where id = r.drop_id and duplicate_of_id is null) then
+       or not exists (select 1 from public.cities where id = r.drop_id and duplicate_of_id is null)
+       -- merge_cities writes city_aliases, whose FK targets the geo spine;
+       -- a partial snapshot (CI) can hold the city without its profile.
+       or not exists (select 1 from public.geo_city_profiles where place_id = r.keep_id)
+       or not exists (select 1 from public.geo_city_profiles where place_id = r.drop_id) then
       v_skipped := v_skipped || ' ' || r.label;
       continue;
     end if;
