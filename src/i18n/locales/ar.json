@@ -1407,7 +1407,12 @@
       "profileDesc": "[AR] Pick a username and avatar, or keep the ones we assigned."
     },
     "profileBlurb": "اختر اسم المستخدم وصورتك. اقترحنا اسمًا وصورة رمزية للبدء.",
-    "passkeyFallback": "تعيين كلمة مرور بدلًا من ذلك"
+    "passkeyFallback": "تعيين كلمة مرور بدلًا من ذلك",
+    "passkeyHeading": "سجّل الدخول بمفتاح مرور",
+    "passkeyRequiredBlurb": "هكذا تسجّل الدخول إلى حسابك الجديد. يستغرق ثوانيَ قليلة.",
+    "passkeyWhy1": "افتح القفل بوجهك أو بصمتك أو رمز جهازك",
+    "passkeyWhy2": "لا شيء لتتذكره، ولا شيء يُسرق أو يتسرّب",
+    "passkeyWhy3": "يتزامن عبر أجهزتك مع مدير كلمات المرور"
   },
   "events": {
     "title": "الفعاليات",

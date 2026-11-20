@@ -1405,7 +1405,12 @@
       "profileDesc": "[FR] Pick a username and avatar, or keep the ones we assigned."
     },
     "profileBlurb": "Choisis ton nom d’utilisateur et ta photo. Nous avons proposé un pseudo et un avatar pour commencer.",
-    "passkeyFallback": "Définir plutôt un mot de passe"
+    "passkeyFallback": "Définir plutôt un mot de passe",
+    "passkeyHeading": "Se connecter avec une clé d’accès",
+    "passkeyRequiredBlurb": "C’est ainsi que tu te connectes à ton nouveau compte. Cela prend quelques secondes.",
+    "passkeyWhy1": "Déverrouille avec ton visage, ton empreinte ou le code de ton appareil",
+    "passkeyWhy2": "Rien à retenir, rien à hameçonner ni à divulguer",
+    "passkeyWhy3": "Synchronisée sur tes appareils avec ton gestionnaire de mots de passe"
   },
   "events": {
     "title": "Événements",

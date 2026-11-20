@@ -1570,7 +1570,12 @@
       "profileDesc": "[DE] Pick a username and avatar, or keep the ones we assigned."
     },
     "profileBlurb": "Wähle deinen Benutzernamen und dein Bild. Ein Handle und ein Avatar sind schon vorgeschlagen.",
-    "passkeyFallback": "Stattdessen ein Passwort festlegen"
+    "passkeyFallback": "Stattdessen ein Passwort festlegen",
+    "passkeyHeading": "Mit Passkey anmelden",
+    "passkeyRequiredBlurb": "So meldest du dich bei deinem neuen Konto an. Es dauert nur ein paar Sekunden.",
+    "passkeyWhy1": "Entsperren mit Gesicht, Fingerabdruck oder Geräte-PIN",
+    "passkeyWhy2": "Nichts zu merken, nichts zu phishen oder zu leaken",
+    "passkeyWhy3": "Synchronisiert über deine Geräte mit deinem Passwortmanager"
   },
   "sos": {
     "button": "SOS",

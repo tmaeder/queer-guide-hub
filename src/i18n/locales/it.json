@@ -1401,7 +1401,12 @@
       "profileDesc": "[IT] Pick a username and avatar, or keep the ones we assigned."
     },
     "profileBlurb": "Scegli il tuo nome utente e la tua immagine. Ti abbiamo suggerito un nome e un avatar da cui partire.",
-    "passkeyFallback": "Imposta invece una password"
+    "passkeyFallback": "Imposta invece una password",
+    "passkeyHeading": "Accedi con una passkey",
+    "passkeyRequiredBlurb": "È così che accedi al tuo nuovo account. Bastano pochi secondi.",
+    "passkeyWhy1": "Sblocca con il volto, l’impronta o il PIN del dispositivo",
+    "passkeyWhy2": "Niente da ricordare, niente da rubare o far trapelare",
+    "passkeyWhy3": "Si sincronizza sui tuoi dispositivi con il gestore di password"
   },
   "events": {
     "title": "Eventi",

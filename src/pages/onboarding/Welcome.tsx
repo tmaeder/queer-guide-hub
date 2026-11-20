@@ -5,7 +5,15 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Heart, KeyRound, ShieldCheck, Check } from '@/components/icons';
+import {
+  Check,
+  Fingerprint,
+  Heart,
+  KeyRound,
+  Lock,
+  ShieldCheck,
+  Smartphone,
+} from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useSignupFunnel } from '@/hooks/useSignupFunnel';
 import { useToast } from '@/hooks/use-toast';
@@ -210,33 +218,60 @@ export default function Welcome() {
 
         {stepId === 'passkey' && (
           <div className="max-w-xl">
-            <div className="mb-8">
-              <h1 className="text-headline font-bold tracking-tight mb-2">
-                {t('onboarding.welcome', 'Welcome to Queer Guide')}
-              </h1>
-              <p className="text-muted-foreground leading-relaxed">
-                {t(
-                  'onboarding.welcomeBlurb',
-                  "You're in. A few quick optional steps to make it yours.",
-                )}
-              </p>
-            </div>
+            <h1 className="mb-2 text-headline font-bold tracking-tight">
+              {t('onboarding.passkeyHeading', 'Sign in with a passkey')}
+            </h1>
+            <p className="mb-6 leading-relaxed text-muted-foreground">
+              {passkeyFirst
+                ? t(
+                    'onboarding.passkeyRequiredBlurb',
+                    'This is how you sign in to your new account. It takes a few seconds.',
+                  )
+                : t(
+                    'onboarding.passkeyBlurb',
+                    'Sign in faster and more securely with your device. No passwords to remember.',
+                  )}
+            </p>
 
-            <div className="pt-8">
-              <div className="flex items-center gap-4 mb-4">
-                <KeyRound size={20} />
-                <p className="text-base font-semibold">
-                  {t('onboarding.passkeyTitle', 'Set up a passkey')}
-                </p>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                {t(
-                  'onboarding.passkeyBlurb',
-                  'Sign in faster and more securely with your device. No passwords to remember.',
-                )}
-              </p>
+            <div className="rounded-container bg-card p-6 shadow-soft">
+              <ul className="m-0 flex list-none flex-col gap-4 p-0">
+                {[
+                  {
+                    Icon: Fingerprint,
+                    text: t(
+                      'onboarding.passkeyWhy1',
+                      'Sign in with your face, fingerprint or device PIN',
+                    ),
+                  },
+                  {
+                    Icon: Lock,
+                    text: t(
+                      'onboarding.passkeyWhy2',
+                      'Nothing to remember, nothing to phish or leak',
+                    ),
+                  },
+                  {
+                    Icon: Smartphone,
+                    text: t(
+                      'onboarding.passkeyWhy3',
+                      'Syncs across your devices with your password manager',
+                    ),
+                  },
+                ].map(({ Icon, text }) => (
+                  <li key={text} className="flex items-center gap-4 text-15">
+                    <span
+                      aria-hidden
+                      className="grid size-10 shrink-0 place-items-center rounded-full bg-muted"
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    {text}
+                  </li>
+                ))}
+              </ul>
+
               {enrollErr && (
-                <Alert variant="destructive" className="mb-4">
+                <Alert variant="destructive" className="mt-6">
                   <AlertDescription>
                     {enrollErr}
                     {passkeyFirst && !passwordFallback && (
@@ -255,18 +290,26 @@ export default function Welcome() {
                 </Alert>
               )}
               {passwordFallback && (
-                <div className="mb-4">
+                <div className="mt-6">
                   <ChangePasswordPanel />
                 </div>
               )}
+
               <Button
                 type="button"
+                size="lg"
                 variant={hasPasskey ? 'outline' : 'default'}
                 onClick={handleEnrollPasskey}
                 disabled={enrolling || hasPasskey}
+                className="mt-6 w-full"
               >
-                {enrolling && <TrackLoader size={16} className="mr-2" />}
-                {hasPasskey && <Check className="mr-2 h-4 w-4" />}
+                {enrolling ? (
+                  <TrackLoader size={16} />
+                ) : hasPasskey ? (
+                  <Check className="h-4 w-4" aria-hidden />
+                ) : (
+                  <KeyRound className="h-4 w-4" aria-hidden />
+                )}
                 {hasPasskey
                   ? t('onboarding.passkeyAlreadyEnrolled', 'Passkey already enabled')
                   : t('onboarding.passkeyEnable', 'Enable passkey')}

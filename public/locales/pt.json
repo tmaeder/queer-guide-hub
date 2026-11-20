@@ -1401,7 +1401,12 @@
       "profileDesc": "[PT] Pick a username and avatar, or keep the ones we assigned."
     },
     "profileBlurb": "Escolhe o teu nome de utilizador e a tua imagem. Sugerimos um nome e um avatar para começar.",
-    "passkeyFallback": "Definir antes uma palavra-passe"
+    "passkeyFallback": "Definir antes uma palavra-passe",
+    "passkeyHeading": "Inicia sessão com uma chave de acesso",
+    "passkeyRequiredBlurb": "É assim que inicias sessão na tua nova conta. Demora poucos segundos.",
+    "passkeyWhy1": "Desbloqueia com o rosto, a impressão digital ou o PIN do dispositivo",
+    "passkeyWhy2": "Nada para lembrar, nada para roubar ou vazar",
+    "passkeyWhy3": "Sincroniza entre os teus dispositivos com o gestor de palavras-passe"
   },
   "events": {
     "title": "Eventos",

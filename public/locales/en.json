@@ -653,7 +653,12 @@
       "profileDesc": "Pick a username and avatar, or keep the ones we assigned."
     },
     "profileBlurb": "Choose your username and picture. We suggested a handle and an avatar to start from.",
-    "passkeyFallback": "Set a password instead"
+    "passkeyFallback": "Set a password instead",
+    "passkeyHeading": "Sign in with a passkey",
+    "passkeyRequiredBlurb": "This is how you sign in to your new account. It takes a few seconds.",
+    "passkeyWhy1": "Sign in with your face, fingerprint or device PIN",
+    "passkeyWhy2": "Nothing to remember, nothing to phish or leak",
+    "passkeyWhy3": "Syncs across your devices with your password manager"
   },
   "events": {
     "title": "Events",
