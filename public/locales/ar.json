@@ -1304,7 +1304,22 @@
         "interests": "Interests"
       },
       "blurb": "Free, takes a minute.",
-      "haveAccountQ": "Already have an account? Sign in"
+      "haveAccountQ": "Already have an account? Sign in",
+      "passwordTitle": "اختر كلمة مرور",
+      "confirmTitle": "أمر أخير",
+      "passwordBlurb": "8 أحرف على الأقل. الأطول أقوى.",
+      "confirmBlurb": "أكّد ويصبح حسابك جاهزًا.",
+      "progress": "الخطوة {{n}} من {{total}}",
+      "signingUpAs": "التسجيل باسم",
+      "change": "تغيير",
+      "back": "رجوع",
+      "continue": "متابعة",
+      "passkeyTitle": "كيف ستسجّل الدخول؟",
+      "passkeyBlurb": "مفتاح المرور يستخدم وجهك أو بصمتك أو رمز جهازك.",
+      "usePasskey": "استخدام مفتاح مرور",
+      "passkeyWhy": "لا شيء لتتذكره، ولا شيء يتسرّب.",
+      "usePassword": "استخدام كلمة مرور بدلًا من ذلك",
+      "passkeyAfter": "تضيف مفتاح المرور في الشاشة التالية."
     },
     "pronouns": {
       "she/her": "she/her",
@@ -1391,7 +1406,8 @@
       "profile": "[AR] Your handle",
       "profileDesc": "[AR] Pick a username and avatar, or keep the ones we assigned."
     },
-    "profileBlurb": "[AR] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
+    "profileBlurb": "اختر اسم المستخدم وصورتك. اقترحنا اسمًا وصورة رمزية للبدء.",
+    "passkeyFallback": "تعيين كلمة مرور بدلًا من ذلك"
   },
   "events": {
     "title": "الفعاليات",

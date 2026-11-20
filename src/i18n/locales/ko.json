@@ -1298,7 +1298,22 @@
         "interests": "관심사"
       },
       "blurb": "무료고, 1 분이면 끝나요.",
-      "haveAccountQ": "이미 계정이 있나요? 로그인해요"
+      "haveAccountQ": "이미 계정이 있나요? 로그인해요",
+      "passwordTitle": "비밀번호 선택",
+      "confirmTitle": "마지막 한 가지",
+      "passwordBlurb": "8자 이상. 길수록 안전합니다.",
+      "confirmBlurb": "확인하면 계정이 준비됩니다.",
+      "progress": "{{total}}단계 중 {{n}}단계",
+      "signingUpAs": "가입 이메일",
+      "change": "변경",
+      "back": "뒤로",
+      "continue": "계속",
+      "passkeyTitle": "어떻게 로그인하시겠어요?",
+      "passkeyBlurb": "패스키는 얼굴, 지문 또는 기기 PIN을 사용합니다.",
+      "usePasskey": "패스키 사용",
+      "passkeyWhy": "기억할 것도, 유출될 것도 없습니다.",
+      "usePassword": "대신 비밀번호 사용",
+      "passkeyAfter": "패스키는 다음 화면에서 추가합니다."
     },
     "pronouns": {
       "she/her": "she/her",
@@ -1385,7 +1400,8 @@
       "profile": "내 핸들",
       "profileDesc": "사용자 이름과 아바타를 골라도 되고, 정해 준 걸 그대로 써도 돼요."
     },
-    "profileBlurb": "계정이 준비됐어요. 핸들과 아바타를 드렸어요. 그대로 써도 되고 바꿔도 돼요."
+    "profileBlurb": "사용자 이름과 사진을 선택하세요. 시작용 핸들과 아바타를 제안해 두었습니다.",
+    "passkeyFallback": "대신 비밀번호 설정"
   },
   "events": {
     "title": "이벤트",

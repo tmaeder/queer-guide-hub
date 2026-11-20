@@ -1330,7 +1330,22 @@
         "interests": "Интересы"
       },
       "blurb": "Free, takes a minute.",
-      "haveAccountQ": "Already have an account? Sign in"
+      "haveAccountQ": "Already have an account? Sign in",
+      "passwordTitle": "Придумайте пароль",
+      "confirmTitle": "Последний шаг",
+      "passwordBlurb": "Не меньше 8 символов. Чем длиннее, тем надёжнее.",
+      "confirmBlurb": "Подтвердите — и аккаунт готов.",
+      "progress": "Шаг {{n}} из {{total}}",
+      "signingUpAs": "Регистрация как",
+      "change": "Изменить",
+      "back": "Назад",
+      "continue": "Продолжить",
+      "passkeyTitle": "Как вы будете входить?",
+      "passkeyBlurb": "Ключ доступа использует лицо, отпечаток пальца или PIN устройства.",
+      "usePasskey": "Использовать ключ доступа",
+      "passkeyWhy": "Нечего запоминать, нечему утечь.",
+      "usePassword": "Использовать пароль",
+      "passkeyAfter": "Ключ доступа добавляется на следующем экране."
     },
     "pronouns": {
       "she/her": "она/её",
@@ -1417,7 +1432,8 @@
       "profile": "[RU] Your handle",
       "profileDesc": "[RU] Pick a username and avatar, or keep the ones we assigned."
     },
-    "profileBlurb": "[RU] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
+    "profileBlurb": "Выберите имя пользователя и изображение. Мы предложили имя и аватар для начала.",
+    "passkeyFallback": "Задать пароль вместо этого"
   },
   "events": {
     "title": "Мероприятия",

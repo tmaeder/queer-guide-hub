@@ -1298,7 +1298,22 @@
         "interests": "Interesses"
       },
       "blurb": "Free, takes a minute.",
-      "haveAccountQ": "Already have an account? Sign in"
+      "haveAccountQ": "Already have an account? Sign in",
+      "passwordTitle": "Escolhe uma palavra-passe",
+      "confirmTitle": "Só mais uma coisa",
+      "passwordBlurb": "Pelo menos 8 caracteres. Mais longa é mais segura.",
+      "confirmBlurb": "Confirma e a tua conta fica pronta.",
+      "progress": "Passo {{n}} de {{total}}",
+      "signingUpAs": "A registar como",
+      "change": "Alterar",
+      "back": "Voltar",
+      "continue": "Continuar",
+      "passkeyTitle": "Como queres iniciar sessão?",
+      "passkeyBlurb": "Uma chave de acesso usa o teu rosto, impressão digital ou PIN do dispositivo.",
+      "usePasskey": "Usar uma chave de acesso",
+      "passkeyWhy": "Nada para lembrar, nada para vazar.",
+      "usePassword": "Usar antes uma palavra-passe",
+      "passkeyAfter": "Adicionas a chave de acesso no ecrã seguinte."
     },
     "pronouns": {
       "she/her": "ela/dela",
@@ -1385,7 +1400,8 @@
       "profile": "[PT] Your handle",
       "profileDesc": "[PT] Pick a username and avatar, or keep the ones we assigned."
     },
-    "profileBlurb": "[PT] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
+    "profileBlurb": "Escolhe o teu nome de utilizador e a tua imagem. Sugerimos um nome e um avatar para começar.",
+    "passkeyFallback": "Definir antes uma palavra-passe"
   },
   "events": {
     "title": "Eventos",
