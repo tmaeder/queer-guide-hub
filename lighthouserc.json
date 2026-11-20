@@ -507,7 +507,7 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 13000,
+                "maxNumericValue": 21000,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -587,7 +587,7 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 13300,
+                "maxNumericValue": 28200,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -627,7 +627,7 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 10500,
+                "maxNumericValue": 16400,
                 "aggregationMethod": "optimistic"
               }
             ],

@@ -25,13 +25,25 @@ import { resolveEntityImage } from '../../src/lib/images/resolveEntityImage';
  * emitted: guessing a single URL there risks downloading the hero twice.
  */
 export function destinationHeroPreload(url: string | null | undefined): string | null {
+  return heroImagePreload(url, DESTINATION_PHOTO_SIZES, DESTINATION_PHOTO_WIDTHS);
+}
+
+/**
+ * The preload tag for any hero rendered through `<Image>` with a Cloudflare
+ * srcset. `sizes` and `widths` must be the values that `<img>` renders with.
+ */
+export function heroImagePreload(
+  url: string | null | undefined,
+  sizes: string,
+  widths: number[],
+): string | null {
   if (!url) return null;
-  const srcset = buildCfSrcSet(url, DESTINATION_PHOTO_WIDTHS);
+  const srcset = buildCfSrcSet(url, widths);
   if (!srcset) return null;
   const referrer = imageReferrerPolicy(url);
   return (
     `<link rel="preload" as="image" fetchpriority="high"` +
-    ` imagesrcset="${attr(srcset)}" imagesizes="${attr(DESTINATION_PHOTO_SIZES)}"` +
+    ` imagesrcset="${attr(srcset)}" imagesizes="${attr(sizes)}"` +
     (referrer ? ` referrerpolicy="${referrer}"` : '') +
     `>`
   );
@@ -53,6 +65,6 @@ function str(v: unknown): string | null {
   return typeof v === 'string' && v.length > 0 ? v : null;
 }
 
-function attr(s: string): string {
+export function attr(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 }

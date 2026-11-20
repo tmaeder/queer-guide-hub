@@ -74,6 +74,7 @@ import { PUBLIC_DOCUMENTS, pageMarkdown } from './_lib/agentContent';
 import { STATIC_ROUTE_BODY } from './_lib/routeBody';
 import { redirectReportPage, setRedirectReportHeaders } from './_lib/redirectReportPage';
 import { trimTrailingSlashes } from '../src/lib/trimTrailingSlashes';
+import { rendersVenuesHero, venuesHeroHead } from './_lib/venuesHeroPreload';
 
 // Prefixes that look like static assets. If the SPA catch-all in
 // _redirects falls through and we'd otherwise serve index.html for one
@@ -579,6 +580,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const branding = await getBranding(env);
   const bMeta = brandingMeta(branding);
 
+  // /venues hub: preload the featured hero and name the venue it shows (see
+  // venuesHeroPreload.ts). Null when the hero will not render or nothing can
+  // be preloaded; never blocks the page past its own short timeout.
+  const venuesHero = rendersVenuesHero(basePath, url.searchParams)
+    ? await venuesHeroHead(env)
+    : null;
+
   // Per-row indexability (P1.1): seo_indexable=false on the row vetoes
   // indexing even if the path is otherwise indexable.
   const indexable =
@@ -681,6 +689,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (detail?.jsonLd) {
     headInjections.push(detail.jsonLd);
   }
+  if (venuesHero) {
+    headInjections.push(venuesHero.meta);
+  }
   // Dataset for the hub pages that publish citable data. '' everywhere else.
   // Gated on indexable for the same reason as the breadcrumb below.
   if (indexable && !detail) {
@@ -750,8 +761,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // HeadInjector's end-of-head position would put them behind: the hero is the
   // LCP element and nothing else on the page can discover it before the JS
   // graph has run. Not gated on `indexable` — it is a loading hint for humans.
-  if (detail?.preloads?.length) {
-    rewriter.on('meta[charset]', new AfterInjector('\n    ' + detail.preloads.join('\n    ')));
+  const preloads = [...(detail?.preloads ?? []), ...(venuesHero ? [venuesHero.preload] : [])];
+  if (preloads.length) {
+    rewriter.on('meta[charset]', new AfterInjector('\n    ' + preloads.join('\n    ')));
   }
   if (reportPage) rewriter.on('meta[name="robots"]', new ElementRemover());
 
