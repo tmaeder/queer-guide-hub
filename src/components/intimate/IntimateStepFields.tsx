@@ -62,7 +62,7 @@ import {
   Waves,
   Zap,
 } from '@/components/icons';
-import type { Genitalia, IntimateProfile, WizardStep } from '@/lib/intimate/types';
+import type { Genitalia, IntimateProfile, IntimateSeeking, WizardStep } from '@/lib/intimate/types';
 
 type IconType = ComponentType<{ size?: number; 'aria-hidden'?: boolean | 'true' }>;
 
@@ -175,6 +175,15 @@ export function IntimateStepFields({
             ))}
           </div>
         </FlatField>
+      )}
+
+      {step === 'seeking' && (
+        <SeekingFields
+          seeking={merged.dating_prefs?.seeking ?? {}}
+          onChange={(seeking) =>
+            update({ dating_prefs: { ...(merged.dating_prefs ?? {}), seeking } })
+          }
+        />
       )}
 
       {step === 'genital-pictogram' && (
@@ -432,6 +441,81 @@ function ChipPicker({
         );
       })}
       {single && <span className="sr-only">Select one</span>}
+    </div>
+  );
+}
+
+function SeekingFields({
+  seeking,
+  onChange,
+}: {
+  seeking: IntimateSeeking;
+  onChange: (next: IntimateSeeking) => void;
+}) {
+  const bands = AGE_BANDS as readonly string[];
+  const lo = Math.max(0, bands.indexOf(seeking.age_min ?? bands[0]));
+  const hi = Math.max(lo, bands.indexOf(seeking.age_max ?? bands[bands.length - 1]));
+  const anyAge = !seeking.age_min && !seeking.age_max;
+  const set = (patch: IntimateSeeking) => onChange({ ...seeking, ...patch });
+  const toggle = (key: 'genitalia' | 'roles' | 'body_types', v: string) =>
+    set({ [key]: toggleIn(seeking[key] ?? [], v) });
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
+        <span className="text-13 text-muted-foreground">Genitals</span>
+        <div className="flex flex-wrap gap-1.5">
+          {GENITALIA_OPTIONS.filter((o) => o.value !== 'prefer_not_to_say').map((o) => (
+            <ToggleChip
+              key={o.value}
+              pressed={(seeking.genitalia ?? []).includes(o.value)}
+              onPressedChange={() => toggle('genitalia', o.value)}
+              icon={GENITALIA_ICONS[o.value]}
+            >
+              {o.label}
+            </ToggleChip>
+          ))}
+        </div>
+      </div>
+      <div className="flex max-w-md flex-col gap-2">
+        <span className="text-13 text-muted-foreground">
+          Age:{' '}
+          <span className="font-bold text-foreground tabular-nums" aria-live="polite">
+            {anyAge ? 'Any' : `${bands[lo]} to ${bands[hi]}`}
+          </span>
+        </span>
+        <Slider
+          min={0}
+          max={bands.length - 1}
+          step={1}
+          minStepsBetweenThumbs={0}
+          value={[lo, hi]}
+          onValueChange={([a, b]) => set({ age_min: bands[a], age_max: bands[b] })}
+          aria-label="Age range"
+        />
+        <div className="flex justify-between text-2xs text-muted-foreground">
+          <span>{bands[0]}</span>
+          <span>{bands[bands.length - 1]}</span>
+        </div>
+      </div>
+      <div className="flex flex-col gap-2">
+        <span className="text-13 text-muted-foreground">Roles</span>
+        <ChipPicker
+          options={ROLES as readonly string[]}
+          icons={ROLE_ICONS}
+          selected={seeking.roles ?? []}
+          onToggle={(v) => toggle('roles', v)}
+        />
+      </div>
+      <div className="flex flex-col gap-2">
+        <span className="text-13 text-muted-foreground">Body types</span>
+        <ChipPicker
+          options={BODY_TYPES as readonly string[]}
+          icons={BODY_ICONS}
+          selected={seeking.body_types ?? []}
+          onToggle={(v) => toggle('body_types', v)}
+        />
+      </div>
+      <p className="text-xs text-muted-foreground">Leave a group empty to mean anyone.</p>
     </div>
   );
 }
