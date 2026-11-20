@@ -1,5 +1,6 @@
 import { Image } from '@/components/ui/Image';
 import { ImageCredit } from '@/components/ui/ImageCredit';
+import { DESTINATION_PHOTO_SIZES, DESTINATION_PHOTO_WIDTHS } from './destinationPhotoImage';
 
 export function DestinationPhoto({
   src,
@@ -35,7 +36,10 @@ export function DestinationPhoto({
           aspect="card"
           rounded="none"
           priority
-          sizes="(min-width: 1600px) 480px, (min-width: 1024px) 32vw, 92vw"
+          // The edge preloads this exact request (functions/_lib/heroPreload.ts);
+          // both read these two values so the preload is the image, not a twin.
+          sizes={DESTINATION_PHOTO_SIZES}
+          widths={DESTINATION_PHOTO_WIDTHS}
         />
       </div>
       {(credit || details?.license) && (
