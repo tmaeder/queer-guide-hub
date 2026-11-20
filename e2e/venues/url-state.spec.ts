@@ -17,7 +17,9 @@ test.describe('Venues — URL ↔ state contract', () => {
 
     // Sort dropdown set to Newest (created_at).
     const sortTrigger = page.getByRole('combobox', { name: /sort venues/i });
-    await expect(sortTrigger).toContainText(/newest/i);
+    await sortTrigger.click();
+    await expect(page.getByRole('option', { name: /newest/i })).toHaveAttribute('data-state', 'checked');
+    await page.keyboard.press('Escape');
 
     // Map view active (the map container is rendered, no grid).
     await expect(page.locator('canvas.maplibregl-canvas')).toBeVisible({ timeout: 15_000 });
