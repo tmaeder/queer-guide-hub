@@ -42,6 +42,13 @@ vi.mock('@/components/profile/PhotoGallery', () => ({ PhotoGallery: () => null }
 vi.mock('@/components/kinks/KinkVisibilitySettings', () => ({
   KinkVisibilitySettings: () => null,
 }));
+vi.mock('@/components/profile/settings/BlockedUsersSettings', () => ({
+  BlockedUsersSettings: () => null,
+}));
+vi.mock('@/components/profile/settings/ContentConsentSettings', () => ({
+  ContentConsentSettings: () => null,
+}));
+vi.mock('@/components/profile/settings/DisplaySettings', () => ({ DisplaySettings: () => null }));
 vi.mock('@/components/profile/BodyProfileEditor', () => ({ BodyProfileEditor: () => null }));
 vi.mock('@/components/profile/IntimateTab', () => ({ IntimateTab: () => null }));
 vi.mock('@/components/profile/TravelPreferencesEditor', () => ({

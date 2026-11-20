@@ -24,6 +24,7 @@ import { BlueskyConnect } from '@/components/profile/settings/BlueskyConnect';
 import { KinkVisibilitySettings } from '@/components/kinks/KinkVisibilitySettings';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { DisplaySettings } from '@/components/profile/settings/DisplaySettings';
+import { BlockedUsersSettings } from '@/components/profile/settings/BlockedUsersSettings';
 import { ContentConsentSettings } from '@/components/profile/settings/ContentConsentSettings';
 import { BodyProfileEditor } from '@/components/profile/BodyProfileEditor';
 import { IntimateTab } from '@/components/profile/IntimateTab';
@@ -435,6 +436,7 @@ function ProfileSettingsContent({
         />
         <KinkVisibilitySettings />
         <ContentConsentSettings />
+        <BlockedUsersSettings />
         <ModerationSettings />
         <BlueskyConnect />
       </>
