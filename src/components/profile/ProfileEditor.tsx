@@ -23,6 +23,7 @@ import { ModerationSettings } from '@/components/profile/settings/ModerationSett
 import { BlueskyConnect } from '@/components/profile/settings/BlueskyConnect';
 import { KinkVisibilitySettings } from '@/components/kinks/KinkVisibilitySettings';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
+import { UserModePicker } from '@/components/profile/settings/UserModePicker';
 import { DisplaySettings } from '@/components/profile/settings/DisplaySettings';
 import { BlockedUsersSettings } from '@/components/profile/settings/BlockedUsersSettings';
 import { ContentConsentSettings } from '@/components/profile/settings/ContentConsentSettings';
@@ -33,6 +34,7 @@ import { StatusEditor } from '@/components/status/StatusEditor';
 import { AvatarChooser, type AvatarSaveData } from '@/components/profile/AvatarChooser';
 import { UsernamePanel } from '@/components/profile/UsernamePanel';
 import { ChangePasswordPanel } from '@/components/profile/ChangePasswordPanel';
+import { VibesLanguagesEditor } from '@/components/profile/settings/VibesLanguagesEditor';
 import { PreferencesMirrorCard } from '@/components/profile/PreferencesMirrorCard';
 import { pronounDisplay } from '@/components/ui/pronoun-utils';
 import { initFormData } from '@/types/profileForm';
@@ -391,6 +393,10 @@ function ProfileSettingsContent({
             <StatusEditor />
           </CardContent>
         </Card>
+        <UserModePicker
+          value={formData.user_mode}
+          onChange={(mode) => handleInputChange('user_mode', mode)}
+        />
         <BasicInfoTab
           formData={formData}
           profile={profile}
@@ -461,6 +467,10 @@ function ProfileSettingsContent({
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-4">
+            <VibesLanguagesEditor
+              profile={profile}
+              onUpdate={(u) => updateProfile(u as Partial<Profile>)}
+            />
             <PreferencesMirrorCard
               profile={profile}
               onUpdate={(u) => updateProfile(u as Partial<Profile>)}
