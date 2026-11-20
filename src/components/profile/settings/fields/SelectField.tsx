@@ -24,6 +24,8 @@ interface SelectFieldProps {
   disabled?: boolean;
   /** Leading mark per option value (icon or flag); shown in the list and the closed trigger. */
   icons?: Partial<Record<string, ReactNode>>;
+  /** The field's own mark, shown in the trigger until a value with its own mark is chosen. */
+  fieldIcon?: ReactNode;
 }
 
 export function SelectField({
@@ -36,13 +38,25 @@ export function SelectField({
   description,
   disabled,
   icons,
+  fieldIcon,
 }: SelectFieldProps) {
+  const showFieldIcon = !!fieldIcon && !(value && icons?.[value]);
   return (
     <div className="flex flex-col gap-1">
       <Label htmlFor={id}>{label}</Label>
       <Select value={value} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger id={id}>
-          <SelectValue placeholder={placeholder || `Select ${label.toLowerCase()}`} />
+          {/* Direct children: the trigger line-clamps every `> span`, which turns a
+              wrapper into a block and stacks the icon above the text. */}
+          {showFieldIcon && (
+            <span className="me-2 inline-flex shrink-0 text-muted-foreground" aria-hidden="true">
+              {fieldIcon}
+            </span>
+          )}
+          <SelectValue
+            className="me-auto"
+            placeholder={placeholder || `Select ${label.toLowerCase()}`}
+          />
         </SelectTrigger>
         <SelectContent>
           {options.map((opt) => (

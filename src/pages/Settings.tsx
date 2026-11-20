@@ -15,11 +15,13 @@ import {
   ArrowRight,
   Bell,
   Download,
+  Flame,
   Heart,
   KeyRound,
   Plane,
   Shield,
   User,
+  UserRound,
 } from '@/components/icons';
 import {
   SETTINGS_SECTIONS,
@@ -34,6 +36,8 @@ const ProfileEditor = lazyRetry(() => import('@/components/profile/ProfileEditor
 const NAV: Record<SettingsSection, { label: string; icon: typeof User }> = {
   profile: { label: 'Profile', icon: User },
   identity: { label: 'Identity & dating', icon: Heart },
+  body: { label: 'Body & about', icon: UserRound },
+  intimate: { label: 'Intimate profile', icon: Flame },
   privacy: { label: 'Privacy & visibility', icon: Shield },
   security: { label: 'Sign-in & security', icon: KeyRound },
   notifications: { label: 'Notifications', icon: Bell },
@@ -113,7 +117,10 @@ export default function Settings({ section: sectionProp }: { section?: SettingsS
         <div className="grid gap-8 md:grid-cols-[15rem_minmax(0,1fr)]">
           <nav
             aria-label={t('settings.sectionsLabel', 'Settings sections')}
-            className={cn('md:sticky md:top-[calc(var(--header-pinned-bottom)+1rem)] md:self-start', !showIndexOnMobile && 'hidden md:block')}
+            className={cn(
+              'md:sticky md:top-[calc(var(--header-pinned-bottom)+1rem)] md:self-start',
+              !showIndexOnMobile && 'hidden md:block',
+            )}
           >
             <ul className="m-0 flex list-none flex-col gap-1 p-0">
               {SETTINGS_SECTIONS.map((s) => {

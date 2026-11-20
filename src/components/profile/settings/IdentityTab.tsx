@@ -6,16 +6,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SelectField } from './fields';
 import {
+  Accessibility,
+  Briefcase,
   CircleDashed,
   Compass,
   DoorClosed,
   DoorOpen,
   EyeOff,
+  Globe,
   Heart,
+  HeartHandshake,
+  Home,
+  Lightbulb,
   Minus,
   Network,
   Repeat,
   Shuffle,
+  Sparkles,
   User,
   Users,
 } from '@/components/icons';
@@ -296,6 +303,7 @@ export function IdentityTab({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField
                 id="gender_identity"
+                fieldIcon={icon(Sparkles)}
                 icons={GENDER_FLAGS}
                 label="Gender Identity"
                 value={formData.gender_identity}
@@ -304,6 +312,7 @@ export function IdentityTab({
               />
               <SelectField
                 id="sexual_orientation"
+                fieldIcon={icon(Heart)}
                 icons={ORIENTATION_FLAGS}
                 label="Sexual Orientation"
                 value={formData.sexual_orientation}
@@ -314,6 +323,7 @@ export function IdentityTab({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField
                 id="chosen_family_status"
+                fieldIcon={icon(Users)}
                 label="Chosen Family"
                 value={formData.chosen_family_status}
                 onChange={(v) => onChange('chosen_family_status', v)}
@@ -321,6 +331,7 @@ export function IdentityTab({
               />
               <SelectField
                 id="disability_status"
+                fieldIcon={icon(Accessibility)}
                 label="Disability Status"
                 options={disabilityOptions}
                 value={formData.disability_status}
@@ -330,6 +341,7 @@ export function IdentityTab({
             </div>
             <SelectField
               id="neurodivergent_status"
+              fieldIcon={icon(Lightbulb)}
               label="Neurodivergent Status"
               options={neurodivergenceOptions}
               value={formData.neurodivergent_status}
@@ -352,6 +364,7 @@ export function IdentityTab({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField
                 id="romantic_orientation"
+                fieldIcon={icon(HeartHandshake)}
                 icons={ROMANTIC_FLAGS}
                 label="Romantic Orientation"
                 value={formData.romantic_orientation}
@@ -360,6 +373,7 @@ export function IdentityTab({
               />
               <SelectField
                 id="current_relationship_status"
+                fieldIcon={icon(Heart)}
                 icons={RELATIONSHIP_STATUS_ICONS}
                 label="Current Status"
                 value={formData.current_relationship_status}
@@ -369,6 +383,7 @@ export function IdentityTab({
             </div>
             <SelectField
               id="relationship_style"
+              fieldIcon={icon(Network)}
               icons={RELATIONSHIP_STYLE_ICONS}
               label="Relationship Style"
               value={formData.relationship_style}
@@ -398,6 +413,7 @@ export function IdentityTab({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField
                 id="coming_out_family"
+                fieldIcon={icon(Home)}
                 icons={COMING_OUT_ICONS}
                 label="Family"
                 placeholder="Not answered"
@@ -407,6 +423,7 @@ export function IdentityTab({
               />
               <SelectField
                 id="coming_out_friends"
+                fieldIcon={icon(Users)}
                 icons={COMING_OUT_ICONS}
                 label="Friends"
                 placeholder="Not answered"
@@ -418,6 +435,7 @@ export function IdentityTab({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField
                 id="coming_out_work"
+                fieldIcon={icon(Briefcase)}
                 icons={COMING_OUT_ICONS}
                 label="Work / School"
                 placeholder="Not answered"
@@ -427,6 +445,7 @@ export function IdentityTab({
               />
               <SelectField
                 id="coming_out_public"
+                fieldIcon={icon(Globe)}
                 icons={COMING_OUT_ICONS}
                 label="Public"
                 placeholder="Not answered"

@@ -5865,7 +5865,7 @@
   },
   "intimate": {
     "hanky": {
-      "help": "Linke Tasche = Top / gebend, rechts = Bottom / nehmend. Privat gespeichert. nur du siehst es.",
+      "help": "Linke Tasche = Top / gebend, rechts = Bottom / nehmend. Privat gespeichert. Nur du siehst es.",
       "sideFor": "Tasche für {{color}}",
       "side": {
         "left": "Links",

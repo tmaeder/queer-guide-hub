@@ -1,4 +1,4 @@
-import type { ReactElement, SVGProps } from 'react';
+import type { ComponentType, ReactElement, SVGProps } from 'react';
 import { Input } from '@/components/ui/input';
 import { ToggleChip } from '@/components/ui/ToggleChip';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,8 +11,117 @@ import {
   SAFER_SEX_PREFS,
   SIZE_CM_OPTIONS,
 } from '@/assets/intimate/options';
-import { angleOptions, bodyPictograms, getGenitalPictogramSet } from '@/assets/intimate/pictograms';
+import {
+  angleOptions,
+  bodyPictograms,
+  getGenitalPictogramSet,
+  intersexPictograms,
+  penisPictograms,
+  vaginaPictograms,
+} from '@/assets/intimate/pictograms';
+import {
+  Activity,
+  ArrowDown,
+  ArrowDownRight,
+  ArrowLeftRight,
+  ArrowUp,
+  ArrowUpDown,
+  ArrowUpRight,
+  BadgeCheck,
+  Circle,
+  CircleDashed,
+  Crown,
+  Drama,
+  Droplets,
+  Dumbbell,
+  EyeOff,
+  Flame,
+  Flower2,
+  Hand,
+  HandHeart,
+  Heart,
+  HeartHandshake,
+  Laugh,
+  Link,
+  MapPin,
+  PawPrint,
+  Pill,
+  Repeat,
+  Shield,
+  ShieldCheck,
+  Shirt,
+  Smile,
+  Sparkles,
+  Sun,
+  TestTube,
+  Timer,
+  User,
+  UserRound,
+  Users,
+  Waves,
+  Zap,
+} from '@/components/icons';
 import type { Genitalia, IntimateProfile, WizardStep } from '@/lib/intimate/types';
+
+type IconType = ComponentType<{ size?: number; 'aria-hidden'?: boolean | 'true' }>;
+
+const BODY_ICONS: Partial<Record<string, IconType>> = {
+  slim: User,
+  average: UserRound,
+  athletic: Activity,
+  muscular: Dumbbell,
+  bear: PawPrint,
+  chub: Smile,
+  twink: Sparkles,
+  otter: Waves,
+};
+const ROLE_ICONS: Partial<Record<string, IconType>> = {
+  top: ArrowUp,
+  bottom: ArrowDown,
+  vers: ArrowUpDown,
+  'vers-top': ArrowUpRight,
+  'vers-bottom': ArrowDownRight,
+  side: ArrowLeftRight,
+  switch: Repeat,
+  dom: Crown,
+  sub: Hand,
+};
+const KINK_ICONS: Partial<Record<string, IconType>> = {
+  oral: Smile,
+  anal: Circle,
+  kissing: Heart,
+  fisting: Hand,
+  rimming: CircleDashed,
+  toys: Sparkles,
+  roleplay: Drama,
+  public: MapPin,
+  group: Users,
+  cuddling: HeartHandshake,
+  massage: HandHeart,
+  sensual: Flower2,
+  rough: Zap,
+  bondage: Link,
+  spanking: Flame,
+  leather: Shirt,
+  rubber: Droplets,
+  edging: Timer,
+  tantra: Sun,
+  tickling: Laugh,
+};
+const SAFER_ICONS: Partial<Record<string, IconType>> = {
+  condoms_always: ShieldCheck,
+  condoms_sometimes: Shield,
+  prep: Pill,
+  doxypep: Pill,
+  undetectable: BadgeCheck,
+  tested_recently: TestTube,
+};
+const GENITALIA_ICONS: Partial<Record<string, ReactElement>> = {
+  penis: penisPictograms['penis-1']({ width: 16, height: 16 }),
+  vagina: vaginaPictograms['vagina-1']({ width: 16, height: 16 }),
+  intersex: intersexPictograms['intersex-1']({ width: 16, height: 16 }),
+  prefer_not_to_say: <EyeOff size={14} aria-hidden="true" />,
+};
 
 export type IntimateDraft = Partial<IntimateProfile>;
 
@@ -51,6 +160,7 @@ export function IntimateStepFields({
                 key={o.value}
                 pressed={merged.genitalia === o.value}
                 onPressedChange={() => update({ genitalia: o.value as Genitalia })}
+                icon={GENITALIA_ICONS[o.value]}
               >
                 {o.label}
               </ToggleChip>
@@ -110,6 +220,7 @@ export function IntimateStepFields({
       {step === 'body-type' && (
         <ChipPicker
           options={BODY_TYPES as readonly string[]}
+          icons={BODY_ICONS}
           selected={merged.body_type ? [merged.body_type] : []}
           onToggle={(v) => update({ body_type: v })}
           single
@@ -142,6 +253,7 @@ export function IntimateStepFields({
       {step === 'role' && (
         <ChipPicker
           options={ROLES as readonly string[]}
+          icons={ROLE_ICONS}
           selected={merged.role ?? []}
           onToggle={(v) => update({ role: toggleIn(merged.role ?? [], v) })}
         />
@@ -150,6 +262,7 @@ export function IntimateStepFields({
       {step === 'into' && (
         <ChipPicker
           options={kinkVocab}
+          icons={KINK_ICONS}
           selected={merged.into_tags ?? []}
           onToggle={(v) => update({ into_tags: toggleIn(merged.into_tags ?? [], v) })}
         />
@@ -158,6 +271,7 @@ export function IntimateStepFields({
       {step === 'limits' && (
         <ChipPicker
           options={limitsVocab}
+          icons={KINK_ICONS}
           selected={merged.limits ?? []}
           onToggle={(v) => update({ limits: toggleIn(merged.limits ?? [], v) })}
         />
@@ -166,6 +280,7 @@ export function IntimateStepFields({
       {step === 'safer-sex' && (
         <ChipPicker
           options={SAFER_SEX_PREFS as readonly string[]}
+          icons={SAFER_ICONS}
           selected={merged.safer_sex_prefs ?? []}
           onToggle={(v) =>
             update({
@@ -218,19 +333,20 @@ function PictogramGrid({
 }) {
   const entries = Object.entries(picks);
   return (
-    <div className="grid grid-cols-3 gap-2 bg-surface-container p-2 sm:grid-cols-4">
+    <div className="grid grid-cols-4 gap-1.5 rounded-element bg-surface-container p-1.5 sm:grid-cols-8">
       {entries.map(([key, Picto]) => {
         const isSelected = selected === key;
         return (
           <button
             key={key}
+            type="button"
             onClick={() => onSelect(key)}
             aria-pressed={isSelected}
-            className={`relative flex items-center justify-center p-4 transition-colors ${
-              isSelected ? 'bg-background' : 'hover:bg-muted/40'
+            className={`relative flex items-center justify-center rounded-element p-1.5 transition-colors ${
+              isSelected ? 'bg-foreground text-background' : 'hover:bg-muted'
             }`}
           >
-            <Picto width={64} height={64} />
+            <Picto width={44} height={44} />
           </button>
         );
       })}
@@ -267,18 +383,26 @@ function ChipPicker({
   selected,
   onToggle,
   single,
+  icons,
 }: {
   options: readonly string[];
   selected: string[];
   onToggle: (v: string) => void;
   single?: boolean;
+  icons?: Partial<Record<string, IconType>>;
 }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {options.map((o) => {
         const on = selected.includes(o);
+        const Icon = icons?.[o];
         return (
-          <ToggleChip key={o} pressed={on} onPressedChange={() => onToggle(o)}>
+          <ToggleChip
+            key={o}
+            pressed={on}
+            onPressedChange={() => onToggle(o)}
+            icon={Icon ? <Icon size={14} aria-hidden="true" /> : undefined}
+          >
             {o.replace(/_/g, ' ')}
           </ToggleChip>
         );
