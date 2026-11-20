@@ -39,7 +39,7 @@ test.describe('user section — edge', () => {
   });
 
   test('settings sections are known app routes', async ({ request }) => {
-    for (const path of ['/settings', '/settings/privacy', '/settings/notifications']) {
+    for (const path of ['/settings', '/settings/privacy', '/settings/notifications', '/settings/body']) {
       const res = await request.get(path, { maxRedirects: 0 });
       expect(res.status(), path).toBe(200);
     }
