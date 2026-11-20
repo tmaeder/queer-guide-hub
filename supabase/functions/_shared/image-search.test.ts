@@ -5,8 +5,7 @@ Deno.test('provider parsers preserve missing captions instead of inventing query
   const saved = globalThis.fetch
   try {
     globalThis.fetch = async input => {
-      const url = String(input)
-      const data = url.includes('pexels.com')
+      const data = new URL(String(input)).hostname === 'api.pexels.com'
         ? { photos: [{ id: 1, src: { large: 'https://images.test/a.jpg', medium: 'https://images.test/a.jpg' }, width: 1600, height: 1000 }] }
         : { results: [{ id: '2', urls: { regular: 'https://images.test/b.jpg', small: 'https://images.test/b.jpg' }, user: { name: 'Creator', links: { html: 'https://images.test/creator' } }, width: 1600, height: 1000 }] }
       return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } })
