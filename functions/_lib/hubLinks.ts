@@ -73,6 +73,27 @@ type HubSpec = {
   order: string;
   limit: number;
   heading: string;
+  /** Extra columns to select for `describe`. */
+  extraColumns?: string;
+  /** Short plain-text facts appended after the link (rendered escaped). */
+  describe?: (row: Record<string, unknown>) => string | null;
+};
+
+/**
+ * A hub whose SPA list comes from an RPC, not a table read. Called with the
+ * ANON key, deliberately: the RPC applies the same visibility rules it applies
+ * to a signed-out visitor, so the crawler can never see more than the page
+ * shows (organizations carry safety gating that a service-role read would
+ * bypass).
+ */
+type RpcHubSpec = {
+  rpc: string;
+  args: Record<string, unknown>;
+  /** Pull {slug, label} items out of the RPC result, in display order. */
+  pick: (data: unknown) => { slug: string; label: string }[];
+  prefix: string;
+  limit: number;
+  heading: string;
 };
 
 const HUBS: Record<string, HubSpec[]> = {
@@ -137,8 +158,11 @@ const HUBS: Record<string, HubSpec[]> = {
       filter:
         'slug=not.is.null&seo_indexable=eq.true&duplicate_of_id=is.null&shell_status=not.in.(ghost,merged)',
       order: 'name.asc,slug.asc',
-      limit: 60,
-      heading: 'Countries',
+      // Every country, as the page's own table lists them.
+      limit: 300,
+      heading: 'Legal status by country',
+      extraColumns: 'lgbti_criminalization,lgbti_same_sex_unions,equality_score',
+      describe: describeCountryRights,
     },
   ],
   '/tags': [
@@ -179,8 +203,102 @@ const HUBS: Record<string, HubSpec[]> = {
   ],
 };
 
+const listOf = (data: unknown, key: string) => {
+  const list = (data as Record<string, unknown> | null)?.[key];
+  return Array.isArray(list) ? (list as Record<string, unknown>[]) : [];
+};
+const slugItems = (rows: Record<string, unknown>[]) =>
+  rows
+    .map((r) => ({ slug: String(r.slug ?? ''), label: String(r.name ?? '') }))
+    .filter((r) => r.slug && r.label);
+
+const RPC_HUBS: Record<string, RpcHubSpec[]> = {
+  // Each substance in the chart links to its glossary page in the SPA.
+  '/tags/interactions': [
+    {
+      rpc: 'substance_interaction_matrix',
+      args: {},
+      pick: (d) => slugItems(listOf(d, 'axis')),
+      prefix: '/tags/',
+      limit: 200,
+      heading: 'Substances in the chart',
+    },
+  ],
+  '/tags/sti-guide': [
+    {
+      rpc: 'sti_transmission_matrix',
+      args: {},
+      pick: (d) => slugItems(listOf(d, 'stis')),
+      prefix: '/tags/',
+      limit: 100,
+      heading: 'Sexually transmitted infections',
+    },
+  ],
+  '/organizations': [
+    {
+      rpc: 'list_organizations',
+      args: {
+        p_role: null,
+        p_q: null,
+        p_country_id: null,
+        p_country_code: null,
+        p_limit: 60,
+        p_offset: 0,
+      },
+      pick: (d) => slugItems(Array.isArray(d) ? (d as Record<string, unknown>[]) : []),
+      prefix: '/organizations/',
+      limit: 60,
+      heading: 'Organizations',
+    },
+  ],
+};
+
+/** Short legal summary for a country row, e.g. "same-sex acts legal; marriage; score 92". */
+export function describeCountryRights(row: Record<string, unknown>): string | null {
+  const parts: string[] = [];
+  const crim = row.lgbti_criminalization as { legal?: unknown } | null;
+  if (crim?.legal === true) parts.push('same-sex acts legal');
+  else if (crim?.legal === false) parts.push('same-sex acts criminalised');
+  let ssu = '';
+  const rawSsu = row.lgbti_same_sex_unions;
+  if (typeof rawSsu === 'string' && rawSsu) {
+    try {
+      ssu = String((JSON.parse(rawSsu) as { summary?: unknown }).summary ?? '');
+    } catch {
+      ssu = rawSsu;
+    }
+  }
+  if (ssu.startsWith('Marriage')) parts.push('same-sex marriage');
+  else if (ssu === 'Civil Union Only') parts.push('civil unions only');
+  if (typeof row.equality_score === 'number') parts.push(`equality score ${row.equality_score}`);
+  return parts.length ? parts.join('; ') : null;
+}
+
+async function fetchRpc(env: Env, name: string, args: Record<string, unknown>): Promise<unknown> {
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return null;
+  const res = await fetch(`${env.SUPABASE_URL.replace(/\/+$/, '')}/rest/v1/rpc/${name}`, {
+    method: 'POST',
+    headers: {
+      apikey: env.SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${env.SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(args),
+  });
+  if (!res.ok) {
+    console.warn(`[hubLinks] rpc ${name} failed: ${res.status}`);
+    return null;
+  }
+  return res.json();
+}
+
+function sectionHtml(heading: string, items: string[]): string {
+  if (items.length === 0) return '';
+  return `<section><h2>${escape(heading)}</h2><ul>\n        ${items.join('\n        ')}\n      </ul></section>`;
+}
+
 /** Public hub routes, also checked against the SPA and edge route contracts. */
-export const HUB_PATHS = Object.keys(HUBS);
+export const HUB_PATHS = [...Object.keys(HUBS), ...Object.keys(RPC_HUBS)];
 
 const escape = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -201,8 +319,9 @@ const stringField = (row: Record<string, unknown>, key: string): string | null =
  * down.
  */
 export async function buildHubLinksHtml(env: Env, pathname: string): Promise<string> {
-  const specs = HUBS[pathname];
-  if (!specs) return '';
+  const specs = HUBS[pathname] ?? [];
+  const rpcSpecs = RPC_HUBS[pathname] ?? [];
+  if (specs.length === 0 && rpcSpecs.length === 0) return '';
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -212,7 +331,7 @@ export async function buildHubLinksHtml(env: Env, pathname: string): Promise<str
         const rows = await fetchRows(
           env,
           spec.table,
-          `slug,${spec.labelColumn}`,
+          `slug,${spec.labelColumn}${spec.extraColumns ? `,${spec.extraColumns}` : ''}`,
           spec.filter.replace('__TODAY__', today),
           spec.limit,
           spec.order,
@@ -222,11 +341,11 @@ export async function buildHubLinksHtml(env: Env, pathname: string): Promise<str
             const slug = stringField(r, 'slug');
             const label = stringField(r, spec.labelColumn);
             if (!slug || !label) return null;
-            return `<li><a href="${spec.prefix}${encodeURIComponent(slug)}">${escape(label)}</a></li>`;
+            const facts = spec.describe?.(r);
+            return `<li><a href="${spec.prefix}${encodeURIComponent(slug)}">${escape(label)}</a>${facts ? ` — ${escape(facts)}` : ''}</li>`;
           })
           .filter((x): x is string => x !== null);
-        if (items.length === 0) return '';
-        return `<section><h2>${escape(spec.heading)}</h2><ul>\n        ${items.join('\n        ')}\n      </ul></section>`;
+        return sectionHtml(spec.heading, items);
       } catch (err) {
         console.warn(`[hubLinks] ${pathname} ${spec.table} failed: ${String(err)}`);
         return '';
@@ -234,7 +353,25 @@ export async function buildHubLinksHtml(env: Env, pathname: string): Promise<str
     }),
   );
 
-  const body = sections.filter(Boolean).join('\n    ');
+  const rpcSections = await Promise.all(
+    rpcSpecs.map(async (spec) => {
+      try {
+        const items = spec
+          .pick(await fetchRpc(env, spec.rpc, spec.args))
+          .slice(0, spec.limit)
+          .map(
+            (i) =>
+              `<li><a href="${spec.prefix}${encodeURIComponent(i.slug)}">${escape(i.label)}</a></li>`,
+          );
+        return sectionHtml(spec.heading, items);
+      } catch (err) {
+        console.warn(`[hubLinks] ${pathname} rpc ${spec.rpc} failed: ${String(err)}`);
+        return '';
+      }
+    }),
+  );
+
+  const body = [...sections, ...rpcSections].filter(Boolean).join('\n    ');
   if (!body) return '';
   return `\n  <nav aria-label="Browse" data-prerendered="hub-links">\n    ${body}\n  </nav>`;
 }

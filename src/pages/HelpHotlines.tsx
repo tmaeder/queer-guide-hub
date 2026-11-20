@@ -73,6 +73,14 @@ function buildEmergencyJsonLd(country: string, hero: Hotline | null): Record<str
   return base;
 }
 
+function regionName(code: string, locale: string): string {
+  try {
+    return new Intl.DisplayNames([locale, 'en'], { type: 'region' }).of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
 export default function HelpHotlines() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
@@ -203,13 +211,30 @@ export default function HelpHotlines() {
     limit: 24,
   });
 
+  // /help/:cc has its own title so a link to "crisis lines in Germany" lands
+  // on a page that says so; the edge serves the same title to crawlers
+  // (functions/_lib/helpCountry.ts). A code with no lines is a duplicate of
+  // /help, so it is noindexed there and canonical to /help here.
+  const urlCountry = params.country?.toUpperCase();
+  const countryPage =
+    urlCountry && hotlines.some((h) => h.country === urlCountry) ? urlCountry : null;
+  const countryPlace = countryPage
+    ? countryPage === 'INT'
+      ? t('help.countryTitleInt', 'worldwide')
+      : t('help.countryTitleIn', 'in {{country}}').replace(
+          '{{country}}',
+          regionName(countryPage, i18n.language),
+        )
+    : null;
   useMeta({
-    title: t('help.title', 'Help & Crisis Hotlines'),
+    title: countryPlace
+      ? t('help.countryTitle', 'LGBTQ+ crisis lines {{place}}').replace('{{place}}', countryPlace)
+      : t('help.title', 'Help & Crisis Hotlines'),
     description: t(
       'help.meta_description',
       'Free, anonymous LGBTQIA+ crisis hotlines and counselling services worldwide. You are not alone.',
     ),
-    canonicalPath: params.country ? `/help/${params.country.toLowerCase()}` : '/help',
+    canonicalPath: countryPage ? `/help/${countryPage.toLowerCase()}` : '/help',
     jsonLd: buildEmergencyJsonLd(countryFilter, hero),
   });
 
