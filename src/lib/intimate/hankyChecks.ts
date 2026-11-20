@@ -94,3 +94,24 @@ export function hankyChecks(input: {
   for (const [color, pocket] of Object.entries(wanted)) boundary(color, pocket, 'them');
   return out;
 }
+
+/**
+ * Which of another member's colours (variant id → pocket) match you: a colour
+ * you look for in a compatible pocket, or one you wear in the opposite pocket
+ * (your left meets their right). 'both' on either side always matches.
+ */
+export function hankyMatches(
+  theirs: Record<string, Pocket> | undefined,
+  wanted: Record<string, Pocket>,
+  mine: Record<string, Pocket>,
+): Set<string> {
+  const out = new Set<string>();
+  const opposite: Record<Pocket, Pocket> = { left: 'right', right: 'left', both: 'both' };
+  for (const [variant, side] of Object.entries(theirs ?? {})) {
+    const want = wanted[variant];
+    const own = mine[variant];
+    const fits = (a: Pocket, b: Pocket) => a === b || a === 'both' || b === 'both';
+    if ((want && fits(side, want)) || (own && fits(side, opposite[own]))) out.add(variant);
+  }
+  return out;
+}

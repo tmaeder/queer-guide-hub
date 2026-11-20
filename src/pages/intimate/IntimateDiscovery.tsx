@@ -15,6 +15,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { SignalChips } from '@/components/people/SignalChips';
 import { HankyWorn } from '@/components/intimate/HankyWorn';
+import { useMyHankySignals } from '@/hooks/useHankySignals';
+import { hankyMatches } from '@/lib/intimate/hankyChecks';
 import type { PeopleMatchShared } from '@/hooks/usePeopleDiscovery';
 import { LikePassActions } from '@/components/intimate/LikePassActions';
 import { SwipeDeck, type SwipeableCard } from '@/components/intimate/SwipeDeck';
@@ -46,6 +48,7 @@ export default function IntimateDiscovery({
   const [bodies, setBodies] = useState<string[]>([]);
   const [genitalia, setGenitalia] = useState<string[]>([]);
   const [hanky, setHanky] = useState<Record<string, 'left' | 'right' | 'both'>>({});
+  const { data: myHanky } = useMyHankySignals();
   // Start from "who you're looking for" (Settings › Identity & dating), once
   // per loaded profile. Render-time seeding, not an effect.
   const seeking = seekingToFilters(me?.dating_prefs?.seeking);
@@ -368,7 +371,16 @@ export default function IntimateDiscovery({
                           {c.role.join(', ')}
                         </div>
                       ) : null}
-                      <HankyWorn signals={c.hanky} compact className="mt-1.5" />
+                      <HankyWorn
+                        signals={c.hanky}
+                        compact
+                        matching={hankyMatches(
+                          c.hanky,
+                          { ...seeking.hanky, ...hanky },
+                          myHanky ?? {},
+                        )}
+                        className="mt-1.5"
+                      />
                       <SignalChips shared={shared} className="mt-1.5" max={2} />
                     </div>
                   </Link>

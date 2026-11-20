@@ -14,28 +14,40 @@ const SIDE_LABEL: Record<HankySide, string> = {
 export function HankyWorn({
   signals,
   compact = false,
+  matching,
   className,
 }: {
   signals?: Record<string, HankySide>;
   compact?: boolean;
+  /** Variant ids that match you; highlighted and listed first. */
+  matching?: Set<string>;
   className?: string;
 }) {
   const { data: variants } = useHankyVariants();
   const colorOf = new Map((variants ?? []).map((v) => [v.variantId, v.colorId]));
   const worn = Object.entries(signals ?? {}).flatMap(([variantId, side]) => {
     const entry = HANKY_CODE.find((h) => h.id === colorOf.get(variantId));
-    return entry ? [{ entry, side }] : [];
+    return entry ? [{ entry, side, match: !!matching?.has(variantId) }] : [];
   });
+  worn.sort((a, b) => Number(b.match) - Number(a.match));
   if (!worn.length) return null;
   return (
     <ul
       aria-label="Hanky code"
       className={cn('m-0 flex list-none flex-wrap gap-2 p-0', compact && 'gap-1', className)}
     >
-      {worn.map(({ entry, side }) => {
-        const text = `${entry.colorEn} (${entry.meaningEn}), ${SIDE_LABEL[side]}`;
+      {worn.map(({ entry, side, match }) => {
+        const text = `${entry.colorEn} (${entry.meaningEn}), ${SIDE_LABEL[side]}${match ? ', matches you' : ''}`;
         return (
-          <li key={entry.id} title={text} className="flex items-center gap-2">
+          <li
+            key={entry.id}
+            title={text}
+            className={cn(
+              'flex items-center gap-2 rounded-badge',
+              match && 'bg-foreground/10 ring-2 ring-foreground',
+              match && (compact ? 'p-0.5' : 'py-0.5 pl-0.5 pr-2'),
+            )}
+          >
             <HankyPocket color={entry.hex} side={side} size={compact ? 24 : 36} />
             {compact ? (
               <span className="sr-only">{text}</span>
