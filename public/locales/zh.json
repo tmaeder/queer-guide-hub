@@ -1694,7 +1694,12 @@
     "joined": "{{date}} 加入",
     "editAvatar": "更换头像",
     "lensHidden": "此视图下看不到该资料。切换到“你”以继续编辑。",
-    "sections": "个人资料分区"
+    "sections": "个人资料分区",
+    "signInGate": {
+      "title": "登录以查看此个人资料",
+      "body": "会员个人资料仅对已登录的会员可见。",
+      "cta": "登录"
+    }
   },
   "groups": {
     "title": "群组",

@@ -1877,7 +1877,12 @@
     "joined": "Dabei seit {{date}}",
     "editAvatar": "Avatar ändern",
     "lensHidden": "Dieses Profil ist in dieser Ansicht nicht sichtbar. Wechsle zu „Du“, um weiter zu bearbeiten.",
-    "sections": "Profilbereiche"
+    "sections": "Profilbereiche",
+    "signInGate": {
+      "title": "Melde dich an, um dieses Profil zu sehen",
+      "body": "Mitgliederprofile sind nur für angemeldete Mitglieder sichtbar.",
+      "cta": "Anmelden"
+    }
   },
   "groups": {
     "title": "Gruppen",

@@ -8,6 +8,7 @@ const state = vi.hoisted(() => ({
   claimedOwner: true,
   missing: false,
   privateMode: false,
+  signedOut: false,
   savePending: vi.fn(),
 }));
 const profile = {
@@ -43,7 +44,9 @@ vi.mock('@/hooks/useProfile', () => ({
         },
   }),
 }));
-vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: state.signedOut ? null : { id: 'u1' }, loading: false }),
+}));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/hooks/useStatus', () => ({ useStatus: () => ({ status: null }) }));
 vi.mock('@/hooks/usePublicStatus', () => ({ usePublicStatus: () => ({ status: null }) }));
@@ -121,12 +124,23 @@ describe('contextual profile editing', () => {
     state.claimedOwner = true;
     state.missing = false;
     state.privateMode = false;
+    state.signedOut = false;
     state.savePending.mockReset().mockResolvedValue(true);
   });
   it('renders not-found state', () => {
     state.missing = true;
     renderAt('/user/u1');
     expect(screen.getByText('Profile not found')).toBeTruthy();
+  });
+  it('asks a signed-out visitor to sign in instead of claiming the profile is missing', () => {
+    state.signedOut = true;
+    state.missing = true;
+    renderAt('/user/u2/travel');
+    expect(screen.getByRole('heading', { name: 'Sign in to view this profile' })).toBeTruthy();
+    expect(screen.queryByText('Profile not found')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Sign in' }).getAttribute('href')).toBe(
+      '/auth?redirect=%2Fuser%2Fu2%2Ftravel',
+    );
   });
   it('shows three identity tabs and no settings or progress tab', () => {
     renderAt('/user/u1');

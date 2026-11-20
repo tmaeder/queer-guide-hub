@@ -1694,7 +1694,12 @@
     "joined": "Se unió en {{date}}",
     "editAvatar": "Cambiar avatar",
     "lensHidden": "Este perfil no es visible en esta vista. Cambia a Tú para seguir editando.",
-    "sections": "Secciones del perfil"
+    "sections": "Secciones del perfil",
+    "signInGate": {
+      "title": "Inicia sesión para ver este perfil",
+      "body": "Los perfiles de los miembros solo son visibles para miembros con sesión iniciada.",
+      "cta": "Iniciar sesión"
+    }
   },
   "groups": {
     "title": "Grupos",

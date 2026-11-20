@@ -1694,7 +1694,12 @@
     "joined": "{{date}} 가입",
     "editAvatar": "아바타 변경",
     "lensHidden": "이 보기에서는 프로필이 보이지 않습니다. 계속 편집하려면 나로 전환하세요.",
-    "sections": "프로필 섹션"
+    "sections": "프로필 섹션",
+    "signInGate": {
+      "title": "이 프로필을 보려면 로그인하세요",
+      "body": "회원 프로필은 로그인한 회원에게만 표시됩니다.",
+      "cta": "로그인"
+    }
   },
   "groups": {
     "title": "그룹",
