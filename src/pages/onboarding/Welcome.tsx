@@ -1,10 +1,19 @@
+import { ChangePasswordPanel } from '@/components/profile/ChangePasswordPanel';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Heart, KeyRound, ShieldCheck, Check } from '@/components/icons';
+import {
+  Check,
+  Fingerprint,
+  Heart,
+  KeyRound,
+  Lock,
+  ShieldCheck,
+  Smartphone,
+} from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useSignupFunnel } from '@/hooks/useSignupFunnel';
 import { useToast } from '@/hooks/use-toast';
@@ -26,6 +35,8 @@ export default function Welcome() {
   const { t } = useTranslation();
   const [enrolling, setEnrolling] = useState(false);
   const [enrollErr, setEnrollErr] = useState<string | null>(null);
+  // Passkey path only: if enrolment fails, a password is the way in instead.
+  const [passwordFallback, setPasswordFallback] = useState(false);
   const [step, setStep] = useState(0);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
@@ -51,8 +62,12 @@ export default function Welcome() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, user]);
 
-  const steps: StepperStep[] = useMemo(
-    () => [
+  // Came from the passkey path of signup: the account has a random password
+  // nobody knows, so the passkey is the first thing to set up.
+  const passkeyFirst = searchParams.get('passkey') === '1';
+
+  const steps: StepperStep[] = useMemo(() => {
+    const all: StepperStep[] = [
       {
         id: 'profile',
         label: t('onboarding.steps.profile', 'Your handle'),
@@ -79,9 +94,10 @@ export default function Welcome() {
         label: t('onboarding.steps.trust', 'Trust tier'),
         description: t('onboarding.steps.trustDesc', 'Your community standing begins here.'),
       },
-    ],
-    [t],
-  );
+    ];
+    if (!passkeyFirst) return all;
+    return [all[1], all[0], ...all.slice(2)];
+  }, [t, passkeyFirst]);
 
   const handleEnrollPasskey = async () => {
     setEnrolling(true);
@@ -158,9 +174,19 @@ export default function Welcome() {
         onNext={handleNext}
         onPrev={handlePrev}
         onSkip={() => void finish(true)}
-        showSkip={step < steps.length - 1}
+        // Handle and avatar are part of signing up, so that step cannot be
+        // skipped (Continue keeps the assigned ones). Nor can the passkey step
+        // when it is how this account signs in.
+        showSkip={
+          step < steps.length - 1 &&
+          stepId !== 'profile' &&
+          !(stepId === 'passkey' && passkeyFirst && !hasPasskey && !passwordFallback)
+        }
         // Blocks double-submit while the profile step writes.
-        canGoNext={!profileSaving}
+        canGoNext={
+          !profileSaving &&
+          !(stepId === 'passkey' && passkeyFirst && !hasPasskey && !passwordFallback)
+        }
         nextLabel={
           step === steps.length - 1
             ? t('onboarding.finish', 'Enter Queer Guide')
@@ -171,14 +197,13 @@ export default function Welcome() {
         {stepId === 'profile' && (
           <div className="max-w-xl">
             <div className="mb-8">
-              <Heart size={40} className="mb-4 text-foreground" style={{ fill: 'currentcolor' }} />
               <h1 className="text-headline font-bold tracking-tight mb-2">
                 {t('onboarding.welcome', 'Welcome to Queer Guide')}
               </h1>
               <p className="text-muted-foreground leading-relaxed">
                 {t(
                   'onboarding.profileBlurb',
-                  'Your account is ready. We gave you a handle and an avatar. Keep them or make them yours.',
+                  'Choose your username and picture. We suggested a handle and an avatar to start from.',
                 )}
               </p>
             </div>
@@ -193,45 +218,98 @@ export default function Welcome() {
 
         {stepId === 'passkey' && (
           <div className="max-w-xl">
-            <div className="mb-8">
-              <Heart size={40} className="mb-4 text-foreground" style={{ fill: 'currentcolor' }} />
-              <h1 className="text-headline font-bold tracking-tight mb-2">
-                {t('onboarding.welcome', 'Welcome to Queer Guide')}
-              </h1>
-              <p className="text-muted-foreground leading-relaxed">
-                {t(
-                  'onboarding.welcomeBlurb',
-                  "You're in. A few quick optional steps to make it yours.",
-                )}
-              </p>
-            </div>
+            <h1 className="mb-2 text-headline font-bold tracking-tight">
+              {t('onboarding.passkeyHeading', 'Sign in with a passkey')}
+            </h1>
+            <p className="mb-6 leading-relaxed text-muted-foreground">
+              {passkeyFirst
+                ? t(
+                    'onboarding.passkeyRequiredBlurb',
+                    'This is how you sign in to your new account. It takes a few seconds.',
+                  )
+                : t(
+                    'onboarding.passkeyBlurb',
+                    'Sign in faster and more securely with your device. No passwords to remember.',
+                  )}
+            </p>
 
-            <div className="pt-8">
-              <div className="flex items-center gap-4 mb-4">
-                <KeyRound size={20} />
-                <p className="text-base font-semibold">
-                  {t('onboarding.passkeyTitle', 'Set up a passkey')}
-                </p>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                {t(
-                  'onboarding.passkeyBlurb',
-                  'Sign in faster and more securely with your device. No passwords to remember.',
-                )}
-              </p>
+            <div className="rounded-container bg-card p-6 shadow-soft">
+              <ul className="m-0 flex list-none flex-col gap-4 p-0">
+                {[
+                  {
+                    Icon: Fingerprint,
+                    text: t(
+                      'onboarding.passkeyWhy1',
+                      'Sign in with your face, fingerprint or device PIN',
+                    ),
+                  },
+                  {
+                    Icon: Lock,
+                    text: t(
+                      'onboarding.passkeyWhy2',
+                      'Nothing to remember, nothing to phish or leak',
+                    ),
+                  },
+                  {
+                    Icon: Smartphone,
+                    text: t(
+                      'onboarding.passkeyWhy3',
+                      'Syncs across your devices with your password manager',
+                    ),
+                  },
+                ].map(({ Icon, text }) => (
+                  <li key={text} className="flex items-center gap-4 text-15">
+                    <span
+                      aria-hidden
+                      className="grid size-10 shrink-0 place-items-center rounded-full bg-muted"
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    {text}
+                  </li>
+                ))}
+              </ul>
+
               {enrollErr && (
-                <Alert variant="destructive" className="mb-4">
-                  <AlertDescription>{enrollErr}</AlertDescription>
+                <Alert variant="destructive" className="mt-6">
+                  <AlertDescription>
+                    {enrollErr}
+                    {passkeyFirst && !passwordFallback && (
+                      <>
+                        {' '}
+                        <button
+                          type="button"
+                          className="underline"
+                          onClick={() => setPasswordFallback(true)}
+                        >
+                          {t('onboarding.passkeyFallback', 'Set a password instead')}
+                        </button>
+                      </>
+                    )}
+                  </AlertDescription>
                 </Alert>
               )}
+              {passwordFallback && (
+                <div className="mt-6">
+                  <ChangePasswordPanel />
+                </div>
+              )}
+
               <Button
                 type="button"
+                size="lg"
                 variant={hasPasskey ? 'outline' : 'default'}
                 onClick={handleEnrollPasskey}
                 disabled={enrolling || hasPasskey}
+                className="mt-6 w-full"
               >
-                {enrolling && <TrackLoader size={16} className="mr-2" />}
-                {hasPasskey && <Check className="mr-2 h-4 w-4" />}
+                {enrolling ? (
+                  <TrackLoader size={16} />
+                ) : hasPasskey ? (
+                  <Check className="h-4 w-4" aria-hidden />
+                ) : (
+                  <KeyRound className="h-4 w-4" aria-hidden />
+                )}
                 {hasPasskey
                   ? t('onboarding.passkeyAlreadyEnrolled', 'Passkey already enabled')
                   : t('onboarding.passkeyEnable', 'Enable passkey')}

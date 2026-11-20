@@ -1298,7 +1298,22 @@
         "interests": "Intereses"
       },
       "blurb": "Free, takes a minute.",
-      "haveAccountQ": "Already have an account? Sign in"
+      "haveAccountQ": "Already have an account? Sign in",
+      "passwordTitle": "Elige una contraseña",
+      "confirmTitle": "Una última cosa",
+      "passwordBlurb": "Al menos 8 caracteres. Cuanto más larga, más segura.",
+      "confirmBlurb": "Confirma y tu cuenta estará lista.",
+      "progress": "Paso {{n}} de {{total}}",
+      "signingUpAs": "Registrándote como",
+      "change": "Cambiar",
+      "back": "Atrás",
+      "continue": "Continuar",
+      "passkeyTitle": "¿Cómo vas a iniciar sesión?",
+      "passkeyBlurb": "Una llave de acceso usa tu cara, tu huella o el PIN del dispositivo.",
+      "usePasskey": "Usar una llave de acceso",
+      "passkeyWhy": "Nada que recordar, nada que filtrar.",
+      "usePassword": "Usar una contraseña en su lugar",
+      "passkeyAfter": "Añades tu llave de acceso en la siguiente pantalla."
     },
     "pronouns": {
       "she/her": "ella",
@@ -1385,7 +1400,13 @@
       "profile": "[ES] Your handle",
       "profileDesc": "[ES] Pick a username and avatar, or keep the ones we assigned."
     },
-    "profileBlurb": "[ES] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
+    "profileBlurb": "Elige tu nombre de usuario y tu foto. Te sugerimos un nombre y un avatar para empezar.",
+    "passkeyFallback": "Establecer una contraseña en su lugar",
+    "passkeyHeading": "Inicia sesión con una llave de acceso",
+    "passkeyRequiredBlurb": "Así inicias sesión en tu nueva cuenta. Tarda unos segundos.",
+    "passkeyWhy1": "Desbloquea con tu cara, tu huella o el PIN del dispositivo",
+    "passkeyWhy2": "Nada que recordar, nada que suplantar ni filtrar",
+    "passkeyWhy3": "Se sincroniza en tus dispositivos con tu gestor de contraseñas"
   },
   "events": {
     "title": "Eventos",
@@ -5373,7 +5394,8 @@
       "entrants": "[ES] Entries",
       "linked": "[ES] Linked to a profile"
     },
-    "backToPersonalities": "← Personalidades"
+    "backToPersonalities": "← Personalidades",
+    "competedAs": "como {{name}}"
   },
   "styleguide": {
     "metaTitle": "[ES] Editorial styleguide and tone of voice",

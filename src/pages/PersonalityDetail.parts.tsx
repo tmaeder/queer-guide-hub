@@ -170,27 +170,41 @@ export function PersonalityHero({
   const roles = ((personality as { roles?: string[] | null }).roles ?? []).filter(Boolean);
   const prettyRole = (slug: string) =>
     slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  const age = calculateAge(personality.birth_date, personality.death_date);
+  // An age is only stated when it is a real one: age at death when the death
+  // date is known, current age for the living. A historical figure with no
+  // recorded death date has no age we can state — aging them against today is
+  // what produced "434" on the professions pages.
+  const ageLabel =
+    age === null
+      ? null
+      : personality.death_date
+        ? `Died aged ${age}`
+        : personality.is_living === false
+          ? null
+          : `${age} years old`;
+  const chip =
+    'inline-flex items-center gap-1.5 rounded-element bg-card px-2.5 py-1 text-13 shadow-soft no-underline';
+
   return (
-    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-      <div className="flex items-start gap-4">
-        {/* Portrait as a station ring — the same 3px ink circle the P-line
-            cards and the featured rail draw. `rounded-full` is the sanctioned
-            circle case. */}
-        <Avatar className="h-24 w-24 shrink-0 border border-border-hairline">
+    <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+        {/* Portrait as a station ring. `rounded-full` is the sanctioned circle. */}
+        <Avatar className="size-32 shrink-0 border border-border-hairline shadow-soft md:size-44">
           <AvatarImage
             src={personality.image_url || ''}
             alt={personality.name}
             referrerPolicy="no-referrer"
             className="object-cover object-top"
           />
-          <AvatarFallback className="font-display text-headline">
+          <AvatarFallback className="font-display text-display">
             {getInitials(personality.name)}
           </AvatarFallback>
         </Avatar>
 
         <div className="min-w-0">
-          {/* The masthead grammar from DetailMasthead: bullet, then eyebrow and
-              status chips, then the Anton title. */}
+          {/* The masthead grammar from DetailMasthead: bullet, then status
+              chips, then the Anton title. */}
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <RouteBullet type="personality" size={34} />
             {personality.is_featured && (
@@ -213,18 +227,13 @@ export function PersonalityHero({
               {personality.name}
             </Editable>
           </h1>
-
-          {personality.bio && (
-            <p className="mt-2 line-clamp-2 max-w-reading text-muted-foreground">
-              {personality.bio.trim().split('\n')[0]}
-            </p>
-          )}
-
           {personality.pronouns && (
-            <p className="mb-2 mt-2 text-13 text-muted-foreground">({personality.pronouns})</p>
+            <p className="mt-2 text-13 text-muted-foreground">{personality.pronouns}</p>
           )}
 
-          <div className="flex items-center gap-4 text-muted-foreground mb-4 flex-wrap">
+          {/* One row of facts, each a chip: what they do, where from, alive or
+              not, and how old. */}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
             {personality.profession && (
               <a
                 href={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
@@ -232,68 +241,51 @@ export function PersonalityHero({
                   e.preventDefault();
                   onProfessionClick(personality.profession!);
                 }}
-                className="flex items-center gap-1 cursor-pointer text-primary no-underline hover:underline"
+                className={`${chip} font-bold text-foreground hover:bg-foreground hover:text-background`}
               >
-                <Briefcase size={16} />
-                <span>{formatProfession(personality.profession)}</span>
+                <Briefcase size={14} aria-hidden />
+                {formatProfession(personality.profession)}
               </a>
             )}
-            {roles.length > 0 && (
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {roles.map((slug) => (
-                  <Badge key={slug} variant="outline" className="text-xs">
-                    {prettyRole(slug)}
-                  </Badge>
-                ))}
-              </div>
-            )}
+            {roles.map((slug) => (
+              <span key={slug} className={chip}>
+                {prettyRole(slug)}
+              </span>
+            ))}
             {personality.nationality &&
               (countryId ? (
                 <LocalizedLink
                   to={`/country/${countryId}`}
-                  className="flex items-center gap-1 text-primary no-underline hover:underline"
+                  className={`${chip} text-foreground hover:bg-foreground hover:text-background`}
                 >
-                  <MapPin size={16} />
-                  <span>{personality.nationality}</span>
+                  <MapPin size={14} aria-hidden />
+                  {personality.nationality}
                 </LocalizedLink>
               ) : (
-                <div className="flex items-center gap-1">
-                  <MapPin size={16} />
-                  <span>{personality.nationality}</span>
-                </div>
+                <span className={chip}>
+                  <MapPin size={14} aria-hidden />
+                  {personality.nationality}
+                </span>
               ))}
-            <div className="flex items-center gap-1">
+            <span className={`${chip} text-muted-foreground`}>
               {personality.is_living ? (
-                <>
-                  <Heart size={16} />
-                  <span>Living</span>
-                </>
+                <Heart size={14} aria-hidden />
               ) : (
-                <>
-                  <Calendar size={16} />
-                  <span>Historical</span>
-                </>
+                <Calendar size={14} aria-hidden />
               )}
-            </div>
+              {personality.is_living ? 'Living' : 'Historical'}
+              {ageLabel && <span className="tabular-nums">· {ageLabel}</span>}
+            </span>
           </div>
 
-          {/* An age is only stated when it is a real one: age at death when the
-              death date is known, current age for the living. A historical figure
-              with no recorded death date has no age we can state — and aging them
-              against today is what produced "434" on the professions pages. */}
-          {(() => {
-            const age = calculateAge(personality.birth_date, personality.death_date);
-            if (age === null) return null;
-            if (personality.death_date)
-              return (
-                <p className="text-sm text-muted-foreground mb-4">Age at death: {age} years</p>
-              );
-            if (personality.is_living === false) return null;
-            return <p className="text-sm text-muted-foreground mb-4">Age: {age} years old</p>;
-          })()}
+          {personality.bio && (
+            <p className="mt-4 line-clamp-3 max-w-reading text-15 leading-relaxed text-muted-foreground">
+              {personality.bio.trim().split('\n')[0]}
+            </p>
+          )}
 
           {personality.fields.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2">
               {personality.fields.map((field, index) => (
                 <Badge key={index} variant="outline" className="text-xs">
                   {field}
@@ -468,7 +460,9 @@ export function PersonalityOverview({
         {personality.description && !personality.bio && (
           <Card>
             <CardHeader>
-              <CardTitle id="personality-biography" className="scroll-mt-24">About</CardTitle>
+              <CardTitle id="personality-biography" className="scroll-mt-24">
+                About
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <Editable
@@ -491,7 +485,9 @@ export function PersonalityOverview({
         {personality.bio && (
           <Card>
             <CardHeader>
-              <CardTitle id="personality-biography" className="scroll-mt-24">Biography</CardTitle>
+              <CardTitle id="personality-biography" className="scroll-mt-24">
+                Biography
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-4">
