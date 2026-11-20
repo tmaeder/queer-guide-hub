@@ -91,6 +91,7 @@
   --motion-route-rider-delay: 220ms;
   --motion-route-arrival: 280ms;
   --motion-route-arrival-delay: 380ms;
+  --motion-route-loading-delay: 250ms;
   --motion-route-content: 240ms;
   --motion-reveal-step: 80ms;
   --motion-tier-overlay: 400ms;
@@ -1166,7 +1167,7 @@ h2:not(.font-sans),
 /* The route skeleton waits before appearing, so a lazy chunk that resolves
    quickly swaps page-to-page instead of flashing a loader in between. */
 [data-route-loading] {
-  animation: fade-in var(--motion-fast, 150ms) ease-out 250ms both;
+  animation: fade-in var(--motion-fast) ease-out var(--motion-route-loading-delay) both;
 }
 
 /* Edge-rendered crawler/agent body (functions/_lib/routeBody.ts). React's
