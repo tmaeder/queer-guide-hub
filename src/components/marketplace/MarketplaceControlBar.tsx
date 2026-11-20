@@ -282,7 +282,10 @@ export function MarketplaceControlBar({
   const facets = describeActiveFilters(filters);
 
   return (
-    <div className="flex flex-col gap-2 md:gap-4">
+    // The band this sits in is sticky with overflow-hidden and the chip row
+    // scrolls, so a soft shadow on any control is cut flat at the box edge.
+    // Inside the band the controls are flat with a 1px divider ring instead.
+    <div className="flex flex-col gap-2 md:gap-4 [&_.shadow-soft]:shadow-none [&_.shadow-soft]:ring-1 [&_.shadow-soft]:ring-surface-container-high">
       <div className="flex gap-2">
         <div className="relative flex-1">
           <TransitIcon
