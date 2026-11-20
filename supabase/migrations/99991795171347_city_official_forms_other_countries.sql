@@ -41,7 +41,9 @@ begin
     if not exists (select 1 from public.cities where id = r.keep_id and duplicate_of_id is null)
        or not exists (select 1 from public.cities where id = r.drop_id and duplicate_of_id is null)
        or not exists (select 1 from public.geo_city_profiles where place_id = r.keep_id)
-       or not exists (select 1 from public.geo_city_profiles where place_id = r.drop_id) then
+       or not exists (select 1 from public.geo_city_profiles where place_id = r.drop_id)
+       or not exists (select 1 from public.cities c join public.geo_places g on g.id = c.country_id
+                       where c.id = r.keep_id) then
       continue;
     end if;
     select wikidata_qid, wikipedia_title into v_qid, v_title from public.cities where id = r.drop_id;
@@ -168,6 +170,9 @@ begin
   loop
     update public.cities set name = r.new_name
      where id = r.id and duplicate_of_id is null and name <> r.new_name
+       -- partial CI snapshot: the rename re-syncs the geo spine row
+       and exists (select 1 from public.geo_places g where g.id = cities.id)
+       and exists (select 1 from public.geo_places g where g.id = cities.country_id)
        and not exists (select 1 from public.cities b
                         where b.id <> r.id and b.country_id = cities.country_id
                           and lower(b.name) = lower(r.new_name)
