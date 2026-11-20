@@ -48,6 +48,7 @@ vi.mock('@/components/profile/settings/BlockedUsersSettings', () => ({
 vi.mock('@/components/profile/settings/ContentConsentSettings', () => ({
   ContentConsentSettings: () => null,
 }));
+vi.mock('@/components/profile/settings/UserModePicker', () => ({ UserModePicker: () => null }));
 vi.mock('@/components/profile/settings/DisplaySettings', () => ({ DisplaySettings: () => null }));
 vi.mock('@/components/profile/BodyProfileEditor', () => ({ BodyProfileEditor: () => null }));
 vi.mock('@/components/profile/IntimateTab', () => ({ IntimateTab: () => null }));

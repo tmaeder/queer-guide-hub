@@ -23,6 +23,7 @@ import { ModerationSettings } from '@/components/profile/settings/ModerationSett
 import { BlueskyConnect } from '@/components/profile/settings/BlueskyConnect';
 import { KinkVisibilitySettings } from '@/components/kinks/KinkVisibilitySettings';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
+import { UserModePicker } from '@/components/profile/settings/UserModePicker';
 import { DisplaySettings } from '@/components/profile/settings/DisplaySettings';
 import { BlockedUsersSettings } from '@/components/profile/settings/BlockedUsersSettings';
 import { ContentConsentSettings } from '@/components/profile/settings/ContentConsentSettings';
@@ -391,6 +392,10 @@ function ProfileSettingsContent({
             <StatusEditor />
           </CardContent>
         </Card>
+        <UserModePicker
+          value={formData.user_mode}
+          onChange={(mode) => handleInputChange('user_mode', mode)}
+        />
         <BasicInfoTab
           formData={formData}
           profile={profile}
