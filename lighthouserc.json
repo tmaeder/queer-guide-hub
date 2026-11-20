@@ -474,7 +474,7 @@
             "total-blocking-time": [
               "error",
               {
-                "maxNumericValue": 5900,
+                "maxNumericValue": 1150,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -554,7 +554,7 @@
             "total-blocking-time": [
               "error",
               {
-                "maxNumericValue": 6600,
+                "maxNumericValue": 950,
                 "aggregationMethod": "optimistic"
               }
             ],
