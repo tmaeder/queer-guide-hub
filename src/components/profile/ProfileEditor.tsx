@@ -426,7 +426,7 @@ function ProfileSettingsContent({
               Optional and 18+. Shown only to members who also opted in.
             </p>
           </div>
-          <IntimateTab />
+          <IntimateTab dateOfBirth={formData.date_of_birth} />
         </section>
       </>
     ) : section === 'body' ? (

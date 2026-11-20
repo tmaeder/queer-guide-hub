@@ -5,13 +5,18 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const useMyIntimateProfile = vi.fn();
 const useOptOutIntimateProfile = vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false }));
+const upsertMutate = vi.fn();
 
 vi.mock('@/hooks/useIntimateProfile', () => ({
   useMyIntimateProfile: (...a: unknown[]) => useMyIntimateProfile(...a),
   useOptOutIntimateProfile: (...a: unknown[]) => useOptOutIntimateProfile(...a),
   useMyIntimateText: () => ({ data: null }),
   useIntimateKinkTags: () => ({ data: [] }),
-  useUpsertIntimateProfile: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpsertIntimateProfile: () => ({
+    mutateAsync: vi.fn(),
+    mutate: upsertMutate,
+    isPending: false,
+  }),
   useSetIntimateText: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 vi.mock('@/components/intimate/HankyCodePicker', () => ({ HankyCodePicker: () => null }));
@@ -71,6 +76,25 @@ describe('IntimateTab', () => {
     });
     render(wrap(<IntimateTab />));
     expect(screen.getByRole('button', { name: 'Show profile' })).toBeInTheDocument();
+  });
+
+  it('derives the age band from the date of birth instead of asking again', () => {
+    const now = new Date().toISOString();
+    useMyIntimateProfile.mockReturnValue({
+      data: {
+        opted_in_at: now,
+        consent_18plus_at: now,
+        genitalia: 'vulva',
+        role: [],
+        age_band: null,
+      },
+      isLoading: false,
+    });
+    const dob = `${new Date().getFullYear() - 31}-01-01`;
+    render(wrap(<IntimateTab dateOfBirth={dob} />));
+    expect(screen.queryByRole('slider', { name: 'Age band' })).toBeNull();
+    expect(screen.getByText('30-34')).toBeInTheDocument();
+    expect(upsertMutate).toHaveBeenCalledWith({ age_band: '30-34' });
   });
 
   it('shows loading state', () => {
