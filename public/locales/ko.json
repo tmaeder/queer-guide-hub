@@ -5732,5 +5732,47 @@
         "interactions": "약물 병용 위험 (Queer Guide)"
       }
     }
+  },
+  "goingOut": {
+    "events": {
+      "filterLabel": "이벤트 유형",
+      "all": "모든 이벤트",
+      "types": {
+        "party": "파티",
+        "drag": "드래그 & 공연",
+        "pride": "프라이드 & 축제",
+        "film": "영화 & 예술",
+        "social": "모임 & 밋업",
+        "talks": "강연 & 워크숍"
+      }
+    },
+    "places": {
+      "filterLabel": "장소 유형",
+      "all": "모든 장소",
+      "types": {
+        "bars": "바",
+        "clubs": "클럽",
+        "cafes": "카페",
+        "food": "레스토랑",
+        "saunas": "사우나",
+        "culture": "극장 & 갤러리",
+        "community": "커뮤니티 센터",
+        "shops": "상점",
+        "wellness": "체육관 & 살롱",
+        "outdoor": "야외",
+        "organizations": "단체",
+        "neighbourhoods": "동네"
+      },
+      "viewLabel": "보기",
+      "view": {
+        "grid": "그리드",
+        "list": "목록",
+        "map": "지도"
+      },
+      "loading": "장소를 찾는 중…",
+      "noOrgs": "{{where}}에 등록된 단체가 아직 없습니다.",
+      "noNeighbourhoods": "{{where}}에 등록된 동네가 아직 없습니다.",
+      "noneForFilter": "이 필터로 {{where}}에 등록된 항목이 아직 없습니다."
+    }
   }
 }

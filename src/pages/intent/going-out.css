@@ -112,6 +112,26 @@
   text-align: right;
 }
 
+.going-out-departure-main {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+}
+
+.going-out-departure-meta {
+  color: hsl(var(--foreground));
+  font-size: var(--text-13);
+  font-weight: 700;
+}
+
+.going-out-departure-blurb {
+  overflow: hidden;
+  color: hsl(var(--muted-foreground));
+  font-size: var(--text-13);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .going-out-safety {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -226,7 +246,7 @@
     grid-row: 1 / span 2;
   }
 
-  .going-out-departure-title,
+  .going-out-departure-main,
   .going-out-departure-city {
     grid-column: 2;
   }
