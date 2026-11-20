@@ -5,8 +5,12 @@
 -- alternate-name duplicates after the city pass: countries are clean (250
 -- live, one per ISO code), landmarks have no pairs (6 live), and of the 20
 -- same-city village pairs within 1 km the rest are neighbouring districts
--- (Kings Cross / Darlinghurst, West Village / Greenwich Village) or overlap
--- with venues on both sides (Castro District / Eureka Valley) and are left.
+-- (Kings Cross / Darlinghurst, West Village / Greenwich Village) and are left.
+--
+-- Castro District and Eureka Valley (San Francisco, 50 m apart) are merged too,
+-- on request: the Castro sits inside Eureka Valley and the site treats it as
+-- one queer district. Castro District survives (73 venues, the name people
+-- use); Eureka Valley's 40 venue rows move onto it.
 -- Reversible: _queer_village_merge_core writes an audit row.
 do $$
 begin
@@ -17,5 +21,23 @@ begin
       'f10201bc-a6b6-4ccc-aeb6-886354926f5e', '3bffbb78-dd35-4b2f-86f0-c8605d658165', null);
   else
     raise notice 'Neartown/Montrose not both live here; skipping';
+  end if;
+end $$;
+
+do $$
+begin
+  perform set_config('app.actor', 'migration:village_castro_eureka_merge', true);
+  if exists (select 1 from public.queer_villages where id = '7dde05b1-f77d-4f35-bbae-8e9597e4cff8' and duplicate_of_id is null)
+     and exists (select 1 from public.queer_villages where id = '754df796-c869-430d-b949-550de60a71b3' and duplicate_of_id is null) then
+    perform public._queer_village_merge_core(
+      '754df796-c869-430d-b949-550de60a71b3', '7dde05b1-f77d-4f35-bbae-8e9597e4cff8', null);
+  else
+    raise notice 'Castro District/Eureka Valley not both live here; skipping';
+  end if;
+
+  if exists (select 1 from public.venues v join public.queer_villages q on q.id = v.queer_village_id
+              where q.id in ('7dde05b1-f77d-4f35-bbae-8e9597e4cff8', '3bffbb78-dd35-4b2f-86f0-c8605d658165')
+                and q.duplicate_of_id is not null and v.duplicate_of_id is null) then
+    raise exception 'venues left on a merged village';
   end if;
 end $$;
