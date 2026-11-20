@@ -939,7 +939,12 @@
     "joined": "Joined {{date}}",
     "editAvatar": "Change avatar",
     "lensHidden": "This profile isn’t visible in this view. Switch to You to continue editing.",
-    "sections": "Profile sections"
+    "sections": "Profile sections",
+    "signInGate": {
+      "title": "Sign in to view this profile",
+      "body": "Member profiles are only visible to signed-in members.",
+      "cta": "Sign in"
+    }
   },
   "groups": {
     "title": "Groups",

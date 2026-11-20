@@ -114,7 +114,7 @@ interface LoaderProps extends EditorProps {
 interface ContentProps extends LoaderProps {
   profile: Profile | null | undefined;
 }
-type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error' | 'auth-error';
+type SaveStatus = 'idle' | 'saved' | 'saving' | 'unsaved' | 'error' | 'auth-error';
 function SaveStatusLine({
   status,
   onRetry,
@@ -189,7 +189,7 @@ function ProfileSettingsContent({
   const px = profile as ProfileX | null | undefined;
   const [formData, setFormData] = useState<ProfileFormData>(() => initFormData(profile));
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const editVersion = useRef(0);
   const saving = useRef<Promise<boolean> | null>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -493,7 +493,8 @@ function ProfileSettingsContent({
         )}
       </header>
       <div className="flex min-w-0 flex-col gap-6">{editor}</div>
-      {autosaves && (
+      {/* Nothing to report until something is edited. */}
+      {autosaves && saveStatus !== 'idle' && (
         <div className="sticky bottom-[calc(4.5rem+var(--island-inset)+env(safe-area-inset-bottom,0px))] z-10 rounded-element bg-card px-4 py-4 md:bottom-4">
           <SaveStatusLine
             status={saveStatus}
