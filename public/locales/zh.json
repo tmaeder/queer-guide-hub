@@ -1682,7 +1682,19 @@
     "blockedUsers": "已屏蔽用户",
     "reportUser": "举报用户",
     "sendMessage": "发送消息",
-    "favoritesShortcut": "收藏"
+    "favoritesShortcut": "收藏",
+    "tabs": {
+      "overview": "概览",
+      "travel": "旅行",
+      "activity": "动态",
+      "groups": "群组"
+    },
+    "share": "分享个人资料",
+    "report": "举报个人资料",
+    "joined": "{{date}} 加入",
+    "editAvatar": "更换头像",
+    "lensHidden": "此视图下看不到该资料。切换到“你”以继续编辑。",
+    "sections": "个人资料分区"
   },
   "groups": {
     "title": "群组",
@@ -2989,6 +3001,47 @@
       "copy": "[ZH] Copy address",
       "openInbox": "[ZH] Open inbox",
       "claimFirst": "[ZH] Choose a username above to activate your address."
+    },
+    "title": "设置",
+    "viewProfile": "查看你的个人资料",
+    "sectionsLabel": "设置分区",
+    "allSettings": "全部设置",
+    "travel": {
+      "reviewSearch": "查看搜索偏好"
+    },
+    "sections": {
+      "profile": {
+        "title": "个人资料",
+        "description": "你的状态、名字、代词、简介和链接。自动保存。"
+      },
+      "identity": {
+        "title": "身份与约会",
+        "description": "身份信息自动保存。约会有单独的设置。"
+      },
+      "privacy": {
+        "title": "隐私与可见性",
+        "description": "谁能看到你资料的各个部分。更改自动保存。"
+      },
+      "security": {
+        "title": "登录与安全",
+        "description": "你的用户名、通行密钥和密码。"
+      },
+      "notifications": {
+        "title": "通知",
+        "description": "我们发送到你设备和邮箱的内容。"
+      },
+      "travel": {
+        "title": "旅行",
+        "description": "为你排序地点和行程的偏好，以及你的预订邮箱。"
+      },
+      "data": {
+        "title": "你的数据",
+        "description": "下载我们保存的关于你的所有数据，或删除账户。"
+      },
+      "avatar": {
+        "title": "你的头像",
+        "description": "选择你的个人资料外观。"
+      }
     }
   },
   "map": {
@@ -4057,7 +4110,8 @@
       "trips": "行程",
       "overview": "概览",
       "messages": "消息",
-      "plans": "计划"
+      "plans": "计划",
+      "progress": "进度"
     },
     "calendar": {
       "title": "即将到来",
@@ -4174,6 +4228,9 @@
     },
     "plans": {
       "trips": "你的行程"
+    },
+    "progress": {
+      "description": "任务、等级、连续记录和认可。仅你可见。"
     }
   },
   "city": {

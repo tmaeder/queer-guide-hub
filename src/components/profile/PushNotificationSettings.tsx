@@ -24,10 +24,10 @@ export function PushNotificationSettings() {
   if (!supported) return null;
 
   return (
-    <Card className="mt-6">
-      <CardContent>
+    <Card>
+      <CardContent className="pt-6">
         <div className="flex items-start gap-4">
-          <div className="w-9 h-9 bg-muted/40 flex items-center justify-center shrink-0">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-element bg-muted/40">
             {subscribed ? <Bell size={18} /> : <BellOff size={18} />}
           </div>
           <div className="flex-1 min-w-0">
@@ -35,7 +35,7 @@ export function PushNotificationSettings() {
             <p className="text-muted-foreground text-sm mb-2">
               {t(
                 'settings.push.body',
-                'Get a browser notification 30 minutes before each reservation, and again when passport or visa dates get close.',
+                'Get a browser notification 30 minutes before each reservation.',
               )}
             </p>
             {error && (

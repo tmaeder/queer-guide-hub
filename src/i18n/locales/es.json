@@ -1682,7 +1682,19 @@
     "blockedUsers": "Usuaries bloqueades",
     "reportUser": "Reportar usuarie",
     "sendMessage": "Enviar mensaje",
-    "favoritesShortcut": "Favoritos"
+    "favoritesShortcut": "Favoritos",
+    "tabs": {
+      "overview": "Resumen",
+      "travel": "Viajes",
+      "activity": "Actividad",
+      "groups": "Grupos"
+    },
+    "share": "Compartir perfil",
+    "report": "Denunciar perfil",
+    "joined": "Se unió en {{date}}",
+    "editAvatar": "Cambiar avatar",
+    "lensHidden": "Este perfil no es visible en esta vista. Cambia a Tú para seguir editando.",
+    "sections": "Secciones del perfil"
   },
   "groups": {
     "title": "Grupos",
@@ -2991,6 +3003,47 @@
       "copy": "[ES] Copy address",
       "openInbox": "[ES] Open inbox",
       "claimFirst": "[ES] Choose a username above to activate your address."
+    },
+    "title": "Configuración",
+    "viewProfile": "Ver tu perfil",
+    "sectionsLabel": "Secciones de configuración",
+    "allSettings": "Toda la configuración",
+    "travel": {
+      "reviewSearch": "Revisar preferencias de búsqueda"
+    },
+    "sections": {
+      "profile": {
+        "title": "Perfil",
+        "description": "Tu vibe, nombre, pronombres, bio y enlaces. Los datos se guardan automáticamente."
+      },
+      "identity": {
+        "title": "Identidad y citas",
+        "description": "Los datos de identidad se guardan automáticamente. Las citas tienen sus propios controles."
+      },
+      "privacy": {
+        "title": "Privacidad y visibilidad",
+        "description": "Quién ve cada parte de tu perfil. Los cambios se guardan automáticamente."
+      },
+      "security": {
+        "title": "Inicio de sesión y seguridad",
+        "description": "Tu usuario, passkey y contraseña."
+      },
+      "notifications": {
+        "title": "Notificaciones",
+        "description": "Lo que enviamos a tu dispositivo y a tu correo."
+      },
+      "travel": {
+        "title": "Viajes",
+        "description": "Preferencias que ordenan lugares y viajes para ti, y tu buzón de reservas."
+      },
+      "data": {
+        "title": "Tus datos",
+        "description": "Descarga todo lo que guardamos sobre ti o elimina tu cuenta."
+      },
+      "avatar": {
+        "title": "Tu avatar",
+        "description": "Elige cómo se ve tu perfil."
+      }
     }
   },
   "map": {
@@ -4059,7 +4112,8 @@
       "trips": "Viajes",
       "overview": "Resumen",
       "messages": "Mensajes",
-      "plans": "Planes"
+      "plans": "Planes",
+      "progress": "Progreso"
     },
     "calendar": {
       "title": "Próximo",
@@ -4176,6 +4230,9 @@
     },
     "plans": {
       "trips": "Tus viajes"
+    },
+    "progress": {
+      "description": "Misiones, nivel, rachas y reconocimientos. Solo lo ves tú."
     }
   },
   "city": {

@@ -1682,7 +1682,19 @@
     "blockedUsers": "ブロック中のユーザー",
     "reportUser": "ユーザーを報告",
     "sendMessage": "メッセージを送る",
-    "favoritesShortcut": "お気に入り"
+    "favoritesShortcut": "お気に入り",
+    "tabs": {
+      "overview": "概要",
+      "travel": "旅行",
+      "activity": "アクティビティ",
+      "groups": "グループ"
+    },
+    "share": "プロフィールを共有",
+    "report": "プロフィールを報告",
+    "joined": "{{date}}に参加",
+    "editAvatar": "アバターを変更",
+    "lensHidden": "この表示ではプロフィールは見えません。「あなた」に切り替えて編集を続けてください。",
+    "sections": "プロフィールのセクション"
   },
   "groups": {
     "title": "グループ",
@@ -2989,6 +3001,47 @@
       "copy": "[JA] Copy address",
       "openInbox": "[JA] Open inbox",
       "claimFirst": "[JA] Choose a username above to activate your address."
+    },
+    "title": "設定",
+    "viewProfile": "プロフィールを見る",
+    "sectionsLabel": "設定のセクション",
+    "allSettings": "すべての設定",
+    "travel": {
+      "reviewSearch": "検索の設定を確認"
+    },
+    "sections": {
+      "profile": {
+        "title": "プロフィール",
+        "description": "バイブ、名前、代名詞、自己紹介、リンク。自動で保存されます。"
+      },
+      "identity": {
+        "title": "アイデンティティと出会い",
+        "description": "アイデンティティは自動で保存されます。出会いの設定は別にあります。"
+      },
+      "privacy": {
+        "title": "プライバシーと公開範囲",
+        "description": "プロフィールの各部分を誰が見られるか。自動で保存されます。"
+      },
+      "security": {
+        "title": "ログインとセキュリティ",
+        "description": "ハンドル、パスキー、パスワード。"
+      },
+      "notifications": {
+        "title": "通知",
+        "description": "端末とメールに届くもの。"
+      },
+      "travel": {
+        "title": "旅行",
+        "description": "場所や旅行の並び順を決める設定と予約用メール。"
+      },
+      "data": {
+        "title": "あなたのデータ",
+        "description": "保存しているすべてのデータをダウンロード、またはアカウントを削除。"
+      },
+      "avatar": {
+        "title": "アバター",
+        "description": "プロフィールの見え方を選びます。"
+      }
     }
   },
   "map": {
@@ -4057,7 +4110,8 @@
       "trips": "旅行",
       "overview": "概要",
       "messages": "メッセージ",
-      "plans": "プラン"
+      "plans": "プラン",
+      "progress": "進捗"
     },
     "calendar": {
       "title": "今後の予定",
@@ -4174,6 +4228,9 @@
     },
     "plans": {
       "trips": "あなたの旅行"
+    },
+    "progress": {
+      "description": "ミッション、レベル、連続記録、表彰。あなただけに表示されます。"
     }
   },
   "city": {

@@ -6,7 +6,6 @@ vi.mock('@/components/profile/ActivityStrip', () => ({ ActivityStrip: () => <div
 vi.mock('@/components/profile/SocialSummaryRow', () => ({ SocialSummaryRow: () => null }));
 vi.mock('@/components/profile/SecureProfileViewer', () => ({ SecureProfileViewer: () => null }));
 vi.mock('@/components/profile/GapPromptCard', () => ({ GapPromptCard: () => null }));
-vi.mock('@/components/profile/CompletionNudge', () => ({ CompletionNudge: () => null }));
 import { OverviewTab } from '../OverviewTab';
 const profile = { user_id: 'u1', privacy_settings: { activity_visibility: 'private' } };
 
