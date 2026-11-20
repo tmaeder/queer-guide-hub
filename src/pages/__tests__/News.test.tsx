@@ -74,7 +74,22 @@ describe('News page', () => {
 
   it('shows the archive band once the feed has loaded', () => {
     newsState.loading = false;
+    // The lower bands mount on approach (DeferredSection); the shared jsdom
+    // stub never intersects, so report the section as on screen.
+    const saved = window.IntersectionObserver;
+    window.IntersectionObserver = class {
+      constructor(private cb: IntersectionObserverCallback) {}
+      observe() {
+        this.cb([{ isIntersecting: true } as IntersectionObserverEntry], this as never);
+      }
+      disconnect() {}
+      unobserve() {}
+      takeRecords() {
+        return [];
+      }
+    } as unknown as typeof IntersectionObserver;
     renderWithProviders(<News />);
+    window.IntersectionObserver = saved;
     expect(screen.getByText('Every story we have ever told.')).toBeInTheDocument();
   });
 });
