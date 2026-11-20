@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { profileEditPath } from '@/lib/profileEditing';
-import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { UserPostsList } from '@/components/posts/UserPostsList';
 import { UserReviewsList } from '@/components/profile/contributions/UserReviewsList';
 import { UserSubmissionsList } from '@/components/profile/contributions/UserSubmissionsList';
@@ -38,7 +37,6 @@ export function ContributionsTab({ userId, isOwnProfile, lens = 'you', privacySe
   }
   const posts = { id: 'contribution-posts', title: t('profile.contributions.posts', 'Posts') };
   const reviews = { id: 'contribution-reviews', title: t('profile.contributions.reviews', 'Reviews') };
-  const photos = { id: 'contribution-photos', title: t('profile.contributions.photos', 'Photos') };
   const submissions = { id: 'contribution-submissions', title: t('profile.contributions.submissions', 'Submissions') };
   const watches = { id: 'contribution-watches', title: t('profile.contributions.watches', 'Watched sites') };
 
@@ -51,10 +49,6 @@ export function ContributionsTab({ userId, isOwnProfile, lens = 'you', privacySe
       <section id={reviews.id} aria-label={reviews.title} className="flex flex-col gap-4">
         <h3 className="font-sans text-title font-bold">{reviews.title}</h3>
         <UserReviewsList userId={userId} />
-      </section>
-      <section id={photos.id} aria-label={photos.title} className="flex flex-col gap-4">
-        <h3 className="font-sans text-title font-bold">{photos.title}</h3>
-        <PhotoGallery userId={userId} isOwnProfile={ownView} />
       </section>
       {ownView && (
         <section id={submissions.id} aria-label={submissions.title} className="flex flex-col gap-4">

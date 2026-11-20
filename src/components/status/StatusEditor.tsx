@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { EmojiPicker } from '@/components/messaging/EmojiPicker';
 import { useProfile } from '@/hooks/useProfile';
 import { IntentChips } from '@/components/status/IntentChips';
@@ -54,52 +53,69 @@ export function StatusEditor({ onDone }: { onDone?: () => void }) {
     onDone?.();
   };
 
+  const hasVibe = !!(current?.vibe_text || current?.vibe_emoji);
+
   return (
     <div className="flex flex-col gap-6">
-      <section>
-        <p className="mb-2 text-sm font-medium">
-          {t('chat.vibe.title', { defaultValue: 'Your vibe' })}
-        </p>
-        <div className="flex items-center gap-2">
+      <section className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <h4 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+            {t('chat.vibe.title', { defaultValue: 'Your vibe' })}
+          </h4>
+          {hasVibe && (
+            <button
+              type="button"
+              onClick={clear}
+              disabled={saving}
+              className="rounded-badge text-xs font-bold underline underline-offset-4 disabled:opacity-40"
+            >
+              {t('common.clear', { defaultValue: 'Clear' })}
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-2 rounded-element bg-card p-1.5 shadow-soft">
           <EmojiPicker
             onSelect={setEmoji}
             side="bottom"
             align="start"
             trigger={
-              <Button variant="outline" size="sm" className="h-9 w-10 shrink-0 p-0 text-lg">
+              <button
+                type="button"
+                aria-label={t('chat.vibe.emoji', { defaultValue: 'Pick an emoji' })}
+                className="flex size-11 shrink-0 items-center justify-center rounded-element text-xl hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
                 {emoji || '✨'}
-              </Button>
+              </button>
             }
           />
-          <Input
+          <input
             value={text}
             onChange={(e) => setText(e.target.value.slice(0, 80))}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void save();
+            }}
             placeholder={t('chat.vibe.placeholder', { defaultValue: "What's your vibe?" })}
-            className="h-9 rounded-element"
+            aria-label={t('chat.vibe.title', { defaultValue: 'Your vibe' })}
+            className="h-11 min-w-0 flex-1 bg-transparent text-15 placeholder:text-muted-foreground focus:outline-none"
             maxLength={80}
           />
         </div>
-        <div className="mt-4 flex items-center justify-between gap-2">
-          <Button variant="ghost" size="sm" onClick={clear} disabled={saving}>
-            {t('common.clear', { defaultValue: 'Clear' })}
+        <div className="flex items-center justify-end gap-2">
+          <Button variant="ghost" size="sm" onClick={() => save(4)} disabled={saving}>
+            {t('chat.vibe.for4h', { defaultValue: '4h' })}
           </Button>
-          <div className="flex gap-1">
-            <Button variant="outline" size="sm" onClick={() => save(4)} disabled={saving}>
-              {t('chat.vibe.for4h', { defaultValue: '4h' })}
-            </Button>
-            <Button size="sm" onClick={() => save()} disabled={saving}>
-              {t('common.save', { defaultValue: 'Save' })}
-            </Button>
-          </div>
+          <Button size="sm" onClick={() => save()} disabled={saving}>
+            {t('common.save', { defaultValue: 'Save' })}
+          </Button>
         </div>
       </section>
 
-      <section>
-        <p className="mb-2 text-sm font-medium">
+      <section className="flex flex-col gap-2">
+        <h4 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
           {t('status.lookingFor', { defaultValue: 'Looking for' })}
-        </p>
+        </h4>
         <IntentChips />
-        <p className="mt-2 text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           {t('status.lookingForHint', {
             defaultValue: 'Helps rank people for you. Not shown on your profile.',
           })}

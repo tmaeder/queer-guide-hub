@@ -257,43 +257,12 @@ export default function ProfilePage() {
   return (
     <PageContainer>
       <div className="flex min-w-0 flex-col gap-6">
-        <div className="flex items-center justify-between gap-2">
-          {isOwnProfile ? (
-            <ViewAsToggle lens={lens} onChange={(next) => void changeLens(next)} />
-          ) : (
-            <Button variant="ghost" onClick={() => navigate(-1)} className="-ms-2">
-              <ArrowLeft size={16} className="mr-2" aria-hidden="true" />
-              {t('common.back', 'Back')}
-            </Button>
-          )}
-          <div className="flex items-center gap-2">
-            {ownView && (
-              <Button variant="outline" size="icon" asChild>
-                <LocalizedLink to="/settings" aria-label={t('settings.title', 'Settings')}>
-                  <Settings size={16} aria-hidden="true" />
-                </LocalizedLink>
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleShare}
-              aria-label={t('profile.share', 'Share profile')}
-            >
-              <Share2 size={16} aria-hidden="true" />
-            </Button>
-            {!isOwnProfile && user && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setReportOpen(true)}
-                aria-label={t('profile.report', 'Report profile')}
-              >
-                <Flag size={16} aria-hidden="true" />
-              </Button>
-            )}
-          </div>
-        </div>
+        {!isOwnProfile && (
+          <Button variant="ghost" onClick={() => navigate(-1)} className="-ms-2 self-start">
+            <ArrowLeft size={16} className="mr-2" aria-hidden="true" />
+            {t('common.back', 'Back')}
+          </Button>
+        )}
 
         {lensVisible ? (
           <>
@@ -307,6 +276,36 @@ export default function ProfilePage() {
               status={status}
               onEditStatus={() => setStatusPickerOpen(true)}
               onEditAvatar={() => void openEditor('avatar')}
+              previewing={isOwnProfile && !ownView}
+              tools={
+                <>
+                  {ownView && (
+                    <Button variant="outline" size="icon" asChild>
+                      <LocalizedLink to="/settings" aria-label={t('settings.title', 'Settings')}>
+                        <Settings size={16} aria-hidden="true" />
+                      </LocalizedLink>
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleShare}
+                    aria-label={t('profile.share', 'Share profile')}
+                  >
+                    <Share2 size={16} aria-hidden="true" />
+                  </Button>
+                  {!isOwnProfile && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setReportOpen(true)}
+                      aria-label={t('profile.report', 'Report profile')}
+                    >
+                      <Flag size={16} aria-hidden="true" />
+                    </Button>
+                  )}
+                </>
+              }
             />
 
             <Tabs
@@ -314,25 +313,37 @@ export default function ProfilePage() {
               onValueChange={(next) => void setTab(next)}
               className="w-full min-w-0"
             >
-              <ScrollableTabList aria-label={t('profile.sections', 'Profile sections')}>
-                {(
-                  [
-                    ['overview', t('profile.tabs.overview', 'Overview')],
-                    ['travel', t('profile.tabs.travel', 'Travel')],
-                    ['activity', t('profile.tabs.activity', 'Activity')],
-                  ] as const
-                ).map(([v, l]) => (
-                  <TabsTrigger
-                    key={v}
-                    value={v}
-                    className="h-10 shrink-0 snap-start whitespace-nowrap rounded-badge bg-transparent px-4 shadow-none data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none"
-                  >
-                    {l}
-                  </TabsTrigger>
-                ))}
-              </ScrollableTabList>
+              <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-border">
+                <ScrollableTabList
+                  aria-label={t('profile.sections', 'Profile sections')}
+                  className="w-auto gap-6 rounded-none bg-transparent p-0"
+                >
+                  {(
+                    [
+                      ['overview', t('profile.tabs.overview', 'Overview')],
+                      ['travel', t('profile.tabs.travel', 'Travel')],
+                      ['activity', t('profile.tabs.activity', 'Activity')],
+                    ] as const
+                  ).map(([v, l]) => (
+                    <TabsTrigger
+                      key={v}
+                      value={v}
+                      className="-mb-px h-11 shrink-0 snap-start whitespace-nowrap rounded-none border-b-2 border-transparent bg-transparent px-0 text-15 font-bold text-muted-foreground shadow-none active:scale-100 data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                    >
+                      {l}
+                    </TabsTrigger>
+                  ))}
+                </ScrollableTabList>
+                {isOwnProfile && (
+                  <ViewAsToggle
+                    lens={lens}
+                    onChange={(next) => void changeLens(next)}
+                    className="mb-1.5"
+                  />
+                )}
+              </div>
 
-              <TabsContent value="overview">
+              <TabsContent value="overview" className="mt-6">
                 <h2 className="sr-only">{t('profile.tabs.overview', 'Overview')}</h2>
                 <OverviewTab
                   profile={profile as unknown as Record<string, unknown>}
@@ -344,7 +355,7 @@ export default function ProfilePage() {
                 />
               </TabsContent>
 
-              <TabsContent value="travel">
+              <TabsContent value="travel" className="mt-6">
                 <h2 className="sr-only">{t('profile.tabs.travel', 'Travel')}</h2>
                 <TravelTab
                   userId={profile.user_id}
@@ -370,7 +381,7 @@ export default function ProfilePage() {
                 />
               </TabsContent>
 
-              <TabsContent value="activity">
+              <TabsContent value="activity" className="mt-6">
                 <h2 className="sr-only">{t('profile.tabs.activity', 'Activity')}</h2>
                 <ActivityTab
                   userId={profile.user_id}
@@ -382,12 +393,19 @@ export default function ProfilePage() {
             </Tabs>
           </>
         ) : (
-          <p className="rounded-container bg-card p-6 text-muted-foreground">
-            {t(
-              'profile.lensHidden',
-              'This profile isn’t visible in this view. Switch to You to continue editing.',
-            )}
-          </p>
+          <>
+            <ViewAsToggle
+              lens={lens}
+              onChange={(next) => void changeLens(next)}
+              className="self-end"
+            />
+            <p className="rounded-container bg-card p-6 text-muted-foreground">
+              {t(
+                'profile.lensHidden',
+                'This profile isn’t visible in this view. Switch to You to continue editing.',
+              )}
+            </p>
+          </>
         )}
       </div>
       {ownView && <StatusPicker open={statusPickerOpen} onOpenChange={setStatusPickerOpen} />}

@@ -55,14 +55,17 @@ vi.mock('@/components/profile/ProfileHeader', () => ({
     isOwnProfile,
     onEditAvatar,
     profile,
+    tools,
   }: {
     isOwnProfile: boolean;
     onEditAvatar: () => void;
     profile: Record<string, unknown>;
+    tools?: React.ReactNode;
   }) => (
     <header>
       {typeof profile.pronouns === 'string' && <span>{profile.pronouns}</span>}
       {isOwnProfile && <button onClick={onEditAvatar}>Change avatar</button>}
+      {tools}
     </header>
   ),
 }));

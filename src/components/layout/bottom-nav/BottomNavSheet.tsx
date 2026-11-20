@@ -113,7 +113,7 @@ export function NavSheetTile({
         onClick={onClick}
         aria-current={active ? 'page' : undefined}
         className={cn(
-          'relative flex min-h-12 items-center gap-2 rounded-element px-4 py-2 text-13 font-bold no-underline transition-colors',
+          'relative flex min-h-11 items-center gap-2 rounded-element px-2.5 py-1.5 text-13 font-bold no-underline transition-colors',
           state,
         )}
       >
@@ -129,14 +129,14 @@ export function NavSheetTile({
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'relative flex flex-col items-center justify-center gap-1.5 rounded-element px-2 py-4 text-center no-underline transition-colors',
+        'relative flex min-h-11 flex-col items-center justify-center gap-1 rounded-element px-1.5 py-2 text-center no-underline transition-colors',
         state,
       )}
     >
-      <Icon size={20} aria-hidden />
+      <Icon size={18} aria-hidden />
       {/* `truncate` — at 320px a grid cell is ~58px wide. */}
       <span className="w-full truncate text-2xs font-bold leading-tight">{label}</span>
-      {badge && <span className="absolute end-2 top-2 flex">{badge}</span>}
+      {badge && <span className="absolute end-1 top-1 flex">{badge}</span>}
     </LocalizedLink>
   );
 }

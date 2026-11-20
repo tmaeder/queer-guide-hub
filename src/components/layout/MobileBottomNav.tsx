@@ -27,7 +27,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useLongPress } from '@/hooks/useLongPress';
 import { useMotionTokens } from '@/lib/motion';
 import { getSubmitCta } from '@/lib/submitCta';
-import { generateAvatarUrl } from '@/lib/avatar';
 import { stripLocale, isMapRoute } from '@/lib/locale';
 
 const FALLBACK_LABEL: Record<BottomNavTab['id'], string> = {
@@ -89,9 +88,9 @@ export function MobileBottomNav() {
   };
   const tapHaptic = () => trigger('nudge');
 
-  const avatarSrc =
-    profile?.avatar_url ||
-    (user?.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
+  // A real picture or nothing: the generated initials disc read as a letter,
+  // not as "you". Without an uploaded photo the tab keeps its person icon.
+  const avatarSrc = (profile?.avatar_url as string | null | undefined) || undefined;
   const avatarInitial = ((profile?.display_name as string | null) || user?.email || 'U')
     .charAt(0)
     .toUpperCase();
@@ -199,7 +198,11 @@ export function MobileBottomNav() {
                     ? t('header.mobileNav.unreadCount', '{{count}} unread', { count: unreadCount })
                     : undefined
                 }
-                avatar={tab.avatar && user ? { src: avatarSrc, initial: avatarInitial } : null}
+                avatar={
+                  tab.avatar && user && avatarSrc
+                    ? { src: avatarSrc, initial: avatarInitial }
+                    : null
+                }
                 longPress={isExplore ? exploreLongPress : undefined}
                 accessory={isExplore ? exploreAccessory : undefined}
               />

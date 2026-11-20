@@ -26,7 +26,7 @@ export function UserReviewsList({ userId }: UserReviewsListProps) {
   const { data: reviews = [], isLoading } = useUserReviews(userId);
 
   if (isLoading) {
-    return <div className="h-20 rounded-container bg-card animate-pulse" />;
+    return <div className="h-20 rounded-container bg-card" />;
   }
   if (reviews.length === 0) {
     return <p className="text-sm text-muted-foreground">No reviews yet.</p>;

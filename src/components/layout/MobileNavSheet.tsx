@@ -11,15 +11,11 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { IdentityRow } from '@/components/layout/IdentityRow';
 import { FriendsOnlineCount } from '@/components/layout/FriendsOnlineCount';
 import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
-import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
-import { CurrencySelector } from '@/components/i18n/CurrencySelector';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { Button } from '@/components/ui/button';
 import {
   DESTINATIONS,
   NAV_CLUSTERS,
-  LEGAL_ITEMS,
   INTENT_NAV,
   INTENT_TRACK,
   isIntentActive,
@@ -144,7 +140,7 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
                 <div key={cluster.id} className="flex flex-col gap-2">
                   {/* `h4`: a cluster is a subsection of "Browse everything". */}
                   <h4 className="text-13 font-bold">{t(cluster.labelKey)}</h4>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
                     {items.map((dest) => (
                       <NavSheetTile
                         key={dest.to}
@@ -249,31 +245,6 @@ export function MobileNavSheet({ open, onOpenChange, openedByPointer }: MobileNa
             )}
           </section>
 
-          {/* Display settings and the small print, in one quiet footer. */}
-          <section className="flex flex-col gap-4 border-t border-border-hairline pt-4">
-            <h3 className="sr-only">{t('header.mobileNav.settingsSection', 'Display')}</h3>
-            <div className="flex flex-wrap items-center gap-2">
-              <LanguageSwitcher />
-              <CurrencySelector />
-              <ThemeToggle />
-            </div>
-            <nav
-              aria-label={t('footer.legalNav', 'About and legal')}
-              className="flex flex-wrap gap-x-4 gap-y-1"
-            >
-              {LEGAL_ITEMS.map((item) => (
-                <LocalizedLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={close}
-                  aria-current={isHere(item.to) ? 'page' : undefined}
-                  className="inline-flex min-h-11 items-center text-13 text-muted-foreground no-underline hover:text-foreground hover:underline"
-                >
-                  {t(item.labelKey)}
-                </LocalizedLink>
-              ))}
-            </nav>
-          </section>
         </div>
       </BottomNavSheet>
 

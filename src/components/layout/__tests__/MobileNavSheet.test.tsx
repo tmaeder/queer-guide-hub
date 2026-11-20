@@ -64,13 +64,12 @@ describe('MobileNavSheet', () => {
     expect(document.querySelector('a[href="/marketplace"]')).not.toBeNull();
   });
 
-  it('shows display controls', () => {
+  it('leaves display controls and legal links to the footer', () => {
     renderSheet(true);
-    expect(screen.getByTestId('lang')).toBeInTheDocument();
-    expect(screen.getByTestId('cur')).toBeInTheDocument();
-    // Dark mode came back 2026-08-18; this asserted the toggle was ABSENT for
-    // nine days in between.
-    expect(screen.getByTestId('theme')).toBeInTheDocument();
+    expect(screen.queryByTestId('lang')).toBeNull();
+    expect(screen.queryByTestId('cur')).toBeNull();
+    expect(screen.queryByTestId('theme')).toBeNull();
+    expect(document.querySelector('a[href="/privacy"]')).toBeNull();
   });
 
   it('offers sign-in for anon and sign-out for signed-in users', () => {

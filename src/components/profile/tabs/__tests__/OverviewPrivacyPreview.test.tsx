@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router';
 vi.mock('@/components/profile/ActivityStrip', () => ({ ActivityStrip: () => <div>ACTIVITY</div> }));
 vi.mock('@/components/profile/SocialSummaryRow', () => ({ SocialSummaryRow: () => null }));
 vi.mock('@/components/profile/SecureProfileViewer', () => ({ SecureProfileViewer: () => null }));
+vi.mock('@/components/profile/PhotoGallery', () => ({ PhotoGallery: () => null }));
 vi.mock('@/components/profile/GapPromptCard', () => ({ GapPromptCard: () => null }));
 import { OverviewTab } from '../OverviewTab';
 const profile = { user_id: 'u1', privacy_settings: { activity_visibility: 'private' } };
