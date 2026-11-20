@@ -5697,5 +5697,47 @@
         "interactions": "Drug combination risks (Queer Guide)"
       }
     }
+  },
+  "goingOut": {
+    "events": {
+      "filterLabel": "Event type",
+      "all": "All events",
+      "types": {
+        "party": "Parties",
+        "drag": "Drag & shows",
+        "pride": "Pride & festivals",
+        "film": "Film & art",
+        "social": "Social & meetups",
+        "talks": "Talks & workshops"
+      }
+    },
+    "places": {
+      "filterLabel": "Place type",
+      "all": "All places",
+      "types": {
+        "bars": "Bars",
+        "clubs": "Clubs",
+        "cafes": "Cafés",
+        "food": "Restaurants",
+        "saunas": "Saunas",
+        "culture": "Theatre & galleries",
+        "community": "Community centres",
+        "shops": "Shops",
+        "wellness": "Gyms & salons",
+        "outdoor": "Outdoors",
+        "organizations": "Organisations",
+        "neighbourhoods": "Neighbourhoods"
+      },
+      "viewLabel": "View",
+      "view": {
+        "grid": "Grid",
+        "list": "List",
+        "map": "Map"
+      },
+      "loading": "Finding places…",
+      "noOrgs": "No organisations listed for {{where}} yet.",
+      "noNeighbourhoods": "No neighbourhoods listed for {{where}} yet.",
+      "noneForFilter": "Nothing listed for {{where}} under this filter yet."
+    }
   }
 }

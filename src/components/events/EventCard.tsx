@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatCurrency } from '@/lib/currency';
+import { formatEventPrice } from '@/lib/eventPrice';
 import { Card } from '@/components/ui/card';
 import { eventTypeIcon } from './eventTypeIcon';
 import { useEventTypeLabel } from '@/lib/eventTypes';
@@ -88,17 +88,7 @@ export const EventCard = memo(function EventCard({
   const isPast = !!event && new Date(event.end_date ?? event.start_date) < new Date();
   const resolvedImage = resolveEntityImage('event', event ?? null).url;
 
-  const priceDisplay = (() => {
-    if (!event) return null;
-    if (event.is_free) return 'Free';
-    if (event.price_min && event.price_max) {
-      if (event.price_min === event.price_max)
-        return formatCurrency(event.price_min, event.currency);
-      return `${formatCurrency(event.price_min, event.currency)} – ${formatCurrency(event.price_max, event.currency)}`;
-    }
-    if (event.price_min) return `From ${formatCurrency(event.price_min, event.currency)}`;
-    return null;
-  })();
+  const priceDisplay = formatEventPrice(event);
 
   // Single overlay slot — priority order
   type Overlay = { label: string; variant: 'past' | 'trip' | 'overlap' | 'featured' };

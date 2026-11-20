@@ -5732,5 +5732,47 @@
         "interactions": "薬物の組み合わせのリスク（Queer Guide）"
       }
     }
+  },
+  "goingOut": {
+    "events": {
+      "filterLabel": "イベントの種類",
+      "all": "すべてのイベント",
+      "types": {
+        "party": "パーティー",
+        "drag": "ドラァグ＆ショー",
+        "pride": "プライド＆フェス",
+        "film": "映画＆アート",
+        "social": "交流＆ミートアップ",
+        "talks": "トーク＆ワークショップ"
+      }
+    },
+    "places": {
+      "filterLabel": "場所の種類",
+      "all": "すべての場所",
+      "types": {
+        "bars": "バー",
+        "clubs": "クラブ",
+        "cafes": "カフェ",
+        "food": "レストラン",
+        "saunas": "サウナ",
+        "culture": "劇場＆ギャラリー",
+        "community": "コミュニティセンター",
+        "shops": "ショップ",
+        "wellness": "ジム＆サロン",
+        "outdoor": "屋外",
+        "organizations": "団体",
+        "neighbourhoods": "エリア"
+      },
+      "viewLabel": "表示",
+      "view": {
+        "grid": "グリッド",
+        "list": "リスト",
+        "map": "地図"
+      },
+      "loading": "場所を検索中…",
+      "noOrgs": "{{where}}にはまだ団体が登録されていません。",
+      "noNeighbourhoods": "{{where}}にはまだエリアが登録されていません。",
+      "noneForFilter": "{{where}}にはこの条件でまだ何も登録されていません。"
+    }
   }
 }

@@ -9,6 +9,7 @@ import {
   lineFor,
   lineTrack,
   fetchLayersForLines,
+  linesForLayers,
   layerForEntityKey,
   isAreaLayer,
   type MapLine,
@@ -263,5 +264,12 @@ describe('the bullet table is not duplicated', () => {
     // The positive control. An empty or mis-rooted file list makes the
     // assertion above pass while reading nothing at all.
     expect(sources().length).toBeGreaterThan(500);
+  });
+});
+
+describe('linesForLayers', () => {
+  it('draws a toggle-only layer on its own, without places or events on', () => {
+    expect(linesForLayers(['cruising'])).toEqual(['M']);
+    expect(linesForLayers(['organizations'])).toEqual(['C']);
   });
 });
