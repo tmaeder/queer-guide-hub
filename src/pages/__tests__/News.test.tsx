@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import type { ReactNode } from 'react';
 import { renderWithProviders, screen } from '@/test/test-utils';
 
 vi.mock('react-i18next', () => ({
@@ -6,6 +7,11 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
+// The bands below the fold mount on IntersectionObserver, which never fires in
+// jsdom; render them straight away so the band assertions see the real tree.
+vi.mock('@/components/home/DeferredSection', () => ({
+  DeferredSection: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null, loading: false }) }));
 vi.mock('@/hooks/useEditorsPick', () => ({ useEditorsPick: () => null }));
 vi.mock('@/hooks/useNewsStories', () => ({ useNewsStories: () => ({ stories: [], heroes: [] }) }));
@@ -38,6 +44,11 @@ vi.mock('@/components/news/editorial/StoryCollectionsBand', () => ({
   StoryCollectionsBand: () => null,
 }));
 vi.mock('@/components/news/editorial/WeekInReview', () => ({ WeekInReview: () => null }));
+// DeferredSection waits for an IntersectionObserver hit jsdom never delivers;
+// render below-the-fold bands immediately so the archive band is testable.
+vi.mock('@/components/home/DeferredSection', () => ({
+  DeferredSection: ({ children }: { children: ReactNode }) => children,
+}));
 vi.mock('@/components/news/editorial/ReaderRail', () => ({ ReaderRail: () => null }));
 // ForYouSection calls useForYouNews → useAuth; mock it out like its siblings so
 // the page renders without an AuthProvider tree (and survives the full suite).
