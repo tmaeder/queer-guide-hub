@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { ArrowRight } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
+import { Image } from '@/components/ui/Image';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MarketplaceCard } from './MarketplaceCard';
 import { BrandMark } from './BrandMark';
@@ -35,9 +36,11 @@ export function BrandSpotlight() {
   const { data: pool = [] } = useSpotlightBrands(30);
   const brand = pool.length > 0 ? pool[dayIndex(new Date()) % pool.length] : null;
   const { data: detail } = useMarketplaceBrand(brand?.slug);
-  const { data: listings = [] } = useBrandTopListings(detail?.brand_key, 3);
-  const listingIds = useMemo(() => listings.map((l) => l.id), [listings]);
-  const { assets } = useEntityImageAssets('marketplace_listing', listingIds, listings);
+  // Top 3 as cards beside the panel, the next 4 as a photo strip inside it.
+  const { data: top = [] } = useBrandTopListings(detail?.brand_key, 7);
+  const listings = useMemo(() => top.slice(0, 3), [top]);
+  const listingIds = useMemo(() => top.map((l) => l.id), [top]);
+  const { assets } = useEntityImageAssets('marketplace_listing', listingIds, top);
   const { register } = useCuratedIds();
 
   useEffect(() => {
@@ -47,6 +50,14 @@ export function BrandSpotlight() {
   if (!brand || listings.length === 0) return null;
 
   const ownership = (brand.ownership_tags ?? []).filter((t) => OWNERSHIP_LABELS[t]);
+  // Overview surfaces may only show a listing's approved asset, never a raw
+  // merchant image, so a product without one is left out of the strip.
+  const strip = top.slice(3).flatMap((l) => {
+    const asset = assets.get(l.id);
+    return l.overview_image_asset_id && asset?.id === l.overview_image_asset_id
+      ? [{ listing: l, asset }]
+      : [];
+  });
   const story = detail?.story ?? null;
 
   return (
@@ -90,6 +101,30 @@ export function BrandSpotlight() {
             )}
             {story && (
               <p className="text-15 leading-relaxed text-muted-foreground line-clamp-4">{story}</p>
+            )}
+            {strip.length > 0 && (
+              <ul aria-label={`More from ${brand.display_name}`} className="grid grid-cols-4 gap-2">
+                {strip.map(({ listing: l, asset }) => (
+                  <li key={l.id}>
+                    <LocalizedLink
+                      to={`/marketplace/${l.slug}`}
+                      aria-label={l.title}
+                      className="block overflow-hidden rounded-element"
+                    >
+                      <Image
+                        imageUrl={asset.url ?? null}
+                        optimizedUrl={asset.optimized_url ?? null}
+                        thumbnailUrl={asset.thumbnail_url ?? null}
+                        alt=""
+                        aspect="square"
+                        rounded="none"
+                        fallbackEntityType="marketplace"
+                        fallbackKey={l.id}
+                      />
+                    </LocalizedLink>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
           <LocalizedLink
