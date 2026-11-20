@@ -2,6 +2,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+// Module-scoped so its identity is stable: PhotoGallery lists it as an effect
+// dependency, and a per-render function re-ran that effect (and its setState)
+// forever, pinning the main thread on every profile page.
+async function getSignedPhotoUrl(storagePath: string, expiresIn: number = 3600) {
+  const { data, error } = await supabase.storage
+    .from('user-photos')
+    .createSignedUrl(storagePath, expiresIn);
+  if (error) return null;
+  return data?.signedUrl ?? null;
+}
+
 export interface UserPhoto {
   id: string;
   user_id: string;
@@ -149,14 +160,6 @@ export function useUserPhotos(userId: string) {
       .from('user-photos')
       .getPublicUrl(storagePath);
     return data.publicUrl;
-  };
-
-  const getSignedPhotoUrl = async (storagePath: string, expiresIn: number = 3600) => {
-    const { data, error } = await supabase.storage
-      .from('user-photos')
-      .createSignedUrl(storagePath, expiresIn);
-    if (error) return null;
-    return data?.signedUrl ?? null;
   };
 
   return {
