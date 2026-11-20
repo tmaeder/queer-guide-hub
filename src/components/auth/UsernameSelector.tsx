@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,9 +44,11 @@ export function UsernameSelector({ value, onChange }: Props) {
 
   // Always one of the shown names picked, unless the reader typed their own.
   // Runs when a new list arrives (first load and every reroll), not on picks.
+  const autoPick = useEffectEvent((list: string[]) => {
+    if (list[0] && !custom && !list.includes(value ?? '')) onChange(list[0]);
+  });
   useEffect(() => {
-    if (suggestions[0] && !custom && !suggestions.includes(value ?? '')) onChange(suggestions[0]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    autoPick(suggestions);
   }, [suggestions]);
 
   useEffect(() => {
