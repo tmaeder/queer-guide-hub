@@ -5892,6 +5892,12 @@
         "left": "Gauche",
         "right": "Droite",
         "both": "Les deux"
+      },
+      "helpMembers": "Chaque couleur correspond à un kink. Poche gauche si tu donnes ou es top, droite si tu reçois ou es bottom, les deux si tu fais les deux. Visible par les autres membres inscrits.",
+      "sideMeaning": {
+        "left": "top / donne",
+        "right": "bottom / reçoit",
+        "both": "les deux"
       }
     }
   }

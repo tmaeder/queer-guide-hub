@@ -14,6 +14,7 @@ import {
 } from '@/hooks/useIntimateMatches';
 import { Button } from '@/components/ui/button';
 import { SignalChips } from '@/components/people/SignalChips';
+import { HankyWorn } from '@/components/intimate/HankyWorn';
 import type { PeopleMatchShared } from '@/hooks/usePeopleDiscovery';
 import { LikePassActions } from '@/components/intimate/LikePassActions';
 import { SwipeDeck, type SwipeableCard } from '@/components/intimate/SwipeDeck';
@@ -44,6 +45,7 @@ export default function IntimateDiscovery({
   const [ages, setAges] = useState<string[]>([]);
   const [bodies, setBodies] = useState<string[]>([]);
   const [genitalia, setGenitalia] = useState<string[]>([]);
+  const [hanky, setHanky] = useState<Record<string, 'left' | 'right' | 'both'>>({});
   // Start from "who you're looking for" (Settings › Identity & dating), once
   // per loaded profile. Render-time seeding, not an effect.
   const seeking = seekingToFilters(me?.dating_prefs?.seeking);
@@ -54,10 +56,15 @@ export default function IntimateDiscovery({
     setAges(seeking.ageBands);
     setBodies(seeking.bodyTypes);
     setGenitalia(seeking.genitalia);
+    setHanky(seeking.hanky);
   }
   const usingSeeking =
     hasSeeking(seeking) &&
-    (genitalia.length > 0 || roles.length > 0 || ages.length > 0 || bodies.length > 0);
+    (genitalia.length > 0 ||
+      Object.keys(hanky).length > 0 ||
+      roles.length > 0 ||
+      ages.length > 0 ||
+      bodies.length > 0);
   const {
     data: kinkTaxonomy,
     isLoading: kinkTaxonomyLoading,
@@ -123,6 +130,7 @@ export default function IntimateDiscovery({
     ageBands: ages,
     bodyTypes: bodies,
     genitalia,
+    hanky,
   });
 
   const { data: likedIds = [] } = useMyIntimateLikes();
@@ -263,6 +271,7 @@ export default function IntimateDiscovery({
               setAges([]);
               setBodies([]);
               setGenitalia([]);
+              setHanky({});
             }}
           >
             Show everyone
@@ -284,6 +293,8 @@ export default function IntimateDiscovery({
         onAgesChange={setAges}
         bodies={bodies}
         onBodiesChange={setBodies}
+        hanky={hanky}
+        onHankyChange={setHanky}
       />
 
       {loadingDisc ? (
@@ -357,6 +368,7 @@ export default function IntimateDiscovery({
                           {c.role.join(', ')}
                         </div>
                       ) : null}
+                      <HankyWorn signals={c.hanky} compact className="mt-1.5" />
                       <SignalChips shared={shared} className="mt-1.5" max={2} />
                     </div>
                   </Link>
