@@ -11,6 +11,7 @@ import {
   MessageCircle,
   CalendarClock,
   Bookmark,
+  Award,
   type LucideIcon,
 } from '@/components/icons';
 import { stripLocale } from '@/lib/locale';
@@ -40,7 +41,8 @@ export type HubModuleId =
   | 'nearby'
   | 'messages'
   | 'plans'
-  | 'saved';
+  | 'saved'
+  | 'progress';
 
 export type HubSectionId = 'home' | 'community' | 'connect' | 'personal';
 
@@ -152,6 +154,14 @@ export const HUB_MODULES: HubModule[] = [
     icon: Bookmark,
     labelKey: 'hub.modules.saved',
     defaultLabel: 'Saved',
+    section: 'personal',
+  },
+  {
+    id: 'progress',
+    path: '/hub/progress',
+    icon: Award,
+    labelKey: 'hub.modules.progress',
+    defaultLabel: 'Progress',
     section: 'personal',
   },
 ];
