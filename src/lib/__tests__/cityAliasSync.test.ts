@@ -59,3 +59,21 @@ describe('city alias collision guard', () => {
     expect(health).toMatch(/sig\.colliding_aliases > 0\) \{[\s\S]{0,300}FAILED = true/);
   });
 });
+
+describe('city alias guard allows a city its own name', () => {
+  const fix = readFileSync(
+    'supabase/migrations/99991795168229_city_alias_guard_allows_own_name.sql',
+    'utf8',
+  )
+    .split('\n')
+    .filter((l) => !l.trim().startsWith('--'))
+    .join('\n');
+
+  it('returns the row before the collision check when the alias is the city own key', () => {
+    const own = fix.indexOf('if v_key is not distinct from v_own_key then');
+    const collide = fix.indexOf('b.canonical_key = v_key');
+    expect(own).toBeGreaterThan(0);
+    expect(fix.slice(own, own + 80)).toContain('return new');
+    expect(collide).toBeGreaterThan(own);
+  });
+});
