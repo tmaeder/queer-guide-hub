@@ -1069,7 +1069,7 @@ function WizardSteps({
                 disabled={!reachable}
                 aria-current={active ? 'step' : undefined}
                 onClick={() => onGo(n)}
-                className={`inline-flex min-h-11 items-center gap-2 rounded-element px-4 text-13 font-bold disabled:opacity-40 ${
+                className={`inline-flex min-h-11 items-center gap-2 rounded-element px-4 text-13 font-bold disabled:cursor-not-allowed disabled:text-muted-foreground ${
                   active ? 'bg-foreground text-background' : 'bg-card shadow-soft hover:bg-muted'
                 }`}
               >
