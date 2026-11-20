@@ -50,35 +50,60 @@ export interface DiscoveryFilters {
   ageBands?: string[];
   bodyTypes?: string[];
   kinkItemSlugs?: string[];
+  /** Not in the discovery view; filtered here against intimate_profiles, which
+   *  opted-in members can already read (the detail page shows it). */
+  genitalia?: string[];
+}
+
+async function keepGenitalia(
+  cards: IntimateDiscoveryCard[],
+  genitalia: string[] | undefined,
+): Promise<IntimateDiscoveryCard[]> {
+  if (!genitalia?.length || !cards.length) return cards;
+  const { data, error } = await supabase
+    .from('intimate_profiles')
+    .select('id, genitalia')
+    .in(
+      'id',
+      cards.map((c) => c.user_id),
+    );
+  if (error) throw error;
+  const keep = new Set(
+    (data ?? []).filter((r) => r.genitalia && genitalia.includes(r.genitalia)).map((r) => r.id),
+  );
+  return cards.filter((c) => keep.has(c.user_id));
 }
 
 export function useIntimateDiscovery(filters: DiscoveryFilters) {
   return useQuery({
     queryKey: ['intimate-discovery', filters],
-    queryFn: async (): Promise<IntimateDiscoveryCard[]> => {
-      if (filters.kinkItemSlugs?.length) {
-        const { data, error } = await untypedRpc<IntimateDiscoveryCard[]>('intimate_discover', {
-          p_city_id: filters.cityId || null,
-          p_roles: filters.roles?.length ? filters.roles : null,
-          p_kink_item_slugs: filters.kinkItemSlugs,
-          p_age_bands: filters.ageBands?.length ? filters.ageBands : null,
-          p_body_types: filters.bodyTypes?.length ? filters.bodyTypes : null,
-          p_limit: 200,
-        });
-        if (error) throw error;
-        return data ?? [];
-      }
-      let q = supabase.from('intimate_discovery_v').select('*').limit(200);
-      if (filters.cityId) q = q.eq('discovery_city_id', filters.cityId);
-      if (filters.roles?.length) q = q.overlaps('role', filters.roles);
-      if (filters.intoTags?.length) q = q.overlaps('into_tags', filters.intoTags);
-      if (filters.ageBands?.length) q = q.in('age_band', filters.ageBands);
-      if (filters.bodyTypes?.length) q = q.in('body_type', filters.bodyTypes);
-      const { data, error } = await q;
-      if (error) throw error;
-      return (data ?? []) as IntimateDiscoveryCard[];
-    },
+    queryFn: async (): Promise<IntimateDiscoveryCard[]> =>
+      keepGenitalia(await fetchDiscovery(filters), filters.genitalia),
   });
+}
+
+async function fetchDiscovery(filters: DiscoveryFilters): Promise<IntimateDiscoveryCard[]> {
+  if (filters.kinkItemSlugs?.length) {
+    const { data, error } = await untypedRpc<IntimateDiscoveryCard[]>('intimate_discover', {
+      p_city_id: filters.cityId || null,
+      p_roles: filters.roles?.length ? filters.roles : null,
+      p_kink_item_slugs: filters.kinkItemSlugs,
+      p_age_bands: filters.ageBands?.length ? filters.ageBands : null,
+      p_body_types: filters.bodyTypes?.length ? filters.bodyTypes : null,
+      p_limit: 200,
+    });
+    if (error) throw error;
+    return data ?? [];
+  }
+  let q = supabase.from('intimate_discovery_v').select('*').limit(200);
+  if (filters.cityId) q = q.eq('discovery_city_id', filters.cityId);
+  if (filters.roles?.length) q = q.overlaps('role', filters.roles);
+  if (filters.intoTags?.length) q = q.overlaps('into_tags', filters.intoTags);
+  if (filters.ageBands?.length) q = q.in('age_band', filters.ageBands);
+  if (filters.bodyTypes?.length) q = q.in('body_type', filters.bodyTypes);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []) as IntimateDiscoveryCard[];
 }
 
 export function useUpsertIntimateProfile() {
