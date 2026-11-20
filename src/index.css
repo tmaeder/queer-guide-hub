@@ -89,8 +89,9 @@
   --motion-route-line-delay: 100ms;
   --motion-route-rider: 200ms;
   --motion-route-rider-delay: 220ms;
-  --motion-route-arrival: 200ms;
+  --motion-route-arrival: 280ms;
   --motion-route-arrival-delay: 380ms;
+  --motion-route-loading-delay: 250ms;
   --motion-route-content: 240ms;
   --motion-reveal-step: 80ms;
   --motion-tier-overlay: 400ms;
@@ -1145,11 +1146,13 @@ h2:not(.font-sans),
   }
 }
 
-/* Start the arrival when the route's Suspense fallback leaves. Opacity keeps
-   the page visible throughout and leaves fixed descendants viewport-relative. */
+/* Start the arrival when the route's Suspense fallback leaves. Opacity only —
+   a transform on this wrapper would re-anchor every position:fixed descendant. */
 @keyframes route-arrive {
+  /* Not 0: while a heavy page mounts the animation can sit on its first frame,
+     and a fully transparent page then reads as a blank screen. */
   from {
-    opacity: 0.78;
+    opacity: 0.25;
   }
   to {
     opacity: 1;
@@ -1159,6 +1162,20 @@ h2:not(.font-sans),
   .route-fade:not(:has(> [data-route-loading])) {
     animation: route-arrive var(--motion-route-arrival) cubic-bezier(0.22, 1, 0.36, 1);
   }
+}
+
+/* The route skeleton waits before appearing, so a lazy chunk that resolves
+   quickly swaps page-to-page instead of flashing a loader in between. */
+[data-route-loading] {
+  animation: fade-in var(--motion-fast) ease-out var(--motion-route-loading-delay) both;
+}
+
+/* Edge-rendered crawler/agent body (functions/_lib/routeBody.ts). React's
+   createRoot replaces it on mount; until then it would paint as bare,
+   unstyled text on the page ground. No-JS visitors get the per-route
+   <noscript> summary instead. */
+#root > [data-prerendered] {
+  display: none;
 }
 
 @keyframes content-enter {
