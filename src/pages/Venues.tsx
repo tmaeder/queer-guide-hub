@@ -628,23 +628,30 @@ const Venues = () => {
                 })()}
 
               {/* Below the 24-card grid: mount (and fetch) only on approach, so
-                  first paint doesn't render four rails nobody can see yet. */}
+                  first paint doesn't render rails nobody can see yet.
+                  VenuesRails already defers each rail itself (its placeholders
+                  must stay attached; see e2e/offscreen-discovery.spec.ts). */}
+              {showRails && (
+                <DeferredSection rootMargin="400px 0px">
+                  <GuidesRail
+                    title={t('guides.rail.titleWorldwide', 'Guides from everywhere')}
+                    filters={{ entityType: 'venue', limit: 6 }}
+                  />
+                </DeferredSection>
+              )}
+
+              {showRails && (
+                <VenuesRails
+                  userLocation={userLocation}
+                  primaryCityId={primaryCity.id}
+                  primaryCityName={primaryCity.name}
+                />
+              )}
+
               {showRails && (
                 <DeferredSection rootMargin="400px 0px">
                   <div className="flex flex-col gap-12">
-                    <GuidesRail
-                      title={t('guides.rail.titleWorldwide', 'Guides from everywhere')}
-                      filters={{ entityType: 'venue', limit: 6 }}
-                    />
-
-                    <VenuesRails
-                      userLocation={userLocation}
-                      primaryCityId={primaryCity.id}
-                      primaryCityName={primaryCity.name}
-                    />
-
                     <LeaderboardWidget cityId={primaryCity.id} cityName={primaryCity.name} />
-
                     {user && <VenuesPersonalStrip />}
                   </div>
                 </DeferredSection>
