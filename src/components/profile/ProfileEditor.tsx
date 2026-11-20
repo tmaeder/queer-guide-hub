@@ -397,7 +397,20 @@ function ProfileSettingsContent({
           onComingOutChange={handleComingOutChange}
           onFlagsChange={handleIdentityFlagsChange}
         />
-        <IntimateTab />
+        <section
+          aria-labelledby="settings-intimate"
+          className="flex flex-col gap-4 border-t border-border pt-6"
+        >
+          <div className="flex flex-col gap-1">
+            <h2 id="settings-intimate" className="text-title font-bold">
+              Intimate profile
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Optional and 18+. Shown only to members who also opted in.
+            </p>
+          </div>
+          <IntimateTab />
+        </section>
       </>
     ) : section === 'body' ? (
       <BodyProfileEditor />

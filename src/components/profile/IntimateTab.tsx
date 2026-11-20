@@ -76,11 +76,7 @@ export function IntimateTab() {
   // No profile, or one started without the 18+ consent: the wizard owns that gate.
   if (!me?.consent_18plus_at) {
     return (
-      <FlatFieldGroup
-        title="Intimate profile"
-        description="Optional add-on. Hidden by default. Visible only to other users who have also opted in."
-        noTopBorder
-      >
+      <FlatFieldGroup noTopBorder>
         <p className="text-sm leading-relaxed text-foreground">
           Enable an explicit, pictogram-based profile to connect with other opted-in users for
           travel hookups, local cruising, kink, or a privacy-preserving alternative to photo-based
