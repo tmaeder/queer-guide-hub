@@ -20,17 +20,13 @@ interface PreferencesMirrorCardProps {
 
 /**
  * Read-only summary of the preferences that power search, trips and recs. Edit
- * travel prefs in the Travel preferences section above; vibes are picked in
- * onboarding. Each row can also be cleared (X) from here.
+ * travel prefs in the Travel preferences section above; vibes in Vibes &
+ * languages. Each row can also be cleared (X) from here.
  */
 export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCardProps) {
   const p = (profile ?? {}) as Record<string, unknown>;
-  const interests = Array.isArray(p.interests) ? (p.interests as string[]) : [];
   const travel = (p.travel_preferences ?? {}) as TravelPrefs;
   const accessibility = Array.isArray(travel.accessibility_needs) ? travel.accessibility_needs : [];
-
-  const removeInterest = (vibe: string) =>
-    onUpdate({ interests: interests.filter((i) => i !== vibe) });
 
   const removeAccessibility = (need: string) =>
     onUpdate({
@@ -44,7 +40,6 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
     onUpdate({ travel_preferences: { ...travel, budget_level: undefined } });
 
   const isEmpty =
-    interests.length === 0 &&
     accessibility.length === 0 &&
     !travel.budget_level &&
     !(Array.isArray(travel.travel_style) ? travel.travel_style.length : travel.travel_style);
@@ -64,10 +59,6 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
             No preferences yet. They build up as you{' '}
             <LocalizedLink to="/search" className="underline underline-offset-4">
               search
-            </LocalizedLink>
-            ,{' '}
-            <LocalizedLink to="/onboarding/search" className="underline underline-offset-4">
-              pick your vibes
             </LocalizedLink>{' '}
             or plan{' '}
             <LocalizedLink to="/trips" className="underline underline-offset-4">
@@ -75,35 +66,6 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
             </LocalizedLink>
             .
           </p>
-        )}
-
-        {interests.length > 0 && (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-baseline justify-between">
-              <p className="text-sm font-medium">Vibes</p>
-              <LocalizedLink
-                to="/onboarding/search"
-                className="text-xs underline underline-offset-4"
-              >
-                Edit where they're set
-              </LocalizedLink>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {interests.map((vibe) => (
-                <Badge key={vibe} variant="secondary" className="rounded-badge gap-1 pr-1">
-                  {vibe}
-                  <button
-                    type="button"
-                    aria-label={`Forget ${vibe}`}
-                    className="rounded-badge p-0.5 hover:bg-accent"
-                    onClick={() => removeInterest(vibe)}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          </div>
         )}
 
         {travel.budget_level && (
@@ -164,9 +126,6 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
 
         {!isEmpty && (
           <div className="flex flex-wrap gap-2 pt-2">
-            <Button asChild variant="outline" size="sm" className="rounded-element">
-              <LocalizedLink to="/onboarding/search">Vibes & languages</LocalizedLink>
-            </Button>
             <Button asChild variant="outline" size="sm" className="rounded-element">
               <LocalizedLink to="/settings/travel">Travel preferences</LocalizedLink>
             </Button>
