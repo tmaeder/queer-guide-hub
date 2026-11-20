@@ -100,3 +100,24 @@ describe('parish rows are not cities', () => {
     );
   });
 });
+
+describe('district rows are not cities', () => {
+  const district = readFileSync(
+    'supabase/migrations/99991795170139_city_district_rows_cleanup.sql',
+    'utf8',
+  )
+    .split('\n')
+    .filter((l) => !l.trim().startsWith('--'))
+    .join('\n');
+
+  it('keeps the parish rule when restating the non-place check', () => {
+    expect(district).toContain("when p_name ~* '^\\s*parroquia\\s' then 'admin_subdivision'");
+    expect(district).toContain(
+      "when p_name ~* '^\\s*(barrio|bairro)\\s' then 'neighbourhood_unit'",
+    );
+  });
+
+  it('does not treat Colonia as a non-place (Colonia del Sacramento is a town)', () => {
+    expect(district).not.toMatch(/when p_name ~\* '\^\\s\*\(?colonia/);
+  });
+});
