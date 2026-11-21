@@ -2,6 +2,7 @@ import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
 import { assertPublicHttpUrl } from '../../../../supabase/functions/_shared/ssrf-guard';
+import { firecrawlScrape } from '../../../../supabase/functions/_shared/firecrawl';
 const mocks = { completion: vi.fn() };
 const source = readFileSync('supabase/functions/_shared/redirect-preview-generation.ts', 'utf8')
   .replace(/^import .*;\s*$/gm, '')
@@ -12,8 +13,9 @@ const code = ts.transpileModule(source, {
 const { previewDestination, previewDraft, generateRedirectPreview } = new Function(
   'assertPublicHttpUrl',
   'llmChatCompletion',
+  'firecrawlScrape',
   code + '\nreturn {previewDestination,previewDraft,generateRedirectPreview};',
-)(assertPublicHttpUrl, mocks.completion) as {
+)(assertPublicHttpUrl, mocks.completion, firecrawlScrape) as {
   previewDestination: (target: string) => string;
   previewDraft: (content: string) => { title: string; description: string };
   generateRedirectPreview: (
