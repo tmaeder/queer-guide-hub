@@ -249,7 +249,9 @@ const Events = () => {
           </div>
         )}
 
-        {events.length === 0 && coverage}
+        {/* Only once loading is done: while it runs `events` is empty too, and
+            the note appeared and then vanished above the results (CLS). */}
+        {!loading && events.length === 0 && coverage}
 
         {/* Count + sort + view mode. Was a sticky 175px bar; see the note in
             EventsResultHeader for why none of the three earns that. */}
