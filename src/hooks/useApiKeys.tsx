@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { ProviderCreditUsage } from '@/lib/providerCredits';
 import { useToast } from '@/hooks/use-toast';
 
 export interface ApiKey {
@@ -23,6 +24,8 @@ export interface RequiredKeyStatus {
     source_type: string;
     is_enabled: boolean;
   }[];
+  /** Firecrawl only: account credits, or why they could not be read. */
+  usage?: ProviderCreditUsage | { error: string };
 }
 
 export interface CreateApiKeyRequest {
