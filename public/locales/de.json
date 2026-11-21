@@ -3973,8 +3973,8 @@
   },
   "pwa": {
     "updateAvailable": {
-      "title": "Eine neue Version ist verfügbar",
-      "description": "Aktualisiere, um die neuesten Funktionen zu erhalten.",
+      "title": "Neue Version verfügbar",
+      "description": "Aktualisiere, um sie zu laden.",
       "action": "Aktualisieren"
     },
     "backOnline": "Wieder online",

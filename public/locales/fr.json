@@ -3977,8 +3977,8 @@
   },
   "pwa": {
     "updateAvailable": {
-      "title": "Une nouvelle version est disponible",
-      "description": "Actualisez pour obtenir les dernières fonctionnalités.",
+      "title": "Nouvelle version disponible",
+      "description": "Actualisez pour la charger.",
       "action": "Actualiser"
     },
     "backOnline": "De retour en ligne",

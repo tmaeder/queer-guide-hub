@@ -3982,7 +3982,7 @@
   "pwa": {
     "updateAvailable": {
       "title": "يتوفر إصدار جديد",
-      "description": "حدّث للحصول على أحدث الميزات.",
+      "description": "حدِّث الصفحة لتحميله.",
       "action": "تحديث"
     },
     "backOnline": "عدت إلى الاتصال",
