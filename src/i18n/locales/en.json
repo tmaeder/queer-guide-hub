@@ -1512,7 +1512,8 @@
       "noOfflineCopy": "No offline copy available",
       "noOfflineCopyHelp": "Reconnect to open the trip and save a copy for offline use.",
       "title": "Today",
-      "startingNow": "Starting now"
+      "startingNow": "Starting now",
+      "savedAt": "Saved {{time}}"
     },
     "bookingAssistant": {
       "linkStop": "Link to itinerary stop",
@@ -4036,7 +4037,7 @@
     "backOnline": "Back online",
     "offline": {
       "title": "You're offline",
-      "description": "Some features may be unavailable."
+      "description": "Saved trips still work."
     },
     "install": {
       "action": "Install",
