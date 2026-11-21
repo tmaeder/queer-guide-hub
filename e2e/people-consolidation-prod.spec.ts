@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const ROUTE_READY_TIMEOUT = 15_000;
 
@@ -29,6 +29,15 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+/** The connection map mounts inside a DeferredSection (rootMargin 200px), so it
+ *  only exists once its section is scrolled near the viewport. */
+async function revealConnectionMap(page: Page) {
+  await page.locator('#map').scrollIntoViewIfNeeded({ timeout: ROUTE_READY_TIMEOUT });
+  await expect(page.getByTestId('people-connection-map')).toBeVisible({
+    timeout: ROUTE_READY_TIMEOUT,
+  });
+}
+
 const communityLinks = ['/hub/feed', '/hub/members', '/hub/friends', '/hub/groups'] as const;
 const connectLinks = ['/hub/people', '/hub/dating', '/hub/travel', '/hub/nearby'] as const;
 const personalLinks = ['/hub/messages', '/hub/plans', '/hub/saved'] as const;
@@ -49,9 +58,7 @@ test('one Hub navigation exposes every community, connection, and personal desti
   await expect(nav.getByText('Community', { exact: true })).toBeVisible();
   await expect(nav.getByText('Connect', { exact: true })).toBeVisible();
   await expect(nav.getByText('Personal', { exact: true })).toBeVisible();
-  await expect(page.getByTestId('people-connection-map')).toBeVisible({
-    timeout: ROUTE_READY_TIMEOUT,
-  });
+  await revealConnectionMap(page);
 
   const mapModes = page.getByRole('tablist', { name: 'Map mode' });
   await expect(mapModes.getByRole('tab', { name: 'Community' })).toHaveAttribute(
@@ -168,12 +175,26 @@ test('private Hub modules keep their signed-out gate inside the shared shell', a
 test('the complete Hub navigation stays inside a mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/hub/people');
-  await expect(page.getByRole('navigation', { name: 'Hub modules' })).toBeVisible({
-    timeout: ROUTE_READY_TIMEOUT,
-  });
-  await expect(page.getByTestId('people-connection-map')).toBeVisible({
-    timeout: ROUTE_READY_TIMEOUT,
-  });
+  // Phones get Hub navigation from the bottom dock's sheet (#5280), not an
+  // in-page rail; hub-nav-consistency.spec.ts owns the dock behaviour itself.
+  await expect(page.getByRole('main').getByRole('navigation', { name: 'Hub modules' })).toHaveCount(
+    0,
+  );
+  const trigger = page
+    .getByRole('navigation', { name: 'Navigation' })
+    .getByRole('link', { name: 'Hub', exact: true });
+  await trigger.click({ timeout: ROUTE_READY_TIMEOUT });
+  const sheet = page.getByRole('dialog', { name: 'Hub' });
+  const hubNav = sheet.getByRole('navigation', { name: 'Hub modules' });
+  await expect(hubNav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
+  for (const href of [...communityLinks, ...connectLinks, ...personalLinks]) {
+    await expect(hubNav.locator(`a[href$="${href}"]`)).toHaveCount(1);
+  }
+  expect(await sheet.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(sheet).toBeHidden();
+
+  await revealConnectionMap(page);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
