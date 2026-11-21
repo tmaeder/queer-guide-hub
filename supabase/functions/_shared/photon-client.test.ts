@@ -186,6 +186,12 @@ Deno.test('privacy: no query text or coordinates in logs or metrics', async () =
   assert(h.logs.length >= 3)
 })
 
+Deno.test('an unsupported lang is dropped instead of sent (Photon 400s on lang=it)', async () => {
+  const h = setup({}, ok)
+  await photonSearch('x', { caller: 't', lang: 'it' })
+  assertEquals(new URL(h.calls[0].url).searchParams.get('lang'), null)
+})
+
 Deno.test('throttle is per upstream', () => {
   setup({}, ok)
   assertEquals(photonThrottleMs('komoot'), 1100)
