@@ -3977,8 +3977,8 @@
   },
   "pwa": {
     "updateAvailable": {
-      "title": "Une nouvelle version est disponible",
-      "description": "Actualisez pour obtenir les dernières fonctionnalités.",
+      "title": "Nouvelle version disponible",
+      "description": "Actualisez pour la charger.",
       "action": "Actualiser"
     },
     "backOnline": "De retour en ligne",
@@ -5906,5 +5906,69 @@
         "both": "les deux"
       }
     }
+  },
+  "appPage": {
+    "metaTitle": "Queer Guide en application",
+    "metaDescription": "Ajoutez Queer Guide à votre écran d'accueil. Il s'ouvre en plein écran comme une app, sans passer par un store.",
+    "ios": {
+      "title": "iPhone et iPad",
+      "step1": "Ouvrez queer.guide dans Safari.",
+      "step2": "Touchez Partager dans la barre d'outils.",
+      "step3": "Choisissez « Sur l'écran d'accueil », puis touchez Ajouter."
+    },
+    "android": {
+      "title": "Android",
+      "step1": "Ouvrez queer.guide dans Chrome.",
+      "step2": "Touchez le menu ⋮.",
+      "step3": "Choisissez « Installer l'application » ou « Ajouter à l'écran d'accueil »."
+    },
+    "desktop": {
+      "title": "Ordinateur",
+      "step1": "Ouvrez queer.guide dans Chrome ou Edge.",
+      "step2": "Cliquez sur l'icône d'installation à droite de la barre d'adresse.",
+      "step3": "Sur un Mac avec Safari, choisissez Fichier → Ajouter au Dock."
+    },
+    "why": {
+      "tap": {
+        "title": "À un geste",
+        "text": "Une icône sur votre écran d'accueil ou dans le Dock. Plus besoin de taper l'adresse ni de chercher parmi vos onglets."
+      },
+      "screen": {
+        "title": "Plus de place à l'écran",
+        "text": "Il s'ouvre en plein écran sans les barres du navigateur : cartes, guides et actus occupent tout l'affichage."
+      },
+      "window": {
+        "title": "Sa propre fenêtre",
+        "text": "Il apparaît dans le sélecteur d'apps comme n'importe quelle app et ne se perd pas ni ne se ferme avec vos onglets."
+      },
+      "offline": {
+        "title": "Voyages sans connexion",
+        "text": "Enregistrez un voyage pour une utilisation hors ligne : son programme et ses réservations restent lisibles en avion ou à l'étranger sans données."
+      },
+      "updates": {
+        "title": "Toujours à jour",
+        "text": "Il se met à jour en arrière-plan. Rien à télécharger, pas de store, pas de compte store."
+      },
+      "light": {
+        "title": "Léger et discret",
+        "text": "Il occupe une fraction de l'espace d'une app du store et ne demande aucune autorisation supplémentaire. Votre compte est le même que sur le site."
+      }
+    },
+    "limits": {
+      "offline": {
+        "title": "La plupart des pages ont besoin d'internet",
+        "text": "Hors ligne, vous voyez un avis ainsi que les voyages enregistrés pour une utilisation hors ligne."
+      },
+      "remove": {
+        "title": "Le supprimer",
+        "text": "Comme toute autre app : sur un téléphone, maintenez l'icône appuyée et choisissez Supprimer. Sur un ordinateur, ouvrez le menu de l'app et choisissez Désinstaller. Votre compte n'est pas affecté."
+      }
+    },
+    "title": "Queer Guide en application",
+    "intro": "Queer Guide est une application web. Ajoutez-la à votre écran d'accueil et elle s'ouvre comme n'importe quelle app.",
+    "installed": "Vous utilisez la version application.",
+    "whyTitle": "Pourquoi l'ajouter",
+    "howTitle": "Comment l'ajouter",
+    "limitsTitle": "Bon à savoir"
   }
 }

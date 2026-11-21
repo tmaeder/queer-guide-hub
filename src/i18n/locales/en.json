@@ -4029,8 +4029,8 @@
   },
   "pwa": {
     "updateAvailable": {
-      "title": "A new version is available",
-      "description": "Refresh to get the latest features.",
+      "title": "New version available",
+      "description": "Refresh to update.",
       "action": "Refresh"
     },
     "backOnline": "Back online",
@@ -5865,5 +5865,69 @@
         "both": "either"
       }
     }
+  },
+  "appPage": {
+    "metaTitle": "Queer Guide as an app",
+    "metaDescription": "Add Queer Guide to your home screen. It opens full screen like an app, with no app store needed.",
+    "ios": {
+      "title": "iPhone and iPad",
+      "step1": "Open queer.guide in Safari.",
+      "step2": "Tap Share in the toolbar.",
+      "step3": "Choose “Add to Home Screen”, then tap Add."
+    },
+    "android": {
+      "title": "Android",
+      "step1": "Open queer.guide in Chrome.",
+      "step2": "Tap the ⋮ menu.",
+      "step3": "Choose “Install app” or “Add to Home screen”."
+    },
+    "desktop": {
+      "title": "Computer",
+      "step1": "Open queer.guide in Chrome or Edge.",
+      "step2": "Click the install icon at the right end of the address bar.",
+      "step3": "On a Mac with Safari, choose File → Add to Dock."
+    },
+    "why": {
+      "tap": {
+        "title": "One tap away",
+        "text": "An icon on your home screen or dock. No typing the address, no hunting through browser tabs."
+      },
+      "screen": {
+        "title": "More room on screen",
+        "text": "It opens full screen without the browser bars, so maps, guides and news get the whole display."
+      },
+      "window": {
+        "title": "Its own window",
+        "text": "It shows up in your app switcher like any other app and does not get lost or closed with your tabs."
+      },
+      "offline": {
+        "title": "Trips without a connection",
+        "text": "Save a trip for offline use and its day plan and reservations stay readable on a plane or abroad without data."
+      },
+      "updates": {
+        "title": "Always up to date",
+        "text": "It updates itself in the background. Nothing to download, no app store, no store account."
+      },
+      "light": {
+        "title": "Light and private",
+        "text": "It takes a fraction of the space of a store app and asks for no extra permissions. Your account is the same as on the website."
+      }
+    },
+    "limits": {
+      "offline": {
+        "title": "Most pages need the internet",
+        "text": "Offline you see a notice, plus any trips you saved for offline use."
+      },
+      "remove": {
+        "title": "Removing it",
+        "text": "Like any other app: on a phone, press and hold the icon and choose Remove. On a computer, open the app menu and choose Uninstall. Your account is not affected."
+      }
+    },
+    "title": "Queer Guide as an app",
+    "intro": "Queer Guide is a web app. Add it to your home screen and it opens like any other app.",
+    "installed": "You are using the app version.",
+    "whyTitle": "Why add it",
+    "howTitle": "How to add it",
+    "limitsTitle": "Good to know"
   }
 }

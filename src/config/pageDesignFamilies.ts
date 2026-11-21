@@ -116,6 +116,7 @@ const PLACE_PAGES = new Set(['CityDetail', 'CountryDetail', 'PlaceDetail', 'Quee
 
 const STATIC_PAGES = new Set([
   'About',
+  'AppInstall',
   'Brand',
   'CMSRoutePage',
   'Contact',
