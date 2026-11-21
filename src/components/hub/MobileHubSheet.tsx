@@ -12,6 +12,7 @@ import { Sparkles } from '@/components/icons';
 import { StatusEditor } from '@/components/status/StatusEditor';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { cn } from '@/lib/utils';
 
 interface MobileHubSheetProps {
   open: boolean;
@@ -70,8 +71,8 @@ export function MobileHubSheet({
             <span className="min-w-0 flex-1 truncate">{vibeLabel}</span>
           </button>
           {vibeOpen && (
-            <div className="border-t border-border-hairline p-4">
-              <StatusEditor onDone={() => setVibeOpen(false)} />
+            <div className="px-4 pb-4">
+              <StatusEditor showVibeHeading={false} onDone={() => setVibeOpen(false)} />
             </div>
           )}
         </div>
@@ -85,16 +86,22 @@ export function MobileHubSheet({
           const modules = HUB_MODULES.filter((m) => m.section === sectionId);
           if (!section || !modules.length) return null;
           const personal = sectionId === 'personal';
+          const home = sectionId === 'home';
           return (
             <section key={sectionId} className="flex flex-col gap-2">
-              {!personal && section.defaultLabel && (
+              {!personal && !home && section.defaultLabel && (
                 <h3 className={NAV_SHEET_HEADING}>
                   {section.labelKey
                     ? t(section.labelKey, section.defaultLabel)
                     : section.defaultLabel}
                 </h3>
               )}
-              <div className={personal ? 'grid grid-cols-4 gap-1.5' : 'grid grid-cols-2 gap-1.5'}>
+              <div
+                className={cn(
+                  'grid gap-1.5',
+                  personal ? 'grid-cols-4' : home ? 'grid-cols-1' : 'grid-cols-2',
+                )}
+              >
                 {modules.map((module) => (
                   <NavSheetTile
                     key={module.id}

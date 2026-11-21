@@ -51,7 +51,11 @@ export function BottomNavSheet({
         ref={contentRef}
         {...(description ? {} : { 'aria-describedby': undefined })}
         overlayClassName="bg-black/20 backdrop-blur-none"
-        className="mobile-hub-sheet inset-x-0 bottom-0 top-auto mx-auto max-h-[85dvh] grid-cols-1 translate-x-0 translate-y-0 gap-4 overflow-y-auto rounded-b-none bg-card px-4 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] data-[state=open]:animate-none data-[state=closed]:animate-none"
+        className={cn(
+          'mobile-hub-sheet inset-x-0 bottom-0 top-auto mx-auto max-h-[85dvh] grid-cols-1 translate-x-0 translate-y-0 gap-4 overflow-y-auto rounded-b-none bg-card px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] data-[state=open]:animate-none data-[state=closed]:animate-none',
+          // No title row: start the content below the close button.
+          hideTitle ? 'pt-16' : 'pt-6',
+        )}
         onOpenAutoFocus={(event) => {
           returnFocus.current =
             document.activeElement instanceof HTMLElement ? document.activeElement : null;

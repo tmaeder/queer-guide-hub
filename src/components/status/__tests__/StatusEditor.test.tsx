@@ -61,7 +61,10 @@ describe('StatusEditor', () => {
 
   it('4h sets a future expiry', async () => {
     render(<StatusEditor />);
+    // '4h' is a toggle now; the expiry applies on Save.
     fireEvent.click(screen.getByRole('button', { name: '4h' }));
+    expect(screen.getByRole('button', { name: '4h' }).getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(updateProfile).toHaveBeenCalled());
     const arg = updateProfile.mock.calls[0][0];
     expect(arg.vibe_expires_at).toBeTruthy();
