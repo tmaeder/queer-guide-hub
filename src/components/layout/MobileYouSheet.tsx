@@ -55,8 +55,7 @@ export function MobileYouSheet({
       hideTitle
       title={t('header.userMenu.you', 'You')}
     >
-      {/* mt clears the sheet's close button, now that there is no title row. */}
-      <div className="mt-8 flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         {/* Who you are: the whole card opens your profile. */}
         <LocalizedLink
           to={`/user/${user.id}`}
