@@ -63,6 +63,8 @@ Deno.test('photonLang maps Accept-Language onto the languages Photon serves', ()
   assertEquals(photonLang('es-ES,es;q=0.9,fr;q=0.5'), 'fr')
   assertEquals(photonLang('ja'), 'en')
   assertEquals(photonLang(null), 'en')
+  // Photon answers lang=it with HTTP 400 (komoot and our planet dump alike).
+  assertEquals(photonLang('it-CH,it;q=0.9'), 'en')
 })
 
 Deno.test('parseLngLat accepts the Mapbox "lng,lat" convention and rejects junk', () => {

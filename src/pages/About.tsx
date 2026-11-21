@@ -419,7 +419,8 @@ export default function About() {
       ),
       items: [
         { name: 'Nominatim', href: 'https://nominatim.openstreetmap.org/' },
-        { name: 'Photon (Komoot)', href: 'https://photon.komoot.io/' },
+        { name: 'Photon (self-hosted by queer.guide)', href: 'https://github.com/komoot/photon' },
+        { name: 'Photon (Komoot, fallback)', href: 'https://photon.komoot.io/' },
         { name: 'Overpass API', href: 'https://overpass-api.de/' },
         { name: 'Google Places', href: 'https://developers.google.com/maps/documentation/places' },
         { name: 'Foursquare', href: 'https://location.foursquare.com/' },

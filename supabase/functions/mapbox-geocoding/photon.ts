@@ -27,8 +27,13 @@ export interface MapboxLikeFeature {
   geometry: { type: 'Point'; coordinates: [number, number] }
 }
 
-/** Photon serves these result languages; anything else falls back to English. */
-const PHOTON_LANGS = new Set(['en', 'de', 'fr', 'it'])
+/**
+ * Photon serves these result languages; anything else falls back to English.
+ * NOT `it`: both komoot and the GraphHopper planet dump we self-host carry
+ * en/de/fr only, and lang=it is answered with HTTP 400 (measured 2026-11-21),
+ * which emptied the autocomplete for every Italian-language browser.
+ */
+const PHOTON_LANGS = new Set(['en', 'de', 'fr'])
 
 /**
  * Pick Photon's `lang` from an Accept-Language header. The language changes

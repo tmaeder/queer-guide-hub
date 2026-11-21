@@ -402,7 +402,8 @@ async function request(endpoint: PhotonEndpoint, params: URLSearchParams, caller
   return k
 }
 
-const LANGS = new Set(['en', 'de', 'fr', 'it'])
+// en/de/fr only: Photon answers any other lang (it included) with HTTP 400.
+const LANGS = new Set(['en', 'de', 'fr'])
 function setCommon(p: URLSearchParams, lang?: string, limit?: number) {
   if (lang && LANGS.has(lang)) p.set('lang', lang)
   if (limit !== undefined) p.set('limit', String(Math.max(1, Math.min(20, Math.trunc(limit)))))
