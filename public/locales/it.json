@@ -3988,7 +3988,9 @@
       "iosTitle": "Aggiungi alla schermata Home",
       "iosHint": "Tocca il pulsante Condividi in Safari, poi seleziona «Aggiungi a Home».",
       "dismiss": "Ignora",
-      "ariaLabel": "Installa app"
+      "ariaLabel": "Installa app",
+      "notNow": "Non ora",
+      "gotIt": "Ho capito"
     }
   },
   "atlas": {

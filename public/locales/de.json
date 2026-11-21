@@ -3988,7 +3988,9 @@
       "iosTitle": "Zum Startbildschirm hinzufügen",
       "iosHint": "Tippe in Safari auf die Teilen-Schaltfläche und wähle „Zum Home-Bildschirm“.",
       "dismiss": "Schließen",
-      "ariaLabel": "App installieren"
+      "ariaLabel": "App installieren",
+      "notNow": "Nicht jetzt",
+      "gotIt": "Verstanden"
     }
   },
   "atlas": {

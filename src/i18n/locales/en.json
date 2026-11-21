@@ -4044,7 +4044,9 @@
       "iosTitle": "Add to Home Screen",
       "iosHint": "Tap the share button in Safari, then select \"Add to Home Screen\".",
       "dismiss": "Dismiss",
-      "ariaLabel": "Install app"
+      "ariaLabel": "Install app",
+      "notNow": "Not now",
+      "gotIt": "Got it"
     }
   },
   "atlas": {

@@ -3992,7 +3992,9 @@
       "iosTitle": "Ajouter à l'écran d'accueil",
       "iosHint": "Touchez le bouton Partager dans Safari, puis sélectionnez « Sur l'écran d'accueil ».",
       "dismiss": "Fermer",
-      "ariaLabel": "Installer l'app"
+      "ariaLabel": "Installer l'app",
+      "notNow": "Pas maintenant",
+      "gotIt": "Compris"
     }
   },
   "atlas": {

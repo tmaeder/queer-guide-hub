@@ -3988,7 +3988,9 @@
       "iosTitle": "Añadir a pantalla de inicio",
       "iosHint": "Toca el botón compartir en Safari y selecciona «Añadir a pantalla de inicio».",
       "dismiss": "Descartar",
-      "ariaLabel": "Instalar app"
+      "ariaLabel": "Instalar app",
+      "notNow": "Ahora no",
+      "gotIt": "Entendido"
     }
   },
   "atlas": {

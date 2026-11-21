@@ -38,7 +38,9 @@ export function PWAProvider({ children }: { children: ReactNode }) {
 
   const isInstalled =
     typeof window !== 'undefined' &&
-    window.matchMedia('(display-mode: standalone)').matches;
+    (window.matchMedia('(display-mode: standalone)').matches ||
+      // iOS home-screen apps report this instead of (or as well as) the media query
+      (navigator as Navigator & { standalone?: boolean }).standalone === true);
 
   // Capture install prompt
   useEffect(() => {
@@ -126,10 +128,7 @@ export function PWAProvider({ children }: { children: ReactNode }) {
           if (!newWorker) return;
 
           newWorker.addEventListener('statechange', () => {
-            if (
-              newWorker.state === 'installed' &&
-              navigator.serviceWorker.controller
-            ) {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               newWorker.postMessage('SKIP_WAITING');
             }
           });
@@ -140,9 +139,12 @@ export function PWAProvider({ children }: { children: ReactNode }) {
         registration.update().catch(() => {});
 
         // Periodically check for SW updates (every 60 min) for long-lived tabs
-        updateInterval = setInterval(() => {
-          registration.update().catch(() => {});
-        }, 60 * 60 * 1000);
+        updateInterval = setInterval(
+          () => {
+            registration.update().catch(() => {});
+          },
+          60 * 60 * 1000,
+        );
       } catch (error) {
         console.debug('[SW] Registration failed:', error);
       }

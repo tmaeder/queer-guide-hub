@@ -3988,7 +3988,9 @@
       "iosTitle": "Adicionar à Tela de Início",
       "iosHint": "Toque no botão de partilha no Safari e selecione «Adicionar à Tela de Início».",
       "dismiss": "Dispensar",
-      "ariaLabel": "Instalar app"
+      "ariaLabel": "Instalar app",
+      "notNow": "Agora não",
+      "gotIt": "Entendi"
     }
   },
   "atlas": {

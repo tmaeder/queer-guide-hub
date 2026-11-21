@@ -3986,7 +3986,9 @@
       "iosTitle": "ホーム画面に追加",
       "iosHint": "Safari の共有ボタンをタップし、「ホーム画面に追加」を選択してください。",
       "dismiss": "閉じる",
-      "ariaLabel": "アプリをインストール"
+      "ariaLabel": "アプリをインストール",
+      "notNow": "今はしない",
+      "gotIt": "了解"
     }
   },
   "atlas": {
