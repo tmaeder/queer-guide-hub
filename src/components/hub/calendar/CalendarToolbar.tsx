@@ -44,58 +44,80 @@ export function CalendarToolbar({
         })
       : date.toLocaleDateString([], { month: 'long', year: 'numeric' });
 
+  const pill =
+    'inline-flex h-10 items-center justify-center rounded-full text-sm font-semibold transition-colors hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
+      {/* Where you are, and how to move. */}
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="min-w-0 truncate text-headline font-bold leading-none">{rangeLabel}</h2>
+        <div className="flex shrink-0 items-center gap-1 rounded-full bg-muted p-1">
+          <button
+            type="button"
+            className={`${pill} w-10`}
             onClick={onPrev}
             aria-label={t('hub.calendar.nav.prev', { defaultValue: 'Previous' })}
           >
             <ChevronLeft className="h-4 w-4" aria-hidden />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
+          </button>
+          <button type="button" className={`${pill} px-4`} onClick={onToday}>
+            {t('hub.calendar.nav.today', { defaultValue: 'Today' })}
+          </button>
+          <button
+            type="button"
+            className={`${pill} w-10`}
             onClick={onNext}
             aria-label={t('hub.calendar.nav.next', { defaultValue: 'Next' })}
           >
             <ChevronRight className="h-4 w-4" aria-hidden />
-          </Button>
-          <Button variant="outline" size="sm" onClick={onToday}>
-            {t('hub.calendar.nav.today', { defaultValue: 'Today' })}
-          </Button>
-          <h2 className="ml-2 text-title font-bold">{rangeLabel}</h2>
+          </button>
         </div>
+      </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Tabs value={view} onValueChange={(v) => onView(v as CalendarView)}>
-            <TabsList>
-              <TabsTrigger value="month">
-                {t('hub.calendar.views.month', { defaultValue: 'Month' })}
-              </TabsTrigger>
-              <TabsTrigger value="week">
-                {t('hub.calendar.views.week', { defaultValue: 'Week' })}
-              </TabsTrigger>
-              <TabsTrigger value="day">
-                {t('hub.calendar.views.day', { defaultValue: 'Day' })}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+      {/* What to show. Labels collapse to icons on a phone so this stays one row. */}
+      <div className="flex items-center justify-between gap-2">
+        <Tabs value={view} onValueChange={(v) => onView(v as CalendarView)}>
+          <TabsList>
+            <TabsTrigger value="month">
+              {t('hub.calendar.views.month', { defaultValue: 'Month' })}
+            </TabsTrigger>
+            <TabsTrigger value="week">
+              {t('hub.calendar.views.week', { defaultValue: 'Week' })}
+            </TabsTrigger>
+            <TabsTrigger value="day">
+              {t('hub.calendar.views.day', { defaultValue: 'Day' })}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div className="flex items-center gap-1">
           <CalendarLayersMenu enabled={enabledLayers} onToggle={onToggleLayer} />
           {onOpenTrips ? (
-            <Button variant="outline" size="sm" onClick={onOpenTrips}>
-              <Plane className="mr-1.5 h-3.5 w-3.5" aria-hidden />
-              {t('hub.calendar.tripsButton', { defaultValue: 'Trips' })}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="rounded-full px-2 sm:px-4"
+              onClick={onOpenTrips}
+              aria-label={t('hub.calendar.tripsButton', { defaultValue: 'Trips' })}
+            >
+              <Plane className="h-4 w-4" aria-hidden />
+              <span className="hidden sm:inline">
+                {t('hub.calendar.tripsButton', { defaultValue: 'Trips' })}
+              </span>
             </Button>
           ) : null}
-          <Button variant="outline" size="sm" onClick={copyCalendarFeedUrl} disabled={feedLoading}>
-            <CalendarPlus className="mr-1.5 h-3.5 w-3.5" aria-hidden />
-            {t('hub.calendar.subscribe', { defaultValue: 'Subscribe' })}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-full px-2 sm:px-4"
+            onClick={copyCalendarFeedUrl}
+            disabled={feedLoading}
+            aria-label={t('hub.calendar.subscribe', { defaultValue: 'Subscribe' })}
+          >
+            <CalendarPlus className="h-4 w-4" aria-hidden />
+            <span className="hidden sm:inline">
+              {t('hub.calendar.subscribe', { defaultValue: 'Subscribe' })}
+            </span>
           </Button>
         </div>
       </div>
