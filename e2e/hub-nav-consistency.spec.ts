@@ -19,8 +19,8 @@ const PILLS = [
   'Saved',
   'Progress',
 ] as const;
-/** The mobile sheet lists Personal first and moves Overview to its header. */
-const SHEET_PILLS = [...PILLS.slice(9), ...PILLS.slice(1, 9)];
+/** The mobile sheet lists Overview as its own tile, then Personal, then the rest. */
+const SHEET_PILLS = [PILLS[0], ...PILLS.slice(9), ...PILLS.slice(1, 9)];
 
 /** One route per page component behind /hub, so every shell that renders the bar
  *  is exercised. `/hub/dating` is absent on purpose: Cruising redirects an

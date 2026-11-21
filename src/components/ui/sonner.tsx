@@ -1,13 +1,15 @@
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { Toaster as Sonner, toast } from 'sonner';
-import { AlertCircle, AlertTriangle, CheckCircle2, Info, Loader2 } from '@/components/icons';
+import { AlertCircle, AlertTriangle, CheckCircle2, Info } from '@/components/icons';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 
 const ICONS = {
   success: <CheckCircle2 size={20} aria-hidden />,
   info: <Info size={20} aria-hidden />,
   warning: <AlertTriangle size={20} aria-hidden />,
   error: <AlertCircle size={20} aria-hidden />,
-  loading: <Loader2 size={20} aria-hidden className="animate-spin" />,
+  // The site's own loader; a rotating spinner is banned by the design contract.
+  loading: <TrackLoader size={20} />,
 };
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
