@@ -84,6 +84,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { photonPause, photonSearch } from '../lib/photon.mjs';
 
 // Node >= 22.18 strips erasable TS syntax natively, so the Deno-first parser
 // module loads with no build step — the same trick import-patroc.mjs uses.
@@ -1019,10 +1020,10 @@ const postcodeOf = (addr) => (/(\d{5})/.exec(addr || '') || [])[1] ?? null;
 
 /** Photon (free, keyless) — the geocoder this repo already uses. */
 async function photon(query) {
-  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=en&limit=1&lat=52.52&lon=13.405`;
-  const body = await getCached(url, { minBytes: 2 });
+  const res = await photonSearch(query, { lang: 'en', limit: 1, lat: 52.52, lon: 13.405 });
+  await photonPause();
   try {
-    const f = JSON.parse(body)?.features?.[0];
+    const f = res.data?.features?.[0];
     if (!f) return null;
     const [lng, lat] = f.geometry.coordinates;
     const p = f.properties || {};

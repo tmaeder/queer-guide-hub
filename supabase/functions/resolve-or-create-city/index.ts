@@ -1,6 +1,7 @@
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireAdmin } from '../_shared/supabase-client.ts'
 import { COUNTRY_ALIASES } from '../_shared/geo-normalize.ts'
+import { photonSearch } from '../_shared/photon-client.ts'
 
 /**
  * resolve-or-create-city
@@ -234,11 +235,9 @@ async function createCity(
     } catch { /* fall through — validate against name only */ }
 
     try {
-      const geocodeUrl = `https://photon.komoot.io/api?q=${encodeURIComponent(`${cityName}, ${countryName}`)}&limit=5&lang=en`
-      const geoRes = await fetch(geocodeUrl)
-      if (geoRes.ok) {
-        const geoData = await geoRes.json()
-        const features = Array.isArray(geoData.features) ? geoData.features : []
+      const geoRes = await photonSearch(`${cityName}, ${countryName}`, { caller: 'resolve-or-create-city', limit: 5, lang: 'en' })
+      if (geoRes.ok && geoRes.data) {
+        const features = geoRes.data.features ?? []
         // Accept only a result whose country matches the expected one.
         const match = features.find((f: { properties?: { countrycode?: string } }) => {
           const cc = (f?.properties?.countrycode || '').toUpperCase()
@@ -250,7 +249,7 @@ async function createCity(
             lng = coords[0]
             lat = coords[1]
           }
-          regionName = match.properties?.state || null
+          regionName = typeof match.properties?.state === 'string' ? match.properties.state || null : null
         }
         // No same-country match → leave coords null rather than snap to a
         // wrong-country capital. The resolver will then refuse to create for

@@ -768,3 +768,6 @@ verify_jwt = false
 [functions.outxout-official-dates]
 # Own internal/service/admin authentication; no public mutations.
 verify_jwt = false
+
+[functions.photon-golden]
+verify_jwt = false
