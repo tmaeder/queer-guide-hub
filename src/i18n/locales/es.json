@@ -5902,5 +5902,10 @@
         "both": "ambos"
       }
     }
+  },
+  "errorToast": {
+    "title": "Algo salió mal",
+    "description": "Recargar la página suele solucionarlo.",
+    "action": "Recargar"
   }
 }

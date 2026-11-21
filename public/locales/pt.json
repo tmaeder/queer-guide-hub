@@ -5902,5 +5902,10 @@
         "both": "ambos"
       }
     }
+  },
+  "errorToast": {
+    "title": "Algo deu errado",
+    "description": "Recarregar a página costuma resolver.",
+    "action": "Recarregar"
   }
 }

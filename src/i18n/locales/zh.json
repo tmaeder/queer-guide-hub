@@ -5900,5 +5900,10 @@
         "both": "都可以"
       }
     }
+  },
+  "errorToast": {
+    "title": "出了点问题",
+    "description": "刷新页面通常可以解决。",
+    "action": "刷新"
   }
 }

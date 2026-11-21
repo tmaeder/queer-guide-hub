@@ -5902,5 +5902,10 @@
         "both": "beides"
       }
     }
+  },
+  "errorToast": {
+    "title": "Etwas ist schiefgelaufen",
+    "description": "Ein Neuladen der Seite behebt das meist.",
+    "action": "Neu laden"
   }
 }

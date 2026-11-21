@@ -5902,5 +5902,10 @@
         "both": "entrambi"
       }
     }
+  },
+  "errorToast": {
+    "title": "Qualcosa è andato storto",
+    "description": "Di solito ricaricare la pagina risolve.",
+    "action": "Ricarica"
   }
 }
