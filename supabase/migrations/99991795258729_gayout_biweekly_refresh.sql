@@ -30,7 +30,7 @@ end
 $patch$;
 
 do $verify$
-declare v_def text := pg_get_functiondef('public.gayout_save_inventory'::regproc);
+declare v_def text := regexp_replace(pg_get_functiondef('public.gayout_save_inventory'::regproc), '--[^' || chr(10) || ']*', '', 'g');
 begin
   if position('hashtext(job->>''url'')' in v_def) = 0 or position('p_inventory=''places''' in v_def) = 0 then
     raise exception 'gayout_save_inventory: biweekly refresh rule missing after patch';
