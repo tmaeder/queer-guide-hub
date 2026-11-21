@@ -5900,5 +5900,69 @@
         "both": "都可以"
       }
     }
+  },
+  "appPage": {
+    "metaTitle": "把 Queer Guide 当作应用",
+    "metaDescription": "将 Queer Guide 添加到主屏幕。无需应用商店，像应用一样全屏打开。",
+    "ios": {
+      "title": "iPhone 和 iPad",
+      "step1": "在 Safari 中打开 queer.guide。",
+      "step2": "点按工具栏中的分享。",
+      "step3": "选择“添加到主屏幕”，然后点按“添加”。"
+    },
+    "android": {
+      "title": "Android",
+      "step1": "在 Chrome 中打开 queer.guide。",
+      "step2": "点按 ⋮ 菜单。",
+      "step3": "选择“安装应用”或“添加到主屏幕”。"
+    },
+    "desktop": {
+      "title": "电脑",
+      "step1": "在 Chrome 或 Edge 中打开 queer.guide。",
+      "step2": "点击地址栏右端的安装图标。",
+      "step3": "在 Mac 上的 Safari 中，选择“文件”→“添加到程序坞”。"
+    },
+    "why": {
+      "tap": {
+        "title": "一点即开",
+        "text": "主屏幕或程序坞上的一个图标。无需输入网址，也不用在标签页中翻找。"
+      },
+      "screen": {
+        "title": "更大的屏幕空间",
+        "text": "全屏打开，没有浏览器栏，地图、指南和新闻占满整个屏幕。"
+      },
+      "window": {
+        "title": "独立的窗口",
+        "text": "像其他应用一样出现在应用切换器中，不会淹没在标签页里，也不会随标签页一起关闭。"
+      },
+      "offline": {
+        "title": "无网络也能看行程",
+        "text": "将行程保存为离线使用后，在飞机上或在国外没有数据时也能查看当天计划和预订。"
+      },
+      "updates": {
+        "title": "始终最新",
+        "text": "在后台自动更新。无需下载，没有应用商店，也不需要商店账户。"
+      },
+      "light": {
+        "title": "轻巧且私密",
+        "text": "只占商店应用一小部分的空间，也不申请额外权限。账户与网站相同。"
+      }
+    },
+    "limits": {
+      "offline": {
+        "title": "大多数页面需要联网",
+        "text": "离线时会显示提示，以及你保存为离线使用的行程。"
+      },
+      "remove": {
+        "title": "如何移除",
+        "text": "与其他应用相同：在手机上长按图标并选择“移除”。在电脑上打开应用菜单并选择“卸载”。你的账户不受影响。"
+      }
+    },
+    "title": "把 Queer Guide 当作应用",
+    "intro": "Queer Guide 是一个网页应用。添加到主屏幕后，它会像其他应用一样打开。",
+    "installed": "你正在使用应用版。",
+    "whyTitle": "为什么要添加",
+    "howTitle": "如何添加",
+    "limitsTitle": "须知"
   }
 }
