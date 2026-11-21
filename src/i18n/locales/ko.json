@@ -718,7 +718,8 @@
       "noOfflineCopy": "오프라인 사본이 없습니다",
       "noOfflineCopyHelp": "인터넷에 다시 연결해 여행을 열고 오프라인 사본을 저장하세요.",
       "title": "오늘",
-      "startingNow": "지금 시작"
+      "startingNow": "지금 시작",
+      "savedAt": "저장됨 {{time}}"
     },
     "bookingAssistant": {
       "linkStop": "일정의 방문 장소에 연결",
@@ -3978,7 +3979,7 @@
     "backOnline": "다시 온라인 상태예요",
     "offline": {
       "title": "오프라인 상태예요",
-      "description": "일부 기능을 쓰지 못할 수 있어요."
+      "description": "저장한 여행은 계속 볼 수 있어요."
     },
     "install": {
       "action": "설치",

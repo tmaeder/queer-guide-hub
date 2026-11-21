@@ -718,7 +718,8 @@
       "noOfflineCopy": "Keine Offline-Kopie verfügbar",
       "noOfflineCopyHelp": "Stelle eine Verbindung her, um die Reise zu öffnen und eine Offline-Kopie zu speichern.",
       "title": "Heute",
-      "startingNow": "Beginnt jetzt"
+      "startingNow": "Beginnt jetzt",
+      "savedAt": "Gespeichert {{time}}"
     },
     "bookingAssistant": {
       "linkStop": "Mit einem Stopp im Reiseplan verknüpfen",
@@ -3980,7 +3981,7 @@
     "backOnline": "Wieder online",
     "offline": {
       "title": "Du bist offline",
-      "description": "Einige Funktionen sind möglicherweise nicht verfügbar."
+      "description": "Gespeicherte Reisen funktionieren weiter."
     },
     "install": {
       "action": "Installieren",

@@ -718,7 +718,8 @@
       "noOfflineCopy": "Não há uma cópia offline disponível",
       "noOfflineCopyHelp": "Volta a ligar-te para abrir a viagem e guardar uma cópia offline.",
       "title": "Hoje",
-      "startingNow": "Começa agora"
+      "startingNow": "Começa agora",
+      "savedAt": "Salvo {{time}}"
     },
     "bookingAssistant": {
       "linkStop": "Associar a uma paragem do itinerário",
@@ -3980,7 +3981,7 @@
     "backOnline": "De volta online",
     "offline": {
       "title": "Você está offline",
-      "description": "Alguns recursos podem estar indisponíveis."
+      "description": "Viagens salvas continuam funcionando."
     },
     "install": {
       "action": "Instalar",
