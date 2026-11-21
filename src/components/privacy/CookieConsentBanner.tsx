@@ -1,4 +1,6 @@
 import { Suspense, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Cookie } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
@@ -27,6 +29,7 @@ const CookiePreferencesDialog = lazyRetry(() =>
  * lazily-loaded chunk.
  */
 export function CookieConsentBanner() {
+  const { t } = useTranslation();
   const { showBanner, acceptAll, acceptNecessary } = useCookieConsent();
   const [showPreferences, setShowPreferences] = useState(false);
 
@@ -86,38 +89,59 @@ export function CookieConsentBanner() {
 
   return (
     <>
-      {/* A small paper card in the bottom corner (full width only on phones):
-          one sentence, one policy link, three choices. The button labels are
-          load-bearing — e2e specs dismiss the banner by name. */}
+      {/* A small paper card in the bottom corner (full width only on phones).
+          The two consent choices carry EQUAL weight — same style, same size,
+          side by side — because refusing must be as easy and as visible as
+          accepting (EDPB 03/2022, CNIL). The English accessible names
+          "Cookie settings", "Accept All" and "Necessary Only" are
+          load-bearing: e2e specs find the banner and dismiss it by them. */}
       {showBanner && (
         <div
           role="region"
-          aria-label="Cookie settings"
+          aria-label={t('cookieBanner.ariaLabel', 'Cookie settings')}
           ref={setBarEl}
           className="animate-in fade-in-0 slide-in-from-bottom-4 duration-normal motion-reduce:animate-none fixed bottom-[var(--island-inset)] left-[var(--island-inset)] right-[var(--island-inset)] z-[var(--z-sticky)] rounded-container bg-card p-4 shadow-soft-lg sm:right-auto sm:max-w-sm"
         >
-          <p className="text-13 leading-relaxed text-muted-foreground">
-            We use cookies to keep you signed in. Anonymous usage stats only with your consent — no
-            ad trackers.{' '}
-            <LocalizedLink to="/cookies" className="text-foreground underline">
-              Cookie policy
-            </LocalizedLink>
+          <div className="flex items-center gap-4">
+            <span
+              aria-hidden
+              className="grid size-10 shrink-0 place-items-center rounded-full bg-muted"
+            >
+              <Cookie size={18} />
+            </span>
+            <p className="text-15 font-bold leading-tight">
+              {t('cookieBanner.title', 'Your privacy, your choice')}
+            </p>
+          </div>
+          <p className="mt-4 text-13 leading-relaxed text-muted-foreground">
+            {t(
+              'cookieBanner.body',
+              'We use cookies to keep you signed in. Anonymous usage stats only with your consent, and no ad trackers.',
+            )}
           </p>
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <Button onClick={acceptAll} size="sm">
-              Accept All
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <Button onClick={acceptNecessary} className="font-bold">
+              {t('cookieBanner.necessaryOnly', 'Necessary Only')}
             </Button>
-            <Button onClick={acceptNecessary} variant="outline" size="sm">
-              Necessary Only
+            <Button onClick={acceptAll} className="font-bold">
+              {t('cookieBanner.acceptAll', 'Accept All')}
             </Button>
+          </div>
+          <div className="mt-2 flex items-center justify-between gap-2">
             <Button
               onClick={() => setShowPreferences(true)}
               variant="ghost"
               size="sm"
-              className="ml-auto text-muted-foreground"
+              className="-ms-2 px-2 text-13 font-normal text-muted-foreground"
             >
-              Customize
+              {t('cookieBanner.customize', 'Customize')}
             </Button>
+            <LocalizedLink
+              to="/cookies"
+              className="inline-flex min-h-11 items-center text-13 text-muted-foreground underline"
+            >
+              {t('cookieBanner.policy', 'Cookie policy')}
+            </LocalizedLink>
           </div>
         </div>
       )}
