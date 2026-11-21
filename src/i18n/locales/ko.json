@@ -5965,6 +5965,15 @@
     "howTitle": "추가하는 방법",
     "limitsTitle": "알아 두세요"
   },
+  "cookieBanner": {
+    "ariaLabel": "쿠키 설정",
+    "title": "나의 개인정보, 나의 선택",
+    "body": "로그인 상태를 유지하기 위해 쿠키를 사용해요. 익명 이용 통계는 동의한 경우에만 수집하고, 광고 추적기는 쓰지 않아요.",
+    "necessaryOnly": "필수만 허용",
+    "acceptAll": "모두 허용",
+    "customize": "직접 설정",
+    "policy": "쿠키 정책"
+  },
   "errorToast": {
     "title": "문제가 발생했어요",
     "description": "페이지를 새로고침하면 대부분 해결돼요.",

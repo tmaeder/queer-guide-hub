@@ -5967,6 +5967,15 @@
     "howTitle": "Come aggiungerla",
     "limitsTitle": "Buono a sapersi"
   },
+  "cookieBanner": {
+    "ariaLabel": "Impostazioni cookie",
+    "title": "La tua privacy, la tua scelta",
+    "body": "Usiamo i cookie per mantenerti connesso. Statistiche d’uso anonime solo con il tuo consenso, e nessun tracker pubblicitario.",
+    "necessaryOnly": "Solo necessari",
+    "acceptAll": "Accetta tutti",
+    "customize": "Personalizza",
+    "policy": "Informativa sui cookie"
+  },
   "errorToast": {
     "title": "Qualcosa è andato storto",
     "description": "Di solito ricaricare la pagina risolve.",

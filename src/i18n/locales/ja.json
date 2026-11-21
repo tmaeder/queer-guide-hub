@@ -5965,6 +5965,15 @@
     "howTitle": "追加の方法",
     "limitsTitle": "知っておきたいこと"
   },
+  "cookieBanner": {
+    "ariaLabel": "Cookie の設定",
+    "title": "あなたのプライバシーは、あなたが決める",
+    "body": "ログイン状態を保つために Cookie を使います。匿名の利用統計はあなたの同意がある場合のみ。広告トラッカーは使いません。",
+    "necessaryOnly": "必要なもののみ",
+    "acceptAll": "すべて許可",
+    "customize": "カスタマイズ",
+    "policy": "Cookie ポリシー"
+  },
   "errorToast": {
     "title": "問題が発生しました",
     "description": "ページを再読み込みすると通常は直ります。",

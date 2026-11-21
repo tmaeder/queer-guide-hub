@@ -12,6 +12,7 @@ import { Sparkles } from '@/components/icons';
 import { StatusEditor } from '@/components/status/StatusEditor';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { cn } from '@/lib/utils';
 
 interface MobileHubSheetProps {
   open: boolean;
@@ -21,9 +22,8 @@ interface MobileHubSheetProps {
   onDismissFocus: () => void;
 }
 
-/** Personal first; `home` (Overview) moves to the header as "Open Hub". */
-// The overview is a tile too (it used to sit as an icon beside the sheet title).
-const ORDER = ['home', 'personal', 'community', 'connect'] as const;
+/** Personal first. No Overview tile: the dock's Hub button already links to /hub. */
+const ORDER = ['personal', 'community', 'connect'] as const;
 
 export function MobileHubSheet({
   open,
@@ -59,20 +59,19 @@ export function MobileHubSheet({
     >
       {/* Your vibe, set right here instead of only from the Messages rail. */}
       {user && (
-        <div className="overflow-hidden rounded-element bg-muted">
-          <button
-            type="button"
-            onClick={() => setVibeOpen((o) => !o)}
-            aria-expanded={vibeOpen}
-            className="flex min-h-12 w-full items-center gap-2 px-4 py-2 text-left text-15 font-bold hover:bg-foreground/5"
-          >
-            <Sparkles size={18} aria-hidden className="shrink-0" />
-            <span className="min-w-0 flex-1 truncate">{vibeLabel}</span>
-          </button>
-          {vibeOpen && (
-            <div className="border-t border-border-hairline p-4">
-              <StatusEditor onDone={() => setVibeOpen(false)} />
-            </div>
+        <div className="rounded-container bg-muted p-2">
+          {vibeOpen ? (
+            <StatusEditor compact onDone={() => setVibeOpen(false)} />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setVibeOpen(true)}
+              aria-expanded={false}
+              className="flex min-h-11 w-full items-center gap-2 rounded-element px-2 text-left text-15 font-bold hover:bg-foreground/5"
+            >
+              <Sparkles size={18} aria-hidden className="shrink-0" />
+              <span className="min-w-0 flex-1 truncate">{vibeLabel}</span>
+            </button>
           )}
         </div>
       )}
@@ -94,7 +93,7 @@ export function MobileHubSheet({
                     : section.defaultLabel}
                 </h3>
               )}
-              <div className={personal ? 'grid grid-cols-4 gap-1.5' : 'grid grid-cols-2 gap-1.5'}>
+              <div className={cn('grid gap-1.5', personal ? 'grid-cols-4' : 'grid-cols-2')}>
                 {modules.map((module) => (
                   <NavSheetTile
                     key={module.id}

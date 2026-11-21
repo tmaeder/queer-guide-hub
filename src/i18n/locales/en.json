@@ -5930,6 +5930,15 @@
     "howTitle": "How to add it",
     "limitsTitle": "Good to know"
   },
+  "cookieBanner": {
+    "ariaLabel": "Cookie settings",
+    "title": "Your privacy, your choice",
+    "body": "We use cookies to keep you signed in. Anonymous usage stats only with your consent, and no ad trackers.",
+    "necessaryOnly": "Necessary Only",
+    "acceptAll": "Accept All",
+    "customize": "Customize",
+    "policy": "Cookie policy"
+  },
   "errorToast": {
     "title": "Something went wrong",
     "description": "A refresh usually fixes it.",
