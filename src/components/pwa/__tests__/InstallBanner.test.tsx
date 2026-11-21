@@ -12,7 +12,8 @@ vi.mock('../PWAProvider', () => ({ usePWA: () => pwa }));
 vi.mock('@/hooks/useCookieConsent', () => ({ useCookieConsent: () => consent }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k: string) => k }) }));
 
-import { InstallBanner, isIOSSafari } from '../InstallBanner';
+import { InstallBanner } from '../InstallBanner';
+import { isIOSSafari } from '../isIOSSafari';
 
 let go: (p: string) => void = () => {};
 function Nav() {

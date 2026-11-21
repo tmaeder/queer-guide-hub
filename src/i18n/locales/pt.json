@@ -3983,7 +3983,7 @@
     },
     "install": {
       "title": "Instalar o Queer Guide",
-      "description": "Acesso rápido pela tela inicial — também funciona offline.",
+      "description": "Abre a partir da tela inicial, sem as barras do navegador.",
       "action": "Instalar",
       "iosTitle": "Adicionar à Tela de Início",
       "iosHint": "Toque no botão de partilha no Safari e selecione «Adicionar à Tela de Início».",

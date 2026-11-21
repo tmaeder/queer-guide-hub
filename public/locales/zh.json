@@ -3981,7 +3981,7 @@
     },
     "install": {
       "title": "安装 Queer Guide",
-      "description": "从主屏幕快速访问，也支持离线使用。",
+      "description": "从主屏幕打开，没有浏览器栏。",
       "action": "安装",
       "iosTitle": "添加到主屏幕",
       "iosHint": "在 Safari 中点按分享按钮，然后选择“添加到主屏幕”。",

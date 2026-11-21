@@ -4039,7 +4039,7 @@
     },
     "install": {
       "title": "Install Queer Guide",
-      "description": "Quick access from your home screen. Works offline too.",
+      "description": "Opens from your home screen, without the browser bars.",
       "action": "Install",
       "iosTitle": "Add to Home Screen",
       "iosHint": "Tap the share button in Safari, then select \"Add to Home Screen\".",
