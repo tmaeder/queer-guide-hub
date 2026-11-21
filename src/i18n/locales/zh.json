@@ -5964,5 +5964,10 @@
     "whyTitle": "为什么要添加",
     "howTitle": "如何添加",
     "limitsTitle": "须知"
+  },
+  "errorToast": {
+    "title": "出了点问题",
+    "description": "刷新页面通常可以解决。",
+    "action": "刷新"
   }
 }

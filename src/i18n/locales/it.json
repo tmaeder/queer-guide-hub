@@ -5966,5 +5966,10 @@
     "whyTitle": "Perché aggiungerla",
     "howTitle": "Come aggiungerla",
     "limitsTitle": "Buono a sapersi"
+  },
+  "errorToast": {
+    "title": "Qualcosa è andato storto",
+    "description": "Di solito ricaricare la pagina risolve.",
+    "action": "Ricarica"
   }
 }

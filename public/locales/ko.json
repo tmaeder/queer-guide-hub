@@ -5964,5 +5964,10 @@
     "whyTitle": "추가하면 좋은 점",
     "howTitle": "추가하는 방법",
     "limitsTitle": "알아 두세요"
+  },
+  "errorToast": {
+    "title": "문제가 발생했어요",
+    "description": "페이지를 새로고침하면 대부분 해결돼요.",
+    "action": "새로고침"
   }
 }

@@ -5966,5 +5966,10 @@
     "whyTitle": "Warum hinzufügen",
     "howTitle": "So fügst du sie hinzu",
     "limitsTitle": "Gut zu wissen"
+  },
+  "errorToast": {
+    "title": "Etwas ist schiefgelaufen",
+    "description": "Ein Neuladen der Seite behebt das meist.",
+    "action": "Neu laden"
   }
 }

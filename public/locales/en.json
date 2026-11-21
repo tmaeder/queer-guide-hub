@@ -5929,5 +5929,10 @@
     "whyTitle": "Why add it",
     "howTitle": "How to add it",
     "limitsTitle": "Good to know"
+  },
+  "errorToast": {
+    "title": "Something went wrong",
+    "description": "A refresh usually fixes it.",
+    "action": "Refresh"
   }
 }

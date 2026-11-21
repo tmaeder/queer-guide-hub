@@ -5970,5 +5970,10 @@
     "whyTitle": "Pourquoi l'ajouter",
     "howTitle": "Comment l'ajouter",
     "limitsTitle": "Bon à savoir"
+  },
+  "errorToast": {
+    "title": "Un problème est survenu",
+    "description": "Recharger la page règle généralement le problème.",
+    "action": "Recharger"
   }
 }
