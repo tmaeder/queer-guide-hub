@@ -24,9 +24,16 @@ export function CalendarLayersMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
-          <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" aria-hidden />
-          {t('hub.calendar.layers.button', { defaultValue: 'Layers' })}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="rounded-full px-2 sm:px-4"
+          aria-label={t('hub.calendar.layers.button', { defaultValue: 'Layers' })}
+        >
+          <SlidersHorizontal className="h-4 w-4" aria-hidden />
+          <span className="hidden sm:inline">
+            {t('hub.calendar.layers.button', { defaultValue: 'Layers' })}
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
