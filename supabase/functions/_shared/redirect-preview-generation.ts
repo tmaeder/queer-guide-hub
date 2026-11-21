@@ -1,6 +1,7 @@
 /* eslint no-control-regex: "off" -- Rejecting ASCII control characters is intentional input/header validation. */
 import { assertPublicHttpUrl } from './ssrf-guard.ts';
 import { llmChatCompletion } from './llm-client.ts';
+import { firecrawlScrape } from './firecrawl.ts';
 
 export function previewDestination(target: string): string {
   const url = assertPublicHttpUrl(new URL(target, 'https://queer.guide').href);
@@ -47,19 +48,11 @@ export async function generateRedirectPreview(
   linkId: string,
 ): Promise<{ title: string; description: string }> {
   const destination = previewDestination(target);
-  const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
-    method: 'POST',
-    redirect: 'error',
-    signal: AbortSignal.timeout(12000),
-    headers: { Authorization: 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      url: destination,
-      formats: ['markdown'],
-      onlyMainContent: true,
-      timeout: 10000,
-      parsers: [],
-    }),
-  });
+  const response = await firecrawlScrape(
+    apiKey,
+    { url: destination, formats: ['markdown'], onlyMainContent: true, timeout: 10000, parsers: [] },
+    { redirect: 'error', signal: AbortSignal.timeout(12000) },
+  );
   if (!response.ok || !response.body) throw new Error('Destination content unavailable');
   const reader = response.body.getReader();
   let size = 0;
