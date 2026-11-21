@@ -1,6 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { flushPhotonMetrics, photonSearch, photonThrottleMs } from '../_shared/photon-client.ts'
 
 // ============================================================
 // Pipeline Geocode
@@ -46,20 +47,12 @@ function makeLru(capacity: number): GeoCache {
   }
 }
 
-const PHOTON_URL = Deno.env.get('PHOTON_URL') ?? 'https://photon.komoot.io/api'
-
 async function photonGeocode(q: string): Promise<{ lat: number; lng: number } | null> {
-  try {
-    const url = `${PHOTON_URL}?q=${encodeURIComponent(q)}&limit=1`
-    const res = await fetch(url, { headers: { 'User-Agent': 'QueerGuidePipeline/1.0' } })
-    if (!res.ok) return null
-    const body = await res.json() as { features?: Array<{ geometry?: { coordinates?: [number, number] } }> }
-    const coords = body.features?.[0]?.geometry?.coordinates
-    if (!coords) return null
-    return { lng: coords[0], lat: coords[1] }
-  } catch {
-    return null
-  }
+  const r = await photonSearch(q, { caller: 'pipeline-geocode', limit: 1 })
+  // Pace by whichever upstream answered: komoot asks for ~1 req/s, our NAS does not.
+  await new Promise((res) => setTimeout(res, photonThrottleMs(r.upstream)))
+  const coords = r.data?.features?.[0]?.geometry?.coordinates
+  return coords ? { lng: coords[0], lat: coords[1] } : null
 }
 
 Deno.serve(withErrorReporting('pipeline-geocode', async (req) => {
@@ -137,6 +130,7 @@ Deno.serve(withErrorReporting('pipeline-geocode', async (req) => {
       geocoded++
     }
 
+    await flushPhotonMetrics()
     return jsonResponse({
       success: true,
       items: items.length,
