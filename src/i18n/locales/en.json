@@ -4038,15 +4038,15 @@
       "description": "Some features may be unavailable."
     },
     "install": {
-      "title": "Install Queer Guide",
-      "description": "Opens from your home screen, without the browser bars.",
       "action": "Install",
-      "iosTitle": "Add to Home Screen",
-      "iosHint": "Tap the share button in Safari, then select \"Add to Home Screen\".",
-      "dismiss": "Dismiss",
       "ariaLabel": "Install app",
       "notNow": "Not now",
-      "gotIt": "Got it"
+      "headline": "Add it to your home screen",
+      "tagline": "Free · No app store needed",
+      "benefitTap": "Opens in one tap",
+      "benefitFull": "Full screen, like an app",
+      "iosStep1": "Tap Share in the Safari toolbar",
+      "iosStep2": "Choose “Add to Home Screen”"
     }
   },
   "atlas": {

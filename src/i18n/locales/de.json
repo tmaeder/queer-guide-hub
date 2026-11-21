@@ -3982,15 +3982,15 @@
       "description": "Einige Funktionen sind möglicherweise nicht verfügbar."
     },
     "install": {
-      "title": "Queer Guide installieren",
-      "description": "Öffnet sich vom Startbildschirm, ohne Browserleisten.",
       "action": "Installieren",
-      "iosTitle": "Zum Startbildschirm hinzufügen",
-      "iosHint": "Tippe in Safari auf die Teilen-Schaltfläche und wähle „Zum Home-Bildschirm“.",
-      "dismiss": "Schließen",
       "ariaLabel": "App installieren",
       "notNow": "Nicht jetzt",
-      "gotIt": "Verstanden"
+      "headline": "Auf den Home-Bildschirm legen",
+      "tagline": "Kostenlos · Kein App Store nötig",
+      "benefitTap": "Öffnet mit einem Tipp",
+      "benefitFull": "Vollbild, wie eine App",
+      "iosStep1": "In der Safari-Leiste auf Teilen tippen",
+      "iosStep2": "„Zum Home-Bildschirm“ wählen"
     }
   },
   "atlas": {

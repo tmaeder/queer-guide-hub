@@ -3982,15 +3982,15 @@
       "description": "Es posible que algunas funciones no estén disponibles."
     },
     "install": {
-      "title": "Instalar Queer Guide",
-      "description": "Se abre desde tu pantalla de inicio, sin las barras del navegador.",
       "action": "Instalar",
-      "iosTitle": "Añadir a pantalla de inicio",
-      "iosHint": "Toca el botón compartir en Safari y selecciona «Añadir a pantalla de inicio».",
-      "dismiss": "Descartar",
       "ariaLabel": "Instalar app",
       "notNow": "Ahora no",
-      "gotIt": "Entendido"
+      "headline": "Añádelo a tu pantalla de inicio",
+      "tagline": "Gratis · Sin tienda de apps",
+      "benefitTap": "Se abre con un toque",
+      "benefitFull": "Pantalla completa, como una app",
+      "iosStep1": "Toca Compartir en la barra de Safari",
+      "iosStep2": "Elige «Añadir a pantalla de inicio»"
     }
   },
   "atlas": {
