@@ -225,6 +225,13 @@ export function generateCspNonce(): string {
 
 /** Apply STATIC_SECURITY_HEADERS + dynamic CSP onto a Response in-place. */
 export function applySecurityHeaders(res: Response, nonce: string): void {
+  // A body carrying a per-request nonce must not carry a validator. The shell
+  // inherited index.html's static ETag, so the browser revalidated it and the
+  // static layer answered 304 with the nonce-less _headers CSP; the browser
+  // merged that CSP onto its cached body (old nonce) and blocked the inlined
+  // entry stylesheet — every second visit to a URL rendered unstyled.
+  res.headers.delete('ETag');
+  res.headers.delete('Last-Modified');
   for (const [k, v] of Object.entries(STATIC_SECURITY_HEADERS)) {
     res.headers.set(k, v);
   }

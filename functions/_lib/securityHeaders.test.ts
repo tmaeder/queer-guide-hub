@@ -138,3 +138,33 @@ describe('security headers', () => {
     expect(`'sha256-${createHash('sha256').update('').digest('base64')}'`).toBe(EMPTY_STYLE_HASH);
   });
 });
+
+describe('nonce-bearing HTML is never revalidated', () => {
+  it('drops validators so a 304 cannot swap in a nonce-less CSP', () => {
+    const res = new Response('<style nonce="n">x</style>', {
+      headers: { ETag: 'W/"static-index"', 'Last-Modified': 'Fri, 20 Nov 2026 00:00:00 GMT' },
+    });
+    applySecurityHeaders(res, 'n');
+    expect(res.headers.get('ETag')).toBeNull();
+    expect(res.headers.get('Last-Modified')).toBeNull();
+    expect(res.headers.get('Content-Security-Policy')).toContain("'nonce-n'");
+  });
+
+  it('never forwards conditional headers for the SPA document', async () => {
+    const { onRequest } = await import('../_middleware');
+    let seen: Request | undefined;
+    await onRequest({
+      request: new Request('https://queer.guide/news', {
+        headers: { 'If-None-Match': 'W/"static-index"', 'If-Modified-Since': 'x' },
+      }),
+      env: {},
+      next: (input?: Request) => {
+        seen = input;
+        // A 304 here is what the static layer returned before the fix.
+        return new Response(null, { status: 304 });
+      },
+    } as unknown as Parameters<typeof onRequest>[0]);
+    expect(seen?.headers.get('If-None-Match')).toBeNull();
+    expect(seen?.headers.get('If-Modified-Since')).toBeNull();
+  });
+});
