@@ -58,8 +58,10 @@ const sources = componentSources();
 const routes = hubRoutes();
 
 function hasSharedNavigation(jsx: string): boolean {
-  return jsx.includes('<HubNavBar />') ||
-    (jsx.includes('<IntentPageLayout') && jsx.includes('<HubNav />'));
+  return (
+    jsx.includes('<HubNavBar />') ||
+    (jsx.includes('<IntentPageLayout') && jsx.includes('<HubNav />'))
+  );
 }
 
 describe('hub navigation is the same control on every /hub page', () => {
@@ -137,9 +139,11 @@ describe('hub navigation is the same control on every /hub page', () => {
     }
   });
 
-  it('HubNav owns the identity block and the unread badge itself', () => {
+  it('HubNav owns the unread badge itself and shows no identity block', () => {
     const nav = readFileSync(join(ROOT, 'src/components/hub/HubNav.tsx'), 'utf8');
-    expect(nav).toContain('<HubIdentityBlock />');
+    // The avatar + handle link was removed on purpose: the hub is the
+    // workspace, and the profile is one tap away in the account menu.
+    expect(nav).not.toContain('HubIdentityBlock');
     expect(nav).toContain('useInboxUnreadCount()');
     // Its only prop is presentational.
     expect(nav).toMatch(/export function HubNav\(\{ className \}: \{ className\?: string \}\)/);

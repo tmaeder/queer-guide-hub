@@ -119,9 +119,9 @@ describe('HubPage', () => {
     expect(screen.getAllByText('3').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('identity block links to the own public profile', () => {
+  it('shows no identity block: the own profile is linked from the account menu, not the hub nav', () => {
     renderPage();
     const links = screen.getAllByRole('link');
-    expect(links.some((a) => a.getAttribute('href')?.includes('/user/u1'))).toBe(true);
+    expect(links.some((a) => a.getAttribute('href')?.includes('/user/u1'))).toBe(false);
   });
 });
