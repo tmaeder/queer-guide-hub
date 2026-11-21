@@ -97,11 +97,11 @@ beforeEach(() => {
 });
 
 describe('People hub', () => {
-  it('places the preferences action alongside the page title', () => {
+  it('opens with the title and intro only (no preferences button or map link)', () => {
     renderWithProviders(<People />);
-    const title = screen.getByRole('heading', { level: 1 });
-    const action = screen.getByRole('button', { name: /I'm here for/i });
-    expect(title.closest('header')).toContainElement(action);
+    const opening = screen.getByRole('heading', { level: 1 }).closest('header')!;
+    expect(within(opening).queryByRole('button')).toBeNull();
+    expect(within(opening).queryByRole('link', { name: 'Connection map' })).toBeNull();
   });
 
   it('keeps the connection map reachable after the listings', () => {
@@ -112,11 +112,6 @@ describe('People hub', () => {
         .compareDocumentPosition(screen.getByRole('heading', { name: 'Connection map' })) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    const opening = screen.getByRole('heading', { level: 1 }).closest('header')!;
-    expect(within(opening).getByRole('link', { name: 'Connection map' })).toHaveAttribute(
-      'href',
-      '#map',
-    );
     expect(screen.getAllByText('Connection map').length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: 'Open full map' })).toHaveAttribute('href', '/map');
   });
