@@ -17,8 +17,11 @@ services:
       - /models/translategemma-4b-it.Q4_K_M.gguf
       - -c
       - '2048'
+      # 2 threads, measured: under CPU contention (a Photon DB import) 3 threads
+      # collapsed to 0.37 tok/s because every step waits for the descheduled
+      # thread; 2 gave 1.4, 1 gave 1.84. On a quiet NAS 3 threads reached ~4–5.
       - -t
-      - '3'
+      - '2'
       - --parallel
       - '1'
       - --host
@@ -26,10 +29,21 @@ services:
       - --port
       - '8080'
       - --no-webui
+      # Weights read into anonymous memory, not mmap'd (this build's spelling of
+      # --no-mmap): UGOS backup/indexing
+      # page-cache churn evicted mapped weights and stalled generation (0.2 tok/s).
+      - --load-mode
+      - none
     volumes:
       - /volume2/translator/models:/models:ro
     cpus: 3
     mem_limit: 4g
+    # No swap for the model: every token reads all weights, so a swapped-out
+    # page costs a disk read per token (measured 20x slowdown, 2026-11-21).
+    memswap_limit: 4g
+    # Holds ~3.3 GB that cannot be reclaimed, so under memory pressure this is
+    # the process to kill (restart brings it back), never Home Assistant.
+    oom_score_adj: 1000
     restart: unless-stopped
     networks: [translator_net]
     healthcheck:

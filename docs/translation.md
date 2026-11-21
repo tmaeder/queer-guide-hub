@@ -79,8 +79,22 @@ news titles, personalities, marketplace, villages).
 | Model | `/volume2/translator/models/translategemma-4b-it.Q4_K_M.gguf` (NVMe pool, no redundancy, re-downloadable) |
 
 - `llm`: `ghcr.io/ggml-org/llama.cpp:server-b12429` pinned by digest, `-c 2048
-  -t 3 --parallel 1`, `cpus: 3`, `mem_limit: 4g`, healthcheck `/health`. Only on
+  -t 2 --parallel 1 --load-mode none`, `cpus: 3`, `mem_limit: 4g`,
+  `memswap_limit: 4g`, `oom_score_adj: 1000`, healthcheck `/health`. Only on
   the internal network `translator_net`: no published ports, no internet.
+  Why each of those, all measured on 2026-11-21:
+  - **No swap, no mmap.** Every generated token reads all weights. With mmap
+    the NAS's page-cache churn (UGOS indexing, a 100 GB Photon import) evicted
+    them; with swap allowed, 214 MB of weights sat in swap. Either way it fell
+    from ~4 to ~0.2 tokens/s. `--load-mode none` (this build's `--no-mmap`)
+    plus `memswap_limit = mem_limit` keeps ~2.8 GB pinned in RAM.
+  - **`oom_score_adj: 1000`.** That RAM can no longer be reclaimed, so under
+    memory pressure `llm` is the process the kernel kills first (and Docker
+    restarts), never Home Assistant.
+  - **2 threads.** llama.cpp's threads synchronise every step, so one thread
+    descheduled by other work stalls them all: with a CPU-heavy neighbour,
+    3 threads gave 0.37 tok/s, 2 gave 1.4, 1 gave 1.84. On a quiet NAS 3
+    threads reach ~4–5. Change `-t` if the NAS's normal load changes.
 - `worker`: `node:24` image, `cpus: 0.5`, `mem_limit: 256m`, read-only root,
   no capabilities. On `translator_net` (to reach `llm`) and `translator_egress`
   (outbound HTTPS to Supabase). No inbound ports, no tunnel.
@@ -95,7 +109,7 @@ All commands below run on the NAS (`ssh nas`) in `/volume1/docker/translator`.
 
 ```sh
 # from the repo checkout on the Mac
-COPYFILE_DISABLE=1 tar -C services/translator-worker -czf - --exclude node_modules --exclude test --exclude .env . \
+tar --no-xattrs -C services/translator-worker -czf - --exclude node_modules --exclude test --exclude .env . \
   | ssh nas 'rm -rf /volume1/docker/translator/worker && mkdir -p /volume1/docker/translator/worker && tar -C /volume1/docker/translator/worker -xzf -'
 ssh nas 'cat > /volume1/docker/translator/docker-compose.yml' < services/translator-worker/docker-compose.nas.yml
 ssh nas 'cd /volume1/docker/translator && sudo -n docker compose -p translator up -d --build'
@@ -149,7 +163,8 @@ the last 24 h, oldest pending, last success, top error codes. Error codes:
 | Code | Meaning | Retried? |
 |---|---|---|
 | `llm_unavailable`, `llm_http_5xx` | model server down or busy | yes, backoff 5/10/20 min |
-| `token_lost` | a protected span (URL, name, glossary term) did not survive, even after one retry | no |
+| `token_lost` | a masked span (URL, email, markup, name) did not survive, even after one retry | no |
+| `glossary_miss` | a do-not-translate term or a glossary term's fixed form is missing from the output | no (fails at once) |
 | `truncated` | output hit the token limit | no |
 | `length_ratio`, `wrong_language`, `untranslated`, `template_leak`, `empty_output` | output failed a sanity check | no |
 | `worker_error` | unexpected exception (logged with a short message) | yes |
@@ -163,19 +178,34 @@ after 30 days, done jobs after 7.
 
 `services/translator-worker/glossary.json`:
 
-- `doNotTranslate`: exact, case-sensitive, kept verbatim (e.g. `LGBTQIA+`,
-  `PrEP`, `Bear`).
-- `terms`: matched case-insensitively as whole words and replaced by the fixed
-  form for the target language. **Leave a language out** where a fixed word
-  would break grammatical agreement (gender/number/case): the model then
-  translates that term itself. A trailing hyphen blocks a match
+- `doNotTranslate`: exact, case-sensitive terms that must appear verbatim in
+  the output (e.g. `LGBTQIA+`, `PrEP`, `Bear`).
+- `terms`: matched case-insensitively as whole words in the source; the output
+  must contain the fixed form for the target language. **Leave a language out**
+  where a fixed word would break grammatical agreement (German *queer* →
+  *queere Nacht*; French/Spanish *non-binaire/no binaria*): the model then
+  translates that term freely. A trailing hyphen blocks a match
   (`trans-Atlantic`), a leading one does not (`anti-trans`).
 
-Before translating, the worker also masks URLs, emails, `{placeholders}`, HTML
-tags, inline code and the venue/organization name. Each span becomes an opaque
-`[[n]]` token; after translation every token must come back exactly once or the
-chunk is retried once, then the job fails with `token_lost`. Edit the glossary,
-redeploy the worker, run `npm test` in `services/translator-worker` first.
+Glossary terms are **validated after translation, not masked**. Measured on
+TranslateGemma (2026-11-21): a placeholder standing in for a *word* ("the best
+known `[[2]]` brand", "a `[[6]]` night") is dropped — `LGBTQIA+` vanished in
+Japanese and Arabic, "Trans" in French — while the same words left in the text
+come through. A miss fails the job with `glossary_miss` **without a retry**:
+a sampled retry reproduced the same wording and once changed a fact (Friday →
+Thursday), and the page showing the original is the safe outcome. What these
+misses caught on 2026-11-21: Japanese dropping "queer", Arabic rendering a
+"queer night" as "a night for young people", French turning "trans" into
+"transgenres". Forms may list several accepted spellings (Japanese drag queen:
+ドラァグクイーン / ドラッグクイーン / ドラグクイーン).
+
+What **is** masked: URLs, emails, `{placeholders}`, HTML tags, inline code and
+the venue/organization name. Each becomes an opaque `[[n]]` token that must
+come back exactly once (these survived in every language tested); otherwise
+the chunk is retried once, then the job fails with `token_lost`.
+
+Edit the glossary, run `npm test` in `services/translator-worker`, redeploy the
+worker.
 
 ## Adding a language
 

@@ -91,13 +91,17 @@ function hardSplit(c: Chunk, maxTokens: number): Chunk[] {
 
 export interface Glossary {
   doNotTranslate: string[];
-  terms: Record<string, Partial<Record<string, string>>>;
+  /** term → target language → fixed form, or accepted spellings */
+  terms: Record<string, Partial<Record<string, string | string[]>>>;
 }
 
 export interface Masked {
   text: string;
   /** token → text to put back */
   restore: Map<string, string>;
+  /** Name tokens: may be dropped or repeated by the model (Japanese drops a
+   *  repeated subject). Every other token must come back exactly once. */
+  soft: Set<string>;
 }
 
 // Chosen by measurement against TranslateGemma (docs/translation.md → Masking).
@@ -115,52 +119,89 @@ const PATTERNS: RegExp[] = [
 
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-/** Replace every protected span with an opaque token. `names` (venue or
- *  organization names) and `doNotTranslate` terms come back verbatim;
- *  glossary terms come back as the fixed form for `target`. */
-export function mask(input: string, target: string, glossary: Glossary, names: string[] = []): Masked {
+/** Replace every structural span (URL, email, placeholder, markup, code) and
+ *  every occurrence of `names` (venue/organization names) with an opaque
+ *  token, restored verbatim by `unmask`.
+ *
+ *  Glossary terms are deliberately NOT masked. Measured on TranslateGemma
+ *  (2026-11-21): a token standing in for a WORD ("the best known [[2]] brand",
+ *  "a [[6]] night") is dropped — LGBTQIA+ lost in ja and ar, "Trans" in fr —
+ *  while the same words left in the text survive. Structural tokens and names
+ *  in subject position survived in every language. Glossary terms are checked
+ *  after translation instead (`checkGlossary`). */
+export function mask(input: string, names: string[] = []): Masked {
   const restore = new Map<string, string>();
+  const soft = new Set<string>();
   let text = input;
   let n = 0;
-  const put = (value: string) => {
+  const put = (value: string, isSoft = false) => {
     const t = token(n++);
     restore.set(t, value);
+    if (isSoft) soft.add(t);
     return t;
   };
   // Never let pre-existing token-shaped text collide with ours.
-  if (TOKEN_RE.test(text)) text = text.replace(TOKEN_RE, (m) => put(m));
-  TOKEN_RE.lastIndex = 0;
+  text = text.replace(TOKEN_RE, (m) => put(m));
 
   for (const re of PATTERNS) text = text.replace(re, (m) => put(m));
 
-  const verbatim = [...names.filter((s) => s && s.trim().length >= 3), ...glossary.doNotTranslate]
-    .map((s) => s.trim())
-    .sort((a, b) => b.length - a.length); // longest first: "LGBTQIA+" before "LGBT"
+  const verbatim = names
+    .map((s) => s?.trim() ?? '')
+    .filter((s) => s.length >= 3)
+    .sort((a, b) => b.length - a.length);
   for (const term of verbatim) {
     const re = new RegExp(`(?<![\\p{L}\\p{N}])${escapeRe(term)}(?![\\p{L}\\p{N}])`, 'gu');
-    text = text.replace(re, (m) => put(m));
+    text = text.replace(re, (m) => put(m, true));
   }
-
-  const terms = Object.entries(glossary.terms)
-    .filter(([, forms]) => forms[target])
-    .sort(([a], [b]) => b.length - a.length);
-  for (const [term, forms] of terms) {
-    // Trailing hyphen blocks prefixes ("trans-Atlantic"); a leading one does not
-    // ("anti-trans" is still the term).
-    const re = new RegExp(`(?<![\\p{L}\\p{N}])${escapeRe(term)}(?![\\p{L}\\p{N}-])`, 'giu');
-    text = text.replace(re, () => put(forms[target]!));
-  }
-  return { text, restore };
+  return { text, restore, soft };
 }
 
-/** Put protected spans back. Returns null if any token was lost, duplicated or
- *  invented — the caller retries once, then fails the job. */
+const LATIN_TARGETS = new Set(['de', 'fr', 'es', 'it', 'pt']);
+
+/** Glossary check on the finished translation. Returns 'glossary_miss' when a
+ *  do-not-translate term present in the source is missing from the output, or
+ *  when a glossary term present in the source does not appear in its fixed
+ *  form for `target`. */
+export function checkGlossary(source: string, output: string, target: string, glossary: Glossary): string | null {
+  for (const term of glossary.doNotTranslate) {
+    const re = new RegExp(`(?<![\\p{L}\\p{N}])${escapeRe(term)}(?![\\p{L}\\p{N}])`, 'u');
+    if (re.test(source) && !output.includes(term)) return 'glossary_miss';
+  }
+  for (const [term, forms] of Object.entries(glossary.terms)) {
+    const accepted = forms[target];
+    if (!accepted) continue;
+    // Trailing hyphen blocks prefixes ("trans-Atlantic"); a leading one does
+    // not ("anti-trans" is still the term).
+    const inSource = new RegExp(`(?<![\\p{L}\\p{N}])${escapeRe(term)}(?![\\p{L}\\p{N}-])`, 'iu');
+    if (!inSource.test(source)) continue;
+    const found = (Array.isArray(accepted) ? accepted : [accepted]).some((form) => {
+      // A space inside a multi-word form may come back as a hyphen or a
+      // non-breaking space ("Drag Queens" / "Drag-Queens" are both German).
+      const formRe = escapeRe(form).replace(/ /g, '[\\s\\u00a0-]+');
+      // Whole word in Latin targets ("trans" must not pass via "transgenres");
+      // CJK has no word boundaries, so a substring is the best test there.
+      return LATIN_TARGETS.has(target)
+        ? new RegExp(`(?<![\\p{L}\\p{N}])${formRe}(?![\\p{L}\\p{N}])`, 'iu').test(output)
+        : new RegExp(formRe, 'iu').test(output);
+    });
+    if (!found) return 'glossary_miss';
+  }
+  return null;
+}
+
+/** Put protected spans back. Returns null if a strict token was lost or
+ *  duplicated, or if any token was invented — the caller retries once, then
+ *  fails the job. */
 export function unmask(output: string, masked: Masked): string | null {
   const found = output.match(TOKEN_RE) ?? [];
-  if (found.length !== masked.restore.size) return null;
-  if (new Set(found).size !== found.length) return null;
-  for (const t of found) if (!masked.restore.has(t)) return null;
-  // Restore in reverse so a restored value containing "[[n]]" is never re-expanded.
+  const counts = new Map<string, number>();
+  for (const t of found) {
+    if (!masked.restore.has(t)) return null;
+    counts.set(t, (counts.get(t) ?? 0) + 1);
+  }
+  for (const t of masked.restore.keys()) {
+    if (!masked.soft.has(t) && counts.get(t) !== 1) return null;
+  }
   return output.replace(TOKEN_RE, (t) => masked.restore.get(t)!);
 }
 

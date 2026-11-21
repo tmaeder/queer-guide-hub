@@ -9,7 +9,16 @@
 // counts — never content text, never secrets.
 import { readFileSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { chunkText, checkOutput, detectLanguage, inQuietHours, mask, unmask, type Glossary } from './text.ts';
+import {
+  checkGlossary,
+  checkOutput,
+  chunkText,
+  detectLanguage,
+  inQuietHours,
+  mask,
+  unmask,
+  type Glossary,
+} from './text.ts';
 
 const env = (k: string, d?: string) => {
   const v = process.env[k] ?? d;
@@ -30,9 +39,14 @@ const GLOSSARY: Glossary = JSON.parse(readFileSync(new URL('../glossary.json', i
 const log = (event: string, fields: Record<string, unknown> = {}) =>
   console.log(JSON.stringify({ t: new Date().toISOString(), event, ...fields }));
 
+// No parameter properties: Node's type stripping rejects them.
 class JobError extends Error {
-  constructor(readonly code: string, readonly retryable: boolean) {
+  readonly code: string;
+  readonly retryable: boolean;
+  constructor(code: string, retryable: boolean) {
     super(code);
+    this.code = code;
+    this.retryable = retryable;
   }
 }
 
@@ -109,28 +123,71 @@ interface Completion {
   timings?: { prompt_n: number; predicted_n: number };
 }
 
+/** Streams /completion. A non-streamed reply sends no headers until it is
+ *  done, and Node's fetch (undici) gives up on headers after 5 minutes — a
+ *  long chunk on a busy NAS took longer than that. Streaming also lets
+ *  llama.cpp stop generating as soon as we abort. */
+async function complete(body: Record<string, unknown>, timeoutMs: number): Promise<Completion> {
+  let res: Response;
+  try {
+    res = await fetch(`${LLM_URL}/completion`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...body, stream: true }),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch {
+    throw new JobError('llm_unavailable', true);
+  }
+  if (!res.ok || !res.body) throw new JobError(`llm_http_${res.status}`, res.status >= 500);
+  let content = '';
+  let final: (Completion & { stop?: boolean }) | null = null;
+  let buf = '';
+  const decoder = new TextDecoder();
+  try {
+    for await (const bytes of res.body) {
+      buf += decoder.decode(bytes, { stream: true });
+      for (let i = buf.indexOf('\n'); i >= 0; i = buf.indexOf('\n')) {
+        const line = buf.slice(0, i).trim();
+        buf = buf.slice(i + 1);
+        if (!line.startsWith('data:')) continue;
+        const ev = JSON.parse(line.slice(5)) as Completion & { stop?: boolean };
+        content += ev.content ?? '';
+        if (ev.stop) final = ev;
+      }
+    }
+  } catch {
+    throw new JobError('llm_stream_error', true);
+  }
+  if (!final) throw new JobError('llm_stream_error', true);
+  return { content, stop_type: final.stop_type, timings: final.timings };
+}
+
 async function translateChunk(text: string, source: string, target: string, name: string | null) {
-  const masked = mask(text, target, GLOSSARY, name ? [name] : []);
-  const prompt = await renderPrompt(masked.text, source, target);
   let tokensIn = 0;
   let tokensOut = 0;
+  const masked = mask(text, name ? [name] : []);
+  const prompt = await renderPrompt(masked.text, source, target);
   for (let attempt = 0; attempt < 2; attempt++) {
-    const r = await llm<Completion>('/completion', {
+    // One retry for a lost token, sampled: temperature 0 would reproduce it.
+    const r = await complete({
       prompt,
-      temperature: 0,
+      temperature: attempt === 0 ? 0 : 0.3,
+      seed: 7,
       n_predict: 1200,
       cache_prompt: true,
-      // On the retry, sample slightly so the model gets a different shot at
-      // keeping the tokens; temperature 0 would just repeat itself.
-      ...(attempt > 0 ? { temperature: 0.3, seed: 7 } : {}),
     }, 15 * 60_000);
     tokensIn += r.timings?.prompt_n ?? 0;
     tokensOut += r.timings?.predicted_n ?? 0;
     if (r.stop_type === 'limit') throw new JobError('truncated', false);
     const restored = unmask(r.content.trim(), masked);
-    if (restored === null) continue; // a protected token was lost — retry once
+    if (restored === null) continue;
     const bad = checkOutput(text, restored, target, source);
     if (bad) throw new JobError(bad, false);
+    // No retry: measured, a sampled retry reproduced the same terminology
+    // and once changed a fact (Friday → Thursday). The page shows the original.
+    const miss = checkGlossary(text, restored, target, GLOSSARY);
+    if (miss) throw new JobError(miss, false);
     return { text: restored, tokensIn, tokensOut };
   }
   throw new JobError('token_lost', false);

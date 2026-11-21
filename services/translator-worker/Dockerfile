@@ -6,6 +6,9 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
 COPY glossary.json ./
 COPY src ./src
+# Source copied off a UGOS volume carries ACL-only permissions; COPY keeps the
+# bare mode bits, which can leave files unreadable to the node user.
+RUN chmod -R a+rX /app
 USER node
 ENV NODE_ENV=production NODE_NO_WARNINGS=1
 CMD ["node", "src/main.ts"]
