@@ -23,9 +23,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
         // banners: paper, soft shadow, no border.
         classNames: {
           toast:
-            'group toast !gap-4 !rounded-container !border-0 !bg-card !p-4 !pe-14 !text-foreground !shadow-soft-lg',
-          title: '!text-15 !font-bold',
-          description: '!text-13 !leading-relaxed !text-muted-foreground',
+            'group toast !gap-2 !rounded-container !border-0 !bg-card !py-2 !ps-4 !pe-12 !text-foreground !shadow-soft-lg',
+          title: '!text-13 !font-bold !leading-snug',
+          description: '!text-xs2 !leading-snug !text-muted-foreground',
           actionButton:
             '!h-11 !rounded-element !bg-foreground !px-4 !text-13 !font-bold !text-background',
           cancelButton:
@@ -34,7 +34,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           // touch-target size index.css enforces on every button. Sonner's
           // default is a 20px disc hanging off the top-left corner.
           closeButton:
-            '!left-auto !right-2 !top-1/2 !size-11 !-translate-y-1/2 !transform-none !rounded-element !border-0 !bg-transparent !text-muted-foreground hover:!bg-muted hover:!text-foreground [&_svg]:!size-4',
+            '!left-auto !right-0.5 !top-1/2 !size-11 !-translate-y-1/2 !transform-none !rounded-element !border-0 !bg-transparent !text-muted-foreground hover:!bg-muted hover:!text-foreground [&_svg]:!size-4',
         },
       }}
       {...props}
