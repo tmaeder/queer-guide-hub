@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ChevronLeft, ChevronRight, Pause, Play } from '@/components/icons';
 import { Image } from '@/components/ui/Image';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useFeaturedVenues } from '@/hooks/useVenuesV2Data';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useVenueCategoryLabel } from '@/lib/venueCategories';
@@ -36,7 +37,7 @@ function edgeChosenVenueId(): string | null {
 export function VenuesHero({ fallback }: { fallback?: Venue }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
-  const { venues: featured } = useFeaturedVenues();
+  const { venues: featured, loading } = useFeaturedVenues();
   const pool = useMemo(() => featured.filter(isVenueHeroEligible), [featured]);
   // A random starting slide, chosen once, so the first venue differs per visit.
   const [randomOffset] = useState(() => Math.floor(Math.random() * 1000));
@@ -57,7 +58,18 @@ export function VenuesHero({ fallback }: { fallback?: Venue }) {
     return () => window.clearInterval(id);
   }, [autoplay]);
 
-  if (!slides.length) return null;
+  // Hold the slide's space while the featured venues load. Rendering nothing
+  // and then a 224px+ card pushed the filters and the grid down on every
+  // phone visit (Lighthouse mobile CLS 0.197 on /venues).
+  if (!slides.length) {
+    return loading ? (
+      <Skeleton
+        aria-hidden
+        className="min-h-56 rounded-panel md:min-h-64"
+        data-testid="venues-hero-placeholder"
+      />
+    ) : null;
+  }
   const venue = slides[(index + offset) % slides.length];
   const step = (d: number) => {
     setManual(true);
