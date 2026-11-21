@@ -718,7 +718,8 @@
       "noOfflineCopy": "لا تتوفر نسخة دون اتصال",
       "noOfflineCopyHelp": "أعِد الاتصال لفتح الرحلة وحفظ نسخة للاستخدام دون اتصال.",
       "title": "اليوم",
-      "startingNow": "يبدأ الآن"
+      "startingNow": "يبدأ الآن",
+      "savedAt": "حُفظ {{time}}"
     },
     "bookingAssistant": {
       "linkStop": "ربط بمحطة في خط السير",
@@ -3988,7 +3989,7 @@
     "backOnline": "عدت إلى الاتصال",
     "offline": {
       "title": "أنت غير متصل بالإنترنت",
-      "description": "قد تكون بعض الميزات غير متاحة."
+      "description": "تظل الرحلات المحفوظة متاحة."
     },
     "install": {
       "action": "تثبيت",

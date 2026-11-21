@@ -718,7 +718,8 @@
       "noOfflineCopy": "No hay una copia sin conexión",
       "noOfflineCopyHelp": "Vuelve a conectarte para abrir el viaje y guardar una copia sin conexión.",
       "title": "Hoy",
-      "startingNow": "Empieza ahora"
+      "startingNow": "Empieza ahora",
+      "savedAt": "Guardado {{time}}"
     },
     "bookingAssistant": {
       "linkStop": "Vincular a una parada del itinerario",
@@ -3980,7 +3981,7 @@
     "backOnline": "De nuevo en línea",
     "offline": {
       "title": "Estás sin conexión",
-      "description": "Es posible que algunas funciones no estén disponibles."
+      "description": "Los viajes guardados siguen funcionando."
     },
     "install": {
       "action": "Instalar",

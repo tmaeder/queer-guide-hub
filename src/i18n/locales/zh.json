@@ -718,7 +718,8 @@
       "noOfflineCopy": "没有可用的离线副本",
       "noOfflineCopyHelp": "请重新联网，打开行程并保存离线副本。",
       "title": "今天",
-      "startingNow": "现在开始"
+      "startingNow": "现在开始",
+      "savedAt": "保存于 {{time}}"
     },
     "bookingAssistant": {
       "linkStop": "关联到行程站点",
@@ -3978,7 +3979,7 @@
     "backOnline": "已恢复在线",
     "offline": {
       "title": "您已离线",
-      "description": "部分功能可能无法使用。"
+      "description": "已保存的行程仍可使用。"
     },
     "install": {
       "action": "安装",

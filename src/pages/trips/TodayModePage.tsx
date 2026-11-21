@@ -329,17 +329,28 @@ export default function TodayModePage() {
     <PageContainer>
       {(!online || servingFromSnapshot) && (
         <div
-          className="mb-4 p-4 bg-muted flex items-center gap-2 text-sm text-muted-foreground"
+          className="mb-4 flex items-center gap-4 rounded-container bg-card p-4 shadow-soft"
           role="status"
         >
-          <WifiOff size={16} />
-          <span className="text-sm">
-            {t('trips.today.offlineBanner', "You're offline — showing your last-saved itinerary.")}
+          <span
+            aria-hidden
+            className="grid size-10 shrink-0 place-items-center rounded-full bg-muted"
+          >
+            <WifiOff size={18} />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-15 font-bold">
+              {t(
+                'trips.today.offlineBanner',
+                "You're offline — showing your last-saved itinerary.",
+              )}
+            </span>
             {snapshotSavedAt && (
-              <>
-                {' '}
-                <span style={{ opacity: 0.7 }}>({new Date(snapshotSavedAt).toLocaleString()})</span>
-              </>
+              <span className="mt-0.5 block text-13 text-muted-foreground">
+                {t('trips.today.savedAt', 'Saved {{time}}', {
+                  time: new Date(snapshotSavedAt).toLocaleString(),
+                })}
+              </span>
             )}
           </span>
         </div>
