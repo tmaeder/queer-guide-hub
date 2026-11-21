@@ -17,14 +17,14 @@ type VibeProfile = {
  * provide the chrome (popover in the messages rail, accordion in settings).
  * Both sections self-save; `onDone` lets a popover close after save/clear.
  */
-/** `showVibeHeading={false}` where the container already names the vibe (the Hub sheet's
- *  "Set a vibe" row). */
+/** `compact`: the vibe line only (no heading, no "Looking for", which lives in
+ *  Settings). Used in the Hub sheet, where space is tight. */
 export function StatusEditor({
   onDone,
-  showVibeHeading = true,
+  compact = false,
 }: {
   onDone?: () => void;
-  showVibeHeading?: boolean;
+  compact?: boolean;
 }) {
   const { t } = useTranslation();
   const { profile, updateProfile } = useProfile();
@@ -63,14 +63,15 @@ export function StatusEditor({
     onDone?.();
   };
 
-  const hasVibe = !!(current?.vibe_text || current?.vibe_emoji);
+  // Clear is offered only when there is a saved line to clear.
+  const hasVibe = !!current?.vibe_text;
 
   return (
     <div className="flex flex-col gap-4">
       {/* One line: emoji, text, save. Clear lives inside the field; the 4-hour
           option is a toggle rather than a second save button. */}
       <section className="flex flex-col gap-2">
-        {showVibeHeading && (
+        {!compact && (
           <h4 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
             {t('chat.vibe.title', { defaultValue: 'Your vibe' })}
           </h4>
@@ -136,17 +137,19 @@ export function StatusEditor({
         </button>
       </section>
 
-      <section className="flex flex-col gap-2">
-        <h4 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
-          {t('status.lookingFor', { defaultValue: 'Looking for' })}
-        </h4>
-        <IntentChips />
-        <p className="text-xs text-muted-foreground">
-          {t('status.lookingForHint', {
-            defaultValue: 'Helps rank people for you. Not shown on your profile.',
-          })}
-        </p>
-      </section>
+      {!compact && (
+        <section className="flex flex-col gap-2">
+          <h4 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+            {t('status.lookingFor', { defaultValue: 'Looking for' })}
+          </h4>
+          <IntentChips />
+          <p className="text-xs text-muted-foreground">
+            {t('status.lookingForHint', {
+              defaultValue: 'Helps rank people for you. Not shown on your profile.',
+            })}
+          </p>
+        </section>
+      )}
     </div>
   );
 }

@@ -22,9 +22,8 @@ interface MobileHubSheetProps {
   onDismissFocus: () => void;
 }
 
-/** Personal first; `home` (Overview) moves to the header as "Open Hub". */
-// The overview is a tile too (it used to sit as an icon beside the sheet title).
-const ORDER = ['home', 'personal', 'community', 'connect'] as const;
+/** Personal first. No Overview tile: the dock's Hub button already links to /hub. */
+const ORDER = ['personal', 'community', 'connect'] as const;
 
 export function MobileHubSheet({
   open,
@@ -60,20 +59,19 @@ export function MobileHubSheet({
     >
       {/* Your vibe, set right here instead of only from the Messages rail. */}
       {user && (
-        <div className="overflow-hidden rounded-element bg-muted">
-          <button
-            type="button"
-            onClick={() => setVibeOpen((o) => !o)}
-            aria-expanded={vibeOpen}
-            className="flex min-h-12 w-full items-center gap-2 px-4 py-2 text-left text-15 font-bold hover:bg-foreground/5"
-          >
-            <Sparkles size={18} aria-hidden className="shrink-0" />
-            <span className="min-w-0 flex-1 truncate">{vibeLabel}</span>
-          </button>
-          {vibeOpen && (
-            <div className="px-4 pb-4">
-              <StatusEditor showVibeHeading={false} onDone={() => setVibeOpen(false)} />
-            </div>
+        <div className="rounded-container bg-muted p-2">
+          {vibeOpen ? (
+            <StatusEditor compact onDone={() => setVibeOpen(false)} />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setVibeOpen(true)}
+              aria-expanded={false}
+              className="flex min-h-11 w-full items-center gap-2 rounded-element px-2 text-left text-15 font-bold hover:bg-foreground/5"
+            >
+              <Sparkles size={18} aria-hidden className="shrink-0" />
+              <span className="min-w-0 flex-1 truncate">{vibeLabel}</span>
+            </button>
           )}
         </div>
       )}
@@ -86,22 +84,16 @@ export function MobileHubSheet({
           const modules = HUB_MODULES.filter((m) => m.section === sectionId);
           if (!section || !modules.length) return null;
           const personal = sectionId === 'personal';
-          const home = sectionId === 'home';
           return (
             <section key={sectionId} className="flex flex-col gap-2">
-              {!personal && !home && section.defaultLabel && (
+              {!personal && section.defaultLabel && (
                 <h3 className={NAV_SHEET_HEADING}>
                   {section.labelKey
                     ? t(section.labelKey, section.defaultLabel)
                     : section.defaultLabel}
                 </h3>
               )}
-              <div
-                className={cn(
-                  'grid gap-1.5',
-                  personal ? 'grid-cols-4' : home ? 'grid-cols-1' : 'grid-cols-2',
-                )}
-              >
+              <div className={cn('grid gap-1.5', personal ? 'grid-cols-4' : 'grid-cols-2')}>
                 {modules.map((module) => (
                   <NavSheetTile
                     key={module.id}
