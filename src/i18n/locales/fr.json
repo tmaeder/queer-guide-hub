@@ -3993,7 +3993,8 @@
       "benefitTap": "S'ouvre d'un geste",
       "benefitFull": "Plein écran, comme une app",
       "iosStep1": "Touchez Partager dans la barre de Safari",
-      "iosStep2": "Choisissez « Sur l'écran d'accueil »"
+      "iosStep2": "Choisissez « Sur l'écran d'accueil »",
+      "learnMore": "En savoir plus"
     }
   },
   "atlas": {

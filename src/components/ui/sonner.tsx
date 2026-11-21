@@ -18,16 +18,23 @@ const Toaster = ({ ...props }: ToasterProps) => {
       closeButton
       style={{ zIndex: 'var(--z-toast)' }}
       toastOptions={{
+        // Sonner's own stylesheet is unlayered, so it beats Tailwind utilities;
+        // every override here needs `!`. Same card as the cookie and install
+        // banners: paper, soft shadow, no border.
         classNames: {
-          // Match the normalized overlay surface (dialogs / popovers):
-          // rounded-container, hairline border, translucent popover bg + blur.
           toast:
-            'group toast rounded-container bg-surface-container-highest/95 backdrop-blur-md text-popover-foreground',
-          description: 'group-[.toast]:text-muted-foreground',
-          actionButton: 'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
-          cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
+            'group toast !gap-4 !rounded-container !border-0 !bg-card !p-4 !pe-14 !text-foreground !shadow-soft-lg',
+          title: '!text-15 !font-bold',
+          description: '!text-13 !leading-relaxed !text-muted-foreground',
+          actionButton:
+            '!h-11 !rounded-element !bg-foreground !px-4 !text-13 !font-bold !text-background',
+          cancelButton:
+            '!h-11 !rounded-element !bg-muted !px-4 !text-13 !font-bold !text-foreground',
+          // Inside the card on the right, vertically centred, at the 44px
+          // touch-target size index.css enforces on every button. Sonner's
+          // default is a 20px disc hanging off the top-left corner.
           closeButton:
-            '!size-7 !rounded-badge !border-0 !bg-muted !text-foreground hover:!bg-foreground hover:!text-background',
+            '!left-auto !right-2 !top-1/2 !size-11 !-translate-y-1/2 !transform-none !rounded-element !border-0 !bg-transparent !text-muted-foreground hover:!bg-muted hover:!text-foreground [&_svg]:!size-4',
         },
       }}
       {...props}

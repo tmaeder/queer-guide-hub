@@ -4045,7 +4045,8 @@
       "benefitTap": "Opens in one tap",
       "benefitFull": "Full screen, like an app",
       "iosStep1": "Tap Share in the Safari toolbar",
-      "iosStep2": "Choose “Add to Home Screen”"
+      "iosStep2": "Choose “Add to Home Screen”",
+      "learnMore": "Learn more"
     }
   },
   "atlas": {

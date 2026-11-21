@@ -3,6 +3,7 @@ import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Download, Plus, Smartphone, Upload, X, Zap } from '@/components/icons';
 import { Button } from '@/components/ui/button';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { isAdminRoute, isMapRoute, stripLocale } from '@/lib/locale';
 import { usePWA } from './PWAProvider';
@@ -18,7 +19,7 @@ const PAGES_BEFORE_PROMPT = 3;
  * pages (no interruptions for someone in distress), and auth/onboarding flows
  * (the reader is mid-task and the card would sit on top of the form).
  */
-const SUPPRESSED = /^\/(help|safety|auth|login|onboarding)(\/|$)|^\/report-/;
+const SUPPRESSED = /^\/(help|safety|auth|login|onboarding|app)(\/|$)|^\/report-/;
 
 function isDismissed(): boolean {
   try {
@@ -151,12 +152,19 @@ export function InstallBanner() {
         ))}
       </List>
 
-      {!ios && (
-        <Button onClick={handleInstall} className="mt-4 w-full font-bold">
-          <Download size={16} className="me-2" aria-hidden />
-          {t('pwa.install.action')}
+      <div className="mt-4 flex gap-2">
+        <Button asChild variant="outline" className="flex-1">
+          <LocalizedLink to="/app" className="no-underline">
+            {t('pwa.install.learnMore')}
+          </LocalizedLink>
         </Button>
-      )}
+        {!ios && (
+          <Button onClick={handleInstall} className="flex-1 font-bold">
+            <Download size={16} className="me-2" aria-hidden />
+            {t('pwa.install.action')}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

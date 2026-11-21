@@ -65,6 +65,7 @@ const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
 // CMS-managed pages (content from cms_pages table)
 const CMSRoutePage = lazyRetry(() => import('./pages/CMSRoutePage'));
 const About = lazyRetry(() => import('./pages/About'));
+const AppInstall = lazyRetry(() => import('./pages/AppInstall'));
 const BrandGuidelines = lazyRetry(() => import('./pages/Brand'));
 const Contact = lazyRetry(() => import('./pages/Contact'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
@@ -914,6 +915,7 @@ export const AppRoutes = () => {
           <Route path="donate" element={<Donate />} />
           <Route path="about-hub" element={<CMSRoutePage slug="about-hub" />} />
           <Route path="about" element={<About />} />
+          <Route path="app" element={<AppInstall />} />
           <Route path="contact" element={<Contact />} />
           <Route path="email-updates" element={<EmailUpdates />} />
           <Route path="vision" element={<CMSRoutePage slug="vision" />} />
