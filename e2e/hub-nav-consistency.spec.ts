@@ -3,7 +3,9 @@ import { test, expect, type Page } from '@playwright/test';
 // Check the shared wayfinding across the public Hub shells, without credentials.
 /** Registry order. Deliberately duplicated from src/config/hubModules.ts: a
  *  guard that imports the thing it guards passes when both move together. */
-const GROUPS = ['HOME', 'COMMUNITY', 'CONNECT', 'PERSONAL'] as const;
+/** The top row: one tab per section. Home's only page names its tab. */
+const SECTIONS = ['Overview', 'Community', 'Connect', 'Personal'] as const;
+type Section = (typeof SECTIONS)[number];
 const PILLS = [
   'Overview',
   'Feed',
@@ -22,28 +24,35 @@ const PILLS = [
 /** The mobile sheet lists Personal first and has no Overview tile (the dock's Hub
  *  button links to /hub). */
 const SHEET_PILLS = [...PILLS.slice(9), ...PILLS.slice(1, 9)];
+/** The second row: only the pages of the section the URL is in. */
+const SECTION_PILLS: Record<Section, readonly string[]> = {
+  Overview: [],
+  Community: PILLS.slice(1, 5),
+  Connect: PILLS.slice(5, 9),
+  Personal: PILLS.slice(9),
+};
 
 /** One route per page component behind /hub, so every shell that renders the bar
  *  is exercised. `/hub/dating` is absent on purpose: Cruising redirects an
  *  anonymous visitor to /auth before any nav renders, which predates #4277. */
-const ROUTES: ReadonlyArray<{ path: string; active: string; shell: string }> = [
-  { path: '/hub', active: 'Overview', shell: 'HubShell' },
-  { path: '/hub/feed', active: 'Feed', shell: 'HubShell (public)' },
-  { path: '/hub/members', active: 'Members', shell: 'Community' },
-  { path: '/hub/friends', active: 'Friends', shell: 'Community' },
-  { path: '/hub/groups', active: 'Groups', shell: 'Community' },
-  { path: '/hub/people', active: 'People', shell: 'IntentPageLayout' },
-  { path: '/hub/travel', active: 'Travel buddies', shell: 'PeopleMode' },
-  { path: '/hub/nearby', active: 'Nearby', shell: 'PeopleMode' },
-  { path: '/hub/messages', active: 'Messages', shell: 'HubShell + AuthGate' },
-  { path: '/hub/plans', active: 'Plans', shell: 'HubShell + AuthGate' },
-  { path: '/hub/saved', active: 'Saved', shell: 'HubShell + AuthGate' },
-  { path: '/hub/progress', active: 'Progress', shell: 'HubShell + AuthGate' },
+const ROUTES: ReadonlyArray<{ path: string; active: string; section: Section; shell: string }> = [
+  { path: '/hub', active: 'Overview', section: 'Overview', shell: 'HubShell' },
+  { path: '/hub/feed', active: 'Feed', section: 'Community', shell: 'HubShell (public)' },
+  { path: '/hub/members', active: 'Members', section: 'Community', shell: 'Community' },
+  { path: '/hub/friends', active: 'Friends', section: 'Community', shell: 'Community' },
+  { path: '/hub/groups', active: 'Groups', section: 'Community', shell: 'Community' },
+  { path: '/hub/people', active: 'People', section: 'Connect', shell: 'IntentPageLayout' },
+  { path: '/hub/travel', active: 'Travel buddies', section: 'Connect', shell: 'PeopleMode' },
+  { path: '/hub/nearby', active: 'Nearby', section: 'Connect', shell: 'PeopleMode' },
+  { path: '/hub/messages', active: 'Messages', section: 'Personal', shell: 'HubShell + AuthGate' },
+  { path: '/hub/plans', active: 'Plans', section: 'Personal', shell: 'HubShell + AuthGate' },
+  { path: '/hub/saved', active: 'Saved', section: 'Personal', shell: 'HubShell + AuthGate' },
+  { path: '/hub/progress', active: 'Progress', section: 'Personal', shell: 'HubShell + AuthGate' },
 ];
 
-/** The bar, located structurally rather than by aria-label — the label comes
- *  from i18n and a locale edit must not silently empty this suite. */
-const NAV = 'nav:has(a[href$="/hub/dating"])';
+/** The bar, located by its data hook rather than by aria-label: the label comes
+ *  from i18n, and since the split no single link appears on every route. */
+const NAV = 'nav[data-hub-nav]';
 
 async function openHub(page: Page, path: string) {
   await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -73,25 +82,37 @@ test.describe('hub nav', () => {
   });
 
   for (const route of ROUTES) {
-    test(`${route.path} (${route.shell}) carries the whole bar`, async ({ page }) => {
+    test(`${route.path} (${route.shell}) shows its section and that section's pages`, async ({
+      page,
+    }) => {
       const nav = await openHub(page, route.path);
 
-      // Same groups, same order, on every route.
-      const groups = (await nav.locator('p').allTextContents()).map((s) => s.trim().toUpperCase());
-      expect(groups, `${route.path}: group labels`).toEqual([...GROUPS]);
+      // Same four section tabs, same order, on every route.
+      const sections = (await nav.locator('[data-hub-sections] a').allTextContents()).map((s) =>
+        s.trim(),
+      );
+      expect(sections, `${route.path}: sections`).toEqual([...SECTIONS]);
 
-      // Same twelve destinations, same order. This is what "configured away"
-      // would look like: a page rendering a subset.
-      const pills = (await nav.locator('a').allTextContents()).map((s) => s.trim());
-      expect(pills, `${route.path}: pills`).toEqual([...PILLS]);
+      // Exactly one section is current, and it agrees with the URL.
+      const currentSection = await nav
+        .locator('[data-hub-sections] a[aria-current]')
+        .allTextContents();
+      expect(
+        currentSection.map((s) => s.trim()),
+        `${route.path}: current section`,
+      ).toEqual([route.section]);
 
-      // Exactly one highlighted pill, and it agrees with the URL. Before #4277
-      // HubShell drove this from a prop, so the nav could claim an active module
-      // the address bar disagreed with.
+      // The second row lists only that section's pages, in registry order.
+      const pills = (await nav.locator('[data-hub-modules] a').allTextContents()).map((s) =>
+        s.trim(),
+      );
+      expect(pills, `${route.path}: section pages`).toEqual([...SECTION_PILLS[route.section]]);
+
+      // Exactly one link is the current page, and it agrees with the URL.
       const current = await nav.locator('a[aria-current="page"]').allTextContents();
       expect(
         current.map((s) => s.trim()),
-        `${route.path}: active pill`,
+        `${route.path}: active page`,
       ).toEqual([route.active]);
     });
   }

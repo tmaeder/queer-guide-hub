@@ -68,7 +68,8 @@ describe('PeopleMode', () => {
   });
 
   it('offers a way back to the hub', () => {
-    renderWithProviders(<PeopleMode tab="friends" />);
-    expect(screen.getByRole('link', { name: /people/i })).toHaveAttribute('href', '/hub/people');
+    renderWithProviders(<PeopleMode tab="friends" />, { route: '/hub/friends' });
+    // Friends sits in Community; the Connect section tab leads to People.
+    expect(screen.getByRole('link', { name: /^Connect$/ })).toHaveAttribute('href', '/hub/people');
   });
 });
