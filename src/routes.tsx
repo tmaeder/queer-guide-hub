@@ -197,6 +197,7 @@ const TripWorkspace = lazyRetry(() => import('./pages/trips/TripWorkspace'));
 const SharedTripPage = lazyRetry(() => import('./pages/trips/SharedTripPage'));
 const TripSubrouteRedirect = lazyRetry(() => import('./pages/trips/TripSubrouteRedirect'));
 const Donate = lazyRetry(() => import('./pages/Donate'));
+const Technical = lazyRetry(() => import('./pages/Technical'));
 const Sitemap = lazyRetry(() => import('./pages/Sitemap'));
 const ContributePage = lazyRetry(() => import('./pages/ContributePage'));
 const FeedbackBoard = lazyRetry(() => import('./pages/FeedbackBoard'));
@@ -915,6 +916,7 @@ export const AppRoutes = () => {
           <Route path="donate" element={<Donate />} />
           <Route path="about-hub" element={<CMSRoutePage slug="about-hub" />} />
           <Route path="about" element={<About />} />
+          <Route path="technical" element={<Technical />} />
           <Route path="app" element={<AppInstall />} />
           <Route path="contact" element={<Contact />} />
           <Route path="email-updates" element={<EmailUpdates />} />

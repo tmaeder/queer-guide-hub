@@ -325,6 +325,7 @@
     "/tags/rights-by-country/trans",
     "/tags/sti-guide",
     "/tags/topic/:slug",
+    "/technical",
     "/terms",
     "/tools/checklist",
     "/tools/checklist/s/:code",

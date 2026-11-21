@@ -129,6 +129,7 @@ const STATIC_PAGES = new Set([
   'SharedRedirectReport',
   'Sitemap',
   'Styleguide',
+  'Technical',
 ]);
 
 const SAFETY_PAGES = new Set(['HelpHotlines', 'SubstanceInteractionsPage', 'StiGuidePage']);

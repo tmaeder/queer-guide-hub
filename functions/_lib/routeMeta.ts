@@ -34,6 +34,10 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Read Queer Guide content without an API key. REST endpoints, OpenAPI, Markdown negotiation, MCP and agent usage examples.',
   },
+  '/technical': {
+    title: 'Technical pages: API, open data and methods | Queer Guide',
+    description: 'The Queer Guide API, open data, methods, standards and tools in one place.',
+  },
   '/': {
     title: 'Queer Guide — LGBTQ+ Safe Spaces, Events & Community',
     description: DEFAULT_DESCRIPTION,
