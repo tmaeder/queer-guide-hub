@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useApiKeys, ApiKey, CreateApiKeyRequest } from '@/hooks/useApiKeys';
+import { creditUsageLine } from '@/lib/providerCredits';
 import { ChatGPTConnection } from './ChatGPTConnection';
 import {
   Plus,
@@ -396,6 +397,7 @@ export const ApiKeysManager = () => {
                           {rk.status === 'configured' && rk.hint && (
                             <p className="text-xs text-muted-foreground font-mono">{rk.hint}</p>
                           )}
+                          {rk.usage && <p className="text-xs">{creditUsageLine(rk.usage)}</p>}
                         </div>
                       </div>
                       {getStatusBadge(rk.status)}

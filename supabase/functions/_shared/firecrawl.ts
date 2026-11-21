@@ -62,3 +62,32 @@ export function firecrawlPage(json: unknown): FirecrawlPage {
     metadata,
   }
 }
+
+export interface FirecrawlCreditUsage {
+  remainingCredits: number
+  planCredits: number | null
+  billingPeriodStart: string | null
+  billingPeriodEnd: string | null
+}
+
+/** GET /v2/team/credit-usage for the account the key belongs to. Throws on any failure. */
+export async function firecrawlCreditUsage(apiKey: string, init: { signal?: AbortSignal; fetcher?: typeof fetch } = {}): Promise<FirecrawlCreditUsage> {
+  const response = await (init.fetcher ?? fetch)(`${FIRECRAWL_API_URL}/v2/team/credit-usage`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+    signal: init.signal ?? AbortSignal.timeout(5000),
+  })
+  if (!response.ok) {
+    await response.body?.cancel()
+    throw new Error(`Firecrawl credit usage HTTP ${response.status}`)
+  }
+  const body = await response.json() as { data?: Record<string, unknown> }
+  const d = body?.data ?? {}
+  if (typeof d.remainingCredits !== 'number') throw new Error('Firecrawl credit usage returned no remainingCredits')
+  const date = (v: unknown) => (typeof v === 'string' && !Number.isNaN(Date.parse(v)) ? v : null)
+  return {
+    remainingCredits: d.remainingCredits,
+    planCredits: typeof d.planCredits === 'number' ? d.planCredits : null,
+    billingPeriodStart: date(d.billingPeriodStart),
+    billingPeriodEnd: date(d.billingPeriodEnd),
+  }
+}

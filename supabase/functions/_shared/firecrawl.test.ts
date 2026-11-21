@@ -1,5 +1,5 @@
-import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
-import { firecrawlPage, firecrawlScrape } from './firecrawl.ts'
+import { assertEquals, assertRejects } from 'https://deno.land/std@0.224.0/assert/mod.ts'
+import { firecrawlCreditUsage, firecrawlPage, firecrawlScrape } from './firecrawl.ts'
 
 Deno.test('firecrawlScrape posts the body with bearer auth to the chosen API version', async () => {
   let seen: { url: string; init: RequestInit } | null = null
@@ -19,4 +19,21 @@ Deno.test('firecrawlPage reads v2, v1 and data-less bodies', () => {
   assertEquals(firecrawlPage({ rawHtml: '<flat>', metadata: { sourceURL: 'https://b.test/' } }).url, 'https://b.test/')
   assertEquals(firecrawlPage({ success: false }).success, false)
   assertEquals(firecrawlPage(null).rawHtml, undefined)
+})
+
+Deno.test('firecrawlCreditUsage reads remaining credits and the billing period', async () => {
+  let auth = ''
+  const fetcher = ((url: string, init: RequestInit) => {
+    auth = (init.headers as Record<string, string>).Authorization
+    assertEquals(url, 'https://api.firecrawl.dev/v2/team/credit-usage')
+    return Promise.resolve(Response.json({ success: true, data: { remainingCredits: 0, planCredits: 3000, billingPeriodStart: '2026-11-01T00:00:00Z', billingPeriodEnd: 'not a date' } }))
+  }) as unknown as typeof fetch
+  assertEquals(await firecrawlCreditUsage('k', { fetcher }), { remainingCredits: 0, planCredits: 3000, billingPeriodStart: '2026-11-01T00:00:00Z', billingPeriodEnd: null })
+  assertEquals(auth, 'Bearer k')
+})
+
+Deno.test('firecrawlCreditUsage throws on HTTP errors and on a body without credits', async () => {
+  const reply = (r: Response) => (() => Promise.resolve(r)) as unknown as typeof fetch
+  await assertRejects(() => firecrawlCreditUsage('k', { fetcher: reply(new Response('', { status: 401 })) }), Error, 'HTTP 401')
+  await assertRejects(() => firecrawlCreditUsage('k', { fetcher: reply(Response.json({ data: {} })) }), Error, 'no remainingCredits')
 })

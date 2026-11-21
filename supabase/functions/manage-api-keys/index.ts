@@ -1,4 +1,5 @@
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
+import { firecrawlCreditUsage } from '../_shared/firecrawl.ts'
 
 // SECURITY FIX: Proper AES encryption for API keys
 async function secureEncrypt(text: string): Promise<string> {
@@ -123,6 +124,15 @@ Deno.serve(async (req) => {
           hint: envValue ? 'configured' : '',
           used_by: [],
         });
+      }
+
+      // Remaining Firecrawl credits and the period end, so a quota stop is visible
+      // without the provider dashboard. The key itself never leaves this function.
+      const firecrawl = (requiredKeys as Array<Record<string, unknown>>)
+        .find(k => k.key_name === 'FIRECRAWL_API_KEY' && k.status === 'configured')
+      if (firecrawl) {
+        firecrawl.usage = await firecrawlCreditUsage(Deno.env.get('FIRECRAWL_API_KEY')!)
+          .catch((e: unknown) => ({ error: e instanceof Error ? e.message : 'Firecrawl credit usage unavailable' }))
       }
 
       // Also include custom keys from admin_api_keys table
