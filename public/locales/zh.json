@@ -5973,5 +5973,10 @@
     "acceptAll": "全部接受",
     "customize": "自定义",
     "policy": "Cookie 政策"
+  },
+  "errorToast": {
+    "title": "出了点问题",
+    "description": "刷新页面通常可以解决。",
+    "action": "刷新"
   }
 }

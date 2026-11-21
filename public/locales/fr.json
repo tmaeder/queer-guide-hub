@@ -5979,5 +5979,10 @@
     "acceptAll": "Tout accepter",
     "customize": "Personnaliser",
     "policy": "Politique de cookies"
+  },
+  "errorToast": {
+    "title": "Un problème est survenu",
+    "description": "Recharger la page règle généralement le problème.",
+    "action": "Recharger"
   }
 }

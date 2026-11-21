@@ -5973,5 +5973,10 @@
     "acceptAll": "모두 허용",
     "customize": "직접 설정",
     "policy": "쿠키 정책"
+  },
+  "errorToast": {
+    "title": "문제가 발생했어요",
+    "description": "페이지를 새로고침하면 대부분 해결돼요.",
+    "action": "새로고침"
   }
 }

@@ -64,7 +64,7 @@ async function checkOnce(): Promise<void> {
   if (!current || current === boot) return;
 
   alreadyNotified = true;
-  toast(i18n.t('pwa.updateAvailable.title'), {
+  toast.info(i18n.t('pwa.updateAvailable.title'), {
     description: i18n.t('pwa.updateAvailable.description'),
     action: {
       label: i18n.t('pwa.updateAvailable.action'),

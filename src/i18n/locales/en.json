@@ -5938,5 +5938,10 @@
     "acceptAll": "Accept All",
     "customize": "Customize",
     "policy": "Cookie policy"
+  },
+  "errorToast": {
+    "title": "Something went wrong",
+    "description": "A refresh usually fixes it.",
+    "action": "Refresh"
   }
 }
