@@ -3983,12 +3983,14 @@
     },
     "install": {
       "title": "Queer Guide installieren",
-      "description": "Schneller Zugriff vom Startbildschirm — funktioniert auch offline.",
+      "description": "Öffnet sich vom Startbildschirm, ohne Browserleisten.",
       "action": "Installieren",
       "iosTitle": "Zum Startbildschirm hinzufügen",
       "iosHint": "Tippe in Safari auf die Teilen-Schaltfläche und wähle „Zum Home-Bildschirm“.",
       "dismiss": "Schließen",
-      "ariaLabel": "App installieren"
+      "ariaLabel": "App installieren",
+      "notNow": "Nicht jetzt",
+      "gotIt": "Verstanden"
     }
   },
   "atlas": {

@@ -3981,12 +3981,14 @@
     },
     "install": {
       "title": "Queer Guide 설치",
-      "description": "홈 화면에서 빠르게 열어요. 오프라인에서도 작동해요.",
+      "description": "홈 화면에서 바로 열리고, 브라우저 막대가 없어요.",
       "action": "설치",
       "iosTitle": "홈 화면에 추가",
       "iosHint": "Safari에서 공유 버튼을 누른 다음 '홈 화면에 추가'를 선택하세요.",
       "dismiss": "닫기",
-      "ariaLabel": "앱 설치"
+      "ariaLabel": "앱 설치",
+      "notNow": "나중에",
+      "gotIt": "확인"
     }
   },
   "atlas": {

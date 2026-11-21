@@ -3987,12 +3987,14 @@
     },
     "install": {
       "title": "Installer Queer Guide",
-      "description": "Accès rapide depuis votre écran d'accueil — fonctionne aussi hors ligne.",
+      "description": "S'ouvre depuis votre écran d'accueil, sans les barres du navigateur.",
       "action": "Installer",
       "iosTitle": "Ajouter à l'écran d'accueil",
       "iosHint": "Touchez le bouton Partager dans Safari, puis sélectionnez « Sur l'écran d'accueil ».",
       "dismiss": "Fermer",
-      "ariaLabel": "Installer l'app"
+      "ariaLabel": "Installer l'app",
+      "notNow": "Pas maintenant",
+      "gotIt": "Compris"
     }
   },
   "atlas": {
