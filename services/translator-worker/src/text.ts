@@ -13,7 +13,10 @@ import { franc } from 'franc-min';
 export function estimateTokens(s: string): number {
   let ascii = 0;
   let other = 0;
-  for (const ch of s) (ch.charCodeAt(0) < 128 ? ascii++ : other++);
+  for (const ch of s) {
+    if (ch.charCodeAt(0) < 128) ascii++;
+    else other++;
+  }
   return Math.ceil(ascii / 3.5 + other);
 }
 

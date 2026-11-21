@@ -65,10 +65,10 @@ async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
   });
   if (!res.ok) {
     // PostgREST error bodies can echo arguments (= content); log the code only.
-    let code = '';
-    try {
-      code = ((await res.json()) as { code?: string }).code ?? '';
-    } catch {}
+    const code = await res
+      .json()
+      .then((j: { code?: string }) => j.code ?? '')
+      .catch(() => '');
     throw new Error(`rpc ${fn} http ${res.status} ${code}`.trim());
   }
   return (await res.json()) as T;
