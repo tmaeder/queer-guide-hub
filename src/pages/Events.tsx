@@ -2,6 +2,7 @@ import { lazy, Suspense, useMemo, useState } from 'react';
 import { dedupeCitiesByNormalized } from '@/utils/dateRange';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EventsHeroSpotlight } from '@/components/events/EventsHeroSpotlight';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { SmartEmptyState } from '@/components/events/SmartEmptyState';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { useEventWindowCounts } from '@/hooks/useEventWindowCounts';
@@ -87,6 +88,7 @@ const Events = () => {
 
   const [_selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [openedAt] = useState(Date.now);
+  const isMobile = useIsMobile();
   const spotlight =
     f.isDefaultBrowse && !loading && !error ? selectDiscoveryEvent(events, openedAt) : undefined;
   const coverage = typeof windowCounts?.upcoming === 'number' && (
@@ -145,7 +147,12 @@ const Events = () => {
         <h1 className="min-w-0 break-words font-display text-display leading-none md:text-hero rtl:font-sans rtl:font-bold">
           {t('pages.events.title', 'Events.')}
         </h1>
-        {spotlight && <EventsHeroSpotlight event={spotlight} />}
+        {/* Beside the title from md up. On a phone the header is a single column, so
+            a spotlight that arrives with the events grew it by ~170px and pushed the
+            filters and results down (mobile CLS 0.126); there it sits at the top of
+            the results instead, where the loading skeleton already holds the space.
+            One instance only, so its priority image is never fetched twice. */}
+        {spotlight && !isMobile && <EventsHeroSpotlight event={spotlight} />}
       </PageContainer>
       {/* ---- Control band ---------------------------------------------------
        *
@@ -365,6 +372,12 @@ const Events = () => {
               }
             />
           ))}
+
+        {spotlight && isMobile && (
+          <div className="mb-6">
+            <EventsHeroSpotlight event={spotlight} />
+          </div>
+        )}
 
         {/* Event Content */}
         {!loading && events.length > 0 && f.viewMode === 'grid' && (
