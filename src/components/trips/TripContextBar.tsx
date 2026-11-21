@@ -78,11 +78,11 @@ export function TripContextBar() {
       aria-label={t('trips.contextBar.ariaLabel', 'Active trip context')}
       className="fixed bottom-20 left-4 right-20 z-[1099] md:sticky md:inset-x-auto md:bottom-auto md:top-[var(--header-pinned-bottom)] md:px-6 md:py-2"
     >
-      <div className="mx-auto flex min-h-12 max-w-[1400px] items-center gap-4 rounded-element bg-foreground px-4 py-2 text-background md:min-h-10 md:rounded-none md:bg-background md:text-foreground">
+      <div className="mx-auto flex min-h-12 max-w-[1400px] items-center gap-2 rounded-element bg-foreground px-4 py-2 text-background md:min-h-10 md:rounded-none md:bg-background md:text-foreground">
         <button
           type="button"
           onClick={open}
-          className="flex min-w-0 flex-1 items-center gap-4 text-left"
+          className="mr-2 flex min-w-0 flex-1 items-center gap-4 text-left"
           aria-expanded={dockOpen}
           aria-controls="active-trip-dock"
         >
@@ -96,8 +96,18 @@ export function TripContextBar() {
           <span className="hidden shrink-0 text-xs text-muted-foreground md:inline">
             {phaseLabel(phase, t)} · {status}
           </span>
-          <CircleEllipsis className="h-4 w-4 shrink-0" aria-hidden />
         </button>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label={t('trips.contextBar.openTrip', 'Open trip')}
+          aria-expanded={dockOpen}
+          aria-controls="active-trip-dock"
+          onClick={open}
+          className="h-8 w-8 shrink-0 p-0 text-current hover:bg-background/15 md:hover:bg-muted"
+        >
+          <CircleEllipsis className="h-4 w-4" aria-hidden />
+        </Button>
         <Button
           variant="ghost"
           size="sm"
